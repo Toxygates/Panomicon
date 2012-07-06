@@ -20,5 +20,9 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 	public String[] doseLevels(String compound, String organ) {
 		return OTGOwlim.doseLevels(compound, organ);
 	}
+	
+	public String[] barcodes(String compound, String organ, String doseLevel) {
+		return OTGOwlim.barcodes(compound, organ, doseLevel);
+	}
 
 }

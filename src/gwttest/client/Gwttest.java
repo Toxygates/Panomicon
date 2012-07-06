@@ -5,6 +5,8 @@ import gwttest.shared.FieldVerifier;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Position;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -43,7 +45,7 @@ public class Gwttest implements EntryPoint {
 	
 	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT.create(OwlimService.class);
 
-	private ListBox compoundList, organList, doseLevelList;
+	private ListBox compoundList, organList, doseLevelList, barcodeList;
 	
 	/**
 	 * This is the entry point method.
@@ -58,27 +60,57 @@ public class Gwttest implements EntryPoint {
 		
 		DockPanel dockPanel = new DockPanel();
 		rootPanel.add(dockPanel, 10, 10);
-		dockPanel.setSize("706px", "283px");
+		dockPanel.setSize("872px", "283px");
 		
 		FlowPanel flowPanel = new FlowPanel();
 		dockPanel.add(flowPanel, DockPanel.CENTER);
-		flowPanel.setSize("706px", "209px");
+		flowPanel.setSize("858px", "209px");
 		
 		compoundList = new ListBox();
-		flowPanel.add(compoundList);
-		compoundList.setMultipleSelect(true);
-		compoundList.setVisibleItemCount(5);
+		flowPanel.add(compoundList);			
 		compoundList.setSize("204px", "202px");
+		compoundList.setVisibleItemCount(10);
+		compoundList.addChangeHandler(new ChangeHandler() {
+			public void onChange(ChangeEvent event) {
+				String compound = compounds[compoundList.getSelectedIndex()];
+				getOrgans(compound);
+				getDoseLevels(compound, null);
+				getBarcodes(compound, null, null);
+			}
+		});
+		
 		
 		organList = new ListBox();
 		flowPanel.add(organList);
 		organList.setSize("210px", "202px");
-		organList.setVisibleItemCount(5);
+		organList.setVisibleItemCount(10);
+		organList.addChangeHandler(new ChangeHandler() {
+			public void onChange(ChangeEvent event) {
+				String compound = compounds[compoundList.getSelectedIndex()];
+				String organ = organs[organList.getSelectedIndex()];
+				getDoseLevels(compound, organ);
+				getBarcodes(compound, organ, null);
+			}
+		});
 		
-		doseLevelList = new ListBox();
-		doseLevelList.setVisibleItemCount(5);
+		doseLevelList = new ListBox();		
 		flowPanel.add(doseLevelList);
 		doseLevelList.setSize("210px", "202px");
+		doseLevelList.setVisibleItemCount(10);
+		doseLevelList.addChangeHandler(new ChangeHandler() {
+			public void onChange(ChangeEvent event) {
+				String compound = compounds[compoundList.getSelectedIndex()];
+				String organ = organs[organList.getSelectedIndex()];
+				String doseLevel= doseLevels[doseLevelList.getSelectedIndex()];
+				
+				getBarcodes(compound, organ, doseLevel);
+			}
+		});
+		
+		barcodeList = new ListBox();
+		barcodeList.setVisibleItemCount(10);
+		flowPanel.add(barcodeList);
+		barcodeList.setSize("210px", "202px");
 		
 		FlowPanel flowPanel_1 = new FlowPanel();
 		dockPanel.add(flowPanel_1, DockPanel.NORTH);
@@ -129,8 +161,8 @@ public class Gwttest implements EntryPoint {
 		
 		//get compounds
 		getCompounds();
-		getOrgans();
-		getDoseLevels();		
+		getOrgans(null);
+		getDoseLevels(null, null);		
 
 		// Create a handler for the sendButton and nameField
 		class MyHandler implements ClickHandler, KeyUpHandler {
@@ -198,13 +230,15 @@ public class Gwttest implements EntryPoint {
 
 	}
 	
+	private String[] compounds;
 	void getCompounds() {
+		compoundList.clear();
 		owlimService.compounds(new AsyncCallback<String[]>() {
 			public void onFailure(Throwable caught) {
 				Window.alert("Unable to get compounds.");				
 			}
 			public void onSuccess(String[] result) {
-				
+				compounds = result;
 				for (String compound: result) {					
 					compoundList.addItem(compound);					
 				}				
@@ -212,13 +246,15 @@ public class Gwttest implements EntryPoint {
 		});
 	}
 	
-	void getOrgans() {
-		owlimService.organs(null, new AsyncCallback<String[]>() {
+	private String[] organs;
+	void getOrgans(String compound) {
+		organList.clear();
+		owlimService.organs(compound, new AsyncCallback<String[]>() {
 			public void onFailure(Throwable caught) {
 				Window.alert("Unable to get organs.");				
 			}
 			public void onSuccess(String[] result) {
-				
+				organs = result;
 				for (String organ: result) {					
 					organList.addItem(organ);					
 				}				
@@ -226,15 +262,31 @@ public class Gwttest implements EntryPoint {
 		});
 	}
 	
-	void getDoseLevels() {
+	private String[] doseLevels;
+	void getDoseLevels(String compound, String organ) {
+		doseLevelList.clear();
 		owlimService.doseLevels(null, null, new AsyncCallback<String[]>() {
 			public void onFailure(Throwable caught) {
 				Window.alert("Unable to get dose levels.");				
 			}
 			public void onSuccess(String[] result) {
-				
+				doseLevels = result;				
 				for (String doseLevel: result) {					
 					doseLevelList.addItem(doseLevel);					
+				}				
+			}
+		});
+	}
+	
+	void getBarcodes(String compound, String organ, String doseLevel) {
+		barcodeList.clear();
+		owlimService.barcodes(compound, organ, doseLevel, new AsyncCallback<String[]>() {
+			public void onFailure(Throwable caught) {
+				Window.alert("Unable to get dose levels.");				
+			}
+			public void onSuccess(String[] result) {								
+				for (String barcode: result) {					
+					barcodeList.addItem(barcode);					
 				}				
 			}
 		});
