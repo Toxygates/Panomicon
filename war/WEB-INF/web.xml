@@ -10,20 +10,31 @@
     <servlet-name>greetServlet</servlet-name>
     <servlet-class>gwttest.server.GreetingServiceImpl</servlet-class>
   </servlet>
-  
-  <servlet>
-  	<servlet-name>owlimServlet</servlet-name>
-  	<servlet-class>gwttest.server.OwlimServiceImpl</servlet-class>
-  </servlet>
-  
-  <servlet-mapping>
-    <servlet-name>greetServlet</servlet-name>
-    <url-pattern>/gwttest/greet</url-pattern>
-  </servlet-mapping>
-  
-  <servlet-mapping>
-    <servlet-name>owlimServlet</servlet-name>
-    <url-pattern>/gwttest/owlim</url-pattern>
+
+	<servlet>
+		<servlet-name>owlimServlet</servlet-name>
+		<servlet-class>gwttest.server.OwlimServiceImpl</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>kcServlet</servlet-name>
+		<servlet-class>gwttest.server.KCServiceImpl</servlet-class>
+	</servlet>
+
+
+	<servlet-mapping>
+		<servlet-name>greetServlet</servlet-name>
+		<url-pattern>/gwttest/greet</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>owlimServlet</servlet-name>
+		<url-pattern>/gwttest/owlim</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>kcServlet</servlet-name>
+    <url-pattern>/gwttest/KC</url-pattern>
   </servlet-mapping>
   
   <!-- Default page to serve -->
