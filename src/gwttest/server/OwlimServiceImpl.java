@@ -8,21 +8,39 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 public class OwlimServiceImpl extends RemoteServiceServlet implements
 		OwlimService {
 
+	//Future: keep connection open, close on shutdown.
+	
 	@Override
 	public String[] compounds() {
-		return OTGOwlim.compounds();
+		try {
+			return OTGOwlim.compounds();
+		} finally {
+			OTGOwlim.close();
+		}
 	}
-	
+
 	public String[] organs(String compound) {
-		return OTGOwlim.organs(compound);
+		try {
+			return OTGOwlim.organs(compound);
+		} finally {
+			OTGOwlim.close();
+		}
 	}
-	
+
 	public String[] doseLevels(String compound, String organ) {
-		return OTGOwlim.doseLevels(compound, organ);
+		try {
+			return OTGOwlim.doseLevels(compound, organ);
+		} finally {
+			OTGOwlim.close();
+		}
 	}
-	
+
 	public String[] barcodes(String compound, String organ, String doseLevel) {
-		return OTGOwlim.barcodes(compound, organ, doseLevel);
+		try {
+			return OTGOwlim.barcodes(compound, organ, doseLevel);
+		} finally {
+			OTGOwlim.close();
+		}
 	}
 
 }

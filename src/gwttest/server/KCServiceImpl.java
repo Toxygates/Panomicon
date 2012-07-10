@@ -8,17 +8,20 @@ import java.util.List;
 import java.util.Map;
 
 import kyotocabinet.DB;
-import otg.OTGQuery;
+import otg.OTGQueries;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 
+	//Future: keep connection open, close on shutdown.
+	
 	public List<ExpressionRow> absoluteValues(String barcode) {
 		DB db = null;
+		String homePath = System.getProperty("otg.home");
 		try {
-			db = OTGQuery.open("/Users/johan/otg/20120221/open-tggates/otg.kct");
-			Map<String, Double> r = OTGQuery.presentValuesByBarcodeForJava(db, barcode);
+			db = OTGQueries.open(homePath + "/otg.kct");
+			Map<String, Double> r = OTGQueries.presentValuesByBarcodeForJava(db, barcode);
 			List<ExpressionRow> rr = new ArrayList<ExpressionRow>();
 			for (String probe: r.keySet()) {
 				rr.add(new ExpressionRow(probe, r.get(probe)));	
