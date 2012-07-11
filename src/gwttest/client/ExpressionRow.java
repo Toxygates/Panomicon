@@ -1,27 +1,34 @@
 package gwttest.client;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 	private String probe;
 	private String title;
-	private Double val;	
+	private Double[] val;	
 	
 	public ExpressionRow() {
 		probe = "";
-		val = 0.0;
+		val = new Double[0];
 		title = "";
 	}
 	
-	public ExpressionRow(String _probe, String _title, Double _val) {
+	public ExpressionRow(String _probe, String _title, Double[] _val) {
 		probe = _probe;
 		val = _val;
 		title = _title;
 	}
 	
+	public ExpressionRow(String _probe, String _title, Double _val) {
+		probe = _probe;
+		val = new Double[] { _val };
+		title = _title;
+	}
+	
 	public boolean equals(Object o) {
 		if (o instanceof ExpressionRow) {
-			return (probe == ((ExpressionRow) o).probe && val == ((ExpressionRow)o).val);
+			return (probe == ((ExpressionRow) o).probe && Arrays.equals(val, ((ExpressionRow)o).val));
 		}
 		return false;
 	}
@@ -29,8 +36,13 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 	public String getProbe() {
 		return probe;
 	}
-	public Double getValue() {
-		return val;
+	
+	public Double getValue(int i) {
+		if (i < val.length) {
+			return val[i];
+		} else {
+			return 0d;
+		}
 	}
 	public String getTitle() {
 		return title;
@@ -40,12 +52,7 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 		if (o == null) {
 			return -1;
 		} else {
-			int pc = probe.compareTo(o.probe);
-			if (pc != 0) {
-				return pc;
-			} else {
-				return val.compareTo(o.val);
-			}	
+			return probe.compareTo(o.probe);			
 		}			
 	}
 	

@@ -28,7 +28,10 @@ import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.MenuItemSeparator;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.view.client.AsyncDataProvider;
+import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.ListDataProvider;
+import com.google.gwt.view.client.Range;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -49,7 +52,8 @@ public class Gwttest implements EntryPoint {
 	private ListBox compoundList, organList, doseLevelList, barcodeList;
 	private DataGrid<ExpressionRow> exprGrid;
 	private ListDataProvider<ExpressionRow> listDataProvider;
-
+	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
+	
 	private ValueType chosenValueType = ValueType.Folds;
 
 	enum DataSet {
@@ -63,6 +67,19 @@ public class Gwttest implements EntryPoint {
 
 	private DataSet chosenDataSet = DataSet.HumanVitro;
 
+	class ExpressionColumn extends Column<ExpressionRow, Number> {
+		int i;
+		NumberCell nc;
+		public ExpressionColumn(NumberCell nc, int i) {
+			super(nc);
+			this.i = i;
+			this.nc = nc;
+		}
+		public Double getValue(ExpressionRow er) {
+			return er.getValue(i);
+		}
+	}
+	
 	/**
 	 * This is the entry point method.
 	 */
@@ -74,8 +91,6 @@ public class Gwttest implements EntryPoint {
 		RootPanel rootPanel = RootPanel.get("rootPanelContainer");
 		rootPanel.setSize("850", "");
 		rootPanel.getElement().getStyle().setPosition(Position.RELATIVE);
-
-		NumberCell nc = new NumberCell();
 
 		VerticalPanel verticalPanel = new VerticalPanel();
 		rootPanel.add(verticalPanel);
@@ -178,14 +193,15 @@ public class Gwttest implements EntryPoint {
 		});
 
 		barcodeList = new ListBox();
+		barcodeList.setMultipleSelect(true);
 		flowPanel.add(barcodeList);
 		barcodeList.setVisibleItemCount(10);
 		barcodeList.setSize("15em", "202px");
 
 		barcodeList.addChangeHandler(new ChangeHandler() {
 			public void onChange(ChangeEvent event) {
-				String barcode = barcodes[barcodeList.getSelectedIndex()];
-				getExpressions(barcode);				
+				selectedBarcodes = selectedBarcodes();				
+				getExpressions();				
 			}
 		});
 		organList.addChangeHandler(new ChangeHandler() {
@@ -203,29 +219,10 @@ public class Gwttest implements EntryPoint {
 		exprGrid.setPageSize(20);
 		exprGrid.setEmptyTableWidget(new HTML("No Data to Display Yet"));
 
-		TextColumn<ExpressionRow> probeCol = new TextColumn<ExpressionRow>() {
-			public String getValue(ExpressionRow er) {
-				return er.getProbe();
-			}
-		};
-		exprGrid.addColumn(probeCol, "Probe");
+		
 
-		TextColumn<ExpressionRow> titleCol = new TextColumn<ExpressionRow>() {
-			public String getValue(ExpressionRow er) {
-				return er.getTitle();
-			}	
-		};
-		exprGrid.addColumn(titleCol, "Title");
-
-		Column<ExpressionRow, Number> valueCol = new Column<ExpressionRow, Number>(nc) {
-			public Double getValue(ExpressionRow er) {
-				return er.getValue();
-			}
-		};		
-		exprGrid.addColumn(valueCol, "Value");
-
-		verticalPanel.add(exprGrid);
-		listDataProvider.addDataDisplay(exprGrid);
+		verticalPanel.add(exprGrid);		
+		asyncProvider.addDataDisplay(exprGrid);
 		exprPager.setDisplay(exprGrid);
 
 		reloadData();
@@ -234,7 +231,48 @@ public class Gwttest implements EntryPoint {
 	private void reloadData() {
 		getCompounds();				
 	}
+	
+	private void setupColumns() {
+		//todo: explicitly set the width of each column
+		NumberCell nc = new NumberCell();
 
+		int count = exprGrid.getColumnCount();
+		for (int i = 0; i < count; ++i) {
+			exprGrid.removeColumn(0);	
+		}
+		
+		TextColumn<ExpressionRow> probeCol = new TextColumn<ExpressionRow>() {
+			public String getValue(ExpressionRow er) {
+				return er.getProbe();
+			}
+		};
+		exprGrid.addColumn(probeCol, "Probe");		
+
+		TextColumn<ExpressionRow> titleCol = new TextColumn<ExpressionRow>() {
+			public String getValue(ExpressionRow er) {
+				return er.getTitle();
+			}	
+		};
+		exprGrid.addColumn(titleCol, "Title");
+
+		int i = 0;
+		for (String bc: selectedBarcodes) {
+			Column<ExpressionRow, Number> valueCol = new ExpressionColumn(nc, i);	
+			exprGrid.addColumn(valueCol, bc);
+			i += 1;
+		}
+	}
+
+	private List<String> selectedBarcodes() {
+		List<String> r = new ArrayList<String>();
+		for (int i = 0; i < barcodeList.getItemCount(); ++i) {
+			if (barcodeList.isItemSelected(i)) {
+				r.add(barcodes[i]);
+			}
+		}
+		return r;
+	}
+	
 	private String[] compounds = new String[0];
 	void getCompounds() {
 		compoundList.clear();
@@ -290,6 +328,7 @@ public class Gwttest implements EntryPoint {
 	}
 
 	private String[] barcodes = new String[0];
+	private List<String> selectedBarcodes = new ArrayList<String>();
 	void getBarcodes(String compound, String organ, String doseLevel) {
 		barcodeList.clear();
 		owlimService.barcodes(compound, organ, doseLevel, new AsyncCallback<String[]>() {
@@ -305,35 +344,37 @@ public class Gwttest implements EntryPoint {
 		});
 	}
 
-	void getExpressions(String barcode) {		
-		listDataProvider.setList(new LinkedList<ExpressionRow>());				
+	void getExpressions() {		
+		
+		setupColumns();										
+		kcService.loadDataset(selectedBarcodes, null, chosenValueType, new AsyncCallback<Integer>() {
+			public void onFailure(Throwable caught) {
+				Window.alert("Unable to load dataset.");				
+			}
+			public void onSuccess(Integer result) {
+				exprGrid.setRowCount(result);
+				exprGrid.setVisibleRangeAndClearData(new Range(0, 20), true);				
+			}
+		});		
+	}
+	
+	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
+		private int start = 0;
 		
 		AsyncCallback<List<ExpressionRow>> rowCallback = new AsyncCallback<List<ExpressionRow>>() {
 			public void onFailure(Throwable caught) {
 				Window.alert("Unable to get expression values.");				
 			}
 			public void onSuccess(List<ExpressionRow> result) {
-				listDataProvider.setList(result);				
-				
-				List<String> probes = new ArrayList();
-				List<String> bcs = new ArrayList();
-				for (ExpressionRow er: result) {
-					probes.add(er.getProbe());
-				}
-				for (String bc: barcodes) {
-					bcs.add(bc);
-				}
-				kcService.loadDataset(bcs, null, chosenValueType, new AsyncCallback<Void>() {
-					public void onFailure(Throwable caught) {}
-					public void onSuccess(Void v) {}
-				});
+				exprGrid.setRowData(start, result);											
 			}
 		};
 		
-		if (chosenValueType == ValueType.Absolute) {
-			kcService.absoluteValues(barcode, rowCallback);
-		} else {
-			kcService.foldValues(barcode, rowCallback);
+		protected void onRangeChanged(HasData<ExpressionRow> display) {
+			Range range = display.getVisibleRange();		
+			start = range.getStart();
+			kcService.datasetItems(range.getStart(), range.getLength(), rowCallback);
 		}
+		
 	}
 }

@@ -15,6 +15,7 @@ import javax.servlet.http.HttpSession;
 import kyotocabinet.DB;
 import otg.B2RAffy;
 import otg.OTGQueries;
+import scala.actors.threadpool.Arrays;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -59,11 +60,16 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		}
 	}
 	
-	public void loadDataset(List<String> barcodes, List<String> probes, ValueType type) {
+	public int loadDataset(List<String> barcodes, List<String> probes, ValueType type) {
 		HttpServletRequest request = getThreadLocalRequest();
 		HttpSession session = request.getSession();
 		DB db = null;
 		String homePath = System.getProperty("otg.home");
+		List<String> realProbes = probes;
+		if (probes == null) {
+			//get all probes
+			realProbes = OTGQueries.probes4J(homePath + "/rat.probes.txt");
+		}
 		try {
 			
 			switch(type) {
@@ -75,30 +81,46 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 				break;
 			}
 				
-			Double[][] r = OTGQueries.presentValuesByBarcodesAndProbes4J(db, barcodes, OTGQueries.nullToNone(probes));
-			
-			Double[][] oldData = (Double[][]) session.getAttribute("dataset");
-			if (oldData != null) {
-				System.out.println("I had " + (oldData).length + " rows stored");
-			}
+			Double[][] r = OTGQueries.presentValuesByBarcodesAndProbes4J(db, barcodes, realProbes);
 			
 			session.setAttribute("dataset", r);
-			session.setAttribute("datasetProbes", probes);
+			session.setAttribute("datasetProbes", realProbes);
 			System.out.println("Stored " + r.length + " x " + r[0].length + " items in session");
+			return r.length;
 		}
 		finally {
 			if (db != null) {
 				System.out.println("DB closed");
 				db.close();
 			}
-		}
-		
-		System.out.println("Storing data in session");
+		}		
 	}
 	
 	public List<ExpressionRow> datasetItems(int offset, int size) {
 		HttpServletRequest request = getThreadLocalRequest();
 		HttpSession session = request.getSession();
-		return new ArrayList<ExpressionRow>();
+		Double[][] data = (Double[][]) session.getAttribute("dataset");
+		if (data != null) {
+			System.out.println("I had " + (data).length + " rows stored");
+		}
+		List<String> probes = (List<String>) session.getAttribute("datasetProbes");
+		List<ExpressionRow> r = new ArrayList<ExpressionRow>();
+
+		if (probes != null && data != null) {
+			try {
+				B2RAffy.connect();
+
+				List<String> probeTitles = B2RAffy.titlesForJava(probes
+						.subList(offset, offset + size));
+				for (int i = offset; i < offset + size; ++i) {
+					r.add(new ExpressionRow(probes.get(i), probeTitles.get(i
+							- offset), data[i]));
+				}
+			} finally {
+				B2RAffy.close();
+			}
+		}
+
+		return r;
 	}
 }

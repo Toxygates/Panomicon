@@ -11,6 +11,6 @@ public interface KCServiceAsync {
 	public void absoluteValues(String barcode, AsyncCallback<List<ExpressionRow>> callback);	
 	public void foldValues(String barcode, AsyncCallback<List<ExpressionRow>> callback);
 	
-	public void loadDataset(List<String> barcodes, List<String> probes, ValueType type, AsyncCallback<Void> callback);
+	public void loadDataset(List<String> barcodes, List<String> probes, ValueType type, AsyncCallback<Integer> callback);
 	public void datasetItems(int offset, int size, AsyncCallback<List<ExpressionRow>> callback);
 }

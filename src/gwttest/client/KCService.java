@@ -14,6 +14,6 @@ public interface KCService extends RemoteService {
 	public List<ExpressionRow> absoluteValues(String barcode);	
 	public List<ExpressionRow> foldValues(String barcode);
 	
-	public void loadDataset(List<String> barcodes, List<String> probes, ValueType type);
+	public int loadDataset(List<String> barcodes, List<String> probes, ValueType type);
 	public List<ExpressionRow> datasetItems(int offset, int size);
 }
