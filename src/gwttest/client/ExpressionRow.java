@@ -4,16 +4,19 @@ import java.io.Serializable;
 
 public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 	private String probe;
-	private Double val;
+	private String title;
+	private Double val;	
 	
 	public ExpressionRow() {
 		probe = "";
 		val = 0.0;
+		title = "";
 	}
 	
-	public ExpressionRow(String _probe, Double _val) {
+	public ExpressionRow(String _probe, String _title, Double _val) {
 		probe = _probe;
 		val = _val;
+		title = _title;
 	}
 	
 	public boolean equals(Object o) {
@@ -28,6 +31,9 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 	}
 	public Double getValue() {
 		return val;
+	}
+	public String getTitle() {
+		return title;
 	}
 	
 	public int compareTo(ExpressionRow o) {		

@@ -13,6 +13,7 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public String[] compounds() {
 		try {
+			OTGOwlim.connect();
 			return OTGOwlim.compounds();
 		} finally {
 			OTGOwlim.close();
@@ -21,6 +22,7 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 
 	public String[] organs(String compound) {
 		try {
+			OTGOwlim.connect();
 			return OTGOwlim.organs(compound);
 		} finally {
 			OTGOwlim.close();
@@ -29,6 +31,7 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 
 	public String[] doseLevels(String compound, String organ) {
 		try {
+			OTGOwlim.connect();
 			return OTGOwlim.doseLevels(compound, organ);
 		} finally {
 			OTGOwlim.close();
@@ -37,10 +40,25 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 
 	public String[] barcodes(String compound, String organ, String doseLevel) {
 		try {
+			OTGOwlim.connect();
 			return OTGOwlim.barcodes(compound, organ, doseLevel);
 		} finally {
 			OTGOwlim.close();
 		}
+	}
+	
+	public String probeTitle(String probe) {
+		try {
+			B2RAffy.connect();
+			return B2RAffy.title(probe);			
+		} finally {
+			B2RAffy.close();
+		}
+	}
+	
+	public String[] probes() {
+		String homePath = System.getProperty("otg.home");
+		return OTGQueries.probes(homePath + "/rat.probes.txt");
 	}
 
 }

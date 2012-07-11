@@ -9,4 +9,5 @@ public interface OwlimService extends RemoteService {
 	public String[] organs(String compound);
 	public String[] doseLevels(String compound, String organ);	
 	public String[] barcodes(String compound, String organ, String doseLevel);
+	public String[] probes();
 }

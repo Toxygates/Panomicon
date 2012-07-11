@@ -19,6 +19,4 @@
 	<!-- Specify the paths for translatable code                    -->
 	<source path='client' />
 	<source path='shared' />
-
-	<entry-point class="gwttest.client.EPTest"></entry-point>
 </module>

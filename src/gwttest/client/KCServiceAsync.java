@@ -4,10 +4,13 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-
+import gwttest.shared.*;
 
 public interface KCServiceAsync {
 
 	public void absoluteValues(String barcode, AsyncCallback<List<ExpressionRow>> callback);	
-	public void foldValues(String barcode, AsyncCallback<Map<String, Double>> callback);
+	public void foldValues(String barcode, AsyncCallback<List<ExpressionRow>> callback);
+	
+	public void loadDataset(List<String> barcodes, List<String> probes, ValueType type, AsyncCallback<Void> callback);
+	public void datasetItems(int offset, int size, AsyncCallback<List<ExpressionRow>> callback);
 }
