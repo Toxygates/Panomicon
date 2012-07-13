@@ -6,8 +6,7 @@ import java.util.Map;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import gwttest.shared.*;
 
-public interface KCServiceAsync {
-
+public interface KCServiceAsync {	
 	public void absoluteValues(String barcode, AsyncCallback<List<ExpressionRow>> callback);	
 	public void foldValues(String barcode, AsyncCallback<List<ExpressionRow>> callback);
 	

@@ -12,7 +12,9 @@ public interface OwlimServiceAsync {
 	
 	public void doseLevels(String compound, String organ, AsyncCallback<String[]> callback);
 	
-	public void barcodes(String compound, String organ, String doseLevel, AsyncCallback<String[]> callback);
+	public void barcodes(String compound, String organ, String doseLevel, String time, AsyncCallback<String[]> callback);
+	
+	public void times(String compound, String organ, AsyncCallback<String[]> callback);
 	
 	public void probes(AsyncCallback<String[]> callback);
 }

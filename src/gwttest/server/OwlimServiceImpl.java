@@ -38,10 +38,19 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 		}
 	}
 
-	public String[] barcodes(String compound, String organ, String doseLevel) {
+	public String[] barcodes(String compound, String organ, String doseLevel, String time) {
 		try {
 			OTGOwlim.connect();
-			return OTGOwlim.barcodes(compound, organ, doseLevel);
+			return OTGOwlim.barcodes(compound, organ, doseLevel, time);
+		} finally {
+			OTGOwlim.close();
+		}
+	}
+	
+	public String[] times(String compound, String organ) {
+		try {
+			OTGOwlim.connect();
+			return OTGOwlim.times(compound, organ);
 		} finally {
 			OTGOwlim.close();
 		}
