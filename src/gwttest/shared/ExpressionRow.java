@@ -1,4 +1,4 @@
-package gwttest.client;
+package gwttest.shared;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -6,24 +6,24 @@ import java.util.Arrays;
 public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 	private String probe;
 	private String title;
-	private Double[] val;	
+	private ExpressionValue[] val;	
 	
 	public ExpressionRow() {
 		probe = "";
-		val = new Double[0];
+		val = new ExpressionValue[0];
 		title = "";
 	}
 	
-	public ExpressionRow(String _probe, String _title, Double[] _val) {
+	public ExpressionRow(String _probe, String _title, ExpressionValue[] _val) {
 		probe = _probe;
 		val = _val;
-		title = _title;
+		title = _title;		
 	}
-	
-	public ExpressionRow(String _probe, String _title, Double _val) {
+		
+	public ExpressionRow(String _probe, String _title, ExpressionValue _val) {
 		probe = _probe;
-		val = new Double[] { _val };
-		title = _title;
+		val = new ExpressionValue[] { _val };
+		title = _title;		
 	}
 	
 	public boolean equals(Object o) {
@@ -37,16 +37,17 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 		return probe;
 	}
 	
-	public Double getValue(int i) {
+	public ExpressionValue getValue(int i) {		
 		if (i < val.length) {
 			return val[i];
 		} else {
-			return 0d;
+			return new ExpressionValue(0, 'A');
 		}
 	}
+	
 	public String getTitle() {
 		return title;
-	}
+	}	
 	
 	public int compareTo(ExpressionRow o) {		
 		if (o == null) {
