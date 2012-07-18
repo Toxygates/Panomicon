@@ -74,7 +74,7 @@ public abstract class ListSelectionHandler<T> {
 				lastResult = result;
 				list.clear();
 				for (T t: result) {
-					list.addItem(t.toString());
+					list.addItem(representation(t));
 				}
 				if (allOption) {
 					list.addItem("(All)");
@@ -82,6 +82,10 @@ public abstract class ListSelectionHandler<T> {
 				handleRetreival(result);				
 			}
 		};
+	}
+	
+	protected String representation(T value) {
+		return value.toString();
 	}
 	
 	protected void handleRetreival(T[] result) {

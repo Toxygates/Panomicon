@@ -1,8 +1,11 @@
 package otgviewer.server;
 
-import java.util.List;
-import otg.*;
+import otg.B2RAffy;
+import otg.B2RKegg;
+import otg.OTGOwlim;
+import otg.OTGQueries;
 import otgviewer.client.OwlimService;
+import otgviewer.shared.Barcode;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -39,10 +42,18 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 		}
 	}
 
-	public String[] barcodes(String compound, String organ, String doseLevel, String time) {
+	public Barcode[] barcodes(String compound, String organ, String doseLevel, String time) {
 		try {
 			OTGOwlim.connect();
-			return OTGOwlim.barcodes(compound, organ, doseLevel, time);
+			String[] codes = OTGOwlim.barcodes(compound, organ, doseLevel, time);
+			Barcode[] r = new Barcode[codes.length];
+			int i = 0;
+			for (String code: codes) {
+				r[i] = new Barcode(code, OTGOwlim.individual(code), OTGOwlim.dose(code),
+						OTGOwlim.time(code));
+				i += 1;
+			}
+			return r;
 		} finally {
 			OTGOwlim.close();
 		}

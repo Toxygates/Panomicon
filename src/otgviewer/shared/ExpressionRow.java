@@ -4,15 +4,11 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
-	private String probe;
-	private String title;
-	private ExpressionValue[] val;	
+	private String probe = "";
+	private String title = "";
+	private ExpressionValue[] val = new ExpressionValue[0];;	
 	
-	public ExpressionRow() {
-		probe = "";
-		val = new ExpressionValue[0];
-		title = "";
-	}
+	public ExpressionRow() { }		
 	
 	public ExpressionRow(String _probe, String _title, ExpressionValue[] _val) {
 		probe = _probe;

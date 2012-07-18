@@ -1,8 +1,9 @@
 package otgviewer.client;
 
-
+import java.util.ArrayList;
 import java.util.List;
 
+import otgviewer.shared.Barcode;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.ValueType;
 
@@ -25,8 +26,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.KeyboardListener;
-import com.google.gwt.user.client.ui.KeyboardListenerAdapter;
+import com.google.gwt.user.client.ui.HorizontalSplitPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.MenuBar;
@@ -35,13 +35,15 @@ import com.google.gwt.user.client.ui.MenuItemSeparator;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.AsyncDataProvider;
 import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.Range;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.HorizontalSplitPanel;
+import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
+import com.google.gwt.visualization.client.DataTable;
+import com.google.gwt.visualization.client.VisualizationUtils;
+import com.google.gwt.visualization.client.visualizations.corechart.LineChart;
+import com.google.gwt.visualization.client.visualizations.corechart.Options;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -64,16 +66,20 @@ public class OTGViewer implements EntryPoint {
 	private ListBox compoundList, organList, doseLevelList, barcodeList,
 			timeList;
 	private DataGrid<ExpressionRow> exprGrid;
+	private DataTable chartTable;
 	private ListDataProvider<ExpressionRow> listDataProvider;
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
 
 	private ValueType chosenValueType = ValueType.Folds;
 	private ListSelectionHandler<String> compoundHandler, organHandler,
 			doseHandler, timeHandler, pathwayHandler;
-	private MultiSelectionHandler<String> barcodeHandler;
+	private MultiSelectionHandler<Barcode> barcodeHandler;
 
 	private TextBox pathwayBox;
 	private String[] chosenProbes = new String[0];
+	private HorizontalPanel horizontalPanel;
+	
+	LineChart exprChart;
 	
 	enum DataSet {
 		HumanVitro, RatVitro, RatVivoKidneySingle, RatVivoKidneyRepeat, RatVivoLiverSingle, RatVivoLiverRepeat
@@ -92,10 +98,10 @@ public class OTGViewer implements EntryPoint {
 		}
 
 		public Double getValue(ExpressionRow er) {
-			if (!er.getValue(i).present()) {
+			if (!er.getValue(i).getPresent()) {
 				return Double.NaN;
 			} else {
-				return er.getValue(i).value();
+				return er.getValue(i).getValue();
 			}
 		}
 	}
@@ -104,7 +110,19 @@ public class OTGViewer implements EntryPoint {
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
-
+		Runnable onLoadChart = new Runnable() {
+			public void run() {				
+				Options lco = Options.create();
+				chartTable = DataTable.create();
+				exprChart = new LineChart(chartTable, lco);
+				exprChart.setWidth("300px");
+				exprChart.setHeight("200px");
+				horizontalPanel.add(exprChart);
+			}
+		};
+		
+		VisualizationUtils.loadVisualizationApi(onLoadChart, "corechart");
+		
 		// Add the nameField and sendButton to the RootPanel
 		// Use RootPanel.get() to get the entire body element
 		RootPanel rootPanel = RootPanel.get("rootPanelContainer");
@@ -172,158 +190,179 @@ public class OTGViewer implements EntryPoint {
 		menuBar_1.addItem(mntmAbsoluteValues);
 		mntmNewMenu.setHTML("Data set");
 		menuBar.addItem(mntmNewMenu);
+		MenuBar menuBar_2 = new MenuBar(true);
+
+		MenuItem mntmNewMenu_1 = new MenuItem("New menu", false, menuBar_2);
+
+		MenuItem mntmGeneId = new MenuItem("Gene ID", false, (Command) null);
+		menuBar_2.addItem(mntmGeneId);
+
+		MenuItem mntmProbeName = new MenuItem("Probe name", false,
+				(Command) null);
+		menuBar_2.addItem(mntmProbeName);
+
+		MenuItem mntmGeneName = new MenuItem("Gene name", false, (Command) null);
+		menuBar_2.addItem(mntmGeneName);
+		mntmNewMenu_1.setHTML("Columns");
+		menuBar.addItem(mntmNewMenu_1);
 
 		MenuItem mntmSettings = new MenuItem("Settings", false, (Command) null);
 		menuBar.addItem(mntmSettings);
 		SimplePager.Resources pagerResources = GWT
 				.create(SimplePager.Resources.class);
-		
+
 		HorizontalSplitPanel horizontalSplitPanel = new HorizontalSplitPanel();
 		horizontalSplitPanel.setSplitPosition("200px");
 		verticalPanel_3.add(horizontalSplitPanel);
 		horizontalSplitPanel.setSize("100%", "700px");
-		
-				VerticalPanel verticalPanel_2 = new VerticalPanel();
-				horizontalSplitPanel.setLeftWidget(verticalPanel_2);
-				verticalPanel_2.setBorderWidth(1);
-				verticalPanel_2.setSize("100%", "");
-				
-						Label lblPathwaySearch = new Label("Pathway search");
-						verticalPanel_2.add(lblPathwaySearch);
-						
-								pathwayBox = new TextBox();
-								verticalPanel_2.add(pathwayBox);
-								pathwayBox.setWidth("165px");
-								pathwayBox.addKeyPressHandler(new KeyPressHandler() {
-									public void onKeyPress(KeyPressEvent event) {
-										if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
-											getPathways(pathwayBox.getText());
-										}
-									}
-								});
-								
-								ListBox pathwayList = new ListBox();
-								verticalPanel_2.add(pathwayList);
-								pathwayList.setSize("100%", "500px");
-								pathwayList.setVisibleItemCount(5);
-								
-								pathwayHandler = new ListSelectionHandler<String>("pathways",
-										pathwayList, false) {
-									protected void getUpdates(String pathway) {
-										owlimService.probes(pathway, new AsyncCallback<String[]>() {
-											public void onFailure(Throwable caught) {
-												Window.alert("Unable to get probes.");
-											}
-											public void onSuccess(String[] probes) {
-												chosenProbes = probes;
-												getExpressions();
-											}
-										});
-									}
-								};
-								
+
+		VerticalPanel verticalPanel_2 = new VerticalPanel();
+		horizontalSplitPanel.setLeftWidget(verticalPanel_2);
+		verticalPanel_2.setBorderWidth(1);
+		verticalPanel_2.setSize("100%", "");
+
+		Label lblPathwaySearch = new Label("Pathway search");
+		verticalPanel_2.add(lblPathwaySearch);
+
+		pathwayBox = new TextBox();
+		verticalPanel_2.add(pathwayBox);
+		pathwayBox.setWidth("165px");
+		pathwayBox.addKeyPressHandler(new KeyPressHandler() {
+			public void onKeyPress(KeyPressEvent event) {
+				if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
+					getPathways(pathwayBox.getText());
+				}
+			}
+		});
+
+		ListBox pathwayList = new ListBox();
+		verticalPanel_2.add(pathwayList);
+		pathwayList.setSize("100%", "500px");
+		pathwayList.setVisibleItemCount(5);
+
+		pathwayHandler = new ListSelectionHandler<String>("pathways",
+				pathwayList, false) {
+			protected void getUpdates(String pathway) {
+				owlimService.probes(pathway, new AsyncCallback<String[]>() {
+					public void onFailure(Throwable caught) {
+						Window.alert("Unable to get probes.");
+					}
+
+					public void onSuccess(String[] probes) {
+						chosenProbes = probes;
+						getExpressions();
+					}
+				});
+			}
+		};
+
 		VerticalPanel verticalPanel = new VerticalPanel();
 		horizontalSplitPanel.setRightWidget(verticalPanel);
 		verticalPanel.setBorderWidth(0);
 		verticalPanel.setSize("100%", "100%");
+
+		horizontalPanel = new HorizontalPanel();
+		verticalPanel.add(horizontalPanel);
+
+		compoundList = new ListBox();
+		horizontalPanel.add(compoundList);
+		compoundList.setSize("210px", "202px");
+		compoundList.setVisibleItemCount(10);
+
+		compoundHandler = new ListSelectionHandler<String>("compounds",
+				compoundList, false) {
+			protected void getUpdates(String compound) {
+				getOrgans(compound);
+			}
+		};
+
+		organList = new ListBox();
+		horizontalPanel.add(organList);
+		organList.setSize("11em", "202px");
+		organList.setVisibleItemCount(10);
+
+		organHandler = new ListSelectionHandler<String>("organs", organList,
+				false) {
+			protected void getUpdates(String organ) {
+				getDoseLevels(compoundHandler.lastSelected(), organ);
+				getTimes(compoundHandler.lastSelected(), organ);
+			}
+		};
+
+		VerticalPanel verticalPanel_1 = new VerticalPanel();
+		horizontalPanel.add(verticalPanel_1);
+
+		doseLevelList = new ListBox();
+		verticalPanel_1.add(doseLevelList);
+		doseLevelList.setSize("10em", "100px");
+		doseLevelList.setVisibleItemCount(10);
+
+		doseHandler = new ListSelectionHandler<String>("dose levels",
+				doseLevelList, true) {
+			protected void getUpdates(String dose) {
+				getBarcodes(compoundHandler.lastSelected(),
+						organHandler.lastSelected(),
+						doseHandler.lastSelected(), timeHandler.lastSelected());
+
+			}
+		};
+
+		timeList = new ListBox();
+		verticalPanel_1.add(timeList);
+		timeList.setSize("10em", "100px");
+		timeList.setVisibleItemCount(5);
+
+		timeHandler = new ListSelectionHandler<String>("times", timeList, true) {
+			protected void getUpdates(String time) {
+				getBarcodes(compoundHandler.lastSelected(),
+						organHandler.lastSelected(),
+						doseHandler.lastSelected(), timeHandler.lastSelected());
+			}
+		};
+
+		barcodeList = new ListBox();
+		horizontalPanel.add(barcodeList);
+		barcodeList.setMultipleSelect(true);
+		barcodeList.setVisibleItemCount(10);
+		barcodeList.setSize("15em", "202px");
+
+		barcodeHandler = new MultiSelectionHandler<Barcode>("barcodes",
+				barcodeList) {
+			protected void getUpdates(String barcode) {
+
+			}
+
+			protected void getUpdates(List<Barcode> barcodes) {
+				getExpressions();
+			}
+			
+			protected String representation(Barcode b) {
+				return b.getTitle();
+			}
+		};
+
+		compoundList.addChangeHandler(new ChangeHandler() {
+			public void onChange(ChangeEvent event) {
+				String compound = compoundHandler.lastSelected();
+				getOrgans(compound);
+				getDoseLevels(compound, null);
+			}
+		});
+
 		
-				HorizontalPanel horizontalPanel = new HorizontalPanel();
-				verticalPanel.add(horizontalPanel);
-				
-						compoundList = new ListBox();
-						horizontalPanel.add(compoundList);
-						compoundList.setSize("210px", "202px");
-						compoundList.setVisibleItemCount(10);
-						
-								compoundHandler = new ListSelectionHandler<String>("compounds",
-										compoundList, false) {
-									protected void getUpdates(String compound) {
-										getOrgans(compound);
-									}
-								};
-								
-										organList = new ListBox();
-										horizontalPanel.add(organList);
-										organList.setSize("11em", "202px");
-										organList.setVisibleItemCount(10);
-										
-												organHandler = new ListSelectionHandler<String>("organs", organList,
-														false) {
-													protected void getUpdates(String organ) {
-														getDoseLevels(compoundHandler.lastSelected(), organ);
-														getTimes(compoundHandler.lastSelected(), organ);
-													}
-												};
-												
-														VerticalPanel verticalPanel_1 = new VerticalPanel();
-														horizontalPanel.add(verticalPanel_1);
-														
-																doseLevelList = new ListBox();
-																verticalPanel_1.add(doseLevelList);
-																doseLevelList.setSize("10em", "100px");
-																doseLevelList.setVisibleItemCount(10);
-																
-																		doseHandler = new ListSelectionHandler<String>("dose levels",
-																				doseLevelList, true) {
-																			protected void getUpdates(String dose) {
-																				getBarcodes(compoundHandler.lastSelected(),
-																						organHandler.lastSelected(),
-																						doseHandler.lastSelected(), timeHandler.lastSelected());
-																
-																			}
-																		};
-																		
-																				timeList = new ListBox();
-																				verticalPanel_1.add(timeList);
-																				timeList.setSize("10em", "100px");
-																				timeList.setVisibleItemCount(5);
-																				
-																						timeHandler = new ListSelectionHandler<String>("times", timeList, true) {
-																							protected void getUpdates(String time) {
-																								getBarcodes(compoundHandler.lastSelected(),
-																										organHandler.lastSelected(),
-																										doseHandler.lastSelected(), timeHandler.lastSelected());
-																							}
-																						};
-																						
-																								barcodeList = new ListBox();
-																								horizontalPanel.add(barcodeList);
-																								barcodeList.setMultipleSelect(true);
-																								barcodeList.setVisibleItemCount(10);
-																								barcodeList.setSize("15em", "202px");
-																								
-																										barcodeHandler = new MultiSelectionHandler<String>("barcodes",
-																												barcodeList) {
-																											protected void getUpdates(String barcode) {
-																								
-																											}
-																								
-																											protected void getUpdates(List<String> barcodes) {
-																												getExpressions();
-																											}
-																										};
-																										
-																												compoundList.addChangeHandler(new ChangeHandler() {
-																													public void onChange(ChangeEvent event) {
-																														String compound = compoundHandler.lastSelected();
-																														getOrgans(compound);
-																														getDoseLevels(compound, null);
-																													}
-																												});
-																												
-																														SimplePager exprPager = new SimplePager(TextLocation.CENTER,
-																																pagerResources, true, 100, true);
-																														verticalPanel.add(exprPager);
-																														
-																																exprGrid = new DataGrid<ExpressionRow>();
-																																exprGrid.setStyleName("exprGrid");
-																																exprGrid.setSize("100%", "500px");
-																																exprGrid.setPageSize(20);
-																																exprGrid.setEmptyTableWidget(new HTML("No Data to Display Yet"));
-																																
-																																		verticalPanel.add(exprGrid);
-																																		asyncProvider.addDataDisplay(exprGrid);
-																																		exprPager.setDisplay(exprGrid);
+		SimplePager exprPager = new SimplePager(TextLocation.CENTER,
+				pagerResources, true, 100, true);
+		verticalPanel.add(exprPager);
+
+		exprGrid = new DataGrid<ExpressionRow>();
+		exprGrid.setStyleName("exprGrid");
+		exprGrid.setSize("100%", "500px");
+		exprGrid.setPageSize(20);
+		exprGrid.setEmptyTableWidget(new HTML("No Data to Display Yet"));
+
+		verticalPanel.add(exprGrid);
+		asyncProvider.addDataDisplay(exprGrid);
+		exprPager.setDisplay(exprGrid);
 
 		listDataProvider = new ListDataProvider<ExpressionRow>();
 		compoundHandler.addAfter(organHandler);
@@ -357,14 +396,20 @@ public class OTGViewer implements EntryPoint {
 			}
 		};
 		exprGrid.addColumn(titleCol, "Title");
-
+		chartTable.removeColumns(0, chartTable.getNumberOfColumns());
+		chartTable.addColumn(ColumnType.STRING, "Probe");
+		
 		int i = 0;
-		List<String> selection = barcodeHandler.lastMultiSelection();
-		for (String bc : selection) {
+		List<Barcode> selection = barcodeHandler.lastMultiSelection();		
+		for (Barcode bc : selection) {
 			Column<ExpressionRow, Number> valueCol = new ExpressionColumn(nc, i);
-			exprGrid.addColumn(valueCol, bc);
+			exprGrid.addColumn(valueCol, bc.getShortTitle());
+			chartTable.addColumn(ColumnType.NUMBER, bc.getShortTitle());
 			i += 1;
 		}
+		
+		
+		
 	}
 
 	void getCompounds() {
@@ -396,9 +441,13 @@ public class OTGViewer implements EntryPoint {
 
 	void getExpressions() {
 		setupColumns();
-
-		kcService.loadDataset(barcodeHandler.lastMultiSelection(), chosenProbes,
-				chosenValueType, new AsyncCallback<Integer>() {
+		List<String> codes = new ArrayList<String>();
+		for (Barcode code: barcodeHandler.lastMultiSelection()) {
+			codes.add(code.getCode());
+		}
+		
+		kcService.loadDataset(codes,
+				chosenProbes, chosenValueType, new AsyncCallback<Integer>() {
 					public void onFailure(Throwable caught) {
 						Window.alert("Unable to load dataset.");
 					}
@@ -407,6 +456,7 @@ public class OTGViewer implements EntryPoint {
 						exprGrid.setRowCount(result);
 						exprGrid.setVisibleRangeAndClearData(new Range(0, 20),
 								true);
+												
 					}
 				});
 	}
@@ -414,7 +464,7 @@ public class OTGViewer implements EntryPoint {
 	void getPathways(String pattern) {
 		owlimService.pathways(pattern, pathwayHandler.retrieveCallback());
 	}
-	
+
 	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
 		private int start = 0;
 
@@ -425,6 +475,19 @@ public class OTGViewer implements EntryPoint {
 
 			public void onSuccess(List<ExpressionRow> result) {
 				exprGrid.setRowData(start, result);
+								
+				chartTable.removeRows(0, chartTable.getNumberOfRows());
+				for (int i = 0; i < result.size(); ++i) {
+					chartTable.addRow();
+					ExpressionRow row = result.get(i);
+					int cols = barcodeHandler.lastMultiSelection().size();
+					chartTable.setValue(i, 0, chosenProbes[start + i]);
+					for (int j = 0; j < cols; ++j) {
+						chartTable.setValue(i, j + 1, row.getValue(j).getValue());
+					}
+					exprChart.draw(chartTable);
+				}
+				
 			}
 		};
 
@@ -433,6 +496,7 @@ public class OTGViewer implements EntryPoint {
 			start = range.getStart();
 			kcService.datasetItems(range.getStart(), range.getLength(),
 					rowCallback);
+
 		}
 
 	}
