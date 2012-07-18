@@ -95,9 +95,11 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 		try {
 			B2RKegg.connect();
 			OTGOwlim.connect();
+			String homePath = System.getProperty("otg.home");
 			String[] geneIds = B2RKegg.geneIds(pathway, "rno");
 			System.out.println("Probes for " + geneIds.length + " genes");
-			return OTGOwlim.probes(geneIds);
+			String [] probes = OTGOwlim.probes(geneIds);
+			return OTGQueries.filterProbes(probes, homePath + "/rat.probes.txt");			
 		} finally {
 			B2RKegg.close();
 			OTGOwlim.close();
