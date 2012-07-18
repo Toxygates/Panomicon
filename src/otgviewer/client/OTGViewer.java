@@ -1,9 +1,10 @@
-package gwttest.client;
+package otgviewer.client;
 
-import gwttest.shared.ExpressionRow;
-import gwttest.shared.ValueType;
 
 import java.util.List;
+
+import otgviewer.shared.ExpressionRow;
+import otgviewer.shared.ValueType;
 
 import com.google.gwt.cell.client.NumberCell;
 import com.google.gwt.core.client.EntryPoint;
@@ -45,7 +46,7 @@ import com.google.gwt.user.client.ui.HorizontalSplitPanel;
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
-public class Gwttest implements EntryPoint {
+public class OTGViewer implements EntryPoint {
 	/**
 	 * The message displayed to the user when the server cannot be reached or
 	 * returns an error.

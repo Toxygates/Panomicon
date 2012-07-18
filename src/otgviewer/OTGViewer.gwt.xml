@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module rename-to='gwttest'>
+<module rename-to='otgviewer'>
 	<!-- Inherit the core Web Toolkit stuff.                        -->
 	<inherits name='com.google.gwt.user.User' />
 
@@ -14,7 +14,7 @@
 	<!-- Other module inherits                                      -->
 
 	<!-- Specify the app entry point class.                         -->
-	<entry-point class='gwttest.client.Gwttest' />
+	<entry-point class='otgviewer.client.OTGViewer' />
 
 	<!-- Specify the paths for translatable code                    -->
 	<source path='client' />

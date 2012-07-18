@@ -1,7 +1,8 @@
-package gwttest.server;
+package otgviewer.server;
 
-import gwttest.client.GreetingService;
-import gwttest.shared.FieldVerifier;
+import otgviewer.client.GreetingService;
+import otgviewer.shared.FieldVerifier;
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 /**

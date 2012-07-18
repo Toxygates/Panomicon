@@ -1,8 +1,9 @@
-package gwttest.server;
+package otgviewer.server;
 
 import java.util.List;
 import otg.*;
-import gwttest.client.OwlimService;
+import otgviewer.client.OwlimService;
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class OwlimServiceImpl extends RemoteServiceServlet implements

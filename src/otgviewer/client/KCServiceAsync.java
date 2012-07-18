@@ -1,10 +1,11 @@
-package gwttest.client;
+package otgviewer.client;
 
 import java.util.List;
 import java.util.Map;
 
+import otgviewer.shared.*;
+
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import gwttest.shared.*;
 
 public interface KCServiceAsync {	
 	public void absoluteValues(String barcode, AsyncCallback<List<ExpressionRow>> callback);	

@@ -1,4 +1,4 @@
-package gwttest.client;
+package otgviewer.client;
 
 import java.util.List;
 

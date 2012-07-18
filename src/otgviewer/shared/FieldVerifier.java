@@ -1,4 +1,4 @@
-package gwttest.shared;
+package otgviewer.shared;
 
 /**
  * <p>

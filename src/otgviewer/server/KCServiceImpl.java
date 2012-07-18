@@ -1,9 +1,5 @@
-package gwttest.server;
+package otgviewer.server;
 
-import gwttest.client.KCService;
-import gwttest.shared.ExpressionRow;
-import gwttest.shared.ExpressionValue;
-import gwttest.shared.ValueType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,6 +14,10 @@ import kyotocabinet.DB;
 import otg.B2RAffy;
 import otg.ExprValue;
 import otg.OTGQueries;
+import otgviewer.client.KCService;
+import otgviewer.shared.ExpressionRow;
+import otgviewer.shared.ExpressionValue;
+import otgviewer.shared.ValueType;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
