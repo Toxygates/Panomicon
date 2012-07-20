@@ -43,14 +43,17 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 			System.out.println("Read " + r.size() + " records");
 			List<ExpressionRow> rr = new ArrayList<ExpressionRow>();
 			List<String> probeTitles = B2RAffy.titlesForJava(r.keySet().toArray(new String[0]));
+			List<String> geneIds = B2RAffy.geneIdsForJava(r.keySet().toArray(new String[0]));
 			Iterator<String> ts = probeTitles.iterator();
+			Iterator<String> gs = geneIds.iterator();
+			//TODO assuming ts and gs have same size
 			for (String probe: r.keySet()) {
 				ExprValue ev = r.get(probe);
 				ExpressionValue jev = new ExpressionValue(ev.value(), ev.call());
 				if (ts.hasNext()) {
-					rr.add(new ExpressionRow(probe, ts.next(), jev));
+					rr.add(new ExpressionRow(probe, ts.next(), gs.next(), jev));
 				} else {
-					rr.add(new ExpressionRow(probe, "(none)", jev));
+					rr.add(new ExpressionRow(probe, "(none)", "(none)", jev));
 				}
 			}
 			System.out.println("Returning " + r.size() + " data rows");
@@ -125,14 +128,15 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 
 				
 				List<String> probeTitles = B2RAffy.titlesForJava((String[]) Arrays.copyOfRange(probes, offset, offset+size));
+				List<String> geneIds = B2RAffy.geneIdsForJava((String[]) Arrays.copyOfRange(probes, offset, offset+size));
 				for (int i = offset; i < offset + size && i < probes.length; ++i) {
 					ExpressionValue[] vals = new ExpressionValue[data[i].length];
 					
 					for (int j = 0; j < vals.length; ++j) {
 						vals[j] = new ExpressionValue(data[i][j].value(), data[i][j].call());						
 					}
-					r.add(new ExpressionRow(probes[i], probeTitles.get(i
-							- offset), vals));
+					r.add(new ExpressionRow(probes[i], probeTitles.get(i - offset), 
+							geneIds.get(i - offset), vals));
 				}
 			} finally {
 				B2RAffy.close();

@@ -66,25 +66,28 @@ public class OTGViewer implements EntryPoint {
 	private KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
 
-	private ListBox compoundList, doseLevelList, barcodeList,
-		timeList, pathwayList;
+	private ListBox compoundList, doseLevelList, barcodeList, timeList,
+			pathwayList;
 	private DataGrid<ExpressionRow> exprGrid;
 	private DataTable chartTable;
 	private ListDataProvider<ExpressionRow> listDataProvider;
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
 
 	private ValueType chosenValueType = ValueType.Folds;
-	private ListSelectionHandler<String> compoundHandler,
-			doseHandler, timeHandler, pathwayHandler;
+	private ListSelectionHandler<String> compoundHandler, doseHandler,
+			timeHandler, pathwayHandler;
 	private MultiSelectionHandler<Barcode> barcodeHandler;
 
 	private TextBox pathwayBox;
 	private String[] chosenProbes = null;
 	private String chosenOrgan = "Liver";
 	private HorizontalPanel horizontalPanel;
-	
+
+	private boolean geneIdColVis = false, probeColVis = false,
+			probeTitleColVis = true;
+
 	LineChart exprChart;
-	
+
 	enum DataSet {
 		HumanVitro, RatVitro, RatVivoKidneySingle, RatVivoKidneyRepeat, RatVivoLiverSingle, RatVivoLiverRepeat
 	}
@@ -115,7 +118,7 @@ public class OTGViewer implements EntryPoint {
 	 */
 	public void onModuleLoad() {
 		Runnable onLoadChart = new Runnable() {
-			public void run() {				
+			public void run() {
 				Options lco = Options.create();
 				chartTable = DataTable.create();
 				exprChart = new LineChart(chartTable, lco);
@@ -124,9 +127,9 @@ public class OTGViewer implements EntryPoint {
 				horizontalPanel.add(exprChart);
 			}
 		};
-		
+
 		VisualizationUtils.loadVisualizationApi(onLoadChart, "corechart");
-		
+
 		// Add the nameField and sendButton to the RootPanel
 		// Use RootPanel.get() to get the entire body element
 		RootPanel rootPanel = RootPanel.get("rootPanelContainer");
@@ -158,15 +161,15 @@ public class OTGViewer implements EntryPoint {
 				chosenOrgan = "Liver";
 			}
 		};
-		
+
 		Command kidneySelect = new Command() {
 			public void execute() {
 				chosenOrgan = "Kidney";
 			}
 		};
-		
+
 		MenuItem mntmNewItem_2 = new MenuItem("New item", false, liverSelect);
-		mntmNewItem_2.setHTML("Rat, in vivo, liver, single");		
+		mntmNewItem_2.setHTML("Rat, in vivo, liver, single");
 		menuBar_1.addItem(mntmNewItem_2);
 
 		MenuItem mntmNewItem_3 = new MenuItem("New item", false, liverSelect);
@@ -207,14 +210,30 @@ public class OTGViewer implements EntryPoint {
 
 		MenuItem mntmNewMenu_1 = new MenuItem("New menu", false, menuBar_2);
 
-		MenuItem mntmGeneId = new MenuItem("Gene ID", false, (Command) null);
+		MenuItem mntmGeneId = new MenuItem("Gene ID", false, new Command() {
+			public void execute() {
+				geneIdColVis = !geneIdColVis;
+				setupColumns();
+			}
+		});
 		menuBar_2.addItem(mntmGeneId);
 
 		MenuItem mntmProbeName = new MenuItem("Probe name", false,
-				(Command) null);
+				new Command() {
+					public void execute() {
+						probeColVis = !probeColVis;
+						setupColumns();
+					}
+				});
 		menuBar_2.addItem(mntmProbeName);
 
-		MenuItem mntmGeneName = new MenuItem("Gene name", false, (Command) null);
+		MenuItem mntmGeneName = new MenuItem("Gene name", false, new Command() {
+			public void execute() {
+				probeTitleColVis = !probeTitleColVis;
+				setupColumns();
+			}
+		});
+
 		menuBar_2.addItem(mntmGeneName);
 		mntmNewMenu_1.setHTML("Columns");
 		menuBar.addItem(mntmNewMenu_1);
@@ -268,14 +287,15 @@ public class OTGViewer implements EntryPoint {
 				});
 			}
 		};
-		
+
 		Button btnShowAllProbes = new Button("Show all probes");
-		verticalPanel_2.add(btnShowAllProbes);		
+		verticalPanel_2.add(btnShowAllProbes);
 		btnShowAllProbes.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent ev) {
 				chosenProbes = null;
 				if (pathwayList.getSelectedIndex() != -1) {
-					pathwayList.setItemSelected(pathwayList.getSelectedIndex(), false);
+					pathwayList.setItemSelected(pathwayList.getSelectedIndex(),
+							false);
 				}
 				getExpressions();
 			}
@@ -289,9 +309,15 @@ public class OTGViewer implements EntryPoint {
 		horizontalPanel = new HorizontalPanel();
 		verticalPanel.add(horizontalPanel);
 
+		VerticalPanel verticalPanel_4 = new VerticalPanel();
+		horizontalPanel.add(verticalPanel_4);
+
+		Label lblCompound = new Label("Compounds");
+		verticalPanel_4.add(lblCompound);
+
 		compoundList = new ListBox();
-		horizontalPanel.add(compoundList);
-		compoundList.setSize("210px", "202px");
+		verticalPanel_4.add(compoundList);
+		compoundList.setSize("210px", "218px");
 		compoundList.setVisibleItemCount(10);
 
 		compoundHandler = new ListSelectionHandler<String>("compounds",
@@ -302,8 +328,18 @@ public class OTGViewer implements EntryPoint {
 			}
 		};
 
+		compoundList.addChangeHandler(new ChangeHandler() {
+			public void onChange(ChangeEvent event) {
+				String compound = compoundHandler.lastSelected();
+				getDoseLevels(compound, null);
+			}
+		});
+
 		VerticalPanel verticalPanel_1 = new VerticalPanel();
 		horizontalPanel.add(verticalPanel_1);
+
+		Label lblDose = new Label("Doses");
+		verticalPanel_1.add(lblDose);
 
 		doseLevelList = new ListBox();
 		verticalPanel_1.add(doseLevelList);
@@ -313,12 +349,14 @@ public class OTGViewer implements EntryPoint {
 		doseHandler = new ListSelectionHandler<String>("dose levels",
 				doseLevelList, true) {
 			protected void getUpdates(String dose) {
-				getBarcodes(compoundHandler.lastSelected(),
-						chosenOrgan,
+				getBarcodes(compoundHandler.lastSelected(), chosenOrgan,
 						doseHandler.lastSelected(), timeHandler.lastSelected());
 
 			}
 		};
+
+		Label lblTime = new Label("Times");
+		verticalPanel_1.add(lblTime);
 
 		timeList = new ListBox();
 		verticalPanel_1.add(timeList);
@@ -327,17 +365,22 @@ public class OTGViewer implements EntryPoint {
 
 		timeHandler = new ListSelectionHandler<String>("times", timeList, true) {
 			protected void getUpdates(String time) {
-				getBarcodes(compoundHandler.lastSelected(),
-						chosenOrgan,
+				getBarcodes(compoundHandler.lastSelected(), chosenOrgan,
 						doseHandler.lastSelected(), timeHandler.lastSelected());
 			}
 		};
 
+		VerticalPanel verticalPanel_5 = new VerticalPanel();
+		horizontalPanel.add(verticalPanel_5);
+
+		Label lblArray = new Label("Arrays");
+		verticalPanel_5.add(lblArray);
+
 		barcodeList = new ListBox();
-		horizontalPanel.add(barcodeList);
+		verticalPanel_5.add(barcodeList);
 		barcodeList.setMultipleSelect(true);
 		barcodeList.setVisibleItemCount(10);
-		barcodeList.setSize("15em", "202px");
+		barcodeList.setSize("15em", "218px");
 
 		barcodeHandler = new MultiSelectionHandler<Barcode>("barcodes",
 				barcodeList) {
@@ -348,20 +391,12 @@ public class OTGViewer implements EntryPoint {
 			protected void getUpdates(List<Barcode> barcodes) {
 				getExpressions();
 			}
-			
+
 			protected String representation(Barcode b) {
 				return b.getTitle();
 			}
 		};
 
-		compoundList.addChangeHandler(new ChangeHandler() {
-			public void onChange(ChangeEvent event) {
-				String compound = compoundHandler.lastSelected();				
-				getDoseLevels(compound, null);
-			}
-		});
-
-		
 		SimplePager exprPager = new SimplePager(TextLocation.CENTER,
 				pagerResources, true, 100, true);
 		verticalPanel.add(exprPager);
@@ -377,7 +412,7 @@ public class OTGViewer implements EntryPoint {
 		exprPager.setDisplay(exprGrid);
 
 		listDataProvider = new ListDataProvider<ExpressionRow>();
-		
+
 		compoundHandler.addAfter(doseHandler);
 		compoundHandler.addAfter(timeHandler);
 		doseHandler.addAfter(barcodeHandler);
@@ -395,21 +430,41 @@ public class OTGViewer implements EntryPoint {
 			exprGrid.removeColumn(0);
 		}
 
-		TextColumn<ExpressionRow> probeCol = new TextColumn<ExpressionRow>() {
-			public String getValue(ExpressionRow er) {
-				return er.getProbe();
-			}
-		};
-		exprGrid.addColumn(probeCol, "Probe");
+		int extraCols = 0;
 
-		TextColumn<ExpressionRow> titleCol = new TextColumn<ExpressionRow>() {
-			public String getValue(ExpressionRow er) {
-				return er.getTitle();
-			}
-		};
-		exprGrid.addColumn(titleCol, "Title");
+		if (probeColVis) {
+			TextColumn<ExpressionRow> probeCol = new TextColumn<ExpressionRow>() {
+				public String getValue(ExpressionRow er) {
+					return er.getProbe();
+				}
+			};
+			exprGrid.addColumn(probeCol, "Probe");
+			
+			extraCols += 1;
+		}
+		
+		if (probeTitleColVis) {
+			TextColumn<ExpressionRow> titleCol = new TextColumn<ExpressionRow>() {
+				public String getValue(ExpressionRow er) {
+					return er.getTitle();
+				}
+			};
+			exprGrid.addColumn(titleCol, "Title");
+			extraCols += 1;
+		}
+		
+		if (geneIdColVis) {
+			TextColumn<ExpressionRow> geneIdCol = new TextColumn<ExpressionRow>() {
+				public String getValue(ExpressionRow er) {
+					return er.getGeneId();
+				}
+			};
+			exprGrid.addColumn(geneIdCol, "Gene");
+			extraCols += 1;
+		}
+		
 		chartTable.removeColumns(0, chartTable.getNumberOfColumns());
-		chartTable.addColumn(ColumnType.STRING, "Probe");
+		chartTable.addColumn(ColumnType.STRING, "Probe");		
 		
 		int i = 0;
 		List<Barcode> selection = barcodeHandler.lastMultiSelection();		
@@ -447,12 +502,12 @@ public class OTGViewer implements EntryPoint {
 	void getExpressions() {
 		setupColumns();
 		List<String> codes = new ArrayList<String>();
-		for (Barcode code: barcodeHandler.lastMultiSelection()) {
+		for (Barcode code : barcodeHandler.lastMultiSelection()) {
 			codes.add(code.getCode());
 		}
-		
-		kcService.loadDataset(codes,
-				chosenProbes, chosenValueType, new AsyncCallback<Integer>() {
+
+		kcService.loadDataset(codes, chosenProbes, chosenValueType,
+				new AsyncCallback<Integer>() {
 					public void onFailure(Throwable caught) {
 						Window.alert("Unable to load dataset.");
 					}
@@ -461,7 +516,7 @@ public class OTGViewer implements EntryPoint {
 						exprGrid.setRowCount(result);
 						exprGrid.setVisibleRangeAndClearData(new Range(0, 20),
 								true);
-												
+
 					}
 				});
 	}
@@ -480,7 +535,7 @@ public class OTGViewer implements EntryPoint {
 
 			public void onSuccess(List<ExpressionRow> result) {
 				exprGrid.setRowData(start, result);
-								
+
 				chartTable.removeRows(0, chartTable.getNumberOfRows());
 				for (int i = 0; i < result.size(); ++i) {
 					chartTable.addRow();
@@ -488,11 +543,12 @@ public class OTGViewer implements EntryPoint {
 					int cols = barcodeHandler.lastMultiSelection().size();
 					chartTable.setValue(i, 0, row.getProbe());
 					for (int j = 0; j < cols; ++j) {
-						chartTable.setValue(i, j + 1, row.getValue(j).getValue());
+						chartTable.setValue(i, j + 1, row.getValue(j)
+								.getValue());
 					}
 					exprChart.draw(chartTable);
 				}
-				
+
 			}
 		};
 
