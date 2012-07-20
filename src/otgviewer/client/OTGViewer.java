@@ -4,7 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import otgviewer.shared.Barcode;
+import otgviewer.shared.CellType;
 import otgviewer.shared.ExpressionRow;
+import otgviewer.shared.Organ;
+import otgviewer.shared.Organism;
+import otgviewer.shared.RepeatType;
 import otgviewer.shared.ValueType;
 
 import com.google.gwt.cell.client.NumberCell;
@@ -78,15 +82,21 @@ public class OTGViewer implements EntryPoint {
 			timeHandler, pathwayHandler;
 	private MultiSelectionHandler<Barcode> barcodeHandler;
 
-	private TextBox pathwayBox;
-	private String[] chosenProbes = null;
-	private String chosenOrgan = "Liver";
+	private TextBox pathwayBox;	
 	private HorizontalPanel horizontalPanel;
 
+	LineChart exprChart;
+
+	//Visible columns
 	private boolean geneIdColVis = false, probeColVis = false,
 			probeTitleColVis = true;
 
-	LineChart exprChart;
+	//Track the current selection
+	private String[] chosenProbes = null;
+	private Organ chosenOrgan = Organ.Liver;
+	private RepeatType chosenRepeatType = RepeatType.Single;
+	private Organism chosenOrganism = Organism.Rat;
+	private CellType chosenCellType = CellType.Vivo;
 
 	enum DataSet {
 		HumanVitro, RatVitro, RatVivoKidneySingle, RatVivoKidneyRepeat, RatVivoLiverSingle, RatVivoLiverRepeat
@@ -148,39 +158,74 @@ public class OTGViewer implements EntryPoint {
 
 		MenuItem mntmNewMenu = new MenuItem("New menu", false, menuBar_1);
 
-		MenuItem mntmNewItem = new MenuItem("New item", false, (Command) null);
+		MenuItem mntmNewItem = new MenuItem("New item", false, new Command() {
+			public void execute() {			
+				chosenOrganism = Organism.Human;								
+				chosenCellType = CellType.Vitro;
+				//Repeat/single ??
+				getCompounds();
+			}
+		});
 		mntmNewItem.setHTML("Human, in vitro");
 		menuBar_1.addItem(mntmNewItem);
 
-		MenuItem mntmNewItem_1 = new MenuItem("New item", false, (Command) null);
+		MenuItem mntmNewItem_1 = new MenuItem("New item", false,  new Command() {
+			public void execute() {			
+				chosenOrganism = Organism.Rat;								
+				chosenCellType = CellType.Vitro;
+				//Repeat/single ??
+				getCompounds();
+			}
+		});
 		mntmNewItem_1.setHTML("Rat, in vitro");
 		menuBar_1.addItem(mntmNewItem_1);
 
-		Command liverSelect = new Command() {
-			public void execute() {
-				chosenOrgan = "Liver";
-			}
-		};
 
-		Command kidneySelect = new Command() {
+		MenuItem mntmNewItem_2 = new MenuItem("New item", false,  new Command() {
 			public void execute() {
-				chosenOrgan = "Kidney";
+				chosenOrganism = Organism.Rat;
+				chosenOrgan = Organ.Liver;
+				chosenRepeatType = RepeatType.Single;
+				chosenCellType = CellType.Vivo;
+				getCompounds();
 			}
-		};
-
-		MenuItem mntmNewItem_2 = new MenuItem("New item", false, liverSelect);
+		});	
 		mntmNewItem_2.setHTML("Rat, in vivo, liver, single");
 		menuBar_1.addItem(mntmNewItem_2);
 
-		MenuItem mntmNewItem_3 = new MenuItem("New item", false, liverSelect);
+		MenuItem mntmNewItem_3 = new MenuItem("New item", false,  new Command() {
+			public void execute() {
+				chosenOrganism = Organism.Rat;
+				chosenOrgan = Organ.Liver;
+				chosenRepeatType = RepeatType.Repeat;
+				chosenCellType = CellType.Vivo;
+				getCompounds();
+			}
+		});
 		mntmNewItem_3.setHTML("Rat, in vivo, liver, repeat");
 		menuBar_1.addItem(mntmNewItem_3);
 
-		MenuItem mntmNewItem_4 = new MenuItem("New item", false, kidneySelect);
+		MenuItem mntmNewItem_4 = new MenuItem("New item", false,  new Command() {
+			public void execute() {
+				chosenOrganism = Organism.Rat;
+				chosenOrgan = Organ.Kidney;
+				chosenRepeatType = RepeatType.Single;
+				chosenCellType = CellType.Vivo;
+				getCompounds();
+			}
+		});
 		mntmNewItem_4.setHTML("Rat, in vivo, kidney, single");
 		menuBar_1.addItem(mntmNewItem_4);
 
-		MenuItem mntmNewItem_5 = new MenuItem("New item", false, kidneySelect);
+		MenuItem mntmNewItem_5 = new MenuItem("New item", false,  new Command() {
+			public void execute() {
+				chosenOrganism = Organism.Rat;
+				chosenOrgan = Organ.Kidney;
+				chosenRepeatType = RepeatType.Repeat;
+				chosenCellType = CellType.Vivo;
+				getCompounds();
+			}
+		});
 		mntmNewItem_5.setHTML("Rat, in vivo, kidney, repeat");
 		menuBar_1.addItem(mntmNewItem_5);
 
@@ -190,7 +235,7 @@ public class OTGViewer implements EntryPoint {
 		MenuItem mntmFolds = new MenuItem("Fold values", false, new Command() {
 			public void execute() {
 				chosenValueType = ValueType.Folds;
-				getCompounds();
+				getExpressions();
 			}
 		});
 		menuBar_1.addItem(mntmFolds);
@@ -199,7 +244,7 @@ public class OTGViewer implements EntryPoint {
 				new Command() {
 					public void execute() {
 						chosenValueType = ValueType.Absolute;
-						getCompounds();
+						getExpressions();
 					}
 				});
 
@@ -323,8 +368,8 @@ public class OTGViewer implements EntryPoint {
 		compoundHandler = new ListSelectionHandler<String>("compounds",
 				compoundList, false) {
 			protected void getUpdates(String compound) {
-				getDoseLevels(compound, chosenOrgan);
-				getTimes(compound, chosenOrgan);
+				getDoseLevels(compound, chosenOrgan.toString());
+				getTimes(compound, chosenOrgan.toString());
 			}
 		};
 
@@ -349,7 +394,7 @@ public class OTGViewer implements EntryPoint {
 		doseHandler = new ListSelectionHandler<String>("dose levels",
 				doseLevelList, true) {
 			protected void getUpdates(String dose) {
-				getBarcodes(compoundHandler.lastSelected(), chosenOrgan,
+				getBarcodes(compoundHandler.lastSelected(), chosenOrgan.toString(),
 						doseHandler.lastSelected(), timeHandler.lastSelected());
 
 			}
@@ -365,7 +410,7 @@ public class OTGViewer implements EntryPoint {
 
 		timeHandler = new ListSelectionHandler<String>("times", timeList, true) {
 			protected void getUpdates(String time) {
-				getBarcodes(compoundHandler.lastSelected(), chosenOrgan,
+				getBarcodes(compoundHandler.lastSelected(), chosenOrgan.toString(),
 						doseHandler.lastSelected(), timeHandler.lastSelected());
 			}
 		};
