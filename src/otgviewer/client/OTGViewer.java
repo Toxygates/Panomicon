@@ -544,7 +544,8 @@ public class OTGViewer implements EntryPoint {
 		owlimService.times(compound, organ, timeHandler.retrieveCallback());
 	}
 
-	void getExpressions() {
+	void getExpressions() {	
+		exprGrid.setRowCount(0, false);
 		setupColumns();
 		List<String> codes = new ArrayList<String>();
 		for (Barcode code : barcodeHandler.lastMultiSelection()) {
