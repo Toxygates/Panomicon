@@ -67,24 +67,33 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		}
 	}
 	
-	public int loadDataset(List<String> barcodes, String[] probes, ValueType type) {
-		HttpServletRequest request = getThreadLocalRequest();
-		HttpSession session = request.getSession();
-		DB db = null;
+	private String[] filterProbes(String[] probes) {
 		String homePath = System.getProperty("otg.home");
 		String[] realProbes = probes;
-		
+
 		if (probes == null) {
-			//get all probes
+			// get all probes
 			realProbes = OTGQueries.probes(homePath + "/rat.probes.txt");
 		} else {
-			realProbes = OTGQueries.filterProbes(probes, homePath + "/rat.probes.txt");
+			realProbes = OTGQueries.filterProbes(probes, homePath
+					+ "/rat.probes.txt");
 		}
-		System.out.println(realProbes.length + " probes requested after filtering");
-		
+		System.out.println(realProbes.length
+				+ " probes requested after filtering");
+		return realProbes;
+	}
+	
+	private ExprValue[][] getExprValues(List<String> barcodes, String[] probes,
+			ValueType type) {
+		DB db = null;
+		String homePath = System.getProperty("otg.home");
+
+		if (barcodes == null) {
+			return new ExprValue[0][0];
+		}
 		try {
-			
-			switch(type) {
+
+			switch (type) {
 			case Folds:
 				db = OTGQueries.open(homePath + "/otgf.kct");
 				break;
@@ -92,24 +101,61 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 				db = OTGQueries.open(homePath + "/otg.kct");
 				break;
 			}
-				
-			ExprValue[][] r = OTGQueries.presentValuesByBarcodesAndProbes4J(db, barcodes, realProbes);
 			
-			session.setAttribute("dataset", r);
-			session.setAttribute("datasetProbes", realProbes);
-			if (r.length > 0) {
-				System.out.println("Stored " + r.length + " x " + r[0].length + " items in session");
-			} else {
-				System.out.println("Stored empty data in session");
-			}
-			return r.length;
-		}
-		finally {
+			return OTGQueries.presentValuesByBarcodesAndProbes4J(db, barcodes,
+					probes);
+		} finally {
 			if (db != null) {
 				System.out.println("DB closed");
 				db.close();
 			}
-		}		
+		}
+
+	}
+	
+	public int loadDataset(List<String> barcodes, String[] probes, ValueType type) {
+		HttpServletRequest request = getThreadLocalRequest();
+		HttpSession session = request.getSession();
+		String[] realProbes = filterProbes(probes);
+		ExprValue[][] r = getExprValues(barcodes, realProbes, type);
+
+		session.setAttribute("dataset", r);
+		session.setAttribute("datasetProbes", realProbes);
+		if (r.length > 0) {
+			System.out.println("Stored " + r.length + " x " + r[0].length
+					+ " items in session, " + realProbes.length + " probes");
+		} else {
+			System.out.println("Stored empty data in session");
+		}
+		return r.length;
+	}
+	
+	private ExpressionRow arrayToRow(String probe, String title, String geneId, ExprValue[] vals) {
+		ExpressionValue[] vout = new ExpressionValue[vals.length];
+
+		for (int j = 0; j < vals.length; ++j) {
+			vout[j] = new ExpressionValue(vals[j].value(), vals[j].call());						
+		}
+		return new ExpressionRow(probe, title, geneId, vout);
+	}
+	
+	private List<ExpressionRow> arrayToRows(String[] probes, ExprValue[][] data, int offset, int size) {
+		List<ExpressionRow> r = new ArrayList<ExpressionRow>();
+
+		if (probes != null && data != null) {
+			try {
+				B2RAffy.connect();				
+				List<String> probeTitles = B2RAffy.titlesForJava((String[]) Arrays.copyOfRange(probes, offset, offset+size));
+				List<String> geneIds = B2RAffy.geneIdsForJava((String[]) Arrays.copyOfRange(probes, offset, offset+size));
+				for (int i = offset; i < offset + size && i < probes.length && i < data.length; ++i) {					
+					r.add(arrayToRow(probes[i], probeTitles.get(i - offset), geneIds.get(i - offset), data[i]));					
+				}
+			} finally {
+				B2RAffy.close();
+			}
+		}
+
+		return r;
 	}
 	
 	public List<ExpressionRow> datasetItems(int offset, int size) {
@@ -120,29 +166,14 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 			System.out.println("I had " + (data).length + " rows stored");
 		}
 		String[] probes = (String[]) session.getAttribute("datasetProbes");
-		List<ExpressionRow> r = new ArrayList<ExpressionRow>();
-
-		if (probes != null && data != null) {
-			try {
-				B2RAffy.connect();
-
-				
-				List<String> probeTitles = B2RAffy.titlesForJava((String[]) Arrays.copyOfRange(probes, offset, offset+size));
-				List<String> geneIds = B2RAffy.geneIdsForJava((String[]) Arrays.copyOfRange(probes, offset, offset+size));
-				for (int i = offset; i < offset + size && i < probes.length; ++i) {
-					ExpressionValue[] vals = new ExpressionValue[data[i].length];
-					
-					for (int j = 0; j < vals.length; ++j) {
-						vals[j] = new ExpressionValue(data[i][j].value(), data[i][j].call());						
-					}
-					r.add(new ExpressionRow(probes[i], probeTitles.get(i - offset), 
-							geneIds.get(i - offset), vals));
-				}
-			} finally {
-				B2RAffy.close();
-			}
-		}
-
-		return r;
+		return arrayToRows(probes, data, offset, size);
+	}
+	
+	
+	public List<ExpressionRow> getFullData(List<String> barcodes, String[] probes, ValueType type) {
+		String[] realProbes = filterProbes(probes);
+		ExprValue[][] r = getExprValues(barcodes, realProbes, type);
+		return arrayToRows(realProbes, r, 0, r.length);
+		
 	}
 }
