@@ -23,5 +23,6 @@ public interface KCService extends RemoteService {
 	public List<ExpressionRow> datasetItems(int offset, int size);
 	
 	//Get all data immediately.
-	public List<ExpressionRow> getFullData(List<String> barcodes, String[] probes, ValueType type);
+	public List<ExpressionRow> getFullData(List<String> barcodes, String[] probes, 
+			ValueType type, boolean sparseRead);
 }

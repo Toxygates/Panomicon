@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -25,20 +27,36 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 
 	//Future: keep connection open, close on shutdown.
 	
+	private DB foldsDB, absDB;
+	
+	public void init(ServletConfig config) throws ServletException {
+		super.init(config);
+		String homePath = System.getProperty("otg.home");
+		
+		foldsDB = OTGQueries.open(homePath + "/otgf.kct");
+		absDB = OTGQueries.open(homePath + "/otg.kct");
+		System.out.println("KC databases are open");
+	}
+	
+	public void destroy() {
+		super.destroy();
+		System.out.println("Closing KC databases");
+		foldsDB.close();
+		absDB.close();
+	}
+	
 	public List<ExpressionRow> absoluteValues(String barcode) {
-		return valuesFromDb(barcode, "otg.kct");		
+		return valuesFromDb(barcode, absDB);		
 	}
 	
 	public List<ExpressionRow> foldValues(String barcode) {
-		return valuesFromDb(barcode, "otgf.kct");
+		return valuesFromDb(barcode, foldsDB);
 	}
 	
-	private List<ExpressionRow> valuesFromDb(String barcode, String dbFile) {
-		DB db = null;
-		B2RAffy.connect();
-		String homePath = System.getProperty("otg.home");
-		try {
-			db = OTGQueries.open(homePath + "/" + dbFile);
+	private List<ExpressionRow> valuesFromDb(String barcode, DB db) {
+		
+		B2RAffy.connect();		
+		try {			
 			Map<String, ExprValue> r = OTGQueries.presentValuesByBarcode4J(db, barcode);
 			System.out.println("Read " + r.size() + " records");
 			List<ExpressionRow> rr = new ArrayList<ExpressionRow>();
@@ -59,10 +77,6 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 			System.out.println("Returning " + r.size() + " data rows");
 			return rr;
 		} finally {
-			if (db != null) {
-				System.out.println("DB closed");
-				db.close();
-			}
 			B2RAffy.close();
 		}
 	}
@@ -84,32 +98,24 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 	}
 	
 	private ExprValue[][] getExprValues(List<String> barcodes, String[] probes,
-			ValueType type) {
+			ValueType type, boolean sparseRead) {
 		DB db = null;
 		String homePath = System.getProperty("otg.home");
 
 		if (barcodes == null) {
 			return new ExprValue[0][0];
 		}
-		try {
 
-			switch (type) {
-			case Folds:
-				db = OTGQueries.open(homePath + "/otgf.kct");
-				break;
-			case Absolute:
-				db = OTGQueries.open(homePath + "/otg.kct");
-				break;
-			}
-			
-			return OTGQueries.presentValuesByBarcodesAndProbes4J(db, barcodes,
-					probes);
-		} finally {
-			if (db != null) {
-				System.out.println("DB closed");
-				db.close();
-			}
+		switch (type) {
+		case Folds:
+			db = foldsDB;
+			break;
+		case Absolute:
+			db = absDB;
+			break;
 		}
+		return OTGQueries.presentValuesByBarcodesAndProbes4J(db, barcodes,
+				probes, sparseRead);
 
 	}
 	
@@ -117,7 +123,7 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		HttpServletRequest request = getThreadLocalRequest();
 		HttpSession session = request.getSession();
 		String[] realProbes = filterProbes(probes);
-		ExprValue[][] r = getExprValues(barcodes, realProbes, type);
+		ExprValue[][] r = getExprValues(barcodes, realProbes, type, false);
 
 		session.setAttribute("dataset", r);
 		session.setAttribute("datasetProbes", realProbes);
@@ -170,9 +176,9 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 	}
 	
 	
-	public List<ExpressionRow> getFullData(List<String> barcodes, String[] probes, ValueType type) {
+	public List<ExpressionRow> getFullData(List<String> barcodes, String[] probes, ValueType type, boolean sparseRead) {
 		String[] realProbes = filterProbes(probes);
-		ExprValue[][] r = getExprValues(barcodes, realProbes, type);
+		ExprValue[][] r = getExprValues(barcodes, realProbes, type, sparseRead);
 		return arrayToRows(realProbes, r, 0, r.length);
 		
 	}

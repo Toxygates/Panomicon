@@ -2,6 +2,7 @@ package otgviewer.server;
 
 import otg.B2RAffy;
 import otg.B2RKegg;
+import otg.BCode;
 import otg.OTGOwlim;
 import otg.OTGQueries;
 import otgviewer.client.OwlimService;
@@ -14,7 +15,6 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 
 	//Future: keep connection open, close on shutdown.
 	
-	@Override
 	public String[] compounds() {
 		try {
 			OTGOwlim.connect();
@@ -45,12 +45,12 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 	public Barcode[] barcodes(String compound, String organ, String doseLevel, String time) {
 		try {
 			OTGOwlim.connect();
-			String[] codes = OTGOwlim.barcodes(compound, organ, doseLevel, time);
+			BCode[] codes = OTGOwlim.barcodes(compound, organ, doseLevel, time);
 			Barcode[] r = new Barcode[codes.length];
 			int i = 0;
-			for (String code: codes) {
-				r[i] = new Barcode(code, OTGOwlim.individual(code), OTGOwlim.dose(code),
-						OTGOwlim.time(code));
+			for (BCode code: codes) {
+				r[i] = new Barcode(code.code(), code.individual(), code.dose(),
+						code.time());
 				i += 1;
 			}
 			return r;

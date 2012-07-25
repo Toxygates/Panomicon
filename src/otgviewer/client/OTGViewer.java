@@ -140,7 +140,7 @@ public class OTGViewer implements EntryPoint {
 			}
 			String[] probes = new String[] { chosenProbe };
 			
-			kcService.getFullData(bcs, probes, chosenValueType, new AsyncCallback<List<ExpressionRow>>() {
+			kcService.getFullData(bcs, probes, chosenValueType, true, new AsyncCallback<List<ExpressionRow>>() {
 				public void onSuccess(List<ExpressionRow> result) {
 					seriesStrategy.displayData(result);					
 				}
