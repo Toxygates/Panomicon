@@ -14,5 +14,6 @@ public interface OwlimServiceAsync {
 	public void probes(AsyncCallback<String[]> callback);
 	
 	public void pathways(String pattern, AsyncCallback<String[]> callback);
-	public void probes(String pathway, AsyncCallback<String[]> callback);
+	public void probesForPathway(String pathway, AsyncCallback<String[]> callback);
+	public void probesTargetedByCompound(String compound, AsyncCallback<String[]> callback);
 }

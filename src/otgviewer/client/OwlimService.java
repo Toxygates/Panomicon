@@ -28,5 +28,13 @@ public interface OwlimService extends RemoteService {
 	 * @param pathway
 	 * @return
 	 */
-	public String[] probes(String pathway);
+	public String[] probesForPathway(String pathway);
+	
+	/**
+	 * Obtain probes that correspond to proteins targeted by
+	 * the named compound.
+	 * @param compound
+	 * @return
+	 */
+	public String[] probesTargetedByCompound(String compound);
 }

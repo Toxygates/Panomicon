@@ -10,8 +10,10 @@ import otgviewer.shared.ExpressionRow;
 
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
+import com.google.gwt.visualization.client.visualizations.corechart.BarChart;
 import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
-import com.google.gwt.visualization.client.visualizations.corechart.ScatterChart;
+import com.google.gwt.visualization.client.visualizations.corechart.LineChart;
+import com.google.gwt.visualization.client.visualizations.corechart.Options;
 
 public abstract class SeriesDisplayStrategy {
 	
@@ -20,13 +22,11 @@ public abstract class SeriesDisplayStrategy {
 	
 	private String[] vitroTimeColumns = new String[] { "2 hr", "8 hr", "24 hr" };
 
-	private CoreChart chart;
-	private DataTable table;
+	protected DataTable table;
 	private Barcode[] barcodes;
 	private String[] individuals;
 	
-	public SeriesDisplayStrategy(CoreChart _chart, DataTable _table) {
-		chart = _chart;
+	public SeriesDisplayStrategy(DataTable _table) {		
 		table = _table;
 	}
 	
@@ -53,7 +53,7 @@ public abstract class SeriesDisplayStrategy {
 		}	
 	}
 	
-	void displayData(List<ExpressionRow> data) {
+	void displayData(List<ExpressionRow> data, CoreChart chart) {
 		System.out.println("Series chart got " + data.size() + " rows");		
 		for (ExpressionRow r: data) {
 			for (int i = 0; i < barcodes.length; ++i) {
@@ -61,13 +61,14 @@ public abstract class SeriesDisplayStrategy {
 						Arrays.binarySearch(individuals, barcodes[i].getIndividual()) + 1,
 						r.getValue(i).getValue());
 			}
-		}
+		}			
 		chart.draw(table);
 	}
 	
 	abstract int categoryForBarcode(Barcode b);
 	abstract String[] categories();	
 	abstract String categoryName();
+	abstract CoreChart makeChart();
 	
 	int indexOf(Object[] data, Object item) {
 		for (int i = 0; i < data.length; ++i) {
@@ -79,22 +80,30 @@ public abstract class SeriesDisplayStrategy {
 	}
 	
 	public static class VsTime extends SeriesDisplayStrategy {
-		public VsTime(CoreChart chart, DataTable table) {
-			super(chart, table);
+		public VsTime(DataTable table) {
+			super(table);
 		}
 		
 		String[] categories() { return new String[] { "3 hr", "6 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day" }; }
 		int categoryForBarcode(Barcode b) { return indexOf(categories(), b.getTime()); }
 		String categoryName() { return "Time"; };
+		CoreChart makeChart() {
+			Options o = Options.create();
+			return new LineChart(table, o);
+		}
 	}
 	
 	public static class VsDose extends SeriesDisplayStrategy {
-		public VsDose(CoreChart chart, DataTable table) {
-			super(chart, table);
+		public VsDose(DataTable table) {
+			super(table);
 		}
 		
 		String[] categories() { return new String[] { "Control", "Low", "Middle", "High" }; }
 		int categoryForBarcode(Barcode b) { return indexOf(categories(), b.getDose()); }
 		String categoryName() { return "Dose"; }
+		CoreChart makeChart() {
+			Options o = Options.create();
+			return new BarChart(table, o);
+		}
 	}
 }

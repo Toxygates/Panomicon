@@ -2,9 +2,10 @@ package otgviewer.server;
 
 import otg.B2RAffy;
 import otg.B2RKegg;
+import otg.CHEMBL;
+import otg.OTGQueries;
 import otg.BCode;
 import otg.OTGOwlim;
-import otg.OTGQueries;
 import otgviewer.client.OwlimService;
 import otgviewer.shared.Barcode;
 
@@ -91,17 +92,32 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 		}		
 	}
 	
-	public String[] probes(String pathway) {
+	public String[] probesForPathway(String pathway) {
 		try {
 			B2RKegg.connect();
 			OTGOwlim.connect();
 			String homePath = System.getProperty("otg.home");
 			String[] geneIds = B2RKegg.geneIds(pathway, "rno");
 			System.out.println("Probes for " + geneIds.length + " genes");
-			String [] probes = OTGOwlim.probes(geneIds);
+			String [] probes = OTGOwlim.probesForEntrezGenes(geneIds);
 			return OTGQueries.filterProbes(probes, homePath + "/rat.probes.txt");			
 		} finally {
 			B2RKegg.close();
+			OTGOwlim.close();
+		}		
+	}
+	
+	public String[] probesTargetedByCompound(String compound) {
+		try {
+			CHEMBL.connect();
+			OTGOwlim.connect();
+			String homePath = System.getProperty("otg.home");
+			String[] prots = CHEMBL.targetProtsForCompound(compound, "Rattus norvegicus");
+			System.out.println("Probes for " + prots.length + " genes");
+			String [] probes = OTGOwlim.probesForUniprot(prots);
+			return OTGQueries.filterProbes(probes, homePath + "/rat.probes.txt");			
+		} finally {
+			CHEMBL.close();
 			OTGOwlim.close();
 		}		
 	}

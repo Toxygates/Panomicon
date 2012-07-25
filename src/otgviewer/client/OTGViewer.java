@@ -22,6 +22,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.SimplePager;
@@ -32,6 +34,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.HorizontalSplitPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -55,6 +58,7 @@ import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 import com.google.gwt.visualization.client.visualizations.corechart.LineChart;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -123,6 +127,10 @@ public class OTGViewer implements EntryPoint {
 			for (String i: result) {
 				chartSubtypeCombo.addItem(i);
 			}
+			if (result.length > 0) {
+				chartSubtypeCombo.setSelectedIndex(0);
+				redrawSeriesChart();
+			}
 		}
 	};
 
@@ -138,16 +146,26 @@ public class OTGViewer implements EntryPoint {
 			for (Barcode b: barcodes) {											
 				bcs.add(b.getCode());
 			}
-			String[] probes = new String[] { chosenProbe };
-			
-			kcService.getFullData(bcs, probes, chosenValueType, true, new AsyncCallback<List<ExpressionRow>>() {
-				public void onSuccess(List<ExpressionRow> result) {
-					seriesStrategy.displayData(result);					
-				}
-				public void onFailure(Throwable caught) {
-					Window.alert("Unable to get series chart data (expressions).");
-				}
+			if (chosenProbe == null) {
+				Window.alert("Unable to draw chart. Please select a probe first.");
+			} else {
+				String[] probes = new String[] { chosenProbe };
+
+				kcService.getFullData(bcs, probes, chosenValueType, true,
+						new AsyncCallback<List<ExpressionRow>>() {
+							public void onSuccess(List<ExpressionRow> result) {
+								chartDockPanel.remove(seriesChart);
+								seriesChart = seriesStrategy.makeChart();
+								chartDockPanel.add(seriesChart,
+										DockPanel.CENTER);
+								seriesStrategy.displayData(result, seriesChart);
+							}
+
+							public void onFailure(Throwable caught) {
+								Window.alert("Unable to get series chart data (expressions).");
+	}
 			});
+			}
 		}
 	};
 	
@@ -341,6 +359,7 @@ public class OTGViewer implements EntryPoint {
 
 		//PATHWAY SEARCH
 		VerticalPanel verticalPanel_2 = new VerticalPanel();
+		verticalPanel_2.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		horizontalSplitPanel.setLeftWidget(verticalPanel_2);
 		verticalPanel_2.setBorderWidth(1);
 		verticalPanel_2.setSize("100%", "");
@@ -362,13 +381,13 @@ public class OTGViewer implements EntryPoint {
 
 		pathwayList = new ListBox();
 		verticalPanel_2.add(pathwayList);
-		pathwayList.setSize("100%", "500px");
+		pathwayList.setSize("100%", "389px");
 		pathwayList.setVisibleItemCount(5);
 
 		pathwayHandler = new ListSelectionHandler<String>("pathways",
 				pathwayList, false) {
 			protected void getUpdates(String pathway) {
-				owlimService.probes(pathway, new AsyncCallback<String[]>() {
+				owlimService.probesForPathway(pathway, new AsyncCallback<String[]>() {
 					public void onFailure(Throwable caught) {
 						Window.alert("Unable to get probes.");
 					}
@@ -393,16 +412,54 @@ public class OTGViewer implements EntryPoint {
 				getExpressions();
 			}
 		});
+		
+		Button btnShowCompoundTargets = new Button("Show CHEMBL targets");
+		verticalPanel_2.add(btnShowCompoundTargets);
+		btnShowCompoundTargets.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent ev) {
+				if (chosenCompound != null) {
+					owlimService.probesTargetedByCompound(chosenCompound, new AsyncCallback<String[]>() {
+						public void onFailure(Throwable caught) {
+							Window.alert("Unable to get probes.");
+						}
 
-		TabPanel chartTabPanel = new TabPanel();
-		horizontalSplitPanel.setRightWidget(chartTabPanel);
-		chartTabPanel.setSize("100%", "100%");
+						public void onSuccess(String[] probes) {
+							displayedProbes = probes;
+							getExpressions();
+						}
+					});
+				} else {
+					Window.alert("Please select a compound first.");
+				}
+			}
+		});
+
+		TabPanel tabPanel = new TabPanel();
+		horizontalSplitPanel.setRightWidget(tabPanel);
+		tabPanel.setSize("100%", "100%");
+		tabPanel.addSelectionHandler(new SelectionHandler<Integer>() {
+			public void onSelection(SelectionEvent<Integer> event) {
+				switch(event.getSelectedItem()) {
+				case 0:
+					//data viewer tab
+					break;
+				case 1:
+					//series chart tab
+					if (chartCombo.getSelectedIndex() == -1) {
+						chartCombo.setSelectedIndex(0);
+						updateSeriesSubtypes();
+					} else {
+						redrawSeriesChart();
+					}
+				}
+			}
+		});
 
 		//DATA VIEWER UI
 		DockPanel dockPanel = new DockPanel();
-		chartTabPanel.add(dockPanel, "Data viewer", false);
+		tabPanel.add(dockPanel, "Data viewer", false);
 		dockPanel.setSize("100%", "100%");
-		chartTabPanel.selectTab(0);
+		tabPanel.selectTab(0);
 
 		horizontalPanel = new HorizontalPanel();
 		dockPanel.add(horizontalPanel, DockPanel.NORTH);
@@ -535,58 +592,47 @@ public class OTGViewer implements EntryPoint {
 		
 		// CHART PANEL GUI
 		chartDockPanel = new DockPanel();
-		chartTabPanel.add(chartDockPanel, "Chart", false);
+		tabPanel.add(chartDockPanel, "Chart", false);		
 		chartDockPanel.setSize("100%", "100%");
-
-		HorizontalPanel horizontalPanel_1 = new HorizontalPanel();
-		chartDockPanel.add(horizontalPanel_1, DockPanel.NORTH);
-
-		chartCombo = new ListBox();
-		chartCombo.addItem("Expression vs time");
-		chartCombo.addItem("Expression vs dose");
-		chartCombo.setSelectedIndex(0);
-		horizontalPanel_1.add(chartCombo);
-		chartCombo.addChangeHandler(new ChangeHandler() {
-			public void onChange(ChangeEvent event) {
-				chartSubtypeCombo.clear();
-				if (chartCombo.getSelectedIndex() == 0) {					
-					getDosesForSeriesChart();
-					seriesStrategy = new SeriesDisplayStrategy.VsTime(seriesChart, seriesTable);
-				} else {
-					getTimesForSeriesChart();	
-					seriesStrategy = new SeriesDisplayStrategy.VsDose(seriesChart, seriesTable);
-				}
-			}
-		});
 		
-		chartSubtypeCombo = new ListBox();
-		horizontalPanel_1.add(chartSubtypeCombo);
+		VerticalPanel verticalPanel = new VerticalPanel();
+		chartDockPanel.add(verticalPanel, DockPanel.NORTH);
+		verticalPanel.setWidth("276px");
 		
 		seriesSelectionLabel = new Label("Selected: none");
-		horizontalPanel_1.add(seriesSelectionLabel);
-		chartSubtypeCombo.addChangeHandler(new ChangeHandler() {
-			public void onChange(ChangeEvent event) {
-				seriesTable.removeRows(0, seriesTable.getNumberOfRows());
-				//first find the applicable barcodes
-				if (chartCombo.getSelectedIndex() == 0) {
-					//select for specific dose.
-					owlimService.barcodes(chosenCompound, chosenOrgan.toString(), 
-							chartSubtypeCombo.getItemText(chartSubtypeCombo.getSelectedIndex()), null, 
-							seriesChartBarcodesCallback);
-				} else {
-					//select for specific time.
-					owlimService.barcodes(chosenCompound, chosenOrgan.toString(), null, 
-							chartSubtypeCombo.getItemText(chartSubtypeCombo.getSelectedIndex()), 
-							seriesChartBarcodesCallback);
-				}
-			}
-			
-		});
+		verticalPanel.add(seriesSelectionLabel);
+		
+		HorizontalPanel horizontalPanel_2 = new HorizontalPanel();
+		horizontalPanel_2.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		verticalPanel.add(horizontalPanel_2);
+		
+				chartCombo = new ListBox();
+				horizontalPanel_2.add(chartCombo);
+				chartCombo.addItem("Expression vs time, fixed dose:");
+				chartCombo.addItem("Expression vs dose, fixed time:");
+				chartCombo.setSelectedIndex(0);
+				
+				chartSubtypeCombo = new ListBox();
+				horizontalPanel_2.add(chartSubtypeCombo);
+				
+				chartSubtypeCombo.addChangeHandler(new ChangeHandler() {
+					public void onChange(ChangeEvent event) {
+						seriesTable.removeRows(0, seriesTable.getNumberOfRows());
+						redrawSeriesChart();						
+					}
+					
+				});
+				chartCombo.addChangeHandler(new ChangeHandler() {
+					public void onChange(ChangeEvent event) {
+						updateSeriesSubtypes();						
+					}
+				});
 
 		//INITIAL DATA
 		getCompounds();
 	}
 	
+
 	/**
 	 * This method is called when selection variables have changed
 	 * and this needs to be reflected.
@@ -769,5 +815,31 @@ public class OTGViewer implements EntryPoint {
 
 	}
 	
-	//----------SERIES CHART PANEL----------
+	//---------- SERIES CHART PANEL ----------
+	void redrawSeriesChart() {
+		//first find the applicable barcodes
+		if (chartCombo.getSelectedIndex() == 0) {
+			//select for specific dose.
+			owlimService.barcodes(chosenCompound, chosenOrgan.toString(), 
+					chartSubtypeCombo.getItemText(chartSubtypeCombo.getSelectedIndex()), null, 
+					seriesChartBarcodesCallback);
+		} else {
+			//select for specific time.
+			owlimService.barcodes(chosenCompound, chosenOrgan.toString(), null, 
+					chartSubtypeCombo.getItemText(chartSubtypeCombo.getSelectedIndex()), 
+					seriesChartBarcodesCallback);
+		}
+	}
+	
+	void updateSeriesSubtypes() {
+		chartSubtypeCombo.clear();
+		if (chartCombo.getSelectedIndex() == 0) {					
+			seriesStrategy = new SeriesDisplayStrategy.VsTime(seriesTable);
+			getDosesForSeriesChart();
+		} else {
+			seriesStrategy = new SeriesDisplayStrategy.VsDose(seriesTable);
+			getTimesForSeriesChart();	
+		}
+	}
+	
 }
