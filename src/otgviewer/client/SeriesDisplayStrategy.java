@@ -84,7 +84,7 @@ public abstract class SeriesDisplayStrategy {
 			super(table);
 		}
 		
-		String[] categories() { return new String[] { "3 hr", "6 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day" }; }
+		String[] categories() { return new String[] { "2 hr", "3 hr", "6 hr", "8 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day" }; }
 		int categoryForBarcode(Barcode b) { return indexOf(categories(), b.getTime()); }
 		String categoryName() { return "Time"; };
 		CoreChart makeChart() {
