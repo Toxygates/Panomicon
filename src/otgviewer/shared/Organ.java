@@ -1,6 +1,8 @@
 package otgviewer.shared;
 
-public enum Organ {
+import java.io.Serializable;
+
+public enum Organ implements Serializable {
 	Liver,
 	Kidney
 }

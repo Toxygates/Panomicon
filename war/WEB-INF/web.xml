@@ -6,10 +6,6 @@
          xmlns="http://java.sun.com/xml/ns/javaee">
 
   <!-- Servlets -->
-  <servlet>
-    <servlet-name>greetServlet</servlet-name>
-    <servlet-class>otgviewer.server.GreetingServiceImpl</servlet-class>
-  </servlet>
 
 	<servlet>
 		<servlet-name>owlimServlet</servlet-name>
@@ -20,12 +16,6 @@
 		<servlet-name>kcServlet</servlet-name>
 		<servlet-class>otgviewer.server.KCServiceImpl</servlet-class>
 	</servlet>
-
-
-	<servlet-mapping>
-		<servlet-name>greetServlet</servlet-name>
-		<url-pattern>/otgviewer/greet</url-pattern>
-	</servlet-mapping>
 
 	<servlet-mapping>
 		<servlet-name>owlimServlet</servlet-name>

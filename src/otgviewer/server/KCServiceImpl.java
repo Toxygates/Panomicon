@@ -38,11 +38,11 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		System.out.println("KC databases are open");
 	}
 	
-	public void destroy() {
-		super.destroy();
+	public void destroy() {		
 		System.out.println("Closing KC databases");
 		foldsDB.close();
 		absDB.close();
+		super.destroy();
 	}
 	
 	public List<ExpressionRow> absoluteValues(String barcode) {

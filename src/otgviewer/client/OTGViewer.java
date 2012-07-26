@@ -5,6 +5,7 @@ import java.util.List;
 
 import otgviewer.shared.Barcode;
 import otgviewer.shared.CellType;
+import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Organ;
 import otgviewer.shared.Organism;
@@ -34,6 +35,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.HorizontalSplitPanel;
@@ -58,7 +60,6 @@ import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 import com.google.gwt.visualization.client.visualizations.corechart.LineChart;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -81,7 +82,9 @@ public class OTGViewer implements EntryPoint {
 	private RepeatType chosenRepeatType = RepeatType.Single;
 	private Organism chosenOrganism = Organism.Rat;
 	private CellType chosenCellType = CellType.Vivo;
-
+	private DataFilter chosenDataFilter = new DataFilter(chosenCellType, chosenOrgan, 
+			chosenRepeatType, chosenOrganism);
+	
 	//DATA VIEWER PANEL
 	
 	private DataTable chartTable;
@@ -154,7 +157,9 @@ public class OTGViewer implements EntryPoint {
 				kcService.getFullData(bcs, probes, chosenValueType, true,
 						new AsyncCallback<List<ExpressionRow>>() {
 							public void onSuccess(List<ExpressionRow> result) {
-								chartDockPanel.remove(seriesChart);
+								if (seriesChart != null) {
+									chartDockPanel.remove(seriesChart);
+								}
 								seriesChart = seriesStrategy.makeChart();
 								chartDockPanel.add(seriesChart,
 										DockPanel.CENTER);
@@ -327,12 +332,7 @@ public class OTGViewer implements EntryPoint {
 				exprChart.setHeight("200px");
 				horizontalPanel.add(exprChart);
 				
-				seriesTable = DataTable.create();
-				seriesChart = new LineChart(seriesTable, lco);
-				seriesChart.setHeight("100%");
-				seriesChart.setWidth("100%");
-				chartDockPanel.add(seriesChart, DockPanel.CENTER);
-				
+				seriesTable = DataTable.create();				
 			}
 		};
 
@@ -639,7 +639,8 @@ public class OTGViewer implements EntryPoint {
 	 */
 	void updateSelections() {
 		seriesSelectionLabel.setText("Selected: " + chosenOrganism + "/" +
-	    chosenOrgan + "/"  + chosenCompound + "/" + chosenValueType + "/" + chosenProbe);
+	    chosenOrgan + "/"  + chosenCompound + "/" + chosenCellType + "/" +  chosenRepeatType + "/" + chosenValueType + "/" + chosenProbe);
+		chosenDataFilter = new DataFilter(chosenCellType, chosenOrgan, chosenRepeatType, chosenOrganism);
 	}
 
 	//----------DATA VIEWER PANEL-----------
@@ -705,49 +706,56 @@ public class OTGViewer implements EntryPoint {
 			extraCols += 1;
 		}
 
-		chartTable.removeColumns(0, chartTable.getNumberOfColumns());
-		chartTable.addColumn(ColumnType.STRING, "Probe");
+		if (chartTable != null) {
+			chartTable.removeColumns(0, chartTable.getNumberOfColumns());
+			chartTable.addColumn(ColumnType.STRING, "Probe");
 
-		int i = 0;
-		List<Barcode> selection = barcodeHandler.lastMultiSelection();
-		for (Barcode bc : selection) {
-			Column<ExpressionRow, Number> valueCol = new ExpressionColumn(nc, i);
-			exprGrid.addColumn(valueCol, bc.getShortTitle());
-			chartTable.addColumn(ColumnType.NUMBER, bc.getShortTitle());
-			i += 1;
+			int i = 0;
+			List<Barcode> selection = barcodeHandler.lastMultiSelection();
+			for (Barcode bc : selection) {
+				Column<ExpressionRow, Number> valueCol = new ExpressionColumn(
+						nc, i);
+				exprGrid.addColumn(valueCol, bc.getShortTitle());
+				chartTable.addColumn(ColumnType.NUMBER, bc.getShortTitle());
+				i += 1;
+			}
 		}
 
 	}
 
 	void getCompounds() {
-		owlimService.compounds(compoundHandler.retrieveCallback());
+		owlimService.compounds(chosenDataFilter, compoundHandler.retrieveCallback());
 	}
 
 	void getDoseLevels(String compound, String organ) {
 		doseLevelList.clear();
-		owlimService.doseLevels(compound, organ, doseHandler.retrieveCallback());
+		owlimService.doseLevels(chosenDataFilter, compound, organ, 
+				doseHandler.retrieveCallback());
 	}
 	
 	void getDosesForSeriesChart() {
 		chartSubtypeCombo.clear();
-		owlimService.doseLevels(chosenCompound, chosenOrgan.toString(), seriesChartItemsCallback);
+		owlimService.doseLevels(chosenDataFilter, chosenCompound, 
+				chosenOrgan.toString(), seriesChartItemsCallback);
 	}
 
 	void getBarcodes(String compound, String organ, String doseLevel,
 			String time) {
 		barcodeList.clear();
-		owlimService.barcodes(compound, organ, doseLevel, time,
+		owlimService.barcodes(chosenDataFilter, compound, organ, doseLevel, time,
 				barcodeHandler.retrieveCallback());
 	}
 
 	void getTimes(String compound, String organ) {
 		timeList.clear();
-		owlimService.times(compound, organ, timeHandler.retrieveCallback());
+		owlimService.times(chosenDataFilter, compound, organ, 
+				timeHandler.retrieveCallback());
 	}
 	
 	void getTimesForSeriesChart() {
 		chartSubtypeCombo.clear();
-		owlimService.times(chosenCompound, chosenOrgan.toString(), seriesChartItemsCallback);
+		owlimService.times(chosenDataFilter, chosenCompound, 
+				chosenOrgan.toString(), seriesChartItemsCallback);
 	}
 
 	void getExpressions() {
@@ -788,20 +796,20 @@ public class OTGViewer implements EntryPoint {
 			public void onSuccess(List<ExpressionRow> result) {
 				exprGrid.setRowData(start, result);
 
-				chartTable.removeRows(0, chartTable.getNumberOfRows());
-				for (int i = 0; i < result.size(); ++i) {
-					chartTable.addRow();
-					ExpressionRow row = result.get(i);
-					int cols = barcodeHandler.lastMultiSelection().size();
-					chartTable.setValue(i, 0, row.getProbe());
-					for (int j = 0; j < cols; ++j) {
-						chartTable.setValue(i, j + 1, row.getValue(j)
-								.getValue());
+				if (chartTable != null) {
+					chartTable.removeRows(0, chartTable.getNumberOfRows());
+					for (int i = 0; i < result.size(); ++i) {
+						chartTable.addRow();
+						ExpressionRow row = result.get(i);
+						int cols = barcodeHandler.lastMultiSelection().size();
+						chartTable.setValue(i, 0, row.getProbe());
+						for (int j = 0; j < cols; ++j) {
+							chartTable.setValue(i, j + 1, row.getValue(j)
+									.getValue());
+						}
+						exprChart.draw(chartTable);
 					}
-					exprChart.draw(chartTable);
-					
 				}
-
 			}
 		};
 
@@ -810,7 +818,6 @@ public class OTGViewer implements EntryPoint {
 			start = range.getStart();
 			kcService.datasetItems(range.getStart(), range.getLength(),
 					rowCallback);
-
 		}
 
 	}
@@ -820,12 +827,12 @@ public class OTGViewer implements EntryPoint {
 		//first find the applicable barcodes
 		if (chartCombo.getSelectedIndex() == 0) {
 			//select for specific dose.
-			owlimService.barcodes(chosenCompound, chosenOrgan.toString(), 
+			owlimService.barcodes(chosenDataFilter, chosenCompound, chosenOrgan.toString(), 
 					chartSubtypeCombo.getItemText(chartSubtypeCombo.getSelectedIndex()), null, 
 					seriesChartBarcodesCallback);
 		} else {
 			//select for specific time.
-			owlimService.barcodes(chosenCompound, chosenOrgan.toString(), null, 
+			owlimService.barcodes(chosenDataFilter, chosenCompound, chosenOrgan.toString(), null, 
 					chartSubtypeCombo.getItemText(chartSubtypeCombo.getSelectedIndex()), 
 					seriesChartBarcodesCallback);
 		}

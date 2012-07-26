@@ -1,6 +1,8 @@
 package otgviewer.shared;
 
-public enum RepeatType {
+import java.io.Serializable;
+
+public enum RepeatType implements Serializable {
 	Single,
 	Repeat
 }

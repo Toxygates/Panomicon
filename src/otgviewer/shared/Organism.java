@@ -1,6 +1,8 @@
 package otgviewer.shared;
 
-public enum Organism {
+import java.io.Serializable;
+
+public enum Organism implements Serializable {
 	Human,
 	Rat
 }

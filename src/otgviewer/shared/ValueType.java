@@ -1,6 +1,8 @@
 package otgviewer.shared;
 
-public enum ValueType {
+import java.io.Serializable;
+
+public enum ValueType implements Serializable {
 	Folds,
 	Absolute
 }
