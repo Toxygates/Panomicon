@@ -7,22 +7,25 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 	private String probe = "";
 	private String title = "";
 	private String geneId = "";
+	private String geneSym = "";
 	private ExpressionValue[] val = new ExpressionValue[0];;	
 	
 	public ExpressionRow() { }		
 	
-	public ExpressionRow(String _probe, String _title, String _geneId, ExpressionValue[] _val) {
+	public ExpressionRow(String _probe, String _title, String _geneId, String _geneSym, ExpressionValue[] _val) {
 		probe = _probe;
 		val = _val;
 		title = _title;		
 		geneId = _geneId;
+		geneSym = _geneSym;
 	}
 		
-	public ExpressionRow(String _probe, String _title, String _geneId, ExpressionValue _val) {
+	public ExpressionRow(String _probe, String _title, String _geneId, String _geneSym, ExpressionValue _val) {
 		probe = _probe;
 		val = new ExpressionValue[] { _val };
 		title = _title;		
 		geneId = _geneId;
+		geneSym = _geneSym;
 	}
 	
 	public boolean equals(Object o) {
@@ -50,6 +53,10 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 	
 	public String getGeneId() {
 		return geneId;
+	}
+	
+	public String getGeneSym() {
+		return geneSym;
 	}
 	
 	public int compareTo(ExpressionRow o) {		

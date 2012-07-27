@@ -1,5 +1,6 @@
 package otgviewer.client;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -10,9 +11,8 @@ import otgviewer.shared.ExpressionRow;
 
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
-import com.google.gwt.visualization.client.visualizations.corechart.BarChart;
+import com.google.gwt.visualization.client.visualizations.corechart.ColumnChart;
 import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
-import com.google.gwt.visualization.client.visualizations.corechart.LineChart;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
 
 public abstract class SeriesDisplayStrategy {
@@ -23,8 +23,8 @@ public abstract class SeriesDisplayStrategy {
 	private String[] vitroTimeColumns = new String[] { "2 hr", "8 hr", "24 hr" };
 
 	protected DataTable table;
-	private Barcode[] barcodes;
-	private String[] individuals;
+	protected Barcode[] barcodes;
+	protected String[] individuals;
 	
 	public SeriesDisplayStrategy(DataTable _table) {		
 		table = _table;
@@ -83,13 +83,35 @@ public abstract class SeriesDisplayStrategy {
 		public VsTime(DataTable table) {
 			super(table);
 		}
+		private String[] categorySubset; 
 		
-		String[] categories() { return new String[] { "2 hr", "3 hr", "6 hr", "8 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day" }; }
-		int categoryForBarcode(Barcode b) { return indexOf(categories(), b.getTime()); }
+		private String[] allCategories = new String[] { "2 hr", "3 hr", "6 hr", "8 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day" }; 
+		int categoryForBarcode(Barcode b) { return indexOf(categorySubset, b.getTime()); }
+		
+		private boolean hasBarcodeForCategory(int cat) {			
+			for (Barcode b: barcodes) {
+				if (b.getTime().equals(allCategories[cat])) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		String[] categories() {
+			ArrayList<String> r = new ArrayList<String>();
+			for (int i = 0; i < allCategories.length; ++i) {
+				if (hasBarcodeForCategory(i)) {
+					r.add(allCategories[i]);
+				}
+			}
+			categorySubset = r.toArray(new String[0]);
+			return categorySubset;
+		}
+		
 		String categoryName() { return "Time"; };
 		CoreChart makeChart() {
 			Options o = Options.create();
-			return new LineChart(table, o);
+			return new ColumnChart(table, o);
 		}
 	}
 	
@@ -103,7 +125,7 @@ public abstract class SeriesDisplayStrategy {
 		String categoryName() { return "Dose"; }
 		CoreChart makeChart() {
 			Options o = Options.create();
-			return new BarChart(table, o);
+			return new ColumnChart(table, o);
 		}
 	}
 }

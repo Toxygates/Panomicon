@@ -107,7 +107,7 @@ public class OTGViewer implements EntryPoint {
 
 	// Visible columns
 	private boolean geneIdColVis = false, probeColVis = false,
-			probeTitleColVis = true;
+			probeTitleColVis = true, geneSymColVis = true;
 
 	// Track the current selection
 	private String[] displayedProbes = null; 
@@ -294,7 +294,7 @@ public class OTGViewer implements EntryPoint {
 		});
 		menuBar_2.addItem(mntmGeneId);
 
-		MenuItem mntmProbeName = new MenuItem("Probe name", false,
+		MenuItem mntmProbeName = new MenuItem("Probe ID", false,
 				new Command() {
 					public void execute() {
 						probeColVis = !probeColVis;
@@ -303,14 +303,23 @@ public class OTGViewer implements EntryPoint {
 				});
 		menuBar_2.addItem(mntmProbeName);
 
-		MenuItem mntmGeneName = new MenuItem("Gene name", false, new Command() {
+		MenuItem mntmGeneName = new MenuItem("Probe title", false, new Command() {
 			public void execute() {
 				probeTitleColVis = !probeTitleColVis;
 				setupColumns();
 			}
 		});
-
 		menuBar_2.addItem(mntmGeneName);
+		
+
+		MenuItem mntmGeneSym = new MenuItem("Gene symbol", false, new Command() {
+			public void execute() {
+				geneSymColVis = ! geneSymColVis;				
+				setupColumns();
+			}
+		});
+		menuBar_2.addItem(mntmGeneSym);
+		
 		mntmNewMenu_1.setHTML("Columns");
 		menuBar.addItem(mntmNewMenu_1);
 
@@ -638,8 +647,17 @@ public class OTGViewer implements EntryPoint {
 	 * and this needs to be reflected.
 	 */
 	void updateSelections() {
-		seriesSelectionLabel.setText("Selected: " + chosenOrganism + "/" +
-	    chosenOrgan + "/"  + chosenCompound + "/" + chosenCellType + "/" +  chosenRepeatType + "/" + chosenValueType + "/" + chosenProbe);
+		switch (chosenCellType) {
+		case Vivo:
+			seriesSelectionLabel.setText("Selected: " + chosenOrganism + "/" +
+				    chosenOrgan + "/"  + chosenCompound + "/" + chosenCellType + "/" +  chosenRepeatType + "/" + chosenValueType + "/" + chosenProbe);
+			break;
+		case Vitro:
+			seriesSelectionLabel.setText("Selected: " + chosenOrganism + "/" +
+				     chosenCompound + "/" + chosenCellType + "/" + "/" + chosenValueType + "/" + chosenProbe);
+			break;
+		}
+		
 		chosenDataFilter = new DataFilter(chosenCellType, chosenOrgan, chosenRepeatType, chosenOrganism);
 	}
 
@@ -692,7 +710,7 @@ public class OTGViewer implements EntryPoint {
 					return er.getTitle();
 				}
 			};
-			exprGrid.addColumn(titleCol, "Title");
+			exprGrid.addColumn(titleCol, "Probe title");
 			extraCols += 1;
 		}
 
@@ -702,10 +720,20 @@ public class OTGViewer implements EntryPoint {
 					return er.getGeneId();
 				}
 			};
-			exprGrid.addColumn(geneIdCol, "Gene");
+			exprGrid.addColumn(geneIdCol, "Gene ID");
 			extraCols += 1;
 		}
 
+		if (geneSymColVis) {
+			TextColumn<ExpressionRow> geneSymCol = new TextColumn<ExpressionRow>() {
+				public String getValue(ExpressionRow er) {
+					return er.getGeneSym();
+				}
+			};
+			exprGrid.addColumn(geneSymCol, "Gene sym");
+			extraCols += 1;
+		}
+		
 		if (chartTable != null) {
 			chartTable.removeColumns(0, chartTable.getNumberOfColumns());
 			chartTable.addColumn(ColumnType.STRING, "Probe");

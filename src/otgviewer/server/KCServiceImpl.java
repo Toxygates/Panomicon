@@ -60,18 +60,21 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 			Map<String, ExprValue> r = OTGQueries.presentValuesByBarcode4J(db, barcode);
 			System.out.println("Read " + r.size() + " records");
 			List<ExpressionRow> rr = new ArrayList<ExpressionRow>();
-			List<String> probeTitles = B2RAffy.titlesForJava(r.keySet().toArray(new String[0]));
-			List<String> geneIds = B2RAffy.geneIdsForJava(r.keySet().toArray(new String[0]));
+			String[] geneKeys = r.keySet().toArray(new String[0]);
+			List<String> probeTitles = B2RAffy.titlesForJava(geneKeys);
+			List<String> geneIds = B2RAffy.geneIdsForJava(geneKeys);
+			List<String> geneSyms = B2RAffy.geneSymsForJava(geneKeys);
 			Iterator<String> ts = probeTitles.iterator();
 			Iterator<String> gs = geneIds.iterator();
+			Iterator<String> ss = geneSyms.iterator();
 			//TODO assuming ts and gs have same size
 			for (String probe: r.keySet()) {
 				ExprValue ev = r.get(probe);
 				ExpressionValue jev = new ExpressionValue(ev.value(), ev.call());
 				if (ts.hasNext()) {
-					rr.add(new ExpressionRow(probe, ts.next(), gs.next(), jev));
+					rr.add(new ExpressionRow(probe, ts.next(), gs.next(), ss.next(), jev));
 				} else {
-					rr.add(new ExpressionRow(probe, "(none)", "(none)", jev));
+					rr.add(new ExpressionRow(probe, "(none)", "(none)", "(none)", jev));
 				}
 			}
 			System.out.println("Returning " + r.size() + " data rows");
@@ -136,13 +139,13 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		return r.length;
 	}
 	
-	private ExpressionRow arrayToRow(String probe, String title, String geneId, ExprValue[] vals) {
+	private ExpressionRow arrayToRow(String probe, String title, String geneId, String geneSym, ExprValue[] vals) {
 		ExpressionValue[] vout = new ExpressionValue[vals.length];
 
 		for (int j = 0; j < vals.length; ++j) {
 			vout[j] = new ExpressionValue(vals[j].value(), vals[j].call());						
 		}
-		return new ExpressionRow(probe, title, geneId, vout);
+		return new ExpressionRow(probe, title, geneId, geneSym, vout);
 	}
 	
 	private List<ExpressionRow> arrayToRows(String[] probes, ExprValue[][] data, int offset, int size) {
@@ -153,8 +156,10 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 				B2RAffy.connect();				
 				List<String> probeTitles = B2RAffy.titlesForJava((String[]) Arrays.copyOfRange(probes, offset, offset+size));
 				List<String> geneIds = B2RAffy.geneIdsForJava((String[]) Arrays.copyOfRange(probes, offset, offset+size));
+				List<String> geneSyms = B2RAffy.geneSymsForJava((String[]) Arrays.copyOfRange(probes, offset, offset+size));
 				for (int i = offset; i < offset + size && i < probes.length && i < data.length; ++i) {					
-					r.add(arrayToRow(probes[i], probeTitles.get(i - offset), geneIds.get(i - offset), data[i]));					
+					r.add(arrayToRow(probes[i], probeTitles.get(i - offset), geneIds.get(i - offset), 
+							geneSyms.get(i - offset), data[i]));					
 				}
 			} finally {
 				B2RAffy.close();
