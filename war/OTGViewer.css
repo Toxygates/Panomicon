@@ -35,3 +35,6 @@ h1 {
 exprGrid {
 	border: 1px solid black;
 }
+.spacedLayout {
+ margin: 2px;
+}

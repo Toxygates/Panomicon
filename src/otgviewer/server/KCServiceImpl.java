@@ -1,6 +1,5 @@
 package otgviewer.server;
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -16,7 +15,10 @@ import kyotocabinet.DB;
 import otg.B2RAffy;
 import otg.ExprValue;
 import otg.OTGQueries;
+import otg.CSVHelper;
+import otg.Species;
 import otgviewer.client.KCService;
+import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.ExpressionValue;
 import otgviewer.shared.ValueType;
@@ -45,28 +47,28 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		super.destroy();
 	}
 	
-	public List<ExpressionRow> absoluteValues(String barcode) {
-		return valuesFromDb(barcode, absDB);		
+	public List<ExpressionRow> absoluteValues(DataFilter filter, String barcode) {
+		return valuesFromDb(filter, barcode, absDB);		
 	}
 	
-	public List<ExpressionRow> foldValues(String barcode) {
-		return valuesFromDb(barcode, foldsDB);
+	public List<ExpressionRow> foldValues(DataFilter filter, String barcode) {
+		return valuesFromDb(filter, barcode, foldsDB);
 	}
 	
-	private List<ExpressionRow> valuesFromDb(String barcode, DB db) {
-		
+	private List<ExpressionRow> valuesFromDb(DataFilter filter, String barcode, DB db) {
+		Species s = Utils.speciesFromFilter(filter);
 		B2RAffy.connect();		
 		try {			
-			Map<String, ExprValue> r = OTGQueries.presentValuesByBarcode4J(db, barcode);
+			Map<String, ExprValue> r = OTGQueries.presentValuesByBarcode4J(db, barcode, s);
 			System.out.println("Read " + r.size() + " records");
 			List<ExpressionRow> rr = new ArrayList<ExpressionRow>();
 			String[] geneKeys = r.keySet().toArray(new String[0]);
 			List<String> probeTitles = B2RAffy.titlesForJava(geneKeys);
-			List<String> geneIds = B2RAffy.geneIdsForJava(geneKeys);
-			List<String> geneSyms = B2RAffy.geneSymsForJava(geneKeys);
+			List<String[]> geneIds = B2RAffy.geneIdsForJava(geneKeys);
+			List<String[]> geneSyms = B2RAffy.geneSymsForJava(geneKeys);
 			Iterator<String> ts = probeTitles.iterator();
-			Iterator<String> gs = geneIds.iterator();
-			Iterator<String> ss = geneSyms.iterator();
+			Iterator<String[]> gs = geneIds.iterator();
+			Iterator<String[]> ss = geneSyms.iterator();
 			//TODO assuming ts and gs have same size
 			for (String probe: r.keySet()) {
 				ExprValue ev = r.get(probe);
@@ -74,7 +76,7 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 				if (ts.hasNext()) {
 					rr.add(new ExpressionRow(probe, ts.next(), gs.next(), ss.next(), jev));
 				} else {
-					rr.add(new ExpressionRow(probe, "(none)", "(none)", "(none)", jev));
+					rr.add(new ExpressionRow(probe, "(none)", new String[0], new String[0], jev));
 				}
 			}
 			System.out.println("Returning " + r.size() + " data rows");
@@ -84,27 +86,24 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		}
 	}
 	
-	private String[] filterProbes(String[] probes) {
-		String homePath = System.getProperty("otg.home");
-		String[] realProbes = probes;
 
+	private String[] filterProbes(DataFilter filter, String[] probes) {	
+		String[] realProbes = probes;
+		Species s = Utils.speciesFromFilter(filter);
 		if (probes == null) {
 			// get all probes
-			realProbes = OTGQueries.probes(homePath + "/rat.probes.txt");
+			realProbes = OTGQueries.probeIds(s);
 		} else {
-			realProbes = OTGQueries.filterProbes(probes, homePath
-					+ "/rat.probes.txt");
+			realProbes = OTGQueries.filterProbes(probes, s);					
 		}
 		System.out.println(realProbes.length
 				+ " probes requested after filtering");
 		return realProbes;
 	}
 	
-	private ExprValue[][] getExprValues(List<String> barcodes, String[] probes,
+	private ExprValue[][] getExprValues(DataFilter filter, List<String> barcodes, String[] probes,
 			ValueType type, boolean sparseRead) {
 		DB db = null;
-		String homePath = System.getProperty("otg.home");
-
 		if (barcodes == null) {
 			return new ExprValue[0][0];
 		}
@@ -118,18 +117,20 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 			break;
 		}
 		return OTGQueries.presentValuesByBarcodesAndProbes4J(db, barcodes,
-				probes, sparseRead);
+				probes, sparseRead, Utils.speciesFromFilter(filter));
 
 	}
 	
-	public int loadDataset(List<String> barcodes, String[] probes, ValueType type) {
+	public int loadDataset(DataFilter filter, List<String> barcodes, String[] probes, ValueType type) {
 		HttpServletRequest request = getThreadLocalRequest();
 		HttpSession session = request.getSession();
-		String[] realProbes = filterProbes(probes);
-		ExprValue[][] r = getExprValues(barcodes, realProbes, type, false);
+		
+		String[] realProbes = filterProbes(filter, probes);
+		ExprValue[][] r = getExprValues(filter, barcodes, realProbes, type, false);
 
 		session.setAttribute("dataset", r);
 		session.setAttribute("datasetProbes", realProbes);
+		session.setAttribute("datasetBarcodes", barcodes.toArray(new String[0]));
 		if (r.length > 0) {
 			System.out.println("Stored " + r.length + " x " + r[0].length
 					+ " items in session, " + realProbes.length + " probes");
@@ -139,13 +140,13 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		return r.length;
 	}
 	
-	private ExpressionRow arrayToRow(String probe, String title, String geneId, String geneSym, ExprValue[] vals) {
+	private ExpressionRow arrayToRow(String probe, String title, String[] geneIds, String[] geneSyms, ExprValue[] vals) {
 		ExpressionValue[] vout = new ExpressionValue[vals.length];
 
 		for (int j = 0; j < vals.length; ++j) {
 			vout[j] = new ExpressionValue(vals[j].value(), vals[j].call());						
 		}
-		return new ExpressionRow(probe, title, geneId, geneSym, vout);
+		return new ExpressionRow(probe, title, geneIds, geneSyms, vout);
 	}
 	
 	private List<ExpressionRow> arrayToRows(String[] probes, ExprValue[][] data, int offset, int size) {
@@ -155,8 +156,8 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 			try {
 				B2RAffy.connect();				
 				List<String> probeTitles = B2RAffy.titlesForJava((String[]) Arrays.copyOfRange(probes, offset, offset+size));
-				List<String> geneIds = B2RAffy.geneIdsForJava((String[]) Arrays.copyOfRange(probes, offset, offset+size));
-				List<String> geneSyms = B2RAffy.geneSymsForJava((String[]) Arrays.copyOfRange(probes, offset, offset+size));
+				List<String[]> geneIds = B2RAffy.geneIdsForJava((String[]) Arrays.copyOfRange(probes, offset, offset+size));
+				List<String[]> geneSyms = B2RAffy.geneSymsForJava((String[]) Arrays.copyOfRange(probes, offset, offset+size));
 				for (int i = offset; i < offset + size && i < probes.length && i < data.length; ++i) {					
 					r.add(arrayToRow(probes[i], probeTitles.get(i - offset), geneIds.get(i - offset), 
 							geneSyms.get(i - offset), data[i]));					
@@ -181,10 +182,23 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 	}
 	
 	
-	public List<ExpressionRow> getFullData(List<String> barcodes, String[] probes, ValueType type, boolean sparseRead) {
-		String[] realProbes = filterProbes(probes);
-		ExprValue[][] r = getExprValues(barcodes, realProbes, type, sparseRead);
+	public List<ExpressionRow> getFullData(DataFilter filter, List<String> barcodes, 
+			String[] probes, ValueType type, boolean sparseRead) {
+		String[] realProbes = filterProbes(filter, probes);
+		ExprValue[][] r = getExprValues(filter, barcodes, realProbes, type, sparseRead);
 		return arrayToRows(realProbes, r, 0, r.length);
 		
+	}
+	
+	public String prepareCSVDownload() {
+		HttpServletRequest request = getThreadLocalRequest();
+		HttpSession session = request.getSession();
+		ExprValue[][] data = (ExprValue[][]) session.getAttribute("dataset");		
+		if (data != null) {
+			System.out.println("I had " + (data).length + " rows stored");
+		}
+		String[] probes = (String[]) session.getAttribute("datasetProbes");
+		String[] barcodes = (String[]) session.getAttribute("datasetBarcodes"); //todo: more helpful names would be good
+		return CSVHelper.writeCSV(probes, barcodes, data);	
 	}
 }

@@ -8,6 +8,7 @@ import otg.B2RKegg;
 import otg.BCode;
 import otg.CHEMBL;
 import otg.OTGOwlim;
+import otg.Species;
 import otg.OTGQueries;
 import otgviewer.client.OwlimService;
 import otgviewer.shared.Barcode;
@@ -67,41 +68,41 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 		return B2RAffy.title(probe);					
 	}
 	
-	public String[] probes(DataFilter filter) {
-		String homePath = System.getProperty("otg.home");
-		return OTGQueries.probes(homePath + "/rat.probes.txt");
+	public String[] probes(DataFilter filter) {		
+		return OTGQueries.probeIds(Utils.speciesFromFilter(filter));
 	}
 	
-	public String[] pathways(String pattern) {
+	public String[] pathways(DataFilter filter, String pattern) {
 		try {
 			B2RKegg.connect();
-			return B2RKegg.pathways(pattern, "rno");
+			Species s = Utils.speciesFromFilter(filter);
+			return B2RKegg.pathways(pattern, s);
 		} finally {
 			B2RKegg.close();
 		}		
 	}
 	
-	public String[] probesForPathway(String pathway) {
+	public String[] probesForPathway(DataFilter filter, String pathway) {
 		try {
-			B2RKegg.connect();			
-			String homePath = System.getProperty("otg.home");
-			String[] geneIds = B2RKegg.geneIds(pathway, "rno");
+			B2RKegg.connect();						
+			Species s = Utils.speciesFromFilter(filter);
+			String[] geneIds = B2RKegg.geneIds(pathway, s);
 			System.out.println("Probes for " + geneIds.length + " genes");
 			String [] probes = OTGOwlim.probesForEntrezGenes(geneIds);
-			return OTGQueries.filterProbes(probes, homePath + "/rat.probes.txt");			
+			return OTGQueries.filterProbes(probes, s);			
 		} finally {
 			B2RKegg.close();			
 		}		
 	}
 	
-	public String[] probesTargetedByCompound(String compound) {
+	public String[] probesTargetedByCompound(DataFilter filter, String compound) {
 		try {
 			CHEMBL.connect();			
-			String homePath = System.getProperty("otg.home");
-			String[] prots = CHEMBL.targetProtsForCompound(compound, "Rattus norvegicus");
+			Species s = Utils.speciesFromFilter(filter);			
+			String[] prots = CHEMBL.targetProtsForCompound(compound, s);
 			System.out.println("Probes for " + prots.length + " genes");
 			String [] probes = OTGOwlim.probesForUniprot(prots);
-			return OTGQueries.filterProbes(probes, homePath + "/rat.probes.txt");			
+			return OTGQueries.filterProbes(probes, s);			
 		} finally {
 			CHEMBL.close();			
 		}		

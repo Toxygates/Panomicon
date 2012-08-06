@@ -60,6 +60,7 @@ import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 import com.google.gwt.visualization.client.visualizations.corechart.LineChart;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
+import com.google.gwt.user.client.ui.TextArea;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -104,6 +105,7 @@ public class OTGViewer implements EntryPoint {
 	private MultiSelectionHandler<Barcode> barcodeHandler;
 
 	private TextBox pathwayBox;
+	private TextArea customProbeText;
 
 	// Visible columns
 	private boolean geneIdColVis = false, probeColVis = false,
@@ -154,7 +156,7 @@ public class OTGViewer implements EntryPoint {
 			} else {
 				String[] probes = new String[] { chosenProbe };
 
-				kcService.getFullData(bcs, probes, chosenValueType, true,
+				kcService.getFullData(chosenDataFilter, bcs, probes, chosenValueType, true,
 						new AsyncCallback<List<ExpressionRow>>() {
 							public void onSuccess(List<ExpressionRow> result) {
 								if (seriesChart != null) {
@@ -282,6 +284,25 @@ public class OTGViewer implements EntryPoint {
 		menuBar_1.addItem(mntmAbsoluteValues);
 		mntmNewMenu.setHTML("Data set");
 		menuBar.addItem(mntmNewMenu);
+		MenuBar menuBar_3 = new MenuBar(true);
+		
+		MenuItem mntmActions_1 = new MenuItem("Actions", false, menuBar_3);
+		
+		MenuItem mntmDownloadCsv = new MenuItem("Download CSV", false, new Command() {
+			public void execute() {
+				kcService.prepareCSVDownload(new AsyncCallback<String>() {
+					public void onFailure(Throwable caught) {
+						Window.alert("Unable to prepare the requested data for download.");
+					}
+					public void onSuccess(String url) {
+						Window.open(url, "_blank", "");
+					}
+				});
+				
+			}
+		});
+		menuBar_3.addItem(mntmDownloadCsv);		
+		menuBar.addItem(mntmActions_1);
 		MenuBar menuBar_2 = new MenuBar(true);
 
 		MenuItem mntmNewMenu_1 = new MenuItem("New menu", false, menuBar_2);
@@ -345,7 +366,7 @@ public class OTGViewer implements EntryPoint {
 			}
 		};
 
-		VisualizationUtils.loadVisualizationApi(onLoadChart, "corechart");
+		VisualizationUtils.loadVisualizationApi("1.1", onLoadChart, "corechart");
 
 		// Add the nameField and sendButton to the RootPanel
 		// Use RootPanel.get() to get the entire body element
@@ -362,15 +383,17 @@ public class OTGViewer implements EntryPoint {
 		
 
 		HorizontalSplitPanel horizontalSplitPanel = new HorizontalSplitPanel();
+		horizontalSplitPanel.setStyleName("spacedLayout");
 		horizontalSplitPanel.setSplitPosition("200px");
 		verticalPanel_3.add(horizontalSplitPanel);
 		horizontalSplitPanel.setSize("100%", "800px");
 
 		//PATHWAY SEARCH
 		VerticalPanel verticalPanel_2 = new VerticalPanel();
+		verticalPanel_2.setStyleName("spacedLayout");
 		verticalPanel_2.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		horizontalSplitPanel.setLeftWidget(verticalPanel_2);
-		verticalPanel_2.setBorderWidth(1);
+		verticalPanel_2.setBorderWidth(0);
 		verticalPanel_2.setSize("100%", "");
 
 		Label lblPathwaySearch = new Label("Pathway search");
@@ -390,13 +413,13 @@ public class OTGViewer implements EntryPoint {
 
 		pathwayList = new ListBox();
 		verticalPanel_2.add(pathwayList);
-		pathwayList.setSize("100%", "389px");
+		pathwayList.setSize("100%", "309px");
 		pathwayList.setVisibleItemCount(5);
 
 		pathwayHandler = new ListSelectionHandler<String>("pathways",
 				pathwayList, false) {
 			protected void getUpdates(String pathway) {
-				owlimService.probesForPathway(pathway, new AsyncCallback<String[]>() {
+				owlimService.probesForPathway(chosenDataFilter, pathway, new AsyncCallback<String[]>() {
 					public void onFailure(Throwable caught) {
 						Window.alert("Unable to get probes.");
 					}
@@ -408,26 +431,14 @@ public class OTGViewer implements EntryPoint {
 				});
 			}
 		};
-
-		Button btnShowAllProbes = new Button("Show all probes");
-		verticalPanel_2.add(btnShowAllProbes);
-		btnShowAllProbes.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent ev) {
-				displayedProbes = null;
-				if (pathwayList.getSelectedIndex() != -1) {
-					pathwayList.setItemSelected(pathwayList.getSelectedIndex(),
-							false);
-				}
-				getExpressions();
-			}
-		});
 		
 		Button btnShowCompoundTargets = new Button("Show CHEMBL targets");
 		verticalPanel_2.add(btnShowCompoundTargets);
 		btnShowCompoundTargets.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent ev) {
 				if (chosenCompound != null) {
-					owlimService.probesTargetedByCompound(chosenCompound, new AsyncCallback<String[]>() {
+					owlimService.probesTargetedByCompound(chosenDataFilter, chosenCompound, 
+							new AsyncCallback<String[]>() {
 						public void onFailure(Throwable caught) {
 							Window.alert("Unable to get probes.");
 						}
@@ -440,6 +451,42 @@ public class OTGViewer implements EntryPoint {
 				} else {
 					Window.alert("Please select a compound first.");
 				}
+			}
+		});
+		
+		Label lblEnterProbesManually = new Label("Custom probe list");
+		verticalPanel_2.add(lblEnterProbesManually);
+		
+		customProbeText = new TextArea();
+		verticalPanel_2.add(customProbeText);
+		customProbeText.setSize("95%", "100px");
+		
+		Button btnShowCustomProbes = new Button("Show custom probes");
+		verticalPanel_2.add(btnShowCustomProbes);
+		btnShowCustomProbes.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent ev) {
+				String text = customProbeText.getText();
+				String[] split = text.split("\n");
+				if (split.length == 0) {
+					Window.alert("Please enter probes, genes or proteins in the text box and try again.");					
+				} else {
+					//TODO look up genes or proteins, etc in case they are not probe IDs
+					displayedProbes = split;
+					getExpressions();
+				}
+			}
+		});
+
+		Button btnShowAllProbes = new Button("Show all probes");
+		verticalPanel_2.add(btnShowAllProbes);
+		btnShowAllProbes.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent ev) {
+				displayedProbes = null;
+				if (pathwayList.getSelectedIndex() != -1) {
+					pathwayList.setItemSelected(pathwayList.getSelectedIndex(),
+							false);
+				}
+				getExpressions();
 			}
 		});
 
@@ -682,6 +729,17 @@ public class OTGViewer implements EntryPoint {
 		}
 	}
 	
+	private String arrayString(String[] ss) {
+		String r = "";
+		for (int i = 0; i < ss.length; ++i) {		
+			r += ss[i];
+			if (i < ss.length - 1) {
+				r += ", ";
+			}
+		}
+		return r;
+	}
+	
 	private void setupColumns() {
 		// todo: explicitly set the width of each column
 		NumberCell nc = new NumberCell();
@@ -717,7 +775,7 @@ public class OTGViewer implements EntryPoint {
 		if (geneIdColVis) {
 			TextColumn<ExpressionRow> geneIdCol = new TextColumn<ExpressionRow>() {
 				public String getValue(ExpressionRow er) {
-					return er.getGeneId();
+					return arrayString(er.getGeneIds());
 				}
 			};
 			exprGrid.addColumn(geneIdCol, "Gene ID");
@@ -727,7 +785,7 @@ public class OTGViewer implements EntryPoint {
 		if (geneSymColVis) {
 			TextColumn<ExpressionRow> geneSymCol = new TextColumn<ExpressionRow>() {
 				public String getValue(ExpressionRow er) {
-					return er.getGeneSym();
+					return arrayString(er.getGeneSyms());
 				}
 			};
 			exprGrid.addColumn(geneSymCol, "Gene sym");
@@ -794,7 +852,7 @@ public class OTGViewer implements EntryPoint {
 			codes.add(code.getCode());
 		}
 
-		kcService.loadDataset(codes, displayedProbes, chosenValueType,
+		kcService.loadDataset(chosenDataFilter, codes, displayedProbes, chosenValueType,
 				new AsyncCallback<Integer>() {
 					public void onFailure(Throwable caught) {
 						Window.alert("Unable to load dataset.");
@@ -810,7 +868,7 @@ public class OTGViewer implements EntryPoint {
 	}
 
 	void getPathways(String pattern) {
-		owlimService.pathways(pattern, pathwayHandler.retrieveCallback());
+		owlimService.pathways(chosenDataFilter, pattern, pathwayHandler.retrieveCallback());
 	}
 
 	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
@@ -835,7 +893,8 @@ public class OTGViewer implements EntryPoint {
 							chartTable.setValue(i, j + 1, row.getValue(j)
 									.getValue());
 						}
-						exprChart.draw(chartTable);
+						
+						exprChart.draw(chartTable);						
 					}
 				}
 			}

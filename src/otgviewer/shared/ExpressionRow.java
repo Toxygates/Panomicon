@@ -6,26 +6,26 @@ import java.util.Arrays;
 public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 	private String probe = "";
 	private String title = "";
-	private String geneId = "";
-	private String geneSym = "";
-	private ExpressionValue[] val = new ExpressionValue[0];;	
+	private String[] geneIds = new String[0];
+	private String[] geneSyms = new String[0];
+	private ExpressionValue[] val = new ExpressionValue[0];	
 	
 	public ExpressionRow() { }		
 	
-	public ExpressionRow(String _probe, String _title, String _geneId, String _geneSym, ExpressionValue[] _val) {
+	public ExpressionRow(String _probe, String _title, String[] _geneId, String[] _geneSym, ExpressionValue[] _val) {
 		probe = _probe;
 		val = _val;
 		title = _title;		
-		geneId = _geneId;
-		geneSym = _geneSym;
+		geneIds = _geneId;
+		geneSyms = _geneSym;
 	}
 		
-	public ExpressionRow(String _probe, String _title, String _geneId, String _geneSym, ExpressionValue _val) {
+	public ExpressionRow(String _probe, String _title, String[] _geneId, String[] _geneSym, ExpressionValue _val) {
 		probe = _probe;
 		val = new ExpressionValue[] { _val };
 		title = _title;		
-		geneId = _geneId;
-		geneSym = _geneSym;
+		geneIds = _geneId;
+		geneSyms = _geneSym;
 	}
 	
 	public boolean equals(Object o) {
@@ -51,12 +51,12 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 		return title;
 	}	
 	
-	public String getGeneId() {
-		return geneId;
+	public String[] getGeneIds() {
+		return geneIds;
 	}
 	
-	public String getGeneSym() {
-		return geneSym;
+	public String[] getGeneSyms() {
+		return geneSyms;
 	}
 	
 	public int compareTo(ExpressionRow o) {		

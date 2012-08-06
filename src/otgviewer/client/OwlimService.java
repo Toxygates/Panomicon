@@ -22,14 +22,14 @@ public interface OwlimService extends RemoteService {
 	 * @param pattern
 	 * @return
 	 */
-	public String[] pathways(String pattern);
+	public String[] pathways(DataFilter filter, String pattern);
 	
 	/**
 	 * Obtain probes that belong to the named pathway.
 	 * @param pathway
 	 * @return
 	 */
-	public String[] probesForPathway(String pathway);
+	public String[] probesForPathway(DataFilter filter, String pathway);
 	
 	/**
 	 * Obtain probes that correspond to proteins targeted by
@@ -37,5 +37,5 @@ public interface OwlimService extends RemoteService {
 	 * @param compound
 	 * @return
 	 */
-	public String[] probesTargetedByCompound(String compound);
+	public String[] probesTargetedByCompound(DataFilter filter, String compound);
 }

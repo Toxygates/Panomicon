@@ -15,7 +15,7 @@ public interface OwlimServiceAsync {
 	public void times(DataFilter filter, String compound, String organ, AsyncCallback<String[]> callback);	
 	public void probes(DataFilter filter, AsyncCallback<String[]> callback);
 	
-	public void pathways(String pattern, AsyncCallback<String[]> callback);
-	public void probesForPathway(String pathway, AsyncCallback<String[]> callback);
-	public void probesTargetedByCompound(String compound, AsyncCallback<String[]> callback);
+	public void pathways(DataFilter filter, String pattern, AsyncCallback<String[]> callback);
+	public void probesForPathway(DataFilter filter, String pathway, AsyncCallback<String[]> callback);
+	public void probesTargetedByCompound(DataFilter filter, String compound, AsyncCallback<String[]> callback);
 }
