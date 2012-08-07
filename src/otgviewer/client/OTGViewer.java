@@ -130,7 +130,9 @@ public class OTGViewer implements EntryPoint {
 		
 		public void onSuccess(String[] result) {
 			for (String i: result) {
-				chartSubtypeCombo.addItem(i);
+				if (! i.equals("Control")) {
+					chartSubtypeCombo.addItem(i);
+				}
 			}
 			if (result.length > 0) {
 				chartSubtypeCombo.setSelectedIndex(0);
@@ -470,9 +472,17 @@ public class OTGViewer implements EntryPoint {
 				if (split.length == 0) {
 					Window.alert("Please enter probes, genes or proteins in the text box and try again.");					
 				} else {
-					//TODO look up genes or proteins, etc in case they are not probe IDs
-					displayedProbes = split;
-					getExpressions();
+					//change the identifiers (which can be mixed format) into a homogenous format (probes only)
+					//todo: might want to display some kind of progress indicator
+					kcService.identifiersToProbes(chosenDataFilter, split, new AsyncCallback<String[]>() {
+						public void onSuccess(String[] probes) {
+							displayedProbes = probes;
+							getExpressions();
+						}
+						public void onFailure(Throwable caught) {
+							
+						}
+					});
 				}
 			}
 		});

@@ -17,6 +17,7 @@ import otg.ExprValue;
 import otg.OTGQueries;
 import otg.CSVHelper;
 import otg.Species;
+import otg.OTGMisc;
 import otgviewer.client.KCService;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
@@ -99,6 +100,14 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		System.out.println(realProbes.length
 				+ " probes requested after filtering");
 		return realProbes;
+	}
+	
+	public String[] identifiersToProbes(DataFilter filter, String[] identifiers) {
+		//convert identifiers such as proteins, genes etc to probes.
+		Species s = Utils.speciesFromFilter(filter);
+		String[] r = OTGMisc.identifiersToProbes(s, identifiers);
+		System.out.println("Converted " + identifiers.length + " into " + r.length + " probes.");
+		return r;
 	}
 	
 	private ExprValue[][] getExprValues(DataFilter filter, List<String> barcodes, String[] probes,

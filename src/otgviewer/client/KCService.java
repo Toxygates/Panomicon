@@ -16,6 +16,8 @@ public interface KCService extends RemoteService {
 	public List<ExpressionRow> absoluteValues(DataFilter filter, String barcode);	
 	public List<ExpressionRow> foldValues(DataFilter filter, String barcode);
 	
+	public String[] identifiersToProbes(DataFilter filter, String[] identifiers);
+	
 	//Set up paging.
 	public int loadDataset(DataFilter filter, List<String> barcodes, String[] probes, ValueType type);
 	//Get one page.
