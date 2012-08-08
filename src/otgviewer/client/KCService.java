@@ -13,20 +13,42 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 @RemoteServiceRelativePath("KC")
 public interface KCService extends RemoteService {
 
-	public List<ExpressionRow> absoluteValues(DataFilter filter, String barcode);	
-	public List<ExpressionRow> foldValues(DataFilter filter, String barcode);
-	
 	public String[] identifiersToProbes(DataFilter filter, String[] identifiers);
 	
-	//Set up paging.
+	/**
+	 * Load data into the user's session.
+	 * @param filter
+	 * @param barcodes
+	 * @param probes
+	 * @param type
+	 * @return
+	 */
 	public int loadDataset(DataFilter filter, List<String> barcodes, String[] probes, ValueType type);
-	//Get one page.
+	
+	/**
+	 * Get one page. Requires that loadDataset was first used to load items.
+	 * @param offset
+	 * @param size
+	 * @return
+	 */
 	public List<ExpressionRow> datasetItems(int offset, int size);
 	
-	//Get all data immediately.
+	/**
+	 * Get all data immediately. Requires that loadDataset was first used to load items.
+	 * @param filter
+	 * @param barcodes
+	 * @param probes
+	 * @param type
+	 * @param sparseRead
+	 * @return
+	 */
 	public List<ExpressionRow> getFullData(DataFilter filter, List<String> barcodes, String[] probes, 
 			ValueType type, boolean sparseRead);
 	
-	//Prepare a CSV file representing the loaded data for download. Returns a URL that may be used for downloading.
+	/**
+	 * Prepare a CSV file representing the loaded data for download. Returns a URL that may be used for downloading.
+	 * Requires that loadDataset was first used to load items.
+	 * @return
+	 */
 	public String prepareCSVDownload();
 }

@@ -46,47 +46,7 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		foldsDB.close();
 		absDB.close();
 		super.destroy();
-	}
-	
-	public List<ExpressionRow> absoluteValues(DataFilter filter, String barcode) {
-		return valuesFromDb(filter, barcode, absDB);		
-	}
-	
-	public List<ExpressionRow> foldValues(DataFilter filter, String barcode) {
-		return valuesFromDb(filter, barcode, foldsDB);
-	}
-	
-	private List<ExpressionRow> valuesFromDb(DataFilter filter, String barcode, DB db) {
-		Species s = Utils.speciesFromFilter(filter);
-		B2RAffy.connect();		
-		try {			
-			Map<String, ExprValue> r = OTGQueries.presentValuesByBarcode4J(db, barcode, s);
-			System.out.println("Read " + r.size() + " records");
-			List<ExpressionRow> rr = new ArrayList<ExpressionRow>();
-			String[] geneKeys = r.keySet().toArray(new String[0]);
-			List<String> probeTitles = B2RAffy.titlesForJava(geneKeys);
-			List<String[]> geneIds = B2RAffy.geneIdsForJava(geneKeys);
-			List<String[]> geneSyms = B2RAffy.geneSymsForJava(geneKeys);
-			Iterator<String> ts = probeTitles.iterator();
-			Iterator<String[]> gs = geneIds.iterator();
-			Iterator<String[]> ss = geneSyms.iterator();
-			//TODO assuming ts and gs have same size
-			for (String probe: r.keySet()) {
-				ExprValue ev = r.get(probe);
-				ExpressionValue jev = new ExpressionValue(ev.value(), ev.call());
-				if (ts.hasNext()) {
-					rr.add(new ExpressionRow(probe, ts.next(), gs.next(), ss.next(), jev));
-				} else {
-					rr.add(new ExpressionRow(probe, "(none)", new String[0], new String[0], jev));
-				}
-			}
-			System.out.println("Returning " + r.size() + " data rows");
-			return rr;
-		} finally {
-			B2RAffy.close();
-		}
-	}
-	
+	}	
 
 	private String[] filterProbes(DataFilter filter, String[] probes) {	
 		String[] realProbes = probes;

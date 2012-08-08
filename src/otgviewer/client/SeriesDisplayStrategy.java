@@ -19,10 +19,10 @@ import com.google.gwt.visualization.client.visualizations.corechart.Options;
 
 public abstract class SeriesDisplayStrategy {
 	
-	private String[] singleTimeColumns = new String[] { "3 hr", "6 hr", "9 hr", "24 hr" };
-	private String[] repeatTimeColumns = new String[] { "4 day", "8 day", "15 day", "29 day" };
-	
-	private String[] vitroTimeColumns = new String[] { "2 hr", "8 hr", "24 hr" };
+//	private String[] singleTimeColumns = new String[] { "3 hr", "6 hr", "9 hr", "24 hr" };
+//	private String[] repeatTimeColumns = new String[] { "4 day", "8 day", "15 day", "29 day" };
+//	
+//	private String[] vitroTimeColumns = new String[] { "2 hr", "8 hr", "24 hr" };
 
 	protected DataTable table;
 	protected Barcode[] barcodes;
@@ -119,7 +119,9 @@ public abstract class SeriesDisplayStrategy {
 		}
 		private String[] categorySubset; 
 		
-		private String[] allCategories = new String[] { "2 hr", "3 hr", "6 hr", "8 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day" }; 
+		public final static String[] allTimes = new String[] { "2 hr", "3 hr", "6 hr", "8 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day" };		
+		private String[] allCategories = allTimes; 
+		
 		int categoryForBarcode(Barcode b) { return indexOf(categorySubset, b.getTime()); }
 		
 		private boolean hasBarcodeForCategory(int cat) {			
@@ -154,7 +156,8 @@ public abstract class SeriesDisplayStrategy {
 			super(table);
 		}
 		
-		String[] categories() { return new String[] { "Low", "Middle", "High" }; }
+		public static final String[] allDoses = new String[] { "Control", "Low", "Middle", "High" };
+		String[] categories() { return allDoses; }
 		int categoryForBarcode(Barcode b) { return indexOf(categories(), b.getDose()); }
 		String categoryName() { return "Dose"; }
 		CoreChart makeChart() {

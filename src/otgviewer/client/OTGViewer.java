@@ -297,7 +297,7 @@ public class OTGViewer implements EntryPoint {
 						Window.alert("Unable to prepare the requested data for download.");
 					}
 					public void onSuccess(String url) {
-						Window.open(url, "_blank", "");
+						Window.open(url, "", "");
 					}
 				});
 				
@@ -564,7 +564,7 @@ public class OTGViewer implements EntryPoint {
 		doseLevelList.setSize("10em", "100px");
 
 		doseHandler = new ListSelectionHandler<String>("dose levels",
-				doseLevelList, true) {
+				doseLevelList, true, SeriesDisplayStrategy.VsDose.allDoses) {
 			protected void getUpdates(String dose) {
 				updateSelections();
 				getBarcodes(compoundHandler.lastSelected(),
@@ -582,7 +582,7 @@ public class OTGViewer implements EntryPoint {
 		verticalPanel_4.add(timeList);
 		timeList.setSize("10em", "100px");
 
-		timeHandler = new ListSelectionHandler<String>("times", timeList, true) {
+		timeHandler = new ListSelectionHandler<String>("times", timeList, true, SeriesDisplayStrategy.VsTime.allTimes) {
 			protected void getUpdates(String time) {
 				updateSelections();
 				getBarcodes(compoundHandler.lastSelected(),
