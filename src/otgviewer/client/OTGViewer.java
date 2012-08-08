@@ -23,6 +23,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.cellview.client.Column;
@@ -63,6 +65,8 @@ import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 import com.google.gwt.visualization.client.visualizations.corechart.LineChart;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
+import com.google.gwt.i18n.client.HasDirection.Direction;
+import com.google.gwt.user.client.ui.DoubleBox;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -76,6 +80,11 @@ public class OTGViewer implements EntryPoint {
 	private KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
 
+	private RootPanel rootPanel;
+	private VerticalPanel mainVertPanel;
+	private HorizontalSplitPanel horizontalSplitPanel;
+	private MenuBar menuBar;
+	
 	enum DataSet {
 		HumanVitro, RatVitro, RatVivoKidneySingle, RatVivoKidneyRepeat, RatVivoLiverSingle, RatVivoLiverRepeat
 	}
@@ -96,6 +105,7 @@ public class OTGViewer implements EntryPoint {
 	private ListBox pathwayList, compoundList, doseLevelList, timeList,
 			barcodeList;
 	private HorizontalPanel horizontalPanel;
+	private DoubleBox absValBox;
 	
 	private ListDataProvider<ExpressionRow> listDataProvider;
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
@@ -270,13 +280,13 @@ public class OTGViewer implements EntryPoint {
 		MenuItem mntmFolds = new MenuItem("Fold values", false, new Command() {
 			public void execute() {
 				chosenValueType = ValueType.Folds;
-				updateSelections();
+				updateSelections();				
 				getExpressions();
 			}
 		});
 		menuBar_1.addItem(mntmFolds);
 
-		MenuItem mntmAbsoluteValues = new MenuItem("Absolute values", false,
+		MenuItem mntmAbsoluteValues = new MenuItem("Absolute expression values", false,
 				new Command() {
 					public void execute() {
 						chosenValueType = ValueType.Absolute;
@@ -353,6 +363,18 @@ public class OTGViewer implements EntryPoint {
 		return menuBar;
 	}
 	
+	private void resizeInterface(int newHeight) {
+		//this is very fiddly and must be tested on all the browsers.
+		//Note that simply setting height = 100% won't work.
+		String h = (newHeight - rootPanel.getAbsoluteTop() - 20) + "px";
+		rootPanel.setHeight(h);
+		mainVertPanel.setHeight(h);
+		String h2 = (newHeight - horizontalSplitPanel.getAbsoluteTop() - 30) + "px";
+		horizontalSplitPanel.setHeight(h2);
+		String h3 = (newHeight - exprGrid.getAbsoluteTop() - 40) + "px";
+		exprGrid.setHeight(h3);	
+	}
+	
 	/**
 	 * This is the entry point method.
 	 */
@@ -365,31 +387,34 @@ public class OTGViewer implements EntryPoint {
 				exprChart.setWidth("300px");
 				exprChart.setHeight("200px");
 				horizontalPanel.add(exprChart);
-				
 				seriesTable = DataTable.create();				
 			}
 		};
 
 		VisualizationUtils.loadVisualizationApi("1.1", onLoadChart, "corechart");
 
-		// Add the nameField and sendButton to the RootPanel
-		// Use RootPanel.get() to get the entire body element
-		RootPanel rootPanel = RootPanel.get("rootPanelContainer");
+		rootPanel = RootPanel.get("rootPanelContainer");
 		rootPanel.setSize("100%", "100%");
 		rootPanel.getElement().getStyle().setPosition(Position.RELATIVE);
 
-		VerticalPanel verticalPanel_3 = new VerticalPanel();
-		verticalPanel_3.setBorderWidth(0);
-		rootPanel.add(verticalPanel_3);
-		verticalPanel_3.setSize("100%", "100%");
-
-		verticalPanel_3.add(setupMenu());
+		Window.addResizeHandler(new ResizeHandler() {
+			public void onResize(ResizeEvent event) {
+				resizeInterface(event.getHeight());
+			}
+		});
 		
+		mainVertPanel = new VerticalPanel();
+		mainVertPanel.setBorderWidth(0);
+		rootPanel.add(mainVertPanel);
+		mainVertPanel.setSize("100%", "100%");
 
-		HorizontalSplitPanel horizontalSplitPanel = new HorizontalSplitPanel();
+		menuBar = setupMenu();
+		mainVertPanel.add(menuBar);
+
+		horizontalSplitPanel = new HorizontalSplitPanel();
 		horizontalSplitPanel.setStyleName("spacedLayout");
 		horizontalSplitPanel.setSplitPosition("200px");
-		verticalPanel_3.add(horizontalSplitPanel);
+		mainVertPanel.add(horizontalSplitPanel);
 		horizontalSplitPanel.setSize("100%", "800px");
 
 		//PATHWAY SEARCH
@@ -627,10 +652,9 @@ public class OTGViewer implements EntryPoint {
 		SimplePager.Resources pagerResources = GWT
 				.create(SimplePager.Resources.class);
 
-		SimplePager exprPager = new SimplePager(TextLocation.CENTER,
-				pagerResources, true, 100, true);
-		dockPanel_1.add(exprPager, DockPanel.NORTH);
-
+		absValBox = new DoubleBox();
+		absValBox.setText("0.00");
+		
 		exprGrid = new DataGrid<ExpressionRow>();
 		dockPanel_1.add(exprGrid, DockPanel.CENTER);
 		exprGrid.setStyleName("exprGrid");
@@ -648,8 +672,46 @@ public class OTGViewer implements EntryPoint {
 			}
 		});
 		asyncProvider.addDataDisplay(exprGrid);		
-		exprPager.setDisplay(exprGrid);
 		AsyncHandler colSortHandler = new AsyncHandler(exprGrid);
+		
+		HorizontalPanel horizontalPanel_1 = new HorizontalPanel();
+		horizontalPanel_1.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		dockPanel_1.add(horizontalPanel_1, DockPanel.NORTH);
+		
+				SimplePager exprPager = new SimplePager(TextLocation.CENTER,
+						pagerResources, true, 100, true);
+				exprPager.setStyleName("spacedLayout");
+				exprPager.setDisplay(exprGrid);
+				horizontalPanel_1.add(exprPager);
+				
+				Label lblAbsoluteValueFilter = new Label("Absolute value >=");
+				lblAbsoluteValueFilter.setStyleName("highlySpaced");
+				lblAbsoluteValueFilter.setDirection(Direction.LTR);
+				horizontalPanel_1.add(lblAbsoluteValueFilter);
+				lblAbsoluteValueFilter.setWidth("");
+				
+				
+				horizontalPanel_1.add(absValBox);
+				
+				Button absApply = new Button("Apply");
+				horizontalPanel_1.add(absApply);
+				absApply.addClickHandler(new ClickHandler() {
+					public void onClick(ClickEvent e) {
+						//force reload
+						exprGrid.setVisibleRangeAndClearData(exprGrid.getVisibleRange(), true);
+					}
+				});
+				
+				Button absClear = new Button("No filter");
+				horizontalPanel_1.add(absClear);
+				absClear.addClickHandler(new ClickHandler() {
+					public void onClick(ClickEvent e) {
+						absValBox.setValue(0.0);
+						//force reload
+						exprGrid.setVisibleRangeAndClearData(exprGrid.getVisibleRange(), true);						
+					}
+				});
+				
 		exprGrid.addColumnSortHandler(colSortHandler);
 
 		listDataProvider = new ListDataProvider<ExpressionRow>();
@@ -698,6 +760,8 @@ public class OTGViewer implements EntryPoint {
 					}
 				});
 
+		//everything has been set up, set the initial size
+		resizeInterface(Window.getClientHeight());
 		//INITIAL DATA
 		getCompounds();
 	}
@@ -915,8 +979,6 @@ public class OTGViewer implements EntryPoint {
 			}
 		};
 
-		private int lastSortCol = 0;
-		private boolean lastSortAsc = false;
 		protected void onRangeChanged(HasData<ExpressionRow> display) {
 			Range range = display.getVisibleRange();
 			
@@ -925,16 +987,11 @@ public class OTGViewer implements EntryPoint {
 			int col = 0;
 			if (csl.size() > 0) {
 				col = exprGrid.getColumnIndex((Column<ExpressionRow, ?>) csl.get(0).getColumn()) - extraCols;
-				asc = csl.get(0).isAscending();
-				if (lastSortCol == col && lastSortAsc == asc) {
-					col = -1;
-				} else {
-					lastSortCol = col;
-					lastSortAsc = asc;
-				}
+				asc = csl.get(0).isAscending();				
 			}
 			start = range.getStart();
-			kcService.datasetItems(range.getStart(), range.getLength(), col, asc,
+			kcService.datasetItems(range.getStart(), range.getLength(), col, asc,	
+					absValBox.getValue(),
 					rowCallback);
 		}
 

@@ -38,3 +38,6 @@ exprGrid {
 .spacedLayout {
  margin: 2px;
 }
+.highlySpaced {
+margin: 5px;
+}

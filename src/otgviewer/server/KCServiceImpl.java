@@ -105,6 +105,14 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		} else {
 			System.out.println("Stored empty data in session");
 		}
+		
+		DataViewParams params = (DataViewParams) session.getAttribute("dataViewParams");
+		if (params == null) {
+			params = new DataViewParams();
+		}
+		params.mustFilter = true;
+		params.mustSort = true;
+		session.setAttribute("params", params);
 		return r.length;
 	}
 	
@@ -123,9 +131,14 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		if (probes != null && data != null) {
 			try {
 				B2RAffy.connect();				
-				List<String> probeTitles = B2RAffy.titlesForJava((String[]) Arrays.copyOfRange(probes, offset, offset+size));
-				List<String[]> geneIds = B2RAffy.geneIdsForJava((String[]) Arrays.copyOfRange(probes, offset, offset+size));
-				List<String[]> geneSyms = B2RAffy.geneSymsForJava((String[]) Arrays.copyOfRange(probes, offset, offset+size));
+				int cpend = offset + size;
+				if (cpend > probes.length) {
+					cpend = probes.length; 
+				}
+				
+				List<String> probeTitles = B2RAffy.titlesForJava((String[]) Arrays.copyOfRange(probes, offset, cpend));
+				List<String[]> geneIds = B2RAffy.geneIdsForJava((String[]) Arrays.copyOfRange(probes, offset, cpend));
+				List<String[]> geneSyms = B2RAffy.geneSymsForJava((String[]) Arrays.copyOfRange(probes, offset, cpend));
 				for (int i = offset; i < offset + size && i < probes.length && i < data.length; ++i) {					
 					r.add(arrayToRow(probes[i], probeTitles.get(i - offset), geneIds.get(i - offset), 
 							geneSyms.get(i - offset), data[i]));					
@@ -138,36 +151,90 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		return r;
 	}
 	
-	private int _sortColumn;
-	private boolean _sortAscending;
-	public List<ExpressionRow> datasetItems(int offset, int size, int sortColumn, boolean ascending) {
+	private boolean _ascending; //for communication with inner class only
+	private int _sortColumn; //ditto
+	
+	public List<ExpressionRow> datasetItems(int offset, int size, int sortColumn, 
+			boolean ascending, double absValFilter) {
 		HttpServletRequest request = getThreadLocalRequest();
 		HttpSession session = request.getSession();
-		_sortColumn = sortColumn;
-		_sortAscending = ascending;
 		
+		DataViewParams params = (DataViewParams) session.getAttribute("dataViewParams");
+		if (params == null) {
+			params = new DataViewParams();
+		}
 		ExprValue[][] data = (ExprValue[][]) session.getAttribute("dataset");		
 		if (data != null) {
 			System.out.println("I had " + (data).length + " rows stored");
 		}
-		if (sortColumn > -1) {
+		String[] probes = (String[]) session.getAttribute("datasetProbes");
+		
+		ExprValue[][] filtered = (ExprValue[][]) session.getAttribute("filteredDataset");
+		if (filtered == null) {
+			filtered = data;
+		}
+		String[] filteredProbes = (String[]) session.getAttribute("filteredProbes");
+		if (filteredProbes == null) {
+			filteredProbes = probes;
+		}
+		
+		//At this point sorting and filtering may happen, possibly both.
+		boolean resorted = false;
+		if (sortColumn > -1 && (sortColumn != params.sortColumn || ascending != params.sortAsc || params.mustSort)) {			
 			//OK, we need to re-sort it and then re-store it
+			params.sortColumn = sortColumn;
+			_sortColumn = sortColumn;
+			params.sortAsc = ascending;
+			_ascending = ascending;
+			params.mustSort = false;
+			
 			Arrays.sort(data, new Comparator<ExprValue[]>() {
 				public int compare(ExprValue[] r1, ExprValue[] r2) {
 					assert(r1 != null);
 					assert(r2 != null);
 					int c = ((Double) r1[_sortColumn].value()).compareTo((Double) r2[_sortColumn].value());
-					if (_sortAscending) {
+					if (_ascending) {
 						return c;
 					} else {
 						return -c;
 					}
 				}
 			});
-			session.setAttribute("dataset", data);			
-		}		
-		String[] probes = (String[]) session.getAttribute("datasetProbes");
-		return arrayToRows(probes, data, offset, size);
+			session.setAttribute("dataset", data);
+			String[] sortedProbes = new String[data.length];
+			for (int i = 0; i < data.length; ++i) {
+				sortedProbes[i] = data[i][0].probe();
+			}
+			session.setAttribute("datasetProbes", sortedProbes);
+			probes = sortedProbes;
+			resorted = true;
+		}				
+		
+		if (absValFilter != params.absValFilter || resorted || params.mustFilter) {
+			//need to perform filter and re-store
+			params.absValFilter = absValFilter;
+			params.mustFilter = false;
+			List<ExprValue[]> remaining = new ArrayList<ExprValue[]>();
+			List<String> remainingProbes = new ArrayList<String>();
+			for (int r = 0; r < data.length; ++r) {				
+				for (int i = 0; i < data[r].length; ++i) {
+					if (Math.abs(data[r][i].value()) >= absValFilter) {
+						remaining.add(data[r]);
+						remainingProbes.add(probes[r]);
+						break;
+					}
+				}
+			}
+			filtered = remaining.toArray(new ExprValue[0][]);
+			filteredProbes = remainingProbes.toArray(new String[0]);
+			session.setAttribute("filteredDataset", filtered);
+			session.setAttribute("filteredProbes", filteredProbes);
+		}
+		
+		session.setAttribute("dataViewParams", params);
+		//If there was no sorting or filtering, we just keep paging the filtered set.
+		
+		return arrayToRows(filteredProbes, filtered, offset, size);
 	}
 	
 	
