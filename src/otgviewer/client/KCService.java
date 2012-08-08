@@ -29,9 +29,12 @@ public interface KCService extends RemoteService {
 	 * Get one page. Requires that loadDataset was first used to load items.
 	 * @param offset
 	 * @param size
+	 * @param sortColumn data column to sort by (0 for the first microarray, etc).
+	 * If this parameter is -1, the previously applied sorting is used.
+	 * @param ascending Whether to use ascending sort. Applies if sortColumn is not -1.
 	 * @return
 	 */
-	public List<ExpressionRow> datasetItems(int offset, int size);
+	public List<ExpressionRow> datasetItems(int offset, int size, int sortColumn, boolean ascending);
 	
 	/**
 	 * Get all data immediately. Requires that loadDataset was first used to load items.

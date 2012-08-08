@@ -26,6 +26,8 @@ import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
+import com.google.gwt.user.cellview.client.ColumnSortList;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
@@ -46,6 +48,7 @@ import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.MenuItemSeparator;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TabPanel;
+import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.AsyncDataProvider;
@@ -60,7 +63,6 @@ import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 import com.google.gwt.visualization.client.visualizations.corechart.LineChart;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
-import com.google.gwt.user.client.ui.TextArea;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -645,8 +647,10 @@ public class OTGViewer implements EntryPoint {
 				}		
 			}
 		});
-		asyncProvider.addDataDisplay(exprGrid);
+		asyncProvider.addDataDisplay(exprGrid);		
 		exprPager.setDisplay(exprGrid);
+		AsyncHandler colSortHandler = new AsyncHandler(exprGrid);
+		exprGrid.addColumnSortHandler(colSortHandler);
 
 		listDataProvider = new ListDataProvider<ExpressionRow>();
 
@@ -750,6 +754,7 @@ public class OTGViewer implements EntryPoint {
 		return r;
 	}
 	
+	private int extraCols = 0;
 	private void setupColumns() {
 		// todo: explicitly set the width of each column
 		NumberCell nc = new NumberCell();
@@ -759,7 +764,7 @@ public class OTGViewer implements EntryPoint {
 			exprGrid.removeColumn(0);
 		}
 
-		int extraCols = 0;
+		extraCols = 0;
 
 		if (probeColVis) {
 			TextColumn<ExpressionRow> probeCol = new TextColumn<ExpressionRow>() {
@@ -768,7 +773,6 @@ public class OTGViewer implements EntryPoint {
 				}
 			};
 			exprGrid.addColumn(probeCol, "Probe");
-
 			extraCols += 1;
 		}
 
@@ -811,6 +815,7 @@ public class OTGViewer implements EntryPoint {
 			for (Barcode bc : selection) {
 				Column<ExpressionRow, Number> valueCol = new ExpressionColumn(
 						nc, i);
+				valueCol.setSortable(true);
 				exprGrid.addColumn(valueCol, bc.getShortTitle());
 				chartTable.addColumn(ColumnType.NUMBER, bc.getShortTitle());
 				i += 1;
@@ -910,10 +915,26 @@ public class OTGViewer implements EntryPoint {
 			}
 		};
 
+		private int lastSortCol = 0;
+		private boolean lastSortAsc = false;
 		protected void onRangeChanged(HasData<ExpressionRow> display) {
 			Range range = display.getVisibleRange();
+			
+			ColumnSortList csl = exprGrid.getColumnSortList();
+			boolean asc = false;
+			int col = 0;
+			if (csl.size() > 0) {
+				col = exprGrid.getColumnIndex((Column<ExpressionRow, ?>) csl.get(0).getColumn()) - extraCols;
+				asc = csl.get(0).isAscending();
+				if (lastSortCol == col && lastSortAsc == asc) {
+					col = -1;
+				} else {
+					lastSortCol = col;
+					lastSortAsc = asc;
+				}
+			}
 			start = range.getStart();
-			kcService.datasetItems(range.getStart(), range.getLength(),
+			kcService.datasetItems(range.getStart(), range.getLength(), col, asc,
 					rowCallback);
 		}
 

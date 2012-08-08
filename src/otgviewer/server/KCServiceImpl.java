@@ -2,9 +2,8 @@ package otgviewer.server;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -13,11 +12,11 @@ import javax.servlet.http.HttpSession;
 
 import kyotocabinet.DB;
 import otg.B2RAffy;
-import otg.ExprValue;
-import otg.OTGQueries;
 import otg.CSVHelper;
-import otg.Species;
+import otg.ExprValue;
 import otg.OTGMisc;
+import otg.OTGQueries;
+import otg.Species;
 import otgviewer.client.KCService;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
@@ -139,13 +138,34 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		return r;
 	}
 	
-	public List<ExpressionRow> datasetItems(int offset, int size) {
+	private int _sortColumn;
+	private boolean _sortAscending;
+	public List<ExpressionRow> datasetItems(int offset, int size, int sortColumn, boolean ascending) {
 		HttpServletRequest request = getThreadLocalRequest();
 		HttpSession session = request.getSession();
-		ExprValue[][] data = (ExprValue[][]) session.getAttribute("dataset");
+		_sortColumn = sortColumn;
+		_sortAscending = ascending;
+		
+		ExprValue[][] data = (ExprValue[][]) session.getAttribute("dataset");		
 		if (data != null) {
 			System.out.println("I had " + (data).length + " rows stored");
 		}
+		if (sortColumn > -1) {
+			//OK, we need to re-sort it and then re-store it
+			Arrays.sort(data, new Comparator<ExprValue[]>() {
+				public int compare(ExprValue[] r1, ExprValue[] r2) {
+					assert(r1 != null);
+					assert(r2 != null);
+					int c = ((Double) r1[_sortColumn].value()).compareTo((Double) r2[_sortColumn].value());
+					if (_sortAscending) {
+						return c;
+					} else {
+						return -c;
+					}
+				}
+			});
+			session.setAttribute("dataset", data);			
+		}		
 		String[] probes = (String[]) session.getAttribute("datasetProbes");
 		return arrayToRows(probes, data, offset, size);
 	}
