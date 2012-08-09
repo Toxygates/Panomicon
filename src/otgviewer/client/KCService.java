@@ -21,9 +21,12 @@ public interface KCService extends RemoteService {
 	 * @param barcodes
 	 * @param probes
 	 * @param type
+	 * @param absValFilter Require that rows should contain at least one value whose 
+	 * abs. value is >= this threshold. If this is 0, it will be ignored.
 	 * @return
 	 */
-	public int loadDataset(DataFilter filter, List<String> barcodes, String[] probes, ValueType type);
+	public int loadDataset(DataFilter filter, List<String> barcodes, 
+			String[] probes, ValueType type, double absValFilter);
 	
 	/**
 	 * Get one page. Requires that loadDataset was first used to load items.
@@ -32,12 +35,10 @@ public interface KCService extends RemoteService {
 	 * @param sortColumn data column to sort by (0 for the first microarray, etc).
 	 * If this parameter is -1, the previously applied sorting is used.
 	 * @param ascending Whether to use ascending sort. Applies if sortColumn is not -1.
-	 * @param absValFilter Require that rows should contain at least one value whose 
-	 * abs. value is >= this threshold. If this is 0, it will be ignored.
 	 * @return
 	 */
 	public List<ExpressionRow> datasetItems(int offset, int size, int sortColumn, 
-			boolean ascending, double absValFilter);
+			boolean ascending);
 	
 	/**
 	 * Get all data immediately. Requires that loadDataset was first used to load items.

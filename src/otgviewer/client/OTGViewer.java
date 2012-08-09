@@ -309,7 +309,7 @@ public class OTGViewer implements EntryPoint {
 						Window.alert("Unable to prepare the requested data for download.");
 					}
 					public void onSuccess(String url) {
-						Window.open(url, "", "");
+						Window.open(url, "_blank", "");
 					}
 				});
 				
@@ -367,7 +367,7 @@ public class OTGViewer implements EntryPoint {
 		//this is very fiddly and must be tested on all the browsers.
 		//Note that simply setting height = 100% won't work.
 		String h = (newHeight - rootPanel.getAbsoluteTop() - 20) + "px";
-		rootPanel.setHeight(h);
+		rootPanel.setHeight("800px");
 		mainVertPanel.setHeight(h);
 		String h2 = (newHeight - horizontalSplitPanel.getAbsoluteTop() - 30) + "px";
 		horizontalSplitPanel.setHeight(h2);
@@ -646,6 +646,7 @@ public class OTGViewer implements EntryPoint {
 		};
 
 		DockPanel dockPanel_1 = new DockPanel();
+		dockPanel_1.setStyleName("none");
 		dockPanel.add(dockPanel_1, DockPanel.CENTER);
 		dockPanel_1.setSize("100%", "100%");
 
@@ -675,43 +676,45 @@ public class OTGViewer implements EntryPoint {
 		AsyncHandler colSortHandler = new AsyncHandler(exprGrid);
 		
 		HorizontalPanel horizontalPanel_1 = new HorizontalPanel();
-		horizontalPanel_1.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		horizontalPanel_1.setStyleName("colored");
+		horizontalPanel_1
+				.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		dockPanel_1.add(horizontalPanel_1, DockPanel.NORTH);
-		
-				SimplePager exprPager = new SimplePager(TextLocation.CENTER,
-						pagerResources, true, 100, true);
-				exprPager.setStyleName("spacedLayout");
-				exprPager.setDisplay(exprGrid);
-				horizontalPanel_1.add(exprPager);
-				
-				Label lblAbsoluteValueFilter = new Label("Absolute value >=");
-				lblAbsoluteValueFilter.setStyleName("highlySpaced");
-				lblAbsoluteValueFilter.setDirection(Direction.LTR);
-				horizontalPanel_1.add(lblAbsoluteValueFilter);
-				lblAbsoluteValueFilter.setWidth("");
-				
-				
-				horizontalPanel_1.add(absValBox);
-				
-				Button absApply = new Button("Apply");
-				horizontalPanel_1.add(absApply);
-				absApply.addClickHandler(new ClickHandler() {
-					public void onClick(ClickEvent e) {
-						//force reload
-						exprGrid.setVisibleRangeAndClearData(exprGrid.getVisibleRange(), true);
-					}
-				});
-				
-				Button absClear = new Button("No filter");
-				horizontalPanel_1.add(absClear);
-				absClear.addClickHandler(new ClickHandler() {
-					public void onClick(ClickEvent e) {
-						absValBox.setValue(0.0);
-						//force reload
-						exprGrid.setVisibleRangeAndClearData(exprGrid.getVisibleRange(), true);						
-					}
-				});
-				
+		horizontalPanel_1.setWidth("");
+
+		SimplePager exprPager = new SimplePager(TextLocation.CENTER,
+				pagerResources, true, 100, true);
+		exprPager.setStyleName("spacedLayout");
+		exprPager.setDisplay(exprGrid);
+		horizontalPanel_1.add(exprPager);
+
+		Label lblAbsoluteValueFilter = new Label("Absolute value >=");
+		lblAbsoluteValueFilter.setStyleName("highlySpaced");
+		lblAbsoluteValueFilter.setDirection(Direction.LTR);
+		horizontalPanel_1.add(lblAbsoluteValueFilter);
+		lblAbsoluteValueFilter.setWidth("");
+
+		horizontalPanel_1.add(absValBox);
+
+		Button absApply = new Button("Apply");
+		horizontalPanel_1.add(absApply);
+		absApply.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent e) {
+				// force reload
+				getExpressions();				
+			}
+		});
+
+		Button absClear = new Button("No filter");
+		horizontalPanel_1.add(absClear);
+		absClear.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent e) {
+				absValBox.setValue(0.0);
+				// force reload
+				getExpressions();				
+			}
+		});
+
 		exprGrid.addColumnSortHandler(colSortHandler);
 
 		listDataProvider = new ListDataProvider<ExpressionRow>();
@@ -932,6 +935,7 @@ public class OTGViewer implements EntryPoint {
 		}
 
 		kcService.loadDataset(chosenDataFilter, codes, displayedProbes, chosenValueType,
+				absValBox.getValue(),
 				new AsyncCallback<Integer>() {
 					public void onFailure(Throwable caught) {
 						Window.alert("Unable to load dataset.");
@@ -990,8 +994,7 @@ public class OTGViewer implements EntryPoint {
 				asc = csl.get(0).isAscending();				
 			}
 			start = range.getStart();
-			kcService.datasetItems(range.getStart(), range.getLength(), col, asc,	
-					absValBox.getValue(),
+			kcService.datasetItems(range.getStart(), range.getLength(), col, asc,						
 					rowCallback);
 		}
 
@@ -999,9 +1002,18 @@ public class OTGViewer implements EntryPoint {
 	
 	//---------- SERIES CHART PANEL ----------
 	void redrawSeriesChart() {
+		//make sure something is selected
+		if (chartCombo.getSelectedIndex() == -1) {
+			chartCombo.setSelectedIndex(0);
+		}
+		
+		if (chartSubtypeCombo.getSelectedIndex() == -1) {
+			chartSubtypeCombo.setSelectedIndex(0);
+		}
+		
 		//first find the applicable barcodes
 		if (chartCombo.getSelectedIndex() == 0) {
-			//select for specific dose.
+			//select for specific dose.		
 			owlimService.barcodes(chosenDataFilter, chosenCompound, chosenOrgan.toString(), 
 					chartSubtypeCombo.getItemText(chartSubtypeCombo.getSelectedIndex()), null, 
 					seriesChartBarcodesCallback);

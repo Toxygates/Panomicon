@@ -1,9 +1,7 @@
 package otgviewer.server;
 
-public class DataViewParams {
-	double absValFilter = -1;
+public class DataViewParams {	
 	boolean sortAsc;
 	int sortColumn;
-	boolean mustSort;
-	boolean mustFilter;
+	boolean mustSort;	
 }

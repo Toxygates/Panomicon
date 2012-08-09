@@ -89,18 +89,34 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 
 	}
 	
-	public int loadDataset(DataFilter filter, List<String> barcodes, String[] probes, ValueType type) {
+	public int loadDataset(DataFilter filter, List<String> barcodes, String[] probes, ValueType type, double absValFilter) {
 		HttpServletRequest request = getThreadLocalRequest();
 		HttpSession session = request.getSession();
-		
-		String[] realProbes = filterProbes(filter, probes);
-		ExprValue[][] r = getExprValues(filter, barcodes, realProbes, type, false);
 
-		session.setAttribute("dataset", r);
+		String[] realProbes = filterProbes(filter, probes);
+		ExprValue[][] data = getExprValues(filter, barcodes, realProbes, type,
+				false);
+
+		// filter by abs. value
+		List<ExprValue[]> remaining = new ArrayList<ExprValue[]>();
+		List<String> remainingProbes = new ArrayList<String>();
+		for (int r = 0; r < data.length; ++r) {
+			for (int i = 0; i < data[r].length; ++i) {
+				if (Math.abs(data[r][i].value()) >= absValFilter) {
+					remaining.add(data[r]);
+					remainingProbes.add(realProbes[r]);
+					break;
+				}
+			}
+		}
+		data = remaining.toArray(new ExprValue[0][]);
+		realProbes = remainingProbes.toArray(new String[0]);
+
+		session.setAttribute("dataset", data);
 		session.setAttribute("datasetProbes", realProbes);
 		session.setAttribute("datasetBarcodes", barcodes.toArray(new String[0]));
-		if (r.length > 0) {
-			System.out.println("Stored " + r.length + " x " + r[0].length
+		if (data.length > 0) {
+			System.out.println("Stored " + data.length + " x " + data[0].length
 					+ " items in session, " + realProbes.length + " probes");
 		} else {
 			System.out.println("Stored empty data in session");
@@ -109,11 +125,10 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		DataViewParams params = (DataViewParams) session.getAttribute("dataViewParams");
 		if (params == null) {
 			params = new DataViewParams();
-		}
-		params.mustFilter = true;
+		}		
 		params.mustSort = true;
 		session.setAttribute("params", params);
-		return r.length;
+		return data.length;
 	}
 	
 	private ExpressionRow arrayToRow(String probe, String title, String[] geneIds, String[] geneSyms, ExprValue[] vals) {
@@ -134,14 +149,17 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 				int cpend = offset + size;
 				if (cpend > probes.length) {
 					cpend = probes.length; 
-				}
+				}				
+				System.out.println("Range: " + offset + " to " + cpend);
 				
-				List<String> probeTitles = B2RAffy.titlesForJava((String[]) Arrays.copyOfRange(probes, offset, cpend));
-				List<String[]> geneIds = B2RAffy.geneIdsForJava((String[]) Arrays.copyOfRange(probes, offset, cpend));
-				List<String[]> geneSyms = B2RAffy.geneSymsForJava((String[]) Arrays.copyOfRange(probes, offset, cpend));
-				for (int i = offset; i < offset + size && i < probes.length && i < data.length; ++i) {					
-					r.add(arrayToRow(probes[i], probeTitles.get(i - offset), geneIds.get(i - offset), 
-							geneSyms.get(i - offset), data[i]));					
+				if (cpend > offset) {
+					List<String> probeTitles = B2RAffy.titlesForJava((String[]) Arrays.copyOfRange(probes, offset, cpend));
+					List<String[]> geneIds = B2RAffy.geneIdsForJava((String[]) Arrays.copyOfRange(probes, offset, cpend));
+					List<String[]> geneSyms = B2RAffy.geneSymsForJava((String[]) Arrays.copyOfRange(probes, offset, cpend));
+					for (int i = offset; i < offset + size && i < probes.length && i < data.length; ++i) {					
+						r.add(arrayToRow(probes[i], probeTitles.get(i - offset), geneIds.get(i - offset), 
+								geneSyms.get(i - offset), data[i]));					
+					}
 				}
 			} finally {
 				B2RAffy.close();
@@ -155,7 +173,7 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 	private int _sortColumn; //ditto
 	
 	public List<ExpressionRow> datasetItems(int offset, int size, int sortColumn, 
-			boolean ascending, double absValFilter) {
+			boolean ascending) {
 		HttpServletRequest request = getThreadLocalRequest();
 		HttpSession session = request.getSession();
 		
@@ -169,17 +187,7 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		}
 		String[] probes = (String[]) session.getAttribute("datasetProbes");
 		
-		ExprValue[][] filtered = (ExprValue[][]) session.getAttribute("filteredDataset");
-		if (filtered == null) {
-			filtered = data;
-		}
-		String[] filteredProbes = (String[]) session.getAttribute("filteredProbes");
-		if (filteredProbes == null) {
-			filteredProbes = probes;
-		}
-		
-		//At this point sorting and filtering may happen, possibly both.
-		boolean resorted = false;
+		//At this point sorting and filtering may happen, possibly both.		
 		if (sortColumn > -1 && (sortColumn != params.sortColumn || ascending != params.sortAsc || params.mustSort)) {			
 			//OK, we need to re-sort it and then re-store it
 			params.sortColumn = sortColumn;
@@ -206,35 +214,12 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 				sortedProbes[i] = data[i][0].probe();
 			}
 			session.setAttribute("datasetProbes", sortedProbes);
-			probes = sortedProbes;
-			resorted = true;
+			probes = sortedProbes;			
 		}				
 		
-		if (absValFilter != params.absValFilter || resorted || params.mustFilter) {
-			//need to perform filter and re-store
-			params.absValFilter = absValFilter;
-			params.mustFilter = false;
-			List<ExprValue[]> remaining = new ArrayList<ExprValue[]>();
-			List<String> remainingProbes = new ArrayList<String>();
-			for (int r = 0; r < data.length; ++r) {				
-				for (int i = 0; i < data[r].length; ++i) {
-					if (Math.abs(data[r][i].value()) >= absValFilter) {
-						remaining.add(data[r]);
-						remainingProbes.add(probes[r]);
-						break;
-					}
-				}
-			}
-			filtered = remaining.toArray(new ExprValue[0][]);
-			filteredProbes = remainingProbes.toArray(new String[0]);
-			session.setAttribute("filteredDataset", filtered);
-			session.setAttribute("filteredProbes", filteredProbes);
-		}
-		
 		session.setAttribute("dataViewParams", params);
-		//If there was no sorting or filtering, we just keep paging the filtered set.
 		
-		return arrayToRows(filteredProbes, filtered, offset, size);
+		return arrayToRows(probes, data, offset, size);
 	}
 	
 	

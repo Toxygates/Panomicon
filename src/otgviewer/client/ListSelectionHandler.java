@@ -38,21 +38,22 @@ public abstract class ListSelectionHandler<T> {
 	
 	protected ChangeHandler makeChangeHandler() {
 		return new ChangeHandler() {
-			public void onChange(ChangeEvent event) {
-				for (ListSelectionHandler<?> handler : afterHandlers) {
-					handler.clear();
-				}
+			public void onChange(ChangeEvent event) {				
 				int sel = list.getSelectedIndex();
-				
-				if (list.getItemText(sel).equals("(All)") && allOption) {
-					lastSelected = null;
-				} else if (sel != -1) {
-					lastSelected = lastResult[sel];
-				} else {
-					lastSelected = null;
+				if (sel != -1) {
+					for (ListSelectionHandler<?> handler : afterHandlers) {
+						handler.clear();
+					}
+					if (list.getItemText(sel).equals("(All)") && allOption) {
+						lastSelected = null;
+					} else if (sel != -1) {
+						lastSelected = lastResult[sel];
+					} else {
+						lastSelected = null;
+					}
+					getUpdates(lastSelected);
 				}
 				
-				getUpdates(lastSelected);
 			}
 		};
 	}

@@ -13,9 +13,9 @@ public interface KCServiceAsync {
 	public void identifiersToProbes(DataFilter filter, String[] identifiers, AsyncCallback<String[]> callback);
 	
 	public void loadDataset(DataFilter filter, List<String> barcodes, String[] probes, 
-			ValueType type, AsyncCallback<Integer> callback);
+			ValueType type, double absValFilter, AsyncCallback<Integer> callback);
 	public void datasetItems(int offset, int size, int sortColumn, 
-			boolean ascending, double absValFilter, AsyncCallback<List<ExpressionRow>> callback);
+			boolean ascending, AsyncCallback<List<ExpressionRow>> callback);
 	public void getFullData(DataFilter filter, List<String> barcodes, 
 			String[] probes, ValueType type, boolean sparseRead, 
 			AsyncCallback<List<ExpressionRow>> callback);
