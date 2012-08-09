@@ -3,6 +3,7 @@ package otgviewer.client;
 
 import java.util.List;
 
+import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.ValueType;
@@ -25,7 +26,7 @@ public interface KCService extends RemoteService {
 	 * abs. value is >= this threshold. If this is 0, it will be ignored.
 	 * @return
 	 */
-	public int loadDataset(DataFilter filter, List<String> barcodes, 
+	public int loadDataset(DataFilter filter, List<DataColumn> columns, 
 			String[] probes, ValueType type, double absValFilter);
 	
 	/**

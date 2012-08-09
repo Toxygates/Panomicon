@@ -2,8 +2,11 @@ package otgviewer.server;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -18,9 +21,13 @@ import otg.OTGMisc;
 import otg.OTGQueries;
 import otg.Species;
 import otgviewer.client.KCService;
+import otgviewer.shared.Barcode;
+import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.ExpressionValue;
+import otgviewer.shared.Group;
+import otgviewer.shared.SharedUtils;
 import otgviewer.shared.ValueType;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -69,7 +76,7 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		return r;
 	}
 	
-	private ExprValue[][] getExprValues(DataFilter filter, List<String> barcodes, String[] probes,
+	private ExprValue[][] getExprValues(DataFilter filter, Collection<String> barcodes, String[] probes,
 			ValueType type, boolean sparseRead) {
 		DB db = null;
 		if (barcodes == null) {
@@ -89,32 +96,70 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 
 	}
 	
-	public int loadDataset(DataFilter filter, List<String> barcodes, String[] probes, ValueType type, double absValFilter) {
+	public int loadDataset(DataFilter filter, List<DataColumn> columns, String[] probes, ValueType type, double absValFilter) {
 		HttpServletRequest request = getThreadLocalRequest();
 		HttpSession session = request.getSession();
 
+		//first compute a list of all barcodes to obtain
+		Set<String> barcodesToGet = new HashSet<String>();
+		for (DataColumn dc: columns) {
+			if (dc instanceof Barcode) {
+				barcodesToGet.add(((Barcode) dc).getCode());
+			} else {
+				//it's a group
+				for (Barcode b: ((Group) dc).getBarcodes()) {
+					barcodesToGet.add(b.getCode());
+				}
+			}
+		}
+		List<String> orderedBarcodes = new ArrayList<String>();
+		orderedBarcodes.addAll(barcodesToGet);
+		
 		String[] realProbes = filterProbes(filter, probes);
-		ExprValue[][] data = getExprValues(filter, barcodes, realProbes, type,
+		ExprValue[][] data = getExprValues(filter, orderedBarcodes, realProbes, type,
 				false);
+		
+		//compute columns
+		//note, we might need to do this in scala eventually, too complex in java
+		ExprValue[][] rendered = new ExprValue[data.length][columns.size()];
+		for (int r = 0; r < data.length; ++r) {
+			ExprValue[] row = data[r];
+			for (int c = 0; c < columns.size(); ++c) {
+				DataColumn dc = columns.get(c);
+				if (dc instanceof Barcode) {
+					int i = SharedUtils.indexOf(orderedBarcodes, ((Barcode) dc).getCode());
+					rendered[r][c] = data[r][i];
+				} else {
+					//group
+					double avg = 0;
+					for (int cc = 0; cc < ((Group) dc).getBarcodes().length; ++cc) {
+						int i = SharedUtils.indexOf(orderedBarcodes, ((Group) dc).getBarcodes()[cc].getCode());
+						avg += data[r][i].value();
+					}
+					avg /= ((Group) dc).getBarcodes().length;
+					rendered[r][c] = new ExprValue(avg, 'P', data[r][0].probe()); //todo: call!!
+				}
+			}
+		}
 
 		// filter by abs. value
 		List<ExprValue[]> remaining = new ArrayList<ExprValue[]>();
 		List<String> remainingProbes = new ArrayList<String>();
-		for (int r = 0; r < data.length; ++r) {
-			for (int i = 0; i < data[r].length; ++i) {
-				if (Math.abs(data[r][i].value()) >= absValFilter) {
-					remaining.add(data[r]);
+		for (int r = 0; r < rendered.length; ++r) {
+			for (int i = 0; i < rendered[r].length; ++i) {
+				if (Math.abs(rendered[r][i].value()) >= absValFilter) {
+					remaining.add(rendered[r]);
 					remainingProbes.add(realProbes[r]);
 					break;
 				}
 			}
 		}
-		data = remaining.toArray(new ExprValue[0][]);
+		rendered = remaining.toArray(new ExprValue[0][]);
 		realProbes = remainingProbes.toArray(new String[0]);
 
-		session.setAttribute("dataset", data);
+		session.setAttribute("dataset", rendered);
 		session.setAttribute("datasetProbes", realProbes);
-		session.setAttribute("datasetBarcodes", barcodes.toArray(new String[0]));
+		session.setAttribute("datasetColumns", columns.toArray(new DataColumn[0]));
 		if (data.length > 0) {
 			System.out.println("Stored " + data.length + " x " + data[0].length
 					+ " items in session, " + realProbes.length + " probes");
@@ -239,7 +284,11 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 			System.out.println("I had " + (data).length + " rows stored");
 		}
 		String[] probes = (String[]) session.getAttribute("datasetProbes");
-		String[] barcodes = (String[]) session.getAttribute("datasetBarcodes"); //todo: more helpful names would be good
-		return CSVHelper.writeCSV(probes, barcodes, data);	
+		DataColumn[] cols = (DataColumn[]) session.getAttribute("datasetColumns"); //todo: more helpful names would be good
+		String[] colNames = new String[cols.length];
+		for (int i = 0; i < cols.length; ++i) {
+			colNames[i] = cols[i].toString();
+		}
+		return CSVHelper.writeCSV(probes, colNames, data);	
 	}
 }

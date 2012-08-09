@@ -2,8 +2,14 @@ package otgviewer.shared;
 
 import java.io.Serializable;
 
-public class Barcode implements Serializable {
-
+/**
+ * A barcode corresponds to a single microarray.
+ * @author johan
+ *
+ */
+public class Barcode implements Serializable, DataColumn {
+	private static final long serialVersionUID = -9107751439620262933L;
+	
 	private String code = "";	
 	private String individual = "";
 	private String dose = "";
@@ -41,5 +47,9 @@ public class Barcode implements Serializable {
 	
 	public String getTime() {
 		return time;
+	}
+	
+	public String toString() {
+		return getShortTitle();
 	}
 }
