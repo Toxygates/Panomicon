@@ -132,12 +132,21 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 				} else {
 					//group
 					double avg = 0;
+					int numPresent = 0;
 					for (int cc = 0; cc < ((Group) dc).getBarcodes().length; ++cc) {
 						int i = SharedUtils.indexOf(orderedBarcodes, ((Group) dc).getBarcodes()[cc].getCode());
-						avg += data[r][i].value();
+						if (data[r][i].present()) {
+							avg += data[r][i].value();
+							numPresent += 1;
+						}
 					}
-					avg /= ((Group) dc).getBarcodes().length;
-					rendered[r][c] = new ExprValue(avg, 'P', data[r][0].probe()); //todo: call!!
+					if (numPresent > 0) {
+						avg /= numPresent;
+						rendered[r][c] = new ExprValue(avg, 'P',
+								data[r][0].probe());
+					} else {
+						rendered[r][c] = new ExprValue(0, 'A', data[r][0].probe());
+					}
 				}
 			}
 		}
@@ -173,7 +182,7 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		}		
 		params.mustSort = true;
 		session.setAttribute("params", params);
-		return data.length;
+		return rendered.length;
 	}
 	
 	private ExpressionRow arrayToRow(String probe, String title, String[] geneIds, String[] geneSyms, ExprValue[] vals) {

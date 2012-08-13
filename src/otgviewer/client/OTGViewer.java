@@ -5,16 +5,13 @@ import java.util.List;
 
 import otgviewer.shared.Barcode;
 import otgviewer.shared.CellType;
-import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
-import otgviewer.shared.Group;
 import otgviewer.shared.Organ;
 import otgviewer.shared.Organism;
 import otgviewer.shared.RepeatType;
 import otgviewer.shared.ValueType;
 
-import com.google.gwt.cell.client.NumberCell;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Position;
@@ -29,20 +26,11 @@ import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.i18n.client.HasDirection.Direction;
-import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
-import com.google.gwt.user.cellview.client.ColumnSortList;
-import com.google.gwt.user.cellview.client.DataGrid;
-import com.google.gwt.user.cellview.client.SimplePager;
-import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
-import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
-import com.google.gwt.user.client.ui.DoubleBox;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -57,12 +45,6 @@ import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.view.client.AsyncDataProvider;
-import com.google.gwt.view.client.HasData;
-import com.google.gwt.view.client.ListDataProvider;
-import com.google.gwt.view.client.MultiSelectionModel;
-import com.google.gwt.view.client.Range;
-import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
@@ -72,7 +54,6 @@ import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
  */
 public class OTGViewer implements EntryPoint {
 
-	//COMMON
 	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
 			.create(OwlimService.class);
 
@@ -87,16 +68,10 @@ public class OTGViewer implements EntryPoint {
 	private DataFilter chosenDataFilter = new DataFilter(CellType.Vivo, Organ.Kidney, 
 			RepeatType.Single, Organism.Rat);
 	
-	//DATA VIEWER PANEL
-	
-	private ListBox pathwayList, compoundList, doseLevelList, timeList,
+	private ListBox pathwayList, doseLevelList, timeList,
 			barcodeList;
 	private HorizontalPanel horizontalPanel;
-	private DoubleBox absValBox;
 	
-	private ListDataProvider<ExpressionRow> listDataProvider;
-	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
-	private DataGrid<ExpressionRow> exprGrid;
 
 	private ValueType chosenValueType = ValueType.Folds;
 	private ListSelectionHandler<String> compoundHandler, doseHandler,
@@ -106,77 +81,14 @@ public class OTGViewer implements EntryPoint {
 	private TextBox pathwayBox;
 	private TextArea customProbeText;
 
-	// Visible columns
-	private boolean geneIdColVis = false, probeColVis = false,
-			probeTitleColVis = true, geneSymColVis = true;
-
 	// Track the current selection
-	private String[] displayedProbes = null; 
-	private String chosenProbe; //single user-selected probe
+	private String[] displayedProbes = null; 	
 	private String chosenCompound;
-
-	//CHART PANEL
-	private SeriesDisplayStrategy seriesStrategy;
-	private Label seriesSelectionLabel;
-	private ListBox chartCombo, chartSubtypeCombo;	
-	private DataTable seriesTable;	
-	private CoreChart seriesChart;
-	private DockPanel chartDockPanel;
-	private AsyncCallback<String[]> seriesChartItemsCallback = new AsyncCallback<String[]>() {
-		public void onFailure(Throwable caught) {
-			Window.alert("Unable to get series chart subitems.");
-		}
-		
-		public void onSuccess(String[] result) {
-			for (String i: result) {
-				if (! i.equals("Control")) {
-					chartSubtypeCombo.addItem(i);
-				}
-			}
-			if (result.length > 0) {
-				chartSubtypeCombo.setSelectedIndex(0);
-				redrawSeriesChart();
-			}
-		}
-	};
-
-	private AsyncCallback<Barcode[]> seriesChartBarcodesCallback = new AsyncCallback<Barcode[]>() {
-		public void onFailure(Throwable caught) {
-			Window.alert("Unable to get series chart data (barcodes).");
-		}
-		
-		public void onSuccess(Barcode[] barcodes) {
-			seriesStrategy.setupTable(barcodes);
-			
-			List<String> bcs = new ArrayList<String>();
-			for (Barcode b: barcodes) {											
-				bcs.add(b.getCode());
-			}
-			if (chosenProbe == null) {
-				Window.alert("Unable to draw chart. Please select a probe first.");
-			} else {
-				String[] probes = new String[] { chosenProbe };
-
-				kcService.getFullData(chosenDataFilter, bcs, probes, chosenValueType, true,
-						new AsyncCallback<List<ExpressionRow>>() {
-							public void onSuccess(List<ExpressionRow> result) {
-								if (seriesChart != null) {
-									chartDockPanel.remove(seriesChart);
-								}
-								seriesChart = seriesStrategy.makeChart();
-								chartDockPanel.add(seriesChart,
-										DockPanel.CENTER);
-								seriesStrategy.displayData(result, seriesChart);
-							}
-
-							public void onFailure(Throwable caught) {
-								Window.alert("Unable to get series chart data (expressions).");
-	}
-			});
-			}
-		}
-	};
 	
+	private ExpressionTable expressionTable;
+	private SeriesChart seriesChart;
+
+
 	private MenuBar setupMenu() {
 	
 		MenuBar menuBar = new MenuBar(false);
@@ -252,7 +164,7 @@ public class OTGViewer implements EntryPoint {
 			public void execute() {
 				chosenValueType = ValueType.Folds;
 				updateSelections();				
-				getExpressions();
+				getExpressions(null, false);
 			}
 		});
 		menuBar_1.addItem(mntmFolds);
@@ -262,75 +174,17 @@ public class OTGViewer implements EntryPoint {
 					public void execute() {
 						chosenValueType = ValueType.Absolute;
 						updateSelections();
-						getExpressions();
+						getExpressions(null, false);
 					}
 				});
 
 		menuBar_1.addItem(mntmAbsoluteValues);
 		mntmNewMenu.setHTML("Data set");
 		menuBar.addItem(mntmNewMenu);
-		MenuBar menuBar_3 = new MenuBar(true);
-		
-		MenuItem mntmActions_1 = new MenuItem("Actions", false, menuBar_3);
-		
-		MenuItem mntmDownloadCsv = new MenuItem("Download CSV", false, new Command() {
-			public void execute() {
-				kcService.prepareCSVDownload(new AsyncCallback<String>() {
-					public void onFailure(Throwable caught) {
-						Window.alert("Unable to prepare the requested data for download.");
-					}
-					public void onSuccess(String url) {
-						Window.open(url, "_blank", "");
-					}
-				});
-				
-			}
-		});
-		menuBar_3.addItem(mntmDownloadCsv);		
-		menuBar.addItem(mntmActions_1);
-		MenuBar menuBar_2 = new MenuBar(true);
-
-		MenuItem mntmNewMenu_1 = new MenuItem("New menu", false, menuBar_2);
-
-		MenuItem mntmGeneId = new MenuItem("Gene ID", false, new Command() {
-			public void execute() {
-				geneIdColVis = !geneIdColVis;
-				setupColumns();
-			}
-		});
-		menuBar_2.addItem(mntmGeneId);
-
-		MenuItem mntmProbeName = new MenuItem("Probe ID", false,
-				new Command() {
-					public void execute() {
-						probeColVis = !probeColVis;
-						setupColumns();
-					}
-				});
-		menuBar_2.addItem(mntmProbeName);
-
-		MenuItem mntmGeneName = new MenuItem("Probe title", false, new Command() {
-			public void execute() {
-				probeTitleColVis = !probeTitleColVis;
-				setupColumns();
-			}
-		});
-		menuBar_2.addItem(mntmGeneName);
-		
-
-		MenuItem mntmGeneSym = new MenuItem("Gene symbol", false, new Command() {
-			public void execute() {
-				geneSymColVis = ! geneSymColVis;				
-				setupColumns();
-			}
-		});
-		menuBar_2.addItem(mntmGeneSym);
-		
-		mntmNewMenu_1.setHTML("Columns");
-		menuBar.addItem(mntmNewMenu_1);
 
 		MenuItem mntmSettings = new MenuItem("Settings", false, (Command) null);
 		menuBar.addItem(mntmSettings);
+		
 		return menuBar;
 	}
 	
@@ -338,11 +192,8 @@ public class OTGViewer implements EntryPoint {
 		//this is very fiddly and must be tested on all the browsers.
 		//Note that simply setting height = 100% won't work.
 		String h = (newHeight - rootPanel.getAbsoluteTop() - 20) + "px";
-		mainVertPanel.setHeight(h);
 		String h2 = (newHeight - horizontalSplitPanel.getAbsoluteTop() - 30) + "px";
-		horizontalSplitPanel.setHeight(h2);
-		String h3 = (newHeight - exprGrid.getAbsoluteTop() - 45) + "px";
-		exprGrid.setHeight(h3);	
+		expressionTable.resizeInterface(newHeight);
 	}
 	
 	/**
@@ -351,7 +202,8 @@ public class OTGViewer implements EntryPoint {
 	public void onModuleLoad() {
 		Runnable onLoadChart = new Runnable() {
 			public void run() {
-				seriesTable = DataTable.create();				
+				seriesChart.onLoadChart();
+								
 			}
 		};
 
@@ -370,7 +222,7 @@ public class OTGViewer implements EntryPoint {
 		mainVertPanel = new VerticalPanel();
 		mainVertPanel.setBorderWidth(0);
 		rootPanel.add(mainVertPanel);
-		mainVertPanel.setSize("100%", "100%");
+		mainVertPanel.setSize("100%", "800px");
 
 		menuBar = setupMenu();
 		mainVertPanel.add(menuBar);
@@ -417,9 +269,8 @@ public class OTGViewer implements EntryPoint {
 						Window.alert("Unable to get probes.");
 					}
 
-					public void onSuccess(String[] probes) {
-						displayedProbes = probes;
-						getExpressions();
+					public void onSuccess(String[] probes) {						
+						getExpressions(probes, false);
 					}
 				});
 			}
@@ -436,9 +287,8 @@ public class OTGViewer implements EntryPoint {
 							Window.alert("Unable to get probes.");
 						}
 
-						public void onSuccess(String[] probes) {
-							displayedProbes = probes;
-							getExpressions();
+						public void onSuccess(String[] probes) {							
+							getExpressions(probes, false);
 						}
 					});
 				} else {
@@ -466,9 +316,8 @@ public class OTGViewer implements EntryPoint {
 					//change the identifiers (which can be mixed format) into a homogenous format (probes only)
 					//todo: might want to display some kind of progress indicator
 					kcService.identifiersToProbes(chosenDataFilter, split, new AsyncCallback<String[]>() {
-						public void onSuccess(String[] probes) {
-							displayedProbes = probes;
-							getExpressions();
+						public void onSuccess(String[] probes) {							
+							getExpressions(probes, false);
 						}
 						public void onFailure(Throwable caught) {
 							
@@ -487,7 +336,7 @@ public class OTGViewer implements EntryPoint {
 					pathwayList.setItemSelected(pathwayList.getSelectedIndex(),
 							false);
 				}
-				getExpressions();
+				getExpressions(null, false);
 			}
 		});
 
@@ -502,12 +351,8 @@ public class OTGViewer implements EntryPoint {
 					break;
 				case 1:
 					//series chart tab
-					if (chartCombo.getSelectedIndex() == -1) {
-						chartCombo.setSelectedIndex(0);
-						updateSeriesSubtypes();
-					} else {
-						redrawSeriesChart();
-					}
+					updateSelections(); //get the selected probe
+					seriesChart.redraw();					
 				}
 			}
 		});
@@ -601,7 +446,8 @@ public class OTGViewer implements EntryPoint {
 			}
 
 			protected void getUpdates(List<Barcode> barcodes) {
-				getExpressions();
+				expressionTable.setSelectedBarcodes(barcodes);
+				getExpressions(null, true);
 			}
 
 			protected String representation(Barcode b) {
@@ -609,123 +455,18 @@ public class OTGViewer implements EntryPoint {
 			}
 		};
 
-		DockPanel dockPanel_1 = new DockPanel();
-		dockPanel_1.setStyleName("none");
-		dockPanel.add(dockPanel_1, DockPanel.CENTER);
-		dockPanel_1.setSize("100%", "100%");
-
-		SimplePager.Resources pagerResources = GWT
-				.create(SimplePager.Resources.class);
-
-		absValBox = new DoubleBox();
-		absValBox.setText("0.00");
 		
-		exprGrid = new DataGrid<ExpressionRow>();
-		dockPanel_1.add(exprGrid, DockPanel.CENTER);
-		exprGrid.setStyleName("exprGrid");
-		exprGrid.setPageSize(20);
-		exprGrid.setSize("100%", "400px");
-		exprGrid.setSelectionModel(new MultiSelectionModel<ExpressionRow>());
-		exprGrid.getSelectionModel().addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
-			public void onSelectionChange(SelectionChangeEvent event) {
-				for (ExpressionRow r: exprGrid.getDisplayedItems()) {
-					if (exprGrid.getSelectionModel().isSelected(r)) {
-						chosenProbe = r.getProbe();
-						updateSelections();
-					}
-				}		
-			}
-		});
-		asyncProvider.addDataDisplay(exprGrid);		
-		AsyncHandler colSortHandler = new AsyncHandler(exprGrid);
+		expressionTable = new ExpressionTable(menuBar);
+		dockPanel.add(expressionTable, DockPanel.CENTER);
 		
-		HorizontalPanel horizontalPanel_1 = new HorizontalPanel();
-		horizontalPanel_1.setStyleName("colored");
-		horizontalPanel_1
-				.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-		dockPanel_1.add(horizontalPanel_1, DockPanel.NORTH);
-		horizontalPanel_1.setWidth("");
-
-		SimplePager exprPager = new SimplePager(TextLocation.CENTER,
-				pagerResources, true, 100, true);
-		exprPager.setStyleName("spacedLayout");
-		exprPager.setDisplay(exprGrid);
-		horizontalPanel_1.add(exprPager);
-
-		Label lblAbsoluteValueFilter = new Label("Absolute value >=");
-		lblAbsoluteValueFilter.setStyleName("highlySpaced");
-		lblAbsoluteValueFilter.setDirection(Direction.LTR);
-		horizontalPanel_1.add(lblAbsoluteValueFilter);
-		lblAbsoluteValueFilter.setWidth("");
-
-		horizontalPanel_1.add(absValBox);
-
-		Button absApply = new Button("Apply");
-		horizontalPanel_1.add(absApply);
-		absApply.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent e) {
-				// force reload
-				getExpressions();				
-			}
-		});
-
-		Button absClear = new Button("No filter");
-		horizontalPanel_1.add(absClear);
-		absClear.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent e) {
-				absValBox.setValue(0.0);
-				// force reload
-				getExpressions();				
-			}
-		});
-
-		exprGrid.addColumnSortHandler(colSortHandler);
-
-		listDataProvider = new ListDataProvider<ExpressionRow>();
-
 		compoundHandler.addAfter(doseHandler);
 		compoundHandler.addAfter(timeHandler);
 		doseHandler.addAfter(barcodeHandler);
 		timeHandler.addAfter(barcodeHandler);
 
-		
-		// CHART PANEL GUI
-		chartDockPanel = new DockPanel();
-		tabPanel.add(chartDockPanel, "Chart", false);		
-		chartDockPanel.setSize("100%", "100%");
-		
-		VerticalPanel verticalPanel = new VerticalPanel();
-		chartDockPanel.add(verticalPanel, DockPanel.NORTH);
-		verticalPanel.setWidth("276px");
-		
-		seriesSelectionLabel = new Label("Selected: none");
-		verticalPanel.add(seriesSelectionLabel);
-		
-		HorizontalPanel horizontalPanel_2 = new HorizontalPanel();
-		horizontalPanel_2.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-		verticalPanel.add(horizontalPanel_2);
-		
-				chartCombo = new ListBox();
-				horizontalPanel_2.add(chartCombo);
-				chartCombo.addItem("Expression vs time, fixed dose:");
-				chartCombo.addItem("Expression vs dose, fixed time:");
-				chartCombo.setSelectedIndex(0);
-				
-				chartSubtypeCombo = new ListBox();
-				horizontalPanel_2.add(chartSubtypeCombo);
-				
-				chartSubtypeCombo.addChangeHandler(new ChangeHandler() {
-					public void onChange(ChangeEvent event) {
-						seriesTable.removeRows(0, seriesTable.getNumberOfRows());
-						redrawSeriesChart();						
-					}
-					
-				});
-				chartCombo.addChangeHandler(new ChangeHandler() {
-					public void onChange(ChangeEvent event) {
-						updateSeriesSubtypes();						
-					}
-				});
+		seriesChart = new SeriesChart();
+		tabPanel.add(seriesChart, "Chart", false);
+		seriesChart.setDataFilter(chosenDataFilter);		
 
 		//everything has been set up, set the initial size
 		resizeInterface(Window.getClientHeight());
@@ -738,116 +479,14 @@ public class OTGViewer implements EntryPoint {
 	 * This method is called when selection variables have changed
 	 * and this needs to be reflected.
 	 */
-	void updateSelections() {
-		switch (chosenDataFilter.cellType) {
-		case Vivo:
-			seriesSelectionLabel.setText("Selected: " + chosenDataFilter.organism + "/" +
-				    chosenDataFilter.organ + "/"  + chosenCompound + "/" + chosenDataFilter.cellType + "/" +  chosenDataFilter.repeatType + "/" + chosenValueType + "/" + chosenProbe);
-			break;
-		case Vitro:
-			seriesSelectionLabel.setText("Selected: " + chosenDataFilter.organism + "/" +
-				     chosenCompound + "/" + chosenDataFilter.cellType + "/" + "/" + chosenValueType + "/" + chosenProbe);
-			break;
-		}		
-	}
-
-	//----------DATA VIEWER PANEL-----------
-	
-	class ExpressionColumn extends Column<ExpressionRow, Number> {
-		int i;
-		NumberCell nc;
-
-		public ExpressionColumn(NumberCell nc, int i) {
-			super(nc);
-			this.i = i;
-			this.nc = nc;
-		}
-
-		public Double getValue(ExpressionRow er) {
-			if (!er.getValue(i).getPresent()) {
-				return Double.NaN;
-			} else {
-				return er.getValue(i).getValue();
-			}
-		}
-	}
-	
-	private String arrayString(String[] ss) {
-		String r = "";
-		for (int i = 0; i < ss.length; ++i) {		
-			r += ss[i];
-			if (i < ss.length - 1) {
-				r += ", ";
-			}
-		}
-		return r;
-	}
-	
-	private int extraCols = 0;
-	private void setupColumns() {
-		// todo: explicitly set the width of each column
-		NumberCell nc = new NumberCell();
-
-		int count = exprGrid.getColumnCount();
-		for (int i = 0; i < count; ++i) {
-			exprGrid.removeColumn(0);
-		}
-
-		extraCols = 0;
-
-		if (probeColVis) {
-			TextColumn<ExpressionRow> probeCol = new TextColumn<ExpressionRow>() {
-				public String getValue(ExpressionRow er) {
-					return er.getProbe();
-				}
-			};
-			exprGrid.addColumn(probeCol, "Probe");
-			extraCols += 1;
-		}
-
-		if (probeTitleColVis) {
-			TextColumn<ExpressionRow> titleCol = new TextColumn<ExpressionRow>() {
-				public String getValue(ExpressionRow er) {
-					return er.getTitle();
-				}
-			};
-			exprGrid.addColumn(titleCol, "Probe title");
-			extraCols += 1;
-		}
-
-		if (geneIdColVis) {
-			TextColumn<ExpressionRow> geneIdCol = new TextColumn<ExpressionRow>() {
-				public String getValue(ExpressionRow er) {
-					return arrayString(er.getGeneIds());
-				}
-			};
-			exprGrid.addColumn(geneIdCol, "Gene ID");
-			extraCols += 1;
-		}
-
-		if (geneSymColVis) {
-			TextColumn<ExpressionRow> geneSymCol = new TextColumn<ExpressionRow>() {
-				public String getValue(ExpressionRow er) {
-					return arrayString(er.getGeneSyms());
-				}
-			};
-			exprGrid.addColumn(geneSymCol, "Gene sym");
-			extraCols += 1;
-		}
-
-		int i = 0;
-		List<Barcode> selection = barcodeHandler.lastMultiSelection();
-		for (Barcode bc : selection) {
-			Column<ExpressionRow, Number> valueCol = new ExpressionColumn(nc, i);
-			valueCol.setSortable(true);
-			exprGrid.addColumn(valueCol, bc.getShortTitle());
-			i += 1;
-		}
-
-		Column<ExpressionRow, Number> avgCol = new ExpressionColumn(nc, i);
-		avgCol.setSortable(true);
-		exprGrid.addColumn(avgCol, "Average");
-		i += 1;
+	void updateSelections() {		
+		expressionTable.setDataFilter(chosenDataFilter);
+		expressionTable.setValueType(chosenValueType);
+		
+		seriesChart.setCompound(chosenCompound);
+		seriesChart.setDataFilter(chosenDataFilter);
+		seriesChart.setValueType(chosenValueType);
+		seriesChart.setProbe(expressionTable.getChosenProbe());
 	}
 
 	void getCompounds() {
@@ -860,12 +499,6 @@ public class OTGViewer implements EntryPoint {
 				doseHandler.retrieveCallback());
 	}
 	
-	void getDosesForSeriesChart() {
-		chartSubtypeCombo.clear();
-		owlimService.doseLevels(chosenDataFilter, chosenCompound, 
-				chosenDataFilter.organ.toString(), seriesChartItemsCallback);
-	}
-
 	void getBarcodes(String compound, String organ, String doseLevel,
 			String time) {
 		barcodeList.clear();
@@ -878,122 +511,15 @@ public class OTGViewer implements EntryPoint {
 		owlimService.times(chosenDataFilter, compound, organ, 
 				timeHandler.retrieveCallback());
 	}
-	
-	void getTimesForSeriesChart() {
-		chartSubtypeCombo.clear();
-		owlimService.times(chosenDataFilter, chosenCompound, 
-				chosenDataFilter.organ.toString(), seriesChartItemsCallback);
-	}
 
-	void getExpressions() {
-		exprGrid.setRowCount(0, false);
-		setupColumns();
-		List<DataColumn> cols = new ArrayList<DataColumn>();
-		for (Barcode code : barcodeHandler.lastMultiSelection()) {
-			cols.add(code);
-		}
-		cols.add(new Group("Average", barcodeHandler.lastMultiSelection().toArray(new Barcode[0])));
-		
-		kcService.loadDataset(chosenDataFilter, cols, displayedProbes, chosenValueType,
-				absValBox.getValue(),
-				new AsyncCallback<Integer>() {
-					public void onFailure(Throwable caught) {
-						Window.alert("Unable to load dataset.");
-					}
-
-					public void onSuccess(Integer result) {
-						exprGrid.setRowCount(result);
-						exprGrid.setVisibleRangeAndClearData(new Range(0, 20),
-								true);
-
-					}
-				});
-	}
 
 	void getPathways(String pattern) {
 		owlimService.pathways(chosenDataFilter, pattern, pathwayHandler.retrieveCallback());
 	}
 
-	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
-		private int start = 0;
-
-		AsyncCallback<List<ExpressionRow>> rowCallback = new AsyncCallback<List<ExpressionRow>>() {
-			public void onFailure(Throwable caught) {
-				Window.alert("Unable to get expression values.");
-			}
-
-			public void onSuccess(List<ExpressionRow> result) {
-				exprGrid.setRowData(start, result);
-
-//				if (chartTable != null) {
-//					chartTable.removeRows(0, chartTable.getNumberOfRows());
-//					for (int i = 0; i < result.size(); ++i) {
-//						chartTable.addRow();
-//						ExpressionRow row = result.get(i);
-//						int cols = barcodeHandler.lastMultiSelection().size();
-//						chartTable.setValue(i, 0, row.getProbe());
-//						for (int j = 0; j < cols; ++j) {
-//							chartTable.setValue(i, j + 1, row.getValue(j)
-//									.getValue());
-//						}
-//						
-//						exprChart.draw(chartTable);						
-//					}
-//				}
-			}
-		};
-
-		protected void onRangeChanged(HasData<ExpressionRow> display) {
-			Range range = display.getVisibleRange();
-			
-			ColumnSortList csl = exprGrid.getColumnSortList();
-			boolean asc = false;
-			int col = 0;
-			if (csl.size() > 0) {
-				col = exprGrid.getColumnIndex((Column<ExpressionRow, ?>) csl.get(0).getColumn()) - extraCols;
-				asc = csl.get(0).isAscending();				
-			}
-			start = range.getStart();
-			kcService.datasetItems(range.getStart(), range.getLength(), col, asc,						
-					rowCallback);
-		}
-
-	}
 	
-	//---------- SERIES CHART PANEL ----------
-	void redrawSeriesChart() {
-		//make sure something is selected
-		if (chartCombo.getSelectedIndex() == -1) {
-			chartCombo.setSelectedIndex(0);
-		}
-		
-		if (chartSubtypeCombo.getSelectedIndex() == -1) {
-			chartSubtypeCombo.setSelectedIndex(0);
-		}
-		
-		//first find the applicable barcodes
-		if (chartCombo.getSelectedIndex() == 0) {
-			//select for specific dose.		
-			owlimService.barcodes(chosenDataFilter, chosenCompound, chosenDataFilter.organ.toString(), 
-					chartSubtypeCombo.getItemText(chartSubtypeCombo.getSelectedIndex()), null, 
-					seriesChartBarcodesCallback);
-		} else {
-			//select for specific time.
-			owlimService.barcodes(chosenDataFilter, chosenCompound, chosenDataFilter.organ.toString(), null, 
-					chartSubtypeCombo.getItemText(chartSubtypeCombo.getSelectedIndex()), 
-					seriesChartBarcodesCallback);
-		}
-	}
-	
-	void updateSeriesSubtypes() {
-		chartSubtypeCombo.clear();
-		if (chartCombo.getSelectedIndex() == 0) {					
-			seriesStrategy = new SeriesDisplayStrategy.VsTime(seriesTable);
-			getDosesForSeriesChart();
-		} else {
-			seriesStrategy = new SeriesDisplayStrategy.VsDose(seriesTable);
-			getTimesForSeriesChart();	
-		}
+	void getExpressions(String[] probes, boolean usePreviousProbes) {
+		expressionTable.getExpressions(probes, usePreviousProbes);
 	}
 	
 }
