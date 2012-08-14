@@ -42,12 +42,11 @@ import com.google.gwt.view.client.MultiSelectionModel;
 import com.google.gwt.view.client.Range;
 import com.google.gwt.view.client.SelectionChangeEvent;
 
-public class ExpressionTable extends Composite {
+public class ExpressionTable extends DataListenerWidget {
 
 	// Visible columns
 	private boolean geneIdColVis = false, probeColVis = false,
 			probeTitleColVis = true, geneSymColVis = true;
-	private String chosenProbe; // single user-selected probe
 
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
 	private DataGrid<ExpressionRow> exprGrid;
@@ -55,10 +54,6 @@ public class ExpressionTable extends Composite {
 
 	private KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
-	
-	public String getChosenProbe() {
-		return chosenProbe;
-	}
 	
 	/**
 	 * This constructor will be used by the GWT designer. (Not functional at run time)
@@ -84,8 +79,8 @@ public class ExpressionTable extends Composite {
 		exprGrid.getSelectionModel().addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
 			public void onSelectionChange(SelectionChangeEvent event) {
 				for (ExpressionRow r: exprGrid.getDisplayedItems()) {
-					if (exprGrid.getSelectionModel().isSelected(r)) {
-						chosenProbe = r.getProbe();						
+					if (exprGrid.getSelectionModel().isSelected(r)) {						
+						changeProbe(r.getProbe());
 					}
 				}		
 			}
@@ -93,7 +88,6 @@ public class ExpressionTable extends Composite {
 		asyncProvider.addDataDisplay(exprGrid);		
 		AsyncHandler colSortHandler = new AsyncHandler(exprGrid);
 		
-
 		HorizontalPanel horizontalPanel = new HorizontalPanel();
 		horizontalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		horizontalPanel.setStyleName("colored");
@@ -282,16 +276,6 @@ public class ExpressionTable extends Composite {
 		selectedBarcodes = selection;
 	}
 	
-	DataFilter chosenDataFilter;
-	public void setDataFilter(DataFilter filter) {
-		chosenDataFilter = filter;
-	}
-	
-	ValueType chosenValueType;
-	public void setValueType(ValueType valueType) {
-		chosenValueType = valueType;
-	}
-	
 	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
 		private int start = 0;
 
@@ -399,8 +383,7 @@ public class ExpressionTable extends Composite {
 			}
 		}
 	}
-	
-	
+		
 	public void resizeInterface(int newHeight) {
 		String h3 = (newHeight - exprGrid.getAbsoluteTop() - 45) + "px";
 		exprGrid.setHeight(h3);	

@@ -23,7 +23,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 
-public class SeriesChart extends Composite {
+public class SeriesChart extends DataListenerWidget {
 
 	private SeriesDisplayStrategy seriesStrategy;
 	private Label seriesSelectionLabel;
@@ -32,34 +32,34 @@ public class SeriesChart extends Composite {
 	private CoreChart seriesChart;
 	private DockPanel chartDockPanel;
 	
-	private DataFilter chosenDataFilter;
-	private String chosenCompound;
-	private ValueType chosenValueType;
-	private String chosenProbe;
-	
 	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
 			.create(OwlimService.class);
 
 	private KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
 	
-	public void setDataFilter(DataFilter df) {
-		chosenDataFilter = df;
+	
+	@Override
+	public void dataFilterChanged(DataFilter df) {
+		super.dataFilterChanged(df);		
+		updateSelectionLabel();		
+	}
+	
+	@Override
+	public void compoundChanged(String compound) {
+		super.compoundChanged(compound);		
 		updateSelectionLabel();
 	}
 	
-	public void setCompound(String compound) {
-		chosenCompound = compound;
+	@Override
+	public void valueTypeChanged(ValueType vt) {
+		super.valueTypeChanged(vt);
 		updateSelectionLabel();
 	}
 	
-	public void setValueType(ValueType vt) {
-		chosenValueType = vt;
-		updateSelectionLabel();
-	}
-	
-	public void setProbe(String probe) {
-		chosenProbe = probe;
+	@Override
+	public void probeChanged(String probe) {
+		super.probeChanged(probe);
 		updateSelectionLabel();
 	}
 	

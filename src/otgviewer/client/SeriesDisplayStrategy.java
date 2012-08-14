@@ -8,6 +8,7 @@ import java.util.Set;
 
 import otgviewer.shared.Barcode;
 import otgviewer.shared.ExpressionRow;
+import otgviewer.shared.SampleTimes;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
@@ -119,7 +120,7 @@ public abstract class SeriesDisplayStrategy {
 		}
 		private String[] categorySubset; 
 		
-		public final static String[] allTimes = new String[] { "2 hr", "3 hr", "6 hr", "8 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day" };		
+		public final static String[] allTimes = SampleTimes.allTimes;		
 		private String[] allCategories = allTimes; 
 		
 		int categoryForBarcode(Barcode b) { return indexOf(categorySubset, b.getTime()); }

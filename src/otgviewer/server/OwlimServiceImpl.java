@@ -8,11 +8,12 @@ import otg.B2RKegg;
 import otg.BCode;
 import otg.CHEMBL;
 import otg.OTGOwlim;
-import otg.Species;
 import otg.OTGQueries;
+import otg.Species;
 import otgviewer.client.OwlimService;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.SampleTimes;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -61,7 +62,9 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 	}
 	
 	public String[] times(DataFilter filter, String compound, String organ) {
-		return OTGOwlim.times(toScala(filter), compound);
+		String[] r =  OTGOwlim.times(toScala(filter), compound);
+		SampleTimes.sortTimes(r);
+		return r;
 	}
 	
 	public String probeTitle(String probe) {		

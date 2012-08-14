@@ -87,8 +87,11 @@ public class OTGViewer implements EntryPoint {
 	
 	private ExpressionTable expressionTable;
 	private SeriesChart seriesChart;
+	private CompoundSelector compoundSelector;
+	private GroupInspector groupInspector;
 
-
+	private DataListenerWidget listeners = new DataListenerWidget(); //dummy widget to track listeners
+	
 	private MenuBar setupMenu() {
 	
 		MenuBar menuBar = new MenuBar(false);
@@ -100,7 +103,7 @@ public class OTGViewer implements EntryPoint {
 		MenuItem mntmNewItem = new MenuItem("New item", false, new Command() {
 			public void execute() {
 				chosenDataFilter = new DataFilter(CellType.Vitro, Organ.Kidney, RepeatType.Single, Organism.Human);
-				updateSelections();
+				listeners.changeDataFilter(chosenDataFilter);				
 				getCompounds();
 			}
 		});
@@ -110,7 +113,7 @@ public class OTGViewer implements EntryPoint {
 		MenuItem mntmNewItem_1 = new MenuItem("New item", false, new Command() {
 			public void execute() {
 				chosenDataFilter = new DataFilter(CellType.Vitro, Organ.Kidney, RepeatType.Single, Organism.Rat);
-				updateSelections();
+				listeners.changeDataFilter(chosenDataFilter);
 				getCompounds();
 			}
 		});
@@ -120,7 +123,7 @@ public class OTGViewer implements EntryPoint {
 		MenuItem mntmNewItem_2 = new MenuItem("New item", false, new Command() {
 			public void execute() {
 				chosenDataFilter = new DataFilter(CellType.Vivo, Organ.Liver, RepeatType.Single, Organism.Rat);
-				updateSelections();
+				listeners.changeDataFilter(chosenDataFilter);
 				getCompounds();
 			}
 		});
@@ -130,7 +133,7 @@ public class OTGViewer implements EntryPoint {
 		MenuItem mntmNewItem_3 = new MenuItem("New item", false, new Command() {
 			public void execute() {
 				chosenDataFilter = new DataFilter(CellType.Vivo, Organ.Liver, RepeatType.Repeat, Organism.Rat);
-				updateSelections();
+				listeners.changeDataFilter(chosenDataFilter);
 				getCompounds();
 			}
 		});
@@ -140,7 +143,7 @@ public class OTGViewer implements EntryPoint {
 		MenuItem mntmNewItem_4 = new MenuItem("New item", false, new Command() {
 			public void execute() {
 				chosenDataFilter = new DataFilter(CellType.Vivo, Organ.Kidney, RepeatType.Single, Organism.Rat);
-				updateSelections();
+				listeners.changeDataFilter(chosenDataFilter);
 				getCompounds();
 			}
 		});
@@ -150,7 +153,7 @@ public class OTGViewer implements EntryPoint {
 		MenuItem mntmNewItem_5 = new MenuItem("New item", false, new Command() {
 			public void execute() {
 				chosenDataFilter = new DataFilter(CellType.Vivo, Organ.Kidney, RepeatType.Repeat, Organism.Rat);
-				updateSelections();
+				listeners.changeDataFilter(chosenDataFilter);
 				getCompounds();
 			}
 		});
@@ -163,7 +166,7 @@ public class OTGViewer implements EntryPoint {
 		MenuItem mntmFolds = new MenuItem("Fold values", false, new Command() {
 			public void execute() {
 				chosenValueType = ValueType.Folds;
-				updateSelections();				
+				listeners.changeValueType(chosenValueType);
 				getExpressions(null, false);
 			}
 		});
@@ -173,7 +176,7 @@ public class OTGViewer implements EntryPoint {
 				new Command() {
 					public void execute() {
 						chosenValueType = ValueType.Absolute;
-						updateSelections();
+						listeners.changeValueType(chosenValueType);
 						getExpressions(null, false);
 					}
 				});
@@ -350,12 +353,22 @@ public class OTGViewer implements EntryPoint {
 					//data viewer tab
 					break;
 				case 1:
-					//series chart tab
-					updateSelections(); //get the selected probe
+					//series chart tab					
 					seriesChart.redraw();					
 				}
 			}
 		});
+		
+		DockPanel dockPanel_1 = new DockPanel();
+		tabPanel.add(dockPanel_1, "Group definitions", false);
+		dockPanel_1.setSize("5cm", "3cm");
+		
+		compoundSelector = new CompoundSelector(chosenDataFilter);
+		dockPanel_1.add(compoundSelector, DockPanel.WEST);
+		
+		groupInspector = new GroupInspector();
+		dockPanel_1.add(groupInspector, DockPanel.CENTER);
+		compoundSelector.addListener(groupInspector);
 
 		//DATA VIEWER UI
 		DockPanel dockPanel = new DockPanel();
@@ -382,7 +395,7 @@ public class OTGViewer implements EntryPoint {
 				compoundList_1, false) {
 			protected void getUpdates(String compound) {
 				chosenCompound = compound;
-				updateSelections();
+				listeners.changeCompound(compound);				
 				getDoseLevels(compound, chosenDataFilter.organ.toString());
 				getTimes(compound, chosenDataFilter.organ.toString());
 			}
@@ -401,8 +414,8 @@ public class OTGViewer implements EntryPoint {
 
 		doseHandler = new ListSelectionHandler<String>("dose levels",
 				doseLevelList, true, SeriesDisplayStrategy.VsDose.allDoses) {
-			protected void getUpdates(String dose) {
-				updateSelections();
+			protected void getUpdates(String dose) {				
+//				updateSelections();
 				getBarcodes(compoundHandler.lastSelected(),
 						chosenDataFilter.organ.toString(), doseHandler.lastSelected(),
 						timeHandler.lastSelected());
@@ -419,8 +432,8 @@ public class OTGViewer implements EntryPoint {
 		timeList.setSize("10em", "100px");
 
 		timeHandler = new ListSelectionHandler<String>("times", timeList, true, SeriesDisplayStrategy.VsTime.allTimes) {
-			protected void getUpdates(String time) {
-				updateSelections();
+			protected void getUpdates(String time) {				
+//				updateSelections();
 				getBarcodes(compoundHandler.lastSelected(),
 						chosenDataFilter.organ.toString(), doseHandler.lastSelected(),
 						timeHandler.lastSelected());
@@ -442,7 +455,7 @@ public class OTGViewer implements EntryPoint {
 		barcodeHandler = new MultiSelectionHandler<Barcode>("barcodes",
 				barcodeList) {
 			protected void getUpdates(String barcode) {
-
+				
 			}
 
 			protected void getUpdates(List<Barcode> barcodes) {
@@ -465,29 +478,38 @@ public class OTGViewer implements EntryPoint {
 		timeHandler.addAfter(barcodeHandler);
 
 		seriesChart = new SeriesChart();
-		tabPanel.add(seriesChart, "Chart", false);
-		seriesChart.setDataFilter(chosenDataFilter);		
-
+		tabPanel.add(seriesChart, "Probe chart", false);
+		
+		//wiring		
+		listeners.addListener(expressionTable);
+		listeners.addListener(seriesChart);
+		listeners.addListener(compoundSelector);
+		expressionTable.addListener(seriesChart);
+		
+		//initial settings
+		listeners.changeDataFilter(chosenDataFilter); 
+		listeners.changeValueType(chosenValueType);
+		
 		//everything has been set up, set the initial size
 		resizeInterface(Window.getClientHeight());
 		//INITIAL DATA
 		getCompounds();
 	}
 	
-
 	/**
 	 * This method is called when selection variables have changed
 	 * and this needs to be reflected.
 	 */
-	void updateSelections() {		
-		expressionTable.setDataFilter(chosenDataFilter);
-		expressionTable.setValueType(chosenValueType);
-		
-		seriesChart.setCompound(chosenCompound);
-		seriesChart.setDataFilter(chosenDataFilter);
-		seriesChart.setValueType(chosenValueType);
-		seriesChart.setProbe(expressionTable.getChosenProbe());
-	}
+//	void updateSelections() {		
+//		expressionTable.setDataFilter(chosenDataFilter);
+//		expressionTable.setValueType(chosenValueType);
+//		
+//		seriesChart.setCompound(chosenCompound);
+//		seriesChart.setDataFilter(chosenDataFilter);
+//		seriesChart.setValueType(chosenValueType);		
+//		
+//		compoundSelector.dataFilterChanged(chosenDataFilter);
+//	}
 
 	void getCompounds() {
 		owlimService.compounds(chosenDataFilter, compoundHandler.retrieveCallback());
@@ -521,5 +543,4 @@ public class OTGViewer implements EntryPoint {
 	void getExpressions(String[] probes, boolean usePreviousProbes) {
 		expressionTable.getExpressions(probes, usePreviousProbes);
 	}
-	
 }
