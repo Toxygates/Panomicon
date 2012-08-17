@@ -26,4 +26,8 @@ public class Group implements Serializable, DataColumn {
 	public String toString() {
 		return name;
 	}
+	
+	public String getShortTitle() {
+		return name;
+	}
 }

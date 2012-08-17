@@ -8,6 +8,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Label;
 
 /**
  * This widget is for selecting a compound or a set of 
@@ -27,6 +28,10 @@ public class CompoundSelector extends DataListenerWidget {
 		VerticalPanel verticalPanel = new VerticalPanel();
 		initWidget(verticalPanel);
 		verticalPanel.setWidth("210px");
+		
+		Label lblCompounds = new Label("Compounds");
+		lblCompounds.setStyleName("heading");
+		verticalPanel.add(lblCompounds);
 		
 		ListBox compoundList = new ListBox();
 		compoundList.setVisibleItemCount(10);

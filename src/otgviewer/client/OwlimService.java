@@ -38,4 +38,8 @@ public interface OwlimService extends RemoteService {
 	 * @return
 	 */
 	public String[] probesTargetedByCompound(DataFilter filter, String compound);
+	
+	public String[] goTerms(String pattern);
+	
+	public String[] probesForGoTerm(String goTerm);
 }

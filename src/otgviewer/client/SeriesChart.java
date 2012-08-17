@@ -162,7 +162,16 @@ public class SeriesChart extends DataListenerWidget {
 		seriesTable = DataTable.create();
 	}
 	
+	@Override
+	public void activate() {
+		super.activate();
+		redraw();
+	}
+	
 	void redraw() {
+		if (!active) {
+			return;
+		}
 		//make sure something is selected
 		if (chartCombo.getSelectedIndex() == -1) {
 			chartCombo.setSelectedIndex(0);

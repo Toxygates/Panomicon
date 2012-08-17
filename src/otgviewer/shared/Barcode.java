@@ -52,4 +52,8 @@ public class Barcode implements Serializable, DataColumn {
 	public String toString() {
 		return getShortTitle();
 	}
+	
+	public Barcode[] getBarcodes() { 
+		return new Barcode[] { this };
+	}
 }

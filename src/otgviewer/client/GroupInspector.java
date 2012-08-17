@@ -13,6 +13,8 @@ import otgviewer.shared.Group;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -21,6 +23,7 @@ import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -69,8 +72,9 @@ public class GroupInspector extends DataListenerWidget {
 		});
 		
 		grid.setStyleName("highlySpaced");
-		grid.setWidth("600px");
+		grid.setWidth("700px");
 		grid.setHeight("400px");
+		grid.setBorderWidth(0);
 		vp.add(grid);
 		vp.setWidth("410px");		
 		
@@ -148,13 +152,23 @@ public class GroupInspector extends DataListenerWidget {
 				HorizontalPanel hp = new HorizontalPanel();
 				for (int t = 0; t < availableTimes.length; ++t) {				
 					CheckBox cb = new CheckBox(availableTimes[t]);
-					cb.setValue(initState);
+					cb.setValue(initState);					
 					checkboxes[c][availableTimes.length * d + t] = cb;
-					hp.add(cb);
+					hp.add(cb);					
 				}
-				grid.setWidget(c + 1, d + 1, hp);
+				CheckBox all = new CheckBox("All");
+				all.addValueChangeHandler(new MultiSelectHandler(c, availableTimes.length * d, availableTimes.length * (d + 1)));
+				hp.add(all);
+				
+				SimplePanel sp = new SimplePanel(hp);
+				sp.setStyleName("border");					
+				grid.setWidget(c + 1, d + 1, sp);					
 			}
 		}
+	}
+	
+	public Map<String, Group> getGroups() {
+		return groups;
 	}
 	
 	Group pendingGroup;
@@ -204,10 +218,7 @@ public class GroupInspector extends DataListenerWidget {
 	}
 	
 	private void addToGroup(Barcode[] barcodes) {		
-		synchronized (this) {
-			assert(barcodes != null);
-			assert(pendingGroup != null);
-			assert(pendingGroup.getBarcodes() != null);
+		synchronized (this) {			
 			List<Barcode> n = new ArrayList<Barcode>();
 			n.addAll(Arrays.asList(barcodes));			
 			n.addAll(Arrays.asList(pendingGroup.getBarcodes()));
@@ -216,5 +227,20 @@ public class GroupInspector extends DataListenerWidget {
 			groups.put(pendingGroup.getName(), pendingGroup);
 		}
 	
+	}
+	
+	private class MultiSelectHandler implements ValueChangeHandler<Boolean> {
+		private int from, to, row;
+		MultiSelectHandler(int row, int from, int to) {
+			this.from = from;
+			this.to = to;
+			this.row = row;
+		}
+		
+		public void onValueChange(ValueChangeEvent<Boolean> vce) {
+			for (int i = from; i < to; ++i) {
+				checkboxes[row][i].setValue(vce.getValue());
+			}
+		}
 	}
 }

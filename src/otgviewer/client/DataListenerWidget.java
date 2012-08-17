@@ -3,6 +3,7 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ValueType;
 
@@ -20,9 +21,13 @@ class DataListenerWidget extends Composite implements DataViewListener {
 	
 	protected DataFilter chosenDataFilter;
 	protected String chosenProbe;
+	protected String[] chosenProbes;
 	protected List<String> chosenCompounds = new ArrayList<String>();
 	protected String chosenCompound;
 	protected ValueType chosenValueType;
+	protected List<DataColumn> chosenColumns = new ArrayList<DataColumn>();
+	
+	protected boolean active = false;
 	
 	public DataListenerWidget() {
 		
@@ -43,6 +48,11 @@ class DataListenerWidget extends Composite implements DataViewListener {
 		changeProbe(probe);
 	}
 	
+	public void probesChanged(String[] probes) {
+		chosenProbes = probes;
+		changeProbes(probes);
+	}
+	
 	public void compoundsChanged(List<String> compounds) {
 		chosenCompounds = compounds;
 		changeCompounds(compounds);
@@ -58,6 +68,15 @@ class DataListenerWidget extends Composite implements DataViewListener {
 		changeValueType(type);
 	}
 	
+	public void columnsChanged(List<DataColumn> columns) {
+		chosenColumns = columns;
+		changeColumns(columns);
+	}
+	
+	public void heightChanged(int newHeight) {
+		changeHeight(newHeight);
+	}
+	
 	//outgoing signals	
 	protected void changeDataFilter(DataFilter filter) {
 		chosenDataFilter = filter;
@@ -70,6 +89,13 @@ class DataListenerWidget extends Composite implements DataViewListener {
 		chosenProbe = probe;
 		for (DataViewListener l: listeners) {
 			l.probeChanged(probe);
+		}
+	}
+	
+	protected void changeProbes(String[] probes) {
+		chosenProbes = probes;
+		for (DataViewListener l: listeners) {
+			l.probesChanged(probes);
 		}
 	}
 	
@@ -93,4 +119,29 @@ class DataListenerWidget extends Composite implements DataViewListener {
 			l.valueTypeChanged(type);
 		}
 	}
+	
+	
+	protected void changeColumns(List<DataColumn> columns) {
+		chosenColumns = columns;
+		for (DataViewListener l : listeners) {
+			l.columnsChanged(columns);
+		}
+	}
+	protected void changeHeight(int newHeight) {
+		for (DataViewListener l : listeners) {
+			l.heightChanged(newHeight);
+		}
+	}
+	
+	// other
+	
+	public void activate() {
+		active = true;
+	}
+	
+	public void deactivate() {
+		active = false;
+	}
+	
+	
 }	

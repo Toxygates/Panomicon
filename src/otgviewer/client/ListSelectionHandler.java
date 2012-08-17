@@ -2,6 +2,7 @@ package otgviewer.client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -82,18 +83,27 @@ public abstract class ListSelectionHandler<T> {
 			}
 
 			public void onSuccess(T[] result) {
-				sort(result);
-				lastResult = result;				
-				list.clear();				
-				for (T t: result) {
-					list.addItem(representation(t));
-				}
-				if (allOption) {
-					list.addItem("(All)");
-				}				
-				handleRetreival(result);				
+				setItems(result);
+								
 			}
 		};
+	}
+	
+	public void setItems(Collection<T> items) {
+		setItems((T[]) items.toArray());
+	}
+	
+	public void setItems(T[] result) {
+		sort(result);
+		lastResult = result;				
+		list.clear();				
+		for (T t: result) {
+			list.addItem(representation(t));
+		}
+		if (allOption) {
+			list.addItem("(All)");
+		}				
+		handleRetreival(result);
 	}
 	
 	protected void sort(T[] items) {

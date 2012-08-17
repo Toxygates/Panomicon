@@ -52,3 +52,9 @@ background:Beige;
   margin: 5px;
   text-align: center;
 }
+
+.border {
+  margin: 1px;
+  padding: 1px;
+  border: solid black 1px;
+}

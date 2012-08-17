@@ -110,5 +110,13 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 			CHEMBL.close();			
 		}		
 	}
+	
+	public String[] goTerms(String pattern) {	
+		return OTGOwlim.goTerms(pattern);		
+	}
+	
+	public String[] probesForGoTerm(String goTerm) {
+		return OTGOwlim.probesForGoTerm(goTerm);
+	}
 
 }

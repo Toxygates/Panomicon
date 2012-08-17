@@ -18,4 +18,7 @@ public interface OwlimServiceAsync {
 	public void pathways(DataFilter filter, String pattern, AsyncCallback<String[]> callback);
 	public void probesForPathway(DataFilter filter, String pathway, AsyncCallback<String[]> callback);
 	public void probesTargetedByCompound(DataFilter filter, String compound, AsyncCallback<String[]> callback);
+	
+	public void goTerms(String pattern, AsyncCallback<String[]> callback);
+	public void probesForGoTerm(String term, AsyncCallback<String[]> callback);
 }

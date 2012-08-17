@@ -1,14 +1,13 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
-import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Group;
-import otgviewer.shared.ValueType;
 
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
@@ -28,7 +27,6 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.DoubleBox;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -253,10 +251,10 @@ public class ExpressionTable extends DataListenerWidget {
 
 		int i = 0;
 		
-		for (Barcode bc : selectedBarcodes) {
+		for (DataColumn c : chosenColumns) {
 			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);
 			valueCol.setSortable(true);
-			exprGrid.addColumn(valueCol, bc.getShortTitle());
+			exprGrid.addColumn(valueCol, c.getShortTitle());
 			
 			if (i == 0 && exprGrid.getColumnSortList().size() == 0) {
 				exprGrid.getColumnSortList().push(valueCol);
@@ -270,12 +268,7 @@ public class ExpressionTable extends DataListenerWidget {
 		i += 1;
 				
 	}
-	
-	List<Barcode> selectedBarcodes = new ArrayList<Barcode>();
-	public void setSelectedBarcodes(List<Barcode> selection) {
-		selectedBarcodes = selection;
-	}
-	
+		
 	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
 		private int start = 0;
 
@@ -333,21 +326,28 @@ public class ExpressionTable extends DataListenerWidget {
 		return r;
 	}
 	
-	String[] currentProbes;
+	@Override
+	public void probesChanged(String[] probes) {
+		//no-op to prohibit change
+	}
+	
 	public void getExpressions(String[] displayedProbes, boolean usePreviousProbes) {
 		if (!usePreviousProbes) {
-			this.currentProbes = displayedProbes;
+			changeProbes(displayedProbes);			
 		}
 		
 		exprGrid.setRowCount(0, false);
 		setupColumns();
 		List<DataColumn> cols = new ArrayList<DataColumn>();
-		for (Barcode code : selectedBarcodes) {
-			cols.add(code);
-		}
-		cols.add(new Group("Average", selectedBarcodes.toArray(new Barcode[0])));
+		cols.addAll(chosenColumns);
 		
-		kcService.loadDataset(chosenDataFilter, cols, currentProbes, chosenValueType,
+		List<Barcode> average = new ArrayList<Barcode>();
+		for (DataColumn c: cols) {			
+			average.addAll(Arrays.asList(c.getBarcodes()));
+		}
+		cols.add(new Group("Average", average.toArray(new Barcode[0])));
+		
+		kcService.loadDataset(chosenDataFilter, cols, chosenProbes, chosenValueType,
 				absValBox.getValue(),
 				new AsyncCallback<Integer>() {
 					public void onFailure(Throwable caught) {
@@ -362,7 +362,6 @@ public class ExpressionTable extends DataListenerWidget {
 					}
 				});
 	}
-
 	
 	class ExpressionColumn extends Column<ExpressionRow, String> {
 		int i;
@@ -383,7 +382,7 @@ public class ExpressionTable extends DataListenerWidget {
 			}
 		}
 	}
-		
+	
 	public void resizeInterface(int newHeight) {
 		String h3 = (newHeight - exprGrid.getAbsoluteTop() - 45) + "px";
 		exprGrid.setHeight(h3);	
