@@ -45,6 +45,8 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.visualization.client.VisualizationUtils;
+import com.google.gwt.user.client.ui.StackPanel;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -58,6 +60,7 @@ public class OTGViewer implements EntryPoint {
 			.create(KCService.class);
 
 	private RootPanel rootPanel;
+	private StackPanel stackPanel;
 	private VerticalPanel mainVertPanel;
 	private HorizontalSplitPanel horizontalSplitPanel;
 	private MenuBar menuBar;
@@ -76,7 +79,7 @@ public class OTGViewer implements EntryPoint {
 	private TextArea customProbeText;
 
 	// Track the current selection
-//	private String[] displayedProbes = null;
+	// private String[] displayedProbes = null;
 	private String chosenCompound;
 
 	private ExpressionTable expressionTable;
@@ -202,7 +205,8 @@ public class OTGViewer implements EntryPoint {
 		String h2 = (newHeight - horizontalSplitPanel.getAbsoluteTop() - 30)
 				+ "px";
 		expressionTable.resizeInterface(newHeight);
-
+		stackPanel.setHeight((newHeight - stackPanel.getAbsoluteTop() - 20) + "px");
+		
 		listeners.changeHeight(newHeight);
 	}
 
@@ -244,120 +248,6 @@ public class OTGViewer implements EntryPoint {
 		mainVertPanel.add(horizontalSplitPanel);
 		horizontalSplitPanel.setSize("100%", "800px");
 
-		// PATHWAY SEARCH
-		VerticalPanel verticalPanel_2 = new VerticalPanel();
-		verticalPanel_2.setStyleName("spacedLayout");
-		verticalPanel_2
-				.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		horizontalSplitPanel.setLeftWidget(verticalPanel_2);
-		verticalPanel_2.setBorderWidth(0);
-		verticalPanel_2.setSize("95%", "95%");
-		
-		ProbeSelector pathwaySel = new ProbeSelector("KEGG pathways") {			
-			protected void getMatches(String pattern) {
-				owlimService.pathways(chosenDataFilter, pattern,
-						retrieveMatchesCallback());						
-			}
-			
-			protected void getProbes(String item) {
-				owlimService.probesForPathway(chosenDataFilter, item, 
-						retrieveProbesCallback());
-			}
-			
-			public void probesChanged(String[] probes) {
-				super.probesChanged(probes);
-				getExpressions(probes, false);
-			}
-		};
-		
-		verticalPanel_2.add(pathwaySel);
-		pathwaySel.setWidth("100%");
-
-		ProbeSelector goSel = new ProbeSelector("GO terms") {
-			protected void getMatches(String pattern) {
-				owlimService.goTerms(pattern, retrieveMatchesCallback());
-			}
-			
-			protected void getProbes(String item) {
-				owlimService.probesForGoTerm(item, retrieveProbesCallback());
-			}
-			
-			public void probesChanged(String[] probes) {
-				super.probesChanged(probes);
-				getExpressions(probes, false);
-			}
-		};
-		verticalPanel_2.add(goSel);
-		goSel.setWidth("100%");
-		
-		Button btnShowCompoundTargets = new Button("Show CHEMBL targets");
-		verticalPanel_2.add(btnShowCompoundTargets);
-		btnShowCompoundTargets.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent ev) {
-				if (chosenCompound != null) {
-					owlimService.probesTargetedByCompound(chosenDataFilter,
-							chosenCompound, new AsyncCallback<String[]>() {
-								public void onFailure(Throwable caught) {
-									Window.alert("Unable to get probes.");
-								}
-
-								public void onSuccess(String[] probes) {
-									getExpressions(probes, false);
-								}
-							});
-				} else {
-					Window.alert("Please select a compound first.");
-				}
-			}
-		});
-
-		Label lblEnterProbesManually = new Label("Custom probe list");
-		lblEnterProbesManually.setStyleName("heading");
-		verticalPanel_2.add(lblEnterProbesManually);
-
-		customProbeText = new TextArea();
-		verticalPanel_2.add(customProbeText);
-		customProbeText.setSize("95%", "100px");
-
-		Button btnShowCustomProbes = new Button("Show custom probes");
-		verticalPanel_2.add(btnShowCustomProbes);
-		btnShowCustomProbes.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent ev) {
-				String text = customProbeText.getText();
-				String[] split = text.split("\n");
-				if (split.length == 0) {
-					Window.alert("Please enter probes, genes or proteins in the text box and try again.");
-				} else {
-					// change the identifiers (which can be mixed format) into a
-					// homogenous format (probes only)
-					// todo: might want to display some kind of progress
-					// indicator
-					kcService.identifiersToProbes(chosenDataFilter, split,
-							new AsyncCallback<String[]>() {
-								public void onSuccess(String[] probes) {
-									getExpressions(probes, false);
-								}
-
-								public void onFailure(Throwable caught) {
-
-								}
-							});
-				}
-			}
-		});
-
-		Button btnShowAllProbes = new Button("Show all probes");
-		verticalPanel_2.add(btnShowAllProbes);
-		btnShowAllProbes.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent ev) {
-//				if (pathwayList.getSelectedIndex() != -1) {
-//					pathwayList.setItemSelected(pathwayList.getSelectedIndex(),
-//							false);
-//				}
-				getExpressions(null, false);
-			}
-		});
-
 		TabPanel tabPanel = new TabPanel();
 		horizontalSplitPanel.setRightWidget(tabPanel);
 		tabPanel.setSize("100%", "100%");
@@ -369,8 +259,8 @@ public class OTGViewer implements EntryPoint {
 					expressionTable.deactivate();
 					seriesChart.deactivate();
 					break;
-				case 1: 
-					//data viewer tab
+				case 1:
+					// data viewer tab
 					expressionTable.activate();
 					seriesChart.deactivate();
 					groupHandler.setItems(groupInspector.getGroups().keySet());
@@ -378,7 +268,7 @@ public class OTGViewer implements EntryPoint {
 				case 2:
 					expressionTable.deactivate();
 					seriesChart.activate();
-					
+
 					// series chart tab
 					seriesChart.redraw();
 				}
@@ -399,12 +289,11 @@ public class OTGViewer implements EntryPoint {
 		DockPanel dockPanel = new DockPanel();
 		tabPanel.add(dockPanel, "Data viewer", false);
 		dockPanel.setSize("100%", "100%");
-		
+
 		TabPanel innerTabPanel = new TabPanel();
 		dockPanel.add(innerTabPanel, DockPanel.NORTH);
 		innerTabPanel.setSize("100%", "281px");
 
-		
 		horizontalPanel = new HorizontalPanel();
 		innerTabPanel.add(horizontalPanel, "Free selection", false);
 		horizontalPanel.setSize("5cm", "3cm");
@@ -412,17 +301,16 @@ public class OTGViewer implements EntryPoint {
 		HorizontalPanel horizontalPanel_1 = new HorizontalPanel();
 		innerTabPanel.add(horizontalPanel_1, "Groups", false);
 		horizontalPanel_1.setSize("5cm", "236px");
-		
+
 		ListBox groupList = new ListBox();
 		horizontalPanel_1.add(groupList);
 		groupList.setMultipleSelect(true);
 		groupList.setSize("200px", "236px");
 		groupList.setVisibleItemCount(5);
-		groupHandler = new MultiSelectionHandler<String>("groups",
-				groupList) {
+		groupHandler = new MultiSelectionHandler<String>("groups", groupList) {
 			protected void getUpdates(List<String> groups) {
 				List<DataColumn> cols = new ArrayList<DataColumn>();
-				for (String s: groups) {
+				for (String s : groups) {
 					cols.add(groupInspector.getGroups().get(s));
 				}
 				listeners.columnsChanged(cols);
@@ -510,8 +398,9 @@ public class OTGViewer implements EntryPoint {
 			}
 
 			protected void getUpdates(List<Barcode> barcodes) {
-				//!!!
-				listeners.columnsChanged(Arrays.asList(barcodes.toArray(new DataColumn[0])));
+				// !!!
+				listeners.columnsChanged(Arrays.asList(barcodes
+						.toArray(new DataColumn[0])));
 				getExpressions(null, true);
 			}
 
@@ -535,18 +424,125 @@ public class OTGViewer implements EntryPoint {
 		listeners.addListener(expressionTable);
 		listeners.addListener(seriesChart);
 		listeners.addListener(compoundSelector);
+		expressionTable.addListener(seriesChart);
+
+		stackPanel = new StackPanel();
+		horizontalSplitPanel.setLeftWidget(stackPanel);
+		stackPanel.setSize("100%", "400px");
+
+		ProbeSelector pathwaySel = new ProbeSelector("You can display probes that correspond to a given KEGG pathway. Enter a partial pathway name and press enter to search.") {
+			protected void getMatches(String pattern) {
+				owlimService.pathways(chosenDataFilter, pattern,
+						retrieveMatchesCallback());
+			}
+
+			protected void getProbes(String item) {
+				owlimService.probesForPathway(chosenDataFilter, item,
+						retrieveProbesCallback());
+			}
+
+			public void probesChanged(String[] probes) {
+				super.probesChanged(probes);
+				getExpressions(probes, false);
+			}
+		};
+		stackPanel.add(pathwaySel, "KEGG pathway search", false);
+		pathwaySel.setSize("100%", "350px");
 		listeners.addListener(pathwaySel);
+
+		ProbeSelector goSel = new ProbeSelector("You can display probes that correspond to a given GO term. Enter a partial term name and press enter to search.") {
+			protected void getMatches(String pattern) {
+				owlimService.goTerms(pattern, retrieveMatchesCallback());
+			}
+
+			protected void getProbes(String item) {
+				owlimService.probesForGoTerm(item, retrieveProbesCallback());
+			}
+
+			public void probesChanged(String[] probes) {
+				super.probesChanged(probes);
+				getExpressions(probes, false);
+			}
+		};
+		stackPanel.add(goSel, "GO term search", false);
+		goSel.setSize("100%", "350px");
 		listeners.addListener(goSel);
-		expressionTable.addListener(seriesChart);		
 		
+		VerticalPanel verticalPanel_2 = new VerticalPanel();
+		verticalPanel_2.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		stackPanel.add(verticalPanel_2, "CHEMBL targets", false);
+		verticalPanel_2.setSize("100%", "100%");
+		
+		Label lblYouCanDisplay = new Label("You can display probes that are known targets of the currently selected compound.");
+		verticalPanel_2.add(lblYouCanDisplay);
+		
+		Button button = new Button("Show CHEMBL targets");
+		verticalPanel_2.add(button);
+		button.setSize("100%", "37px");
+
+		VerticalPanel verticalPanel = new VerticalPanel();
+		verticalPanel
+				.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		stackPanel.add(verticalPanel, "Custom probes", false);
+		verticalPanel.setSize("100%", "350px");
+
+		Label lblEnterProbesManually = new Label(
+				"Enter a list of probes, genes or proteins to display only these.");
+		verticalPanel.add(lblEnterProbesManually);
+		lblEnterProbesManually.setStyleName("none");
+
+		customProbeText = new TextArea();
+		verticalPanel.add(customProbeText);
+		customProbeText.setSize("95%", "300px");
+
+		Button btnShowCustomProbes = new Button("Show custom probes");
+		verticalPanel.add(btnShowCustomProbes);
+
+		Button btnShowAllProbes = new Button("Show all probes");
+		verticalPanel.add(btnShowAllProbes);
+		btnShowAllProbes.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent ev) {
+				// if (pathwayList.getSelectedIndex() != -1) {
+				// pathwayList.setItemSelected(pathwayList.getSelectedIndex(),
+				// false);
+				// }
+				getExpressions(null, false);
+			}
+		});
+		btnShowCustomProbes.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent ev) {
+				String text = customProbeText.getText();
+				String[] split = text.split("\n");
+				if (split.length == 0) {
+					Window.alert("Please enter probes, genes or proteins in the text box and try again.");
+				} else {
+					// change the identifiers (which can be mixed format) into a
+					// homogenous format (probes only)
+					// todo: might want to display some kind of progress
+					// indicator
+					kcService.identifiersToProbes(chosenDataFilter, split,
+							new AsyncCallback<String[]>() {
+								public void onSuccess(String[] probes) {
+									getExpressions(probes, false);
+								}
+
+								public void onFailure(Throwable caught) {
+
+								}
+							});
+				}
+			}
+		});
+
 		// initial settings
 		listeners.changeDataFilter(chosenDataFilter);
 		listeners.changeValueType(chosenValueType);
 
-		//now when all widgets are in place we can do this (will trigger some activity)
+		// now when all widgets are in place we can do this (will trigger some
+		// activity)
 		tabPanel.selectTab(0);
 		innerTabPanel.selectTab(0);
-		
+
 		// everything has been set up, set the initial size
 		resizeInterface(Window.getClientHeight());
 		// INITIAL DATA

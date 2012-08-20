@@ -100,57 +100,18 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		HttpServletRequest request = getThreadLocalRequest();
 		HttpSession session = request.getSession();
 
-		//first compute a list of all barcodes to obtain
-		Set<String> barcodesToGet = new HashSet<String>();
-		for (DataColumn dc: columns) {
-			if (dc instanceof Barcode) {
-				barcodesToGet.add(((Barcode) dc).getCode());
-			} else {
-				//it's a group
-				for (Barcode b: ((Group) dc).getBarcodes()) {
-					barcodesToGet.add(b.getCode());
-				}
-			}
-		}
-		List<String> orderedBarcodes = new ArrayList<String>();
-		orderedBarcodes.addAll(barcodesToGet);
-		
+		String[] orderedBarcodes = KCServiceImplS.barcodes4J(columns);
+
 		String[] realProbes = filterProbes(filter, probes);
-		ExprValue[][] data = getExprValues(filter, orderedBarcodes, realProbes, type,
+		ExprValue[][] data = getExprValues(filter, Arrays.asList(orderedBarcodes), realProbes, type,
 				false);
 		
-		//compute columns
-		//note, we might need to do this in scala eventually, too complex in java
-		ExprValue[][] rendered = new ExprValue[data.length][columns.size()];
-		for (int r = 0; r < data.length; ++r) {
-			ExprValue[] row = data[r];
-			for (int c = 0; c < columns.size(); ++c) {
-				DataColumn dc = columns.get(c);
-				if (dc instanceof Barcode) {
-					int i = SharedUtils.indexOf(orderedBarcodes, ((Barcode) dc).getCode());
-					rendered[r][c] = data[r][i];
-				} else {
-					//group
-					double avg = 0;
-					int numPresent = 0;
-					for (int cc = 0; cc < ((Group) dc).getBarcodes().length; ++cc) {
-						int i = SharedUtils.indexOf(orderedBarcodes, ((Group) dc).getBarcodes()[cc].getCode());
-						if (data[r][i].present()) {
-							avg += data[r][i].value();
-							numPresent += 1;
-						}
-					}
-					if (numPresent > 0) {
-						avg /= numPresent;
-						rendered[r][c] = new ExprValue(avg, 'P',
-								data[r][0].probe());
-					} else {
-						rendered[r][c] = new ExprValue(0, 'A', data[r][0].probe());
-					}
-				}
-			}
-		}
+		ExprValue[][] rendered = new ExprValue[data.length][];
 
+		for (int r = 0; r < data.length; ++r) {
+			rendered[r] = KCServiceImplS.computeRow4J(columns, data, orderedBarcodes, r);
+		}
+		
 		// filter by abs. value
 		List<ExprValue[]> remaining = new ArrayList<ExprValue[]>();
 		List<String> remainingProbes = new ArrayList<String>();
@@ -207,9 +168,9 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 				System.out.println("Range: " + offset + " to " + cpend);
 				
 				if (cpend > offset) {
-					List<String> probeTitles = B2RAffy.titlesForJava((String[]) Arrays.copyOfRange(probes, offset, cpend));
-					List<String[]> geneIds = B2RAffy.geneIdsForJava((String[]) Arrays.copyOfRange(probes, offset, cpend));
-					List<String[]> geneSyms = B2RAffy.geneSymsForJava((String[]) Arrays.copyOfRange(probes, offset, cpend));
+					List<String> probeTitles = B2RAffy.titles4J((String[]) Arrays.copyOfRange(probes, offset, cpend));
+					List<String[]> geneIds = B2RAffy.geneIds4J((String[]) Arrays.copyOfRange(probes, offset, cpend));
+					List<String[]> geneSyms = B2RAffy.geneSyms4J((String[]) Arrays.copyOfRange(probes, offset, cpend));
 					for (int i = offset; i < offset + size && i < probes.length && i < data.length; ++i) {					
 						r.add(arrayToRow(probes[i], probeTitles.get(i - offset), geneIds.get(i - offset), 
 								geneSyms.get(i - offset), data[i]));					

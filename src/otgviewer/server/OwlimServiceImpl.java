@@ -50,7 +50,7 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 	public Barcode[] barcodes(DataFilter filter, String compound, String organ,
 			String doseLevel, String time) {
 
-		BCode[] codes = OTGOwlim.barcodes(toScala(filter), compound, doseLevel, time);
+		BCode[] codes = OTGOwlim.barcodes4J(toScala(filter), compound, doseLevel, time);
 		Barcode[] r = new Barcode[codes.length];
 		int i = 0;
 		for (BCode code : codes) {
@@ -91,7 +91,7 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 			Species s = Utils.speciesFromFilter(filter);
 			String[] geneIds = B2RKegg.geneIds(pathway, s);
 			System.out.println("Probes for " + geneIds.length + " genes");
-			String [] probes = OTGOwlim.probesForEntrezGenes(geneIds);
+			String [] probes = OTGOwlim.probesForEntrezGenes4J(geneIds);
 			return OTGQueries.filterProbes(probes, s);			
 		} finally {
 			B2RKegg.close();			
@@ -104,7 +104,7 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 			Species s = Utils.speciesFromFilter(filter);			
 			String[] prots = CHEMBL.targetProtsForCompound(compound, s);
 			System.out.println("Probes for " + prots.length + " genes");
-			String [] probes = OTGOwlim.probesForUniprot(prots);
+			String [] probes = OTGOwlim.probesForUniprot4J(prots);
 			return OTGQueries.filterProbes(probes, s);			
 		} finally {
 			CHEMBL.close();			

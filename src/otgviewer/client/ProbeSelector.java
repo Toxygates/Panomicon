@@ -33,8 +33,7 @@ abstract public class ProbeSelector extends DataListenerWidget {
 		initWidget(vp);
 		vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		
-		Label lblPathwaySearch = new Label(label);
-		lblPathwaySearch.setStyleName("heading");
+		Label lblPathwaySearch = new Label(label);		
 		vp.add(lblPathwaySearch);
 		lblPathwaySearch.setWidth("100%");
 
@@ -52,7 +51,7 @@ abstract public class ProbeSelector extends DataListenerWidget {
 
 		itemList = new ListBox();
 		vp.add(itemList);
-		itemList.setSize("100%", "200px");
+		itemList.setSize("100%", "300px");
 		itemList.setVisibleItemCount(5);
 
 		itemHandler = new ListSelectionHandler<String>("pathways",
