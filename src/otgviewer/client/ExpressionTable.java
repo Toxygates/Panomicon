@@ -42,6 +42,10 @@ import com.google.gwt.view.client.Range;
 import com.google.gwt.view.client.SelectionChangeEvent;
 
 public class ExpressionTable extends DataListenerWidget {
+	
+	public static interface ExpressionListener {
+		public void expressionsChanged(List<ExpressionRow> expressions);		
+	}
 
 	// Visible columns
 	private boolean geneIdColVis = false, probeColVis = false,
@@ -54,13 +58,15 @@ public class ExpressionTable extends DataListenerWidget {
 	private KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
 	
+	private List<ExpressionListener> els = new ArrayList<ExpressionListener>();
+	
 	/**
 	 * This constructor will be used by the GWT designer. (Not functional at run time)
 	 * @wbp.parser.constructor
 	 */
 	public ExpressionTable() {
 		this(null);
-	}
+	}	
 	
 	public ExpressionTable(MenuBar menuBar) {
 
@@ -135,6 +141,9 @@ public class ExpressionTable extends DataListenerWidget {
 
 	}
 	
+	public void addExpressionListener(ExpressionListener el) {
+		els.add(el);
+	}
 	
 	private String downloadUrl;
 	private DialogBox db;
@@ -305,6 +314,9 @@ public class ExpressionTable extends DataListenerWidget {
 
 			public void onSuccess(List<ExpressionRow> result) {
 				exprGrid.setRowData(start, result);
+				for (ExpressionListener el: els) {
+					el.expressionsChanged(result);
+				}
 
 //				if (chartTable != null) {
 //					chartTable.removeRows(0, chartTable.getNumberOfRows());
@@ -412,5 +424,5 @@ public class ExpressionTable extends DataListenerWidget {
 	public void resizeInterface(int newHeight) {
 		String h3 = (newHeight - exprGrid.getAbsoluteTop() - 45) + "px";
 		exprGrid.setHeight(h3);	
-	}
+	}	
 }

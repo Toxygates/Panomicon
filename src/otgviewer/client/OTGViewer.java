@@ -8,20 +8,17 @@ import otgviewer.shared.Barcode;
 import otgviewer.shared.CellType;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
-import otgviewer.shared.Group;
 import otgviewer.shared.Organ;
 import otgviewer.shared.Organism;
 import otgviewer.shared.RepeatType;
 import otgviewer.shared.ValueType;
+import sun.tools.jstat.Alignment;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -32,22 +29,24 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.HorizontalSplitPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.MenuItemSeparator;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.StackPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextArea;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
+import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.VisualizationUtils;
-import com.google.gwt.user.client.ui.StackPanel;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.Image;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -76,14 +75,18 @@ public class OTGViewer implements EntryPoint {
 			timeHandler, groupHandler;
 	private MultiSelectionHandler<Barcode> barcodeHandler;
 
+	private TextArea customProbeText;
+
 	// Track the current selection
 	// private String[] displayedProbes = null;
 	private String chosenCompound;
 
 	private ExpressionTable expressionTable;
 	private SeriesChart seriesChart;
+	private BioHeatMap bhm;
 	private CompoundSelector compoundSelector;
 	private GroupInspector groupInspector;
+	private ProbeSelector pathwaySel, gotermSel;
 
 	private DataListenerWidget listeners = new DataListenerWidget(); // dummy
 																		// widget
@@ -203,7 +206,7 @@ public class OTGViewer implements EntryPoint {
 		String h2 = (newHeight - horizontalSplitPanel.getAbsoluteTop() - 30)
 				+ "px";
 		expressionTable.resizeInterface(newHeight);
-		
+
 		listeners.changeHeight(newHeight);
 	}
 
@@ -215,11 +218,37 @@ public class OTGViewer implements EntryPoint {
 			public void run() {
 				seriesChart.onLoadChart();
 
+				 DataTable data = DataTable.create();
+		         data.addColumn(ColumnType.STRING, "Gene Name");
+		         data.addColumn(ColumnType.NUMBER, "chip_XXX_XXX_600");
+		         data.addColumn(ColumnType.NUMBER, "chip2");
+		         data.addColumn(ColumnType.NUMBER, "chip3");
+		         data.addColumn(ColumnType.NUMBER, "chip4");
+		         data.addColumn(ColumnType.NUMBER, "chip5");
+		         data.addColumn(ColumnType.NUMBER, "chip6");
+		         data.addRows(2);         
+		         data.setValue(0, 0, "ATF3");
+		         data.setValue(0, 1, 0);
+		         data.setValue(0, 2, 0.5);
+		         data.setValue(0, 3, 1);
+		         data.setValue(0, 4, 1.5);
+		         data.setValue(0, 5, 2);
+		         data.setValue(0, 6, 2.5);
+		         data.setValue(1, 0, "INS");
+		         data.setValue(1, 1, 3);
+		         data.setValue(1, 2, 3.5);
+		         data.setValue(1, 3, 4);
+		         data.setValue(1, 4, 4.5);
+		         data.setValue(1, 5, 5);
+		         data.setValue(1, 6, 5.5);
+		         
+		         bhm.draw(data);
 			}
 		};
 
 		VisualizationUtils
 				.loadVisualizationApi("1.1", onLoadChart, "corechart");
+	
 
 		rootPanel = RootPanel.get("rootPanelContainer");
 		rootPanel.setSize("100%", "100%");
@@ -294,6 +323,7 @@ public class OTGViewer implements EntryPoint {
 		horizontalPanel = new HorizontalPanel();
 		innerTabPanel.add(horizontalPanel, "Free selection", false);
 		horizontalPanel.setSize("5cm", "3cm");
+		horizontalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 
 		HorizontalPanel horizontalPanel_1 = new HorizontalPanel();
 		innerTabPanel.add(horizontalPanel_1, "Groups", false);
@@ -405,6 +435,9 @@ public class OTGViewer implements EntryPoint {
 				return b.getShortTitle();
 			}
 		};
+		
+		bhm = new BioHeatMap(BioHeatMap.Options.create());
+		horizontalPanel.add(bhm);
 
 		expressionTable = new ExpressionTable(menuBar);
 		dockPanel.add(expressionTable, DockPanel.CENTER);
@@ -417,57 +450,88 @@ public class OTGViewer implements EntryPoint {
 		seriesChart = new SeriesChart();
 		tabPanel.add(seriesChart, "Probe chart", false);
 
-		// wiring
-		listeners.addListener(expressionTable);
-		listeners.addListener(seriesChart);
-		listeners.addListener(compoundSelector);
-		expressionTable.addListener(seriesChart);
 		
 		VerticalPanel verticalPanel = new VerticalPanel();
+		verticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		verticalPanel.setStyleName("gwt-StackPanel");
 		horizontalSplitPanel.setLeftWidget(verticalPanel);
 		verticalPanel.setSize("100%", "3cm");
 		
 		Image image = new Image("images/otgLogoSmall.png");
-		verticalPanel.add(image);
+		verticalPanel.add(image);		
+		image.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent ev) {
+				Window.open("http://toxico.nibio.go.jp", "", "");
+			}
+		});
 		
 		StackPanel stackPanel = new StackPanel();
 		stackPanel.setStyleName("gwt-stackPanel");
 		verticalPanel.add(stackPanel);
 		stackPanel.setSize("100%", "592px");
 		
-		ProbeSelector probeSelector = new ProbeSelector("This lets you view probes that correspond to a given KEGG pathway. Enter a partial pathway name and press enter to search.") {
+		pathwaySel = new ProbeSelector("This lets you view probes that correspond to a given KEGG pathway. " +
+				"Enter a partial pathway name and press enter to search.") {
 			protected void getMatches(String pattern) {
+					owlimService.pathways(chosenDataFilter, pattern,
+						retrieveMatchesCallback());
 			}
 			protected void getProbes(String item) {
+			owlimService.probesForPathway(chosenDataFilter, item,
+						retrieveProbesCallback());
 			}
 			public void probesChanged(String[] probes) {
+				super.probesChanged(probes);
+				getExpressions(probes, false);
 			}
 		};
-		stackPanel.add(probeSelector, "KEGG pathway search", false);
-		probeSelector.setSize("100%", "350px");
+		stackPanel.add(pathwaySel, "KEGG pathway search", false);
+		pathwaySel.setSize("100%", "350px");
 		
-		ProbeSelector probeSelector_1 = new ProbeSelector("This lets you view probes that correspond to a given GO term. Enter a partial term name and press enter to search.") {
+		gotermSel = new ProbeSelector("This lets you view probes that correspond to a given GO term. " +
+				"Enter a partial term name and press enter to search.") {
 			protected void getMatches(String pattern) {
+			owlimService.goTerms(pattern, retrieveMatchesCallback());
 			}
 			protected void getProbes(String item) {
+			owlimService.probesForGoTerm(item, retrieveProbesCallback());
 			}
 			public void probesChanged(String[] probes) {
+				super.probesChanged(probes);
+				getExpressions(probes, false);
 			}
 		};
-		stackPanel.add(probeSelector_1, "GO term search", false);
-		probeSelector_1.setSize("100%", "350px");
+		stackPanel.add(gotermSel, "GO term search", false);
+		gotermSel.setSize("100%", "350px");
 		
 		VerticalPanel verticalPanel_2 = new VerticalPanel();
 		verticalPanel_2.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		stackPanel.add(verticalPanel_2, "CHEMBL targets", false);
-		verticalPanel_2.setSize("100%", "100px");
+		verticalPanel_2.setSize("100%", "100px");		
 		
 		Label label_4 = new Label("This lets you view probes that are known targets of the currently selected compound.");
 		verticalPanel_2.add(label_4);
 		
 		Button button = new Button("Show CHEMBL targets");
 		verticalPanel_2.add(button);
+		button.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent ev) {
+				if (chosenCompound != null) {
+					owlimService.probesTargetedByCompound(chosenDataFilter,
+							chosenCompound, new AsyncCallback<String[]>() {
+								public void onFailure(Throwable caught) {
+									Window.alert("Unable to get probes.");
+								}
+
+								public void onSuccess(String[] probes) {
+									getExpressions(probes, false);
+								}
+							});
+				} else {
+					Window.alert("Please select a compound first.");
+				}
+			}
+		});
 		
 		VerticalPanel verticalPanel_3 = new VerticalPanel();
 		verticalPanel_3.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
@@ -478,16 +542,57 @@ public class OTGViewer implements EntryPoint {
 		label_5.setStyleName("none");
 		verticalPanel_3.add(label_5);
 		
-		TextArea textArea = new TextArea();
-		verticalPanel_3.add(textArea);
-		textArea.setSize("95%", "300px");
+		customProbeText = new TextArea();
+		verticalPanel_3.add(customProbeText);
+		customProbeText.setSize("95%", "300px");
 		
 		Button button_1 = new Button("Show custom probes");
 		verticalPanel_3.add(button_1);
+		button_1.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent ev) {
+				String text = customProbeText.getText();
+				String[] split = text.split("\n");
+				if (split.length == 0) {
+					Window.alert("Please enter probes, genes or proteins in the text box and try again.");
+				} else {
+					// change the identifiers (which can be mixed format) into a
+					// homogenous format (probes only)
+					// todo: might want to display some kind of progress
+					// indicator
+					kcService.identifiersToProbes(chosenDataFilter, split,
+							new AsyncCallback<String[]>() {
+								public void onSuccess(String[] probes) {
+									getExpressions(probes, false);
+								}
+
+								public void onFailure(Throwable caught) {
+
+								}
+							});
+				}
+			}
+		});
 		
 		Button button_2 = new Button("Show all probes");
 		verticalPanel_3.add(button_2);
+		button_2.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent ev) {
+				// if (pathwayList.getSelectedIndex() != -1) {
+				// pathwayList.setItemSelected(pathwayList.getSelectedIndex(),
+				// false);
+				// }
+				getExpressions(null, false);
+			}
+		});
 
+		// wiring
+		listeners.addListener(expressionTable);
+		listeners.addListener(seriesChart);
+		listeners.addListener(compoundSelector);
+		expressionTable.addListener(seriesChart);
+		listeners.addListener(pathwaySel);
+		listeners.addListener(gotermSel);
+		
 		// initial settings
 		listeners.changeDataFilter(chosenDataFilter);
 		listeners.changeValueType(chosenValueType);
