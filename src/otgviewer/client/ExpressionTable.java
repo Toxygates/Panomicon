@@ -27,6 +27,7 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.DoubleBox;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -134,6 +135,9 @@ public class ExpressionTable extends DataListenerWidget {
 
 	}
 	
+	
+	private String downloadUrl;
+	private DialogBox db;
 	private void setupMenu(MenuBar menuBar) {
 		MenuBar menuBar_3 = new MenuBar(true);
 		
@@ -146,7 +150,29 @@ public class ExpressionTable extends DataListenerWidget {
 						Window.alert("Unable to prepare the requested data for download.");
 					}
 					public void onSuccess(String url) {
-						Window.open(url, "_blank", "");
+						downloadUrl = url;
+						db = new DialogBox(false, true);
+						db.setPopupPosition(Window.getClientWidth()/2 - 100, Window.getClientHeight() / 2 - 100);						
+						db.setHTML("Your download is ready.");				
+						HorizontalPanel hp = new HorizontalPanel();
+						
+						Button b = new Button("Download");
+						b.addClickHandler(new ClickHandler() {
+							public void onClick(ClickEvent ev) {
+								Window.open(downloadUrl, "_blank", "");
+								db.hide();
+							}
+						});
+						hp.add(b);
+						b = new Button("Cancel");
+						b.addClickHandler(new ClickHandler() {
+							public void onClick(ClickEvent ev) {
+								db.hide();								
+							}
+						});
+						hp.add(b);
+						db.add(hp);
+						db.show();						
 					}
 				});
 				
@@ -350,7 +376,7 @@ public class ExpressionTable extends DataListenerWidget {
 		kcService.loadDataset(chosenDataFilter, cols, chosenProbes, chosenValueType,
 				absValBox.getValue(),
 				new AsyncCallback<Integer>() {
-					public void onFailure(Throwable caught) {
+					public void onFailure(Throwable caught) {						
 						Window.alert("Unable to load dataset.");
 					}
 
