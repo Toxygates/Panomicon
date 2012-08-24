@@ -43,6 +43,7 @@ abstract public class ProbeSelector extends DataListenerWidget {
 		searchBox.addKeyPressHandler(new KeyPressHandler() {
 			public void onKeyPress(KeyPressEvent event) {
 				if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
+					itemHandler.clearForLoad();
 					getMatches(searchBox.getText());					
 				}
 			}
@@ -73,6 +74,7 @@ abstract public class ProbeSelector extends DataListenerWidget {
 		return new AsyncCallback<String[]>() {
 			public void onFailure(Throwable caught) {
 				Window.alert("Unable to get probes.");
+				itemHandler.clear();
 			}
 
 			public void onSuccess(String[] probes) {

@@ -72,6 +72,22 @@ public abstract class ListSelectionHandler<T> {
 		}
 	}
 	
+	void clearForLoad() {
+		list.clear();
+		lastSelected = null;
+		list.addItem("(Loading ...)");
+		list.setEnabled(false);
+		for (ListSelectionHandler<?> handler: afterHandlers) {
+			handler.clear();
+			handler.setWaiting();
+		}
+	}
+	
+	void setWaiting() {
+		list.addItem("(Waiting for selection)");
+		list.setEnabled(false);
+	}
+	
 	public T lastSelected() {
 		return lastSelected;
 	}
@@ -80,6 +96,7 @@ public abstract class ListSelectionHandler<T> {
 		return new AsyncCallback<T[]>() {
 			public void onFailure(Throwable caught) {
 				Window.alert("Unable to get " + description);
+				list.clear();
 			}
 
 			public void onSuccess(T[] result) {
@@ -89,7 +106,7 @@ public abstract class ListSelectionHandler<T> {
 		};
 	}
 	
-	public void setItems(Collection<T> items) {
+	public void setItems(Collection<T> items) {		
 		setItems((T[]) items.toArray());
 	}
 	
@@ -97,13 +114,14 @@ public abstract class ListSelectionHandler<T> {
 		sort(result);
 		lastResult = result;				
 		list.clear();				
-		for (T t: result) {
+		for (T t: result) { 
 			list.addItem(representation(t));
 		}
 		if (allOption) {
 			list.addItem("(All)");
-		}				
-		handleRetreival(result);
+		}			
+		list.setEnabled(true);
+		handleRetrieval(result);
 	}
 	
 	protected void sort(T[] items) {
@@ -126,7 +144,7 @@ public abstract class ListSelectionHandler<T> {
 		return value.toString();
 	}
 	
-	protected void handleRetreival(T[] result) {
+	protected void handleRetrieval(T[] result) {
 		
 	}
 	

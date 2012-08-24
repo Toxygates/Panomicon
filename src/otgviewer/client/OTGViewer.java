@@ -12,7 +12,6 @@ import otgviewer.shared.Organ;
 import otgviewer.shared.Organism;
 import otgviewer.shared.RepeatType;
 import otgviewer.shared.ValueType;
-import sun.tools.jstat.Alignment;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -29,11 +28,9 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.HorizontalSplitPanel;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.MenuBar;
@@ -44,6 +41,7 @@ import com.google.gwt.user.client.ui.StackPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.VisualizationUtils;
@@ -68,7 +66,8 @@ public class OTGViewer implements EntryPoint {
 			Organ.Kidney, RepeatType.Single, Organism.Rat);
 
 	private ListBox doseLevelList, timeList, barcodeList;
-	private HorizontalPanel horizontalPanel;
+	private HorizontalPanel freeSelPanel;
+	private TabPanel mainTabPanel;
 
 	private ValueType chosenValueType = ValueType.Folds;
 	private ListSelectionHandler<String> compoundHandler, doseHandler,
@@ -203,10 +202,14 @@ public class OTGViewer implements EntryPoint {
 		// this is very fiddly and must be tested on all the browsers.
 		// Note that simply setting height = 100% won't work.
 		String h = (newHeight - rootPanel.getAbsoluteTop() - 20) + "px";
-		String h2 = (newHeight - horizontalSplitPanel.getAbsoluteTop() - 30)
+		String h2 = (newHeight - mainTabPanel.getAbsoluteTop() - 30)
 				+ "px";
+		String h3 = (newHeight - horizontalSplitPanel.getAbsoluteTop() - 40)
+				+ "px";
+		
+		mainTabPanel.setHeight(h2);
+		horizontalSplitPanel.setHeight(h3);
 		expressionTable.resizeInterface(newHeight);
-
 		listeners.changeHeight(newHeight);
 	}
 
@@ -263,21 +266,17 @@ public class OTGViewer implements EntryPoint {
 		mainVertPanel = new VerticalPanel();
 		mainVertPanel.setBorderWidth(0);
 		rootPanel.add(mainVertPanel);
-		mainVertPanel.setSize("100%", "800px");
-
+		mainVertPanel.setSize("100%", "100%");
+		mainVertPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
+		
 		menuBar = setupMenu();
 		mainVertPanel.add(menuBar);
 
-		horizontalSplitPanel = new HorizontalSplitPanel();
-		horizontalSplitPanel.setStyleName("spacedLayout");
-		horizontalSplitPanel.setSplitPosition("200px");
-		mainVertPanel.add(horizontalSplitPanel);
-		horizontalSplitPanel.setSize("100%", "800px");
-
-		TabPanel tabPanel = new TabPanel();
-		horizontalSplitPanel.setRightWidget(tabPanel);
-		tabPanel.setSize("100%", "100%");
-		tabPanel.addSelectionHandler(new SelectionHandler<Integer>() {
+	
+		mainTabPanel = new TabPanel();
+		mainVertPanel.add(mainTabPanel);		
+		mainTabPanel.setSize("100%", "100%");
+		mainTabPanel.addSelectionHandler(new SelectionHandler<Integer>() {
 			public void onSelection(SelectionEvent<Integer> event) {
 				switch (event.getSelectedItem()) {
 				case 0:
@@ -290,6 +289,10 @@ public class OTGViewer implements EntryPoint {
 					expressionTable.activate();
 					seriesChart.deactivate();
 					groupHandler.setItems(groupInspector.getGroups().keySet());
+					
+					//the horizontal split panel has a bug that makes it work unreliably inside tab panels.
+					//this works around the bug.
+					horizontalSplitPanel.setSplitPosition("200px");
 					break;
 				case 2:
 					expressionTable.deactivate();
@@ -301,29 +304,39 @@ public class OTGViewer implements EntryPoint {
 			}
 		});
 
-		DockPanel dockPanel_1 = new DockPanel();
-		tabPanel.add(dockPanel_1, "Group definitions", false);
-		dockPanel_1.setSize("5cm", "3cm");
+		DockPanel groupDefDock = new DockPanel();
+		mainTabPanel.add(groupDefDock, "Group definitions", false);
+		groupDefDock.setSize("5cm", "3cm");
 
 		compoundSelector = new CompoundSelector(chosenDataFilter);
-		dockPanel_1.add(compoundSelector, DockPanel.WEST);
+		groupDefDock.add(compoundSelector, DockPanel.WEST);
 
 		groupInspector = new GroupInspector();
-		dockPanel_1.add(groupInspector, DockPanel.CENTER);
+		groupDefDock.add(groupInspector, DockPanel.CENTER);
 		compoundSelector.addListener(groupInspector);
+		
+		horizontalSplitPanel = new HorizontalSplitPanel();
+		horizontalSplitPanel.setStyleName("spacedLayout");		
+		horizontalSplitPanel.setSize("100%", "800px");
 
-		DockPanel dockPanel = new DockPanel();
-		tabPanel.add(dockPanel, "Data viewer", false);
-		dockPanel.setSize("100%", "100%");
-
+		mainTabPanel.add(horizontalSplitPanel, "Data viewer", false);
+		
+		VerticalPanel probeSelVert = new VerticalPanel();
+		DockPanel dataViewDock = new DockPanel();			
+		dataViewDock.setSize("100%", "100%");
+		
+		horizontalSplitPanel.setLeftWidget(probeSelVert);
+		horizontalSplitPanel.setRightWidget(dataViewDock);
+		horizontalSplitPanel.setSplitPosition("200px");
+		
 		TabPanel innerTabPanel = new TabPanel();
-		dockPanel.add(innerTabPanel, DockPanel.NORTH);
+		dataViewDock.add(innerTabPanel, DockPanel.NORTH);
 		innerTabPanel.setSize("100%", "281px");
 
-		horizontalPanel = new HorizontalPanel();
-		innerTabPanel.add(horizontalPanel, "Free selection", false);
-		horizontalPanel.setSize("5cm", "3cm");
-		horizontalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		freeSelPanel = new HorizontalPanel();
+		innerTabPanel.add(freeSelPanel, "Free selection", false);
+		freeSelPanel.setSize("5cm", "3cm");
+		freeSelPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 
 		HorizontalPanel horizontalPanel_1 = new HorizontalPanel();
 		innerTabPanel.add(horizontalPanel_1, "Groups", false);
@@ -346,7 +359,7 @@ public class OTGViewer implements EntryPoint {
 		};
 
 		VerticalPanel verticalPanel_1 = new VerticalPanel();
-		horizontalPanel.add(verticalPanel_1);
+		freeSelPanel.add(verticalPanel_1);
 
 		Label label = new Label("Compounds");
 		verticalPanel_1.add(label);
@@ -367,7 +380,7 @@ public class OTGViewer implements EntryPoint {
 		};
 
 		VerticalPanel verticalPanel_4 = new VerticalPanel();
-		horizontalPanel.add(verticalPanel_4);
+		freeSelPanel.add(verticalPanel_4);
 
 		Label label_1 = new Label("Doses");
 		verticalPanel_4.add(label_1);
@@ -407,7 +420,7 @@ public class OTGViewer implements EntryPoint {
 		};
 
 		VerticalPanel verticalPanel_5 = new VerticalPanel();
-		horizontalPanel.add(verticalPanel_5);
+		freeSelPanel.add(verticalPanel_5);
 
 		Label label_3 = new Label("Arrays");
 		verticalPanel_5.add(label_3);
@@ -436,11 +449,12 @@ public class OTGViewer implements EntryPoint {
 			}
 		};
 		
-		bhm = new BioHeatMap(BioHeatMap.Options.create());
-		horizontalPanel.add(bhm);
+//		bhm = new BioHeatMap(BioHeatMap.Options.create());
+//		freeSelPanel.add(bhm);
 
 		expressionTable = new ExpressionTable(menuBar);
-		dockPanel.add(expressionTable, DockPanel.CENTER);
+		dataViewDock.add(expressionTable, DockPanel.CENTER);
+		expressionTable.setWidth("100%");
 
 		compoundHandler.addAfter(doseHandler);
 		compoundHandler.addAfter(timeHandler);
@@ -448,27 +462,20 @@ public class OTGViewer implements EntryPoint {
 		timeHandler.addAfter(barcodeHandler);
 
 		seriesChart = new SeriesChart();
-		tabPanel.add(seriesChart, "Probe chart", false);
-
+		mainTabPanel.add(seriesChart, "Probe chart", false);
 		
-		VerticalPanel verticalPanel = new VerticalPanel();
-		verticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		verticalPanel.setStyleName("gwt-StackPanel");
-		horizontalSplitPanel.setLeftWidget(verticalPanel);
-		verticalPanel.setSize("100%", "3cm");
+		probeSelVert.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);		
+		probeSelVert.setSize("100%", "100%");
+		probeSelVert.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
 		
-		Image image = new Image("images/otgLogoSmall.png");
-		verticalPanel.add(image);		
-		image.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent ev) {
-				Window.open("http://toxico.nibio.go.jp", "", "");
-			}
-		});
+		Label l = new Label("Probe selection");
+		l.setStyleName("heading");
+		probeSelVert.add(l);
 		
-		StackPanel stackPanel = new StackPanel();
-		stackPanel.setStyleName("gwt-stackPanel");
-		verticalPanel.add(stackPanel);
-		stackPanel.setSize("100%", "592px");
+		StackPanel probeSelStack = new StackPanel();
+		probeSelStack.setStyleName("gwt-StackPanel");
+		probeSelVert.add(probeSelStack);
+		probeSelStack.setSize("", "592px");
 		
 		pathwaySel = new ProbeSelector("This lets you view probes that correspond to a given KEGG pathway. " +
 				"Enter a partial pathway name and press enter to search.") {
@@ -477,7 +484,8 @@ public class OTGViewer implements EntryPoint {
 						retrieveMatchesCallback());
 			}
 			protected void getProbes(String item) {
-			owlimService.probesForPathway(chosenDataFilter, item,
+				expressionTable.beginLoading();
+				owlimService.probesForPathway(chosenDataFilter, item,
 						retrieveProbesCallback());
 			}
 			public void probesChanged(String[] probes) {
@@ -485,57 +493,43 @@ public class OTGViewer implements EntryPoint {
 				getExpressions(probes, false);
 			}
 		};
-		stackPanel.add(pathwaySel, "KEGG pathway search", false);
+		probeSelStack.add(pathwaySel, "KEGG pathway search", false);
 		pathwaySel.setSize("100%", "350px");
 		
 		gotermSel = new ProbeSelector("This lets you view probes that correspond to a given GO term. " +
-				"Enter a partial term name and press enter to search.") {
+ "Enter a partial term name and press enter to search.") {
 			protected void getMatches(String pattern) {
-			owlimService.goTerms(pattern, retrieveMatchesCallback());
+				owlimService.goTerms(pattern, retrieveMatchesCallback());
 			}
+
 			protected void getProbes(String item) {
-			owlimService.probesForGoTerm(item, retrieveProbesCallback());
+				expressionTable.beginLoading();
+				owlimService.probesForGoTerm(item, retrieveProbesCallback());
 			}
+
 			public void probesChanged(String[] probes) {
 				super.probesChanged(probes);
 				getExpressions(probes, false);
 			}
 		};
-		stackPanel.add(gotermSel, "GO term search", false);
+		probeSelStack.add(gotermSel, "GO term search", false);
 		gotermSel.setSize("100%", "350px");
 		
-		VerticalPanel verticalPanel_2 = new VerticalPanel();
-		verticalPanel_2.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		stackPanel.add(verticalPanel_2, "CHEMBL targets", false);
-		verticalPanel_2.setSize("100%", "100px");		
 		
-		Label label_4 = new Label("This lets you view probes that are known targets of the currently selected compound.");
-		verticalPanel_2.add(label_4);
-		
-		Button button = new Button("Show CHEMBL targets");
-		verticalPanel_2.add(button);
-		button.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent ev) {
-				if (chosenCompound != null) {
-					owlimService.probesTargetedByCompound(chosenDataFilter,
-							chosenCompound, new AsyncCallback<String[]>() {
-								public void onFailure(Throwable caught) {
-									Window.alert("Unable to get probes.");
-								}
-
-								public void onSuccess(String[] probes) {
-									getExpressions(probes, false);
-								}
-							});
-				} else {
-					Window.alert("Please select a compound first.");
-				}
-			}
-		});
+		Widget chembl = makeTargetLookupPanel("CHEMBL", 
+				"This lets you view probes that are known targets of the currently selected compound.", 
+				"Show CHEMBL targets");
+		probeSelStack.add(chembl, "CHEMBL targets", false);
+				
+		Widget drugBank = makeTargetLookupPanel("DrugBank", 
+				"This lets you view probes that are known targets of the currently selected compound.", 
+				"Show DrugBank targets");
+		probeSelStack.add(drugBank, "DrugBank targets", false);
+	
 		
 		VerticalPanel verticalPanel_3 = new VerticalPanel();
 		verticalPanel_3.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		stackPanel.add(verticalPanel_3, "Custom probes", false);
+		probeSelStack.add(verticalPanel_3, "Custom", false);
 		verticalPanel_3.setSize("100%", "350px");
 		
 		Label label_5 = new Label("Enter a list of probes, genes or proteins to display only those.");
@@ -574,7 +568,7 @@ public class OTGViewer implements EntryPoint {
 		});
 		
 		Button button_2 = new Button("Show all probes");
-		verticalPanel_3.add(button_2);
+		probeSelVert.add(button_2);
 		button_2.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent ev) {
 				// if (pathwayList.getSelectedIndex() != -1) {
@@ -599,7 +593,7 @@ public class OTGViewer implements EntryPoint {
 
 		// now when all widgets are in place we can do this (will trigger some
 		// activity)
-		tabPanel.selectTab(0);
+		mainTabPanel.selectTab(0);
 		innerTabPanel.selectTab(0);
 
 		// everything has been set up, set the initial size
@@ -608,6 +602,38 @@ public class OTGViewer implements EntryPoint {
 		getCompounds();
 	}
 
+	private Widget makeTargetLookupPanel(final String service, String label, String buttonText) {
+		VerticalPanel verticalPanel_2 = new VerticalPanel();
+		verticalPanel_2.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);		
+		verticalPanel_2.setSize("100%", "100px");		
+		
+		Label label_4 = new Label(label);
+		verticalPanel_2.add(label_4);
+		
+		Button button = new Button(buttonText);
+		verticalPanel_2.add(button);
+		button.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent ev) {
+				if (chosenCompound != null) {
+					expressionTable.beginLoading();
+					owlimService.probesTargetedByCompound(chosenDataFilter,
+							chosenCompound, service, new AsyncCallback<String[]>() {
+								public void onFailure(Throwable caught) {
+									Window.alert("Unable to get probes.");
+								}
+
+								public void onSuccess(String[] probes) {
+									getExpressions(probes, false);
+								}
+							});
+				} else {
+					Window.alert("Please select a compound first.");
+				}
+			}
+		});
+		return verticalPanel_2;
+	}
+	
 	/**
 	 * This method is called when selection variables have changed and this
 	 * needs to be reflected.
@@ -624,25 +650,26 @@ public class OTGViewer implements EntryPoint {
 	// }
 
 	void getCompounds() {
+		compoundHandler.clearForLoad();
 		owlimService.compounds(chosenDataFilter,
 				compoundHandler.retrieveCallback());
 	}
 
 	void getDoseLevels(String compound, String organ) {
-		doseLevelList.clear();
+		doseHandler.clearForLoad();		
 		owlimService.doseLevels(chosenDataFilter, compound, organ,
 				doseHandler.retrieveCallback());
 	}
 
 	void getBarcodes(String compound, String organ, String doseLevel,
 			String time) {
-		barcodeList.clear();
+		barcodeHandler.clearForLoad();		
 		owlimService.barcodes(chosenDataFilter, compound, organ, doseLevel,
 				time, barcodeHandler.retrieveCallback());
 	}
 
 	void getTimes(String compound, String organ) {
-		timeList.clear();
+		timeHandler.clearForLoad();
 		owlimService.times(chosenDataFilter, compound, organ,
 				timeHandler.retrieveCallback());
 	}

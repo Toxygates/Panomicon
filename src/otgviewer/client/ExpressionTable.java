@@ -369,6 +369,10 @@ public class ExpressionTable extends DataListenerWidget {
 		//no-op to prohibit change
 	}
 	
+	public void beginLoading() {
+		exprGrid.setRowCount(0, false);		
+	}
+	
 	public void getExpressions(String[] displayedProbes, boolean usePreviousProbes) {
 		if (!usePreviousProbes) {
 			changeProbes(displayedProbes);			

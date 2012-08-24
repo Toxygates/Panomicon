@@ -7,6 +7,7 @@ import otg.B2RAffy;
 import otg.B2RKegg;
 import otg.BCode;
 import otg.CHEMBL;
+import otg.DrugBank;
 import otg.OTGOwlim;
 import otg.OTGQueries;
 import otg.Species;
@@ -98,17 +99,33 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 		}		
 	}
 	
-	public String[] probesTargetedByCompound(DataFilter filter, String compound) {
-		try {
-			CHEMBL.connect();			
-			Species s = Utils.speciesFromFilter(filter);			
-			String[] prots = CHEMBL.targetProtsForCompound(compound, s);
+	public String[] probesTargetedByCompound(DataFilter filter, String compound, String service) {
+			
+			Species s = Utils.speciesFromFilter(filter);
+			String[] prots;
+			if (service.equals("CHEMBL")) {
+				try {
+					CHEMBL.connect();			
+					prots = CHEMBL.targetProtsForCompound(compound, s);
+				} finally {					
+					CHEMBL.close();			
+				}
+			} else if (service.equals("DrugBank")) {
+				try {
+					DrugBank.connect();
+					prots = DrugBank.targetProtsForDrug(compound);
+				} finally {
+					DrugBank.close();
+				}
+				
+			} else {
+				//TODO
+				throw new RuntimeException("Unexpected service request: " + service);
+			}
+			
 			System.out.println("Probes for " + prots.length + " genes");
 			String [] probes = OTGOwlim.probesForUniprot4J(prots);
-			return OTGQueries.filterProbes(probes, s);			
-		} finally {
-			CHEMBL.close();			
-		}		
+			return OTGQueries.filterProbes(probes, s);					
 	}
 	
 	public String[] goTerms(String pattern) {	
