@@ -311,7 +311,7 @@ public class OTGViewer implements EntryPoint {
 		compoundSelector = new CompoundSelector(chosenDataFilter);
 		groupDefDock.add(compoundSelector, DockPanel.WEST);
 
-		groupInspector = new GroupInspector();
+		groupInspector = new GroupInspector(compoundSelector);
 		groupDefDock.add(groupInspector, DockPanel.CENTER);
 		compoundSelector.addListener(groupInspector);
 		
@@ -449,8 +449,8 @@ public class OTGViewer implements EntryPoint {
 			}
 		};
 		
-//		bhm = new BioHeatMap(BioHeatMap.Options.create());
-//		freeSelPanel.add(bhm);
+		bhm = new BioHeatMap(BioHeatMap.Options.create());
+		freeSelPanel.add(bhm);
 
 		expressionTable = new ExpressionTable(menuBar);
 		dataViewDock.add(expressionTable, DockPanel.CENTER);
@@ -551,8 +551,6 @@ public class OTGViewer implements EntryPoint {
 				} else {
 					// change the identifiers (which can be mixed format) into a
 					// homogenous format (probes only)
-					// todo: might want to display some kind of progress
-					// indicator
 					kcService.identifiersToProbes(chosenDataFilter, split,
 							new AsyncCallback<String[]>() {
 								public void onSuccess(String[] probes) {

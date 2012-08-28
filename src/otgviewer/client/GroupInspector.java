@@ -9,8 +9,11 @@ import java.util.Map;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
+import otgviewer.shared.SharedUtils;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -20,9 +23,11 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -42,17 +47,25 @@ public class GroupInspector extends DataListenerWidget {
 	private String[] availableTimes;
 	private CheckBox[][] checkboxes;
 	private Map<String, Group> groups = new HashMap<String, Group>();
+	private Map<String, List<String>> groupCompounds = new HashMap<String, List<String>>();
+	private Map<Barcode, String> barcodeCompounds = new HashMap<Barcode, String>();
 	private TextBox txtbxGroup;
+	private ListBox existingGroupsList;
+	private CompoundSelector compoundSel;
 	
-	public GroupInspector() {
+	
+	public GroupInspector(CompoundSelector cs) {
+		compoundSel = cs;
 		VerticalPanel vp = new VerticalPanel();
+		vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		initWidget(vp);
 		
-		Label lblGroupDefinition = new Label("Group definition");
+		Label lblGroupDefinition = new Label("2. Group definition");
 		lblGroupDefinition.setStyleName("heading");
 		vp.add(lblGroupDefinition);
 		
 		HorizontalPanel horizontalPanel_1 = new HorizontalPanel();
+		horizontalPanel_1.setStyleName("slightlySpaced");
 		vp.add(horizontalPanel_1);
 		
 		Button btnSelectAll = new Button("Select all");
@@ -79,10 +92,13 @@ public class GroupInspector extends DataListenerWidget {
 		vp.setWidth("410px");		
 		
 		HorizontalPanel horizontalPanel = new HorizontalPanel();
+		horizontalPanel.setStyleName("slightlySpaced");
+		horizontalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		horizontalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		vp.add(horizontalPanel);
 		
 		Label lblSaveGroupAs = new Label("Save group as");
+		lblSaveGroupAs.setStyleName("slightlySpaced");
 		horizontalPanel.add(lblSaveGroupAs);
 		
 		
@@ -92,9 +108,32 @@ public class GroupInspector extends DataListenerWidget {
 		
 		Button btnSave = new Button("Save");
 		horizontalPanel.add(btnSave);
+		
+		Button btnDelete = new Button("Delete");
+		horizontalPanel.add(btnDelete);
+		
+		Label lblDefinedGroups = new Label("3. Existing groups");
+		lblDefinedGroups.setStyleName("heading");
+		vp.add(lblDefinedGroups);
+		
+		existingGroupsList = new ListBox();
+		vp.add(existingGroupsList);
+		existingGroupsList.setSize("100%", "100px");
+		existingGroupsList.setVisibleItemCount(5);
 		btnSave.addClickHandler(new ClickHandler(){
 			public void onClick(ClickEvent ce) {
 				makeGroup(txtbxGroup.getValue());
+			}
+		});
+		
+		
+		existingGroupsList.addChangeHandler(new ChangeHandler() {
+			public void onChange(ChangeEvent ce) {
+				int index = existingGroupsList.getSelectedIndex();
+				if (index != -1) {
+					String name = existingGroupsList.getItemText(index);
+					displayGroup(name);
+				}
 			}
 		});
 		
@@ -174,30 +213,22 @@ public class GroupInspector extends DataListenerWidget {
 	Group pendingGroup;
 	private void makeGroup(String name) {
 		List<Barcode> barcodes = new ArrayList<Barcode>();
-		if (groups.containsKey(name)) {
-			Window.alert("A group with that name has already been defined.");
-			return;
+		
+		if (!groups.containsKey(name)) {
+			existingGroupsList.addItem(name);
 		}
-
 		pendingGroup = new Group(name, new Barcode[0]);
-
+		groups.put(name, pendingGroup);		
+		List<String> ccCopy = new ArrayList<String>(chosenCompounds);
+		groupCompounds.put(name, ccCopy);
+		
 		for (int c = 0; c < chosenCompounds.size(); ++c) {
 			for (int d = 0; d < 3; ++d) {
 				for (int t = 0; t < availableTimes.length; ++t) {
 					if (checkboxes[c][availableTimes.length * d + t].getValue()) {
-						String compound = chosenCompounds.get(c);
-						String dose = "";
-						switch (d) {
-						case 0:
-							dose = "Low";
-							break;
-						case 1:
-							dose = "Middle";
-							break;
-						case 2:
-							dose = "High";
-							break;
-						}
+						final String compound = chosenCompounds.get(c);
+						String dose = indexToDose(d);
+						
 						String time = availableTimes[t];
 
 						owlimService.barcodes(chosenDataFilter, compound,
@@ -205,6 +236,10 @@ public class GroupInspector extends DataListenerWidget {
 								new AsyncCallback<Barcode[]>() {
 									public void onSuccess(Barcode[] barcodes) {
 										addToGroup(barcodes);
+
+										for (Barcode b: barcodes) {
+											barcodeCompounds.put(b, compound);
+										}
 									}
 
 									public void onFailure(Throwable caught) {
@@ -217,6 +252,26 @@ public class GroupInspector extends DataListenerWidget {
 		}
 	}
 	
+	private int doseToIndex(String dose) {
+		if (dose.equals("Low")) {
+			return 0;
+		} else if (dose.equals("Middle")) {
+			return 1;
+		} else {
+			return 2;
+		}
+	}
+	
+	private String indexToDose(int dose) {
+		switch (dose) {
+		case 0:
+			return "Low";			
+		case 1:
+			return "Middle";								
+		}
+		return "High";
+	}
+	
 	private void addToGroup(Barcode[] barcodes) {		
 		synchronized (this) {			
 			List<Barcode> n = new ArrayList<Barcode>();
@@ -224,9 +279,26 @@ public class GroupInspector extends DataListenerWidget {
 			n.addAll(Arrays.asList(pendingGroup.getBarcodes()));
 			pendingGroup = new Group(pendingGroup.getName(),
 					n.toArray(new Barcode[0]));
-			groups.put(pendingGroup.getName(), pendingGroup);
+			groups.put(pendingGroup.getName(), pendingGroup);			
 		}
 	
+	}
+	
+	private void displayGroup(String name) {
+		List<String> compounds = groupCompounds.get(name);
+		compoundSel.setSelection(compounds);
+		txtbxGroup.setValue(name);
+		
+		Group g = groups.get(name);
+		//set the appropriate checkboxes
+		for (Barcode b: g.getBarcodes()) {
+			String c = barcodeCompounds.get(b);
+			int ci = SharedUtils.indexOf(chosenCompounds, c);
+			int time = SharedUtils.indexOf(availableTimes, b.getTime());
+			int dose = doseToIndex(b.getDose());
+			checkboxes[ci][dose * availableTimes.length + time].setValue(true);			
+		}
+		
 	}
 	
 	private class MultiSelectHandler implements ValueChangeHandler<Boolean> {

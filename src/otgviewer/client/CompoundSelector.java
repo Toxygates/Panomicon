@@ -29,7 +29,7 @@ public class CompoundSelector extends DataListenerWidget {
 		initWidget(verticalPanel);
 		verticalPanel.setWidth("210px");
 		
-		Label lblCompounds = new Label("Compounds");
+		Label lblCompounds = new Label("1. Compounds");
 		lblCompounds.setStyleName("heading");
 		verticalPanel.add(lblCompounds);
 		
@@ -61,5 +61,10 @@ public class CompoundSelector extends DataListenerWidget {
 
 	void loadCompounds() {
 		owlimService.compounds(chosenDataFilter, compoundHandler.retrieveCallback());
+	}
+	
+	public void setSelection(List<String> compounds) {
+		compoundHandler.setSelection(compounds);
+		changeCompounds(compounds);
 	}
 }
