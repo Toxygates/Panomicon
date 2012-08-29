@@ -24,6 +24,7 @@ public interface KCService extends RemoteService {
 	 * @param type
 	 * @param absValFilter Require that rows should contain at least one value whose 
 	 * abs. value is >= this threshold. If this is 0, it will be ignored.
+	 * @param loadID an integer to identify the dataset that has been loaded.
 	 * @return
 	 */
 	public int loadDataset(DataFilter filter, List<DataColumn> columns, 

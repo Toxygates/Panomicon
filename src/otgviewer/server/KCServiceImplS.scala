@@ -22,20 +22,21 @@ object KCServiceImplS {
         val vs = ids.map(rawData(_))
         val call = (if (vs.exists(_.call != 'A')) { 'P' } else { 'A' })
         val pvals = vs.filter(_.call != 'A')
-        new ExprValue(pvals.map(_.value).fold(0.0)(_+_) / pvals.size, call, rawData(0).probe)
+        new ExprValue(pvals.map(_.value).sum / pvals.size, call, rawData(0).probe)
       }
       case b: Barcode => {
         val i = orderedBarcodes.indexOf(b.getCode)
         rawData(i)
+      }
+      case _ => {
+        throw new Exception("Unexpected column type")
       }
     }
   }
   
   def computeRow(cols: Iterable[DataColumn], rawData: Array[Array[ExprValue]], 
       orderedBarcodes: Array[String], row: Int): Array[ExprValue] = {
-    cols.map(c => {
-      computeColumn(c, rawData(row), orderedBarcodes)
-    }).toArray
+    cols.map(computeColumn(_, rawData(row), orderedBarcodes)).toArray
   }
   
   def computeRow4J(cols: java.lang.Iterable[DataColumn], rawData: Array[Array[ExprValue]], 

@@ -100,6 +100,7 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		HttpServletRequest request = getThreadLocalRequest();
 		HttpSession session = request.getSession();
 
+		//Expand groups into simple barcodes
 		String[] orderedBarcodes = KCServiceImplS.barcodes4J(columns);
 
 		String[] realProbes = filterProbes(filter, probes);
@@ -109,18 +110,24 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		ExprValue[][] rendered = new ExprValue[data.length][];
 
 		for (int r = 0; r < data.length; ++r) {
+			//compute column values for each row, including group columns
 			rendered[r] = KCServiceImplS.computeRow4J(columns, data, orderedBarcodes, r);
 		}
+		
+		assert(rendered.length == data.length);
 		
 		// filter by abs. value
 		List<ExprValue[]> remaining = new ArrayList<ExprValue[]>();
 		List<String> remainingProbes = new ArrayList<String>();
 		for (int r = 0; r < rendered.length; ++r) {
 			for (int i = 0; i < rendered[r].length; ++i) {
-				if (Math.abs(rendered[r][i].value()) >= absValFilter) {
+				if ((Double.isNaN(rendered[r][i].value()) && absValFilter == 0) || 
+						Math.abs(rendered[r][i].value()) >= absValFilter - 0.0001) { //safe comparison
 					remaining.add(rendered[r]);
 					remainingProbes.add(realProbes[r]);
 					break;
+				} else {
+					System.out.println("Ignore value " + rendered[r][i].value());
 				}
 			}
 		}
@@ -131,7 +138,7 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		session.setAttribute("datasetProbes", realProbes);
 		session.setAttribute("datasetColumns", columns.toArray(new DataColumn[0]));
 		if (data.length > 0) {
-			System.out.println("Stored " + data.length + " x " + data[0].length
+			System.out.println("Stored " + rendered.length + " x " + rendered[0].length
 					+ " items in session, " + realProbes.length + " probes");
 		} else {
 			System.out.println("Stored empty data in session");

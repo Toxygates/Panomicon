@@ -47,6 +47,14 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 		}
 	}
 	
+	/**
+	 * Obtain the number of data columns contained.
+	 * @return
+	 */
+	public int getColumns() {
+		return val.length;
+	}
+	
 	public String getTitle() {
 		return title;
 	}	

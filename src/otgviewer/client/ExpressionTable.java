@@ -60,6 +60,8 @@ public class ExpressionTable extends DataListenerWidget {
 	
 	private List<ExpressionListener> els = new ArrayList<ExpressionListener>();
 	
+	private int lastRequestedDataColNumber = 2;
+	
 	/**
 	 * This constructor will be used by the GWT designer. (Not functional at run time)
 	 * @wbp.parser.constructor
@@ -313,27 +315,37 @@ public class ExpressionTable extends DataListenerWidget {
 			}
 
 			public void onSuccess(List<ExpressionRow> result) {
-				exprGrid.setRowData(start, result);
-				for (ExpressionListener el: els) {
-					el.expressionsChanged(result);
-				}
+				if (result.size() > 0) {
+					//This check ensures that the number of columns we display is the same as
+					//the last number of columns we requested. Useful when there are multiple outstanding requests.
+					//Future: match up data returned with requests using unique IDs.
+					if (result.get(0).getColumns() == lastRequestedDataColNumber) {
+						exprGrid.setRowData(start, result);
+						for (ExpressionListener el : els) {
+							el.expressionsChanged(result);
+						}
 
-//				if (chartTable != null) {
-//					chartTable.removeRows(0, chartTable.getNumberOfRows());
-//					for (int i = 0; i < result.size(); ++i) {
-//						chartTable.addRow();
-//						ExpressionRow row = result.get(i);
-//						int cols = barcodeHandler.lastMultiSelection().size();
-//						chartTable.setValue(i, 0, row.getProbe());
-//						for (int j = 0; j < cols; ++j) {
-//							chartTable.setValue(i, j + 1, row.getValue(j)
-//									.getValue());
-//						}
-//						
-//						exprChart.draw(chartTable);						
-//					}
-//				}
+						// if (chartTable != null) {
+						// chartTable.removeRows(0,
+						// chartTable.getNumberOfRows());
+						// for (int i = 0; i < result.size(); ++i) {
+						// chartTable.addRow();
+						// ExpressionRow row = result.get(i);
+						// int cols =
+						// barcodeHandler.lastMultiSelection().size();
+						// chartTable.setValue(i, 0, row.getProbe());
+						// for (int j = 0; j < cols; ++j) {
+						// chartTable.setValue(i, j + 1, row.getValue(j)
+						// .getValue());
+						// }
+						//
+						// exprChart.draw(chartTable);
+						// }
+						// }
+					}
+				}
 			}
+
 		};
 
 		protected void onRangeChanged(HasData<ExpressionRow> display) {
@@ -388,6 +400,8 @@ public class ExpressionTable extends DataListenerWidget {
 			average.addAll(Arrays.asList(c.getBarcodes()));
 		}
 		cols.add(new Group("Average", average.toArray(new Barcode[0])));
+		
+		lastRequestedDataColNumber = cols.size();
 		
 		kcService.loadDataset(chosenDataFilter, cols, chosenProbes, chosenValueType,
 				absValBox.getValue(),
