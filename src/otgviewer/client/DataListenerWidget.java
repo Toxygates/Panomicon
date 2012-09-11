@@ -133,6 +133,16 @@ class DataListenerWidget extends Composite implements DataViewListener {
 		}
 	}
 	
+	public void propagateTo(DataListenerWidget other) {
+		other.dataFilterChanged(chosenDataFilter);
+		other.probeChanged(chosenProbe);
+		other.probesChanged(chosenProbes);
+		other.compoundsChanged(chosenCompounds);
+		other.compoundChanged(chosenCompound);
+		other.valueTypeChanged(chosenValueType);
+		other.columnsChanged(chosenColumns);		
+	}
+	
 	// other
 	
 	public void activate() {

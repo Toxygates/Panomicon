@@ -100,6 +100,8 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		HttpServletRequest request = getThreadLocalRequest();
 		HttpSession session = request.getSession();
 
+		long time = System.currentTimeMillis();
+		
 		//Expand groups into simple barcodes
 		String[] orderedBarcodes = KCServiceImplS.barcodes4J(columns);
 
@@ -107,13 +109,10 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		ExprValue[][] data = getExprValues(filter, Arrays.asList(orderedBarcodes), realProbes, type,
 				false);
 		
-		ExprValue[][] rendered = new ExprValue[data.length][];
-
-		for (int r = 0; r < data.length; ++r) {
-			//compute column values for each row, including group columns
-			rendered[r] = KCServiceImplS.computeRow4J(columns, data, orderedBarcodes, r);
-		}
+		System.out.println("Loaded in " + (System.currentTimeMillis() - time) + " ms");
+		time = System.currentTimeMillis();
 		
+		ExprValue[][] rendered = KCServiceImplS.computeRows4J(columns, data, orderedBarcodes);
 		assert(rendered.length == data.length);
 		
 		// filter by abs. value
@@ -134,6 +133,8 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		rendered = remaining.toArray(new ExprValue[0][]);
 		realProbes = remainingProbes.toArray(new String[0]);
 
+		System.out.println("Rendered in " + (System.currentTimeMillis() - time) + " ms");
+		
 		session.setAttribute("dataset", rendered);
 		session.setAttribute("datasetProbes", realProbes);
 		session.setAttribute("datasetColumns", columns.toArray(new DataColumn[0]));
@@ -209,7 +210,7 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		}
 		String[] probes = (String[]) session.getAttribute("datasetProbes");
 		
-		//At this point sorting and filtering may happen, possibly both.		
+		//At this point sorting may happen		
 		if (sortColumn > -1 && (sortColumn != params.sortColumn || ascending != params.sortAsc || params.mustSort)) {			
 			//OK, we need to re-sort it and then re-store it
 			params.sortColumn = sortColumn;

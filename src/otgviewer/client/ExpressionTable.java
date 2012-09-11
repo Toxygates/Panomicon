@@ -9,12 +9,19 @@ import otgviewer.shared.DataColumn;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Group;
 
+import com.google.gwt.cell.client.AbstractCell;
+import com.google.gwt.cell.client.Cell;
+import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.cell.client.TextCell;
+import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.HasDirection.Direction;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.cellview.client.ColumnSortList;
@@ -35,6 +42,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.view.client.AsyncDataProvider;
 import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.MultiSelectionModel;
@@ -54,6 +62,7 @@ public class ExpressionTable extends DataListenerWidget {
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
 	private DataGrid<ExpressionRow> exprGrid;
 	private DoubleBox absValBox;
+	private SeriesChart seriesChart;
 
 	private KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
@@ -141,6 +150,8 @@ public class ExpressionTable extends DataListenerWidget {
 		
 		setupMenu(menuBar);
 
+		seriesChart = new SeriesChart();
+		this.addListener(seriesChart);
 	}
 	
 	public void addExpressionListener(ExpressionListener el) {
@@ -246,6 +257,11 @@ public class ExpressionTable extends DataListenerWidget {
 
 		extraCols = 0;
 
+		ToolColumn tcl = new ToolColumn(new ToolCell(this));
+		exprGrid.addColumn(tcl, "");
+		exprGrid.setColumnWidth(tcl, "40px");		
+		extraCols += 1;
+		
 		if (probeColVis) {
 			TextColumn<ExpressionRow> probeCol = new TextColumn<ExpressionRow>() {
 				public String getValue(ExpressionRow er) {
@@ -436,6 +452,48 @@ public class ExpressionTable extends DataListenerWidget {
 				NumberFormat fmt = NumberFormat.getDecimalFormat();				
 				return fmt.format(er.getValue(i).getValue());
 			}
+		}
+	}
+	
+	class ToolCell extends AbstractCell<String> {
+		DataListenerWidget owner;
+		
+		public ToolCell(DataListenerWidget owner) {
+			super("click");
+			this.owner = owner;
+		}
+		
+		public void render(Cell.Context context, String data, SafeHtmlBuilder sb) {
+			sb.appendHtmlConstant("<img src=\"images/chart_16.png\">");
+		}
+		
+		public void onBrowserEvent(Context context, Element parent, String value,
+				NativeEvent event, ValueUpdater<String> valueUpdater) {
+			if ("click".equals(event.getType())) {
+				PopupPanel pp = new PopupPanel(true, true);
+				
+				seriesChart.probeChanged(value);
+				seriesChart.activate();
+				seriesChart.setWidth("500px");
+				seriesChart.setHeight("300px");				
+				pp.setWidget(seriesChart);
+				pp.setPopupPosition(Window.getClientWidth()/2 - 250, Window.getClientHeight() / 2 - 200);
+				pp.show();
+				
+			} else {
+				super.onBrowserEvent(context, parent, value, event, valueUpdater);
+			}
+		}
+	}
+	
+	class ToolColumn extends Column<ExpressionRow, String> {
+			
+		public ToolColumn(ToolCell tc) {
+			super(tc);			
+		}
+		
+		public String getValue(ExpressionRow er) {
+			return er.getProbe();			
 		}
 	}
 	

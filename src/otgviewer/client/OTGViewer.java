@@ -219,7 +219,6 @@ public class OTGViewer implements EntryPoint {
 	public void onModuleLoad() {
 		Runnable onLoadChart = new Runnable() {
 			public void run() {
-				seriesChart.onLoadChart();
 
 				 DataTable data = DataTable.create();
 		         data.addColumn(ColumnType.STRING, "Gene Name");
