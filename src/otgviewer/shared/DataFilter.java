@@ -18,4 +18,21 @@ public class DataFilter implements Serializable {
 	public DataFilter() {
 		
 	}
+	
+	public static DataFilter unpack(String s) {
+		String[] parts = s.split(",");
+		assert(parts.length == 4);
+		
+		try {
+			return new DataFilter(CellType.valueOf(parts[0]),
+					Organ.valueOf(parts[1]), RepeatType.valueOf(parts[2]),
+					Organism.valueOf(parts[3]));
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	public String pack() {
+		return cellType.name() + "," + organ.name() + "," + repeatType.name() + "," + organism.name();
+	}
 }

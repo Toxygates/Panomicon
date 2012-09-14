@@ -22,21 +22,21 @@ public class CompoundSelector extends DataListenerWidget {
 			.create(OwlimService.class);
 	private MultiSelectionHandler<String> compoundHandler;		
 	
-	public CompoundSelector(DataFilter initFilter) {
+	public CompoundSelector(DataFilter initFilter, String heading) {
 		chosenDataFilter = initFilter;
 		
 		VerticalPanel verticalPanel = new VerticalPanel();
 		initWidget(verticalPanel);
-		verticalPanel.setWidth("210px");
+		verticalPanel.setWidth("100%");
 		
-		Label lblCompounds = new Label("1. Compounds");
+		Label lblCompounds = new Label(heading);
 		lblCompounds.setStyleName("heading");
 		verticalPanel.add(lblCompounds);
 		
 		ListBox compoundList = new ListBox();
 		compoundList.setVisibleItemCount(10);
 		verticalPanel.add(compoundList);
-		compoundList.setSize("200px", "400px");
+		compoundList.setSize("100%", "400px");
 		compoundList.setMultipleSelect(true);
 
 		compoundHandler = new MultiSelectionHandler<String>("compounds",

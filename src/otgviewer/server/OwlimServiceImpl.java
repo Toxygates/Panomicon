@@ -56,7 +56,7 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 		int i = 0;
 		for (BCode code : codes) {
 			r[i] = new Barcode(code.code(), code.individual(), code.dose(),
-					code.time());
+					code.time(), compound);
 			i += 1;
 		}
 		return r;

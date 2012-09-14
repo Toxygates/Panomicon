@@ -1,6 +1,8 @@
 package otgviewer.shared;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A group of barcodes. Values will be computed as an average.
@@ -29,5 +31,13 @@ public class Group implements Serializable, DataColumn {
 	
 	public String getShortTitle() {
 		return name;
+	}
+	
+	public String[] getCompounds() {
+		Set<String> compounds = new HashSet<String>();
+		for (Barcode b : barcodes) {
+			compounds.add(b.getCompound());
+		}
+		return compounds.toArray(new String[0]);		
 	}
 }

@@ -2,7 +2,9 @@ package otgviewer.client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import otgviewer.shared.Barcode;
 import otgviewer.shared.CellType;
@@ -22,7 +24,10 @@ import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -65,7 +70,9 @@ public class OTGViewer implements EntryPoint {
 	private DataFilter chosenDataFilter = new DataFilter(CellType.Vivo,
 			Organ.Kidney, RepeatType.Single, Organism.Rat);
 
+	
 	private ListBox doseLevelList, timeList, barcodeList;
+	
 	private HorizontalPanel freeSelPanel;
 	private TabPanel mainTabPanel;
 
@@ -87,12 +94,13 @@ public class OTGViewer implements EntryPoint {
 	private GroupInspector groupInspector;
 	private ProbeSelector pathwaySel, gotermSel;
 
-	private DataListenerWidget listeners = new DataListenerWidget(); // dummy
-																		// widget
-																		// to
-																		// track
-																		// listeners
-
+	/**
+	 * Dummy widget to track listeners
+	 */
+	private DataListenerWidget listeners = new DataListenerWidget(); 
+	
+	private Map<String, Screen> screens = new HashMap<String, Screen>();
+	
 	private MenuBar setupMenu() {
 
 		MenuBar menuBar = new MenuBar(false);
@@ -202,16 +210,44 @@ public class OTGViewer implements EntryPoint {
 		// this is very fiddly and must be tested on all the browsers.
 		// Note that simply setting height = 100% won't work.
 		String h = (newHeight - rootPanel.getAbsoluteTop() - 20) + "px";
-		String h2 = (newHeight - mainTabPanel.getAbsoluteTop() - 30)
-				+ "px";
-		String h3 = (newHeight - horizontalSplitPanel.getAbsoluteTop() - 40)
-				+ "px";
+//		String h2 = (newHeight - mainTabPanel.getAbsoluteTop() - 30)
+//				+ "px";
+//		String h3 = (newHeight - horizontalSplitPanel.getAbsoluteTop() - 40)
+//				+ "px";
 		
-		mainTabPanel.setHeight(h2);
-		horizontalSplitPanel.setHeight(h3);
-		expressionTable.resizeInterface(newHeight);
+		if (currentScreen != null) {
+			currentScreen.resizeInterface(newHeight);
+		}
+//		mainTabPanel.setHeight(h2);
+//		horizontalSplitPanel.setHeight(h3);
+//		expressionTable.resizeInterface(newHeight);
 		listeners.changeHeight(newHeight);
 	}
+	
+	private Screen currentScreen;
+
+	
+	/**
+	 * Pick the appropriate screen to display.
+	 * @return
+	 */
+	private Screen pickScreen(String token) {
+		if (!screens.containsKey(token)) {
+			return screens.get(DatasetScreen.key); //default			
+		}
+		return screens.get(token);		
+	}
+	
+	private void initScreens() {
+		Screen s = new DatasetScreen(null);
+		screens.put(s.key(), s);
+		s = new CompoundScreen(s);
+		screens.put(s.key(), s);
+		s = new ColumnScreen(s);
+		screens.put(s.key(), s);
+	}
+	
+	
 
 	/**
 	 * This is the entry point method.
@@ -251,7 +287,21 @@ public class OTGViewer implements EntryPoint {
 		VisualizationUtils
 				.loadVisualizationApi("1.1", onLoadChart, "corechart");
 	
-
+		initScreens();
+		
+		History.addValueChangeHandler(new ValueChangeHandler<String>() {
+			public void onValueChange(ValueChangeEvent<String> vce) {
+				Screen s = pickScreen(vce.getValue());
+				if (currentScreen != null) {
+					mainVertPanel.remove(currentScreen);
+				}
+				currentScreen = s;
+				currentScreen.show();				
+				mainVertPanel.add(currentScreen);
+			}
+		});
+		
+		
 		rootPanel = RootPanel.get("rootPanelContainer");
 		rootPanel.setSize("100%", "100%");
 		rootPanel.getElement().getStyle().setPosition(Position.RELATIVE);
@@ -267,13 +317,20 @@ public class OTGViewer implements EntryPoint {
 		rootPanel.add(mainVertPanel);
 		mainVertPanel.setSize("100%", "100%");
 		mainVertPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
-		
+				
 		menuBar = setupMenu();
 		mainVertPanel.add(menuBar);
-
+		
+		if ("".equals(History.getToken())) {
+			History.newItem(DatasetScreen.key);
+		}
+		
+		resizeInterface(Window.getClientHeight()); //remove this if merging with the method below
+	}
 	
+	public void onModuleLoadRest() {
 		mainTabPanel = new TabPanel();
-		mainVertPanel.add(mainTabPanel);		
+//		mainVertPanel.add(mainTabPanel); //!!		
 		mainTabPanel.setSize("100%", "100%");
 		mainTabPanel.addSelectionHandler(new SelectionHandler<Integer>() {
 			public void onSelection(SelectionEvent<Integer> event) {
@@ -307,7 +364,7 @@ public class OTGViewer implements EntryPoint {
 		mainTabPanel.add(groupDefDock, "Group definitions", false);
 		groupDefDock.setSize("5cm", "3cm");
 
-		compoundSelector = new CompoundSelector(chosenDataFilter);
+		compoundSelector = new CompoundSelector(chosenDataFilter, "1. Compounds");
 		groupDefDock.add(compoundSelector, DockPanel.WEST);
 
 		groupInspector = new GroupInspector(compoundSelector);

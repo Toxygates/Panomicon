@@ -2,7 +2,9 @@ package otgviewer.client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
@@ -11,7 +13,6 @@ import otgviewer.shared.Group;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.core.client.GWT;
@@ -43,6 +44,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.AsyncDataProvider;
 import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.MultiSelectionModel;
@@ -62,7 +64,7 @@ public class ExpressionTable extends DataListenerWidget {
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
 	private DataGrid<ExpressionRow> exprGrid;
 	private DoubleBox absValBox;
-	private SeriesChart seriesChart;
+	private VerticalPanel seriesChartPanel = new VerticalPanel();	
 
 	private KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
@@ -150,8 +152,6 @@ public class ExpressionTable extends DataListenerWidget {
 		
 		setupMenu(menuBar);
 
-		seriesChart = new SeriesChart();
-		this.addListener(seriesChart);
 	}
 	
 	public void addExpressionListener(ExpressionListener el) {
@@ -419,6 +419,23 @@ public class ExpressionTable extends DataListenerWidget {
 		
 		lastRequestedDataColNumber = cols.size();
 		
+		//set up the series charts
+		Set<String> soFar = new HashSet();
+		seriesChartPanel.clear();
+		for (DataColumn c: cols) {
+			for (String com: c.getCompounds()) {
+				if (!soFar.contains(com)) {
+					soFar.add(com);
+					SeriesChart sc = new SeriesChart();					
+					seriesChartPanel.add(sc);
+					this.propagateTo(sc);
+					sc.compoundChanged(com);
+				}
+			}						
+		}
+		
+		
+		//load data
 		kcService.loadDataset(chosenDataFilter, cols, chosenProbes, chosenValueType,
 				absValBox.getValue(),
 				new AsyncCallback<Integer>() {
@@ -472,12 +489,24 @@ public class ExpressionTable extends DataListenerWidget {
 			if ("click".equals(event.getType())) {
 				PopupPanel pp = new PopupPanel(true, true);
 				
-				seriesChart.probeChanged(value);
-				seriesChart.activate();
-				seriesChart.setWidth("500px");
-				seriesChart.setHeight("300px");				
-				pp.setWidget(seriesChart);
-				pp.setPopupPosition(Window.getClientWidth()/2 - 250, Window.getClientHeight() / 2 - 200);
+				int chartHeight = 300;
+				int availHeight = Window.getClientHeight() - 100;
+				final int numCharts = seriesChartPanel.getWidgetCount();
+				if (availHeight / numCharts <= 300) {
+					chartHeight = availHeight / numCharts;
+				}
+				int height = chartHeight * numCharts;
+				for (int i = 0; i < numCharts; i++) {
+					SeriesChart seriesChart = (SeriesChart) seriesChartPanel.getWidget(i);
+					seriesChart.probeChanged(value);
+					seriesChart.activate();
+					seriesChart.setWidth("500px");
+					seriesChart.setPixelHeight(chartHeight);									
+				}
+				seriesChartPanel.setHeight(height + "px");
+												
+				pp.setWidget(seriesChartPanel);
+				pp.setPopupPosition(Window.getClientWidth()/2 - 250, Window.getClientHeight() / 2 - (height/2));
 				pp.show();
 				
 			} else {

@@ -53,6 +53,14 @@ background:Beige;
   text-align: center;
 }
 
+.clickHeading {
+	font-size: 1.2em;
+  color: #777777;
+  margin: 5px;
+  text-align: center;
+  cursor: pointer;
+}
+
 .border {
   margin: 1px;
   padding: 1px;

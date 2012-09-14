@@ -7,6 +7,8 @@ import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ValueType;
 
+import com.google.gwt.storage.client.Storage;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 
 /**
@@ -28,10 +30,6 @@ class DataListenerWidget extends Composite implements DataViewListener {
 	protected List<DataColumn> chosenColumns = new ArrayList<DataColumn>();
 	
 	protected boolean active = false;
-	
-	public DataListenerWidget() {
-		
-	}
 	
 	public void addListener(DataViewListener l) {
 		listeners.add(l);
@@ -151,6 +149,36 @@ class DataListenerWidget extends Composite implements DataViewListener {
 	
 	public void deactivate() {
 		active = false;
+	}
+	
+	public void storeState() {
+		Storage s = Storage.getLocalStorageIfSupported();
+		if (s == null) {
+			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
+		} else {
+			if (chosenDataFilter != null) {
+				s.setItem("OTG.dataFilter", chosenDataFilter.pack());
+			}
+			if (chosenValueType != null) {
+				s.setItem("OTG.valueType", chosenValueType.toString());
+			}
+		}
+	}
+	
+	public void loadState() {
+		Storage s = Storage.getLocalStorageIfSupported();
+		if (s == null) {
+			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
+		} else {
+			String v = s.getItem("OTG.dataFilter");
+			if (v != null) {				
+				changeDataFilter(DataFilter.unpack(v));
+			}
+			v = s.getItem("OTG.valueType");
+			if (v != null) {
+				changeValueType(ValueType.valueOf(v));
+			}
+		}
 	}
 	
 	

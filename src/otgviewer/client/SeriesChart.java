@@ -79,6 +79,12 @@ public class SeriesChart extends DataListenerWidget {
 			}
 		}
 	};
+	
+	int pixelHeight = 300;
+	public void setPixelHeight(int px) {
+		setHeight(px + "px");
+		pixelHeight = px;
+	}
 
 	private AsyncCallback<Barcode[]> seriesChartBarcodesCallback = new AsyncCallback<Barcode[]>() {
 		public void onFailure(Throwable caught) {
@@ -107,6 +113,7 @@ public class SeriesChart extends DataListenerWidget {
 								seriesChart = seriesStrategy.makeChart();
 								chartDockPanel.add(seriesChart,
 										DockPanel.CENTER);
+								seriesChart.setHeight((pixelHeight - 50) + "px");
 								seriesStrategy.displayData(result, seriesChart);
 							}
 

@@ -4,5 +4,7 @@ public interface DataColumn {
 
 	public Barcode[] getBarcodes();
 	
+	public String[] getCompounds();
+	
 	public String getShortTitle();
 }

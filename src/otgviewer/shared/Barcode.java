@@ -14,15 +14,17 @@ public class Barcode implements Serializable, DataColumn {
 	private String individual = "";
 	private String dose = "";
 	private String time = "";
+	private String compound = "";
 	
 	public Barcode() { }
 	
 	public Barcode(String _code, String _ind, 
-			String _dose, String _time) {
+			String _dose, String _time, String _compound) {
 		code = _code;		
 		individual = _ind;
 		dose = _dose;
-		time = _time;			
+		time = _time;		
+		compound = _compound;
 	}
 	
 	public String getTitle() {
@@ -53,7 +55,15 @@ public class Barcode implements Serializable, DataColumn {
 		return getShortTitle();
 	}
 	
+	public String getCompound() { 
+		return compound;
+	}
+	
 	public Barcode[] getBarcodes() { 
 		return new Barcode[] { this };
+	}
+	
+	public String[] getCompounds() {
+		return new String[] { compound };
 	}
 }
