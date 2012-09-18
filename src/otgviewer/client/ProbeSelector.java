@@ -1,11 +1,14 @@
 package otgviewer.client;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -23,12 +26,17 @@ abstract public class ProbeSelector extends DataListenerWidget {
 	TextBox searchBox;
 	ListBox itemList;
 	ListSelectionHandler<String> itemHandler;
+	private boolean withButton;
+	private String[] loadedProbes;
+	private Button addButton;
 	
 	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
 			.create(OwlimService.class);
 
 	
-	public ProbeSelector(String label) {
+	public ProbeSelector(String label, boolean wb) {
+		this.withButton = wb;
+		
 		VerticalPanel vp = new VerticalPanel();
 		initWidget(vp);
 		vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
@@ -58,10 +66,23 @@ abstract public class ProbeSelector extends DataListenerWidget {
 		itemHandler = new ListSelectionHandler<String>("pathways",
 				itemList, false) {
 			protected void getUpdates(String item) {
-				getProbes(item);
-						
+				if (withButton) {
+					addButton.setEnabled(false);
+				}
+				getProbes(item);						
 			}
 		};
+		
+		if (withButton) {
+			addButton = new Button("Add selected probes >>");
+			addButton.addClickHandler(new ClickHandler() {
+				public void onClick(ClickEvent e) {
+					probesChanged(loadedProbes);
+				}
+			});
+			addButton.setEnabled(false);
+			vp.add(addButton);
+		}
 	}
 	
 	public AsyncCallback<String[]> retrieveMatchesCallback() {
@@ -75,10 +96,16 @@ abstract public class ProbeSelector extends DataListenerWidget {
 			public void onFailure(Throwable caught) {
 				Window.alert("Unable to get probes.");
 				itemHandler.clear();
+				addButton.setEnabled(false);
 			}
 
 			public void onSuccess(String[] probes) {
-				probesChanged(probes);								
+				if (!withButton) {
+					probesChanged(probes);
+				} else {
+					addButton.setEnabled(true);
+					loadedProbes = probes;
+				}
 			}
 		};
 	}	

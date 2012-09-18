@@ -171,12 +171,21 @@ public class GroupInspector extends DataListenerWidget {
 		grid.resize(chosenCompounds.size() + 1, 4);
 		
 		for (int i = 1; i < chosenCompounds.size() + 1; ++i) {
-			grid.setWidget(i, 0, new Label(chosenCompounds.get(i - 1)));
+			Label l = new Label(chosenCompounds.get(i - 1));
+			l.setStyleName("emphasized");
+			grid.setWidget(i, 0, l);
 		}
 		
-		grid.setWidget(0, 1, new Label("Low"));
-		grid.setWidget(0, 2, new Label("Medium"));
-		grid.setWidget(0, 3, new Label("High"));
+		Label l = new Label("Low");
+		l.setStyleName("emphasized");
+		grid.setWidget(0, 1, l);
+		l = new Label("Medium");
+		l.setStyleName("emphasized");
+		grid.setWidget(0, 2, l);
+		l = new Label("High");
+		l.setStyleName("emphasized");
+		grid.setWidget(0, 3, l);
+		
 		
 		grid.setHeight(50 * (chosenCompounds.size() + 1) + "px");
 		lazyFetchTimes();

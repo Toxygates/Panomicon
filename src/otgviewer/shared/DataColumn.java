@@ -7,4 +7,7 @@ public interface DataColumn {
 	public String[] getCompounds();
 	
 	public String getShortTitle();
+	
+	public String pack();
+	
 }

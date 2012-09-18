@@ -241,9 +241,13 @@ public class OTGViewer implements EntryPoint {
 	private void initScreens() {
 		Screen s = new DatasetScreen(null);
 		screens.put(s.key(), s);
-		s = new CompoundScreen(s);
-		screens.put(s.key(), s);
+//		s = new CompoundScreen(s);
+//		screens.put(s.key(), s);
 		s = new ColumnScreen(s);
+		screens.put(s.key(), s);
+		s = new ProbeScreen(s);
+		screens.put(s.key(), s);
+		s = new DataScreen(s);
 		screens.put(s.key(), s);
 	}
 	
@@ -256,31 +260,31 @@ public class OTGViewer implements EntryPoint {
 		Runnable onLoadChart = new Runnable() {
 			public void run() {
 
-				 DataTable data = DataTable.create();
-		         data.addColumn(ColumnType.STRING, "Gene Name");
-		         data.addColumn(ColumnType.NUMBER, "chip_XXX_XXX_600");
-		         data.addColumn(ColumnType.NUMBER, "chip2");
-		         data.addColumn(ColumnType.NUMBER, "chip3");
-		         data.addColumn(ColumnType.NUMBER, "chip4");
-		         data.addColumn(ColumnType.NUMBER, "chip5");
-		         data.addColumn(ColumnType.NUMBER, "chip6");
-		         data.addRows(2);         
-		         data.setValue(0, 0, "ATF3");
-		         data.setValue(0, 1, 0);
-		         data.setValue(0, 2, 0.5);
-		         data.setValue(0, 3, 1);
-		         data.setValue(0, 4, 1.5);
-		         data.setValue(0, 5, 2);
-		         data.setValue(0, 6, 2.5);
-		         data.setValue(1, 0, "INS");
-		         data.setValue(1, 1, 3);
-		         data.setValue(1, 2, 3.5);
-		         data.setValue(1, 3, 4);
-		         data.setValue(1, 4, 4.5);
-		         data.setValue(1, 5, 5);
-		         data.setValue(1, 6, 5.5);
-		         
-		         bhm.draw(data);
+//				 DataTable data = DataTable.create();
+//		         data.addColumn(ColumnType.STRING, "Gene Name");
+//		         data.addColumn(ColumnType.NUMBER, "chip_XXX_XXX_600");
+//		         data.addColumn(ColumnType.NUMBER, "chip2");
+//		         data.addColumn(ColumnType.NUMBER, "chip3");
+//		         data.addColumn(ColumnType.NUMBER, "chip4");
+//		         data.addColumn(ColumnType.NUMBER, "chip5");
+//		         data.addColumn(ColumnType.NUMBER, "chip6");
+//		         data.addRows(2);         
+//		         data.setValue(0, 0, "ATF3");
+//		         data.setValue(0, 1, 0);
+//		         data.setValue(0, 2, 0.5);
+//		         data.setValue(0, 3, 1);
+//		         data.setValue(0, 4, 1.5);
+//		         data.setValue(0, 5, 2);
+//		         data.setValue(0, 6, 2.5);
+//		         data.setValue(1, 0, "INS");
+//		         data.setValue(1, 1, 3);
+//		         data.setValue(1, 2, 3.5);
+//		         data.setValue(1, 3, 4);
+//		         data.setValue(1, 4, 4.5);
+//		         data.setValue(1, 5, 5);
+//		         data.setValue(1, 6, 5.5);
+//		         
+//		         bhm.draw(data);
 			}
 		};
 
@@ -290,14 +294,8 @@ public class OTGViewer implements EntryPoint {
 		initScreens();
 		
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
-			public void onValueChange(ValueChangeEvent<String> vce) {
-				Screen s = pickScreen(vce.getValue());
-				if (currentScreen != null) {
-					mainVertPanel.remove(currentScreen);
-				}
-				currentScreen = s;
-				currentScreen.show();				
-				mainVertPanel.add(currentScreen);
+			public void onValueChange(ValueChangeEvent<String> vce) {				
+				setScreenForToken(vce.getValue());
 			}
 		});
 		
@@ -323,9 +321,21 @@ public class OTGViewer implements EntryPoint {
 		
 		if ("".equals(History.getToken())) {
 			History.newItem(DatasetScreen.key);
+		} else {
+			setScreenForToken(History.getToken());		
 		}
 		
-		resizeInterface(Window.getClientHeight()); //remove this if merging with the method below
+	}
+	
+	private void setScreenForToken(String token) {
+		Screen s = pickScreen(token);
+		if (currentScreen != null) {
+			mainVertPanel.remove(currentScreen);
+		}
+		currentScreen = s;
+		currentScreen.show();				
+		mainVertPanel.add(currentScreen);
+		resizeInterface(Window.getClientHeight()); 
 	}
 	
 	public void onModuleLoadRest() {
@@ -508,7 +518,7 @@ public class OTGViewer implements EntryPoint {
 		bhm = new BioHeatMap(BioHeatMap.Options.create());
 		freeSelPanel.add(bhm);
 
-		expressionTable = new ExpressionTable(menuBar);
+		expressionTable = new ExpressionTable(menuBar, "400px");
 		dataViewDock.add(expressionTable, DockPanel.CENTER);
 		expressionTable.setWidth("100%");
 
@@ -534,7 +544,7 @@ public class OTGViewer implements EntryPoint {
 		probeSelStack.setSize("", "592px");
 		
 		pathwaySel = new ProbeSelector("This lets you view probes that correspond to a given KEGG pathway. " +
-				"Enter a partial pathway name and press enter to search.") {
+				"Enter a partial pathway name and press enter to search.", false) {
 			protected void getMatches(String pattern) {
 					owlimService.pathways(chosenDataFilter, pattern,
 						retrieveMatchesCallback());
@@ -553,7 +563,7 @@ public class OTGViewer implements EntryPoint {
 		pathwaySel.setSize("100%", "350px");
 		
 		gotermSel = new ProbeSelector("This lets you view probes that correspond to a given GO term. " +
- "Enter a partial term name and press enter to search.") {
+ "Enter a partial term name and press enter to search.", false) {
 			protected void getMatches(String pattern) {
 				owlimService.goTerms(pattern, retrieveMatchesCallback());
 			}

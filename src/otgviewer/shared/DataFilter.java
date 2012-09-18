@@ -35,4 +35,21 @@ public class DataFilter implements Serializable {
 	public String pack() {
 		return cellType.name() + "," + organ.name() + "," + repeatType.name() + "," + organism.name();
 	}
+	
+	public String toString() {
+		StringBuilder s = new StringBuilder();
+		s.append(organism.name());
+		s.append(", ");
+		s.append(cellType.name());
+		s.append(", ");
+		switch (cellType) {
+		case Vivo:
+			s.append(organ.name());
+			s.append(", ");
+		case Vitro:
+			break;
+		}
+		s.append(repeatType.name());		
+		return s.toString();
+	}
 }

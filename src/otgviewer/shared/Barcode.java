@@ -2,6 +2,8 @@ package otgviewer.shared;
 
 import java.io.Serializable;
 
+import com.google.gwt.user.client.Window;
+
 /**
  * A barcode corresponds to a single microarray.
  * @author johan
@@ -65,5 +67,15 @@ public class Barcode implements Serializable, DataColumn {
 	
 	public String[] getCompounds() {
 		return new String[] { compound };
+	}
+	
+	public static Barcode unpack(String s) {
+//		Window.alert(s + " as barcode");
+		String[] s1 = s.split("\\$\\$\\$");		
+		return new Barcode(s1[1], s1[2], s1[3], s1[4], s1[5]);
+	}
+	
+	public String pack() {
+		return "Barcode$$$" + code + "$$$" + individual + "$$$" + dose + "$$$" + time + "$$$" + compound; //!!
 	}
 }

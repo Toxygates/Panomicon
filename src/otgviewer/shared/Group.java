@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.google.gwt.user.client.Window;
+
 /**
  * A group of barcodes. Values will be computed as an average.
  * @author johan
@@ -39,5 +41,29 @@ public class Group implements Serializable, DataColumn {
 			compounds.add(b.getCompound());
 		}
 		return compounds.toArray(new String[0]);		
+	}
+	
+	public String pack() {
+		StringBuilder s = new StringBuilder();
+		s.append("Group:::");
+		s.append(name + ":::"); //!!
+		for (Barcode b : barcodes) {
+			s.append(b.pack());
+			s.append("^^^");
+		}
+		return s.toString();
+	}
+	
+	public static Group unpack(String s) {
+//		Window.alert(s + " as group");
+		String[] s1 = s.split(":::"); //!!
+		String[] s2 = s1[2].split("\\^\\^\\^");
+		Barcode[] bcs = new Barcode[s2.length];
+		String name = s1[1];
+		for (int i = 0; i < s2.length; ++i) {
+			Barcode b = Barcode.unpack(s2[i]);
+			bcs[i] = b;
+		}
+		return new Group(name, bcs);
 	}
 }

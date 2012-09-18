@@ -2,6 +2,8 @@ package otgviewer.shared;
 
 import java.util.List;
 
+import scala.actors.threadpool.Arrays;
+
 public class SharedUtils {
 	
 	public static <T> int indexOf(T[] haystack, T needle) {
@@ -22,4 +24,14 @@ public class SharedUtils {
 		}
 		return -1;
 	}
+	
+	public static DataColumn unpackColumn(String s) {		
+		String[] spl = s.split("^^^");
+		if (spl[0].equals("Barcode")) {
+			return Barcode.unpack(s);
+		} else {
+			return Group.unpack(s);
+		}
+	}
+	
 }

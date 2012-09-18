@@ -78,10 +78,10 @@ public class ExpressionTable extends DataListenerWidget {
 	 * @wbp.parser.constructor
 	 */
 	public ExpressionTable() {
-		this(null);
+		this(null, "400px");
 	}	
 	
-	public ExpressionTable(MenuBar menuBar) {
+	public ExpressionTable(MenuBar menuBar, String height) {
 
 		DockPanel dockPanel = new DockPanel();
 		dockPanel.setStyleName("none");
@@ -92,7 +92,7 @@ public class ExpressionTable extends DataListenerWidget {
 		dockPanel.add(exprGrid, DockPanel.CENTER);
 		exprGrid.setStyleName("exprGrid");
 		exprGrid.setPageSize(20);
-		exprGrid.setSize("100%", "400px");
+		exprGrid.setSize("100%", height);
 		exprGrid.setSelectionModel(new MultiSelectionModel<ExpressionRow>());
 		exprGrid.getSelectionModel().addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
 			public void onSelectionChange(SelectionChangeEvent event) {
@@ -150,7 +150,9 @@ public class ExpressionTable extends DataListenerWidget {
 
 		exprGrid.addColumnSortHandler(colSortHandler);
 		
-		setupMenu(menuBar);
+		if (menuBar != null) {
+			setupMenu(menuBar); //TODO
+		}
 
 	}
 	

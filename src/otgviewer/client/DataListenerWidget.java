@@ -5,6 +5,7 @@ import java.util.List;
 
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.SharedUtils;
 import otgviewer.shared.ValueType;
 
 import com.google.gwt.storage.client.Storage;
@@ -162,6 +163,14 @@ class DataListenerWidget extends Composite implements DataViewListener {
 			if (chosenValueType != null) {
 				s.setItem("OTG.valueType", chosenValueType.toString());
 			}
+			if (chosenColumns != null) {
+				StringBuilder sb = new StringBuilder();
+				for (DataColumn c : chosenColumns) {
+					sb.append(c.pack());
+					sb.append("###");
+				}
+				s.setItem("OTG.columns", sb.toString());
+			}
 		}
 	}
 	
@@ -172,11 +181,21 @@ class DataListenerWidget extends Composite implements DataViewListener {
 		} else {
 			String v = s.getItem("OTG.dataFilter");
 			if (v != null) {				
-				changeDataFilter(DataFilter.unpack(v));
+				dataFilterChanged(DataFilter.unpack(v));
 			}
 			v = s.getItem("OTG.valueType");
 			if (v != null) {
-				changeValueType(ValueType.valueOf(v));
+				valueTypeChanged(ValueType.valueOf(v));
+			}
+			v = s.getItem("OTG.columns");
+			if (v != null && !v.equals("")) {				
+				String[] spl = v.split("###");
+				chosenColumns.clear();
+				for (String cl: spl) {
+					DataColumn c = SharedUtils.unpackColumn(cl);
+					chosenColumns.add(c);
+				}
+				columnsChanged(chosenColumns);
 			}
 		}
 	}

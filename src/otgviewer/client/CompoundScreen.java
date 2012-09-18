@@ -13,7 +13,7 @@ public class CompoundScreen extends Screen {
 	static String key = "compound";
 	
 	public CompoundScreen(Screen parent) {
-		super(parent, "Compound selection", key);
+		super(parent, "Compound selection", key, true);
 	}
 	
 	public Widget content() {

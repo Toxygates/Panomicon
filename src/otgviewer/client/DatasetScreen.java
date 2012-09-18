@@ -23,7 +23,7 @@ public class DatasetScreen extends Screen {
 	static String key = "ds";
 	
 	public DatasetScreen(Screen parent) {
-		super(parent, "Dataset selection", key);		
+		super(parent, "Dataset selection", key, false);		
 	}
 	
 	public Widget content() {
@@ -43,7 +43,7 @@ public class DatasetScreen extends Screen {
 				Organ.Kidney, RepeatType.Single, Organism.Human)));
 		hp.add(datasetButton("Rat, in vitro", new DataFilter(CellType.Vitro,
 				Organ.Kidney, RepeatType.Single, Organism.Rat)));
-		hp.add(datasetButton("Rat, in vitro, liver, single", new DataFilter(
+		hp.add(datasetButton("Rat, in vivo, liver, single", new DataFilter(
 				CellType.Vivo, Organ.Liver, RepeatType.Single, Organism.Rat)));
 		hp.add(datasetButton("Rat, in vivo, liver, repeat", new DataFilter(
 				CellType.Vivo, Organ.Liver, RepeatType.Repeat, Organism.Rat)));
@@ -65,7 +65,7 @@ public class DatasetScreen extends Screen {
 				String vt = valueTypeList.getItemText(valueTypeList.getSelectedIndex());
 				changeValueType(ValueType.valueOf(vt));
 				storeState();
-				History.newItem("compound"); //Go to compound selection screen
+				History.newItem(ColumnScreen.key); //Go to compound selection screen
 			}
 		});
 		return b;
