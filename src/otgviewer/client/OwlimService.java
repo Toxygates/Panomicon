@@ -7,9 +7,8 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 @RemoteServiceRelativePath("owlim")
 public interface OwlimService extends RemoteService {
-
+	
 	//Methods relating to metadata about our microarrays.
-	public String[] probes(DataFilter filter);
 	public String[] compounds(DataFilter filter);
 	public String[] organs(DataFilter filter, String compound);
 	public String[] doseLevels(DataFilter filter, String compound, String organ);	
@@ -17,6 +16,8 @@ public interface OwlimService extends RemoteService {
 	public String[] times(DataFilter filter, String compound, String organ);		
 	
 	//Other methods.
+	public String[] probes(DataFilter filter);
+	
 	/**
 	 * Obtain pathway names matching the pattern.
 	 * @param pattern
@@ -41,5 +42,5 @@ public interface OwlimService extends RemoteService {
 	
 	public String[] goTerms(String pattern);
 	
-	public String[] probesForGoTerm(String goTerm);
+	public String[] probesForGoTerm(DataFilter filter, String goTerm);
 }

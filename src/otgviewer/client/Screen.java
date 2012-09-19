@@ -1,5 +1,8 @@
 package otgviewer.client;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import otgviewer.shared.DataFilter;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -9,6 +12,8 @@ import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -29,10 +34,13 @@ public class Screen extends DataListenerWidget {
 	private boolean shown = false;
 	private Label viewLabel = new Label();
 	private boolean showDataFilter = false;
+	private MenuBar menuBar;
+	private List<MenuItem> menuItems = new ArrayList<MenuItem>();
 	
-	public Screen(Screen parent, String title, String key, 
-			boolean showDataFilter) {
+	public Screen(Screen parent, String title, String key, MenuBar mb, 
+			boolean showDataFilter) {		
 		initWidget(dockPanel);
+		menuBar = mb;
 		this.showDataFilter = showDataFilter;
 		dockPanel.setWidth("100%");		
 		this.key = key;
@@ -41,7 +49,7 @@ public class Screen extends DataListenerWidget {
 				
 	}
 	
-	public void addParentLinks(final Screen parent) {
+	void addParentLinks(final Screen parent) {
 		if (parent != null) {
 			addParentLinks(parent.parent());
 			Label l;
@@ -61,6 +69,10 @@ public class Screen extends DataListenerWidget {
 		}
 	}
 	
+	/**
+	 * This method will be called each time the screen is displayed anew.
+	 * If overriding, make sure to call the superclass method.
+	 */
 	public void show() {
 		if (!shown) {
 			VerticalPanel vp = new VerticalPanel();
@@ -72,8 +84,27 @@ public class Screen extends DataListenerWidget {
 			dockPanel.add(content(), DockPanel.CENTER);
 			vp.add(viewLabel);			
 			shown = true;
+		}		
+		for (MenuItem mi: menuItems) {
+			mi.setVisible(true);
 		}
 		loadState();
+	}
+	
+	/**
+	 * This method will be called each time the screen is hidden.
+	 * If overriding, make sure to call the superclass method.
+	 */
+	public void hide() {
+		for (MenuItem mi: menuItems) {
+			mi.setVisible(false);
+		}
+	}
+	
+	public void addMenu(MenuItem m) {
+		menuBar.addItem(m);
+		m.setVisible(false);
+		menuItems.add(m);
 	}
 	
 	public void resizeInterface(int newHeight) {
@@ -83,6 +114,7 @@ public class Screen extends DataListenerWidget {
 	
 	/**
 	 * Override this method to define the main content of the screen.
+	 * Stored state may not have been loaded when this method is invoked.
 	 * @return
 	 */
 	public Widget content() {

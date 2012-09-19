@@ -15,6 +15,8 @@ import com.google.gwt.user.client.ui.Composite;
 /**
  * A Composite that is also a DataViewListener.
  * Has default implementations for the change listener methods.
+ * 
+ * Convention: lists may be empty, but should never be null.
  * @author johan
  *
  */
@@ -68,7 +70,7 @@ class DataListenerWidget extends Composite implements DataViewListener {
 	}
 	
 	public void columnsChanged(List<DataColumn> columns) {
-		chosenColumns = columns;
+		chosenColumns = columns;		
 		changeColumns(columns);
 	}
 	
@@ -100,6 +102,7 @@ class DataListenerWidget extends Composite implements DataViewListener {
 	
 	protected void changeCompounds(List<String> compounds) {
 		chosenCompounds = compounds;
+		assert(compounds != null);
 		for (DataViewListener l: listeners) {
 			l.compoundsChanged(compounds);
 		}
@@ -122,6 +125,7 @@ class DataListenerWidget extends Composite implements DataViewListener {
 	
 	protected void changeColumns(List<DataColumn> columns) {
 		chosenColumns = columns;
+		assert(columns != null);
 		for (DataViewListener l : listeners) {
 			l.columnsChanged(columns);
 		}
@@ -152,6 +156,9 @@ class DataListenerWidget extends Composite implements DataViewListener {
 		active = false;
 	}
 	
+	/**
+	 * Store this widget's state into local storage.
+	 */
 	public void storeState() {
 		Storage s = Storage.getLocalStorageIfSupported();
 		if (s == null) {
@@ -159,38 +166,53 @@ class DataListenerWidget extends Composite implements DataViewListener {
 		} else {
 			if (chosenDataFilter != null) {
 				s.setItem("OTG.dataFilter", chosenDataFilter.pack());
+			} else {
+				s.setItem("OTG.dataFilter", null);
 			}
 			if (chosenValueType != null) {
 				s.setItem("OTG.valueType", chosenValueType.toString());
+			} else {
+				s.setItem("OTG.valueType", null);
 			}
-			if (chosenColumns != null) {
-				StringBuilder sb = new StringBuilder();
-				for (DataColumn c : chosenColumns) {
-					sb.append(c.pack());
-					sb.append("###");
-				}
-				s.setItem("OTG.columns", sb.toString());
+			if (! chosenColumns.isEmpty()) {				
+				s.setItem("OTG.columns", packColumns());
+			} else {
+				s.setItem("OTG.columns", null);
 			}
 		}
 	}
 	
+	private String packColumns() {
+		StringBuilder sb = new StringBuilder();
+		for (DataColumn c : chosenColumns) {
+			sb.append(c.pack());
+			sb.append("###");
+		}
+		return sb.toString();
+	}
+	
+	/**
+	 * Load saved state from the local storage.
+	 * If the loaded state is different from what was previously remembered in this widget, the appropriate 
+	 * signals will fire.
+	 */
 	public void loadState() {
 		Storage s = Storage.getLocalStorageIfSupported();
 		if (s == null) {
 			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
 		} else {
 			String v = s.getItem("OTG.dataFilter");
-			if (v != null) {				
+			if (v != null && (chosenDataFilter == null || !v.equals(chosenDataFilter.pack()))) {				
 				dataFilterChanged(DataFilter.unpack(v));
 			}
 			v = s.getItem("OTG.valueType");
-			if (v != null) {
+			if (v != null && (chosenValueType == null || !v.equals(chosenValueType.toString()))) {
 				valueTypeChanged(ValueType.valueOf(v));
 			}
 			v = s.getItem("OTG.columns");
-			if (v != null && !v.equals("")) {				
+			if (v != null && !v.equals(packColumns())) {				
 				String[] spl = v.split("###");
-				chosenColumns.clear();
+				chosenColumns = new ArrayList<DataColumn>();
 				for (String cl: spl) {
 					DataColumn c = SharedUtils.unpackColumn(cl);
 					chosenColumns.add(c);

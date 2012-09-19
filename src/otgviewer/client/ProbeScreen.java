@@ -3,6 +3,8 @@ package otgviewer.client;
 import java.util.HashSet;
 import java.util.Set;
 
+import otgviewer.shared.DataFilter;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -12,10 +14,10 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.StackPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -34,8 +36,8 @@ public class ProbeScreen extends Screen {
 	private ListBox probesList;
 	private Set<String> listedProbes = new HashSet<String>();
 
-	public ProbeScreen(Screen parent) {
-		super(parent, "Select probes", key, true);
+	public ProbeScreen(Screen parent, MenuBar mb) {
+		super(parent, "Select probes", key, mb, true);
 	}
 
 	private ProbeSelector pathwaySel, gotermSel;
@@ -76,7 +78,7 @@ public class ProbeScreen extends Screen {
 			}
 
 			protected void getProbes(String item) {
-				owlimService.probesForGoTerm(item, retrieveProbesCallback());
+				owlimService.probesForGoTerm(chosenDataFilter, item, retrieveProbesCallback());
 			}
 
 			public void probesChanged(String[] probes) {
@@ -225,5 +227,11 @@ public class ProbeScreen extends Screen {
 		for (String p: listedProbes) {
 			probesList.addItem(p);
 		}		
+	}
+	
+	public void dataFilterChanged(DataFilter filter) {
+		super.dataFilterChanged(filter);
+		probesList.clear();
+		listedProbes.clear();
 	}
 }

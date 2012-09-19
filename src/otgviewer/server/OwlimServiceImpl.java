@@ -132,8 +132,9 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 		return OTGOwlim.goTerms(pattern);		
 	}
 	
-	public String[] probesForGoTerm(String goTerm) {
-		return OTGOwlim.probesForGoTerm(goTerm);
+	public String[] probesForGoTerm(DataFilter filter, String goTerm) {
+		Species s = Utils.speciesFromFilter(filter);
+		return OTGQueries.filterProbes(OTGOwlim.probesForGoTerm(goTerm), s);
 	}
 
 }

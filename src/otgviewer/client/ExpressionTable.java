@@ -78,10 +78,10 @@ public class ExpressionTable extends DataListenerWidget {
 	 * @wbp.parser.constructor
 	 */
 	public ExpressionTable() {
-		this(null, "400px");
+		this("400px");
 	}	
 	
-	public ExpressionTable(MenuBar menuBar, String height) {
+	public ExpressionTable(String height) {
 
 		DockPanel dockPanel = new DockPanel();
 		dockPanel.setStyleName("none");
@@ -149,10 +149,6 @@ public class ExpressionTable extends DataListenerWidget {
 		});
 
 		exprGrid.addColumnSortHandler(colSortHandler);
-		
-		if (menuBar != null) {
-			setupMenu(menuBar); //TODO
-		}
 
 	}
 	
@@ -162,10 +158,12 @@ public class ExpressionTable extends DataListenerWidget {
 	
 	private String downloadUrl;
 	private DialogBox db;
-	private void setupMenu(MenuBar menuBar) {
+	
+	MenuItem[] menuItems() {
+		MenuItem[] r = new MenuItem[2];
 		MenuBar menuBar_3 = new MenuBar(true);
 		
-		MenuItem mntmActions_1 = new MenuItem("Actions", false, menuBar_3);
+		MenuItem mntmActions_1 = new MenuItem("Actions", false, menuBar_3);		
 		
 		MenuItem mntmDownloadCsv = new MenuItem("Download CSV", false, new Command() {
 			public void execute() {
@@ -203,7 +201,8 @@ public class ExpressionTable extends DataListenerWidget {
 			}
 		});
 		menuBar_3.addItem(mntmDownloadCsv);		
-		menuBar.addItem(mntmActions_1);
+		r[0] = mntmActions_1;
+		
 		MenuBar menuBar_2 = new MenuBar(true);
 
 		MenuItem mntmNewMenu_1 = new MenuItem("New menu", false, menuBar_2);
@@ -243,7 +242,8 @@ public class ExpressionTable extends DataListenerWidget {
 		menuBar_2.addItem(mntmGeneSym);
 		
 		mntmNewMenu_1.setHTML("Columns");
-		menuBar.addItem(mntmNewMenu_1);
+		r[1] = mntmNewMenu_1;
+		return r;
 	}
 
 	private int extraCols = 0;

@@ -105,103 +105,108 @@ public class OTGViewer implements EntryPoint {
 
 		MenuBar menuBar = new MenuBar(false);
 		menuBar.setWidth("100%");
-		MenuBar menuBar_1 = new MenuBar(true);
+		
+		menuBar.addItem(new MenuItem("Open TG-Gates", new Command() {
+			public void execute() {}
+		}));
+		
+//		MenuBar menuBar_1 = new MenuBar(true);
 
-		MenuItem mntmNewMenu = new MenuItem("New menu", false, menuBar_1);
+//		MenuItem mntmNewMenu = new MenuItem("New menu", false, menuBar_1);
+//
+//		MenuItem mntmNewItem = new MenuItem("New item", false, new Command() {
+//			public void execute() {
+//				chosenDataFilter = new DataFilter(CellType.Vitro, Organ.Kidney,
+//						RepeatType.Single, Organism.Human);
+//				listeners.changeDataFilter(chosenDataFilter);
+//				getCompounds();
+//			}
+//		});
+//		mntmNewItem.setHTML("Human, in vitro");
+//		menuBar_1.addItem(mntmNewItem);
+//
+//		MenuItem mntmNewItem_1 = new MenuItem("New item", false, new Command() {
+//			public void execute() {
+//				chosenDataFilter = new DataFilter(CellType.Vitro, Organ.Kidney,
+//						RepeatType.Single, Organism.Rat);
+//				listeners.changeDataFilter(chosenDataFilter);
+//				getCompounds();
+//			}
+//		});
+//		mntmNewItem_1.setHTML("Rat, in vitro");
+//		menuBar_1.addItem(mntmNewItem_1);
+//
+//		MenuItem mntmNewItem_2 = new MenuItem("New item", false, new Command() {
+//			public void execute() {
+//				chosenDataFilter = new DataFilter(CellType.Vivo, Organ.Liver,
+//						RepeatType.Single, Organism.Rat);
+//				listeners.changeDataFilter(chosenDataFilter);
+//				getCompounds();
+//			}
+//		});
+//		mntmNewItem_2.setHTML("Rat, in vivo, liver, single");
+//		menuBar_1.addItem(mntmNewItem_2);
+//
+//		MenuItem mntmNewItem_3 = new MenuItem("New item", false, new Command() {
+//			public void execute() {
+//				chosenDataFilter = new DataFilter(CellType.Vivo, Organ.Liver,
+//						RepeatType.Repeat, Organism.Rat);
+//				listeners.changeDataFilter(chosenDataFilter);
+//				getCompounds();
+//			}
+//		});
+//		mntmNewItem_3.setHTML("Rat, in vivo, liver, repeat");
+//		menuBar_1.addItem(mntmNewItem_3);
+//
+//		MenuItem mntmNewItem_4 = new MenuItem("New item", false, new Command() {
+//			public void execute() {
+//				chosenDataFilter = new DataFilter(CellType.Vivo, Organ.Kidney,
+//						RepeatType.Single, Organism.Rat);
+//				listeners.changeDataFilter(chosenDataFilter);
+//				getCompounds();
+//			}
+//		});
+//		mntmNewItem_4.setHTML("Rat, in vivo, kidney, single");
+//		menuBar_1.addItem(mntmNewItem_4);
+//
+//		MenuItem mntmNewItem_5 = new MenuItem("New item", false, new Command() {
+//			public void execute() {
+//				chosenDataFilter = new DataFilter(CellType.Vivo, Organ.Kidney,
+//						RepeatType.Repeat, Organism.Rat);
+//				listeners.changeDataFilter(chosenDataFilter);
+//				getCompounds();
+//			}
+//		});
+//		mntmNewItem_5.setHTML("Rat, in vivo, kidney, repeat");
+//		menuBar_1.addItem(mntmNewItem_5);
+//
+//		MenuItemSeparator separator = new MenuItemSeparator();
+//		menuBar_1.addSeparator(separator);
+//
+//		MenuItem mntmFolds = new MenuItem("Fold values", false, new Command() {
+//			public void execute() {
+//				chosenValueType = ValueType.Folds;
+//				listeners.changeValueType(chosenValueType);
+//				getExpressions(null, false);
+//			}
+//		});
+//		menuBar_1.addItem(mntmFolds);
+//
+//		MenuItem mntmAbsoluteValues = new MenuItem(
+//				"Absolute expression values", false, new Command() {
+//					public void execute() {
+//						chosenValueType = ValueType.Absolute;
+//						listeners.changeValueType(chosenValueType);
+//						getExpressions(null, false);
+//					}
+//				});
+//
+//		menuBar_1.addItem(mntmAbsoluteValues);
+//		mntmNewMenu.setHTML("Data set");
+//		menuBar.addItem(mntmNewMenu);
 
-		MenuItem mntmNewItem = new MenuItem("New item", false, new Command() {
-			public void execute() {
-				chosenDataFilter = new DataFilter(CellType.Vitro, Organ.Kidney,
-						RepeatType.Single, Organism.Human);
-				listeners.changeDataFilter(chosenDataFilter);
-				getCompounds();
-			}
-		});
-		mntmNewItem.setHTML("Human, in vitro");
-		menuBar_1.addItem(mntmNewItem);
-
-		MenuItem mntmNewItem_1 = new MenuItem("New item", false, new Command() {
-			public void execute() {
-				chosenDataFilter = new DataFilter(CellType.Vitro, Organ.Kidney,
-						RepeatType.Single, Organism.Rat);
-				listeners.changeDataFilter(chosenDataFilter);
-				getCompounds();
-			}
-		});
-		mntmNewItem_1.setHTML("Rat, in vitro");
-		menuBar_1.addItem(mntmNewItem_1);
-
-		MenuItem mntmNewItem_2 = new MenuItem("New item", false, new Command() {
-			public void execute() {
-				chosenDataFilter = new DataFilter(CellType.Vivo, Organ.Liver,
-						RepeatType.Single, Organism.Rat);
-				listeners.changeDataFilter(chosenDataFilter);
-				getCompounds();
-			}
-		});
-		mntmNewItem_2.setHTML("Rat, in vivo, liver, single");
-		menuBar_1.addItem(mntmNewItem_2);
-
-		MenuItem mntmNewItem_3 = new MenuItem("New item", false, new Command() {
-			public void execute() {
-				chosenDataFilter = new DataFilter(CellType.Vivo, Organ.Liver,
-						RepeatType.Repeat, Organism.Rat);
-				listeners.changeDataFilter(chosenDataFilter);
-				getCompounds();
-			}
-		});
-		mntmNewItem_3.setHTML("Rat, in vivo, liver, repeat");
-		menuBar_1.addItem(mntmNewItem_3);
-
-		MenuItem mntmNewItem_4 = new MenuItem("New item", false, new Command() {
-			public void execute() {
-				chosenDataFilter = new DataFilter(CellType.Vivo, Organ.Kidney,
-						RepeatType.Single, Organism.Rat);
-				listeners.changeDataFilter(chosenDataFilter);
-				getCompounds();
-			}
-		});
-		mntmNewItem_4.setHTML("Rat, in vivo, kidney, single");
-		menuBar_1.addItem(mntmNewItem_4);
-
-		MenuItem mntmNewItem_5 = new MenuItem("New item", false, new Command() {
-			public void execute() {
-				chosenDataFilter = new DataFilter(CellType.Vivo, Organ.Kidney,
-						RepeatType.Repeat, Organism.Rat);
-				listeners.changeDataFilter(chosenDataFilter);
-				getCompounds();
-			}
-		});
-		mntmNewItem_5.setHTML("Rat, in vivo, kidney, repeat");
-		menuBar_1.addItem(mntmNewItem_5);
-
-		MenuItemSeparator separator = new MenuItemSeparator();
-		menuBar_1.addSeparator(separator);
-
-		MenuItem mntmFolds = new MenuItem("Fold values", false, new Command() {
-			public void execute() {
-				chosenValueType = ValueType.Folds;
-				listeners.changeValueType(chosenValueType);
-				getExpressions(null, false);
-			}
-		});
-		menuBar_1.addItem(mntmFolds);
-
-		MenuItem mntmAbsoluteValues = new MenuItem(
-				"Absolute expression values", false, new Command() {
-					public void execute() {
-						chosenValueType = ValueType.Absolute;
-						listeners.changeValueType(chosenValueType);
-						getExpressions(null, false);
-					}
-				});
-
-		menuBar_1.addItem(mntmAbsoluteValues);
-		mntmNewMenu.setHTML("Data set");
-		menuBar.addItem(mntmNewMenu);
-
-		MenuItem mntmSettings = new MenuItem("Settings", false, (Command) null);
-		menuBar.addItem(mntmSettings);
+//		MenuItem mntmSettings = new MenuItem("Settings", false, (Command) null);
+//		menuBar.addItem(mntmSettings);
 
 		return menuBar;
 	}
@@ -239,15 +244,15 @@ public class OTGViewer implements EntryPoint {
 	}
 	
 	private void initScreens() {
-		Screen s = new DatasetScreen(null);
+		Screen s = new DatasetScreen(null, menuBar);
 		screens.put(s.key(), s);
-//		s = new CompoundScreen(s);
+//		s = new CompoundScreen(s, menuBar);
 //		screens.put(s.key(), s);
-		s = new ColumnScreen(s);
+		s = new ColumnScreen(s, menuBar);
 		screens.put(s.key(), s);
-		s = new ProbeScreen(s);
+		s = new ProbeScreen(s, menuBar);
 		screens.put(s.key(), s);
-		s = new DataScreen(s);
+		s = new DataScreen(s, menuBar);
 		screens.put(s.key(), s);
 	}
 	
@@ -291,6 +296,7 @@ public class OTGViewer implements EntryPoint {
 		VisualizationUtils
 				.loadVisualizationApi("1.1", onLoadChart, "corechart");
 	
+		menuBar = setupMenu();
 		initScreens();
 		
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
@@ -316,7 +322,7 @@ public class OTGViewer implements EntryPoint {
 		mainVertPanel.setSize("100%", "100%");
 		mainVertPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
 				
-		menuBar = setupMenu();
+		
 		mainVertPanel.add(menuBar);
 		
 		if ("".equals(History.getToken())) {
@@ -331,6 +337,7 @@ public class OTGViewer implements EntryPoint {
 		Screen s = pickScreen(token);
 		if (currentScreen != null) {
 			mainVertPanel.remove(currentScreen);
+			currentScreen.hide();
 		}
 		currentScreen = s;
 		currentScreen.show();				
@@ -374,7 +381,8 @@ public class OTGViewer implements EntryPoint {
 		mainTabPanel.add(groupDefDock, "Group definitions", false);
 		groupDefDock.setSize("5cm", "3cm");
 
-		compoundSelector = new CompoundSelector(chosenDataFilter, "1. Compounds");
+		compoundSelector = new CompoundSelector("1. Compounds");
+		compoundSelector.changeDataFilter(chosenDataFilter);
 		groupDefDock.add(compoundSelector, DockPanel.WEST);
 
 		groupInspector = new GroupInspector(compoundSelector);
@@ -518,7 +526,11 @@ public class OTGViewer implements EntryPoint {
 		bhm = new BioHeatMap(BioHeatMap.Options.create());
 		freeSelPanel.add(bhm);
 
-		expressionTable = new ExpressionTable(menuBar, "400px");
+		expressionTable = new ExpressionTable("400px");
+		MenuItem[] mis = expressionTable.menuItems();
+		menuBar.addItem(mis[0]);
+		menuBar.addItem(mis[1]);
+		
 		dataViewDock.add(expressionTable, DockPanel.CENTER);
 		expressionTable.setWidth("100%");
 
@@ -570,7 +582,7 @@ public class OTGViewer implements EntryPoint {
 
 			protected void getProbes(String item) {
 				expressionTable.beginLoading();
-				owlimService.probesForGoTerm(item, retrieveProbesCallback());
+				owlimService.probesForGoTerm(chosenDataFilter, item, retrieveProbesCallback());
 			}
 
 			public void probesChanged(String[] probes) {

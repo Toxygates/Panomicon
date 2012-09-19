@@ -20,5 +20,5 @@ public interface OwlimServiceAsync {
 	public void probesTargetedByCompound(DataFilter filter, String compound, String service, AsyncCallback<String[]> callback);
 	
 	public void goTerms(String pattern, AsyncCallback<String[]> callback);
-	public void probesForGoTerm(String term, AsyncCallback<String[]> callback);
+	public void probesForGoTerm(DataFilter filter, String term, AsyncCallback<String[]> callback);
 }

@@ -157,8 +157,14 @@ public class GroupInspector extends DataListenerWidget {
 	
 	@Override
 	public void dataFilterChanged(DataFilter filter) {
+		super.dataFilterChanged(filter);
 		chosenDataFilter = filter;
 		availableTimes = null;
+		// future: we could save and restore groups for each data filter in
+		// the local state.
+		groups.clear();
+		existingGroupsList.clear();
+		compoundsChanged(new ArrayList<String>());
 	}
 	
 	@Override

@@ -22,8 +22,8 @@ public class CompoundSelector extends DataListenerWidget {
 			.create(OwlimService.class);
 	private MultiSelectionHandler<String> compoundHandler;		
 	
-	public CompoundSelector(DataFilter initFilter, String heading) {
-		chosenDataFilter = initFilter;
+	public CompoundSelector(String heading) {
+//		chosenDataFilter = initFilter;
 		
 		VerticalPanel verticalPanel = new VerticalPanel();
 		initWidget(verticalPanel);
@@ -46,7 +46,7 @@ public class CompoundSelector extends DataListenerWidget {
 			}
 		};
 		
-		loadCompounds();
+//		loadCompounds();
 	}
 	
 	@Override

@@ -14,6 +14,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -22,8 +23,8 @@ public class DatasetScreen extends Screen {
 	ListBox valueTypeList = new ListBox();
 	static String key = "ds";
 	
-	public DatasetScreen(Screen parent) {
-		super(parent, "Dataset selection", key, false);		
+	public DatasetScreen(Screen parent, MenuBar mb) {
+		super(parent, "Dataset selection", key, mb, false);		
 	}
 	
 	public Widget content() {
