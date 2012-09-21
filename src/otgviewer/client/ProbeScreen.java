@@ -170,6 +170,7 @@ public class ProbeScreen extends Screen {
 			@Override
 			public void onClick(ClickEvent event) {
 				changeProbes(listedProbes.toArray(new String[0]));
+				storeState();
 				History.newItem(DataScreen.key);
 			}
 		});
@@ -179,6 +180,7 @@ public class ProbeScreen extends Screen {
 		b.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				changeProbes(new String[0]);
+				storeState();
 				History.newItem(DataScreen.key);
 			}
 		});

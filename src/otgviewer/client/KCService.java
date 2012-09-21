@@ -6,6 +6,7 @@ import java.util.List;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
+import otgviewer.shared.Group;
 import otgviewer.shared.ValueType;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -29,6 +30,15 @@ public interface KCService extends RemoteService {
 	 */
 	public int loadDataset(DataFilter filter, List<DataColumn> columns, 
 			String[] probes, ValueType type, double absValFilter);
+	
+	/**
+	 * Add a T-test column. Requires that loadDataset was
+	 * first used to load items. After this has been done, 
+	 * datasetItems or getFullData can be used as normal to obtain the data.
+	 * @param g1
+	 * @param g2
+	 */
+	public void addTTest(Group g1, Group g2);
 	
 	/**
 	 * Get one page. Requires that loadDataset was first used to load items.

@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -21,13 +19,12 @@ import otg.OTGMisc;
 import otg.OTGQueries;
 import otg.Species;
 import otgviewer.client.KCService;
-import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.ExpressionValue;
 import otgviewer.shared.Group;
-import otgviewer.shared.SharedUtils;
+import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -57,7 +54,7 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 	private String[] filterProbes(DataFilter filter, String[] probes) {	
 		String[] realProbes = probes;
 		Species s = Utils.speciesFromFilter(filter);
-		if (probes == null) {
+		if (probes == null || probes.length == 0) {
 			// get all probes
 			realProbes = OTGQueries.probeIds(s);
 		} else {
@@ -108,6 +105,7 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		String[] realProbes = filterProbes(filter, probes);
 		ExprValue[][] data = getExprValues(filter, Arrays.asList(orderedBarcodes), realProbes, type,
 				false);
+		session.setAttribute("datasetRaw", data);
 		
 		System.out.println("Loaded in " + (System.currentTimeMillis() - time) + " ms");
 		time = System.currentTimeMillis();
@@ -138,9 +136,12 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		session.setAttribute("dataset", rendered);
 		session.setAttribute("datasetProbes", realProbes);
 		session.setAttribute("datasetColumns", columns.toArray(new DataColumn[0]));
-		if (data.length > 0) {
-			System.out.println("Stored " + rendered.length + " x " + rendered[0].length
-					+ " items in session, " + realProbes.length + " probes");
+		if (rendered.length > 0) {
+
+			System.out.println("Stored " + rendered.length + " x "
+					+ rendered[0].length + " items in session, "
+					+ realProbes.length + " probes");
+
 		} else {
 			System.out.println("Stored empty data in session");
 		}
@@ -152,6 +153,28 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		params.mustSort = true;
 		session.setAttribute("params", params);
 		return rendered.length;
+	}
+	
+	public void addTTest(Group g1, Group g2) {
+		HttpServletRequest request = getThreadLocalRequest();
+		HttpSession session = request.getSession();
+
+		long time = System.currentTimeMillis();
+		
+		DataColumn[] columns = (DataColumn[]) session.getAttribute("datasetColumns");
+		ExprValue[][] data = (ExprValue[][]) session.getAttribute("datasetRaw");
+		ExprValue[][] rendered = (ExprValue[][]) session.getAttribute("dataset");
+		
+		//Expand groups into simple barcodes
+		String[] orderedBarcodes = KCServiceImplS.barcodes4J(columns);		
+		rendered = KCServiceImplS.performTTests(g1, g2, data, rendered, orderedBarcodes);
+		System.out.println("Performed t-test in " + (System.currentTimeMillis() - time) + " ms");
+		DataViewParams params = (DataViewParams) session.getAttribute("dataViewParams");
+		
+		DataColumn[] ncolumns = Arrays.copyOf(columns, columns.length + 1);
+		ncolumns[columns.length] = new Synthetic("T(" + g1.getShortTitle() + "," + g2.getShortTitle() + ")");
+		session.setAttribute("dataset", rendered);
+		session.setAttribute("datasetColumns", ncolumns);
 	}
 	
 	private ExpressionRow arrayToRow(String probe, String title, String[] geneIds, String[] geneSyms, ExprValue[] vals) {

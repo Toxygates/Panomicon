@@ -25,4 +25,12 @@ public class DataScreen extends Screen {
 		
 		return et;		
 	}
+	
+	public void show() {
+		super.show();
+		//state has finished loading
+		
+		et.getExpressions(chosenProbes, false);		
+		
+	}
 }

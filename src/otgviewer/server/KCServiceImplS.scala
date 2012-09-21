@@ -1,9 +1,12 @@
 package otgviewer.server
 import otgviewer.shared._
 import otg.ExprValue
+import org.apache.commons.math3.stat.inference.TTest
 
 object KCServiceImplS {
   import scala.collection.JavaConversions._
+  
+  val ttest = new TTest()
 
   def barcodes(columns: Iterable[DataColumn]): Array[String] = {
     columns.flatMap(_ match {
@@ -13,7 +16,8 @@ object KCServiceImplS {
   }
 
   def barcodes4J(columns: java.lang.Iterable[DataColumn]): Array[String] = barcodes(columns)
-
+  def barcodes4J(columns: Array[DataColumn]): Array[String] = barcodes(columns.toIterable)
+  
   def computeColumn(col: DataColumn, rawData: Array[ExprValue], colMap: Map[String, Int]): ExprValue = {
     col match {
       case g: Group => {
@@ -31,6 +35,20 @@ object KCServiceImplS {
         throw new Exception("Unexpected column type")
       }
     }
+  }
+  
+  /**
+   * Perform a T-test on the two specified columns.
+   * The result will be the renderInto row with the t-test p-value added as a final item at the end.
+   */
+  def performTTest(col1: Group, col2: Group, row: Array[ExprValue], renderInto: Array[ExprValue], colMap: Map[String, Int]): Array[ExprValue] = {
+    val bcs1 = col1.getBarcodes
+    val vs1 = bcs1.map(b => colMap(b.getCode)).map(row(_))
+    val bcs2 = col2.getBarcodes
+    val vs2 = bcs2.map(b => colMap(b.getCode)).map(row(_))
+    
+    val p = ExprValue(ttest.tTest(vs1.map(_.value), vs2.map(_.value)), 'P', vs1.head.probe)
+    (renderInto.toVector :+ p).toArray    
   }
   
   private def makeColMap(orderedBarcodes: Array[String]): Map[String, Int] = Map() ++ orderedBarcodes.zipWithIndex.map(x => (x._1, x._2))
@@ -51,7 +69,14 @@ object KCServiceImplS {
   def computeRows(cols: Iterable[DataColumn], 
       rawData: Array[Array[ExprValue]],
       orderedBarcodes: Array[String]): Array[Array[ExprValue]] = {
-    (0 until rawData.size).par.map(r => cols.map(computeColumn(_, rawData(r), makeColMap(orderedBarcodes))).toArray).seq.toArray        
+    val colmap = makeColMap(orderedBarcodes)
+    (0 until rawData.size).par.map(r => cols.map(computeColumn(_, rawData(r), colmap)).toArray).seq.toArray        
+  }
+  
+  def performTTests(col1: Group, col2: Group, data: Array[Array[ExprValue]],
+      renderInto: Array[Array[ExprValue]], orderedBarcodes: Array[String]): Array[Array[ExprValue]] = {
+    val colmap = makeColMap(orderedBarcodes)
+    (0 until data.size).par.map(r => performTTest(col1, col2, data(r), renderInto(r), colmap)).seq.toArray
   }
   
   def computeRows4J(cols: java.lang.Iterable[DataColumn], 

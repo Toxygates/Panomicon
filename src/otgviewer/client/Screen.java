@@ -8,6 +8,7 @@ import otgviewer.shared.DataFilter;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -84,7 +85,10 @@ public class Screen extends DataListenerWidget {
 			dockPanel.add(content(), DockPanel.CENTER);
 			vp.add(viewLabel);			
 			shown = true;
-		}		
+//			Window.alert("First show");
+		} else {
+//			Window.alert("Late show");
+		}
 		for (MenuItem mi: menuItems) {
 			mi.setVisible(true);
 		}
@@ -95,7 +99,7 @@ public class Screen extends DataListenerWidget {
 	 * This method will be called each time the screen is hidden.
 	 * If overriding, make sure to call the superclass method.
 	 */
-	public void hide() {
+	public void hide() {		
 		for (MenuItem mi: menuItems) {
 			mi.setVisible(false);
 		}

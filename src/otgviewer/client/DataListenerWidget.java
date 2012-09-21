@@ -26,7 +26,7 @@ class DataListenerWidget extends Composite implements DataViewListener {
 	
 	protected DataFilter chosenDataFilter;
 	protected String chosenProbe;
-	protected String[] chosenProbes;
+	protected String[] chosenProbes = new String[0];
 	protected List<String> chosenCompounds = new ArrayList<String>();
 	protected String chosenCompound;
 	protected ValueType chosenValueType;
@@ -167,19 +167,30 @@ class DataListenerWidget extends Composite implements DataViewListener {
 			if (chosenDataFilter != null) {
 				s.setItem("OTG.dataFilter", chosenDataFilter.pack());
 			} else {
-				s.setItem("OTG.dataFilter", null);
+				s.setItem("OTG.dataFilter", "");
 			}
 			if (chosenValueType != null) {
 				s.setItem("OTG.valueType", chosenValueType.toString());
 			} else {
-				s.setItem("OTG.valueType", null);
+				s.setItem("OTG.valueType", "");
 			}
 			if (! chosenColumns.isEmpty()) {				
 				s.setItem("OTG.columns", packColumns());
 			} else {
-				s.setItem("OTG.columns", null);
-			}
+				s.setItem("OTG.columns", "");
+			}			
+			s.setItem("OTG.probes", packProbes());
+			
 		}
+	}
+	
+	private String packProbes() {
+		StringBuilder sb = new StringBuilder();
+		for (String p: chosenProbes) {			
+			sb.append(p);
+			sb.append("###");
+		}		
+		return sb.toString();
 	}
 	
 	private String packColumns() {
@@ -218,6 +229,14 @@ class DataListenerWidget extends Composite implements DataViewListener {
 					chosenColumns.add(c);
 				}
 				columnsChanged(chosenColumns);
+			}
+			v = s.getItem("OTG.probes");
+//			Window.alert(v);
+			if (v != null && !v.equals("") && !v.equals(packProbes())) {
+				chosenProbes = v.split("###");				
+				probesChanged(chosenProbes);				
+			} else if (v == null || v.equals("")) {
+				probesChanged(new String[0]);
 			}
 		}
 	}

@@ -5,6 +5,7 @@ import java.util.List;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
+import otgviewer.shared.Group;
 import otgviewer.shared.ValueType;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -21,5 +22,7 @@ public interface KCServiceAsync {
 			String[] probes, ValueType type, boolean sparseRead, 
 			AsyncCallback<List<ExpressionRow>> callback);
 	
-	public void prepareCSVDownload(AsyncCallback<String> callback);	
+	public void prepareCSVDownload(AsyncCallback<String> callback);
+	
+	public void addTTest(Group g1, Group g2, AsyncCallback<Void> callback);
 }

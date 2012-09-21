@@ -340,7 +340,7 @@ public class OTGViewer implements EntryPoint {
 			currentScreen.hide();
 		}
 		currentScreen = s;
-		currentScreen.show();				
+		currentScreen.show();					
 		mainVertPanel.add(currentScreen);
 		resizeInterface(Window.getClientHeight()); 
 	}

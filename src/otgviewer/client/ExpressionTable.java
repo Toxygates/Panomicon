@@ -10,6 +10,7 @@ import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Group;
+import otgviewer.shared.Synthetic;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.cell.client.Cell;
@@ -70,8 +71,7 @@ public class ExpressionTable extends DataListenerWidget {
 			.create(KCService.class);
 	
 	private List<ExpressionListener> els = new ArrayList<ExpressionListener>();
-	
-	private int lastRequestedDataColNumber = 2;
+	private List<Synthetic> ttestColumns = new ArrayList<Synthetic>();
 	
 	/**
 	 * This constructor will be used by the GWT designer. (Not functional at run time)
@@ -147,7 +147,25 @@ public class ExpressionTable extends DataListenerWidget {
 				getExpressions(null, true);				
 			}
 		});
-
+		
+		Button b = new Button("Add T-Test");
+		horizontalPanel.add(b);
+		b.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent e) {
+				kcService.addTTest((Group) chosenColumns.get(0), (Group) chosenColumns.get(1), new AsyncCallback<Void>() {
+					public void onSuccess(Void v) {
+						ttestColumns.add(new Synthetic("T-Test"));
+//						getExpressions(null, true);
+						setupColumns();
+						exprGrid.setVisibleRangeAndClearData(new Range(0, 20), true);
+					}
+					public void onFailure(Throwable caught) {
+						Window.alert("Unable to perform T-Test.");
+					}
+				});
+			}
+		});
+		
 		exprGrid.addColumnSortHandler(colSortHandler);
 
 	}
@@ -316,11 +334,18 @@ public class ExpressionTable extends DataListenerWidget {
 			}
 			i += 1;
 		}
+		
+		for (Synthetic s: ttestColumns) {
+			Column<ExpressionRow, String> ttestCol = new ExpressionColumn(tc, i);
+			ttestCol.setSortable(true);
+			exprGrid.addColumn(ttestCol, s.getShortTitle());
+			i += 1;
+		}
 
-		Column<ExpressionRow, String> avgCol = new ExpressionColumn(tc, i);
-		avgCol.setSortable(true);
-		exprGrid.addColumn(avgCol, "Average");
-		i += 1;
+//		Column<ExpressionRow, String> avgCol = new ExpressionColumn(tc, i);
+//		avgCol.setSortable(true);
+//		exprGrid.addColumn(avgCol, "Average");
+//		i += 1;
 				
 	}
 		
@@ -334,33 +359,30 @@ public class ExpressionTable extends DataListenerWidget {
 
 			public void onSuccess(List<ExpressionRow> result) {
 				if (result.size() > 0) {
-					//This check ensures that the number of columns we display is the same as
-					//the last number of columns we requested. Useful when there are multiple outstanding requests.
-					//Future: match up data returned with requests using unique IDs.
-					if (result.get(0).getColumns() == lastRequestedDataColNumber) {
-						exprGrid.setRowData(start, result);
-						for (ExpressionListener el : els) {
-							el.expressionsChanged(result);
-						}
 
-						// if (chartTable != null) {
-						// chartTable.removeRows(0,
-						// chartTable.getNumberOfRows());
-						// for (int i = 0; i < result.size(); ++i) {
-						// chartTable.addRow();
-						// ExpressionRow row = result.get(i);
-						// int cols =
-						// barcodeHandler.lastMultiSelection().size();
-						// chartTable.setValue(i, 0, row.getProbe());
-						// for (int j = 0; j < cols; ++j) {
-						// chartTable.setValue(i, j + 1, row.getValue(j)
-						// .getValue());
-						// }
-						//
-						// exprChart.draw(chartTable);
-						// }
-						// }
+					exprGrid.setRowData(start, result);
+					for (ExpressionListener el : els) {
+						el.expressionsChanged(result);
 					}
+
+					// if (chartTable != null) {
+					// chartTable.removeRows(0,
+					// chartTable.getNumberOfRows());
+					// for (int i = 0; i < result.size(); ++i) {
+					// chartTable.addRow();
+					// ExpressionRow row = result.get(i);
+					// int cols =
+					// barcodeHandler.lastMultiSelection().size();
+					// chartTable.setValue(i, 0, row.getProbe());
+					// for (int j = 0; j < cols; ++j) {
+					// chartTable.setValue(i, j + 1, row.getValue(j)
+					// .getValue());
+					// }
+					//
+					// exprChart.draw(chartTable);
+					// }
+					// }
+
 				}
 			}
 
@@ -417,24 +439,22 @@ public class ExpressionTable extends DataListenerWidget {
 		for (DataColumn c: cols) {			
 			average.addAll(Arrays.asList(c.getBarcodes()));
 		}
-		cols.add(new Group("Average", average.toArray(new Barcode[0])));
-		
-		lastRequestedDataColNumber = cols.size();
+//		cols.add(new Group("Average", average.toArray(new Barcode[0])));
 		
 		//set up the series charts
-		Set<String> soFar = new HashSet();
-		seriesChartPanel.clear();
-		for (DataColumn c: cols) {
-			for (String com: c.getCompounds()) {
-				if (!soFar.contains(com)) {
-					soFar.add(com);
-					SeriesChart sc = new SeriesChart();					
-					seriesChartPanel.add(sc);
-					this.propagateTo(sc);
-					sc.compoundChanged(com);
-				}
-			}						
-		}
+//		Set<String> soFar = new HashSet();
+//		seriesChartPanel.clear();
+//		for (DataColumn c: cols) {
+//			for (String com: c.getCompounds()) {
+//				if (!soFar.contains(com)) {
+//					soFar.add(com);
+//					SeriesChart sc = new SeriesChart();					
+//					seriesChartPanel.add(sc);
+//					this.propagateTo(sc);
+//					sc.compoundChanged(com);
+//				}
+//			}						
+//		}
 		
 		
 		//load data
@@ -449,6 +469,7 @@ public class ExpressionTable extends DataListenerWidget {
 						exprGrid.setRowCount(result);
 						exprGrid.setVisibleRangeAndClearData(new Range(0, 20),
 								true);
+						//todo: also load the synthetic (ttest etc) columns
 
 					}
 				});
