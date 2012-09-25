@@ -11,7 +11,8 @@ object KCServiceImplS {
   def barcodes(columns: Iterable[DataColumn]): Array[String] = {
     columns.flatMap(_ match {
       case g: Group   => g.getBarcodes
-      case b: Barcode => Array(b)      
+      case b: Barcode => Vector(b)      
+      case _ => Vector()
     }).map(_.getCode).toArray    
   }
 
@@ -47,7 +48,14 @@ object KCServiceImplS {
     val bcs2 = col2.getBarcodes
     val vs2 = bcs2.map(b => colMap(b.getCode)).map(row(_))
     
-    val p = ExprValue(ttest.tTest(vs1.map(_.value), vs2.map(_.value)), 'P', vs1.head.probe)
+    val fvs1 = vs1.filter(_.call != 'A')
+    val fvs2 = vs2.filter(_.call != 'A')
+    val p = (if (fvs1.size >= 2 && fvs2.size >= 2) {
+      ExprValue(ttest.tTest(fvs1.map(_.value), fvs2.map(_.value)), 'P', vs1.head.probe)
+    } else {
+      ExprValue(0, 'A', vs1.head.probe)
+    })
+     
     (renderInto.toVector :+ p).toArray    
   }
   

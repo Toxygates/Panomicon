@@ -1,12 +1,10 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Group;
@@ -42,6 +40,7 @@ import com.google.gwt.user.client.ui.DoubleBox;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -71,7 +70,10 @@ public class ExpressionTable extends DataListenerWidget {
 			.create(KCService.class);
 	
 	private List<ExpressionListener> els = new ArrayList<ExpressionListener>();
-	private List<Synthetic> ttestColumns = new ArrayList<Synthetic>();
+	private List<Synthetic> synthColumns = new ArrayList<Synthetic>();
+	
+	private ListBox groupsel1 = new ListBox();
+	private ListBox groupsel2 = new ListBox();
 	
 	/**
 	 * This constructor will be used by the GWT designer. (Not functional at run time)
@@ -148,23 +150,36 @@ public class ExpressionTable extends DataListenerWidget {
 			}
 		});
 		
+		horizontalPanel = new HorizontalPanel();
+		dockPanel.add(horizontalPanel, DockPanel.NORTH);
+		horizontalPanel.setStyleName("colored2");
+		
+		horizontalPanel.add(groupsel1);
+		groupsel1.setVisibleItemCount(1);
+		horizontalPanel.add(groupsel2);
+		groupsel2.setVisibleItemCount(1);
+		
+		
 		Button b = new Button("Add T-Test");
 		horizontalPanel.add(b);
 		b.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent e) {
 				kcService.addTTest((Group) chosenColumns.get(0), (Group) chosenColumns.get(1), new AsyncCallback<Void>() {
 					public void onSuccess(Void v) {
-						ttestColumns.add(new Synthetic("T-Test"));
+						synthColumns.add(new Synthetic.TTest((Group) chosenColumns.get(0), (Group) chosenColumns.get(1)));
 //						getExpressions(null, true);
 						setupColumns();
 						exprGrid.setVisibleRangeAndClearData(new Range(0, 20), true);
 					}
 					public void onFailure(Throwable caught) {
-						Window.alert("Unable to perform T-Test.");
+						Window.alert("Unable to perform T-Test: " + caught.getMessage());
 					}
 				});
 			}
 		});
+		
+		b = new Button("Remove T-Tests");
+		horizontalPanel.add(b);
 		
 		exprGrid.addColumnSortHandler(colSortHandler);
 
@@ -187,7 +202,7 @@ public class ExpressionTable extends DataListenerWidget {
 			public void execute() {
 				kcService.prepareCSVDownload(new AsyncCallback<String>() {
 					public void onFailure(Throwable caught) {
-						Window.alert("Unable to prepare the requested data for download.");
+						Window.alert("Unable to prepare the requested data for download: " + caught.getMessage());
 					}
 					public void onSuccess(String url) {
 						downloadUrl = url;
@@ -325,7 +340,7 @@ public class ExpressionTable extends DataListenerWidget {
 		int i = 0;
 		
 		for (DataColumn c : chosenColumns) {
-			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);
+			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i, NumberFormat.getDecimalFormat());
 			valueCol.setSortable(true);
 			exprGrid.addColumn(valueCol, c.getShortTitle());
 			
@@ -335,8 +350,8 @@ public class ExpressionTable extends DataListenerWidget {
 			i += 1;
 		}
 		
-		for (Synthetic s: ttestColumns) {
-			Column<ExpressionRow, String> ttestCol = new ExpressionColumn(tc, i);
+		for (Synthetic s: synthColumns) {
+			Column<ExpressionRow, String> ttestCol = new ExpressionColumn(tc, i, NumberFormat.getScientificFormat());
 			ttestCol.setSortable(true);
 			exprGrid.addColumn(ttestCol, s.getShortTitle());
 			i += 1;
@@ -354,7 +369,7 @@ public class ExpressionTable extends DataListenerWidget {
 
 		AsyncCallback<List<ExpressionRow>> rowCallback = new AsyncCallback<List<ExpressionRow>>() {
 			public void onFailure(Throwable caught) {
-				Window.alert("Unable to get expression values.");
+				Window.alert("Unable to get expression values: " + caught.getMessage());
 			}
 
 			public void onSuccess(List<ExpressionRow> result) {
@@ -421,6 +436,23 @@ public class ExpressionTable extends DataListenerWidget {
 		//no-op to prohibit change
 	}
 	
+	@Override
+	public void columnsChanged(List<DataColumn> columns) {
+		super.columnsChanged(columns);
+		 //invalidate synthetic columns, since they depend on
+		//normal columns
+		synthColumns.clear();
+		
+		groupsel1.clear();
+		groupsel2.clear();
+		for (DataColumn dc: columns) {
+			if (dc instanceof Group) {
+				groupsel1.addItem(dc.getShortTitle());
+				groupsel2.addItem(dc.getShortTitle());
+			}
+		}
+	}
+	
 	public void beginLoading() {
 		exprGrid.setRowCount(0, false);		
 	}
@@ -435,34 +467,33 @@ public class ExpressionTable extends DataListenerWidget {
 		List<DataColumn> cols = new ArrayList<DataColumn>();
 		cols.addAll(chosenColumns);
 		
-		List<Barcode> average = new ArrayList<Barcode>();
-		for (DataColumn c: cols) {			
-			average.addAll(Arrays.asList(c.getBarcodes()));
-		}
+//		List<Barcode> average = new ArrayList<Barcode>();
+//		for (DataColumn c: cols) {			
+//			average.addAll(Arrays.asList(c.getBarcodes()));
+//		}
 //		cols.add(new Group("Average", average.toArray(new Barcode[0])));
 		
 		//set up the series charts
-//		Set<String> soFar = new HashSet();
-//		seriesChartPanel.clear();
-//		for (DataColumn c: cols) {
-//			for (String com: c.getCompounds()) {
-//				if (!soFar.contains(com)) {
-//					soFar.add(com);
-//					SeriesChart sc = new SeriesChart();					
-//					seriesChartPanel.add(sc);
-//					this.propagateTo(sc);
-//					sc.compoundChanged(com);
-//				}
-//			}						
-//		}
-		
+		Set<String> soFar = new HashSet<String>();
+		seriesChartPanel.clear();
+		for (DataColumn c: cols) {
+			for (String com: c.getCompounds()) {
+				if (!soFar.contains(com)) {
+					soFar.add(com);
+					SeriesChart sc = new SeriesChart();					
+					seriesChartPanel.add(sc);
+					this.propagateTo(sc);
+					sc.compoundChanged(com);
+				}
+			}						
+		}
 		
 		//load data
 		kcService.loadDataset(chosenDataFilter, cols, chosenProbes, chosenValueType,
-				absValBox.getValue(),
+				absValBox.getValue(), synthColumns, 
 				new AsyncCallback<Integer>() {
 					public void onFailure(Throwable caught) {						
-						Window.alert("Unable to load dataset.");
+						Window.alert("Unable to load dataset: "  + caught.getMessage());					
 					}
 
 					public void onSuccess(Integer result) {
@@ -478,18 +509,19 @@ public class ExpressionTable extends DataListenerWidget {
 	class ExpressionColumn extends Column<ExpressionRow, String> {
 		int i;
 		TextCell tc;
-
-		public ExpressionColumn(TextCell tc, int i) {
+		NumberFormat fmt;
+		
+		public ExpressionColumn(TextCell tc, int i, NumberFormat fmt) {
 			super(tc);
 			this.i = i;
 			this.tc = tc;
+			this.fmt = fmt;
 		}
 
 		public String getValue(ExpressionRow er) {
 			if (!er.getValue(i).getPresent()) {
 				return "(absent)";
-			} else {
-				NumberFormat fmt = NumberFormat.getDecimalFormat();				
+			} else {								
 				return fmt.format(er.getValue(i).getValue());
 			}
 		}

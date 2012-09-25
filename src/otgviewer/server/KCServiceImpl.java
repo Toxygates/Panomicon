@@ -90,10 +90,10 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		}
 		return OTGQueries.presentValuesByBarcodesAndProbes4J(db, barcodes,
 				probes, sparseRead, Utils.speciesFromFilter(filter));
-
 	}
 	
-	public int loadDataset(DataFilter filter, List<DataColumn> columns, String[] probes, ValueType type, double absValFilter) {
+	public int loadDataset(DataFilter filter, List<DataColumn> columns, String[] probes, 
+			ValueType type, double absValFilter, List<Synthetic> syntheticColumns) {
 		HttpServletRequest request = getThreadLocalRequest();
 		HttpSession session = request.getSession();
 
@@ -105,41 +105,50 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		String[] realProbes = filterProbes(filter, probes);
 		ExprValue[][] data = getExprValues(filter, Arrays.asList(orderedBarcodes), realProbes, type,
 				false);
-		session.setAttribute("datasetRaw", data);
 		
 		System.out.println("Loaded in " + (System.currentTimeMillis() - time) + " ms");
 		time = System.currentTimeMillis();
 		
-		ExprValue[][] rendered = KCServiceImplS.computeRows4J(columns, data, orderedBarcodes);
-		assert(rendered.length == data.length);
+		//Compute groups
+		ExprValue[][] groupedFiltered = KCServiceImplS.computeRows4J(columns, data, orderedBarcodes);
+		assert(groupedFiltered.length == data.length);
 		
 		// filter by abs. value
-		List<ExprValue[]> remaining = new ArrayList<ExprValue[]>();
+		List<ExprValue[]> remainingGrouped = new ArrayList<ExprValue[]>();
+		List<ExprValue[]> remainingUngrouped = new ArrayList<ExprValue[]>();
 		List<String> remainingProbes = new ArrayList<String>();
-		for (int r = 0; r < rendered.length; ++r) {
-			for (int i = 0; i < rendered[r].length; ++i) {
-				if ((Double.isNaN(rendered[r][i].value()) && absValFilter == 0) || 
-						Math.abs(rendered[r][i].value()) >= absValFilter - 0.0001) { //safe comparison
-					remaining.add(rendered[r]);
+		for (int r = 0; r < groupedFiltered.length; ++r) {
+			for (int i = 0; i < groupedFiltered[r].length; ++i) {
+				if ((Double.isNaN(groupedFiltered[r][i].value()) && absValFilter == 0) || 
+						Math.abs(groupedFiltered[r][i].value()) >= absValFilter - 0.0001) { //safe comparison
+					remainingGrouped.add(groupedFiltered[r]);
+					remainingUngrouped.add(data[r]);
 					remainingProbes.add(realProbes[r]);
 					break;
 				} else {
-					System.out.println("Ignore value " + rendered[r][i].value());
+					System.out.println("Ignore value " + groupedFiltered[r][i].value());
 				}
 			}
 		}
-		rendered = remaining.toArray(new ExprValue[0][]);
+		groupedFiltered = remainingGrouped.toArray(new ExprValue[0][]);
+		ExprValue[][] ungroupedFiltered = remainingUngrouped.toArray(new ExprValue[0][]);
 		realProbes = remainingProbes.toArray(new String[0]);
 
 		System.out.println("Rendered in " + (System.currentTimeMillis() - time) + " ms");
 		
-		session.setAttribute("dataset", rendered);
+		session.setAttribute("flatBarcodes", orderedBarcodes);
+		
+		//This contains the grouped and filtered data, as well as synthetic columns (eventually)
+		session.setAttribute("groupedFiltered", groupedFiltered);
+		 //This contains all the data as flat barcodes (filtered, not grouped, no synthetic columns)
+		session.setAttribute("ungroupedFiltered", ungroupedFiltered);
+		
 		session.setAttribute("datasetProbes", realProbes);
 		session.setAttribute("datasetColumns", columns.toArray(new DataColumn[0]));
-		if (rendered.length > 0) {
+		if (groupedFiltered.length > 0) {
 
-			System.out.println("Stored " + rendered.length + " x "
-					+ rendered[0].length + " items in session, "
+			System.out.println("Stored " + groupedFiltered.length + " x "
+					+ groupedFiltered[0].length + " items in session, "
 					+ realProbes.length + " probes");
 
 		} else {
@@ -152,9 +161,21 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		}		
 		params.mustSort = true;
 		session.setAttribute("params", params);
-		return rendered.length;
+
+		for (Synthetic s : syntheticColumns) {
+			if (s instanceof Synthetic.TTest) {
+				Synthetic.TTest tt = ((Synthetic.TTest) s);
+				addTTest(tt.getGroup1(), tt.getGroup2());
+			}
+		}
+
+		return groupedFiltered.length;
 	}
 	
+	/**
+	 * Add a column with a two-tailed t-test that does not assume
+	 * equal sample variances.
+	 */
 	public void addTTest(Group g1, Group g2) {
 		HttpServletRequest request = getThreadLocalRequest();
 		HttpSession session = request.getSession();
@@ -162,18 +183,16 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		long time = System.currentTimeMillis();
 		
 		DataColumn[] columns = (DataColumn[]) session.getAttribute("datasetColumns");
-		ExprValue[][] data = (ExprValue[][]) session.getAttribute("datasetRaw");
-		ExprValue[][] rendered = (ExprValue[][]) session.getAttribute("dataset");
-		
-		//Expand groups into simple barcodes
-		String[] orderedBarcodes = KCServiceImplS.barcodes4J(columns);		
+		ExprValue[][] data = (ExprValue[][]) session.getAttribute("ungroupedFiltered");
+		ExprValue[][] rendered = (ExprValue[][]) session.getAttribute("groupedFiltered");		
+		String[] orderedBarcodes = (String[]) session.getAttribute("flatBarcodes");		
 		rendered = KCServiceImplS.performTTests(g1, g2, data, rendered, orderedBarcodes);
 		System.out.println("Performed t-test in " + (System.currentTimeMillis() - time) + " ms");
-		DataViewParams params = (DataViewParams) session.getAttribute("dataViewParams");
+//		DataViewParams params = (DataViewParams) session.getAttribute("dataViewParams");
 		
 		DataColumn[] ncolumns = Arrays.copyOf(columns, columns.length + 1);
-		ncolumns[columns.length] = new Synthetic("T(" + g1.getShortTitle() + "," + g2.getShortTitle() + ")");
-		session.setAttribute("dataset", rendered);
+		ncolumns[columns.length] = new Synthetic.TTest(g1, g2); 
+		session.setAttribute("groupedFiltered", rendered);
 		session.setAttribute("datasetColumns", ncolumns);
 	}
 	
@@ -227,7 +246,7 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		if (params == null) {
 			params = new DataViewParams();
 		}
-		ExprValue[][] data = (ExprValue[][]) session.getAttribute("dataset");		
+		ExprValue[][] data = (ExprValue[][]) session.getAttribute("groupedFiltered");		
 		if (data != null) {
 			System.out.println("I had " + (data).length + " rows stored");
 		}
@@ -246,15 +265,25 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 				public int compare(ExprValue[] r1, ExprValue[] r2) {
 					assert(r1 != null);
 					assert(r2 != null);
-					int c = ((Double) r1[_sortColumn].value()).compareTo((Double) r2[_sortColumn].value());
-					if (_ascending) {
-						return c;
+					ExprValue ev1 = r1[_sortColumn];
+					ExprValue ev2 = r2[_sortColumn];
+					int _ascFactor = 1;
+					if (!_ascending) {
+						_ascFactor = -1;
+					}
+					
+					if (ev1.call() == 'A' && ev2.call() != 'A') {
+						return 1 * _ascFactor; //absent values at the end
+					} else if (ev1.call() != 'A' && ev2.call() == 'A') {
+						return -1 * _ascFactor;
 					} else {
-						return -c;
+						int c = ((Double) r1[_sortColumn].value())
+								.compareTo((Double) r2[_sortColumn].value());
+						return c * _ascFactor; 						
 					}
 				}
 			});
-			session.setAttribute("dataset", data);
+			session.setAttribute("groupedFiltered", data);
 			String[] sortedProbes = new String[data.length];
 			for (int i = 0; i < data.length; ++i) {
 				sortedProbes[i] = data[i][0].probe();
@@ -280,7 +309,7 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 	public String prepareCSVDownload() {
 		HttpServletRequest request = getThreadLocalRequest();
 		HttpSession session = request.getSession();
-		ExprValue[][] data = (ExprValue[][]) session.getAttribute("dataset");		
+		ExprValue[][] data = (ExprValue[][]) session.getAttribute("groupedFiltered");		
 		if (data != null) {
 			System.out.println("I had " + (data).length + " rows stored");
 		}

@@ -6,6 +6,7 @@ import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Group;
+import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -15,7 +16,8 @@ public interface KCServiceAsync {
 	public void identifiersToProbes(DataFilter filter, String[] identifiers, AsyncCallback<String[]> callback);
 	
 	public void loadDataset(DataFilter filter, List<DataColumn> columns, String[] probes, 
-			ValueType type, double absValFilter, AsyncCallback<Integer> callback);
+			ValueType type, double absValFilter, List<Synthetic> synthCols,
+			AsyncCallback<Integer> callback);
 	public void datasetItems(int offset, int size, int sortColumn, 
 			boolean ascending, AsyncCallback<List<ExpressionRow>> callback);
 	public void getFullData(DataFilter filter, List<String> barcodes, 

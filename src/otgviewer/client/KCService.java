@@ -7,6 +7,7 @@ import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Group;
+import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -25,16 +26,19 @@ public interface KCService extends RemoteService {
 	 * @param type
 	 * @param absValFilter Require that rows should contain at least one value whose 
 	 * abs. value is >= this threshold. If this is 0, it will be ignored.
-	 * @param loadID an integer to identify the dataset that has been loaded.
+	 * @param synthCols Synthetic columns, such as T-Tests, that should be computed
+	 * from the start.
 	 * @return
 	 */
 	public int loadDataset(DataFilter filter, List<DataColumn> columns, 
-			String[] probes, ValueType type, double absValFilter);
+			String[] probes, ValueType type, double absValFilter,
+			List<Synthetic> synthCols);
 	
 	/**
 	 * Add a T-test column. Requires that loadDataset was
 	 * first used to load items. After this has been done, 
 	 * datasetItems or getFullData can be used as normal to obtain the data.
+	 * The test is two-tailed and does not assume equal sample variances.
 	 * @param g1
 	 * @param g2
 	 */
