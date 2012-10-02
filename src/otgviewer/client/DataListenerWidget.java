@@ -39,7 +39,7 @@ class DataListenerWidget extends Composite implements DataViewListener {
 	}
 	
 	//incoming signals
-	public void dataFilterChanged(DataFilter filter) {
+	public void dataFilterChanged(DataFilter filter) {		
 		chosenDataFilter = filter;
 		changeDataFilter(filter);
 	}
@@ -160,6 +160,12 @@ class DataListenerWidget extends Composite implements DataViewListener {
 	 * Store this widget's state into local storage.
 	 */
 	public void storeState() {
+		storeDataFilterAndValueType();
+		storeColumns();
+		storeProbes();	
+	}
+	
+	public void storeDataFilterAndValueType() {
 		Storage s = Storage.getLocalStorageIfSupported();
 		if (s == null) {
 			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
@@ -174,13 +180,31 @@ class DataListenerWidget extends Composite implements DataViewListener {
 			} else {
 				s.setItem("OTG.valueType", "");
 			}
-			if (! chosenColumns.isEmpty()) {				
-				s.setItem("OTG.columns", packColumns());
-			} else {
-				s.setItem("OTG.columns", "");
-			}			
+		}		
+	}
+	
+	public void storeColumns() {
+		Storage s = Storage.getLocalStorageIfSupported();
+		if (s == null) {
+			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
+		} else {
+			if (chosenDataFilter != null) {
+				if (!chosenColumns.isEmpty()) {
+					s.setItem("OTG.columns." + chosenDataFilter.pack(),
+							packColumns());
+				} else {
+					s.setItem("OTG.columns." + chosenDataFilter.pack(), "");
+				}
+			}
+		}
+	}
+	
+	public void storeProbes() {
+		Storage s = Storage.getLocalStorageIfSupported();
+		if (s == null) {
+			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
+		} else {
 			s.setItem("OTG.probes", packProbes());
-			
 		}
 	}
 	
@@ -218,17 +242,25 @@ class DataListenerWidget extends Composite implements DataViewListener {
 			}
 			v = s.getItem("OTG.valueType");
 			if (v != null && (chosenValueType == null || !v.equals(chosenValueType.toString()))) {
-				valueTypeChanged(ValueType.valueOf(v));
+				valueTypeChanged(ValueType.unpack(v));
 			}
-			v = s.getItem("OTG.columns");
-			if (v != null && !v.equals(packColumns())) {				
-				String[] spl = v.split("###");
-				chosenColumns = new ArrayList<DataColumn>();
-				for (String cl: spl) {
-					DataColumn c = SharedUtils.unpackColumn(cl);
-					chosenColumns.add(c);
+			if (chosenDataFilter != null) {
+				v = s.getItem("OTG.columns." + chosenDataFilter.pack());
+				if (v != null && !v.equals(packColumns())) {
+					try {
+						String[] spl = v.split("###");
+						chosenColumns = new ArrayList<DataColumn>();
+						for (String cl : spl) {
+							DataColumn c = SharedUtils.unpackColumn(cl);
+							chosenColumns.add(c);
+						}
+						columnsChanged(chosenColumns);
+					} catch (Exception e) {
+						//one possible failure source is if data is stored in an incorrect foramt
+						columnsChanged(new ArrayList<DataColumn>());
+						storeColumns(); //overwrite the old data
+					}
 				}
-				columnsChanged(chosenColumns);
 			}
 			v = s.getItem("OTG.probes");
 //			Window.alert(v);

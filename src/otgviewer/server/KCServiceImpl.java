@@ -233,10 +233,7 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 
 		return r;
 	}
-	
-	private boolean _ascending; //for communication with inner class only
-	private int _sortColumn; //ditto
-	
+
 	public List<ExpressionRow> datasetItems(int offset, int size, int sortColumn, 
 			boolean ascending) {
 		HttpServletRequest request = getThreadLocalRequest();
@@ -246,47 +243,31 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		if (params == null) {
 			params = new DataViewParams();
 		}
-		ExprValue[][] data = (ExprValue[][]) session.getAttribute("groupedFiltered");		
-		if (data != null) {
-			System.out.println("I had " + (data).length + " rows stored");
+		ExprValue[][] groupedFiltered = (ExprValue[][]) session.getAttribute("groupedFiltered");		
+		if (groupedFiltered != null) {
+			System.out.println("I had " + (groupedFiltered).length + " rows stored");
 		}
+		ExprValue[][] ungroupedFiltered = (ExprValue[][]) session.getAttribute("ungroupedFiltered");
+		
 		String[] probes = (String[]) session.getAttribute("datasetProbes");
 		
 		//At this point sorting may happen		
 		if (sortColumn > -1 && (sortColumn != params.sortColumn || ascending != params.sortAsc || params.mustSort)) {			
 			//OK, we need to re-sort it and then re-store it
-			params.sortColumn = sortColumn;
-			_sortColumn = sortColumn;
-			params.sortAsc = ascending;
-			_ascending = ascending;
+			params.sortColumn = sortColumn;			
+			params.sortAsc = ascending;			
 			params.mustSort = false;
 			
-			Arrays.sort(data, new Comparator<ExprValue[]>() {
-				public int compare(ExprValue[] r1, ExprValue[] r2) {
-					assert(r1 != null);
-					assert(r2 != null);
-					ExprValue ev1 = r1[_sortColumn];
-					ExprValue ev2 = r2[_sortColumn];
-					int _ascFactor = 1;
-					if (!_ascending) {
-						_ascFactor = -1;
-					}
-					
-					if (ev1.call() == 'A' && ev2.call() != 'A') {
-						return 1 * _ascFactor; //absent values at the end
-					} else if (ev1.call() != 'A' && ev2.call() == 'A') {
-						return -1 * _ascFactor;
-					} else {
-						int c = ((Double) r1[_sortColumn].value())
-								.compareTo((Double) r2[_sortColumn].value());
-						return c * _ascFactor; 						
-					}
-				}
-			});
-			session.setAttribute("groupedFiltered", data);
-			String[] sortedProbes = new String[data.length];
-			for (int i = 0; i < data.length; ++i) {
-				sortedProbes[i] = data[i][0].probe();
+			//Note: these two must be sorted together since some algos assume
+			//that they are kept in sync
+			ExprValue[][][] sorted = KCServiceImplS.sortData4J(groupedFiltered, sortColumn, ascending, ungroupedFiltered);
+//			
+			session.setAttribute("groupedFiltered", sorted[0]);
+			session.setAttribute("ungroupedFiltered", sorted[1]);
+			groupedFiltered = sorted[0];
+			String[] sortedProbes = new String[groupedFiltered.length];
+			for (int i = 0; i < groupedFiltered.length; ++i) {
+				sortedProbes[i] = groupedFiltered[i][0].probe();
 			}
 			session.setAttribute("datasetProbes", sortedProbes);
 			probes = sortedProbes;			
@@ -294,9 +275,8 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		
 		session.setAttribute("dataViewParams", params);
 		
-		return arrayToRows(probes, data, offset, size);
+		return arrayToRows(probes, groupedFiltered, offset, size);
 	}
-	
 	
 	public List<ExpressionRow> getFullData(DataFilter filter, List<String> barcodes, 
 			String[] probes, ValueType type, boolean sparseRead) {

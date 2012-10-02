@@ -40,10 +40,7 @@ public class ColumnScreen extends Screen {
 		b.addClickHandler(new ClickHandler() {
 			
 			@Override
-			public void onClick(ClickEvent event) {
-				chosenColumns = Arrays.asList(gi.getGroups().values().toArray(new DataColumn[0]));
-				assert(chosenColumns != null);
-				storeState();
+			public void onClick(ClickEvent event) {								
 				History.newItem(ProbeScreen.key);				
 			}
 		});

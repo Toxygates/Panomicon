@@ -1,6 +1,9 @@
 package otgviewer.client;
 
+import java.util.ArrayList;
+
 import otgviewer.shared.CellType;
+import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Organ;
 import otgviewer.shared.Organism;
@@ -28,32 +31,32 @@ public class DatasetScreen extends Screen {
 	}
 	
 	public Widget content() {
-		VerticalPanel hp = new VerticalPanel();
-		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		hp.setWidth("250px");
+		VerticalPanel vp = new VerticalPanel();
+		vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		vp.setWidth("250px");
 		
-		hp.add(new Label("Value type"));
-		valueTypeList.addItem(ValueType.Absolute.toString());
+		vp.add(new Label("Value type"));		
 		valueTypeList.addItem(ValueType.Folds.toString());
+		valueTypeList.addItem(ValueType.Absolute.toString());
 		valueTypeList.setVisibleItemCount(1);
-		hp.add(valueTypeList);
+		vp.add(valueTypeList);
 		
-		hp.add(new Label("Data set"));
+		vp.add(new Label("Data set"));
 		
-		hp.add(datasetButton("Human, in vitro", new DataFilter(CellType.Vitro,
+		vp.add(datasetButton("Human, in vitro", new DataFilter(CellType.Vitro,
 				Organ.Kidney, RepeatType.Single, Organism.Human)));
-		hp.add(datasetButton("Rat, in vitro", new DataFilter(CellType.Vitro,
+		vp.add(datasetButton("Rat, in vitro", new DataFilter(CellType.Vitro,
 				Organ.Kidney, RepeatType.Single, Organism.Rat)));
-		hp.add(datasetButton("Rat, in vivo, liver, single", new DataFilter(
+		vp.add(datasetButton("Rat, in vivo, liver, single", new DataFilter(
 				CellType.Vivo, Organ.Liver, RepeatType.Single, Organism.Rat)));
-		hp.add(datasetButton("Rat, in vivo, liver, repeat", new DataFilter(
+		vp.add(datasetButton("Rat, in vivo, liver, repeat", new DataFilter(
 				CellType.Vivo, Organ.Liver, RepeatType.Repeat, Organism.Rat)));
-		hp.add(datasetButton("Rat, in vivo, kidney, single", new DataFilter(
+		vp.add(datasetButton("Rat, in vivo, kidney, single", new DataFilter(
 				CellType.Vivo, Organ.Kidney, RepeatType.Single, Organism.Rat)));
-		hp.add(datasetButton("Rat, in vivo, kidney, repeat", new DataFilter(
+		vp.add(datasetButton("Rat, in vivo, kidney, repeat", new DataFilter(
 				CellType.Vivo, Organ.Kidney, RepeatType.Repeat, Organism.Rat)));
 
-		return hp;
+		return vp;
 	}
 	
 	private Widget datasetButton(final String title, final DataFilter filter) {
@@ -62,10 +65,13 @@ public class DatasetScreen extends Screen {
 		b.setWidth("100%");
 		b.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent ce) {
-				changeDataFilter(filter);
-				String vt = valueTypeList.getItemText(valueTypeList.getSelectedIndex());
-				changeValueType(ValueType.valueOf(vt));
-				storeState();
+				if (!filter.equals(chosenDataFilter)) {
+					changeDataFilter(filter);
+					String vt = valueTypeList.getItemText(valueTypeList
+							.getSelectedIndex());
+					changeValueType(ValueType.unpack(vt));					
+					storeDataFilterAndValueType();
+				}
 				History.newItem(ColumnScreen.key); //Go to compound selection screen
 			}
 		});

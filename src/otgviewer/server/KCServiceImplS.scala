@@ -90,5 +90,26 @@ object KCServiceImplS {
   def computeRows4J(cols: java.lang.Iterable[DataColumn], 
       rawData: Array[Array[ExprValue]],
       orderedBarcodes: Array[String]): Array[Array[ExprValue]] = computeRows(cols, rawData, orderedBarcodes)
+      
+  /**
+   * Sort array 1 and 2 simultaneously according to a column in a1.
+   */
+  def sortData4J(a1: Array[Array[ExprValue]], sortCol: Int, asc: Boolean, a2: Array[Array[ExprValue]]): Array[Array[Array[ExprValue]]] = {
+    val z = a1.zip(a2)
+    val s = z.sortWith((p1, p2) => {
+      val ev1 = p1._1(sortCol)
+      val ev2 = p2._1(sortCol)
+      val ascFactor = if (asc) { 1 } else { -1 }
+      if (ev1.call == 'A' && ev2.call != 'A') {
+        false
+      } else if (ev1.call != 'A' && ev2.call == 'A') {
+        true
+      } else {
+        if (asc) { ev1.value < ev2.value } else { ev1.value >= ev2.value }
+      }
+    })
+    val (u1, u2) = s.unzip
+    Array(u1.toArray, u2.toArray)
+  }
   
 }

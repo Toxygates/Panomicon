@@ -13,6 +13,9 @@ import com.google.gwt.user.client.ui.Label;
 /**
  * This widget is for selecting a compound or a set of 
  * compounds using various data sources.
+ * 
+ * Receives: dataFilter
+ * Emits: compounds
  * @author johan
  *
  */
@@ -46,7 +49,6 @@ public class CompoundSelector extends DataListenerWidget {
 			}
 		};
 		
-//		loadCompounds();
 	}
 	
 	@Override

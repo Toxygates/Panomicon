@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import otgviewer.shared.Barcode;
+import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.SharedUtils;
@@ -35,6 +36,9 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 /**
  * This widget is intended to help visually define and modify "groups"
  * of microarrays.
+ * 
+ * Receives: dataFilter, compounds
+ * Emits: columns
  * @author johan
  *
  */
@@ -46,9 +50,8 @@ public class GroupInspector extends DataListenerWidget {
 	private Grid grid = new Grid();
 	private String[] availableTimes;
 	private CheckBox[][] checkboxes;
-	private Map<String, Group> groups = new HashMap<String, Group>();
-	private Map<String, List<String>> groupCompounds = new HashMap<String, List<String>>();
-	private Map<Barcode, String> barcodeCompounds = new HashMap<Barcode, String>();
+	private Map<String, Group> groups = new HashMap<String, Group>();	
+	
 	private TextBox txtbxGroup;
 	private ListBox existingGroupsList;
 	private CompoundSelector compoundSel;
@@ -140,37 +143,57 @@ public class GroupInspector extends DataListenerWidget {
 	}
 	
 	private void lazyFetchTimes() {
-		if (availableTimes != null) {
+		if (availableTimes != null && availableTimes.length > 0) {
 			drawGridInner(false);
 		} else if (chosenCompounds.size() > 0) {
-			owlimService.times(chosenDataFilter, chosenCompounds.get(0), chosenDataFilter.organ.toString(), new AsyncCallback<String[]>() {
-				public void onSuccess(String[] times) {
-					availableTimes = times;
-					drawGridInner(false);
-				}
-				public void onFailure(Throwable caught) {
-					Window.alert("Unable to get sample times.");
-				}
-			});			
+			fetchTimes(chosenCompounds.get(0));						
 		}		
 	}
 	
+	private void fetchTimes(String compound) {
+		owlimService.times(chosenDataFilter, compound, chosenDataFilter.organ.toString(), new AsyncCallback<String[]>() {
+			public void onSuccess(String[] times) {
+				availableTimes = times;
+				drawGridInner(false);
+				//TODO: block compound selection until we have obtained this data
+			}
+			public void onFailure(Throwable caught) {
+				Window.alert("Unable to get sample times.");
+			}
+		});			
+	}
+	
 	@Override
-	public void dataFilterChanged(DataFilter filter) {
-		super.dataFilterChanged(filter);
-		chosenDataFilter = filter;
-		availableTimes = null;
-		// future: we could save and restore groups for each data filter in
-		// the local state.
-		groups.clear();
-		existingGroupsList.clear();
-		compoundsChanged(new ArrayList<String>());
+	public void dataFilterChanged(DataFilter filter) {		
+		if (!filter.equals(chosenDataFilter)) {
+			super.dataFilterChanged(filter);			
+			chosenDataFilter = filter;
+			availableTimes = null;
+			groups.clear();
+			existingGroupsList.clear();
+			compoundsChanged(new ArrayList<String>());
+		}
 	}
 	
 	@Override
 	public void compoundsChanged(List<String> compounds) {
 		chosenCompounds = compounds;
 		redrawGrid();
+	}
+	
+	@Override 
+	public void columnsChanged(List<DataColumn> columns) {
+		groups.clear();
+		existingGroupsList.clear();
+		//Currently we expect all groups here		
+		for (DataColumn c: columns) {
+			Group g = (Group) c;
+			groups.put(g.getName(), g);
+			existingGroupsList.addItem(g.getName());			
+		}
+		if (columns.size() > 0) {
+			fetchTimes(columns.get(0).getCompounds()[0]);
+		}
 	}
 	
 	private void redrawGrid() {
@@ -226,16 +249,18 @@ public class GroupInspector extends DataListenerWidget {
 	}
 	
 	Group pendingGroup;
+	
+	/**
+	 * Get here if save button is clicked
+	 * @param name
+	 */
 	private void makeGroup(String name) {
-		List<Barcode> barcodes = new ArrayList<Barcode>();
 		
 		if (!groups.containsKey(name)) {
 			existingGroupsList.addItem(name);
 		}
 		pendingGroup = new Group(name, new Barcode[0]);
-		groups.put(name, pendingGroup);		
-		List<String> ccCopy = new ArrayList<String>(chosenCompounds);
-		groupCompounds.put(name, ccCopy);
+		groups.put(name, pendingGroup);						
 		
 		for (int c = 0; c < chosenCompounds.size(); ++c) {
 			for (int d = 0; d < 3; ++d) {
@@ -251,10 +276,6 @@ public class GroupInspector extends DataListenerWidget {
 								new AsyncCallback<Barcode[]>() {
 									public void onSuccess(Barcode[] barcodes) {
 										addToGroup(barcodes);
-
-										for (Barcode b: barcodes) {
-											barcodeCompounds.put(b, compound);
-										}
 									}
 
 									public void onFailure(Throwable caught) {
@@ -264,7 +285,7 @@ public class GroupInspector extends DataListenerWidget {
 					}
 				}
 			}
-		}
+		}		
 	}
 	
 	private int doseToIndex(String dose) {
@@ -288,32 +309,34 @@ public class GroupInspector extends DataListenerWidget {
 	}
 	
 	private void addToGroup(Barcode[] barcodes) {		
-		synchronized (this) {			
+		synchronized (this) {		//TODO review concurrency/synchronization
 			List<Barcode> n = new ArrayList<Barcode>();
 			n.addAll(Arrays.asList(barcodes));			
 			n.addAll(Arrays.asList(pendingGroup.getBarcodes()));
 			pendingGroup = new Group(pendingGroup.getName(),
 					n.toArray(new Barcode[0]));
-			groups.put(pendingGroup.getName(), pendingGroup);			
+			groups.put(pendingGroup.getName(), pendingGroup);
+			
+			chosenColumns = Arrays.asList(groups.values().toArray(new DataColumn[0]));
+			storeColumns();  //make sure we preserve the groups			
 		}
 	
 	}
 	
 	private void displayGroup(String name) {
-		List<String> compounds = groupCompounds.get(name);
-		compoundSel.setSelection(compounds);
+		List<String> compounds = Arrays.asList(groups.get(name).getCompounds());
+		compoundSel.setSelection(compounds);		
 		txtbxGroup.setValue(name);
 		
 		Group g = groups.get(name);
 		//set the appropriate checkboxes
 		for (Barcode b: g.getBarcodes()) {
-			String c = barcodeCompounds.get(b);
+			String c = b.getCompound();
 			int ci = SharedUtils.indexOf(chosenCompounds, c);
 			int time = SharedUtils.indexOf(availableTimes, b.getTime());
-			int dose = doseToIndex(b.getDose());
+			int dose = doseToIndex(b.getDose());			
 			checkboxes[ci][dose * availableTimes.length + time].setValue(true);			
-		}
-		
+		}		
 	}
 	
 	private class MultiSelectHandler implements ValueChangeHandler<Boolean> {

@@ -10,7 +10,7 @@ abstract public class Synthetic implements DataColumn, Serializable {
 		public TTest() { }
 			
 		public TTest(Group g1, Group g2) {
-			super("T(" + g1.getShortTitle() + ", " + g2.getShortTitle() + ")");
+			super("p(" + g1.getShortTitle() + ", " + g2.getShortTitle() + ")");
 			this.g1 = g1;
 			this.g2 = g2;
 		}

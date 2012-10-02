@@ -2,6 +2,8 @@ package otgviewer.shared;
 
 import java.io.Serializable;
 
+import com.google.gwt.user.client.Window;
+
 public class DataFilter implements Serializable {
 	public CellType cellType;
 	public Organ organ;
@@ -19,15 +21,31 @@ public class DataFilter implements Serializable {
 		
 	}
 	
+	public boolean equals(Object other) {
+		if (other instanceof DataFilter) {
+			DataFilter dfo = (DataFilter) other;
+			return (dfo.cellType == cellType && dfo.organ == organ &&
+					dfo.repeatType == repeatType && dfo.organism == organism);
+		} else {
+			return false;
+		}
+	}
+	
+	public int hashCode() {
+		return cellType.hashCode() + 41 * (organ.hashCode() + 
+				41 * (repeatType.hashCode() + 41 * organism.hashCode()));
+	}
+	
 	public static DataFilter unpack(String s) {
 		String[] parts = s.split(",");
 		assert(parts.length == 4);
 		
 		try {
-			return new DataFilter(CellType.valueOf(parts[0]),
+			DataFilter r = new DataFilter(CellType.valueOf(parts[0]),
 					Organ.valueOf(parts[1]), RepeatType.valueOf(parts[2]),
-					Organism.valueOf(parts[3]));
-		} catch (Exception e) {
+					Organism.valueOf(parts[3]));			
+			return r;
+		} catch (Exception e) {			
 			return null;
 		}
 	}

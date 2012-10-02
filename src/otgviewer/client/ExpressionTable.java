@@ -153,6 +153,7 @@ public class ExpressionTable extends DataListenerWidget {
 		horizontalPanel = new HorizontalPanel();
 		dockPanel.add(horizontalPanel, DockPanel.NORTH);
 		horizontalPanel.setStyleName("colored2");
+		horizontalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		
 		horizontalPanel.add(groupsel1);
 		groupsel1.setVisibleItemCount(1);
@@ -172,7 +173,7 @@ public class ExpressionTable extends DataListenerWidget {
 						exprGrid.setVisibleRangeAndClearData(new Range(0, 20), true);
 					}
 					public void onFailure(Throwable caught) {
-						Window.alert("Unable to perform T-Test: " + caught.getMessage());
+						Window.alert("Unable to perform T-Test");
 					}
 				});
 			}
@@ -202,7 +203,7 @@ public class ExpressionTable extends DataListenerWidget {
 			public void execute() {
 				kcService.prepareCSVDownload(new AsyncCallback<String>() {
 					public void onFailure(Throwable caught) {
-						Window.alert("Unable to prepare the requested data for download: " + caught.getMessage());
+						Window.alert("Unable to prepare the requested data for download");
 					}
 					public void onSuccess(String url) {
 						downloadUrl = url;
@@ -340,7 +341,7 @@ public class ExpressionTable extends DataListenerWidget {
 		int i = 0;
 		
 		for (DataColumn c : chosenColumns) {
-			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i, NumberFormat.getDecimalFormat());
+			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);
 			valueCol.setSortable(true);
 			exprGrid.addColumn(valueCol, c.getShortTitle());
 			
@@ -351,7 +352,7 @@ public class ExpressionTable extends DataListenerWidget {
 		}
 		
 		for (Synthetic s: synthColumns) {
-			Column<ExpressionRow, String> ttestCol = new ExpressionColumn(tc, i, NumberFormat.getScientificFormat());
+			Column<ExpressionRow, String> ttestCol = new ExpressionColumn(tc, i);
 			ttestCol.setSortable(true);
 			exprGrid.addColumn(ttestCol, s.getShortTitle());
 			i += 1;
@@ -369,7 +370,7 @@ public class ExpressionTable extends DataListenerWidget {
 
 		AsyncCallback<List<ExpressionRow>> rowCallback = new AsyncCallback<List<ExpressionRow>>() {
 			public void onFailure(Throwable caught) {
-				Window.alert("Unable to get expression values: " + caught.getMessage());
+				Window.alert("Unable to get expression values");
 			}
 
 			public void onSuccess(List<ExpressionRow> result) {
@@ -493,7 +494,7 @@ public class ExpressionTable extends DataListenerWidget {
 				absValBox.getValue(), synthColumns, 
 				new AsyncCallback<Integer>() {
 					public void onFailure(Throwable caught) {						
-						Window.alert("Unable to load dataset: "  + caught.getMessage());					
+						Window.alert("Unable to load dataset");					
 					}
 
 					public void onSuccess(Integer result) {
@@ -509,20 +510,26 @@ public class ExpressionTable extends DataListenerWidget {
 	class ExpressionColumn extends Column<ExpressionRow, String> {
 		int i;
 		TextCell tc;
-		NumberFormat fmt;
+		NumberFormat df = NumberFormat.getDecimalFormat();
+		NumberFormat sf = NumberFormat.getScientificFormat();
 		
-		public ExpressionColumn(TextCell tc, int i, NumberFormat fmt) {
+		public ExpressionColumn(TextCell tc, int i) {
 			super(tc);
 			this.i = i;
 			this.tc = tc;
-			this.fmt = fmt;
+			
 		}
 
 		public String getValue(ExpressionRow er) {
 			if (!er.getValue(i).getPresent()) {
 				return "(absent)";
-			} else {								
-				return fmt.format(er.getValue(i).getValue());
+			} else {		
+				double v = er.getValue(i).getValue();
+				if (Math.abs(v) > 0.001) {
+					return df.format(v);
+				} else {
+					return sf.format(v);
+				}				
 			}
 		}
 	}
