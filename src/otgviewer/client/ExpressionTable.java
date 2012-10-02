@@ -121,7 +121,7 @@ public class ExpressionTable extends DataListenerWidget {
 		horizontalPanel.add(simplePager);
 		simplePager.setDisplay(exprGrid);
 		
-		Label label = new Label("Absolute value >=");
+		Label label = new Label("Magnitude >=");
 		label.setStyleName("highlySpaced");
 		label.setDirection(Direction.LTR);
 		horizontalPanel.add(label);

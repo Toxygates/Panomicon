@@ -106,7 +106,7 @@ public class GroupInspector extends DataListenerWidget {
 		
 		
 		txtbxGroup = new TextBox();
-		txtbxGroup.setText("Group 1");
+		txtbxGroup.setText(nextGroupName());
 		horizontalPanel.add(txtbxGroup);
 		
 		Button btnSave = new Button("Save");
@@ -126,9 +126,25 @@ public class GroupInspector extends DataListenerWidget {
 		btnSave.addClickHandler(new ClickHandler(){
 			public void onClick(ClickEvent ce) {
 				makeGroup(txtbxGroup.getValue());
+				txtbxGroup.setText(nextGroupName());
 			}
 		});
 		
+		btnDelete.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent ce) {
+				String grp = txtbxGroup.getValue();
+				if (groups.containsKey(grp)) {
+					groups.remove(grp);
+					
+					existingGroupsList.clear();
+					for (Group g: groups.values()) {
+						existingGroupsList.addItem(g.getName());
+					}
+					chosenColumns = Arrays.asList(groups.values().toArray(new DataColumn[0]));
+					storeColumns();
+				}
+			}
+		});
 		
 		existingGroupsList.addChangeHandler(new ChangeHandler() {
 			public void onChange(ChangeEvent ce) {
@@ -140,6 +156,16 @@ public class GroupInspector extends DataListenerWidget {
 			}
 		});
 		
+	}
+	
+	private String nextGroupName() {
+		int i = 1;
+		String name = "Group " + i;
+		while (groups.containsKey(name)) {
+			i += 1;
+			name = "Group " + i;
+		}
+		return name;
 	}
 	
 	private void lazyFetchTimes() {
