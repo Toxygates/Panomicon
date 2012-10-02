@@ -1,6 +1,7 @@
 package otgviewer.client;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import otgviewer.shared.DataFilter;
@@ -225,9 +226,34 @@ public class ProbeScreen extends Screen {
 		for (String p: probes) {
 			listedProbes.add(p);
 		}
+		final String[] probesInOrder = listedProbes.toArray(new String[0]);
+		
+		//TODO reduce the number of ajax calls done by this screen by collapsing  them
+		owlimService.geneSymsForProbes(probesInOrder, new AsyncCallback<String[][]>() {
+			public void onSuccess(String[][] syms) {
+				deferredAddProbes(probesInOrder, syms);
+			}
+			
+			public void onFailure(Throwable caught) {
+				Window.alert("Unable to get gene symbols for probes.");
+			}
+		});			
+	}
+	
+	/**
+	 * deferred add probes. Probes must be unique.
+	 * @param probes
+	 * @param syms
+	 */
+	private void deferredAddProbes(String[] probes, String[][] syms) {
 		probesList.clear();
-		for (String p: listedProbes) {
-			probesList.addItem(p);
+		for (int i = 0; i < probes.length; ++i) {
+			if (syms[i].length > 0) {
+				probesList.addItem(syms[i][0] + " (" + probes[i] + ")");
+			} else {
+				probesList.addItem(probes[i]);
+			}
+			
 		}		
 	}
 	
@@ -235,5 +261,14 @@ public class ProbeScreen extends Screen {
 		super.dataFilterChanged(filter);
 		probesList.clear();
 		listedProbes.clear();
+	}
+	
+	@Override
+	public void show() {	
+		super.show();
+		probesList.clear();
+		listedProbes.clear();
+		pathwaySel.clear();
+		gotermSel.clear();
 	}
 }

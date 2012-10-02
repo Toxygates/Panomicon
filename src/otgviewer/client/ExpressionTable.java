@@ -561,7 +561,7 @@ public class ExpressionTable extends DataListenerWidget {
 				for (int i = 0; i < numCharts; i++) {
 					SeriesChart seriesChart = (SeriesChart) seriesChartPanel.getWidget(i);
 					seriesChart.probeChanged(value);
-					seriesChart.activate();
+					seriesChart.redraw();
 					seriesChart.setWidth("500px");
 					seriesChart.setPixelHeight(chartHeight);									
 				}

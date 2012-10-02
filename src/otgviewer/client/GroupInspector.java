@@ -56,7 +56,6 @@ public class GroupInspector extends DataListenerWidget {
 	private ListBox existingGroupsList;
 	private CompoundSelector compoundSel;
 	
-	
 	public GroupInspector(CompoundSelector cs) {
 		compoundSel = cs;
 		VerticalPanel vp = new VerticalPanel();
@@ -125,8 +124,7 @@ public class GroupInspector extends DataListenerWidget {
 		existingGroupsList.setVisibleItemCount(5);
 		btnSave.addClickHandler(new ClickHandler(){
 			public void onClick(ClickEvent ce) {
-				makeGroup(txtbxGroup.getValue());
-				txtbxGroup.setText(nextGroupName());
+				makeGroup(txtbxGroup.getValue());				
 			}
 		});
 		
@@ -140,8 +138,8 @@ public class GroupInspector extends DataListenerWidget {
 					for (Group g: groups.values()) {
 						existingGroupsList.addItem(g.getName());
 					}
-					chosenColumns = new ArrayList<DataColumn>(groups.values());
-					storeColumns();
+					
+					reflectGroupChanges();
 				}
 			}
 		});
@@ -156,6 +154,12 @@ public class GroupInspector extends DataListenerWidget {
 			}
 		});
 		
+	}
+	
+	private void reflectGroupChanges() {
+		chosenColumns = new ArrayList<DataColumn>(groups.values());
+		storeColumns();
+		txtbxGroup.setText(nextGroupName());
 	}
 	
 	private String nextGroupName() {
@@ -176,7 +180,7 @@ public class GroupInspector extends DataListenerWidget {
 		}		
 	}
 	
-	private void fetchTimes(String compound) {
+	private void fetchTimes(String compound) {		
 		owlimService.times(chosenDataFilter, compound, chosenDataFilter.organ.toString(), new AsyncCallback<String[]>() {
 			public void onSuccess(String[] times) {
 				availableTimes = times;
@@ -190,9 +194,9 @@ public class GroupInspector extends DataListenerWidget {
 	}
 	
 	@Override
-	public void dataFilterChanged(DataFilter filter) {		
-		if (!filter.equals(chosenDataFilter)) {
-			super.dataFilterChanged(filter);			
+	public void dataFilterChanged(DataFilter filter) {
+		super.dataFilterChanged(filter);			
+		if (!filter.equals(chosenDataFilter)) {			
 			chosenDataFilter = filter;
 			availableTimes = null;
 			groups.clear();
@@ -203,12 +207,13 @@ public class GroupInspector extends DataListenerWidget {
 	
 	@Override
 	public void compoundsChanged(List<String> compounds) {
-		chosenCompounds = compounds;
+		super.compoundsChanged(compounds);		
 		redrawGrid();
 	}
 	
 	@Override 
 	public void columnsChanged(List<DataColumn> columns) {
+		super.columnsChanged(columns);
 		groups.clear();
 		existingGroupsList.clear();
 		//Currently we expect all groups here		
@@ -220,6 +225,7 @@ public class GroupInspector extends DataListenerWidget {
 		if (columns.size() > 0) {
 			fetchTimes(columns.get(0).getCompounds()[0]);
 		}
+		txtbxGroup.setText(nextGroupName());
 	}
 	
 	private void redrawGrid() {
@@ -296,7 +302,7 @@ public class GroupInspector extends DataListenerWidget {
 						String dose = indexToDose(d);
 						
 						String time = availableTimes[t];
-
+						
 						owlimService.barcodes(chosenDataFilter, compound,
 								chosenDataFilter.organ.toString(), dose, time,
 								new AsyncCallback<Barcode[]>() {
@@ -335,6 +341,7 @@ public class GroupInspector extends DataListenerWidget {
 	}
 	
 	private void addToGroup(String pendingGroupName, Barcode[] barcodes) {
+		
 		List<Barcode> n = new ArrayList<Barcode>();
 		Group pendingGroup = groups.get(pendingGroupName);
 		n.addAll(Arrays.asList(barcodes));
@@ -343,8 +350,7 @@ public class GroupInspector extends DataListenerWidget {
 				n.toArray(new Barcode[0]));
 		groups.put(pendingGroupName, pendingGroup);
 
-		chosenColumns = new ArrayList<DataColumn>(groups.values());
-		storeColumns(); // make sure we preserve the groups
+		reflectGroupChanges();		
 	}
 	
 	private void displayGroup(String name) {

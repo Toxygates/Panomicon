@@ -1,18 +1,13 @@
 package otgviewer.client;
 
-import java.util.Arrays;
-
-import otgviewer.shared.DataColumn;
-
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -40,8 +35,12 @@ public class ColumnScreen extends Screen {
 		b.addClickHandler(new ClickHandler() {
 			
 			@Override
-			public void onClick(ClickEvent event) {								
-				History.newItem(ProbeScreen.key);				
+			public void onClick(ClickEvent event) {
+				if (gi.chosenColumns.size() == 0) {
+					Window.alert("Please define at least one group.");
+				} else {
+					History.newItem(ProbeScreen.key);
+				}
 			}
 		});
 		dockPanel.add(b, DockPanel.SOUTH);

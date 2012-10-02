@@ -1,5 +1,7 @@
 package otgviewer.server;
 
+import java.util.Collection;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
@@ -24,9 +26,11 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		OTGOwlim.connect();
+		B2RAffy.connect();
 	}
 	
 	public void destroy() {
+		B2RAffy.close();
 		OTGOwlim.close();
 		super.destroy();		
 	}
@@ -84,6 +88,10 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 		} finally {
 			B2RKegg.close();
 		}		
+	}
+	
+	public String[][] geneSymsForProbes(String[] probes) {
+		return B2RAffy.geneSyms4J(probes).toArray(new String[0][0]);
 	}
 	
 	public String[] probesForPathway(DataFilter filter, String pathway) {

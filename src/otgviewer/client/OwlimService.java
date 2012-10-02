@@ -43,4 +43,6 @@ public interface OwlimService extends RemoteService {
 	public String[] goTerms(String pattern);
 	
 	public String[] probesForGoTerm(DataFilter filter, String goTerm);
+	
+	public String[][] geneSymsForProbes(String[] probes);
 }

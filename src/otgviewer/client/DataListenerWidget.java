@@ -32,8 +32,6 @@ class DataListenerWidget extends Composite implements DataViewListener {
 	protected ValueType chosenValueType;
 	protected List<DataColumn> chosenColumns = new ArrayList<DataColumn>();
 	
-	protected boolean active = false;
-	
 	public DataListenerWidget() {
 		super();
 	}
@@ -149,17 +147,7 @@ class DataListenerWidget extends Composite implements DataViewListener {
 		other.valueTypeChanged(chosenValueType);
 		other.columnsChanged(chosenColumns);		
 	}
-	
-	// other
-	
-	public void activate() {
-		active = true;
-	}
-	
-	public void deactivate() {
-		active = false;
-	}
-	
+
 	/**
 	 * Store this widget's state into local storage.
 	 */

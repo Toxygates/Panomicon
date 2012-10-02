@@ -65,13 +65,11 @@ public class DatasetScreen extends Screen {
 		b.setWidth("100%");
 		b.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent ce) {
-				if (!filter.equals(chosenDataFilter)) {
-					changeDataFilter(filter);
-					String vt = valueTypeList.getItemText(valueTypeList
-							.getSelectedIndex());
-					changeValueType(ValueType.unpack(vt));					
-					storeDataFilterAndValueType();
-				}
+				changeDataFilter(filter);
+				String vt = valueTypeList.getItemText(valueTypeList
+						.getSelectedIndex());
+				changeValueType(ValueType.unpack(vt));
+				storeDataFilterAndValueType();
 				History.newItem(ColumnScreen.key); //Go to compound selection screen
 			}
 		});

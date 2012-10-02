@@ -76,7 +76,7 @@ abstract public class ProbeSelector extends DataListenerWidget {
 		if (withButton) {
 			addButton = new Button("Add selected probes >>");
 			addButton.addClickHandler(new ClickHandler() {
-				public void onClick(ClickEvent e) {
+				public void onClick(ClickEvent e) {					
 					probesChanged(loadedProbes);
 				}
 			});
@@ -102,7 +102,7 @@ abstract public class ProbeSelector extends DataListenerWidget {
 			public void onSuccess(String[] probes) {
 				if (!withButton) {
 					probesChanged(probes);
-				} else {
+				} else if (probes.length > 0) {
 					addButton.setEnabled(true);
 					loadedProbes = probes;
 				}
@@ -111,5 +111,10 @@ abstract public class ProbeSelector extends DataListenerWidget {
 	}	
 	
 	abstract protected void getProbes(String item);
+	
+	void clear() {
+		searchBox.setText("");
+		itemHandler.clear();
+	}
 	
 }

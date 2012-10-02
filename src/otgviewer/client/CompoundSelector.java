@@ -113,6 +113,12 @@ public class CompoundSelector extends DataListenerWidget {
 	public void dataFilterChanged(DataFilter filter) {
 		super.dataFilterChanged(filter);		
 		loadCompounds();
+		selectedCompounds.clear();
+		
+		//reset any edits the user might have done
+		for (String item: provider.getList()) {
+			((CheckboxCell) selectColumn.getCell()).clearViewData(provider.getKey(item));
+		}
 	}
 	
 	public List<String> getCompounds() {				
@@ -122,7 +128,7 @@ public class CompoundSelector extends DataListenerWidget {
 		return r;
 	}
 
-	void loadCompounds() {
+	void loadCompounds() {		
 		owlimService.compounds(chosenDataFilter, new AsyncCallback<String[]>() {
 			
 			@Override

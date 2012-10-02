@@ -174,16 +174,13 @@ public class SeriesChart extends DataListenerWidget {
 		
 	}
 
-	@Override
-	public void activate() {
-		super.activate();
-		redraw();
-	}
+//	@Override
+//	public void activate() {
+//		super.activate();
+//		redraw();
+//	}
 
-	void redraw() {
-		if (!active) {
-			return;
-		}
+	void redraw() {		
 		// make sure something is selected
 		if (chartCombo.getSelectedIndex() == -1) {
 			chartCombo.setSelectedIndex(0);
