@@ -34,6 +34,10 @@ class DataListenerWidget extends Composite implements DataViewListener {
 	
 	protected boolean active = false;
 	
+	public DataListenerWidget() {
+		super();
+	}
+	
 	public void addListener(DataViewListener l) {
 		listeners.add(l);
 	}

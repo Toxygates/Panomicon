@@ -140,7 +140,7 @@ public class GroupInspector extends DataListenerWidget {
 					for (Group g: groups.values()) {
 						existingGroupsList.addItem(g.getName());
 					}
-					chosenColumns = Arrays.asList(groups.values().toArray(new DataColumn[0]));
+					chosenColumns = new ArrayList<DataColumn>(groups.values());
 					storeColumns();
 				}
 			}
@@ -274,19 +274,19 @@ public class GroupInspector extends DataListenerWidget {
 		return groups;
 	}
 	
-	Group pendingGroup;
+//	Group pendingGroup;
 	
 	/**
 	 * Get here if save button is clicked
 	 * @param name
 	 */
-	private void makeGroup(String name) {
+	private void makeGroup(final String name) {
 		
 		if (!groups.containsKey(name)) {
 			existingGroupsList.addItem(name);
 		}
-		pendingGroup = new Group(name, new Barcode[0]);
-		groups.put(name, pendingGroup);						
+		Group pendingGroup = new Group(name, new Barcode[0]);
+		groups.put(name, pendingGroup);
 		
 		for (int c = 0; c < chosenCompounds.size(); ++c) {
 			for (int d = 0; d < 3; ++d) {
@@ -301,7 +301,7 @@ public class GroupInspector extends DataListenerWidget {
 								chosenDataFilter.organ.toString(), dose, time,
 								new AsyncCallback<Barcode[]>() {
 									public void onSuccess(Barcode[] barcodes) {
-										addToGroup(barcodes);
+										addToGroup(name, barcodes);
 									}
 
 									public void onFailure(Throwable caught) {
@@ -334,23 +334,22 @@ public class GroupInspector extends DataListenerWidget {
 		return "High";
 	}
 	
-	private void addToGroup(Barcode[] barcodes) {		
-		synchronized (this) {		//TODO review concurrency/synchronization
-			List<Barcode> n = new ArrayList<Barcode>();
-			n.addAll(Arrays.asList(barcodes));			
-			n.addAll(Arrays.asList(pendingGroup.getBarcodes()));
-			pendingGroup = new Group(pendingGroup.getName(),
-					n.toArray(new Barcode[0]));
-			groups.put(pendingGroup.getName(), pendingGroup);
-			
-			chosenColumns = Arrays.asList(groups.values().toArray(new DataColumn[0]));
-			storeColumns();  //make sure we preserve the groups			
-		}
-	
+	private void addToGroup(String pendingGroupName, Barcode[] barcodes) {
+		List<Barcode> n = new ArrayList<Barcode>();
+		Group pendingGroup = groups.get(pendingGroupName);
+		n.addAll(Arrays.asList(barcodes));
+		n.addAll(Arrays.asList(pendingGroup.getBarcodes()));
+		pendingGroup = new Group(pendingGroupName,
+				n.toArray(new Barcode[0]));
+		groups.put(pendingGroupName, pendingGroup);
+
+		chosenColumns = new ArrayList<DataColumn>(groups.values());
+		storeColumns(); // make sure we preserve the groups
 	}
 	
 	private void displayGroup(String name) {
-		List<String> compounds = Arrays.asList(groups.get(name).getCompounds());
+		List<String> compounds = new ArrayList<String>(Arrays.asList(groups.get(name).getCompounds()));
+		
 		compoundSel.setSelection(compounds);		
 		txtbxGroup.setValue(name);
 		

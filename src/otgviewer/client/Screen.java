@@ -114,6 +114,7 @@ public class Screen extends DataListenerWidget {
 	public void resizeInterface(int newHeight) {
 		String h = (newHeight - dockPanel.getAbsoluteTop()) + "px";
 		dockPanel.setHeight(h);		
+		changeHeight(newHeight);
 	}
 	
 	/**
