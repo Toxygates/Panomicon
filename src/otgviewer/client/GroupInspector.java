@@ -175,13 +175,13 @@ public class GroupInspector extends DataListenerWidget {
 	private void lazyFetchTimes() {
 		if (availableTimes != null && availableTimes.length > 0) {
 			drawGridInner(false);
-		} else if (chosenCompounds.size() > 0) {
-			fetchTimes(chosenCompounds.get(0));						
+		} else {
+			fetchTimes();						
 		}		
 	}
 	
-	private void fetchTimes(String compound) {		
-		owlimService.times(chosenDataFilter, compound, chosenDataFilter.organ.toString(), new AsyncCallback<String[]>() {
+	private void fetchTimes() {		
+		owlimService.times(chosenDataFilter, null, new AsyncCallback<String[]>() {
 			public void onSuccess(String[] times) {
 				availableTimes = times;
 				drawGridInner(false);
@@ -194,14 +194,16 @@ public class GroupInspector extends DataListenerWidget {
 	}
 	
 	@Override
-	public void dataFilterChanged(DataFilter filter) {
-		super.dataFilterChanged(filter);			
+	public void dataFilterChanged(DataFilter filter) {		
 		if (!filter.equals(chosenDataFilter)) {			
-			chosenDataFilter = filter;
+			super.dataFilterChanged(filter); //this call changes chosenDataFilter			
 			availableTimes = null;
 			groups.clear();
 			existingGroupsList.clear();
+			fetchTimes();
 			compoundsChanged(new ArrayList<String>());
+		} else {
+			super.dataFilterChanged(filter);
 		}
 	}
 	
@@ -221,9 +223,6 @@ public class GroupInspector extends DataListenerWidget {
 			Group g = (Group) c;
 			groups.put(g.getName(), g);
 			existingGroupsList.addItem(g.getName());			
-		}
-		if (columns.size() > 0) {
-			fetchTimes(columns.get(0).getCompounds()[0]);
 		}
 		txtbxGroup.setText(nextGroupName());
 	}
@@ -299,15 +298,15 @@ public class GroupInspector extends DataListenerWidget {
 				for (int t = 0; t < availableTimes.length; ++t) {
 					if (checkboxes[c][availableTimes.length * d + t].getValue()) {
 						final String compound = chosenCompounds.get(c);
-						String dose = indexToDose(d);
+						final String dose = indexToDose(d);
 						
-						String time = availableTimes[t];
+						final String time = availableTimes[t];
 						
 						owlimService.barcodes(chosenDataFilter, compound,
-								chosenDataFilter.organ.toString(), dose, time,
+								dose, time,
 								new AsyncCallback<Barcode[]>() {
 									public void onSuccess(Barcode[] barcodes) {
-										addToGroup(name, barcodes);
+										addToGroup(name, compound + "/" + dose + "/" + time, barcodes);
 									}
 
 									public void onFailure(Throwable caught) {
@@ -340,17 +339,21 @@ public class GroupInspector extends DataListenerWidget {
 		return "High";
 	}
 	
-	private void addToGroup(String pendingGroupName, Barcode[] barcodes) {
+	private void addToGroup(String pendingGroupName, String humanReadable, Barcode[] barcodes) {
 		
-		List<Barcode> n = new ArrayList<Barcode>();
-		Group pendingGroup = groups.get(pendingGroupName);
-		n.addAll(Arrays.asList(barcodes));
-		n.addAll(Arrays.asList(pendingGroup.getBarcodes()));
-		pendingGroup = new Group(pendingGroupName,
-				n.toArray(new Barcode[0]));
-		groups.put(pendingGroupName, pendingGroup);
+		if (barcodes.length == 0) {
+			Window.alert("No samples were found for: " + humanReadable);
+		} else {
+			List<Barcode> n = new ArrayList<Barcode>();
+			Group pendingGroup = groups.get(pendingGroupName);
+			n.addAll(Arrays.asList(barcodes));
+			n.addAll(Arrays.asList(pendingGroup.getBarcodes()));
+			pendingGroup = new Group(pendingGroupName,
+					n.toArray(new Barcode[0]));
+			groups.put(pendingGroupName, pendingGroup);
 
-		reflectGroupChanges();		
+			reflectGroupChanges();
+		}
 	}
 	
 	private void displayGroup(String name) {

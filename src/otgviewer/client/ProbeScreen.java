@@ -1,10 +1,13 @@
 package otgviewer.client;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.Group;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -36,7 +39,8 @@ public class ProbeScreen extends Screen {
 	private TextArea customProbeText;
 	private ListBox probesList;
 	private Set<String> listedProbes = new HashSet<String>();
-
+	private List<ListBox> compoundLists = new ArrayList<ListBox>();
+	
 	public ProbeScreen(Screen parent, MenuBar mb) {
 		super(parent, "Select probes", key, mb, true);
 	}
@@ -93,13 +97,13 @@ public class ProbeScreen extends Screen {
 		Widget chembl = makeTargetLookupPanel(
 				"CHEMBL",
 				"This lets you view probes that are known targets of the currently selected compound.",
-				"Show CHEMBL targets");
+				"Add CHEMBL targets >>");
 		probeSelStack.add(chembl, "CHEMBL targets", false);
 
 		Widget drugBank = makeTargetLookupPanel(
 				"DrugBank",
 				"This lets you view probes that are known targets of the currently selected compound.",
-				"Show DrugBank targets");
+				"Add DrugBank targets >>");
 		probeSelStack.add(drugBank, "DrugBank targets", false);
 
 		VerticalPanel verticalPanel_3 = new VerticalPanel();
@@ -170,9 +174,13 @@ public class ProbeScreen extends Screen {
 		b.addClickHandler(new ClickHandler() {			
 			@Override
 			public void onClick(ClickEvent event) {
-				changeProbes(listedProbes.toArray(new String[0]));
-				storeState();
-				History.newItem(DataScreen.key);
+				if (listedProbes.size() == 0) {
+					Window.alert("Please select the probes you are interested in, or proceed with all probes.");
+				} else {
+					changeProbes(listedProbes.toArray(new String[0]));
+					storeProbes();
+					History.newItem(DataScreen.key);
+				}
 			}
 		});
 
@@ -181,7 +189,7 @@ public class ProbeScreen extends Screen {
 		b.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				changeProbes(new String[0]);
-				storeState();
+				storeProbes();
 				History.newItem(DataScreen.key);
 			}
 		});
@@ -198,14 +206,18 @@ public class ProbeScreen extends Screen {
 		Label label_4 = new Label(label);
 		verticalPanel_2.add(label_4);
 		
+		final ListBox compoundList = new ListBox();
+		compoundLists.add(compoundList);
+		verticalPanel_2.add(compoundList);
+		
 		Button button = new Button(buttonText);
 		verticalPanel_2.add(button);
 		button.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent ev) {
-				if (chosenCompound != null) {
-					
+				if (compoundList.getSelectedIndex() != -1) {
+					String compound = compoundList.getItemText(compoundList.getSelectedIndex());					
 					owlimService.probesTargetedByCompound(chosenDataFilter,
-							chosenCompound, service, new AsyncCallback<String[]>() {
+							compound, service, new AsyncCallback<String[]>() {
 								public void onFailure(Throwable caught) {
 									Window.alert("Unable to get probes.");
 								}
@@ -228,16 +240,18 @@ public class ProbeScreen extends Screen {
 		}
 		final String[] probesInOrder = listedProbes.toArray(new String[0]);
 		
-		//TODO reduce the number of ajax calls done by this screen by collapsing  them
-		owlimService.geneSymsForProbes(probesInOrder, new AsyncCallback<String[][]>() {
-			public void onSuccess(String[][] syms) {
-				deferredAddProbes(probesInOrder, syms);
-			}
-			
-			public void onFailure(Throwable caught) {
-				Window.alert("Unable to get gene symbols for probes.");
-			}
-		});			
+		if (probes.length > 0) {
+			//TODO reduce the number of ajax calls done by this screen by collapsing  them
+			owlimService.geneSymsForProbes(probesInOrder, new AsyncCallback<String[][]>() {
+				public void onSuccess(String[][] syms) {
+					deferredAddProbes(probesInOrder, syms);
+				}
+
+				public void onFailure(Throwable caught) {
+					Window.alert("Unable to get gene symbols for probes.");
+				}
+			});			
+		}
 	}
 	
 	/**
@@ -252,15 +266,35 @@ public class ProbeScreen extends Screen {
 				probesList.addItem(syms[i][0] + " (" + probes[i] + ")");
 			} else {
 				probesList.addItem(probes[i]);
-			}
-			
+			}			
 		}		
 	}
 	
+	@Override
 	public void dataFilterChanged(DataFilter filter) {
 		super.dataFilterChanged(filter);
 		probesList.clear();
 		listedProbes.clear();
+	}
+	
+	@Override
+	public void columnsChanged(List<DataColumn> columns) {
+		for (ListBox l: compoundLists) {
+			l.clear();
+			for (DataColumn c : columns) {
+				Group g = (Group) c;
+				for (String cmp: g.getCompounds()) {
+					l.addItem(cmp);
+				}
+			}
+		}		
+	}
+	
+	@Override
+	public void probesChanged(String[] probes) {
+		/*
+		 * Demo no-op only: do not pass these probes on to the inner widgets
+		 */
 	}
 	
 	@Override

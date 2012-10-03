@@ -11,9 +11,17 @@ public interface OwlimService extends RemoteService {
 	//Methods relating to metadata about our microarrays.
 	public String[] compounds(DataFilter filter);
 	public String[] organs(DataFilter filter, String compound);
-	public String[] doseLevels(DataFilter filter, String compound, String organ);	
-	public Barcode[] barcodes(DataFilter filter, String compound, String organ, String doseLevel, String time);	
-	public String[] times(DataFilter filter, String compound, String organ);		
+	public String[] doseLevels(DataFilter filter, String compound);	
+	public Barcode[] barcodes(DataFilter filter, String compound, String doseLevel, String time);
+	
+	/**
+	 * Obtain times corresponding to a data filter and a compound.
+	 * Compound may be null, in which case all times for the filter are returned.
+	 * @param filter
+	 * @param compound
+	 * @return
+	 */
+	public String[] times(DataFilter filter, String compound);		
 	
 	//Other methods.
 	public String[] probes(DataFilter filter);

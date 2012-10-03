@@ -197,14 +197,13 @@ public class SeriesChart extends DataListenerWidget {
 			if (chartCombo.getSelectedIndex() == 0) {
 				// select for specific dose.
 				owlimService.barcodes(chosenDataFilter, chosenCompound,
-						chosenDataFilter.organ.toString(), chartSubtypeCombo
-								.getItemText(chartSubtypeCombo
+						chartSubtypeCombo.getItemText(chartSubtypeCombo
 										.getSelectedIndex()), null,
 						seriesChartBarcodesCallback);
 			} else {
 				// select for specific time.
 				owlimService.barcodes(chosenDataFilter, chosenCompound,
-						chosenDataFilter.organ.toString(), null,
+						null,
 						chartSubtypeCombo.getItemText(chartSubtypeCombo
 								.getSelectedIndex()),
 						seriesChartBarcodesCallback);
@@ -225,14 +224,12 @@ public class SeriesChart extends DataListenerWidget {
 
 	void getDosesForSeriesChart() {
 		chartSubtypeCombo.clear();
-		owlimService.doseLevels(chosenDataFilter, chosenCompound,
-				chosenDataFilter.organ.toString(), seriesChartItemsCallback);
+		owlimService.doseLevels(chosenDataFilter, chosenCompound, seriesChartItemsCallback);
 	}
 
 	void getTimesForSeriesChart() {
 		chartSubtypeCombo.clear();
-		owlimService.times(chosenDataFilter, chosenCompound,
-				chosenDataFilter.organ.toString(), seriesChartItemsCallback);
+		owlimService.times(chosenDataFilter, chosenCompound, seriesChartItemsCallback);
 	}
 
 	private void updateSelectionLabel() {

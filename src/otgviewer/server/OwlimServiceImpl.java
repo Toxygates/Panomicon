@@ -48,11 +48,11 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 		return OTGOwlim.organs(toScala(filter), compound);		
 	}
 
-	public String[] doseLevels(DataFilter filter, String compound, String organ) {		
+	public String[] doseLevels(DataFilter filter, String compound) {		
 		return OTGOwlim.doseLevels(toScala(filter), compound);		
 	}
 
-	public Barcode[] barcodes(DataFilter filter, String compound, String organ,
+	public Barcode[] barcodes(DataFilter filter, String compound,
 			String doseLevel, String time) {
 
 		BCode[] codes = OTGOwlim.barcodes4J(toScala(filter), compound, doseLevel, time);
@@ -66,7 +66,7 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 		return r;
 	}
 	
-	public String[] times(DataFilter filter, String compound, String organ) {
+	public String[] times(DataFilter filter, String compound) {
 		String[] r =  OTGOwlim.times(toScala(filter), compound);
 		SampleTimes.sortTimes(r);
 		return r;
