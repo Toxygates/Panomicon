@@ -191,8 +191,9 @@ class DataListenerWidget extends Composite implements DataViewListener {
 		}
 	}
 	
-	public void storeProbes() {
+	public void storeProbes() {		
 		Storage s = Storage.getLocalStorageIfSupported();
+		Window.alert("Store '" + packProbes() + "' " + this.getClass());
 		if (s == null) {
 			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
 		} else {
@@ -254,8 +255,7 @@ class DataListenerWidget extends Composite implements DataViewListener {
 					}
 				}
 			}
-			v = s.getItem("OTG.probes");
-//			Window.alert(v);
+			v = s.getItem("OTG.probes");			
 			if (v != null && !v.equals("") && !v.equals(packProbes())) {
 				chosenProbes = v.split("###");				
 				probesChanged(chosenProbes);				

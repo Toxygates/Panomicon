@@ -1,4 +1,7 @@
 package otgviewer.client;
+import java.util.Map;
+import java.util.Set;
+
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 
@@ -52,5 +55,7 @@ public interface OwlimService extends RemoteService {
 	
 	public String[] probesForGoTerm(DataFilter filter, String goTerm);
 	
-	public String[][] geneSymsForProbes(String[] probes);
+	public String[][] geneSyms(String[] probes);
+	
+	public Map<String, Set<String>> associations(DataFilter filter, String[] probes);
 }

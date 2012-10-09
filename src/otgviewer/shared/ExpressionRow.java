@@ -18,16 +18,9 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 		title = _title;		
 		geneIds = _geneId;
 		geneSyms = _geneSym;
-	}
 		
-	public ExpressionRow(String _probe, String _title, String[] _geneId, String[] _geneSym, ExpressionValue _val) {
-		probe = _probe;
-		val = new ExpressionValue[] { _val };
-		title = _title;		
-		geneIds = _geneId;
-		geneSyms = _geneSym;
 	}
-	
+
 	public boolean equals(Object o) {
 		if (o instanceof ExpressionRow) {
 			return (probe == ((ExpressionRow) o).probe && Arrays.equals(val, ((ExpressionRow)o).val));
@@ -66,13 +59,12 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 	public String[] getGeneSyms() {
 		return geneSyms;
 	}
-	
+
 	public int compareTo(ExpressionRow o) {		
 		if (o == null) {
 			return -1;
 		} else {
 			return probe.compareTo(o.probe);			
 		}			
-	}
-	
+	}	
 }

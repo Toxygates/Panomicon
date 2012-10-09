@@ -1,6 +1,9 @@
 package otgviewer.server;
 
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -90,7 +93,7 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 		}		
 	}
 	
-	public String[][] geneSymsForProbes(String[] probes) {
+	public String[][] geneSyms(String[] probes) {
 		return B2RAffy.geneSyms4J(probes).toArray(new String[0][0]);
 	}
 	
@@ -145,4 +148,19 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 		return OTGQueries.filterProbes(OTGOwlim.probesForGoTerm(goTerm), s);
 	}
 
+	public Map<String, Set<String>> associations(DataFilter filter, String[] probes) {		
+		try {
+			B2RKegg.connect();
+			//need to rebuild it to ensure we don't use any scala map types
+			
+			Map<String, Set<String>> r = new HashMap<String, Set<String>>();
+			Map<String, Set<String>> sr = B2RKegg.pathwaysForProbes(probes, Utils.speciesFromFilter(filter));			
+			for (String key: sr.keySet()) {
+				r.put(key, new HashSet<String>(sr.get(key)));				
+			}
+			return r;			
+		} finally {
+			B2RKegg.close();
+		}
+	}
 }

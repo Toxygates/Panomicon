@@ -117,4 +117,8 @@ abstract public class ProbeSelector extends DataListenerWidget {
 		itemHandler.clear();
 	}
 	
+	@Override
+	public void probesChanged(String[] probes) {
+		clear();
+	}
 }

@@ -1,6 +1,7 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -164,6 +165,8 @@ public class ProbeScreen extends Screen {
 			public void onClick(ClickEvent event) {
 				probesList.clear();				
 				listedProbes.clear();
+				changeProbes(new String[0]);
+				storeProbes();
 			}
 		});
 
@@ -239,10 +242,12 @@ public class ProbeScreen extends Screen {
 			listedProbes.add(p);
 		}
 		final String[] probesInOrder = listedProbes.toArray(new String[0]);
+		chosenProbes = probesInOrder;
+		storeProbes();
 		
 		if (probes.length > 0) {
 			//TODO reduce the number of ajax calls done by this screen by collapsing  them
-			owlimService.geneSymsForProbes(probesInOrder, new AsyncCallback<String[][]>() {
+			owlimService.geneSyms(probesInOrder, new AsyncCallback<String[][]>() {
 				public void onSuccess(String[][] syms) {
 					deferredAddProbes(probesInOrder, syms);
 				}
@@ -272,9 +277,17 @@ public class ProbeScreen extends Screen {
 	
 	@Override
 	public void dataFilterChanged(DataFilter filter) {
+		if (chosenDataFilter != null && !filter.organism.equals(chosenDataFilter.organism)) {
+			super.dataFilterChanged(filter);
+			probesChanged(new String[0]);
+			storeProbes();
+		} else {
+			super.dataFilterChanged(filter);
+		}
 		super.dataFilterChanged(filter);
-		probesList.clear();
-		listedProbes.clear();
+//		
+//		probesList.clear();
+//		listedProbes.clear();
 	}
 	
 	@Override
@@ -289,20 +302,17 @@ public class ProbeScreen extends Screen {
 			}
 		}		
 	}
-	
+
 	@Override
 	public void probesChanged(String[] probes) {
-		/*
-		 * Demo no-op only: do not pass these probes on to the inner widgets
-		 */
+		super.probesChanged(probes);
+		
+		probesList.clear();
+		for (String p: probes) {
+			probesList.addItem(p);
+		}
+		listedProbes.clear();
+		listedProbes.addAll(Arrays.asList(probes));
 	}
 	
-	@Override
-	public void show() {	
-		super.show();
-		probesList.clear();
-		listedProbes.clear();
-		pathwaySel.clear();
-		gotermSel.clear();
-	}
 }

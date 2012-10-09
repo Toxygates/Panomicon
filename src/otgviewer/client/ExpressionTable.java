@@ -1,8 +1,10 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import otgviewer.shared.DataColumn;
@@ -59,21 +61,24 @@ public class ExpressionTable extends DataListenerWidget {
 
 	// Visible columns
 	private boolean geneIdColVis = false, probeColVis = false,
-			probeTitleColVis = true, geneSymColVis = true;
+			probeTitleColVis = true, geneSymColVis = true, assocColumnVis = true;
 
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
 	private DataGrid<ExpressionRow> exprGrid;
 	private DoubleBox absValBox;
 	private VerticalPanel seriesChartPanel = new VerticalPanel();	
 
-	private KCServiceAsync kcService = (KCServiceAsync) GWT
+	private final KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
+	private final OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT.create(OwlimService.class);
 	
 	private List<ExpressionListener> els = new ArrayList<ExpressionListener>();
 	private List<Synthetic> synthColumns = new ArrayList<Synthetic>();
 	
 	private ListBox groupsel1 = new ListBox();
 	private ListBox groupsel2 = new ListBox();
+	
+	private Map<String, Set<String>> associations = new HashMap<String, Set<String>>();
 	
 	/**
 	 * This constructor will be used by the GWT designer. (Not functional at run time)
@@ -165,25 +170,52 @@ public class ExpressionTable extends DataListenerWidget {
 		horizontalPanel.add(b);
 		b.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent e) {
-				kcService.addTTest((Group) chosenColumns.get(0), (Group) chosenColumns.get(1), new AsyncCallback<Void>() {
-					public void onSuccess(Void v) {
-						synthColumns.add(new Synthetic.TTest((Group) chosenColumns.get(0), (Group) chosenColumns.get(1)));
-//						getExpressions(null, true);
-						setupColumns();
-						exprGrid.setVisibleRangeAndClearData(new Range(0, 20), true);
-					}
-					public void onFailure(Throwable caught) {
-						Window.alert("Unable to perform T-Test");
-					}
-				});
+				if (groupsel1.getSelectedIndex() == -1 || groupsel2.getSelectedIndex() == -1) {
+					Window.alert("Please select two groups to perform T-Test.");
+				} else if (groupsel1.getSelectedIndex() == groupsel2.getSelectedIndex()) {
+					Window.alert("Please select two different groups to perform T-Test.");
+				} else {
+					final Group g1 = findGroup(chosenColumns, groupsel1.getItemText(groupsel1.getSelectedIndex()));
+					final Group g2 = findGroup(chosenColumns, groupsel2.getItemText(groupsel2.getSelectedIndex()));
+					kcService.addTTest(g1, g2, new AsyncCallback<Void>() {
+						public void onSuccess(Void v) {
+							synthColumns.add(new Synthetic.TTest(g1, g2));
+							//						getExpressions(null, true);
+							setupColumns();
+							exprGrid.setVisibleRangeAndClearData(new Range(0, 20), true);
+						}
+						public void onFailure(Throwable caught) {
+							Window.alert("Unable to perform T-Test");
+						}
+					});
+				}
 			}
 		});
 		
 		b = new Button("Remove T-Tests");
 		horizontalPanel.add(b);
+		b.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent ce) {
+				if (!synthColumns.isEmpty()) {
+					synthColumns.clear();
+					//We have to reload the data completely to get rid of the synth columns
+					//in our server side session
+					getExpressions(null, true);	
+				}
+			}
+		});
 		
 		exprGrid.addColumnSortHandler(colSortHandler);
 
+	}
+	
+	private Group findGroup(List<DataColumn> groups, String title) {
+		for (DataColumn d: groups) {
+			if (((Group) d).getName().equals(title)) {
+				return ((Group) d);
+			}
+		}
+		return null;
 	}
 	
 	public void addExpressionListener(ExpressionListener el) {
@@ -275,6 +307,14 @@ public class ExpressionTable extends DataListenerWidget {
 		});
 		menuBar_2.addItem(mntmGeneSym);
 		
+		MenuItem mi = new MenuItem("Associations", false, new Command() {
+			public void execute() {
+				assocColumnVis = ! assocColumnVis;
+				setupColumns();
+			}
+		});
+		menuBar_2.addItem(mi);
+		
 		mntmNewMenu_1.setHTML("Columns");
 		r[1] = mntmNewMenu_1;
 		return r;
@@ -337,6 +377,20 @@ public class ExpressionTable extends DataListenerWidget {
 			exprGrid.addColumn(geneSymCol, "Gene sym");
 			extraCols += 1;
 		}
+		
+		if (assocColumnVis) {
+			TextColumn<ExpressionRow> assocCol = new TextColumn<ExpressionRow>() {
+				public String getValue(ExpressionRow er) {
+					if (associations.containsKey(er.getProbe())) {					
+						return arrayString(associations.get(er.getProbe()).toArray(new String[0]));
+					} else {
+						return "";
+					}
+				}
+			};
+			exprGrid.addColumn(assocCol, "Associations");
+			extraCols += 1;
+		}
 
 		int i = 0;
 		
@@ -368,6 +422,17 @@ public class ExpressionTable extends DataListenerWidget {
 	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
 		private int start = 0;
 
+		AsyncCallback<Map<String, Set<String>>> assocCallback = new AsyncCallback<Map<String, Set<String>>>() {
+			public void onFailure(Throwable caught) {
+				Window.alert("Unable to get associations");
+			}
+			
+			public void onSuccess(Map<String, Set<String>> result) {
+				associations = result;
+				exprGrid.redraw();
+			}
+		};
+		
 		AsyncCallback<List<ExpressionRow>> rowCallback = new AsyncCallback<List<ExpressionRow>>() {
 			public void onFailure(Throwable caught) {
 				Window.alert("Unable to get expression values");
@@ -380,24 +445,12 @@ public class ExpressionTable extends DataListenerWidget {
 					for (ExpressionListener el : els) {
 						el.expressionsChanged(result);
 					}
-
-					// if (chartTable != null) {
-					// chartTable.removeRows(0,
-					// chartTable.getNumberOfRows());
-					// for (int i = 0; i < result.size(); ++i) {
-					// chartTable.addRow();
-					// ExpressionRow row = result.get(i);
-					// int cols =
-					// barcodeHandler.lastMultiSelection().size();
-					// chartTable.setValue(i, 0, row.getProbe());
-					// for (int j = 0; j < cols; ++j) {
-					// chartTable.setValue(i, j + 1, row.getValue(j)
-					// .getValue());
-					// }
-					//
-					// exprChart.draw(chartTable);
-					// }
-					// }
+					
+					String[] probes = new String[result.size()];
+					for (int i = 0; i < probes.length; ++i) {
+						probes[i] = result.get(i).getProbe();
+					}
+					owlimService.associations(chosenDataFilter, probes, assocCallback);
 
 				}
 			}
@@ -588,8 +641,9 @@ public class ExpressionTable extends DataListenerWidget {
 		}
 	}
 	
-	public void resizeInterface(int newHeight) {
+	@Override
+	public void heightChanged(int newHeight) {
 		String h3 = (newHeight - exprGrid.getAbsoluteTop() - 45) + "px";
 		exprGrid.setHeight(h3);	
-	}	
+	}		
 }

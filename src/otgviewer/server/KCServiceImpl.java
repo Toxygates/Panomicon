@@ -13,6 +13,7 @@ import javax.servlet.http.HttpSession;
 
 import kyotocabinet.DB;
 import otg.B2RAffy;
+import otg.B2RKegg;
 import otg.CSVHelper;
 import otg.ExprValue;
 import otg.OTGMisc;
@@ -160,7 +161,8 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 			params = new DataViewParams();
 		}		
 		params.mustSort = true;
-		session.setAttribute("params", params);
+		params.filter = filter;		
+		session.setAttribute("dataViewParams", params);
 
 		for (Synthetic s : syntheticColumns) {
 			if (s instanceof Synthetic.TTest) {
@@ -196,7 +198,8 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		session.setAttribute("datasetColumns", ncolumns);
 	}
 	
-	private ExpressionRow arrayToRow(String probe, String title, String[] geneIds, String[] geneSyms, ExprValue[] vals) {
+	private ExpressionRow arrayToRow(String probe, String title, String[] geneIds, String[] geneSyms, 
+			ExprValue[] vals) {
 		ExpressionValue[] vout = new ExpressionValue[vals.length];
 
 		for (int j = 0; j < vals.length; ++j) {
@@ -205,7 +208,7 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		return new ExpressionRow(probe, title, geneIds, geneSyms, vout);
 	}
 	
-	private List<ExpressionRow> arrayToRows(String[] probes, ExprValue[][] data, int offset, int size) {
+	private List<ExpressionRow> arrayToRows(DataFilter filter, String[] probes, ExprValue[][] data, int offset, int size) {
 		List<ExpressionRow> r = new ArrayList<ExpressionRow>();
 
 		if (probes != null && data != null) {
@@ -221,6 +224,17 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 					List<String> probeTitles = B2RAffy.titles4J((String[]) Arrays.copyOfRange(probes, offset, cpend));
 					List<String[]> geneIds = B2RAffy.geneIds4J((String[]) Arrays.copyOfRange(probes, offset, cpend));
 					List<String[]> geneSyms = B2RAffy.geneSyms4J((String[]) Arrays.copyOfRange(probes, offset, cpend));
+					
+					String[] gids = new String[geneIds.size()];
+					for (int i = 0; i < geneIds.size() && i< 100; ++i) {
+						if (geneIds.get(i).length > 0) {
+							gids[i] = geneIds.get(i)[0];
+						}
+					}
+					B2RKegg.connect();
+					B2RKegg.pathways(gids, Utils.speciesFromFilter(filter));
+					B2RKegg.close();
+					
 					for (int i = offset; i < offset + size && i < probes.length && i < data.length; ++i) {					
 						r.add(arrayToRow(probes[i], probeTitles.get(i - offset), geneIds.get(i - offset), 
 								geneSyms.get(i - offset), data[i]));					
@@ -275,14 +289,23 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		
 		session.setAttribute("dataViewParams", params);
 		
-		return arrayToRows(probes, groupedFiltered, offset, size);
+		return arrayToRows(params.filter, probes, groupedFiltered, offset, size);
 	}
 	
 	public List<ExpressionRow> getFullData(DataFilter filter, List<String> barcodes, 
 			String[] probes, ValueType type, boolean sparseRead) {
-		String[] realProbes = filterProbes(filter, probes);
+		HttpServletRequest request = getThreadLocalRequest();
+		HttpSession session = request.getSession();
+		DataViewParams params = (DataViewParams) session.getAttribute("dataViewParams");
+		if (params == null) {
+			params = new DataViewParams();
+		}
+		params.filter = filter;
+		session.setAttribute("dataViewParams", params);
+		
+		String[] realProbes = filterProbes(filter, probes);		
 		ExprValue[][] r = getExprValues(filter, barcodes, realProbes, type, sparseRead);
-		return arrayToRows(realProbes, r, 0, r.length);
+		return arrayToRows(filter, realProbes, r, 0, r.length);
 		
 	}
 	
