@@ -3,6 +3,8 @@ import otgviewer.shared._
 import otg.ExprValue
 import org.apache.commons.math3.stat.inference.TTest
 import otg.B2RAffy
+import java.util.{List => JList}
+import javax.servlet.http.HttpSession
 
 object KCServiceImplS {
   import scala.collection.JavaConversions._
@@ -95,9 +97,10 @@ object KCServiceImplS {
   /**
    * Sort array 1 and 2 simultaneously according to a column in a1.
    */
-  def sortData4J(a1: Array[Array[ExprValue]], sortCol: Int, asc: Boolean, a2: Array[Array[ExprValue]]): Array[Array[Array[ExprValue]]] = {
+  private def sortData(a1: Array[Array[ExprValue]], sortCol: Int, asc: Boolean, a2: Array[Array[ExprValue]]): 
+  (Array[Array[ExprValue]], Array[Array[ExprValue]]) = {
     val z = a1.zip(a2)
-    val s = z.sortWith((p1, p2) => {
+    val as = z.sortWith((p1, p2) => {
       val ev1 = p1._1(sortCol)
       val ev2 = p2._1(sortCol)
       val ascFactor = if (asc) { 1 } else { -1 }
@@ -108,13 +111,12 @@ object KCServiceImplS {
       } else {
         if (asc) { ev1.value < ev2.value } else { ev1.value >= ev2.value }
       }
-    })
-    val (u1, u2) = s.unzip
-    Array(u1.toArray, u2.toArray)
+    }).unzip
+    (as._1.toArray, as._2.toArray)
   }
   
-  def arrayToRows(filter: DataFilter, probes: Array[String], data: Array[Array[ExprValue]], 
-      offset: Int, size: Int): Vector[ExpressionRow] =  {
+  def arrayToRows4J(filter: DataFilter, probes: Array[String], data: Array[Array[ExprValue]], 
+      offset: Int, size: Int): JList[ExpressionRow] =  {
     if (probes != null && data != null) {
       try {
         B2RAffy.connect()
@@ -125,9 +127,13 @@ object KCServiceImplS {
           val geneIds = B2RAffy.geneIds(probes.slice(offset, cpend))
           val geneSyms = B2RAffy.geneSyms(probes.slice(offset, cpend))
           
+          offset.until(List(offset + size, probes.length, data.length).min).map(i => {
+            val vals = data(i).map(x => new ExpressionValue(x.value, x.call))
+            new ExpressionRow(probes(i), probeTitles(i-offset), geneIds(i-offset), geneSyms(i-offset), vals)
+          }).toVector
+        } else {		
+        	Vector()
         }
-			
-        Vector()
       } finally {
         B2RAffy.close()
       }
@@ -135,4 +141,45 @@ object KCServiceImplS {
       Vector()
     }
   }
+  
+  def datasetItems4J(session: HttpSession, offset: Int, size: Int, 
+      sortColumn: Int, ascending: Boolean): JList[ExpressionRow] = {
+   
+    var params = session.getAttribute("dataViewParams").asInstanceOf[DataViewParams]
+    if (params == null) {
+      params = new DataViewParams()
+    }
+    
+    def shouldReSort = sortColumn > -1 && (sortColumn != params.sortColumn ||
+        ascending != params.sortAsc || params.mustSort)
+        
+    var groupedFiltered = session.getAttribute("groupedFiltered").asInstanceOf[Array[Array[ExprValue]]]
+    if (groupedFiltered != null) {
+      println("I had " + (groupedFiltered).size + " rows stored")
+    }
+    
+    val ungroupedFiltered = session.getAttribute("ungroupedFiltered").asInstanceOf[Array[Array[ExprValue]]]    
+    var probes = session.getAttribute("datasetProbes").asInstanceOf[Array[String]]
+
+    //At this point sorting may happen		
+    if (shouldReSort) {
+      //OK, we need to re-sort it and then re-store it
+      params.sortColumn = sortColumn;
+      params.sortAsc = ascending
+      params.mustSort = false
+      
+      val (grf, ugrf) = sortData(groupedFiltered, sortColumn, ascending, ungroupedFiltered)
+      
+      session.setAttribute("groupedFiltered", grf)
+      session.setAttribute("ungroupedFiltered", ugrf)
+      groupedFiltered = grf
+      val sortedProbes = groupedFiltered.map(_(0).probe)
+      session.setAttribute("sortedProbes", sortedProbes)
+      probes = sortedProbes
+    }
+    
+    session.setAttribute("dataViewParams", params)
+    arrayToRows4J(params.filter, probes, groupedFiltered, offset, size)
+  } 
+  
 }

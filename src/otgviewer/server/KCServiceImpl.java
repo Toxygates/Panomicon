@@ -3,7 +3,6 @@ package otgviewer.server;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
@@ -12,8 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import kyotocabinet.DB;
-import otg.B2RAffy;
-import otg.B2RKegg;
 import otg.CSVHelper;
 import otg.ExprValue;
 import otg.OTGMisc;
@@ -23,7 +20,6 @@ import otgviewer.client.KCService;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
-import otgviewer.shared.ExpressionValue;
 import otgviewer.shared.Group;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
@@ -198,98 +194,15 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 		session.setAttribute("datasetColumns", ncolumns);
 	}
 	
-	private ExpressionRow arrayToRow(String probe, String title, String[] geneIds, String[] geneSyms, 
-			ExprValue[] vals) {
-		ExpressionValue[] vout = new ExpressionValue[vals.length];
-
-		for (int j = 0; j < vals.length; ++j) {
-			vout[j] = new ExpressionValue(vals[j].value(), vals[j].call());						
-		}
-		return new ExpressionRow(probe, title, geneIds, geneSyms, vout);
-	}
-	
 	private List<ExpressionRow> arrayToRows(DataFilter filter, String[] probes, ExprValue[][] data, int offset, int size) {
-		List<ExpressionRow> r = new ArrayList<ExpressionRow>();
-
-		if (probes != null && data != null) {
-			try {
-				B2RAffy.connect();				
-				int cpend = offset + size;
-				if (cpend > probes.length) {
-					cpend = probes.length; 
-				}				
-				System.out.println("Range: " + offset + " to " + cpend);
-				
-				if (cpend > offset) {
-					List<String> probeTitles = B2RAffy.titles4J((String[]) Arrays.copyOfRange(probes, offset, cpend));
-					List<String[]> geneIds = B2RAffy.geneIds4J((String[]) Arrays.copyOfRange(probes, offset, cpend));
-					List<String[]> geneSyms = B2RAffy.geneSyms4J((String[]) Arrays.copyOfRange(probes, offset, cpend));
-					
-//					String[] gids = new String[geneIds.size()];
-//					for (int i = 0; i < geneIds.size() && i< 100; ++i) {
-//						if (geneIds.get(i).length > 0) {
-//							gids[i] = geneIds.get(i)[0];
-//						}
-//					}
-//					B2RKegg.connect();
-//					B2RKegg.pathways(gids, Utils.speciesFromFilter(filter));
-//					B2RKegg.close();
-					
-					for (int i = offset; i < offset + size && i < probes.length && i < data.length; ++i) {					
-						r.add(arrayToRow(probes[i], probeTitles.get(i - offset), geneIds.get(i - offset), 
-								geneSyms.get(i - offset), data[i]));					
-					}
-				}
-			} finally {				
-				B2RAffy.close();
-			}
-		}
-
-		return r;
+		return new ArrayList<ExpressionRow>(KCServiceImplS.arrayToRows4J(filter, probes, data, offset, size));
 	}
 
 	public List<ExpressionRow> datasetItems(int offset, int size, int sortColumn, 
 			boolean ascending) {
 		HttpServletRequest request = getThreadLocalRequest();
 		HttpSession session = request.getSession();
-		
-		DataViewParams params = (DataViewParams) session.getAttribute("dataViewParams");
-		if (params == null) {
-			params = new DataViewParams();
-		}
-		ExprValue[][] groupedFiltered = (ExprValue[][]) session.getAttribute("groupedFiltered");		
-		if (groupedFiltered != null) {
-			System.out.println("I had " + (groupedFiltered).length + " rows stored");
-		}
-		ExprValue[][] ungroupedFiltered = (ExprValue[][]) session.getAttribute("ungroupedFiltered");
-		
-		String[] probes = (String[]) session.getAttribute("datasetProbes");
-		
-		//At this point sorting may happen		
-		if (sortColumn > -1 && (sortColumn != params.sortColumn || ascending != params.sortAsc || params.mustSort)) {			
-			//OK, we need to re-sort it and then re-store it
-			params.sortColumn = sortColumn;			
-			params.sortAsc = ascending;			
-			params.mustSort = false;
-			
-			//Note: these two must be sorted together since some algos assume
-			//that they are kept in sync
-			ExprValue[][][] sorted = KCServiceImplS.sortData4J(groupedFiltered, sortColumn, ascending, ungroupedFiltered);
-//			
-			session.setAttribute("groupedFiltered", sorted[0]);
-			session.setAttribute("ungroupedFiltered", sorted[1]);
-			groupedFiltered = sorted[0];
-			String[] sortedProbes = new String[groupedFiltered.length];
-			for (int i = 0; i < groupedFiltered.length; ++i) {
-				sortedProbes[i] = groupedFiltered[i][0].probe();
-			}
-			session.setAttribute("datasetProbes", sortedProbes);
-			probes = sortedProbes;			
-		}				
-		
-		session.setAttribute("dataViewParams", params);
-		
-		return arrayToRows(params.filter, probes, groupedFiltered, offset, size);
+		return new ArrayList<ExpressionRow>(KCServiceImplS.datasetItems4J(session, offset, size, sortColumn, ascending));
 	}
 	
 	public List<ExpressionRow> getFullData(DataFilter filter, List<String> barcodes, 
