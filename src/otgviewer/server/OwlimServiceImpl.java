@@ -148,19 +148,7 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 		return OTGQueries.filterProbes(OTGOwlim.probesForGoTerm(goTerm), s);
 	}
 
-	public Map<String, Set<String>> associations(DataFilter filter, String[] probes) {		
-		try {
-			B2RKegg.connect();
-			//need to rebuild it to ensure we don't use any scala map types
-			
-			Map<String, Set<String>> r = new HashMap<String, Set<String>>();
-			Map<String, Set<String>> sr = B2RKegg.pathwaysForProbes(probes, Utils.speciesFromFilter(filter));			
-			for (String key: sr.keySet()) {
-				r.put(key, new HashSet<String>(sr.get(key)));				
-			}
-			return r;			
-		} finally {
-			B2RKegg.close();
-		}
+	public HashMap<String, HashSet<String>> associations(DataFilter filter, String[] probes) {	
+		return OwlimServiceImplS.associations(filter, probes);	
 	}
 }

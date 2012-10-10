@@ -2,6 +2,7 @@ package otgviewer.server
 import otgviewer.shared._
 import otg.ExprValue
 import org.apache.commons.math3.stat.inference.TTest
+import otg.B2RAffy
 
 object KCServiceImplS {
   import scala.collection.JavaConversions._
@@ -100,7 +101,7 @@ object KCServiceImplS {
       val ev1 = p1._1(sortCol)
       val ev2 = p2._1(sortCol)
       val ascFactor = if (asc) { 1 } else { -1 }
-      if (ev1.call == 'A' && ev2.call != 'A') {
+      if (ev1.call == 'A' && ev2.call != 'A') {	
         false
       } else if (ev1.call != 'A' && ev2.call == 'A') {
         true
@@ -112,4 +113,26 @@ object KCServiceImplS {
     Array(u1.toArray, u2.toArray)
   }
   
+  def arrayToRows(filter: DataFilter, probes: Array[String], data: Array[Array[ExprValue]], 
+      offset: Int, size: Int): Vector[ExpressionRow] =  {
+    if (probes != null && data != null) {
+      try {
+        B2RAffy.connect()
+        val cpend = if (offset + size > probes.length) { probes.length } else { offset + size }							
+        println("Range: " + offset + " to " + cpend)
+        if (cpend > offset) {
+          val probeTitles = B2RAffy.titles(probes.slice(offset, cpend))
+          val geneIds = B2RAffy.geneIds(probes.slice(offset, cpend))
+          val geneSyms = B2RAffy.geneSyms(probes.slice(offset, cpend))
+          
+        }
+			
+        Vector()
+      } finally {
+        B2RAffy.close()
+      }
+    } else {
+      Vector()
+    }
+  }
 }

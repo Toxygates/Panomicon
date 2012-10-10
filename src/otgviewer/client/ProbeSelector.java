@@ -30,10 +30,10 @@ abstract public class ProbeSelector extends DataListenerWidget {
 	private String[] loadedProbes;
 	private Button addButton;
 	
-	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
-			.create(OwlimService.class);
-
-	
+//	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
+//			.create(OwlimService.class);
+//
+//	
 	public ProbeSelector(String label, boolean wb) {
 		this.withButton = wb;
 		
@@ -115,10 +115,7 @@ abstract public class ProbeSelector extends DataListenerWidget {
 	void clear() {
 		searchBox.setText("");
 		itemHandler.clear();
+		loadedProbes = new String[0];
 	}
 	
-	@Override
-	public void probesChanged(String[] probes) {
-		clear();
-	}
 }

@@ -225,22 +225,22 @@ public class KCServiceImpl extends RemoteServiceServlet implements KCService {
 					List<String[]> geneIds = B2RAffy.geneIds4J((String[]) Arrays.copyOfRange(probes, offset, cpend));
 					List<String[]> geneSyms = B2RAffy.geneSyms4J((String[]) Arrays.copyOfRange(probes, offset, cpend));
 					
-					String[] gids = new String[geneIds.size()];
-					for (int i = 0; i < geneIds.size() && i< 100; ++i) {
-						if (geneIds.get(i).length > 0) {
-							gids[i] = geneIds.get(i)[0];
-						}
-					}
-					B2RKegg.connect();
-					B2RKegg.pathways(gids, Utils.speciesFromFilter(filter));
-					B2RKegg.close();
+//					String[] gids = new String[geneIds.size()];
+//					for (int i = 0; i < geneIds.size() && i< 100; ++i) {
+//						if (geneIds.get(i).length > 0) {
+//							gids[i] = geneIds.get(i)[0];
+//						}
+//					}
+//					B2RKegg.connect();
+//					B2RKegg.pathways(gids, Utils.speciesFromFilter(filter));
+//					B2RKegg.close();
 					
 					for (int i = offset; i < offset + size && i < probes.length && i < data.length; ++i) {					
 						r.add(arrayToRow(probes[i], probeTitles.get(i - offset), geneIds.get(i - offset), 
 								geneSyms.get(i - offset), data[i]));					
 					}
 				}
-			} finally {
+			} finally {				
 				B2RAffy.close();
 			}
 		}

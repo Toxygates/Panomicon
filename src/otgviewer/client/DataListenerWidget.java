@@ -193,7 +193,7 @@ class DataListenerWidget extends Composite implements DataViewListener {
 	
 	public void storeProbes() {		
 		Storage s = Storage.getLocalStorageIfSupported();
-		Window.alert("Store '" + packProbes() + "' " + this.getClass());
+//		Window.alert("Store '" + packProbes() + "' " + this.getClass());
 		if (s == null) {
 			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
 		} else {

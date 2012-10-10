@@ -78,7 +78,7 @@ public class ExpressionTable extends DataListenerWidget {
 	private ListBox groupsel1 = new ListBox();
 	private ListBox groupsel2 = new ListBox();
 	
-	private Map<String, Set<String>> associations = new HashMap<String, Set<String>>();
+	private Map<String, HashSet<String>> associations = new HashMap<String, HashSet<String>>();
 	
 	/**
 	 * This constructor will be used by the GWT designer. (Not functional at run time)
@@ -422,12 +422,12 @@ public class ExpressionTable extends DataListenerWidget {
 	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
 		private int start = 0;
 
-		AsyncCallback<Map<String, Set<String>>> assocCallback = new AsyncCallback<Map<String, Set<String>>>() {
+		AsyncCallback<HashMap<String, HashSet<String>>> assocCallback = new AsyncCallback<HashMap<String, HashSet<String>>>() {
 			public void onFailure(Throwable caught) {
 				Window.alert("Unable to get associations");
 			}
 			
-			public void onSuccess(Map<String, Set<String>> result) {
+			public void onSuccess(HashMap<String, HashSet<String>> result) {
 				associations = result;
 				exprGrid.redraw();
 			}

@@ -68,7 +68,9 @@ public class ProbeScreen extends Screen {
 						retrieveProbesCallback());
 			}
 
+			@Override
 			public void probesChanged(String[] probes) {
+				super.probesChanged(probes);
 				addProbes(probes);
 			}
 		};
@@ -86,8 +88,10 @@ public class ProbeScreen extends Screen {
 			protected void getProbes(String item) {
 				owlimService.probesForGoTerm(chosenDataFilter, item, retrieveProbesCallback());
 			}
-
+			
+			@Override
 			public void probesChanged(String[] probes) {
+				super.probesChanged(probes);
 				addProbes(probes);
 			}
 		};
@@ -162,11 +166,8 @@ public class ProbeScreen extends Screen {
 		lp.add(b);
 		b.addClickHandler(new ClickHandler() {			
 			@Override
-			public void onClick(ClickEvent event) {
-				probesList.clear();				
-				listedProbes.clear();
-				changeProbes(new String[0]);
-				storeProbes();
+			public void onClick(ClickEvent event) {				
+				probesChanged(new String[0]);								
 			}
 		});
 
@@ -180,7 +181,7 @@ public class ProbeScreen extends Screen {
 				if (listedProbes.size() == 0) {
 					Window.alert("Please select the probes you are interested in, or proceed with all probes.");
 				} else {
-					changeProbes(listedProbes.toArray(new String[0]));
+					chosenProbes = listedProbes.toArray(new String[0]);					
 					storeProbes();
 					History.newItem(DataScreen.key);
 				}
@@ -190,9 +191,8 @@ public class ProbeScreen extends Screen {
 		b = new Button("Display data with all probes");
 		buttons.add(b);
 		b.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				changeProbes(new String[0]);
-				storeProbes();
+			public void onClick(ClickEvent event) {				
+				probesChanged(new String[0]);								
 				History.newItem(DataScreen.key);
 			}
 		});
@@ -237,7 +237,7 @@ public class ProbeScreen extends Screen {
 		return verticalPanel_2;
 	}
 	
-	private void addProbes(String[] probes) {
+	private void addProbes(String[] probes) {			
 		for (String p: probes) {
 			listedProbes.add(p);
 		}
@@ -279,12 +279,10 @@ public class ProbeScreen extends Screen {
 	public void dataFilterChanged(DataFilter filter) {
 		if (chosenDataFilter != null && !filter.organism.equals(chosenDataFilter.organism)) {
 			super.dataFilterChanged(filter);
-			probesChanged(new String[0]);
-			storeProbes();
+			probesChanged(new String[0]);						
 		} else {
 			super.dataFilterChanged(filter);
 		}
-		super.dataFilterChanged(filter);
 //		
 //		probesList.clear();
 //		listedProbes.clear();
@@ -303,16 +301,29 @@ public class ProbeScreen extends Screen {
 		}		
 	}
 
+	/**
+	 * The "incoming" probes signal will reset all the
+	 * probes tracking state as well as call the outgoing signal.
+	 */
 	@Override
-	public void probesChanged(String[] probes) {
-		super.probesChanged(probes);
-		
+	public void probesChanged(String[] probes) {		
 		probesList.clear();
 		for (String p: probes) {
 			probesList.addItem(p);
 		}
 		listedProbes.clear();
 		listedProbes.addAll(Arrays.asList(probes));
+		super.probesChanged(probes);		
 	}
 	
+	/**
+	 * The "outgoing" probes signal will
+	 * assume that any widget state changes have already been done
+	 * and store the probes.
+	 */
+	@Override 
+	public void changeProbes(String[] probes) {
+		super.changeProbes(probes);
+		storeProbes();
+	}
 }
