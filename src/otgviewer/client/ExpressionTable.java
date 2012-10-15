@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import otgviewer.shared.Association;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Group;
@@ -61,7 +62,7 @@ public class ExpressionTable extends DataListenerWidget {
 
 	// Visible columns
 	private boolean geneIdColVis = false, probeColVis = false,
-			probeTitleColVis = true, geneSymColVis = true, assocColumnVis = true;
+			probeTitleColVis = true, geneSymColVis = true;
 
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
 	private DataGrid<ExpressionRow> exprGrid;
@@ -78,7 +79,9 @@ public class ExpressionTable extends DataListenerWidget {
 	private ListBox groupsel1 = new ListBox();
 	private ListBox groupsel2 = new ListBox();
 	
-	private Map<String, HashSet<String>> associations = new HashMap<String, HashSet<String>>();
+	private Map<String, Association> associations = new HashMap<String, Association>();
+	private final static String[] expectedAssociations = new String[] { "KEGG pathways", "GO terms" };
+	private final static Boolean[] assocColumnVis = new Boolean[] { false, false };
 	
 	/**
 	 * This constructor will be used by the GWT designer. (Not functional at run time)
@@ -307,19 +310,26 @@ public class ExpressionTable extends DataListenerWidget {
 		});
 		menuBar_2.addItem(mntmGeneSym);
 		
-		MenuItem mi = new MenuItem("Associations", false, new Command() {
-			public void execute() {
-				assocColumnVis = ! assocColumnVis;
-				setupColumns();
-			}
-		});
-		menuBar_2.addItem(mi);
+		for (int i = 0; i < expectedAssociations.length; ++i) {
+			MenuItem mi = makeAssocMenuItem(i);
+			menuBar_2.addItem(mi);	
+		}
 		
 		mntmNewMenu_1.setHTML("Columns");
 		r[1] = mntmNewMenu_1;
 		return r;
 	}
 
+	private MenuItem makeAssocMenuItem(final int i) {
+		MenuItem mi = new MenuItem(expectedAssociations[i], false, new Command() {
+			public void execute() {
+				assocColumnVis[i] = ! assocColumnVis[i];					
+				setupColumns();
+			}
+		});
+		return mi;
+	}
+	
 	private int extraCols = 0;
 	private void setupColumns() {
 		// todo: explicitly set the width of each column
@@ -361,7 +371,7 @@ public class ExpressionTable extends DataListenerWidget {
 		if (geneIdColVis) {
 			TextColumn<ExpressionRow> geneIdCol = new TextColumn<ExpressionRow>() {
 				public String getValue(ExpressionRow er) {
-					return arrayString(er.getGeneIds());
+					return arrayString(er.getGeneIds(), ", ");
 				}
 			};
 			exprGrid.addColumn(geneIdCol, "Gene ID");
@@ -371,25 +381,18 @@ public class ExpressionTable extends DataListenerWidget {
 		if (geneSymColVis) {
 			TextColumn<ExpressionRow> geneSymCol = new TextColumn<ExpressionRow>() {
 				public String getValue(ExpressionRow er) {
-					return arrayString(er.getGeneSyms());
+					return arrayString(er.getGeneSyms(), ", ");
 				}
 			};
 			exprGrid.addColumn(geneSymCol, "Gene sym");
 			extraCols += 1;
 		}
 		
-		if (assocColumnVis) {
-			TextColumn<ExpressionRow> assocCol = new TextColumn<ExpressionRow>() {
-				public String getValue(ExpressionRow er) {
-					if (associations.containsKey(er.getProbe())) {					
-						return arrayString(associations.get(er.getProbe()).toArray(new String[0]));
-					} else {
-						return "";
-					}
-				}
-			};
-			exprGrid.addColumn(assocCol, "Associations");
-			extraCols += 1;
+		for (int i = 0; i < expectedAssociations.length; ++i) {
+			if (assocColumnVis[i]) {
+				exprGrid.addColumn(new AssociationColumn(tc, expectedAssociations[i]), expectedAssociations[i]);
+				extraCols += 1;
+			}
 		}
 
 		int i = 0;
@@ -422,13 +425,16 @@ public class ExpressionTable extends DataListenerWidget {
 	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
 		private int start = 0;
 
-		AsyncCallback<HashMap<String, HashSet<String>>> assocCallback = new AsyncCallback<HashMap<String, HashSet<String>>>() {
+		AsyncCallback<Association[]> assocCallback = new AsyncCallback<Association[]>() {
 			public void onFailure(Throwable caught) {
 				Window.alert("Unable to get associations");
 			}
 			
-			public void onSuccess(HashMap<String, HashSet<String>> result) {
-				associations = result;
+			public void onSuccess(Association[] result) {
+				associations.clear();
+				for (Association a: result) {
+					associations.put(a.getTitle(), a);	
+				};				
 				exprGrid.redraw();
 			}
 		};
@@ -474,15 +480,16 @@ public class ExpressionTable extends DataListenerWidget {
 
 	}
 	
-	private String arrayString(String[] ss) {
-		String r = "";
+	private String arrayString(String[] ss, String sep) {
+		StringBuilder r = new StringBuilder();
+		
 		for (int i = 0; i < ss.length; ++i) {		
-			r += ss[i];
+			r.append(ss[i]);
 			if (i < ss.length - 1) {
-				r += ", ";
+				r.append(sep);
 			}
 		}
-		return r;
+		return r.toString();
 	}
 	
 	@Override
@@ -569,8 +576,7 @@ public class ExpressionTable extends DataListenerWidget {
 		public ExpressionColumn(TextCell tc, int i) {
 			super(tc);
 			this.i = i;
-			this.tc = tc;
-			
+			this.tc = tc;	
 		}
 
 		public String getValue(ExpressionRow er) {
@@ -584,6 +590,30 @@ public class ExpressionTable extends DataListenerWidget {
 					return sf.format(v);
 				}				
 			}
+		}
+	}
+	
+	class AssociationColumn extends Column<ExpressionRow, String> {
+		String assoc;
+		TextCell tc;
+		
+		public AssociationColumn(TextCell tc, String association) {
+			super(tc);
+			this.assoc = association;
+			this.tc = tc;
+		}
+		
+		public String getValue(ExpressionRow er) {			
+			if (associations.containsKey(assoc)) {
+				Association a = associations.get(assoc);
+				if (a.getData().containsKey(er.getProbe())) {
+					return arrayString(a.getData().get(er.getProbe()).toArray(new String[0]), ", ");	
+				} else {
+					return "";
+				}
+			} else {
+				return "";
+			}							
 		}
 	}
 	

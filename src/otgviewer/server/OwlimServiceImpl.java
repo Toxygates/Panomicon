@@ -1,9 +1,6 @@
 package otgviewer.server;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -17,6 +14,7 @@ import otg.OTGOwlim;
 import otg.OTGQueries;
 import otg.Species;
 import otgviewer.client.OwlimService;
+import otgviewer.shared.Association;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.SampleTimes;
@@ -148,7 +146,7 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 		return OTGQueries.filterProbes(OTGOwlim.probesForGoTerm(goTerm), s);
 	}
 
-	public HashMap<String, HashSet<String>> associations(DataFilter filter, String[] probes) {	
+	public Association[] associations(DataFilter filter, String[] probes) {	
 		return OwlimServiceImplS.associations(filter, probes);	
 	}
 }

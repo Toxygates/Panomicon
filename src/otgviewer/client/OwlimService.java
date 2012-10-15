@@ -1,7 +1,5 @@
 package otgviewer.client;
-import java.util.HashMap;
-import java.util.HashSet;
-
+import otgviewer.shared.Association;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 
@@ -57,5 +55,5 @@ public interface OwlimService extends RemoteService {
 	
 	public String[][] geneSyms(String[] probes);
 	
-	public HashMap<String, HashSet<String>> associations(DataFilter filter, String[] probes);
+	public Association[] associations(DataFilter filter, String[] probes);
 }

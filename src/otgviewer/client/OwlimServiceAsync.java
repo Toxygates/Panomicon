@@ -1,8 +1,6 @@
 package otgviewer.client;
 
-import java.util.HashMap;
-import java.util.HashSet;
-
+import otgviewer.shared.Association;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 
@@ -26,5 +24,5 @@ public interface OwlimServiceAsync {
 	public void goTerms(String pattern, AsyncCallback<String[]> callback);
 	public void probesForGoTerm(DataFilter filter, String term, AsyncCallback<String[]> callback);
 	
-	public void associations(DataFilter filter, String[] probes, AsyncCallback<HashMap<String, HashSet<String>>> callback);
+	public void associations(DataFilter filter, String[] probes, AsyncCallback<Association[]> callback);
 }

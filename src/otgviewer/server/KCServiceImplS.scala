@@ -145,11 +145,8 @@ object KCServiceImplS {
   def datasetItems4J(session: HttpSession, offset: Int, size: Int, 
       sortColumn: Int, ascending: Boolean): JList[ExpressionRow] = {
    
-    var params = session.getAttribute("dataViewParams").asInstanceOf[DataViewParams]
-    if (params == null) {
-      params = new DataViewParams()
-    }
-    
+    var params = attribOrElse(session, "dataViewParams", new DataViewParams())
+
     def shouldReSort = sortColumn > -1 && (sortColumn != params.sortColumn ||
         ascending != params.sortAsc || params.mustSort)
         
@@ -182,4 +179,8 @@ object KCServiceImplS {
     arrayToRows4J(params.filter, probes, groupedFiltered, offset, size)
   } 
   
+  private def attribOrElse[T](session: HttpSession, name: String, alternative: T): T = {
+    val v = session.getAttribute(name)
+    if (v != null) { v.asInstanceOf[T] } else { alternative }
+  }
 }
