@@ -433,7 +433,7 @@ public class ExpressionTable extends DataListenerWidget {
 			public void onSuccess(Association[] result) {
 				associations.clear();
 				for (Association a: result) {
-					associations.put(a.getTitle(), a);	
+					associations.put(a.title(), a);	
 				};				
 				exprGrid.redraw();
 			}
@@ -606,8 +606,8 @@ public class ExpressionTable extends DataListenerWidget {
 		public String getValue(ExpressionRow er) {			
 			if (associations.containsKey(assoc)) {
 				Association a = associations.get(assoc);
-				if (a.getData().containsKey(er.getProbe())) {
-					return arrayString(a.getData().get(er.getProbe()).toArray(new String[0]), ", ");	
+				if (a.data().containsKey(er.getProbe())) {
+					return arrayString(a.data().get(er.getProbe()).toArray(new String[0]), ", ");	
 				} else {
 					return "";
 				}

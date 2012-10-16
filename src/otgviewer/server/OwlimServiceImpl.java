@@ -1,5 +1,6 @@
 package otgviewer.server;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
@@ -16,7 +17,9 @@ import otg.Species;
 import otgviewer.client.OwlimService;
 import otgviewer.shared.Association;
 import otgviewer.shared.Barcode;
+import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.Pathology;
 import otgviewer.shared.SampleTimes;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -39,6 +42,10 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 	private otg.Filter toScala(DataFilter filter) {
 		return new otg.Filter(filter.cellType.toString(), filter.organ.toString(),
 				filter.repeatType.toString(), filter.organism.toString());
+	}
+	
+	private Pathology fromScala(otg.Pathology path) {
+		return new Pathology(path.barcode(), path.topography(), path.finding(), path.spontaneous(), path.grade());
 	}
 	
 	public String[] compounds(DataFilter filter) {		
@@ -79,6 +86,32 @@ public class OwlimServiceImpl extends RemoteServiceServlet implements
 	
 	public String[] probes(DataFilter filter) {		
 		return OTGQueries.probeIds(Utils.speciesFromFilter(filter));
+	}
+	
+	public Pathology[] pathologies(DataFilter filter) {
+		List<Pathology> r = new ArrayList<Pathology>();
+		for (otg.Pathology p: OTGOwlim.pathologies(toScala(filter))) {
+			r.add(fromScala(p));
+		}
+		return r.toArray(new Pathology[0]);			
+	}
+	
+	public Pathology[] pathologies(DataColumn column) {
+		List<Pathology> r = new ArrayList<Pathology>();
+		for (Barcode b: column.getBarcodes()) {
+			for (otg.Pathology p: OTGOwlim.pathologies(b.getCode())) {
+				r.add(fromScala(p));
+			}			
+		}
+		return r.toArray(new Pathology[0]);
+	}
+	
+	public Pathology[] pathologies(Barcode barcode) {
+		List<Pathology> r = new ArrayList<Pathology>();
+		for (otg.Pathology p: OTGOwlim.pathologies(barcode.getCode())) {
+			r.add(fromScala(p));
+		}
+		return r.toArray(new Pathology[0]);
 	}
 	
 	public String[] pathways(DataFilter filter, String pattern) {

@@ -5,13 +5,14 @@ import org.apache.commons.math3.stat.inference.TTest
 import otg.B2RAffy
 import java.util.{List => JList}
 import javax.servlet.http.HttpSession
+import otg.OTGOwlim
 
 object KCServiceImplS {
   import scala.collection.JavaConversions._
   
   val ttest = new TTest()
 
-  def barcodes(columns: Iterable[DataColumn]): Array[String] = {
+  def barcodes(columns: Iterable[DataColumn]): Array[String] = {    
     columns.flatMap(_ match {
       case g: Group   => g.getBarcodes
       case b: Barcode => Vector(b)      

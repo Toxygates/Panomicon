@@ -1,7 +1,9 @@
 package otgviewer.client;
 import otgviewer.shared.Association;
 import otgviewer.shared.Barcode;
+import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.Pathology;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -23,10 +25,14 @@ public interface OwlimService extends RemoteService {
 	 * @return
 	 */
 	public String[] times(DataFilter filter, String compound);		
-	
-	//Other methods.
+		
 	public String[] probes(DataFilter filter);
 	
+	public Pathology[] pathologies(DataFilter filter);
+	public Pathology[] pathologies(DataColumn column);
+	public Pathology[] pathologies(Barcode barcode);	
+	
+	//Other methods.
 	/**
 	 * Obtain pathway names matching the pattern.
 	 * @param pattern

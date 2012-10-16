@@ -77,6 +77,8 @@ public class OTGViewer implements EntryPoint {
 		screens.put(s.key(), s);
 		s = new DataScreen(s, menuBar);
 		screens.put(s.key(), s);
+		s = new PathologyScreen(s, menuBar);
+		screens.put(s.key(), s);
 	}
 
 	/**

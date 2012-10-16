@@ -7,22 +7,22 @@ import java.util.Map;
 
 public class Association implements Serializable {
 
-	private String title;
-	private Map<String, HashSet<String>> data = new HashMap<String, HashSet<String>>();
+	private String _title;
+	private Map<String, HashSet<String>> _data = new HashMap<String, HashSet<String>>();
 	
 	public Association() {
 		
 	}
 	
 	public Association(String title, Map<String, HashSet<String>> data) {
-		this.title = title;
-		this.data = data;
+		_title = title;
+		_data = data;
 	}
 	
-	public String getTitle() {
-		return title;
+	public String title() {
+		return _title;
 	}
-	public Map<String, HashSet<String>> getData() {
-		return data;
+	public Map<String, HashSet<String>> data() {
+		return _data;
 	}
 }
