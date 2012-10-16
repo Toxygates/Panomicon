@@ -116,11 +116,15 @@ public class ExpressionTable extends DataListenerWidget {
 		asyncProvider.addDataDisplay(exprGrid);		
 		AsyncHandler colSortHandler = new AsyncHandler(exprGrid);
 		
+		HorizontalPanel tools = new HorizontalPanel();
+		dockPanel.add(tools, DockPanel.NORTH);
+		
 		HorizontalPanel horizontalPanel = new HorizontalPanel();
 		horizontalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		horizontalPanel.setStyleName("colored");
-		dockPanel.add(horizontalPanel, DockPanel.NORTH);
 		horizontalPanel.setWidth("");
+		tools.add(horizontalPanel);
+		tools.setSpacing(5);
 
 		Resources r = GWT.create(Resources.class);
 		SimplePager simplePager = new SimplePager(TextLocation.CENTER,
@@ -159,7 +163,7 @@ public class ExpressionTable extends DataListenerWidget {
 		});
 		
 		horizontalPanel = new HorizontalPanel();
-		dockPanel.add(horizontalPanel, DockPanel.NORTH);
+		tools.add(horizontalPanel);		
 		horizontalPanel.setStyleName("colored2");
 		horizontalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		

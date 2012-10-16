@@ -9,7 +9,7 @@
 
 	<servlet>
 		<servlet-name>owlimServlet</servlet-name>
-		<servlet-class>otgviewer.server.OwlimServiceImpl</servlet-class>
+		<servlet-class>otgviewer.server.XOwlimServiceImpl</servlet-class>
 	</servlet>
 
 	<servlet>
