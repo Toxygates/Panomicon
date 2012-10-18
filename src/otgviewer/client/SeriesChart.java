@@ -31,6 +31,7 @@ public class SeriesChart extends DataListenerWidget {
 	private DataTable seriesTable;
 	private CoreChart seriesChart;
 	private DockPanel chartDockPanel;
+	private boolean isSlave;
 
 	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
 			.create(OwlimService.class);
@@ -38,6 +39,12 @@ public class SeriesChart extends DataListenerWidget {
 	private KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
 
+	private List<SeriesChart> slaveCharts = new ArrayList<SeriesChart>();
+	
+	void addSlaveChart(SeriesChart slave) {
+		slaveCharts.add(slave);
+	}
+	
 	@Override
 	public void dataFilterChanged(DataFilter df) {
 		super.dataFilterChanged(df);
@@ -125,7 +132,7 @@ public class SeriesChart extends DataListenerWidget {
 		}
 	};
 
-	public SeriesChart() {
+	public SeriesChart(boolean isSlave) {
 		
 		VisualizationUtils
 		.loadVisualizationApi("1.1", new Runnable() {
@@ -134,6 +141,8 @@ public class SeriesChart extends DataListenerWidget {
 			}
 		}, "corechart");
 
+		this.isSlave = isSlave;
+		
 		chartDockPanel = new DockPanel();
 		chartDockPanel.setSize("100%", "100%");
 		initWidget(chartDockPanel);
@@ -145,79 +154,89 @@ public class SeriesChart extends DataListenerWidget {
 		seriesSelectionLabel = new Label("Selected: none");
 		verticalPanel.add(seriesSelectionLabel);
 
-		HorizontalPanel horizontalPanel_2 = new HorizontalPanel();
-		horizontalPanel_2
-				.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-		verticalPanel.add(horizontalPanel_2);
+		if (!isSlave) {
+			HorizontalPanel horizontalPanel_2 = new HorizontalPanel();
+			horizontalPanel_2
+			.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+			verticalPanel.add(horizontalPanel_2);
 
-		chartCombo = new ListBox();
-		horizontalPanel_2.add(chartCombo);
-		chartCombo.addItem("Expression vs time, fixed dose:");
-		chartCombo.addItem("Expression vs dose, fixed time:");
-		chartCombo.setSelectedIndex(0);
+			chartCombo = new ListBox();
+			horizontalPanel_2.add(chartCombo);
+			chartCombo.addItem("Expression vs time, fixed dose:");
+			chartCombo.addItem("Expression vs dose, fixed time:");
+			chartCombo.setSelectedIndex(0);
 
-		chartSubtypeCombo = new ListBox();
-		horizontalPanel_2.add(chartSubtypeCombo);
+			chartSubtypeCombo = new ListBox();
+			horizontalPanel_2.add(chartSubtypeCombo);
 
-		chartSubtypeCombo.addChangeHandler(new ChangeHandler() {
-			public void onChange(ChangeEvent event) {
-				seriesTable.removeRows(0, seriesTable.getNumberOfRows());
-				redraw();
-			}
+			chartSubtypeCombo.addChangeHandler(new ChangeHandler() {
+				public void onChange(ChangeEvent event) {
+					seriesTable.removeRows(0, seriesTable.getNumberOfRows());
+					redraw();
+				}
 
-		});
-		chartCombo.addChangeHandler(new ChangeHandler() {
-			public void onChange(ChangeEvent event) {
-				updateSeriesSubtypes();
-			}
-		});
-		
+			});
+			chartCombo.addChangeHandler(new ChangeHandler() {
+				public void onChange(ChangeEvent event) {
+					updateSeriesSubtypes();
+				}
+			});
+		}
+
 	}
 
-//	@Override
-//	public void activate() {
-//		super.activate();
-//		redraw();
-//	}
-
-	void redraw() {		
-		// make sure something is selected
-		if (chartCombo.getSelectedIndex() == -1) {
-			chartCombo.setSelectedIndex(0);
-		}
-		if (chartSubtypeCombo.getItemCount() == 0) {			
-			updateSeriesSubtypes(); //will redraw for us later		
-		} else {
-		
-			if (chartSubtypeCombo.getSelectedIndex() == -1) {
-				chartSubtypeCombo.setSelectedIndex(0);
+	void redraw() {
+		if (!isSlave) {
+			// make sure something is selected
+			if (chartCombo.getSelectedIndex() == -1) {
+				chartCombo.setSelectedIndex(0);
 			}
-
-			// first find the applicable barcodes
-			if (chartCombo.getSelectedIndex() == 0) {
-				// select for specific dose.
-				owlimService.barcodes(chosenDataFilter, chosenCompound,
-						chartSubtypeCombo.getItemText(chartSubtypeCombo
-										.getSelectedIndex()), null,
-						seriesChartBarcodesCallback);
+			if (chartSubtypeCombo.getItemCount() == 0) {
+				updateSeriesSubtypes(); // will redraw for us later
 			} else {
-				// select for specific time.
-				owlimService.barcodes(chosenDataFilter, chosenCompound,
-						null,
-						chartSubtypeCombo.getItemText(chartSubtypeCombo
-								.getSelectedIndex()),
-						seriesChartBarcodesCallback);
+
+				if (chartSubtypeCombo.getSelectedIndex() == -1) {
+					chartSubtypeCombo.setSelectedIndex(0);
+				}
+
+				// first find the applicable barcodes
+				if (chartCombo.getSelectedIndex() == 0) {
+					redrawForDose(chartSubtypeCombo
+							.getItemText(chartSubtypeCombo.getSelectedIndex()));
+				} else {
+					redrawForTime(chartSubtypeCombo
+							.getItemText(chartSubtypeCombo.getSelectedIndex()));
+
+				}
 			}
+		}
+	}
+	
+	void redrawForTime(String time) {
+		seriesStrategy = new SeriesDisplayStrategy.VsDose(seriesTable);
+		owlimService.barcodes(chosenDataFilter, chosenCompound,
+				null, time,
+				seriesChartBarcodesCallback);
+		for (SeriesChart sc: slaveCharts) {
+			sc.redrawForTime(time);
+		}
+	}
+	
+	void redrawForDose(String dose) {
+		seriesStrategy = new SeriesDisplayStrategy.VsTime(seriesTable);
+		owlimService.barcodes(chosenDataFilter, chosenCompound,
+				dose, null,
+				seriesChartBarcodesCallback);
+		for (SeriesChart sc: slaveCharts) {
+			sc.redrawForDose(dose);
 		}
 	}
 
 	void updateSeriesSubtypes() {
 		chartSubtypeCombo.clear();
 		if (chartCombo.getSelectedIndex() == 0) {
-			seriesStrategy = new SeriesDisplayStrategy.VsTime(seriesTable);
 			getDosesForSeriesChart();
-		} else {
-			seriesStrategy = new SeriesDisplayStrategy.VsDose(seriesTable);
+		} else {			
 			getTimesForSeriesChart();
 		}
 	}
@@ -233,20 +252,22 @@ public class SeriesChart extends DataListenerWidget {
 	}
 
 	private void updateSelectionLabel() {
+
 		switch (chosenDataFilter.cellType) {
 		case Vivo:
 			seriesSelectionLabel.setText("Selected: "
-					+ chosenDataFilter.organism + "/" + chosenDataFilter.organ
-					+ "/" + chosenCompound + "/" + chosenDataFilter.cellType
-					+ "/" + chosenDataFilter.repeatType + "/" + chosenValueType
+					+ chosenDataFilter.organism + "/"
+					+ chosenDataFilter.organ + "/" + chosenCompound + "/"
+					+ chosenDataFilter.cellType + "/"
+					+ chosenDataFilter.repeatType + "/" + chosenValueType
 					+ "/" + chosenProbe);
 			break;
 		case Vitro:
 			seriesSelectionLabel.setText("Selected: "
-					+ chosenDataFilter.organism + "/" + chosenCompound + "/"
-					+ chosenDataFilter.cellType + "/" + "/" + chosenValueType
-					+ "/" + chosenProbe);
+					+ chosenDataFilter.organism + "/" + chosenCompound
+					+ "/" + chosenDataFilter.cellType + "/" + "/"
+					+ chosenValueType + "/" + chosenProbe);
 			break;
-		}
+		}		
 	}
 }

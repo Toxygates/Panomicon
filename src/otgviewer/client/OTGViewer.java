@@ -31,14 +31,11 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	private Map<String, Screen> screens = new HashMap<String, Screen>();
 	
 	private MenuBar setupMenu() {
-
 		MenuBar menuBar = new MenuBar(false);
-		menuBar.setWidth("100%");
-		
-		menuBar.addItem(new MenuItem("Open TG-Gates", new Command() {
+		menuBar.setWidth("100%");		
+		menuBar.addItem(new MenuItem("Toxygates", new Command() {
 			public void execute() {}
-		}));
-		
+		}));		
 		return menuBar;
 	}
 
@@ -50,10 +47,8 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		if (currentScreen != null) {
 			currentScreen.resizeInterface(newHeight);
 		}	
-	}
-	
+	}	
 	private Screen currentScreen;
-
 	
 	/**
 	 * Pick the appropriate screen to display.
@@ -150,8 +145,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 			History.newItem(DatasetScreen.key);
 		} else {
 			setScreenForToken(History.getToken());		
-		}
-		
+		}		
 	}
 	
 	private void setScreenForToken(String token) {
@@ -179,5 +173,4 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	public MenuBar getMenuBar() { 
 		return menuBar;
 	}
-
 }

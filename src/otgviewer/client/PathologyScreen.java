@@ -81,7 +81,7 @@ public class PathologyScreen extends Screen {
 				return p.barcode();
 			}
 		};
-		pathologyTable.addColumn(col, "Array");
+		pathologyTable.addColumn(col, "Sample");
 		
 		col = new TextColumn<Pathology>() {
 			public String getValue(Pathology p) {
@@ -155,7 +155,7 @@ public class PathologyScreen extends Screen {
 		
 		public void onClick(String value) {
 			Barcode b = barcodeFor(value);
-			Screen s = new ArrayDetailScreen(b, myScreen, manager);
+			Screen s = new SampleDetailScreen(b, myScreen, manager);
 			manager.showTemporary(s);			
 		}
 	}

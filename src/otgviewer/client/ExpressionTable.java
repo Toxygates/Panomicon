@@ -541,11 +541,18 @@ public class ExpressionTable extends DataListenerWidget {
 		//set up the series charts
 		Set<String> soFar = new HashSet<String>();
 		seriesChartPanel.clear();
+		
+		SeriesChart firstChart = null;
 		for (DataColumn c: cols) {
 			for (String com: c.getCompounds()) {
 				if (!soFar.contains(com)) {
 					soFar.add(com);
-					SeriesChart sc = new SeriesChart();					
+					SeriesChart sc = new SeriesChart(firstChart != null);
+					if (firstChart == null) {
+						firstChart = sc;
+					} else {
+						firstChart.addSlaveChart(sc);
+					}					
 					seriesChartPanel.add(sc);
 					this.propagateTo(sc);
 					sc.compoundChanged(com);

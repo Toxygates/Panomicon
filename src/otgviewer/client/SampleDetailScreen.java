@@ -15,7 +15,7 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-public class ArrayDetailScreen extends Screen {
+public class SampleDetailScreen extends Screen {
 
 	public static final String key = "ad";
 	
@@ -27,8 +27,8 @@ public class ArrayDetailScreen extends Screen {
 	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
 			.create(OwlimService.class);
 	
-	public ArrayDetailScreen(Barcode barcode, Screen parent, ScreenManager man) {
-		super(parent, "Array " + barcode.getCode() + " details", key, false, man);
+	public SampleDetailScreen(Barcode barcode, Screen parent, ScreenManager man) {
+		super(parent, "Sample " + barcode.getCode() + " details", key, false, man);
 		this.barcode = barcode;
 	}
 	
