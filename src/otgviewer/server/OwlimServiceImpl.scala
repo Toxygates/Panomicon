@@ -17,10 +17,14 @@ import otg.CHEMBL
 import otg.DrugBank
 import otg.CHEMBL
 
+/**
+ * This servlet is reponsible for making queries to RDF stores, including our
+ * local Owlim-lite store.
+ */
 class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
   import Conversions._
   import UtilsS._
-  import OwlimServiceImplS._
+  import Assocations._
 
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
@@ -95,7 +99,20 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
   def probesForGoTerm(filter: DataFilter, goTerm: String): Array[String] = 
     OTGQueries.filterProbes(OTGOwlim.probesForGoTerm(goTerm), filter)
     
-  def associations(filter: DataFilter, probes: Array[String]): Array[Association] = OwlimServiceImplS.associations(filter, probes)
-  
+  def associations(filter: DataFilter, probes: Array[String]): Array[Association] = {
+
+    try {
+      B2RKegg.connect()
+      OTGOwlim.connect()
+
+      val sources = List(() => ("KEGG pathways", convert(B2RKegg.pathwaysForProbes(probes, filter))),
+        () => ("GO terms", getGoterms(probes)))
+
+      sources.par.map(_()).seq.map(x => new Association(x._1, x._2)).toArray
+    } finally {
+      B2RKegg.close()
+      OTGOwlim.close()
+    }
+  }
   
 }

@@ -40,6 +40,10 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 		}
 	}
 	
+	public ExpressionValue[] getValues() {
+		return val;
+	}
+	
 	/**
 	 * Obtain the number of data columns contained.
 	 * @return

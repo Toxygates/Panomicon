@@ -5,6 +5,7 @@ import otgviewer.shared.Pathology
 import otg.BCode
 import otgviewer.shared.Barcode
 import otg.Species
+import otgviewer.shared.Organism
 
 object Conversions {
 
@@ -17,6 +18,11 @@ object Conversions {
   def asJava(bcode: BCode, compound: String): Barcode = new Barcode(bcode.code, bcode.individual, bcode.dose,
 					bcode.time, compound);
   
-  implicit def speciesFromFilter(filter: DataFilter): Species = Utils.speciesFromFilter(filter)
+  implicit def speciesFromFilter(filter: DataFilter): Species = {
+    filter.organism match {
+      case Organism.Rat => otg.Rat()
+      case Organism.Human => otg.Human()
+    }
+  }
   
 }
