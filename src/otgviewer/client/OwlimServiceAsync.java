@@ -1,5 +1,6 @@
 package otgviewer.client;
 
+import otgviewer.shared.Annotation;
 import otgviewer.shared.Association;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
@@ -18,9 +19,11 @@ public interface OwlimServiceAsync {
 	public void times(DataFilter filter, String compound, AsyncCallback<String[]> callback);	
 	public void probes(DataFilter filter, AsyncCallback<String[]> callback);
 	
-	public void pathologies(DataFilter filter, AsyncCallback<Pathology[]> callback);
 	public void pathologies(DataColumn column, AsyncCallback<Pathology[]> callback);
 	public void pathologies(Barcode barcode, AsyncCallback<Pathology[]> callback);
+	
+	public void annotations(DataColumn column, AsyncCallback<Annotation[]> callback);
+	public void annotations(Barcode barcode, AsyncCallback<Annotation> callback);
 	
 	public void pathways(DataFilter filter, String pattern, AsyncCallback<String[]> callback);
 	public void probesForPathway(DataFilter filter, String pathway, AsyncCallback<String[]> callback);

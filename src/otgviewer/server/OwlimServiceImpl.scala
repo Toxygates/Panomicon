@@ -16,6 +16,7 @@ import otg.B2RKegg
 import otg.CHEMBL
 import otg.DrugBank
 import otg.CHEMBL
+import otgviewer.shared.Annotation
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -59,15 +60,16 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
     
   def probes(filter: DataFilter): Array[String] = 
     OTGQueries.probeIds(filter)
-  
-  def pathologies(filter: DataFilter): Array[Pathology] = 
-    OTGOwlim.pathologies(filter).map(asJava(_))
     
   def pathologies(barcode: Barcode): Array[Pathology] = 
     OTGOwlim.pathologies(barcode.getCode).map(asJava(_))
     
   def pathologies(column: DataColumn): Array[Pathology] = 
     column.getBarcodes.flatMap(x => OTGOwlim.pathologies(x.getCode)).map(asJava(_))
+    
+  def annotations(barcode: Barcode): Annotation = asJava(OTGOwlim.annotations(barcode.getCode))
+  def annotations(column: DataColumn): Array[Annotation] = 
+    column.getBarcodes.map(x => OTGOwlim.annotations(x.getCode)).map(asJava(_))
     
   def pathways(filter: DataFilter, pattern: String): Array[String] = 
     useConnector(B2RKegg, (c: B2RKegg.type) => c.pathways(pattern, filter))    

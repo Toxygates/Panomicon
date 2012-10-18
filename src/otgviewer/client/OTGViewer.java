@@ -22,7 +22,7 @@ import com.google.gwt.visualization.client.VisualizationUtils;
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
-public class OTGViewer implements EntryPoint {
+public class OTGViewer implements EntryPoint, ScreenManager {
 
 	private RootPanel rootPanel;
 	private VerticalPanel mainVertPanel;
@@ -59,7 +59,7 @@ public class OTGViewer implements EntryPoint {
 	 * Pick the appropriate screen to display.
 	 * @return
 	 */
-	private Screen pickScreen(String token) {
+	private Screen pickScreen(String token) {		
 		if (!screens.containsKey(token)) {
 			return screens.get(DatasetScreen.key); //default			
 		}
@@ -67,17 +67,17 @@ public class OTGViewer implements EntryPoint {
 	}
 	
 	private void initScreens() {
-		Screen s = new DatasetScreen(null, menuBar);
+		Screen s = new DatasetScreen(null, this);
 		screens.put(s.key(), s);
-//		s = new CompoundScreen(s, menuBar);
+//		s = new CompoundScreen(s, this);
 //		screens.put(s.key(), s);
-		s = new ColumnScreen(s, menuBar);
+		s = new ColumnScreen(s, this);
 		screens.put(s.key(), s);
-		s = new ProbeScreen(s, menuBar);
+		s = new ProbeScreen(s, this);
 		screens.put(s.key(), s);
-		s = new DataScreen(s, menuBar);
+		s = new DataScreen(s, this);
 		screens.put(s.key(), s);
-		s = new PathologyScreen(s, menuBar);
+		s = new PathologyScreen(s, this);
 		screens.put(s.key(), s);
 	}
 
@@ -156,6 +156,10 @@ public class OTGViewer implements EntryPoint {
 	
 	private void setScreenForToken(String token) {
 		Screen s = pickScreen(token);
+		showScreen(s);
+	}
+	
+	private void showScreen(Screen s) {
 		if (currentScreen != null) {
 			mainVertPanel.remove(currentScreen);
 			currentScreen.hide();
@@ -164,6 +168,16 @@ public class OTGViewer implements EntryPoint {
 		currentScreen.show();					
 		mainVertPanel.add(currentScreen);
 		resizeInterface(Window.getClientHeight()); 
+	}
+	
+	public void showTemporary(Screen s) 
+	{
+		screens.put(s.key(), s);
+		History.newItem(s.key());
+	}
+	
+	public MenuBar getMenuBar() { 
+		return menuBar;
 	}
 
 }

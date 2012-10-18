@@ -42,8 +42,8 @@ public class ProbeScreen extends Screen {
 	private Set<String> listedProbes = new HashSet<String>();
 	private List<ListBox> compoundLists = new ArrayList<ListBox>();
 	
-	public ProbeScreen(Screen parent, MenuBar mb) {
-		super(parent, "Select probes", key, mb, true);
+	public ProbeScreen(Screen parent, ScreenManager man) {
+		super(parent, "Select probes", key, true, man);
 	}
 
 	private ProbeSelector pathwaySel, gotermSel;

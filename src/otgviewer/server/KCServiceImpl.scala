@@ -49,6 +49,22 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     super.destroy()
   }
 
+  private def getSessionData() = new SessionData(getThreadLocalRequest().getSession())
+
+  private class SessionData(val session: HttpSession) {
+    def data: ExprMatrix = session.getAttribute("ungroupedFiltered").asInstanceOf[ExprMatrix]
+    def data_=(v: ExprMatrix) = session.setAttribute("ungroupedFiltered", v)
+
+    def rendered: ExprMatrix = session.getAttribute("groupedFiltered").asInstanceOf[ExprMatrix]
+    def rendered_=(v: ExprMatrix) = session.setAttribute("groupedFiltered", v)
+
+    def params: DataViewParams = {
+      val r = session.getAttribute("params").asInstanceOf[DataViewParams]
+      if (r != null) { r } else { new DataViewParams() }
+    }
+    def params_=(v: DataViewParams) = session.setAttribute("params", v)
+  }
+
   //Should this be in owlimService?
   //Is the separate OTGMisc object needed?
   def identifiersToProbes(filter: DataFilter, identifiers: Array[String]): Array[String] =
@@ -88,9 +104,8 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
       }).map(_.getCode)
     }
 
-    val session = getThreadLocalRequest().getSession()
-    var realProbes = filterProbes(filter, probes)
-    val data = getExprValues(filter, barcodes(columns), realProbes, typ, false)
+    val session = getSessionData() 
+    val data = getExprValues(filter, barcodes(columns), filterProbes(filter, probes), typ, false)
 
     val groupedColumns = columns.map(c => {
       c match {
@@ -117,8 +132,8 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
 
     val (ngfd, nfd) = groupedData.modifyJointly(data, _.filterRows(r => f(r, groupedData.columns)))
 
-    session.setAttribute("groupedFiltered", ngfd)
-    session.setAttribute("ungroupedFiltered", nfd)
+    session.rendered = ngfd
+    session.data = nfd
 
     if (ngfd.rows > 0) {
       println("Stored " + ngfd.rows + " x " + ngfd.columns + " items in session")
@@ -126,10 +141,9 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
       System.out.println("Stored empty data in session");
     }
 
-    val params = attribOrElse(session, "dataViewParams", new DataViewParams())
+    val params = session.params
     params.mustSort = true
     params.filter = filter
-    session.setAttribute("dataViewParams", params)
 
     for (s <- syntheticColumns) {
       s match {
@@ -155,15 +169,12 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
       }
     }
 
-    val session = getThreadLocalRequest().getSession()
-    var params = attribOrElse(session, "dataViewParams", new DataViewParams())
-
-    var groupedFiltered = session.getAttribute("groupedFiltered").asInstanceOf[ExprMatrix]
-   	val ungroupedFiltered = session.getAttribute("ungroupedFiltered").asInstanceOf[ExprMatrix]
+    val session = getSessionData()
+    var groupedFiltered = session.rendered
+    val params = session.params
     if (groupedFiltered != null) {
       println("I had " + groupedFiltered.rows + " rows stored")
     }
-
     //At this point sorting may happen		
     if (sortColumn > -1 && (sortColumn != params.sortColumn ||
       ascending != params.sortAsc || params.mustSort)) {
@@ -172,15 +183,14 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
       params.sortAsc = ascending
       params.mustSort = false
 
-      val (grf, ugrf) = groupedFiltered.modifyJointly(ungroupedFiltered,
+      val (grf, ugrf) = groupedFiltered.modifyJointly(session.data,
         _.sortRows((r1, r2) => sortData(sortColumn, ascending, r1, r2)))
 
       groupedFiltered = grf
-      session.setAttribute("groupedFiltered", grf)
-      session.setAttribute("ungroupedFiltered", ugrf)
+      session.rendered = grf
+      session.data = ugrf
     }
 
-    session.setAttribute("dataViewParams", params)
     new ArrayList[ExpressionRow](insertAnnotations(groupedFiltered.asRows.drop(offset).take(size)))
   }
 
@@ -204,34 +214,34 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
 
   def getFullData(filter: DataFilter, barcodes: JList[String], probes: Array[String],
                   typ: ValueType, sparseRead: Boolean): JList[ExpressionRow] = {
-    val session = getThreadLocalRequest().getSession()
-    val params = attribOrElse(session, "dataViewParams", new DataViewParams())
-    params.filter = filter
-    session.setAttribute("dataViewParams", params)
+    val session = getSessionData()
+    val p = session.params
+    p.filter = filter
+
+    //      session.setAttribute("dataViewParams", params)
     val realProbes = filterProbes(filter, probes)
     val r = getExprValues(filter, barcodes, realProbes, typ, sparseRead)
     new ArrayList[ExpressionRow](insertAnnotations(r.asRows))
   }
 
   def addTTest(g1: Group, g2: Group): Unit = {
-    val session = getThreadLocalRequest().getSession()
-    val data = session.getAttribute("ungroupedFiltered").asInstanceOf[ExprMatrix]
-    val rendered = session.getAttribute("groupedFiltered").asInstanceOf[ExprMatrix]
-
+    val session = getSessionData()
+    val rendered = session.rendered
+    val data = session.data
     val withtt = rendered.appendTTest(data, g1.getBarcodes.map(x => data.columnMap(x.getCode)),
       g2.getBarcodes.map(x => data.columnMap(x.getCode)))
     withtt.columnMap += ((new Synthetic.TTest(g1, g2)).toString -> rendered.columns)
-    session.setAttribute("groupedFiltered", withtt)
+    session.rendered = withtt
   }
 
   def prepareCSVDownload(): String = {
-    val session = getThreadLocalRequest().getSession()
-    val data = session.getAttribute("groupedFiltered").asInstanceOf[ExprMatrix]
-    if (data != null) {
-      println("I had " + data.rows + " rows stored")
+    val session = getSessionData()
+    val rendered = session.rendered
+    if (rendered != null) {
+      println("I had " + session.rendered.rows + " rows stored")
     }
-    val colNames = data.columnMap.toArray.sortWith(_._2 < _._2).map(_._1)
-    CSVHelper.writeCSV(data.annotations.map(_.probe), colNames, data.data)
+    val colNames = rendered.columnMap.toArray.sortWith(_._2 < _._2).map(_._1)
+    CSVHelper.writeCSV(rendered.annotations.map(_.probe), colNames, session.data.data)
   }
 
 }

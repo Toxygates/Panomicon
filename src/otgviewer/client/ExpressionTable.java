@@ -621,46 +621,34 @@ public class ExpressionTable extends DataListenerWidget {
 		}
 	}
 	
-	class ToolCell extends AbstractCell<String> {
-		DataListenerWidget owner;
+	class ToolCell extends ImageClickCell {
 		
 		public ToolCell(DataListenerWidget owner) {
-			super("click");
-			this.owner = owner;
+			super("chart_16.png");
 		}
 		
-		public void render(Cell.Context context, String data, SafeHtmlBuilder sb) {
-			sb.appendHtmlConstant("<img src=\"images/chart_16.png\">");
-		}
-		
-		public void onBrowserEvent(Context context, Element parent, String value,
-				NativeEvent event, ValueUpdater<String> valueUpdater) {
-			if ("click".equals(event.getType())) {
-				PopupPanel pp = new PopupPanel(true, true);
-				
-				int chartHeight = 300;
-				int availHeight = Window.getClientHeight() - 100;
-				final int numCharts = seriesChartPanel.getWidgetCount();
-				if (availHeight / numCharts <= 300) {
-					chartHeight = availHeight / numCharts;
-				}
-				int height = chartHeight * numCharts;
-				for (int i = 0; i < numCharts; i++) {
-					SeriesChart seriesChart = (SeriesChart) seriesChartPanel.getWidget(i);
-					seriesChart.probeChanged(value);
-					seriesChart.redraw();
-					seriesChart.setWidth("500px");
-					seriesChart.setPixelHeight(chartHeight);									
-				}
-				seriesChartPanel.setHeight(height + "px");
-												
-				pp.setWidget(seriesChartPanel);
-				pp.setPopupPosition(Window.getClientWidth()/2 - 250, Window.getClientHeight() / 2 - (height/2));
-				pp.show();
-				
-			} else {
-				super.onBrowserEvent(context, parent, value, event, valueUpdater);
+		public void onClick(String value) {
+			PopupPanel pp = new PopupPanel(true, true);
+
+			int chartHeight = 300;
+			int availHeight = Window.getClientHeight() - 100;
+			final int numCharts = seriesChartPanel.getWidgetCount();
+			if (availHeight / numCharts <= 300) {
+				chartHeight = availHeight / numCharts;
 			}
+			int height = chartHeight * numCharts;
+			for (int i = 0; i < numCharts; i++) {
+				SeriesChart seriesChart = (SeriesChart) seriesChartPanel.getWidget(i);
+				seriesChart.probeChanged(value);
+				seriesChart.redraw();
+				seriesChart.setWidth("500px");
+				seriesChart.setPixelHeight(chartHeight);									
+			}
+			seriesChartPanel.setHeight(height + "px");
+
+			pp.setWidget(seriesChartPanel);
+			pp.setPopupPosition(Window.getClientWidth()/2 - 250, Window.getClientHeight() / 2 - (height/2));
+			pp.show();		
 		}
 	}
 	

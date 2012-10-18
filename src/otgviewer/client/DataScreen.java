@@ -15,8 +15,8 @@ public class DataScreen extends Screen {
 
 	public static final String key = "data";
 	private ExpressionTable et;
-	public DataScreen(Screen parent, MenuBar mb) {
-		super(parent, "View data", key, mb, true);
+	public DataScreen(Screen parent, ScreenManager man) {
+		super(parent, "View data", key, true, man);
 		
 	}
 	

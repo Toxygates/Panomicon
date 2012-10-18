@@ -11,10 +11,11 @@ import otgviewer.shared.Pathology;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -26,12 +27,13 @@ public class PathologyScreen extends Screen {
 	private ScrollPanel sp = new ScrollPanel();
 	private VerticalPanel vp = new VerticalPanel();
 	private List<Pathology> pathologies = new ArrayList<Pathology>();
+	final Screen myScreen = this;
 	
 	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
 			.create(OwlimService.class);
 	
-	public PathologyScreen(Screen parent, MenuBar mb) {
-		super(parent, "Pathology/chemical data", key, mb, false);
+	public PathologyScreen(Screen parent, ScreenManager man) {
+		super(parent, "Pathology/chemical data", key, true, man);
 	}
 	
 	private Group groupFor(String barcode) {
@@ -41,6 +43,17 @@ public class PathologyScreen extends Screen {
 					if (c instanceof Group) {
 						return (Group) c;
 					}
+				}
+			}
+		}
+		return null;
+	}
+	
+	private Barcode barcodeFor(String barcode) {
+		for (DataColumn c: chosenColumns) {
+			for (Barcode b: c.getBarcodes()) {
+				if (b.getCode().equals(barcode)) {
+					return b;					
 				}
 			}
 		}
@@ -75,6 +88,11 @@ public class PathologyScreen extends Screen {
 				return p.finding();
 			}
 		};
+		
+		ToolColumn tcl = new ToolColumn(new InspectCell());
+		pathologyTable.addColumn(tcl, "");
+		pathologyTable.setColumnWidth(tcl, "40px");		
+		
 		pathologyTable.addColumn(col, "Finding");
 		
 		col = new TextColumn<Pathology>() {
@@ -127,6 +145,28 @@ public class PathologyScreen extends Screen {
 			super.heightChanged(newHeight);
 			vp.setHeight((newHeight - vp.getAbsoluteTop() - 50) + "px");
 			sp.setHeight((newHeight - sp.getAbsoluteTop() - 70) + "px");
+		}
+	}
+	
+	class InspectCell extends ImageClickCell {
+		InspectCell() {
+			super("search_button_16.png");
+		}
+		
+		public void onClick(String value) {
+			Barcode b = barcodeFor(value);
+			Screen s = new ArrayDetailScreen(b, myScreen, manager);
+			manager.showTemporary(s);			
+		}
+	}
+	
+	class ToolColumn extends Column<Pathology, String> {		
+		public ToolColumn(InspectCell tc) {
+			super(tc);			
+		}
+		
+		public String getValue(Pathology p) {
+			return p.barcode();			
 		}
 	}
 }

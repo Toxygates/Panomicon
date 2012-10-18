@@ -26,8 +26,8 @@ public class DatasetScreen extends Screen {
 	ListBox valueTypeList = new ListBox();
 	static String key = "ds";
 	
-	public DatasetScreen(Screen parent, MenuBar mb) {
-		super(parent, "Dataset selection", key, mb, false);		
+	public DatasetScreen(Screen parent, ScreenManager man) {
+		super(parent, "Dataset selection", key, false, man);		
 	}
 	
 	public Widget content() {

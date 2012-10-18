@@ -9,10 +9,8 @@ public class Pathology implements Serializable {
 	private boolean _spontaneous;
 	private String _grade;
 	
-	public Pathology() {
+	public Pathology() { }
 		
-	}
-	
 	public Pathology(String barcode, String topography, String finding, boolean spontaneous, String grade) {
 		_barcode = barcode;
 		_topography = topography;

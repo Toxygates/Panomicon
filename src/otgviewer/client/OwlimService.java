@@ -1,4 +1,5 @@
 package otgviewer.client;
+import otgviewer.shared.Annotation;
 import otgviewer.shared.Association;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
@@ -28,9 +29,11 @@ public interface OwlimService extends RemoteService {
 		
 	public String[] probes(DataFilter filter);
 	
-	public Pathology[] pathologies(DataFilter filter);
-	public Pathology[] pathologies(DataColumn column);
 	public Pathology[] pathologies(Barcode barcode);	
+	public Pathology[] pathologies(DataColumn column);
+	
+	public Annotation annotations(Barcode barcode);
+	public Annotation[] annotations(DataColumn column);
 	
 	//Other methods.
 	/**

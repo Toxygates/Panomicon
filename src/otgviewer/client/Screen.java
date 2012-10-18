@@ -37,11 +37,13 @@ public class Screen extends DataListenerWidget {
 	private boolean showDataFilter = false;
 	private MenuBar menuBar;
 	private List<MenuItem> menuItems = new ArrayList<MenuItem>();
+	protected ScreenManager manager;
 	
-	public Screen(Screen parent, String title, String key, MenuBar mb, 
-			boolean showDataFilter) {		
+	public Screen(Screen parent, String title, String key,  
+			boolean showDataFilter, ScreenManager man) {		
 		initWidget(dockPanel);
-		menuBar = mb;
+		menuBar = man.getMenuBar();
+		manager = man;
 		this.showDataFilter = showDataFilter;
 		dockPanel.setWidth("100%");		
 		this.key = key;
@@ -58,7 +60,7 @@ public class Screen extends DataListenerWidget {
 				l = new Label(parent.getTitle() + " >> ");
 				l.addClickHandler(new ClickHandler() {
 					public void onClick(ClickEvent e) {
-						History.newItem(parent.key());
+						History.newItem(parent.key());						
 					}
 				});
 				l.setStyleName("clickHeading");			

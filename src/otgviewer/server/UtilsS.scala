@@ -14,9 +14,4 @@ object UtilsS {
       conn.close()
     }
   }
-
-  def attribOrElse[T](session: HttpSession, name: String, alternative: T): T = {
-    val v = session.getAttribute(name)
-    if (v != null) { v.asInstanceOf[T] } else { alternative }
-  }
 }

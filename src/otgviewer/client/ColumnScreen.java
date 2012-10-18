@@ -15,8 +15,8 @@ public class ColumnScreen extends Screen {
 	public static String key = "columns";
 	
 	
-	public ColumnScreen(Screen parent, MenuBar mb) {
-		super(parent, "Column definitions", key, mb, true);
+	public ColumnScreen(Screen parent, ScreenManager man) {
+		super(parent, "Column definitions", key, true, man);
 	}
 	
 	public Widget content() {
