@@ -14,4 +14,12 @@ object UtilsS {
       conn.close()
     }
   }
+  
+  def nullToNone[T <: AnyRef](x: T): Option[T] = {
+    if (x == null) {
+      None
+    } else {
+      Some(x)
+    }
+  }
 }

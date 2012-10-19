@@ -50,7 +50,8 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
     OTGOwlim.doseLevels(filter, compound)
   
   def barcodes(filter: DataFilter, compound: String, doseLevel: String, time: String) =
-    OTGOwlim.barcodes4J(filter, compound, doseLevel, time).map(asJava(_, compound))
+    OTGOwlim.barcodes(filter, nullToNone(compound), 
+        nullToNone(doseLevel), nullToNone(time)).map(asJava(_, compound))
     
   def times(filter: DataFilter, compound: String): Array[String] = 
     OTGOwlim.times(filter, compound)
