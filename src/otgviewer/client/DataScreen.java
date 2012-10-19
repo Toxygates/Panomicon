@@ -15,6 +15,7 @@ public class DataScreen extends Screen {
 
 	public static final String key = "data";
 	private ExpressionTable et;
+	private final Screen myScreen = this;
 	public DataScreen(Screen parent, ScreenManager man) {
 		super(parent, "View data", key, true, man);
 		
@@ -30,13 +31,22 @@ public class DataScreen extends Screen {
 		}
 		
 		HorizontalPanel hp = new HorizontalPanel();
-		Button b = new Button("Inspect pathological/chemical data");
+		Button b = new Button("View pathologies");
 		hp.add(b);
 		b.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				History.newItem(PathologyScreen.key);
 			}
 		});
+		
+		b = new Button("View biochemical data");
+		hp.add(b);
+		b.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				manager.showTemporary(new SampleDetailScreen(null, myScreen, manager));
+			}
+		});
+		
 		dockPanel.add(hp, DockPanel.SOUTH);
 		
 		return et;		

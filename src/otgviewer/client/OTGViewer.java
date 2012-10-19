@@ -166,7 +166,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	
 	public void showTemporary(Screen s) 
 	{
-		screens.put(s.key(), s);
+		screens.put(s.key(), s);		
 		History.newItem(s.key());
 	}
 	

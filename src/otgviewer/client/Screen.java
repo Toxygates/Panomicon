@@ -48,8 +48,7 @@ public class Screen extends DataListenerWidget {
 		dockPanel.setWidth("100%");		
 		this.key = key;
 		this.parent = parent;		
-		setTitle(title);
-				
+		setTitle(title);		
 	}
 	
 	void addParentLinks(final Screen parent) {
