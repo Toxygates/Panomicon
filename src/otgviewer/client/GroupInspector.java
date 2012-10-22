@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import otgviewer.shared.Annotation;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
@@ -19,6 +20,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -49,12 +51,15 @@ public class GroupInspector extends DataListenerWidget {
 
 	private Grid grid = new Grid();
 	private String[] availableTimes;
-	private CheckBox[][] checkboxes;
+	private CheckBox[][] checkboxes; //for selecting the subgroups
+	
 	private Map<String, Group> groups = new HashMap<String, Group>();	
 	
 	private TextBox txtbxGroup;
 	private ListBox existingGroupsList;
 	private CompoundSelector compoundSel;
+	
+	private ListBox annotationSelector = new ListBox();
 	
 	public GroupInspector(CompoundSelector cs) {
 		compoundSel = cs;
@@ -69,6 +74,7 @@ public class GroupInspector extends DataListenerWidget {
 		HorizontalPanel horizontalPanel_1 = new HorizontalPanel();
 		horizontalPanel_1.setStyleName("slightlySpaced");
 		vp.add(horizontalPanel_1);
+		horizontalPanel_1.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		
 		Button btnSelectAll = new Button("Select all");
 		horizontalPanel_1.add(btnSelectAll);
@@ -85,6 +91,17 @@ public class GroupInspector extends DataListenerWidget {
 				drawGridInner(false);
 			}
 		});
+		
+		horizontalPanel_1.add(new Label("Annotation:"));
+		horizontalPanel_1.add(annotationSelector);
+		Button b = new Button("Show");
+		b.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent ce) {
+				reloadAnnotations();
+			}
+		});
+		horizontalPanel_1.add(b);
+		horizontalPanel_1.setSpacing(2);
 		
 		grid.setStyleName("highlySpaced");
 		grid.setWidth("700px");
@@ -210,6 +227,25 @@ public class GroupInspector extends DataListenerWidget {
 	@Override
 	public void compoundsChanged(List<String> compounds) {
 		super.compoundsChanged(compounds);		
+		if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
+			owlimService.barcodes(chosenDataFilter, compounds.get(0), null, null, new AsyncCallback<Barcode[]>() {
+				public void onSuccess(Barcode[] bcs) {
+					owlimService.annotations(bcs[0], new AsyncCallback<Annotation>() {
+						public void onSuccess(Annotation a) {
+							for (Annotation.Entry e: a.getEntries()) {
+								annotationSelector.addItem(e.description);
+							}
+						}
+						public void onFailure(Throwable caught) {
+							Window.alert("Unable to get annotations.");
+						}
+					});
+				}
+				public void onFailure(Throwable caught) {
+					Window.alert("Unable to get annotations.");
+				}
+			});
+		}
 		redrawGrid();
 	}
 	
@@ -248,7 +284,7 @@ public class GroupInspector extends DataListenerWidget {
 		
 		
 		grid.setHeight(50 * (chosenCompounds.size() + 1) + "px");
-		lazyFetchTimes();
+		lazyFetchTimes();		
 	}
 	
 	private void drawGridInner(boolean initState) {
@@ -263,6 +299,7 @@ public class GroupInspector extends DataListenerWidget {
 					cb.setValue(initState);					
 					checkboxes[c][availableTimes.length * d + t] = cb;
 					hp.add(cb);					
+					
 				}
 				CheckBox all = new CheckBox("All");
 				all.addValueChangeHandler(new MultiSelectHandler(c, availableTimes.length * d, availableTimes.length * (d + 1)));
@@ -371,6 +408,105 @@ public class GroupInspector extends DataListenerWidget {
 			int dose = doseToIndex(b.getDose());			
 			checkboxes[ci][dose * availableTimes.length + time].setValue(true);			
 		}		
+	}
+	
+	private void reloadAnnotations() {
+		if (annotationSelector.getSelectedIndex() != -1) {
+			String annot = annotationSelector
+					.getItemText(annotationSelector.getSelectedIndex());
+			displayAnnotation(annot);
+			
+		}
+	}
+	
+	private void displayAnnotation(String name) {
+		annotValues = new double[chosenCompounds.size()][availableTimes.length * 3];
+		annotValuesRemaining = chosenCompounds.size() * availableTimes.length * 3;
+		
+		for (int c = 0; c < chosenCompounds.size(); ++c) {
+			for (int d = 0; d < 3; ++d) {
+				for (int t = 0; t < availableTimes.length; ++t) {
+					final String compound = chosenCompounds.get(c);
+					final String dose = indexToDose(d);
+
+					final String time = availableTimes[t];
+					displayAnnotation(name, c, d * availableTimes.length + t,
+							compound, dose, time);
+				}
+			}
+		}		
+	}
+	
+	private double[][] annotValues;
+	private int annotValuesRemaining = 0;
+	private void displayAnnotation(final String annotation, final int row, final int col, 
+			final String compound, final String dose, final String time) {
+		
+		final NumberFormat fmt = NumberFormat.getFormat("#0.00");
+		owlimService.barcodes(chosenDataFilter, compound,
+				dose, time,
+				new AsyncCallback<Barcode[]>() {
+					public void onSuccess(Barcode[] barcodes) {
+						Group g = new Group("temporary", barcodes);
+						owlimService.annotations(g, new AsyncCallback<Annotation[]>() {
+							public void onSuccess(Annotation[] as) {								
+								double sum = 0;
+								int n = 0;
+								for (Annotation a: as) {
+									for (Annotation.Entry e: a.getEntries()) {
+										if (e.description.equals(annotation)) {																						
+											try {
+												sum += Double.valueOf(e.value);
+												n += 1;
+											} catch (Exception ex) {
+												//number format error
+											}											
+										}
+									}
+								}
+								
+								double avg = (n > 0 ? sum / n : 0);
+								checkboxes[row][col].setText(time + " (" + fmt.format(avg) + ")");
+								annotValues[row][col] = avg;
+								annotValuesRemaining -= 1;
+								
+								if (annotValuesRemaining == 0) { 
+									//got the final values
+									double min = Double.MAX_VALUE;
+									double max = Double.MIN_VALUE;
+									for (double[] r : annotValues) {
+										for (double v: r) {
+											if (v > max) {
+												max = v;
+											}
+											if (v < min) {
+												min = v;
+											}
+										}
+									}
+									for (int r = 0; r < annotValues.length; ++r) {
+										for (int c = 0; c < annotValues[0].length; ++c) {
+											int bb = 255;
+											int gg = 255 - (int) ((annotValues[r][c] - min) * 127 / (max - min));
+											int rr = gg;
+											String html = checkboxes[r][c].getHTML();
+											checkboxes[r][c].setHTML("<div style=\"background: #" + Integer.toHexString(rr) + 
+													Integer.toHexString(gg) + Integer.toHexString(bb) + "\">" + html + "</div>"); 											
+										}
+									}
+									
+								}
+							}
+							public void onFailure(Throwable caught) {
+								Window.alert("Unable to get annotations.");
+							}
+						});
+					}
+
+					public void onFailure(Throwable caught) {
+						Window.alert("Unable to retrieve barcodes for the group definition.");
+					}
+				});
 	}
 	
 	private class MultiSelectHandler implements ValueChangeHandler<Boolean> {
