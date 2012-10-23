@@ -16,7 +16,15 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 @RemoteServiceRelativePath("KC")
 public interface KCService extends RemoteService {
 
-	public String[] identifiersToProbes(DataFilter filter, String[] identifiers);
+	/**
+	 * Convert identifiers such as genes, probe IDs and proteins into a list of probes.
+	 * 
+	 * @param filter
+	 * @param identifiers
+	 * @param precise If true, names must be an exact match, otherwise partial name matching is used.
+	 * @return
+	 */
+	public String[] identifiersToProbes(DataFilter filter, String[] identifiers, boolean precise);
 	
 	/**
 	 * Load data into the user's session.

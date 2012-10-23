@@ -29,10 +29,12 @@ public class Annotation implements Serializable {
 	public static class Entry implements Serializable {
 		public String description;
 		public String value;
+		public boolean numerical;
 		public Entry() {}
-		public Entry(String description, String value) {
+		public Entry(String description, String value, boolean numerical) {
 			this.description = description;
 			this.value = value;
+			this.numerical = numerical;
 		}
 	}
 	

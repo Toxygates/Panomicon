@@ -80,7 +80,11 @@ public class GroupInspector extends DataListenerWidget {
 		horizontalPanel_1.add(btnSelectAll);
 		btnSelectAll.addClickHandler(new ClickHandler(){
 			public void onClick(ClickEvent ce) {
-				drawGridInner(true);
+				for (CheckBox[] r: checkboxes) {
+					for (CheckBox cb: r) {
+						cb.setValue(true);
+					}
+				}				
 			}
 		});
 		
@@ -88,7 +92,11 @@ public class GroupInspector extends DataListenerWidget {
 		horizontalPanel_1.add(btnSelectNone);
 		btnSelectNone.addClickHandler(new ClickHandler(){
 			public void onClick(ClickEvent ce) {
-				drawGridInner(false);
+				for (CheckBox[] r: checkboxes) {
+					for (CheckBox cb: r) {
+						cb.setValue(false);
+					}
+				}			
 			}
 		});
 		
@@ -230,16 +238,20 @@ public class GroupInspector extends DataListenerWidget {
 		if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
 			owlimService.barcodes(chosenDataFilter, compounds.get(0), null, null, new AsyncCallback<Barcode[]>() {
 				public void onSuccess(Barcode[] bcs) {
+					
 					owlimService.annotations(bcs[0], new AsyncCallback<Annotation>() {
 						public void onSuccess(Annotation a) {
 							for (Annotation.Entry e: a.getEntries()) {
-								annotationSelector.addItem(e.description);
+								if (e.numerical) {
+									annotationSelector.addItem(e.description);
+								}
 							}
 						}
 						public void onFailure(Throwable caught) {
 							Window.alert("Unable to get annotations.");
 						}
 					});
+					
 				}
 				public void onFailure(Throwable caught) {
 					Window.alert("Unable to get annotations.");

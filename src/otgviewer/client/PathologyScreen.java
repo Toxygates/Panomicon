@@ -79,7 +79,7 @@ public class PathologyScreen extends Screen {
 		col = new TextColumn<Pathology>() {
 			public String getValue(Pathology p) {
 				Barcode b = barcodeFor(p.barcode());
-				return b.getCompound() + "/" + b.getDose() + "/" + b.getTime(); 				
+				return b.getCompound() + "/" + b.getShortTitle(); 				
 			}
 		};
 		pathologyTable.addColumn(col, "Sample");

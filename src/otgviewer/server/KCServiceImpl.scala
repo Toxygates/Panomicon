@@ -67,8 +67,8 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
 
   //Should this be in owlimService?
   //Is the separate OTGMisc object needed?
-  def identifiersToProbes(filter: DataFilter, identifiers: Array[String]): Array[String] =
-    OTGMisc.identifiersToProbes(filter, identifiers)
+  def identifiersToProbes(filter: DataFilter, identifiers: Array[String], precise: Boolean): Array[String] =
+    OTGMisc.identifiersToProbes(filter, identifiers, precise)
 
   private def filterProbes(filter: DataFilter, probes: Array[String]) =
     if (probes == null || probes.size == 0) {
@@ -174,24 +174,27 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     val params = session.params
     if (groupedFiltered != null) {
       println("I had " + groupedFiltered.rows + " rows stored")
+
+      //At this point sorting may happen		
+      if (sortColumn > -1 && (sortColumn != params.sortColumn ||
+        ascending != params.sortAsc || params.mustSort)) {
+        //OK, we need to re-sort it and then re-store it
+        params.sortColumn = sortColumn
+        params.sortAsc = ascending
+        params.mustSort = false
+
+        val (grf, ugrf) = groupedFiltered.modifyJointly(session.data,
+          _.sortRows((r1, r2) => sortData(sortColumn, ascending, r1, r2)))
+
+        groupedFiltered = grf
+        session.rendered = grf
+        session.data = ugrf
+
+      }
+      new ArrayList[ExpressionRow](insertAnnotations(groupedFiltered.asRows.drop(offset).take(size)))
+    } else {
+      new ArrayList[ExpressionRow]()
     }
-    //At this point sorting may happen		
-    if (sortColumn > -1 && (sortColumn != params.sortColumn ||
-      ascending != params.sortAsc || params.mustSort)) {
-      //OK, we need to re-sort it and then re-store it
-      params.sortColumn = sortColumn
-      params.sortAsc = ascending
-      params.mustSort = false
-
-      val (grf, ugrf) = groupedFiltered.modifyJointly(session.data,
-        _.sortRows((r1, r2) => sortData(sortColumn, ascending, r1, r2)))
-
-      groupedFiltered = grf
-      session.rendered = grf
-      session.data = ugrf
-    }
-
-    new ArrayList[ExpressionRow](insertAnnotations(groupedFiltered.asRows.drop(offset).take(size)))
   }
 
   /**

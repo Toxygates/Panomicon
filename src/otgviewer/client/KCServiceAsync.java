@@ -13,7 +13,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface KCServiceAsync {	
 
-	public void identifiersToProbes(DataFilter filter, String[] identifiers, AsyncCallback<String[]> callback);
+	public void identifiersToProbes(DataFilter filter, String[] identifiers, boolean precise, AsyncCallback<String[]> callback);
 	
 	public void loadDataset(DataFilter filter, List<DataColumn> columns, String[] probes, 
 			ValueType type, double absValFilter, List<Synthetic> synthCols,

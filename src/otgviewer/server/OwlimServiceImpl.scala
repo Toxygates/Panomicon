@@ -46,15 +46,21 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
   def organs(filter: DataFilter, compound: String): Array[String] = 
     OTGOwlim.organs(filter, compound)
     
-  def doseLevels(filter: DataFilter, compound: String) = 
-    OTGOwlim.doseLevels(filter, compound)
+  val orderedDoses = List("Control", "Low", "Middle", "High")
+  def doseLevels(filter: DataFilter, compound: String): Array[String] = { 
+    val r = OTGOwlim.doseLevels(filter, compound)
+    r.sortWith((d1, d2) => orderedDoses.indexOf(d1) < orderedDoses.indexOf(d2))
+  }
   
   def barcodes(filter: DataFilter, compound: String, doseLevel: String, time: String) =
     OTGOwlim.barcodes(filter, nullToNone(compound), 
         nullToNone(doseLevel), nullToNone(time)).map(asJava(_, compound))
     
-  def times(filter: DataFilter, compound: String): Array[String] = 
-    OTGOwlim.times(filter, compound)
+  val orderedTimes = List("2 hr", "3 hr", "6 hr", "8 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day")
+  def times(filter: DataFilter, compound: String): Array[String] = { 
+    val r = OTGOwlim.times(filter, compound)    
+    r.sortWith((t1, t2) => orderedTimes.indexOf(t1) < orderedTimes.indexOf(t2))
+  }
     
   def probeTitle(probe: String): String = 
     B2RAffy.title(probe)

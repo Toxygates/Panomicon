@@ -114,11 +114,11 @@ public class ProbeScreen extends Screen {
 		VerticalPanel verticalPanel_3 = new VerticalPanel();
 		verticalPanel_3
 				.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		probeSelStack.add(verticalPanel_3, "Custom", false);
+		probeSelStack.add(verticalPanel_3, "Free selection", false);
 		verticalPanel_3.setSize("100%", "");
 
 		Label label_5 = new Label(
-				"Enter a list of probes, genes or proteins to display only those.");
+				"Enter a list of probes, genes or proteins, one per line, to display only those.");
 		label_5.setStyleName("none");
 		verticalPanel_3.add(label_5);
 
@@ -126,7 +126,7 @@ public class ProbeScreen extends Screen {
 		verticalPanel_3.add(customProbeText);
 		customProbeText.setSize("95%", "");
 
-		Button button_1 = new Button("Add custom probes");
+		Button button_1 = new Button("Add manual probes");
 		verticalPanel_3.add(button_1);
 		button_1.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent ev) {
@@ -137,14 +137,14 @@ public class ProbeScreen extends Screen {
 				} else {
 					// change the identifiers (which can be mixed format) into a
 					// homogenous format (probes only)
-					kcService.identifiersToProbes(chosenDataFilter, split,
+					kcService.identifiersToProbes(chosenDataFilter, split, true, 
 							new AsyncCallback<String[]>() {
 								public void onSuccess(String[] probes) {
 									addProbes(probes);
 								}
 
 								public void onFailure(Throwable caught) {
-
+									Window.alert("Unable to resolve manual probes");
 								}
 							});
 				}
