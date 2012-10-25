@@ -2,8 +2,6 @@ package otgviewer.shared;
 
 import java.io.Serializable;
 
-import com.google.gwt.user.client.Window;
-
 /**
  * A barcode corresponds to a single microarray.
  * @author johan

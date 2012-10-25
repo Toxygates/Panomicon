@@ -1,9 +1,7 @@
 package otgviewer.shared;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * A set of annotations (such as chemical data and morphological data)

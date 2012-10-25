@@ -20,6 +20,7 @@ import friedrich.statistics.ArrayVector
 import javax.servlet.http.HttpSession
 import otg.B2RAffy
 import otg.CSVHelper
+import otgviewer.shared.Series
 
 /**
  * This servlet is responsible for obtaining and manipulating data from the Kyoto
@@ -245,6 +246,14 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     }
     val colNames = rendered.columnMap.toArray.sortWith(_._2 < _._2).map(_._1)
     CSVHelper.writeCSV(rendered.annotations.map(_.probe), colNames, session.data.data)
+  }
+  
+  def getSingleSeries(filter: DataFilter, probe: String, timeDose: String, compound: String): Series = {
+	null 
+  }
+  
+  def getSeries(filter: DataFilter, probe: String, timeDose: String, compound: String): JList[Series] = {
+    null
   }
 
 }

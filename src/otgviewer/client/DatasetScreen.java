@@ -1,9 +1,6 @@
 package otgviewer.client;
 
-import java.util.ArrayList;
-
 import otgviewer.shared.CellType;
-import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Organ;
 import otgviewer.shared.Organism;
@@ -17,7 +14,6 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 

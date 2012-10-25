@@ -2,15 +2,12 @@ package otgviewer.client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import otgviewer.shared.Barcode;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.SampleTimes;
 
-import com.google.gwt.user.client.Window;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.LegendPosition;

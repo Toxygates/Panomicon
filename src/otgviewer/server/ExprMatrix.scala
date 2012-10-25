@@ -41,6 +41,7 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
   with RowColAllocation[ExprValue, ArrayVector[ExprValue], String, String] {
 
   import ExprMatrix._
+  import Conversions._
 
   var annotations: Array[RowAnnotation] = Array.fill(rows)(new RowAnnotation(null, null, null, null))
 
@@ -53,7 +54,7 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
   def asRows: Iterable[ExpressionRow] = toRowVectors.zip(annotations).map(x => {
     val ann = x._2
     new ExpressionRow(ann.probe, ann.title, ann.geneIds, ann.geneSyms,
-      x._1.toArray.map(v => new ExpressionValue(v.value, v.call)))
+      x._1.toArray.map(asJava(_)))
   })
 
   def filterRows(f: (ArrayVector[ExprValue]) => Boolean): ExprMatrix = {

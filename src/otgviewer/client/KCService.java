@@ -7,6 +7,7 @@ import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Group;
+import otgviewer.shared.Series;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
 
@@ -82,4 +83,24 @@ public interface KCService extends RemoteService {
 	 * @return
 	 */
 	public String prepareCSVDownload();
+	
+	/**
+	 * Obtain a single time series or dose series.
+	 * @param filter
+	 * @param probe
+	 * @param timeDose A fixed time, or a fixed dose.
+	 * @param compound 
+	 * @return
+	 */
+	public Series getSingleSeries(DataFilter filter, String probe, String timeDose, String compound);
+	
+	/**
+	 * Obtain a number of time series or dose series.
+	 * @param filter Must be specified.
+	 * @param probe Must be specified.
+	 * @param timeDose A fixed time, or a fixed dose. Can optionally be null (no constraint).
+	 * @param compound Can optionally be null (no constraint).
+	 * @return
+	 */
+	public List<Series> getSeries(DataFilter filter, String probe, String timeDose, String compound);
 }
