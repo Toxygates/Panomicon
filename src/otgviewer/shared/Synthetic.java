@@ -4,25 +4,64 @@ import java.io.Serializable;
 
 abstract public class Synthetic implements DataColumn, Serializable {
 
-	public static class TTest extends Synthetic {
-		private Group g1, g2;
-		
-		public TTest() { }
-			
-		public TTest(Group g1, Group g2) {
-			super("p(" + g1.getShortTitle() + ", " + g2.getShortTitle() + ")");
-			this.g1 = g1;
-			this.g2 = g2;
-		}
-		
+	public abstract static class TwoGroupSynthetic extends Synthetic {
+		protected Group g1, g2;
 		public Group getGroup1() { return g1; }
 		public Group getGroup2() { return g2; }
 		
+		public TwoGroupSynthetic(String title, Group g1, Group g2) {		
+			super(title);
+			setGroups(g1, g2);			
+		}
+		
+		public void setGroups(Group g1, Group g2) {
+			this.g1 = g1;
+			this.g2 = g2;
+		}
 	}
 	
-	private static final long serialVersionUID = 1990541110612881170L;
+	/**
+	 * Student's T-Test.
+	 * The test is two-tailed and does not assume equal sample variances.
+	 */
+	public static class TTest extends TwoGroupSynthetic {
+		
+		public TTest() { super("", null, null); }
+			
+		public TTest(Group g1, Group g2) {			
+			super("", g1, g2);
+		}	
+		
+		@Override
+		public void setGroups(Group g1, Group g2) {
+			super.setGroups(g1, g2);
+			if (g1 != null && g2 != null) {
+				name = "(T) p(" + g1.getShortTitle() + ", " + g2.getShortTitle() + ")";
+			}
+		}
+	}
 	
-	private String name;
+	/**
+	 * Mann-Whitney U-test.
+	 */
+	public static class UTest extends TwoGroupSynthetic {
+		
+		public UTest() { super("", null, null); }
+			
+		public UTest(Group g1, Group g2) {
+			super("", g1, g2);
+		}	
+		
+		@Override
+		public void setGroups(Group g1, Group g2) {
+			super.setGroups(g1, g2);
+			if (g1 != null && g2 != null) {
+				name = "(U) p(" + g1.getShortTitle() + ", " + g2.getShortTitle() + ")";
+			}
+		}
+	}	
+
+	protected String name;
 	
 	public Synthetic() { }
 		

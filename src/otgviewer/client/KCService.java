@@ -51,8 +51,8 @@ public interface KCService extends RemoteService {
 	 * @param g1
 	 * @param g2
 	 */
-	public void addTTest(Group g1, Group g2);
-	
+	public void addTwoGroupTest(Synthetic.TwoGroupSynthetic test);
+
 	/**
 	 * Get one page. Requires that loadDataset was first used to load items.
 	 * @param offset
@@ -99,7 +99,7 @@ public interface KCService extends RemoteService {
 	 * @param filter Must be specified.
 	 * @param probe Must be specified.
 	 * @param timeDose A fixed time, or a fixed dose. Can optionally be null (no constraint).
-	 * @param compound Can optionally be null (no constraint).
+	 * @param compound Can optionally be null (no constraint). If this is null, timeDose must be null.
 	 * @return
 	 */
 	public List<Series> getSeries(DataFilter filter, String probe, String timeDose, String compound);

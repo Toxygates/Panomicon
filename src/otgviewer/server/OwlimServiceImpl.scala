@@ -41,24 +41,24 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
   }
 
   def compounds(filter: DataFilter): Array[String] = 
-    OTGOwlim.compounds(filter)
+    OTGOwlim.compounds(filter).toArray
     
   def organs(filter: DataFilter, compound: String): Array[String] = 
-    OTGOwlim.organs(filter, compound)
+    OTGOwlim.organs(filter, nullToOption(compound)).toArray
     
   val orderedDoses = List("Control", "Low", "Middle", "High")
   def doseLevels(filter: DataFilter, compound: String): Array[String] = { 
-    val r = OTGOwlim.doseLevels(filter, compound)
+    val r = OTGOwlim.doseLevels(filter, nullToOption(compound)).toArray
     r.sortWith((d1, d2) => orderedDoses.indexOf(d1) < orderedDoses.indexOf(d2))
   }
   
   def barcodes(filter: DataFilter, compound: String, doseLevel: String, time: String) =
     OTGOwlim.barcodes(filter, nullToNone(compound), 
-        nullToNone(doseLevel), nullToNone(time)).map(asJava(_, compound))
+        nullToNone(doseLevel), nullToNone(time)).map(asJava(_, compound)).toArray
     
   val orderedTimes = List("2 hr", "3 hr", "6 hr", "8 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day")
   def times(filter: DataFilter, compound: String): Array[String] = { 
-    val r = OTGOwlim.times(filter, compound)    
+    val r = OTGOwlim.times(filter, nullToOption(compound)).toArray    
     r.sortWith((t1, t2) => orderedTimes.indexOf(t1) < orderedTimes.indexOf(t2))
   }
     
@@ -83,13 +83,13 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
   
   
   def geneSyms(probes: Array[String]): Array[Array[String]] = 
-    B2RAffy.geneSyms(probes)
+    B2RAffy.geneSyms(probes).map(_.toArray).toArray
     
   def probesForPathway(filter: DataFilter, pathway: String): Array[String] = {
     useConnector(B2RKegg, (c: B2RKegg.type) => {
       val geneIds = c.geneIds(pathway, filter)
       println("Probes for " + geneIds.length + " genes")
-      val probes = OTGOwlim.probesForEntrezGenes(geneIds) 
+      val probes = OTGOwlim.probesForEntrezGenes(geneIds).toArray 
       OTGQueries.filterProbes(probes, filter)
     })    
   }
@@ -100,7 +100,7 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
         
       case _ => throw new Exception("Unexpected probe target service request: " + service)
     })
-    OTGOwlim.probesForUniprot(proteins)
+    OTGOwlim.probesForUniprot(proteins).toArray
   }
   
   def goTerms(pattern: String): Array[String] = 

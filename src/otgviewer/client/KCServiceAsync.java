@@ -30,8 +30,8 @@ public interface KCServiceAsync {
 
 	public void prepareCSVDownload(AsyncCallback<String> callback);
 
-	public void addTTest(Group g1, Group g2, AsyncCallback<Void> callback);
-
+	public void addTwoGroupTest(Synthetic.TwoGroupSynthetic test, AsyncCallback<Void> callback);
+	
 	public void getSingleSeries(DataFilter filter, String probe,
 			String timeDose, String compound, AsyncCallback<Series> callback);
 

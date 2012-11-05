@@ -21,6 +21,8 @@ import javax.servlet.http.HttpSession
 import otg.B2RAffy
 import otg.CSVHelper
 import otgviewer.shared.Series
+import otg.OTGSeriesQuery
+import otgviewer.shared.ExpressionValue
 
 /**
  * This servlet is responsible for obtaining and manipulating data from the Kyoto
@@ -33,6 +35,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
 
   private var foldsDB: DB = _
   private var absDB: DB = _
+  private var seriesDB: DB = _
 
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
@@ -40,6 +43,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     val homePath = System.getProperty("otg.home")
     foldsDB = OTGQueries.open(homePath + "/otgf.kct")
     absDB = OTGQueries.open(homePath + "/otg.kct")
+    seriesDB = OTGSeriesQuery.open(homePath + "/otgfs.kct")
     println("KC databases are open")
   }
 
@@ -47,6 +51,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     println("Closing KC databases")
     foldsDB.close()
     absDB.close()
+    seriesDB.close()
     super.destroy()
   }
 
@@ -148,7 +153,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
 
     for (s <- syntheticColumns) {
       s match {
-        case tt: Synthetic.TTest => addTTest(tt.getGroup1, tt.getGroup2)
+        case tgt: Synthetic.TwoGroupSynthetic => addTwoGroupTest(tgt)        
       }
     }
 
@@ -156,19 +161,20 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
   }
 
   def datasetItems(offset: Int, size: Int, sortColumn: Int, ascending: Boolean): JList[ExpressionRow] = {
-    def sortData(sortCol: Int, asc: Boolean, v1: ArrayVector[ExprValue],
+    def sortData(v1: ArrayVector[ExprValue],
                  v2: ArrayVector[ExprValue]): Boolean = {
-      val ev1 = v1(sortCol)
-      val ev2 = v2(sortCol)
-      val ascFactor = if (asc) { 1 } else { -1 }
+      val ev1 = v1(sortColumn)
+      val ev2 = v2(sortColumn)
       if (ev1.call == 'A' && ev2.call != 'A') {
         false
       } else if (ev1.call != 'A' && ev2.call == 'A') {
         true
       } else {
-        if (asc) { ev1.value < ev2.value } else { ev1.value >= ev2.value }
+        if (ascending) { ev1.value < ev2.value } else { ev1.value >= ev2.value }
       }
     }
+    
+    println("SortCol: " + sortColumn + " asc: " + ascending)
 
     val session = getSessionData()
     var groupedFiltered = session.rendered
@@ -185,7 +191,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
         params.mustSort = false
 
         val (grf, ugrf) = groupedFiltered.modifyJointly(session.data,
-          _.sortRows((r1, r2) => sortData(sortColumn, ascending, r1, r2)))
+          _.sortRows(sortData))
 
         groupedFiltered = grf
         session.rendered = grf
@@ -206,9 +212,9 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
   private def insertAnnotations(rows: Iterable[ExpressionRow]): Iterable[ExpressionRow] = {
     val probes = rows.map(_.getProbe).toArray
     useConnector(B2RAffy, (c: B2RAffy.type) => {
-      val probeTitles = c.titles(probes)
-      val geneIds = c.geneIds(probes)
-      val geneSyms = c.geneSyms(probes)
+      val probeTitles = c.titles(probes).toArray
+      val geneIds = c.geneIds(probes).map(_.toArray).toArray
+      val geneSyms = c.geneSyms(probes).map(_.toArray).toArray
       rows.zip(probeTitles).zip(geneIds).zip(geneSyms).map(r => {
         val or = r._1._1._1
         new ExpressionRow(or.getProbe, r._1._1._2, r._1._2, r._2, or.getValues)
@@ -228,16 +234,28 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     new ArrayList[ExpressionRow](insertAnnotations(r.asRows))
   }
 
-  def addTTest(g1: Group, g2: Group): Unit = {
+  def addTwoGroupTest(test: Synthetic.TwoGroupSynthetic): Unit = {
     val session = getSessionData()
     val rendered = session.rendered
     val data = session.data
-    val withtt = rendered.appendTTest(data, g1.getBarcodes.map(x => data.columnMap(x.getCode)),
-      g2.getBarcodes.map(x => data.columnMap(x.getCode)))
-    withtt.columnMap += ((new Synthetic.TTest(g1, g2)).toString -> rendered.columns)
-    session.rendered = withtt
+    val g1 = test.getGroup1
+    val g2 = test.getGroup2
+    test match {
+      case ut: Synthetic.UTest => {
+        val withut = rendered.appendUTest(data, g1.getBarcodes.map(_.getCode),
+          g2.getBarcodes.map(_.getCode))
+        withut.columnMap += (test.toString -> rendered.columns)
+        session.rendered = withut
+      }
+      case tt: Synthetic.TTest => {
+        val withtt = rendered.appendTTest(data, g1.getBarcodes.map(_.getCode),
+          g2.getBarcodes.map(_.getCode))
+        withtt.columnMap += (test.toString -> rendered.columns)
+        session.rendered = withtt
+      }
+    }    
   }
-
+  
   def prepareCSVDownload(): String = {
     val session = getSessionData()
     val rendered = session.rendered
@@ -249,11 +267,13 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
   }
   
   def getSingleSeries(filter: DataFilter, probe: String, timeDose: String, compound: String): Series = {
-	null 
+    OTGSeriesQuery.getSeries(seriesDB, asScala(filter, new Series("", probe, timeDose, compound, Array.empty))).head	
   }
   
   def getSeries(filter: DataFilter, probe: String, timeDose: String, compound: String): JList[Series] = {
-    null
+    val ss = OTGSeriesQuery.getSeries(seriesDB, asScala(filter, new Series("", probe, timeDose, compound, Array.empty)))
+    val jss = ss.map(asJava(_))
+    new ArrayList[Series](asJavaCollection(jss))
   }
 
 }

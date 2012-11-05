@@ -53,5 +53,13 @@ object Conversions {
   }
   
   implicit def asJava(ev: otg.ExprValue): ExpressionValue = new ExpressionValue(ev.value, ev.call)
+  
+  def nullToOption[T](v: T): Option[T] = {
+    if (v == null) {
+      None
+    } else {
+      Some(v)
+    }
+  }
     
 }

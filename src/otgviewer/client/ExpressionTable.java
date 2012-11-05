@@ -41,6 +41,7 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.AsyncDataProvider;
 import com.google.gwt.view.client.HasData;
@@ -62,6 +63,7 @@ public class ExpressionTable extends DataListenerWidget {
 	private DataGrid<ExpressionRow> exprGrid;
 	private DoubleBox absValBox;
 	private VerticalPanel seriesChartPanel = new VerticalPanel();	
+	private List<SeriesChart> seriesCharts = new ArrayList<SeriesChart>();
 
 	private final KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
@@ -170,30 +172,16 @@ public class ExpressionTable extends DataListenerWidget {
 		Button b = new Button("Add T-Test");
 		horizontalPanel.add(b);
 		b.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent e) {
-				if (groupsel1.getSelectedIndex() == -1 || groupsel2.getSelectedIndex() == -1) {
-					Window.alert("Please select two groups to perform T-Test.");
-				} else if (groupsel1.getSelectedIndex() == groupsel2.getSelectedIndex()) {
-					Window.alert("Please select two different groups to perform T-Test.");
-				} else {
-					final Group g1 = findGroup(chosenColumns, groupsel1.getItemText(groupsel1.getSelectedIndex()));
-					final Group g2 = findGroup(chosenColumns, groupsel2.getItemText(groupsel2.getSelectedIndex()));
-					kcService.addTTest(g1, g2, new AsyncCallback<Void>() {
-						public void onSuccess(Void v) {
-							synthColumns.add(new Synthetic.TTest(g1, g2));
-							//						getExpressions(null, true);
-							setupColumns();
-							exprGrid.setVisibleRangeAndClearData(new Range(0, 20), true);
-						}
-						public void onFailure(Throwable caught) {
-							Window.alert("Unable to perform T-Test");
-						}
-					});
-				}
-			}
+			public void onClick(ClickEvent e) { addTwoGroupSynthetic(new Synthetic.TTest(null, null), "T-Test"); }							
 		});
 		
-		b = new Button("Remove T-Tests");
+		b = new Button("Add U-Test");
+		horizontalPanel.add(b);
+		b.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent e) { addTwoGroupSynthetic(new Synthetic.UTest(null, null), "U-Test"); }							
+		});
+		
+		b = new Button("Remove tests");
 		horizontalPanel.add(b);
 		b.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent ce) {
@@ -208,6 +196,28 @@ public class ExpressionTable extends DataListenerWidget {
 		
 		exprGrid.addColumnSortHandler(colSortHandler);
 
+	}
+	
+	private void addTwoGroupSynthetic(final Synthetic.TwoGroupSynthetic synth, final String name) {
+		if (groupsel1.getSelectedIndex() == -1 || groupsel2.getSelectedIndex() == -1) {
+			Window.alert("Please select two groups to perform " + name + ".");
+		} else if (groupsel1.getSelectedIndex() == groupsel2.getSelectedIndex()) {
+			Window.alert("Please select two different groups to perform " + name + ".");
+		} else {
+			final Group g1 = findGroup(chosenColumns, groupsel1.getItemText(groupsel1.getSelectedIndex()));
+			final Group g2 = findGroup(chosenColumns, groupsel2.getItemText(groupsel2.getSelectedIndex()));
+			synth.setGroups(g1, g2);
+			kcService.addTwoGroupTest(synth, new AsyncCallback<Void>() {
+				public void onSuccess(Void v) {
+					synthColumns.add(synth);
+					setupColumns();
+					exprGrid.setVisibleRangeAndClearData(new Range(0, 20), true);
+				}
+				public void onFailure(Throwable caught) {
+					Window.alert("Unable to perform " + name);
+				}
+			});
+		}
 	}
 	
 	private Group findGroup(List<DataColumn> groups, String title) {
@@ -411,13 +421,7 @@ public class ExpressionTable extends DataListenerWidget {
 			ttestCol.setSortable(true);
 			exprGrid.addColumn(ttestCol, s.getShortTitle());
 			i += 1;
-		}
-
-//		Column<ExpressionRow, String> avgCol = new ExpressionColumn(tc, i);
-//		avgCol.setSortable(true);
-//		exprGrid.addColumn(avgCol, "Average");
-//		i += 1;
-				
+		}				
 	}
 		
 	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
@@ -535,9 +539,13 @@ public class ExpressionTable extends DataListenerWidget {
 		//set up the series charts
 		Set<String> soFar = new HashSet<String>();
 		seriesChartPanel.clear();
+		seriesCharts.clear();
 		
 		SeriesChart firstChart = null;
 		for (DataColumn c: cols) {
+			Label l = new Label(c.getShortTitle());
+			seriesChartPanel.add(l);			
+			l.setStyleName("heading");
 			for (String com: c.getCompounds()) {
 				if (!soFar.contains(com)) {
 					soFar.add(com);
@@ -548,6 +556,7 @@ public class ExpressionTable extends DataListenerWidget {
 						firstChart.addSlaveChart(sc);
 					}					
 					seriesChartPanel.add(sc);
+					seriesCharts.add(sc);
 					this.propagateTo(sc);
 					sc.compoundChanged(com);
 				}
@@ -631,24 +640,23 @@ public class ExpressionTable extends DataListenerWidget {
 		public void onClick(String value) {
 			PopupPanel pp = new PopupPanel(true, true);
 
-			int chartHeight = 300;
-			int availHeight = Window.getClientHeight() - 100;
-			final int numCharts = seriesChartPanel.getWidgetCount();
-			if (availHeight / numCharts <= 300) {
-				chartHeight = availHeight / numCharts;
-			}
-			int height = chartHeight * numCharts;
+			int chartHeight = 200;
+			final int numCharts = seriesCharts.size();
+
+			int height = chartHeight * numCharts;			
 			for (int i = 0; i < numCharts; i++) {
-				SeriesChart seriesChart = (SeriesChart) seriesChartPanel.getWidget(i);
+				SeriesChart seriesChart = (SeriesChart) seriesCharts.get(i);
 				seriesChart.probeChanged(value);
 				seriesChart.redraw();
 				seriesChart.setWidth("500px");
-				seriesChart.setPixelHeight(chartHeight);									
+				seriesChart.setPixelHeight(chartHeight);
 			}
-			seriesChartPanel.setHeight(height + "px");
 
-			pp.setWidget(seriesChartPanel);
-			pp.setPopupPosition(Window.getClientWidth()/2 - 250, Window.getClientHeight() / 2 - (height/2));
+			ScrollPanel sp = new ScrollPanel(seriesChartPanel);			
+			sp.setHeight((Window.getClientHeight() - 100) + "px");			
+			pp.setWidget(sp);					
+			seriesChartPanel.setHeight((height + 30 * chosenColumns.size()) + "px");
+			pp.setPopupPosition(Window.getClientWidth()/2 - 250, 50);			
 			pp.show();		
 		}
 	}

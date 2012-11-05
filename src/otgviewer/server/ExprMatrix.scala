@@ -8,9 +8,11 @@ import scala.reflect.ClassTag
 import friedrich.statistics.DataMatrixBuilder
 import friedrich.statistics.ArrayMatrix
 import org.apache.commons.math3.stat.inference.TTest
+import org.apache.commons.math3.stat.inference.MannWhitneyUTest
 
 object ExprMatrix extends DataMatrixBuilder {
   val ttest = new TTest()
+  val utest = new MannWhitneyUTest()
 
   def withRows(data: Seq[Seq[ExprValue]], metadata: ExprMatrix = null) = {
     if (data.size > 0) {
@@ -71,14 +73,15 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
     r
   }
 
-  def appendTTest(sourceData: ExprMatrix, group1: Iterable[Int], group2: Iterable[Int]): ExprMatrix = {
+  def appendTwoColTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String], 
+      test: (Array[Double], Array[Double]) => Double): ExprMatrix = {
     val cs1 = group1.toSeq.map(sourceData.column(_))
     val cs2 = group2.toSeq.map(sourceData.column(_))
     val ps = (0 until rows).map(i => {
       val vs1 = cs1.map(_(i)).filter(_.call != 'A').toArray
       val vs2 = cs2.map(_(i)).filter(_.call != 'A').toArray
       if (vs1.size >= 2 && vs2.size >= 2) {
-        ExprValue(ttest.tTest(vs1.map(_.value), vs2.map(_.value)), 'P', vs1.head.probe)
+        ExprValue(test(vs1.map(_.value), vs2.map(_.value)), 'P', vs1.head.probe)
       } else {
         ExprValue(0, 'A', cs1.head(i).probe)
       }
@@ -86,6 +89,13 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
     val r = appendColumn(ps.toSeq)
     r
   }
+  
+  def appendTTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String]): ExprMatrix = 
+		  appendTwoColTest(sourceData, group1, group2, ttest.tTest(_, _))
+  
+  def appendUTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String]): ExprMatrix = 
+  	appendTwoColTest(sourceData, group1, group2, utest.mannWhitneyUTest(_, _))
+  
 
   def sortRows(f: (ArrayVector[ExprValue], ArrayVector[ExprValue]) => Boolean): ExprMatrix = {
     val sort = toRowVectors.zip(rowMap).zip(annotations)
