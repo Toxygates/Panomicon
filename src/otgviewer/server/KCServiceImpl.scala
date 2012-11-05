@@ -66,7 +66,13 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
 
     def params: DataViewParams = {
       val r = session.getAttribute("params").asInstanceOf[DataViewParams]
-      if (r != null) { r } else { new DataViewParams() }
+      if (r != null) {
+        r
+      } else {
+        val p = new DataViewParams()
+        this.params = p
+        p
+      }
     }
     def params_=(v: DataViewParams) = session.setAttribute("params", v)
   }
@@ -170,7 +176,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
       } else if (ev1.call != 'A' && ev2.call == 'A') {
         true
       } else {
-        if (ascending) { ev1.value < ev2.value } else { ev1.value >= ev2.value }
+        if (ascending) { ev1.value < ev2.value } else { ev1.value > ev2.value }
       }
     }
     
@@ -228,7 +234,6 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     val p = session.params
     p.filter = filter
 
-    //      session.setAttribute("dataViewParams", params)
     val realProbes = filterProbes(filter, probes)
     val r = getExprValues(filter, barcodes, realProbes, typ, sparseRead)
     new ArrayList[ExpressionRow](insertAnnotations(r.asRows))

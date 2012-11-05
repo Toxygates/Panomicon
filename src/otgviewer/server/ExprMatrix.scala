@@ -98,11 +98,12 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
   
 
   def sortRows(f: (ArrayVector[ExprValue], ArrayVector[ExprValue]) => Boolean): ExprMatrix = {
-    val sort = toRowVectors.zip(rowMap).zip(annotations)
+    val sortedKeys = rowMap.toSeq.sortWith(_._2 < _._2).map(_._1)
+    val sort = toRowVectors.zip(sortedKeys).zip(annotations)
     val sorted = sort.sortWith((x, y) => f(x._1._1, y._1._1))
     val r = ExprMatrix.withRows(sorted.map(_._1._1), this)
     r.annotations = sorted.map(_._2).toArray
-    r.rowMap = Map() ++ sorted.map(_._1._2)    
+    r.rowMap = Map() ++ sorted.map(_._1._2).zipWithIndex    
     r
   }
 

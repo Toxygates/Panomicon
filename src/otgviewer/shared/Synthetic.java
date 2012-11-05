@@ -24,10 +24,8 @@ abstract public class Synthetic implements DataColumn, Serializable {
 	 * Student's T-Test.
 	 * The test is two-tailed and does not assume equal sample variances.
 	 */
-	public static class TTest extends TwoGroupSynthetic {
-		
-		public TTest() { super("", null, null); }
-			
+	public static class TTest extends TwoGroupSynthetic {		
+		public TTest() { super("", null, null); }			
 		public TTest(Group g1, Group g2) {			
 			super("", g1, g2);
 		}	
@@ -44,10 +42,8 @@ abstract public class Synthetic implements DataColumn, Serializable {
 	/**
 	 * Mann-Whitney U-test.
 	 */
-	public static class UTest extends TwoGroupSynthetic {
-		
-		public UTest() { super("", null, null); }
-			
+	public static class UTest extends TwoGroupSynthetic {		
+		public UTest() { super("", null, null); }			
 		public UTest(Group g1, Group g2) {
 			super("", g1, g2);
 		}	
@@ -63,14 +59,10 @@ abstract public class Synthetic implements DataColumn, Serializable {
 
 	protected String name;
 	
-	public Synthetic() { }
-		
+	public Synthetic() { }		
 	public Synthetic(String name) { this.name = name; }
-
-	public Barcode[] getBarcodes() { return new Barcode[0]; }
-	
-	public String[] getCompounds() { return new String[0]; }
-	
+	public Barcode[] getBarcodes() { return new Barcode[0]; }	
+	public String[] getCompounds() { return new String[0]; }	
 	public String getShortTitle() { return name; }
 	
 	public String pack() {
