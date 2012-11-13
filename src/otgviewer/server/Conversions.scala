@@ -1,16 +1,19 @@
 package otgviewer.server
 
+import scala.collection.JavaConversions._
+
+import otg.BCode
+import otg.SeriesMatching
+import otg.Species
+import otgviewer.shared.Annotation
+import otgviewer.shared.Barcode
 import otgviewer.shared.CellType
 import otgviewer.shared.DataFilter
-import otgviewer.shared.Pathology
-import otg.BCode
-import otgviewer.shared.Barcode
-import otg.Species
-import otgviewer.shared.Organism
-import otgviewer.shared.Annotation
-import scala.collection.JavaConversions._
-import otgviewer.shared.Series
 import otgviewer.shared.ExpressionValue
+import otgviewer.shared.Organism
+import otgviewer.shared.Pathology
+import otgviewer.shared.RankRule
+import otgviewer.shared.Series
 
 object Conversions {
   import language.implicitConversions
@@ -61,5 +64,18 @@ object Conversions {
       Some(v)
     }
   }
-    
+
+  implicit def asScala(rr: RankRule): SeriesMatching.MatchType = {
+    rr match {
+      case i: RankRule.Increasing => SeriesMatching.Increasing()
+      case d: RankRule.Decreasing => SeriesMatching.Decreasing()
+      case s: RankRule.Synthetic  => {
+        println("Correlation curve: " + s.data.toVector)
+        SeriesMatching.MultiSynthetic(s.data.toVector)
+      }
+    }
+  }
+  
+  implicit def asJava[T,U](v: (T, U)) = new otgviewer.shared.Pair[T, U](v._1, v._2)
+  
 }

@@ -1,22 +1,34 @@
 package otgviewer.server
 
+import scala.Array.canBuildFrom
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-import otgviewer.client.OwlimService
-import otg.OTGOwlim
-import otg.B2RAffy
+import Assocations.convert
+import Assocations.getGoterms
+import UtilsS.nullToNone
+import UtilsS.useConnector
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
-import otgviewer.shared.DataFilter
-import otg.OTGQueries
-import otgviewer.shared.Pathology
-import otgviewer.shared.Barcode
-import otgviewer.shared.DataColumn
-import otgviewer.shared.Association
+import otg.B2RAffy
+import otg.B2RKegg
 import otg.B2RKegg
 import otg.CHEMBL
-import otg.DrugBank
 import otg.CHEMBL
+import otg.DrugBank
+import otg.DrugBank
+import otg.OTGOwlim
+import otg.OTGQueries
+import otgviewer.client.OwlimService
 import otgviewer.shared.Annotation
+import otgviewer.shared.Association
+import otgviewer.shared.Barcode
+import otgviewer.shared.DataColumn
+import otgviewer.shared.DataFilter
+import otgviewer.shared.Pathology
+import otgviewer.shared.Pair
+import otgviewer.shared.RankRule
+import otg.OTGSeriesQuery
+import kyotocabinet.DB
+import otg.Series
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -26,23 +38,44 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
   import Conversions._
   import UtilsS._
   import Assocations._
-
+  
+  private var seriesDB: DB = _
+  
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config)
     OTGOwlim.connect()
     B2RAffy.connect()
+    val homePath = System.getProperty("otg.home")
+    seriesDB = OTGSeriesQuery.open(homePath + "/otgfs.kct")
   }
 
   override def destroy() {
     B2RAffy.close()
     OTGOwlim.close()
+    seriesDB.close()
     super.destroy()
   }
 
   def compounds(filter: DataFilter): Array[String] = 
     OTGOwlim.compounds(filter).toArray
     
+  import java.lang.{Double => JDouble}
+  def rankedCompounds(filter: DataFilter, rules: Array[RankRule]): Array[Pair[String, JDouble]] = {
+    val srs = rules.map(asScala)
+    //TODO: probe is actually irrelevant here but the API is not well designed
+    //Same for timeDose = High
+    val key = asScala(filter, new otgviewer.shared.Series("", rules.head.probe, "High", null, Array.empty)) 
+    val probesRules = rules.map(_.probe).zip(srs)
+    val r = OTGSeriesQuery.rankCompoundsCombined(seriesDB, key, probesRules).map(p => asJava[String, JDouble](p._1, p._2.toDouble)).toArray
+    val rr = r.sortWith((x1, x2) => x1.second > x2.second)
+
+    for (s <- rr.take(10)) {
+      println(s)
+    }
+    rr
+  }
+  
   def organs(filter: DataFilter, compound: String): Array[String] = 
     OTGOwlim.organs(filter, nullToOption(compound)).toArray
     
@@ -96,8 +129,7 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
   def probesTargetedByCompound(filter: DataFilter, compound: String, service: String): Array[String] = {
     val proteins = (service match {
       case "CHEMBL" => useConnector(CHEMBL, (c:CHEMBL.type) => c.targetProtsForCompound(compound, filter))              
-      case "DrugBank" => useConnector(DrugBank, (c:DrugBank.type) => c.targetProtsForDrug(compound))
-        
+      case "DrugBank" => useConnector(DrugBank, (c:DrugBank.type) => c.targetProtsForDrug(compound))        
       case _ => throw new Exception("Unexpected probe target service request: " + service)
     })
     OTGOwlim.probesForUniprot(proteins).toArray

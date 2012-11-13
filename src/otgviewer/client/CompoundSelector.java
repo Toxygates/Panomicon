@@ -3,22 +3,35 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.Pair;
+import otgviewer.shared.RankRule;
 
 import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.NoSelectionModel;
@@ -45,6 +58,13 @@ public class CompoundSelector extends DataListenerWidget {
 	private Column<String, Boolean> selectColumn;
 	private ListDataProvider<String> provider = new ListDataProvider<String>();
 	
+	//compound sorter widgets
+	private VerticalPanel csVerticalPanel = new VerticalPanel();
+	private TextBox sortProbeText = new TextBox();
+	private ListBox rankType = new ListBox();
+	private TextBox syntheticCurveText = new TextBox();
+	
+	private Map<String, Double> scores = new HashMap<String, Double>(); //for compound ranking
 	
 	/**
 	 * @wbp.parser.constructor
@@ -53,20 +73,112 @@ public class CompoundSelector extends DataListenerWidget {
 		this("Compounds");
 	}
 	
+	private void makeCompoundSorter() {
+		csVerticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		Label l = new Label("Compound ranking");
+		l.setStyleName("heading");
+		csVerticalPanel.add(l);
+		
+		HorizontalPanel hp = Utils.mkHorizontalPanel();		
+		csVerticalPanel.add(hp);
+		hp.add(new Label("Protein/gene/probe: "));
+		hp.add(sortProbeText);
+		
+		hp = Utils.mkHorizontalPanel();
+		csVerticalPanel.add(hp);
+		hp.add(new Label("Match type: "));
+		rankType.addItem("Increasing");
+		rankType.addItem("Decreasing");
+		rankType.addItem("Synthetic curve");
+		hp.add(rankType);
+		
+		hp = Utils.mkHorizontalPanel();		
+		csVerticalPanel.add(hp);
+		hp.add(new Label("Synthetic curve: "));
+		hp.add(syntheticCurveText);
+		
+		Button b = new Button("Rank");
+		csVerticalPanel.add(b);
+		b.addClickHandler(new ClickHandler() {						
+			public void onClick(ClickEvent event) {
+				RankRule[] rules = new RankRule[1];
+				switch(rankType.getSelectedIndex()) {
+				case 0:
+					rules[0] = new RankRule.Increasing(sortProbeText.getText());
+					break;
+				case 1:
+					rules[0] = new RankRule.Decreasing(sortProbeText.getText());
+					break;
+				case 2:
+					double[] data = new double[4];
+					String[] ss = syntheticCurveText.getText().split(" ");
+					if (ss.length != 4) {
+						Window.alert("Please supply 4 space-separated values as the synthetic curve. (Example: -1 -2 -3 -4");
+					} else {
+						for (int i = 0; i < ss.length; ++i) {
+							data[i] = Double.valueOf(ss[i]);
+						}
+						rules[0] = new RankRule.Synthetic(sortProbeText
+								.getText(), data);
+					}
+					break;
+				}
+				if (rules[0] != null) {
+					owlimService.rankedCompounds(chosenDataFilter, rules,
+							new AsyncCallback<Pair<String, Double>[]>() {
+								public void onSuccess(Pair<String, Double>[] res) {
+									List<String> sortedCompounds = new ArrayList<String>();
+									for (Pair<String, Double> p : res) {
+										scores.put(p.first(), p.second());
+										sortedCompounds.add(p.first());
+									}
+									provider.setList(sortedCompounds);
+									compoundTable.setVisibleRange(0,
+											sortedCompounds.size());
+								}
+
+								public void onFailure(Throwable caught) {
+									Window.alert("Unable to rank compounds.");
+								}
+							});
+				}
+			}
+		});
+		
+	}
+	
 	public CompoundSelector(String heading) {
 //		chosenDataFilter = initFilter;
+		makeCompoundSorter();
 		
 		verticalPanel = new VerticalPanel();
 		initWidget(verticalPanel);
 		verticalPanel.setWidth("100%");
+		verticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		
 		Label lblCompounds = new Label(heading);
 		lblCompounds.setStyleName("heading");
 		verticalPanel.add(lblCompounds);
 		
+		Button b = new Button("Sort by effect on genes...");
+		verticalPanel.add(b);
+		b.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent ce) {
+				displayCompoundSorter();
+			}
+		});
+		
 		scrollPanel = new ScrollPanel();
 		verticalPanel.add(scrollPanel);
 		scrollPanel.setSize("100%", "400px");
+		
+		b = new Button("Unselect all");
+		verticalPanel.add(b);
+		b.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent ce) {
+				setSelection(new ArrayList<String>());
+			}
+		});
 		
 		compoundTable = new CellTable<String>();
 		scrollPanel.setWidget(compoundTable);
@@ -105,6 +217,18 @@ public class CompoundSelector extends DataListenerWidget {
 			}
 		};
 		compoundTable.addColumn(textColumn, "Compound");
+		
+		textColumn = new TextColumn<String>() {
+			@Override
+			public String getValue(String object) {
+				if (scores.containsKey(object)) {
+					return Utils.formatNumber(scores.get(object));					
+				} else {
+					return "N/A";
+				}
+			}
+		};
+		compoundTable.addColumn(textColumn, "Score");
 		
 		provider.addDataDisplay(compoundTable);		
 	}
@@ -169,5 +293,12 @@ public class CompoundSelector extends DataListenerWidget {
 			verticalPanel.setHeight((newHeight - verticalPanel.getAbsoluteTop() - 50) + "px");
 			scrollPanel.setHeight((newHeight - scrollPanel.getAbsoluteTop() - 70) + "px");
 		}
+	}
+	
+	void displayCompoundSorter() {
+		PopupPanel pp = new PopupPanel(true, true);
+		pp.setWidget(csVerticalPanel);
+		pp.setPopupPosition(Window.getClientWidth()/2 - 100, Window.getClientHeight()/2 - 100);
+		pp.show();
 	}
 }

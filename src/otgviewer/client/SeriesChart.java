@@ -255,17 +255,14 @@ public class SeriesChart extends DataListenerWidget {
 
 		switch (chosenDataFilter.cellType) {
 		case Vivo:
-			seriesSelectionLabel.setText("Selected: "
-					+ chosenDataFilter.organism + "/"
-					+ chosenDataFilter.organ + "/" + chosenCompound + "/"
-					+ chosenDataFilter.cellType + "/"
+			seriesSelectionLabel.setText("Selected: "					
+					+ chosenCompound + "/"					
 					+ chosenDataFilter.repeatType + "/" + chosenValueType
 					+ "/" + chosenProbe);
 			break;
 		case Vitro:
 			seriesSelectionLabel.setText("Selected: "
-					+ chosenDataFilter.organism + "/" + chosenCompound
-					+ "/" + chosenDataFilter.cellType + "/" + "/"
+					+ chosenCompound + "/"
 					+ chosenValueType + "/" + chosenProbe);
 			break;
 		}		

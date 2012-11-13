@@ -103,4 +103,6 @@ public interface KCService extends RemoteService {
 	 * @return
 	 */
 	public List<Series> getSeries(DataFilter filter, String probe, String timeDose, String compound);
+	
+	
 }

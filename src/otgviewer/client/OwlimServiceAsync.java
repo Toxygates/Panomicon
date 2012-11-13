@@ -5,13 +5,17 @@ import otgviewer.shared.Association;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.Pair;
 import otgviewer.shared.Pathology;
+import otgviewer.shared.RankRule;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface OwlimServiceAsync {
 
-	public void compounds(DataFilter filter, AsyncCallback<String[]> callback);	
+	public void compounds(DataFilter filter, AsyncCallback<String[]> callback);
+	public void rankedCompounds(DataFilter filter, RankRule[] rules, AsyncCallback<Pair<String, Double>[]> callback);
+	
 	public void organs(DataFilter filter, String compound, AsyncCallback<String[]> callback);	
 	public void doseLevels(DataFilter filter, String compound, AsyncCallback<String[]> callback);	
 	public void barcodes(DataFilter filter, String compound, 

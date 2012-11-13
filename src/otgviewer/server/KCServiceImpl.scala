@@ -32,6 +32,13 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
   import Conversions._
   import scala.collection.JavaConversions._
   import UtilsS._
+  
+  class DataViewParams {	
+	var sortAsc: Boolean = _
+	var sortColumn: Int = _
+	var mustSort: Boolean = _
+	var filter: DataFilter = _
+  }
 
   private var foldsDB: DB = _
   private var absDB: DB = _

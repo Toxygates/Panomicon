@@ -596,13 +596,8 @@ public class ExpressionTable extends DataListenerWidget {
 		public String getValue(ExpressionRow er) {
 			if (!er.getValue(i).getPresent()) {
 				return "(absent)";
-			} else {		
-				double v = er.getValue(i).getValue();
-				if (Math.abs(v) > 0.001) {
-					return df.format(v);
-				} else {
-					return sf.format(v);
-				}				
+			} else {	
+				return Utils.formatNumber(er.getValue(i).getValue());								
 			}
 		}
 	}
