@@ -12,6 +12,7 @@ import java.util.Set;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Pair;
 import otgviewer.shared.RankRule;
+import scala.swing.Table;
 
 import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.cell.client.FieldUpdater;
@@ -24,6 +25,7 @@ import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -60,9 +62,9 @@ public class CompoundSelector extends DataListenerWidget {
 	
 	//compound sorter widgets
 	private VerticalPanel csVerticalPanel = new VerticalPanel();
-	private TextBox sortProbeText = new TextBox();
-	private ListBox rankType = new ListBox();
-	private TextBox syntheticCurveText = new TextBox();
+	private TextBox[] sortProbeText = new TextBox[5];
+	private ListBox[] rankType = new ListBox[5];
+	private TextBox[] syntheticCurveText = new TextBox[5];
 	
 	private Map<String, Double> scores = new HashMap<String, Double>(); //for compound ranking
 	
@@ -79,49 +81,62 @@ public class CompoundSelector extends DataListenerWidget {
 		l.setStyleName("heading");
 		csVerticalPanel.add(l);
 		
-		HorizontalPanel hp = Utils.mkHorizontalPanel();		
-		csVerticalPanel.add(hp);
-		hp.add(new Label("Protein/gene/probe: "));
-		hp.add(sortProbeText);
+		Grid g = new Grid(6, 3);
+		csVerticalPanel.add(g);
+		g.setWidget(0, 0, new Label("Protein/gene/probe"));
+		g.setWidget(0, 1, new Label("Match type"));
+		g.setWidget(0, 2, new Label("Synthetic curve"));
 		
-		hp = Utils.mkHorizontalPanel();
-		csVerticalPanel.add(hp);
-		hp.add(new Label("Match type: "));
-		rankType.addItem("Increasing");
-		rankType.addItem("Decreasing");
-		rankType.addItem("Synthetic curve");
-		hp.add(rankType);
-		
-		hp = Utils.mkHorizontalPanel();		
-		csVerticalPanel.add(hp);
-		hp.add(new Label("Synthetic curve: "));
-		hp.add(syntheticCurveText);
+		for (int i = 0; i < 5; i++) {
+			sortProbeText[i] = new TextBox();
+			rankType[i] = new ListBox();
+			rankType[i].addItem("Increasing");
+			rankType[i].addItem("Decreasing");
+			rankType[i].addItem("Increasing 2");
+			rankType[i].addItem("Decreasing 2");
+			rankType[i].addItem("Synthetic curve");
+			syntheticCurveText[i] = new TextBox();
+			g.setWidget(i + 1, 0, sortProbeText[i]);
+			g.setWidget(i + 1, 1, rankType[i]);
+			g.setWidget(i + 1, 2, syntheticCurveText[i]);
+		}		
 		
 		Button b = new Button("Rank");
 		csVerticalPanel.add(b);
 		b.addClickHandler(new ClickHandler() {						
 			public void onClick(ClickEvent event) {
-				RankRule[] rules = new RankRule[1];
-				switch(rankType.getSelectedIndex()) {
-				case 0:
-					rules[0] = new RankRule.Increasing(sortProbeText.getText());
-					break;
-				case 1:
-					rules[0] = new RankRule.Decreasing(sortProbeText.getText());
-					break;
-				case 2:
-					double[] data = new double[4];
-					String[] ss = syntheticCurveText.getText().split(" ");
-					if (ss.length != 4) {
-						Window.alert("Please supply 4 space-separated values as the synthetic curve. (Example: -1 -2 -3 -4");
-					} else {
-						for (int i = 0; i < ss.length; ++i) {
-							data[i] = Double.valueOf(ss[i]);
+				RankRule[] rules = new RankRule[5];
+				for (int i = 0; i < 5; ++i) {
+					if (!sortProbeText[i].getText().equals("")) {
+						String probe = sortProbeText[i].getText();
+						switch (rankType[i].getSelectedIndex()) {
+						case 0:
+							rules[i] = new RankRule.Increasing(probe);
+							break;
+						case 1:
+							rules[i] = new RankRule.Decreasing(probe);
+							break;
+						case 2:
+							rules[i] = new RankRule.Increasing2(probe);
+							break;
+						case 3:
+							rules[i] = new RankRule.Decreasing2(probe);
+							break;
+						case 4:
+							double[] data = new double[4];
+							String[] ss = syntheticCurveText[i].getText()
+									.split(" ");
+							if (ss.length != 4) {
+								Window.alert("Please supply 4 space-separated values as the synthetic curve. (Example: -1 -2 -3 -4");
+							} else {
+								for (int j = 0; j < ss.length; ++j) {
+									data[j] = Double.valueOf(ss[j]);
+								}
+								rules[i] = new RankRule.Synthetic(probe, data);
+							}
+							break;
 						}
-						rules[0] = new RankRule.Synthetic(sortProbeText
-								.getText(), data);
 					}
-					break;
 				}
 				if (rules[0] != null) {
 					owlimService.rankedCompounds(chosenDataFilter, rules,

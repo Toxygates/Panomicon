@@ -29,6 +29,7 @@ import otgviewer.shared.RankRule
 import otg.OTGSeriesQuery
 import kyotocabinet.DB
 import otg.Series
+import otg.OTGMisc
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -62,11 +63,20 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
     
   import java.lang.{Double => JDouble}
   def rankedCompounds(filter: DataFilter, rules: Array[RankRule]): Array[Pair[String, JDouble]] = {
-    val srs = rules.map(asScala)
+    val nnr = rules.takeWhile(_ != null)
+    var srs = nnr.map(asScala(_))    
+    var probesRules = nnr.map(_.probe).zip(srs)
+    
+    //Convert the input probes (which may actually be proteins or genes) into definite probes
+    probesRules = probesRules.flatMap(pr => {
+      val resolved = OTGMisc.identifiersToProbes(filter, Array(pr._1), true)
+      resolved.map(r => (r, pr._2))
+    })
+    
     //TODO: probe is actually irrelevant here but the API is not well designed
     //Same for timeDose = High
-    val key = asScala(filter, new otgviewer.shared.Series("", rules.head.probe, "High", null, Array.empty)) 
-    val probesRules = rules.map(_.probe).zip(srs)
+    val key = asScala(filter, new otgviewer.shared.Series("", probesRules.head._1, "High", null, Array.empty)) 
+    
     val r = OTGSeriesQuery.rankCompoundsCombined(seriesDB, key, probesRules).map(p => asJava[String, JDouble](p._1, p._2.toDouble)).toArray
     val rr = r.sortWith((x1, x2) => x1.second > x2.second)
 

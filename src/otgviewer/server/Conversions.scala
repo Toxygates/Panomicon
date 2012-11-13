@@ -69,6 +69,8 @@ object Conversions {
     rr match {
       case i: RankRule.Increasing => SeriesMatching.Increasing()
       case d: RankRule.Decreasing => SeriesMatching.Decreasing()
+      case i: RankRule.Increasing2 => SeriesMatching.Increasing2()
+      case d: RankRule.Decreasing2 => SeriesMatching.Decreasing2()
       case s: RankRule.Synthetic  => {
         println("Correlation curve: " + s.data.toVector)
         SeriesMatching.MultiSynthetic(s.data.toVector)
