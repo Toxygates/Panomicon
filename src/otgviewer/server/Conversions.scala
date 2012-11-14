@@ -1,7 +1,6 @@
 package otgviewer.server
 
 import scala.collection.JavaConversions._
-
 import otg.BCode
 import otg.SeriesMatching
 import otg.Species
@@ -14,6 +13,7 @@ import otgviewer.shared.Organism
 import otgviewer.shared.Pathology
 import otgviewer.shared.RankRule
 import otgviewer.shared.Series
+import otgviewer.shared.RuleType
 
 object Conversions {
   import language.implicitConversions
@@ -66,15 +66,19 @@ object Conversions {
   }
 
   implicit def asScala(rr: RankRule): SeriesMatching.MatchType = {
-    rr match {
-      case i: RankRule.Increasing => SeriesMatching.Increasing()
-      case d: RankRule.Decreasing => SeriesMatching.Decreasing()
-      case i: RankRule.Increasing2 => SeriesMatching.Increasing2()
-      case d: RankRule.Decreasing2 => SeriesMatching.Decreasing2()
-      case s: RankRule.Synthetic  => {
-        println("Correlation curve: " + s.data.toVector)
-        SeriesMatching.MultiSynthetic(s.data.toVector)
+    
+    rr.`type`() match {      
+      case s: RuleType.Synthetic.type  => {
+        println("Correlation curve: " + rr.data.toVector)
+        SeriesMatching.MultiSynthetic(rr.data.toVector)
       }
+      case r: RuleType.HighVariance.type => SeriesMatching.HighVariance()
+      case r: RuleType.LowVariance.type => SeriesMatching.LowVariance()
+      case r: RuleType.Sum.type => SeriesMatching.Sum()
+      case r: RuleType.NegativeSum.type => SeriesMatching.NegativeSum()
+      case r: RuleType.Unchanged.type => SeriesMatching.Unchanged()
+      case r: RuleType.MonotonicUp.type => SeriesMatching.MonotonicIncreasing()
+      case r: RuleType.MonotonicDown.type => SeriesMatching.MonotonicDecreasing()
     }
   }
   

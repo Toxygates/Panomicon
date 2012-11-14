@@ -86,7 +86,7 @@ public abstract class SeriesDisplayStrategy {
 				}
 			}
 		}		
-		chart.draw(table, createOptions());
+		chart.draw(table, Utils.createChartOptions());
 	}
 	
 	abstract int categoryForBarcode(Barcode b);
@@ -103,13 +103,6 @@ public abstract class SeriesDisplayStrategy {
 		return -1;
 	}
 	
-	Options createOptions() {
-		Options o = Options.create();
-		o.setColors("MediumAquaMarine");				
-		o.set("legend.position", "none");
-		o.setLegend(LegendPosition.NONE);
-		return o;
-	}
 	
 	public static class VsTime extends SeriesDisplayStrategy {
 		public VsTime(DataTable table) {
@@ -144,7 +137,7 @@ public abstract class SeriesDisplayStrategy {
 		
 		String categoryName() { return "Time"; };
 		CoreChart makeChart() {
-			Options o = createOptions();
+			Options o = Utils.createChartOptions();
 			return new ColumnChart(table, o);
 		}
 	}
@@ -159,7 +152,7 @@ public abstract class SeriesDisplayStrategy {
 		int categoryForBarcode(Barcode b) { return indexOf(categories(), b.getDose()); }
 		String categoryName() { return "Dose"; }
 		CoreChart makeChart() {
-			Options o = createOptions();			
+			Options o = Utils.createChartOptions();			
 			return new ColumnChart(table, o);
 		}
 	}

@@ -67,9 +67,9 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
     var srs = nnr.map(asScala(_))    
     var probesRules = nnr.map(_.probe).zip(srs)
     
-    //Convert the input probes (which may actually be proteins or genes) into definite probes
+    //Convert the input probes (which may actually be genes) into definite probes
     probesRules = probesRules.flatMap(pr => {
-      val resolved = OTGMisc.identifiersToProbes(filter, Array(pr._1), true)
+      val resolved = OTGMisc.identifiersToProbesQuick(filter, Array(pr._1), true)
       resolved.map(r => (r, pr._2))
     })
     

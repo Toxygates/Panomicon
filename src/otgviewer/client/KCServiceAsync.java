@@ -35,7 +35,7 @@ public interface KCServiceAsync {
 	public void getSingleSeries(DataFilter filter, String probe,
 			String timeDose, String compound, AsyncCallback<Series> callback);
 
-	public void getSeries(DataFilter filter, String probe,
+	public void getSeries(DataFilter filter, String[] probes,
 			String timeDose, String compound,
 			AsyncCallback<List<Series>> callback);
 }

@@ -87,7 +87,7 @@ public interface KCService extends RemoteService {
 	/**
 	 * Obtain a single time series or dose series.
 	 * @param filter
-	 * @param probe
+	 * @param probe Must be a probe id.
 	 * @param timeDose A fixed time, or a fixed dose.
 	 * @param compound 
 	 * @return
@@ -97,12 +97,11 @@ public interface KCService extends RemoteService {
 	/**
 	 * Obtain a number of time series or dose series.
 	 * @param filter Must be specified.
-	 * @param probe Must be specified.
+	 * @param probes Must be specified. Can be genes/proteins/probe ids.
 	 * @param timeDose A fixed time, or a fixed dose. Can optionally be null (no constraint).
 	 * @param compound Can optionally be null (no constraint). If this is null, timeDose must be null.
 	 * @return
 	 */
-	public List<Series> getSeries(DataFilter filter, String probe, String timeDose, String compound);
-	
+	public List<Series> getSeries(DataFilter filter, String[] probes, String timeDose, String compound);
 	
 }

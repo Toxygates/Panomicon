@@ -282,9 +282,15 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     OTGSeriesQuery.getSeries(seriesDB, asScala(filter, new Series("", probe, timeDose, compound, Array.empty))).head	
   }
   
-  def getSeries(filter: DataFilter, probe: String, timeDose: String, compound: String): JList[Series] = {
-    val ss = OTGSeriesQuery.getSeries(seriesDB, asScala(filter, new Series("", probe, timeDose, compound, Array.empty)))
+  def getSeries(filter: DataFilter, probes: Array[String], timeDose: String, compound: String): JList[Series] = {
+    val validated = OTGMisc.identifiersToProbesQuick(filter, probes, true)
+    val ss = validated.flatMap(p => 
+      OTGSeriesQuery.getSeries(seriesDB, asScala(filter, new Series("", p, timeDose, compound, Array.empty))))
     val jss = ss.map(asJava(_))
+    for (s <- ss) {
+      println(s)
+    } 
+      
     new ArrayList[Series](asJavaCollection(jss))
   }
 

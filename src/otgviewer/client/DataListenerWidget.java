@@ -244,7 +244,7 @@ class DataListenerWidget extends Composite implements DataViewListener {
 						String[] spl = v.split("###");
 						chosenColumns = new ArrayList<DataColumn>();
 						for (String cl : spl) {
-							DataColumn c = SharedUtils.unpackColumn(cl);
+							DataColumn c = Utils.unpackColumn(cl);
 							chosenColumns.add(c);
 						}
 						columnsChanged(chosenColumns);

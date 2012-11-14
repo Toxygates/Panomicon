@@ -647,12 +647,13 @@ public class ExpressionTable extends DataListenerWidget {
 				seriesChart.setPixelHeight(chartHeight);
 			}
 
-			ScrollPanel sp = new ScrollPanel(seriesChartPanel);			
-			sp.setHeight((Window.getClientHeight() - 100) + "px");			
-			pp.setWidget(sp);					
+//			ScrollPanel sp = new ScrollPanel(seriesChartPanel);			
+//			sp.setHeight((Window.getClientHeight() - 100) + "px");			
+//			pp.setWidget(sp);					
 			seriesChartPanel.setHeight((height + 30 * chosenColumns.size()) + "px");
-			pp.setPopupPosition(Window.getClientWidth()/2 - 250, 50);			
-			pp.show();		
+			Utils.displayInScrolledPopup(seriesChartPanel);
+//			pp.setPopupPosition(Window.getClientWidth()/2 - 250, 50);			
+//			pp.show();		
 		}
 	}
 	

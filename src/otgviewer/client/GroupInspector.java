@@ -424,10 +424,8 @@ public class GroupInspector extends DataListenerWidget {
 	
 	private void reloadAnnotations() {
 		if (annotationSelector.getSelectedIndex() != -1) {
-			String annot = annotationSelector
-					.getItemText(annotationSelector.getSelectedIndex());
-			displayAnnotation(annot);
-			
+			String annot = annotationSelector.getItemText(annotationSelector.getSelectedIndex());
+			displayAnnotation(annot);			
 		}
 	}
 	

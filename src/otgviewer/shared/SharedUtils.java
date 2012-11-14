@@ -21,12 +21,11 @@ public class SharedUtils {
 		return -1;
 	}
 
-	public static DataColumn unpackColumn(String s) {
-		String[] spl = s.split("^^^");
-		if (spl[0].equals("Barcode")) {
-			return Barcode.unpack(s);
-		} else {
-			return Group.unpack(s);
+	public static String mkString(String[] ar) {
+		StringBuilder sb = new StringBuilder();
+		for (String s: ar) {
+			sb.append(s);
 		}
+		return sb.toString();
 	}
 }
