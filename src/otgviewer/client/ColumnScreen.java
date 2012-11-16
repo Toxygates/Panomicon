@@ -1,5 +1,13 @@
 package otgviewer.client;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import otgviewer.client.components.ScreenManager;
+import otgviewer.shared.DataColumn;
+import otgviewer.shared.Group;
+
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.History;
@@ -7,13 +15,13 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 public class ColumnScreen extends Screen {
 	public static String key = "columns";
 	
+	GroupInspector gi;
 	
 	public ColumnScreen(Screen parent, ScreenManager man) {
 		super(parent, "Column definitions", key, true, man);
@@ -26,7 +34,7 @@ public class ColumnScreen extends Screen {
 		CompoundSelector cs = new CompoundSelector("1. Compounds");
 		this.addListener(cs);
 		hp.add(cs);
-		final GroupInspector gi = new GroupInspector(cs);
+		gi = new GroupInspector(cs);
 		this.addListener(gi);
 		cs.addListener(gi);
 		hp.add(gi);
@@ -36,8 +44,8 @@ public class ColumnScreen extends Screen {
 			
 			@Override
 			public void onClick(ClickEvent event) {
-				if (gi.chosenColumns.size() == 0) {
-					Window.alert("Please define at least one group.");
+				if (gi.chosenColumns().size() == 0) {
+					Window.alert("Please define and activate at least one group.");
 				} else {
 					History.newItem(ProbeScreen.key);
 				}
@@ -48,4 +56,20 @@ public class ColumnScreen extends Screen {
 		return vp;
 	}
 	
+	
+	@Override
+	public void loadState() {
+		super.loadState();
+		
+		try {
+			List<DataColumn> ics = loadColumns("inactiveColumns", 
+					new ArrayList<DataColumn>(gi.existingGroupsTable.inverseSelection()));
+			if (ics != null) {
+				gi.inactiveColumnsChanged(ics);
+			}
+
+		} catch (Exception e) {
+			Window.alert("Unable to load inactive columns.");
+		}
+	}
 }

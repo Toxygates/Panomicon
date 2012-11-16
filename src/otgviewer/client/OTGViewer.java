@@ -3,6 +3,8 @@ package otgviewer.client;
 import java.util.HashMap;
 import java.util.Map;
 
+import otgviewer.client.components.ScreenManager;
+
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.logical.shared.ResizeEvent;

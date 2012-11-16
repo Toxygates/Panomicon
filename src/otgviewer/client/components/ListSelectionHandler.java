@@ -1,4 +1,4 @@
-package otgviewer.client;
+package otgviewer.client.components;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +24,7 @@ public abstract class ListSelectionHandler<T> {
 	protected boolean allOption;
 	protected String[] referenceOrdering; //optional reference to assist sorting of items
 
-	ListSelectionHandler(String description, ListBox list, boolean allOption, String[] referenceOrdering) {
+	public ListSelectionHandler(String description, ListBox list, boolean allOption, String[] referenceOrdering) {
 		this.description = description;
 		this.list = list;
 		this.allOption = allOption;
@@ -33,7 +33,7 @@ public abstract class ListSelectionHandler<T> {
 		list.addChangeHandler(makeChangeHandler());
 	}
 	
-	ListSelectionHandler(String description, ListBox list, boolean allOption) {
+	public ListSelectionHandler(String description, ListBox list, boolean allOption) {
 		this(description, list, allOption, null);
 	}
 	
@@ -64,7 +64,7 @@ public abstract class ListSelectionHandler<T> {
 		afterHandlers.add(after);
 	}
 	
-	void clear() {
+	public void clear() {
 		list.clear();
 		lastSelected = null;
 		for (ListSelectionHandler<?> handler: afterHandlers) {
@@ -72,7 +72,7 @@ public abstract class ListSelectionHandler<T> {
 		}
 	}
 	
-	void clearForLoad() {
+	public void clearForLoad() {
 		list.clear();
 		lastSelected = null;
 		list.addItem("(Loading ...)");
@@ -83,7 +83,7 @@ public abstract class ListSelectionHandler<T> {
 		}
 	}
 	
-	void setWaiting() {
+	public void setWaiting() {
 		list.addItem("(Waiting for selection)");
 		list.setEnabled(false);
 	}
@@ -92,7 +92,7 @@ public abstract class ListSelectionHandler<T> {
 		return lastSelected;
 	}
 	
-	AsyncCallback<T[]> retrieveCallback() {
+	public AsyncCallback<T[]> retrieveCallback() {
 		return new AsyncCallback<T[]>() {
 			public void onFailure(Throwable caught) {
 				Window.alert("Unable to get " + description);

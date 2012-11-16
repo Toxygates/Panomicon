@@ -1,11 +1,12 @@
-package otgviewer.client;
+package otgviewer.client.components;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import otgviewer.client.Utils;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
-import otgviewer.shared.SharedUtils;
 import otgviewer.shared.ValueType;
 
 import com.google.gwt.storage.client.Storage;
@@ -20,7 +21,7 @@ import com.google.gwt.user.client.ui.Composite;
  * @author johan
  *
  */
-class DataListenerWidget extends Composite implements DataViewListener {
+public class DataListenerWidget extends Composite implements DataViewListener {
 
 	private List<DataViewListener> listeners = new ArrayList<DataViewListener>();
 	
@@ -31,6 +32,8 @@ class DataListenerWidget extends Composite implements DataViewListener {
 	protected String chosenCompound;
 	protected ValueType chosenValueType;
 	protected List<DataColumn> chosenColumns = new ArrayList<DataColumn>();
+	
+	public List<DataColumn> chosenColumns() { return this.chosenColumns; }
 	
 	public DataListenerWidget() {
 		super();
@@ -175,19 +178,50 @@ class DataListenerWidget extends Composite implements DataViewListener {
 		}		
 	}
 	
-	public void storeColumns() {
+	protected void storeColumns(String key, Collection<DataColumn> columns) {		
 		Storage s = Storage.getLocalStorageIfSupported();
 		if (s == null) {
 			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
 		} else {
 			if (chosenDataFilter != null) {
-				if (!chosenColumns.isEmpty()) {
-					s.setItem("OTG.columns." + chosenDataFilter.pack(),
-							packColumns());
+				if (!columns.isEmpty()) {
+					s.setItem("OTG." + key + "." + chosenDataFilter.pack(),
+							packColumns(columns));
 				} else {
-					s.setItem("OTG.columns." + chosenDataFilter.pack(), "");
+					s.setItem("OTG." + key + "." + chosenDataFilter.pack(), "");
 				}
 			}
+		}
+	}
+	
+	public void storeColumns() {
+		storeColumns("columns", chosenColumns);
+	}	
+	
+	
+	private String packColumns(Collection<DataColumn> columns) {
+		StringBuilder sb = new StringBuilder();
+		for (DataColumn c : columns) {
+			sb.append(c.pack());
+			sb.append("###");
+		}
+		return sb.toString();
+	}
+	
+	protected List<DataColumn> loadColumns(String key,
+			Collection<DataColumn> expectedColumns) throws Exception {
+		Storage s = Storage.getLocalStorageIfSupported();
+		String v = s.getItem("OTG." + key + "." + chosenDataFilter.pack());
+		List<DataColumn> r = new ArrayList<DataColumn>();
+		if (v != null && !v.equals(packColumns(expectedColumns))) {
+			String[] spl = v.split("###");
+			for (String cl : spl) {
+				DataColumn c = Utils.unpackColumn(cl);
+				r.add(c);
+			}			
+			return r;
+		} else {
+			return null;
 		}
 	}
 	
@@ -209,16 +243,7 @@ class DataListenerWidget extends Composite implements DataViewListener {
 		}		
 		return sb.toString();
 	}
-	
-	private String packColumns() {
-		StringBuilder sb = new StringBuilder();
-		for (DataColumn c : chosenColumns) {
-			sb.append(c.pack());
-			sb.append("###");
-		}
-		return sb.toString();
-	}
-	
+
 	/**
 	 * Load saved state from the local storage.
 	 * If the loaded state is different from what was previously remembered in this widget, the appropriate 
@@ -237,23 +262,19 @@ class DataListenerWidget extends Composite implements DataViewListener {
 			if (v != null && (chosenValueType == null || !v.equals(chosenValueType.toString()))) {
 				valueTypeChanged(ValueType.unpack(v));
 			}
-			if (chosenDataFilter != null) {
-				v = s.getItem("OTG.columns." + chosenDataFilter.pack());
-				if (v != null && !v.equals(packColumns())) {
-					try {
-						String[] spl = v.split("###");
-						chosenColumns = new ArrayList<DataColumn>();
-						for (String cl : spl) {
-							DataColumn c = Utils.unpackColumn(cl);
-							chosenColumns.add(c);
-						}
+			if (chosenDataFilter != null) {				
+				try {
+					List<DataColumn> cs = loadColumns("columns", chosenColumns);
+					if (cs != null) {
+						chosenColumns = cs;
 						columnsChanged(chosenColumns);
-					} catch (Exception e) {
-						//one possible failure source is if data is stored in an incorrect foramt
-						columnsChanged(new ArrayList<DataColumn>());
-						storeColumns(); //overwrite the old data
-					}
+					}						
+				} catch (Exception e) {
+					//one possible failure source is if data is stored in an incorrect foramt
+					columnsChanged(new ArrayList<DataColumn>());
+					storeColumns(); //overwrite the old data
 				}
+
 			}
 			v = s.getItem("OTG.probes");			
 			if (v != null && !v.equals("") && !v.equals(packProbes())) {

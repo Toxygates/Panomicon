@@ -2,10 +2,16 @@ package otgviewer.client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.SelectionTable;
 import otgviewer.shared.Annotation;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
@@ -14,13 +20,13 @@ import otgviewer.shared.Group;
 import otgviewer.shared.SharedUtils;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -34,6 +40,7 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.view.client.SelectionChangeEvent;
 
 /**
  * This widget is intended to help visually define and modify "groups"
@@ -53,10 +60,10 @@ public class GroupInspector extends DataListenerWidget {
 	private String[] availableTimes;
 	private CheckBox[][] checkboxes; //for selecting the subgroups
 	
-	private Map<String, Group> groups = new HashMap<String, Group>();	
+	private Map<String, Group> groups = new HashMap<String, Group>();		
 	
 	private TextBox txtbxGroup;
-	private ListBox existingGroupsList;
+	SelectionTable<Group> existingGroupsTable;
 	private CompoundSelector compoundSel;
 	
 	private ListBox annotationSelector = new ListBox();
@@ -143,10 +150,33 @@ public class GroupInspector extends DataListenerWidget {
 		lblDefinedGroups.setStyleName("heading");
 		vp.add(lblDefinedGroups);
 		
-		existingGroupsList = new ListBox();
-		vp.add(existingGroupsList);
-		existingGroupsList.setSize("100%", "100px");
-		existingGroupsList.setVisibleItemCount(5);
+		existingGroupsTable = new SelectionTable<Group>("Active") {
+			protected void initTable(CellTable<Group> table) {
+				TextColumn<Group> textColumn = new TextColumn<Group>() {
+					@Override
+					public String getValue(Group object) {
+						return object.getName();
+					}
+				};
+				table.addColumn(textColumn, "Group");
+				
+				textColumn = new TextColumn<Group>() {
+					@Override
+					public String getValue(Group object) {
+						return "" + object.getBarcodes().length;
+					}
+				};
+				table.addColumn(textColumn, "Samples");
+			}
+			
+			protected void selectionChanged(Set<Group> selected) {
+				chosenColumns = new ArrayList<DataColumn>(selected);
+				storeColumns();
+			}
+		};
+		vp.add(existingGroupsTable);
+		existingGroupsTable.setSize("100%", "100px");
+		
 		btnSave.addClickHandler(new ClickHandler(){
 			public void onClick(ClickEvent ce) {
 				makeGroup(txtbxGroup.getValue());				
@@ -157,32 +187,32 @@ public class GroupInspector extends DataListenerWidget {
 			public void onClick(ClickEvent ce) {
 				String grp = txtbxGroup.getValue();
 				if (groups.containsKey(grp)) {
-					groups.remove(grp);
-					
-					existingGroupsList.clear();
-					for (Group g: groups.values()) {
-						existingGroupsList.addItem(g.getName());
-					}
-					
+					groups.remove(grp);									
 					reflectGroupChanges();
 				}
 			}
 		});
 		
-		existingGroupsList.addChangeHandler(new ChangeHandler() {
-			public void onChange(ChangeEvent ce) {
-				int index = existingGroupsList.getSelectedIndex();
-				if (index != -1) {
-					String name = existingGroupsList.getItemText(index);
-					displayGroup(name);
+		existingGroupsTable.table().getSelectionModel().addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
+			@Override
+			public void onSelectionChange(SelectionChangeEvent event) {
+				Group g = existingGroupsTable.highlightedRow();
+				if (g != null) {
+					displayGroup(g.getName());
 				}
 			}
-		});
-		
+		});		
+	}
+	
+	private List<Group> sortedGroupList(Collection<Group> groups) {
+		ArrayList<Group> r = new ArrayList<Group>(groups);
+		Collections.sort(r);
+		return r;
 	}
 	
 	private void reflectGroupChanges() {
-		chosenColumns = new ArrayList<DataColumn>(groups.values());
+		chosenColumns = new ArrayList<DataColumn>(existingGroupsTable.selection());
+		existingGroupsTable.reloadWith(sortedGroupList(groups.values()), false);
 		storeColumns();
 		txtbxGroup.setText(nextGroupName());
 	}
@@ -224,7 +254,7 @@ public class GroupInspector extends DataListenerWidget {
 			super.dataFilterChanged(filter); //this call changes chosenDataFilter			
 			availableTimes = null;
 			groups.clear();
-			existingGroupsList.clear();
+			existingGroupsTable.reloadWith(new ArrayList<Group>(), true);			
 			fetchTimes();
 			compoundsChanged(new ArrayList<String>());
 		} else {
@@ -265,14 +295,43 @@ public class GroupInspector extends DataListenerWidget {
 	public void columnsChanged(List<DataColumn> columns) {
 		super.columnsChanged(columns);
 		groups.clear();
-		existingGroupsList.clear();
-		//Currently we expect all groups here		
+			
 		for (DataColumn c: columns) {
 			Group g = (Group) c;
+			groups.put(g.getName(), g);			
+		}
+		txtbxGroup.setText(nextGroupName());		
+		existingGroupsTable.reloadWith(sortedGroupList(groups.values()), true);
+		existingGroupsTable.setSelection(asGroupList(chosenColumns));
+	}
+	
+	public void inactiveColumnsChanged(List<DataColumn> columns) {
+		Collection<Group> igs = sortedGroupList(asGroupList(columns));
+		for (Group g : igs) {
 			groups.put(g.getName(), g);
-			existingGroupsList.addItem(g.getName());			
 		}
 		txtbxGroup.setText(nextGroupName());
+		List<Group> all = new ArrayList<Group>();
+		all.addAll(sortedGroupList(existingGroupsTable.selection()));
+		all.addAll(igs);
+		existingGroupsTable.reloadWith(all, false);		
+		existingGroupsTable.unselectAll(igs);
+		existingGroupsTable.table().redraw();
+	}
+	
+	private List<Group> asGroupList(Collection<DataColumn> dcs) {
+		List<Group> r = new ArrayList<Group>();
+		for (DataColumn dc : dcs) {
+			r.add((Group) dc);
+		}
+		return r;
+	}
+	
+	@Override 
+	public void storeColumns() {
+		super.storeColumns();			
+		storeColumns("inactiveColumns", 
+				new ArrayList<DataColumn>(existingGroupsTable.inverseSelection()));
 	}
 	
 	private void redrawGrid() {
@@ -328,20 +387,17 @@ public class GroupInspector extends DataListenerWidget {
 		return groups;
 	}
 	
-//	Group pendingGroup;
-	
 	/**
 	 * Get here if save button is clicked
 	 * @param name
 	 */
 	private void makeGroup(final String name) {
 		
-		if (!groups.containsKey(name)) {
-			existingGroupsList.addItem(name);
-		}
-		Group pendingGroup = new Group(name, new Barcode[0]);
+		Group pendingGroup = new Group(name, new Barcode[0]);		
 		groups.put(name, pendingGroup);
-		
+		existingGroupsTable.provider().getList().add(pendingGroup);
+		existingGroupsTable.setSelected(pendingGroup);
+
 		for (int c = 0; c < chosenCompounds.size(); ++c) {
 			for (int d = 0; d < 3; ++d) {
 				for (int t = 0; t < availableTimes.length; ++t) {

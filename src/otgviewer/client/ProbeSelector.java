@@ -1,5 +1,8 @@
 package otgviewer.client;
 
+import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.ListSelectionHandler;
+
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;

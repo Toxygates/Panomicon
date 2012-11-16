@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.ImageClickCell;
+import otgviewer.client.components.StringSelectionTable;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Pair;
 import otgviewer.shared.RankRule;
@@ -16,12 +18,10 @@ import otgviewer.shared.RuleType;
 import otgviewer.shared.Series;
 
 import com.google.gwt.cell.client.CheckboxCell;
-import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.IdentityColumn;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
@@ -53,13 +53,9 @@ public class CompoundSelector extends DataListenerWidget {
 	private KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
 	
-	private CellTable<String> compoundTable;
+	private StringSelectionTable compoundTable;
 	private ScrollPanel scrollPanel;
 	private VerticalPanel verticalPanel;
-	
-	private Set<String> selectedCompounds = new HashSet<String>();
-	private Column<String, Boolean> selectColumn;
-	private ListDataProvider<String> provider = new ListDataProvider<String>();
 	
 	//compound sorter widgets
 	private VerticalPanel csVerticalPanel = new VerticalPanel();
@@ -76,8 +72,6 @@ public class CompoundSelector extends DataListenerWidget {
 	public CompoundSelector() {
 		this("Compounds");
 	}
-	
-	
 	
 	public CompoundSelector(String heading) {
 //		chosenDataFilter = initFilter;
@@ -112,77 +106,47 @@ public class CompoundSelector extends DataListenerWidget {
 			}
 		});
 		
-		compoundTable = new CellTable<String>();
-		scrollPanel.setWidget(compoundTable);
-		compoundTable.setSize("100%", "100%");
-		compoundTable.setSelectionModel(new NoSelectionModel<String>());
-		
-		selectColumn = new Column<String, Boolean>(new CheckboxCell()) {
-			@Override
-			public Boolean getValue(String object) {
-
-				return selectedCompounds.contains(object);				
-			}
-		};
-		selectColumn.setFieldUpdater(new FieldUpdater<String, Boolean>() {
-			@Override
-			public void update(int index, String object, Boolean value) {
-				if (value) {					
-					selectedCompounds.add(object);
-				} else {
-					selectedCompounds.remove(object);
-				}
-				
+		compoundTable = new StringSelectionTable("Sel", "Compound") {
+			protected void selectionChanged(Set<String> selected) {
 				List<String> r = new ArrayList<String>();
-				r.addAll(selectedCompounds);
+				r.addAll(selected);
 				Collections.sort(r);
 				changeCompounds(r);
 			}
-		});
-		
-		compoundTable.addColumn(selectColumn, "Sel");
-		
-		TextColumn<String> textColumn = new TextColumn<String>() {
-			@Override
-			public String getValue(String object) {
-				return object;
+			
+			protected void initTable(CellTable<String> table) {
+				super.initTable(table);
+				TextColumn<String> textColumn = new TextColumn<String>() {
+					@Override
+					public String getValue(String object) {
+						if (scores.containsKey(object)) {
+							return Utils.formatNumber(scores.get(object));					
+						} else {
+							return "N/A";
+						}
+					}
+				};
+				table.addColumn(textColumn, "Score");
+				
+				ChartClickCell ccc = new ChartClickCell();
+				table.addColumn(new IdentityColumn<String>(ccc), "");
 			}
 		};
-		compoundTable.addColumn(textColumn, "Compound");
-		
-		textColumn = new TextColumn<String>() {
-			@Override
-			public String getValue(String object) {
-				if (scores.containsKey(object)) {
-					return Utils.formatNumber(scores.get(object));					
-				} else {
-					return "N/A";
-				}
-			}
-		};
-		compoundTable.addColumn(textColumn, "Score");
-		
-		ChartClickCell ccc = new ChartClickCell();
-		compoundTable.addColumn(new IdentityColumn<String>(ccc), "");
-		
-		provider.addDataDisplay(compoundTable);		
+		scrollPanel.setWidget(compoundTable);
+		compoundTable.setSize("100%", "100%");
+		compoundTable.table().setSelectionModel(new NoSelectionModel<String>());		
 	}
 	
 	@Override
 	public void dataFilterChanged(DataFilter filter) {
 		super.dataFilterChanged(filter);		
 		loadCompounds();
-		selectedCompounds.clear();
-		
-		//reset any edits the user might have done
-		for (String item: provider.getList()) {
-			((CheckboxCell) selectColumn.getCell()).clearViewData(provider.getKey(item));
-		}
+		compoundTable.clearSelection();		
 	}
 	
 	public List<String> getCompounds() {				
 		List<String> r = new ArrayList<String>();
-		r.addAll(selectedCompounds);		
+		r.addAll(compoundTable.selection());		
 		Collections.sort(r);
 		return r;
 	}
@@ -193,9 +157,8 @@ public class CompoundSelector extends DataListenerWidget {
 			@Override
 			public void onSuccess(String[] result) {
 				Arrays.sort(result);
-				List<String> r = new ArrayList<String>((Arrays.asList(result)));				
-				provider.setList(r);
-				compoundTable.setVisibleRange(0, r.size());
+				List<String> r = new ArrayList<String>((Arrays.asList(result)));
+				compoundTable.reloadWith(r, true);				
 			}
 			
 			@Override
@@ -206,15 +169,10 @@ public class CompoundSelector extends DataListenerWidget {
 	}
 	
 	public void setSelection(List<String> compounds) {		
-		selectedCompounds.clear();
-		selectedCompounds.addAll(compounds);
+		compoundTable.clearSelection();		
+		compoundTable.selection().addAll(compounds);
 		
-		//reset any edits the user might have done
-		for (String item: provider.getList()) {
-			((CheckboxCell) selectColumn.getCell()).clearViewData(provider.getKey(item));
-		}
-		
-		compoundTable.redraw();		
+		compoundTable.table().redraw();		
 		Collections.sort(compounds);
 		changeCompounds(compounds);
 	}
@@ -322,9 +280,7 @@ public class CompoundSelector extends DataListenerWidget {
 										scores.put(p.first(), p.second());
 										sortedCompounds.add(p.first());
 									}
-									provider.setList(sortedCompounds);
-									compoundTable.setVisibleRange(0,
-											sortedCompounds.size());
+									compoundTable.reloadWith(sortedCompounds, false);									
 								}
 
 								public void onFailure(Throwable caught) {

@@ -11,7 +11,7 @@ import com.google.gwt.user.client.Window;
  * @author johan
  *
  */
-public class Group implements Serializable, DataColumn {
+public class Group implements Serializable, DataColumn, Comparable<Group> {
 
 	private static final long serialVersionUID = 2111266740402283063L;
 	Barcode[] barcodes;
@@ -69,5 +69,9 @@ public class Group implements Serializable, DataColumn {
 		} else {
 			return new Group(name, new Barcode[0]);
 		}
+	}
+	
+	public int compareTo(Group other) {
+		return name.compareTo(other.getName());
 	}
 }

@@ -1,4 +1,4 @@
-package otgviewer.client;
+package otgviewer.client.components;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +25,7 @@ public abstract class MultiSelectionHandler<T> extends ListSelectionHandler<T> {
 
 	}
 	
-	protected void clear() {
+	public void clear() {
 		super.clear();
 		lastMultiSelection.clear();
 	}

@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.ImageClickCell;
 import otgviewer.shared.Association;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.ExpressionRow;

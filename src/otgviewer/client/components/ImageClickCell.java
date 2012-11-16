@@ -1,4 +1,4 @@
-package otgviewer.client;
+package otgviewer.client.components;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.cell.client.Cell;

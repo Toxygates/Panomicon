@@ -3,6 +3,7 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import otgviewer.client.components.DataListenerWidget;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;

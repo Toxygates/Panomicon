@@ -1,4 +1,4 @@
-package otgviewer.client;
+package otgviewer.client.components;
 
 import java.util.List;
 

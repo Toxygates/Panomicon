@@ -1,5 +1,6 @@
 package otgviewer.client;
 
+import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Organ;
