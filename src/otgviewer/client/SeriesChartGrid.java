@@ -105,15 +105,17 @@ public class SeriesChartGrid extends Composite {
 		t.setValue(0, 0, "1");
 		t.setValue(1, 0, "2");
 		t.setValue(2, 0, "3");
-		t.setValue(3, 0, "4");
+		t.setValue(3, 0, "4");		
 		int i = 0;
 		for (ExpressionValue v : s.values()) {
-			t.setValue(i, 1, v.getValue());
+			double vv = v.getValue();
+			t.setValue(i, 1, vv);
+			t.setFormattedValue(i, 1, Utils.formatNumber(vv));
 			i += 1;
 		}
 		
 		CoreChart c = new ColumnChart(t, o);
-		c.setPixelSize(150, 150);
+		c.setPixelSize(200, 150);
 		g.setWidget(row, column, c);
 	}
 	

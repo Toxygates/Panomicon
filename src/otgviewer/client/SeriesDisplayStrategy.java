@@ -16,11 +16,6 @@ import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
 
 public abstract class SeriesDisplayStrategy {
-	
-//	private String[] singleTimeColumns = new String[] { "3 hr", "6 hr", "9 hr", "24 hr" };
-//	private String[] repeatTimeColumns = new String[] { "4 day", "8 day", "15 day", "29 day" };
-//	
-//	private String[] vitroTimeColumns = new String[] { "2 hr", "8 hr", "24 hr" };
 
 	protected DataTable table;
 	protected Barcode[] barcodes;
@@ -73,14 +68,15 @@ public abstract class SeriesDisplayStrategy {
 	void displayData(List<ExpressionRow> data, CoreChart chart) {
 		System.out.println("Series chart got " + data.size() + " rows");
 		
-		if (bcTable.length > 0) {
-		int cols = bcTable[0].length;
+		if (bcTable.length > 0) {	
 			for (ExpressionRow r : data) {
 				for (int i = 0; i < bcTable.length; ++i) {
 					for (int j = 0; j < bcTable[i].length; ++j) {
 						if (bcTable[i][j] != -1) {
-							table.setValue(i, j + 1, r.getValue(bcTable[i][j])
-								.getValue());						
+							double v = r.getValue(bcTable[i][j]).getValue();
+							
+							table.setValue(i, j + 1, v);
+							table.setFormattedValue(i, j + 1, Utils.formatNumber(v));
 						}
 					}
 				}

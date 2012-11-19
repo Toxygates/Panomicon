@@ -1,11 +1,9 @@
 package otgviewer.server
 
-import scala.Array.canBuildFrom
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
 import Assocations.convert
 import Assocations.getGoterms
 import UtilsS.nullToNone
-import UtilsS.useConnector
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import otg.B2RAffy
@@ -150,21 +148,25 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
     
   def probesForGoTerm(filter: DataFilter, goTerm: String): Array[String] = 
     OTGQueries.filterProbes(OTGOwlim.probesForGoTerm(goTerm), filter)
-    
+
   def associations(filter: DataFilter, probes: Array[String]): Array[Association] = {
 
-    try {
-      B2RKegg.connect()
-      OTGOwlim.connect()
+    //By setting it up like this we can request data from the different servers in parallel,
+    //and keep going if one fails
+    val sources = List(() => {
+      ("KEGG pathways", convert(
+          useConnector(B2RKegg,
+              (c: B2RKegg.type) => c.pathwaysForProbes(probes, filter),
+              Map())))                
+    },
+      () => {
+        ("GO terms",
+          useConnector(OTGOwlim,            
+            (c: OTGOwlim.type) => getGoterms(probes),
+            convert(Map())))          
+      })
 
-      val sources = List(() => ("KEGG pathways", convert(B2RKegg.pathwaysForProbes(probes, filter))),
-        () => ("GO terms", getGoterms(probes)))
-
-      sources.par.map(_()).seq.map(x => new Association(x._1, x._2)).toArray
-    } finally {
-      B2RKegg.close()
-      OTGOwlim.close()
-    }
+    sources.par.map(_()).seq.map(x => new Association(x._1, x._2)).toArray
   }
   
 }

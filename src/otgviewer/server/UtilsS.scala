@@ -14,6 +14,14 @@ object UtilsS {
       conn.close()
     }
   }
+
+  def useConnector[C <: RDFConnector, T](conn: C, f: C => T, onFailure: T): T =
+    gracefully(() => {
+      conn.connect()
+      f(conn)
+    },
+      onFailure,
+      () => conn.close())
   
   def nullToNone[T <: AnyRef](x: T): Option[T] = {
     if (x == null) {
@@ -22,4 +30,18 @@ object UtilsS {
       Some(x)
     }
   }
+  
+  private def gracefully[T](f: () => T, onFailure: T, finalizer: () => Unit): T = {
+    try {
+      f()
+    } catch {
+      case e => {
+        e.printStackTrace()
+        onFailure
+      }
+    } finally {
+      finalizer()
+    }
+  }
+
 }
