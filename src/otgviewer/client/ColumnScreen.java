@@ -1,12 +1,10 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.DataColumn;
-import otgviewer.shared.Group;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

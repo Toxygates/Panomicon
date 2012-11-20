@@ -2,8 +2,6 @@ package otgviewer.shared;
 
 import java.io.Serializable;
 
-import com.google.gwt.user.client.Window;
-
 public class DataFilter implements Serializable {
 	public CellType cellType;
 	public Organ organ;

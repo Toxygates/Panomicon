@@ -60,7 +60,7 @@ public abstract class ListSelectionHandler<T> {
 	}
 	
 	
-	void addAfter(ListSelectionHandler after) {
+	void addAfter(ListSelectionHandler<?> after) {
 		afterHandlers.add(after);
 	}
 	

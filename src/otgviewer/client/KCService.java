@@ -6,7 +6,6 @@ import java.util.List;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
-import otgviewer.shared.Group;
 import otgviewer.shared.Series;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;

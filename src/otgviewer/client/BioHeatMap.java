@@ -3,7 +3,6 @@ package otgviewer.client;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.visualization.client.AbstractDrawOptions;
-import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.visualizations.Visualization;
 
 public class BioHeatMap extends Visualization<BioHeatMap.Options> {

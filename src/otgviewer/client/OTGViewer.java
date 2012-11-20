@@ -44,7 +44,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	private void resizeInterface(int newHeight) {
 		// this is very fiddly and must be tested on all the browsers.
 		// Note that simply setting height = 100% won't work.
-		String h = (newHeight - rootPanel.getAbsoluteTop() - 20) + "px";
+//		String h = (newHeight - rootPanel.getAbsoluteTop() - 20) + "px";
 
 		if (currentScreen != null) {
 			currentScreen.resizeInterface(newHeight);

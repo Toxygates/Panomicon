@@ -19,7 +19,6 @@ import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.i18n.client.HasDirection.Direction;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
@@ -42,8 +41,6 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.AsyncDataProvider;
 import com.google.gwt.view.client.HasData;
@@ -132,8 +129,7 @@ public class ExpressionTable extends DataListenerWidget {
 		simplePager.setDisplay(exprGrid);
 		
 		Label label = new Label("Magnitude >=");
-		label.setStyleName("highlySpaced");
-		label.setDirection(Direction.LTR);
+		label.setStyleName("highlySpaced");		
 		horizontalPanel.add(label);
 		label.setWidth("");
 
@@ -650,7 +646,7 @@ public class ExpressionTable extends DataListenerWidget {
 		}
 		
 		public void onClick(String value) {
-			PopupPanel pp = new PopupPanel(true, true);
+//			PopupPanel pp = new PopupPanel(true, true);
 
 			int chartHeight = 200;
 			final int numCharts = seriesCharts.size();
