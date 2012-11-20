@@ -2,7 +2,6 @@ package otgviewer.server
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
 import Assocations.convert
-import Assocations.getGoterms
 import UtilsS.nullToNone
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
@@ -76,7 +75,15 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
     val key = asScala(filter, new otgviewer.shared.Series("", probesRules.head._1, "High", null, Array.empty)) 
     
     val r = OTGSeriesQuery.rankCompoundsCombined(seriesDB, key, probesRules).map(p => asJava[String, JDouble](p._1, p._2.toDouble)).toArray
-    val rr = r.sortWith((x1, x2) => x1.second > x2.second)
+    val rr = r.sortWith((x1, x2) => {
+      if (JDouble.isNaN(x1.second)) {
+        false
+      } else if (JDouble.isNaN(x2.second)) {
+        true
+      } else {
+        x1.second > x2.second
+      }
+    })
 
     for (s <- rr.take(10)) {
       println(s)
@@ -160,13 +167,26 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
               Map())))                
     },
       () => {
-        ("GO terms",
-          useConnector(OTGOwlim,            
-            (c: OTGOwlim.type) => getGoterms(probes),
-            convert(Map())))          
-      })
+        ("MF GO terms",
+          convert(useConnector(OTGOwlim,            
+            (c: OTGOwlim.type) => c.mfGoTermsForProbes(probes),
+            Map())))          
+      },
+      () => {
+        ("BP GO terms",
+          convert(useConnector(OTGOwlim,            
+            (c: OTGOwlim.type) => c.bpGoTermsForProbes(probes),
+            Map())))          
+      },
+      () => {
+        ("CC GO terms",
+          convert(useConnector(OTGOwlim,            
+            (c: OTGOwlim.type) => c.ccGoTermsForProbes(probes),
+            Map())))          
+      }
+      )
 
-    sources.par.map(_()).seq.map(x => new Association(x._1, x._2)).toArray
+    sources.par.map(_()).seq.map(x => new Association(x._1, x._2)).toArray    
   }
   
 }

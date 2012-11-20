@@ -28,7 +28,7 @@ public interface KCService extends RemoteService {
 	public String[] identifiersToProbes(DataFilter filter, String[] identifiers, boolean precise);
 	
 	/**
-	 * Load data into the user's session.
+	 * Load data into the user's session. Also perform an initial filtering.
 	 * @param filter
 	 * @param barcodes
 	 * @param probes
@@ -37,11 +37,24 @@ public interface KCService extends RemoteService {
 	 * abs. value is >= this threshold. If this is 0, it will be ignored.
 	 * @param synthCols Synthetic columns, such as T-Tests, that should be computed
 	 * from the start.
-	 * @return
+	 * @return The number of rows that remain after filtering.
 	 */
 	public int loadDataset(DataFilter filter, List<DataColumn> columns, 
 			String[] probes, ValueType type, double absValFilter,
 			List<Synthetic> synthCols);
+	
+	/**
+	 * Filter data that has already been loaded into the session.
+	 * @param filter
+	 * @param columns
+	 * @param absValFilter
+	 * @param synthCols
+	 * @return The number of rows that remain after filtering.
+	 */
+	public int refilterData(DataFilter filter, List<DataColumn> columns, 
+			double absValFilter,
+			List<Synthetic> synthCols);
+	
 	
 	/**
 	 * Add a T-test column. Requires that loadDataset was

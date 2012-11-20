@@ -5,7 +5,6 @@ import java.util.List;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
-import otgviewer.shared.Group;
 import otgviewer.shared.Series;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
@@ -21,6 +20,10 @@ public interface KCServiceAsync {
 			String[] probes, ValueType type, double absValFilter,
 			List<Synthetic> synthCols, AsyncCallback<Integer> callback);
 
+	public void refilterData(DataFilter filter, List<DataColumn> columns,
+			double absValFilter, List<Synthetic> synthCols,
+			AsyncCallback<Integer> callback);
+
 	public void datasetItems(int offset, int size, int sortColumn,
 			boolean ascending, AsyncCallback<List<ExpressionRow>> callback);
 
@@ -30,12 +33,12 @@ public interface KCServiceAsync {
 
 	public void prepareCSVDownload(AsyncCallback<String> callback);
 
-	public void addTwoGroupTest(Synthetic.TwoGroupSynthetic test, AsyncCallback<Void> callback);
-	
+	public void addTwoGroupTest(Synthetic.TwoGroupSynthetic test,
+			AsyncCallback<Void> callback);
+
 	public void getSingleSeries(DataFilter filter, String probe,
 			String timeDose, String compound, AsyncCallback<Series> callback);
 
-	public void getSeries(DataFilter filter, String[] probes,
-			String timeDose, String compound,
-			AsyncCallback<List<Series>> callback);
+	public void getSeries(DataFilter filter, String[] probes, String timeDose,
+			String compound, AsyncCallback<List<Series>> callback);
 }

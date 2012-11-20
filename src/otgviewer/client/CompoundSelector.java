@@ -279,19 +279,17 @@ public class CompoundSelector extends DataListenerWidget {
 									for (Pair<String, Double> p : res) {
 										scores.put(p.first(), p.second());
 										sortedCompounds.add(p.first());
-									}
+									}									
 									compoundTable.reloadWith(sortedCompounds, false);									
 								}
 
 								public void onFailure(Throwable caught) {
 									Window.alert("Unable to rank compounds.");
 								}
-							});
-										
+							});										
 				}
 			}
-		});
-		
+		});		
 	}
 	
 	class ChartClickCell extends ImageClickCell {

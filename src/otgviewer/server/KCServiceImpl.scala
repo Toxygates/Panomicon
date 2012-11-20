@@ -32,12 +32,12 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
   import Conversions._
   import scala.collection.JavaConversions._
   import UtilsS._
-  
-  class DataViewParams {	
-	var sortAsc: Boolean = _
-	var sortColumn: Int = _
-	var mustSort: Boolean = _
-	var filter: DataFilter = _
+
+  class DataViewParams {
+    var sortAsc: Boolean = _
+    var sortColumn: Int = _
+    var mustSort: Boolean = _
+    var filter: DataFilter = _
   }
 
   private var foldsDB: DB = _
@@ -65,8 +65,11 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
   private def getSessionData() = new SessionData(getThreadLocalRequest().getSession())
 
   private class SessionData(val session: HttpSession) {
-    def data: ExprMatrix = session.getAttribute("ungroupedFiltered").asInstanceOf[ExprMatrix]
-    def data_=(v: ExprMatrix) = session.setAttribute("ungroupedFiltered", v)
+    def ungroupedUnfiltered: ExprMatrix = session.getAttribute("ungroupedUnfiltered").asInstanceOf[ExprMatrix]
+    def ungroupedUnfiltered_=(v: ExprMatrix) = session.setAttribute("ungroupedUnfiltered", v)
+
+    def ungroupedFiltered: ExprMatrix = session.getAttribute("ungroupedFiltered").asInstanceOf[ExprMatrix]
+    def ungroupedFiltered_=(v: ExprMatrix) = session.setAttribute("ungroupedFiltered", v)
 
     def rendered: ExprMatrix = session.getAttribute("groupedFiltered").asInstanceOf[ExprMatrix]
     def rendered_=(v: ExprMatrix) = session.setAttribute("groupedFiltered", v)
@@ -123,8 +126,17 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
       }).map(_.getCode)
     }
 
-    val session = getSessionData() 
+    val session = getSessionData()
     val data = getExprValues(filter, barcodes(columns), filterProbes(filter, probes), typ, false)
+
+    session.ungroupedUnfiltered = data
+    refilterData(filter, columns, absValFilter, syntheticColumns)
+  }
+  
+  def refilterData(filter: DataFilter, columns: JList[DataColumn], absValFilter: Double,
+                   syntheticColumns: JList[Synthetic]): Int = {
+    val session = getSessionData()
+    val data = session.ungroupedUnfiltered
 
     val groupedColumns = columns.map(c => {
       c match {
@@ -152,7 +164,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     val (ngfd, nfd) = groupedData.modifyJointly(data, _.filterRows(r => f(r, groupedData.columns)))
 
     session.rendered = ngfd
-    session.data = nfd
+    session.ungroupedFiltered = nfd
 
     if (ngfd.rows > 0) {
       println("Stored " + ngfd.rows + " x " + ngfd.columns + " items in session")
@@ -166,7 +178,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
 
     for (s <- syntheticColumns) {
       s match {
-        case tgt: Synthetic.TwoGroupSynthetic => addTwoGroupTest(tgt)        
+        case tgt: Synthetic.TwoGroupSynthetic => addTwoGroupTest(tgt)
       }
     }
 
@@ -186,7 +198,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
         if (ascending) { ev1.value < ev2.value } else { ev1.value > ev2.value }
       }
     }
-    
+
     println("SortCol: " + sortColumn + " asc: " + ascending)
 
     val session = getSessionData()
@@ -203,12 +215,12 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
         params.sortAsc = ascending
         params.mustSort = false
 
-        val (grf, ugrf) = groupedFiltered.modifyJointly(session.data,
+        val (grf, ugrf) = groupedFiltered.modifyJointly(session.ungroupedFiltered,
           _.sortRows(sortData))
 
         groupedFiltered = grf
         session.rendered = grf
-        session.data = ugrf
+        session.ungroupedFiltered = ugrf
 
       }
       new ArrayList[ExpressionRow](insertAnnotations(groupedFiltered.asRows.drop(offset).take(size)))
@@ -249,7 +261,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
   def addTwoGroupTest(test: Synthetic.TwoGroupSynthetic): Unit = {
     val session = getSessionData()
     val rendered = session.rendered
-    val data = session.data
+    val data = session.ungroupedFiltered
     val g1 = test.getGroup1
     val g2 = test.getGroup2
     test match {
@@ -265,9 +277,9 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
         withtt.columnMap += (test.toString -> rendered.columns)
         session.rendered = withtt
       }
-    }    
+    }
   }
-  
+
   def prepareCSVDownload(): String = {
     val session = getSessionData()
     val rendered = session.rendered
@@ -275,22 +287,22 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
       println("I had " + session.rendered.rows + " rows stored")
     }
     val colNames = rendered.columnMap.toArray.sortWith(_._2 < _._2).map(_._1)
-    CSVHelper.writeCSV(rendered.annotations.map(_.probe), colNames, session.data.data)
+    CSVHelper.writeCSV(rendered.annotations.map(_.probe), colNames, session.ungroupedFiltered.data)
   }
-  
+
   def getSingleSeries(filter: DataFilter, probe: String, timeDose: String, compound: String): Series = {
-    OTGSeriesQuery.getSeries(seriesDB, asScala(filter, new Series("", probe, timeDose, compound, Array.empty))).head	
+    OTGSeriesQuery.getSeries(seriesDB, asScala(filter, new Series("", probe, timeDose, compound, Array.empty))).head
   }
-  
+
   def getSeries(filter: DataFilter, probes: Array[String], timeDose: String, compound: String): JList[Series] = {
     val validated = OTGMisc.identifiersToProbesQuick(filter, probes, true)
-    val ss = validated.flatMap(p => 
+    val ss = validated.flatMap(p =>
       OTGSeriesQuery.getSeries(seriesDB, asScala(filter, new Series("", p, timeDose, compound, Array.empty))))
     val jss = ss.map(asJava(_))
     for (s <- ss) {
       println(s)
-    } 
-      
+    }
+
     new ArrayList[Series](asJavaCollection(jss))
   }
 

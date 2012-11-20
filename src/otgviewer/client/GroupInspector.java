@@ -455,8 +455,11 @@ public class GroupInspector extends DataListenerWidget {
 			n.addAll(Arrays.asList(pendingGroup.getBarcodes()));
 			pendingGroup = new Group(pendingGroupName,
 					n.toArray(new Barcode[0]));
+			
+			existingGroupsTable.provider().getList().remove(groups.get(pendingGroupName));
 			groups.put(pendingGroupName, pendingGroup);
-
+			existingGroupsTable.provider().getList().add(pendingGroup);
+			existingGroupsTable.setSelected(pendingGroup);
 			reflectGroupChanges();
 		}
 	}

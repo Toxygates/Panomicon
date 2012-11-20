@@ -1,6 +1,11 @@
 package otgviewer.client;
 
+import java.util.Arrays;
+import java.util.List;
+
 import otgviewer.client.components.ScreenManager;
+import otgviewer.shared.DataColumn;
+import otgviewer.shared.DataFilter;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -17,6 +22,11 @@ public class DataScreen extends Screen {
 	public static final String key = "data";
 	private ExpressionTable et;
 	private final Screen myScreen = this;
+	
+	private DataFilter lastFilter;
+	private String[] lastProbes;
+	private List<DataColumn> lastColumns;
+	
 	public DataScreen(Screen parent, ScreenManager man) {
 		super(parent, "View data", key, true, man);
 		
@@ -57,7 +67,14 @@ public class DataScreen extends Screen {
 		super.show();
 		//state has finished loading
 		
+		//Attempt to avoid reloading the data
+		if (lastFilter == null || !lastFilter.equals(chosenDataFilter) ||
+				lastProbes == null || !Arrays.deepEquals(chosenProbes, lastProbes) ||
+				lastColumns == null || !chosenColumns.equals(lastColumns)) {
+			lastProbes = chosenProbes;
+			lastFilter = chosenDataFilter;
+			lastColumns = chosenColumns;
 		et.getExpressions(chosenProbes, false);		
-		
+		}		
 	}
 }

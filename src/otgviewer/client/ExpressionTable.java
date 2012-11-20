@@ -78,8 +78,8 @@ public class ExpressionTable extends DataListenerWidget {
 	private ListBox groupsel2 = new ListBox();
 	
 	private Map<String, Association> associations = new HashMap<String, Association>();
-	private final static String[] expectedAssociations = new String[] { "KEGG pathways", "GO terms" };
-	private final static Boolean[] assocColumnVis = new Boolean[] { false, false };
+	private final static String[] expectedAssociations = new String[] { "KEGG pathways", "MF GO terms", "CC GO terms", "BP GO terms" };
+	private final static Boolean[] assocColumnVis = new Boolean[] { false, false, false, false };
 	
 	/**
 	 * This constructor will be used by the GWT designer. (Not functional at run time)
@@ -144,9 +144,8 @@ public class ExpressionTable extends DataListenerWidget {
 		Button absApply = new Button("Apply");
 		horizontalPanel.add(absApply);
 		absApply.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent e) {
-				// force reload
-				getExpressions(null, true);				
+			public void onClick(ClickEvent e) {				
+				refilterData();					
 			}
 		});
 
@@ -155,8 +154,7 @@ public class ExpressionTable extends DataListenerWidget {
 		absClear.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent e) {
 				absValBox.setValue(0.0);
-				// force reload
-				getExpressions(null, true);				
+				refilterData();
 			}
 		});
 		
@@ -522,6 +520,25 @@ public class ExpressionTable extends DataListenerWidget {
 		exprGrid.setRowCount(0, false);		
 	}
 	
+	private void refilterData() {
+		exprGrid.setRowCount(0, false);
+		List<DataColumn> cols = new ArrayList<DataColumn>();
+		cols.addAll(chosenColumns);
+		kcService.refilterData(chosenDataFilter, cols, 
+				absValBox.getValue(), synthColumns, 
+				new AsyncCallback<Integer>() {
+					public void onFailure(Throwable caught) {						
+						Window.alert("Unable to load dataset");					
+					}
+
+					public void onSuccess(Integer result) {
+						exprGrid.setRowCount(result);
+						exprGrid.setVisibleRangeAndClearData(new Range(0, 20),
+								true);
+					}
+				});
+	}
+	
 	public void getExpressions(String[] displayedProbes, boolean usePreviousProbes) {
 		if (!usePreviousProbes) {
 			changeProbes(displayedProbes);			
@@ -577,8 +594,6 @@ public class ExpressionTable extends DataListenerWidget {
 						exprGrid.setRowCount(result);
 						exprGrid.setVisibleRangeAndClearData(new Range(0, 20),
 								true);
-						//todo: also load the synthetic (ttest etc) columns
-
 					}
 				});
 	}

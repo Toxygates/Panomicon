@@ -31,7 +31,7 @@ object UtilsS {
     }
   }
   
-  private def gracefully[T](f: () => T, onFailure: T, finalizer: () => Unit): T = {
+  def gracefully[T](f: () => T, onFailure: T, finalizer: () => Unit): T = {
     try {
       f()
     } catch {
@@ -43,5 +43,5 @@ object UtilsS {
       finalizer()
     }
   }
-
+  
 }
