@@ -36,38 +36,14 @@ public class PathologyScreen extends Screen {
 	public PathologyScreen(Screen parent, ScreenManager man) {
 		super(parent, "Pathology/chemical data", key, true, man);
 	}
-	
-	private Group groupFor(String barcode) {
-		for (DataColumn c: chosenColumns) {
-			for (Barcode b: c.getBarcodes()) {
-				if (b.getCode().equals(barcode)) {
-					if (c instanceof Group) {
-						return (Group) c;
-					}
-				}
-			}
-		}
-		return null;
-	}
-	
-	private Barcode barcodeFor(String barcode) {
-		for (DataColumn c: chosenColumns) {
-			for (Barcode b: c.getBarcodes()) {
-				if (b.getCode().equals(barcode)) {
-					return b;					
-				}
-			}
-		}
-		return null;
-	}
-	
+
 	public Widget content() {		
 		vp.add(sp);
 		sp.setWidget(pathologyTable);
 		
 		TextColumn<Pathology> col = new TextColumn<Pathology>() {
 			public String getValue(Pathology p) {
-				Group g = groupFor(p.barcode());
+				Group g = Utils.groupFor(chosenColumns, p.barcode());
 				if (g != null) {
 					return g.getName();
 				} else {
@@ -79,7 +55,7 @@ public class PathologyScreen extends Screen {
 		
 		col = new TextColumn<Pathology>() {
 			public String getValue(Pathology p) {
-				Barcode b = barcodeFor(p.barcode());
+				Barcode b = Utils.barcodeFor(chosenColumns, p.barcode());
 				return b.getCompound() + "/" + b.getShortTitle(); 				
 			}
 		};
@@ -156,7 +132,7 @@ public class PathologyScreen extends Screen {
 		}
 		
 		public void onClick(String value) {
-			Barcode b = barcodeFor(value);
+			Barcode b = Utils.barcodeFor(chosenColumns, value);
 			Screen s = new SampleDetailScreen(b, myScreen, manager);
 			manager.showTemporary(s);			
 		}

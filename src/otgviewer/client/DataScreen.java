@@ -28,8 +28,7 @@ public class DataScreen extends Screen {
 	private List<DataColumn> lastColumns;
 	
 	public DataScreen(Screen parent, ScreenManager man) {
-		super(parent, "View data", key, true, man);
-		
+		super(parent, "View data", key, true, man);		
 	}
 	
 	public Widget content() {

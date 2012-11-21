@@ -44,4 +44,13 @@ public class Annotation implements Serializable {
 //		return r;
 		return _entries;
 	}
+	
+	public double doubleValueFor(String entryName) throws Exception {
+		for (Annotation.Entry e: getEntries()) {
+			if (e.description.equals(entryName)) {																										
+				return Double.valueOf(e.value);
+			}
+		}
+		throw new Exception("Value not available");
+	}
 }

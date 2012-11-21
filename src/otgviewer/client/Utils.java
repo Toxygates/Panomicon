@@ -9,8 +9,10 @@ import otgviewer.shared.Group;
 
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 import com.google.gwt.user.client.ui.ScrollPanel;
@@ -35,7 +37,14 @@ public class Utils {
 		HorizontalPanel hp = new HorizontalPanel();
 		hp.setSpacing(2);
 		hp.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		return hp;
+	}
+	
+	public static Label mkEmphLabel(String s) {
+		Label r = new Label(s);
+		r.setStyleName("emphasized");
+		return r;
 	}
 
 	/**
@@ -89,6 +98,40 @@ public class Utils {
 			}
 		}
 		return r.toArray(new String[0]);
+	}
+	
+	public static Group findGroup(List<DataColumn> groups, String title) {
+		for (DataColumn d: groups) {
+			if (((Group) d).getName().equals(title)) {
+				return ((Group) d);
+			}
+		}
+		return null;
+	}
+
+	
+	public static Group groupFor(List<DataColumn> columns, String barcode) {
+		for (DataColumn c: columns) {
+			for (Barcode b: c.getBarcodes()) {
+				if (b.getCode().equals(barcode)) {
+					if (c instanceof Group) {
+						return (Group) c;
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
+	public static Barcode barcodeFor(List<DataColumn> columns, String barcode) {
+		for (DataColumn c: columns) {
+			for (Barcode b: c.getBarcodes()) {
+				if (b.getCode().equals(barcode)) {
+					return b;					
+				}
+			}
+		}
+		return null;
 	}
 	
 }

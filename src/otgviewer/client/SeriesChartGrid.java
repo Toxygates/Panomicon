@@ -82,12 +82,12 @@ public class SeriesChartGrid extends Composite {
 		
 		int i = 1;
 		for (String p: rowKeys) {
-			g.setWidget(i, 0, new Label(p));
+			g.setWidget(i, 0, Utils.mkEmphLabel(p));
 			i += 2;
 		}
-		g.setWidget(0, 0, new Label("Low"));
-		g.setWidget(0, 1, new Label("Middle"));
-		g.setWidget(0, 2, new Label("High"));
+		g.setWidget(0, 0, Utils.mkEmphLabel("Low"));
+		g.setWidget(0, 1, Utils.mkEmphLabel("Middle"));
+		g.setWidget(0, 2, Utils.mkEmphLabel("High"));
 
 		if (!rowsAreCompounds) {
 			owlimService.geneSyms(rowKeys.toArray(new String[0]),
@@ -95,10 +95,9 @@ public class SeriesChartGrid extends Composite {
 						public void onSuccess(String[][] results) {
 							for (int i = 0; i < results.length; ++i) {
 								g.setWidget(
-										i * 2 + 1,
-										0,
-										new Label(SharedUtils
-												.mkString(results[i])));
+										i * 2 + 1, 0,
+										Utils.mkEmphLabel(SharedUtils
+												.mkString(results[i])));										
 							}
 						}
 

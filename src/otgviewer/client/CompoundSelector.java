@@ -72,7 +72,6 @@ public class CompoundSelector extends DataListenerWidget {
 	}
 	
 	public CompoundSelector(String heading) {
-//		chosenDataFilter = initFilter;
 		makeCompoundSorter();
 		
 		verticalPanel = new VerticalPanel();
@@ -168,7 +167,7 @@ public class CompoundSelector extends DataListenerWidget {
 	
 	public void setSelection(List<String> compounds) {		
 		compoundTable.clearSelection();		
-		compoundTable.selection().addAll(compounds);
+		compoundTable.selectAll(compounds);
 		
 		compoundTable.table().redraw();		
 		Collections.sort(compounds);
@@ -205,14 +204,10 @@ public class CompoundSelector extends DataListenerWidget {
 		for (int i = 0; i < 5; i++) {
 			sortProbeText[i] = new TextBox();
 			rankType[i] = new ListBox();
-			rankType[i].addItem("Sum");
-			rankType[i].addItem("Negative sum");			
-			rankType[i].addItem("Synthetic curve");
-			rankType[i].addItem("Low variance");
-			rankType[i].addItem("High variance");
-			rankType[i].addItem("Unchanged");
-			rankType[i].addItem("Strict increasing");
-			rankType[i].addItem("Strict decreasing");
+			for (RuleType rt: RuleType.values()) {
+				rankType[i].addItem(rt.toString());
+			}
+
 			syntheticCurveText[i] = new TextBox();
 			g.setWidget(i + 1, 0, sortProbeText[i]);
 			g.setWidget(i + 1, 1, rankType[i]);
@@ -224,70 +219,54 @@ public class CompoundSelector extends DataListenerWidget {
 		
 		b.addClickHandler(new ClickHandler() {						
 			public void onClick(ClickEvent event) {
-				RankRule[] rules = new RankRule[5];
-				rankProbes = new ArrayList<String>();
-				for (int i = 0; i < 5; ++i) {
-					if (!sortProbeText[i].getText().equals("")) {
-						String probe = sortProbeText[i].getText();
-						rankProbes.add(probe);
-						switch (rankType[i].getSelectedIndex()) {
-						case 0:
-							rules[i] = new RankRule(RuleType.Sum, probe);
-							break;
-						case 1:
-							rules[i] = new RankRule(RuleType.NegativeSum, probe);
-							break;						
-						case 2:
-							double[] data = new double[4];
-							String[] ss = syntheticCurveText[i].getText()
-									.split(" ");
-							if (ss.length != 4) {
-								Window.alert("Please supply 4 space-separated values as the synthetic curve. (Example: -1 -2 -3 -4");
-							} else {
-								for (int j = 0; j < ss.length; ++j) {
-									data[j] = Double.valueOf(ss[j]);
-								}
-								rules[i] = new RankRule(RuleType.Synthetic, probe);
-								rules[i].setData(data);
-							}
-							break;
-						case 3:
-							rules[i] = new RankRule(RuleType.LowVariance, probe);
-							break;
-						case 4:
-							rules[i] = new RankRule(RuleType.HighVariance, probe);
-							break;
-						case 5:
-							rules[i] = new RankRule(RuleType.Unchanged, probe);
-							break;
-						case 6:
-							rules[i] = new RankRule(RuleType.MonotonicUp, probe);
-							break;
-						case 7:
-							rules[i] = new RankRule(RuleType.MonotonicDown, probe);
-							break;
-						}
-					}
-				}
-				if (rules[0] != null) {
-					owlimService.rankedCompounds(chosenDataFilter, rules,
-							new AsyncCallback<Pair<String, Double>[]>() {
-								public void onSuccess(Pair<String, Double>[] res) {
-									List<String> sortedCompounds = new ArrayList<String>();
-									for (Pair<String, Double> p : res) {
-										scores.put(p.first(), p.second());
-										sortedCompounds.add(p.first());
-									}									
-									compoundTable.reloadWith(sortedCompounds, false);									
-								}
-
-								public void onFailure(Throwable caught) {
-									Window.alert("Unable to rank compounds.");
-								}
-							});										
-				}
+				performRanking();				
 			}
 		});		
+	}
+	
+	private void performRanking() {
+		RankRule[] rules = new RankRule[5];
+		rankProbes = new ArrayList<String>();
+		for (int i = 0; i < 5; ++i) {
+			if (!sortProbeText[i].getText().equals("")) {
+				String probe = sortProbeText[i].getText();
+				rankProbes.add(probe);
+				RuleType rt = RuleType.valueOf(rankType[i].getItemText(rankType[i].getSelectedIndex()));
+				rules[i] = new RankRule(rt, probe);
+				
+				if (rt == RuleType.Synthetic) {
+					double[] data = new double[4];
+					String[] ss = syntheticCurveText[i].getText()
+							.split(" ");
+					if (ss.length != 4) {
+						Window.alert("Please supply 4 space-separated values as the synthetic curve. (Example: -1 -2 -3 -4");
+						rules[i] = null;
+					} else {
+						for (int j = 0; j < ss.length; ++j) {
+							data[j] = Double.valueOf(ss[j]);
+						}						
+						rules[i].setData(data);
+					}
+				}
+			}
+		}
+		if (rules[0] != null) { //do we have at least 1 rule?			
+			owlimService.rankedCompounds(chosenDataFilter, rules,
+					new AsyncCallback<Pair<String, Double>[]>() {
+						public void onSuccess(Pair<String, Double>[] res) {
+							List<String> sortedCompounds = new ArrayList<String>();
+							for (Pair<String, Double> p : res) {
+								scores.put(p.first(), p.second());
+								sortedCompounds.add(p.first());
+							}									
+							compoundTable.reloadWith(sortedCompounds, false);									
+						}
+
+						public void onFailure(Throwable caught) {
+							Window.alert("Unable to rank compounds.");
+						}
+					});									
+		}
 	}
 	
 	class ChartClickCell extends ImageClickCell {

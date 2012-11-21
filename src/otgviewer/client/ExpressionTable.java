@@ -45,6 +45,7 @@ import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.AsyncDataProvider;
 import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.MultiSelectionModel;
@@ -52,14 +53,7 @@ import com.google.gwt.view.client.Range;
 import com.google.gwt.view.client.SelectionChangeEvent;
 
 public class ExpressionTable extends DataListenerWidget {
-	
-	public static interface ExpressionListener {
-		public void expressionsChanged(List<ExpressionRow> expressions);		
-	}
 
-	// Visible columns
-	private boolean geneIdColVis = false, probeColVis = false,
-			probeTitleColVis = true, geneSymColVis = true;
 
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
 	private DataGrid<ExpressionRow> exprGrid;
@@ -71,15 +65,15 @@ public class ExpressionTable extends DataListenerWidget {
 			.create(KCService.class);
 	private final OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT.create(OwlimService.class);
 	
-	private List<ExpressionListener> els = new ArrayList<ExpressionListener>();
 	private List<Synthetic> synthColumns = new ArrayList<Synthetic>();
 	
 	private ListBox groupsel1 = new ListBox();
 	private ListBox groupsel2 = new ListBox();
 	
 	private Map<String, Association> associations = new HashMap<String, Association>();
-	private final static String[] expectedAssociations = new String[] { "KEGG pathways", "MF GO terms", "CC GO terms", "BP GO terms" };
-	private final static Boolean[] assocColumnVis = new Boolean[] { false, false, false, false };
+	private final static String[] expectedAssociations = new String[] { "KEGG pathways", "MF GO terms", "CC GO terms", "BP GO terms" };	
+	private List<HideableColumn> hideableColumns = new ArrayList<HideableColumn>();
+ 	private List<AssociationColumn> associationColumns = new ArrayList<AssociationColumn>();
 	
 	/**
 	 * This constructor will be used by the GWT designer. (Not functional at run time)
@@ -90,12 +84,13 @@ public class ExpressionTable extends DataListenerWidget {
 	}	
 	
 	public ExpressionTable(String height) {
-
 		DockPanel dockPanel = new DockPanel();
 		dockPanel.setStyleName("none");
 		initWidget(dockPanel);
 		dockPanel.setSize("100%", "100%");
 
+		initHideableColumns();
+		
 		exprGrid = new DataGrid<ExpressionRow>();
 		dockPanel.add(exprGrid, DockPanel.CENTER);
 		exprGrid.setStyleName("exprGrid");
@@ -114,8 +109,14 @@ public class ExpressionTable extends DataListenerWidget {
 		asyncProvider.addDataDisplay(exprGrid);		
 		AsyncHandler colSortHandler = new AsyncHandler(exprGrid);
 		
-		HorizontalPanel tools = new HorizontalPanel();
-		dockPanel.add(tools, DockPanel.NORTH);
+		dockPanel.add(makeToolPanel(), DockPanel.NORTH);
+		
+		exprGrid.addColumnSortHandler(colSortHandler);
+
+	}
+	
+	private Widget makeToolPanel() {
+		HorizontalPanel tools = new HorizontalPanel();		
 		
 		HorizontalPanel horizontalPanel = new HorizontalPanel();
 		horizontalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
@@ -193,9 +194,9 @@ public class ExpressionTable extends DataListenerWidget {
 			}
 		});
 		
-		exprGrid.addColumnSortHandler(colSortHandler);
-
+		return tools;
 	}
+	
 	
 	private void addTwoGroupSynthetic(final Synthetic.TwoGroupSynthetic synth, final String name) {
 		if (groupsel1.getSelectedIndex() == -1 || groupsel2.getSelectedIndex() == -1) {
@@ -203,8 +204,8 @@ public class ExpressionTable extends DataListenerWidget {
 		} else if (groupsel1.getSelectedIndex() == groupsel2.getSelectedIndex()) {
 			Window.alert("Please select two different groups to perform " + name + ".");
 		} else {
-			final Group g1 = findGroup(chosenColumns, groupsel1.getItemText(groupsel1.getSelectedIndex()));
-			final Group g2 = findGroup(chosenColumns, groupsel2.getItemText(groupsel2.getSelectedIndex()));
+			final Group g1 = Utils.findGroup(chosenColumns, groupsel1.getItemText(groupsel1.getSelectedIndex()));
+			final Group g2 = Utils.findGroup(chosenColumns, groupsel2.getItemText(groupsel2.getSelectedIndex()));
 			synth.setGroups(g1, g2);
 			kcService.addTwoGroupTest(synth, new AsyncCallback<Void>() {
 				public void onSuccess(Void v) {
@@ -219,22 +220,6 @@ public class ExpressionTable extends DataListenerWidget {
 		}
 	}
 	
-	private Group findGroup(List<DataColumn> groups, String title) {
-		for (DataColumn d: groups) {
-			if (((Group) d).getName().equals(title)) {
-				return ((Group) d);
-			}
-		}
-		return null;
-	}
-	
-	public void addExpressionListener(ExpressionListener el) {
-		els.add(el);
-	}
-	
-	private String downloadUrl;
-	private DialogBox db;
-	
 	MenuItem[] menuItems() {
 		MenuItem[] r = new MenuItem[2];
 		MenuBar menuBar_3 = new MenuBar(true);
@@ -248,8 +233,8 @@ public class ExpressionTable extends DataListenerWidget {
 						Window.alert("Unable to prepare the requested data for download");
 					}
 					public void onSuccess(String url) {
-						downloadUrl = url;
-						db = new DialogBox(false, true);
+						final String downloadUrl = url;
+						final DialogBox db = new DialogBox(false, true);
 						db.setPopupPosition(Window.getClientWidth()/2 - 100, Window.getClientHeight() / 2 - 100);						
 						db.setHTML("Your download is ready.");				
 						HorizontalPanel hp = new HorizontalPanel();
@@ -283,43 +268,14 @@ public class ExpressionTable extends DataListenerWidget {
 
 		MenuItem mntmNewMenu_1 = new MenuItem("New menu", false, menuBar_2);
 
-		MenuItem mntmGeneId = new MenuItem("Gene ID", false, new Command() {
-			public void execute() {
-				geneIdColVis = !geneIdColVis;
-				setupColumns();
-			}
-		});
-		menuBar_2.addItem(mntmGeneId);
-
-		MenuItem mntmProbeName = new MenuItem("Probe ID", false,
-				new Command() {
-					public void execute() {
-						probeColVis = !probeColVis;
-						setupColumns();
-					}
-				});
-		menuBar_2.addItem(mntmProbeName);
-
-		MenuItem mntmGeneName = new MenuItem("Probe title", false, new Command() {
-			public void execute() {
-				probeTitleColVis = !probeTitleColVis;
-				setupColumns();
-			}
-		});
-		menuBar_2.addItem(mntmGeneName);
-		
-
-		MenuItem mntmGeneSym = new MenuItem("Gene symbol", false, new Command() {
-			public void execute() {
-				geneSymColVis = ! geneSymColVis;				
-				setupColumns();
-			}
-		});
-		menuBar_2.addItem(mntmGeneSym);
-		
-		for (int i = 0; i < expectedAssociations.length; ++i) {
-			MenuItem mi = makeAssocMenuItem(i);
-			menuBar_2.addItem(mi);	
+		for (final HideableColumn c: hideableColumns) {
+			MenuItem mi = new MenuItem(c.name(), false, new Command() {
+				public void execute() {
+					c.flipVisibility();					
+					setupColumns();
+				}
+			});
+			menuBar_2.addItem(mi);
 		}
 		
 		mntmNewMenu_1.setHTML("Columns");
@@ -327,15 +283,6 @@ public class ExpressionTable extends DataListenerWidget {
 		return r;
 	}
 
-	private MenuItem makeAssocMenuItem(final int i) {
-		MenuItem mi = new MenuItem(expectedAssociations[i], false, new Command() {
-			public void execute() {
-				assocColumnVis[i] = ! assocColumnVis[i];					
-				setupColumns();
-			}
-		});
-		return mi;
-	}
 	
 	private int extraCols = 0;
 	private void setupColumns() {
@@ -355,52 +302,13 @@ public class ExpressionTable extends DataListenerWidget {
 		exprGrid.setColumnWidth(tcl, "40px");		
 		extraCols += 1;
 		
-		if (probeColVis) {
-			TextColumn<ExpressionRow> probeCol = new TextColumn<ExpressionRow>() {
-				public String getValue(ExpressionRow er) {
-					return er.getProbe();
-				}
-			};
-			exprGrid.addColumn(probeCol, "Probe");
-			extraCols += 1;
-		}
-
-		if (probeTitleColVis) {
-			TextColumn<ExpressionRow> titleCol = new TextColumn<ExpressionRow>() {
-				public String getValue(ExpressionRow er) {
-					return er.getTitle();
-				}
-			};
-			exprGrid.addColumn(titleCol, "Probe title");
-			extraCols += 1;
-		}
-
-		if (geneIdColVis) {
-			TextColumn<ExpressionRow> geneIdCol = new TextColumn<ExpressionRow>() {
-				public String getValue(ExpressionRow er) {
-					return arrayString(er.getGeneIds(), ", ");
-				}
-			};
-			exprGrid.addColumn(geneIdCol, "Gene ID");
-			extraCols += 1;
-		}
-
-		if (geneSymColVis) {
-			TextColumn<ExpressionRow> geneSymCol = new TextColumn<ExpressionRow>() {
-				public String getValue(ExpressionRow er) {
-					return arrayString(er.getGeneSyms(), ", ");
-				}
-			};
-			exprGrid.addColumn(geneSymCol, "Gene sym");
-			extraCols += 1;
-		}
-		
-		for (int i = 0; i < expectedAssociations.length; ++i) {
-			if (assocColumnVis[i]) {
-				exprGrid.addColumn(new AssociationColumn(tc, expectedAssociations[i]), expectedAssociations[i]);
+		for (HideableColumn c: hideableColumns) {
+			if (c.visible()) {
+				exprGrid.addColumn((Column<ExpressionRow, ?>) c, c.name());				
 				extraCols += 1;
 			}
-		}
+		}		
+
 
 		int i = 0;
 		
@@ -422,7 +330,37 @@ public class ExpressionTable extends DataListenerWidget {
 			i += 1;
 		}				
 	}
+
+	private void initHideableColumns() {
+		hideableColumns.add(new DefHideableColumn("Gene ID", false) {
+			public String getValue(ExpressionRow er) {
+				return arrayString(er.getGeneIds(), ", ");
+			}
+		});
+		hideableColumns.add(new DefHideableColumn("Gene Sym", true) {
+			public String getValue(ExpressionRow er) {				
+				return arrayString(er.getGeneSyms(), ", ");
+			}
+		});
+		hideableColumns.add(new DefHideableColumn("Probe title", true) {
+			public String getValue(ExpressionRow er) {				
+				return er.getTitle();
+			}
+		});
+		hideableColumns.add(new DefHideableColumn("Probe", true) {
+			public String getValue(ExpressionRow er) {				
+				return er.getProbe();
+			}
+		});
 		
+		TextCell tc = new TextCell();
+		for (String assoc: expectedAssociations) {
+			AssociationColumn ac = new AssociationColumn(tc, assoc);
+			associationColumns.add(ac);
+			hideableColumns.add(ac);
+		}
+	}
+	
 	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
 		private int start = 0;
 
@@ -449,10 +387,7 @@ public class ExpressionTable extends DataListenerWidget {
 				if (result.size() > 0) {
 
 					exprGrid.setRowData(start, result);
-					for (ExpressionListener el : els) {
-						el.expressionsChanged(result);
-					}
-					
+
 					String[] probes = new String[result.size()];
 					for (int i = 0; i < probes.length; ++i) {
 						probes[i] = result.get(i).getProbe();
@@ -547,13 +482,7 @@ public class ExpressionTable extends DataListenerWidget {
 		setupColumns();
 		List<DataColumn> cols = new ArrayList<DataColumn>();
 		cols.addAll(chosenColumns);
-		
-//		List<Barcode> average = new ArrayList<Barcode>();
-//		for (DataColumn c: cols) {			
-//			average.addAll(Arrays.asList(c.getBarcodes()));
-//		}
-//		cols.add(new Group("Average", average.toArray(new Barcode[0])));
-		
+
 		//set up the series charts
 		Set<String> soFar = new HashSet<String>();
 		seriesChartPanel.clear();
@@ -618,9 +547,16 @@ public class ExpressionTable extends DataListenerWidget {
 		}
 	}
 	
-	class AssociationColumn extends Column<ExpressionRow, String> {
+	interface HideableColumn {
+		String name();
+		boolean visible();
+		void flipVisibility();
+	}
+	
+	class AssociationColumn extends Column<ExpressionRow, String> implements HideableColumn {
 		String assoc;
 		TextCell tc;
+		boolean visible = false;
 		
 		public AssociationColumn(TextCell tc, String association) {
 			super(tc);
@@ -640,6 +576,10 @@ public class ExpressionTable extends DataListenerWidget {
 				return "";
 			}							
 		}
+		
+		public String name() { return assoc; }
+		public void flipVisibility() { visible = ! visible; }		
+		public boolean visible() { return this.visible; }		
 	}
 	
 	class ToolCell extends ImageClickCell {
@@ -700,9 +640,21 @@ public class ExpressionTable extends DataListenerWidget {
 			super(tc);			
 		}
 		
-		public String getValue(ExpressionRow er) {
-			return er.getProbe();			
+		public String getValue(ExpressionRow er) { return er.getProbe(); }					
+	}
+	
+	abstract class DefHideableColumn extends TextColumn<ExpressionRow> implements HideableColumn {
+		private boolean visible;
+		public DefHideableColumn(String name, boolean initState) {
+			super();
+			visible = initState;
+			_name = name;
 		}
+		
+		private String _name;
+		public String name() { return _name; }
+		public boolean visible() { return this.visible; }
+		public void flipVisibility() { visible = ! visible; }		
 	}
 	
 	@Override
