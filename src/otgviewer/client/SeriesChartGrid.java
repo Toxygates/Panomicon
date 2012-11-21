@@ -17,6 +17,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.VisualizationUtils;
+import com.google.gwt.visualization.client.visualizations.corechart.AxisOptions;
 import com.google.gwt.visualization.client.visualizations.corechart.ColumnChart;
 import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
@@ -31,10 +32,32 @@ public class SeriesChartGrid extends Composite {
 	
 	List<Series> data;
 	Grid g;
-	List<String> probes;
+	List<String> rowKeys;
 	DataTable table;
-	public SeriesChartGrid(List<Series> series) {
+	
+	boolean rowsAreCompounds = false; //if false, they are probes
+	
+	public SeriesChartGrid(List<Series> series, boolean rowsAreCompounds) {
 		super();
+		data = series;
+		this.rowsAreCompounds = rowsAreCompounds;
+		
+		Set<String> rows = new HashSet<String>();
+		
+		for (Series s: data) {
+			if (rowsAreCompounds) {
+				rows.add(s.compound());
+			} else {
+				rows.add(s.probe());
+			}
+		}
+		this.rowKeys = new ArrayList<String>(rows);
+		
+		g = new Grid(rows.size() * 2 + 1, 3);		
+		initWidget(g);
+		
+		g.setWidth("470px");
+		g.setHeight(rowKeys.size() * 170 + "px");
 		
 		VisualizationUtils
 		.loadVisualizationApi("1.1", new Runnable() {
@@ -42,58 +65,55 @@ public class SeriesChartGrid extends Composite {
 				drawCharts();
 			}
 		}, "corechart");
-		
-		data = series;
-		Set<String> probes = new HashSet<String>();
-		
-		for (Series s: data) {
-			probes.add(s.probe());
-		}
-		this.probes = new ArrayList<String>(probes);
-		
-		g = new Grid(probes.size() + 1, 4);
-		initWidget(g);
 	}
 	
 	private void drawCharts() {
 		for (Series s: data) {
-			int row = SharedUtils.indexOf(probes, s.probe());
+			int row = rowsAreCompounds ? SharedUtils.indexOf(rowKeys, s.compound()) : SharedUtils.indexOf(rowKeys, s.probe());
 			String td = s.timeDose();
 			if (td.equals("Low")) {
-				displaySeriesAt(row + 1, 1, s);
+				displaySeriesAt(row * 2 + 2, 0, s);
 			} else if (td.equals("Middle")) {
-				displaySeriesAt(row + 1, 2, s);
+				displaySeriesAt(row * 2 + 2, 1, s);
 			} else if (td.equals("High")) {
-				displaySeriesAt(row + 1, 3, s);
+				displaySeriesAt(row * 2 + 2, 2, s);
 			}
 		}
 		
 		int i = 1;
-		for (String p: probes) {
+		for (String p: rowKeys) {
 			g.setWidget(i, 0, new Label(p));
-			i += 1;
+			i += 2;
 		}
-		g.setWidget(0, 1, new Label("Low"));
-		g.setWidget(0, 2, new Label("Middle"));
-		g.setWidget(0, 3, new Label("High"));
+		g.setWidget(0, 0, new Label("Low"));
+		g.setWidget(0, 1, new Label("Middle"));
+		g.setWidget(0, 2, new Label("High"));
 
-		owlimService.geneSyms(probes.toArray(new String[0]),
-			new AsyncCallback<String[][]>() {
-				public void onSuccess(String[][] results) {
-					for (int i = 0; i < results.length; ++i) {
-						g.setWidget(i + 1, 0, new Label(SharedUtils.mkString(results[i])));
-					}
-				}
+		if (!rowsAreCompounds) {
+			owlimService.geneSyms(rowKeys.toArray(new String[0]),
+					new AsyncCallback<String[][]>() {
+						public void onSuccess(String[][] results) {
+							for (int i = 0; i < results.length; ++i) {
+								g.setWidget(
+										i * 2 + 1,
+										0,
+										new Label(SharedUtils
+												.mkString(results[i])));
+							}
+						}
 
-				public void onFailure(Throwable caught) {
+						public void onFailure(Throwable caught) {
 
-				}
-			});
-
+						}
+					});
+		}
 	}
 	
 	private void displaySeriesAt(int row, int column, Series s) {
-		Options o = Utils.createChartOptions();
+		Options o = Utils.createChartOptions("LightSkyBlue");
+		o.setWidth(150);
+		o.setHeight(150);
+		
 		DataTable t = DataTable.create();
 		t.addColumn(ColumnType.STRING, "Time");
 		t.addColumn(ColumnType.NUMBER, "Value");
@@ -107,15 +127,34 @@ public class SeriesChartGrid extends Composite {
 		t.setValue(2, 0, "3");
 		t.setValue(3, 0, "4");		
 		int i = 0;
+		double min = Double.MAX_VALUE;
+		double max = Double.MIN_VALUE;
+		
 		for (ExpressionValue v : s.values()) {
 			double vv = v.getValue();
 			t.setValue(i, 1, vv);
 			t.setFormattedValue(i, 1, Utils.formatNumber(vv));
 			i += 1;
+			if (vv < min) {
+				min = vv;
+			}
+			if (vv > max) {
+				max = vv;
+			}
+		}
+		if (min > 0) {
+			min = 0;
+		}
+		if (max < 0) {
+			max = 0;
 		}
 		
-		CoreChart c = new ColumnChart(t, o);
-		c.setPixelSize(200, 150);
+		AxisOptions ao = AxisOptions.create();
+		ao.setMaxValue(max);
+		ao.setMinValue(min);
+		o.setVAxisOptions(ao);
+		
+		CoreChart c = new ColumnChart(t, o);				
 		g.setWidget(row, column, c);
 	}
 	

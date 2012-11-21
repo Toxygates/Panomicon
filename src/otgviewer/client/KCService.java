@@ -114,6 +114,6 @@ public interface KCService extends RemoteService {
 	 * @param compound Can optionally be null (no constraint). If this is null, timeDose must be null.
 	 * @return
 	 */
-	public List<Series> getSeries(DataFilter filter, String[] probes, String timeDose, String compound);
+	public List<Series> getSeries(DataFilter filter, String[] probes, String timeDose, String[] compounds);
 	
 }

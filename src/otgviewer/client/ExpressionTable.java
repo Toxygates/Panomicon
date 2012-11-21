@@ -13,6 +13,7 @@ import otgviewer.shared.Association;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Group;
+import otgviewer.shared.Series;
 import otgviewer.shared.Synthetic;
 
 import com.google.gwt.cell.client.TextCell;
@@ -41,6 +42,8 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.AsyncDataProvider;
 import com.google.gwt.view.client.HasData;
@@ -645,8 +648,8 @@ public class ExpressionTable extends DataListenerWidget {
 			super("chart_16.png");
 		}
 		
+		//TODO the popup chart code could be cleaned up/factored out quite a bit
 		public void onClick(String value) {
-//			PopupPanel pp = new PopupPanel(true, true);
 
 			int chartHeight = 200;
 			final int numCharts = seriesCharts.size();
@@ -660,13 +663,34 @@ public class ExpressionTable extends DataListenerWidget {
 				seriesChart.setPixelHeight(chartHeight);
 			}
 
-//			ScrollPanel sp = new ScrollPanel(seriesChartPanel);			
-//			sp.setHeight((Window.getClientHeight() - 100) + "px");			
-//			pp.setWidget(sp);					
-			seriesChartPanel.setHeight((height + 30 * chosenColumns.size()) + "px");
-			Utils.displayInScrolledPopup(seriesChartPanel);
-//			pp.setPopupPosition(Window.getClientWidth()/2 - 250, 50);			
-//			pp.show();		
+			HorizontalPanel hp = new HorizontalPanel();
+			TabPanel tp = new TabPanel();
+			hp.add(tp);
+			tp.add(seriesChartPanel, "Individual values");			
+			
+			VerticalPanel v = new VerticalPanel();			
+			tp.add(v, "All time series");			
+			tp.selectTab(0);
+			
+			for (DataColumn dc: chosenColumns) {
+				Label l = new Label(dc.getShortTitle());
+				l.setStyleName("heading");
+				v.add(l);
+				final SimplePanel sp = new SimplePanel();				
+				v.add(sp);
+				kcService.getSeries(chosenDataFilter, new String[] { value }, 
+						null, dc.getCompounds(), new AsyncCallback<List<Series>>() {
+					public void onSuccess(List<Series> ss) {
+						SeriesChartGrid scg = new SeriesChartGrid(ss, true);
+						sp.add(scg);
+					}
+					public void onFailure(Throwable caught) {
+						Window.alert("Unable to retrieve data.");
+					}
+				});	
+			}			
+			
+			Utils.displayInPopup(hp);				
 		}
 	}
 	

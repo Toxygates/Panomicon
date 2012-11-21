@@ -394,7 +394,7 @@ public class GroupInspector extends DataListenerWidget {
 		
 		Group pendingGroup = new Group(name, new Barcode[0]);		
 		groups.put(name, pendingGroup);
-		existingGroupsTable.provider().getList().add(pendingGroup);
+		existingGroupsTable.addItem(pendingGroup);
 		existingGroupsTable.setSelected(pendingGroup);
 
 		for (int c = 0; c < chosenCompounds.size(); ++c) {
@@ -455,9 +455,9 @@ public class GroupInspector extends DataListenerWidget {
 			pendingGroup = new Group(pendingGroupName,
 					n.toArray(new Barcode[0]));
 			
-			existingGroupsTable.provider().getList().remove(groups.get(pendingGroupName));
+			existingGroupsTable.removeItem(groups.get(pendingGroupName));
 			groups.put(pendingGroupName, pendingGroup);
-			existingGroupsTable.provider().getList().add(pendingGroup);
+			existingGroupsTable.addItem(pendingGroup);
 			existingGroupsTable.setSelected(pendingGroup);
 			reflectGroupChanges();
 		}

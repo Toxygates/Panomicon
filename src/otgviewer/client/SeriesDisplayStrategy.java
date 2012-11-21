@@ -81,7 +81,7 @@ public abstract class SeriesDisplayStrategy {
 				}
 			}
 		}		
-		chart.draw(table, Utils.createChartOptions());
+		chart.draw(table, Utils.createChartOptions("MediumAquaMarine"));
 	}
 	
 	abstract int categoryForBarcode(Barcode b);
@@ -132,7 +132,7 @@ public abstract class SeriesDisplayStrategy {
 		
 		String categoryName() { return "Time"; };
 		CoreChart makeChart() {
-			Options o = Utils.createChartOptions();
+			Options o = Utils.createChartOptions("MediumAquaMarine");
 			return new ColumnChart(table, o);
 		}
 	}
@@ -147,7 +147,7 @@ public abstract class SeriesDisplayStrategy {
 		int categoryForBarcode(Barcode b) { return indexOf(categories(), b.getDose()); }
 		String categoryName() { return "Dose"; }
 		CoreChart makeChart() {
-			Options o = Utils.createChartOptions();			
+			Options o = Utils.createChartOptions("MediumAquaMarine");			
 			return new ColumnChart(table, o);
 		}
 	}

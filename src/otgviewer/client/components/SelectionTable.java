@@ -62,7 +62,7 @@ abstract public class SelectionTable<T> extends Composite {
 	
 	protected void selectionChanged(Set<T> selected) { }
 	
-	public ListDataProvider<T> provider() { return this.provider; }
+//	public ListDataProvider<T> provider() { return this.provider; }
 	public CellTable<T> table() { return this.table; }	
 	public Set<T> selection() { return selected; }
 	public Set<T> inverseSelection() {
@@ -89,6 +89,15 @@ abstract public class SelectionTable<T> extends Composite {
 	
 	public void setSelected(T t) {
 		selected.add(t);
+	}
+	
+	public void addItem(T t) {
+		provider.getList().add(t);		
+	}
+	
+	public void removeItem(T t) {
+		provider.getList().remove(t);
+		selected.remove(t);
 	}
 		
 	/**

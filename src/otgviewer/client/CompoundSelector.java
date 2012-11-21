@@ -297,10 +297,10 @@ public class CompoundSelector extends DataListenerWidget {
 		
 		public void onClick(String value) {
 			kcService.getSeries(chosenDataFilter, rankProbes.toArray(new String[0]), 
-					null, value, new AsyncCallback<List<Series>>() {
+					null, new String[] { value }, new AsyncCallback<List<Series>>() {
 				public void onSuccess(List<Series> ss) {
-					SeriesChartGrid scg = new SeriesChartGrid(ss);
-					Utils.displayInScrolledPopup(scg);
+					SeriesChartGrid scg = new SeriesChartGrid(ss, false);
+					Utils.displayInPopup(scg);
 				}
 				public void onFailure(Throwable caught) {
 					Window.alert("Unable to retrieve data.");
