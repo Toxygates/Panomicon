@@ -148,13 +148,8 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     val groupedColumns = columns.map(_ match {
         case g: Group => {
           new ArrayVector[ExprValue]((0 until data.rows).map(r => {
-            val fvs = g.getBarcodes.map(bc => data.columnMap(bc.getCode)).map(data(r, _)).filter(_.present)
-            val sum = fvs.map(_.value).sum
-            if (fvs.size > 0) {
-              ExprValue(sum / fvs.size, 'P')
-            } else {
-              ExprValue(0, 'A')
-            }
+            val vs = g.getBarcodes.map(bc => data.columnMap(bc.getCode)).map(data(r, _))
+            ExprValue.presentMean(vs, "")            
           }).toArray)
         }
         case b: Barcode => data.column(b.getCode)
@@ -187,11 +182,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     params.mustSort = true
     params.filter = filter
 
-    for (s <- syntheticColumns) {
-      s match {
-        case tgt: Synthetic.TwoGroupSynthetic => addTwoGroupTest(tgt)
-      }
-    }
+    syntheticColumns.foreach(t => addTwoGroupTest(t.asInstanceOf[Synthetic.TwoGroupSynthetic]))
 
     ngfd.rows
   }
@@ -248,9 +239,9 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
   private def insertAnnotations(rows: Iterable[ExpressionRow]): Iterable[ExpressionRow] = {
     val probes = rows.map(_.getProbe).toArray
     useConnector(B2RAffy, (c: B2RAffy.type) => {
-      val probeTitles = c.titles(probes).toArray
-      val geneIds = c.geneIds(probes).map(_.toArray).toArray
-      val geneSyms = c.geneSyms(probes).map(_.toArray).toArray
+      val probeTitles = c.titles(probes)
+      val geneIds = c.geneIds(probes).map(_.toArray)
+      val geneSyms = c.geneSyms(probes).map(_.toArray)
       rows.zip(probeTitles).zip(geneIds).zip(geneSyms).map(r => {
         val or = r._1._1._1
         new ExpressionRow(or.getProbe, r._1._1._2, r._1._2, r._2, or.getValues)
@@ -275,20 +266,18 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     val data = session.ungroupedFiltered
     val g1 = test.getGroup1
     val g2 = test.getGroup2
-    test match {
+    val withTest = test match {
       case ut: Synthetic.UTest => {
-        val withut = rendered.appendUTest(data, g1.getBarcodes.map(_.getCode),
+        rendered.appendUTest(data, g1.getBarcodes.map(_.getCode),
           g2.getBarcodes.map(_.getCode))
-        withut.columnMap += (test.toString -> rendered.columns)
-        session.rendered = withut
       }
       case tt: Synthetic.TTest => {
-        val withtt = rendered.appendTTest(data, g1.getBarcodes.map(_.getCode),
+        rendered.appendTTest(data, g1.getBarcodes.map(_.getCode),
           g2.getBarcodes.map(_.getCode))
-        withtt.columnMap += (test.toString -> rendered.columns)
-        session.rendered = withtt
       }
     }
+    withTest.columnMap += (test.toString -> rendered.columns)
+    session.rendered = withTest
   }
 
   def prepareCSVDownload(): String = {
