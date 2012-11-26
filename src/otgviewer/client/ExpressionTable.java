@@ -187,9 +187,9 @@ public class ExpressionTable extends DataListenerWidget {
 			public void onClick(ClickEvent ce) {
 				if (!synthColumns.isEmpty()) {
 					synthColumns.clear();
-					//We have to reload the data completely to get rid of the synth columns
+					//We have to reload the data to get rid of the synth columns
 					//in our server side session
-					getExpressions(null, true);	
+					getExpressions(chosenProbes);	
 				}
 			}
 		});
@@ -427,12 +427,7 @@ public class ExpressionTable extends DataListenerWidget {
 		}
 		return r.toString();
 	}
-	
-	@Override
-	public void probesChanged(String[] probes) {
-		//no-op to prohibit change
-	}
-	
+
 	@Override
 	public void columnsChanged(List<DataColumn> columns) {
 		super.columnsChanged(columns);
@@ -454,11 +449,11 @@ public class ExpressionTable extends DataListenerWidget {
 		exprGrid.setRowCount(0, false);		
 	}
 	
-	private void refilterData() {
+	void refilterData() { 
 		exprGrid.setRowCount(0, false);
 		List<DataColumn> cols = new ArrayList<DataColumn>();
 		cols.addAll(chosenColumns);
-		kcService.refilterData(chosenDataFilter, cols, 
+		kcService.refilterData(chosenDataFilter, cols, chosenProbes,
 				absValBox.getValue(), synthColumns, 
 				new AsyncCallback<Integer>() {
 					public void onFailure(Throwable caught) {						
@@ -473,11 +468,7 @@ public class ExpressionTable extends DataListenerWidget {
 				});
 	}
 	
-	public void getExpressions(String[] displayedProbes, boolean usePreviousProbes) {
-		if (!usePreviousProbes) {
-			changeProbes(displayedProbes);			
-		}
-		
+	public void getExpressions(String[] displayedProbes) {
 		exprGrid.setRowCount(0, false);
 		setupColumns();
 		List<DataColumn> cols = new ArrayList<DataColumn>();

@@ -51,7 +51,7 @@ public interface KCService extends RemoteService {
 	 * @return The number of rows that remain after filtering.
 	 */
 	public int refilterData(DataFilter filter, List<DataColumn> columns, 
-			double absValFilter,
+			String[] probes, double absValFilter,
 			List<Synthetic> synthCols);
 	
 	

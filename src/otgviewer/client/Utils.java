@@ -16,6 +16,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.visualization.client.LegendPosition;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
@@ -35,10 +36,18 @@ public class Utils {
 	
 	public static HorizontalPanel mkHorizontalPanel() {
 		HorizontalPanel hp = new HorizontalPanel();
-		hp.setSpacing(2);
+		hp.setStyleName("slightlySpaced");
 		hp.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		return hp;
+	}
+	
+	public static VerticalPanel mkVerticalPanel() {
+		VerticalPanel vp = new VerticalPanel();
+		vp.setStyleName("slightlySpaced");
+		vp.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		return vp;
 	}
 	
 	public static Label mkEmphLabel(String s) {

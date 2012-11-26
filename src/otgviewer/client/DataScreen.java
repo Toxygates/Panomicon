@@ -68,12 +68,15 @@ public class DataScreen extends Screen {
 		
 		//Attempt to avoid reloading the data
 		if (lastFilter == null || !lastFilter.equals(chosenDataFilter) ||
-				lastProbes == null || !Arrays.deepEquals(chosenProbes, lastProbes) ||
-				lastColumns == null || !chosenColumns.equals(lastColumns)) {
-			lastProbes = chosenProbes;
-			lastFilter = chosenDataFilter;
-			lastColumns = chosenColumns;
-		et.getExpressions(chosenProbes, false);		
-		}		
+				//lastProbes == null || !Arrays.deepEquals(chosenProbes, lastProbes) ||
+				lastColumns == null || !chosenColumns.equals(lastColumns)) {			
+			et.getExpressions(chosenProbes); //false		
+		} else if (!Arrays.equals(chosenProbes, lastProbes)) {				
+			et.refilterData();			
+		}
+		
+		lastProbes = chosenProbes;
+		lastFilter = chosenDataFilter;
+		lastColumns = chosenColumns;
 	}
 }

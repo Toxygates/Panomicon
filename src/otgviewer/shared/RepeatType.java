@@ -4,5 +4,5 @@ import java.io.Serializable;
 
 public enum RepeatType implements Serializable {
 	Single,
-	Repeat
+	Repeat	
 }

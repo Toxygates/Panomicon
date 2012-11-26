@@ -126,20 +126,26 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
       }).map(_.getCode)
     }
 
+    val filtered = filterProbes(filter, null)
     val session = getSessionData()
-    val data = getExprValues(filter, barcodes(columns), filterProbes(filter, probes), typ, false)
+    //load with all probes for this filter
+    val data = getExprValues(filter, barcodes(columns), filtered, typ, false)
 
     session.ungroupedUnfiltered = data
-    refilterData(filter, columns, absValFilter, syntheticColumns)
+    refilterData(filter, columns, probes, absValFilter, syntheticColumns)
   }
   
-  def refilterData(filter: DataFilter, columns: JList[DataColumn], absValFilter: Double,
+  def refilterData(filter: DataFilter, columns: JList[DataColumn], probes: Array[String], absValFilter: Double,
                    syntheticColumns: JList[Synthetic]): Int = {
+    println("Refilter probes: " + probes)
+    if (probes != null) {
+      println("Length: " + probes.size)
+    }
+    
     val session = getSessionData()
     val data = session.ungroupedUnfiltered
-
-    val groupedColumns = columns.map(c => {
-      c match {
+    
+    val groupedColumns = columns.map(_ match {
         case g: Group => {
           new ArrayVector[ExprValue]((0 until data.rows).map(r => {
             val fvs = g.getBarcodes.map(bc => data.columnMap(bc.getCode)).map(data(r, _)).filter(_.present)
@@ -152,11 +158,16 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
           }).toArray)
         }
         case b: Barcode => data.column(b.getCode)
-      }
-    })
-    val groupedData = ExprMatrix.withColumns(groupedColumns, data)
-    groupedData.columnMap = Map() ++ columns.map(_.toString).zipWithIndex
-
+      })
+    
+    var groupedData = ExprMatrix.withColumns(groupedColumns, data)
+    groupedData.columnMap = Map() ++ columns.map(_.toString).zipWithIndex    
+    
+    val filtered = filterProbes(filter, probes)
+    //pick out rows that correspond to the selected probes only
+    val selectedRows = filtered.map(groupedData.row(_))
+    groupedData = ExprMatrix.withRows(selectedRows, data)
+    
     //filter by abs. value
     def f(r: ArrayVector[ExprValue], before: Int): Boolean = r.take(before).exists(v =>
       (Math.abs(v.value) >= absValFilter - 0.0001) || (java.lang.Double.isNaN(v.value) && absValFilter == 0))

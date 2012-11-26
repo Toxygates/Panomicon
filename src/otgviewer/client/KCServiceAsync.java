@@ -21,7 +21,7 @@ public interface KCServiceAsync {
 			List<Synthetic> synthCols, AsyncCallback<Integer> callback);
 
 	public void refilterData(DataFilter filter, List<DataColumn> columns,
-			double absValFilter, List<Synthetic> synthCols,
+			String[] probes, double absValFilter, List<Synthetic> synthCols,
 			AsyncCallback<Integer> callback);
 
 	public void datasetItems(int offset, int size, int sortColumn,

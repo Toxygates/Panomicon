@@ -313,7 +313,7 @@ public class ProbeScreen extends Screen {
 		}
 		listedProbes.clear();
 		listedProbes.addAll(Arrays.asList(probes));
-		super.probesChanged(probes);		
+		super.probesChanged(probes); //calls changeProbes		
 	}
 	
 	/**
