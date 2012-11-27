@@ -45,12 +45,14 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
   import ExprMatrix._
   import Conversions._
 
-  var annotations: Array[RowAnnotation] = Array.fill(rows)(new RowAnnotation(null, null, null, null))
+  var annotations: Array[RowAnnotation] = _
 
   if (metadata != null) {
     annotations = metadata.annotations
     rowMap = metadata.rowMap
     columnMap = metadata.columnMap
+  } else {
+    annotations = Array.fill(rows)(new RowAnnotation(null, null, null, null))
   }
   
   def asRows: Iterable[ExpressionRow] = toRowVectors.zip(annotations).map(x => {
@@ -142,5 +144,25 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
     val modified = f(joined)
     modified.verticalSplit(columns)
   }
-
+  
+  def selectRows(rows: Iterable[Int]): ExprMatrix = {
+    val r = ExprMatrix.withRows(rows.map(row(_)).toVector)    
+    val rowIds = rows.toSet
+    r.annotations = rows.map(a => annotations(a)).toArray
+    r.rowMap = rowMap.filter(a => rowIds.contains(a._2))
+    r
+  }
+  
+  def selectNamedRows(rows: Iterable[String]) = selectRows(rows.map(rowMap(_)))
+  
+  def selectColumns(columns: Iterable[Int]): ExprMatrix = {
+    val r = ExprMatrix.withColumns(columns.map(column(_)).toVector)
+    val colIds = columns.toSet
+    r.columnMap = columnMap.filter(a => colIds.contains(a._2))
+    r
+  }
+  
+  def selectNamedColumns(columns: Iterable[String]) = selectColumns(columns.map(columnMap(_)))
+  
+    
 }

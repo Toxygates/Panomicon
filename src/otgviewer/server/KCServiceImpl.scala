@@ -134,35 +134,34 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     session.ungroupedUnfiltered = data
     refilterData(filter, columns, probes, absValFilter, syntheticColumns)
   }
-  
+
   def refilterData(filter: DataFilter, columns: JList[DataColumn], probes: Array[String], absValFilter: Double,
                    syntheticColumns: JList[Synthetic]): Int = {
     println("Refilter probes: " + probes)
     if (probes != null) {
       println("Length: " + probes.size)
     }
-    
+
     val session = getSessionData()
     val data = session.ungroupedUnfiltered
-    
+
     val groupedColumns = columns.map(_ match {
-        case g: Group => {
-          new ArrayVector[ExprValue]((0 until data.rows).map(r => {
-            val vs = g.getBarcodes.map(bc => data.columnMap(bc.getCode)).map(data(r, _))
-            ExprValue.presentMean(vs, "")            
-          }).toArray)
-        }
-        case b: Barcode => data.column(b.getCode)
-      })
-    
+      case g: Group => {
+        new ArrayVector[ExprValue]((0 until data.rows).map(r => {
+          val vs = g.getBarcodes.map(bc => data.columnMap(bc.getCode)).map(data(r, _))
+          ExprValue.presentMean(vs, "")
+        }).toArray)
+      }
+      case b: Barcode => data.column(b.getCode)
+    })
+
     var groupedData = ExprMatrix.withColumns(groupedColumns, data)
-    groupedData.columnMap = Map() ++ columns.map(_.toString).zipWithIndex    
-    
+    groupedData.columnMap = Map() ++ columns.map(_.toString).zipWithIndex
+
     val filtered = filterProbes(filter, probes)
     //pick out rows that correspond to the selected probes only
-    val selectedRows = filtered.map(groupedData.row(_))
-    groupedData = ExprMatrix.withRows(selectedRows, data)
-    
+    groupedData = groupedData.selectNamedRows(filtered)
+
     //filter by abs. value
     def f(r: ArrayVector[ExprValue], before: Int): Boolean = r.take(before).exists(v =>
       (Math.abs(v.value) >= absValFilter - 0.0001) || (java.lang.Double.isNaN(v.value) && absValFilter == 0))
@@ -278,6 +277,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     }
     withTest.columnMap += (test.toString -> rendered.columns)
     session.rendered = withTest
+
   }
 
   def prepareCSVDownload(): String = {
@@ -296,10 +296,9 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
 
   def getSeries(filter: DataFilter, probes: Array[String], timeDose: String, compounds: Array[String]): JList[Series] = {
     val validated = OTGMisc.identifiersToProbesQuick(filter, probes, true)
-    val ss = validated.flatMap(p => 
+    val ss = validated.flatMap(p =>
       compounds.flatMap(c =>
-      OTGSeriesQuery.getSeries(seriesDB, asScala(filter, new Series("", p, timeDose, c, Array.empty)))
-      ))
+        OTGSeriesQuery.getSeries(seriesDB, asScala(filter, new Series("", p, timeDose, c, Array.empty)))))
     val jss = ss.map(asJava(_))
     for (s <- ss) {
       println(s)
