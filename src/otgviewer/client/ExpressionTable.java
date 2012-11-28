@@ -234,8 +234,8 @@ public class ExpressionTable extends DataListenerWidget {
 					}
 					public void onSuccess(String url) {
 						final String downloadUrl = url;
-						final DialogBox db = new DialogBox(false, true);
-						db.setPopupPosition(Window.getClientWidth()/2 - 100, Window.getClientHeight() / 2 - 100);						
+						final DialogBox db = new DialogBox(false, true);							
+												
 						db.setHTML("Your download is ready.");				
 						HorizontalPanel hp = new HorizontalPanel();
 						
@@ -255,7 +255,7 @@ public class ExpressionTable extends DataListenerWidget {
 						});
 						hp.add(b);
 						db.add(hp);
-						db.show();						
+						db.setPopupPositionAndShow(Utils.displayInCenter(db));						
 					}
 				});
 				

@@ -3,8 +3,10 @@ package otgviewer.client;
 import java.util.List;
 
 import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.shared.Annotation;
 import otgviewer.shared.Barcode;
+import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.SharedUtils;
@@ -38,6 +40,8 @@ public class TimeDoseGrid extends DataListenerWidget {
 	private CheckBox[][] checkboxes; //for selecting the subgroups
 	private ListBox annotationSelector = new ListBox();
 
+	private Button annotationButton;
+	
 	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
 			.create(OwlimService.class);
 
@@ -62,13 +66,13 @@ public class TimeDoseGrid extends DataListenerWidget {
 		
 		horizontalPanel_1.add(new Label("Annotation:"));
 		horizontalPanel_1.add(annotationSelector);
-		Button b = new Button("Show");
-		b.addClickHandler(new ClickHandler() {
+		annotationButton = new Button("Show");
+		annotationButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent ce) {
 				reloadAnnotations();
 			}
 		});
-		horizontalPanel_1.add(b);
+		horizontalPanel_1.add(annotationButton);
 		horizontalPanel_1.setSpacing(2);
 		
 		grid.setStyleName("highlySpaced");
@@ -99,6 +103,10 @@ public class TimeDoseGrid extends DataListenerWidget {
 		} else {
 			super.dataFilterChanged(filter);
 		}
+		
+		boolean annEnab = (filter.cellType == CellType.Vitro ? false : true);
+		annotationSelector.setEnabled(annEnab);
+		annotationButton.setEnabled(annEnab);
 	}
 	
 	@Override
@@ -299,67 +307,72 @@ public class TimeDoseGrid extends DataListenerWidget {
 	private int annotValuesRemaining = 0;
 	
 	private void displayAnnotation(final String annotation, final int row, final int col, 
-			final String compound, final String dose, final String time) {
+			final String compound, final String dose, final String time) {		
 		
-		final NumberFormat fmt = NumberFormat.getFormat("#0.00");
 		owlimService.barcodes(chosenDataFilter, compound,
 				dose, time,
-				new AsyncCallback<Barcode[]>() {
-					public void onSuccess(Barcode[] barcodes) {
-						Group g = new Group("temporary", barcodes);
-						owlimService.annotations(g, new AsyncCallback<Annotation[]>() {
-							public void onSuccess(Annotation[] as) {								
-								double sum = 0;
-								int n = 0;
-								for (Annotation a: as) {
-									try {
-										sum += a.doubleValueFor(annotation);
-										n += 1;
-									} catch (Exception e) {
-										//number format error, or missing
-									}									
-								}
-								
-								double avg = (n > 0 ? sum / n : 0);
-								checkboxes[row][col].setText(time + " (" + fmt.format(avg) + ")");
-								annotValues[row][col] = avg;
-								annotValuesRemaining -= 1;
-								
-								if (annotValuesRemaining == 0) { 
-									//got the final values
-									double min = Double.MAX_VALUE;
-									double max = Double.MIN_VALUE;
-									
-									for (double[] r : annotValues) {
-										for (double v: r) {
-											if (v > max) {
-												max = v;
-											}
-											if (v < min) {
-												min = v;
-											}
-										}
-									}
-									for (int r = 0; r < annotValues.length; ++r) {
-										for (int c = 0; c < annotValues[0].length; ++c) {
-											int bb = 255;
-											int gg = 255 - (int) ((annotValues[r][c] - min) * 127 / (max - min));
-											int rr = gg;
-											setColour(r, c, rr, gg, 255);
-										}
-									}									
-								}
-							}
-							public void onFailure(Throwable caught) {
-								Window.alert("Unable to get annotations.");
-							}
-						});
+				new PendingAsyncCallback<Barcode[]>(this) {
+					public void handleSuccess(Barcode[] barcodes) {
+						processAnnotationBarcodes(annotation, row, col, time, barcodes);						
 					}
 
-					public void onFailure(Throwable caught) {
-						Window.alert("Unable to retrieve barcodes for the group definition.");
+					public void handleFailure(Throwable caught) {
+						Window.alert("Unable to retrieve barcodes for the group definition.");						
 					}
 				});
+	}
+	
+	private void processAnnotationBarcodes(final String annotation, final int row, final int col,
+			final String time, final Barcode[] barcodes) {
+		final NumberFormat fmt = NumberFormat.getFormat("#0.00");
+		Group g = new Group("temporary", barcodes);
+		owlimService.annotations(g, new PendingAsyncCallback<Annotation[]>(this) {
+			public void handleSuccess(Annotation[] as) {								
+				double sum = 0;
+				int n = 0;
+				for (Annotation a: as) {
+					try {
+						sum += a.doubleValueFor(annotation);
+						n += 1;
+					} catch (Exception e) {
+						//number format error, or missing
+					}									
+				}
+				
+				double avg = (n > 0 ? sum / n : 0);
+				checkboxes[row][col].setText(time + " (" + fmt.format(avg) + ")");
+				annotValues[row][col] = avg;
+				annotValuesRemaining -= 1;
+				
+				if (annotValuesRemaining == 0) { 
+					//got the final values
+					double min = Double.MAX_VALUE;
+					double max = Double.MIN_VALUE;
+					
+					for (double[] r : annotValues) {
+						for (double v: r) {
+							if (v > max) {
+								max = v;
+							}
+							if (v < min) {
+								min = v;
+							}
+						}
+					}
+					for (int r = 0; r < annotValues.length; ++r) {
+						for (int c = 0; c < annotValues[0].length; ++c) {
+							int bb = 255;
+							int gg = 255 - (int) ((annotValues[r][c] - min) * 127 / (max - min));
+							int rr = gg;
+							setColour(r, c, rr, gg, 255);
+						}
+					}									
+				}		
+			}
+			public void handleFailure(Throwable caught) {
+				Window.alert("Unable to get annotations.");				
+			}
+		});
 	}
 	
 	

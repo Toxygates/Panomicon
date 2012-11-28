@@ -5,6 +5,7 @@ import otgviewer.shared.Association;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.NoSuchProbeException;
 import otgviewer.shared.Pair;
 import otgviewer.shared.Pathology;
 import otgviewer.shared.RankRule;

@@ -92,14 +92,14 @@ public abstract class ListSelectionHandler<T> {
 		return lastSelected;
 	}
 	
-	public AsyncCallback<T[]> retrieveCallback() {
-		return new AsyncCallback<T[]>() {
-			public void onFailure(Throwable caught) {
+	public AsyncCallback<T[]> retrieveCallback(DataListenerWidget w) {
+		return new PendingAsyncCallback<T[]>(w) {
+			public void handleFailure(Throwable caught) {
 				Window.alert("Unable to get " + description);
 				list.clear();
 			}
 
-			public void onSuccess(T[] result) {
+			public void handleSuccess(T[] result) {
 				setItems(result);
 								
 			}

@@ -39,6 +39,10 @@ object ExprMatrix extends DataMatrixBuilder {
   case class RowAnnotation(probe: String, title: String, geneIds: Array[String], geneSyms: Array[String])
 }
 
+/**
+ * Future: lift up some of this functionality into the Friedrich matrix library.
+ * Use immutable rather than mutable matrices.
+ */
 class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends ArrayMatrix[ExprValue](rows, columns, ExprValue(0, 'A'))
   with RowColAllocation[ExprValue, ArrayVector[ExprValue], String, String] {
 
@@ -150,6 +154,7 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
     val rowIds = rows.toSet
     r.annotations = rows.map(a => annotations(a)).toArray
     r.rowMap = rowMap.filter(a => rowIds.contains(a._2))
+    r.columnMap = columnMap
     r
   }
   
@@ -159,6 +164,7 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
     val r = ExprMatrix.withColumns(columns.map(column(_)).toVector)
     val colIds = columns.toSet
     r.columnMap = columnMap.filter(a => colIds.contains(a._2))
+    r.rowMap = rowMap
     r
   }
   

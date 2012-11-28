@@ -5,13 +5,17 @@ import java.util.Collection;
 import java.util.List;
 
 import otgviewer.client.Utils;
+import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.Group;
 import otgviewer.shared.ValueType;
 
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.Label;
 
 /**
  * A Composite that is also a DataViewListener.
@@ -207,6 +211,15 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}
 		return sb.toString();
 	}
+
+	private DataColumn unpackColumn(String s) {
+		String[] spl = s.split("^^^");
+		if (spl[0].equals("Barcode")) {
+			return Barcode.unpack(s);
+		} else {
+			return Group.unpack(s);
+		}
+	}
 	
 	protected List<DataColumn> loadColumns(String key,
 			Collection<DataColumn> expectedColumns) throws Exception {
@@ -216,7 +229,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		if (v != null && !v.equals(packColumns(expectedColumns))) {
 			String[] spl = v.split("###");
 			for (String cl : spl) {
-				DataColumn c = Utils.unpackColumn(cl);
+				DataColumn c = unpackColumn(cl);
 				r.add(c);
 			}			
 			return r;
@@ -286,5 +299,27 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}
 	}
 	
+	private int numPendingRequests = 0;
+	
+	private DialogBox waitDialog;
+	
+	// Load indicator handling
+	protected void addPendingRequest() {
+		numPendingRequests += 1;
+		if (numPendingRequests == 1) {
+			if (waitDialog == null) {
+				waitDialog = new DialogBox(false, true);
+				waitDialog.setWidget(Utils.mkEmphLabel("Please wait..."));
+			}
+			waitDialog.setPopupPositionAndShow(Utils.displayInCenter(waitDialog));
+		}
+	}
+	
+	protected void removePendingRequest() {
+		numPendingRequests -= 1;
+		if (numPendingRequests == 0) {
+			waitDialog.hide();
+		}
+	}
 	
 }	

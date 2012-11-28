@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
@@ -126,8 +128,11 @@ public class ProbeScreen extends Screen {
 		verticalPanel_3.add(customProbeText);
 		customProbeText.setSize("95%", "");
 
-		Button button_1 = new Button("Add manual probes");
+		Button button_1 = new Button("Add probes");
 		verticalPanel_3.add(button_1);
+		
+		final DataListenerWidget w = this;
+		
 		button_1.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent ev) {
 				String text = customProbeText.getText();
@@ -138,12 +143,12 @@ public class ProbeScreen extends Screen {
 					// change the identifiers (which can be mixed format) into a
 					// homogenous format (probes only)
 					kcService.identifiersToProbes(chosenDataFilter, split, true, 
-							new AsyncCallback<String[]>() {
-								public void onSuccess(String[] probes) {
+							new PendingAsyncCallback<String[]>(w) {
+								public void handleSuccess(String[] probes) {
 									addProbes(probes);
 								}
 
-								public void onFailure(Throwable caught) {
+								public void handleFailure(Throwable caught) {
 									Window.alert("Unable to resolve manual probes");
 								}
 							});
@@ -191,8 +196,8 @@ public class ProbeScreen extends Screen {
 		b = new Button("Display data with all probes");
 		buttons.add(b);
 		b.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {				
-				probesChanged(new String[0]);								
+			public void onClick(ClickEvent event) {								
+				probesChanged(new String[0]);						
 				History.newItem(DataScreen.key);
 			}
 		});
@@ -215,17 +220,19 @@ public class ProbeScreen extends Screen {
 		
 		Button button = new Button(buttonText);
 		verticalPanel_2.add(button);
+		final DataListenerWidget w = this;
+		
 		button.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent ev) {
 				if (compoundList.getSelectedIndex() != -1) {
 					String compound = compoundList.getItemText(compoundList.getSelectedIndex());					
 					owlimService.probesTargetedByCompound(chosenDataFilter,
-							compound, service, new AsyncCallback<String[]>() {
-								public void onFailure(Throwable caught) {
+							compound, service, new PendingAsyncCallback<String[]>(w) {
+								public void handleFailure(Throwable caught) {
 									Window.alert("Unable to get probes.");
 								}
 
-								public void onSuccess(String[] probes) {		
+								public void handleSuccess(String[] probes) {		
 									addProbes(probes);
 								}
 							});

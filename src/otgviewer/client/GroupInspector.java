@@ -11,32 +11,20 @@ import java.util.Set;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.SelectionTable;
-import otgviewer.shared.Annotation;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import otgviewer.shared.SharedUtils;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.SelectionChangeEvent;
@@ -51,9 +39,6 @@ import com.google.gwt.view.client.SelectionChangeEvent;
  *
  */
 public class GroupInspector extends DataListenerWidget implements TimeDoseGrid.BarcodeListener {
-	
-	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
-			.create(OwlimService.class);
 
 	private TimeDoseGrid timeDoseGrid;
 	private Map<String, Group> groups = new HashMap<String, Group>();		

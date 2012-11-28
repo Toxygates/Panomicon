@@ -66,5 +66,19 @@ class ExprMatrixTest extends FunSuite {
     
     assert(em2.toRowVectors.reverse === em3.toRowVectors)
   }
+  
+  test("row and column select") {
+    val em = testMatrix
+    val em1 = em.selectRows(List(1,3,4))
+    assert(em1.rows == 3)
+    assert(em1.rowMap == Map("b" -> 1, "d" -> 3, "e" -> 4))
+    assert(em1.columnMap == em.columnMap)
+    val em2 = em1.selectColumns(List(1,3,4))
+    assert(em2.columns == 3)
+    assert(em2.rows == 3)
+    assert(em2.rowMap == em1.rowMap)
+    assert(em2.columnMap == Map("b" -> 1, "d" -> 3, "e" -> 4))
+    
+  }
 
 }

@@ -10,6 +10,7 @@ import java.util.Set;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ImageClickCell;
+import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.StringSelectionTable;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Pair;
@@ -26,6 +27,7 @@ import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Label;
@@ -57,10 +59,14 @@ public class CompoundSelector extends DataListenerWidget {
 	
 	//compound sorter widgets
 	private VerticalPanel csVerticalPanel = new VerticalPanel();
-	private TextBox[] sortProbeText = new TextBox[5];
-	private ListBox[] rankType = new ListBox[5];
-	private TextBox[] syntheticCurveText = new TextBox[5];
-	private List<String> rankProbes = new ArrayList<String>();
+	private final int RANK_CONDS = 10;
+	private TextBox[] sortProbeText = new TextBox[RANK_CONDS];
+	private ListBox[] rankType = new ListBox[RANK_CONDS];
+	private ListBox[] rankRefCompound = new ListBox[RANK_CONDS];
+	private ListBox[] rankRefDose = new ListBox[RANK_CONDS];
+	private TextBox[] syntheticCurveText = new TextBox[RANK_CONDS];
+	private CheckBox[] rankCheckBox = new CheckBox[RANK_CONDS];
+	private List<String> rankProbes = new ArrayList<String>();	
 	
 	private Map<String, Double> scores = new HashMap<String, Double>(); //for compound ranking
 	
@@ -103,6 +109,7 @@ public class CompoundSelector extends DataListenerWidget {
 			}
 		});
 		
+		final DataListenerWidget w = this;
 		compoundTable = new StringSelectionTable("Sel", "Compound") {
 			protected void selectionChanged(Set<String> selected) {
 				List<String> r = new ArrayList<String>();
@@ -125,7 +132,7 @@ public class CompoundSelector extends DataListenerWidget {
 				};
 				table.addColumn(textColumn, "Score");
 				
-				ChartClickCell ccc = new ChartClickCell();
+				ChartClickCell ccc = new ChartClickCell(w);
 				table.addColumn(new IdentityColumn<String>(ccc), "");
 			}
 		};
@@ -139,6 +146,9 @@ public class CompoundSelector extends DataListenerWidget {
 		super.dataFilterChanged(filter);		
 		loadCompounds();
 		compoundTable.clearSelection();		
+		for (ListBox lb: rankRefCompound) {
+			lb.clear();
+		}
 	}
 	
 	public List<String> getCompounds() {				
@@ -155,7 +165,13 @@ public class CompoundSelector extends DataListenerWidget {
 			public void onSuccess(String[] result) {
 				Arrays.sort(result);
 				List<String> r = new ArrayList<String>((Arrays.asList(result)));
-				compoundTable.reloadWith(r, true);				
+				compoundTable.reloadWith(r, true);			
+				
+				for (ListBox lb: rankRefCompound) {
+					for (String c: result) {
+						lb.addItem(c);
+					}
+				}
 			}
 			
 			@Override
@@ -189,29 +205,48 @@ public class CompoundSelector extends DataListenerWidget {
 		Utils.displayInPopup(csVerticalPanel);		
 	}
 	
+	private void makeRankRuleInputs(Grid g, int row) {
+		sortProbeText[row] = new TextBox();
+		rankType[row] = new ListBox();
+		for (RuleType rt: RuleType.values()) {
+			rankType[row].addItem(rt.toString());
+		}
+		rankCheckBox[row] = new CheckBox();
+		syntheticCurveText[row] = new TextBox();
+		syntheticCurveText[row].setWidth("10em");
+		rankRefCompound[row] = new ListBox();	
+		rankRefCompound[row].setStyleName("colored");
+		ListBox lb = new ListBox();
+		rankRefDose[row] = lb;
+		lb.setStyleName("colored");
+		lb.addItem("Low");
+		lb.addItem("Middle");
+		lb.addItem("High");
+		
+		g.setWidget(row + 1, 0, rankCheckBox[row]);
+		g.setWidget(row + 1, 1, sortProbeText[row]);
+		g.setWidget(row + 1, 2, rankType[row]);
+		g.setWidget(row + 1, 3, syntheticCurveText[row]);
+		g.setWidget(row + 1, 4, rankRefCompound[row]);
+		g.setWidget(row + 1, 5, rankRefDose[row]);		
+	}
+	
 	private void makeCompoundSorter() {
 		csVerticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		Label l = new Label("Compound ranking");
 		l.setStyleName("heading");
 		csVerticalPanel.add(l);
 		
-		Grid g = new Grid(6, 3);
+		Grid g = new Grid(RANK_CONDS + 1, 6);
 		csVerticalPanel.add(g);
-		g.setWidget(0, 0, new Label("Gene/probe"));
-		g.setWidget(0, 1, new Label("Match type"));
-		g.setWidget(0, 2, new Label("Synthetic curve"));
+		g.setWidget(0, 1, Utils.mkEmphLabel("Gene/probe"));
+		g.setWidget(0, 2, Utils.mkEmphLabel("Match type"));
+		g.setWidget(0, 3, Utils.mkEmphLabel("Synthetic curve"));
+		g.setWidget(0, 4, Utils.mkEmphLabel("Ref. compound"));
+		g.setWidget(0, 5, Utils.mkEmphLabel("Ref. dose"));		
 		
-		for (int i = 0; i < 5; i++) {
-			sortProbeText[i] = new TextBox();
-			rankType[i] = new ListBox();
-			for (RuleType rt: RuleType.values()) {
-				rankType[i].addItem(rt.toString());
-			}
-
-			syntheticCurveText[i] = new TextBox();
-			g.setWidget(i + 1, 0, sortProbeText[i]);
-			g.setWidget(i + 1, 1, rankType[i]);
-			g.setWidget(i + 1, 2, syntheticCurveText[i]);
+		for (int row = 0; row < RANK_CONDS; row++) {
+			makeRankRuleInputs(g, row);			
 		}		
 		
 		Button b = new Button("Rank");
@@ -225,35 +260,52 @@ public class CompoundSelector extends DataListenerWidget {
 	}
 	
 	private void performRanking() {
-		RankRule[] rules = new RankRule[5];
+		List<RankRule> rules = new ArrayList<RankRule>();
 		rankProbes = new ArrayList<String>();
-		for (int i = 0; i < 5; ++i) {
-			if (!sortProbeText[i].getText().equals("")) {
-				String probe = sortProbeText[i].getText();
-				rankProbes.add(probe);
-				RuleType rt = RuleType.valueOf(rankType[i].getItemText(rankType[i].getSelectedIndex()));
-				rules[i] = new RankRule(rt, probe);
-				
-				if (rt == RuleType.Synthetic) {
-					double[] data = new double[4];
-					String[] ss = syntheticCurveText[i].getText()
-							.split(" ");
-					if (ss.length != 4) {
-						Window.alert("Please supply 4 space-separated values as the synthetic curve. (Example: -1 -2 -3 -4");
-						rules[i] = null;
+		for (int i = 0; i < RANK_CONDS; ++i) {
+			if (rankCheckBox[i].getValue()) {
+				if (!sortProbeText[i].getText().equals("")) {
+					String probe = sortProbeText[i].getText();
+					rankProbes.add(probe);
+					RuleType rt = RuleType.valueOf(rankType[i]
+							.getItemText(rankType[i].getSelectedIndex()));
+					
+					if (rt == RuleType.Synthetic) {
+						double[] data = new double[4];
+						String[] ss = syntheticCurveText[i].getText()
+								.split(" ");
+						RankRule r = new RankRule(rt, probe);
+						if (ss.length != 4) {
+							Window.alert("Please supply 4 space-separated values as the synthetic curve. (Example: -1 -2 -3 -4");							
+						} else {
+							for (int j = 0; j < ss.length; ++j) {
+								data[j] = Double.valueOf(ss[j]);
+							}
+							r.setData(data);
+							rules.add(r);
+						}
+					} else if (rt == RuleType.ReferenceCompound) {						
+							String cmp = rankRefCompound[i]
+									.getItemText(rankRefCompound[i].getSelectedIndex());
+							RankRule r = new RankRule(rt, probe);
+							r.setCompound(cmp);
+							r.setDose(rankRefDose[i].getItemText(rankRefDose[i].getSelectedIndex()));
+							rules.add(r);
+						
 					} else {
-						for (int j = 0; j < ss.length; ++j) {
-							data[j] = Double.valueOf(ss[j]);
-						}						
-						rules[i].setData(data);
+						//rule is not synthetic or ref compound
+						rules.add(new RankRule(rt, probe));
 					}
+				} else {
+					//gene name is not empty
+					Window.alert("Empty gene name detected. Please specify a gene/probe for each enabled rule.");
 				}
 			}
 		}
-		if (rules[0] != null) { //do we have at least 1 rule?			
-			owlimService.rankedCompounds(chosenDataFilter, rules,
-					new AsyncCallback<Pair<String, Double>[]>() {
-						public void onSuccess(Pair<String, Double>[] res) {
+		if (rules.size() > 0) { //do we have at least 1 rule?						
+			owlimService.rankedCompounds(chosenDataFilter, rules.toArray(new RankRule[0]),
+					new PendingAsyncCallback<Pair<String, Double>[]>(this) {
+						public void handleSuccess(Pair<String, Double>[] res) {
 							List<String> sortedCompounds = new ArrayList<String>();
 							for (Pair<String, Double> p : res) {
 								scores.put(p.first(), p.second());
@@ -262,26 +314,30 @@ public class CompoundSelector extends DataListenerWidget {
 							compoundTable.reloadWith(sortedCompounds, false);									
 						}
 
-						public void onFailure(Throwable caught) {
-							Window.alert("Unable to rank compounds.");
+						public void handleFailure(Throwable caught) {
+							Window.alert("Unable to rank compounds: " + caught.getMessage());							
 						}
 					});									
+		} else {
+			Window.alert("Please specify and enable at least one rule to perform the ranking.");
 		}
 	}
 	
 	class ChartClickCell extends ImageClickCell {
-		public ChartClickCell() {
+		final DataListenerWidget w;
+		public ChartClickCell(DataListenerWidget w) {
 			super("chart_16.png");
+			this.w = w;
 		}
 		
 		public void onClick(String value) {
 			kcService.getSeries(chosenDataFilter, rankProbes.toArray(new String[0]), 
-					null, new String[] { value }, new AsyncCallback<List<Series>>() {
-				public void onSuccess(List<Series> ss) {
+					null, new String[] { value }, new PendingAsyncCallback<List<Series>>(w) {
+				public void handleSuccess(List<Series> ss) {
 					SeriesChartGrid scg = new SeriesChartGrid(ss, false);
 					Utils.displayInPopup(scg);
 				}
-				public void onFailure(Throwable caught) {
+				public void handleFailure(Throwable caught) {
 					Window.alert("Unable to retrieve data.");
 				}
 			});

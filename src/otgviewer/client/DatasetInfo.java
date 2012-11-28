@@ -2,6 +2,9 @@ package otgviewer.client;
 
 import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.Organ;
+import otgviewer.shared.Organism;
+import otgviewer.shared.RepeatType;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -10,6 +13,9 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -24,6 +30,7 @@ public class DatasetInfo extends Composite implements ClickHandler {
 	private DataFilter _filter;
 	private SelectionListener _listener;
 	private Label compoundsLabel, doseLabel, timeLabel;
+	private Resources resources = GWT.create(Resources.class);
 	
 	public DatasetInfo(DataFilter filter, SelectionListener listener) {
 		_filter = filter;
@@ -32,8 +39,8 @@ public class DatasetInfo extends Composite implements ClickHandler {
 		VerticalPanel vp = Utils.mkVerticalPanel();		
 		initWidget(vp);
 		vp.setStyleName("border");
-		vp.setWidth("400px");
-		vp.setHeight("180px");
+		vp.setWidth("100%");
+		vp.setHeight("100%");
 		
 		String description = filter.organism.toString();
 		description += ", " + filter.cellType.toString();
@@ -41,6 +48,36 @@ public class DatasetInfo extends Composite implements ClickHandler {
 		if (filter.cellType == CellType.Vivo) {
 			description += ", " + filter.organ.toString() + ", " + filter.repeatType.toString() + " dose";			
 		}
+		
+
+		HorizontalPanel icons = new HorizontalPanel();		
+		icons.setStyleName("darkColored");		
+		icons.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		
+		if (filter.organism == Organism.Human) {
+			icons.add(new Image(resources.human()));
+		} else {
+			icons.add(new Image(resources.rat()));
+		}
+
+		if (filter.cellType == CellType.Vivo) {
+			icons.add(new Image(resources.vivo()));
+			if (filter.organ == Organ.Liver) {
+				icons.add(new Image(resources.liver()));
+			} else {
+				icons.add(new Image(resources.kidney()));
+			}
+		} else {
+			icons.add(new Image(resources.vitro()));
+		}
+		
+		icons.add(new Image(resources.bottle()));
+		if (filter.repeatType == RepeatType.Repeat) {
+			icons.add(new Image(resources.bottle()));					
+		}
+		
+		vp.add(icons);		
+		icons.setSpacing(5);
 		
 		VerticalPanel ivp = new VerticalPanel(); //for left alignment
 		ivp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
@@ -50,6 +87,7 @@ public class DatasetInfo extends Composite implements ClickHandler {
 		ivp.add(l);
 		ivp.setWidth("100%");
 		ivp.setHeight("100px");
+		
 		
 		compoundsLabel = new Label("Retrieving compounds...");
 		ivp.add(compoundsLabel);

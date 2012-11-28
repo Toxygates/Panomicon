@@ -2,6 +2,7 @@ package otgviewer.client;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ListSelectionHandler;
+import otgviewer.client.components.PendingAsyncCallback;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -88,20 +89,20 @@ abstract public class ProbeSelector extends DataListenerWidget {
 	}
 	
 	public AsyncCallback<String[]> retrieveMatchesCallback() {
-		return itemHandler.retrieveCallback();
+		return itemHandler.retrieveCallback(this);
 	}
 	
 	abstract protected void getMatches(String key);
 	
 	public AsyncCallback<String[]> retrieveProbesCallback() {
-		return new AsyncCallback<String[]>() {
-			public void onFailure(Throwable caught) {
+		return new PendingAsyncCallback<String[]>(this) {
+			public void handleFailure(Throwable caught) {
 				Window.alert("Unable to get probes.");
 				itemHandler.clear();
 				addButton.setEnabled(false);
 			}
 
-			public void onSuccess(String[] probes) {
+			public void handleSuccess(String[] probes) {
 				if (!withButton) {
 					probesChanged(probes);
 				} else if (probes.length > 0) {
