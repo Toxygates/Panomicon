@@ -72,4 +72,5 @@ public class Group implements Serializable, DataColumn, Comparable<Group> {
 	public int compareTo(Group other) {
 		return name.compareTo(other.getName());
 	}
+	
 }

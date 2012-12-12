@@ -23,6 +23,8 @@ import otg.CSVHelper
 import otgviewer.shared.Series
 import otg.OTGSeriesQuery
 import otgviewer.shared.ExpressionValue
+import otg.OTGOwlim
+import otg.OTGCabinet
 
 /**
  * This servlet is responsible for obtaining and manipulating data from the Kyoto
@@ -107,10 +109,11 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
   private def getExprValues(filter: DataFilter, barcodes: Iterable[String], probes: Array[String],
                             typ: ValueType, sparseRead: Boolean): ExprMatrix = {
     val db = getDB(typ)
-    val data = OTGQueries.presentValuesByBarcodesAndProbes(db, barcodes.toSeq, probes, sparseRead, filter)
+    val sorted = OTGQueries.sortBarcodes(barcodes.toSeq)
+    val data = OTGQueries.presentValuesByBarcodesAndProbes(db, sorted, probes, sparseRead, filter)
     val r = ExprMatrix.withRows(data.map(_.toSeq).toSeq) //todo
     r.annotations = probes.map(ExprMatrix.RowAnnotation(_, null, null, null)).toArray
-    r.columnMap = Map() ++ barcodes.zipWithIndex
+    r.columnMap = Map() ++ sorted.zipWithIndex
     r.rowMap = Map() ++ probes.zipWithIndex
     r
   }
@@ -128,6 +131,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
 
     val filtered = filterProbes(filter, null)
     val session = getSessionData()
+    
     //load with all probes for this filter
     val data = getExprValues(filter, barcodes(columns), filtered, typ, false)
 

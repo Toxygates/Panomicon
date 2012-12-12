@@ -53,10 +53,6 @@ public class GroupInspector extends DataListenerWidget implements TimeDoseGrid.B
 		vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		initWidget(vp);
 		
-		Label lblGroupDefinition = new Label("2. Group definition");
-		lblGroupDefinition.setStyleName("heading");
-		vp.add(lblGroupDefinition);
-		
 		timeDoseGrid = new TimeDoseGrid();
 		vp.add(timeDoseGrid);
 		addListener(timeDoseGrid);
@@ -81,9 +77,6 @@ public class GroupInspector extends DataListenerWidget implements TimeDoseGrid.B
 		Button btnDelete = new Button("Delete");
 		horizontalPanel.add(btnDelete);
 		
-		Label lblDefinedGroups = new Label("3. Existing groups");
-		lblDefinedGroups.setStyleName("heading");
-		vp.add(lblDefinedGroups);
 		
 		existingGroupsTable = new SelectionTable<Group>("Active") {
 			protected void initTable(CellTable<Group> table) {

@@ -61,7 +61,7 @@ public class DatasetInfo extends Composite implements ClickHandler {
 		}
 
 		if (filter.cellType == CellType.Vivo) {
-			icons.add(new Image(resources.vivo()));
+//			icons.add(new Image(resources.vivo()));
 			if (filter.organ == Organ.Liver) {
 				icons.add(new Image(resources.liver()));
 			} else {

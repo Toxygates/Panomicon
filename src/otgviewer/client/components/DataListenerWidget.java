@@ -63,6 +63,10 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		changeProbes(probes);
 	}
 	
+	public void availableCompoundsChanged(List<String> compounds) {
+		changeAvailableCompounds(compounds);
+	}
+	
 	public void compoundsChanged(List<String> compounds) {
 		chosenCompounds = compounds;
 		changeCompounds(compounds);
@@ -109,6 +113,20 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}
 	}
 	
+	/**
+	 * Change the available compounds
+	 * @param compounds
+	 */
+	protected void changeAvailableCompounds(List<String> compounds) {
+		for (DataViewListener l: listeners) {
+			l.availableCompoundsChanged(compounds);
+		}
+	}
+	
+	/** 
+	 * Change the selected compounds
+	 * @param compounds
+	 */
 	protected void changeCompounds(List<String> compounds) {
 		chosenCompounds = compounds;
 		assert(compounds != null);

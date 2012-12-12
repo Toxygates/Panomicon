@@ -11,8 +11,9 @@ public interface DataViewListener {
 	public void dataFilterChanged(DataFilter filter);
 	public void probeChanged(String probe);
 	public void probesChanged(String[] probes);
-	public void compoundsChanged(List<String> compounds);
 	public void compoundChanged(String compound);
+	public void compoundsChanged(List<String> compounds);
+	public void availableCompoundsChanged(List<String> compounds);
 	public void valueTypeChanged(ValueType type);
 	public void columnsChanged(List<DataColumn> columns);
 	
