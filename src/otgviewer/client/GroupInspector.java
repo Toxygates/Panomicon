@@ -53,6 +53,10 @@ public class GroupInspector extends DataListenerWidget implements TimeDoseGrid.B
 		vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		initWidget(vp);
 		
+		Label lblGroupDefinition = new Label("Group definition");
+		lblGroupDefinition.setStyleName("heading");
+		vp.add(lblGroupDefinition);
+		
 		timeDoseGrid = new TimeDoseGrid();
 		vp.add(timeDoseGrid);
 		addListener(timeDoseGrid);

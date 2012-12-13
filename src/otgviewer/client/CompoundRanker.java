@@ -8,8 +8,14 @@ import otgviewer.shared.DataFilter;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.RuleType;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -25,7 +31,7 @@ public class CompoundRanker extends DataListenerWidget {
 
 	private VerticalPanel csVerticalPanel = new VerticalPanel();
 	private final int RANK_CONDS = 10;
-	private TextBox[] sortProbeText = new TextBox[RANK_CONDS];
+	private TextBox[] rankProbeText = new TextBox[RANK_CONDS];
 	private ListBox[] rankType = new ListBox[RANK_CONDS];
 	private ListBox[] rankRefCompound = new ListBox[RANK_CONDS];
 	private ListBox[] rankRefDose = new ListBox[RANK_CONDS];
@@ -36,70 +42,116 @@ public class CompoundRanker extends DataListenerWidget {
 	public CompoundRanker(CompoundSelector selector) {
 		this.selector = selector;
 		selector.addListener(this);
-		
-		csVerticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+
+		csVerticalPanel
+				.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		initWidget(csVerticalPanel);
 
-		Grid g = new Grid(RANK_CONDS + 1, 6);		
+		Grid g = new Grid(RANK_CONDS + 1, 6);
 		csVerticalPanel.add(g);
 		g.setWidget(0, 1, Utils.mkEmphLabel("Gene/probe"));
 		g.setWidget(0, 2, Utils.mkEmphLabel("Match type"));
 		g.setWidget(0, 3, Utils.mkEmphLabel("Synth. curve"));
 		g.setWidget(0, 4, Utils.mkEmphLabel("Ref. compound"));
-		g.setWidget(0, 5, Utils.mkEmphLabel("Ref. dose"));		
-		
+		g.setWidget(0, 5, Utils.mkEmphLabel("Ref. dose"));
+
 		for (int row = 0; row < RANK_CONDS; row++) {
-			makeRankRuleInputs(g, row);			
-		}		
-		
+			makeRankRuleInputs(g, row);
+		}
+
 		Button b = new Button("Rank");
 		csVerticalPanel.add(b);
-		
-		b.addClickHandler(new ClickHandler() {						
+
+		b.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				performRanking();				
+				performRanking();
 			}
-		});		
+		});
 	}
 
-	private void makeRankRuleInputs(Grid g, int row) {
-		sortProbeText[row] = new TextBox();
+	private void makeRankRuleInputs(Grid g, final int row) {
+		rankProbeText[row] = new TextBox();
+		
 		rankType[row] = new ListBox();
-		for (RuleType rt: RuleType.values()) {
+		for (RuleType rt : RuleType.values()) {
 			rankType[row].addItem(rt.toString());
 		}
+		rankType[row].addChangeHandler(rankTypeChangeHandler(row));
 		rankCheckBox[row] = new CheckBox();
+		
+		rankProbeText[row].addKeyPressHandler(new KeyPressHandler() {			
+			@Override
+			public void onKeyPress(KeyPressEvent event) {
+				rankCheckBox[row].setValue(true);				
+			}
+		});
+		
 		syntheticCurveText[row] = new TextBox();
 		syntheticCurveText[row].setWidth("5em");
-		rankRefCompound[row] = new ListBox();	
+		syntheticCurveText[row].setEnabled(false);
+		
+		rankRefCompound[row] = new ListBox();
 		rankRefCompound[row].setStyleName("colored");
+		rankRefCompound[row].setEnabled(false);
+		
 		ListBox lb = new ListBox();
-		rankRefDose[row] = lb;
+		rankRefDose[row] = lb;		
 		lb.setStyleName("colored");
-		lb.addItem("Low");
+		lb.addItem("Low"); //TODO! read proper doses from db
 		lb.addItem("Middle");
 		lb.addItem("High");
-		
+		lb.setEnabled(false);
+
 		g.setWidget(row + 1, 0, rankCheckBox[row]);
-		g.setWidget(row + 1, 1, sortProbeText[row]);
+		g.setWidget(row + 1, 1, rankProbeText[row]);
 		g.setWidget(row + 1, 2, rankType[row]);
 		g.setWidget(row + 1, 3, syntheticCurveText[row]);
 		g.setWidget(row + 1, 4, rankRefCompound[row]);
-		g.setWidget(row + 1, 5, rankRefDose[row]);		
+		g.setWidget(row + 1, 5, rankRefDose[row]);
 	}
-	
+
+	private ChangeHandler rankTypeChangeHandler(final int row) {
+		return new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				RuleType rt = selectedRuleType(row);
+				switch (rt) {
+				case Synthetic:
+					syntheticCurveText[row].setEnabled(true);
+					rankRefCompound[row].setEnabled(false);
+					rankRefDose[row].setEnabled(false);
+					break;
+				case ReferenceCompound:
+					syntheticCurveText[row].setEnabled(false);
+					rankRefCompound[row].setEnabled(true);
+					rankRefDose[row].setEnabled(true);
+					break;
+				default:
+					syntheticCurveText[row].setEnabled(false);
+					rankRefCompound[row].setEnabled(false);
+					rankRefDose[row].setEnabled(false);
+					break;
+				}
+			}
+		};
+	}
+
+	private RuleType selectedRuleType(int row) {
+		return RuleType.valueOf(rankType[row].getItemText(rankType[row]
+				.getSelectedIndex()));
+	}
+
 	private void performRanking() {
 		List<RankRule> rules = new ArrayList<RankRule>();
 		rankProbes = new ArrayList<String>();
 		for (int i = 0; i < RANK_CONDS; ++i) {
 			if (rankCheckBox[i].getValue()) {
-				if (!sortProbeText[i].getText().equals("")) {
-					String probe = sortProbeText[i].getText();
+				if (!rankProbeText[i].getText().equals("")) {
+					String probe = rankProbeText[i].getText();
 					rankProbes.add(probe);
-					RuleType rt = RuleType.valueOf(rankType[i]
-							.getItemText(rankType[i].getSelectedIndex()));
-
-					if (rt == RuleType.Synthetic) {
+					RuleType rt = selectedRuleType(i);
+					switch (rt) {
+					case Synthetic: {
 						double[] data = new double[4];
 						String[] ss = syntheticCurveText[i].getText()
 								.split(" ");
@@ -113,7 +165,9 @@ public class CompoundRanker extends DataListenerWidget {
 							r.setData(data);
 							rules.add(r);
 						}
-					} else if (rt == RuleType.ReferenceCompound) {
+					}
+						break;
+					case ReferenceCompound: {
 						String cmp = rankRefCompound[i]
 								.getItemText(rankRefCompound[i]
 										.getSelectedIndex());
@@ -122,10 +176,12 @@ public class CompoundRanker extends DataListenerWidget {
 						r.setDose(rankRefDose[i].getItemText(rankRefDose[i]
 								.getSelectedIndex()));
 						rules.add(r);
-
-					} else {
+					}
+						break;
+					default:
 						// rule is not synthetic or ref compound
 						rules.add(new RankRule(rt, probe));
+						break;
 					}
 				} else {
 					// gene name is not empty
@@ -138,18 +194,18 @@ public class CompoundRanker extends DataListenerWidget {
 	}
 
 	@Override
-	public void dataFilterChanged(DataFilter filter) {		
+	public void dataFilterChanged(DataFilter filter) {
 		super.dataFilterChanged(filter);
-		for (ListBox lb: rankRefCompound) {
+		for (ListBox lb : rankRefCompound) {
 			lb.clear();
 		}
 	}
 
 	@Override
-	public void availableCompoundsChanged(List<String> compounds) {		
+	public void availableCompoundsChanged(List<String> compounds) {
 		super.compoundsChanged(compounds);
-		for (ListBox lb: rankRefCompound) {
-			for (String c: compounds) {
+		for (ListBox lb : rankRefCompound) {
+			for (String c : compounds) {
 				lb.addItem(c);
 			}
 		}

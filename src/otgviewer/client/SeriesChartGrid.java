@@ -1,8 +1,10 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import otgviewer.shared.ExpressionValue;
@@ -13,7 +15,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.VisualizationUtils;
@@ -33,6 +34,7 @@ public class SeriesChartGrid extends Composite {
 	List<Series> data;
 	Grid g;
 	List<String> rowKeys;
+	
 	DataTable table;
 	
 	boolean rowsAreCompounds = false; //if false, they are probes
@@ -46,9 +48,9 @@ public class SeriesChartGrid extends Composite {
 		
 		for (Series s: data) {
 			if (rowsAreCompounds) {
-				rows.add(s.compound());
+				rows.add(s.compound());				
 			} else {
-				rows.add(s.probe());
+				rows.add(s.probe());			
 			}
 		}
 		this.rowKeys = new ArrayList<String>(rows);
@@ -68,20 +70,33 @@ public class SeriesChartGrid extends Composite {
 	}
 	
 	private void drawCharts() {
+		double min = Double.MAX_VALUE;
+		double max = Double.MIN_VALUE;
+		for (Series s: data) {
+			for (ExpressionValue ev: s.values()) {
+				if (ev.getValue() < min) {
+					min = ev.getValue();
+				}
+				if (ev.getValue() > max) {
+					max = ev.getValue();
+				}
+			}
+		}
+		
 		for (Series s: data) {
 			int row = rowsAreCompounds ? SharedUtils.indexOf(rowKeys, s.compound()) : SharedUtils.indexOf(rowKeys, s.probe());
 			String td = s.timeDose();
 			if (td.equals("Low")) {
-				displaySeriesAt(row * 2 + 2, 0, s);
+				displaySeriesAt(row * 2 + 2, 0, s, min, max);
 			} else if (td.equals("Middle")) {
-				displaySeriesAt(row * 2 + 2, 1, s);
+				displaySeriesAt(row * 2 + 2, 1, s, min, max);
 			} else if (td.equals("High")) {
-				displaySeriesAt(row * 2 + 2, 2, s);
+				displaySeriesAt(row * 2 + 2, 2, s, min, max);
 			}
 		}
 		
 		int i = 1;
-		for (String p: rowKeys) {
+		for (String p: rowKeys) {			
 			g.setWidget(i, 0, Utils.mkEmphLabel(p));
 			i += 2;
 		}
@@ -96,8 +111,7 @@ public class SeriesChartGrid extends Composite {
 							for (int i = 0; i < results.length; ++i) {
 								g.setWidget(
 										i * 2 + 1, 0,
-										Utils.mkEmphLabel(SharedUtils
-												.mkString(results[i])));										
+										Utils.mkEmphLabel(SharedUtils.mkString(results[i]) + "/" + rowKeys.get(i)));										
 							}
 						}
 
@@ -108,10 +122,14 @@ public class SeriesChartGrid extends Composite {
 		}
 	}
 	
-	private void displaySeriesAt(int row, int column, Series s) {
+	private void displaySeriesAt(int row, int column, Series s, double minVal, double maxVal) {
 		Options o = Utils.createChartOptions("LightSkyBlue");
 		o.setWidth(150);
 		o.setHeight(150);
+		AxisOptions ao = AxisOptions.create();
+		ao.setMinValue(minVal);
+		ao.setMaxValue(maxVal);
+		o.setVAxisOptions(ao);
 		
 		DataTable t = DataTable.create();
 		t.addColumn(ColumnType.STRING, "Time");
@@ -126,33 +144,15 @@ public class SeriesChartGrid extends Composite {
 		t.setValue(2, 0, "3");
 		t.setValue(3, 0, "4");		
 		int i = 0;
-		double min = Double.MAX_VALUE;
-		double max = Double.MIN_VALUE;
-		
+
 		for (ExpressionValue v : s.values()) {
 			double vv = v.getValue();
 			t.setValue(i, 1, vv);
 			t.setFormattedValue(i, 1, Utils.formatNumber(vv));
 			i += 1;
-			if (vv < min) {
-				min = vv;
-			}
-			if (vv > max) {
-				max = vv;
-			}
+
 		}
-		if (min > 0) {
-			min = 0;
-		}
-		if (max < 0) {
-			max = 0;
-		}
-		
-		AxisOptions ao = AxisOptions.create();
-		ao.setMaxValue(max);
-		ao.setMinValue(min);
-		o.setVAxisOptions(ao);
-		
+
 		CoreChart c = new ColumnChart(t, o);				
 		g.setWidget(row, column, c);
 	}
