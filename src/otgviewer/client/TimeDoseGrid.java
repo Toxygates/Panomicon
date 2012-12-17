@@ -38,9 +38,11 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class TimeDoseGrid extends DataListenerWidget {
 	private Grid grid = new Grid();
 	private String[] availableTimes;
+	
 	private CheckBox[][] checkboxes; //for selecting the subgroups
 	private ListBox annotationSelector = new ListBox();
-	private List<String> oldCompounds = new ArrayList<String>();
+	//private List<String> oldCompounds = new ArrayList<String>();
+	private Combination[] oldSelection;
 	
 	private Button annotationButton;
 	
@@ -49,6 +51,18 @@ public class TimeDoseGrid extends DataListenerWidget {
 
 	public static interface BarcodeListener {
 		void barcodesObtained(Barcode[] barcodes, String description);
+	}
+	
+	private static class Combination {
+		String compound;
+		int dose;
+		int time;
+		
+		public Combination(String compound, int dose, int time) {
+			this.compound = compound;
+			this.dose = dose;
+			this.time = time;
+		}
 	}
 	
 	public TimeDoseGrid() {
@@ -113,8 +127,8 @@ public class TimeDoseGrid extends DataListenerWidget {
 	
 	
 	@Override
-	public void compoundsChanged(List<String> compounds) {
-		oldCompounds = chosenCompounds;
+	public void compoundsChanged(List<String> compounds) {		
+		oldSelection = getSelection();
 		
 		super.compoundsChanged(compounds);		
 		if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
@@ -223,20 +237,22 @@ public class TimeDoseGrid extends DataListenerWidget {
 				grid.setWidget(c + 1, d + 1, sp);					
 			}
 		}
+		if (oldSelection != null) {
+			setSelection(oldSelection);
+			oldSelection = null;
+		}
 	}
 	
-	private boolean getSelected(String compound, String time, String dose) {
-		int ci = SharedUtils.indexOf(chosenCompounds, compound);
+	private boolean getSelected(String compound, String time, String dose) {		
 		int t = SharedUtils.indexOf(availableTimes, time);
-		int d = doseToIndex(dose);			
-		return checkboxes[ci][d * availableTimes.length + t].getValue();
+		int d = doseToIndex(dose);
+		return getSelected(compound, t, d);		
 	}
 	
 	private void setSelected(String compound, String time, String dose, boolean v) {
-		int ci = SharedUtils.indexOf(chosenCompounds, compound);
 		int t = SharedUtils.indexOf(availableTimes, time);
-		int d = doseToIndex(dose);			
-		checkboxes[ci][d * availableTimes.length + t].setValue(v);
+		int d = doseToIndex(dose);
+		setSelected(compound, t, d, v);
 	}
 	
 	private boolean getSelected(String compound, int t, int d) {
@@ -244,10 +260,25 @@ public class TimeDoseGrid extends DataListenerWidget {
 		return checkboxes[ci][d * availableTimes.length + t].getValue();
 	}
 	
-	//TODO: keep cleaning up the behaviour of this grid
 	private void setSelected(String compound, int t, int d, boolean v) {
-		int ci = SharedUtils.indexOf(chosenCompounds, compound);					
-		checkboxes[ci][d * availableTimes.length + t].setValue(v);
+		int ci = SharedUtils.indexOf(chosenCompounds, compound);
+		if (ci != -1) {
+			checkboxes[ci][d * availableTimes.length + t].setValue(v);
+		}
+	}
+	
+	public Combination[] getSelection() {
+		List<Combination> r = new ArrayList<Combination>();
+		for (String c: chosenCompounds) {
+			for (int d = 0; d < 3; d++) {
+				for (int t = 0; t < availableTimes.length; ++t) {
+					if (getSelected(c, t, d)) {
+						r.add(new Combination(c, d, t));
+					}
+				}
+			}
+		}
+		return r.toArray(new Combination[0]);
 	}
 	
 	public void setSelection(Barcode[] barcodes) {
@@ -255,6 +286,12 @@ public class TimeDoseGrid extends DataListenerWidget {
 			String c = b.getCompound();
 			setSelected(c, b.getTime(), b.getDose(), true);						
 		}		
+	}
+	
+	public void setSelection(Combination[] combinations) {
+		for (Combination c: combinations) {
+			setSelected(c.compound, c.time, c.dose, true);
+		}
 	}
 	
 	private class MultiSelectHandler implements ValueChangeHandler<Boolean> {

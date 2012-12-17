@@ -41,7 +41,7 @@ public class ColumnScreen extends Screen {
 		gi = new GroupInspector(cs);
 		this.addListener(gi);
 		cs.addListener(gi);
-		tp.add(gi, "Groups");
+		tp.add(gi, "Sample groups");
 		
 		final CompoundRanker cr = new CompoundRanker(cs);
 		tp.add(cr, "Compound ranking");

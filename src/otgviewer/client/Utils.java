@@ -7,9 +7,12 @@ import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.Group;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -27,7 +30,8 @@ public class Utils {
 
 	private static NumberFormat df = NumberFormat.getDecimalFormat();
 	private static NumberFormat sf = NumberFormat.getScientificFormat();
-
+	private static Resources resources = GWT.create(Resources.class);
+	
 	public static String formatNumber(double v) {
 		if (Math.abs(v) > 0.001) {
 			return df.format(v);
@@ -74,16 +78,43 @@ public class Utils {
 
 	public static void displayInPopup(Widget w) {
 		final PopupPanel pp = new PopupPanel(true, true);
-		pp.setWidget(w);
-		pp.setPopupPositionAndShow(displayInCenter(pp));		
+		DockPanel dp = new DockPanel();
+		HorizontalPanel hp = new HorizontalPanel();
+		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+		Image i = new Image(resources.close());
+		i.addClickHandler(new ClickHandler() {			
+			@Override
+			public void onClick(ClickEvent event) {
+				pp.hide();				
+			}
+		});
+		hp.add(i);		
+		hp.setWidth("100%");
+		
+		dp.add(hp, DockPanel.NORTH);
+		dp.add(w, DockPanel.CENTER);
+		pp.setWidget(dp);
+		pp.setPopupPositionAndShow(displayInCenter(pp, dp, w));		
 	}
 
 	public static PositionCallback displayInCenter(final PopupPanel pp) {
+		return displayInCenter(pp, null, null);
+	}
+	
+	private static PositionCallback displayInCenter(final PopupPanel pp, final DockPanel dp, final Widget center) {
 		return new PositionCallback() {			
-		public void setPosition(int w, int h) {
-			if (h > Window.getClientHeight() - 100) {			
-				pp.setHeight((Window.getClientHeight() - 100) + "px");	
-				pp.setWidget(makeScrolled(pp.getWidget()));
+		public void setPosition(int w, int h) {			
+			if (h > Window.getClientHeight() - 100) {
+				pp.setHeight((Window.getClientHeight() - 100) + "px");
+				if (center != null && dp != null) {					
+					dp.remove(center);					
+					Widget scrl = makeScrolled(center);
+					scrl.setHeight((Window.getClientHeight() - 120) + "px");
+					dp.add(scrl, DockPanel.CENTER);					
+				} else {				
+					Widget wd = pp.getWidget();
+					pp.setWidget(makeScrolled(wd));
+				}				
 				pp.setPopupPosition(Window.getClientWidth() - w - 50, 50);
 			} else {
 				pp.setPopupPosition(Window.getClientWidth() - w - 50, 

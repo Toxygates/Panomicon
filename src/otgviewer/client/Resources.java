@@ -29,4 +29,7 @@ public interface Resources extends ClientBundle {
 	
 	@Source("images/bottle64.png")
 	ImageResource bottle();
+	
+	@Source("images/close_16.png")
+	ImageResource close();
 }
