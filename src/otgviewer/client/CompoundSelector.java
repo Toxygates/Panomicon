@@ -15,7 +15,6 @@ import otgviewer.client.components.StringSelectionTable;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Pair;
 import otgviewer.shared.RankRule;
-import otgviewer.shared.RuleType;
 import otgviewer.shared.Series;
 
 import com.google.gwt.core.client.GWT;
@@ -25,15 +24,11 @@ import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.IdentityColumn;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.NoSelectionModel;
 
@@ -90,8 +85,19 @@ public class CompoundSelector extends DataListenerWidget {
 		verticalPanel.add(scrollPanel);
 		scrollPanel.setSize("100%", "400px");
 		
-		Button b = new Button("Unselect all");
-		verticalPanel.add(b);
+		HorizontalPanel hp = Utils.mkHorizontalPanel();
+		verticalPanel.add(hp);
+		
+		Button b = new Button("Sort by name");
+		hp.add(b);
+		b.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent ce) {
+				loadCompounds();
+			}
+		});
+		
+		b = new Button("Unselect all");
+		hp.add(b);		
 		b.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent ce) {
 				setSelection(new ArrayList<String>());
@@ -149,10 +155,10 @@ public class CompoundSelector extends DataListenerWidget {
 	}
 
 	void loadCompounds() {		
-		owlimService.compounds(chosenDataFilter, new AsyncCallback<String[]>() {
+		owlimService.compounds(chosenDataFilter, new PendingAsyncCallback<String[]>(this) {
 			
 			@Override
-			public void onSuccess(String[] result) {
+			public void handleSuccess(String[] result) {
 				Arrays.sort(result);
 				List<String> r = new ArrayList<String>((Arrays.asList(result)));
 				compoundTable.reloadWith(r, true);				
@@ -160,7 +166,7 @@ public class CompoundSelector extends DataListenerWidget {
 			}
 			
 			@Override
-			public void onFailure(Throwable caught) {
+			public void handleFailure(Throwable caught) {
 				Window.alert("Unable to retrieve compounds");			
 			}
 		});

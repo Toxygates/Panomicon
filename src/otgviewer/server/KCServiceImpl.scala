@@ -260,7 +260,9 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
 
     val realProbes = filterProbes(filter, probes)
     val r = getExprValues(filter, barcodes, realProbes, typ, sparseRead)
-    new ArrayList[ExpressionRow](insertAnnotations(r.asRows))
+    //When we have obtained the data in r, it may no longer be sorted in the order that the user
+    //requested. Thus we use selectNamedRows here to force the sort order they wanted.
+    new ArrayList[ExpressionRow](insertAnnotations(r.selectNamedColumns(barcodes).asRows))
   }
 
   def addTwoGroupTest(test: Synthetic.TwoGroupSynthetic): Unit = {

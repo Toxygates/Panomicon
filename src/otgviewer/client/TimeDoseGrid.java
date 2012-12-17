@@ -1,5 +1,6 @@
 package otgviewer.client;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import otgviewer.client.components.DataListenerWidget;
@@ -39,7 +40,8 @@ public class TimeDoseGrid extends DataListenerWidget {
 	private String[] availableTimes;
 	private CheckBox[][] checkboxes; //for selecting the subgroups
 	private ListBox annotationSelector = new ListBox();
-
+	private List<String> oldCompounds = new ArrayList<String>();
+	
 	private Button annotationButton;
 	
 	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
@@ -109,8 +111,11 @@ public class TimeDoseGrid extends DataListenerWidget {
 		annotationButton.setEnabled(annEnab);
 	}
 	
+	
 	@Override
 	public void compoundsChanged(List<String> compounds) {
+		oldCompounds = chosenCompounds;
+		
 		super.compoundsChanged(compounds);		
 		if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
 			owlimService.barcodes(chosenDataFilter, compounds.get(0), null, null, new AsyncCallback<Barcode[]>() {
@@ -182,7 +187,8 @@ public class TimeDoseGrid extends DataListenerWidget {
 	private void redrawGrid() {
 		grid.resize(chosenCompounds.size() + 1, 4);
 		
-		for (int i = 1; i < chosenCompounds.size() + 1; ++i) {			
+		for (int i = 1; i < chosenCompounds.size() + 1; ++i) {
+			
 			grid.setWidget(i, 0, Utils.mkEmphLabel(chosenCompounds.get(i - 1)));
 		}
 				
@@ -219,13 +225,35 @@ public class TimeDoseGrid extends DataListenerWidget {
 		}
 	}
 	
+	private boolean getSelected(String compound, String time, String dose) {
+		int ci = SharedUtils.indexOf(chosenCompounds, compound);
+		int t = SharedUtils.indexOf(availableTimes, time);
+		int d = doseToIndex(dose);			
+		return checkboxes[ci][d * availableTimes.length + t].getValue();
+	}
+	
+	private void setSelected(String compound, String time, String dose, boolean v) {
+		int ci = SharedUtils.indexOf(chosenCompounds, compound);
+		int t = SharedUtils.indexOf(availableTimes, time);
+		int d = doseToIndex(dose);			
+		checkboxes[ci][d * availableTimes.length + t].setValue(v);
+	}
+	
+	private boolean getSelected(String compound, int t, int d) {
+		int ci = SharedUtils.indexOf(chosenCompounds, compound);					
+		return checkboxes[ci][d * availableTimes.length + t].getValue();
+	}
+	
+	//TODO: keep cleaning up the behaviour of this grid
+	private void setSelected(String compound, int t, int d, boolean v) {
+		int ci = SharedUtils.indexOf(chosenCompounds, compound);					
+		checkboxes[ci][d * availableTimes.length + t].setValue(v);
+	}
+	
 	public void setSelection(Barcode[] barcodes) {
 		for (Barcode b: barcodes) {
 			String c = b.getCompound();
-			int ci = SharedUtils.indexOf(chosenCompounds, c);
-			int time = SharedUtils.indexOf(availableTimes, b.getTime());
-			int dose = doseToIndex(b.getDose());			
-			checkboxes[ci][dose * availableTimes.length + time].setValue(true);			
+			setSelected(c, b.getTime(), b.getDose(), true);						
 		}		
 	}
 	

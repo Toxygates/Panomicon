@@ -65,7 +65,7 @@ public abstract class SeriesDisplayStrategy {
 	}
 	
 	void displayData(List<ExpressionRow> data, CoreChart chart) {
-		System.out.println("Series chart got " + data.size() + " rows");
+//		System.out.println("Series chart got " + data.size() + " rows");
 		
 		if (bcTable.length > 0) {	
 			for (ExpressionRow r : data) {
