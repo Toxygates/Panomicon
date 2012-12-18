@@ -60,10 +60,11 @@ public class ExpressionTable extends DataListenerWidget {
 	private DoubleBox absValBox;
 	private VerticalPanel seriesChartPanel = new VerticalPanel();	
 	private List<SeriesChart> seriesCharts = new ArrayList<SeriesChart>();
-
+	
 	private final KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
 	private final OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT.create(OwlimService.class);
+	private static otgviewer.client.Resources resources = GWT.create(otgviewer.client.Resources.class);
 	
 	private List<Synthetic> synthColumns = new ArrayList<Synthetic>();
 	
@@ -576,7 +577,7 @@ public class ExpressionTable extends DataListenerWidget {
 	class ToolCell extends ImageClickCell {
 		
 		public ToolCell(DataListenerWidget owner) {
-			super("chart_16.png");
+			super(resources.chart());
 		}
 		
 		//TODO the popup chart code could be cleaned up/factored out quite a bit

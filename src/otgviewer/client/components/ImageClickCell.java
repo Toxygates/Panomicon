@@ -5,18 +5,21 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
+import com.google.gwt.user.client.ui.AbstractImagePrototype;
 
 abstract public class ImageClickCell extends AbstractCell<String> {
-	private String image;
+	private ImageResource image;
 
-	public ImageClickCell(String image) {
+	public ImageClickCell(ImageResource image) {
 		super("click");
 		this.image = image;
 	}
 	
-	public void render(Cell.Context context, String data, SafeHtmlBuilder sb) {
-		sb.appendHtmlConstant("<img src=\"images/" + image + "\">");
+	public void render(Cell.Context context, String data, SafeHtmlBuilder sb) {		
+		sb.append(SafeHtmlUtils.fromTrustedString(AbstractImagePrototype.create(image).getHTML()));
 	}
 	
 

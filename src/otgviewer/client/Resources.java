@@ -30,6 +30,20 @@ public interface Resources extends ClientBundle {
 	@Source("images/bottle64.png")
 	ImageResource bottle();
 	
-	@Source("images/close_16.png")
+	
+	@Source("images/clock64.png")
+	ImageResource clock();
+	
+	@Source("images/16_statistics.png")
+	ImageResource chart();
+	
+	@Source("images/16_close.png")
 	ImageResource close();
+	
+	@Source("images/16_info.png")
+	ImageResource info();
+	
+	@Source("images/16_search.png")
+	ImageResource magnify();
+	
 }

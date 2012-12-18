@@ -1,21 +1,29 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.Annotation;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
+import otgviewer.shared.Group;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.ScrollPanel;
@@ -26,19 +34,23 @@ public class SampleDetailScreen extends Screen {
 
 	public static final String key = "ad";
 	
-	private CellTable<String[]> annotationTable = new CellTable<String[]>();
+	private CellTable<String[]> experimentTable = new CellTable<String[]>();
+	private CellTable<String[]> biologicalTable = new CellTable<String[]>();
+	
 	private ScrollPanel sp = new ScrollPanel();
 	private VerticalPanel vp = new VerticalPanel();
-	private List<String[]> annotations = new ArrayList<String[]>();
+	
 	private Barcode[] barcodes;
 	private DataColumn displayColumn, customColumn;
 	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
 			.create(OwlimService.class);
+	AnnotationTDGrid atd = new AnnotationTDGrid();
 	
 	public SampleDetailScreen(DataColumn column, Screen parent, ScreenManager man) {
 		super(parent, "Sample details", key, false, man);		
 		customColumn = column;
 		displayColumn = customColumn;		
+		this.addListener(atd);
 		parent.propagateTo(this); //nonstandard data flow
 		if (displayColumn == null) {
 			displayColumn = chosenColumns.get(0);
@@ -46,11 +58,26 @@ public class SampleDetailScreen extends Screen {
 	}
 	
 	public Widget content() {
-		HorizontalPanel hp = new HorizontalPanel();
+		HorizontalPanel hp = Utils.mkHorizontalPanel();
 		dockPanel.add(hp, DockPanel.NORTH);
 		
 		final ListBox columnList = new ListBox();
 		hp.add(columnList);
+		
+		Button b = new Button("Grid visualisation...");
+		hp.add(b);
+		b.addClickHandler(new ClickHandler() {			
+			@Override
+			public void onClick(ClickEvent event) {
+				Set<String> compounds = new HashSet<String>();
+				for (DataColumn d: chosenColumns) {
+					compounds.addAll(Arrays.asList(((Group) d).getCompounds()));
+				}
+				List<String> compounds_ = new ArrayList<String>(compounds);
+				atd.compoundsChanged(compounds_);
+				Utils.displayInPopup(atd);								
+			}
+		});
 		
 		columnList.addChangeHandler(new ChangeHandler() {
 			public void onChange(ChangeEvent ce) {
@@ -70,7 +97,12 @@ public class SampleDetailScreen extends Screen {
 		displayWith(columnList.getItemText(columnList.getSelectedIndex()));
 				
 		vp.add(sp);
-		sp.setWidget(annotationTable);		
+		
+		VerticalPanel vpi = new VerticalPanel();
+		vpi.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		vpi.add(experimentTable);
+		vpi.add(biologicalTable);
+		sp.setWidget(vpi);		
 		
 		return vp;
 	}
@@ -85,8 +117,11 @@ public class SampleDetailScreen extends Screen {
 	}
 	
 	private void displayWith(String column) {		
-		while(annotationTable.getColumnCount() > 0) {
-			annotationTable.removeColumn(0);
+		while(experimentTable.getColumnCount() > 0) {
+			experimentTable.removeColumn(0);
+		}
+		while(biologicalTable.getColumnCount() > 0) {
+			biologicalTable.removeColumn(0);
 		}
 		
 		if (customColumn != null && column.equals(customColumn.getShortTitle())) {
@@ -106,9 +141,17 @@ public class SampleDetailScreen extends Screen {
 				return x[0];											
 			}
 		}; 
-		annotationTable.addColumn(col, "Annotation");		
-		for (int i = 1; i < barcodes.length + 1; ++i) {			
-			annotationTable.addColumn(makeColumn(i), barcodes[i - 1].getCode().substring(2)); //remove leading 00
+		experimentTable.addColumn(col, "Experiment detail");
+		experimentTable.setColumnWidth(col, "15em");
+		biologicalTable.addColumn(col, "Biological detail");
+		biologicalTable.setColumnWidth(col, "15em");
+		for (int i = 1; i < barcodes.length + 1; ++i) {
+			String name = barcodes[i - 1].getCode().substring(2); //remove leading 00
+			TextColumn<String[]> c = makeColumn(i);
+			experimentTable.addColumn(c, name);		
+			experimentTable.setColumnWidth(c, "10em");			
+			biologicalTable.addColumn(c, name);
+			biologicalTable.setColumnWidth(c, "10em");
 		}
 		reload();
 	}
@@ -120,19 +163,32 @@ public class SampleDetailScreen extends Screen {
 					Window.alert("Unable to get array annotations.");
 				}
 				public void onSuccess(Annotation[] as) {
-					annotations.clear();
-
+					List<String[]> annotations = new ArrayList<String[]>();
+					
 					final int numEntries = as[0].getEntries().size();
-					for (int i = 0; i < numEntries; i++) {
+					int i = 0;
+					while(i < numEntries && i < 23) {
 						String[] item = new String[barcodes.length + 1];
 						item[0] = as[0].getEntries().get(i).description;
 						for (int j = 0; j < as.length; ++j) {					
 							item[j + 1] = as[j].getEntries().get(i).value;						
 						}
 						annotations.add(item);
+						i += 1;
 					}
-
-					annotationTable.setRowData(annotations);
+					experimentTable.setRowData(annotations);
+					annotations.clear();
+					
+					while(i < numEntries) {
+						String[] item = new String[barcodes.length + 1];
+						item[0] = as[0].getEntries().get(i).description;
+						for (int j = 0; j < as.length; ++j) {					
+							item[j + 1] = as[j].getEntries().get(i).value;						
+						}
+						annotations.add(item);
+						i += 1;
+					}
+					biologicalTable.setRowData(annotations);
 				}
 			});
 		}

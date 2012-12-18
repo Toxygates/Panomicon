@@ -47,6 +47,7 @@ public class CompoundSelector extends DataListenerWidget {
 			.create(OwlimService.class);
 	private KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
+	private static Resources resources = GWT.create(Resources.class);
 	
 	private StringSelectionTable compoundTable;
 	private ScrollPanel scrollPanel;
@@ -222,21 +223,25 @@ public class CompoundSelector extends DataListenerWidget {
 	class ChartClickCell extends ImageClickCell {
 		final DataListenerWidget w;
 		public ChartClickCell(DataListenerWidget w) {
-			super("chart_16.png");
+			super(resources.chart());
 			this.w = w;
 		}
 		
 		public void onClick(String value) {
-			kcService.getSeries(chosenDataFilter, rankProbes.toArray(new String[0]), 
-					null, new String[] { value }, new PendingAsyncCallback<List<Series>>(w) {
-				public void handleSuccess(List<Series> ss) {
-					SeriesChartGrid scg = new SeriesChartGrid(ss, false);
-					Utils.displayInPopup(scg);
-				}
-				public void handleFailure(Throwable caught) {
-					Window.alert("Unable to retrieve data.");
-				}
-			});
+			if (rankProbes.size() == 0) {
+				Window.alert("These charts can only be displayed if compounds have been ranked.");
+			} else {
+				kcService.getSeries(chosenDataFilter, rankProbes.toArray(new String[0]), 
+						null, new String[] { value }, new PendingAsyncCallback<List<Series>>(w) {
+					public void handleSuccess(List<Series> ss) {
+						SeriesChartGrid scg = new SeriesChartGrid(ss, false);
+						Utils.displayInPopup(scg);
+					}
+					public void handleFailure(Throwable caught) {
+						Window.alert("Unable to retrieve data.");
+					}
+				});
+			}
 		}
 	}
 }

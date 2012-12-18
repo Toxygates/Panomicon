@@ -12,6 +12,7 @@ import otgviewer.shared.Group;
 import otgviewer.shared.Pathology;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.TextColumn;
@@ -29,6 +30,7 @@ public class PathologyScreen extends Screen {
 	private VerticalPanel vp = new VerticalPanel();
 	private List<Pathology> pathologies = new ArrayList<Pathology>();
 	final Screen myScreen = this;
+	private static Resources resources = GWT.create(Resources.class);
 	
 	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
 			.create(OwlimService.class);
@@ -128,7 +130,7 @@ public class PathologyScreen extends Screen {
 	
 	class InspectCell extends ImageClickCell {
 		InspectCell() {
-			super("search_button_16.png");
+			super(resources.magnify());
 		}
 		
 		public void onClick(String value) {

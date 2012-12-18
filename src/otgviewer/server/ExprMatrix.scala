@@ -170,5 +170,4 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
   
   def selectNamedColumns(columns: Iterable[String]) = selectColumns(columns.map(columnMap(_)))
   
-    
 }

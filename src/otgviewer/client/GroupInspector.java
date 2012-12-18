@@ -38,9 +38,9 @@ import com.google.gwt.view.client.SelectionChangeEvent;
  * @author johan
  *
  */
-public class GroupInspector extends DataListenerWidget implements TimeDoseGrid.BarcodeListener {
+public class GroupInspector extends DataListenerWidget implements SelectionTDGrid.BarcodeListener {
 
-	private TimeDoseGrid timeDoseGrid;
+	private SelectionTDGrid timeDoseGrid;
 	private Map<String, Group> groups = new HashMap<String, Group>();		
 	
 	private TextBox txtbxGroup;
@@ -57,7 +57,7 @@ public class GroupInspector extends DataListenerWidget implements TimeDoseGrid.B
 		lblGroupDefinition.setStyleName("heading");
 		vp.add(lblGroupDefinition);
 		
-		timeDoseGrid = new TimeDoseGrid();
+		timeDoseGrid = new SelectionTDGrid();
 		vp.add(timeDoseGrid);
 		addListener(timeDoseGrid);
 	

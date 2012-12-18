@@ -72,7 +72,9 @@ public class DatasetInfo extends Composite implements ClickHandler {
 		}
 		
 		icons.add(new Image(resources.bottle()));
+
 		if (filter.repeatType == RepeatType.Repeat) {
+			icons.add(new Image(resources.clock()));
 			icons.add(new Image(resources.bottle()));					
 		}
 		
