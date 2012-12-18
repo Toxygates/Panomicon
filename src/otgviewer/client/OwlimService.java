@@ -69,5 +69,12 @@ public interface OwlimService extends RemoteService {
 	
 	public String[][] geneSyms(String[] probes);
 	
+	/**
+	 * Obtain gene suggestions from a partial gene name (natural language)
+	 * @param partialName
+	 * @return An array of pairs, where the first item is the precise gene symbol and the second is the full gene name.
+	 */
+	public Pair<String, String>[] geneSuggestions(String partialName);
+	
 	public Association[] associations(DataFilter filter, String[] probes);
 }

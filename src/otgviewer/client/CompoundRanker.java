@@ -20,6 +20,7 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -29,7 +30,7 @@ public class CompoundRanker extends DataListenerWidget {
 
 	private VerticalPanel csVerticalPanel = new VerticalPanel();
 	private final int RANK_CONDS = 10;
-	private TextBox[] rankProbeText = new TextBox[RANK_CONDS];
+	private SuggestBox[] rankProbeText = new SuggestBox[RANK_CONDS];
 	private ListBox[] rankType = new ListBox[RANK_CONDS];
 	private ListBox[] rankRefCompound = new ListBox[RANK_CONDS];
 	private ListBox[] rankRefDose = new ListBox[RANK_CONDS];
@@ -67,8 +68,10 @@ public class CompoundRanker extends DataListenerWidget {
 		});
 	}
 
+	final GeneOracle oracle = new GeneOracle();
 	private void makeRankRuleInputs(Grid g, final int row) {
-		rankProbeText[row] = new TextBox();
+		
+		rankProbeText[row] = new SuggestBox(oracle);
 		
 		rankType[row] = new ListBox();
 		for (RuleType rt : RuleType.values()) {

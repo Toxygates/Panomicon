@@ -26,6 +26,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.StackPanel;
+import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -43,6 +44,7 @@ public class ProbeScreen extends Screen {
 	private ListBox probesList;
 	private Set<String> listedProbes = new HashSet<String>();
 	private List<ListBox> compoundLists = new ArrayList<ListBox>();
+	final SuggestBox sb = new SuggestBox(new GeneOracle());
 	
 	public ProbeScreen(Screen parent, ScreenManager man) {
 		super(parent, "Select probes", key, true, man);
@@ -128,36 +130,43 @@ public class ProbeScreen extends Screen {
 		verticalPanel_3.add(customProbeText);
 		customProbeText.setSize("95%", "");
 
-		Button button_1 = new Button("Add probes");
+		Button button_1 = new Button("Add manual list");
 		verticalPanel_3.add(button_1);
-		
-		final DataListenerWidget w = this;
 		
 		button_1.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent ev) {
 				String text = customProbeText.getText();
 				String[] split = text.split("\n");
+				
 				if (split.length == 0) {
 					Window.alert("Please enter probes, genes or proteins in the text box and try again.");
 				} else {
-					// change the identifiers (which can be mixed format) into a
-					// homogenous format (probes only)
-					kcService.identifiersToProbes(chosenDataFilter, split, true, 
-							new PendingAsyncCallback<String[]>(w) {
-								public void handleSuccess(String[] probes) {
-									addProbes(probes);
-								}
-
-								public void handleFailure(Throwable caught) {
-									Window.alert("Unable to resolve manual probes");
-								}
-							});
+					addManualProbes(split);
+					
 				}
 			}
 		});
 		
+		Label l = new Label("Begin typing a gene name to get suggestions.");
+		verticalPanel_3.add(l);
+		
+		verticalPanel_3.add(sb);
+		sb.setWidth("95%");
+		Button b = new Button("Add gene");
+		verticalPanel_3.add(b);
+		b.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent ev) {
+				String[] gs = new String[1];
+				if (sb.getText().length() == 0) {
+					Window.alert("Please type a gene name or identifier and try again.");
+				}
+				gs[0] = sb.getText();
+				addManualProbes(gs);
+			}
+		});
+		
 		VerticalPanel lp = new VerticalPanel();
-		Label l = new Label("Selected probes");
+		l = new Label("Selected probes");
 		l.setStyleName("heading");
 		lp.add(l);
 		probesList = new ListBox();
@@ -167,7 +176,7 @@ public class ProbeScreen extends Screen {
 		hp.add(lp);
 		
 		lp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		Button b = new Button("Clear selected probes");
+		b = new Button("Clear selected probes");
 		lp.add(b);
 		b.addClickHandler(new ClickHandler() {			
 			@Override
@@ -204,6 +213,21 @@ public class ProbeScreen extends Screen {
 		
 		dockPanel.add(buttons, DockPanel.SOUTH);
 		return hp;
+	}
+	
+	private void addManualProbes(String[] probes) {
+		// change the identifiers (which can be mixed format) into a
+		// homogenous format (probes only)
+		kcService.identifiersToProbes(chosenDataFilter, probes, true, 
+				new PendingAsyncCallback<String[]>(this) {
+					public void handleSuccess(String[] probes) {
+						addProbes(probes);
+					}
+
+					public void handleFailure(Throwable caught) {
+						Window.alert("Unable to resolve manual probes");
+					}
+				});
 	}
 	
 	private Widget makeTargetLookupPanel(final String service, String label, String buttonText) {

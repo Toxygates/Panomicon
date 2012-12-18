@@ -193,4 +193,9 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
     sources.par.map(_()).seq.map(x => new Association(x._1, x._2)).toArray    
   }
   
+  def geneSuggestions(partialName: String): Array[Pair[String, String]] = {
+    useConnector(B2RAffy, (c: B2RAffy.type) => c.probesForPartialTitle(partialName, null)).map(x => 
+      new Pair(x._1, x._2)).toArray
+  }
+  
 }
