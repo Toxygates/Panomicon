@@ -20,15 +20,12 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class SelectionTDGrid extends TimeDoseGrid {
 
-	private CheckBox[][] checkboxes; //for selecting the subgroups
-	
-	//private List<String> oldCompounds = new ArrayList<String>();
+	private CheckBox[][] checkboxes; //for selecting the subgroups	
 	private Combination[] oldSelection;
 
 	public static interface BarcodeListener {
 		void barcodesObtained(Barcode[] barcodes, String description);
 	}
-
 
 	private static class Combination {
 		String compound;

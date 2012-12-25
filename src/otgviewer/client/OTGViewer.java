@@ -3,6 +3,7 @@ package otgviewer.client;
 import java.util.HashMap;
 import java.util.Map;
 
+import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -38,6 +39,13 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		menuBar.addItem(new MenuItem("Toxygates", new Command() {
 			public void execute() {}
 		}));		
+		
+		menuBar.addItem(new MenuItem("Help", new Command() {
+			public void execute() {
+				currentScreen.showHelp();
+			}
+		}));
+		
 		return menuBar;
 	}
 

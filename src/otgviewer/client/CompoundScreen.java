@@ -1,5 +1,6 @@
 package otgviewer.client;
 
+import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -15,7 +16,7 @@ public class CompoundScreen extends Screen {
 	static String key = "compound";
 	
 	public CompoundScreen(Screen parent, ScreenManager man) {
-		super(parent, "Compound selection", key, true, man);
+		super(parent, "Compound selection", key, true, true, man);
 	}
 	
 	public Widget content() {

@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import otgviewer.client.components.ImageClickCell;
+import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
@@ -36,7 +37,7 @@ public class PathologyScreen extends Screen {
 			.create(OwlimService.class);
 	
 	public PathologyScreen(Screen parent, ScreenManager man) {
-		super(parent, "Pathology/chemical data", key, true, man);
+		super(parent, "Pathology/chemical data", key, true, false, man);
 	}
 
 	public Widget content() {		

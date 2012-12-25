@@ -3,6 +3,7 @@ package otgviewer.client;
 import java.util.Arrays;
 import java.util.List;
 
+import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
@@ -28,7 +29,7 @@ public class DataScreen extends Screen {
 	private List<DataColumn> lastColumns;
 	
 	public DataScreen(Screen parent, ScreenManager man) {
-		super(parent, "View data", key, true, man);		
+		super(parent, "View data", key, true, true, man);		
 	}
 	
 	public Widget content() {

@@ -1,18 +1,21 @@
-package otgviewer.client;
+package otgviewer.client.components;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.ScreenManager;
+import otgviewer.client.Resources;
+import otgviewer.client.Utils;
 import otgviewer.shared.DataFilter;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
@@ -28,7 +31,8 @@ import com.google.gwt.user.client.ui.Widget;
  *
  */
 public class Screen extends DataListenerWidget {
-
+	protected static Resources resources = GWT.create(Resources.class);
+	
 	protected DockPanel dockPanel = new DockPanel();
 	private String key; //An identifier string
 	private Screen parent;
@@ -37,24 +41,39 @@ public class Screen extends DataListenerWidget {
 	private Label viewLabel = new Label();
 	private boolean showDataFilter = false;
 	private MenuBar menuBar;
+	private boolean alwaysLinked = false;
+	protected boolean enabled = false;
 	private List<MenuItem> menuItems = new ArrayList<MenuItem>();
+	private List<Screen> children = new ArrayList<Screen>();
 	protected ScreenManager manager;
 	
 	public Screen(Screen parent, String title, String key,  
-			boolean showDataFilter, ScreenManager man) {		
+			boolean showDataFilter, boolean alwaysLinked, ScreenManager man) {		
 		initWidget(dockPanel);
 		menuBar = man.getMenuBar();
 		manager = man;
+		this.alwaysLinked = alwaysLinked;
 		this.showDataFilter = showDataFilter;
 		dockPanel.setWidth("100%");		
 		this.key = key;
-		this.parent = parent;		
+		this.parent = parent;	
+		if (parent != null) {
+			parent.addChild(this);
+		}
 		setTitle(title);		
 	}
 	
-	void addParentLinks(final Screen parent) {
+	private void addChild(Screen child) {
+		children.add(child);
+	}
+	
+	private boolean enabled() {
+		return enabled;
+	}
+	
+	void addSequenceLinks(final Screen parent) {
 		if (parent != null) {
-			addParentLinks(parent.parent());
+			addSequenceLinks(parent.parent());
 			Label l;
 			if (parent != this) {
 				l = new Label(parent.getTitle() + " >> ");
@@ -66,7 +85,7 @@ public class Screen extends DataListenerWidget {
 				l.setStyleName("clickHeading");			
 			} else {
 				l = new Label(parent.getTitle());
-				l.setStyleName("heading");
+				l.setStyleName("headingBlack");
 			}
 			horizontalPanel.add(l);
 		}
@@ -82,14 +101,15 @@ public class Screen extends DataListenerWidget {
 			horizontalPanel = new HorizontalPanel();
 			vp.add(horizontalPanel);
 			dockPanel.add(vp, DockPanel.NORTH);
-			addParentLinks(this);
+			addSequenceLinks(this);
 			dockPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 			dockPanel.add(content(), DockPanel.CENTER);
 			vp.add(viewLabel);			
 			shown = true;
-//			Window.alert("First show");
+			enabled = true;
+//			first show
 		} else {
-//			Window.alert("Late show");
+//			later show
 		}
 		for (MenuItem mi: menuItems) {
 			mi.setVisible(true);
@@ -142,5 +162,26 @@ public class Screen extends DataListenerWidget {
 		if (showDataFilter) {
 			viewLabel.setText("Viewing: " + filter.toString());
 		}
+	}
+	
+	public void showHelp() {
+		VerticalPanel vp = new VerticalPanel();		
+		Image i = getHelpImage();
+		if (i != null) {
+			vp.add(i);			
+		}		
+		SimplePanel sp = new SimplePanel();
+		sp.setWidth("600px");
+		sp.setWidget(getHelpHTML());
+		vp.add(sp);
+		Utils.displayInPopup(vp);
+	}
+	
+	protected HTML getHelpHTML() {
+		return new HTML(resources.defaultHelpHTML().getText());
+	}
+	
+	protected Image getHelpImage() {
+		return null;		
 	}
 }

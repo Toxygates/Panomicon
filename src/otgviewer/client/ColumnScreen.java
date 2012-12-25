@@ -3,6 +3,7 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.DataColumn;
 
@@ -12,7 +13,9 @@ import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -21,15 +24,19 @@ public class ColumnScreen extends Screen {
 	public static String key = "columns";
 	
 	private GroupInspector gi;
+	private VerticalPanel vp;
+	private HorizontalPanel hp;
 	
 	public ColumnScreen(Screen parent, ScreenManager man) {
-		super(parent, "Column definitions", key, true, man);
+		super(parent, "Column definitions", key, true, true, man);
 	}
 	
 	public Widget content() {
 		
-		VerticalPanel vp = new VerticalPanel();
-		HorizontalPanel hp = new HorizontalPanel();
+		vp = Utils.mkVerticalPanel();
+		hp = Utils.mkHorizontalPanel();
+		hp.setHeight("100%");
+		
 		vp.add(hp);
 		CompoundSelector cs = new CompoundSelector("Compounds");
 		this.addListener(cs);
@@ -46,6 +53,7 @@ public class ColumnScreen extends Screen {
 		final CompoundRanker cr = new CompoundRanker(cs);
 		tp.add(cr, "Compound ranking");
 		tp.selectTab(0);
+		tp.setHeight("100%");
 		
 		Button b = new Button("Next: Select probes");		
 		b.addClickHandler(new ClickHandler() {
@@ -63,8 +71,7 @@ public class ColumnScreen extends Screen {
 		
 		return vp;
 	}
-	
-	
+
 	@Override
 	public void loadState() {
 		super.loadState();
@@ -80,4 +87,17 @@ public class ColumnScreen extends Screen {
 			Window.alert("Unable to load inactive columns.");
 		}
 	}
+
+	@Override
+	protected Image getHelpImage() {
+		return new Image(resources.groupDefinitionHelp());		
+	}
+
+	@Override
+	protected HTML getHelpHTML() {
+		return new HTML(resources.groupDefinitionHTML().getText());		
+	}	
+	
+	
+	
 }

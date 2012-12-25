@@ -74,14 +74,6 @@ public class CompoundSelector extends DataListenerWidget {
 		lblCompounds.setStyleName("heading");
 		verticalPanel.add(lblCompounds);
 		
-//		Button b = new Button("Sort by effect on genes...");
-//		verticalPanel.add(b);
-//		b.addClickHandler(new ClickHandler() {
-//			public void onClick(ClickEvent ce) {
-//				displayCompoundSorter();
-//			}
-//		});
-		
 		scrollPanel = new ScrollPanel();
 		verticalPanel.add(scrollPanel);
 		scrollPanel.setSize("100%", "400px");
@@ -193,10 +185,6 @@ public class CompoundSelector extends DataListenerWidget {
 		}
 	}
 	
-//	void displayCompoundSorter() {
-//		Utils.displayInPopup(csVerticalPanel);		
-//	}
-//	
 	void performRanking(List<RankRule> rules) {
 		
 		if (rules.size() > 0) { //do we have at least 1 rule?						

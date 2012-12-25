@@ -58,10 +58,15 @@ background:MintCream;
   margin: 5px;
   text-align: center;
 }
-
+.headingBlack {
+  font-size: 1.2em;
+  color: black;
+  margin: 5px;
+  text-align: center;
+}
 .clickHeading {
-	font-size: 1.2em;
-  color: #777777;
+  font-size: 1.2em;
+  color: DarkBlue;
   margin: 5px;
   text-align: center;
   cursor: pointer;

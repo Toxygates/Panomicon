@@ -1,8 +1,8 @@
 package otgviewer.client;
 
 import com.google.gwt.resources.client.ClientBundle;
-import com.google.gwt.resources.client.ClientBundle.Source;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.resources.client.TextResource;
 
 public interface Resources extends ClientBundle {
 
@@ -45,5 +45,14 @@ public interface Resources extends ClientBundle {
 	
 	@Source("images/16_search.png")
 	ImageResource magnify();
+	
+	@Source("help/default.html")
+	TextResource defaultHelpHTML();
+	
+	@Source("help/groupDefinition.png")
+	ImageResource groupDefinitionHelp();
+	
+	@Source("help/groupDefinition.html")
+	TextResource groupDefinitionHTML();	
 	
 }

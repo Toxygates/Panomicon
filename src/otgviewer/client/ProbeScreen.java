@@ -8,6 +8,7 @@ import java.util.Set;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
@@ -47,7 +48,7 @@ public class ProbeScreen extends Screen {
 	final SuggestBox sb = new SuggestBox(new GeneOracle());
 	
 	public ProbeScreen(Screen parent, ScreenManager man) {
-		super(parent, "Select probes", key, true, man);
+		super(parent, "Select probes", key, true, true, man);
 	}
 
 	private ProbeSelector pathwaySel, gotermSel;
@@ -121,17 +122,22 @@ public class ProbeScreen extends Screen {
 		probeSelStack.add(verticalPanel_3, "Free selection", false);
 		verticalPanel_3.setSize("100%", "");
 
+		VerticalPanel vpi = Utils.mkVerticalPanel();
+		vpi.setStyleName("colored");
+		verticalPanel_3.add(vpi);
+		vpi.setWidth("100%");
+		
 		Label label_5 = new Label(
 				"Enter a list of probes, genes or proteins, one per line, to display only those.");
 		label_5.setStyleName("none");
-		verticalPanel_3.add(label_5);
+		vpi.add(label_5);
 
 		customProbeText = new TextArea();
-		verticalPanel_3.add(customProbeText);
+		vpi.add(customProbeText);
 		customProbeText.setSize("95%", "");
 
 		Button button_1 = new Button("Add manual list");
-		verticalPanel_3.add(button_1);
+		vpi.add(button_1);
 		
 		button_1.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent ev) {
@@ -147,13 +153,18 @@ public class ProbeScreen extends Screen {
 			}
 		});
 		
-		Label l = new Label("Begin typing a gene name to get suggestions.");
-		verticalPanel_3.add(l);
+		vpi = Utils.mkVerticalPanel();
+		vpi.setStyleName("colored2");
+		verticalPanel_3.add(vpi);
+		vpi.setWidth("100%");
 		
-		verticalPanel_3.add(sb);
+		Label l = new Label("Begin typing a gene name to get suggestions.");
+		vpi.add(l);
+		
+		vpi.add(sb);
 		sb.setWidth("95%");
 		Button b = new Button("Add gene");
-		verticalPanel_3.add(b);
+		vpi.add(b);
 		b.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent ev) {
 				String[] gs = new String[1];
@@ -165,7 +176,7 @@ public class ProbeScreen extends Screen {
 			}
 		});
 		
-		VerticalPanel lp = new VerticalPanel();
+		VerticalPanel lp = Utils.mkVerticalPanel();
 		l = new Label("Selected probes");
 		l.setStyleName("heading");
 		lp.add(l);
@@ -175,7 +186,7 @@ public class ProbeScreen extends Screen {
 		lp.add(probesList);
 		hp.add(lp);
 		
-		lp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		
 		b = new Button("Clear selected probes");
 		lp.add(b);
 		b.addClickHandler(new ClickHandler() {			

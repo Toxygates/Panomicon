@@ -1,5 +1,6 @@
 package otgviewer.client;
 
+import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
@@ -21,7 +22,7 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 	static String key = "ds";
 	
 	public DatasetScreen(Screen parent, ScreenManager man) {
-		super(parent, "Dataset selection", key, false, man);		
+		super(parent, "Dataset selection", key, false, true, man);		
 	}
 	
 	public Widget content() {

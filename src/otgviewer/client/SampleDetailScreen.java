@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.Annotation;
 import otgviewer.shared.Barcode;
@@ -47,7 +48,7 @@ public class SampleDetailScreen extends Screen {
 	AnnotationTDGrid atd = new AnnotationTDGrid();
 	
 	public SampleDetailScreen(DataColumn column, Screen parent, ScreenManager man) {
-		super(parent, "Sample details", key, false, man);		
+		super(parent, "Sample details", key, false, true, man);		
 		customColumn = column;
 		displayColumn = customColumn;		
 		this.addListener(atd);

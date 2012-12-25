@@ -151,7 +151,8 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
       case "DrugBank" => useConnector(DrugBank, (c:DrugBank.type) => c.targetProtsForDrug(compound))        
       case _ => throw new Exception("Unexpected probe target service request: " + service)
     })
-    OTGOwlim.probesForUniprot(proteins).toArray
+    val pbs = OTGOwlim.probesForUniprot(proteins).toArray
+    OTGQueries.filterProbes(pbs, filter)
   }
   
   def goTerms(pattern: String): Array[String] = 
