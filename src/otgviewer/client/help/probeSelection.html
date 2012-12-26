@@ -1,0 +1,46 @@
+<H3>Probe selection</H3>
+
+The probe selection screen allows you to select the microarray probes (corresponding to mRNA, and indirectly genes and proteins) that you want 
+to display in the main data table, which follows immediately after probe selection has finished. Groups, which were defined in the previous step, 
+will be displayed as columns, and probes will be displayed as rows.
+	If you do not want to select any particular probes, you can proceed to the next screen without making a selection. This is done by clicking
+	 <i>Display data with all probes</i>
+	 at the bottom of the screen. In this case, all probes will be displayed. This is approximately 30,000 probes for rat cells, and 50,000
+	  probes for human cells.
+	If you want to select a particular set of probes, several different methods can be used. You can use multiple sources simultaneously to 
+	select probes. At this time of writing the following probe sources are supported.
+
+<H4>KEGG pathways</H4>
+
+KEGG pathway data is loaded in realtime from the Bio2RDF project. This data is currently hosted in Canada and while generally reliable, 
+it may occasionally be unavailable. In order to obtain the probes associated with a pathway, first type the name of the pathway. 
+A partial name is acceptable. Then press enter to search. You will see a list of matching pathways. Select the pathway you are
+ interested in, and wait for a few seconds. If there are matching probes available for this data set, the <i>Add selected probes
+  </i> button should become clickable. Click it, and the corresponding probes are added to the list on the right.
+	If you want, you can add probes from multiple pathways in this way. When you are satisfied with your selected probes list, 
+	you can click <i>Display data</i> with selected probes at the bottom of the screen to proceed to the next stage.
+
+<H4>GO term search</H4>
+The GO term based probe search is very similar to the KEGG pathway search. However, the data is hosted locally, and should thus 
+always be available as long as Toxygates itself is available. For both KEGG pathways and GO terms, note that the initial search
+ is sensitive to the name only. Thus, if you search for “cancer”  you will not find the KEGG pathway called “basal cell carcinoma”.
+
+<H4<CHEMBL targets</H4>
+This feature lets you search for CHEMBL targets for a selected compound. Only the compounds that are part of your active groups
+ (from the previous screen) will be shown here. Select a compound and click <i>Add CHEMBL targets</i> to add the relevant probes to the list
+  on the right hand side. Probes whose protein have an IC50 score for the given compound will be added (the actual IC50 value is ignored). 
+  As the CHEMBL data is hosted remotely, it may occasionally be unavailable. Also, note that many more CHEMBL targets are available for
+   human proteins than for rat proteins.
+
+<H4>DrugBank targets</H4>
+This feature is very similar to the CHEMBL target search, but DrugBank target information is used instead. This data is also stored remotely.
+
+<H4>Free selection</H4>
+Here, you can specify probes explicitly by entering the names of genes, probes or proteins. One identifier per line is accepted. 
+Note that a particular gene or protein may have multiple corresponding probes (and a probe may have multiple corresponding genes or proteins).
+ In this case, all the relevant probes will be added.
+
+￼
+<H4>Next step</H4>
+When you are happy with the list of selected probes, click <i>Display data with chosen probes</i> to proceed. If you do not want to choose any 
+particular probes, click <Display data with all probes</i>.
