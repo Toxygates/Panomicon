@@ -10,6 +10,8 @@ import otgviewer.shared.DataFilter;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HTML;
@@ -47,13 +49,19 @@ public class Screen extends DataListenerWidget {
 	private List<Screen> children = new ArrayList<Screen>();
 	protected ScreenManager manager;
 	
+	protected TextResource helpHTML;
+	protected ImageResource helpImage;
+	
 	public Screen(Screen parent, String title, String key,  
-			boolean showDataFilter, boolean alwaysLinked, ScreenManager man) {		
+			boolean showDataFilter, boolean alwaysLinked, ScreenManager man,
+			TextResource helpHTML, ImageResource helpImage) {		
 		initWidget(dockPanel);
 		menuBar = man.getMenuBar();
 		manager = man;
 		this.alwaysLinked = alwaysLinked;
 		this.showDataFilter = showDataFilter;
+		this.helpHTML = helpHTML;
+		this.helpImage = helpImage;
 		dockPanel.setWidth("100%");		
 		this.key = key;
 		this.parent = parent;	
@@ -61,6 +69,11 @@ public class Screen extends DataListenerWidget {
 			parent.addChild(this);
 		}
 		setTitle(title);		
+	}
+	
+	public Screen(Screen parent, String title, String key,  
+			boolean showDataFilter, boolean alwaysLinked, ScreenManager man) {
+		this(parent, title, key, showDataFilter, alwaysLinked, man, resources.defaultHelpHTML(), null);
 	}
 	
 	private void addChild(Screen child) {
@@ -165,23 +178,14 @@ public class Screen extends DataListenerWidget {
 	}
 	
 	public void showHelp() {
-		VerticalPanel vp = new VerticalPanel();		
-		Image i = getHelpImage();
-		if (i != null) {
-			vp.add(i);			
-		}		
-		SimplePanel sp = new SimplePanel();
-		sp.setWidth("600px");
-		sp.setWidget(getHelpHTML());
-		vp.add(sp);
-		Utils.displayInPopup(vp);
+		Utils.showHelp(getHelpHTML(), getHelpImage());		
 	}
 	
-	protected HTML getHelpHTML() {
-		return new HTML(resources.defaultHelpHTML().getText());
+	protected TextResource getHelpHTML() {
+		return helpHTML;
 	}
 	
-	protected Image getHelpImage() {
-		return null;		
+	protected ImageResource getHelpImage() {
+		return helpImage;	
 	}
 }

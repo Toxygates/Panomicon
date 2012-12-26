@@ -28,9 +28,7 @@ public class CompoundScreen extends Screen {
 		cs.setWidth("350px");
 		vp.add(cs);
 		
-		Button b = new Button("Proceed");
-		vp.add(b);
-		b.addClickHandler(new ClickHandler() {
+		vp.add(new Button("Proceed", new ClickHandler() {
 			
 			@Override
 			public void onClick(ClickEvent event) {
@@ -42,7 +40,7 @@ public class CompoundScreen extends Screen {
 					History.newItem(ColumnScreen.key);
 				}
 			}
-		});
+		}));
 		return vp;
 		
 	}

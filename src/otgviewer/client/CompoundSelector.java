@@ -81,21 +81,17 @@ public class CompoundSelector extends DataListenerWidget {
 		HorizontalPanel hp = Utils.mkHorizontalPanel();
 		verticalPanel.add(hp);
 		
-		Button b = new Button("Sort by name");
-		hp.add(b);
-		b.addClickHandler(new ClickHandler() {
+		hp.add(new Button("Sort by name", new ClickHandler() {
 			public void onClick(ClickEvent ce) {
 				loadCompounds();
 			}
-		});
+		}));
 		
-		b = new Button("Unselect all");
-		hp.add(b);		
-		b.addClickHandler(new ClickHandler() {
+		hp.add(new Button("Unselect all", new ClickHandler() {
 			public void onClick(ClickEvent ce) {
 				setSelection(new ArrayList<String>());
 			}
-		});
+		}));
 		
 		final DataListenerWidget w = this;
 		compoundTable = new StringSelectionTable("Sel", "Compound") {

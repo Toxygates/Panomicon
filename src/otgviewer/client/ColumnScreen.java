@@ -9,13 +9,13 @@ import otgviewer.shared.DataColumn;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -28,7 +28,8 @@ public class ColumnScreen extends Screen {
 	private HorizontalPanel hp;
 	
 	public ColumnScreen(Screen parent, ScreenManager man) {
-		super(parent, "Column definitions", key, true, true, man);
+		super(parent, "Column definitions", key, true, true, man,
+				resources.groupDefinitionHTML(), resources.groupDefinitionHelp());
 	}
 	
 	public Widget content() {
@@ -55,10 +56,7 @@ public class ColumnScreen extends Screen {
 		tp.selectTab(0);
 		tp.setHeight("100%");
 		
-		Button b = new Button("Next: Select probes");		
-		b.addClickHandler(new ClickHandler() {
-			
-			@Override
+		Button b = new Button("Next: Select probes", new ClickHandler() {			
 			public void onClick(ClickEvent event) {
 				if (gi.chosenColumns().size() == 0) {
 					Window.alert("Please define and activate at least one group.");
@@ -88,16 +86,5 @@ public class ColumnScreen extends Screen {
 		}
 	}
 
-	@Override
-	protected Image getHelpImage() {
-		return new Image(resources.groupDefinitionHelp());		
-	}
-
-	@Override
-	protected HTML getHelpHTML() {
-		return new HTML(resources.groupDefinitionHTML().getText());		
-	}	
-	
-	
 	
 }

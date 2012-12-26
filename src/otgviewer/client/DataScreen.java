@@ -29,7 +29,8 @@ public class DataScreen extends Screen {
 	private List<DataColumn> lastColumns;
 	
 	public DataScreen(Screen parent, ScreenManager man) {
-		super(parent, "View data", key, true, true, man);		
+		super(parent, "View data", key, true, true, man,
+				resources.dataDisplayHTML(), resources.dataDisplayHelp());		
 	}
 	
 	public Widget content() {
@@ -42,21 +43,17 @@ public class DataScreen extends Screen {
 		}
 		
 		HorizontalPanel hp = new HorizontalPanel();
-		Button b = new Button("View pathologies");
-		hp.add(b);
-		b.addClickHandler(new ClickHandler() {
+		hp.add(new Button("View pathologies", new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				History.newItem(PathologyScreen.key);
 			}
-		});
+		}));
 		
-		b = new Button("View biochemical data");
-		hp.add(b);
-		b.addClickHandler(new ClickHandler() {
+		hp.add(new Button("View biochemical data", new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				manager.showTemporary(new SampleDetailScreen(null, myScreen, manager));
 			}
-		});
+		}));
 		
 		dockPanel.add(hp, DockPanel.SOUTH);
 		

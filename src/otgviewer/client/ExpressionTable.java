@@ -142,23 +142,18 @@ public class ExpressionTable extends DataListenerWidget {
 		absValBox.setText("0.00");
 		horizontalPanel.add(absValBox);
 
-		Button absApply = new Button("Apply");
-		horizontalPanel.add(absApply);
-		absApply.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent e) {				
-				refilterData();					
+		horizontalPanel.add(new Button("Apply", new ClickHandler() {
+			public void onClick(ClickEvent e) {
+				refilterData();
 			}
-		});
-
-		Button absClear = new Button("No filter");
-		horizontalPanel.add(absClear);
-		absClear.addClickHandler(new ClickHandler() {
+		}));
+		horizontalPanel.add(new Button("No filter", new ClickHandler() {
 			public void onClick(ClickEvent e) {
 				absValBox.setValue(0.0);
 				refilterData();
 			}
-		});
-		
+		}));
+
 		horizontalPanel = new HorizontalPanel();
 		tools.add(horizontalPanel);		
 		horizontalPanel.setStyleName("colored2");
@@ -170,21 +165,15 @@ public class ExpressionTable extends DataListenerWidget {
 		groupsel2.setVisibleItemCount(1);
 		
 		
-		Button b = new Button("Add T-Test");
-		horizontalPanel.add(b);
-		b.addClickHandler(new ClickHandler() {
+		horizontalPanel.add(new Button("Add T-Test", new ClickHandler() {
 			public void onClick(ClickEvent e) { addTwoGroupSynthetic(new Synthetic.TTest(null, null), "T-Test"); }							
-		});
+		}));
 		
-		b = new Button("Add U-Test");
-		horizontalPanel.add(b);
-		b.addClickHandler(new ClickHandler() {
+		horizontalPanel.add(new Button("Add U-Test", new ClickHandler() {
 			public void onClick(ClickEvent e) { addTwoGroupSynthetic(new Synthetic.UTest(null, null), "U-Test"); }							
-		});
+		}));
 		
-		b = new Button("Remove tests");
-		horizontalPanel.add(b);
-		b.addClickHandler(new ClickHandler() {
+		horizontalPanel.add(new Button("Remove tests", new ClickHandler() {
 			public void onClick(ClickEvent ce) {
 				if (!synthColumns.isEmpty()) {
 					synthColumns.clear();
@@ -193,7 +182,7 @@ public class ExpressionTable extends DataListenerWidget {
 					getExpressions(chosenProbes);	
 				}
 			}
-		});
+		}));
 		
 		return tools;
 	}
@@ -240,21 +229,19 @@ public class ExpressionTable extends DataListenerWidget {
 						db.setHTML("Your download is ready.");				
 						HorizontalPanel hp = new HorizontalPanel();
 						
-						Button b = new Button("Download");
-						b.addClickHandler(new ClickHandler() {
+						hp.add(new Button("Download", new ClickHandler() {
 							public void onClick(ClickEvent ev) {
 								Window.open(downloadUrl, "_blank", "");
 								db.hide();
 							}
-						});
-						hp.add(b);
-						b = new Button("Cancel");
-						b.addClickHandler(new ClickHandler() {
+						}));
+						
+						hp.add(new Button("Cancel", new ClickHandler() {
 							public void onClick(ClickEvent ev) {
 								db.hide();								
 							}
-						});
-						hp.add(b);
+						}));
+						
 						db.add(hp);
 						db.setPopupPositionAndShow(Utils.displayInCenter(db));						
 					}

@@ -30,7 +30,6 @@ public interface Resources extends ClientBundle {
 	@Source("images/bottle64.png")
 	ImageResource bottle();
 	
-	
 	@Source("images/clock64.png")
 	ImageResource clock();
 	
@@ -46,6 +45,9 @@ public interface Resources extends ClientBundle {
 	@Source("images/16_search.png")
 	ImageResource magnify();
 	
+	@Source("images/16_faq.png")
+	ImageResource help();
+	
 	@Source("help/default.html")
 	TextResource defaultHelpHTML();
 	
@@ -54,5 +56,23 @@ public interface Resources extends ClientBundle {
 	
 	@Source("help/groupDefinition.html")
 	TextResource groupDefinitionHTML();	
+	
+	@Source("help/probeSelection.png")
+	ImageResource probeSelectionHelp();
+	
+	@Source("help/probeSelection.html")
+	TextResource probeSelectionHTML();
+	
+	@Source("help/dataDisplay.html")
+	TextResource dataDisplayHTML();
+	
+	@Source("help/dataDisplay.png")
+	ImageResource dataDisplayHelp();
+	
+	@Source("help/compoundRanking.html")
+	TextResource compoundRankingHTML();
+	
+	@Source("help/compoundRanking.png")
+	ImageResource compoundRankingHelp();
 	
 }

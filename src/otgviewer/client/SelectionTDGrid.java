@@ -42,13 +42,8 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	@Override
 	protected void initTools(HorizontalPanel toolPanel) {
 		super.initTools(toolPanel);
-		Button btnSelectAll = new Button("Select all");
-		toolPanel.add(btnSelectAll);
-		btnSelectAll.addClickHandler(setAllHandler(true));
-
-		Button btnSelectNone = new Button("Select none");
-		toolPanel.add(btnSelectNone);
-		btnSelectNone.addClickHandler(setAllHandler(false));
+		toolPanel.add(new Button("Select all", setAllHandler(true)));		
+		toolPanel.add(new Button("Select none", setAllHandler(false)));		
 	}
 	
 	@Override

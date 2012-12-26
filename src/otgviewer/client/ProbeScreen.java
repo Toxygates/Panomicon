@@ -48,7 +48,8 @@ public class ProbeScreen extends Screen {
 	final SuggestBox sb = new SuggestBox(new GeneOracle());
 	
 	public ProbeScreen(Screen parent, ScreenManager man) {
-		super(parent, "Select probes", key, true, true, man);
+		super(parent, "Select probes", key, true, true, man,
+				resources.probeSelectionHTML(), resources.probeSelectionHelp());				
 	}
 
 	private ProbeSelector pathwaySel, gotermSel;
@@ -135,11 +136,8 @@ public class ProbeScreen extends Screen {
 		customProbeText = new TextArea();
 		vpi.add(customProbeText);
 		customProbeText.setSize("95%", "");
-
-		Button button_1 = new Button("Add manual list");
-		vpi.add(button_1);
 		
-		button_1.addClickHandler(new ClickHandler() {
+		vpi.add(new Button("Add manual list", new ClickHandler() {
 			public void onClick(ClickEvent ev) {
 				String text = customProbeText.getText();
 				String[] split = text.split("\n");
@@ -147,11 +145,9 @@ public class ProbeScreen extends Screen {
 				if (split.length == 0) {
 					Window.alert("Please enter probes, genes or proteins in the text box and try again.");
 				} else {
-					addManualProbes(split);
-					
-				}
-			}
-		});
+					addManualProbes(split);					
+				} }
+		}));
 		
 		vpi = Utils.mkVerticalPanel();
 		vpi.setStyleName("colored2");
@@ -162,10 +158,8 @@ public class ProbeScreen extends Screen {
 		vpi.add(l);
 		
 		vpi.add(sb);
-		sb.setWidth("95%");
-		Button b = new Button("Add gene");
-		vpi.add(b);
-		b.addClickHandler(new ClickHandler() {
+		sb.setWidth("95%");		
+		vpi.add(new Button("Add gene", new ClickHandler() {
 			public void onClick(ClickEvent ev) {
 				String[] gs = new String[1];
 				if (sb.getText().length() == 0) {
@@ -174,7 +168,7 @@ public class ProbeScreen extends Screen {
 				gs[0] = sb.getText();
 				addManualProbes(gs);
 			}
-		});
+		}));
 		
 		VerticalPanel lp = Utils.mkVerticalPanel();
 		l = new Label("Selected probes");
@@ -186,21 +180,16 @@ public class ProbeScreen extends Screen {
 		lp.add(probesList);
 		hp.add(lp);
 		
-		
-		b = new Button("Clear selected probes");
-		lp.add(b);
-		b.addClickHandler(new ClickHandler() {			
+		lp.add(new Button("Clear selected probes", new ClickHandler() {			
 			@Override
 			public void onClick(ClickEvent event) {				
 				probesChanged(new String[0]);								
 			}
-		});
+		}));
 
 		HorizontalPanel buttons = new HorizontalPanel();
-		b = new Button("Display data with chosen probes");
-		buttons.add(b);
 		
-		b.addClickHandler(new ClickHandler() {			
+		buttons.add(new Button("Display data with chosen probes", new ClickHandler() {			
 			@Override
 			public void onClick(ClickEvent event) {
 				if (listedProbes.size() == 0) {
@@ -211,16 +200,14 @@ public class ProbeScreen extends Screen {
 					History.newItem(DataScreen.key);
 				}
 			}
-		});
-
-		b = new Button("Display data with all probes");
-		buttons.add(b);
-		b.addClickHandler(new ClickHandler() {
+		}));
+		
+		buttons.add(new Button("Display data with all probes", new ClickHandler() {
 			public void onClick(ClickEvent event) {								
 				probesChanged(new String[0]);						
 				History.newItem(DataScreen.key);
 			}
-		});
+		}));
 		
 		dockPanel.add(buttons, DockPanel.SOUTH);
 		return hp;
@@ -368,4 +355,5 @@ public class ProbeScreen extends Screen {
 		super.changeProbes(probes);
 		storeProbes();
 	}
+
 }

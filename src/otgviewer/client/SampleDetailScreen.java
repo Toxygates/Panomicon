@@ -65,9 +65,7 @@ public class SampleDetailScreen extends Screen {
 		final ListBox columnList = new ListBox();
 		hp.add(columnList);
 		
-		Button b = new Button("Grid visualisation...");
-		hp.add(b);
-		b.addClickHandler(new ClickHandler() {			
+		hp.add(new Button("Grid visualisation...", new ClickHandler() {			
 			@Override
 			public void onClick(ClickEvent event) {
 				Set<String> compounds = new HashSet<String>();
@@ -78,7 +76,7 @@ public class SampleDetailScreen extends Screen {
 				atd.compoundsChanged(compounds_);
 				Utils.displayInPopup(atd);								
 			}
-		});
+		}));
 		
 		columnList.addChangeHandler(new ChangeHandler() {
 			public void onChange(ChangeEvent ce) {

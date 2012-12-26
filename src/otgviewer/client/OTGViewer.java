@@ -36,9 +36,11 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	private MenuBar setupMenu() {
 		MenuBar menuBar = new MenuBar(false);
 		menuBar.setWidth("100%");		
-		menuBar.addItem(new MenuItem("Toxygates", new Command() {
+		MenuItem mi = new MenuItem("Toxygates", new Command() {
 			public void execute() {}
-		}));		
+		});		
+		mi.setEnabled(false);
+		menuBar.addItem(mi);
 		
 		menuBar.addItem(new MenuItem("Help", new Command() {
 			public void execute() {

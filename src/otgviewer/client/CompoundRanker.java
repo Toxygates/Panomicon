@@ -8,6 +8,7 @@ import otgviewer.shared.DataFilter;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.RuleType;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -19,13 +20,15 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 public class CompoundRanker extends DataListenerWidget {
-
+	private static Resources resources = GWT.create(Resources.class);
 	private CompoundSelector selector;
 
 	private VerticalPanel csVerticalPanel = new VerticalPanel();
@@ -58,14 +61,18 @@ public class CompoundRanker extends DataListenerWidget {
 			makeRankRuleInputs(g, row);
 		}
 
-		Button b = new Button("Rank");
-		csVerticalPanel.add(b);
-
-		b.addClickHandler(new ClickHandler() {
+		HorizontalPanel hp = Utils.mkHorizontalPanel();
+		csVerticalPanel.add(hp);
+		
+		hp.add(new Button("Rank", new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				performRanking();
 			}
-		});
+		}));
+		
+		
+		Widget i = Utils.mkHelpButton(resources.compoundRankingHTML(), resources.compoundRankingHelp());
+		hp.add(i);
 	}
 
 	final GeneOracle oracle = new GeneOracle();

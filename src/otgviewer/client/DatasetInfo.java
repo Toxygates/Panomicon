@@ -143,9 +143,7 @@ public class DatasetInfo extends Composite implements ClickHandler {
 		ivp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		ivp.setWidth("100%");
 		vp.add(ivp);
-		Button b = new Button("Select");
-		ivp.add(b);
-		b.addClickHandler(this);		
+		ivp.add(new Button("Select", this));			
 	}
 	
 	public void onClick(ClickEvent ce) {

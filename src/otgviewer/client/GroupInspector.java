@@ -75,12 +75,23 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		txtbxGroup.setText(nextGroupName());
 		horizontalPanel.add(txtbxGroup);
 		
-		Button btnSave = new Button("Save");
-		horizontalPanel.add(btnSave);
 		
-		Button btnDelete = new Button("Delete");
-		horizontalPanel.add(btnDelete);
+		horizontalPanel.add(new Button("Save",
+		new ClickHandler(){
+			public void onClick(ClickEvent ce) {
+				makeGroup(txtbxGroup.getValue());				
+			}
+		}));		
 		
+		horizontalPanel.add(new Button("Delete", new ClickHandler() {
+			public void onClick(ClickEvent ce) {
+				String grp = txtbxGroup.getValue();
+				if (groups.containsKey(grp)) {
+					groups.remove(grp);									
+					reflectGroupChanges();
+				}
+			}
+		}));
 		
 		existingGroupsTable = new SelectionTable<Group>("Active") {
 			protected void initTable(CellTable<Group> table) {
@@ -108,22 +119,8 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		};
 		vp.add(existingGroupsTable);
 		existingGroupsTable.setSize("100%", "100px");
+	
 		
-		btnSave.addClickHandler(new ClickHandler(){
-			public void onClick(ClickEvent ce) {
-				makeGroup(txtbxGroup.getValue());				
-			}
-		});
-		
-		btnDelete.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent ce) {
-				String grp = txtbxGroup.getValue();
-				if (groups.containsKey(grp)) {
-					groups.remove(grp);									
-					reflectGroupChanges();
-				}
-			}
-		});
 		
 		existingGroupsTable.table().getSelectionModel().addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
 			@Override
