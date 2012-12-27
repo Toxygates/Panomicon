@@ -35,6 +35,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	protected String chosenCompound;
 	protected ValueType chosenValueType;
 	protected List<DataColumn> chosenColumns = new ArrayList<DataColumn>();
+	protected DataColumn customColumn;
 	
 	public List<DataColumn> chosenColumns() { return this.chosenColumns; }
 	
@@ -84,6 +85,11 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	public void columnsChanged(List<DataColumn> columns) {
 		chosenColumns = columns;		
 		changeColumns(columns);
+	}
+	
+	public void customColumnChanged(DataColumn customColumn) {
+		this.customColumn = customColumn;
+		changeCustomColumn(customColumn);
 	}
 	
 	public void heightChanged(int newHeight) {
@@ -148,7 +154,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}
 	}
 	
-	
 	protected void changeColumns(List<DataColumn> columns) {
 		chosenColumns = columns;
 		assert(columns != null);
@@ -156,13 +161,21 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 			l.columnsChanged(columns);
 		}
 	}
+	
+	protected void changeCustomColumn(DataColumn customColumn) {
+		this.customColumn = customColumn;
+		for (DataViewListener l: listeners) {
+			l.customColumnChanged(customColumn);
+		}
+	}
+	
 	protected void changeHeight(int newHeight) {
 		for (DataViewListener l : listeners) {
 			l.heightChanged(newHeight);
 		}
 	}
 	
-	public void propagateTo(DataListenerWidget other) {
+	public void propagateTo(DataViewListener other) {
 		other.dataFilterChanged(chosenDataFilter);
 		other.probeChanged(chosenProbe);
 		other.probesChanged(chosenProbes);
@@ -170,6 +183,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		other.compoundChanged(chosenCompound);
 		other.valueTypeChanged(chosenValueType);
 		other.columnsChanged(chosenColumns);		
+		other.customColumnChanged(customColumn);
 	}
 
 	/**
@@ -211,7 +225,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 				} else {
 					s.setItem("OTG." + key + "." + chosenDataFilter.pack(), "");
 				}
-			}
+			}		
 		}
 	}
 	
@@ -219,6 +233,18 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		storeColumns("columns", chosenColumns);
 	}	
 	
+	protected void storeCustomColumn(DataColumn column) {
+		Storage s = Storage.getLocalStorageIfSupported();
+		if (s == null) {
+			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
+		} else {
+			if (column != null) {
+				s.setItem("OTG.customColumn", column.pack());
+			} else {
+				s.removeItem("OTG.customColumn");
+			}
+		}
+	}
 	
 	private String packColumns(Collection<DataColumn> columns) {
 		StringBuilder sb = new StringBuilder();
@@ -230,7 +256,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	}
 
 	private DataColumn unpackColumn(String s) {
-		String[] spl = s.split("^^^");
+		String[] spl = s.split("\\$\\$\\$");
 		if (spl[0].equals("Barcode")) {
 			return Barcode.unpack(s);
 		} else {
@@ -257,7 +283,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	
 	public void storeProbes() {		
 		Storage s = Storage.getLocalStorageIfSupported();
-//		Window.alert("Store '" + packProbes() + "' " + this.getClass());
 		if (s == null) {
 			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
 		} else {
@@ -295,14 +320,19 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 			if (chosenDataFilter != null) {				
 				try {
 					List<DataColumn> cs = loadColumns("columns", chosenColumns);
-					if (cs != null) {
-						chosenColumns = cs;
-						columnsChanged(chosenColumns);
+					if (cs != null) {						
+						columnsChanged(cs);
 					}						
-				} catch (Exception e) {
-					//one possible failure source is if data is stored in an incorrect foramt
+					v = s.getItem("OTG.customColumn");
+					if (v != null) {												
+						DataColumn cc = unpackColumn(v);						
+						customColumnChanged(cc);						
+					}
+				} catch (Exception e) {										
+					//one possible failure source is if data is stored in an incorrect format
 					columnsChanged(new ArrayList<DataColumn>());
 					storeColumns(); //overwrite the old data
+					storeCustomColumn(null); //ditto
 				}
 
 			}

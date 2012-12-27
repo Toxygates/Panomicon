@@ -40,29 +40,56 @@ public class SampleDetailScreen extends Screen {
 	
 	private ScrollPanel sp = new ScrollPanel();
 	private VerticalPanel vp = new VerticalPanel();
+	private ListBox columnList = new ListBox();
 	
 	private Barcode[] barcodes;
-	private DataColumn displayColumn, customColumn;
+	private DataColumn displayColumn;
 	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
 			.create(OwlimService.class);
 	AnnotationTDGrid atd = new AnnotationTDGrid();
 	
-	public SampleDetailScreen(DataColumn column, Screen parent, ScreenManager man) {
-		super(parent, "Sample details", key, false, true, man);		
-		customColumn = column;
-		displayColumn = customColumn;		
+	public SampleDetailScreen(ScreenManager man) {
+		super("Sample details", key, false, man);						
 		this.addListener(atd);
-		parent.propagateTo(this); //nonstandard data flow
-		if (displayColumn == null) {
-			displayColumn = chosenColumns.get(0);
-		}
 	}
 	
+	@Override
+	public void columnsChanged(List<DataColumn> columns) {
+		super.columnsChanged(columns);
+		if (columns.size() > 0) {
+			displayColumn = chosenColumns.get(0);
+
+			columnList.clear();
+			for (DataColumn c : chosenColumns) {
+				columnList.addItem(c.getShortTitle());
+			}
+			columnList.setSelectedIndex(0);
+			displayWith(columnList.getItemText(columnList.getSelectedIndex()));
+		}
+	}
+
+	@Override
+	public void customColumnChanged(DataColumn customColumn) {
+		Window.alert("Changed");		
+		super.customColumnChanged(customColumn);
+		if (customColumn != null) {
+			columnList.addItem(customColumn.getShortTitle());
+			columnList.setSelectedIndex(columnList.getItemCount() - 1);
+			displayWith(columnList.getItemText(columnList.getSelectedIndex()));
+			storeCustomColumn(null); // consume the data so it doesn't turn up
+										// again.
+		}
+	}
+
+	@Override
+	public boolean enabled() {
+		return manager.isConfigured(ColumnScreen.key);
+	}
+
 	public Widget content() {
 		HorizontalPanel hp = Utils.mkHorizontalPanel();
 		dockPanel.add(hp, DockPanel.NORTH);
 		
-		final ListBox columnList = new ListBox();
 		hp.add(columnList);
 		
 		hp.add(new Button("Grid visualisation...", new ClickHandler() {			
@@ -83,18 +110,7 @@ public class SampleDetailScreen extends Screen {
 				displayWith(columnList.getItemText(columnList.getSelectedIndex()));
 			}
 		});
-		
-		for (DataColumn c: chosenColumns) {
-			columnList.addItem(c.getShortTitle());
-		}		
-		if (customColumn != null) {
-			columnList.addItem(customColumn.getShortTitle());
-			columnList.setSelectedIndex(columnList.getItemCount() - 1);
-		} else {
-			columnList.setSelectedIndex(0);			
-		}		
-		displayWith(columnList.getItemText(columnList.getSelectedIndex()));
-				
+
 		vp.add(sp);
 		
 		VerticalPanel vpi = new VerticalPanel();

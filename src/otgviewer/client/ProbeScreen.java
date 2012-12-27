@@ -17,7 +17,6 @@ import otgviewer.shared.Group;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -47,9 +46,14 @@ public class ProbeScreen extends Screen {
 	private List<ListBox> compoundLists = new ArrayList<ListBox>();
 	final SuggestBox sb = new SuggestBox(new GeneOracle());
 	
-	public ProbeScreen(Screen parent, ScreenManager man) {
-		super(parent, "Select probes", key, true, true, man,
+	public ProbeScreen(ScreenManager man) {
+		super("Select probes", key, true, man,
 				resources.probeSelectionHTML(), resources.probeSelectionHelp());				
+	}
+
+	@Override
+	public boolean enabled() {
+		return manager.isConfigured(ColumnScreen.key);
 	}
 
 	private ProbeSelector pathwaySel, gotermSel;
@@ -197,15 +201,15 @@ public class ProbeScreen extends Screen {
 				} else {
 					chosenProbes = listedProbes.toArray(new String[0]);					
 					storeProbes();
-					History.newItem(DataScreen.key);
+					configuredProceed(DataScreen.key);					
 				}
 			}
 		}));
 		
 		buttons.add(new Button("Display data with all probes", new ClickHandler() {
 			public void onClick(ClickEvent event) {								
-				probesChanged(new String[0]);						
-				History.newItem(DataScreen.key);
+				probesChanged(new String[0]);
+				configuredProceed(DataScreen.key);				
 			}
 		}));
 		
@@ -217,14 +221,11 @@ public class ProbeScreen extends Screen {
 		// change the identifiers (which can be mixed format) into a
 		// homogenous format (probes only)
 		kcService.identifiersToProbes(chosenDataFilter, probes, true, 
-				new PendingAsyncCallback<String[]>(this) {
+				new PendingAsyncCallback<String[]>(this, "Unable to resolve manual probes.") {
 					public void handleSuccess(String[] probes) {
 						addProbes(probes);
 					}
 
-					public void handleFailure(Throwable caught) {
-						Window.alert("Unable to resolve manual probes");
-					}
 				});
 	}
 	
@@ -249,11 +250,7 @@ public class ProbeScreen extends Screen {
 				if (compoundList.getSelectedIndex() != -1) {
 					String compound = compoundList.getItemText(compoundList.getSelectedIndex());					
 					owlimService.probesTargetedByCompound(chosenDataFilter,
-							compound, service, new PendingAsyncCallback<String[]>(w) {
-								public void handleFailure(Throwable caught) {
-									Window.alert("Unable to get probes.");
-								}
-
+							compound, service, new PendingAsyncCallback<String[]>(w, "Unable to get probes.") {								
 								public void handleSuccess(String[] probes) {		
 									addProbes(probes);
 								}

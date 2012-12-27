@@ -196,9 +196,8 @@ public class CompoundRanker extends DataListenerWidget {
 					Window.alert("Empty gene name detected. Please specify a gene/probe for each enabled rule.");
 				}
 			}
-		}
-		selector.setRankProbes(rankProbes);
-		selector.performRanking(rules);
+		}		
+		selector.performRanking(rankProbes, rules);
 	}
 
 	@Override

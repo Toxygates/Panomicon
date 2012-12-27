@@ -16,6 +16,6 @@ public interface DataViewListener {
 	public void availableCompoundsChanged(List<String> compounds);
 	public void valueTypeChanged(ValueType type);
 	public void columnsChanged(List<DataColumn> columns);
-	
+	public void customColumnChanged(DataColumn column);
 	public void heightChanged(int newHeight);
 }

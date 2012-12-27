@@ -52,6 +52,7 @@ public class CompoundSelector extends DataListenerWidget {
 	private StringSelectionTable compoundTable;
 	private ScrollPanel scrollPanel;
 	private VerticalPanel verticalPanel;
+	private boolean hasRankColumns = false;
 	
 	private Map<String, Double> scores = new HashMap<String, Double>(); //for compound ranking
 	private List<String> rankProbes = new ArrayList<String>();
@@ -93,7 +94,6 @@ public class CompoundSelector extends DataListenerWidget {
 			}
 		}));
 		
-		final DataListenerWidget w = this;
 		compoundTable = new StringSelectionTable("Sel", "Compound") {
 			protected void selectionChanged(Set<String> selected) {
 				List<String> r = new ArrayList<String>();
@@ -101,32 +101,32 @@ public class CompoundSelector extends DataListenerWidget {
 				Collections.sort(r);
 				changeCompounds(r);
 			}
-			
-			protected void initTable(CellTable<String> table) {
-				super.initTable(table);
-				TextColumn<String> textColumn = new TextColumn<String>() {
-					@Override
-					public String getValue(String object) {
-						if (scores.containsKey(object)) {
-							return Utils.formatNumber(scores.get(object));					
-						} else {
-							return "N/A";
-						}
-					}
-				};
-				table.addColumn(textColumn, "Score");
-				
-				ChartClickCell ccc = new ChartClickCell(w);
-				table.addColumn(new IdentityColumn<String>(ccc), "");
-			}
+		
 		};
 		scrollPanel.setWidget(compoundTable);
 		compoundTable.setSize("100%", "100%");
 		compoundTable.table().setSelectionModel(new NoSelectionModel<String>());		
 	}
 	
-	void setRankProbes(List<String> rankProbes) {
-		this.rankProbes = rankProbes;
+	private void addRankColumns() {
+		if (!hasRankColumns) {
+			CellTable<String> table = compoundTable.table();
+ 			TextColumn<String> textColumn = new TextColumn<String>() {
+				@Override
+				public String getValue(String object) {
+					if (scores.containsKey(object)) {
+						return Utils.formatNumber(scores.get(object));					
+					} else {
+						return "N/A";
+					}
+				}
+			};
+			table.addColumn(textColumn, "Score");
+			
+			ChartClickCell ccc = new ChartClickCell(this);
+			table.addColumn(new IdentityColumn<String>(ccc), "");
+			hasRankColumns = true;
+		}
 	}
 	
 	@Override
@@ -144,7 +144,7 @@ public class CompoundSelector extends DataListenerWidget {
 	}
 
 	void loadCompounds() {		
-		owlimService.compounds(chosenDataFilter, new PendingAsyncCallback<String[]>(this) {
+		owlimService.compounds(chosenDataFilter, new PendingAsyncCallback<String[]>(this, "Unable to retrieve compounds") {
 			
 			@Override
 			public void handleSuccess(String[] result) {
@@ -154,10 +154,6 @@ public class CompoundSelector extends DataListenerWidget {
 				changeAvailableCompounds(Arrays.asList(result));								
 			}
 			
-			@Override
-			public void handleFailure(Throwable caught) {
-				Window.alert("Unable to retrieve compounds");			
-			}
 		});
 	}
 	
@@ -181,7 +177,9 @@ public class CompoundSelector extends DataListenerWidget {
 		}
 	}
 	
-	void performRanking(List<RankRule> rules) {
+	void performRanking(List<String> rankProbes, List<RankRule> rules) {
+		this.rankProbes = rankProbes;
+		addRankColumns();
 		
 		if (rules.size() > 0) { //do we have at least 1 rule?						
 			owlimService.rankedCompounds(chosenDataFilter, rules.toArray(new RankRule[0]),
@@ -216,14 +214,12 @@ public class CompoundSelector extends DataListenerWidget {
 				Window.alert("These charts can only be displayed if compounds have been ranked.");
 			} else {
 				kcService.getSeries(chosenDataFilter, rankProbes.toArray(new String[0]), 
-						null, new String[] { value }, new PendingAsyncCallback<List<Series>>(w) {
+						null, new String[] { value }, new PendingAsyncCallback<List<Series>>(w, "Unable to retrieve data.") {
 					public void handleSuccess(List<Series> ss) {
 						SeriesChartGrid scg = new SeriesChartGrid(ss, false);
 						Utils.displayInPopup(scg);
 					}
-					public void handleFailure(Throwable caught) {
-						Window.alert("Unable to retrieve data.");
-					}
+					
 				});
 			}
 		}

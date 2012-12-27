@@ -54,7 +54,8 @@ import com.google.gwt.view.client.SelectionChangeEvent;
 
 public class ExpressionTable extends DataListenerWidget {
 
-
+	private final int PAGE_SIZE = 50;
+	
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
 	private DataGrid<ExpressionRow> exprGrid;
 	private DoubleBox absValBox;
@@ -95,7 +96,7 @@ public class ExpressionTable extends DataListenerWidget {
 		exprGrid = new DataGrid<ExpressionRow>();
 		dockPanel.add(exprGrid, DockPanel.CENTER);
 		exprGrid.setStyleName("exprGrid");
-		exprGrid.setPageSize(20);
+		exprGrid.setPageSize(PAGE_SIZE);
 		exprGrid.setSize("100%", height);
 		exprGrid.setSelectionModel(new MultiSelectionModel<ExpressionRow>());
 		exprGrid.getSelectionModel().addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
@@ -128,7 +129,7 @@ public class ExpressionTable extends DataListenerWidget {
 
 		Resources r = GWT.create(Resources.class);
 		SimplePager simplePager = new SimplePager(TextLocation.CENTER,
-				r, true, 100, true);
+				r, true, 10 * PAGE_SIZE, true);
 		simplePager.setStyleName("spacedLayout");
 		horizontalPanel.add(simplePager);
 		simplePager.setDisplay(exprGrid);
@@ -201,7 +202,7 @@ public class ExpressionTable extends DataListenerWidget {
 				public void onSuccess(Void v) {
 					synthColumns.add(synth);
 					setupColumns();
-					exprGrid.setVisibleRangeAndClearData(new Range(0, 20), true);
+					exprGrid.setVisibleRangeAndClearData(new Range(0, PAGE_SIZE), true);
 				}
 				public void onFailure(Throwable caught) {
 					Window.alert("Unable to perform " + name);
@@ -450,7 +451,7 @@ public class ExpressionTable extends DataListenerWidget {
 
 					public void onSuccess(Integer result) {
 						exprGrid.setRowCount(result);
-						exprGrid.setVisibleRangeAndClearData(new Range(0, 20),
+						exprGrid.setVisibleRangeAndClearData(new Range(0, PAGE_SIZE),
 								true);
 					}
 				});
@@ -499,7 +500,7 @@ public class ExpressionTable extends DataListenerWidget {
 
 					public void onSuccess(Integer result) {
 						exprGrid.setRowCount(result);
-						exprGrid.setVisibleRangeAndClearData(new Range(0, 20),
+						exprGrid.setVisibleRangeAndClearData(new Range(0, PAGE_SIZE),
 								true);
 					}
 				});

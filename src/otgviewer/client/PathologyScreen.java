@@ -33,11 +33,16 @@ public class PathologyScreen extends Screen {
 	final Screen myScreen = this;
 	private static Resources resources = GWT.create(Resources.class);
 	
+	@Override
+	public boolean enabled() {
+		return manager.isConfigured(ColumnScreen.key);
+	}
+
 	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
 			.create(OwlimService.class);
 	
-	public PathologyScreen(Screen parent, ScreenManager man) {
-		super(parent, "Pathology/chemical data", key, true, false, man);
+	public PathologyScreen(ScreenManager man) {
+		super("Pathology/chemical data", key, true, man);
 	}
 
 	public Widget content() {		
@@ -135,9 +140,8 @@ public class PathologyScreen extends Screen {
 		}
 		
 		public void onClick(String value) {
-			Barcode b = Utils.barcodeFor(chosenColumns, value);
-			Screen s = new SampleDetailScreen(b, myScreen, manager);
-			manager.showTemporary(s);			
+			storeCustomColumn(Utils.barcodeFor(chosenColumns, value));
+			configuredProceed(SampleDetailScreen.key);
 		}
 	}
 	

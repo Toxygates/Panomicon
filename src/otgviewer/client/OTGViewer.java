@@ -1,13 +1,19 @@
 package otgviewer.client;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.dom.client.Style.Position;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -16,6 +22,8 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -30,8 +38,10 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	private RootPanel rootPanel;
 	private VerticalPanel mainVertPanel;
 	private MenuBar menuBar;
-
+	private HorizontalPanel navPanel;
+	private List<Screen> workflow = new ArrayList<Screen>();
 	private Map<String, Screen> screens = new HashMap<String, Screen>();
+	private Set<String> configuredScreens = new HashSet<String>();
 	
 	private MenuBar setupMenu() {
 		MenuBar menuBar = new MenuBar(false);
@@ -73,19 +83,18 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		return screens.get(token);		
 	}
 	
+	private void addScreenSeq(Screen s) {
+		screens.put(s.key(), s);
+		workflow.add(s);		
+	}
+	
 	private void initScreens() {
-		Screen s = new DatasetScreen(null, this);
-		screens.put(s.key(), s);
-//		s = new CompoundScreen(s, this);
-//		screens.put(s.key(), s);
-		s = new ColumnScreen(s, this);
-		screens.put(s.key(), s);
-		s = new ProbeScreen(s, this);
-		screens.put(s.key(), s);
-		s = new DataScreen(s, this);
-		screens.put(s.key(), s);
-		s = new PathologyScreen(s, this);
-		screens.put(s.key(), s);
+		addScreenSeq(new DatasetScreen(this));		
+		addScreenSeq(new ColumnScreen(this));		
+		addScreenSeq(new ProbeScreen(this));		
+		addScreenSeq(new DataScreen(this));		
+		addScreenSeq(new PathologyScreen(this));
+		addScreenSeq(new SampleDetailScreen(this));
 	}
 
 	/**
@@ -153,10 +162,34 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		
 		mainVertPanel.add(menuBar);
 		
+		navPanel = Utils.mkHorizontalPanel();
+		mainVertPanel.add(navPanel);
+		
 		if ("".equals(History.getToken())) {
 			History.newItem(DatasetScreen.key);
 		} else {
 			setScreenForToken(History.getToken());		
+		}		
+	}
+	
+	void addWorkflowLinks() {
+		navPanel.clear();
+		for (int i = 0; i < workflow.size(); ++i) {
+			final Screen s = workflow.get(i);
+		
+			String link = (i < workflow.size() - 1) ? (s.getTitle()  + " >> ") : s.getTitle();
+			Label l = new Label(link);
+			if (s.enabled()) {								
+				l.addClickHandler(new ClickHandler() {
+					public void onClick(ClickEvent e) {
+						History.newItem(s.key());						
+					}
+				});
+				l.setStyleName("clickHeading");		
+			} else {
+				l.setStyleName("headingBlack");
+			}
+			navPanel.add(l);
 		}		
 	}
 	
@@ -173,6 +206,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		currentScreen = s;
 		currentScreen.show();					
 		mainVertPanel.add(currentScreen);
+		addWorkflowLinks();
 		resizeInterface(Window.getClientHeight()); 
 	}
 	
@@ -184,5 +218,23 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	
 	public MenuBar getMenuBar() { 
 		return menuBar;
+	}
+
+	@Override
+	public void setConfigured(Screen s) {
+		configuredScreens.add(s.key());		
+	}
+
+	@Override
+	public void deconfigureAll() {
+		for (Screen s: workflow) {
+			s.deconfigure();
+		}
+		configuredScreens.clear();		
+	}
+	
+	@Override
+	public boolean isConfigured(String key) {
+		return configuredScreens.contains(key);
 	}
 }

@@ -9,9 +9,6 @@ import otgviewer.shared.DataColumn;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.TextResource;
-import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
@@ -27,11 +24,16 @@ public class ColumnScreen extends Screen {
 	private VerticalPanel vp;
 	private HorizontalPanel hp;
 	
-	public ColumnScreen(Screen parent, ScreenManager man) {
-		super(parent, "Column definitions", key, true, true, man,
+	public ColumnScreen(ScreenManager man) {
+		super("Sample group definitions", key, true, man,
 				resources.groupDefinitionHTML(), resources.groupDefinitionHelp());
 	}
 	
+	@Override
+	public boolean enabled() {
+		return manager.isConfigured(DatasetScreen.key); 
+	}
+
 	public Widget content() {
 		
 		vp = Utils.mkVerticalPanel();
@@ -52,7 +54,7 @@ public class ColumnScreen extends Screen {
 		tp.add(gi, "Sample groups");
 		
 		final CompoundRanker cr = new CompoundRanker(cs);
-		tp.add(cr, "Compound ranking");
+		tp.add(cr, "Compound ranking (optional)");
 		tp.selectTab(0);
 		tp.setHeight("100%");
 		
@@ -61,7 +63,7 @@ public class ColumnScreen extends Screen {
 				if (gi.chosenColumns().size() == 0) {
 					Window.alert("Please define and activate at least one group.");
 				} else {
-					History.newItem(ProbeScreen.key);
+					configuredProceed(ProbeScreen.key);					
 				}
 			}
 		});

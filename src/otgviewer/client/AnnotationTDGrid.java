@@ -15,7 +15,6 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -96,13 +95,9 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 		
 		owlimService.barcodes(chosenDataFilter, compound,
 				dose, time,
-				new PendingAsyncCallback<Barcode[]>(this) {
+				new PendingAsyncCallback<Barcode[]>(this, "Unable to retrieve barcodes for the group definition.") {
 					public void handleSuccess(Barcode[] barcodes) {
 						processAnnotationBarcodes(annotation, row, col, time, barcodes);						
-					}
-
-					public void handleFailure(Throwable caught) {
-						Window.alert("Unable to retrieve barcodes for the group definition.");						
 					}
 				});
 	}
@@ -111,7 +106,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 			final String time, final Barcode[] barcodes) {
 		final NumberFormat fmt = NumberFormat.getFormat("#0.00");
 		Group g = new Group("temporary", barcodes);
-		owlimService.annotations(g, new PendingAsyncCallback<Annotation[]>(this) {
+		owlimService.annotations(g, new PendingAsyncCallback<Annotation[]>(this, "Unable to get annotations.") {
 			public void handleSuccess(Annotation[] as) {								
 				double sum = 0;
 				int n = 0;
@@ -146,7 +141,6 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 					}
 					for (int r = 0; r < annotValues.length; ++r) {
 						for (int c = 0; c < annotValues[0].length; ++c) {
-							int bb = 255;
 							int gg = 255 - (int) ((annotValues[r][c] - min) * 127 / (max - min));
 							int rr = gg;
 							setColour(r, c, rr, gg, 255);
@@ -154,9 +148,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 					}									
 				}		
 			}
-			public void handleFailure(Throwable caught) {
-				Window.alert("Unable to get annotations.");				
-			}
+
 		});
 	}
 	

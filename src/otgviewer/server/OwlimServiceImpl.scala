@@ -133,7 +133,6 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
   def pathways(filter: DataFilter, pattern: String): Array[String] = 
     useConnector(B2RKegg, (c: B2RKegg.type) => c.pathways(pattern, filter))    
   
-  
   def geneSyms(probes: Array[String]): Array[Array[String]] = 
     B2RAffy.geneSyms(probes).map(_.toArray).toArray
     

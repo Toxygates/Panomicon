@@ -8,16 +8,12 @@ import otgviewer.client.Utils;
 import otgviewer.shared.DataFilter;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.DockPanel;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
@@ -37,71 +33,71 @@ public class Screen extends DataListenerWidget {
 	
 	protected DockPanel dockPanel = new DockPanel();
 	private String key; //An identifier string
-	private Screen parent;
+
 	private HorizontalPanel horizontalPanel;
 	private boolean shown = false;
 	private Label viewLabel = new Label();
 	private boolean showDataFilter = false;
-	private MenuBar menuBar;
-	private boolean alwaysLinked = false;
-	protected boolean enabled = false;
+	private MenuBar menuBar;	
+	protected boolean configured = false;
 	private List<MenuItem> menuItems = new ArrayList<MenuItem>();
-	private List<Screen> children = new ArrayList<Screen>();
+	
 	protected ScreenManager manager;
 	
 	protected TextResource helpHTML;
 	protected ImageResource helpImage;
 	
-	public Screen(Screen parent, String title, String key,  
-			boolean showDataFilter, boolean alwaysLinked, ScreenManager man,
+	public Screen(String title, String key,  
+			boolean showDataFilter, ScreenManager man,
 			TextResource helpHTML, ImageResource helpImage) {		
 		initWidget(dockPanel);
 		menuBar = man.getMenuBar();
-		manager = man;
-		this.alwaysLinked = alwaysLinked;
+		manager = man;		
 		this.showDataFilter = showDataFilter;
 		this.helpHTML = helpHTML;
 		this.helpImage = helpImage;
 		dockPanel.setWidth("100%");		
 		this.key = key;
-		this.parent = parent;	
-		if (parent != null) {
-			parent.addChild(this);
-		}
+		
 		setTitle(title);		
 	}
 	
-	public Screen(Screen parent, String title, String key,  
-			boolean showDataFilter, boolean alwaysLinked, ScreenManager man) {
-		this(parent, title, key, showDataFilter, alwaysLinked, man, resources.defaultHelpHTML(), null);
+	public Screen(String title, String key,  
+			boolean showDataFilter, ScreenManager man) {
+		this(title, key, showDataFilter, man, resources.defaultHelpHTML(), null);
 	}
 	
-	private void addChild(Screen child) {
-		children.add(child);
+	/**
+	 * Is this screen ready for use?
+	 * @return
+	 */
+	public boolean enabled() {
+		return true;
 	}
 	
-	private boolean enabled() {
-		return enabled;
+	/**
+	 * Has the user finished configuring this screen?
+	 * @return
+	 */
+	public boolean configured() {
+		return configured;
 	}
 	
-	void addSequenceLinks(final Screen parent) {
-		if (parent != null) {
-			addSequenceLinks(parent.parent());
-			Label l;
-			if (parent != this) {
-				l = new Label(parent.getTitle() + " >> ");
-				l.addClickHandler(new ClickHandler() {
-					public void onClick(ClickEvent e) {
-						History.newItem(parent.key());						
-					}
-				});
-				l.setStyleName("clickHeading");			
-			} else {
-				l = new Label(parent.getTitle());
-				l.setStyleName("headingBlack");
-			}
-			horizontalPanel.add(l);
-		}
+	protected void setConfigured() {
+		configured = true;
+		manager.setConfigured(this);
+	}
+	
+	/**
+	 * Indicate that this screen is no longer configured.
+	 */
+	public void deconfigure() {
+		configured = false;
+	}
+	
+	protected void configuredProceed(String key) {
+		setConfigured();
+		History.newItem(key);
 	}
 	
 	/**
@@ -114,12 +110,10 @@ public class Screen extends DataListenerWidget {
 			horizontalPanel = new HorizontalPanel();
 			vp.add(horizontalPanel);
 			dockPanel.add(vp, DockPanel.NORTH);
-			addSequenceLinks(this);
 			dockPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 			dockPanel.add(content(), DockPanel.CENTER);
 			vp.add(viewLabel);			
-			shown = true;
-			enabled = true;
+			shown = true;			
 //			first show
 		} else {
 //			later show
@@ -163,10 +157,6 @@ public class Screen extends DataListenerWidget {
 	
 	public String key() {
 		return key;
-	}
-	
-	public Screen parent() {
-		return parent;
 	}
 	
 	@Override

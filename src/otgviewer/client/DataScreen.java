@@ -10,7 +10,6 @@ import otgviewer.shared.DataFilter;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
@@ -22,14 +21,13 @@ public class DataScreen extends Screen {
 
 	public static final String key = "data";
 	private ExpressionTable et;
-	private final Screen myScreen = this;
 	
 	private DataFilter lastFilter;
 	private String[] lastProbes;
 	private List<DataColumn> lastColumns;
 	
-	public DataScreen(Screen parent, ScreenManager man) {
-		super(parent, "View data", key, true, true, man,
+	public DataScreen(ScreenManager man) {
+		super("View data", key, true, man,
 				resources.dataDisplayHTML(), resources.dataDisplayHelp());		
 	}
 	
@@ -44,14 +42,14 @@ public class DataScreen extends Screen {
 		
 		HorizontalPanel hp = new HorizontalPanel();
 		hp.add(new Button("View pathologies", new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				History.newItem(PathologyScreen.key);
+			public void onClick(ClickEvent event) {				
+				configuredProceed(PathologyScreen.key);				
 			}
 		}));
 		
 		hp.add(new Button("View biochemical data", new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				manager.showTemporary(new SampleDetailScreen(null, myScreen, manager));
+				configuredProceed(SampleDetailScreen.key);				
 			}
 		}));
 		
@@ -60,6 +58,11 @@ public class DataScreen extends Screen {
 		return et;		
 	}
 	
+	@Override
+	public boolean enabled() {
+		return manager.isConfigured(ProbeScreen.key) && manager.isConfigured(ColumnScreen.key); 
+	}
+
 	public void show() {
 		super.show();
 		//state has finished loading

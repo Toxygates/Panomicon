@@ -8,4 +8,10 @@ public interface ScreenManager {
 	void showTemporary(Screen s);
 	
 	MenuBar getMenuBar();
+	
+	void setConfigured(Screen s);
+	
+	void deconfigureAll();
+	
+	boolean isConfigured(String key);
 }

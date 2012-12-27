@@ -9,7 +9,6 @@ import otgviewer.shared.Organism;
 import otgviewer.shared.RepeatType;
 import otgviewer.shared.ValueType;
 
-import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -21,8 +20,8 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 	ListBox valueTypeList = new ListBox();
 	static String key = "ds";
 	
-	public DatasetScreen(Screen parent, ScreenManager man) {
-		super(parent, "Dataset selection", key, false, true, man);		
+	public DatasetScreen(ScreenManager man) {
+		super("Dataset selection", key, false, man);		
 	}
 	
 	public Widget content() {
@@ -56,8 +55,7 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 				r += 1;
 				c = 0;
 			}
-		}
-	
+		}	
 		return vp;
 	}
 	
@@ -67,6 +65,7 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 				.getSelectedIndex());
 		changeValueType(ValueType.unpack(vt));
 		storeDataFilterAndValueType();
-		History.newItem(ColumnScreen.key); //Go to compound selection screen
+		manager.deconfigureAll();
+		configuredProceed(ColumnScreen.key);		
 	}	
 }
