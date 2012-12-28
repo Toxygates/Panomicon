@@ -88,5 +88,13 @@ public class ColumnScreen extends Screen {
 		}
 	}
 
+	@Override
+	public void tryConfigure() {
+		if (chosenColumns.size() > 0) {
+//			Window.alert(chosenColumns.size() + "");
+			setConfigured();
+		}
+	}
+
 	
 }

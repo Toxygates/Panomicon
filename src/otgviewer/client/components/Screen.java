@@ -83,9 +83,21 @@ public class Screen extends DataListenerWidget {
 		return configured;
 	}
 	
+	/**
+	 * For subclass implementations to indicate that they have been configured
+	 */
 	protected void setConfigured() {
 		configured = true;
 		manager.setConfigured(this);
+	}
+	
+	/**
+	 * Subclass implementations should use this method to check
+	 * whether sufficient state to be "configured" has been loaded.
+	 * If it has, they should call setConfigured().
+	 */
+	public void tryConfigure() {
+		setConfigured();
 	}
 	
 	/**

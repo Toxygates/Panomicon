@@ -22,7 +22,7 @@ import com.google.gwt.user.client.ui.Widget;
  */
 abstract public class TimeDoseGrid extends DataListenerWidget {
 	private Grid grid = new Grid();
-	protected String[] availableTimes;
+	protected String[] availableTimes = null;
 	
 	protected OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
 			.create(OwlimService.class);

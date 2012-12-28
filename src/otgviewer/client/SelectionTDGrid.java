@@ -90,11 +90,13 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	
 	public Combination[] getSelection() {
 		List<Combination> r = new ArrayList<Combination>();
-		for (String c: chosenCompounds) {
-			for (int d = 0; d < 3; d++) {
-				for (int t = 0; t < availableTimes.length; ++t) {
-					if (getSelected(c, t, d)) {
-						r.add(new Combination(c, d, t));
+		if (availableTimes != null) {
+			for (String c : chosenCompounds) {
+				for (int d = 0; d < 3; d++) {
+					for (int t = 0; t < availableTimes.length; ++t) {
+						if (getSelected(c, t, d)) {
+							r.add(new Combination(c, d, t));
+						}
 					}
 				}
 			}

@@ -69,8 +69,7 @@ public class SampleDetailScreen extends Screen {
 	}
 
 	@Override
-	public void customColumnChanged(DataColumn customColumn) {
-		Window.alert("Changed");		
+	public void customColumnChanged(DataColumn customColumn) {				
 		super.customColumnChanged(customColumn);
 		if (customColumn != null) {
 			columnList.addItem(customColumn.getShortTitle());

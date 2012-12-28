@@ -32,7 +32,7 @@ public class DataScreen extends Screen {
 	}
 	
 	public Widget content() {
-		et = new ExpressionTable((Window.getClientHeight() - 100) + "px");
+		et = new ExpressionTable((Window.getClientHeight() - 70) + "px");
 		addListener(et);
 		
 		MenuItem[] mis = et.menuItems();
@@ -40,20 +40,20 @@ public class DataScreen extends Screen {
 			addMenu(mi);
 		}
 		
-		HorizontalPanel hp = new HorizontalPanel();
-		hp.add(new Button("View pathologies", new ClickHandler() {
-			public void onClick(ClickEvent event) {				
-				configuredProceed(PathologyScreen.key);				
-			}
-		}));
-		
-		hp.add(new Button("View biochemical data", new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				configuredProceed(SampleDetailScreen.key);				
-			}
-		}));
-		
-		dockPanel.add(hp, DockPanel.SOUTH);
+//		HorizontalPanel hp = new HorizontalPanel();
+//		hp.add(new Button("View pathologies", new ClickHandler() {
+//			public void onClick(ClickEvent event) {				
+//				configuredProceed(PathologyScreen.key);				
+//			}
+//		}));
+//		
+//		hp.add(new Button("View biochemical data", new ClickHandler() {
+//			public void onClick(ClickEvent event) {
+//				configuredProceed(SampleDetailScreen.key);				
+//			}
+//		}));
+//		
+//		dockPanel.add(hp, DockPanel.SOUTH);
 		
 		return et;		
 	}

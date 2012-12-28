@@ -86,6 +86,8 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	private void addScreenSeq(Screen s) {
 		screens.put(s.key(), s);
 		workflow.add(s);		
+		s.show(); //initialise the UI once
+		s.tryConfigure(); //give it a chance to register itself as configured
 	}
 	
 	private void initScreens() {
@@ -228,9 +230,12 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	@Override
 	public void deconfigureAll() {
 		for (Screen s: workflow) {
-			s.deconfigure();
+			s.deconfigure();			
 		}
-		configuredScreens.clear();		
+		configuredScreens.clear();
+		for (Screen s: workflow) {
+			s.tryConfigure();
+		}
 	}
 	
 	@Override

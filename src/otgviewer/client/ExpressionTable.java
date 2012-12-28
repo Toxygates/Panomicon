@@ -355,7 +355,7 @@ public class ExpressionTable extends DataListenerWidget {
 
 		AsyncCallback<Association[]> assocCallback = new AsyncCallback<Association[]>() {
 			public void onFailure(Throwable caught) {
-				Window.alert("Unable to get associations");
+				Window.alert("Unable to get associations: " + caught.getMessage());
 			}
 			
 			public void onSuccess(Association[] result) {
@@ -369,23 +369,19 @@ public class ExpressionTable extends DataListenerWidget {
 		
 		AsyncCallback<List<ExpressionRow>> rowCallback = new AsyncCallback<List<ExpressionRow>>() {
 			public void onFailure(Throwable caught) {
-				Window.alert("Unable to get expression values");
+				Window.alert("Unable to get expression values: " + caught.getMessage());
 			}
 
 			public void onSuccess(List<ExpressionRow> result) {
 				if (result.size() > 0) {
-
 					exprGrid.setRowData(start, result);
-
 					String[] probes = new String[result.size()];
 					for (int i = 0; i < probes.length; ++i) {
 						probes[i] = result.get(i).getProbe();
 					}
 					owlimService.associations(chosenDataFilter, probes, assocCallback);
-
 				}
 			}
-
 		};
 
 		protected void onRangeChanged(HasData<ExpressionRow> display) {
@@ -639,7 +635,7 @@ public class ExpressionTable extends DataListenerWidget {
 	
 	@Override
 	public void heightChanged(int newHeight) {
-		String h3 = (newHeight - exprGrid.getAbsoluteTop() - 45) + "px";
+		String h3 = (newHeight - exprGrid.getAbsoluteTop() - 15) + "px";
 		exprGrid.setHeight(h3);	
 	}		
 }
