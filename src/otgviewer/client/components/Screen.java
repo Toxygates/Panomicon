@@ -67,6 +67,10 @@ public class Screen extends DataListenerWidget {
 		this(title, key, showDataFilter, man, resources.defaultHelpHTML(), null);
 	}
 	
+	public ScreenManager manager() {
+		return this.manager;
+	}
+	
 	/**
 	 * Is this screen ready for use?
 	 * @return
@@ -86,9 +90,9 @@ public class Screen extends DataListenerWidget {
 	/**
 	 * For subclass implementations to indicate that they have been configured
 	 */
-	protected void setConfigured() {
-		configured = true;
-		manager.setConfigured(this);
+	public void setConfigured(boolean cfg) {
+		configured = cfg;
+		manager.setConfigured(this, configured);
 	}
 	
 	/**
@@ -97,18 +101,11 @@ public class Screen extends DataListenerWidget {
 	 * If it has, they should call setConfigured().
 	 */
 	public void tryConfigure() {
-		setConfigured();
+		setConfigured(true);
 	}
-	
-	/**
-	 * Indicate that this screen is no longer configured.
-	 */
-	public void deconfigure() {
-		configured = false;
-	}
-	
+		
 	protected void configuredProceed(String key) {
-		setConfigured();
+		setConfigured(true);
 		History.newItem(key);
 	}
 	

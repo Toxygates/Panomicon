@@ -65,7 +65,7 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 				.getSelectedIndex());
 		changeValueType(ValueType.unpack(vt));
 		storeDataFilterAndValueType();
-		manager.deconfigureAll();
+		manager.deconfigureAll(this);
 		configuredProceed(ColumnScreen.key);		
 	}	
 }

@@ -138,7 +138,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 				.loadVisualizationApi("1.1", onLoadChart, "corechart");
 	
 		menuBar = setupMenu();
-		initScreens();
+
 		
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
 			public void onValueChange(ValueChangeEvent<String> vce) {				
@@ -167,6 +167,8 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		navPanel = Utils.mkHorizontalPanel();
 		mainVertPanel.add(navPanel);
 		
+		initScreens(); //Need access to the nav. panel
+		
 		if ("".equals(History.getToken())) {
 			History.newItem(DatasetScreen.key);
 		} else {
@@ -174,14 +176,14 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		}		
 	}
 	
-	void addWorkflowLinks() {
+	void addWorkflowLinks(Screen current) {
 		navPanel.clear();
 		for (int i = 0; i < workflow.size(); ++i) {
 			final Screen s = workflow.get(i);
 		
 			String link = (i < workflow.size() - 1) ? (s.getTitle()  + " >> ") : s.getTitle();
 			Label l = new Label(link);
-			if (s.enabled()) {								
+			if (s.enabled() && s != current) {								
 				l.addClickHandler(new ClickHandler() {
 					public void onClick(ClickEvent e) {
 						History.newItem(s.key());						
@@ -189,7 +191,11 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 				});
 				l.setStyleName("clickHeading");		
 			} else {
-				l.setStyleName("headingBlack");
+				if (s == current) {
+					l.setStyleName("headingCurrent");
+				} else {
+					l.setStyleName("headingBlack");
+				}
 			}
 			navPanel.add(l);
 		}		
@@ -208,7 +214,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		currentScreen = s;
 		currentScreen.show();					
 		mainVertPanel.add(currentScreen);
-		addWorkflowLinks();
+		addWorkflowLinks(currentScreen);
 		resizeInterface(Window.getClientHeight()); 
 	}
 	
@@ -223,19 +229,28 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	}
 
 	@Override
-	public void setConfigured(Screen s) {
-		configuredScreens.add(s.key());		
+	public void setConfigured(Screen s, boolean configured) {
+		if (configured) {
+			configuredScreens.add(s.key());
+		} else {
+			configuredScreens.remove(s.key());
+		}
 	}
 
 	@Override
-	public void deconfigureAll() {
+	public void deconfigureAll(Screen from) {
 		for (Screen s: workflow) {
-			s.deconfigure();			
-		}
-		configuredScreens.clear();
+			if (s != from) {
+				s.setConfigured(false);				
+			}
+		}		
 		for (Screen s: workflow) {
-			s.tryConfigure();
+			if (s != from) {
+				s.loadState();
+				s.tryConfigure();
+			}
 		}
+		addWorkflowLinks(currentScreen);
 	}
 	
 	@Override

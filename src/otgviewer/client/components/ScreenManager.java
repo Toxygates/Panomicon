@@ -9,9 +9,15 @@ public interface ScreenManager {
 	
 	MenuBar getMenuBar();
 	
-	void setConfigured(Screen s);
+	void setConfigured(Screen s, boolean configured);
 	
-	void deconfigureAll();
+	/**
+	 * Invalidate all screens' "configured" state and subsequently
+	 * attempt their reconfiguration.
+	 * Precondition: all screens must have been displayed at least once
+	 * using Screen.show()
+	 */
+	void deconfigureAll(Screen from);
 	
 	boolean isConfigured(String key);
 }

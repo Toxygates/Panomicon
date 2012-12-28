@@ -66,10 +66,16 @@ background:MintCream;
 }
 .clickHeading {
   font-size: 1.2em;
-  color: DarkBlue;
+  color: SteelBlue;
   margin: 5px;
   text-align: center;
   cursor: pointer;
+}
+.headingCurrent {
+  font-size: 1.4em;
+  color: LightCoral;
+  margin: 5px;
+  text-align: center;
 }
 
 .border {

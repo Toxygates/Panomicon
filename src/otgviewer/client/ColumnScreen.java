@@ -34,8 +34,7 @@ public class ColumnScreen extends Screen {
 		return manager.isConfigured(DatasetScreen.key); 
 	}
 
-	public Widget content() {
-		
+	public Widget content() {		
 		vp = Utils.mkVerticalPanel();
 		hp = Utils.mkHorizontalPanel();
 		hp.setHeight("100%");
@@ -48,7 +47,7 @@ public class ColumnScreen extends Screen {
 		TabPanel tp = new TabPanel();
 		hp.add(tp);		
 		
-		gi = new GroupInspector(cs);
+		gi = new GroupInspector(cs, this);
 		this.addListener(gi);
 		cs.addListener(gi);
 		tp.add(gi, "Sample groups");
@@ -90,9 +89,8 @@ public class ColumnScreen extends Screen {
 
 	@Override
 	public void tryConfigure() {
-		if (chosenColumns.size() > 0) {
-//			Window.alert(chosenColumns.size() + "");
-			setConfigured();
+		if (chosenColumns.size() > 0) {		
+			setConfigured(true);
 		}
 	}
 
