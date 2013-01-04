@@ -38,7 +38,7 @@ public class DatasetInfo extends Composite implements ClickHandler {
 		
 		VerticalPanel vp = Utils.mkVerticalPanel();		
 		initWidget(vp);
-		vp.setStyleName("border");
+		vp.setStyleName("borderPadded");
 		vp.setWidth("100%");
 		vp.setHeight("100%");
 		

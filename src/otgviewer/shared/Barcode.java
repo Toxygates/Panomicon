@@ -35,6 +35,10 @@ public class Barcode implements Serializable, DataColumn {
 		return dose + "/" + time + "/"+ individual;
 	}
 	
+	public String getCDT() {
+		return compound + "/" + dose + "/" + time;
+	}
+	
 	public String getCode() {
 		return code;
 	}

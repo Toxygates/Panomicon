@@ -33,6 +33,23 @@ public class Group implements Serializable, DataColumn, Comparable<Group> {
 		return name;
 	}
 	
+	public String getCDTs(final int limit) {
+		Set<String> CDTs = new HashSet<String>();
+		Set<String> allCDTs = new HashSet<String>();
+		for (Barcode b : barcodes) {			
+			if (CDTs.size() < limit || limit == -1) {
+				CDTs.add(b.getCDT());
+			}
+			allCDTs.add(b.getCDT());
+		}
+		String r = SharedUtils.mkString(CDTs, ", ");
+		if (allCDTs.size() > limit && limit != -1) {
+			return r + "...";
+		} else {
+			return r;
+		}
+	}
+	
 	public String[] getCompounds() {
 		Set<String> compounds = new HashSet<String>();
 		for (Barcode b : barcodes) {

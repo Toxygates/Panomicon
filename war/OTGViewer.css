@@ -35,20 +35,25 @@ h1 {
 exprGrid {
 	border: 1px solid black;
 }
-.spacedLayout {
- margin: 2px;
-}
+
 .highlySpaced {
 margin: 5px;
 }
+.slightlySpaced {
+margin:2px;
+}
+
 .colored {
 background:Beige;
+margin: 2px;
 }
 .darkColored {
 background:White;
+margin: 2px;
 }
 .colored2 {
 background:MintCream;
+margin: 2px;
 }
 .none {
 }
@@ -66,19 +71,26 @@ background:MintCream;
 }
 .clickHeading {
   font-size: 1.2em;
-  color: SteelBlue;
+  color: DarkBlue;
   margin: 5px;
   text-align: center;
   cursor: pointer;
 }
 .headingCurrent {
-  font-size: 1.4em;
-  color: LightCoral;
-  margin: 5px;
+  font-size: 1.2em;
+  color: SteelBlue;
+  margin: 1px;
   text-align: center;
+  border: dotted 1px;
+  padding: 3px;
 }
 
 .border {
+	margin: 1px;
+	border: solid black 1px;
+}
+
+.borderPadded {
   margin: 1px;
   padding: 4px;
   border: solid black 1px;
@@ -86,9 +98,6 @@ background:MintCream;
 .otg {
  background: #053769;
  color: white;
-}
-.slightlySpaced {
-margin:2px;
 }
 
 .emphasized {

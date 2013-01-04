@@ -46,10 +46,9 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 
 	@Override
 	public void dataFilterChanged(DataFilter filter) {
-		super.dataFilterChanged(filter);
-		boolean annEnab = (filter.cellType == CellType.Vitro ? false : true);
-		annotationSelector.setEnabled(annEnab);
-		annotationButton.setEnabled(annEnab);
+		super.dataFilterChanged(filter);		
+//		annotationSelector.setEnabled(annEnab);
+//		annotationButton.setEnabled(annEnab);
 	}
 
 	@Override
@@ -119,7 +118,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 					}									
 				}
 				
-				double avg = (n > 0 ? sum / n : 0);
+				double avg = (n > 0 ? sum / n : Double.NaN);
 				labels[row][col].setText(time + " (" + fmt.format(avg) + ")");
 				annotValues[row][col] = avg;
 				annotValuesRemaining -= 1;
@@ -131,19 +130,21 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 					
 					for (double[] r : annotValues) {
 						for (double v: r) {
-							if (v > max) {
+							if (v != Double.NaN && v > max) {
 								max = v;
 							}
-							if (v < min) {
+							if (v != Double.NaN && v < min) {
 								min = v;
 							}
 						}
 					}
 					for (int r = 0; r < annotValues.length; ++r) {
 						for (int c = 0; c < annotValues[0].length; ++c) {
-							int gg = 255 - (int) ((annotValues[r][c] - min) * 127 / (max - min));
-							int rr = gg;
-							setColour(r, c, rr, gg, 255);
+							if (annotValues[r][c] != Double.NaN) {
+								int gg = 255 - (int) ((annotValues[r][c] - min) * 127 / (max - min));
+								int rr = gg;
+								setColour(r, c, rr, gg, 255);
+							}
 						}
 					}									
 				}		

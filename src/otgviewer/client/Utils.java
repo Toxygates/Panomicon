@@ -46,18 +46,32 @@ public class Utils {
 	}
 
 	public static HorizontalPanel mkHorizontalPanel() {
+		return mkHorizontalPanel(false);
+	}
+	
+	public static HorizontalPanel mkHorizontalPanel(boolean spaced) {
 		HorizontalPanel hp = new HorizontalPanel();
-		hp.setStyleName("slightlySpaced");
+//		hp.setStyleName("slightlySpaced");
 		hp.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		if (spaced) {
+			hp.setSpacing(4);
+		}
 		return hp;
 	}
 
 	public static VerticalPanel mkVerticalPanel() {
+		return mkVerticalPanel(false);
+	}
+	
+	public static VerticalPanel mkVerticalPanel(boolean spaced) {
 		VerticalPanel vp = new VerticalPanel();
-		vp.setStyleName("slightlySpaced");
+//		vp.setStyleName("slightlySpaced");
 		vp.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		if (spaced) {
+			vp.setSpacing(4);
+		}
 		return vp;
 	}
 

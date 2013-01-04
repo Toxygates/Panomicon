@@ -17,24 +17,16 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class DatasetScreen extends Screen implements DatasetInfo.SelectionListener {
 
-	ListBox valueTypeList = new ListBox();
 	static String key = "ds";
 	
 	public DatasetScreen(ScreenManager man) {
-		super("Dataset selection", key, false, man);		
+		super("Dataset selection", key, false, false, man);		
 	}
 	
 	public Widget content() {
 		Grid g = new Grid(3, 2);
 		VerticalPanel vp = Utils.mkVerticalPanel();
-		//vp.setSpacing(30);
-		
-		vp.add(new Label("Value type"));		
-		valueTypeList.addItem(ValueType.Folds.toString());
-		valueTypeList.addItem(ValueType.Absolute.toString());
-		valueTypeList.setVisibleItemCount(1);
-		vp.add(valueTypeList);
-		
+
 		final DataFilter[] filters = new DataFilter[] {
 				new DataFilter(CellType.Vitro, Organ.Kidney, RepeatType.Single, Organism.Human),
 				new DataFilter(CellType.Vitro, Organ.Kidney, RepeatType.Single, Organism.Rat),
@@ -61,10 +53,7 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 	
 	public void filterSelected(DataFilter filter) {
 		changeDataFilter(filter);
-		String vt = valueTypeList.getItemText(valueTypeList
-				.getSelectedIndex());
-		changeValueType(ValueType.unpack(vt));
-		storeDataFilterAndValueType();
+		storeDataFilter();
 		manager.deconfigureAll(this);
 		configuredProceed(ColumnScreen.key);		
 	}	

@@ -8,6 +8,7 @@ import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.Barcode;
+import otgviewer.shared.CellType;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.Group;
 import otgviewer.shared.Pathology;
@@ -25,7 +26,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class PathologyScreen extends Screen {
 	public static final String key = "pc";
-	
+
 	private CellTable<Pathology> pathologyTable = new CellTable<Pathology>();
 	private ScrollPanel sp = new ScrollPanel();
 	private VerticalPanel vp = new VerticalPanel();
@@ -35,14 +36,14 @@ public class PathologyScreen extends Screen {
 	
 	@Override
 	public boolean enabled() {
-		return manager.isConfigured(ColumnScreen.key);
+		return manager.isConfigured(ColumnScreen.key) && chosenDataFilter.cellType == CellType.Vivo;
 	}
 
 	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
 			.create(OwlimService.class);
 	
 	public PathologyScreen(ScreenManager man) {
-		super("Pathology/chemical data", key, true, man);
+		super("Pathologies", key, true, true, man);
 	}
 
 	public Widget content() {		
@@ -105,21 +106,33 @@ public class PathologyScreen extends Screen {
 		return vp;
 	}
 	
+	
+	@Override
+	public void show() {
+		super.show();
+		if (visible) {
+			columnsChanged(chosenColumns);
+		}
+	}
+
+	
 	@Override
 	public void columnsChanged(List<DataColumn> columns) {
 		super.columnsChanged(columns);
-		pathologies.clear();
-		for(DataColumn c: columns) {
-			owlimService.pathologies(c, new AsyncCallback<Pathology[]>() {
-				public void onFailure(Throwable caught) {
-					Window.alert("Unable to get pathologies.");
-				}
-				
-				public void onSuccess(Pathology[] values) {
-					pathologies.addAll(Arrays.asList(values));
-					pathologyTable.setRowData(pathologies);					
-				}
-			});
+		if (visible) {
+			pathologies.clear();
+			for (DataColumn c : columns) {
+				owlimService.pathologies(c, new AsyncCallback<Pathology[]>() {
+					public void onFailure(Throwable caught) {
+						Window.alert("Unable to get pathologies.");
+					}
+
+					public void onSuccess(Pathology[] values) {
+						pathologies.addAll(Arrays.asList(values));
+						pathologyTable.setRowData(pathologies);
+					}
+				});
+			}
 		}
 	}
 	

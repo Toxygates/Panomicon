@@ -86,7 +86,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	private void addScreenSeq(Screen s) {
 		screens.put(s.key(), s);
 		workflow.add(s);		
-		s.show(); //initialise the UI once
+		s.initGUI();
 		s.tryConfigure(); //give it a chance to register itself as configured
 	}
 	
@@ -218,11 +218,11 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		resizeInterface(Window.getClientHeight()); 
 	}
 	
-	public void showTemporary(Screen s) 
-	{
-		screens.put(s.key(), s);		
-		History.newItem(s.key());
-	}
+//	public void showTemporary(Screen s) 
+//	{
+//		screens.put(s.key(), s);		
+//		History.newItem(s.key());
+//	}
 	
 	public MenuBar getMenuBar() { 
 		return menuBar;

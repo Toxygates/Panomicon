@@ -47,7 +47,7 @@ public class ProbeScreen extends Screen {
 	final SuggestBox sb = new SuggestBox(new GeneOracle());
 	
 	public ProbeScreen(ScreenManager man) {
-		super("Select probes", key, true, man,
+		super("Select probes", key, true, true, man,
 				resources.probeSelectionHTML(), resources.probeSelectionHelp());				
 	}
 
@@ -316,6 +316,7 @@ public class ProbeScreen extends Screen {
 	
 	@Override
 	public void columnsChanged(List<DataColumn> columns) {
+		super.columnsChanged(columns);
 		for (ListBox l: compoundLists) {
 			l.clear();
 			for (DataColumn c : columns) {

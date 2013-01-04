@@ -5,7 +5,9 @@ import java.util.List;
 
 import otgviewer.client.Resources;
 import otgviewer.client.Utils;
+import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.Group;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.resources.client.ImageResource;
@@ -34,10 +36,10 @@ public class Screen extends DataListenerWidget {
 	protected DockPanel dockPanel = new DockPanel();
 	private String key; //An identifier string
 
-	private HorizontalPanel horizontalPanel;
-	private boolean shown = false;
+	private HorizontalPanel horizontalPanel, statusPanel;		
+	protected boolean visible = false;
 	private Label viewLabel = new Label();
-	private boolean showDataFilter = false;
+	private boolean showDataFilter = false, showGroups = false;
 	private MenuBar menuBar;	
 	protected boolean configured = false;
 	private List<MenuItem> menuItems = new ArrayList<MenuItem>();
@@ -48,12 +50,14 @@ public class Screen extends DataListenerWidget {
 	protected ImageResource helpImage;
 	
 	public Screen(String title, String key,  
-			boolean showDataFilter, ScreenManager man,
+			boolean showDataFilter, boolean showGroups, 
+			ScreenManager man,
 			TextResource helpHTML, ImageResource helpImage) {		
 		initWidget(dockPanel);
 		menuBar = man.getMenuBar();
 		manager = man;		
 		this.showDataFilter = showDataFilter;
+		this.showGroups = showGroups;
 		this.helpHTML = helpHTML;
 		this.helpImage = helpImage;
 		dockPanel.setWidth("100%");		
@@ -63,8 +67,8 @@ public class Screen extends DataListenerWidget {
 	}
 	
 	public Screen(String title, String key,  
-			boolean showDataFilter, ScreenManager man) {
-		this(title, key, showDataFilter, man, resources.defaultHelpHTML(), null);
+			boolean showDataFilter, boolean showGroups, ScreenManager man) {
+		this(title, key, showDataFilter, showGroups, man, resources.defaultHelpHTML(), null);
 	}
 	
 	public ScreenManager manager() {
@@ -109,28 +113,48 @@ public class Screen extends DataListenerWidget {
 		History.newItem(key);
 	}
 	
+	public void initGUI() {
+		VerticalPanel vp = Utils.mkVerticalPanel();
+		statusPanel = Utils.mkHorizontalPanel(true);			
+		vp.add(statusPanel);
+		horizontalPanel = Utils.mkHorizontalPanel();
+		vp.add(horizontalPanel);
+		dockPanel.add(vp, DockPanel.NORTH);
+		dockPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		dockPanel.add(content(), DockPanel.CENTER);	
+	}
+	
 	/**
 	 * This method will be called each time the screen is displayed anew.
 	 * If overriding, make sure to call the superclass method.
 	 */
 	public void show() {
-		if (!shown) {
-			VerticalPanel vp = new VerticalPanel();
-			horizontalPanel = new HorizontalPanel();
-			vp.add(horizontalPanel);
-			dockPanel.add(vp, DockPanel.NORTH);
-			dockPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-			dockPanel.add(content(), DockPanel.CENTER);
-			vp.add(viewLabel);			
-			shown = true;			
-//			first show
-		} else {
-//			later show
-		}
+		visible = true;		
+		updateStatusPanel();
 		for (MenuItem mi: menuItems) {
 			mi.setVisible(true);
 		}
 		loadState();
+	}
+	
+	protected void updateStatusPanel() {
+		statusPanel.clear();
+		statusPanel.add(viewLabel);		
+		if (showGroups) {
+			for (DataColumn dc: chosenColumns) {
+				Group g = (Group) dc;
+				HorizontalPanel hp = Utils.mkHorizontalPanel(true);
+				hp.setStyleName("border");
+				String tip = g.getCDTs(-1);
+				Label l = Utils.mkEmphLabel(g.getName() + ":");
+				hp.add(l);
+				l.setTitle(tip);
+				l = new Label(g.getCDTs(2));
+				hp.add(l);
+				l.setTitle(tip);
+				statusPanel.add(hp);
+			}
+		}
 	}
 	
 	/**
@@ -138,6 +162,7 @@ public class Screen extends DataListenerWidget {
 	 * If overriding, make sure to call the superclass method.
 	 */
 	public void hide() {		
+		visible = false;
 		for (MenuItem mi: menuItems) {
 			mi.setVisible(false);
 		}
@@ -172,7 +197,7 @@ public class Screen extends DataListenerWidget {
 	public void dataFilterChanged(DataFilter filter) {
 		super.dataFilterChanged(filter);
 		if (showDataFilter) {
-			viewLabel.setText("Viewing: " + filter.toString());
+			viewLabel.setText(filter.toString());
 		}
 	}
 	

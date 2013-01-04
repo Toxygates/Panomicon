@@ -49,34 +49,48 @@ public class SampleDetailScreen extends Screen {
 	AnnotationTDGrid atd = new AnnotationTDGrid();
 	
 	public SampleDetailScreen(ScreenManager man) {
-		super("Sample details", key, false, man);						
+		super("Sample details", key, true, true, man);						
 		this.addListener(atd);
 	}
 	
 	@Override
 	public void columnsChanged(List<DataColumn> columns) {
 		super.columnsChanged(columns);
-		if (columns.size() > 0) {
-			displayColumn = chosenColumns.get(0);
+		if (visible) {
+			if (columns.size() > 0) {
+				displayColumn = chosenColumns.get(0);
 
-			columnList.clear();
-			for (DataColumn c : chosenColumns) {
-				columnList.addItem(c.getShortTitle());
+				columnList.clear();
+				for (DataColumn c : chosenColumns) {
+					columnList.addItem(c.getShortTitle());
+				}
+				columnList.setSelectedIndex(0);
+				displayWith(columnList.getItemText(columnList
+						.getSelectedIndex()));
 			}
-			columnList.setSelectedIndex(0);
-			displayWith(columnList.getItemText(columnList.getSelectedIndex()));
 		}
 	}
 
 	@Override
-	public void customColumnChanged(DataColumn customColumn) {				
+	public void show() {
+		super.show();
+		columnsChanged(chosenColumns);
+		customColumnChanged(chosenCustomColumn);		
+	}
+
+	@Override
+	public void customColumnChanged(DataColumn customColumn) {
 		super.customColumnChanged(customColumn);
-		if (customColumn != null) {
-			columnList.addItem(customColumn.getShortTitle());
-			columnList.setSelectedIndex(columnList.getItemCount() - 1);
-			displayWith(columnList.getItemText(columnList.getSelectedIndex()));
-			storeCustomColumn(null); // consume the data so it doesn't turn up
-										// again.
+		if (visible) {
+			if (customColumn != null) {
+				columnList.addItem(customColumn.getShortTitle());
+				columnList.setSelectedIndex(columnList.getItemCount() - 1);
+				displayWith(columnList.getItemText(columnList
+						.getSelectedIndex()));
+				storeCustomColumn(null); // consume the data so it doesn't turn
+											// up
+											// again.
+			}
 		}
 	}
 
@@ -125,7 +139,11 @@ public class SampleDetailScreen extends Screen {
 	private TextColumn<String[]> makeColumn(final int idx) {
 		return new TextColumn<String[]>() {
 			public String getValue(String[] x) {
-				return x[idx];
+				if (x.length > idx) {
+					return x[idx];
+				} else {
+					return "";
+				}
 			}
 		};
 	}
@@ -138,9 +156,9 @@ public class SampleDetailScreen extends Screen {
 			biologicalTable.removeColumn(0);
 		}
 		
-		if (customColumn != null && column.equals(customColumn.getShortTitle())) {
-			barcodes = customColumn.getBarcodes();
-			displayColumn = customColumn;
+		if (chosenCustomColumn != null && column.equals(chosenCustomColumn.getShortTitle())) {
+			barcodes = chosenCustomColumn.getBarcodes();
+			displayColumn = chosenCustomColumn;
 		} else {
 			for (DataColumn c : chosenColumns) {
 				if (c.getShortTitle().equals(column)) {

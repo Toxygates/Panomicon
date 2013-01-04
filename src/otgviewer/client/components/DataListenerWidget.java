@@ -35,7 +35,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	protected String chosenCompound;
 	protected ValueType chosenValueType;
 	protected List<DataColumn> chosenColumns = new ArrayList<DataColumn>();
-	protected DataColumn customColumn;
+	protected DataColumn chosenCustomColumn;
 	
 	public List<DataColumn> chosenColumns() { return this.chosenColumns; }
 	
@@ -88,7 +88,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	}
 	
 	public void customColumnChanged(DataColumn customColumn) {
-		this.customColumn = customColumn;
+		this.chosenCustomColumn = customColumn;
 		changeCustomColumn(customColumn);
 	}
 	
@@ -163,7 +163,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	}
 	
 	protected void changeCustomColumn(DataColumn customColumn) {
-		this.customColumn = customColumn;
+		this.chosenCustomColumn = customColumn;
 		for (DataViewListener l: listeners) {
 			l.customColumnChanged(customColumn);
 		}
@@ -183,19 +183,19 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		other.compoundChanged(chosenCompound);
 		other.valueTypeChanged(chosenValueType);
 		other.columnsChanged(chosenColumns);		
-		other.customColumnChanged(customColumn);
+		other.customColumnChanged(chosenCustomColumn);
 	}
 
 	/**
 	 * Store this widget's state into local storage.
 	 */
 	public void storeState() {
-		storeDataFilterAndValueType();
+		storeDataFilter();
 		storeColumns();
 		storeProbes();	
 	}
 	
-	public void storeDataFilterAndValueType() {
+	public void storeDataFilter() {
 		Storage s = Storage.getLocalStorageIfSupported();
 		if (s == null) {
 			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
@@ -204,11 +204,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 				s.setItem("OTG.dataFilter", chosenDataFilter.pack());
 			} else {
 				s.setItem("OTG.dataFilter", "");
-			}
-			if (chosenValueType != null) {
-				s.setItem("OTG.valueType", chosenValueType.toString());
-			} else {
-				s.setItem("OTG.valueType", "");
 			}
 		}		
 	}
@@ -312,10 +307,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 			String v = s.getItem("OTG.dataFilter");
 			if (v != null && (chosenDataFilter == null || !v.equals(chosenDataFilter.pack()))) {				
 				dataFilterChanged(DataFilter.unpack(v));
-			}
-			v = s.getItem("OTG.valueType");
-			if (v != null && (chosenValueType == null || !v.equals(chosenValueType.toString()))) {
-				valueTypeChanged(ValueType.unpack(v));
 			}
 			if (chosenDataFilter != null) {				
 				try {

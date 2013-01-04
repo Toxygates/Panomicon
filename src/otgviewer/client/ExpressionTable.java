@@ -15,11 +15,16 @@ import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Group;
 import otgviewer.shared.Series;
 import otgviewer.shared.Synthetic;
+import otgviewer.shared.ValueType;
 
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
@@ -34,9 +39,9 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.DisclosurePanel;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.DoubleBox;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -58,7 +63,10 @@ public class ExpressionTable extends DataListenerWidget {
 	
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
 	private DataGrid<ExpressionRow> exprGrid;
+	
 	private DoubleBox absValBox;
+	private ListBox valueTypeList = new ListBox();
+	
 	private VerticalPanel seriesChartPanel = new VerticalPanel();	
 	private List<SeriesChart> seriesCharts = new ArrayList<SeriesChart>();
 	
@@ -117,20 +125,37 @@ public class ExpressionTable extends DataListenerWidget {
 
 	}
 	
+	private ValueType getValueType() {
+		String vt = valueTypeList.getItemText(valueTypeList
+				.getSelectedIndex());
+		return ValueType.unpack(vt);		
+	}
+	
 	private Widget makeToolPanel() {
-		HorizontalPanel tools = new HorizontalPanel();		
+		HorizontalPanel tools = Utils.mkHorizontalPanel();		
 		
-		HorizontalPanel horizontalPanel = new HorizontalPanel();
-		horizontalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		HorizontalPanel horizontalPanel = Utils.mkHorizontalPanel(true);		
 		horizontalPanel.setStyleName("colored");
 		horizontalPanel.setWidth("");
 		tools.add(horizontalPanel);
-		tools.setSpacing(5);
+		
+		valueTypeList.addItem(ValueType.Folds.toString());
+		valueTypeList.addItem(ValueType.Absolute.toString());
+		changeValueType(ValueType.Folds);
+		valueTypeList.setVisibleItemCount(1);
+		horizontalPanel.add(valueTypeList);
+		valueTypeList.addChangeHandler(new ChangeHandler() {			
+			@Override
+			public void onChange(ChangeEvent event) {
+				changeValueType(getValueType());
+				getExpressions(chosenProbes);
+			}
+		});
 
 		Resources r = GWT.create(Resources.class);
 		SimplePager simplePager = new SimplePager(TextLocation.CENTER,
 				r, true, 10 * PAGE_SIZE, true);
-		simplePager.setStyleName("spacedLayout");
+		simplePager.setStyleName("slightlySpaced");
 		horizontalPanel.add(simplePager);
 		simplePager.setDisplay(exprGrid);
 		
@@ -141,7 +166,13 @@ public class ExpressionTable extends DataListenerWidget {
 
 		absValBox = new DoubleBox();
 		absValBox.setText("0.00");
+		absValBox.setWidth("5em");
 		horizontalPanel.add(absValBox);
+		absValBox.addValueChangeHandler(new ValueChangeHandler<Double>() {			
+			public void onValueChange(ValueChangeEvent<Double> event) {
+				refilterData();				
+			}
+		});
 
 		horizontalPanel.add(new Button("Apply", new ClickHandler() {
 			public void onClick(ClickEvent e) {
@@ -155,10 +186,12 @@ public class ExpressionTable extends DataListenerWidget {
 			}
 		}));
 
-		horizontalPanel = new HorizontalPanel();
-		tools.add(horizontalPanel);		
+		DisclosurePanel analysisDisclosure = new DisclosurePanel("Analysis");
+		tools.add(analysisDisclosure);		
+		
+		horizontalPanel = Utils.mkHorizontalPanel(true);
+		analysisDisclosure.add(horizontalPanel);
 		horizontalPanel.setStyleName("colored2");
-		horizontalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		
 		horizontalPanel.add(groupsel1);
 		groupsel1.setVisibleItemCount(1);
@@ -179,7 +212,7 @@ public class ExpressionTable extends DataListenerWidget {
 				if (!synthColumns.isEmpty()) {
 					synthColumns.clear();
 					//We have to reload the data to get rid of the synth columns
-					//in our server side session
+					//in our server side session (TODO, avoid this)
 					getExpressions(chosenProbes);	
 				}
 			}

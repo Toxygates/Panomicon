@@ -1,5 +1,6 @@
 package otgviewer.shared;
 
+import java.util.Collection;
 import java.util.List;
 
 public class SharedUtils {
@@ -28,4 +29,15 @@ public class SharedUtils {
 		}
 		return sb.toString();
 	}
+	
+	public static String mkString(Collection<String> cl, String separator) {
+		StringBuilder sb = new StringBuilder();		
+		for (String s: cl) {
+			sb.append(s);
+			sb.append(separator);
+		}
+		String r = sb.toString();
+		return r.substring(0, r.length() - 2); //remove final separator
+	}
+	
 }

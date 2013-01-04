@@ -25,7 +25,7 @@ public class ColumnScreen extends Screen {
 	private HorizontalPanel hp;
 	
 	public ColumnScreen(ScreenManager man) {
-		super("Sample group definitions", key, true, man,
+		super("Sample group definitions", key, true, false, man,
 				resources.groupDefinitionHTML(), resources.groupDefinitionHelp());
 	}
 	
