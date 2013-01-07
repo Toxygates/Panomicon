@@ -130,7 +130,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	protected void drawGridInner(Grid grid) {
 		for (int c = 0; c < chosenCompounds.size(); ++c) {
 			for (int d = 0; d < 3; ++d) {
-				HorizontalPanel hp = new HorizontalPanel();
+				HorizontalPanel hp = Utils.mkHorizontalPanel(true);
 				for (int t = 0; t < availableTimes.length; ++t) {
 					hp.add(initUnit(c, d, t));
 				}

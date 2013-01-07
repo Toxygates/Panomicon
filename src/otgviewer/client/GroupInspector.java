@@ -66,8 +66,16 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 	
 		vp.setWidth("410px");		
 		
-		HorizontalPanel horizontalPanel = Utils.mkHorizontalPanel();
+		HorizontalPanel horizontalPanel = Utils.mkHorizontalPanel(true);
 		vp.add(horizontalPanel);
+		
+		horizontalPanel.add(new Button("New",
+				new ClickHandler() {
+					public void onClick(ClickEvent event) {
+						newGroup();
+					}
+			
+		}));
 		
 		Label lblSaveGroupAs = new Label("Save group as");
 		lblSaveGroupAs.setStyleName("slightlySpaced");
@@ -82,7 +90,8 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		horizontalPanel.add(new Button("Save",
 		new ClickHandler(){
 			public void onClick(ClickEvent ce) {
-				makeGroup(txtbxGroup.getValue());				
+				makeGroup(txtbxGroup.getValue());
+				newGroup();
 			}
 		}));		
 		
@@ -91,7 +100,8 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 				String grp = txtbxGroup.getValue();
 				if (groups.containsKey(grp)) {
 					groups.remove(grp);									
-					reflectGroupChanges(); //stores columns					
+					reflectGroupChanges(); //stores columns
+					newGroup();
 				}
 			}
 		}));
@@ -122,7 +132,6 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		};
 		vp.add(existingGroupsTable);
 		existingGroupsTable.setSize("100%", "100px");
-	
 		
 		
 		existingGroupsTable.table().getSelectionModel().addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
@@ -136,6 +145,12 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		});		
 	}
 
+	private void newGroup() {
+		txtbxGroup.setText(nextGroupName());
+		timeDoseGrid.setAll(false);
+		compoundSel.setSelection(new ArrayList<String>());
+	}
+	
 	private List<Group> sortedGroupList(Collection<Group> groups) {
 		ArrayList<Group> r = new ArrayList<Group>(groups);
 		Collections.sort(r);
@@ -192,10 +207,10 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 			groups.put(g.getName(), g);			
 		}
 		updateConfigureStatus();
-		
-		txtbxGroup.setText(nextGroupName());		
+				
 		existingGroupsTable.reloadWith(sortedGroupList(groups.values()), true);
 		existingGroupsTable.setSelection(asGroupList(chosenColumns));
+		newGroup();
 	}
 	
 	public void inactiveColumnsChanged(List<DataColumn> columns) {
@@ -203,13 +218,14 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		for (Group g : igs) {
 			groups.put(g.getName(), g);
 		}
-		txtbxGroup.setText(nextGroupName());
+		
 		List<Group> all = new ArrayList<Group>();
 		all.addAll(sortedGroupList(existingGroupsTable.selection()));
 		all.addAll(igs);
 		existingGroupsTable.reloadWith(all, false);		
 		existingGroupsTable.unselectAll(igs);
 		existingGroupsTable.table().redraw();
+		newGroup();
 	}
 	
 	private List<Group> asGroupList(Collection<DataColumn> dcs) {

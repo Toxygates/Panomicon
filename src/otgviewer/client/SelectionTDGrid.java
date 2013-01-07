@@ -42,8 +42,8 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	@Override
 	protected void initTools(HorizontalPanel toolPanel) {
 		super.initTools(toolPanel);
-		toolPanel.add(new Button("Select all", setAllHandler(true)));		
-		toolPanel.add(new Button("Select none", setAllHandler(false)));		
+//		toolPanel.add(new Button("Select all", setAllHandler(true)));		
+//		toolPanel.add(new Button("Select none", setAllHandler(false)));		
 	}
 	
 	@Override
@@ -55,13 +55,19 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	private ClickHandler setAllHandler(final boolean val) {
 		return new ClickHandler() {
 		public void onClick(ClickEvent ce) {
-			for (CheckBox[] r: checkboxes) {
-				for (CheckBox cb: r) {
-					cb.setValue(val);
-				}
-			}				
+			setAll(val);	
 		}
 		};
+	}
+	
+	public void setAll(boolean val) {
+		if (checkboxes != null) {
+			for (CheckBox[] r : checkboxes) {
+				for (CheckBox cb : r) {
+					cb.setValue(val);
+				}
+			}
+		}
 	}
 	
 	private boolean getSelected(String compound, String time, String dose) {		

@@ -87,12 +87,12 @@ public class CompoundSelector extends DataListenerWidget {
 				loadCompounds();
 			}
 		}));
-		
-		hp.add(new Button("Unselect all", new ClickHandler() {
-			public void onClick(ClickEvent ce) {
-				setSelection(new ArrayList<String>());
-			}
-		}));
+//		
+//		hp.add(new Button("Unselect all", new ClickHandler() {
+//			public void onClick(ClickEvent ce) {
+//				setSelection(new ArrayList<String>());
+//			}
+//		}));
 		
 		compoundTable = new StringSelectionTable("Sel", "Compound") {
 			protected void selectionChanged(Set<String> selected) {
