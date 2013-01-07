@@ -9,6 +9,7 @@ import java.util.Set;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ImageClickCell;
+import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.Association;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.ExpressionRow;
@@ -42,6 +43,8 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DisclosurePanel;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.DoubleBox;
+import com.google.gwt.user.client.ui.FocusWidget;
+import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -63,6 +66,7 @@ public class ExpressionTable extends DataListenerWidget {
 	
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
 	private DataGrid<ExpressionRow> exprGrid;
+	private HorizontalPanel tools;
 	
 	private DoubleBox absValBox;
 	private ListBox valueTypeList = new ListBox();
@@ -84,6 +88,8 @@ public class ExpressionTable extends DataListenerWidget {
 	private final static String[] expectedAssociations = new String[] { "KEGG pathways", "MF GO terms", "CC GO terms", "BP GO terms" };	
 	private List<HideableColumn> hideableColumns = new ArrayList<HideableColumn>();
  	private List<AssociationColumn> associationColumns = new ArrayList<AssociationColumn>();
+ 	
+ 	
 	
 	/**
 	 * This constructor will be used by the GWT designer. (Not functional at run time)
@@ -122,6 +128,7 @@ public class ExpressionTable extends DataListenerWidget {
 		dockPanel.add(makeToolPanel(), DockPanel.NORTH);
 		
 		exprGrid.addColumnSortHandler(colSortHandler);
+		setEnabled(false);
 
 	}
 	
@@ -132,11 +139,10 @@ public class ExpressionTable extends DataListenerWidget {
 	}
 	
 	private Widget makeToolPanel() {
-		HorizontalPanel tools = Utils.mkHorizontalPanel();		
+		tools = Utils.mkHorizontalPanel();		
 		
 		HorizontalPanel horizontalPanel = Utils.mkHorizontalPanel(true);		
 		horizontalPanel.setStyleName("colored");
-		horizontalPanel.setWidth("");
 		tools.add(horizontalPanel);
 		
 		valueTypeList.addItem(ValueType.Folds.toString());
@@ -162,7 +168,6 @@ public class ExpressionTable extends DataListenerWidget {
 		Label label = new Label("Magnitude >=");
 		label.setStyleName("highlySpaced");		
 		horizontalPanel.add(label);
-		label.setWidth("");
 
 		absValBox = new DoubleBox();
 		absValBox.setText("0.00");
@@ -173,7 +178,7 @@ public class ExpressionTable extends DataListenerWidget {
 				refilterData();				
 			}
 		});
-
+		
 		horizontalPanel.add(new Button("Apply", new ClickHandler() {
 			public void onClick(ClickEvent e) {
 				refilterData();
@@ -291,13 +296,13 @@ public class ExpressionTable extends DataListenerWidget {
 		MenuItem mntmNewMenu_1 = new MenuItem("New menu", false, menuBar_2);
 
 		for (final HideableColumn c: hideableColumns) {
-			MenuItem mi = new MenuItem(c.name(), false, new Command() {
-				public void execute() {
-					c.flipVisibility();					
+			new TickMenuItem(menuBar_2, c.name(), c.visible()) {
+				@Override
+				public void stateChange(boolean newState) {
+					c.setVisibility(newState);	
 					setupColumns();
-				}
-			});
-			menuBar_2.addItem(mi);
+				}				
+			};
 		}
 		
 		mntmNewMenu_1.setHTML("Columns");
@@ -461,13 +466,19 @@ public class ExpressionTable extends DataListenerWidget {
 				groupsel2.addItem(dc.getShortTitle());
 			}
 		}
+		
+		if (columns.size() >= 2) {
+			groupsel1.setSelectedIndex(0);
+			groupsel2.setSelectedIndex(1);			
+		}
 	}
 	
 	public void beginLoading() {
 		exprGrid.setRowCount(0, false);		
 	}
 	
-	void refilterData() { 
+	void refilterData() {
+		setEnabled(false);
 		exprGrid.setRowCount(0, false);
 		List<DataColumn> cols = new ArrayList<DataColumn>();
 		cols.addAll(chosenColumns);
@@ -482,12 +493,14 @@ public class ExpressionTable extends DataListenerWidget {
 						exprGrid.setRowCount(result);
 						exprGrid.setVisibleRangeAndClearData(new Range(0, PAGE_SIZE),
 								true);
+						setEnabled(true);
 					}
 				});
 	}
 	
 	public void getExpressions(String[] displayedProbes) {
-		exprGrid.setRowCount(0, false);
+		setEnabled(false);
+		exprGrid.setRowCount(0, false);		
 		setupColumns();
 		List<DataColumn> cols = new ArrayList<DataColumn>();
 		cols.addAll(chosenColumns);
@@ -528,11 +541,27 @@ public class ExpressionTable extends DataListenerWidget {
 					}
 
 					public void onSuccess(Integer result) {
+						setEnabled(true);
 						exprGrid.setRowCount(result);
 						exprGrid.setVisibleRangeAndClearData(new Range(0, PAGE_SIZE),
 								true);
 					}
 				});
+	}
+	
+	private void setEnabled(boolean enabled) {
+		setEnabled(tools, enabled);		
+	}
+	
+	private void setEnabled(HasWidgets root, boolean enabled) {
+		for (Widget w: root) {
+			if (w instanceof HasWidgets) {
+				setEnabled((HasWidgets) w, enabled);
+			}
+			if (w instanceof FocusWidget) {
+				((FocusWidget) w).setEnabled(enabled);
+			}
+		}
 	}
 	
 	class ExpressionColumn extends Column<ExpressionRow, String> {
@@ -559,7 +588,7 @@ public class ExpressionTable extends DataListenerWidget {
 	interface HideableColumn {
 		String name();
 		boolean visible();
-		void flipVisibility();
+		void setVisibility(boolean v);
 	}
 	
 	class AssociationColumn extends Column<ExpressionRow, String> implements HideableColumn {
@@ -587,7 +616,7 @@ public class ExpressionTable extends DataListenerWidget {
 		}
 		
 		public String name() { return assoc; }
-		public void flipVisibility() { visible = ! visible; }		
+		public void setVisibility(boolean v) { visible = v; }		
 		public boolean visible() { return this.visible; }		
 	}
 	
@@ -663,7 +692,7 @@ public class ExpressionTable extends DataListenerWidget {
 		private String _name;
 		public String name() { return _name; }
 		public boolean visible() { return this.visible; }
-		public void flipVisibility() { visible = ! visible; }		
+		public void setVisibility(boolean v) { visible = v; }		
 	}
 	
 	@Override

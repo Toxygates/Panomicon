@@ -52,14 +52,14 @@ public class Screen extends DataListenerWidget {
 	public Screen(String title, String key,  
 			boolean showDataFilter, boolean showGroups, 
 			ScreenManager man,
-			TextResource helpHTML, ImageResource helpImage) {		
-		initWidget(dockPanel);
-		menuBar = man.getMenuBar();
-		manager = man;		
+			TextResource helpHTML, ImageResource helpImage) {
 		this.showDataFilter = showDataFilter;
 		this.showGroups = showGroups;
 		this.helpHTML = helpHTML;
 		this.helpImage = helpImage;
+		initWidget(dockPanel);
+		menuBar = man.getMenuBar();
+		manager = man;				
 		dockPanel.setWidth("100%");		
 		this.key = key;
 		
@@ -130,11 +130,11 @@ public class Screen extends DataListenerWidget {
 	 */
 	public void show() {
 		visible = true;		
-		updateStatusPanel();
 		for (MenuItem mi: menuItems) {
 			mi.setVisible(true);
 		}
 		loadState();
+		updateStatusPanel(); //needs access to the groups from loadState
 	}
 	
 	protected void updateStatusPanel() {

@@ -174,6 +174,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		} else {
 			setScreenForToken(History.getToken());		
 		}		
+		deconfigureAll(pickScreen(History.getToken()));
 	}
 	
 	void addWorkflowLinks(Screen current) {
@@ -217,13 +218,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		addWorkflowLinks(currentScreen);
 		resizeInterface(Window.getClientHeight()); 
 	}
-	
-//	public void showTemporary(Screen s) 
-//	{
-//		screens.put(s.key(), s);		
-//		History.newItem(s.key());
-//	}
-	
+
 	public MenuBar getMenuBar() { 
 		return menuBar;
 	}
