@@ -19,17 +19,17 @@
 
 	<servlet-mapping>
 		<servlet-name>owlimServlet</servlet-name>
-		<url-pattern>/otgviewer/owlim</url-pattern>
+		<url-pattern>/toxygates/owlim</url-pattern>
 	</servlet-mapping>
 
 	<servlet-mapping>
 		<servlet-name>kcServlet</servlet-name>
-    <url-pattern>/otgviewer/KC</url-pattern>
+    <url-pattern>/toxygates/KC</url-pattern>
   </servlet-mapping>
   
   <!-- Default page to serve -->
   <welcome-file-list>
-    <welcome-file>OTGViewer.html</welcome-file>
+    <welcome-file>toxygates.html</welcome-file>
   </welcome-file-list>
 
 </web-app>
