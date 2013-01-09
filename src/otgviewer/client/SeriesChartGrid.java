@@ -5,11 +5,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionValue;
 import otgviewer.shared.Series;
 import otgviewer.shared.SharedUtils;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
@@ -36,11 +38,13 @@ public class SeriesChartGrid extends Composite {
 	DataTable table;
 	
 	boolean rowsAreCompounds = false; //if false, they are probes
+	private DataFilter filter;
 	
-	public SeriesChartGrid(List<Series> series, boolean rowsAreCompounds) {
+	public SeriesChartGrid(DataFilter filter, List<Series> series, boolean rowsAreCompounds) {
 		super();
 		data = series;
 		this.rowsAreCompounds = rowsAreCompounds;
+		this.filter = filter;
 		
 		Set<String> rows = new HashSet<String>();
 		
@@ -56,8 +60,8 @@ public class SeriesChartGrid extends Composite {
 		g = new Grid(rows.size() * 2 + 1, 3);		
 		initWidget(g);
 		
-		g.setWidth("470px");
-		g.setHeight(rowKeys.size() * 170 + "px");
+		g.setWidth("530px");
+		g.setHeight(rowKeys.size() * 190 + "px");
 		
 		VisualizationUtils
 		.loadVisualizationApi("1.1", new Runnable() {
@@ -81,17 +85,8 @@ public class SeriesChartGrid extends Composite {
 			}
 		}
 		
-		for (Series s: data) {
-			int row = rowsAreCompounds ? SharedUtils.indexOf(rowKeys, s.compound()) : SharedUtils.indexOf(rowKeys, s.probe());
-			String td = s.timeDose();
-			if (td.equals("Low")) {
-				displaySeriesAt(row * 2 + 2, 0, s, min, max);
-			} else if (td.equals("Middle")) {
-				displaySeriesAt(row * 2 + 2, 1, s, min, max);
-			} else if (td.equals("High")) {
-				displaySeriesAt(row * 2 + 2, 2, s, min, max);
-			}
-		}
+		final double fmin = min;
+		final double fmax = max;
 		
 		int i = 1;
 		for (String p: rowKeys) {			
@@ -118,12 +113,33 @@ public class SeriesChartGrid extends Composite {
 						}
 					});
 		}
+		
+		owlimService.times(filter, null, new AsyncCallback<String[]>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Unable to obtain sample times");
+			}
+			@Override
+			public void onSuccess(String[] result) {
+				for (Series s: data) {
+					int row = rowsAreCompounds ? SharedUtils.indexOf(rowKeys, s.compound()) : SharedUtils.indexOf(rowKeys, s.probe());
+					String td = s.timeDose();
+					if (td.equals("Low")) {
+						displaySeriesAt(result, row * 2 + 2, 0, s, fmin, fmax);
+					} else if (td.equals("Middle")) {
+						displaySeriesAt(result, row * 2 + 2, 1, s, fmin, fmax);
+					} else if (td.equals("High")) {
+						displaySeriesAt(result, row * 2 + 2, 2, s, fmin, fmax);
+					}
+				}								
+			}			
+		});
 	}
 	
-	private void displaySeriesAt(int row, int column, Series s, double minVal, double maxVal) {
+	private void displaySeriesAt(String[] times, int row, int column, Series s, double minVal, double maxVal) {
 		Options o = Utils.createChartOptions("LightSkyBlue");
-		o.setWidth(150);
-		o.setHeight(150);
+		o.setWidth(170);
+		o.setHeight(170);
 		AxisOptions ao = AxisOptions.create();
 		ao.setMinValue(minVal);
 		ao.setMaxValue(maxVal);
@@ -133,14 +149,11 @@ public class SeriesChartGrid extends Composite {
 		t.addColumn(ColumnType.STRING, "Time");
 		t.addColumn(ColumnType.NUMBER, "Value");
 		
-		t.addRow();
-		t.addRow();
-		t.addRow();
-		t.addRow();
-		t.setValue(0, 0, "1");
-		t.setValue(1, 0, "2");
-		t.setValue(2, 0, "3");
-		t.setValue(3, 0, "4");		
+		for (int i = 0; i < times.length; ++i) {
+			t.addRow();
+			t.setValue(i, 0, times[i]);			
+		}		
+				
 		int i = 0;
 
 		for (ExpressionValue v : s.values()) {
@@ -148,7 +161,6 @@ public class SeriesChartGrid extends Composite {
 			t.setValue(i, 1, vv);
 			t.setFormattedValue(i, 1, Utils.formatNumber(vv));
 			i += 1;
-
 		}
 
 		CoreChart c = new ColumnChart(t, o);				

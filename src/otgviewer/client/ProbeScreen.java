@@ -59,7 +59,7 @@ public class ProbeScreen extends Screen {
 	private ProbeSelector pathwaySel, gotermSel;
 
 	public Widget content() {
-		HorizontalPanel hp = new HorizontalPanel();
+		HorizontalPanel hp = Utils.mkHorizontalPanel();
 
 		StackPanel probeSelStack = new StackPanel();
 		hp.add(probeSelStack);
@@ -179,7 +179,7 @@ public class ProbeScreen extends Screen {
 		l.setStyleName("heading");
 		lp.add(l);
 		probesList = new ListBox();
-		probesList.setVisibleItemCount(20);
+		probesList.setVisibleItemCount(30);
 		probesList.setWidth("350px");
 		lp.add(probesList);
 		hp.add(lp);
@@ -193,7 +193,7 @@ public class ProbeScreen extends Screen {
 
 		HorizontalPanel buttons = new HorizontalPanel();
 		
-		buttons.add(new Button("Display data with chosen probes", new ClickHandler() {			
+		buttons.add(new Button("Proceed with selected probes", new ClickHandler() {			
 			@Override
 			public void onClick(ClickEvent event) {
 				if (listedProbes.size() == 0) {
@@ -206,7 +206,7 @@ public class ProbeScreen extends Screen {
 			}
 		}));
 		
-		buttons.add(new Button("Display data with all probes", new ClickHandler() {
+		buttons.add(new Button("Proceed with all probes", new ClickHandler() {
 			public void onClick(ClickEvent event) {								
 				probesChanged(new String[0]);
 				configuredProceed(DataScreen.key);				

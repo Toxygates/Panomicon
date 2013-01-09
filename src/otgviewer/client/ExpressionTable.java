@@ -29,6 +29,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
+import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.cellview.client.ColumnSortList;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.SimplePager;
@@ -57,6 +58,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.AsyncDataProvider;
 import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.MultiSelectionModel;
+import com.google.gwt.view.client.NoSelectionModel;
 import com.google.gwt.view.client.Range;
 import com.google.gwt.view.client.SelectionChangeEvent;
 
@@ -112,16 +114,10 @@ public class ExpressionTable extends DataListenerWidget {
 		exprGrid.setStyleName("exprGrid");
 		exprGrid.setPageSize(PAGE_SIZE);
 		exprGrid.setSize("100%", height);
-		exprGrid.setSelectionModel(new MultiSelectionModel<ExpressionRow>());
-		exprGrid.getSelectionModel().addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
-			public void onSelectionChange(SelectionChangeEvent event) {
-				for (ExpressionRow r: exprGrid.getDisplayedItems()) {
-					if (exprGrid.getSelectionModel().isSelected(r)) {						
-						changeProbe(r.getProbe());
-					}
-				}		
-			}
-		});
+		exprGrid.setSelectionModel(new NoSelectionModel());
+
+		exprGrid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
+		
 		asyncProvider.addDataDisplay(exprGrid);		
 		AsyncHandler colSortHandler = new AsyncHandler(exprGrid);
 		
@@ -632,10 +628,10 @@ public class ExpressionTable extends DataListenerWidget {
 			int chartHeight = 200;
 			final int numCharts = seriesCharts.size();
 
-			int height = chartHeight * numCharts;			
+//			int height = chartHeight * numCharts;			
 			for (int i = 0; i < numCharts; i++) {
 				SeriesChart seriesChart = (SeriesChart) seriesCharts.get(i);
-				seriesChart.probeChanged(value);
+				seriesChart.changeProbe(value);
 				seriesChart.redraw();
 				seriesChart.setWidth("500px");
 				seriesChart.setPixelHeight(chartHeight);
@@ -659,7 +655,7 @@ public class ExpressionTable extends DataListenerWidget {
 				kcService.getSeries(chosenDataFilter, new String[] { value }, 
 						null, dc.getCompounds(), new AsyncCallback<List<Series>>() {
 					public void onSuccess(List<Series> ss) {
-						SeriesChartGrid scg = new SeriesChartGrid(ss, true);
+						SeriesChartGrid scg = new SeriesChartGrid(chosenDataFilter, ss, true);
 						sp.add(scg);
 					}
 					public void onFailure(Throwable caught) {

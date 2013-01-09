@@ -33,6 +33,7 @@ public class SeriesChart extends DataListenerWidget {
 	private CoreChart seriesChart;
 	private DockPanel chartDockPanel;
 	private boolean isSlave;
+	private String chosenProbe;
 
 	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
 			.create(OwlimService.class);
@@ -64,9 +65,8 @@ public class SeriesChart extends DataListenerWidget {
 		updateSelectionLabel();
 	}
 
-	@Override
-	public void probeChanged(String probe) {
-		super.probeChanged(probe);
+	public void changeProbe(String probe) {
+		chosenProbe = probe;		
 		updateSelectionLabel();
 	}
 
@@ -152,7 +152,7 @@ public class SeriesChart extends DataListenerWidget {
 		chartDockPanel.add(verticalPanel, DockPanel.NORTH);
 		verticalPanel.setWidth("500px");
 
-		seriesSelectionLabel = new Label("Selected: none");
+		seriesSelectionLabel = Utils.mkEmphLabel("Selected: none");
 		verticalPanel.add(seriesSelectionLabel);
 
 		if (!isSlave) {
@@ -256,15 +256,12 @@ public class SeriesChart extends DataListenerWidget {
 
 		switch (chosenDataFilter.cellType) {
 		case Vivo:
-			seriesSelectionLabel.setText("Selected: "					
-					+ chosenCompound + "/"					
-					+ chosenDataFilter.repeatType + "/" + chosenValueType
-					+ "/" + chosenProbe);
+			seriesSelectionLabel.setText(chosenCompound +		 
+					"/" + chosenProbe);
 			break;
 		case Vitro:
-			seriesSelectionLabel.setText("Selected: "
-					+ chosenCompound + "/"
-					+ chosenValueType + "/" + chosenProbe);
+			seriesSelectionLabel.setText(chosenCompound + 
+					"/" + chosenProbe);
 			break;
 		}		
 	}

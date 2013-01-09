@@ -8,8 +8,7 @@ import otgviewer.shared.ValueType;
 
 public interface DataViewListener {
 
-	public void dataFilterChanged(DataFilter filter);
-	public void probeChanged(String probe);
+	public void dataFilterChanged(DataFilter filter);	
 	public void probesChanged(String[] probes);
 	public void compoundChanged(String compound);
 	public void compoundsChanged(List<String> compounds);

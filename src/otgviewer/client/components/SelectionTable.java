@@ -10,8 +10,10 @@ import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.view.client.ListDataProvider;
+import com.google.gwt.view.client.NoSelectionModel;
 import com.google.gwt.view.client.SingleSelectionModel;
 
 /**
@@ -53,7 +55,8 @@ abstract public class SelectionTable<T> extends Composite {
 		});
 		
 		table.addColumn(selectColumn, selectColTitle);
-		table.setSelectionModel(new SingleSelectionModel());
+		table.setSelectionModel(new NoSelectionModel());
+		table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 		provider.addDataDisplay(table);		
 		initTable(table);
 	}
@@ -135,5 +138,9 @@ abstract public class SelectionTable<T> extends Composite {
 			}
 			selected.removeAll(toRemove);
 		}
+	}
+	
+	public T get(int index) {
+		return provider.getList().get(index);
 	}
 }

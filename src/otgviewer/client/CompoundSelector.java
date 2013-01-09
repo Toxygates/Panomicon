@@ -87,12 +87,12 @@ public class CompoundSelector extends DataListenerWidget {
 				loadCompounds();
 			}
 		}));
-//		
-//		hp.add(new Button("Unselect all", new ClickHandler() {
-//			public void onClick(ClickEvent ce) {
-//				setSelection(new ArrayList<String>());
-//			}
-//		}));
+		
+		hp.add(new Button("Unselect all", new ClickHandler() {
+			public void onClick(ClickEvent ce) {
+				setSelection(new ArrayList<String>());
+			}
+		}));
 		
 		compoundTable = new StringSelectionTable("Sel", "Compound") {
 			protected void selectionChanged(Set<String> selected) {
@@ -216,7 +216,7 @@ public class CompoundSelector extends DataListenerWidget {
 				kcService.getSeries(chosenDataFilter, rankProbes.toArray(new String[0]), 
 						null, new String[] { value }, new PendingAsyncCallback<List<Series>>(w, "Unable to retrieve data.") {
 					public void handleSuccess(List<Series> ss) {
-						SeriesChartGrid scg = new SeriesChartGrid(ss, false);
+						SeriesChartGrid scg = new SeriesChartGrid(chosenDataFilter, ss, false);
 						Utils.displayInPopup(scg);
 					}
 					

@@ -29,7 +29,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	private List<DataViewListener> listeners = new ArrayList<DataViewListener>();
 	
 	protected DataFilter chosenDataFilter;
-	protected String chosenProbe;
 	protected String[] chosenProbes = new String[0];
 	protected List<String> chosenCompounds = new ArrayList<String>();
 	protected String chosenCompound;
@@ -52,12 +51,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		chosenDataFilter = filter;
 		changeDataFilter(filter);
 	}
-	
-	public void probeChanged(String probe) {
-		chosenProbe = probe;
-		changeProbe(probe);
-	}
-	
+
 	public void probesChanged(String[] probes) {
 		chosenProbes = probes;
 		changeProbes(probes);
@@ -102,13 +96,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		for (DataViewListener l : listeners) {
 			l.dataFilterChanged(filter);
 		}		
-	}
-	
-	protected void changeProbe(String probe) {
-		chosenProbe = probe;
-		for (DataViewListener l: listeners) {
-			l.probeChanged(probe);
-		}
 	}
 	
 	protected void changeProbes(String[] probes) {
@@ -177,7 +164,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	
 	public void propagateTo(DataViewListener other) {
 		other.dataFilterChanged(chosenDataFilter);
-		other.probeChanged(chosenProbe);
 		other.probesChanged(chosenProbes);
 		other.compoundsChanged(chosenCompounds);
 		other.compoundChanged(chosenCompound);

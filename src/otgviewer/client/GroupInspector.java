@@ -17,26 +17,21 @@ import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.cell.client.ButtonCell;
+import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
-import com.google.gwt.event.dom.client.KeyUpEvent;
-import com.google.gwt.event.dom.client.KeyUpHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.view.client.SelectionChangeEvent;
 
 /**
  * This widget is intended to help visually define and modify "groups"
@@ -55,10 +50,11 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 	private Screen screen;
 	private Label titleLabel;
 	private TextBox txtbxGroup;
-	private Button saveButton, deleteButton;
+	private Button saveButton;
 	SelectionTable<Group> existingGroupsTable;
 	private CompoundSelector compoundSel;
-
+	private HorizontalPanel toolPanel;
+	
 	public GroupInspector(CompoundSelector cs, Screen scr) {
 		compoundSel = cs;
 		this.screen = scr;
@@ -76,34 +72,16 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 	
 		vp.setWidth("410px");		
 		
-		HorizontalPanel horizontalPanel = Utils.mkHorizontalPanel(true);
-		vp.add(horizontalPanel);
-		
-		horizontalPanel.add(new Button("New",
-				new ClickHandler() {
-					public void onClick(ClickEvent event) {
-						newGroup();
-					}
-			
-		}));
+		toolPanel = Utils.mkHorizontalPanel(true);
+		vp.add(toolPanel);
 		
 		Label lblSaveGroupAs = new Label("Save group as");
 		lblSaveGroupAs.setStyleName("slightlySpaced");
-		horizontalPanel.add(lblSaveGroupAs);
+		toolPanel.add(lblSaveGroupAs);
 		
 		txtbxGroup = new TextBox();
 		txtbxGroup.setText(nextGroupName());
-		horizontalPanel.add(txtbxGroup);
-		txtbxGroup.addKeyUpHandler(new KeyUpHandler() {			
-			@Override
-			public void onKeyUp(KeyUpEvent event) {
-				if (groups.containsKey(txtbxGroup.getValue())) {
-					setDeleteable(true);
-				} else {
-					setDeleteable(false);
-				}		
-			}
-		});
+		toolPanel.add(txtbxGroup);		
 		
 		saveButton = new Button("Save",
 		new ClickHandler(){
@@ -111,19 +89,8 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 				makeGroup(txtbxGroup.getValue());
 			}
 		});
-		horizontalPanel.add(saveButton);
+		toolPanel.add(saveButton);
 		setEditing(false);
-		
-		deleteButton = new Button("Delete", new ClickHandler() {
-			public void onClick(ClickEvent ce) {
-				String grp = txtbxGroup.getValue();
-				if (groups.containsKey(grp)) {
-					deleteGroup(grp, true);					
-				}
-			}
-		});
-		horizontalPanel.add(deleteButton);
-		setDeleteable(false);
 		
 		existingGroupsTable = new SelectionTable<Group>("Active") {
 			protected void initTable(CellTable<Group> table) {
@@ -141,7 +108,40 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 						return "" + object.getBarcodes().length;
 					}
 				};
-				table.addColumn(textColumn, "Samples");
+				table.addColumn(textColumn, "Sample count");
+				
+				ButtonCell editCell = new ButtonCell();
+				
+				Column<Group, String> editColumn = new Column<Group, String>(editCell) {
+					public String getValue(Group g) {
+						return "Edit";
+					}					
+				};
+				editColumn.setFieldUpdater(new FieldUpdater<Group,String>() {					
+					@Override
+					public void update(int index, Group object, String value) {						
+						displayGroup(object.getName());							
+					}
+				});
+				table.addColumn(editColumn, "");
+				
+				ButtonCell deleteCell = new ButtonCell();
+				Column<Group, String> deleteColumn = new Column<Group, String>(deleteCell) {
+					public String getValue(Group g) {
+						return "Delete";
+					}
+				};
+				deleteColumn.setFieldUpdater(new FieldUpdater<Group, String>() {
+					@Override
+					public void update(int index, Group object, String value) {
+						if (Window.confirm("Are you sure you want to delete the group " + object.getName() + "?")) {
+							deleteGroup(object.getName(), true);						
+						}
+					}
+					
+				});
+				table.addColumn(deleteColumn, "");
+				
 			}
 			
 			protected void selectionChanged(Set<Group> selected) {
@@ -150,18 +150,8 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 			}
 		};
 		vp.add(existingGroupsTable);
-		existingGroupsTable.setSize("100%", "100px");
-		
-		
-		existingGroupsTable.table().getSelectionModel().addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
-			@Override
-			public void onSelectionChange(SelectionChangeEvent event) {
-				Group g = existingGroupsTable.highlightedRow();
-				if (g != null) {
-					displayGroup(g.getName());
-				}
-			}
-		});		
+		existingGroupsTable.setVisible(false);
+		existingGroupsTable.setSize("100%", "100px");		
 	}
 	
 	private void deleteGroup(String name, boolean createNew) {
@@ -177,18 +167,10 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 	 * @param editing
 	 */
 	private void setEditing(boolean editing) {
-		boolean val = editing && (chosenCompounds.size() > 0); 
-		saveButton.setEnabled(val);
-		txtbxGroup.setEnabled(val);
+		boolean val = editing && (chosenCompounds.size() > 0);
+		toolPanel.setVisible(val);
 	}
-	
-	/**
-	 * Toggle deleteable mode
-	 * @param deleteable
-	 */
-	private void setDeleteable(boolean deleteable) {
-		deleteButton.setEnabled(deleteable);
-	}
+
 	
 	private void setHeading(String title) {
 		titleLabel.setText("Sample group definition - " + title);
@@ -199,8 +181,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		timeDoseGrid.setAll(false);
 		compoundSel.setSelection(new ArrayList<String>());
 		setHeading("new group");
-		setEditing(true);
-		setDeleteable(false);
+		setEditing(true);		
 	}
 	
 	private List<Group> sortedGroupList(Collection<Group> groups) {
@@ -215,6 +196,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		storeColumns();
 		txtbxGroup.setText(nextGroupName());
 		updateConfigureStatus();
+		existingGroupsTable.setVisible(groups.values().size() > 0);					
 	}
 	
 	private void updateConfigureStatus() {		
@@ -261,7 +243,8 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		updateConfigureStatus();
 				
 		existingGroupsTable.reloadWith(sortedGroupList(groups.values()), true);
-		existingGroupsTable.setSelection(asGroupList(chosenColumns));
+		existingGroupsTable.setSelection(asGroupList(chosenColumns));		
+		existingGroupsTable.setVisible(groups.size() > 0);		
 		newGroup();
 	}
 
@@ -269,7 +252,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 	public void compoundsChanged(List<String> compounds) {
 		super.compoundsChanged(compounds);
 		if (compounds.size() == 0) {
-			setEditing(false);
+			setEditing(false);			
 		} else {
 			setEditing(true);
 		}
@@ -287,6 +270,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		existingGroupsTable.reloadWith(all, false);		
 		existingGroupsTable.unselectAll(igs);
 		existingGroupsTable.table().redraw();
+		existingGroupsTable.setVisible(groups.size() > 0);
 		newGroup();
 	}
 	
@@ -370,7 +354,6 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		Group g = groups.get(name);
 		timeDoseGrid.setSelection(g.getBarcodes());
 		
-		setDeleteable(true);
 		setEditing(true);
 	}
 	

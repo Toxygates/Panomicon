@@ -281,7 +281,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
           g2.getBarcodes.map(_.getCode))
       }
     }
-    withTest.columnMap += (test.toString -> rendered.columns)
+    withTest.columnMap += (test.getShortTitle() -> rendered.columns)
     session.rendered = withTest
 
   }
