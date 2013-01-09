@@ -11,6 +11,7 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -18,6 +19,8 @@ import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
@@ -34,7 +37,8 @@ import com.google.gwt.visualization.client.VisualizationUtils;
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class OTGViewer implements EntryPoint, ScreenManager {
-
+	private static Resources resources = GWT.create(Resources.class);
+	
 	private RootPanel rootPanel;
 	private VerticalPanel mainVertPanel;
 	private MenuBar menuBar;
@@ -46,15 +50,20 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	private MenuBar setupMenu() {
 		MenuBar menuBar = new MenuBar(false);
 		menuBar.setWidth("100%");		
-		MenuItem mi = new MenuItem("Toxygates", new Command() {
-			public void execute() {}
-		});		
-		mi.setEnabled(false);
+		
+		MenuBar hm = new MenuBar(true);		
+		MenuItem mi = new MenuItem("Help", hm);
 		menuBar.addItem(mi);
 		
-		menuBar.addItem(new MenuItem("Help", new Command() {
+		hm.addItem(new MenuItem("Instructions...", new Command() {
 			public void execute() {
 				currentScreen.showHelp();
+			}
+		}));
+		
+		hm.addItem(new MenuItem("About Toxygates...", new Command() {
+			public void execute() {
+				Utils.showHelp(getAboutHTML(), getAboutImage());
 			}
 		}));
 		
@@ -251,5 +260,13 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	@Override
 	public boolean isConfigured(String key) {
 		return configuredScreens.contains(key);
+	}
+	
+	private TextResource getAboutHTML() {
+		return resources.aboutHTML();
+	}
+	
+	private ImageResource getAboutImage() {
+		return resources.about();
 	}
 }

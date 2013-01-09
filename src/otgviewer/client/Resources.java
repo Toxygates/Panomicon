@@ -75,4 +75,10 @@ public interface Resources extends ClientBundle {
 	@Source("help/compoundRanking.png")
 	ImageResource compoundRankingHelp();
 	
+	@Source("help/about.html")
+	TextResource aboutHTML();
+	
+	@Source("help/about.png")
+	ImageResource about();
+	
 }

@@ -23,6 +23,8 @@ import com.google.gwt.user.client.ui.Widget;
 abstract public class TimeDoseGrid extends DataListenerWidget {
 	private Grid grid = new Grid();
 	protected String[] availableTimes = null;
+	protected VerticalPanel rootPanel;
+	protected VerticalPanel mainPanel;
 	
 	protected OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
 			.create(OwlimService.class);
@@ -32,19 +34,22 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	}
 	
 	public TimeDoseGrid() {
-		VerticalPanel vp = new VerticalPanel();
-		initWidget(vp);
+		rootPanel = Utils.mkVerticalPanel();
+		initWidget(rootPanel);
+		rootPanel.setWidth("710px");
+		mainPanel = new VerticalPanel();
 		
-		HorizontalPanel horizontalPanel_1 = Utils.mkHorizontalPanel();		
-		vp.add(horizontalPanel_1);
-		initTools(horizontalPanel_1);
-		horizontalPanel_1.setSpacing(2);
+		
+		HorizontalPanel selectionPanel = Utils.mkHorizontalPanel();		
+		mainPanel.add(selectionPanel);
+		initTools(selectionPanel);
+		selectionPanel.setSpacing(2);
 		
 		grid.setStyleName("highlySpaced");
-		grid.setWidth("700px");
+		grid.setWidth("100%");
 		grid.setHeight("400px");
 		grid.setBorderWidth(0);
-		vp.add(grid);
+		mainPanel.add(grid);
 	}
 	
 	@Override
@@ -61,8 +66,15 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	
 	@Override
 	public void compoundsChanged(List<String> compounds) {				
-		super.compoundsChanged(compounds);				
-		redrawGrid();
+		super.compoundsChanged(compounds);		
+		if (compounds.isEmpty()) {
+			rootPanel.clear();
+			rootPanel.add(Utils.mkEmphLabel("Please select at least one compound"));
+		} else {
+			rootPanel.clear();
+			rootPanel.add(mainPanel);
+			redrawGrid();
+		}
 	}
 	
 	private void lazyFetchTimes() {

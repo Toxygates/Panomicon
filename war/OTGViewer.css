@@ -95,12 +95,16 @@ margin: 2px;
   padding: 4px;
   border: solid black 1px;
 }
-.otg {
- background: #053769;
- color: white;
-}
-
 .emphasized {
 	font-weight: bold;
+}
+.statusPanel {
+	background: White;
+	color: black;
+	height:3em;
+}
+.statusBorder {
+	margin: 1px;
+	border: solid DarkBlue 1px;
 }
 

@@ -24,7 +24,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	private Combination[] oldSelection;
 
 	public static interface BarcodeListener {
-		void barcodesObtained(Barcode[] barcodes, String description);
+		void barcodesObtained(List<Barcode> barcodes);
 	}
 
 	private static class Combination {
@@ -138,30 +138,58 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		}
 	}
 	
-	public void getSelection(final BarcodeListener listener) {
+	private int outstanding = 0;
+	private List<Barcode> obtainedBarcodes;
+	private BarcodeListener outstandingListener;
+	
+	public synchronized void getSelection(final BarcodeListener listener) {
+		boolean gotSome = false;
+		outstanding = 0;
+		outstandingListener = listener;
+		obtainedBarcodes = new ArrayList<Barcode>();
 		for (int c = 0; c < chosenCompounds.size(); ++c) {
 			for (int d = 0; d < 3; ++d) {
 				for (int t = 0; t < availableTimes.length; ++t) {
 					if (checkboxes[c][availableTimes.length * d + t].getValue()) {
 						final String compound = chosenCompounds.get(c);
 						final String dose = indexToDose(d);						
-						final String time = availableTimes[t];
-						
+						final String time = availableTimes[t];						
+						outstanding += 1;
+						gotSome = true;
 						owlimService.barcodes(chosenDataFilter, compound,
 								dose, time,
 								new AsyncCallback<Barcode[]>() {
 									public void onSuccess(Barcode[] barcodes) {
-										listener.barcodesObtained(barcodes, compound + "/" + dose + "/" + time);										
+										if (barcodes.length == 0) {
+											Window.alert("No samples found for " + compound + "/" + dose + "/" + time);
+										} else {
+											for (Barcode b: barcodes) {
+												obtainedBarcodes.add(b);
+											}							
+										}
+										decrementOutstanding();
 									}
 
 									public void onFailure(Throwable caught) {
 										Window.alert("Unable to retrieve sample information.");
+										decrementOutstanding();
 									}
 								});
 					}
 				}
 			}
-		}		
+		}	
+		if (!gotSome) {
+			Window.alert("Please select at least one time/dose combination.");		
+			outstandingListener.barcodesObtained(obtainedBarcodes); //ensure that we always call back at least once
+		}
+	}
+	
+	private synchronized void decrementOutstanding() {
+		outstanding -= 1;
+		if (outstanding == 0) {
+			outstandingListener.barcodesObtained(obtainedBarcodes);
+		}
 	}
 
 	

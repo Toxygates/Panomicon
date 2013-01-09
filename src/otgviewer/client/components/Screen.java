@@ -36,7 +36,7 @@ public class Screen extends DataListenerWidget {
 	protected DockPanel dockPanel = new DockPanel();
 	private String key; //An identifier string
 
-	private HorizontalPanel horizontalPanel, statusPanel;		
+	private HorizontalPanel statusPanel;		
 	protected boolean visible = false;
 	private Label viewLabel = new Label();
 	private boolean showDataFilter = false, showGroups = false;
@@ -115,10 +115,19 @@ public class Screen extends DataListenerWidget {
 	
 	public void initGUI() {
 		VerticalPanel vp = Utils.mkVerticalPanel();
-		statusPanel = Utils.mkHorizontalPanel(true);			
-		vp.add(statusPanel);
-		horizontalPanel = Utils.mkHorizontalPanel();
-		vp.add(horizontalPanel);
+		statusPanel = Utils.mkHorizontalPanel(true);	
+		HorizontalPanel spOuter = new HorizontalPanel();
+		vp.add(spOuter);
+		vp.setWidth("100%");		
+		spOuter.setWidth("100%");
+		spOuter.add(statusPanel);		
+		spOuter.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
+		statusPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
+		statusPanel.setStyleName("statusPanel");
+		spOuter.setStyleName("statusPanel");	
+		
+//		horizontalPanel = Utils.mkHorizontalPanel();
+//		vp.add(horizontalPanel);
 		dockPanel.add(vp, DockPanel.NORTH);
 		dockPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		dockPanel.add(content(), DockPanel.CENTER);	
@@ -144,7 +153,7 @@ public class Screen extends DataListenerWidget {
 			for (DataColumn dc: chosenColumns) {
 				Group g = (Group) dc;
 				HorizontalPanel hp = Utils.mkHorizontalPanel(true);
-				hp.setStyleName("border");
+				hp.setStyleName("statusBorder");
 				String tip = g.getCDTs(-1);
 				Label l = Utils.mkEmphLabel(g.getName() + ":");
 				hp.add(l);

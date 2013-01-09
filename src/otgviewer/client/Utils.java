@@ -50,7 +50,7 @@ public class Utils {
 	}
 	
 	public static HorizontalPanel mkHorizontalPanel(boolean spaced) {
-		HorizontalPanel hp = new HorizontalPanel();
+		HorizontalPanel hp = new HorizontalPanel();		
 //		hp.setStyleName("slightlySpaced");
 		hp.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);

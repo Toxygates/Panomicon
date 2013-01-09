@@ -20,11 +20,14 @@ import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 public class PathologyScreen extends Screen {
+
+
 	public static final String key = "pc";
 
 	private CellTable<Pathology> pathologyTable = new CellTable<Pathology>();
@@ -46,7 +49,8 @@ public class PathologyScreen extends Screen {
 		super("Pathologies", key, true, true, man);
 	}
 
-	public Widget content() {		
+	public Widget content() {
+		vp.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
 		vp.add(sp);
 		sp.setWidget(pathologyTable);
 		
@@ -142,8 +146,8 @@ public class PathologyScreen extends Screen {
 		if (newHeight != lastHeight) {
 			lastHeight = newHeight;
 			super.heightChanged(newHeight);
-			vp.setHeight((newHeight - vp.getAbsoluteTop() - 50) + "px");
-			sp.setHeight((newHeight - sp.getAbsoluteTop() - 70) + "px");
+			vp.setHeight((newHeight - vp.getAbsoluteTop()) + "px");
+			sp.setHeight((newHeight - sp.getAbsoluteTop() - 10) + "px");
 		}
 	}
 	

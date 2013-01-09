@@ -17,8 +17,16 @@ import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
@@ -41,11 +49,13 @@ import com.google.gwt.view.client.SelectionChangeEvent;
  */
 public class GroupInspector extends DataListenerWidget implements SelectionTDGrid.BarcodeListener {
 
+
 	private SelectionTDGrid timeDoseGrid;
 	private Map<String, Group> groups = new HashMap<String, Group>();		
 	private Screen screen;
-	
+	private Label titleLabel;
 	private TextBox txtbxGroup;
+	private Button saveButton, deleteButton;
 	SelectionTable<Group> existingGroupsTable;
 	private CompoundSelector compoundSel;
 
@@ -56,9 +66,9 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		initWidget(vp);
 		
-		Label lblGroupDefinition = new Label("Sample group definition");
-		lblGroupDefinition.setStyleName("heading");
-		vp.add(lblGroupDefinition);
+		titleLabel = new Label("Sample group definition");
+		titleLabel.setStyleName("heading");
+		vp.add(titleLabel);
 		
 		timeDoseGrid = new SelectionTDGrid();
 		vp.add(timeDoseGrid);
@@ -81,30 +91,39 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		lblSaveGroupAs.setStyleName("slightlySpaced");
 		horizontalPanel.add(lblSaveGroupAs);
 		
-		
 		txtbxGroup = new TextBox();
 		txtbxGroup.setText(nextGroupName());
 		horizontalPanel.add(txtbxGroup);
+		txtbxGroup.addKeyUpHandler(new KeyUpHandler() {			
+			@Override
+			public void onKeyUp(KeyUpEvent event) {
+				if (groups.containsKey(txtbxGroup.getValue())) {
+					setDeleteable(true);
+				} else {
+					setDeleteable(false);
+				}		
+			}
+		});
 		
-		
-		horizontalPanel.add(new Button("Save",
+		saveButton = new Button("Save",
 		new ClickHandler(){
 			public void onClick(ClickEvent ce) {
 				makeGroup(txtbxGroup.getValue());
-				newGroup();
 			}
-		}));		
+		});
+		horizontalPanel.add(saveButton);
+		setEditing(false);
 		
-		horizontalPanel.add(new Button("Delete", new ClickHandler() {
+		deleteButton = new Button("Delete", new ClickHandler() {
 			public void onClick(ClickEvent ce) {
 				String grp = txtbxGroup.getValue();
 				if (groups.containsKey(grp)) {
-					groups.remove(grp);									
-					reflectGroupChanges(); //stores columns
-					newGroup();
+					deleteGroup(grp, true);					
 				}
 			}
-		}));
+		});
+		horizontalPanel.add(deleteButton);
+		setDeleteable(false);
 		
 		existingGroupsTable = new SelectionTable<Group>("Active") {
 			protected void initTable(CellTable<Group> table) {
@@ -144,11 +163,44 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 			}
 		});		
 	}
+	
+	private void deleteGroup(String name, boolean createNew) {
+		groups.remove(name);									
+		reflectGroupChanges(); //stores columns
+		if (createNew) {
+			newGroup();
+		}
+	}
+	
+	/**
+	 * Toggle edit mode
+	 * @param editing
+	 */
+	private void setEditing(boolean editing) {
+		boolean val = editing && (chosenCompounds.size() > 0); 
+		saveButton.setEnabled(val);
+		txtbxGroup.setEnabled(val);
+	}
+	
+	/**
+	 * Toggle deleteable mode
+	 * @param deleteable
+	 */
+	private void setDeleteable(boolean deleteable) {
+		deleteButton.setEnabled(deleteable);
+	}
+	
+	private void setHeading(String title) {
+		titleLabel.setText("Sample group definition - " + title);
+	}
 
 	private void newGroup() {
 		txtbxGroup.setText(nextGroupName());
 		timeDoseGrid.setAll(false);
 		compoundSel.setSelection(new ArrayList<String>());
+		setHeading("new group");
+		setEditing(true);
+		setDeleteable(false);
 	}
 	
 	private List<Group> sortedGroupList(Collection<Group> groups) {
@@ -212,6 +264,16 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		existingGroupsTable.setSelection(asGroupList(chosenColumns));
 		newGroup();
 	}
+
+	@Override
+	public void compoundsChanged(List<String> compounds) {
+		super.compoundsChanged(compounds);
+		if (compounds.size() == 0) {
+			setEditing(false);
+		} else {
+			setEditing(true);
+		}
+	}
 	
 	public void inactiveColumnsChanged(List<DataColumn> columns) {
 		Collection<Group> igs = sortedGroupList(asGroupList(columns));
@@ -253,8 +315,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 	 * Get here if save button is clicked
 	 * @param name
 	 */
-	private void makeGroup(final String name) {
-		
+	private void makeGroup(final String name) {		
 		pendingGroup = new Group(name, new Barcode[0]);		
 		groups.put(name, pendingGroup);
 		existingGroupsTable.addItem(pendingGroup);
@@ -263,38 +324,54 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		timeDoseGrid.getSelection(this);		
 	}
 	
-	public void barcodesObtained(Barcode[] barcodes, String description) {
-		addToGroup(pendingGroup.getName(), description, barcodes);
-	}
-		
-	private void addToGroup(String pendingGroupName, String humanReadable, Barcode[] barcodes) {
-		
-		if (barcodes.length == 0) {
-			Window.alert("No samples were found for: " + humanReadable);
+	/**
+	 * callback from selectionTDgrid
+	 */
+	public void barcodesObtained(List<Barcode> barcodes) {
+		if (barcodes.size() == 0) {
+			 Window.alert("No samples found.");
+			 cullEmptyGroups();
 		} else {
-			List<Barcode> n = new ArrayList<Barcode>();
-			Group pendingGroup = groups.get(pendingGroupName);
-			n.addAll(Arrays.asList(barcodes));
-			n.addAll(Arrays.asList(pendingGroup.getBarcodes()));
-			pendingGroup = new Group(pendingGroupName,
-					n.toArray(new Barcode[0]));
-			
-			existingGroupsTable.removeItem(groups.get(pendingGroupName));
-			groups.put(pendingGroupName, pendingGroup);
-			existingGroupsTable.addItem(pendingGroup);
-			existingGroupsTable.setSelected(pendingGroup);
-			reflectGroupChanges();
+			setGroup(pendingGroup.getName(), barcodes);
+			newGroup();
 		}
 	}
 	
+	private void cullEmptyGroups() {
+		// look for empty groups, undo the saving
+		// this is needed if we found no barcodes or if the user didn't select
+		// any combination
+		for (String name : groups.keySet()) {
+			Group g = groups.get(name);
+			if (g.getBarcodes().length == 0) {
+				deleteGroup(name, false);
+			}
+		}
+	}
+		
+	private void setGroup(String pendingGroupName, List<Barcode> barcodes) {
+		Group pendingGroup = groups.get(pendingGroupName);
+		pendingGroup = new Group(pendingGroupName, barcodes.toArray(new Barcode[0]));
+
+		existingGroupsTable.removeItem(groups.get(pendingGroupName));
+		groups.put(pendingGroupName, pendingGroup);
+		existingGroupsTable.addItem(pendingGroup);
+		existingGroupsTable.setSelected(pendingGroup);
+		reflectGroupChanges();
+	}
+	
 	private void displayGroup(String name) {
+		setHeading("editing " + name);
 		List<String> compounds = new ArrayList<String>(Arrays.asList(groups.get(name).getCompounds()));
 		
 		compoundSel.setSelection(compounds);		
 		txtbxGroup.setValue(name);
 		
 		Group g = groups.get(name);
-		timeDoseGrid.setSelection(g.getBarcodes());				
+		timeDoseGrid.setSelection(g.getBarcodes());
+		
+		setDeleteable(true);
+		setEditing(true);
 	}
 	
 }
