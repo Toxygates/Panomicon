@@ -145,8 +145,8 @@ public class CompoundRanker extends DataListenerWidget {
 	}
 
 	private RuleType selectedRuleType(int row) {
-		return RuleType.valueOf(rankType[row].getItemText(rankType[row]
-				.getSelectedIndex()));
+		return RuleType.parse(rankType[row].getItemText(rankType[row]
+				.getSelectedIndex()));		
 	}
 
 	private void performRanking() {

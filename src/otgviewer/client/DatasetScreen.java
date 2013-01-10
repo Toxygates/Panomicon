@@ -17,6 +17,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class DatasetScreen extends Screen implements DatasetInfo.SelectionListener {
 
+
 	static String key = "ds";
 	
 	public DatasetScreen(ScreenManager man) {
@@ -54,7 +55,17 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 	public void filterSelected(DataFilter filter) {
 		changeDataFilter(filter);
 		storeDataFilter();
+		setConfigured(true);
 		manager.deconfigureAll(this);
 		configuredProceed(ColumnScreen.key);		
+	}
+
+	@Override
+	public void tryConfigure() {
+		if (chosenDataFilter != null) {
+			setConfigured(true);
+		}
 	}	
+
+	
 }

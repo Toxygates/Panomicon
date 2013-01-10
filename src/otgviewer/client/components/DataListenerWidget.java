@@ -248,18 +248,22 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	protected List<DataColumn> loadColumns(String key,
 			Collection<DataColumn> expectedColumns) throws Exception {
 		Storage s = Storage.getLocalStorageIfSupported();
-		String v = s.getItem("OTG." + key + "." + chosenDataFilter.pack());
-		List<DataColumn> r = new ArrayList<DataColumn>();
-		if (v != null && !v.equals(packColumns(expectedColumns))) {
-			String[] spl = v.split("###");
-			for (String cl : spl) {
-				DataColumn c = unpackColumn(cl);
-				r.add(c);
-			}			
-			return r;
+		if (s == null) {
+			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
 		} else {
-			return null;
+			String v = s.getItem("OTG." + key + "." + chosenDataFilter.pack());
+			List<DataColumn> r = new ArrayList<DataColumn>();		
+			if (v != null && !v.equals(packColumns(expectedColumns))) {
+				String[] spl = v.split("###");
+				for (String cl : spl) {
+					DataColumn c = unpackColumn(cl);
+					r.add(c);
+				}			
+				return r;
+			}
 		}
+
+		return null;		
 	}
 	
 	public void storeProbes() {		
@@ -321,6 +325,10 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 				probesChanged(new String[0]);
 			}
 		}
+	}
+	
+	public void clearState() {
+		
 	}
 	
 	private int numPendingRequests = 0;

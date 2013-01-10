@@ -20,4 +20,10 @@ public interface ScreenManager {
 	void deconfigureAll(Screen from);
 	
 	boolean isConfigured(String key);
+	
+	/**
+	 * Try to proceed to a new screen.
+	 * @param to
+	 */
+	void attemptProceed(String to);
 }

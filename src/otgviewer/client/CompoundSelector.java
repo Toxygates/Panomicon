@@ -53,6 +53,7 @@ public class CompoundSelector extends DataListenerWidget {
 	private ScrollPanel scrollPanel;
 	private VerticalPanel verticalPanel;
 	private boolean hasRankColumns = false;
+	private Button sortButton;
 	
 	private Map<String, Double> scores = new HashMap<String, Double>(); //for compound ranking
 	private List<String> rankProbes = new ArrayList<String>();
@@ -82,11 +83,14 @@ public class CompoundSelector extends DataListenerWidget {
 		HorizontalPanel hp = Utils.mkHorizontalPanel();
 		verticalPanel.add(hp);
 		
-		hp.add(new Button("Sort by name", new ClickHandler() {
+		sortButton = new Button("Sort by name", new ClickHandler() {
 			public void onClick(ClickEvent ce) {
 				loadCompounds();
+				sortButton.setEnabled(false);
 			}
-		}));
+		});
+		hp.add(sortButton);
+		sortButton.setEnabled(false);
 		
 		hp.add(new Button("Unselect all", new ClickHandler() {
 			public void onClick(ClickEvent ce) {
@@ -190,7 +194,8 @@ public class CompoundSelector extends DataListenerWidget {
 								scores.put(p.first(), p.second());
 								sortedCompounds.add(p.first());
 							}									
-							compoundTable.reloadWith(sortedCompounds, false);									
+							compoundTable.reloadWith(sortedCompounds, false);		
+							sortButton.setEnabled(true);
 						}
 
 						public void handleFailure(Throwable caught) {

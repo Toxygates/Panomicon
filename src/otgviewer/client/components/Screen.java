@@ -110,7 +110,7 @@ public class Screen extends DataListenerWidget {
 		
 	protected void configuredProceed(String key) {
 		setConfigured(true);
-		History.newItem(key);
+		manager.attemptProceed(key);		
 	}
 	
 	public void initGUI() {

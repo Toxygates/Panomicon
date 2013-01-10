@@ -74,16 +74,19 @@ public class ColumnScreen extends Screen {
 	@Override
 	public void loadState() {
 		super.loadState();
-		
-		try {
-			List<DataColumn> ics = loadColumns("inactiveColumns", 
-					new ArrayList<DataColumn>(gi.existingGroupsTable.inverseSelection()));
-			if (ics != null) {
-				gi.inactiveColumnsChanged(ics);
-			}
+		if (visible) {
+			//If we became visible, we must have been enabled, so can count on a
+			//data filter being present.
+			try {
+				List<DataColumn> ics = loadColumns("inactiveColumns", 
+						new ArrayList<DataColumn>(gi.existingGroupsTable.inverseSelection()));
+				if (ics != null) {
+					gi.inactiveColumnsChanged(ics);
+				}
 
-		} catch (Exception e) {
-			Window.alert("Unable to load inactive columns.");
+			} catch (Exception e) {
+				Window.alert("Unable to load inactive columns.");
+			}
 		}
 	}
 

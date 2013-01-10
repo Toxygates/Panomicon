@@ -85,11 +85,26 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	 * Pick the appropriate screen to display.
 	 * @return
 	 */
-	private Screen pickScreen(String token) {		
+	private Screen pickScreen(String token) {
+		
 		if (!screens.containsKey(token)) {
-			return screens.get(DatasetScreen.key); //default			
+		    return screens.get(DatasetScreen.key); //default			
+		} else {
+			return screens.get(token);
+		}		
+	}
+	
+	/**
+	 * Proceed if the screen is ready.
+	 */
+	public void attemptProceed(String to) {
+		Screen s = pickScreen(to);
+		if (s.enabled()) {
+			History.newItem(to);
+		} else {			
+			//proceed to default screen (must always be enabled!)
+			History.newItem(DatasetScreen.key);
 		}
-		return screens.get(token);		
 	}
 	
 	private void addScreenSeq(Screen s) {
@@ -177,12 +192,8 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		mainVertPanel.add(navPanel);
 		
 		initScreens(); //Need access to the nav. panel
-		
-		if ("".equals(History.getToken())) {
-			History.newItem(DatasetScreen.key);
-		} else {
-			setScreenForToken(History.getToken());		
-		}		
+				
+		setScreenForToken(History.getToken());						
 		deconfigureAll(pickScreen(History.getToken()));
 	}
 	
