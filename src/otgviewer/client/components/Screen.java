@@ -15,6 +15,7 @@ import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
@@ -33,7 +34,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class Screen extends DataListenerWidget {
 	protected static Resources resources = GWT.create(Resources.class);
 	
-	protected DockPanel dockPanel = new DockPanel();
+	protected VerticalPanel rootPanel;
 	private String key; //An identifier string
 
 	private HorizontalPanel statusPanel;		
@@ -57,10 +58,11 @@ public class Screen extends DataListenerWidget {
 		this.showGroups = showGroups;
 		this.helpHTML = helpHTML;
 		this.helpImage = helpImage;
-		initWidget(dockPanel);
+		rootPanel = Utils.mkVerticalPanel();
+		initWidget(rootPanel);
 		menuBar = man.getMenuBar();
 		manager = man;				
-		dockPanel.setWidth("100%");		
+		rootPanel.setWidth("100%");				
 		this.key = key;
 		
 		setTitle(title);		
@@ -114,23 +116,22 @@ public class Screen extends DataListenerWidget {
 	}
 	
 	public void initGUI() {
-		VerticalPanel vp = Utils.mkVerticalPanel();
+//		VerticalPanel vp = Utils.mkVerticalPanel();
 		statusPanel = Utils.mkHorizontalPanel(true);	
 		HorizontalPanel spOuter = new HorizontalPanel();
-		vp.add(spOuter);
-		vp.setWidth("100%");		
+		
 		spOuter.setWidth("100%");
+		spOuter.setHeight("3em");
 		spOuter.add(statusPanel);		
 		spOuter.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		statusPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		statusPanel.setStyleName("statusPanel");
+		statusPanel.setHeight("3em");
 		spOuter.setStyleName("statusPanel");	
-		
-//		horizontalPanel = Utils.mkHorizontalPanel();
-//		vp.add(horizontalPanel);
-		dockPanel.add(vp, DockPanel.NORTH);
-		dockPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		dockPanel.add(content(), DockPanel.CENTER);	
+
+		rootPanel.add(spOuter);		
+		rootPanel.add(content());	
+		rootPanel.add(bottomContent());
 	}
 	
 	/**
@@ -154,11 +155,11 @@ public class Screen extends DataListenerWidget {
 				Group g = (Group) dc;
 				HorizontalPanel hp = Utils.mkHorizontalPanel(true);
 				hp.setStyleName("statusBorder");
-				String tip = g.getCDTs(-1);
+				String tip = g.getCDTs(-1, ", ");
 				Label l = Utils.mkEmphLabel(g.getName() + ":");
 				hp.add(l);
 				l.setTitle(tip);
-				l = new Label(g.getCDTs(2));
+				l = new Label(g.getCDTs(2, ", "));
 				hp.add(l);
 				l.setTitle(tip);
 				statusPanel.add(hp);
@@ -184,9 +185,13 @@ public class Screen extends DataListenerWidget {
 	}
 	
 	public void resizeInterface(int newHeight) {
-		String h = (newHeight - dockPanel.getAbsoluteTop()) + "px";
-		dockPanel.setHeight(h);		
+		String h = (newHeight - rootPanel.getAbsoluteTop()) + "px";
+		rootPanel.setHeight(h);		
 		changeHeight(newHeight);
+	}
+	
+	public int availableHeight() {
+		return manager.availableHeight() - statusPanel.getOffsetHeight() - 10;
 	}
 	
 	/**
@@ -195,6 +200,10 @@ public class Screen extends DataListenerWidget {
 	 * @return
 	 */
 	public Widget content() {
+		return new SimplePanel();
+	}
+	
+	public Widget bottomContent() {
 		return new SimplePanel();
 	}
 	

@@ -57,6 +57,11 @@ public class ColumnScreen extends Screen {
 		tp.selectTab(0);
 		tp.setHeight("100%");
 		
+		return vp;
+	}
+
+	@Override
+	public Widget bottomContent() {
 		Button b = new Button("Next: Select probes", new ClickHandler() {			
 			public void onClick(ClickEvent event) {
 				if (gi.chosenColumns().size() == 0) {
@@ -66,11 +71,9 @@ public class ColumnScreen extends Screen {
 				}
 			}
 		});
-		dockPanel.add(b, DockPanel.SOUTH);
-		
-		return vp;
+		return b;
 	}
-
+	
 	@Override
 	public void loadState() {
 		super.loadState();

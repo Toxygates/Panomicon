@@ -92,7 +92,7 @@ public abstract class ListSelectionHandler<T> {
 		return lastSelected;
 	}
 	
-	public AsyncCallback<T[]> retrieveCallback(DataListenerWidget w) {
+	public AsyncCallback<T[]> retrieveCallback(DataListenerWidget w, final boolean warnIfNone) {
 		return new PendingAsyncCallback<T[]>(w) {
 			public void handleFailure(Throwable caught) {
 				Window.alert("Unable to get " + description);
@@ -100,8 +100,10 @@ public abstract class ListSelectionHandler<T> {
 			}
 
 			public void handleSuccess(T[] result) {
-				setItems(result);
-								
+				if (warnIfNone && result.length == 0) {
+					Window.alert("No results were found.");
+				} 
+				setItems(result);				
 			}
 		};
 	}

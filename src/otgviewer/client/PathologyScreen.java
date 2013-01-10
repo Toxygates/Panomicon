@@ -17,22 +17,22 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 public class PathologyScreen extends Screen {
-
-
 	public static final String key = "pc";
 
 	private CellTable<Pathology> pathologyTable = new CellTable<Pathology>();
 	private ScrollPanel sp = new ScrollPanel();
-	private VerticalPanel vp = new VerticalPanel();
+//	private HorizontalPanel hp = new HorizontalPanel();
 	private List<Pathology> pathologies = new ArrayList<Pathology>();
 	final Screen myScreen = this;
 	private static Resources resources = GWT.create(Resources.class);
@@ -50,9 +50,11 @@ public class PathologyScreen extends Screen {
 	}
 
 	public Widget content() {
-		vp.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
-		vp.add(sp);
+//		hp = new HorizontalPanel();
+//		hp.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
+//		
 		sp.setWidget(pathologyTable);
+		pathologyTable.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 		
 		TextColumn<Pathology> col = new TextColumn<Pathology>() {
 			public String getValue(Pathology p) {
@@ -107,9 +109,9 @@ public class PathologyScreen extends Screen {
 		};
 		pathologyTable.addColumn(col, "Spontaneous");		
 		
-		return vp;
-	}
-	
+//		hp.add(sp);
+		return sp;		
+	}	
 	
 	@Override
 	public void show() {
@@ -118,7 +120,6 @@ public class PathologyScreen extends Screen {
 			columnsChanged(chosenColumns);
 		}
 	}
-
 	
 	@Override
 	public void columnsChanged(List<DataColumn> columns) {
@@ -142,12 +143,12 @@ public class PathologyScreen extends Screen {
 	
 	int lastHeight = 0;
 	@Override
-	public void heightChanged(int newHeight) {
+	public void resizeInterface(int newHeight) {
+		super.resizeInterface(newHeight);
 		if (newHeight != lastHeight) {
 			lastHeight = newHeight;
-			super.heightChanged(newHeight);
-			vp.setHeight((newHeight - vp.getAbsoluteTop()) + "px");
-			sp.setHeight((newHeight - sp.getAbsoluteTop() - 10) + "px");
+			sp.setHeight((availableHeight() - 10) + "px");
+//			sp.setHeight((newHeight - sp.getAbsoluteTop() - 10) + "px");			
 		}
 	}
 	

@@ -89,7 +89,7 @@ abstract public class ProbeSelector extends DataListenerWidget {
 	}
 	
 	public AsyncCallback<String[]> retrieveMatchesCallback() {
-		return itemHandler.retrieveCallback(this);
+		return itemHandler.retrieveCallback(this, true);
 	}
 	
 	abstract protected void getMatches(String key);

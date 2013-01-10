@@ -26,4 +26,10 @@ public interface ScreenManager {
 	 * @param to
 	 */
 	void attemptProceed(String to);
+	
+	/**
+	 * Available height for screen contents in pixels.
+	 * @return
+	 */
+	int availableHeight();
 }

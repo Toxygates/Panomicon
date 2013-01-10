@@ -46,83 +46,8 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	private List<Screen> workflow = new ArrayList<Screen>();
 	private Map<String, Screen> screens = new HashMap<String, Screen>();
 	private Set<String> configuredScreens = new HashSet<String>();
-	
-	private MenuBar setupMenu() {
-		MenuBar menuBar = new MenuBar(false);
-		menuBar.setWidth("100%");		
-		
-		MenuBar hm = new MenuBar(true);		
-		MenuItem mi = new MenuItem("Help", hm);
-		menuBar.addItem(mi);
-		
-		hm.addItem(new MenuItem("Instructions...", new Command() {
-			public void execute() {
-				currentScreen.showHelp();
-			}
-		}));
-		
-		hm.addItem(new MenuItem("About Toxygates...", new Command() {
-			public void execute() {
-				Utils.showHelp(getAboutHTML(), getAboutImage());
-			}
-		}));
-		
-		return menuBar;
-	}
-
-	private void resizeInterface(int newHeight) {
-		// this is very fiddly and must be tested on all the browsers.
-		// Note that simply setting height = 100% won't work.
-//		String h = (newHeight - rootPanel.getAbsoluteTop() - 20) + "px";
-
-		if (currentScreen != null) {
-			currentScreen.resizeInterface(newHeight);
-		}	
-	}	
 	private Screen currentScreen;
 	
-	/**
-	 * Pick the appropriate screen to display.
-	 * @return
-	 */
-	private Screen pickScreen(String token) {
-		
-		if (!screens.containsKey(token)) {
-		    return screens.get(DatasetScreen.key); //default			
-		} else {
-			return screens.get(token);
-		}		
-	}
-	
-	/**
-	 * Proceed if the screen is ready.
-	 */
-	public void attemptProceed(String to) {
-		Screen s = pickScreen(to);
-		if (s.enabled()) {
-			History.newItem(to);
-		} else {			
-			//proceed to default screen (must always be enabled!)
-			History.newItem(DatasetScreen.key);
-		}
-	}
-	
-	private void addScreenSeq(Screen s) {
-		screens.put(s.key(), s);
-		workflow.add(s);		
-		s.initGUI();
-		s.tryConfigure(); //give it a chance to register itself as configured
-	}
-	
-	private void initScreens() {
-		addScreenSeq(new DatasetScreen(this));		
-		addScreenSeq(new ColumnScreen(this));		
-		addScreenSeq(new ProbeScreen(this));		
-		addScreenSeq(new DataScreen(this));		
-		addScreenSeq(new PathologyScreen(this));
-		addScreenSeq(new SampleDetailScreen(this));
-	}
-
 	/**
 	 * This is the entry point method.
 	 */
@@ -197,6 +122,35 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		deconfigureAll(pickScreen(History.getToken()));
 	}
 	
+	
+	private MenuBar setupMenu() {
+		MenuBar menuBar = new MenuBar(false);
+		menuBar.setWidth("100%");		
+		
+		MenuBar hm = new MenuBar(true);		
+		MenuItem mi = new MenuItem("Help", hm);
+		menuBar.addItem(mi);
+		
+		hm.addItem(new MenuItem("Instructions...", new Command() {
+			public void execute() {
+				currentScreen.showHelp();
+			}
+		}));
+		
+		hm.addItem(new MenuItem("About Toxygates...", new Command() {
+			public void execute() {
+				Utils.showHelp(getAboutHTML(), getAboutImage());
+			}
+		}));
+		
+		return menuBar;
+	}
+
+	public MenuBar getMenuBar() { 
+		return menuBar;
+	}
+
+	
 	void addWorkflowLinks(Screen current) {
 		navPanel.clear();
 		for (int i = 0; i < workflow.size(); ++i) {
@@ -239,10 +193,48 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		resizeInterface(Window.getClientHeight()); 
 	}
 
-	public MenuBar getMenuBar() { 
-		return menuBar;
+	/**
+	 * Pick the appropriate screen to display.
+	 * @return
+	 */
+	private Screen pickScreen(String token) {
+		
+		if (!screens.containsKey(token)) {
+		    return screens.get(DatasetScreen.key); //default			
+		} else {
+			return screens.get(token);
+		}		
 	}
-
+	
+	/**
+	 * Proceed if the screen is ready.
+	 */
+	public void attemptProceed(String to) {
+		Screen s = pickScreen(to);
+		if (s.enabled()) {
+			History.newItem(to);
+		} else {			
+			//proceed to default screen (must always be enabled!)
+			History.newItem(DatasetScreen.key);
+		}
+	}
+	
+	private void addScreenSeq(Screen s) {
+		screens.put(s.key(), s);
+		workflow.add(s);		
+		s.initGUI();
+		s.tryConfigure(); //give it a chance to register itself as configured
+	}
+	
+	private void initScreens() {
+		addScreenSeq(new DatasetScreen(this));		
+		addScreenSeq(new ColumnScreen(this));		
+		addScreenSeq(new ProbeScreen(this));		
+		addScreenSeq(new DataScreen(this));		
+		addScreenSeq(new PathologyScreen(this));
+		addScreenSeq(new SampleDetailScreen(this));
+	}
+	
 	@Override
 	public void setConfigured(Screen s, boolean configured) {
 		if (configured) {
@@ -271,6 +263,20 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	@Override
 	public boolean isConfigured(String key) {
 		return configuredScreens.contains(key);
+	}
+	
+
+	private void resizeInterface(int newHeight) {
+		// this is very fiddly and must be tested on all the browsers.
+		// Note that simply setting height = 100% won't work.
+		if (currentScreen != null) {
+			currentScreen.resizeInterface(newHeight);
+		}	
+	}	
+	
+	@Override
+	public int availableHeight() {
+		return Window.getClientHeight() - menuBar.getOffsetHeight() - navPanel.getOffsetHeight();
 	}
 	
 	private TextResource getAboutHTML() {

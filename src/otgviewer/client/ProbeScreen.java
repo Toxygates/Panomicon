@@ -191,41 +191,49 @@ public class ProbeScreen extends Screen {
 			}
 		}));
 
-		HorizontalPanel buttons = new HorizontalPanel();
 		
-		buttons.add(new Button("Proceed with selected probes", new ClickHandler() {			
-			@Override
-			public void onClick(ClickEvent event) {
-				if (listedProbes.size() == 0) {
-					Window.alert("Please select the probes you are interested in, or proceed with all probes.");
-				} else {
-					chosenProbes = listedProbes.toArray(new String[0]);					
-					storeProbes();
-					configuredProceed(DataScreen.key);					
-				}
-			}
-		}));
 		
-		buttons.add(new Button("Proceed with all probes", new ClickHandler() {
-			public void onClick(ClickEvent event) {								
-				probesChanged(new String[0]);
-				configuredProceed(DataScreen.key);				
-			}
-		}));
-		
-		dockPanel.add(buttons, DockPanel.SOUTH);
 		return hp;
+	}
+	
+	@Override
+	public Widget bottomContent() {
+		HorizontalPanel buttons = new HorizontalPanel();
+		buttons.add(new Button("Proceed with selected probes",
+				new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						if (listedProbes.size() == 0) {
+							Window.alert("Please select the probes you are interested in, or proceed with all probes.");
+						} else {
+							chosenProbes = listedProbes.toArray(new String[0]);
+							storeProbes();
+							configuredProceed(DataScreen.key);
+						}
+					}
+				}));
+
+		buttons.add(new Button("Proceed with all probes", new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				probesChanged(new String[0]);
+				configuredProceed(DataScreen.key);
+			}
+		}));
+		return buttons;
 	}
 	
 	private void addManualProbes(String[] probes) {
 		// change the identifiers (which can be mixed format) into a
 		// homogenous format (probes only)
 		kcService.identifiersToProbes(chosenDataFilter, probes, true, 
-				new PendingAsyncCallback<String[]>(this, "Unable to resolve manual probes.") {
+				new PendingAsyncCallback<String[]>(this, "Unable to obtain manual probes (technical error).") {
 					public void handleSuccess(String[] probes) {
-						addProbes(probes);
+						if (probes.length == 0) {
+							Window.alert("No matching probes were found.");
+						} else {							
+							addProbes(probes);
+						}
 					}
-
 				});
 	}
 	
@@ -250,9 +258,13 @@ public class ProbeScreen extends Screen {
 				if (compoundList.getSelectedIndex() != -1) {
 					String compound = compoundList.getItemText(compoundList.getSelectedIndex());					
 					owlimService.probesTargetedByCompound(chosenDataFilter,
-							compound, service, new PendingAsyncCallback<String[]>(w, "Unable to get probes.") {								
+							compound, service, new PendingAsyncCallback<String[]>(w, "Unable to get probes (technical error).") {								
 								public void handleSuccess(String[] probes) {		
-									addProbes(probes);
+									if (probes.length == 0) {
+										Window.alert("No matching probes were found.");
+									} else {										
+										addProbes(probes);
+									}
 								}
 							});
 				} else {

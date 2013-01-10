@@ -33,7 +33,7 @@ public class Group implements Serializable, DataColumn, Comparable<Group> {
 		return name;
 	}
 	
-	public String getCDTs(final int limit) {
+	public String getCDTs(final int limit, String separator) {
 		Set<String> CDTs = new HashSet<String>();
 		Set<String> allCDTs = new HashSet<String>();
 		for (Barcode b : barcodes) {			
@@ -42,7 +42,7 @@ public class Group implements Serializable, DataColumn, Comparable<Group> {
 			}
 			allCDTs.add(b.getCDT());
 		}
-		String r = SharedUtils.mkString(CDTs, ", ");
+		String r = SharedUtils.mkString(CDTs, separator);
 		if (allCDTs.size() > limit && limit != -1) {
 			return r + "...";
 		} else {

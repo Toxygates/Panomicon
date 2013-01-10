@@ -20,6 +20,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -30,6 +31,7 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.view.client.NoSelectionModel;
 
 public class SampleDetailScreen extends Screen {
 
@@ -100,8 +102,11 @@ public class SampleDetailScreen extends Screen {
 	}
 
 	public Widget content() {
-		HorizontalPanel hp = Utils.mkHorizontalPanel();
-		dockPanel.add(hp, DockPanel.NORTH);
+		HorizontalPanel hp = Utils.mkHorizontalPanel(true);		
+		HorizontalPanel hpi = Utils.mkHorizontalPanel();
+		hpi.setWidth("100%");
+		hpi.add(hp);
+		vp.add(hpi);
 		
 		hp.add(columnList);
 		
@@ -128,11 +133,18 @@ public class SampleDetailScreen extends Screen {
 		
 		VerticalPanel vpi = new VerticalPanel();
 		vpi.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		configureTable(experimentTable);
+		configureTable(biologicalTable);
 		vpi.add(experimentTable);
 		vpi.add(biologicalTable);
 		sp.setWidget(vpi);		
 		
 		return vp;
+	}
+	
+	private void configureTable(CellTable ct) {
+		ct.setSelectionModel(new NoSelectionModel());
+		ct.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 	}
 	
 	
@@ -179,15 +191,18 @@ public class SampleDetailScreen extends Screen {
 		biologicalTable.setColumnWidth(col, "15em");
 		for (int i = 1; i < barcodes.length + 1; ++i) {
 			String name = barcodes[i - 1].getCode().substring(2); //remove leading 00
-			TextColumn<String[]> c = makeColumn(i);
-			experimentTable.addColumn(c, name);		
-			experimentTable.setColumnWidth(c, "10em");			
-			biologicalTable.addColumn(c, name);
-			biologicalTable.setColumnWidth(c, "10em");
+			addColumn(experimentTable, name, i);
+			addColumn(biologicalTable, name, i);			
 		}
 		reload();
 	}
 
+	private void addColumn(CellTable<String[]> table, String name, int idx) {
+		TextColumn<String[]> c = makeColumn(idx);		
+		table.addColumn(c, name);		
+		table.setColumnWidth(c, "10em");
+	}
+	
 	private void reload() {
 		if (displayColumn != null) {
 			owlimService.annotations(displayColumn, new AsyncCallback<Annotation[]>() {
