@@ -5,14 +5,6 @@ import Assocations.convert
 import UtilsS.nullToNone
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
-import otg.B2RAffy
-import otg.B2RKegg
-import otg.B2RKegg
-import otg.CHEMBL
-import otg.CHEMBL
-import otg.DrugBank
-import otg.DrugBank
-import otg.OTGOwlim
 import otg.OTGQueries
 import otgviewer.client.OwlimService
 import otgviewer.shared.Annotation
@@ -28,6 +20,11 @@ import kyotocabinet.DB
 import otg.Series
 import otg.OTGMisc
 import otgviewer.shared.NoSuchProbeException
+import otg.sparql.B2RKegg
+import otg.sparql.OTGOwlim
+import otg.sparql.CHEMBL
+import otg.sparql.DrugBank
+import otg.sparql.B2RAffy
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -187,7 +184,12 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
           convert(useConnector(OTGOwlim,            
             (c: OTGOwlim.type) => c.ccGoTermsForProbes(probes),
             Map())))          
-      }
+      }//,
+//      () => {
+//        ("Homologene entries",
+//            convert(useConnector(B2RHomologene,
+//                (c: B2RHomologene.type) => c.homologousGenes(geneIds)
+//      }
       )
 
     sources.par.map(_()).seq.map(x => new Association(x._1, x._2)).toArray     

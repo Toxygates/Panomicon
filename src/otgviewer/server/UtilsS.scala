@@ -2,7 +2,7 @@ package otgviewer.server
 
 import otgviewer.shared.DataFilter
 import otg.Filter
-import otg.RDFConnector
+import otg.sparql.RDFConnector
 import javax.servlet.http.HttpSession
 
 object UtilsS {

@@ -152,9 +152,6 @@ public class SeriesChart extends DataListenerWidget {
 		chartDockPanel.add(verticalPanel, DockPanel.NORTH);
 		verticalPanel.setWidth("500px");
 
-		seriesSelectionLabel = Utils.mkEmphLabel("Selected: none");
-		verticalPanel.add(seriesSelectionLabel);
-
 		if (!isSlave) {
 			HorizontalPanel horizontalPanel_2 = new HorizontalPanel();
 			horizontalPanel_2
@@ -183,7 +180,9 @@ public class SeriesChart extends DataListenerWidget {
 				}
 			});
 		}
-
+		
+		seriesSelectionLabel = Utils.mkEmphLabel("Selected: none");
+		verticalPanel.add(seriesSelectionLabel);
 	}
 
 	void redraw() {
@@ -252,17 +251,7 @@ public class SeriesChart extends DataListenerWidget {
 		owlimService.times(chosenDataFilter, chosenCompound, seriesChartItemsCallback);
 	}
 
-	private void updateSelectionLabel() {
-
-		switch (chosenDataFilter.cellType) {
-		case Vivo:
-			seriesSelectionLabel.setText(chosenCompound +		 
-					"/" + chosenProbe);
-			break;
-		case Vitro:
-			seriesSelectionLabel.setText(chosenCompound + 
-					"/" + chosenProbe);
-			break;
-		}		
+	private void updateSelectionLabel() {		
+		seriesSelectionLabel.setText(chosenCompound);		 			
 	}
 }

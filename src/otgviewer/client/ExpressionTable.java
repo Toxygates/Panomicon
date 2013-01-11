@@ -508,7 +508,7 @@ public class ExpressionTable extends DataListenerWidget {
 		
 		SeriesChart firstChart = null;
 		for (DataColumn c: cols) {
-			Label l = new Label(c.getShortTitle());
+			Label l = new Label("Compounds in '" + c.getShortTitle() +"'");
 			seriesChartPanel.add(l);			
 			l.setStyleName("heading");
 			for (String com: c.getCompounds()) {
@@ -640,14 +640,14 @@ public class ExpressionTable extends DataListenerWidget {
 			HorizontalPanel hp = new HorizontalPanel();
 			TabPanel tp = new TabPanel();
 			hp.add(tp);
-			tp.add(seriesChartPanel, "Individual values");			
+			tp.add(seriesChartPanel, "Individual samples");			
 			
 			VerticalPanel v = new VerticalPanel();			
-			tp.add(v, "All time series");			
+			tp.add(v, "Average time series");			
 			tp.selectTab(0);
 			
 			for (DataColumn dc: chosenColumns) {
-				Label l = new Label(dc.getShortTitle());
+				Label l = new Label("Compounds in '" + dc.getShortTitle() +"'");
 				l.setStyleName("heading");
 				v.add(l);
 				final SimplePanel sp = new SimplePanel();				

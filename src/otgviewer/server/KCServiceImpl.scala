@@ -18,12 +18,12 @@ import otg.ExprValue
 import otgviewer.shared.Barcode
 import friedrich.statistics.ArrayVector
 import javax.servlet.http.HttpSession
-import otg.B2RAffy
+import otg.sparql.B2RAffy
 import otg.CSVHelper
 import otgviewer.shared.Series
 import otg.OTGSeriesQuery
 import otgviewer.shared.ExpressionValue
-import otg.OTGOwlim
+import otg.sparql.OTGOwlim
 import otg.OTGCabinet
 
 /**

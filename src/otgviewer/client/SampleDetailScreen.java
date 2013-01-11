@@ -14,20 +14,21 @@ import otgviewer.shared.DataColumn;
 import otgviewer.shared.Group;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
+import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -128,44 +129,25 @@ public class SampleDetailScreen extends Screen {
 				displayWith(columnList.getItemText(columnList.getSelectedIndex()));
 			}
 		});
-
-		vp.add(sp);
 		
-		VerticalPanel vpi = new VerticalPanel();
-		vpi.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		configureTable(experimentTable);
-		configureTable(biologicalTable);
-		vpi.add(experimentTable);
-		vpi.add(biologicalTable);
-		sp.setWidget(vpi);		
-		
+		configureTable(vp, experimentTable);
+		configureTable(vp, biologicalTable);				
 		return vp;
 	}
 	
-	private void configureTable(CellTable ct) {
+	private void configureTable(Panel p, CellTable<String[]> ct) {
+		ct.setWidth("100%", true); //use fixed layout so we can control column width explicitly
 		ct.setSelectionModel(new NoSelectionModel());
 		ct.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
+		p.add(ct);
 	}
-	
-	
-	private TextColumn<String[]> makeColumn(final int idx) {
-		return new TextColumn<String[]>() {
-			public String getValue(String[] x) {
-				if (x.length > idx) {
-					return x[idx];
-				} else {
-					return "";
-				}
-			}
-		};
-	}
-	
-	private void displayWith(String column) {		
-		while(experimentTable.getColumnCount() > 0) {
-			experimentTable.removeColumn(0);
-		}
+
+	private void displayWith(String column) {
 		while(biologicalTable.getColumnCount() > 0) {
 			biologicalTable.removeColumn(0);
+		}
+		while(experimentTable.getColumnCount() > 0) {
+			experimentTable.removeColumn(0);
 		}
 		
 		if (chosenCustomColumn != null && column.equals(chosenCustomColumn.getShortTitle())) {
@@ -180,29 +162,33 @@ public class SampleDetailScreen extends Screen {
 			}
 		}
 		
-		TextColumn<String[]> col = new TextColumn<String[]>() {
-			public String getValue(String[] x) {
-				return x[0];											
-			}
-		}; 
-		experimentTable.addColumn(col, "Experiment detail");
-		experimentTable.setColumnWidth(col, "15em");
-		biologicalTable.addColumn(col, "Biological detail");
-		biologicalTable.setColumnWidth(col, "15em");
+		makeColumn(experimentTable, 0, "Experiment detail", "15em");
+		makeColumn(biologicalTable, 0, "Biological detail", "15em");		
+		
 		for (int i = 1; i < barcodes.length + 1; ++i) {
 			String name = barcodes[i - 1].getCode().substring(2); //remove leading 00
-			addColumn(experimentTable, name, i);
-			addColumn(biologicalTable, name, i);			
+			makeColumn(biologicalTable, i, name, "9em");					
+			makeColumn(experimentTable, i, name, "9em");
 		}
 		reload();
 	}
-
-	private void addColumn(CellTable<String[]> table, String name, int idx) {
-		TextColumn<String[]> c = makeColumn(idx);		
-		table.addColumn(c, name);		
-		table.setColumnWidth(c, "10em");
-	}
 	
+	private TextColumn<String[]> makeColumn(CellTable<String[]> table, final int idx, String title, String width) {
+		TextColumn<String[]> col = new TextColumn<String[]>() {
+			public String getValue(String[] x) {
+				if (x.length > idx) {
+					return x[idx];
+				} else {
+					return "";
+				}
+			}
+		};
+		
+		table.addColumn(col, title);
+		table.setColumnWidth(col, width);
+		return col;
+	}
+
 	private void reload() {
 		if (displayColumn != null) {
 			owlimService.annotations(displayColumn, new AsyncCallback<Annotation[]>() {
@@ -238,17 +224,6 @@ public class SampleDetailScreen extends Screen {
 					biologicalTable.setRowData(annotations);
 				}
 			});
-		}
-	}
-	
-	int lastHeight = 0;
-	@Override
-	public void heightChanged(int newHeight) {
-		if (newHeight != lastHeight) {
-			lastHeight = newHeight;
-			super.heightChanged(newHeight);
-			vp.setHeight((newHeight - vp.getAbsoluteTop() - 50) + "px");
-			sp.setHeight((newHeight - sp.getAbsoluteTop() - 70) + "px");
 		}
 	}
 
