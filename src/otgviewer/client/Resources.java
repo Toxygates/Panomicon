@@ -15,13 +15,16 @@ public interface Resources extends ClientBundle {
 	@Source("images/vivo64.png")
 	ImageResource vivo();
 	
+	@Source("images/calendar64.png")
+	ImageResource calendar();
+	
 	@Source("images/vitro64.png")
 	ImageResource vitro();
 	
-	@Source("images/liver64.png")
+	@Source("images/liver32.png")
 	ImageResource liver();
 	
-	@Source("images/kidney64.png")
+	@Source("images/kidney32.png")
 	ImageResource kidney();
 	
 	@Source("images/chip64.png")

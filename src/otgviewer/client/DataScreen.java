@@ -50,7 +50,7 @@ public class DataScreen extends Screen {
 		if (lastFilter == null || !lastFilter.equals(chosenDataFilter) ||
 				//lastProbes == null || !Arrays.deepEquals(chosenProbes, lastProbes) ||
 				lastColumns == null || !chosenColumns.equals(lastColumns)) {			
-			et.getExpressions(chosenProbes); //false		
+			et.getExpressions(); //false		
 		} else if (!Arrays.equals(chosenProbes, lastProbes)) {				
 			et.refilterData();			
 		}

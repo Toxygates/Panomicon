@@ -90,10 +90,11 @@ margin: 2px;
 	border: solid black 1px;
 }
 
-.borderPadded {
+.datasetInfo {
   margin: 1px;
   padding: 4px;
   border: solid black 1px;
+  cursor: pointer;
 }
 .emphasized {
 	font-weight: bold;
@@ -106,5 +107,8 @@ margin: 2px;
 .statusBorder {
 	margin: 1px;
 	border: solid DarkBlue 1px;
+}
+.highlightedRow {
+	font-weight: bold;
 }
 

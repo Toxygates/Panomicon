@@ -1,6 +1,7 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,6 +16,7 @@ import otgviewer.shared.DataColumn;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Group;
 import otgviewer.shared.Series;
+import otgviewer.shared.SharedUtils;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
 
@@ -29,9 +31,10 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
-import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.cellview.client.ColumnSortList;
 import com.google.gwt.user.cellview.client.DataGrid;
+import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
+import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.SimplePager.Resources;
 import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
@@ -57,10 +60,8 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.AsyncDataProvider;
 import com.google.gwt.view.client.HasData;
-import com.google.gwt.view.client.MultiSelectionModel;
 import com.google.gwt.view.client.NoSelectionModel;
 import com.google.gwt.view.client.Range;
-import com.google.gwt.view.client.SelectionChangeEvent;
 
 public class ExpressionTable extends DataListenerWidget {
 
@@ -86,8 +87,11 @@ public class ExpressionTable extends DataListenerWidget {
 	private ListBox groupsel1 = new ListBox();
 	private ListBox groupsel2 = new ListBox();
 	
+	private int highlightedRow = -1;
+	private String[] displayedProbes;
 	private Map<String, Association> associations = new HashMap<String, Association>();
-	private final static String[] expectedAssociations = new String[] { "KEGG pathways", "MF GO terms", "CC GO terms", "BP GO terms" };	
+	private final static String[] expectedAssociations = new String[] { "KEGG pathways", "MF GO terms", 
+		"CC GO terms", "BP GO terms", "Homologene entries" };	
 	private List<HideableColumn> hideableColumns = new ArrayList<HideableColumn>();
  	private List<AssociationColumn> associationColumns = new ArrayList<AssociationColumn>();
  	
@@ -115,7 +119,8 @@ public class ExpressionTable extends DataListenerWidget {
 		exprGrid.setPageSize(PAGE_SIZE);
 		exprGrid.setSize("100%", height);
 		exprGrid.setSelectionModel(new NoSelectionModel());
-
+		exprGrid.setRowStyles(new RowHighligher());
+		
 		exprGrid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 		
 		asyncProvider.addDataDisplay(exprGrid);		
@@ -150,7 +155,7 @@ public class ExpressionTable extends DataListenerWidget {
 			@Override
 			public void onChange(ChangeEvent event) {
 				changeValueType(getValueType());
-				getExpressions(chosenProbes);
+				getExpressions();
 			}
 		});
 
@@ -214,7 +219,7 @@ public class ExpressionTable extends DataListenerWidget {
 					synthColumns.clear();
 					//We have to reload the data to get rid of the synth columns
 					//in our server side session (TODO, avoid this)
-					getExpressions(chosenProbes);	
+					getExpressions();	
 				}
 			}
 		}));
@@ -409,11 +414,15 @@ public class ExpressionTable extends DataListenerWidget {
 			public void onSuccess(List<ExpressionRow> result) {
 				if (result.size() > 0) {
 					exprGrid.setRowData(start, result);
-					String[] probes = new String[result.size()];
-					for (int i = 0; i < probes.length; ++i) {
-						probes[i] = result.get(i).getProbe();
-					}
-					owlimService.associations(chosenDataFilter, probes, assocCallback);
+					displayedProbes = new String[result.size()];
+					List<String> geneIds = new ArrayList<String>();
+					highlightedRow = -1;
+					for (int i = 0; i < displayedProbes.length; ++i) {
+						displayedProbes[i] = result.get(i).getProbe();
+						geneIds.addAll(Arrays.asList(result.get(i).getGeneIds()));
+					}										
+					owlimService.associations(chosenDataFilter, displayedProbes, 
+							geneIds.toArray(new String[0]), assocCallback);
 				}
 			}
 		};
@@ -494,15 +503,14 @@ public class ExpressionTable extends DataListenerWidget {
 				});
 	}
 	
-	public void getExpressions(String[] displayedProbes) {
+	public void getExpressions() {
 		setEnabled(false);
 		exprGrid.setRowCount(0, false);		
 		setupColumns();
 		List<DataColumn> cols = new ArrayList<DataColumn>();
 		cols.addAll(chosenColumns);
 
-		//set up the series charts
-		Set<String> soFar = new HashSet<String>();
+		//set up the series charts		
 		seriesChartPanel.clear();
 		seriesCharts.clear();
 		
@@ -511,21 +519,19 @@ public class ExpressionTable extends DataListenerWidget {
 			Label l = new Label("Compounds in '" + c.getShortTitle() +"'");
 			seriesChartPanel.add(l);			
 			l.setStyleName("heading");
-			for (String com: c.getCompounds()) {
-				if (!soFar.contains(com)) {
-					soFar.add(com);
-					SeriesChart sc = new SeriesChart(firstChart != null);
-					if (firstChart == null) {
-						firstChart = sc;
-					} else {
-						firstChart.addSlaveChart(sc);
-					}					
-					seriesChartPanel.add(sc);
-					seriesCharts.add(sc);
-					this.propagateTo(sc);
-					sc.compoundChanged(com);
+			for (String com : c.getCompounds()) {
+				SeriesChart sc = new SeriesChart(firstChart != null);
+				if (firstChart == null) {
+					firstChart = sc;
+				} else {
+					firstChart.addSlaveChart(sc);
 				}
-			}						
+				seriesChartPanel.add(sc);
+				seriesCharts.add(sc);
+				this.propagateTo(sc);
+				sc.compoundChanged(com);
+
+			}			
 		}
 		
 		//load data
@@ -558,6 +564,19 @@ public class ExpressionTable extends DataListenerWidget {
 				((FocusWidget) w).setEnabled(enabled);
 			}
 		}
+	}
+	
+	private class RowHighligher implements RowStyles<ExpressionRow> {
+
+		@Override
+		public String getStyleNames(ExpressionRow row, int rowIndex) {
+			if (highlightedRow != -1 && rowIndex == highlightedRow + exprGrid.getVisibleRange().getStart()) {
+				return "highlightedRow";
+			} else {
+				return "";
+			}
+		}
+		
 	}
 	
 	class ExpressionColumn extends Column<ExpressionRow, String> {
@@ -604,7 +623,14 @@ public class ExpressionTable extends DataListenerWidget {
 				if (a.data().containsKey(er.getProbe())) {
 					return arrayString(a.data().get(er.getProbe()).toArray(new String[0]), ", ");	
 				} else {
-					return "";
+					String[] geneids = er.getGeneIds();
+					Set<String> all = new HashSet<String>();
+					for (String gi: geneids) {
+						if (a.data().containsKey(gi)) {
+							all.addAll(a.data().get(gi));														
+						}						
+					}
+					return arrayString(all.toArray(new String[0]), ", ");					
 				}
 			} else {
 				return "";
@@ -623,8 +649,10 @@ public class ExpressionTable extends DataListenerWidget {
 		}
 		
 		//TODO the popup chart code could be cleaned up/factored out quite a bit
-		public void onClick(String value) {
-
+		public void onClick(String value) {			
+			highlightedRow = SharedUtils.indexOf(displayedProbes, value);
+			exprGrid.redraw();
+			
 			int chartHeight = 200;
 			final int numCharts = seriesCharts.size();
 

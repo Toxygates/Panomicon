@@ -60,7 +60,8 @@ public class ProbeScreen extends Screen {
 
 	public Widget content() {
 		HorizontalPanel hp = Utils.mkHorizontalPanel();
-
+		hp.setSpacing(10);
+		
 		StackPanel probeSelStack = new StackPanel();
 		hp.add(probeSelStack);
 		probeSelStack.setSize("350px", "592px");
@@ -111,14 +112,12 @@ public class ProbeScreen extends Screen {
 
 		Widget chembl = makeTargetLookupPanel(
 				"CHEMBL",
-				"This lets you view probes that are known targets of the currently selected compound.",
-				"Add CHEMBL targets >>");
+				"This lets you view probes that are known targets of the currently selected compound.");
 		probeSelStack.add(chembl, "CHEMBL targets", false);
 
 		Widget drugBank = makeTargetLookupPanel(
 				"DrugBank",
-				"This lets you view probes that are known targets of the currently selected compound.",
-				"Add DrugBank targets >>");
+				"This lets you view probes that are known targets of the currently selected compound.");
 		probeSelStack.add(drugBank, "DrugBank targets", false);
 
 		VerticalPanel verticalPanel_3 = new VerticalPanel();
@@ -237,28 +236,15 @@ public class ProbeScreen extends Screen {
 				});
 	}
 	
-	private Widget makeTargetLookupPanel(final String service, String label, String buttonText) {
-		VerticalPanel verticalPanel_2 = new VerticalPanel();
-		verticalPanel_2.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);		
-		verticalPanel_2.setSize("100%", "100px");		
-		
-		Label label_4 = new Label(label);
-		verticalPanel_2.add(label_4);
-		
-		final ListBox compoundList = new ListBox();
-		compoundLists.add(compoundList);
-		verticalPanel_2.add(compoundList);
-		
-		Button button = new Button(buttonText);
-		verticalPanel_2.add(button);
+	private ClickHandler makeTargetLookupCH(final ListBox compoundList, final String service, 
+			final boolean homologs) {
 		final DataListenerWidget w = this;
-		
-		button.addClickHandler(new ClickHandler() {
+		return new ClickHandler() {
 			public void onClick(ClickEvent ev) {
 				if (compoundList.getSelectedIndex() != -1) {
 					String compound = compoundList.getItemText(compoundList.getSelectedIndex());					
 					owlimService.probesTargetedByCompound(chosenDataFilter,
-							compound, service, new PendingAsyncCallback<String[]>(w, "Unable to get probes (technical error).") {								
+							compound, service, homologs, new PendingAsyncCallback<String[]>(w, "Unable to get probes (technical error).") {								
 								public void handleSuccess(String[] probes) {		
 									if (probes.length == 0) {
 										Window.alert("No matching probes were found.");
@@ -271,7 +257,46 @@ public class ProbeScreen extends Screen {
 					Window.alert("Please select a compound first.");
 				}
 			}
-		});
+		};
+	}
+	
+	private Widget makeTargetLookupPanel(final String service, String label) {
+		VerticalPanel verticalPanel_2 = Utils.mkVerticalPanel(true);			
+		verticalPanel_2.setSize("100%", "100px");		
+		
+		Label label_4 = new Label(label);
+		verticalPanel_2.add(label_4);
+		
+		final ListBox compoundList = new ListBox();
+		compoundLists.add(compoundList);
+		verticalPanel_2.add(compoundList);
+		
+		Button button = new Button("Add direct targets >>", makeTargetLookupCH(compoundList, service, false));
+		verticalPanel_2.add(button);
+		
+		button = new Button("Add targets with homologs >>", makeTargetLookupCH(compoundList, service, true));
+		verticalPanel_2.add(button);		
+		
+		
+//		button.addClickHandler(new ClickHandler() {
+//			public void onClick(ClickEvent ev) {
+//				if (compoundList.getSelectedIndex() != -1) {
+//					String compound = compoundList.getItemText(compoundList.getSelectedIndex());					
+//					owlimService.probesTargetedByCompound(chosenDataFilter,
+//							compound, service, true, new PendingAsyncCallback<String[]>(w, "Unable to get probes (technical error).") {								
+//								public void handleSuccess(String[] probes) {		
+//									if (probes.length == 0) {
+//										Window.alert("No matching probes were found.");
+//									} else {										
+//										addProbes(probes);
+//									}
+//								}
+//							});
+//				} else {
+//					Window.alert("Please select a compound first.");
+//				}
+//			}
+//		});
 		return verticalPanel_2;
 	}
 	

@@ -59,9 +59,12 @@ public interface OwlimService extends RemoteService {
 	 * Obtain probes that correspond to proteins targeted by
 	 * the named compound.
 	 * @param compound
+	 * @param service Service to use for lookup (currently DrugBank or CHEMBL)
+	 * @param homologous Whether to use homologous genes (if not, only direct targets are returned)
 	 * @return
 	 */
-	public String[] probesTargetedByCompound(DataFilter filter, String compound, String service);
+	public String[] probesTargetedByCompound(DataFilter filter, String compound, String service, 
+			boolean homologous);
 	
 	public String[] goTerms(String pattern);
 	
@@ -76,5 +79,5 @@ public interface OwlimService extends RemoteService {
 	 */
 	public Pair<String, String>[] geneSuggestions(String partialName);
 	
-	public Association[] associations(DataFilter filter, String[] probes);
+	public Association[] associations(DataFilter filter, String[] probes, String[] geneIds);
 }

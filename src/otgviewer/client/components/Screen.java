@@ -34,7 +34,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class Screen extends DataListenerWidget {
 	protected static Resources resources = GWT.create(Resources.class);
 	
-	protected VerticalPanel rootPanel;
+	protected DockPanel rootPanel;
 	private String key; //An identifier string
 
 	private HorizontalPanel statusPanel;		
@@ -58,11 +58,13 @@ public class Screen extends DataListenerWidget {
 		this.showGroups = showGroups;
 		this.helpHTML = helpHTML;
 		this.helpImage = helpImage;
-		rootPanel = Utils.mkVerticalPanel();
+		rootPanel = new DockPanel();
 		initWidget(rootPanel);
 		menuBar = man.getMenuBar();
 		manager = man;				
-		rootPanel.setWidth("100%");				
+		rootPanel.setWidth("100%");
+		rootPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		rootPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		this.key = key;
 		
 		setTitle(title);		
@@ -129,9 +131,9 @@ public class Screen extends DataListenerWidget {
 		statusPanel.setHeight("3em");
 		spOuter.setStyleName("statusPanel");	
 
-		rootPanel.add(spOuter);		
-		rootPanel.add(content());	
-		rootPanel.add(bottomContent());
+		rootPanel.add(spOuter, DockPanel.NORTH);		
+		rootPanel.add(content(), DockPanel.CENTER);	
+		rootPanel.add(bottomContent(), DockPanel.SOUTH);
 	}
 	
 	/**

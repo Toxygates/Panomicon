@@ -24,6 +24,7 @@ import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -105,11 +106,11 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 			}
 		});
 
-		mainVertPanel = new VerticalPanel();
-		mainVertPanel.setBorderWidth(0);
+		mainVertPanel = Utils.mkVerticalPanel(false);		
 		rootPanel.add(mainVertPanel);
 		mainVertPanel.setSize("100%", "100%");
-		mainVertPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
+//		mainVertPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
+		mainVertPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		
 		mainVertPanel.add(menuBar);
 		

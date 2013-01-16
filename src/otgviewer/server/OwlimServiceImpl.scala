@@ -20,11 +20,7 @@ import kyotocabinet.DB
 import otg.Series
 import otg.OTGMisc
 import otgviewer.shared.NoSuchProbeException
-import otg.sparql.B2RKegg
-import otg.sparql.OTGOwlim
-import otg.sparql.CHEMBL
-import otg.sparql.DrugBank
-import otg.sparql.B2RAffy
+import otg.sparql._
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -42,6 +38,7 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
     super.init(config)
     OTGOwlim.connect()
     B2RAffy.connect()
+    B2RHomologene.connect()
     val homePath = System.getProperty("otg.home")
     seriesDB = OTGSeriesQuery.open(homePath + "/otgfs.kct")
   }
@@ -49,6 +46,7 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
   override def destroy() {
     B2RAffy.close()
     OTGOwlim.close()
+    B2RHomologene.close()
     seriesDB.close()
     super.destroy()
   }
@@ -128,7 +126,7 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
     column.getBarcodes.map(x => OTGOwlim.annotations(x.getCode)).map(asJava(_))
     
   def pathways(filter: DataFilter, pattern: String): Array[String] = 
-    useConnector(B2RKegg, (c: B2RKegg.type) => c.pathways(pattern, filter))    
+    useConnector(B2RKegg, (c: B2RKegg.type) => c.pathways(pattern, filter)).toArray    
   
   def geneSyms(probes: Array[String]): Array[Array[String]] = 
     B2RAffy.geneSyms(probes).map(_.toArray).toArray
@@ -141,14 +139,19 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
       OTGQueries.filterProbes(probes, filter)
     })    
   }
-  def probesTargetedByCompound(filter: DataFilter, compound: String, service: String): Array[String] = {
+  def probesTargetedByCompound(filter: DataFilter, compound: String, service: String, homologous: Boolean): Array[String] = {
     val proteins = (service match {
       case "CHEMBL" => useConnector(CHEMBL, (c:CHEMBL.type) => c.targetProtsForCompound(compound, filter))              
       case "DrugBank" => useConnector(DrugBank, (c:DrugBank.type) => c.targetProtsForDrug(compound))        
       case _ => throw new Exception("Unexpected probe target service request: " + service)
     })
-    val pbs = OTGOwlim.probesForUniprot(proteins).toArray
-    OTGQueries.filterProbes(pbs, filter)
+    val pbs = if (homologous) {
+      val genes = B2RHomologene.homologousGenesForUniprots(proteins).values.flatten
+      OTGOwlim.probesForEntrezGenes(genes)
+    } else {
+      OTGOwlim.probesForUniprot(proteins)
+    }
+    OTGQueries.filterProbes(pbs.toArray, filter)
   }
   
   def goTerms(pattern: String): Array[String] = 
@@ -157,7 +160,7 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
   def probesForGoTerm(filter: DataFilter, goTerm: String): Array[String] = 
     OTGQueries.filterProbes(OTGOwlim.probesForGoTerm(goTerm), filter)
 
-  def associations(filter: DataFilter, probes: Array[String]): Array[Association] = {
+  def associations(filter: DataFilter, probes: Array[String], geneIds: Array[String]): Array[Association] = {
 
     //By setting it up like this we can request data from the different servers in parallel,
     //and keep going if one fails
@@ -184,12 +187,13 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
           convert(useConnector(OTGOwlim,            
             (c: OTGOwlim.type) => c.ccGoTermsForProbes(probes),
             Map())))          
-      }//,
-//      () => {
-//        ("Homologene entries",
-//            convert(useConnector(B2RHomologene,
-//                (c: B2RHomologene.type) => c.homologousGenes(geneIds)
-//      }
+      },
+      () => {
+        ("Homologene entries",
+            convert(useConnector(B2RHomologene,
+                (c: B2RHomologene.type) => c.homologousGenes(geneIds),
+                Map())))
+      }
       )
 
     sources.par.map(_()).seq.map(x => new Association(x._1, x._2)).toArray     

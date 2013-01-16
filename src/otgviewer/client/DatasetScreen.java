@@ -37,7 +37,7 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 				new DataFilter(CellType.Vivo, Organ.Kidney, RepeatType.Repeat, Organism.Rat)
 		};
 		vp.add(g);
-		g.setCellSpacing(5);
+		g.setCellSpacing(20);
 		
 		int r = 0;
 		int c = 0;

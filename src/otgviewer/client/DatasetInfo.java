@@ -9,9 +9,8 @@ import otgviewer.shared.RepeatType;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -36,9 +35,13 @@ public class DatasetInfo extends Composite implements ClickHandler {
 		_filter = filter;
 		_listener = listener;
 		
-		VerticalPanel vp = Utils.mkVerticalPanel();		
-		initWidget(vp);
-		vp.setStyleName("borderPadded");
+		FocusPanel fp = new FocusPanel();
+		initWidget(fp);
+		fp.addClickHandler(this);		
+		
+		VerticalPanel vp = Utils.mkVerticalPanel();
+		fp.add(vp);
+		vp.setStyleName("datasetInfo");
 		vp.setWidth("100%");
 		vp.setHeight("100%");
 		
@@ -70,12 +73,12 @@ public class DatasetInfo extends Composite implements ClickHandler {
 			icons.add(new Image(resources.vitro()));
 		}
 		
-		icons.add(new Image(resources.bottle()));
-
 		if (filter.repeatType == RepeatType.Repeat) {
-			icons.add(new Image(resources.clock()));
-			icons.add(new Image(resources.bottle()));					
+			icons.add(new Image(resources.calendar()));					
+		} else {
+			icons.add(new Image(resources.clock()));			
 		}
+		icons.add(new Image(resources.bottle()));
 		
 		vp.add(icons);		
 		icons.setSpacing(5);
@@ -87,62 +90,62 @@ public class DatasetInfo extends Composite implements ClickHandler {
 		l.setStyleName("heading");
 		ivp.add(l);
 		ivp.setWidth("100%");
-		ivp.setHeight("100px");
+//		ivp.setHeight("100px");
 		
 		
-		compoundsLabel = new Label("Retrieving compounds...");
-		ivp.add(compoundsLabel);
+//		compoundsLabel = new Label("Retrieving compounds...");
+//		ivp.add(compoundsLabel);
+//		
+//		doseLabel = new Label("Retrieving doses...");
+//		ivp.add(doseLabel);
+//		
+//		timeLabel = new Label("Retrieving times...");
+//		ivp.add(timeLabel);
 		
-		doseLabel = new Label("Retrieving doses...");
-		ivp.add(doseLabel);
-		
-		timeLabel = new Label("Retrieving times...");
-		ivp.add(timeLabel);
-		
-		owlimService.compounds(filter, new AsyncCallback<String[]>() {
-			
-			@Override
-			public void onSuccess(String[] result) {
-				compoundsLabel.setText("Compounds: " + previewString(result));				
-			}
-			
-			@Override
-			public void onFailure(Throwable caught) {
-				compoundsLabel.setText("Error");				
-			}
-		});
-		
-		owlimService.doseLevels(filter, null, new AsyncCallback<String[]>() {
-			
-			@Override
-			public void onSuccess(String[] result) {
-				doseLabel.setText("Doses: " + previewString(result));				
-			}
-			
-			@Override
-			public void onFailure(Throwable caught) {
-				doseLabel.setText("Error");				
-			}
-		});
-		
-		owlimService.times(filter, null, new AsyncCallback<String[]>() {
-			
-			@Override
-			public void onSuccess(String[] result) {
-				timeLabel.setText("Sample times: " + previewString(result));				
-			}
-			
-			@Override
-			public void onFailure(Throwable caught) {
-				timeLabel.setText("Error");				
-			}
-		});
+//		owlimService.compounds(filter, new AsyncCallback<String[]>() {
+//			
+//			@Override
+//			public void onSuccess(String[] result) {
+//				compoundsLabel.setText("Compounds: " + previewString(result));				
+//			}
+//			
+//			@Override
+//			public void onFailure(Throwable caught) {
+//				compoundsLabel.setText("Error");				
+//			}
+//		});
+//		
+//		owlimService.doseLevels(filter, null, new AsyncCallback<String[]>() {
+//			
+//			@Override
+//			public void onSuccess(String[] result) {
+//				doseLabel.setText("Doses: " + previewString(result));				
+//			}
+//			
+//			@Override
+//			public void onFailure(Throwable caught) {
+//				doseLabel.setText("Error");				
+//			}
+//		});
+//		
+//		owlimService.times(filter, null, new AsyncCallback<String[]>() {
+//			
+//			@Override
+//			public void onSuccess(String[] result) {
+//				timeLabel.setText("Sample times: " + previewString(result));				
+//			}
+//			
+//			@Override
+//			public void onFailure(Throwable caught) {
+//				timeLabel.setText("Error");				
+//			}
+//		});
 		
 		ivp = new VerticalPanel();
 		ivp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		ivp.setWidth("100%");
 		vp.add(ivp);
-		ivp.add(new Button("Select", this));			
+//		ivp.add(new Button("Select", this));			
 	}
 	
 	public void onClick(ClickEvent ce) {
