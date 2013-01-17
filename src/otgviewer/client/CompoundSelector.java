@@ -18,6 +18,7 @@ import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.cellview.client.CellTable;
@@ -25,9 +26,11 @@ import com.google.gwt.user.cellview.client.IdentityColumn;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.NoSelectionModel;
@@ -41,7 +44,7 @@ import com.google.gwt.view.client.NoSelectionModel;
  * @author johan
  *
  */
-public class CompoundSelector extends DataListenerWidget {
+public class CompoundSelector extends DataListenerWidget implements RequiresResize {
 
 	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
 			.create(OwlimService.class);
@@ -50,8 +53,7 @@ public class CompoundSelector extends DataListenerWidget {
 	private static Resources resources = GWT.create(Resources.class);
 	
 	private StringSelectionTable compoundTable;
-	private ScrollPanel scrollPanel;
-	private VerticalPanel verticalPanel;
+	private DockLayoutPanel dp;
 	private boolean hasRankColumns = false;
 	private Button sortButton;
 	
@@ -67,21 +69,15 @@ public class CompoundSelector extends DataListenerWidget {
 	
 	public CompoundSelector(String heading) {
 		
-		verticalPanel = new VerticalPanel();
-		initWidget(verticalPanel);
-		verticalPanel.setWidth("100%");
-		verticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		
+		dp = new DockLayoutPanel(Unit.EM);
+
+		initWidget(dp);
 		Label lblCompounds = new Label(heading);
 		lblCompounds.setStyleName("heading");
-		verticalPanel.add(lblCompounds);
-		
-		scrollPanel = new ScrollPanel();
-		verticalPanel.add(scrollPanel);
-		scrollPanel.setSize("100%", "400px");
-		
-		HorizontalPanel hp = Utils.mkHorizontalPanel();
-		verticalPanel.add(hp);
+		dp.addNorth(lblCompounds, 2.5);
+	
+		HorizontalPanel hp = Utils.mkWidePanel();		
+		dp.addSouth(hp, 2.5);
 		
 		sortButton = new Button("Sort by name", new ClickHandler() {
 			public void onClick(ClickEvent ce) {
@@ -106,9 +102,11 @@ public class CompoundSelector extends DataListenerWidget {
 				changeCompounds(r);
 			}
 		
-		};
-		scrollPanel.setWidget(compoundTable);
-		compoundTable.setSize("100%", "100%");
+		};		
+				
+		dp.add(new ScrollPanel(compoundTable));
+		
+		compoundTable.setWidth("100%");
 		compoundTable.table().setSelectionModel(new NoSelectionModel<String>());		
 	}
 	
@@ -170,17 +168,13 @@ public class CompoundSelector extends DataListenerWidget {
 		changeCompounds(compounds);
 	}
 	
-	int lastHeight = 0;
-	@Override
-	public void heightChanged(int newHeight) {
-		if (newHeight != lastHeight) {
-			lastHeight = newHeight;
-			super.heightChanged(newHeight);
-			verticalPanel.setHeight((newHeight - verticalPanel.getAbsoluteTop() - 50) + "px");
-			scrollPanel.setHeight((newHeight - scrollPanel.getAbsoluteTop() - 70) + "px");
-		}
-	}
 	
+	
+	@Override
+	public void onResize() {		
+		dp.onResize();		
+	}
+
 	void performRanking(List<String> rankProbes, List<RankRule> rules) {
 		this.rankProbes = rankProbes;
 		addRankColumns();

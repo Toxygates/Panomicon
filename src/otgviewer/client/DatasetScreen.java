@@ -20,13 +20,16 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 
 	static String key = "ds";
 	
+	VerticalPanel vp;
+	
 	public DatasetScreen(ScreenManager man) {
 		super("Dataset selection", key, false, false, man);		
 	}
 	
 	public Widget content() {
 		Grid g = new Grid(3, 2);
-		VerticalPanel vp = Utils.mkVerticalPanel();
+		vp = Utils.mkTallPanel();
+		vp.setWidth("100%");
 
 		final DataFilter[] filters = new DataFilter[] {
 				new DataFilter(CellType.Vitro, Organ.Kidney, RepeatType.Single, Organism.Human),
@@ -65,6 +68,12 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 		if (chosenDataFilter != null) {
 			setConfigured(true);
 		}
+	}
+
+	@Override
+	public void onResize() {
+		super.onResize();
+		vp.setHeight(getOffsetHeight() + "px");
 	}	
 
 	

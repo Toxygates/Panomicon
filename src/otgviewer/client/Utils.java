@@ -49,6 +49,18 @@ public class Utils {
 		return mkHorizontalPanel(false);
 	}
 	
+	public static HorizontalPanel mkWidePanel() {
+		HorizontalPanel r = mkHorizontalPanel(false);
+		r.setWidth("100%");
+		return r;
+	}
+	
+	public static VerticalPanel mkTallPanel() {
+		VerticalPanel r = mkVerticalPanel(false);
+		r.setHeight("100%");
+		return r;
+	}
+	
 	public static HorizontalPanel mkHorizontalPanel(boolean spaced) {
 		HorizontalPanel hp = new HorizontalPanel();		
 //		hp.setStyleName("slightlySpaced");

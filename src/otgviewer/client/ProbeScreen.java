@@ -190,14 +190,14 @@ public class ProbeScreen extends Screen {
 			}
 		}));
 
-		
-		
-		return hp;
+		HorizontalPanel hpo = Utils.mkWidePanel();
+		hpo.add(hp);
+		return hpo;			
 	}
 	
 	@Override
 	public Widget bottomContent() {
-		HorizontalPanel buttons = new HorizontalPanel();
+		HorizontalPanel buttons = Utils.mkHorizontalPanel(false);
 		buttons.add(new Button("Proceed with selected probes",
 				new ClickHandler() {
 					@Override
@@ -277,26 +277,6 @@ public class ProbeScreen extends Screen {
 		button = new Button("Add targets with homologs >>", makeTargetLookupCH(compoundList, service, true));
 		verticalPanel_2.add(button);		
 		
-		
-//		button.addClickHandler(new ClickHandler() {
-//			public void onClick(ClickEvent ev) {
-//				if (compoundList.getSelectedIndex() != -1) {
-//					String compound = compoundList.getItemText(compoundList.getSelectedIndex());					
-//					owlimService.probesTargetedByCompound(chosenDataFilter,
-//							compound, service, true, new PendingAsyncCallback<String[]>(w, "Unable to get probes (technical error).") {								
-//								public void handleSuccess(String[] probes) {		
-//									if (probes.length == 0) {
-//										Window.alert("No matching probes were found.");
-//									} else {										
-//										addProbes(probes);
-//									}
-//								}
-//							});
-//				} else {
-//					Window.alert("Please select a compound first.");
-//				}
-//			}
-//		});
 		return verticalPanel_2;
 	}
 	

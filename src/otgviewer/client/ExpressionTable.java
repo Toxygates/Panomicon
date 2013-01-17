@@ -22,6 +22,7 @@ import otgviewer.shared.ValueType;
 
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -45,7 +46,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DisclosurePanel;
-import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.DoubleBox;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -54,6 +55,9 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.ProvidesResize;
+import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -63,13 +67,14 @@ import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.NoSelectionModel;
 import com.google.gwt.view.client.Range;
 
-public class ExpressionTable extends DataListenerWidget {
+public class ExpressionTable extends DataListenerWidget implements RequiresResize, ProvidesResize {
 
 	private final int PAGE_SIZE = 50;
 	
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
 	private DataGrid<ExpressionRow> exprGrid;
 	private HorizontalPanel tools;
+	private DockLayoutPanel dockPanel;
 	
 	private DoubleBox absValBox;
 	private ListBox valueTypeList = new ListBox();
@@ -96,37 +101,27 @@ public class ExpressionTable extends DataListenerWidget {
  	private List<AssociationColumn> associationColumns = new ArrayList<AssociationColumn>();
  	
  	
-	
-	/**
-	 * This constructor will be used by the GWT designer. (Not functional at run time)
-	 * @wbp.parser.constructor
-	 */
 	public ExpressionTable() {
-		this("400px");
-	}	
-	
-	public ExpressionTable(String height) {
-		DockPanel dockPanel = new DockPanel();
-		dockPanel.setStyleName("none");
-		initWidget(dockPanel);
-		dockPanel.setSize("100%", "100%");
+		dockPanel = new DockLayoutPanel(Unit.EM);
 
+		initWidget(dockPanel);
 		initHideableColumns();
 		
 		exprGrid = new DataGrid<ExpressionRow>();
-		dockPanel.add(exprGrid, DockPanel.CENTER);
+		dockPanel.addNorth(makeToolPanel(), 3.5);
+		
 		exprGrid.setStyleName("exprGrid");
 		exprGrid.setPageSize(PAGE_SIZE);
-		exprGrid.setSize("100%", height);
+		exprGrid.setWidth("100%");
+
 		exprGrid.setSelectionModel(new NoSelectionModel());
 		exprGrid.setRowStyles(new RowHighligher());
 		
 		exprGrid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
+		dockPanel.add(exprGrid);
 		
 		asyncProvider.addDataDisplay(exprGrid);		
 		AsyncHandler colSortHandler = new AsyncHandler(exprGrid);
-		
-		dockPanel.add(makeToolPanel(), DockPanel.NORTH);
 		
 		exprGrid.addColumnSortHandler(colSortHandler);
 		setEnabled(false);
@@ -726,10 +721,10 @@ public class ExpressionTable extends DataListenerWidget {
 		public boolean visible() { return this.visible; }
 		public void setVisibility(boolean v) { visible = v; }		
 	}
-	
+
 	@Override
-	public void heightChanged(int newHeight) {
-		String h3 = (newHeight - exprGrid.getAbsoluteTop() - 15) + "px";
-		exprGrid.setHeight(h3);	
-	}		
+	public void onResize() {		
+		dockPanel.onResize();		
+	}
+	
 }

@@ -13,6 +13,7 @@ import otgviewer.client.components.ScreenManager;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Position;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
@@ -24,14 +25,13 @@ import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.visualization.client.VisualizationUtils;
 
 /**
@@ -40,8 +40,9 @@ import com.google.gwt.visualization.client.VisualizationUtils;
 public class OTGViewer implements EntryPoint, ScreenManager {
 	private static Resources resources = GWT.create(Resources.class);
 	
-	private RootPanel rootPanel;
-	private VerticalPanel mainVertPanel;
+	private RootLayoutPanel rootPanel;
+	private DockLayoutPanel mainDockPanel;
+//	private FlowPanel mainVertPanel;
 	private MenuBar menuBar;
 	private HorizontalPanel navPanel;
 	private List<Screen> workflow = new ArrayList<Screen>();
@@ -96,26 +97,23 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 			}
 		});
 		
-		rootPanel = RootPanel.get("rootPanelContainer");
+		rootPanel = RootLayoutPanel.get();
 		rootPanel.setSize("100%", "100%");
-		rootPanel.getElement().getStyle().setPosition(Position.RELATIVE);
-
-		Window.addResizeHandler(new ResizeHandler() {
-			public void onResize(ResizeEvent event) {
-				resizeInterface(event.getHeight());
-			}
-		});
-
-		mainVertPanel = Utils.mkVerticalPanel(false);		
-		rootPanel.add(mainVertPanel);
-		mainVertPanel.setSize("100%", "100%");
-//		mainVertPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
-		mainVertPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		
-		mainVertPanel.add(menuBar);
+//		Window.addResizeHandler(new ResizeHandler() {
+//			public void onResize(ResizeEvent event) {
+//				resizeInterface(event.getHeight());
+//			}
+//		});
+
+		mainDockPanel = new DockLayoutPanel(Unit.EM);		
+		rootPanel.add(mainDockPanel);
+		mainDockPanel.setSize("100%", "100%");
+		
+		mainDockPanel.addNorth(menuBar, 3);
 		
 		navPanel = Utils.mkHorizontalPanel();
-		mainVertPanel.add(navPanel);
+		mainDockPanel.addNorth(navPanel, 3);
 		
 		initScreens(); //Need access to the nav. panel
 				
@@ -184,14 +182,14 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	
 	private void showScreen(Screen s) {
 		if (currentScreen != null) {
-			mainVertPanel.remove(currentScreen);
+			mainDockPanel.remove(currentScreen);
 			currentScreen.hide();
 		}
 		currentScreen = s;
 		currentScreen.show();					
-		mainVertPanel.add(currentScreen);
+		mainDockPanel.add(currentScreen);
 		addWorkflowLinks(currentScreen);
-		resizeInterface(Window.getClientHeight()); 
+//		resizeInterface(Window.getClientHeight()); 
 	}
 
 	/**
@@ -266,20 +264,6 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		return configuredScreens.contains(key);
 	}
 	
-
-	private void resizeInterface(int newHeight) {
-		// this is very fiddly and must be tested on all the browsers.
-		// Note that simply setting height = 100% won't work.
-		if (currentScreen != null) {
-			currentScreen.resizeInterface(newHeight);
-		}	
-	}	
-	
-	@Override
-	public int availableHeight() {
-		return Window.getClientHeight() - menuBar.getOffsetHeight() - navPanel.getOffsetHeight();
-	}
-	
 	private TextResource getAboutHTML() {
 		return resources.aboutHTML();
 	}
@@ -287,4 +271,6 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	private ImageResource getAboutImage() {
 		return resources.about();
 	}
+	
+	
 }

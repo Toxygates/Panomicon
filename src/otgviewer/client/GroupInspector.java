@@ -30,7 +30,9 @@ import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -43,8 +45,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * @author johan
  *
  */
-public class GroupInspector extends DataListenerWidget implements SelectionTDGrid.BarcodeListener {
-
+public class GroupInspector extends DataListenerWidget implements SelectionTDGrid.BarcodeListener, RequiresResize { 
 
 	private SelectionTDGrid timeDoseGrid;
 	private Map<String, Group> groups = new HashMap<String, Group>();		
@@ -55,16 +56,16 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 	SelectionTable<Group> existingGroupsTable;
 	private CompoundSelector compoundSel;
 	private HorizontalPanel toolPanel;
-	private DockPanel dp;
-	private ScrollPanel sp;
+	private SplitLayoutPanel sp;
 	
 	public GroupInspector(CompoundSelector cs, Screen scr) {
 		compoundSel = cs;
 		this.screen = scr;
-		VerticalPanel vp = new VerticalPanel();
-		vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		initWidget(vp);
-		
+		sp = new SplitLayoutPanel();
+		initWidget(sp);
+//		
+		VerticalPanel vp = Utils.mkTallPanel();
+
 		titleLabel = new Label("Sample group definition");
 		titleLabel.setStyleName("heading");
 		vp.add(titleLabel);
@@ -94,11 +95,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		});
 		toolPanel.add(saveButton);
 		setEditing(false);
-		
-//		sp = Utils.makeScrolled(vp);
-//		sp.setWidth("800px");
-//		dp.add(sp, DockPanel.CENTER);
-//		
+						
 		existingGroupsTable = new SelectionTable<Group>("Active") {
 			protected void initTable(CellTable<Group> table) {
 				TextColumn<Group> textColumn = new TextColumn<Group>() {
@@ -156,9 +153,12 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 				storeColumns();
 			}
 		};
-		vp.add(existingGroupsTable);
+//		vp.add(existingGroupsTable);
 		existingGroupsTable.setVisible(false);
-		existingGroupsTable.setSize("100%", "100px");				
+		existingGroupsTable.setSize("100%", "100px");
+		sp.addSouth(Utils.makeScrolled(existingGroupsTable), 200);
+		
+		sp.add(Utils.makeScrolled(vp));
 	}
 	
 	private void deleteGroup(String name, boolean createNew) {
@@ -350,15 +350,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		groups.put(name, group);
 		existingGroupsTable.addItem(group);
 		existingGroupsTable.setSelected(group);
-		//heightChanged(screen.availableHeight());
 	}
-	
-//	@Override
-//	public void heightChanged(int newHeight) {	
-//		super.heightChanged(newHeight);
-//		dp.setHeight((screen.availableHeight() - 10) + "px"); 
-////		sp.setHeight((screen.availableHeight() - existingGroupsTable.getOffsetHeight() - 10) + "px");
-//	}
 
 	private void displayGroup(String name) {
 		setHeading("editing " + name);
@@ -372,5 +364,13 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		
 		setEditing(true);
 	}
+
+	@Override
+	public void onResize() {
+		sp.onResize();
+		
+	}
+	
+	
 	
 }

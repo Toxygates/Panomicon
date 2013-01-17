@@ -27,7 +27,7 @@ public class DataScreen extends Screen {
 	}
 	
 	public Widget content() {
-		et = new ExpressionTable((Window.getClientHeight() - 70) + "px");
+		et = new ExpressionTable();
 		addListener(et);
 		
 		MenuItem[] mis = et.menuItems();

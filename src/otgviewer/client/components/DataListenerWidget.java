@@ -2,7 +2,6 @@ package otgviewer.client.components;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import otgviewer.client.Utils;
@@ -17,6 +16,8 @@ import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.ProvidesResize;
+import com.google.gwt.user.client.ui.RequiresResize;
 
 /**
  * A Composite that is also a DataViewListener.
@@ -87,10 +88,10 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		this.chosenCustomColumn = customColumn;
 		changeCustomColumn(customColumn);
 	}
-	
-	public void heightChanged(int newHeight) {
-		changeHeight(newHeight);
-	}
+//	
+//	public void heightChanged(int newHeight) {
+//		changeHeight(newHeight);
+//	}
 	
 	//outgoing signals	
 	protected void changeDataFilter(DataFilter filter) {
@@ -158,11 +159,11 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}
 	}
 	
-	protected void changeHeight(int newHeight) {
-		for (DataViewListener l : listeners) {
-			l.heightChanged(newHeight);
-		}
-	}
+//	protected void changeHeight(int newHeight) {
+//		for (DataViewListener l : listeners) {
+//			l.heightChanged(newHeight);
+//		}
+//	}
 	
 	public void propagateTo(DataViewListener other) {
 		other.dataFilterChanged(chosenDataFilter);

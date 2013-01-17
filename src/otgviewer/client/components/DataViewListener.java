@@ -17,5 +17,5 @@ public interface DataViewListener {
 	public void valueTypeChanged(ValueType type);
 	public void columnsChanged(List<Group> columns);
 	public void customColumnChanged(DataColumn column);
-	public void heightChanged(int newHeight);
+//	public void heightChanged(int newHeight);
 }

@@ -8,21 +8,21 @@ import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.Group;
 
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.TabPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 public class ColumnScreen extends Screen {
 	public static String key = "columns";
 	
 	private GroupInspector gi;
-	private VerticalPanel vp;
-	private HorizontalPanel hp;
+	private CompoundSelector cs;	
 	
 	public ColumnScreen(ScreenManager man) {
 		super("Sample group definitions", key, true, false, man,
@@ -35,17 +35,14 @@ public class ColumnScreen extends Screen {
 	}
 
 	public Widget content() {		
-		vp = Utils.mkVerticalPanel();
-		hp = Utils.mkHorizontalPanel();
-		hp.setHeight("100%");
-		
-		vp.add(hp);
-		CompoundSelector cs = new CompoundSelector("Compounds");
+		DockLayoutPanel dp = new DockLayoutPanel(Unit.EM);		
+
+		cs = new CompoundSelector("Compounds");
 		this.addListener(cs);
-		hp.add(cs);
+		dp.addWest(cs, 27);
 		
-		TabPanel tp = new TabPanel();
-		hp.add(tp);		
+		TabLayoutPanel tp = new TabLayoutPanel(2.5, Unit.EM);
+		dp.add(tp);		
 		
 		gi = new GroupInspector(cs, this);
 		this.addListener(gi);
@@ -53,15 +50,16 @@ public class ColumnScreen extends Screen {
 		tp.add(gi, "Sample groups");
 		
 		final CompoundRanker cr = new CompoundRanker(cs);
-		tp.add(cr, "Compound ranking (optional)");
+		tp.add(Utils.makeScrolled(cr), "Compound ranking (optional)");
 		tp.selectTab(0);
-		tp.setHeight("100%");
+//		tp.setHeight("100%");
 		
-		return vp;
+		return dp;
 	}
 
 	@Override
 	public Widget bottomContent() {
+		HorizontalPanel hp = Utils.mkWidePanel();
 		Button b = new Button("Next: Select probes", new ClickHandler() {			
 			public void onClick(ClickEvent event) {
 				if (gi.chosenColumns().size() == 0) {
@@ -71,7 +69,8 @@ public class ColumnScreen extends Screen {
 				}
 			}
 		});
-		return b;
+		hp.add(b);		
+		return hp;
 	}
 	
 	@Override
@@ -100,5 +99,4 @@ public class ColumnScreen extends Screen {
 		}
 	}
 
-	
 }

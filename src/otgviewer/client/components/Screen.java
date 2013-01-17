@@ -15,15 +15,17 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.ProvidesResize;
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -34,10 +36,10 @@ import com.google.gwt.user.client.ui.Widget;
  * @author johan
  *
  */
-public class Screen extends DataListenerWidget {
+public class Screen extends DataListenerWidget implements RequiresResize, ProvidesResize {
 	protected static Resources resources = GWT.create(Resources.class);
 	
-	protected DockPanel rootPanel;
+	protected DockLayoutPanel rootPanel;
 	private String key; //An identifier string
 
 	private FlowPanel statusPanel;		
@@ -62,13 +64,13 @@ public class Screen extends DataListenerWidget {
 		this.showGroups = showGroups;
 		this.helpHTML = helpHTML;
 		this.helpImage = helpImage;
-		rootPanel = new DockPanel();
+		rootPanel = new DockLayoutPanel(Unit.EM);
 		initWidget(rootPanel);
 		menuBar = man.getMenuBar();
 		manager = man;				
-		rootPanel.setWidth("100%");
-		rootPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-		rootPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+//		rootPanel.setWidth("100%");
+//		rootPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+//		rootPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		viewLabel.setWordWrap(false);
 		viewLabel.getElement().getStyle().setMargin(2, Unit.PX);
 		this.key = key;
@@ -128,18 +130,21 @@ public class Screen extends DataListenerWidget {
 		statusPanel.setStyleName("statusPanel");		
 		floatLeft(statusPanel);
 
-		HorizontalPanel spOuter = Utils.mkHorizontalPanel(true);
-		spOuter.setWidth("100%");
+		HorizontalPanel spOuter = Utils.mkWidePanel();		
 		spOuter.setHeight("3em");
 		spOuter.add(statusPanel);		
 		spOuter.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		statusPanel.setStyleName("statusPanel");
 		spOuter.setStyleName("statusPanel");	
 
-		rootPanel.add(spOuter, DockPanel.NORTH);		
-		rootPanel.add(content(), DockPanel.CENTER);
+		rootPanel.addNorth(spOuter, 3);		
 		bottom = bottomContent();
-		rootPanel.add(bottom, DockPanel.SOUTH);
+		if (bottom != null) {
+			HorizontalPanel hp = Utils.mkWidePanel();
+			hp.add(bottom);
+			rootPanel.addSouth(hp, 2.5);
+		}
+		rootPanel.add(content());
 	}
 	
 	/**
@@ -207,17 +212,7 @@ public class Screen extends DataListenerWidget {
 		m.setVisible(false);
 		menuItems.add(m);
 	}
-	
-	public void resizeInterface(int newHeight) {
-		statusPanel.setWidth(Window.getClientWidth() + "px");
-		String h = (newHeight - rootPanel.getAbsoluteTop()) + "px";
-		rootPanel.setHeight(h);		
-		changeHeight(newHeight - bottom.getOffsetHeight()); //emit the height available for the "content" area
-	}
-	
-	public int availableHeight() {
-		return manager.availableHeight() - bottom.getOffsetHeight() - statusPanel.getOffsetHeight() - 10;
-	}
+
 	
 	/**
 	 * Override this method to define the main content of the screen.
@@ -229,7 +224,7 @@ public class Screen extends DataListenerWidget {
 	}
 	
 	public Widget bottomContent() {
-		return new SimplePanel();
+		return null;
 	}
 	
 	public String key() {
@@ -255,4 +250,16 @@ public class Screen extends DataListenerWidget {
 	protected ImageResource getHelpImage() {
 		return helpImage;	
 	}
+
+	@Override
+	public void onResize() {
+		final int c = rootPanel.getWidgetCount();
+		for (int i = 0; i < c; ++i) {
+			Widget w = rootPanel.getWidget(i);
+			if (w instanceof RequiresResize) {
+				((RequiresResize) w).onResize();
+			}
+		}		
+	}
+	
 }

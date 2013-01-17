@@ -25,7 +25,7 @@ import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Panel;
@@ -41,8 +41,6 @@ public class SampleDetailScreen extends Screen {
 	private CellTable<String[]> experimentTable = new CellTable<String[]>();
 	private CellTable<String[]> biologicalTable = new CellTable<String[]>();
 	
-	private ScrollPanel sp = new ScrollPanel();
-	private VerticalPanel vp = new VerticalPanel();
 	private ListBox columnList = new ListBox();
 	
 	private Barcode[] barcodes;
@@ -103,11 +101,13 @@ public class SampleDetailScreen extends Screen {
 	}
 
 	public Widget content() {
+		DockLayoutPanel dp = new DockLayoutPanel(Unit.EM);
 		HorizontalPanel hp = Utils.mkHorizontalPanel(true);		
 		HorizontalPanel hpi = Utils.mkHorizontalPanel();
 		hpi.setWidth("100%");
 		hpi.add(hp);
-		vp.add(hpi);
+//		vp.add(hpi);
+		dp.addNorth(hpi, 3);
 		
 		hp.add(columnList);
 		
@@ -130,9 +130,11 @@ public class SampleDetailScreen extends Screen {
 			}
 		});
 		
+		VerticalPanel vp = Utils.mkVerticalPanel();
 		configureTable(vp, experimentTable);
-		configureTable(vp, biologicalTable);				
-		return vp;
+		configureTable(vp, biologicalTable);
+		dp.add(new ScrollPanel(vp));
+		return dp;
 	}
 	
 	private void configureTable(Panel p, CellTable<String[]> ct) {

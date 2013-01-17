@@ -55,6 +55,7 @@ public class PathologyScreen extends Screen {
 //		
 		sp.setWidget(pathologyTable);
 		pathologyTable.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
+		pathologyTable.setWidth("100%");
 		
 		TextColumn<Pathology> col = new TextColumn<Pathology>() {
 			public String getValue(Pathology p) {
@@ -138,17 +139,6 @@ public class PathologyScreen extends Screen {
 					}
 				});
 			}
-		}
-	}
-	
-	int lastHeight = 0;
-	@Override
-	public void resizeInterface(int newHeight) {
-		super.resizeInterface(newHeight);
-		if (newHeight != lastHeight) {
-			lastHeight = newHeight;
-			sp.setHeight((availableHeight() - 10) + "px");
-//			sp.setHeight((newHeight - sp.getAbsoluteTop() - 10) + "px");			
 		}
 	}
 	

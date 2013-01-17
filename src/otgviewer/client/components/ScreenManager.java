@@ -2,8 +2,9 @@ package otgviewer.client.components;
 
 
 import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.ProvidesResize;
 
-public interface ScreenManager {
+public interface ScreenManager extends ProvidesResize {
 //
 //	void showTemporary(Screen s);
 //	
@@ -27,9 +28,4 @@ public interface ScreenManager {
 	 */
 	void attemptProceed(String to);
 	
-	/**
-	 * Available height for screen contents in pixels.
-	 * @return
-	 */
-	int availableHeight();
 }
