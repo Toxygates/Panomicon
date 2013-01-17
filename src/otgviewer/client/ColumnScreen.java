@@ -6,12 +6,12 @@ import java.util.List;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.DataColumn;
+import otgviewer.shared.Group;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -81,7 +81,7 @@ public class ColumnScreen extends Screen {
 			//If we became visible, we must have been enabled, so can count on a
 			//data filter being present.
 			try {
-				List<DataColumn> ics = loadColumns("inactiveColumns", 
+				List<Group> ics = loadColumns("inactiveColumns", 
 						new ArrayList<DataColumn>(gi.existingGroupsTable.inverseSelection()));
 				if (ics != null) {
 					gi.inactiveColumnsChanged(ics);

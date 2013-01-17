@@ -1,27 +1,30 @@
 package otgviewer.client.components;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import otgviewer.client.Resources;
 import otgviewer.client.Utils;
-import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Float;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
-import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 
@@ -37,13 +40,14 @@ public class Screen extends DataListenerWidget {
 	protected DockPanel rootPanel;
 	private String key; //An identifier string
 
-	private HorizontalPanel statusPanel;		
+	private FlowPanel statusPanel;		
 	protected boolean visible = false;
 	private Label viewLabel = new Label();
 	private boolean showDataFilter = false, showGroups = false;
 	private MenuBar menuBar;	
 	protected boolean configured = false;
 	private List<MenuItem> menuItems = new ArrayList<MenuItem>();
+	private Widget bottom;
 	
 	protected ScreenManager manager;
 	
@@ -65,6 +69,8 @@ public class Screen extends DataListenerWidget {
 		rootPanel.setWidth("100%");
 		rootPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		rootPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		viewLabel.setWordWrap(false);
+		viewLabel.getElement().getStyle().setMargin(2, Unit.PX);
 		this.key = key;
 		
 		setTitle(title);		
@@ -118,22 +124,22 @@ public class Screen extends DataListenerWidget {
 	}
 	
 	public void initGUI() {
-//		VerticalPanel vp = Utils.mkVerticalPanel();
-		statusPanel = Utils.mkHorizontalPanel(true);	
-		HorizontalPanel spOuter = new HorizontalPanel();
-		
+		statusPanel = new FlowPanel(); 
+		statusPanel.setStyleName("statusPanel");		
+		floatLeft(statusPanel);
+
+		HorizontalPanel spOuter = Utils.mkHorizontalPanel(true);
 		spOuter.setWidth("100%");
 		spOuter.setHeight("3em");
 		spOuter.add(statusPanel);		
 		spOuter.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
-		statusPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		statusPanel.setStyleName("statusPanel");
-		statusPanel.setHeight("3em");
 		spOuter.setStyleName("statusPanel");	
 
 		rootPanel.add(spOuter, DockPanel.NORTH);		
-		rootPanel.add(content(), DockPanel.CENTER);	
-		rootPanel.add(bottomContent(), DockPanel.SOUTH);
+		rootPanel.add(content(), DockPanel.CENTER);
+		bottom = bottomContent();
+		rootPanel.add(bottom, DockPanel.SOUTH);
 	}
 	
 	/**
@@ -149,22 +155,38 @@ public class Screen extends DataListenerWidget {
 		updateStatusPanel(); //needs access to the groups from loadState
 	}
 	
+	private void floatLeft(Widget w) {
+		w.getElement().getStyle().setFloat(Float.LEFT);
+	}
+	
 	protected void updateStatusPanel() {
+		statusPanel.setWidth(Window.getClientHeight() + "px");
 		statusPanel.clear();
-		statusPanel.add(viewLabel);		
+		statusPanel.add(viewLabel);
+		floatLeft(viewLabel);
+//		viewLabel.getElement().getStyle().setFloat(Float.LEFT);
 		if (showGroups) {
-			for (DataColumn dc: chosenColumns) {
-				Group g = (Group) dc;
-				HorizontalPanel hp = Utils.mkHorizontalPanel(true);
-				hp.setStyleName("statusBorder");
+			Collections.sort(chosenColumns);
+			
+			for (Group g: chosenColumns) {				
+				FlowPanel fp = new FlowPanel(); 
+				fp.setStyleName("statusBorder");
 				String tip = g.getCDTs(-1, ", ");
 				Label l = Utils.mkEmphLabel(g.getName() + ":");
-				hp.add(l);
+				l.setWordWrap(false);
+				l.getElement().getStyle().setMargin(2, Unit.PX);
+				floatLeft(l);
+				fp.add(l);
 				l.setTitle(tip);
 				l = new Label(g.getCDTs(2, ", "));
-				hp.add(l);
+				fp.add(l);
+				l.getElement().getStyle().setMargin(2, Unit.PX);
+				floatLeft(l);
 				l.setTitle(tip);
-				statusPanel.add(hp);
+				l.setWordWrap(false);
+				statusPanel.add(fp);
+				floatLeft(fp);
+//				fp.getElement().getStyle().setProperty("float", "left");
 			}
 		}
 	}
@@ -187,13 +209,14 @@ public class Screen extends DataListenerWidget {
 	}
 	
 	public void resizeInterface(int newHeight) {
+		statusPanel.setWidth(Window.getClientWidth() + "px");
 		String h = (newHeight - rootPanel.getAbsoluteTop()) + "px";
 		rootPanel.setHeight(h);		
-		changeHeight(newHeight);
+		changeHeight(newHeight - bottom.getOffsetHeight()); //emit the height available for the "content" area
 	}
 	
 	public int availableHeight() {
-		return manager.availableHeight() - statusPanel.getOffsetHeight() - 10;
+		return manager.availableHeight() - bottom.getOffsetHeight() - statusPanel.getOffsetHeight() - 10;
 	}
 	
 	/**

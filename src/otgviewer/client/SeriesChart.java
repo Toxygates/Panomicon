@@ -122,7 +122,7 @@ public class SeriesChart extends DataListenerWidget {
 								chartDockPanel.add(seriesChart,
 										DockPanel.CENTER);
 								seriesChart.setHeight((pixelHeight - 50) + "px");
-								seriesStrategy.displayData(result, seriesChart);
+								seriesStrategy.displayData(result, seriesChart); 
 							}
 
 							public void onFailure(Throwable caught) {

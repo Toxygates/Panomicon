@@ -143,7 +143,7 @@ public class Utils {
 		};
 	}
 
-	public static Widget makeScrolled(Widget w) {
+	public static ScrollPanel makeScrolled(Widget w) {
 		ScrollPanel sp = new ScrollPanel(w);
 		return sp;
 	}
@@ -158,30 +158,28 @@ public class Utils {
 		return r.toArray(new String[0]);
 	}
 
-	public static Group findGroup(List<DataColumn> groups, String title) {
-		for (DataColumn d : groups) {
-			if (((Group) d).getName().equals(title)) {
-				return ((Group) d);
+	public static Group findGroup(List<Group> groups, String title) {
+		for (Group d : groups) {
+			if (d.getName().equals(title)) {
+				return d;
 			}
 		}
 		return null;
 	}
 
-	public static Group groupFor(List<DataColumn> columns, String barcode) {
-		for (DataColumn c : columns) {
+	public static Group groupFor(List<Group> columns, String barcode) {
+		for (Group c : columns) {
 			for (Barcode b : c.getBarcodes()) {
 				if (b.getCode().equals(barcode)) {
-					if (c instanceof Group) {
-						return (Group) c;
-					}
+					return c;						
 				}
 			}
 		}
 		return null;
 	}
 
-	public static Barcode barcodeFor(List<DataColumn> columns, String barcode) {
-		for (DataColumn c : columns) {
+	public static Barcode barcodeFor(List<Group> columns, String barcode) {
+		for (Group c : columns) {
 			for (Barcode b : c.getBarcodes()) {
 				if (b.getCode().equals(barcode)) {
 					return b;

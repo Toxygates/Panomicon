@@ -26,10 +26,11 @@ import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -54,6 +55,8 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 	SelectionTable<Group> existingGroupsTable;
 	private CompoundSelector compoundSel;
 	private HorizontalPanel toolPanel;
+	private DockPanel dp;
+	private ScrollPanel sp;
 	
 	public GroupInspector(CompoundSelector cs, Screen scr) {
 		compoundSel = cs;
@@ -92,6 +95,10 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		toolPanel.add(saveButton);
 		setEditing(false);
 		
+//		sp = Utils.makeScrolled(vp);
+//		sp.setWidth("800px");
+//		dp.add(sp, DockPanel.CENTER);
+//		
 		existingGroupsTable = new SelectionTable<Group>("Active") {
 			protected void initTable(CellTable<Group> table) {
 				TextColumn<Group> textColumn = new TextColumn<Group>() {
@@ -145,13 +152,13 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 			}
 			
 			protected void selectionChanged(Set<Group> selected) {
-				chosenColumns = new ArrayList<DataColumn>(selected);
+				chosenColumns = new ArrayList<Group>(selected);
 				storeColumns();
 			}
 		};
 		vp.add(existingGroupsTable);
 		existingGroupsTable.setVisible(false);
-		existingGroupsTable.setSize("100%", "100px");		
+		existingGroupsTable.setSize("100%", "100px");				
 	}
 	
 	private void deleteGroup(String name, boolean createNew) {
@@ -192,7 +199,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 	
 	private void reflectGroupChanges() {
 		existingGroupsTable.reloadWith(sortedGroupList(groups.values()), false);
-		chosenColumns = new ArrayList<DataColumn>(existingGroupsTable.selection());
+		chosenColumns = new ArrayList<Group>(existingGroupsTable.selection());
 		storeColumns();
 		txtbxGroup.setText(nextGroupName());
 		updateConfigureStatus();
@@ -232,7 +239,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 	}
 	
 	@Override 
-	public void columnsChanged(List<DataColumn> columns) {
+	public void columnsChanged(List<Group> columns) {
 		super.columnsChanged(columns);
 		groups.clear();
 			
@@ -243,7 +250,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		updateConfigureStatus();
 				
 		existingGroupsTable.reloadWith(sortedGroupList(groups.values()), true);
-		existingGroupsTable.setSelection(asGroupList(chosenColumns));		
+		existingGroupsTable.setSelection(chosenColumns);		
 		existingGroupsTable.setVisible(groups.size() > 0);		
 		newGroup();
 	}
@@ -258,8 +265,8 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		}
 	}
 	
-	public void inactiveColumnsChanged(List<DataColumn> columns) {
-		Collection<Group> igs = sortedGroupList(asGroupList(columns));
+	public void inactiveColumnsChanged(List<Group> columns) {
+		Collection<Group> igs = sortedGroupList(columns);
 		for (Group g : igs) {
 			groups.put(g.getName(), g);
 		}
@@ -300,11 +307,8 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 	 * @param name
 	 */
 	private void makeGroup(final String name) {		
-		pendingGroup = new Group(name, new Barcode[0]);		
-		groups.put(name, pendingGroup);
-		existingGroupsTable.addItem(pendingGroup);
-		existingGroupsTable.setSelected(pendingGroup);
-
+		pendingGroup = new Group(name, new Barcode[0]);
+		addGroup(name, pendingGroup);
 		timeDoseGrid.getSelection(this);		
 	}
 	
@@ -338,12 +342,24 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		pendingGroup = new Group(pendingGroupName, barcodes.toArray(new Barcode[0]));
 
 		existingGroupsTable.removeItem(groups.get(pendingGroupName));
-		groups.put(pendingGroupName, pendingGroup);
-		existingGroupsTable.addItem(pendingGroup);
-		existingGroupsTable.setSelected(pendingGroup);
+		addGroup(pendingGroupName, pendingGroup);
 		reflectGroupChanges();
 	}
 	
+	private void addGroup(String name, Group group) {
+		groups.put(name, group);
+		existingGroupsTable.addItem(group);
+		existingGroupsTable.setSelected(group);
+		//heightChanged(screen.availableHeight());
+	}
+	
+//	@Override
+//	public void heightChanged(int newHeight) {	
+//		super.heightChanged(newHeight);
+//		dp.setHeight((screen.availableHeight() - 10) + "px"); 
+////		sp.setHeight((screen.availableHeight() - existingGroupsTable.getOffsetHeight() - 10) + "px");
+//	}
+
 	private void displayGroup(String name) {
 		setHeading("editing " + name);
 		List<String> compounds = new ArrayList<String>(Arrays.asList(groups.get(name).getCompounds()));

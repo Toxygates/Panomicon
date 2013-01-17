@@ -352,7 +352,7 @@ public class ProbeScreen extends Screen {
 	}
 	
 	@Override
-	public void columnsChanged(List<DataColumn> columns) {
+	public void columnsChanged(List<Group> columns) {
 		super.columnsChanged(columns);
 		for (ListBox l: compoundLists) {
 			l.clear();

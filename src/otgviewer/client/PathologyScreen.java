@@ -122,7 +122,7 @@ public class PathologyScreen extends Screen {
 	}
 	
 	@Override
-	public void columnsChanged(List<DataColumn> columns) {
+	public void columnsChanged(List<Group> columns) {
 		super.columnsChanged(columns);
 		if (visible) {
 			pathologies.clear();

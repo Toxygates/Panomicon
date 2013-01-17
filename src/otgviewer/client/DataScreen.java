@@ -5,8 +5,8 @@ import java.util.List;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
-import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.Group;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.MenuItem;
@@ -19,7 +19,7 @@ public class DataScreen extends Screen {
 	
 	private DataFilter lastFilter;
 	private String[] lastProbes;
-	private List<DataColumn> lastColumns;
+	private List<Group> lastColumns;
 	
 	public DataScreen(ScreenManager man) {
 		super("View data", key, true, true, man,

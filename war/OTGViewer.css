@@ -101,14 +101,20 @@ margin: 2px;
 }
 .statusPanel {
 	background: White;
+	text-align:left;
 	color: black;
-	height:3em;
 }
 .statusBorder {
 	margin: 1px;
 	border: solid DarkBlue 1px;
 }
 .highlightedRow {
-	font-weight: bold;
+	text-decoration: underline;
+}
+.dataColumn {
+	color: Black;
+}
+.extraColumn {
+	color: SteelBlue;
 }
 

@@ -312,6 +312,17 @@ public class ExpressionTable extends DataListenerWidget {
 	}
 
 	
+	private void addExtraColumn(Column<ExpressionRow, ?> col, String name) {
+		col.setCellStyleNames("extraColumn");
+		exprGrid.addColumn(col, name);
+	}
+	
+	private void addDataColumn(Column<ExpressionRow, ?> col, String title) {
+		col.setSortable(true);
+		exprGrid.addColumn(col, title);
+		col.setCellStyleNames("dataColumn");		
+	}
+	
 	private int extraCols = 0;
 	private void setupColumns() {
 		// todo: explicitly set the width of each column
@@ -324,7 +335,6 @@ public class ExpressionTable extends DataListenerWidget {
 		exprGrid.getColumnSortList().clear();
 
 		extraCols = 0;
-
 		ToolColumn tcl = new ToolColumn(new ToolCell(this));
 		exprGrid.addColumn(tcl, "");
 		exprGrid.setColumnWidth(tcl, "40px");		
@@ -332,19 +342,17 @@ public class ExpressionTable extends DataListenerWidget {
 		
 		for (HideableColumn c: hideableColumns) {
 			if (c.visible()) {
-				exprGrid.addColumn((Column<ExpressionRow, ?>) c, c.name());				
-				extraCols += 1;
+				Column<ExpressionRow, ?> cc = (Column<ExpressionRow, ?>) c;
+				addExtraColumn(cc, c.name());								
+				extraCols += 1;				
 			}
 		}		
 
-
-		int i = 0;
-		
+		int i = 0;		
+		//columns with data
 		for (DataColumn c : chosenColumns) {
-			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);
-			valueCol.setSortable(true);
-			exprGrid.addColumn(valueCol, c.getShortTitle());
-			
+			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);			
+			addDataColumn(valueCol, c.getShortTitle());			
 			if (i == 0 && exprGrid.getColumnSortList().size() == 0) {
 				exprGrid.getColumnSortList().push(valueCol);
 			}
@@ -353,8 +361,8 @@ public class ExpressionTable extends DataListenerWidget {
 		
 		for (Synthetic s: synthColumns) {
 			Column<ExpressionRow, String> ttestCol = new ExpressionColumn(tc, i);
+			addExtraColumn(ttestCol, s.getShortTitle());
 			ttestCol.setSortable(true);
-			exprGrid.addColumn(ttestCol, s.getShortTitle());
 			i += 1;
 		}				
 	}
@@ -457,7 +465,7 @@ public class ExpressionTable extends DataListenerWidget {
 	}
 
 	@Override
-	public void columnsChanged(List<DataColumn> columns) {
+	public void columnsChanged(List<Group> columns) {
 		super.columnsChanged(columns);
 		 //invalidate synthetic columns, since they depend on
 		//normal columns

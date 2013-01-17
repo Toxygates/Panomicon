@@ -1,5 +1,6 @@
 package otgviewer.shared;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -31,13 +32,24 @@ public class SharedUtils {
 	}
 	
 	public static String mkString(Collection<String> cl, String separator) {
+		List<String> ss = new ArrayList<String>(cl);
+		java.util.Collections.sort(ss);
 		StringBuilder sb = new StringBuilder();		
-		for (String s: cl) {
+		for (String s: ss) {
 			sb.append(s);
 			sb.append(separator);
 		}
 		String r = sb.toString();
 		return r.substring(0, r.length() - 2); //remove final separator
 	}
+	
+	public static List<DataColumn> asColumns(List<Group> groups) {		
+		List<DataColumn> r = new ArrayList<DataColumn>(groups.size());	
+		for (Group g: groups) {
+			r.add(g);
+		}		
+		return r;
+	}
+	
 	
 }

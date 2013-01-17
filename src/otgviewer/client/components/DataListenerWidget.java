@@ -2,6 +2,7 @@ package otgviewer.client.components;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import otgviewer.client.Utils;
@@ -9,6 +10,7 @@ import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
+import otgviewer.shared.SharedUtils;
 import otgviewer.shared.ValueType;
 
 import com.google.gwt.storage.client.Storage;
@@ -33,10 +35,10 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	protected List<String> chosenCompounds = new ArrayList<String>();
 	protected String chosenCompound;
 	protected ValueType chosenValueType;
-	protected List<DataColumn> chosenColumns = new ArrayList<DataColumn>();
+	protected List<Group> chosenColumns = new ArrayList<Group>();
 	protected DataColumn chosenCustomColumn;
 	
-	public List<DataColumn> chosenColumns() { return this.chosenColumns; }
+	public List<Group> chosenColumns() { return this.chosenColumns; }
 	
 	public DataListenerWidget() {
 		super();
@@ -76,7 +78,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		changeValueType(type);
 	}
 	
-	public void columnsChanged(List<DataColumn> columns) {
+	public void columnsChanged(List<Group> columns) {
 		chosenColumns = columns;		
 		changeColumns(columns);
 	}
@@ -141,7 +143,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}
 	}
 	
-	protected void changeColumns(List<DataColumn> columns) {
+	protected void changeColumns(List<Group> columns) {
 		chosenColumns = columns;
 		assert(columns != null);
 		for (DataViewListener l : listeners) {
@@ -211,7 +213,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	}
 	
 	public void storeColumns() {
-		storeColumns("columns", chosenColumns);
+		storeColumns("columns", SharedUtils.asColumns(chosenColumns));
 	}	
 	
 	protected void storeCustomColumn(DataColumn column) {
@@ -245,18 +247,18 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}
 	}
 	
-	protected List<DataColumn> loadColumns(String key,
+	protected List<Group> loadColumns(String key,
 			Collection<DataColumn> expectedColumns) throws Exception {
 		Storage s = Storage.getLocalStorageIfSupported();
 		if (s == null) {
 			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
 		} else {
 			String v = s.getItem("OTG." + key + "." + chosenDataFilter.pack());
-			List<DataColumn> r = new ArrayList<DataColumn>();		
+			List<Group> r = new ArrayList<Group>();		
 			if (v != null && !v.equals(packColumns(expectedColumns))) {
 				String[] spl = v.split("###");
 				for (String cl : spl) {
-					DataColumn c = unpackColumn(cl);
+					Group c = (Group) unpackColumn(cl);
 					r.add(c);
 				}			
 				return r;
@@ -282,7 +284,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 			sb.append("###");
 		}		
 		return sb.toString();
-	}
+	}	
 
 	/**
 	 * Load saved state from the local storage.
@@ -300,7 +302,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 			}
 			if (chosenDataFilter != null) {				
 				try {
-					List<DataColumn> cs = loadColumns("columns", chosenColumns);
+					List<Group> cs = loadColumns("columns", SharedUtils.asColumns(chosenColumns));					
 					if (cs != null) {						
 						columnsChanged(cs);
 					}						
@@ -311,7 +313,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 					}
 				} catch (Exception e) {										
 					//one possible failure source is if data is stored in an incorrect format
-					columnsChanged(new ArrayList<DataColumn>());
+					columnsChanged(new ArrayList<Group>());
 					storeColumns(); //overwrite the old data
 					storeCustomColumn(null); //ditto
 				}

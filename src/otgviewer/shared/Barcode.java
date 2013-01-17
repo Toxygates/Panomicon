@@ -80,4 +80,5 @@ public class Barcode implements Serializable, DataColumn {
 	public String pack() {
 		return "Barcode$$$" + code + "$$$" + individual + "$$$" + dose + "$$$" + time + "$$$" + compound; //!!
 	}
+
 }

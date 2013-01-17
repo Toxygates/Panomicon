@@ -57,7 +57,7 @@ public class SampleDetailScreen extends Screen {
 	}
 	
 	@Override
-	public void columnsChanged(List<DataColumn> columns) {
+	public void columnsChanged(List<Group> columns) {
 		super.columnsChanged(columns);
 		if (visible) {
 			if (columns.size() > 0) {

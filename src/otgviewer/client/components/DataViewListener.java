@@ -4,6 +4,7 @@ import java.util.List;
 
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.Group;
 import otgviewer.shared.ValueType;
 
 public interface DataViewListener {
@@ -14,7 +15,7 @@ public interface DataViewListener {
 	public void compoundsChanged(List<String> compounds);
 	public void availableCompoundsChanged(List<String> compounds);
 	public void valueTypeChanged(ValueType type);
-	public void columnsChanged(List<DataColumn> columns);
+	public void columnsChanged(List<Group> columns);
 	public void customColumnChanged(DataColumn column);
 	public void heightChanged(int newHeight);
 }

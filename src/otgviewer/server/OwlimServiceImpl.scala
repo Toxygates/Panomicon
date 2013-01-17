@@ -141,7 +141,8 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
   }
   def probesTargetedByCompound(filter: DataFilter, compound: String, service: String, homologous: Boolean): Array[String] = {
     val proteins = (service match {
-      case "CHEMBL" => useConnector(CHEMBL, (c:CHEMBL.type) => c.targetProtsForCompound(compound, filter))              
+      case "CHEMBL" => useConnector(CHEMBL, (c:CHEMBL.type) => c.targetProtsForCompound(compound, 
+          if (homologous) { null } else { filter }))              
       case "DrugBank" => useConnector(DrugBank, (c:DrugBank.type) => c.targetProtsForDrug(compound))        
       case _ => throw new Exception("Unexpected probe target service request: " + service)
     })
