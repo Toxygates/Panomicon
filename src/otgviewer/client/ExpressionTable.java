@@ -10,6 +10,8 @@ import java.util.Set;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ImageClickCell;
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
 import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.Association;
 import otgviewer.shared.DataColumn;
@@ -27,6 +29,10 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.event.logical.shared.OpenEvent;
+import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
@@ -35,6 +41,7 @@ import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.cellview.client.ColumnSortList;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
+import com.google.gwt.user.cellview.client.PageSizePager;
 import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.SimplePager.Resources;
@@ -57,7 +64,6 @@ import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -71,6 +77,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 
 	private final int PAGE_SIZE = 50;
 	
+	private Screen screen;
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
 	private DataGrid<ExpressionRow> exprGrid;
 	private HorizontalPanel tools;
@@ -81,6 +88,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 	
 	private VerticalPanel seriesChartPanel = new VerticalPanel();	
 	private List<SeriesChart> seriesCharts = new ArrayList<SeriesChart>();
+	private SeriesChart.Controller chartController;
 	
 	private final KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
@@ -99,16 +107,18 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		"CC GO terms", "BP GO terms", "Homologene entries" };	
 	private List<HideableColumn> hideableColumns = new ArrayList<HideableColumn>();
  	private List<AssociationColumn> associationColumns = new ArrayList<AssociationColumn>();
+ 	private Widget toolPanel;
  	
- 	
-	public ExpressionTable() {
+	public ExpressionTable(Screen _screen) {
+		screen = _screen;
 		dockPanel = new DockLayoutPanel(Unit.EM);
 
 		initWidget(dockPanel);
 		initHideableColumns();
 		
 		exprGrid = new DataGrid<ExpressionRow>();
-		dockPanel.addNorth(makeToolPanel(), 3.5);
+		toolPanel = makeToolPanel();
+		dockPanel.addNorth(toolPanel, 3.5);
 		
 		exprGrid.setStyleName("exprGrid");
 		exprGrid.setPageSize(PAGE_SIZE);
@@ -155,11 +165,15 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		});
 
 		Resources r = GWT.create(Resources.class);
-		SimplePager simplePager = new SimplePager(TextLocation.CENTER,
-				r, true, 10 * PAGE_SIZE, true);
-		simplePager.setStyleName("slightlySpaced");
-		horizontalPanel.add(simplePager);
-		simplePager.setDisplay(exprGrid);
+		SimplePager sp = new SimplePager(TextLocation.CENTER, r, true, 10 * PAGE_SIZE, true);
+		sp.setStyleName("slightlySpaced");
+		horizontalPanel.add(sp);
+		sp.setDisplay(exprGrid);
+		
+		PageSizePager pager = new PageSizePager(50); 			
+		pager.setStyleName("slightlySpaced");
+		horizontalPanel.add(pager);
+		pager.setDisplay(exprGrid);
 		
 		Label label = new Label("Magnitude >=");
 		label.setStyleName("highlySpaced");		
@@ -188,7 +202,19 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		}));
 
 		DisclosurePanel analysisDisclosure = new DisclosurePanel("Analysis");
-		tools.add(analysisDisclosure);		
+		tools.add(analysisDisclosure);
+		analysisDisclosure.addOpenHandler(new OpenHandler<DisclosurePanel>() {			
+			@Override
+			public void onOpen(OpenEvent<DisclosurePanel> event) {
+				dockPanel.setWidgetSize(toolPanel, 5);				
+			}
+		});
+		analysisDisclosure.addCloseHandler(new CloseHandler<DisclosurePanel>() {			
+			@Override
+			public void onClose(CloseEvent<DisclosurePanel> event) {
+				dockPanel.setWidgetSize(toolPanel, 3.5);
+			}
+		});
 		
 		horizontalPanel = Utils.mkHorizontalPanel(true);
 		analysisDisclosure.add(horizontalPanel);
@@ -250,14 +276,12 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		MenuBar menuBar_3 = new MenuBar(true);
 		
 		MenuItem mntmActions_1 = new MenuItem("Actions", false, menuBar_3);		
-		
+		final DataListenerWidget w = this;
 		MenuItem mntmDownloadCsv = new MenuItem("Download CSV", false, new Command() {
 			public void execute() {
-				kcService.prepareCSVDownload(new AsyncCallback<String>() {
-					public void onFailure(Throwable caught) {
-						Window.alert("Unable to prepare the requested data for download");
-					}
-					public void onSuccess(String url) {
+				kcService.prepareCSVDownload(new PendingAsyncCallback<String>(w, "Unable to prepare the requested data for download.") {
+					
+					public void handleSuccess(String url) {
 						final String downloadUrl = url;
 						final DialogBox db = new DialogBox(false, true);							
 												
@@ -517,23 +541,22 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		seriesChartPanel.clear();
 		seriesCharts.clear();
 		
-		SeriesChart firstChart = null;
+		chartController  = new SeriesChart.Controller();
+		this.addListener(chartController);
+		this.propagateTo(chartController);
+		seriesChartPanel.add(chartController);
+		
 		for (DataColumn c: cols) {
 			Label l = new Label("Compounds in '" + c.getShortTitle() +"'");
 			seriesChartPanel.add(l);			
 			l.setStyleName("heading");
 			for (String com : c.getCompounds()) {
-				SeriesChart sc = new SeriesChart(firstChart != null);
-				if (firstChart == null) {
-					firstChart = sc;
-				} else {
-					firstChart.addSlaveChart(sc);
-				}
+				SeriesChart sc = new SeriesChart(screen);
+				chartController.addChart(sc);				
 				seriesChartPanel.add(sc);
 				seriesCharts.add(sc);
 				this.propagateTo(sc);
 				sc.compoundChanged(com);
-
 			}			
 		}
 		
@@ -663,10 +686,10 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 			for (int i = 0; i < numCharts; i++) {
 				SeriesChart seriesChart = (SeriesChart) seriesCharts.get(i);
 				seriesChart.changeProbe(value);
-				seriesChart.redraw();
 				seriesChart.setWidth("500px");
 				seriesChart.setPixelHeight(chartHeight);
 			}
+			chartController.redraw();
 
 			HorizontalPanel hp = new HorizontalPanel();
 			TabPanel tp = new TabPanel();

@@ -5,7 +5,9 @@ import java.util.Collections;
 import java.util.List;
 
 import otgviewer.client.Resources;
+import otgviewer.client.SampleDetailScreen;
 import otgviewer.client.Utils;
+import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 
@@ -14,12 +16,9 @@ import com.google.gwt.dom.client.Style.Float;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
@@ -50,6 +49,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	protected boolean configured = false;
 	private List<MenuItem> menuItems = new ArrayList<MenuItem>();
 	private Widget bottom;
+	private HorizontalPanel spOuter;
 	
 	protected ScreenManager manager;
 	
@@ -68,9 +68,6 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		initWidget(rootPanel);
 		menuBar = man.getMenuBar();
 		manager = man;				
-//		rootPanel.setWidth("100%");
-//		rootPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-//		rootPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		viewLabel.setWordWrap(false);
 		viewLabel.getElement().getStyle().setMargin(2, Unit.PX);
 		this.key = key;
@@ -130,19 +127,19 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		statusPanel.setStyleName("statusPanel");		
 		floatLeft(statusPanel);
 
-		HorizontalPanel spOuter = Utils.mkWidePanel();		
+		spOuter = Utils.mkWidePanel();		
 		spOuter.setHeight("3em");
 		spOuter.add(statusPanel);		
 		spOuter.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		statusPanel.setStyleName("statusPanel");
 		spOuter.setStyleName("statusPanel");	
 
-		rootPanel.addNorth(spOuter, 3);		
+		rootPanel.addNorth(spOuter, 2.5);		
 		bottom = bottomContent();
 		if (bottom != null) {
 			HorizontalPanel hp = Utils.mkWidePanel();
 			hp.add(bottom);
-			rootPanel.addSouth(hp, 2.5);
+			rootPanel.addSouth(hp, 3);
 		}
 		rootPanel.add(content());
 	}
@@ -163,9 +160,13 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	private void floatLeft(Widget w) {
 		w.getElement().getStyle().setFloat(Float.LEFT);
 	}
+	private void floatLeft(FlowPanel fp, Widget w) {
+		floatLeft(w);
+		fp.add(w);
+	}
 	
 	protected void updateStatusPanel() {
-		statusPanel.setWidth(Window.getClientHeight() + "px");
+//		statusPanel.setWidth(Window.getClientHeight() + "px");
 		statusPanel.clear();
 		statusPanel.add(viewLabel);
 		floatLeft(viewLabel);
@@ -180,20 +181,18 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 				Label l = Utils.mkEmphLabel(g.getName() + ":");
 				l.setWordWrap(false);
 				l.getElement().getStyle().setMargin(2, Unit.PX);
-				floatLeft(l);
-				fp.add(l);
+				floatLeft(fp, l);
 				l.setTitle(tip);
 				l = new Label(g.getCDTs(2, ", "));
-				fp.add(l);
 				l.getElement().getStyle().setMargin(2, Unit.PX);
-				floatLeft(l);
+				floatLeft(fp, l);
 				l.setTitle(tip);
 				l.setWordWrap(false);
-				statusPanel.add(fp);
-				floatLeft(fp);
-//				fp.getElement().getStyle().setProperty("float", "left");
+				floatLeft(statusPanel, fp);
 			}
 		}
+//		rootPanel.forceLayout();
+//		rootPanel.setWidgetSize(spOuter, statusPanel.getOffsetHeight());
 	}
 	
 	/**
@@ -260,6 +259,12 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 				((RequiresResize) w).onResize();
 			}
 		}		
+	}
+	
+	//TODO: best location for this?
+	public void displaySampleDetail(Barcode b) {
+		storeCustomColumn(b);
+		configuredProceed(SampleDetailScreen.key);
 	}
 	
 }

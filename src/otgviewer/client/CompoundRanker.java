@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import otgviewer.client.components.DataListenerWidget;
+import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.RuleType;
@@ -53,7 +54,7 @@ public class CompoundRanker extends DataListenerWidget {
 		csVerticalPanel.add(g);
 		g.setWidget(0, 1, Utils.mkEmphLabel("Gene/probe"));
 		g.setWidget(0, 2, Utils.mkEmphLabel("Match type"));
-		g.setWidget(0, 3, Utils.mkEmphLabel("Synth. curve"));
+		g.setWidget(0, 3, Utils.mkEmphLabel("User ptn."));
 		g.setWidget(0, 4, Utils.mkEmphLabel("Ref. compound"));
 		g.setWidget(0, 5, Utils.mkEmphLabel("Ref. dose"));
 
@@ -160,13 +161,20 @@ public class CompoundRanker extends DataListenerWidget {
 					RuleType rt = selectedRuleType(i);
 					switch (rt) {
 					case Synthetic: {
-						double[] data = new double[4];
+						double[] data;
 						String[] ss = syntheticCurveText[i].getText()
 								.split(" ");
 						RankRule r = new RankRule(rt, probe);
-						if (ss.length != 4) {
-							Window.alert("Please supply 4 space-separated values as the synthetic curve. (Example: -1 -2 -3 -4");
+						if (ss.length != 4 && chosenDataFilter.cellType == CellType.Vivo) {
+							Window.alert("Please supply 4 space-separated values as the synthetic curve. (Example: -1 -2 -3 -4)");
+						} else if (ss.length != 3) { //vitro
+							Window.alert("Please supply 4 space-separated values as the synthetic curve. (Example: -1 -2 -3)");
 						} else {
+							if (chosenDataFilter.cellType == CellType.Vivo) {
+								data = new double[4];
+							} else {
+								data = new double[3];
+							}
 							for (int j = 0; j < ss.length; ++j) {
 								data[j] = Double.valueOf(ss[j]);
 							}

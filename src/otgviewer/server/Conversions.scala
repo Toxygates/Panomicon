@@ -79,6 +79,8 @@ object Conversions {
       case r: RuleType.Unchanged.type => SeriesMatching.Unchanged()
       case r: RuleType.MonotonicUp.type => SeriesMatching.MonotonicIncreasing()
       case r: RuleType.MonotonicDown.type => SeriesMatching.MonotonicDecreasing()
+      case r: RuleType.MaximalFold.type => SeriesMatching.MaxFold()
+      case r: RuleType.MinimalFold.type => SeriesMatching.MinFold()
       case r: RuleType.ReferenceCompound.type => SeriesMatching.ReferenceCompound(rr.compound, rr.dose)
     }
   }

@@ -27,7 +27,7 @@ public class DataScreen extends Screen {
 	}
 	
 	public Widget content() {
-		et = new ExpressionTable();
+		et = new ExpressionTable(this);
 		addListener(et);
 		
 		MenuItem[] mis = et.menuItems();

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
@@ -14,6 +15,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -26,26 +28,126 @@ import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 
 public class SeriesChart extends DataListenerWidget {
 
+	public static class Controller extends DataListenerWidget {
+		private ListBox chartCombo, chartSubtypeCombo;
+
+		private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
+				.create(OwlimService.class);
+		
+		private List<SeriesChart> charts = new ArrayList<SeriesChart>();
+		
+		public Controller() {
+			HorizontalPanel hp = Utils.mkHorizontalPanel();
+			initWidget(hp);
+			
+			chartCombo = new ListBox();
+			hp.add(chartCombo);
+			chartCombo.addItem("Expression vs time, fixed dose:");
+			chartCombo.addItem("Expression vs dose, fixed time:");
+			chartCombo.setSelectedIndex(0);
+
+			chartSubtypeCombo = new ListBox();
+			hp.add(chartSubtypeCombo);
+
+			chartSubtypeCombo.addChangeHandler(new ChangeHandler() {
+				public void onChange(ChangeEvent event) {				
+					redraw();
+				}
+
+			});
+			chartCombo.addChangeHandler(new ChangeHandler() {
+				public void onChange(ChangeEvent event) {
+					updateSeriesSubtypes();
+				}
+			});
+		}
+		
+		public void addChart(SeriesChart sc) { charts.add(sc); }
+		
+
+		private AsyncCallback<String[]> seriesChartItemsCallback = new AsyncCallback<String[]>() {
+			public void onFailure(Throwable caught) {
+				Window.alert("Unable to get series chart subitems.");
+			}
+
+			public void onSuccess(String[] result) {
+				for (String i : result) {
+					if (!i.equals("Control")) {
+						chartSubtypeCombo.addItem(i);
+					}
+				}
+				if (result.length > 0) {
+					chartSubtypeCombo.setSelectedIndex(0);
+					redraw();
+				}
+			}
+		};
+		
+		public void redraw() {
+
+			// make sure something is selected
+			if (chartCombo.getSelectedIndex() == -1) {
+				chartCombo.setSelectedIndex(0);
+			}
+			if (chartSubtypeCombo.getItemCount() == 0) {
+				updateSeriesSubtypes(); // will redraw for us later
+			} else {
+
+				if (chartSubtypeCombo.getSelectedIndex() == -1) {
+					chartSubtypeCombo.setSelectedIndex(0);
+				}
+
+				for (SeriesChart sc : charts) {
+					// first find the applicable barcodes
+					if (chartCombo.getSelectedIndex() == 0) {
+						sc.redrawForDose(chartSubtypeCombo
+								.getItemText(chartSubtypeCombo
+										.getSelectedIndex()));
+					} else {
+						sc.redrawForTime(chartSubtypeCombo
+								.getItemText(chartSubtypeCombo
+										.getSelectedIndex()));
+
+					}
+				}
+			}
+		}
+		
+		private void updateSeriesSubtypes() {
+			chartSubtypeCombo.clear();
+			if (chartCombo.getSelectedIndex() == 0) {
+				getDosesForSeriesChart();
+			} else {			
+				getTimesForSeriesChart();
+			}
+		}
+
+		private void getDosesForSeriesChart() {
+			chartSubtypeCombo.clear();
+			owlimService.doseLevels(chosenDataFilter, chosenCompound, seriesChartItemsCallback);
+		}
+
+		private void getTimesForSeriesChart() {
+			chartSubtypeCombo.clear();
+			owlimService.times(chosenDataFilter, chosenCompound, seriesChartItemsCallback);
+		}
+
+	}
+	
 	private SeriesDisplayStrategy seriesStrategy;
 	private Label seriesSelectionLabel;
-	private ListBox chartCombo, chartSubtypeCombo;
+	
 	private DataTable seriesTable;
 	private CoreChart seriesChart;
 	private DockPanel chartDockPanel;
-	private boolean isSlave;
 	private String chosenProbe;
+	private Screen screen;
 
 	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
 			.create(OwlimService.class);
 
 	private KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
-
-	private List<SeriesChart> slaveCharts = new ArrayList<SeriesChart>();
-	
-	void addSlaveChart(SeriesChart slave) {
-		slaveCharts.add(slave);
-	}
 	
 	@Override
 	public void dataFilterChanged(DataFilter df) {
@@ -69,24 +171,6 @@ public class SeriesChart extends DataListenerWidget {
 		chosenProbe = probe;		
 		updateSelectionLabel();
 	}
-
-	private AsyncCallback<String[]> seriesChartItemsCallback = new AsyncCallback<String[]>() {
-		public void onFailure(Throwable caught) {
-			Window.alert("Unable to get series chart subitems.");
-		}
-
-		public void onSuccess(String[] result) {
-			for (String i : result) {
-				if (!i.equals("Control")) {
-					chartSubtypeCombo.addItem(i);
-				}
-			}
-			if (result.length > 0) {
-				chartSubtypeCombo.setSelectedIndex(0);
-				redraw();
-			}
-		}
-	};
 	
 	int pixelHeight = 300;
 	public void setPixelHeight(int px) {
@@ -133,7 +217,7 @@ public class SeriesChart extends DataListenerWidget {
 		}
 	};
 
-	public SeriesChart(boolean isSlave) {
+	public SeriesChart(Screen _screen) {
 		
 		VisualizationUtils
 		.loadVisualizationApi("1.1", new Runnable() {
@@ -142,7 +226,7 @@ public class SeriesChart extends DataListenerWidget {
 			}
 		}, "corechart");
 
-		this.isSlave = isSlave;
+		screen = _screen;
 		
 		chartDockPanel = new DockPanel();
 		chartDockPanel.setSize("100%", "100%");
@@ -151,106 +235,26 @@ public class SeriesChart extends DataListenerWidget {
 		VerticalPanel verticalPanel = new VerticalPanel();
 		chartDockPanel.add(verticalPanel, DockPanel.NORTH);
 		verticalPanel.setWidth("500px");
-
-		if (!isSlave) {
-			HorizontalPanel horizontalPanel_2 = new HorizontalPanel();
-			horizontalPanel_2
-			.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-			verticalPanel.add(horizontalPanel_2);
-
-			chartCombo = new ListBox();
-			horizontalPanel_2.add(chartCombo);
-			chartCombo.addItem("Expression vs time, fixed dose:");
-			chartCombo.addItem("Expression vs dose, fixed time:");
-			chartCombo.setSelectedIndex(0);
-
-			chartSubtypeCombo = new ListBox();
-			horizontalPanel_2.add(chartSubtypeCombo);
-
-			chartSubtypeCombo.addChangeHandler(new ChangeHandler() {
-				public void onChange(ChangeEvent event) {
-					seriesTable.removeRows(0, seriesTable.getNumberOfRows());
-					redraw();
-				}
-
-			});
-			chartCombo.addChangeHandler(new ChangeHandler() {
-				public void onChange(ChangeEvent event) {
-					updateSeriesSubtypes();
-				}
-			});
-		}
 		
 		seriesSelectionLabel = Utils.mkEmphLabel("Selected: none");
 		verticalPanel.add(seriesSelectionLabel);
 	}
 
-	void redraw() {
-		if (!isSlave) {
-			// make sure something is selected
-			if (chartCombo.getSelectedIndex() == -1) {
-				chartCombo.setSelectedIndex(0);
-			}
-			if (chartSubtypeCombo.getItemCount() == 0) {
-				updateSeriesSubtypes(); // will redraw for us later
-			} else {
-
-				if (chartSubtypeCombo.getSelectedIndex() == -1) {
-					chartSubtypeCombo.setSelectedIndex(0);
-				}
-
-				// first find the applicable barcodes
-				if (chartCombo.getSelectedIndex() == 0) {
-					redrawForDose(chartSubtypeCombo
-							.getItemText(chartSubtypeCombo.getSelectedIndex()));
-				} else {
-					redrawForTime(chartSubtypeCombo
-							.getItemText(chartSubtypeCombo.getSelectedIndex()));
-
-				}
-			}
-		}
-	}
 	
 	void redrawForTime(String time) {
-		seriesStrategy = new SeriesDisplayStrategy.VsDose(seriesTable);
+		seriesStrategy = new SeriesDisplayStrategy.VsDose(screen, seriesTable);
 		owlimService.barcodes(chosenDataFilter, chosenCompound,
 				null, time,
 				seriesChartBarcodesCallback);
-		for (SeriesChart sc: slaveCharts) {
-			sc.redrawForTime(time);
-		}
 	}
 	
 	void redrawForDose(String dose) {
-		seriesStrategy = new SeriesDisplayStrategy.VsTime(seriesTable);
+		seriesStrategy = new SeriesDisplayStrategy.VsTime(screen, seriesTable);
 		owlimService.barcodes(chosenDataFilter, chosenCompound,
 				dose, null,
 				seriesChartBarcodesCallback);
-		for (SeriesChart sc: slaveCharts) {
-			sc.redrawForDose(dose);
-		}
 	}
-
-	void updateSeriesSubtypes() {
-		chartSubtypeCombo.clear();
-		if (chartCombo.getSelectedIndex() == 0) {
-			getDosesForSeriesChart();
-		} else {			
-			getTimesForSeriesChart();
-		}
-	}
-
-	void getDosesForSeriesChart() {
-		chartSubtypeCombo.clear();
-		owlimService.doseLevels(chosenDataFilter, chosenCompound, seriesChartItemsCallback);
-	}
-
-	void getTimesForSeriesChart() {
-		chartSubtypeCombo.clear();
-		owlimService.times(chosenDataFilter, chosenCompound, seriesChartItemsCallback);
-	}
-
+	
 	private void updateSelectionLabel() {		
 		seriesSelectionLabel.setText(chosenCompound);		 			
 	}

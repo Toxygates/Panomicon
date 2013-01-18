@@ -292,9 +292,14 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     if (rendered != null) {
       println("I had " + session.rendered.rows + " rows stored")
     }
+    
     val colNames = rendered.columnMap.toArray.sortWith(_._2 < _._2).map(_._1)
     val rowNames = rendered.rowMap.toArray.sortWith(_._2 < _._2).map(_._1)
-    CSVHelper.writeCSV(rowNames, colNames, session.rendered.data)
+    useConnector(B2RAffy, (c: B2RAffy.type) => {
+      val gis = c.allGeneIds()      
+      val geneIds = rowNames.map(gis.getOrElse(_, Seq.empty)).map(_.mkString(" "))
+      CSVHelper.writeCSV(rowNames, colNames, geneIds, session.rendered.data)
+    })
   }
 
   def getSingleSeries(filter: DataFilter, probe: String, timeDose: String, compound: String): Series = {

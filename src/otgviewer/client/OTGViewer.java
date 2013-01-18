@@ -98,7 +98,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		});
 		
 		rootPanel = RootLayoutPanel.get();
-		rootPanel.setSize("100%", "100%");
+//		rootPanel.setSize("100%", "100%");
 		
 //		Window.addResizeHandler(new ResizeHandler() {
 //			public void onResize(ResizeEvent event) {
@@ -108,7 +108,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 
 		mainDockPanel = new DockLayoutPanel(Unit.EM);		
 		rootPanel.add(mainDockPanel);
-		mainDockPanel.setSize("100%", "100%");
+//		mainDockPanel.setSize("100%", "100%");
 		
 		mainDockPanel.addNorth(menuBar, 3);
 		

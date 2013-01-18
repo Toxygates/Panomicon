@@ -148,8 +148,7 @@ public class PathologyScreen extends Screen {
 		}
 		
 		public void onClick(String value) {
-			storeCustomColumn(Utils.barcodeFor(chosenColumns, value));
-			configuredProceed(SampleDetailScreen.key);
+			displaySampleDetail(Utils.barcodeFor(chosenColumns, value));
 		}
 	}
 	

@@ -59,7 +59,8 @@ public class SampleDetailScreen extends Screen {
 		super.columnsChanged(columns);
 		if (visible) {
 			if (columns.size() > 0) {
-				displayColumn = chosenColumns.get(0);
+				setDisplayColumn(chosenColumns.get(0));
+//				displayColumn = chosenColumns.get(0);
 
 				columnList.clear();
 				for (DataColumn c : chosenColumns) {
@@ -144,6 +145,11 @@ public class SampleDetailScreen extends Screen {
 		p.add(ct);
 	}
 
+	private void setDisplayColumn(DataColumn c) {
+		barcodes = c.getBarcodes();
+		displayColumn = c;
+	}
+	
 	private void displayWith(String column) {
 		while(biologicalTable.getColumnCount() > 0) {
 			biologicalTable.removeColumn(0);
@@ -152,16 +158,18 @@ public class SampleDetailScreen extends Screen {
 			experimentTable.removeColumn(0);
 		}
 		
+		displayColumn = null;
 		if (chosenCustomColumn != null && column.equals(chosenCustomColumn.getShortTitle())) {
-			barcodes = chosenCustomColumn.getBarcodes();
-			displayColumn = chosenCustomColumn;
+			setDisplayColumn(chosenCustomColumn);
 		} else {
 			for (DataColumn c : chosenColumns) {
 				if (c.getShortTitle().equals(column)) {
-					barcodes = c.getBarcodes();
-					displayColumn = c;
+					setDisplayColumn(c);					
 				}
 			}
+		}
+		if (displayColumn == null) {
+			Window.alert("Error: no display column selected.");
 		}
 		
 		makeColumn(experimentTable, 0, "Experiment detail", "15em");
@@ -191,6 +199,15 @@ public class SampleDetailScreen extends Screen {
 		return col;
 	}
 
+	private String[] makeAnnotItem(int i, Annotation[] as) {
+		String[] item = new String[barcodes.length + 1];
+		item[0] = as[0].getEntries().get(i).description;
+		for (int j = 0; j < as.length; ++j) {					
+			item[j + 1] = as[j].getEntries().get(i).value;						
+		}
+		return item;
+	}
+	
 	private void reload() {
 		if (displayColumn != null) {
 			owlimService.annotations(displayColumn, new AsyncCallback<Annotation[]>() {
@@ -203,24 +220,14 @@ public class SampleDetailScreen extends Screen {
 					final int numEntries = as[0].getEntries().size();
 					int i = 0;
 					while(i < numEntries && i < 23) {
-						String[] item = new String[barcodes.length + 1];
-						item[0] = as[0].getEntries().get(i).description;
-						for (int j = 0; j < as.length; ++j) {					
-							item[j + 1] = as[j].getEntries().get(i).value;						
-						}
-						annotations.add(item);
+						annotations.add(makeAnnotItem(i, as));						
 						i += 1;
 					}
 					experimentTable.setRowData(annotations);
 					annotations.clear();
 					
 					while(i < numEntries) {
-						String[] item = new String[barcodes.length + 1];
-						item[0] = as[0].getEntries().get(i).description;
-						for (int j = 0; j < as.length; ++j) {					
-							item[j + 1] = as[j].getEntries().get(i).value;						
-						}
-						annotations.add(item);
+						annotations.add(makeAnnotItem(i, as));						
 						i += 1;
 					}
 					biologicalTable.setRowData(annotations);

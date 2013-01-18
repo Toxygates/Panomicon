@@ -4,12 +4,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.SampleTimes;
 
+import com.google.gwt.core.client.JsArray;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
+import com.google.gwt.visualization.client.Selection;
+import com.google.gwt.visualization.client.events.SelectHandler;
 import com.google.gwt.visualization.client.visualizations.corechart.ColumnChart;
 import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
@@ -20,9 +24,11 @@ public abstract class SeriesDisplayStrategy {
 	protected Barcode[] barcodes;
 	protected int[][] bcTable;
 	protected String[] individuals;
+	private Screen screen;
 	
-	public SeriesDisplayStrategy(DataTable _table) {		
+	public SeriesDisplayStrategy(Screen _screen, DataTable _table) {		
 		table = _table;
+		screen = _screen;
 	}
 	
 	void setupTable(Barcode[] barcodes) {
@@ -64,7 +70,7 @@ public abstract class SeriesDisplayStrategy {
 		}	
 	}
 	
-	void displayData(List<ExpressionRow> data, CoreChart chart) {
+	void displayData(List<ExpressionRow> data, final CoreChart chart) {
 //		System.out.println("Series chart got " + data.size() + " rows");
 		
 		if (bcTable.length > 0) {	
@@ -82,6 +88,17 @@ public abstract class SeriesDisplayStrategy {
 			}
 		}		
 		chart.draw(table, Utils.createChartOptions("MediumAquaMarine"));
+		chart.addSelectHandler(new SelectHandler() {			
+			@Override
+			public void onSelect(SelectEvent event) {
+				JsArray<Selection> ss = chart.getSelections();
+				Selection s = ss.get(0);
+				int col = s.getColumn();
+				int row = s.getRow();
+				Barcode b = barcodes[bcTable[row][col - 1]];
+				screen.displaySampleDetail(b);
+			}
+		});
 	}
 	
 	abstract int categoryForBarcode(Barcode b);
@@ -100,8 +117,8 @@ public abstract class SeriesDisplayStrategy {
 	
 	
 	public static class VsTime extends SeriesDisplayStrategy {
-		public VsTime(DataTable table) {
-			super(table);
+		public VsTime(Screen screen, DataTable table) {
+			super(screen, table);
 		}
 		private String[] categorySubset; 
 		
@@ -138,8 +155,8 @@ public abstract class SeriesDisplayStrategy {
 	}
 	
 	public static class VsDose extends SeriesDisplayStrategy {
-		public VsDose(DataTable table) {
-			super(table);
+		public VsDose(Screen screen, DataTable table) {
+			super(screen, table);
 		}
 		
 		public static final String[] allDoses = new String[] { "Control", "Low", "Middle", "High" };
