@@ -111,6 +111,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	}
 	
 	public void setSelection(Barcode[] barcodes) {
+		setAll(false);
 		for (Barcode b: barcodes) {
 			String c = b.getCompound();
 			setSelected(c, b.getTime(), b.getDose(), true);						

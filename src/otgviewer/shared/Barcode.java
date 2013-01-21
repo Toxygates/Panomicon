@@ -80,5 +80,18 @@ public class Barcode implements Serializable, DataColumn {
 	public String pack() {
 		return "Barcode$$$" + code + "$$$" + individual + "$$$" + dose + "$$$" + time + "$$$" + compound; //!!
 	}
+	
+	@Override
+	public int hashCode() {
+		return code.hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Barcode) {
+			return code.equals(((Barcode) other).getCode());
+		}
+		return false;
+	}
 
 }

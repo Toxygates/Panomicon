@@ -1,22 +1,23 @@
 package otgviewer.shared;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class Pathology implements Serializable {
-	private String _barcode;
-	private String _topography;
-	private String _finding;
-	private boolean _spontaneous;
-	private String _grade;
+	private String barcode;
+	private String topography;
+	private String finding;
+	private boolean spontaneous;
+	private String grade;
 	
 	public Pathology() { }
 		
-	public Pathology(String barcode, String topography, String finding, boolean spontaneous, String grade) {
-		_barcode = barcode;
-		_topography = topography;
-		_finding = finding;
-		_spontaneous = spontaneous;
-		_grade = grade;
+	public Pathology(String _barcode, String _topography, String _finding, boolean _spontaneous, String _grade) {
+		barcode = _barcode;
+		topography = _topography;
+		finding = _finding;
+		spontaneous = _spontaneous;
+		grade = _grade;
 	}
 	
 	/**
@@ -24,19 +25,51 @@ public class Pathology implements Serializable {
 	 * @return
 	 */
 	public String barcode() {
-		return _barcode;
+		return barcode;
 	}
 	public String topography() {
-		return _topography;		
+		return topography;		
 	}
 	public String finding() {
-		return _finding;
+		return finding;
 	}	
 	public boolean spontaneous() {
-		return _spontaneous;
+		return spontaneous;
 	}
 	public String grade() {
-		return _grade;
+		return grade;
+	}
+	
+	@Override
+	public int hashCode() {
+		int r = 1;
+		if (barcode != null) {
+			r = r * 41 + barcode.hashCode();
+		}
+		if (topography != null) {
+			r = r * 41 + topography.hashCode();
+		}
+		if (finding != null) {
+			r = r * 41 + finding.hashCode();
+		}
+		if (grade != null) {
+			r = r * 41 + grade.hashCode();
+		}
+		if (spontaneous) {
+			r *= 41;
+		}
+		return r;
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Pathology) {
+			Pathology op = (Pathology) other;
+			Object[] th = new Object[] { barcode, topography, finding, spontaneous, grade };
+			Object[] oth = new Object[] { op.barcode(), op.topography(), op.finding(), op.spontaneous(), op.grade() } ;
+			return Arrays.deepEquals(th, oth);			
+		}
+		return false;
 	}
 	
 }

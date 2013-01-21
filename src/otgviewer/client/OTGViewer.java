@@ -12,7 +12,7 @@ import otgviewer.client.components.ScreenManager;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Style.Position;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -26,7 +26,6 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
@@ -100,20 +99,24 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		rootPanel = RootLayoutPanel.get();
 //		rootPanel.setSize("100%", "100%");
 		
-//		Window.addResizeHandler(new ResizeHandler() {
-//			public void onResize(ResizeEvent event) {
-//				resizeInterface(event.getHeight());
-//			}
-//		});
+		Window.addResizeHandler(new ResizeHandler() {
+			public void onResize(ResizeEvent event) {
+				Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand () {
+					public void execute() {
+						resizeInterface();						
+					}
+				});
+			}
+		});
 
 		mainDockPanel = new DockLayoutPanel(Unit.EM);		
 		rootPanel.add(mainDockPanel);
 //		mainDockPanel.setSize("100%", "100%");
 		
-		mainDockPanel.addNorth(menuBar, 3);
+		mainDockPanel.addNorth(menuBar, 2.7);
 		
 		navPanel = Utils.mkHorizontalPanel();
-		mainDockPanel.addNorth(navPanel, 3);
+		mainDockPanel.addNorth(navPanel, 2.7);
 		
 		initScreens(); //Need access to the nav. panel
 				
@@ -149,7 +152,6 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		return menuBar;
 	}
 
-	
 	void addWorkflowLinks(Screen current) {
 		navPanel.clear();
 		for (int i = 0; i < workflow.size(); ++i) {
@@ -186,10 +188,10 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 			currentScreen.hide();
 		}
 		currentScreen = s;
-		currentScreen.show();					
-		mainDockPanel.add(currentScreen);
 		addWorkflowLinks(currentScreen);
-//		resizeInterface(Window.getClientHeight()); 
+		mainDockPanel.add(currentScreen);
+		currentScreen.show();
+		resizeInterface(); 
 	}
 
 	/**
@@ -270,6 +272,12 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	
 	private ImageResource getAboutImage() {
 		return resources.about();
+	}
+	
+	private void resizeInterface() {
+		if (currentScreen != null) {
+			currentScreen.resizeInterface();
+		}
 	}
 	
 	

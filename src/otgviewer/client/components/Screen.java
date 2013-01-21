@@ -12,6 +12,7 @@ import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Float;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.resources.client.ImageResource;
@@ -50,6 +51,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	private List<MenuItem> menuItems = new ArrayList<MenuItem>();
 	private Widget bottom;
 	private HorizontalPanel spOuter;
+	private List<Widget> toolbars = new ArrayList<Widget>();
 	
 	protected ScreenManager manager;
 	
@@ -64,7 +66,8 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		this.showGroups = showGroups;
 		this.helpHTML = helpHTML;
 		this.helpImage = helpImage;
-		rootPanel = new DockLayoutPanel(Unit.EM);
+		rootPanel = new DockLayoutPanel(Unit.PX);
+		
 		initWidget(rootPanel);
 		menuBar = man.getMenuBar();
 		manager = man;				
@@ -128,20 +131,25 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		floatLeft(statusPanel);
 
 		spOuter = Utils.mkWidePanel();		
-		spOuter.setHeight("3em");
+		spOuter.setHeight("30px");
 		spOuter.add(statusPanel);		
 		spOuter.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		statusPanel.setStyleName("statusPanel");
 		spOuter.setStyleName("statusPanel");	
 
-		rootPanel.addNorth(spOuter, 2.5);		
+		addToolbars(); //must be called before rootPanel.add()		
 		bottom = bottomContent();
 		if (bottom != null) {
-			HorizontalPanel hp = Utils.mkWidePanel();
+			HorizontalPanel hp = Utils.mkWidePanel();			
 			hp.add(bottom);
-			rootPanel.addSouth(hp, 3);
+			hp.setHeight("40px");
+			rootPanel.addSouth(hp, 40);
 		}
 		rootPanel.add(content());
+	}
+	
+	protected void addToolbars() {
+		addToolbar(spOuter, 40);
 	}
 	
 	/**
@@ -155,6 +163,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		}
 		loadState();
 		updateStatusPanel(); //needs access to the groups from loadState
+		deferredResize();
 	}
 	
 	private void floatLeft(Widget w) {
@@ -188,11 +197,32 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 				floatLeft(fp, l);
 				l.setTitle(tip);
 				l.setWordWrap(false);
-				floatLeft(statusPanel, fp);
+				floatLeft(statusPanel, fp);				
 			}
+		}		
+	}
+	
+	public void resizeInterface() {
+		for (Widget w: toolbars) {
+			rootPanel.setWidgetSize(w, w.getOffsetHeight());
 		}
-//		rootPanel.forceLayout();
-//		rootPanel.setWidgetSize(spOuter, statusPanel.getOffsetHeight());
+		rootPanel.forceLayout();
+//		rootPanel.setWidgetSize(spOuter, statusPanel.getOffsetHeight() + 10);
+	}
+	
+	protected void addToolbar(Widget toolbar, int size) {
+		toolbars.add(toolbar);
+		rootPanel.addNorth(toolbar, size);
+	}
+	
+	//Sometimes we need to do a deferred resize, because the layout engine has not finished yet
+	//at the time when we request the resize operation.
+	public void deferredResize() {
+		Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand () {
+			public void execute() {
+				resizeInterface();						
+			}
+		});
 	}
 	
 	/**

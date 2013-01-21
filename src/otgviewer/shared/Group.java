@@ -1,6 +1,7 @@
 package otgviewer.shared;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -86,8 +87,22 @@ public class Group implements Serializable, DataColumn, Comparable<Group> {
 		}
 	}
 	
+	@Override
 	public int compareTo(Group other) {
 		return name.compareTo(other.getName());
+	}
+	
+	@Override
+	public int hashCode() {
+		return Arrays.hashCode(barcodes) * 41 + name.hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Group) {
+			return (Arrays.deepEquals(this.barcodes, ((Group) other).getBarcodes())) && name.equals(((Group) other).getName());
+		}
+		return false;
 	}
 	
 }

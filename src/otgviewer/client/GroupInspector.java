@@ -151,6 +151,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 			protected void selectionChanged(Set<Group> selected) {
 				chosenColumns = new ArrayList<Group>(selected);
 				storeColumns();
+				updateConfigureStatus();
 			}
 		};
 //		vp.add(existingGroupsTable);
@@ -339,9 +340,8 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		
 	private void setGroup(String pendingGroupName, List<Barcode> barcodes) {
 		Group pendingGroup = groups.get(pendingGroupName);
+		existingGroupsTable.removeItem(pendingGroup);
 		pendingGroup = new Group(pendingGroupName, barcodes.toArray(new Barcode[0]));
-
-		existingGroupsTable.removeItem(groups.get(pendingGroupName));
 		addGroup(pendingGroupName, pendingGroup);
 		reflectGroupChanges();
 	}

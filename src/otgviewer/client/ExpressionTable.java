@@ -80,7 +80,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 	private Screen screen;
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
 	private DataGrid<ExpressionRow> exprGrid;
-	private HorizontalPanel tools;
+	private HorizontalPanel tools, analysisTools;
 	private DockLayoutPanel dockPanel;
 	
 	private DoubleBox absValBox;
@@ -112,13 +112,11 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 	public ExpressionTable(Screen _screen) {
 		screen = _screen;
 		dockPanel = new DockLayoutPanel(Unit.EM);
-
-		initWidget(dockPanel);
 		initHideableColumns();
 		
 		exprGrid = new DataGrid<ExpressionRow>();
-		toolPanel = makeToolPanel();
-		dockPanel.addNorth(toolPanel, 3.5);
+		dockPanel.add(exprGrid);
+		initWidget(dockPanel);
 		
 		exprGrid.setStyleName("exprGrid");
 		exprGrid.setPageSize(PAGE_SIZE);
@@ -128,12 +126,12 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		exprGrid.setRowStyles(new RowHighligher());
 		
 		exprGrid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
-		dockPanel.add(exprGrid);
-		
+	
 		asyncProvider.addDataDisplay(exprGrid);		
 		AsyncHandler colSortHandler = new AsyncHandler(exprGrid);
 		
 		exprGrid.addColumnSortHandler(colSortHandler);
+		makeTools();
 		setEnabled(false);
 
 	}
@@ -144,7 +142,11 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		return ValueType.unpack(vt);		
 	}
 	
-	private Widget makeToolPanel() {
+	public Widget tools() {
+		return this.tools;
+	}
+	
+	private void makeTools() {
 		tools = Utils.mkHorizontalPanel();		
 		
 		HorizontalPanel horizontalPanel = Utils.mkHorizontalPanel(true);		
@@ -206,35 +208,41 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		analysisDisclosure.addOpenHandler(new OpenHandler<DisclosurePanel>() {			
 			@Override
 			public void onOpen(OpenEvent<DisclosurePanel> event) {
-				dockPanel.setWidgetSize(toolPanel, 5);				
+				analysisTools.setVisible(true);
+				screen.deferredResize();
+//				dockPanel.setWidgetSize(toolPanel, 5);				
 			}
 		});
 		analysisDisclosure.addCloseHandler(new CloseHandler<DisclosurePanel>() {			
 			@Override
 			public void onClose(CloseEvent<DisclosurePanel> event) {
-				dockPanel.setWidgetSize(toolPanel, 3.5);
+				analysisTools.setVisible(false);
+				screen.deferredResize();
+//				dockPanel.setWidgetSize(toolPanel, 3.5);
 			}
-		});
+		});		
+	}
+	
+	public Widget analysisTools() {
+		analysisTools = Utils.mkHorizontalPanel(true);
+//		analysisDisclosure.add(horizontalPanel);
+		analysisTools.setStyleName("colored2");
 		
-		horizontalPanel = Utils.mkHorizontalPanel(true);
-		analysisDisclosure.add(horizontalPanel);
-		horizontalPanel.setStyleName("colored2");
-		
-		horizontalPanel.add(groupsel1);
+		analysisTools.add(groupsel1);
 		groupsel1.setVisibleItemCount(1);
-		horizontalPanel.add(groupsel2);
+		analysisTools.add(groupsel2);
 		groupsel2.setVisibleItemCount(1);
 		
 		
-		horizontalPanel.add(new Button("Add T-Test", new ClickHandler() {
+		analysisTools.add(new Button("Add T-Test", new ClickHandler() {
 			public void onClick(ClickEvent e) { addTwoGroupSynthetic(new Synthetic.TTest(null, null), "T-Test"); }							
 		}));
 		
-		horizontalPanel.add(new Button("Add U-Test", new ClickHandler() {
+		analysisTools.add(new Button("Add U-Test", new ClickHandler() {
 			public void onClick(ClickEvent e) { addTwoGroupSynthetic(new Synthetic.UTest(null, null), "U-Test"); }							
 		}));
 		
-		horizontalPanel.add(new Button("Remove tests", new ClickHandler() {
+		analysisTools.add(new Button("Remove tests", new ClickHandler() {
 			public void onClick(ClickEvent ce) {
 				if (!synthColumns.isEmpty()) {
 					synthColumns.clear();
@@ -244,10 +252,9 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 				}
 			}
 		}));
-		
-		return tools;
+		analysisTools.setVisible(false); //initially hidden
+		return analysisTools;
 	}
-	
 	
 	private void addTwoGroupSynthetic(final Synthetic.TwoGroupSynthetic synth, final String name) {
 		if (groupsel1.getSelectedIndex() == -1 || groupsel2.getSelectedIndex() == -1) {

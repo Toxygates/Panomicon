@@ -11,6 +11,7 @@ import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.Annotation;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
+import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 
 import com.google.gwt.core.client.GWT;
@@ -49,6 +50,10 @@ public class SampleDetailScreen extends Screen {
 			.create(OwlimService.class);
 	AnnotationTDGrid atd = new AnnotationTDGrid();
 	
+	private DataFilter lastFilter;
+	private List<Group> lastColumns;
+	private DataColumn lastCustomColumn;
+	
 	public SampleDetailScreen(ScreenManager man) {
 		super("Sample details", key, true, true, man);						
 		this.addListener(atd);
@@ -57,18 +62,15 @@ public class SampleDetailScreen extends Screen {
 	@Override
 	public void columnsChanged(List<Group> columns) {
 		super.columnsChanged(columns);
-		if (visible) {
+		if (visible && !columns.equals(lastColumns)) {
 			if (columns.size() > 0) {
 				setDisplayColumn(chosenColumns.get(0));
 //				displayColumn = chosenColumns.get(0);
-
+				columnList.setSelectedIndex(0);
 				columnList.clear();
 				for (DataColumn c : chosenColumns) {
 					columnList.addItem(c.getShortTitle());
-				}
-				columnList.setSelectedIndex(0);
-				displayWith(columnList.getItemText(columnList
-						.getSelectedIndex()));
+				}				
 			}
 		}
 	}
@@ -76,8 +78,20 @@ public class SampleDetailScreen extends Screen {
 	@Override
 	public void show() {
 		super.show();
-		columnsChanged(chosenColumns);
-		customColumnChanged(chosenCustomColumn);		
+		if (visible
+				&& (lastFilter == null || !lastFilter.equals(chosenDataFilter)
+						|| lastColumns == null
+						|| !chosenColumns.equals(lastColumns) || chosenCustomColumn != null
+						&& (lastCustomColumn == null || !lastCustomColumn
+								.equals(chosenCustomColumn)))) {
+			columnsChanged(chosenColumns);			
+			customColumnChanged(chosenCustomColumn);
+			displayWith(columnList.getItemText(columnList.getSelectedIndex()));
+			
+			lastFilter = chosenDataFilter;
+			lastColumns = chosenColumns;
+			lastCustomColumn = chosenCustomColumn;			
+		}
 	}
 
 	@Override
@@ -86,9 +100,7 @@ public class SampleDetailScreen extends Screen {
 		if (visible) {
 			if (customColumn != null) {
 				columnList.addItem(customColumn.getShortTitle());
-				columnList.setSelectedIndex(columnList.getItemCount() - 1);
-				displayWith(columnList.getItemText(columnList
-						.getSelectedIndex()));
+				columnList.setSelectedIndex(columnList.getItemCount() - 1);				
 				storeCustomColumn(null); // consume the data so it doesn't turn
 											// up
 											// again.
@@ -134,7 +146,10 @@ public class SampleDetailScreen extends Screen {
 		VerticalPanel vp = Utils.mkVerticalPanel();
 		configureTable(vp, experimentTable);
 		configureTable(vp, biologicalTable);
-		dp.add(new ScrollPanel(vp));
+
+		hp = Utils.mkWidePanel(); //to make it centered
+		hp.add(vp);
+		dp.add(new ScrollPanel(hp));		
 		return dp;
 	}
 	
@@ -180,6 +195,8 @@ public class SampleDetailScreen extends Screen {
 			makeColumn(biologicalTable, i, name, "9em");					
 			makeColumn(experimentTable, i, name, "9em");
 		}
+		biologicalTable.setWidth((15 + 9 * barcodes.length) + "em", true);
+		experimentTable.setWidth((15 + 9 * barcodes.length) + "em", true);
 		reload();
 	}
 	
@@ -202,6 +219,7 @@ public class SampleDetailScreen extends Screen {
 	private String[] makeAnnotItem(int i, Annotation[] as) {
 		String[] item = new String[barcodes.length + 1];
 		item[0] = as[0].getEntries().get(i).description;
+//		Window.alert(item.length + " " + as.length + " " + barcodes.length);
 		for (int j = 0; j < as.length; ++j) {					
 			item[j + 1] = as[j].getEntries().get(i).value;						
 		}

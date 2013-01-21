@@ -23,11 +23,18 @@ public class DataScreen extends Screen {
 	
 	public DataScreen(ScreenManager man) {
 		super("View data", key, true, true, man,
-				resources.dataDisplayHTML(), resources.dataDisplayHelp());		
+				resources.dataDisplayHTML(), resources.dataDisplayHelp());
+		et = new ExpressionTable(this);
 	}
 	
-	public Widget content() {
-		et = new ExpressionTable(this);
+	@Override
+	protected void addToolbars() {
+		super.addToolbars();
+		addToolbar(et.tools(), 30);
+		addToolbar(et.analysisTools(), 30);
+	}
+
+	public Widget content() {		
 		addListener(et);
 		
 		MenuItem[] mis = et.menuItems();
@@ -48,7 +55,6 @@ public class DataScreen extends Screen {
 		
 		//Attempt to avoid reloading the data
 		if (lastFilter == null || !lastFilter.equals(chosenDataFilter) ||
-				//lastProbes == null || !Arrays.deepEquals(chosenProbes, lastProbes) ||
 				lastColumns == null || !chosenColumns.equals(lastColumns)) {			
 			et.getExpressions(); //false		
 		} else if (!Arrays.equals(chosenProbes, lastProbes)) {				

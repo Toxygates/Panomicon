@@ -45,15 +45,14 @@ margin:2px;
 
 .colored {
 background:Beige;
-margin: 2px;
 }
 .darkColored {
 background:White;
 margin: 2px;
 }
 .colored2 {
-background:MintCream;
-margin: 2px;
+margin: 1px 0px 0px 0px;
+background:LightSteelBlue;
 }
 .none {
 }
@@ -102,7 +101,7 @@ margin: 2px;
 .statusPanel {
 	background: White;
 	text-align:left;
-	color: black;
+	color: black;	
 }
 .statusBorder {
 	margin: 1px;

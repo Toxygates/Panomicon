@@ -189,6 +189,19 @@ public class Utils {
 		}
 		return null;
 	}
+	
+	public static List<Group> groupsFor(List<Group> columns, String barcode) {
+		List<Group> r = new ArrayList<Group>();
+		for (Group c : columns) {
+			for (Barcode b : c.getBarcodes()) {
+				if (b.getCode().equals(barcode)) {
+					r.add(c);
+					break;
+				}
+			}
+		}
+		return r;
+	}
 
 	public static Barcode barcodeFor(List<Group> columns, String barcode) {
 		for (Group c : columns) {
