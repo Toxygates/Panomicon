@@ -274,7 +274,7 @@ public class ProbeScreen extends Screen {
 		Button button = new Button("Add direct targets >>", makeTargetLookupCH(compoundList, service, false));
 		verticalPanel_2.add(button);
 		
-		button = new Button("Add targets with homologs >>", makeTargetLookupCH(compoundList, service, true));
+		button = new Button("Add inferred targets >>", makeTargetLookupCH(compoundList, service, true));
 		verticalPanel_2.add(button);		
 		
 		return verticalPanel_2;

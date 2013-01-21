@@ -1,26 +1,27 @@
 package otgviewer.server
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
+
 import Assocations.convert
 import UtilsS.nullToNone
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
+import kyotocabinet.DB
+import otg.OTGMisc
 import otg.OTGQueries
+import otg.OTGSeriesQuery
+import otg.Series
+import otg.sparql._
 import otgviewer.client.OwlimService
 import otgviewer.shared.Annotation
 import otgviewer.shared.Association
 import otgviewer.shared.Barcode
 import otgviewer.shared.DataColumn
 import otgviewer.shared.DataFilter
-import otgviewer.shared.Pathology
-import otgviewer.shared.Pair
-import otgviewer.shared.RankRule
-import otg.OTGSeriesQuery
-import kyotocabinet.DB
-import otg.Series
-import otg.OTGMisc
 import otgviewer.shared.NoSuchProbeException
-import otg.sparql._
+import otgviewer.shared.Pair
+import otgviewer.shared.Pathology
+import otgviewer.shared.RankRule
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -38,7 +39,7 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
     super.init(config)
     OTGOwlim.connect()
     B2RAffy.connect()
-    B2RHomologene.connect()
+    Uniprot.connect()
     val homePath = System.getProperty("otg.home")
     seriesDB = OTGSeriesQuery.open(homePath + "/otgfs.kct")
   }
@@ -46,7 +47,7 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
   override def destroy() {
     B2RAffy.close()
     OTGOwlim.close()
-    B2RHomologene.close()
+    Uniprot.close()
     seriesDB.close()
     super.destroy()
   }
@@ -147,7 +148,7 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
       case _ => throw new Exception("Unexpected probe target service request: " + service)
     })
     val pbs = if (homologous) {
-      val genes = B2RHomologene.homologousGenesForUniprots(proteins).values.flatten
+      val genes = Uniprot.orthologousGenesForUniprots(proteins).values.flatten
       OTGOwlim.probesForEntrezGenes(genes)
     } else {
       OTGOwlim.probesForUniprot(proteins)
