@@ -11,6 +11,7 @@ import otg.OTGMisc
 import otg.OTGQueries
 import otg.OTGSeriesQuery
 import otg.Series
+import otg.Species
 import otg.sparql._
 import otgviewer.client.OwlimService
 import otgviewer.shared.Annotation
@@ -148,8 +149,9 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
       case _ => throw new Exception("Unexpected probe target service request: " + service)
     })
     val pbs = if (homologous) {
-      val genes = Uniprot.orthologousGenesForUniprots(proteins).values.flatten
-      OTGOwlim.probesForEntrezGenes(genes)
+      val oproteins = Uniprot.orthologsForUniprots(proteins).values.flatten
+      OTGOwlim.probesForUniprot(oproteins)
+//      OTGOwlim.probesForEntrezGenes(genes)
     } else {
       OTGOwlim.probesForUniprot(proteins)
     }
@@ -162,47 +164,62 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
   def probesForGoTerm(filter: DataFilter, goTerm: String): Array[String] = 
     OTGQueries.filterProbes(OTGOwlim.probesForGoTerm(goTerm), filter)
 
+    import OTGMisc._
   def associations(filter: DataFilter, probes: Array[String], geneIds: Array[String]): Array[Association] = {
 
+    def connectorOrEmpty[T <: RDFConnector](c: T, f: T => SMMap) = 
+      useConnector(c, f, emptySMMap())
+    
+      val proteins = OTGOwlim.uniprotsForProbes(probes)
+      
     //By setting it up like this we can request data from the different servers in parallel,
     //and keep going if one fails
     val sources = List(() => {
-      ("KEGG pathways", convert(
-          useConnector(B2RKegg,
-              (c: B2RKegg.type) => c.pathwaysForProbes(probes, filter),
-              Map())))                
+      ("KEGG pathways", connectorOrEmpty(B2RKegg,
+              (c: B2RKegg.type) => c.pathwaysForProbes(probes, filter)))              
       },
       () => {
-        ("MF GO terms",
-          convert(useConnector(OTGOwlim,            
-            (c: OTGOwlim.type) => c.mfGoTermsForProbes(probes),
-            Map())))          
+        ("MF GO terms", connectorOrEmpty(OTGOwlim,            
+            (c: OTGOwlim.type) => c.mfGoTermsForProbes(probes)))            
       },
       () => {
-        ("BP GO terms",
-          convert(useConnector(OTGOwlim,            
-            (c: OTGOwlim.type) => c.bpGoTermsForProbes(probes),
-            Map())))          
+        ("BP GO terms", connectorOrEmpty(OTGOwlim,            
+            (c: OTGOwlim.type) => c.bpGoTermsForProbes(probes)))
+            
       },
       () => {
-        ("CC GO terms",
-          convert(useConnector(OTGOwlim,            
-            (c: OTGOwlim.type) => c.ccGoTermsForProbes(probes),
-            Map())))          
+        ("CC GO terms", connectorOrEmpty(OTGOwlim,            
+            (c: OTGOwlim.type) => c.ccGoTermsForProbes(probes)))            
       },
       () => {
-        ("Homologene entries",
-            convert(useConnector(B2RHomologene,
-                (c: B2RHomologene.type) => c.homologousGenes(geneIds),
-                Map())))
+        ("CHEMBL targets", connectorOrEmpty(CHEMBL,
+            (c: CHEMBL.type) => { val targets = c.targetingCompoundsForProteins(proteins.flatMap(_._2), null)
+              val r = proteins.map(x => (x._1 -> x._2.flatMap(targets.getOrElse(_, Set()))))
+              r
+            }))
+      },
+      () => {
+        ("DrugBank targets", connectorOrEmpty(DrugBank,
+            (c: DrugBank.type) => { val targets = c.targetingCompoundsForProteins(proteins.flatMap(_._2))
+              val r = proteins.map(x => (x._1 -> x._2.flatMap(targets.getOrElse(_, Set()))))
+              r
+            }))
+      },
+      () => {
+        ("Homologene entries", connectorOrEmpty(B2RHomologene,
+                (c: B2RHomologene.type) => c.homologousGenes(geneIds)))                
+      },
+      () => {
+        ("UniProt proteins", connectorOrEmpty(OTGOwlim,
+            (c: OTGOwlim.type) => c.uniprotsForProbes(probes)))
       }
       )
 
-    sources.par.map(_()).seq.map(x => new Association(x._1, x._2)).toArray     
+    sources.par.map(_()).seq.map(x => new Association(x._1, convert(x._2))).toArray     
   }
   
-  def geneSuggestions(partialName: String): Array[Pair[String, String]] = {
-    useConnector(B2RAffy, (c: B2RAffy.type) => c.probesForPartialTitle(partialName, null)).map(x => 
+  def geneSuggestions(partialName: String, filter: DataFilter): Array[Pair[String, String]] = {
+    useConnector(B2RAffy, (c: B2RAffy.type) => c.probesForPartialTitle(partialName, filter)).map(x => 
       new Pair(x._1, x._2)).toArray
   }
   

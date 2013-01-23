@@ -39,7 +39,8 @@ public class ColumnScreen extends Screen {
 
 		cs = new CompoundSelector("Compounds");
 		this.addListener(cs);
-		dp.addWest(cs, 27);
+		cs.setStyleName("compoundSelector");
+		dp.addWest(cs, 29);
 		
 		TabLayoutPanel tp = new TabLayoutPanel(2.5, Unit.EM);
 		dp.add(tp);		

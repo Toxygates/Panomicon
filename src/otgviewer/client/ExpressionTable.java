@@ -80,6 +80,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 	private Screen screen;
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
 	private DataGrid<ExpressionRow> exprGrid;
+	private SimplePager sp;
 	private HorizontalPanel tools, analysisTools;
 	private DockLayoutPanel dockPanel;
 	
@@ -104,7 +105,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 	private String[] displayedProbes;
 	private Map<String, Association> associations = new HashMap<String, Association>();
 	private final static String[] expectedAssociations = new String[] { "KEGG pathways", "MF GO terms", 
-		"CC GO terms", "BP GO terms", "Homologene entries" };	
+		"CC GO terms", "BP GO terms", "CHEMBL targets", "DrugBank targets", "UniProt proteins", "Homologene entries" };	
 	private List<HideableColumn> hideableColumns = new ArrayList<HideableColumn>();
  	private List<AssociationColumn> associationColumns = new ArrayList<AssociationColumn>();
  	private Widget toolPanel;
@@ -146,6 +147,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		return this.tools;
 	}
 	
+	private boolean warnedPageSize = false;
 	private void makeTools() {
 		tools = Utils.mkHorizontalPanel();		
 		
@@ -167,15 +169,27 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		});
 
 		Resources r = GWT.create(Resources.class);
-		SimplePager sp = new SimplePager(TextLocation.CENTER, r, true, 10 * PAGE_SIZE, true);
+		sp = new SimplePager(TextLocation.CENTER, r, true, 10 * PAGE_SIZE, true);
 		sp.setStyleName("slightlySpaced");
-		horizontalPanel.add(sp);
+		horizontalPanel.add(sp);		
 		sp.setDisplay(exprGrid);
 		
-		PageSizePager pager = new PageSizePager(50); 			
+		
+		PageSizePager pager = new PageSizePager(50) {
+			@Override
+			protected void onRangeOrRowCountChanged() {
+				super.onRangeOrRowCountChanged();
+				if (getPageSize() > 100 && !warnedPageSize) {
+					Window.alert("You are now displaying " + getPageSize() + " rows. Dynamic columns will " + 
+							"only be loaded for the first 100 rows on each page.");
+					warnedPageSize = true;
+				}				
+			}
+			
+		};
 		pager.setStyleName("slightlySpaced");
 		horizontalPanel.add(pager);
-		pager.setDisplay(exprGrid);
+		pager.setDisplay(exprGrid);		
 		
 		Label label = new Label("Magnitude >=");
 		label.setStyleName("highlySpaced");		
@@ -423,6 +437,22 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		}
 	}
 	
+	/**
+	 * Return an array of length at most 100, for association retrieval.
+	 * @param data
+	 * @return
+	 */
+	private String[] limitLength(String[] data) {
+		if (data.length <= 100) {
+			return data;
+		}
+		String[] r = new String[100];
+		for (int i = 0; i < 100; ++i) {
+			r[i] = data[i];
+		}
+		return r;		
+	}
+	
 	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
 		private int start = 0;
 
@@ -455,8 +485,8 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 						displayedProbes[i] = result.get(i).getProbe();
 						geneIds.addAll(Arrays.asList(result.get(i).getGeneIds()));
 					}										
-					owlimService.associations(chosenDataFilter, displayedProbes, 
-							geneIds.toArray(new String[0]), assocCallback);
+					owlimService.associations(chosenDataFilter, limitLength(displayedProbes), 
+							limitLength(geneIds.toArray(new String[0])), assocCallback);
 				}
 			}
 		};

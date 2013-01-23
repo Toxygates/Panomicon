@@ -77,7 +77,7 @@ public interface OwlimService extends RemoteService {
 	 * @param partialName
 	 * @return An array of pairs, where the first item is the precise gene symbol and the second is the full gene name.
 	 */
-	public Pair<String, String>[] geneSuggestions(String partialName);
+	public Pair<String, String>[] geneSuggestions(String partialName, DataFilter filter);
 	
 	public Association[] associations(DataFilter filter, String[] probes, String[] geneIds);
 }

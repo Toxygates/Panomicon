@@ -76,7 +76,7 @@ public class CompoundRanker extends DataListenerWidget {
 		hp.add(i);
 	}
 
-	final GeneOracle oracle = new GeneOracle();
+	
 	private void makeRankRuleInputs(Grid g, final int row) {
 		
 		rankProbeText[row] = new SuggestBox(oracle);
@@ -208,9 +208,12 @@ public class CompoundRanker extends DataListenerWidget {
 		selector.performRanking(rankProbes, rules);
 	}
 
+	final GeneOracle oracle = new GeneOracle();
+	
 	@Override
 	public void dataFilterChanged(DataFilter filter) {
 		super.dataFilterChanged(filter);
+		oracle.setFilter(filter);		
 		for (ListBox lb : rankRefCompound) {
 			lb.clear();
 		}

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import otgviewer.shared.Pair;
+import otgviewer.shared.DataFilter;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;
@@ -11,6 +12,11 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.SuggestOracle;
 
 public class GeneOracle extends SuggestOracle {
+	
+	private DataFilter filter;
+	public void setFilter(DataFilter filter) {
+		this.filter = filter;
+	}
 	
 	private static String lastRequest = "";
 	
@@ -47,7 +53,7 @@ public class GeneOracle extends SuggestOracle {
 	}
 	
 	private void getSuggestions(final Request request, final Callback callback) {
-		owlimService.geneSuggestions(request.getQuery(), new AsyncCallback<Pair<String,String>[]>() {
+		owlimService.geneSuggestions(request.getQuery(), filter, new AsyncCallback<Pair<String,String>[]>() {
 			
 			@Override
 			public void onSuccess(Pair<String, String>[] result) {

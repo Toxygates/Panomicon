@@ -1,87 +1,99 @@
 /** Add css rules here for your application. */
-
-
 /** Example rules used by the template application (remove for your app) */
 h1 {
-  font-size: 2em;
-  font-weight: bold;
-  color: #777777;
-  margin: 40px 0px 70px;
-  text-align: center;
+	font-size: 2em;
+	font-weight: bold;
+	color: #777777;
+	margin: 40px 0px 70px;
+	text-align: center;
 }
 
 .sendButton {
-  display: block;
-  font-size: 16pt;
+	display: block;
+	font-size: 16pt;
 }
 
 /** Most GWT widgets already have a style name defined */
 .gwt-DialogBox {
-  width: 400px;
+	width: 400px;
 }
 
 .dialogVPanel {
-  margin: 5px;
+	margin: 5px;
 }
 
 .serverResponseLabelError {
-  color: red;
+	color: red;
 }
 
 /** Set ids using widget.getElement().setId("idOfElement") */
 #closeButton {
-  margin: 15px 6px 6px;
+	margin: 15px 6px 6px;
 }
+
 exprGrid {
 	border: 1px solid black;
 }
 
 .highlySpaced {
-margin: 5px;
+	margin: 5px;
 }
+
 .slightlySpaced {
-margin:2px;
+	margin: 2px;
 }
 
 .colored {
-background:Beige;
+	background: Beige;
 }
+
 .darkColored {
-background:White;
-margin: 2px;
+	background: White;
+	margin: 2px;
 }
+
 .colored2 {
-margin: 1px 0px 0px 0px;
-background:LightSteelBlue;
+	margin: 1px 0px 0px 0px;
+	background: Beige;
 }
+
+.compoundSelector {
+	margin: 0em 0em 0em 1em;
+}
+
 .none {
+	
 }
+
 .heading {
-  font-size: 1.2em;
-  color: #777777;
-  margin: 5px;
-  text-align: center;
+	font-size: 1.2em;
+	color: #777777;
+	margin: 5px;
+	text-align: center;
 }
+
 .headingBlack {
-  font-size: 1.2em;
-  color: black;
-  margin: 5px;
-  text-align: center;
+	font-size: 1.2em;
+	color: black;
+	margin: 5px;
+	text-align: center;
 }
+
 .clickHeading {
-  font-size: 1.2em;
-  color: DarkBlue;
-  margin: 5px;
-  text-align: center;
-  cursor: pointer;
+	font-size: 1.2em;
+	color: DarkBlue;
+	margin: 5px;
+	text-align: center;
+	cursor: pointer;
 }
+
 .headingCurrent {
-  font-size: 1.2em;
-  color: SteelBlue;
-  margin: 1px;
-  text-align: center;
-  border: dotted 1px;
-  padding: 3px;
+	font-size: 1.2em;
+	color: SteelBlue;
+	margin: 1px;
+	text-align: center;
+	border: dotted 1px;
+	padding: 3px;
 }
 
 .border {
@@ -90,30 +102,35 @@ background:LightSteelBlue;
 }
 
 .datasetInfo {
-  margin: 1px;
-  padding: 4px;
-  border: solid black 1px;
-  cursor: pointer;
+	margin: 1px;
+	padding: 4px;
+	border: solid black 1px;
+	cursor: pointer;
 }
+
 .emphasized {
 	font-weight: bold;
 }
+
 .statusPanel {
 	background: White;
-	text-align:left;
-	color: black;	
+	text-align: left;
+	color: black;
 }
+
 .statusBorder {
 	margin: 1px;
 	border: solid DarkBlue 1px;
 }
+
 .highlightedRow {
 	text-decoration: underline;
 }
+
 .dataColumn {
 	color: Black;
 }
+
 .extraColumn {
 	color: SteelBlue;
 }
-

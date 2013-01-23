@@ -131,9 +131,25 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		}
 	}
 	
+	private void removeRankColumns() {
+		if (hasRankColumns) {
+			CellTable<String> table = compoundTable.table();
+			table.removeColumn(3); //chart icons
+			table.removeColumn(2); //score
+			rankProbes.clear();
+			scores.clear();
+			hasRankColumns = false;
+		}
+	}
+	
+	private DataFilter lastFilter;
 	@Override
 	public void dataFilterChanged(DataFilter filter) {
-		super.dataFilterChanged(filter);		
+		super.dataFilterChanged(filter);
+		if (lastFilter == null || !filter.equals(lastFilter)) {
+			removeRankColumns();
+		}
+		lastFilter = filter;
 		loadCompounds();
 		compoundTable.clearSelection();				
 	}

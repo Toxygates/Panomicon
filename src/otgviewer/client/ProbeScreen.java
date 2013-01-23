@@ -44,7 +44,8 @@ public class ProbeScreen extends Screen {
 	private ListBox probesList;
 	private Set<String> listedProbes = new HashSet<String>();
 	private List<ListBox> compoundLists = new ArrayList<ListBox>();
-	final SuggestBox sb = new SuggestBox(new GeneOracle());
+	final GeneOracle oracle = new GeneOracle();
+	final SuggestBox sb = new SuggestBox(oracle);
 	
 	public ProbeScreen(ScreenManager man) {
 		super("Select probes", key, true, true, man,
@@ -320,6 +321,7 @@ public class ProbeScreen extends Screen {
 	
 	@Override
 	public void dataFilterChanged(DataFilter filter) {
+		oracle.setFilter(filter);
 		if (chosenDataFilter != null && !filter.organism.equals(chosenDataFilter.organism)) {
 			super.dataFilterChanged(filter);
 			probesChanged(new String[0]);						
