@@ -97,6 +97,11 @@ public interface KCService extends RemoteService {
 	public String prepareCSVDownload();
 	
 	/**
+	 * Get the GeneIDs currently being displayed. If limit is -1, no limit will be applied.
+	 */
+	public String[] getGenes(int limit);
+	
+	/**
 	 * Obtain a single time series or dose series.
 	 * @param filter
 	 * @param probe Must be a probe id.

@@ -33,6 +33,8 @@ public interface KCServiceAsync {
 
 	public void prepareCSVDownload(AsyncCallback<String> callback);
 
+	public void getGenes(int limit, AsyncCallback<String[]> callback);
+	
 	public void addTwoGroupTest(Synthetic.TwoGroupSynthetic test,
 			AsyncCallback<Void> callback);
 

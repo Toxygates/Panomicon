@@ -168,9 +168,8 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
   def associations(filter: DataFilter, probes: Array[String], geneIds: Array[String]): Array[Association] = {
 
     def connectorOrEmpty[T <: RDFConnector](c: T, f: T => SMMap) = 
-      useConnector(c, f, emptySMMap())
+      useConnector(c, f, Map() ++ probes.map(p => (p -> Set("(Could not obtain data)"))))
     
-      val proteins = OTGOwlim.uniprotsForProbes(probes)
       
     //By setting it up like this we can request data from the different servers in parallel,
     //and keep going if one fails
@@ -193,14 +192,20 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
       },
       () => {
         ("CHEMBL targets", connectorOrEmpty(CHEMBL,
-            (c: CHEMBL.type) => { val targets = c.targetingCompoundsForProteins(proteins.flatMap(_._2), null)
+            (c: CHEMBL.type) => {
+              val compounds = OTGOwlim.compounds(filter)
+              val proteins = OTGOwlim.uniprotsForProbes(probes)    
+              val targets = c.targetingCompoundsForProteins(proteins.flatMap(_._2), null, compounds)
               val r = proteins.map(x => (x._1 -> x._2.flatMap(targets.getOrElse(_, Set()))))
               r
             }))
       },
       () => {
         ("DrugBank targets", connectorOrEmpty(DrugBank,
-            (c: DrugBank.type) => { val targets = c.targetingCompoundsForProteins(proteins.flatMap(_._2))
+            (c: DrugBank.type) => {
+              val compounds = OTGOwlim.compounds(filter)
+              val proteins = OTGOwlim.uniprotsForProbes(probes)
+              val targets = c.targetingCompoundsForProteins(proteins.flatMap(_._2), compounds)
               val r = proteins.map(x => (x._1 -> x._2.flatMap(targets.getOrElse(_, Set()))))
               r
             }))

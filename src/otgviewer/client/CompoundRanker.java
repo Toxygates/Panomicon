@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.EnumSelector;
 import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.RankRule;
@@ -35,7 +36,7 @@ public class CompoundRanker extends DataListenerWidget {
 	private VerticalPanel csVerticalPanel = new VerticalPanel();
 	private final int RANK_CONDS = 10;
 	private SuggestBox[] rankProbeText = new SuggestBox[RANK_CONDS];
-	private ListBox[] rankType = new ListBox[RANK_CONDS];
+	private EnumSelector<RuleType>[] rankType = new EnumSelector[RANK_CONDS];
 	private ListBox[] rankRefCompound = new ListBox[RANK_CONDS];
 	private ListBox[] rankRefDose = new ListBox[RANK_CONDS];
 	private TextBox[] syntheticCurveText = new TextBox[RANK_CONDS];
@@ -81,11 +82,11 @@ public class CompoundRanker extends DataListenerWidget {
 		
 		rankProbeText[row] = new SuggestBox(oracle);
 		
-		rankType[row] = new ListBox();
-		for (RuleType rt : RuleType.values()) {
-			rankType[row].addItem(rt.toString());
-		}
-		rankType[row].addChangeHandler(rankTypeChangeHandler(row));
+		rankType[row] = new EnumSelector<RuleType>() {
+			protected RuleType[] values() { return RuleType.values(); }
+		};
+
+		rankType[row].listBox().addChangeHandler(rankTypeChangeHandler(row));
 		rankCheckBox[row] = new CheckBox();
 		
 		rankProbeText[row].addKeyPressHandler(new KeyPressHandler() {			
@@ -146,8 +147,7 @@ public class CompoundRanker extends DataListenerWidget {
 	}
 
 	private RuleType selectedRuleType(int row) {
-		return RuleType.parse(rankType[row].getItemText(rankType[row]
-				.getSelectedIndex()));		
+		return rankType[row].value();		
 	}
 
 	private void performRanking() {

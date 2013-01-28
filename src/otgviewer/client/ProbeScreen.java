@@ -46,6 +46,7 @@ public class ProbeScreen extends Screen {
 	private List<ListBox> compoundLists = new ArrayList<ListBox>();
 	final GeneOracle oracle = new GeneOracle();
 	final SuggestBox sb = new SuggestBox(oracle);
+	private Button proceedSelected;
 	
 	public ProbeScreen(ScreenManager man) {
 		super("Select probes", key, true, true, man,
@@ -199,7 +200,7 @@ public class ProbeScreen extends Screen {
 	@Override
 	public Widget bottomContent() {
 		HorizontalPanel buttons = Utils.mkHorizontalPanel(false);
-		buttons.add(new Button("Proceed with selected probes",
+		proceedSelected = new Button("Proceed with selected probes",
 				new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
@@ -211,14 +212,18 @@ public class ProbeScreen extends Screen {
 							configuredProceed(DataScreen.key);
 						}
 					}
-				}));
-
+				});
+		buttons.add(proceedSelected);
+		updateProceedButton();
+		
 		buttons.add(new Button("Proceed with all probes", new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				probesChanged(new String[0]);
-				configuredProceed(DataScreen.key);
+				if (listedProbes.size() == 0 || Window.confirm("Proceeding will erase your list of " + listedProbes.size() + " selected probes.")) {
+					probesChanged(new String[0]);
+					configuredProceed(DataScreen.key);	
+				}				
 			}
-		}));
+		}));		
 		return buttons;
 	}
 	
@@ -301,6 +306,7 @@ public class ProbeScreen extends Screen {
 				}
 			});			
 		}
+		updateProceedButton();		
 	}
 	
 	/**
@@ -358,8 +364,14 @@ public class ProbeScreen extends Screen {
 			probesList.addItem(p);
 		}
 		listedProbes.clear();
-		listedProbes.addAll(Arrays.asList(probes));
+		listedProbes.addAll(Arrays.asList(probes));		
+		updateProceedButton();
 		super.probesChanged(probes); //calls changeProbes		
+	}
+	
+	private void updateProceedButton() {
+		proceedSelected.setEnabled(listedProbes.size() > 0);
+		proceedSelected.setText("Proceed with " + listedProbes.size() + " selected probes >>");		
 	}
 	
 	/**

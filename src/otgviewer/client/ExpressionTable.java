@@ -108,6 +108,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		"CC GO terms", "BP GO terms", "CHEMBL targets", "DrugBank targets", "UniProt proteins", "Homologene entries" };	
 	private List<HideableColumn> hideableColumns = new ArrayList<HideableColumn>();
  	private List<AssociationColumn> associationColumns = new ArrayList<AssociationColumn>();
+ 	private boolean waitingForAssociations = true;
  	private Widget toolPanel;
  	
 	public ExpressionTable(Screen _screen) {
@@ -223,8 +224,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 			@Override
 			public void onOpen(OpenEvent<DisclosurePanel> event) {
 				analysisTools.setVisible(true);
-				screen.deferredResize();
-//				dockPanel.setWidgetSize(toolPanel, 5);				
+				screen.deferredResize();				
 			}
 		});
 		analysisDisclosure.addCloseHandler(new CloseHandler<DisclosurePanel>() {			
@@ -232,14 +232,12 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 			public void onClose(CloseEvent<DisclosurePanel> event) {
 				analysisTools.setVisible(false);
 				screen.deferredResize();
-//				dockPanel.setWidgetSize(toolPanel, 3.5);
 			}
 		});		
 	}
 	
 	public Widget analysisTools() {
 		analysisTools = Utils.mkHorizontalPanel(true);
-//		analysisDisclosure.add(horizontalPanel);
 		analysisTools.setStyleName("colored2");
 		
 		analysisTools.add(groupsel1);
@@ -298,7 +296,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		
 		MenuItem mntmActions_1 = new MenuItem("Actions", false, menuBar_3);		
 		final DataListenerWidget w = this;
-		MenuItem mntmDownloadCsv = new MenuItem("Download CSV", false, new Command() {
+		MenuItem mntmDownloadCsv = new MenuItem("Download CSV...", false, new Command() {
 			public void execute() {
 				kcService.prepareCSVDownload(new PendingAsyncCallback<String>(w, "Unable to prepare the requested data for download.") {
 					
@@ -329,11 +327,19 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 				
 			}
 		});
-		menuBar_3.addItem(mntmDownloadCsv);		
+		menuBar_3.addItem(mntmDownloadCsv);
+		
+		MenuItem mi = new MenuItem("Export to TargetMine...", false, new Command() {
+			public void execute() {
+				Utils.displayInPopup(new GeneExporter(w));
+			}
+		});
+		
+		menuBar_3.addItem(mi);
+		
 		r[0] = mntmActions_1;
 		
 		MenuBar menuBar_2 = new MenuBar(true);
-
 		MenuItem mntmNewMenu_1 = new MenuItem("New menu", false, menuBar_2);
 
 		for (final HideableColumn c: hideableColumns) {
@@ -463,6 +469,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 			
 			public void onSuccess(Association[] result) {
 				associations.clear();
+				waitingForAssociations = false;
 				for (Association a: result) {
 					associations.put(a.title(), a);	
 				};				
@@ -484,7 +491,8 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 					for (int i = 0; i < displayedProbes.length; ++i) {
 						displayedProbes[i] = result.get(i).getProbe();
 						geneIds.addAll(Arrays.asList(result.get(i).getGeneIds()));
-					}										
+					}						
+					waitingForAssociations = true;					
 					owlimService.associations(chosenDataFilter, limitLength(displayedProbes), 
 							limitLength(geneIds.toArray(new String[0])), assocCallback);
 				}
@@ -680,24 +688,30 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 			this.tc = tc;
 		}
 		
-		public String getValue(ExpressionRow er) {			
-			if (associations.containsKey(assoc)) {
-				Association a = associations.get(assoc);
-				if (a.data().containsKey(er.getProbe())) {
-					return arrayString(a.data().get(er.getProbe()).toArray(new String[0]), ", ");	
-				} else {
-					String[] geneids = er.getGeneIds();
-					Set<String> all = new HashSet<String>();
-					for (String gi: geneids) {
-						if (a.data().containsKey(gi)) {
-							all.addAll(a.data().get(gi));														
-						}						
-					}
-					return arrayString(all.toArray(new String[0]), ", ");					
-				}
+		public String getValue(ExpressionRow er) {		
+			if (waitingForAssociations) {
+				return "(Waiting for data...)";
 			} else {
-				return "";
-			}							
+				if (associations.containsKey(assoc)) {
+					Association a = associations.get(assoc);
+					if (a.data().containsKey(er.getProbe())) {
+						return arrayString(
+								a.data().get(er.getProbe())
+										.toArray(new String[0]), ", ");
+					} else {
+						String[] geneids = er.getGeneIds();
+						Set<String> all = new HashSet<String>();
+						for (String gi : geneids) {
+							if (a.data().containsKey(gi)) {
+								all.addAll(a.data().get(gi));
+							}
+						}
+						return arrayString(all.toArray(new String[0]), ", ");
+					}
+				} else {
+					return "(Data unavailable)";
+				}
+			}
 		}
 		
 		public String name() { return assoc; }

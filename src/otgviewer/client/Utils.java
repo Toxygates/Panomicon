@@ -61,13 +61,16 @@ public class Utils {
 		return r;
 	}
 	
-	public static HorizontalPanel mkHorizontalPanel(boolean spaced) {
+	public static HorizontalPanel mkHorizontalPanel(boolean spaced, Widget... widgets) {
 		HorizontalPanel hp = new HorizontalPanel();		
 //		hp.setStyleName("slightlySpaced");
 		hp.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		if (spaced) {
 			hp.setSpacing(4);
+		}
+		for (Widget w: widgets) {
+			hp.add(w);
 		}
 		return hp;
 	}
@@ -76,7 +79,7 @@ public class Utils {
 		return mkVerticalPanel(false);
 	}
 	
-	public static VerticalPanel mkVerticalPanel(boolean spaced) {
+	public static VerticalPanel mkVerticalPanel(boolean spaced, Widget... widgets) {
 		VerticalPanel vp = new VerticalPanel();
 //		vp.setStyleName("slightlySpaced");
 		vp.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
@@ -84,8 +87,13 @@ public class Utils {
 		if (spaced) {
 			vp.setSpacing(4);
 		}
+		
+		for (Widget w: widgets) {
+			vp.add(w);
+		}
 		return vp;
 	}
+	
 
 	public static Label mkEmphLabel(String s) {
 		Label r = new Label(s);

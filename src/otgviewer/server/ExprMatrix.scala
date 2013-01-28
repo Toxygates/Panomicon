@@ -59,17 +59,20 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
     annotations = Array.fill(rows)(new RowAnnotation(null, null, null, null))
   }
   
-  def asRows: Iterable[ExpressionRow] = toRowVectors.zip(annotations).map(x => {
-    val ann = x._2
+  def sortedRowMap = rowMap.toSeq.sortWith(_._2 < _._2)
+  def sortedColumnMap = columnMap.toSeq.sortWith(_._2 < _._2)
+  
+  def asRows: Seq[ExpressionRow] = toRowVectors.zip(annotations).map(x => {
+    val ann = x._2    
     new ExpressionRow(ann.probe, ann.title, ann.geneIds, ann.geneSyms,
       x._1.toArray.map(asJava(_)))
   })
 
   def filterRows(f: (ArrayVector[ExprValue]) => Boolean): ExprMatrix = {
-    val x = toRowVectors.zip(annotations).zip(rowMap).filter(x => f(x._1._1))
+    val x = toRowVectors.zip(annotations).zip(sortedRowMap.map(_._1)).filter(x => f(x._1._1))
     val r = ExprMatrix.withRows(x.map(_._1._1), this)
     r.annotations = x.map(_._1._2).toArray
-    r.rowMap = Map() ++ x.map(_._2)    
+    r.rowMap = Map() ++ x.map(_._2).zipWithIndex    
     r
   }
 
@@ -104,7 +107,7 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
   
 
   def sortRows(f: (ArrayVector[ExprValue], ArrayVector[ExprValue]) => Boolean): ExprMatrix = {
-    val sortedKeys = rowMap.toSeq.sortWith(_._2 < _._2).map(_._1)
+    val sortedKeys = sortedRowMap.map(_._1)
     val sort = toRowVectors.zip(sortedKeys).zip(annotations)
     val sorted = sort.sortWith((x, y) => f(x._1._1, y._1._1))
     val r = ExprMatrix.withRows(sorted.map(_._1._1), this)
@@ -117,6 +120,7 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
    * Adjoin another matrix to this one on the right hand side.
    * The two matrices must have the same number of rows
    * and be sorted in the same way.
+   * The metadata of the resulting matrix is taken from 'this' where appropriate.
    */
   def adjoinRight(other: ExprMatrix): ExprMatrix = {
     val r = new ExprMatrix(rows, columns + other.columns, this)
@@ -128,6 +132,7 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
   /**
    * Split this matrix vertically so that the first column in the second matrix
    * has the given offset in this matrix.
+   * The metadata of the resulting matrix is taken from 'this' where appropriate.
    */
   def verticalSplit(at: Int): (ExprMatrix, ExprMatrix) = {
     val r1 = new ExprMatrix(rows, at, this)
@@ -142,6 +147,7 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
   
   /**
    * Adjoin two matrices, modify them together, then split again.
+   * The metadata of the resulting matrix is taken from 'this' where appropriate.
    */
   def modifyJointly(other: ExprMatrix, f: (ExprMatrix) => ExprMatrix): (ExprMatrix, ExprMatrix) = {
     val joined = adjoinRight(other)
@@ -149,25 +155,35 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
     modified.verticalSplit(columns)
   }
   
-  def selectRows(rows: Iterable[Int]): ExprMatrix = {
-    val r = ExprMatrix.withRows(rows.map(row(_)).toVector)    
+  /**
+   * NB this allows for permutation as well as selection
+   */
+  def selectRows(rows: Seq[Int]): ExprMatrix = {
+    val r = ExprMatrix.withRows(rows.map(row(_)), this)    
     val rowIds = rows.toSet
     r.annotations = rows.map(a => annotations(a)).toArray
-    r.rowMap = rowMap.filter(a => rowIds.contains(a._2))
-    r.columnMap = columnMap
+    r.rowMap = Map() ++ rows.map(rowNames(_)).zipWithIndex
     r
   }
   
-  def selectNamedRows(rows: Iterable[String]) = selectRows(rows.map(rowMap(_)))
+  /**
+   * NB this allows for permutation as well as selection
+   */
+  def selectNamedRows(rows: Seq[String]) = selectRows(rows.map(rowMap(_)))   
   
-  def selectColumns(columns: Iterable[Int]): ExprMatrix = {
-    val r = ExprMatrix.withColumns(columns.map(column(_)).toVector)
+  /**
+   * NB this allows for permutation as well as selection
+   */
+  def selectColumns(columns: Seq[Int]): ExprMatrix = {
+    val r = ExprMatrix.withColumns(columns.map(column(_)), this)
     val colIds = columns.toSet
-    r.columnMap = columnMap.filter(a => colIds.contains(a._2))
-    r.rowMap = rowMap
+    r.columnMap = Map() ++ columns.map(columnNames(_)).zipWithIndex 
     r
   }
   
-  def selectNamedColumns(columns: Iterable[String]) = selectColumns(columns.map(columnMap(_)))
+  /**
+   * NB this allows for permutation as well as selection
+   */
+  def selectNamedColumns(columns: Seq[String]) = selectColumns(columns.map(columnMap(_)))
   
 }
