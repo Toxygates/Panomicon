@@ -13,6 +13,7 @@ import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.TickMenuItem;
+import otgviewer.shared.AType;
 import otgviewer.shared.Association;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.ExpressionRow;
@@ -103,9 +104,9 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 	
 	private int highlightedRow = -1;
 	private String[] displayedProbes;
-	private Map<String, Association> associations = new HashMap<String, Association>();
-	private final static String[] expectedAssociations = new String[] { "KEGG pathways", "MF GO terms", 
-		"CC GO terms", "BP GO terms", "CHEMBL targets", "DrugBank targets", "UniProt proteins", "Homologene entries" };	
+	private List<String> displayedGeneIds = new ArrayList<String>();
+	private Map<AType, Association> associations = new HashMap<AType, Association>();
+		
 	private List<HideableColumn> hideableColumns = new ArrayList<HideableColumn>();
  	private List<AssociationColumn> associationColumns = new ArrayList<AssociationColumn>();
  	private boolean waitingForAssociations = true;
@@ -348,6 +349,9 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 				public void stateChange(boolean newState) {
 					c.setVisibility(newState);	
 					setupColumns();
+					if (newState) {
+						getAssociations();
+					}
 				}				
 			};
 		}
@@ -436,11 +440,22 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		});
 		
 		TextCell tc = new TextCell();
-		for (String assoc: expectedAssociations) {
-			AssociationColumn ac = new AssociationColumn(tc, assoc);
+		for (AType at: AType.values()) {
+			AssociationColumn ac = new AssociationColumn(tc, at);
 			associationColumns.add(ac);
 			hideableColumns.add(ac);
 		}
+		
+	}
+	
+	private AType[] visibleAssociations() {
+		List<AType> r = new ArrayList<AType>();
+		for (AssociationColumn ac: associationColumns) {
+			if (ac.visible()) {
+				r.add(ac.assoc);
+			}
+		}
+		return r.toArray(new AType[0]);
 	}
 	
 	/**
@@ -459,8 +474,8 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		return r;		
 	}
 	
-	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
-		private int start = 0;
+	private void getAssociations() {
+		waitingForAssociations = true;					
 
 		AsyncCallback<Association[]> assocCallback = new AsyncCallback<Association[]>() {
 			public void onFailure(Throwable caught) {
@@ -471,11 +486,20 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 				associations.clear();
 				waitingForAssociations = false;
 				for (Association a: result) {
-					associations.put(a.title(), a);	
+					associations.put(a.type(), a);	
 				};				
 				exprGrid.redraw();
 			}
 		};
+		
+		owlimService.associations(chosenDataFilter, visibleAssociations(),
+				limitLength(displayedProbes), 
+				limitLength(displayedGeneIds.toArray(new String[0])), assocCallback);
+	}
+	
+	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
+		private int start = 0;
+
 		
 		AsyncCallback<List<ExpressionRow>> rowCallback = new AsyncCallback<List<ExpressionRow>>() {
 			public void onFailure(Throwable caught) {
@@ -486,15 +510,14 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 				if (result.size() > 0) {
 					exprGrid.setRowData(start, result);
 					displayedProbes = new String[result.size()];
-					List<String> geneIds = new ArrayList<String>();
-					highlightedRow = -1;
-					for (int i = 0; i < displayedProbes.length; ++i) {
+					List<String> geneIds = new ArrayList<String>();		
+					for (int i = 0; i < displayedProbes.length; ++i) {			
 						displayedProbes[i] = result.get(i).getProbe();
 						geneIds.addAll(Arrays.asList(result.get(i).getGeneIds()));
-					}						
-					waitingForAssociations = true;					
-					owlimService.associations(chosenDataFilter, limitLength(displayedProbes), 
-							limitLength(geneIds.toArray(new String[0])), assocCallback);
+					}		
+					displayedGeneIds = geneIds;
+					highlightedRow = -1;							
+					getAssociations();
 				}
 			}
 		};
@@ -678,11 +701,11 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 	}
 	
 	class AssociationColumn extends Column<ExpressionRow, String> implements HideableColumn {
-		String assoc;
+		AType assoc;
 		TextCell tc;
 		boolean visible = false;
 		
-		public AssociationColumn(TextCell tc, String association) {
+		public AssociationColumn(TextCell tc, AType association) {
 			super(tc);
 			this.assoc = association;
 			this.tc = tc;
@@ -714,7 +737,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 			}
 		}
 		
-		public String name() { return assoc; }
+		public String name() { return assoc.title(); }
 		public void setVisibility(boolean v) { visible = v; }		
 		public boolean visible() { return this.visible; }		
 	}

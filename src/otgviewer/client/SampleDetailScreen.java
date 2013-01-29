@@ -63,15 +63,22 @@ public class SampleDetailScreen extends Screen {
 	public void columnsChanged(List<Group> columns) {
 		super.columnsChanged(columns);
 		if (visible && !columns.equals(lastColumns)) {
-			if (columns.size() > 0) {
-				setDisplayColumn(chosenColumns.get(0));
-//				displayColumn = chosenColumns.get(0);
-				columnList.setSelectedIndex(0);
-				columnList.clear();
-				for (DataColumn c : chosenColumns) {
-					columnList.addItem(c.getShortTitle());
-				}				
+			updateColumnList();
+		}
+	}
+	
+	private void updateColumnList() {
+		columnList.clear();
+		if (chosenColumns.size() > 0) {
+			setDisplayColumn(chosenColumns.get(0));
+			columnList.setSelectedIndex(0);
+			for (DataColumn c : chosenColumns) {
+				columnList.addItem(c.getShortTitle());
 			}
+		}
+		if (chosenCustomColumn != null) {
+			columnList.addItem(chosenCustomColumn.getShortTitle());
+			columnList.setSelectedIndex(columnList.getItemCount() - 1);
 		}
 	}
 
@@ -81,16 +88,15 @@ public class SampleDetailScreen extends Screen {
 		if (visible
 				&& (lastFilter == null || !lastFilter.equals(chosenDataFilter)
 						|| lastColumns == null
-						|| !chosenColumns.equals(lastColumns) || chosenCustomColumn != null
-						&& (lastCustomColumn == null || !lastCustomColumn
-								.equals(chosenCustomColumn)))) {
-			columnsChanged(chosenColumns);			
-			customColumnChanged(chosenCustomColumn);
+						|| !chosenColumns.equals(lastColumns) || chosenCustomColumn != null)
+						|| chosenCustomColumn != null && (lastCustomColumn == null || !lastCustomColumn
+								.equals(chosenCustomColumn))) {
+			updateColumnList();			
 			displayWith(columnList.getItemText(columnList.getSelectedIndex()));
 			
 			lastFilter = chosenDataFilter;
-			lastColumns = chosenColumns;
-			lastCustomColumn = chosenCustomColumn;			
+			lastColumns = chosenColumns;						
+			lastCustomColumn = chosenCustomColumn;
 		}
 	}
 
@@ -98,13 +104,9 @@ public class SampleDetailScreen extends Screen {
 	public void customColumnChanged(DataColumn customColumn) {
 		super.customColumnChanged(customColumn);
 		if (visible) {
-			if (customColumn != null) {
-				columnList.addItem(customColumn.getShortTitle());
-				columnList.setSelectedIndex(columnList.getItemCount() - 1);				
-				storeCustomColumn(null); // consume the data so it doesn't turn
-											// up
-											// again.
-			}
+			updateColumnList();
+			storeCustomColumn(null); // consume the data so it doesn't turn
+										// up again.
 		}
 	}
 

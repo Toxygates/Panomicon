@@ -1,4 +1,5 @@
 package otgviewer.client;
+import otgviewer.shared.AType;
 import otgviewer.shared.Annotation;
 import otgviewer.shared.Association;
 import otgviewer.shared.Barcode;
@@ -37,6 +38,12 @@ public interface OwlimService extends RemoteService {
 	public Pathology[] pathologies(Barcode barcode);	
 	public Pathology[] pathologies(DataColumn column);
 	
+	/**
+	 * Annotations are experiment-associated information such as barcode,
+	 * dose, time, biochemical data etc.
+	 * @param barcode
+	 * @return
+	 */
 	public Annotation annotations(Barcode barcode);
 	public Annotation[] annotations(DataColumn column);
 	
@@ -79,5 +86,13 @@ public interface OwlimService extends RemoteService {
 	 */
 	public Pair<String, String>[] geneSuggestions(String partialName, DataFilter filter);
 	
-	public Association[] associations(DataFilter filter, String[] probes, String[] geneIds);
+	/**
+	 * Associations are the "dynamic columns" on the data screen.
+	 * @param types the association types to get.
+	 * @param filter
+	 * @param probes
+	 * @param geneIds
+	 * @return
+	 */
+	public Association[] associations(DataFilter filter, AType[] types, String[] probes, String[] geneIds);
 }

@@ -2,6 +2,7 @@ package otgviewer.client;
 
 import otgviewer.shared.Annotation;
 import otgviewer.shared.Association;
+import otgviewer.shared.AType;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
@@ -40,5 +41,5 @@ public interface OwlimServiceAsync {
 	public void goTerms(String pattern, AsyncCallback<String[]> callback);
 	public void probesForGoTerm(DataFilter filter, String term, AsyncCallback<String[]> callback);
 	
-	public void associations(DataFilter filter, String[] probes, String[] geneIds, AsyncCallback<Association[]> callback);
+	public void associations(DataFilter filter, AType[] types, String[] probes, String[] geneIds, AsyncCallback<Association[]> callback);
 }

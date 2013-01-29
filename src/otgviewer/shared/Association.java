@@ -8,32 +8,25 @@ import java.util.Set;
 
 public class Association implements Serializable {
 
-	private String _title;
+	private AType _type;
 	private Map<String, ? extends Set<String>> _data = new HashMap<String, HashSet<String>>();
 	
 	public Association() { }
 	
-	public Association(String title, Map<String, ? extends Set<String>> data) {
-		_title = title;
+	public Association(AType type, Map<String, ? extends Set<String>> data) {
+		_type = type;
 		_data = data;
 	}
 	
-	public String title() {
-		return _title;
-	}
-	public Map<String, ? extends Set<String>> data() {
-		return _data;
+	public AType type() {
+		return _type;
 	}
 	
-	public static enum Type {
-		Chembl("CHEMBL targets"), Drugbank("DrugBank targets"),
-		Uniprot("UniProt proteins"), GOCC("GO Cellular component"),
-		GOMF("GO Molecular function"), GOBP("GO Biological process"),
-		Homologene("Homologene entries");
-		
-		private String name;
-		private Type(String name) {
-			this.name = name;
-		}
+	public String title() {
+		return _type.name();
+	}
+	
+	public Map<String, ? extends Set<String>> data() {
+		return _data;
 	}
 }

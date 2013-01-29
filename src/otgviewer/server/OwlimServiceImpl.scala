@@ -21,6 +21,7 @@ import otgviewer.shared.DataColumn
 import otgviewer.shared.DataFilter
 import otgviewer.shared.NoSuchProbeException
 import otgviewer.shared.Pair
+import otgviewer.shared.AType
 import otgviewer.shared.Pathology
 import otgviewer.shared.RankRule
 
@@ -165,62 +166,45 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
     OTGQueries.filterProbes(OTGOwlim.probesForGoTerm(goTerm), filter)
 
     import OTGMisc._
-  def associations(filter: DataFilter, probes: Array[String], geneIds: Array[String]): Array[Association] = {
+
+  def associations(filter: DataFilter, types: Array[AType], probes: Array[String], geneIds: Array[String]): Array[Association] = {
 
     def connectorOrEmpty[T <: RDFConnector](c: T, f: T => SMMap) = 
       useConnector(c, f, Map() ++ probes.map(p => (p -> Set("(Could not obtain data)"))))
-    
-      
-    //By setting it up like this we can request data from the different servers in parallel,
-    //and keep going if one fails
-    val sources = List(() => {
-      ("KEGG pathways", connectorOrEmpty(B2RKegg,
-              (c: B2RKegg.type) => c.pathwaysForProbes(probes, filter)))              
-      },
-      () => {
-        ("MF GO terms", connectorOrEmpty(OTGOwlim,            
-            (c: OTGOwlim.type) => c.mfGoTermsForProbes(probes)))            
-      },
-      () => {
-        ("BP GO terms", connectorOrEmpty(OTGOwlim,            
-            (c: OTGOwlim.type) => c.bpGoTermsForProbes(probes)))
-            
-      },
-      () => {
-        ("CC GO terms", connectorOrEmpty(OTGOwlim,            
-            (c: OTGOwlim.type) => c.ccGoTermsForProbes(probes)))            
-      },
-      () => {
-        ("CHEMBL targets", connectorOrEmpty(CHEMBL,
+
+    import Association._
+    def lookupFunction(t: AType) = t match {
+      case x: AType.Chembl.type => connectorOrEmpty(CHEMBL,
             (c: CHEMBL.type) => {
               val compounds = OTGOwlim.compounds(filter)
               val proteins = OTGOwlim.uniprotsForProbes(probes)    
               val targets = c.targetingCompoundsForProteins(proteins.flatMap(_._2), null, compounds)
               val r = proteins.map(x => (x._1 -> x._2.flatMap(targets.getOrElse(_, Set()))))
               r
-            }))
-      },
-      () => {
-        ("DrugBank targets", connectorOrEmpty(DrugBank,
+            })      
+      case x: AType.Drugbank.type => connectorOrEmpty(DrugBank,
             (c: DrugBank.type) => {
               val compounds = OTGOwlim.compounds(filter)
               val proteins = OTGOwlim.uniprotsForProbes(probes)
               val targets = c.targetingCompoundsForProteins(proteins.flatMap(_._2), compounds)
               val r = proteins.map(x => (x._1 -> x._2.flatMap(targets.getOrElse(_, Set()))))
               r
-            }))
-      },
-      () => {
-        ("Homologene entries", connectorOrEmpty(B2RHomologene,
-                (c: B2RHomologene.type) => c.homologousGenes(geneIds)))                
-      },
-      () => {
-        ("UniProt proteins", connectorOrEmpty(OTGOwlim,
-            (c: OTGOwlim.type) => c.uniprotsForProbes(probes)))
-      }
-      )
-
-    sources.par.map(_()).seq.map(x => new Association(x._1, convert(x._2))).toArray     
+            })
+      case x: AType.GOMF.type => connectorOrEmpty(OTGOwlim,            
+            (c: OTGOwlim.type) => c.mfGoTermsForProbes(probes))         
+      case x: AType.GOBP.type => connectorOrEmpty(OTGOwlim,            
+            (c: OTGOwlim.type) => c.bpGoTermsForProbes(probes))        
+      case x: AType.GOCC.type => connectorOrEmpty(OTGOwlim,            
+            (c: OTGOwlim.type) => c.ccGoTermsForProbes(probes))                  
+      case x: AType.Uniprot.type => connectorOrEmpty(OTGOwlim,
+            (c: OTGOwlim.type) => c.uniprotsForProbes(probes))
+      case x: AType.Homologene.type => connectorOrEmpty(B2RHomologene,
+            (c: B2RHomologene.type) => c.homologousGenes(geneIds))    
+      case x: AType.KEGG.type => connectorOrEmpty(B2RKegg,
+            (c: B2RKegg.type) => c.pathwaysForProbes(probes, filter))             
+    }
+      
+    types.par.map(x => (x,lookupFunction(x))).seq.map(p => new Association(p._1, convert(p._2))).toArray     
   }
   
   def geneSuggestions(partialName: String, filter: DataFilter): Array[Pair[String, String]] = {
