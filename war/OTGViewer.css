@@ -134,3 +134,29 @@ exprGrid {
 .extraColumn {
 	color: SteelBlue;
 }
+
+/** For the GroupInspector. */
+.DodgerBlueGroup {
+	color: DodgerBlue;
+}
+.FireBrickGroup {
+	color: FireBrick;
+}
+.LightSeaGreenGroup {
+	color: LightSeaGreen;
+}
+.NavyGroup {
+	color: Navy;
+}
+.DarkCyanGroup {
+	color: DarkCyan;
+}
+.PapayaBrickGroup {
+	color: PapayaBrick;
+}
+.PurpleGroup {
+	color: Purple;
+}
+.TurqoiseGroup {
+	color: DarkOliveGreen;
+}

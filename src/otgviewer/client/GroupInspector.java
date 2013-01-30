@@ -23,15 +23,13 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DockPanel;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -156,6 +154,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		};
 //		vp.add(existingGroupsTable);
 		existingGroupsTable.setVisible(false);
+		existingGroupsTable.table().setRowStyles(new GroupColouring());
 		existingGroupsTable.setSize("100%", "100px");
 		sp.addSouth(Utils.makeScrolled(existingGroupsTable), 200);
 		
@@ -367,8 +366,14 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 
 	@Override
 	public void onResize() {
-		sp.onResize();
-		
+		sp.onResize();		
+	}
+	
+	private class GroupColouring implements RowStyles<Group> {
+		@Override
+		public String getStyleNames(Group g, int rowIndex) {
+			return g.getColour() + "Group";	
+		}
 	}
 	
 	

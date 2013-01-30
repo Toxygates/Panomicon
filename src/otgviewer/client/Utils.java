@@ -107,9 +107,9 @@ public class Utils {
 	 * @param color
 	 * @return
 	 */
-	public static Options createChartOptions(String color) {
+	public static Options createChartOptions(String... colors) {
 		Options o = Options.create();
-		o.setColors(color);
+		o.setColors(colors);
 		o.set("legend.position", "none");
 		o.setLegend(LegendPosition.NONE);
 		return o;

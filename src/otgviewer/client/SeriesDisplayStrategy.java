@@ -2,11 +2,14 @@ package otgviewer.client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.ExpressionRow;
+import otgviewer.shared.Group;
 import otgviewer.shared.SampleTimes;
 
 import com.google.gwt.core.client.JsArray;
@@ -22,42 +25,86 @@ public abstract class SeriesDisplayStrategy {
 
 	protected DataTable table;
 	protected Barcode[] barcodes;
-	protected int[][] bcTable;
+//	protected int[][] bcTable;
 	protected String[] individuals;
+	protected List<Group> groups;
 	private Screen screen;
 	
-	public SeriesDisplayStrategy(Screen _screen, DataTable _table) {		
+	private class TableColumn {
+		Group group; //can be null for the default group
+		
+		String colour() {
+			if (group == null) {
+				return "DarkGrey";
+			} else {
+				return group.getColour();
+			}
+		}
+		
+		/**
+		 * May be sparsely populated. Each offset corresponds to a category.
+		 */
+		int[] bcIndex;
+		Barcode[] barcodes;
+		
+		/**
+		 * @param categories number of times/doses
+		 */
+		TableColumn(int categories) {
+			bcIndex = new int[categories];
+			Arrays.fill(bcIndex, -1);
+			barcodes = new Barcode[categories];
+		}
+	}
+	
+	protected List<TableColumn> tableColumns = new ArrayList<TableColumn>();
+	protected Map<Group, TableColumn> groupColumns = new HashMap<Group, TableColumn>();
+	
+	TableColumn defaultColumn;
+	
+	public SeriesDisplayStrategy(Screen _screen, List<Group> _groups, DataTable _table) {		
 		table = _table;
 		screen = _screen;
+		groups = _groups;
 	}
 	
 	void setupTable(Barcode[] barcodes) {
 		System.out.println("Series chart got " + barcodes.length + " barcodes");
 		this.barcodes = barcodes;
-		bcTable = new int[categories().length][]; //rows
-		int cols = barcodes.length/categories().length;
-		for (int i = 0; i < bcTable.length; ++i) {
-			bcTable[i] = new int[cols];		
-			Arrays.fill(bcTable[i], -1);
-		}		
-		
+		final int nc = categories().length;
+		defaultColumn = new TableColumn(nc);
+	
 		table.removeColumns(0, table.getNumberOfColumns());
 		table.addColumn(ColumnType.STRING, categoryName());
 		
 		for (int x = 0; x < barcodes.length; ++x) {
 			int cat = categoryForBarcode(barcodes[x]);
-			if (cat != -1) {
-				for (int i = 0; i < bcTable[cat].length; ++i) {
-					if (bcTable[cat][i] == -1) {
-						bcTable[cat][i] = x;
-						break;
-					}
+			Group g = groupForBarcode(barcodes[x]);
+			TableColumn tc = defaultColumn;
+			if (g != null) {
+				if (groupColumns.containsKey(g) && groupColumns.get(g).barcodes[cat] == null) {
+					tc = groupColumns.get(g);					
+				} else {
+					tc = new TableColumn(nc);
+					tableColumns.add(tc);
+					tc.group = g;
+					groupColumns.put(g, tc);
 				}
-			}			
+				
+			} else {
+				if (tc.barcodes[cat] != null) {
+					tc = defaultColumn = new TableColumn(nc);
+					tableColumns.add(tc);
+				}
+			}
+			if (cat != -1) {
+				tc.bcIndex[cat] = x;
+				tc.barcodes[cat] = barcodes[x];
+			}
+					
 		}
-		
-		
-		for (int x: bcTable[0]) {
+//		
+		for (TableColumn tc: tableColumns) {
 			table.addColumn(ColumnType.NUMBER);
 		}		
 		
@@ -73,21 +120,34 @@ public abstract class SeriesDisplayStrategy {
 	void displayData(List<ExpressionRow> data, final CoreChart chart) {
 //		System.out.println("Series chart got " + data.size() + " rows");
 		
-		if (bcTable.length > 0) {	
-			for (ExpressionRow r : data) {
-				for (int i = 0; i < bcTable.length; ++i) {
-					for (int j = 0; j < bcTable[i].length; ++j) {
-						if (bcTable[i][j] != -1) {
-							double v = r.getValue(bcTable[i][j]).getValue();
-							
-							table.setValue(i, j + 1, v);
-							table.setFormattedValue(i, j + 1, Utils.formatNumber(v));
-						}
+		for (int c = 0; c < tableColumns.size(); ++ c) {
+			TableColumn tc = tableColumns.get(c);
+			for (ExpressionRow r : data) { //most of the time we actually expect a single row
+				for (int i = 0; i < tc.bcIndex.length; ++i) {
+					if (tc.bcIndex[i] != -1) {
+						double v = r.getValue(tc.bcIndex[i]).getValue();						
+						table.setValue(i, c + 1, v);
+						table.setFormattedValue(i, c + 1, Utils.formatNumber(v));
 					}
 				}
 			}
-		}		
-		chart.draw(table, Utils.createChartOptions("MediumAquaMarine"));
+		}
+		
+//		if (bcTable.length > 0) {	
+//			for (ExpressionRow r : data) {
+//				for (int i = 0; i < bcTable.length; ++i) {
+//					for (int j = 0; j < bcTable[i].length; ++j) {
+//						if (bcTable[i][j] != -1) {
+//							double v = r.getValue(bcTable[i][j]).getValue();
+//							
+//							table.setValue(i, j + 1, v);
+//							table.setFormattedValue(i, j + 1, Utils.formatNumber(v));
+//						}
+//					}
+//				}
+//			}
+//		}		
+		chart.draw(table, Utils.createChartOptions(getColumnColors()));
 		chart.addSelectHandler(new SelectHandler() {			
 			@Override
 			public void onSelect(SelectEvent event) {
@@ -95,7 +155,8 @@ public abstract class SeriesDisplayStrategy {
 				Selection s = ss.get(0);
 				int col = s.getColumn();
 				int row = s.getRow();
-				Barcode b = barcodes[bcTable[row][col - 1]];
+				TableColumn tc = tableColumns.get(col - 1);				
+				Barcode b = tc.barcodes[row];
 				screen.displaySampleDetail(b);
 			}
 		});
@@ -106,6 +167,10 @@ public abstract class SeriesDisplayStrategy {
 	abstract String categoryName();
 	abstract CoreChart makeChart();
 	
+	Group groupForBarcode(Barcode b) {
+		return Utils.groupFor(groups, b.getCode());
+	}
+	
 	int indexOf(Object[] data, Object item) {
 		for (int i = 0; i < data.length; ++i) {
 			if (data[i].equals(item)) {
@@ -115,10 +180,19 @@ public abstract class SeriesDisplayStrategy {
 		return -1;
 	}
 	
+	String[] getColumnColors() {
+		String[] colors = new String[tableColumns.size()];
+		for (int i = 0; i < tableColumns.size(); ++i) {
+			colors[i] = tableColumns.get(i).colour();
+		}
+		return colors;
+//		return new String[] { "red", "blue" };
+	}
+	
 	
 	public static class VsTime extends SeriesDisplayStrategy {
-		public VsTime(Screen screen, DataTable table) {
-			super(screen, table);
+		public VsTime(Screen screen, List<Group> groups, DataTable table) {
+			super(screen, groups, table);
 		}
 		private String[] categorySubset; 
 		
@@ -149,14 +223,14 @@ public abstract class SeriesDisplayStrategy {
 		
 		String categoryName() { return "Time"; };
 		CoreChart makeChart() {
-			Options o = Utils.createChartOptions("MediumAquaMarine");
+			Options o = Utils.createChartOptions(getColumnColors());
 			return new ColumnChart(table, o);
 		}
 	}
 	
 	public static class VsDose extends SeriesDisplayStrategy {
-		public VsDose(Screen screen, DataTable table) {
-			super(screen, table);
+		public VsDose(Screen screen, List<Group> groups, DataTable table) {
+			super(screen, groups, table);
 		}
 		
 		public static final String[] allDoses = new String[] { "Control", "Low", "Middle", "High" };
@@ -164,7 +238,7 @@ public abstract class SeriesDisplayStrategy {
 		int categoryForBarcode(Barcode b) { return indexOf(categories(), b.getDose()); }
 		String categoryName() { return "Dose"; }
 		CoreChart makeChart() {
-			Options o = Utils.createChartOptions("MediumAquaMarine");			
+			Options o = Utils.createChartOptions(getColumnColors());			
 			return new ColumnChart(table, o);
 		}
 	}

@@ -242,14 +242,14 @@ public class SeriesChart extends DataListenerWidget {
 
 	
 	void redrawForTime(String time) {
-		seriesStrategy = new SeriesDisplayStrategy.VsDose(screen, seriesTable);
+		seriesStrategy = new SeriesDisplayStrategy.VsDose(screen, chosenColumns, seriesTable);
 		owlimService.barcodes(chosenDataFilter, chosenCompound,
 				null, time,
 				seriesChartBarcodesCallback);
 	}
 	
 	void redrawForDose(String dose) {
-		seriesStrategy = new SeriesDisplayStrategy.VsTime(screen, seriesTable);
+		seriesStrategy = new SeriesDisplayStrategy.VsTime(screen, chosenColumns, seriesTable);
 		owlimService.barcodes(chosenDataFilter, chosenCompound,
 				dose, null,
 				seriesChartBarcodesCallback);
