@@ -6,11 +6,11 @@ package otgviewer.shared;
  *
  */
 public enum AType {
-
-	Chembl("CHEMBL targets"), Drugbank("DrugBank targets"), Uniprot(
-			"UniProt proteins"), GOCC("GO Cellular component"), GOMF(
-			"GO Molecular function"), GOBP("GO Biological process"), Homologene(
-			"Homologene entries"), KEGG("KEGG pathways");
+	KEGG("KEGG pathways"),
+	Chembl("CHEMBL compounds"), Drugbank("DrugBank compounds"), 
+	Uniprot("UniProt proteins"), GOCC("GO Cellular component"), 
+			GOMF("GO Molecular function"), GOBP("GO Biological process"), 
+			Homologene("Homologene entries");
 
 	private String _title;
 
