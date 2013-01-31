@@ -14,7 +14,7 @@ public class Group implements Serializable, DataColumn, Comparable<Group> {
 
 	private static final long serialVersionUID = 2111266740402283063L;
 	private static final String[] groupColours = new String[] { "DodgerBlue", "FireBrick", "DarkCyan", "Navy", 
-		"LightSeaGreen", "PapayaWhip", "Purple", "Turqoise" };
+		"LightSeaGreen", "PapayaWhip", "Purple", "DarkOliveGreen" };
 	private static int nextColour = 0;
 	
 	Barcode[] barcodes;
