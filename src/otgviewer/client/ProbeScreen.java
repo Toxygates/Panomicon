@@ -66,7 +66,7 @@ public class ProbeScreen extends Screen {
 		
 		StackPanel probeSelStack = new StackPanel();
 		hp.add(probeSelStack);
-		probeSelStack.setSize("350px", "592px");
+		probeSelStack.setSize("350px", "492px");
 
 		pathwaySel = new ProbeSelector(
 				"This lets you view probes that correspond to a given KEGG pathway. "
@@ -180,7 +180,7 @@ public class ProbeScreen extends Screen {
 		l.setStyleName("heading");
 		lp.add(l);
 		probesList = new ListBox();
-		probesList.setVisibleItemCount(30);
+		probesList.setVisibleItemCount(25);
 		probesList.setWidth("350px");
 		lp.add(probesList);
 		hp.add(lp);
@@ -194,6 +194,8 @@ public class ProbeScreen extends Screen {
 
 		HorizontalPanel hpo = Utils.mkWidePanel();
 		hpo.add(hp);
+		hpo.setHeight("100%");
+		
 		return hpo;			
 	}
 	
