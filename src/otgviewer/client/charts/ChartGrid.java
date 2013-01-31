@@ -1,17 +1,16 @@
-package otgviewer.client;
+package otgviewer.client.charts;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import otgviewer.shared.DataFilter;
+import otgviewer.client.Utils;
 import otgviewer.shared.ExpressionValue;
+import otgviewer.shared.Group;
 import otgviewer.shared.Series;
 import otgviewer.shared.SharedUtils;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
@@ -28,23 +27,26 @@ import com.google.gwt.visualization.client.visualizations.corechart.Options;
  * @author johan
  *
  */
-public class SeriesChartGrid extends Composite {
-	private final OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT.create(OwlimService.class);
+public class ChartGrid extends Composite {
 	
-	List<Series> data;
 	Grid g;
 	List<String> rowKeys;
 	
-	DataTable table;
-	
-	boolean rowsAreCompounds = false; //if false, they are probes
-	private DataFilter filter;
-	
-	public SeriesChartGrid(DataFilter filter, List<Series> series, boolean rowsAreCompounds) {
+	public ChartGrid(ChartTables table, List<Group> groups, List<String> rowFilters, boolean rowsAreCompounds, 
+			String[] timesOrDoses, boolean isTimes) {
 		super();
-		data = series;
-		this.rowsAreCompounds = rowsAreCompounds;
-		this.filter = filter;
+		
+		g = new Grid(rowFilters.size() * 2 + 1, 3);
+		initWidget(g);
+		
+		for (int c = 0; c < timesOrDoses.length; ++c) {
+			String tod = timesOrDoses[c];
+			for (int r = 0; r < rowFilters.size(); ++r) {
+				String filter = rowFilters.get(r);
+				DataTable dt = table.makeTable(tod, filter, isTimes, !rowsAreCompounds);
+			}
+		}
+		//... work in progress ends here
 		
 		Set<String> rows = new HashSet<String>();
 		
@@ -56,9 +58,6 @@ public class SeriesChartGrid extends Composite {
 			}
 		}
 		this.rowKeys = new ArrayList<String>(rows);
-		
-		g = new Grid(rows.size() * 2 + 1, 3);		
-		initWidget(g);
 		
 		g.setWidth("530px");
 		g.setHeight(rowKeys.size() * 190 + "px");
@@ -114,26 +113,7 @@ public class SeriesChartGrid extends Composite {
 					});
 		}
 		
-		owlimService.times(filter, null, new AsyncCallback<String[]>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				Window.alert("Unable to obtain sample times");
-			}
-			@Override
-			public void onSuccess(String[] result) {
-				for (Series s: data) {
-					int row = rowsAreCompounds ? SharedUtils.indexOf(rowKeys, s.compound()) : SharedUtils.indexOf(rowKeys, s.probe());
-					String td = s.timeDose();
-					if (td.equals("Low")) {
-						displaySeriesAt(result, row * 2 + 2, 0, s, fmin, fmax);
-					} else if (td.equals("Middle")) {
-						displaySeriesAt(result, row * 2 + 2, 1, s, fmin, fmax);
-					} else if (td.equals("High")) {
-						displaySeriesAt(result, row * 2 + 2, 2, s, fmin, fmax);
-					}
-				}								
-			}			
-		});
+		
 	}
 	
 	private void displaySeriesAt(String[] times, int row, int column, Series s, double minVal, double maxVal) {

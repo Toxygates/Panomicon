@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import otgviewer.client.charts.SeriesChart;
+import otgviewer.client.charts.ChartGrid;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
@@ -76,7 +78,7 @@ import com.google.gwt.view.client.Range;
 
 public class ExpressionTable extends DataListenerWidget implements RequiresResize, ProvidesResize {
 
-	private final int PAGE_SIZE = 50;
+	private final int PAGE_SIZE = 25;
 	
 	private Screen screen;
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
@@ -149,7 +151,6 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		return this.tools;
 	}
 	
-	private boolean warnedPageSize = false;
 	private void makeTools() {
 		tools = Utils.mkHorizontalPanel();		
 		
@@ -171,24 +172,22 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		});
 
 		Resources r = GWT.create(Resources.class);
-		sp = new SimplePager(TextLocation.CENTER, r, true, 10 * PAGE_SIZE, true);
+		sp = new SimplePager(TextLocation.CENTER, r, true, 500, true);
 		sp.setStyleName("slightlySpaced");
 		horizontalPanel.add(sp);		
 		sp.setDisplay(exprGrid);
 		
 		
-		PageSizePager pager = new PageSizePager(50) {
+		PageSizePager pager = new PageSizePager(25) {
 			@Override
 			protected void onRangeOrRowCountChanged() {
 				super.onRangeOrRowCountChanged();
-				if (getPageSize() > 100 && !warnedPageSize) {
-					Window.alert("You are now displaying " + getPageSize() + " rows. Dynamic columns will " + 
-							"only be loaded for the first 100 rows on each page.");
-					warnedPageSize = true;
+				if (getPageSize() > 100) {
+					setPageSize(100);					
 				}				
-			}
-			
+			}			
 		};
+		
 		pager.setStyleName("slightlySpaced");
 		horizontalPanel.add(pager);
 		pager.setDisplay(exprGrid);		
@@ -459,22 +458,6 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		return r.toArray(new AType[0]);
 	}
 	
-	/**
-	 * Return an array of length at most 100, for association retrieval.
-	 * @param data
-	 * @return
-	 */
-	private String[] limitLength(String[] data) {
-		if (data.length <= 100) {
-			return data;
-		}
-		String[] r = new String[100];
-		for (int i = 0; i < 100; ++i) {
-			r[i] = data[i];
-		}
-		return r;		
-	}
-	
 	private void getAssociations() {
 		waitingForAssociations = true;					
 
@@ -494,8 +477,8 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		};
 		
 		owlimService.associations(chosenDataFilter, visibleAssociations(),
-				limitLength(displayedProbes), 
-				limitLength(displayedGeneIds.toArray(new String[0])), assocCallback);
+				displayedProbes, 
+				displayedGeneIds.toArray(new String[0]), assocCallback);
 	}
 	
 	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
@@ -784,7 +767,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 				kcService.getSeries(chosenDataFilter, new String[] { value }, 
 						null, dc.getCompounds(), new AsyncCallback<List<Series>>() {
 					public void onSuccess(List<Series> ss) {
-						SeriesChartGrid scg = new SeriesChartGrid(chosenDataFilter, ss, true);
+						ChartGrid scg = new ChartGrid(chosenDataFilter, ss, true);
 						sp.add(scg);
 					}
 					public void onFailure(Throwable caught) {

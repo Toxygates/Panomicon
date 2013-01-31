@@ -1,8 +1,13 @@
-package otgviewer.client;
+package otgviewer.client.charts;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import otgviewer.client.KCService;
+import otgviewer.client.KCServiceAsync;
+import otgviewer.client.OwlimService;
+import otgviewer.client.OwlimServiceAsync;
+import otgviewer.client.Utils;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;

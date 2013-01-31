@@ -1,4 +1,4 @@
-package otgviewer.client;
+package otgviewer.client.charts;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import otgviewer.client.Utils;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.ExpressionRow;
@@ -133,20 +134,6 @@ public abstract class SeriesDisplayStrategy {
 			}
 		}
 		
-//		if (bcTable.length > 0) {	
-//			for (ExpressionRow r : data) {
-//				for (int i = 0; i < bcTable.length; ++i) {
-//					for (int j = 0; j < bcTable[i].length; ++j) {
-//						if (bcTable[i][j] != -1) {
-//							double v = r.getValue(bcTable[i][j]).getValue();
-//							
-//							table.setValue(i, j + 1, v);
-//							table.setFormattedValue(i, j + 1, Utils.formatNumber(v));
-//						}
-//					}
-//				}
-//			}
-//		}		
 		chart.draw(table, Utils.createChartOptions(getColumnColors()));
 		chart.addSelectHandler(new SelectHandler() {			
 			@Override
