@@ -7,11 +7,9 @@ import otgviewer.shared.DataFilter;
 import otgviewer.shared.Organ;
 import otgviewer.shared.Organism;
 import otgviewer.shared.RepeatType;
-import otgviewer.shared.ValueType;
 
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -55,7 +53,7 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 		return vp;
 	}
 	
-	public void filterSelected(DataFilter filter) {
+	public void filterSelected(DataFilter filter) {		
 		changeDataFilter(filter);
 		storeDataFilter();
 		setConfigured(true);
