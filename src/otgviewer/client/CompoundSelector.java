@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import otgviewer.client.charts.ChartGrid;
+import otgviewer.client.charts.ChartGridFactory;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
@@ -28,12 +29,10 @@ import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.NoSelectionModel;
 
 /**
@@ -232,8 +231,14 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 				kcService.getSeries(chosenDataFilter, rankProbes.toArray(new String[0]), 
 						null, new String[] { value }, new PendingAsyncCallback<List<Series>>(w, "Unable to retrieve data.") {
 					public void handleSuccess(List<Series> ss) {
-						ChartGrid scg = new ChartGrid(chosenDataFilter, ss, false);
-						Utils.displayInPopup(scg);
+						ChartGridFactory cgf = new ChartGridFactory(chosenDataFilter, chosenColumns);
+						cgf.makeSeriesCharts(ss, false, new ChartGridFactory.ChartAcceptor() {
+							
+							@Override
+							public void acceptCharts(ChartGrid cg) {
+								Utils.displayInPopup(cg);								
+							}
+						});						
 					}
 					
 				});

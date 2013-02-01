@@ -31,35 +31,7 @@ public abstract class SeriesDisplayStrategy {
 	protected List<Group> groups;
 	private Screen screen;
 	
-	private class TableColumn {
-		Group group; //can be null for the default group
-		
-		String colour() {
-			if (group == null) {
-				return "DarkGrey";
-			} else {
-				return group.getColour();
-			}
-		}
-		
-		/**
-		 * May be sparsely populated. Each offset corresponds to a category.
-		 */
-		int[] bcIndex;
-		Barcode[] barcodes;
-		
-		/**
-		 * @param categories number of times/doses
-		 */
-		TableColumn(int categories) {
-			bcIndex = new int[categories];
-			Arrays.fill(bcIndex, -1);
-			barcodes = new Barcode[categories];
-		}
-	}
 	
-	protected List<TableColumn> tableColumns = new ArrayList<TableColumn>();
-	protected Map<Group, TableColumn> groupColumns = new HashMap<Group, TableColumn>();
 	
 	TableColumn defaultColumn;
 	

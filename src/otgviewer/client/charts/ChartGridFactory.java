@@ -28,7 +28,7 @@ public class ChartGridFactory {
 		this.filter = filter;
 	}
 	
-	public void makeSeriesCharts(final List<Series> series, final boolean rowsAreCompounds, 
+	public void makeSeriesCharts(final List<Series> series, final boolean rowsAreCompounds,
 			final ChartAcceptor acceptor) {
 		
 		owlimService.times(filter, null, new AsyncCallback<String[]>() {
@@ -40,17 +40,17 @@ public class ChartGridFactory {
 			public void onSuccess(String[] result) {
 				finishSeriesCharts(series, result, rowsAreCompounds, acceptor);												
 			}			
-		});	
-		
+		});			
 	}
 	
-	private void finishSeriesCharts(List<Series> series, String[] times, boolean rowsAreCompounds, ChartAcceptor acceptor) {
+	private void finishSeriesCharts(List<Series> series, String[] times, boolean rowsAreCompounds,			
+			ChartAcceptor acceptor) {
 		ChartDataSource cds = new ChartDataSource.SeriesSource(series, times);
 		// strategy: 1. Make data source,
 		// 2. Make table
 		// 3. make chart grid and return
 		
-		ChartTables ct = new ChartTables.GroupedChartTable(cds.getSamples(), groups);
+		ChartTables ct = new ChartTables.PlainChartTable(cds.getSamples(), times, true);
 		
 		List<String> filters = new ArrayList<String>();
 		for (Series s: series) {			
@@ -61,7 +61,7 @@ public class ChartGridFactory {
 			}
 		}
 		
-		ChartGrid cg = new ChartGrid(ct, groups, filters, rowsAreCompounds);
+		ChartGrid cg = new ChartGrid(ct, groups, filters, rowsAreCompounds, new String[] { "Low", "Middle", "High" }, false);
 		acceptor.acceptCharts(cg);
 	}
 }

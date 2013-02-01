@@ -767,8 +767,8 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 				kcService.getSeries(chosenDataFilter, new String[] { value }, 
 						null, dc.getCompounds(), new AsyncCallback<List<Series>>() {
 					public void onSuccess(List<Series> ss) {
-						ChartGrid scg = new ChartGrid(chosenDataFilter, ss, true);
-						sp.add(scg);
+//						ChartGrid scg = new ChartGrid(chosenDataFilter, ss, true);
+//						sp.add(scg);
 					}
 					public void onFailure(Throwable caught) {
 						Window.alert("Unable to retrieve data.");
