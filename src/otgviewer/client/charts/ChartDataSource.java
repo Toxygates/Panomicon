@@ -7,6 +7,7 @@ import otgviewer.shared.Barcode;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.ExpressionValue;
 import otgviewer.shared.Series;
+import otgviewer.shared.TimesDoses;
 
 /**
  * This class brings series and row data into a unified interface for the purposes of
@@ -37,6 +38,35 @@ abstract class ChartDataSource {
 	
 	List<ChartSample> getSamples() { return samples; }
 	protected List<ChartSample> samples = new ArrayList<ChartSample>();
+
+	private String[] _times;
+	private String[] _doses;
+	
+	String[] times() { return _times; }
+	String[] doses() { return _doses; }
+	
+	
+	protected void init() {
+		List<String> times = new ArrayList<String>();
+		for (ChartDataSource.ChartSample s: samples) {
+			if (!times.contains(s.time)) {
+				times.add(s.time);
+			}
+		}
+		_times = times.toArray(new String[0]);
+		TimesDoses.sortTimes(_times);		
+	
+		List<String> doses = new ArrayList<String>();
+		for (ChartDataSource.ChartSample s: samples) {
+			if (!doses.contains(s.dose) && !s.dose.equals("Control")) {
+				doses.add(s.dose);
+			}
+		}
+		_doses = doses.toArray(new String[0]);
+		TimesDoses.sortDoses(_doses);
+	}
+	
+	
 	
 	static class SeriesSource extends ChartDataSource {
 		SeriesSource(List<Series> series, String[] times) {
@@ -47,7 +77,8 @@ abstract class ChartDataSource {
 					samples.add(cs);
 				}
 			}
-		}
+			init();
+		}		
 	}
 	
 	static class ExpressionRowSource extends ChartDataSource {
@@ -60,6 +91,9 @@ abstract class ChartDataSource {
 					samples.add(cs);
 				}
 			}
+			init();
 		}
 	}
+	
+	
 }

@@ -51,6 +51,7 @@ public class ChartGrid extends Composite {
 		this.timesOrDoses = timesOrDoses;
 		this.table = table;
 		this.columnsAreTimes = columnsAreTimes;
+		final int width = 510 / timesOrDoses.length; 
 		
 		g = new Grid(rowFilters.size() * 2 + 1, timesOrDoses.length);
 		initWidget(g);
@@ -61,7 +62,7 @@ public class ChartGrid extends Composite {
 			for (int r = 0; r < rowFilters.size(); ++r) {
 				String filter = rowFilters.get(r);								
 				g.setWidget(r * 2 + 1, 0, Utils.mkEmphLabel(rowFilters.get(r)));
-				displaySeriesAt(r, c);
+				displaySeriesAt(r, c, width);
 			}
 		}
 	
@@ -95,10 +96,8 @@ public class ChartGrid extends Composite {
 	}
 
 	
-	private void displaySeriesAt(int row, int column) {
-		Options o = Utils.createChartOptions("LightSkyBlue");
-		o.setWidth(170);
-		o.setHeight(170);
+	private void displaySeriesAt(int row, int column, int width) {
+		
 		AxisOptions ao = AxisOptions.create();
 		
 		String rf = rowFilters.get(row);
@@ -106,6 +105,10 @@ public class ChartGrid extends Composite {
 		DataTable dt = table.makeTable(tod, rf, columnsAreTimes, !rowsAreCompounds);
 		ao.setMinValue(table.getMin());
 		ao.setMaxValue(table.getMax());
+		
+		Options o = Utils.createChartOptions(table.getColumnColors());
+		o.setWidth(width);
+		o.setHeight(170);
 		o.setVAxisOptions(ao);
 		
 		CoreChart c = new ColumnChart(dt, o);				

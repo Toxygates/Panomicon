@@ -105,7 +105,12 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
   def barcodes(filter: DataFilter, compound: String, doseLevel: String, time: String) =
     OTGOwlim.barcodes(filter, nullToNone(compound), 
         nullToNone(doseLevel), nullToNone(time)).map(asJava(_, compound)).toArray
+  
+  def barcodes(filter: DataFilter, compounds: Array[String], doseLevel: String, time: String) =
+    compounds.flatMap(c => OTGOwlim.barcodes(filter, nullToNone(c), 
+        nullToNone(doseLevel), nullToNone(time)).map(asJava(_, c))).toArray
     
+        
   val orderedTimes = List("2 hr", "3 hr", "6 hr", "8 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day")
   def times(filter: DataFilter, compound: String): Array[String] = { 
     val r = OTGOwlim.times(filter, nullToOption(compound)).toArray    

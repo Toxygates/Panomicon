@@ -8,8 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import otgviewer.client.charts.SeriesChart;
-import otgviewer.client.charts.ChartGrid;
+import otgviewer.client.charts.AdjustableChartGrid;
+import otgviewer.client.charts.ChartGridFactory;
+import otgviewer.client.charts.ChartGridFactory.AChartAcceptor;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
@@ -20,7 +21,6 @@ import otgviewer.shared.Association;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Group;
-import otgviewer.shared.Series;
 import otgviewer.shared.SharedUtils;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
@@ -67,9 +67,6 @@ import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.TabPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.AsyncDataProvider;
 import com.google.gwt.view.client.HasData;
@@ -89,10 +86,6 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 	
 	private DoubleBox absValBox;
 	private ListBox valueTypeList = new ListBox();
-	
-	private VerticalPanel seriesChartPanel = new VerticalPanel();	
-	private List<SeriesChart> seriesCharts = new ArrayList<SeriesChart>();
-	private SeriesChart.Controller chartController;
 	
 	private final KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
@@ -589,29 +582,6 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		List<DataColumn> cols = new ArrayList<DataColumn>();
 		cols.addAll(chosenColumns);
 
-		//set up the series charts		
-		seriesChartPanel.clear();
-		seriesCharts.clear();
-		
-		chartController  = new SeriesChart.Controller();
-		this.addListener(chartController);
-		this.propagateTo(chartController);
-		seriesChartPanel.add(chartController);
-		
-		for (DataColumn c: cols) {
-			Label l = new Label("Compounds in '" + c.getShortTitle() +"'");
-			seriesChartPanel.add(l);			
-			l.setStyleName("heading");
-			for (String com : c.getCompounds()) {
-				SeriesChart sc = new SeriesChart(screen);
-				chartController.addChart(sc);				
-				seriesChartPanel.add(sc);
-				seriesCharts.add(sc);
-				this.propagateTo(sc);
-				sc.compoundChanged(com);
-			}			
-		}
-		
 		//load data
 		kcService.loadDataset(chosenDataFilter, cols, chosenProbes, chosenValueType,
 				absValBox.getValue(), synthColumns, 
@@ -737,46 +707,44 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 			highlightedRow = SharedUtils.indexOf(displayedProbes, value);
 			exprGrid.redraw();
 			
-			int chartHeight = 200;
-			final int numCharts = seriesCharts.size();
-
-//			int height = chartHeight * numCharts;			
-			for (int i = 0; i < numCharts; i++) {
-				SeriesChart seriesChart = (SeriesChart) seriesCharts.get(i);
-				seriesChart.changeProbe(value);
-				seriesChart.setWidth("500px");
-				seriesChart.setPixelHeight(chartHeight);
-			}
-			chartController.redraw();
-
-			HorizontalPanel hp = new HorizontalPanel();
-			TabPanel tp = new TabPanel();
-			hp.add(tp);
-			tp.add(seriesChartPanel, "Individual samples");			
+			ChartGridFactory cgf = new ChartGridFactory(chosenDataFilter, chosenColumns);
 			
-			VerticalPanel v = new VerticalPanel();			
-			tp.add(v, "Average time series");			
-			tp.selectTab(0);
+			cgf.makeRowCharts(chosenValueType, value, 
+					new AChartAcceptor() {
+				public void acceptCharts(AdjustableChartGrid cg) {
+					Utils.displayInPopup(cg);
+				}
+			});
 			
-			for (DataColumn dc: chosenColumns) {
-				Label l = new Label("Compounds in '" + dc.getShortTitle() +"'");
-				l.setStyleName("heading");
-				v.add(l);
-				final SimplePanel sp = new SimplePanel();				
-				v.add(sp);
-				kcService.getSeries(chosenDataFilter, new String[] { value }, 
-						null, dc.getCompounds(), new AsyncCallback<List<Series>>() {
-					public void onSuccess(List<Series> ss) {
-//						ChartGrid scg = new ChartGrid(chosenDataFilter, ss, true);
-//						sp.add(scg);
-					}
-					public void onFailure(Throwable caught) {
-						Window.alert("Unable to retrieve data.");
-					}
-				});	
-			}			
-			
-			Utils.displayInPopup(hp);				
+		
+//			HorizontalPanel hp = new HorizontalPanel();
+//			TabPanel tp = new TabPanel();
+//			hp.add(tp);
+//			tp.add(seriesChartPanel, "Individual samples");			
+//			
+//			VerticalPanel v = new VerticalPanel();			
+//			tp.add(v, "Average time series	");			
+//			tp.selectTab(0);
+//			
+//			for (DataColumn dc: chosenColumns) {
+//				Label l = new Label("Compounds in '" + dc.getShortTitle() +"'");
+//				l.setStyleName("heading");
+//				v.add(l);
+//				final SimplePanel sp = new SimplePanel();				
+//				v.add(sp);
+//				kcService.getSeries(chosenDataFilter, new String[] { value }, 
+//						null, dc.getCompounds(), new AsyncCallback<List<Series>>() {
+//					public void onSuccess(List<Series> ss) {
+////						ChartGrid scg = new ChartGrid(chosenDataFilter, ss, true);
+////						sp.add(scg);
+//					}
+//					public void onFailure(Throwable caught) {
+//						Window.alert("Unable to retrieve data.");
+//					}
+//				});	
+//			}			
+//			
+//			Utils.displayInPopup(hp);				
 		}
 	}
 	

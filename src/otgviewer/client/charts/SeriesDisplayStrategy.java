@@ -11,7 +11,7 @@ import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Group;
-import otgviewer.shared.SampleTimes;
+import otgviewer.shared.TimesDoses;
 
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
@@ -33,7 +33,7 @@ public abstract class SeriesDisplayStrategy {
 	
 	
 	
-	TableColumn defaultColumn;
+//	TableColumn defaultColumn;
 	
 	public SeriesDisplayStrategy(Screen _screen, List<Group> _groups, DataTable _table) {		
 		table = _table;
@@ -45,41 +45,41 @@ public abstract class SeriesDisplayStrategy {
 		System.out.println("Series chart got " + barcodes.length + " barcodes");
 		this.barcodes = barcodes;
 		final int nc = categories().length;
-		defaultColumn = new TableColumn(nc);
-	
-		table.removeColumns(0, table.getNumberOfColumns());
-		table.addColumn(ColumnType.STRING, categoryName());
-		
-		for (int x = 0; x < barcodes.length; ++x) {
-			int cat = categoryForBarcode(barcodes[x]);
-			Group g = groupForBarcode(barcodes[x]);
-			TableColumn tc = defaultColumn;
-			if (g != null) {
-				if (groupColumns.containsKey(g) && groupColumns.get(g).barcodes[cat] == null) {
-					tc = groupColumns.get(g);					
-				} else {
-					tc = new TableColumn(nc);
-					tableColumns.add(tc);
-					tc.group = g;
-					groupColumns.put(g, tc);
-				}
-				
-			} else {
-				if (tc.barcodes[cat] != null) {
-					tc = defaultColumn = new TableColumn(nc);
-					tableColumns.add(tc);
-				}
-			}
-			if (cat != -1) {
-				tc.bcIndex[cat] = x;
-				tc.barcodes[cat] = barcodes[x];
-			}
-					
-		}
+//		defaultColumn = new TableColumn(nc);
+//	
+//		table.removeColumns(0, table.getNumberOfColumns());
+//		table.addColumn(ColumnType.STRING, categoryName());
 //		
-		for (TableColumn tc: tableColumns) {
-			table.addColumn(ColumnType.NUMBER);
-		}		
+//		for (int x = 0; x < barcodes.length; ++x) {
+//			int cat = categoryForBarcode(barcodes[x]);
+//			Group g = groupForBarcode(barcodes[x]);
+//			TableColumn tc = defaultColumn;
+//			if (g != null) {
+//				if (groupColumns.containsKey(g) && groupColumns.get(g).barcodes[cat] == null) {
+//					tc = groupColumns.get(g);					
+//				} else {
+//					tc = new TableColumn(nc);
+//					tableColumns.add(tc);
+//					tc.group = g;
+//					groupColumns.put(g, tc);
+//				}
+//				
+//			} else {
+//				if (tc.barcodes[cat] != null) {
+//					tc = defaultColumn = new TableColumn(nc);
+//					tableColumns.add(tc);
+//				}
+//			}
+//			if (cat != -1) {
+//				tc.bcIndex[cat] = x;
+//				tc.barcodes[cat] = barcodes[x];
+//			}
+//					
+//		}
+//		
+//		for (TableColumn tc: tableColumns) {
+//			table.addColumn(ColumnType.NUMBER);
+//		}		
 		
 		table.removeRows(0, table.getNumberOfRows());		
 		int i = 0;
@@ -93,18 +93,18 @@ public abstract class SeriesDisplayStrategy {
 	void displayData(List<ExpressionRow> data, final CoreChart chart) {
 //		System.out.println("Series chart got " + data.size() + " rows");
 		
-		for (int c = 0; c < tableColumns.size(); ++ c) {
-			TableColumn tc = tableColumns.get(c);
-			for (ExpressionRow r : data) { //most of the time we actually expect a single row
-				for (int i = 0; i < tc.bcIndex.length; ++i) {
-					if (tc.bcIndex[i] != -1) {
-						double v = r.getValue(tc.bcIndex[i]).getValue();						
-						table.setValue(i, c + 1, v);
-						table.setFormattedValue(i, c + 1, Utils.formatNumber(v));
-					}
-				}
-			}
-		}
+//		for (int c = 0; c < tableColumns.size(); ++ c) {
+//			TableColumn tc = tableColumns.get(c);
+//			for (ExpressionRow r : data) { //most of the time we actually expect a single row
+//				for (int i = 0; i < tc.bcIndex.length; ++i) {
+//					if (tc.bcIndex[i] != -1) {
+//						double v = r.getValue(tc.bcIndex[i]).getValue();						
+//						table.setValue(i, c + 1, v);
+//						table.setFormattedValue(i, c + 1, Utils.formatNumber(v));
+//					}
+//				}
+//			}
+//		}
 		
 		chart.draw(table, Utils.createChartOptions(getColumnColors()));
 		chart.addSelectHandler(new SelectHandler() {			
@@ -114,9 +114,9 @@ public abstract class SeriesDisplayStrategy {
 				Selection s = ss.get(0);
 				int col = s.getColumn();
 				int row = s.getRow();
-				TableColumn tc = tableColumns.get(col - 1);				
-				Barcode b = tc.barcodes[row];
-				screen.displaySampleDetail(b);
+//				TableColumn tc = tableColumns.get(col - 1);				
+//				Barcode b = tc.barcodes[row];
+//				screen.displaySampleDetail(b);
 			}
 		});
 	}
@@ -140,12 +140,12 @@ public abstract class SeriesDisplayStrategy {
 	}
 	
 	String[] getColumnColors() {
-		String[] colors = new String[tableColumns.size()];
-		for (int i = 0; i < tableColumns.size(); ++i) {
-			colors[i] = tableColumns.get(i).colour();
-		}
-		return colors;
-//		return new String[] { "red", "blue" };
+//		String[] colors = new String[tableColumns.size()];
+//		for (int i = 0; i < tableColumns.size(); ++i) {
+//			colors[i] = tableColumns.get(i).colour();
+//		}
+//		return colors;
+		return new String[] { "red", "blue" };
 	}
 	
 	
@@ -155,7 +155,7 @@ public abstract class SeriesDisplayStrategy {
 		}
 		private String[] categorySubset; 
 		
-		public final static String[] allTimes = SampleTimes.allTimes;		
+		public final static String[] allTimes = TimesDoses.allTimes;		
 		private String[] allCategories = allTimes; 
 		
 		int categoryForBarcode(Barcode b) { return indexOf(categorySubset, b.getTime()); }

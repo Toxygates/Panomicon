@@ -26,6 +26,7 @@ abstract class ChartTables {
 	ChartTables(List<ChartDataSource.ChartSample> samples, String[] categories, boolean categoriesAreTimes) {
 		this.samples = samples;
 		this.categoriesAreTimes = categoriesAreTimes;		
+		
 		for (ChartDataSource.ChartSample s: samples) {
 			if (s.value < min) { 
 				min = s.value;
@@ -37,6 +38,9 @@ abstract class ChartTables {
 		
 		this.categories = categories;		
 	}
+	
+//	String[] getCategories() { return categories; }
+//	boolean getCategoriesAreTimes() { return categoriesAreTimes; } 
 	
 	/**
 	 * Minimum value across the whole sample space.
@@ -52,6 +56,10 @@ abstract class ChartTables {
 	 */
 	double getMax() {
 		return max;
+	}
+	
+	String[] getColumnColors() {
+		return new String[] { "LightSkyBlue" };
 	}
 	
 	/**
@@ -121,10 +129,12 @@ abstract class ChartTables {
 			
 			for (ChartDataSource.ChartSample s: samples) {
 				int cat = SharedUtils.indexOf(categories, categoryForSample(s));
-				dt.setValue(cat, valCount[cat] + 1, s.value);
-				dt.setFormattedValue(cat, valCount[cat] + 1, Utils.formatNumber(s.value));
-				valCount[cat]++;
-				
+				if (cat != -1) {
+					dt.setValue(cat, valCount[cat] + 1, s.value);
+					dt.setFormattedValue(cat, valCount[cat] + 1,
+							Utils.formatNumber(s.value));
+					valCount[cat]++;
+				}				
 			}			
 		}
 	}
@@ -165,9 +175,7 @@ abstract class ChartTables {
 			}
 		}
 		
-		protected List<TableColumn> tableColumns = new ArrayList<TableColumn>();
-		protected Map<Group, TableColumn> groupColumns = new HashMap<Group, TableColumn>();
-		
+	
 		protected List<Group> groups;		
 		
 		GroupedChartTable(List<ChartDataSource.ChartSample> samples, List<Group> groups, 
@@ -206,7 +214,12 @@ abstract class ChartTables {
 		}
 
 		protected void makeColumns(DataTable dt, List<ChartDataSource.ChartSample> samples) {
+			List<TableColumn> tableColumns = new ArrayList<TableColumn>();
+			Map<Group, TableColumn> groupColumns = new HashMap<Group, TableColumn>();
+			
 			TableColumn defaultColumn = new TableColumn(categories.length);
+			tableColumns.add(defaultColumn);
+			
 			for (ChartDataSource.ChartSample s: samples) {
 				Group g = groupForSample(s);
 				String c = categoryForSample(s);
@@ -223,9 +236,9 @@ abstract class ChartTables {
 						groupColumns.put(g, tc);
 					}
 					
-				} else {
-					if (tc.barcodes[ic] != null) {
-						tc = defaultColumn = new TableColumn(categories.length);
+				} else if (ic != -1){
+					if (tc.samples[ic] != null) {
+						tc = defaultColumn = new TableColumn(categories.length);						
 						tableColumns.add(tc);
 					}
 				}
@@ -233,23 +246,31 @@ abstract class ChartTables {
 //					tc.bcIndex[ic] = x;
 //					tc.barcodes[ic] = barcodes[x];
 					tc.samples[ic] = s;
-				}
-				
+				}				
 			}
 			
-			for (TableColumn tc: tableColumns) {
-				dt.addColumn(ColumnType.NUMBER);
-			}	
-			
 			for (int c = 0; c < tableColumns.size(); ++ c) {
+				dt.addColumn(ColumnType.NUMBER);				
 				TableColumn tc = tableColumns.get(c);
 				for (int i = 0; i < tc.samples.length; ++i) {
-					if (tc.samples[i] != null) {											
+					if (tc.samples[i] != null) {
 						dt.setValue(i, c + 1, tc.samples[i].value);
-						dt.setFormattedValue(i, c + 1, Utils.formatNumber(tc.samples[i].value));
+						dt.setFormattedValue(i, c + 1,
+								Utils.formatNumber(tc.samples[i].value));
 					}
 				}
 			}
+			
+			colors = new String[tableColumns.size()];
+			for (int i = 0; i < tableColumns.size(); ++i) {
+				colors[i] = tableColumns.get(i).colour();
+			}
 		}
+		
+		private String[] colors;
+		String[] getColumnColors() {
+			return colors;			
+		}
+		
 	}
 }
