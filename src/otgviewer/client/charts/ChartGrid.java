@@ -38,7 +38,7 @@ public class ChartGrid extends Composite {
 	List<String> rowFilters;
 	String[] timesOrDoses;
 	ChartTables table;
-	Screen screen;
+	Screen screen;	
 	
 	public ChartGrid(Screen screen, ChartTables table, List<Group> groups, 
 			final List<String> rowFilters, 
@@ -56,19 +56,17 @@ public class ChartGrid extends Composite {
 		g = new Grid(rowFilters.size() * 2 + 1, timesOrDoses.length);
 		initWidget(g);
 		
+		for (int r = 0; r < rowFilters.size(); ++r) {
+			g.setWidget(r * 2 + 1, 0, Utils.mkEmphLabel(rowFilters.get(r)));
+		}
+		
 		for (int c = 0; c < timesOrDoses.length; ++c) {
-			String tod = timesOrDoses[c];
 			g.setWidget(0, c, Utils.mkEmphLabel(timesOrDoses[c]));				
-			for (int r = 0; r < rowFilters.size(); ++r) {
-				String filter = rowFilters.get(r);								
-				g.setWidget(r * 2 + 1, 0, Utils.mkEmphLabel(rowFilters.get(r)));
+			for (int r = 0; r < rowFilters.size(); ++r) {									
 				displaySeriesAt(r, c, width);
 			}
 		}
 	
-		g.setWidth("800px");
-		g.setHeight(rowFilters.size() * 190 + "px");
-		
 		if (!rowsAreCompounds) {
 			owlimService.geneSyms(rowFilters.toArray(new String[0]),
 				new AsyncCallback<String[][]>() {
@@ -107,7 +105,7 @@ public class ChartGrid extends Composite {
 		ao.setMaxValue(table.getMax());
 		
 		Options o = Utils.createChartOptions(table.getColumnColors());
-		o.setWidth(width);
+		o.setWidth(width <= 400 ? width : 400);
 		o.setHeight(170);
 		o.setVAxisOptions(ao);
 		

@@ -64,7 +64,7 @@ public class ChartGridFactory {
 			ChartAcceptor acceptor) {
 		ChartDataSource cds = new ChartDataSource.SeriesSource(series, times);
 		
-		ChartTables ct = new ChartTables.PlainChartTable(cds.getSamples(), times, true);
+		ChartTables ct = new ChartTables.PlainChartTable(cds.getSamples(null), times, true);
 		
 		List<String> filters = new ArrayList<String>();
 		for (Series s: series) {			

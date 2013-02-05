@@ -7,6 +7,7 @@ import otgviewer.shared.Barcode;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.ExpressionValue;
 import otgviewer.shared.Series;
+import otgviewer.shared.SharedUtils;
 import otgviewer.shared.TimesDoses;
 
 /**
@@ -36,7 +37,20 @@ abstract class ChartDataSource {
 		}
 	}
 	
-	List<ChartSample> getSamples() { return samples; }
+	List<ChartSample> getSamples(String[] compounds) {
+		if (compounds == null) {
+			return samples;
+		} else {
+			List<ChartSample> r = new ArrayList<ChartSample>();
+			for (ChartSample s: samples) {
+				if (SharedUtils.indexOf(compounds, s.compound) != -1) {
+					r.add(s);
+				}
+			}
+			return r;
+		}		 
+	}
+	
 	protected List<ChartSample> samples = new ArrayList<ChartSample>();
 
 	private String[] _times;
