@@ -6,6 +6,7 @@ import java.util.List;
 import otgviewer.client.OwlimService;
 import otgviewer.client.OwlimServiceAsync;
 import otgviewer.client.Utils;
+import otgviewer.client.components.Screen;
 import otgviewer.shared.Group;
 
 import com.google.gwt.core.client.GWT;
@@ -23,13 +24,15 @@ public class AdjustableChartGrid extends Composite {
 	private List<String> compounds;
 	private List<Group> groups;
 	private VerticalPanel vp;
+	private Screen screen;
 	
 	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
 			.create(OwlimService.class);
 	
-	public AdjustableChartGrid(ChartDataSource source, List<Group> groups) {
+	public AdjustableChartGrid(Screen screen, ChartDataSource source, List<Group> groups) {
 		this.source = source;
 		this.groups = groups;
+		this.screen = screen;
 		this.compounds = Arrays.asList(Utils.compoundsFor(groups));		
 		
 		vp = new VerticalPanel();
@@ -38,14 +41,22 @@ public class AdjustableChartGrid extends Composite {
 		HorizontalPanel hp = Utils.mkHorizontalPanel();
 		vp.add(hp);
 		
+		hp.setStyleName("colored");
+		hp.setWidth("100%");
+		
+		HorizontalPanel ihp = Utils.mkHorizontalPanel();
+		hp.add(ihp);
+		ihp.setSpacing(5);
+		
 		chartCombo = new ListBox();
-		hp.add(chartCombo);
+		ihp.add(chartCombo);
+		
 		chartCombo.addItem("Expression vs time, fixed dose:");
 		chartCombo.addItem("Expression vs dose, fixed time:");
 		chartCombo.setSelectedIndex(0);
 
 		chartSubtypeCombo = new ListBox();
-		hp.add(chartSubtypeCombo);
+		ihp.add(chartSubtypeCombo);
 
 		chartSubtypeCombo.addChangeHandler(new ChangeHandler() {
 			public void onChange(ChangeEvent event) {				
@@ -73,7 +84,7 @@ public class AdjustableChartGrid extends Composite {
 					vsTime ? source.times() : source.doses(), vsTime)
 		:
 			new ChartTables.PlainChartTable(source.getSamples(), vsTime ? source.times() : source.doses(), vsTime);
-		return new ChartGrid(ct, groups, compounds, true, 
+		return new ChartGrid(screen, ct, groups, compounds, true, 
 				useColumns, !vsTime);
 	}
 	

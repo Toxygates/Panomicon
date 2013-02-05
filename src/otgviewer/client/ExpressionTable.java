@@ -395,7 +395,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		for (DataColumn c : chosenColumns) {
 			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);			
 			addDataColumn(valueCol, c.getShortTitle());			
-			valueCol.setCellStyleNames(((Group) c).getColour() + "Group");
+			valueCol.setCellStyleNames(((Group) c).getColor() + "Group");
 			if (i == 0 && exprGrid.getColumnSortList().size() == 0) {
 				exprGrid.getColumnSortList().push(valueCol);
 			}
@@ -709,7 +709,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 			
 			ChartGridFactory cgf = new ChartGridFactory(chosenDataFilter, chosenColumns);
 			
-			cgf.makeRowCharts(chosenValueType, value, 
+			cgf.makeRowCharts(screen, chosenValueType, value, 
 					new AChartAcceptor() {
 				public void acceptCharts(AdjustableChartGrid cg) {
 					Utils.displayInPopup(cg);

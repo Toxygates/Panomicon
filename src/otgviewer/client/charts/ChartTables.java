@@ -2,6 +2,8 @@ package otgviewer.client.charts;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +58,17 @@ abstract class ChartTables {
 	 */
 	double getMax() {
 		return max;
+	}
+	
+	/**
+	 * Get the barcode corresponding to a particular row and column.
+	 * May be null.
+	 * @param row
+	 * @param column
+	 * @return
+	 */
+	Barcode getBarcode(int row, int column) {
+		return null;
 	}
 	
 	String[] getColumnColors() {
@@ -149,29 +162,21 @@ abstract class ChartTables {
 		private static class TableColumn {
 			Group group; //can be null for the default group
 			
-			String colour() {
+			String color() {
 				if (group == null) {
 					return "DarkGrey";
 				} else {
-					return group.getColour();
+					return group.getColor();
 				}
 			}
 			
-			/**
-			 * May be sparsely populated. Each offset corresponds to a category.
-			 */
-			int[] bcIndex; //may be -1
-			Barcode[] barcodes; //may be null
-			ChartDataSource.ChartSample[] samples; //may not be null			
+			ChartDataSource.ChartSample[] samples; 			
 			
 			/**
 			 * @param categories number of times/doses
 			 */
-			TableColumn(int categories) {
-				bcIndex = new int[categories];
-				samples = new ChartDataSource.ChartSample[categories];
-				Arrays.fill(bcIndex, -1);
-				barcodes = new Barcode[categories];
+			TableColumn(int categories) {				
+				samples = new ChartDataSource.ChartSample[categories];				
 			}
 		}
 		
@@ -213,12 +218,16 @@ abstract class ChartTables {
 			return null;
 		}
 
+		
 		protected void makeColumns(DataTable dt, List<ChartDataSource.ChartSample> samples) {
-			List<TableColumn> tableColumns = new ArrayList<TableColumn>();
+			List<TableColumn> tableColumns = new ArrayList<TableColumn>(); //all columns
+			List<TableColumn> defaultColumns = new ArrayList<TableColumn>(); //columns for grey, group-less samples
+			
 			Map<Group, TableColumn> groupColumns = new HashMap<Group, TableColumn>();
 			
 			TableColumn defaultColumn = new TableColumn(categories.length);
 			tableColumns.add(defaultColumn);
+			defaultColumns.add(defaultColumn);
 			
 			for (ChartDataSource.ChartSample s: samples) {
 				Group g = groupForSample(s);
@@ -238,16 +247,51 @@ abstract class ChartTables {
 					
 				} else if (ic != -1){
 					if (tc.samples[ic] != null) {
-						tc = defaultColumn = new TableColumn(categories.length);						
-						tableColumns.add(tc);
+						//unable to use the most recent default column
+						
+						TableColumn found = null;
+						for (TableColumn tci: defaultColumns) {
+							//try to find another default column we can use
+							if (tci.samples[ic] == null) {
+								tc = found = tci;
+								break;
+							}
+						}
+						if (found == null) {
+							//need to make a new default column
+							tc = defaultColumn = new TableColumn(categories.length);
+							defaultColumns.add(tc);
+							tableColumns.add(tc);
+						} 
+						
 					}
 				}
+				
 				if (ic!= -1) {
-//					tc.bcIndex[ic] = x;
-//					tc.barcodes[ic] = barcodes[x];
 					tc.samples[ic] = s;
 				}				
 			}
+			
+			//Place group columns last
+			Collections.sort(tableColumns, new Comparator<TableColumn>() {
+				@Override
+				public int compare(TableColumn arg0, TableColumn arg1) {
+					if (arg0.group == null) {
+						if (arg1.group == null) {
+							return 0;
+						} else {
+							return 1;									
+						}						
+					} else {
+						if (arg1.group == null) {
+							return -1;
+						} else {
+							return 0;
+						}
+					}
+				}
+				
+			});
 			
 			for (int c = 0; c < tableColumns.size(); ++ c) {
 				dt.addColumn(ColumnType.NUMBER);				
@@ -257,20 +301,26 @@ abstract class ChartTables {
 						dt.setValue(i, c + 1, tc.samples[i].value);
 						dt.setFormattedValue(i, c + 1,
 								Utils.formatNumber(tc.samples[i].value));
+						
+						dt.setProperty(i, c+1, "barcode", tc.samples[i].barcode.pack());
 					}
 				}
 			}
 			
 			colors = new String[tableColumns.size()];
 			for (int i = 0; i < tableColumns.size(); ++i) {
-				colors[i] = tableColumns.get(i).colour();
+				colors[i] = tableColumns.get(i).color();
 			}
+			
+			
 		}
 		
 		private String[] colors;
 		String[] getColumnColors() {
 			return colors;			
 		}
+		
+		
 		
 	}
 }

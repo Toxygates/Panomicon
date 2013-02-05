@@ -88,6 +88,7 @@ abstract class ChartDataSource {
 				for (ExpressionRow er : rows) {
 					ChartSample cs = new ChartSample(b.getTime(), b.getDose(), b.getCompound(), 
 							er.getValue(i).getValue(), b, er.getProbe());
+					cs.barcode = b;
 					samples.add(cs);
 				}
 			}
