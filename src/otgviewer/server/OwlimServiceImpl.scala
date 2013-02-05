@@ -183,8 +183,19 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
             (c: CHEMBL.type) => {
               val compounds = OTGOwlim.compounds(filter)
               val proteins = OTGOwlim.uniprotsForProbes(probes)    
+              
+              //TODO merge the two target queries into one?
               val targets = c.targetingCompoundsForProteins(proteins.flatMap(_._2), null, compounds)
-              val r = proteins.map(x => (x._1 -> x._2.flatMap(targets.getOrElse(_, Set()))))
+//              val r = proteins.map(x => (x._1 -> x._2.flatMap(targets.getOrElse(_, Set()))))
+              
+              val oproteins = proteins.map(x => (x._1 -> Uniprot.orthologsForUniprots(x._2).map(_._2).flatten))
+              val otargets = c.targetingCompoundsForProteins(oproteins.flatMap(_._2), null, compounds)
+              
+              val r = proteins.map(x => 
+                (x._1 -> 
+                  (x._2.flatMap(targets.getOrElse(_, Set())) ++      //direct
+                  otargets.getOrElse(x._1, Set()).map(_ + "(inf)")   //inferred
+                  )))
               r
             })      
       case x: AType.Drugbank.type => connectorOrEmpty(DrugBank,

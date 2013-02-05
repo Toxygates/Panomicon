@@ -25,11 +25,12 @@ abstract class ChartTables {
 	protected double min = Double.MAX_VALUE;
 	protected double max = Double.MIN_VALUE;
 	
-	ChartTables(List<ChartDataSource.ChartSample> samples, String[] categories, boolean categoriesAreTimes) {
+	ChartTables(List<ChartDataSource.ChartSample> samples, List<ChartDataSource.ChartSample> allSamples, 
+			String[] categories, boolean categoriesAreTimes) {
 		this.samples = samples;
 		this.categoriesAreTimes = categoriesAreTimes;		
 		
-		for (ChartDataSource.ChartSample s: samples) {
+		for (ChartDataSource.ChartSample s: allSamples) {
 			if (s.value < min) { 
 				min = s.value;
 			}
@@ -129,8 +130,9 @@ abstract class ChartTables {
 	
 	static class PlainChartTable extends ChartTables {
 		
-		public PlainChartTable(List<ChartDataSource.ChartSample> samples, String[] categories, boolean categoriesAreTimes) {
-			super(samples, categories, categoriesAreTimes);
+		public PlainChartTable(List<ChartDataSource.ChartSample> samples, List<ChartDataSource.ChartSample> allSamples,
+				String[] categories, boolean categoriesAreTimes) {
+			super(samples, allSamples, categories, categoriesAreTimes);
 		}
 		
 		protected void makeColumns(DataTable dt, List<ChartDataSource.ChartSample> samples) {
@@ -183,9 +185,11 @@ abstract class ChartTables {
 	
 		protected List<Group> groups;		
 		
-		GroupedChartTable(List<ChartDataSource.ChartSample> samples, List<Group> groups, 
+		GroupedChartTable(List<ChartDataSource.ChartSample> samples,
+				List<ChartDataSource.ChartSample> allSamples, 
+				List<Group> groups, 
 				String[] categories, boolean categoriesAreTimes) {
-			super(samples, categories, categoriesAreTimes);
+			super(samples, allSamples, categories, categoriesAreTimes);
 //			Window.alert(samples.size() + " ");
 			this.groups = groups;			
 				

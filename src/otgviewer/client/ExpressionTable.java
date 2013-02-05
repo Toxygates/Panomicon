@@ -130,6 +130,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		
 		exprGrid.addColumnSortHandler(colSortHandler);
 		makeTools();
+		makeAnalysisTools();
 		setEnabled(false);
 
 	}
@@ -140,9 +141,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		return ValueType.unpack(vt);		
 	}
 	
-	public Widget tools() {
-		return this.tools;
-	}
+	public Widget tools() { return this.tools; }
 	
 	private void makeTools() {
 		tools = Utils.mkHorizontalPanel();		
@@ -229,7 +228,9 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		});		
 	}
 	
-	public Widget analysisTools() {
+	public Widget analysisTools() { return analysisTools; }
+	
+	private void makeAnalysisTools() {
 		analysisTools = Utils.mkHorizontalPanel(true);
 		analysisTools.setStyleName("colored2");
 		
@@ -257,8 +258,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 				}
 			}
 		}));
-		analysisTools.setVisible(false); //initially hidden
-		return analysisTools;
+		analysisTools.setVisible(false); //initially hidden		
 	}
 	
 	private void addTwoGroupSynthetic(final Synthetic.TwoGroupSynthetic synth, final String name) {
@@ -324,7 +324,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		
 		MenuItem mi = new MenuItem("Export to TargetMine...", false, new Command() {
 			public void execute() {
-				Utils.displayInPopup(new GeneExporter(w));
+				Utils.displayInPopup(new GeneExporter(w, exprGrid.getRowCount()));
 			}
 		});
 		
@@ -591,16 +591,21 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 					}
 
 					public void onSuccess(Integer result) {
-						setEnabled(true);
-						exprGrid.setRowCount(result);
-						exprGrid.setVisibleRangeAndClearData(new Range(0, PAGE_SIZE),
-								true);
+						if (result > 0) {
+							setEnabled(true);
+							exprGrid.setRowCount(result);
+							exprGrid.setVisibleRangeAndClearData(new Range(0, PAGE_SIZE),
+									true);
+						} else {
+							Window.alert("No data was available. If you have not used Toxygates for a while, try reloading the page.");
+						}
 					}
 				});
 	}
 	
 	private void setEnabled(boolean enabled) {
-		setEnabled(tools, enabled);		
+		setEnabled(tools, enabled);
+		setEnabled(analysisTools, enabled);
 	}
 	
 	private void setEnabled(HasWidgets root, boolean enabled) {

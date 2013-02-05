@@ -80,10 +80,11 @@ public class AdjustableChartGrid extends Composite {
 	private ChartGrid gridFor(boolean vsTime, String[] columns, String[] useCompounds) {
 		String[] useColumns = (columns == null ? (vsTime ? source.doses() : source.times()) : columns);
 		ChartTables ct = (groups != null) ? 
-			new ChartTables.GroupedChartTable(source.getSamples(useCompounds), groups, 
+			new ChartTables.GroupedChartTable(source.getSamples(useCompounds), source.getSamples(null), groups, 
 					vsTime ? source.times() : source.doses(), vsTime)
 		:
-			new ChartTables.PlainChartTable(source.getSamples(useCompounds), vsTime ? source.times() : source.doses(), vsTime);
+			new ChartTables.PlainChartTable(source.getSamples(useCompounds), source.getSamples(null), 
+					vsTime ? source.times() : source.doses(), vsTime);
 					
 		
 		return new ChartGrid(screen, ct, groups, useCompounds == null ? compounds : Arrays.asList(useCompounds), true, 

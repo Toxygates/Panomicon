@@ -14,7 +14,7 @@ public class Group implements Serializable, DataColumn, Comparable<Group> {
 
 	private static final long serialVersionUID = 2111266740402283063L;
 	private static final String[] groupColors = new String[] { "DodgerBlue", "FireBrick", "DarkCyan", "Navy", 
-		"LightSeaGreen", "PapayaWhip", "Purple", "DarkOliveGreen" };
+		"LightSeaGreen", "Peru", "Purple", "DarkOliveGreen" };
 	private static int nextColor = 0;
 	
 	Barcode[] barcodes;
@@ -104,13 +104,13 @@ public class Group implements Serializable, DataColumn, Comparable<Group> {
 			if (SharedUtils.indexOf(groupColors, color) == -1) {
 				//replace the color if it is invalid.
 				//this lets us safely upgrade colors in the future.
-				color = pickColor(); 
+				color = groupColors[0]; 
 			}
 		} else if (s1.length == 3) {
-			color = pickColor();
+			color = groupColors[0];
 			barcodes = s1[2];
 		} else if (s1.length == 2) {
-			color = pickColor();
+			color = groupColors[0];
 		}
 		if (s1.length >= 3) {
 			String[] s2 = barcodes.split("\\^\\^\\^");
@@ -138,7 +138,8 @@ public class Group implements Serializable, DataColumn, Comparable<Group> {
 	@Override
 	public boolean equals(Object other) {
 		if (other instanceof Group) {
-			return (Arrays.deepEquals(this.barcodes, ((Group) other).getBarcodes())) && name.equals(((Group) other).getName());
+			return (Arrays.deepEquals(this.barcodes, ((Group) other).getBarcodes())) && name.equals(((Group) other).getName())
+					&& color.equals(((Group) other).getColor());
 		}
 		return false;
 	}
