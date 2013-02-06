@@ -72,9 +72,9 @@ abstract class ChartTables {
 		return null;
 	}
 	
-	String[] getColumnColors() {
-		return new String[] { "LightSkyBlue" };
-	}
+//	String[] getColumnColors() {
+//		return new String[] { "LightSkyBlue" };
+//	}
 	
 	/**
 	 * Make a table corresponding to the given time or dose.
@@ -90,7 +90,6 @@ abstract class ChartTables {
 	DataTable makeTable(String timeOrDose, String probeOrCompound, boolean isTime, boolean isProbe) {
 		DataTable t = DataTable.create();
 		t.addColumn(ColumnType.STRING, "Time");
-		t.addColumn(ColumnType.NUMBER, "Value");
 		
 		for (int i = 0; i < categories.length; ++i) {
 			t.addRow();
@@ -138,7 +137,8 @@ abstract class ChartTables {
 		protected void makeColumns(DataTable dt, List<ChartDataSource.ChartSample> samples) {
 			int nc = samples.size() / categories.length;
 			for (int i = 0; i < nc; ++i) {
-				dt.addColumn(ColumnType.NUMBER);				
+				dt.addColumn(ColumnType.NUMBER);
+				dt.setProperty(0, i + 1, "color", "LightSkyBlue");
 			}
 			int[] valCount = new int[categories.length];
 			
@@ -309,21 +309,21 @@ abstract class ChartTables {
 						dt.setProperty(i, c+1, "barcode", tc.samples[i].barcode.pack());
 					}
 				}
+				dt.setProperty(0, c+1, "color", tc.color());
 			}
 			
-			colors = new String[tableColumns.size()];
-			for (int i = 0; i < tableColumns.size(); ++i) {
-				colors[i] = tableColumns.get(i).color();
-			}
+//			colors = new String[tableColumns.size()];
+//			for (int i = 0; i < tableColumns.size(); ++i) {
+//				colors[i] = tableColumns.get(i).color();
+//			}
 			
 			
 		}
 		
-		private String[] colors;
-		String[] getColumnColors() {
-			return colors;			
-		}
-		
+//		private String[] colors;
+//		String[] getColumnColors() {
+//			return colors;			
+//		}
 		
 		
 	}

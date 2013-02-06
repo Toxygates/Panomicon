@@ -1,15 +1,13 @@
 package otgviewer.client.charts;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import otgviewer.client.OwlimService;
-import otgviewer.client.OwlimServiceAsync;
 import otgviewer.client.Utils;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Group;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.Composite;
@@ -111,16 +109,33 @@ public class AdjustableChartGrid extends Composite {
 									.getSelectedIndex());
 			String[] columns = (subtype.equals("All") ? null : new String[] { subtype } );
 			
+			List<ChartGrid> grids = new ArrayList<ChartGrid>();
+			
 			if (groups != null) {
 				for (Group g : groups) {
 					Label l = new Label("Compounds in '" + g.getName() + "'");
 					l.setStyleName("heading");
 					ivp.add(l);
-					ivp.add(gridFor(chartCombo.getSelectedIndex() == 0,
-							columns, g.getCompounds()));
+					ChartGrid gr = gridFor(chartCombo.getSelectedIndex() == 0,
+							columns, g.getCompounds());
+					ivp.add(gr);
+					grids.add(gr);					
 				}
 			} else {
-				ivp.add(gridFor(chartCombo.getSelectedIndex() == 0, columns, null));
+				ChartGrid gr = gridFor(chartCombo.getSelectedIndex() == 0, columns, null);
+				ivp.add(gr);
+				grids.add(gr);			
+			}
+			
+			//harmonise the column count across all grids
+			int max = 0;
+			for (ChartGrid gr: grids) {
+				if (gr.getMaxColumnCount() > max) {
+					max = gr.getMaxColumnCount();
+				}
+			}
+			for (ChartGrid gr: grids) {
+				gr.adjustAndDisplay(max);
 			}
 			
 		}

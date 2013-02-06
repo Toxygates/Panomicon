@@ -709,7 +709,6 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 			super(resources.chart());
 		}
 		
-		//TODO the popup chart code could be cleaned up/factored out quite a bit
 		public void onClick(String value) {			
 			highlightedRow = SharedUtils.indexOf(displayedProbes, value);
 			exprGrid.redraw();
@@ -721,37 +720,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 				public void acceptCharts(AdjustableChartGrid cg) {
 					Utils.displayInPopup(cg);
 				}
-			});
-			
-		
-//			HorizontalPanel hp = new HorizontalPanel();
-//			TabPanel tp = new TabPanel();
-//			hp.add(tp);
-//			tp.add(seriesChartPanel, "Individual samples");			
-//			
-//			VerticalPanel v = new VerticalPanel();			
-//			tp.add(v, "Average time series	");			
-//			tp.selectTab(0);
-//			
-//			for (DataColumn dc: chosenColumns) {
-//				Label l = new Label("Compounds in '" + dc.getShortTitle() +"'");
-//				l.setStyleName("heading");
-//				v.add(l);
-//				final SimplePanel sp = new SimplePanel();				
-//				v.add(sp);
-//				kcService.getSeries(chosenDataFilter, new String[] { value }, 
-//						null, dc.getCompounds(), new AsyncCallback<List<Series>>() {
-//					public void onSuccess(List<Series> ss) {
-////						ChartGrid scg = new ChartGrid(chosenDataFilter, ss, true);
-////						sp.add(scg);
-//					}
-//					public void onFailure(Throwable caught) {
-//						Window.alert("Unable to retrieve data.");
-//					}
-//				});	
-//			}			
-//			
-//			Utils.displayInPopup(hp);				
+			});			
 		}
 	}
 	

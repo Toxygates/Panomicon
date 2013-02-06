@@ -1,5 +1,6 @@
 package otgviewer.client.charts;
 
+import java.util.Arrays;
 import java.util.List;
 
 import otgviewer.client.OwlimService;
@@ -12,9 +13,12 @@ import otgviewer.shared.SharedUtils;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
+import com.google.gwt.visualization.client.ChartArea;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.Selection;
 import com.google.gwt.visualization.client.events.SelectHandler;
@@ -39,6 +43,7 @@ public class ChartGrid extends Composite {
 	String[] timesOrDoses;
 	ChartTables table;
 	Screen screen;	
+	DataTable[][] tables;
 	
 	public ChartGrid(Screen screen, ChartTables table, List<Group> groups, 
 			final List<String> rowFilters, 
@@ -51,19 +56,22 @@ public class ChartGrid extends Composite {
 		this.table = table;
 		this.columnsAreTimes = columnsAreTimes;
 		this.screen = screen;
-		final int width = 780 / timesOrDoses.length; //width of each individual chart 
 		
-		g = new Grid(rowFilters.size() * 2 + 1, timesOrDoses.length);
+		g = new Grid(rowFilters.size() * 2 + 1, timesOrDoses.length);		
 		initWidget(g);
+		
 		
 		for (int r = 0; r < rowFilters.size(); ++r) {
 			g.setWidget(r * 2 + 1, 0, Utils.mkEmphLabel(rowFilters.get(r)));
 		}
 		
+		tables = new DataTable[rowFilters.size()][timesOrDoses.length];
 		for (int c = 0; c < timesOrDoses.length; ++c) {
 			g.setWidget(0, c, Utils.mkEmphLabel(timesOrDoses[c]));				
-			for (int r = 0; r < rowFilters.size(); ++r) {									
-				displaySeriesAt(r, c, width);
+			for (int r = 0; r < rowFilters.size(); ++r) {
+				tables[r][c] = table.makeTable(timesOrDoses[c], rowFilters.get(r), 
+						columnsAreTimes, !rowsAreCompounds);
+				
 			}
 		}
 	
@@ -92,22 +100,70 @@ public class ChartGrid extends Composite {
 //			}
 //		}, "corechart");
 	}
-
 	
-	private void displaySeriesAt(int row, int column, int width) {
-		
+	/**
+	 * Obtain the largest number of data columns used in any of our backing tables.
+	 * @return
+	 */
+	public int getMaxColumnCount() {
+		int max = 0;
+		for (int c = 0; c < timesOrDoses.length; ++c) {						
+			for (int r = 0; r < rowFilters.size(); ++r) {
+				if (tables[r][c].getNumberOfColumns() > max) {
+					max = tables[r][c].getNumberOfColumns();
+				}				
+			}
+		}
+		return max;
+	}
+
+	public void adjustAndDisplay(int tableColumnCount) {
+		final int width = 780 / timesOrDoses.length; //width of each individual chart 		
+		for (int c = 0; c < timesOrDoses.length; ++c) {						
+			for (int r = 0; r < rowFilters.size(); ++r) {							
+				displaySeriesAt(r, c, width, tableColumnCount);
+			}
+		}
+	}
+	
+	/**
+	 * We normalise the column count of each data table when displaying it
+	 * in order to force the charts to have equally wide bars.
+	 * @param row
+	 * @param column
+	 * @param width
+	 * @param columnCount
+	 */
+	private void displaySeriesAt(int row, int column, int width, int columnCount) {		
 		AxisOptions ao = AxisOptions.create();
 		
-		String rf = rowFilters.get(row);
-		String tod = timesOrDoses[column];
-		final DataTable dt = table.makeTable(tod, rf, columnsAreTimes, !rowsAreCompounds);
-		ao.setMinValue(table.getMin());
-		ao.setMaxValue(table.getMax());
+		final DataTable dt = tables[row][column];
 		
-		Options o = Utils.createChartOptions(table.getColumnColors());
-		o.setWidth(width <= 400 ? width : 400);
+		String[] colors = new String[columnCount];
+		for (int i = 1; i < dt.getNumberOfColumns(); ++i) {
+			colors[i - 1] = dt.getProperty(0, i, "color");
+		}
+		while (dt.getNumberOfColumns() < columnCount) {
+			int idx = dt.addColumn(ColumnType.NUMBER);
+			for (int j = 0; j < dt.getNumberOfRows(); ++j) {
+				dt.setValue(j, idx, 0);
+			}
+			colors[idx - 1] = "DarkGrey";
+
+		}
+
+		ao.setMinValue(table.getMin());
+		ao.setMaxValue(table.getMax());		
+		
+		Options o = Utils.createChartOptions(colors);
+		final int useWidth = width <= 400 ? width : 400;
+		o.setWidth(useWidth);
 		o.setHeight(170);
 		o.setVAxisOptions(ao);
+		ChartArea ca = ChartArea.create();
+		ca.setWidth(useWidth-50);
+		ca.setHeight(140);		
+		o.setChartArea(ca);
 		
 		final CoreChart c = new ColumnChart(dt, o);
 		if (screen != null) {
