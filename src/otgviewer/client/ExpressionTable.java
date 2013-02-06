@@ -495,6 +495,8 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 					displayedGeneIds = geneIds;
 					highlightedRow = -1;							
 					getAssociations();
+				} else {
+					Window.alert("Unable to obtain data. If you have not used Toxygates in a while, try reloading the page.");
 				}
 			}
 		};
