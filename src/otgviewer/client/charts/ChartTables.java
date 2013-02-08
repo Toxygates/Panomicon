@@ -42,9 +42,6 @@ abstract class ChartTables {
 		this.categories = categories;		
 	}
 	
-//	String[] getCategories() { return categories; }
-//	boolean getCategoriesAreTimes() { return categoriesAreTimes; } 
-	
 	/**
 	 * Minimum value across the whole sample space.
 	 * @return
@@ -71,11 +68,7 @@ abstract class ChartTables {
 	Barcode getBarcode(int row, int column) {
 		return null;
 	}
-	
-//	String[] getColumnColors() {
-//		return new String[] { "LightSkyBlue" };
-//	}
-	
+
 	/**
 	 * Make a table corresponding to the given time or dose.
 	 * If a time is given, the table will be grouped by dose.
@@ -311,20 +304,7 @@ abstract class ChartTables {
 				}
 				dt.setProperty(0, c+1, "color", tc.color());
 			}
-			
-//			colors = new String[tableColumns.size()];
-//			for (int i = 0; i < tableColumns.size(); ++i) {
-//				colors[i] = tableColumns.get(i).color();
-//			}
-			
-			
-		}
 		
-//		private String[] colors;
-//		String[] getColumnColors() {
-//			return colors;			
-//		}
-		
-		
+		}		
 	}
 }

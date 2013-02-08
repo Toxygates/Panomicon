@@ -512,8 +512,10 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 				asc = csl.get(0).isAscending();				
 			}
 			start = range.getStart();
-			kcService.datasetItems(range.getStart(), range.getLength(), col, asc,						
+			if (range.getLength() > 0) {
+				kcService.datasetItems(range.getStart(), range.getLength(), col, asc,						
 					rowCallback);
+			}
 		}
 
 	}
