@@ -190,12 +190,12 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 				Label l = Utils.mkEmphLabel(g.getName() + ":");
 				l.setWordWrap(false);
 				l.getElement().getStyle().setMargin(2, Unit.PX);
-				l.setStyleName(g.getColour() + "Group");
+				l.setStyleName(g.getColor() + "Group");
 				floatLeft(fp, l);
 				l.setTitle(tip);
 				l = new Label(g.getCDTs(2, ", "));
 				l.getElement().getStyle().setMargin(2, Unit.PX);
-				l.setStyleName(g.getColour() + "Group");
+				l.setStyleName(g.getColor() + "Group");
 				floatLeft(fp, l);
 				l.setTitle(tip);
 				l.setWordWrap(false);

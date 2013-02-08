@@ -211,6 +211,18 @@ public class Utils {
 		return r;
 	}
 
+	public static String[] compoundsFor(List<Group> columns) {
+		List<String> compounds = new ArrayList<String>();
+		for (Group g : columns) {
+			for (String c : g.getCompounds()) {
+				if (!compounds.contains(c)) {
+					compounds.add(c);
+				}
+			}
+		}
+		return compounds.toArray(new String[0]);
+	}
+	
 	public static Barcode barcodeFor(List<Group> columns, String barcode) {
 		for (Group c : columns) {
 			for (Barcode b : c.getBarcodes()) {

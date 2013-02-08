@@ -372,7 +372,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 	private class GroupColouring implements RowStyles<Group> {
 		@Override
 		public String getStyleNames(Group g, int rowIndex) {
-			return g.getColour() + "Group";	
+			return g.getColor() + "Group";	
 		}
 	}
 	

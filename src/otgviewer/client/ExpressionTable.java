@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import otgviewer.client.charts.AdjustableChartGrid;
+import otgviewer.client.charts.ChartGridFactory;
+import otgviewer.client.charts.ChartGridFactory.AChartAcceptor;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
@@ -18,7 +21,6 @@ import otgviewer.shared.Association;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Group;
-import otgviewer.shared.Series;
 import otgviewer.shared.SharedUtils;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
@@ -65,9 +67,6 @@ import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.TabPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.AsyncDataProvider;
 import com.google.gwt.view.client.HasData;
@@ -76,7 +75,7 @@ import com.google.gwt.view.client.Range;
 
 public class ExpressionTable extends DataListenerWidget implements RequiresResize, ProvidesResize {
 
-	private final int PAGE_SIZE = 50;
+	private final int PAGE_SIZE = 25;
 	
 	private Screen screen;
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
@@ -87,10 +86,6 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 	
 	private DoubleBox absValBox;
 	private ListBox valueTypeList = new ListBox();
-	
-	private VerticalPanel seriesChartPanel = new VerticalPanel();	
-	private List<SeriesChart> seriesCharts = new ArrayList<SeriesChart>();
-	private SeriesChart.Controller chartController;
 	
 	private final KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
@@ -135,6 +130,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		
 		exprGrid.addColumnSortHandler(colSortHandler);
 		makeTools();
+		makeAnalysisTools();
 		setEnabled(false);
 
 	}
@@ -145,11 +141,8 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		return ValueType.unpack(vt);		
 	}
 	
-	public Widget tools() {
-		return this.tools;
-	}
+	public Widget tools() { return this.tools; }
 	
-	private boolean warnedPageSize = false;
 	private void makeTools() {
 		tools = Utils.mkHorizontalPanel();		
 		
@@ -171,24 +164,22 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		});
 
 		Resources r = GWT.create(Resources.class);
-		sp = new SimplePager(TextLocation.CENTER, r, true, 10 * PAGE_SIZE, true);
+		sp = new SimplePager(TextLocation.CENTER, r, true, 500, true);
 		sp.setStyleName("slightlySpaced");
 		horizontalPanel.add(sp);		
 		sp.setDisplay(exprGrid);
 		
 		
-		PageSizePager pager = new PageSizePager(50) {
+		PageSizePager pager = new PageSizePager(25) {
 			@Override
 			protected void onRangeOrRowCountChanged() {
 				super.onRangeOrRowCountChanged();
-				if (getPageSize() > 100 && !warnedPageSize) {
-					Window.alert("You are now displaying " + getPageSize() + " rows. Dynamic columns will " + 
-							"only be loaded for the first 100 rows on each page.");
-					warnedPageSize = true;
+				if (getPageSize() > 100) {
+					setPageSize(100);					
 				}				
-			}
-			
+			}			
 		};
+		
 		pager.setStyleName("slightlySpaced");
 		horizontalPanel.add(pager);
 		pager.setDisplay(exprGrid);		
@@ -237,7 +228,9 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		});		
 	}
 	
-	public Widget analysisTools() {
+	public Widget analysisTools() { return analysisTools; }
+	
+	private void makeAnalysisTools() {
 		analysisTools = Utils.mkHorizontalPanel(true);
 		analysisTools.setStyleName("colored2");
 		
@@ -265,8 +258,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 				}
 			}
 		}));
-		analysisTools.setVisible(false); //initially hidden
-		return analysisTools;
+		analysisTools.setVisible(false); //initially hidden		
 	}
 	
 	private void addTwoGroupSynthetic(final Synthetic.TwoGroupSynthetic synth, final String name) {
@@ -332,7 +324,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		
 		MenuItem mi = new MenuItem("Export to TargetMine...", false, new Command() {
 			public void execute() {
-				Utils.displayInPopup(new GeneExporter(w));
+				Utils.displayInPopup(new GeneExporter(w, exprGrid.getRowCount()));
 			}
 		});
 		
@@ -403,7 +395,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		for (DataColumn c : chosenColumns) {
 			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);			
 			addDataColumn(valueCol, c.getShortTitle());			
-			valueCol.setCellStyleNames(((Group) c).getColour() + "Group");
+			valueCol.setCellStyleNames(((Group) c).getColor() + "Group");
 			if (i == 0 && exprGrid.getColumnSortList().size() == 0) {
 				exprGrid.getColumnSortList().push(valueCol);
 			}
@@ -459,22 +451,6 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		return r.toArray(new AType[0]);
 	}
 	
-	/**
-	 * Return an array of length at most 100, for association retrieval.
-	 * @param data
-	 * @return
-	 */
-	private String[] limitLength(String[] data) {
-		if (data.length <= 100) {
-			return data;
-		}
-		String[] r = new String[100];
-		for (int i = 0; i < 100; ++i) {
-			r[i] = data[i];
-		}
-		return r;		
-	}
-	
 	private void getAssociations() {
 		waitingForAssociations = true;					
 
@@ -494,8 +470,8 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		};
 		
 		owlimService.associations(chosenDataFilter, visibleAssociations(),
-				limitLength(displayedProbes), 
-				limitLength(displayedGeneIds.toArray(new String[0])), assocCallback);
+				displayedProbes, 
+				displayedGeneIds.toArray(new String[0]), assocCallback);
 	}
 	
 	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
@@ -519,6 +495,8 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 					displayedGeneIds = geneIds;
 					highlightedRow = -1;							
 					getAssociations();
+				} else {
+					Window.alert("Unable to obtain data. If you have not used Toxygates in a while, try reloading the page.");
 				}
 			}
 		};
@@ -534,8 +512,10 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 				asc = csl.get(0).isAscending();				
 			}
 			start = range.getStart();
-			kcService.datasetItems(range.getStart(), range.getLength(), col, asc,						
+			if (range.getLength() > 0) {
+				kcService.datasetItems(range.getStart(), range.getLength(), col, asc,						
 					rowCallback);
+			}
 		}
 
 	}
@@ -606,29 +586,6 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		List<DataColumn> cols = new ArrayList<DataColumn>();
 		cols.addAll(chosenColumns);
 
-		//set up the series charts		
-		seriesChartPanel.clear();
-		seriesCharts.clear();
-		
-		chartController  = new SeriesChart.Controller();
-		this.addListener(chartController);
-		this.propagateTo(chartController);
-		seriesChartPanel.add(chartController);
-		
-		for (DataColumn c: cols) {
-			Label l = new Label("Compounds in '" + c.getShortTitle() +"'");
-			seriesChartPanel.add(l);			
-			l.setStyleName("heading");
-			for (String com : c.getCompounds()) {
-				SeriesChart sc = new SeriesChart(screen);
-				chartController.addChart(sc);				
-				seriesChartPanel.add(sc);
-				seriesCharts.add(sc);
-				this.propagateTo(sc);
-				sc.compoundChanged(com);
-			}			
-		}
-		
 		//load data
 		kcService.loadDataset(chosenDataFilter, cols, chosenProbes, chosenValueType,
 				absValBox.getValue(), synthColumns, 
@@ -638,16 +595,21 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 					}
 
 					public void onSuccess(Integer result) {
-						setEnabled(true);
-						exprGrid.setRowCount(result);
-						exprGrid.setVisibleRangeAndClearData(new Range(0, PAGE_SIZE),
-								true);
+						if (result > 0) {
+							setEnabled(true);
+							exprGrid.setRowCount(result);
+							exprGrid.setVisibleRangeAndClearData(new Range(0, PAGE_SIZE),
+									true);
+						} else {
+							Window.alert("No data was available. If you have not used Toxygates for a while, try reloading the page.");
+						}
 					}
 				});
 	}
 	
 	private void setEnabled(boolean enabled) {
-		setEnabled(tools, enabled);		
+		setEnabled(tools, enabled);
+		setEnabled(analysisTools, enabled);
 	}
 	
 	private void setEnabled(HasWidgets root, boolean enabled) {
@@ -749,51 +711,18 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 			super(resources.chart());
 		}
 		
-		//TODO the popup chart code could be cleaned up/factored out quite a bit
 		public void onClick(String value) {			
 			highlightedRow = SharedUtils.indexOf(displayedProbes, value);
 			exprGrid.redraw();
 			
-			int chartHeight = 200;
-			final int numCharts = seriesCharts.size();
-
-//			int height = chartHeight * numCharts;			
-			for (int i = 0; i < numCharts; i++) {
-				SeriesChart seriesChart = (SeriesChart) seriesCharts.get(i);
-				seriesChart.changeProbe(value);
-				seriesChart.setWidth("500px");
-				seriesChart.setPixelHeight(chartHeight);
-			}
-			chartController.redraw();
-
-			HorizontalPanel hp = new HorizontalPanel();
-			TabPanel tp = new TabPanel();
-			hp.add(tp);
-			tp.add(seriesChartPanel, "Individual samples");			
+			ChartGridFactory cgf = new ChartGridFactory(chosenDataFilter, chosenColumns);
 			
-			VerticalPanel v = new VerticalPanel();			
-			tp.add(v, "Average time series");			
-			tp.selectTab(0);
-			
-			for (DataColumn dc: chosenColumns) {
-				Label l = new Label("Compounds in '" + dc.getShortTitle() +"'");
-				l.setStyleName("heading");
-				v.add(l);
-				final SimplePanel sp = new SimplePanel();				
-				v.add(sp);
-				kcService.getSeries(chosenDataFilter, new String[] { value }, 
-						null, dc.getCompounds(), new AsyncCallback<List<Series>>() {
-					public void onSuccess(List<Series> ss) {
-						SeriesChartGrid scg = new SeriesChartGrid(chosenDataFilter, ss, true);
-						sp.add(scg);
-					}
-					public void onFailure(Throwable caught) {
-						Window.alert("Unable to retrieve data.");
-					}
-				});	
-			}			
-			
-			Utils.displayInPopup(hp);				
+			cgf.makeRowCharts(screen, chosenValueType, value, 
+					new AChartAcceptor() {
+				public void acceptCharts(AdjustableChartGrid cg) {
+					Utils.displayInPopup(cg);
+				}
+			});			
 		}
 	}
 	

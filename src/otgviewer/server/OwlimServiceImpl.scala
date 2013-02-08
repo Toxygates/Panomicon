@@ -104,8 +104,13 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
   
   def barcodes(filter: DataFilter, compound: String, doseLevel: String, time: String) =
     OTGOwlim.barcodes(filter, nullToNone(compound), 
-        nullToNone(doseLevel), nullToNone(time)).map(asJava(_, compound)).toArray
+        nullToNone(doseLevel), nullToNone(time)).map(asJava(_)).toArray
+  
+  def barcodes(filter: DataFilter, compounds: Array[String], doseLevel: String, time: String) =
+    OTGOwlim.barcodes(filter, compounds, 
+        nullToNone(doseLevel), nullToNone(time)).map(asJava(_)).toArray
     
+        
   val orderedTimes = List("2 hr", "3 hr", "6 hr", "8 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day")
   def times(filter: DataFilter, compound: String): Array[String] = { 
     val r = OTGOwlim.times(filter, nullToOption(compound)).toArray    
@@ -170,38 +175,72 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
   def associations(filter: DataFilter, types: Array[AType], probes: Array[String], geneIds: Array[String]): Array[Association] = {
 
     def connectorOrEmpty[T <: RDFConnector](c: T, f: T => SMMap) = 
-      useConnector(c, f, Map() ++ probes.map(p => (p -> Set("(Could not obtain data)"))))
+      useConnector(c, f, Map() ++ probes.map(p => (p -> Set("(Timeout or error)"))))
 
+    //In the case where m1 maps T->U and m2 maps U->V, produce a map T->V.
+    def composeMaps(m1: SMMap, m2: SMMap): SMMap = 
+      m1.map(x => (x._1 -> x._2.flatMap(m2.getOrElse(_, Set()))))
+      
+    //compose by applying a lookup function to U from the first map T->U
+    def composeWith(m1: SMMap, lookup: (Iterable[String]) => SMMap): SMMap = 
+      composeMaps(m1, lookup(m1.flatMap(_._2).toSet))
+    
+    def union(m1: SMMap, m2: SMMap): SMMap = {
+      val allKeys = m1.keySet ++ m2.keySet
+      Map() ++ allKeys.map(k => k -> (m1.getOrElse(k, Set()) ++ m2.getOrElse(k, Set())))
+    } 
+      
+    //this should be done in a separate future, kind of
+    val proteins = if (types.contains(AType.Chembl) || types.contains(AType.Drugbank) ||
+        types.contains(AType.KOProts) || types.contains(AType.Uniprot))  {      
+    	OTGOwlim.uniprotsForProbes(probes)
+    } else {
+      emptySMMap
+    }
+    
+    val oproteins = if (types.contains(AType.Chembl) || types.contains(AType.Drugbank) ||
+        types.contains(AType.KOProts)) {
+      composeWith(proteins, ps => Uniprot.orthologsForUniprots(ps))
+    } else {
+      emptySMMap
+    }
+    
     import Association._
     def lookupFunction(t: AType) = t match {
       case x: AType.Chembl.type => connectorOrEmpty(CHEMBL,
             (c: CHEMBL.type) => {
               val compounds = OTGOwlim.compounds(filter)
-              val proteins = OTGOwlim.uniprotsForProbes(probes)    
-              val targets = c.targetingCompoundsForProteins(proteins.flatMap(_._2), null, compounds)
-              val r = proteins.map(x => (x._1 -> x._2.flatMap(targets.getOrElse(_, Set()))))
-              r
+
+              //strictly orthologous proteins
+              val oproteinVs = oproteins.flatMap(_._2).toSet -- proteins.flatMap(_._2).toSet              
+              val allProteins = union(proteins, oproteins)              
+              val allTargets = c.targetingCompoundsForProteins(allProteins.flatMap(_._2).toSet, null, compounds)
+              
+              composeMaps(allProteins, allTargets.map(x => (x._1 -> x._2.map(c => 
+                if (oproteinVs.contains(x._1)) { c + "(inf)" } else { c }))))              
             })      
       case x: AType.Drugbank.type => connectorOrEmpty(DrugBank,
             (c: DrugBank.type) => {
               val compounds = OTGOwlim.compounds(filter)
-              val proteins = OTGOwlim.uniprotsForProbes(probes)
-              val targets = c.targetingCompoundsForProteins(proteins.flatMap(_._2), compounds)
-              val r = proteins.map(x => (x._1 -> x._2.flatMap(targets.getOrElse(_, Set()))))
-              r
+              val oproteinVs = oproteins.flatMap(_._2).toSet -- proteins.flatMap(_._2).toSet              
+              val allProteins = union(proteins, oproteins)              
+              val allTargets = c.targetingCompoundsForProteins(allProteins.flatMap(_._2).toSet, compounds)
+              composeMaps(allProteins, allTargets.map(x => (x._1 -> x._2.map(c => 
+                if (oproteinVs.contains(x._1)) { c + "(inf)" } else { c }))))
             })
+      case x: AType.Uniprot.type => proteins
+      case x: AType.KOProts.type => oproteins
       case x: AType.GOMF.type => connectorOrEmpty(OTGOwlim,            
             (c: OTGOwlim.type) => c.mfGoTermsForProbes(probes))         
       case x: AType.GOBP.type => connectorOrEmpty(OTGOwlim,            
             (c: OTGOwlim.type) => c.bpGoTermsForProbes(probes))        
       case x: AType.GOCC.type => connectorOrEmpty(OTGOwlim,            
             (c: OTGOwlim.type) => c.ccGoTermsForProbes(probes))                  
-      case x: AType.Uniprot.type => connectorOrEmpty(OTGOwlim,
-            (c: OTGOwlim.type) => c.uniprotsForProbes(probes))
       case x: AType.Homologene.type => connectorOrEmpty(B2RHomologene,
             (c: B2RHomologene.type) => c.homologousGenes(geneIds))    
       case x: AType.KEGG.type => connectorOrEmpty(B2RKegg,
-            (c: B2RKegg.type) => c.pathwaysForProbes(probes, filter))             
+            (c: B2RKegg.type) => c.pathwaysForProbes(probes, filter))
+            
     }
       
     types.par.map(x => (x,lookupFunction(x))).seq.map(p => new Association(p._1, convert(p._2))).toArray     

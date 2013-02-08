@@ -9,8 +9,9 @@ public enum AType {
 	KEGG("KEGG pathways"),
 	Chembl("CHEMBL compounds"), Drugbank("DrugBank compounds"), 
 	Uniprot("UniProt proteins"), GOCC("GO Cellular component"), 
-			GOMF("GO Molecular function"), GOBP("GO Biological process"), 
-			Homologene("Homologene entries");
+	GOMF("GO Molecular function"), GOBP("GO Biological process"), 
+	Homologene("Homologene entries"),
+	KOProts("KO orthologous proteins");
 
 	private String _title;
 

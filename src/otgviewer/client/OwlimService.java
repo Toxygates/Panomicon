@@ -23,6 +23,7 @@ public interface OwlimService extends RemoteService {
 	public String[] organs(DataFilter filter, String compound);
 	public String[] doseLevels(DataFilter filter, String compound);	
 	public Barcode[] barcodes(DataFilter filter, String compound, String doseLevel, String time);
+	public Barcode[] barcodes(DataFilter filter, String[] compounds, String doseLevel, String time);
 	
 	/**
 	 * Obtain times corresponding to a data filter and a compound.

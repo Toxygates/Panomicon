@@ -20,7 +20,10 @@ public interface OwlimServiceAsync {
 	public void organs(DataFilter filter, String compound, AsyncCallback<String[]> callback);	
 	public void doseLevels(DataFilter filter, String compound, AsyncCallback<String[]> callback);	
 	public void barcodes(DataFilter filter, String compound, 
-			String doseLevel, String time, AsyncCallback<Barcode[]> callback);	
+			String doseLevel, String time, AsyncCallback<Barcode[]> callback);
+	public void barcodes(DataFilter filter, String[] compounds, 
+			String doseLevel, String time, AsyncCallback<Barcode[]> callback);
+	
 	public void times(DataFilter filter, String compound, AsyncCallback<String[]> callback);	
 	public void probes(DataFilter filter, AsyncCallback<String[]> callback);
 	

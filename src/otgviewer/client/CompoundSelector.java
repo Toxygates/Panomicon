@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import otgviewer.client.charts.ChartGrid;
+import otgviewer.client.charts.ChartGridFactory;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
@@ -229,8 +231,14 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 				kcService.getSeries(chosenDataFilter, rankProbes.toArray(new String[0]), 
 						null, new String[] { value }, new PendingAsyncCallback<List<Series>>(w, "Unable to retrieve data.") {
 					public void handleSuccess(List<Series> ss) {
-						SeriesChartGrid scg = new SeriesChartGrid(chosenDataFilter, ss, false);
-						Utils.displayInPopup(scg);
+						ChartGridFactory cgf = new ChartGridFactory(chosenDataFilter, chosenColumns);
+						cgf.makeSeriesCharts(ss, false, new ChartGridFactory.ChartAcceptor() {
+							
+							@Override
+							public void acceptCharts(ChartGrid cg) {
+								Utils.displayInPopup(cg);								
+							}
+						});						
 					}
 					
 				});

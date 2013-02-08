@@ -23,12 +23,18 @@ public class GeneExporter extends Composite {
 	private final KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
 	
+	private static int rowCount; //!!!
+	
 	private enum ExportType {
-		All("All"), Limit("Limited number:");
+		All("All") {
+			public String toString() {
+				return "All (" + rowCount + ")";
+			}
+		}, Limit("Limited number:");
 		
 		private String name;
 		private ExportType(String name) { this.name = name; }		
-		public String toString() { return name; }
+		public String toString() { return name; }		
 	}
 	
 	private enum Template {
@@ -59,9 +65,7 @@ public class GeneExporter extends Composite {
 		public String toString() { return name; }
 	}
 	
-	private EnumSelector<ExportType> etes = new EnumSelector<ExportType>() {
-		protected ExportType[] values() { return ExportType.values(); }
-	};
+	private EnumSelector<ExportType> etes;
 	private EnumSelector<Template> tes = new EnumSelector<Template>() {
 		protected Template[] values() { return Template.values(); }
 	};
@@ -69,7 +73,7 @@ public class GeneExporter extends Composite {
 //	private TextArea geneListText = new TextArea();
 	private TextBox geneNumberText = new TextBox();
 	
-	public GeneExporter(final DataListenerWidget w) {	
+	public GeneExporter(final DataListenerWidget w, final int totalRows) {	
 		VerticalPanel vp = Utils.mkVerticalPanel(true);
 		initWidget(vp);
 		vp.setWidth("300px");
@@ -78,11 +82,18 @@ public class GeneExporter extends Composite {
 		l.setWordWrap(true);
 		vp.add(l);
 		
+		rowCount = totalRows;
+		
+		etes = new EnumSelector<ExportType>() {
+			protected ExportType[] values() { return ExportType.values(); }
+		};
+		
 		geneNumberText.setEnabled(false);
 	
 		geneNumberText.setWidth("3em");
 		vp.add(Utils.mkHorizontalPanel(true, Utils.mkEmphLabel("Probe selection"), etes, geneNumberText));		
 		vp.add(Utils.mkHorizontalPanel(true, Utils.mkEmphLabel("Template"), tes));
+		
 		
 		etes.listBox().addChangeHandler(new ChangeHandler() {
 			

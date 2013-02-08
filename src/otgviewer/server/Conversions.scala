@@ -34,8 +34,8 @@ object Conversions {
     new Annotation(annot.barcode, new java.util.ArrayList(annot.data.map(x =>
       new Annotation.Entry(x._1, x._2, otg.Annotation.isNumerical(x._1)))))
 
-  def asJava(bcode: BCode, compound: String): Barcode = new Barcode(bcode.code, bcode.individual, bcode.dose,
-    bcode.time, compound);
+  def asJava(bcode: BCode): Barcode = new Barcode(bcode.code, bcode.individual, bcode.dose,
+    bcode.time, bcode.compound);
 
   implicit def speciesFromFilter(filter: DataFilter): Species = {
     filter.organism match {

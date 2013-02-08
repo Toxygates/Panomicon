@@ -132,7 +132,7 @@ exprGrid {
 }
 
 .extraColumn {
-	color: SteelBlue;
+	color: Black;
 }
 
 /** For the GroupInspector. */
@@ -151,8 +151,8 @@ exprGrid {
 .DarkCyanGroup {
 	color: DarkCyan;
 }
-.PapayaWhipGroup {
-	color: PapayaWhip;
+.PeruGroup {
+	color: Peru;
 }
 .PurpleGroup {
 	color: Purple;
