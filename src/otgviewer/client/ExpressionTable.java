@@ -2,6 +2,7 @@ package otgviewer.client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,6 +26,7 @@ import otgviewer.shared.SharedUtils;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
 
+import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -39,6 +41,8 @@ import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.cellview.client.ColumnSortList;
@@ -59,6 +63,7 @@ import com.google.gwt.user.client.ui.DisclosurePanel;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.DoubleBox;
 import com.google.gwt.user.client.ui.FocusWidget;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -395,7 +400,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		for (DataColumn c : chosenColumns) {
 			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);			
 			addDataColumn(valueCol, c.getShortTitle());			
-			valueCol.setCellStyleNames(((Group) c).getColor() + "Group");
+			valueCol.setCellStyleNames(((Group) c).getStyleName());
 			if (i == 0 && exprGrid.getColumnSortList().size() == 0) {
 				exprGrid.getColumnSortList().push(valueCol);
 			}
@@ -432,9 +437,9 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 			}
 		});
 		
-		TextCell tc = new TextCell();
+		SafeHtmlCell shc = new SafeHtmlCell();
 		for (AType at: AType.values()) {
-			AssociationColumn ac = new AssociationColumn(tc, at);
+			AssociationColumn ac = new AssociationColumn(shc, at);
 			associationColumns.add(ac);
 			hideableColumns.add(ac);
 		}
@@ -663,27 +668,42 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		void setVisibility(boolean v);
 	}
 	
-	class AssociationColumn extends Column<ExpressionRow, String> implements HideableColumn {
+	class AssociationColumn extends Column<ExpressionRow, SafeHtml> implements HideableColumn {
 		AType assoc;
-		TextCell tc;
+		SafeHtmlCell tc;
 		boolean visible = false;
 		
-		public AssociationColumn(TextCell tc, AType association) {
+		public AssociationColumn(SafeHtmlCell tc, AType association) {
 			super(tc);
 			this.assoc = association;
 			this.tc = tc;
 		}
 		
-		public String getValue(ExpressionRow er) {		
+		private List<String> makeLinks(Collection<String> values) {
+			List<String> r = new ArrayList<String>();
+			for (String v: values) {
+				String l = assoc.formLink(v);
+				if (l != null) {
+					r.add("<a target=\"_TGassoc\" href=\"" + l + "\">" + v + "</a>");
+				} else {
+					r.add(v);
+				}				
+			}
+			return r;
+		}
+		
+		public SafeHtml getValue(ExpressionRow er) {		
+			SafeHtmlBuilder build = new SafeHtmlBuilder();
 			if (waitingForAssociations) {
-				return "(Waiting for data...)";
+				build.appendEscaped("(Waiting for data...)");
 			} else {
 				if (associations.containsKey(assoc)) {
 					Association a = associations.get(assoc);
 					if (a.data().containsKey(er.getProbe())) {
-						return arrayString(
-								a.data().get(er.getProbe())
+						String c = arrayString(
+								makeLinks(a.data().get(er.getProbe()))
 										.toArray(new String[0]), ", ");
+						build.appendHtmlConstant(c);
 					} else {
 						String[] geneids = er.getGeneIds();
 						Set<String> all = new HashSet<String>();
@@ -692,12 +712,14 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 								all.addAll(a.data().get(gi));
 							}
 						}
-						return arrayString(all.toArray(new String[0]), ", ");
+						String c = arrayString(makeLinks(all).toArray(new String[0]), ", ");
+						build.appendHtmlConstant(c);
 					}
 				} else {
-					return "(Data unavailable)";
+					build.appendEscaped("(Data unavailable)");
 				}
 			}
+			return build.toSafeHtml();
 		}
 		
 		public String name() { return assoc.title(); }

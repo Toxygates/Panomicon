@@ -13,8 +13,13 @@ import java.util.Set;
 public class Group implements Serializable, DataColumn, Comparable<Group> {
 
 	private static final long serialVersionUID = 2111266740402283063L;
-	private static final String[] groupColors = new String[] { "DodgerBlue", "FireBrick", "DarkCyan", "Navy", 
-		"LightSeaGreen", "Peru", "Purple", "DarkOliveGreen" };
+	
+	/**
+	 * This list was generated using the service at
+	 * http://tools.medialab.sciences-po.fr/iwanthue/
+	 */
+	private static final String[] groupColors = new String[] { "#97BDBD", "#C46839", "#9F6AC8", "#9CD05B", 
+		"#513C4D", "#6B7644", "#C75880" };
 	private static int nextColor = 0;
 	
 	Barcode[] barcodes;
@@ -53,6 +58,14 @@ public class Group implements Serializable, DataColumn, Comparable<Group> {
 	
 	public String getColor() {
 		return color;
+	}
+	
+	public String getStyleName() {
+		return "Group" + getColorIndex();
+	}
+	
+	private int getColorIndex() {
+		return SharedUtils.indexOf(groupColors, color);
 	}
 	
 	public String getCDTs(final int limit, String separator) {

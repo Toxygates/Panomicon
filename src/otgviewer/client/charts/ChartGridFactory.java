@@ -76,6 +76,7 @@ public class ChartGridFactory {
 		}
 		
 		ChartGrid cg = new ChartGrid(null, ct, groups, filters, rowsAreCompounds, new String[] { "Low", "Middle", "High" }, false);
+		cg.adjustAndDisplay(cg.getMaxColumnCount());
 		acceptor.acceptCharts(cg);
 	}
 	
