@@ -416,11 +416,19 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 	}
 
 	private void initHideableColumns() {
-		hideableColumns.add(new DefHideableColumn("Gene ID", false) {
-			public String getValue(ExpressionRow er) {
-				return arrayString(er.getGeneIds(), ", ");
+		SafeHtmlCell shc = new SafeHtmlCell();
+		
+		hideableColumns.add(new LinkingColumn(shc, "Gene ID", false) {
+			@Override
+			String formLink(String value) {
+				return AType.formGeneLink(value);
 			}
+			@Override
+			Collection<String> getLinkableValues(ExpressionRow er) {
+				return Arrays.asList(er.getGeneIds());
+			}						
 		});
+		
 		hideableColumns.add(new DefHideableColumn("Gene Sym", true) {
 			public String getValue(ExpressionRow er) {				
 				return arrayString(er.getGeneSyms(), ", ");
@@ -437,7 +445,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 			}
 		});
 		
-		SafeHtmlCell shc = new SafeHtmlCell();
+		
 		for (AType at: AType.values()) {
 			AssociationColumn ac = new AssociationColumn(shc, at);
 			associationColumns.add(ac);
@@ -517,7 +525,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 				asc = csl.get(0).isAscending();				
 			}
 			start = range.getStart();
-			if (range.getLength() > 0) {
+			if (range.getLength() > 0 && display.getRowCount() > 0) {
 				kcService.datasetItems(range.getStart(), range.getLength(), col, asc,						
 					rowCallback);
 			}
@@ -662,71 +670,6 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		}
 	}
 	
-	interface HideableColumn {
-		String name();
-		boolean visible();
-		void setVisibility(boolean v);
-	}
-	
-	class AssociationColumn extends Column<ExpressionRow, SafeHtml> implements HideableColumn {
-		AType assoc;
-		SafeHtmlCell tc;
-		boolean visible = false;
-		
-		public AssociationColumn(SafeHtmlCell tc, AType association) {
-			super(tc);
-			this.assoc = association;
-			this.tc = tc;
-		}
-		
-		private List<String> makeLinks(Collection<String> values) {
-			List<String> r = new ArrayList<String>();
-			for (String v: values) {
-				String l = assoc.formLink(v);
-				if (l != null) {
-					r.add("<a target=\"_TGassoc\" href=\"" + l + "\">" + v + "</a>");
-				} else {
-					r.add(v);
-				}				
-			}
-			return r;
-		}
-		
-		public SafeHtml getValue(ExpressionRow er) {		
-			SafeHtmlBuilder build = new SafeHtmlBuilder();
-			if (waitingForAssociations) {
-				build.appendEscaped("(Waiting for data...)");
-			} else {
-				if (associations.containsKey(assoc)) {
-					Association a = associations.get(assoc);
-					if (a.data().containsKey(er.getProbe())) {
-						String c = arrayString(
-								makeLinks(a.data().get(er.getProbe()))
-										.toArray(new String[0]), ", ");
-						build.appendHtmlConstant(c);
-					} else {
-						String[] geneids = er.getGeneIds();
-						Set<String> all = new HashSet<String>();
-						for (String gi : geneids) {
-							if (a.data().containsKey(gi)) {
-								all.addAll(a.data().get(gi));
-							}
-						}
-						String c = arrayString(makeLinks(all).toArray(new String[0]), ", ");
-						build.appendHtmlConstant(c);
-					}
-				} else {
-					build.appendEscaped("(Data unavailable)");
-				}
-			}
-			return build.toSafeHtml();
-		}
-		
-		public String name() { return assoc.title(); }
-		public void setVisibility(boolean v) { visible = v; }		
-		public boolean visible() { return this.visible; }		
-	}
-	
 	class ToolCell extends ImageClickCell {
 		
 		public ToolCell(DataListenerWidget owner) {
@@ -757,6 +700,101 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		public String getValue(ExpressionRow er) { return er.getProbe(); }					
 	}
 	
+	
+	interface HideableColumn {
+		String name();
+		boolean visible();
+		void setVisibility(boolean v);
+	}
+	
+	abstract class LinkingColumn extends Column<ExpressionRow, SafeHtml> implements HideableColumn {
+		private boolean visible;
+		SafeHtmlCell c;
+		String name;
+		public LinkingColumn(SafeHtmlCell c, String name, boolean initState) {
+			super(c);
+			visible = initState;
+			this.name = name;
+			this.c = c;
+		}
+				
+		public String name() { return name; }
+		public boolean visible() { return this.visible; }
+		public void setVisibility(boolean v) { visible = v; }		
+		
+		protected List<String> makeLinks(Collection<String> values) {
+			List<String> r = new ArrayList<String>();
+			for (String v: values) {
+				String l = formLink(v);
+				if (l != null) {
+					r.add("<a target=\"_TGassoc\" href=\"" + l + "\">" + v + "</a>");
+				} else {
+					r.add(v);
+				}				
+			}
+			return r;
+		}
+		
+		public SafeHtml getValue(ExpressionRow er) {
+			SafeHtmlBuilder build = new SafeHtmlBuilder();
+			String c = arrayString(
+					makeLinks(getLinkableValues(er))
+							.toArray(new String[0]), ", ");
+			build.appendHtmlConstant(c);
+			return build.toSafeHtml();
+		}
+		
+		Collection<String> getLinkableValues(ExpressionRow er) {
+			return new ArrayList<String>();
+		}
+		
+		abstract String formLink(String value);
+		
+	}
+	
+	class AssociationColumn extends LinkingColumn implements HideableColumn {
+		AType assoc;		
+		
+		public AssociationColumn(SafeHtmlCell tc, AType association) {
+			super(tc, association.title(), false);
+			this.assoc = association;			
+		}
+		
+		String formLink(String value) { return assoc.formLink(value); }
+		
+		Collection<String> getLinkableValues(ExpressionRow er) {
+			Association a = associations.get(assoc);
+			if (a.data().containsKey(er.getProbe())) {
+				return a.data().get(er.getProbe());				
+			} else {
+				String[] geneids = er.getGeneIds();
+				Set<String> all = new HashSet<String>();
+				for (String gi : geneids) {
+					if (a.data().containsKey(gi)) {
+						all.addAll(a.data().get(gi));
+					}
+				}
+				return all;				
+			}
+		}
+		
+		public SafeHtml getValue(ExpressionRow er) {		
+			SafeHtmlBuilder build = new SafeHtmlBuilder();
+			if (waitingForAssociations) {
+				build.appendEscaped("(Waiting for data...)");
+				return build.toSafeHtml();
+			} else {
+				if (associations.containsKey(assoc)) {
+					return super.getValue(er);					
+				} else {
+					build.appendEscaped("(Data unavailable)");
+				}
+			}
+			return build.toSafeHtml();
+		}		
+	}
+	
+	
 	abstract class DefHideableColumn extends TextColumn<ExpressionRow> implements HideableColumn {
 		private boolean visible;
 		public DefHideableColumn(String name, boolean initState) {
@@ -770,6 +808,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		public boolean visible() { return this.visible; }
 		public void setVisibility(boolean v) { visible = v; }		
 	}
+	
 
 	@Override
 	public void onResize() {		
