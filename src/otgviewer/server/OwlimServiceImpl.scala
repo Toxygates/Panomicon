@@ -172,37 +172,41 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
 
     import OTGMisc._
 
+    import scala.collection.{Map => CMap, Set => CSet}
+    
   def associations(filter: DataFilter, types: Array[AType], probes: Array[String], geneIds: Array[String]): Array[Association] = {
 
-    def connectorOrEmpty[T <: RDFConnector](c: T, f: T => SMMap) = 
-      useConnector(c, f, Map() ++ probes.map(p => (p -> Set("(Timeout or error)"))))
+    def connectorOrEmpty[T <: RDFConnector](c: T, f: T => SMPMap): SMPMap = 
+      useConnector(c, f, Map() ++ probes.map(p => (p -> CSet(("(Timeout or error)", null: String)))))
 
     //In the case where m1 maps T->U and m2 maps U->V, produce a map T->V.
-    def composeMaps(m1: SMMap, m2: SMMap): SMMap = 
-      m1.map(x => (x._1 -> x._2.flatMap(m2.getOrElse(_, Set()))))
+    def composeMaps(m1: SMPMap, m2: SMPMap): SMPMap = 
+      m1.map(x => (x._1 -> x._2.flatMap(titleAndId => m2.getOrElse(titleAndId._1, Set()))))
       
     //compose by applying a lookup function to U from the first map T->U
-    def composeWith(m1: SMMap, lookup: (Iterable[String]) => SMMap): SMMap = 
-      composeMaps(m1, lookup(m1.flatMap(_._2).toSet))
+    def composeWith(m1: SMPMap, lookup: (Iterable[String]) => SMPMap): SMPMap = 
+      composeMaps(m1, lookup(m1.flatMap(_._2.map(_._1)).toSet))
     
-    def union(m1: SMMap, m2: SMMap): SMMap = {
+    def union(m1: SMPMap, m2: SMPMap): SMPMap = {
       val allKeys = m1.keySet ++ m2.keySet
       Map() ++ allKeys.map(k => k -> (m1.getOrElse(k, Set()) ++ m2.getOrElse(k, Set())))
     } 
-      
+    
+    def double(m: SMMap): SMPMap = m.map(x => (x._1 -> x._2.map(y => (y, y))))
+    
     //this should be done in a separate future, kind of
     val proteins = if (types.contains(AType.Chembl) || types.contains(AType.Drugbank) ||
         types.contains(AType.KOProts) || types.contains(AType.Uniprot))  {      
-    	OTGOwlim.uniprotsForProbes(probes)
+    	double(OTGOwlim.uniprotsForProbes(probes))
     } else {
-      emptySMMap
+      emptySMPMap
     }
     
     val oproteins = if (types.contains(AType.Chembl) || types.contains(AType.Drugbank) ||
         types.contains(AType.KOProts)) {
-      composeWith(proteins, ps => Uniprot.orthologsForUniprots(ps))
+      composeWith(proteins, ps => double(Uniprot.orthologsForUniprots(ps)))
     } else {
-      emptySMMap
+      emptySMPMap
     }
     
     import Association._
@@ -212,21 +216,21 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
               val compounds = OTGOwlim.compounds(filter)
 
               //strictly orthologous proteins
-              val oproteinVs = oproteins.flatMap(_._2).toSet -- proteins.flatMap(_._2).toSet              
+              val oproteinVs = oproteins.flatMap(_._2).map(_._1).toSet -- proteins.flatMap(_._2).map(_._1).toSet              
               val allProteins = union(proteins, oproteins)              
-              val allTargets = c.targetingCompoundsForProteins(allProteins.flatMap(_._2).toSet, null, compounds)
+              val allTargets = c.targetingCompoundsForProteins(allProteins.flatMap(_._2).map(_._1).toSet, null, compounds)
               
               composeMaps(allProteins, allTargets.map(x => (x._1 -> x._2.map(c => 
-                if (oproteinVs.contains(x._1)) { c + "(inf)" } else { c }))))              
+                if (oproteinVs.contains(x._1)) { (c._1 + "(inf)", c._2) } else { c }))))              
             })      
       case x: AType.Drugbank.type => connectorOrEmpty(DrugBank,
             (c: DrugBank.type) => {
               val compounds = OTGOwlim.compounds(filter)
-              val oproteinVs = oproteins.flatMap(_._2).toSet -- proteins.flatMap(_._2).toSet              
+              val oproteinVs = oproteins.flatMap(_._2).map(_._1).toSet -- proteins.flatMap(_._2).map(_._1).toSet              
               val allProteins = union(proteins, oproteins)              
-              val allTargets = c.targetingCompoundsForProteins(allProteins.flatMap(_._2).toSet, compounds)
+              val allTargets = c.targetingCompoundsForProteins(allProteins.flatMap(_._2).map(_._1).toSet, compounds)
               composeMaps(allProteins, allTargets.map(x => (x._1 -> x._2.map(c => 
-                if (oproteinVs.contains(x._1)) { c + "(inf)" } else { c }))))
+                if (oproteinVs.contains(x._1)) { (c._1 + "(inf)", c._2) } else { c }))))
             })
       case x: AType.Uniprot.type => proteins
       case x: AType.KOProts.type => oproteins
@@ -237,13 +241,14 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
       case x: AType.GOCC.type => connectorOrEmpty(OTGOwlim,            
             (c: OTGOwlim.type) => c.ccGoTermsForProbes(probes))                  
       case x: AType.Homologene.type => connectorOrEmpty(B2RHomologene,
-            (c: B2RHomologene.type) => c.homologousGenes(geneIds))    
+            (c: B2RHomologene.type) => double(c.homologousGenes(geneIds)))    
       case x: AType.KEGG.type => connectorOrEmpty(B2RKegg,
             (c: B2RKegg.type) => c.pathwaysForProbes(probes, filter))
             
     }
       
-    types.par.map(x => (x,lookupFunction(x))).seq.map(p => new Association(p._1, convert(p._2))).toArray     
+    types.par.map(x => (x,lookupFunction(x))).seq.map(p => new Association(p._1, 
+        convertPairs(p._2))).toArray     
   }
   
   def geneSuggestions(partialName: String, filter: DataFilter): Array[Pair[String, String]] = {

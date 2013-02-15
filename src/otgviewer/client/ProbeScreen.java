@@ -49,7 +49,7 @@ public class ProbeScreen extends Screen {
 	private Button proceedSelected;
 	
 	public ProbeScreen(ScreenManager man) {
-		super("Select probes", key, true, true, man,
+		super("Probe selection", key, true, true, man,
 				resources.probeSelectionHTML(), resources.probeSelectionHelp());				
 	}
 

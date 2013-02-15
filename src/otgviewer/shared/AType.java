@@ -6,23 +6,32 @@ package otgviewer.shared;
  *
  */
 public enum AType {
-	KEGG("KEGG pathways"),
-	Chembl("CHEMBL compounds"), Drugbank("DrugBank compounds"), 
+	KEGG("KEGG pathways") {
+		public String formLink(String value) { return value; }		
+	},
+	Chembl("CHEMBL compounds") {
+		public String formLink(String value) { return "https://www.ebi.ac.uk/chembldb/compound/inspect/" + value; }		
+	},
+	Drugbank("DrugBank compounds") {
+		public String formLink(String value) { return value; }		
+	},
 	Uniprot("UniProt proteins") {
-		 public String formLink(String value) {
-			 return formProteinLink(value);
-		 }
-	}, GOCC("GO Cellular component"),
-	GOMF("GO Molecular function"), GOBP("GO Biological process"), 
+		 public String formLink(String value) { return formProteinLink(value); }		 
+	}, 
+	GOCC("GO Cellular component") {
+		public String formLink(String value) { return formGOLink(value); }		
+	},
+	GOMF("GO Molecular function") {
+		public String formLink(String value) { return formGOLink(value); }		
+	},	
+	GOBP("GO Biological process") {
+		public String formLink(String value) { return formGOLink(value); }		
+	},	
 	Homologene("Homologene entries") {
-		public String formLink(String value) {
-			return formGeneLink(value);
-		}
+		public String formLink(String value) { return formGeneLink(value); }		
 	},
 	KOProts("KO orthologous proteins") {
-		 public String formLink(String value) {
-			 return formProteinLink(value);
-		 }
+		 public String formLink(String value) { return formProteinLink(value); }		 
 	};
 
 	private String _title;
@@ -40,10 +49,26 @@ public enum AType {
 	}
 	
 	public static String formGeneLink(String value) {
-		return "http://www.ncbi.nlm.nih.gov/gene/" + value;
+		if (value != null) {
+			return "http://www.ncbi.nlm.nih.gov/gene/" + value;
+		} else {
+			return null;
+		}
 	}
 	
 	public static String formProteinLink(String value) {
-		return "http://www.uniprot.org/uniprot/" + value;
+		if (value != null) {
+			return "http://www.uniprot.org/uniprot/" + value;
+		} else {
+			return null;
+		}
+	}
+	
+	public static String formGOLink(String value) {
+		if (value != null) {
+			return "http://amigo.geneontology.org/cgi-bin/amigo/term_details?term=" + value.toUpperCase();
+		} else {
+			return null;
+		}
 	}
 }

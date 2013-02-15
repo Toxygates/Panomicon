@@ -22,6 +22,7 @@ import otgviewer.shared.Association;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Group;
+import otgviewer.shared.Pair;
 import otgviewer.shared.SharedUtils;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
@@ -63,7 +64,6 @@ import com.google.gwt.user.client.ui.DisclosurePanel;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.DoubleBox;
 import com.google.gwt.user.client.ui.FocusWidget;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -109,7 +109,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		
 	private List<HideableColumn> hideableColumns = new ArrayList<HideableColumn>();
  	private List<AssociationColumn> associationColumns = new ArrayList<AssociationColumn>();
- 	private boolean waitingForAssociations = true;
+ 	private boolean waitingForAssociations = true, loadedData = false;
  	private Widget toolPanel;
  	
 	public ExpressionTable(Screen _screen) {
@@ -173,7 +173,6 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		sp.setStyleName("slightlySpaced");
 		horizontalPanel.add(sp);		
 		sp.setDisplay(exprGrid);
-		
 		
 		PageSizePager pager = new PageSizePager(25) {
 			@Override
@@ -424,14 +423,14 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 				return AType.formGeneLink(value);
 			}
 			@Override
-			Collection<String> getLinkableValues(ExpressionRow er) {
-				return Arrays.asList(er.getGeneIds());
+			Collection<Pair<String, String>> getLinkableValues(ExpressionRow er) {
+				return Pair.duplicate(Arrays.asList(er.getGeneIds()));
 			}						
 		});
 		
 		hideableColumns.add(new DefHideableColumn("Gene Sym", true) {
 			public String getValue(ExpressionRow er) {				
-				return arrayString(er.getGeneSyms(), ", ");
+				return SharedUtils.mkString(er.getGeneSyms(), ", ");
 			}
 		});
 		hideableColumns.add(new DefHideableColumn("Probe title", true) {
@@ -515,35 +514,40 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		};
 
 		protected void onRangeChanged(HasData<ExpressionRow> display) {
-			Range range = display.getVisibleRange();
-			
-			ColumnSortList csl = exprGrid.getColumnSortList();
-			boolean asc = false;
-			int col = 0;
-			if (csl.size() > 0) {
-				col = exprGrid.getColumnIndex((Column<ExpressionRow, ?>) csl.get(0).getColumn()) - extraCols;
-				asc = csl.get(0).isAscending();				
-			}
-			start = range.getStart();
-			if (range.getLength() > 0 && display.getRowCount() > 0) {
-				kcService.datasetItems(range.getStart(), range.getLength(), col, asc,						
-					rowCallback);
+			if (loadedData) {
+				Range range = display.getVisibleRange();
+
+				ColumnSortList csl = exprGrid.getColumnSortList();
+				boolean asc = false;
+				int col = 0;
+				if (csl.size() > 0) {
+					col = exprGrid
+							.getColumnIndex((Column<ExpressionRow, ?>) csl.get(
+									0).getColumn())
+							- extraCols;
+					asc = csl.get(0).isAscending();
+				}
+				start = range.getStart();
+				if (range.getLength() > 0) {
+					kcService.datasetItems(range.getStart(), range.getLength(),
+							col, asc, rowCallback);
+				}
 			}
 		}
 
 	}
 	
-	private String arrayString(String[] ss, String sep) {
-		StringBuilder r = new StringBuilder();
-		
-		for (int i = 0; i < ss.length; ++i) {		
-			r.append(ss[i]);
-			if (i < ss.length - 1) {
-				r.append(sep);
-			}
-		}
-		return r.toString();
-	}
+//	private String arrayString(String[] ss, String sep) {
+//		StringBuilder r = new StringBuilder();
+//		
+//		for (int i = 0; i < ss.length; ++i) {		
+//			r.append(ss[i]);
+//			if (i < ss.length - 1) {
+//				r.append(sep);
+//			}
+//		}
+//		return r.toString();
+//	}
 
 	@Override
 	public void columnsChanged(List<Group> columns) {
@@ -567,29 +571,27 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		}
 	}
 	
-	public void beginLoading() {
-		exprGrid.setRowCount(0, false);		
-	}
-	
 	void refilterData() {
-		setEnabled(false);
-		exprGrid.setRowCount(0, false);
-		List<DataColumn> cols = new ArrayList<DataColumn>();
-		cols.addAll(chosenColumns);
-		kcService.refilterData(chosenDataFilter, cols, chosenProbes,
-				absValBox.getValue(), synthColumns, 
-				new AsyncCallback<Integer>() {
-					public void onFailure(Throwable caught) {						
-						Window.alert("Unable to load dataset");					
-					}
+		if (loadedData) {
+			setEnabled(false);
+			exprGrid.setRowCount(0, false);
+			List<DataColumn> cols = new ArrayList<DataColumn>();
+			cols.addAll(chosenColumns);
+			kcService.refilterData(chosenDataFilter, cols, chosenProbes,
+					absValBox.getValue(), synthColumns,
+					new AsyncCallback<Integer>() {
+						public void onFailure(Throwable caught) {
+							Window.alert("Unable to load dataset");
+						}
 
-					public void onSuccess(Integer result) {
-						exprGrid.setRowCount(result);
-						exprGrid.setVisibleRangeAndClearData(new Range(0, PAGE_SIZE),
-								true);
-						setEnabled(true);
-					}
-				});
+						public void onSuccess(Integer result) {
+							exprGrid.setRowCount(result);
+							exprGrid.setVisibleRangeAndClearData(new Range(0,
+									PAGE_SIZE), true);
+							setEnabled(true);
+						}
+					});
+		}
 	}
 	
 	public void getExpressions() {
@@ -606,9 +608,10 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 					public void onFailure(Throwable caught) {						
 						Window.alert("Unable to load dataset");					
 					}
-
+					
 					public void onSuccess(Integer result) {
 						if (result > 0) {
+							loadedData = true;
 							setEnabled(true);
 							exprGrid.setRowCount(result);
 							exprGrid.setVisibleRangeAndClearData(new Range(0, PAGE_SIZE),
@@ -617,7 +620,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 							Window.alert("No data was available. If you have not used Toxygates for a while, try reloading the page.");
 						}
 					}
-				});
+				});		
 	}
 	
 	private void setEnabled(boolean enabled) {
@@ -637,7 +640,6 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 	}
 	
 	private class RowHighligher implements RowStyles<ExpressionRow> {
-
 		@Override
 		public String getStyleNames(ExpressionRow row, int rowIndex) {
 			if (highlightedRow != -1 && rowIndex == highlightedRow + exprGrid.getVisibleRange().getStart()) {
@@ -645,8 +647,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 			} else {
 				return "";
 			}
-		}
-		
+		}		
 	}
 	
 	class ExpressionColumn extends Column<ExpressionRow, String> {
@@ -697,7 +698,13 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 			super(tc);			
 		}
 		
-		public String getValue(ExpressionRow er) { return er.getProbe(); }					
+		public String getValue(ExpressionRow er) {
+			if (er != null) {
+				return er.getProbe();
+			} else {
+				return "";
+			}
+		}					
 	}
 	
 	
@@ -722,14 +729,14 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		public boolean visible() { return this.visible; }
 		public void setVisibility(boolean v) { visible = v; }		
 		
-		protected List<String> makeLinks(Collection<String> values) {
+		protected List<String> makeLinks(Collection<Pair<String, String>> values) {
 			List<String> r = new ArrayList<String>();
-			for (String v: values) {
-				String l = formLink(v);
+			for (Pair<String, String> v: values) {
+				String l = formLink(v.second());
 				if (l != null) {
-					r.add("<a target=\"_TGassoc\" href=\"" + l + "\">" + v + "</a>");
+					r.add("<a target=\"_TGassoc\" href=\"" + l + "\">" + v.first() + "</a>");
 				} else {
-					r.add(v);
+					r.add(v.first()); //no link
 				}				
 			}
 			return r;
@@ -737,15 +744,14 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		
 		public SafeHtml getValue(ExpressionRow er) {
 			SafeHtmlBuilder build = new SafeHtmlBuilder();
-			String c = arrayString(
-					makeLinks(getLinkableValues(er))
-							.toArray(new String[0]), ", ");
+			String c = SharedUtils.mkString(makeLinks(getLinkableValues(er))
+							, ", ");
 			build.appendHtmlConstant(c);
 			return build.toSafeHtml();
 		}
 		
-		Collection<String> getLinkableValues(ExpressionRow er) {
-			return new ArrayList<String>();
+		Collection<Pair<String, String>> getLinkableValues(ExpressionRow er) {
+			return new ArrayList<Pair<String, String>>();
 		}
 		
 		abstract String formLink(String value);
@@ -762,13 +768,13 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		
 		String formLink(String value) { return assoc.formLink(value); }
 		
-		Collection<String> getLinkableValues(ExpressionRow er) {
+		Collection<Pair<String, String>> getLinkableValues(ExpressionRow er) {
 			Association a = associations.get(assoc);
 			if (a.data().containsKey(er.getProbe())) {
 				return a.data().get(er.getProbe());				
 			} else {
 				String[] geneids = er.getGeneIds();
-				Set<String> all = new HashSet<String>();
+				Set<Pair<String, String>> all = new HashSet<Pair<String, String>>();
 				for (String gi : geneids) {
 					if (a.data().containsKey(gi)) {
 						all.addAll(a.data().get(gi));

@@ -1,6 +1,7 @@
 package otgviewer.shared;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -24,11 +25,11 @@ public class SharedUtils {
 	}
 
 	public static String mkString(String[] ar) {
-		StringBuilder sb = new StringBuilder();
-		for (String s: ar) {
-			sb.append(s);
-		}
-		return sb.toString();
+		return mkString(ar, "");
+	}
+	
+	public static String mkString(String[] ar, String separator) {
+		return mkString(Arrays.asList(ar), separator);		
 	}
 	
 	public static String mkString(Collection<String> cl, String separator) {
@@ -40,7 +41,11 @@ public class SharedUtils {
 			sb.append(separator);
 		}
 		String r = sb.toString();
-		return r.substring(0, r.length() - 2); //remove final separator
+		if (r.length() > 0) {
+			return r.substring(0, r.length() - separator.length()); //remove final separator
+		} else {
+			return r;
+		}
 	}
 	
 	public static List<DataColumn> asColumns(List<Group> groups) {		
