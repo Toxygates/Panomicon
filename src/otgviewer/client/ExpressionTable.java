@@ -110,8 +110,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 	private List<HideableColumn> hideableColumns = new ArrayList<HideableColumn>();
  	private List<AssociationColumn> associationColumns = new ArrayList<AssociationColumn>();
  	private boolean waitingForAssociations = true, loadedData = false;
- 	private Widget toolPanel;
- 	
+
 	public ExpressionTable(Screen _screen) {
 		screen = _screen;
 		dockPanel = new DockLayoutPanel(Unit.EM);
@@ -256,9 +255,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 			public void onClick(ClickEvent ce) {
 				if (!synthColumns.isEmpty()) {
 					synthColumns.clear();
-					//We have to reload the data to get rid of the synth columns
-					//in our server side session (TODO, avoid this)
-					getExpressions();	
+					setupColumns();					
 				}
 			}
 		}));
@@ -278,7 +275,8 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 				public void onSuccess(Void v) {
 					synthColumns.add(synth);
 					setupColumns();
-					exprGrid.setVisibleRangeAndClearData(new Range(0, PAGE_SIZE), true);
+					//force reload
+					exprGrid.setVisibleRangeAndClearData(exprGrid.getVisibleRange(), true); 
 				}
 				public void onFailure(Throwable caught) {
 					Window.alert("Unable to perform " + name);
@@ -536,18 +534,6 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		}
 
 	}
-	
-//	private String arrayString(String[] ss, String sep) {
-//		StringBuilder r = new StringBuilder();
-//		
-//		for (int i = 0; i < ss.length; ++i) {		
-//			r.append(ss[i]);
-//			if (i < ss.length - 1) {
-//				r.append(sep);
-//			}
-//		}
-//		return r.toString();
-//	}
 
 	@Override
 	public void columnsChanged(List<Group> columns) {
@@ -581,7 +567,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 					absValBox.getValue(), synthColumns,
 					new AsyncCallback<Integer>() {
 						public void onFailure(Throwable caught) {
-							Window.alert("Unable to load dataset");
+							getExpressions(); //the user probably let the session expire							
 						}
 
 						public void onSuccess(Integer result) {
