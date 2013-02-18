@@ -1,7 +1,6 @@
 package otgviewer.server
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-
 import Assocations.convert
 import UtilsS.nullToNone
 import javax.servlet.ServletConfig
@@ -24,6 +23,7 @@ import otgviewer.shared.Pair
 import otgviewer.shared.AType
 import otgviewer.shared.Pathology
 import otgviewer.shared.RankRule
+import otgviewer.shared.MatchResult
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -58,7 +58,7 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
     OTGOwlim.compounds(filter).toArray
     
   import java.lang.{Double => JDouble}
-  def rankedCompounds(filter: DataFilter, rules: Array[RankRule]): Array[Pair[String, JDouble]] = {
+  def rankedCompounds(filter: DataFilter, rules: Array[RankRule]): Array[MatchResult] = {
     val nnr = rules.takeWhile(_ != null)
     var srs = nnr.map(asScala(_))    
     var probesRules = nnr.map(_.probe).zip(srs)
@@ -76,14 +76,14 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
     //Same for timeDose = High
     val key = asScala(filter, new otgviewer.shared.Series("", probesRules.head._1, "High", null, Array.empty)) 
     
-    val r = OTGSeriesQuery.rankCompoundsCombined(seriesDB, key, probesRules).map(p => asJava[String, JDouble](p._1, p._2.toDouble)).toArray
+    val r = OTGSeriesQuery.rankCompoundsCombined(seriesDB, key, probesRules).map(p => new MatchResult(p._1, p._2._1, p._2._2)).toArray
     val rr = r.sortWith((x1, x2) => {
-      if (JDouble.isNaN(x1.second)) {
+      if (JDouble.isNaN(x1.score)) {
         false
-      } else if (JDouble.isNaN(x2.second)) {
+      } else if (JDouble.isNaN(x2.score)) {
         true
       } else {
-        x1.second > x2.second
+        x1.score > x2.score
       }
     })
 
