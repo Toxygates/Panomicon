@@ -91,7 +91,7 @@ public class AdjustableChartGrid extends Composite {
 					
 		
 		return new ChartGrid(screen, ct, groups, useCompounds == null ? compounds : Arrays.asList(useCompounds), true, 
-				useColumns, !vsTime);
+				useColumns, -1, !vsTime, 780);
 	}
 	
 	public void redraw(boolean fromUpdate) {

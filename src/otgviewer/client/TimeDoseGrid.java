@@ -26,8 +26,8 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	protected VerticalPanel rootPanel;
 	protected VerticalPanel mainPanel;
 	
-	protected OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
-			.create(OwlimService.class);
+	protected SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT
+			.create(SparqlService.class);
 
 	protected void initTools(HorizontalPanel toolPanel) {
 		

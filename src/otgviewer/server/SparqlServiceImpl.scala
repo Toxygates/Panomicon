@@ -1,6 +1,7 @@
 package otgviewer.server
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
+
 import Assocations.convert
 import UtilsS.nullToNone
 import javax.servlet.ServletConfig
@@ -12,24 +13,24 @@ import otg.OTGSeriesQuery
 import otg.Series
 import otg.Species
 import otg.sparql._
-import otgviewer.client.OwlimService
+import otgviewer.client.SparqlService
+import otgviewer.shared.AType
 import otgviewer.shared.Annotation
 import otgviewer.shared.Association
 import otgviewer.shared.Barcode
 import otgviewer.shared.DataColumn
 import otgviewer.shared.DataFilter
+import otgviewer.shared.MatchResult
 import otgviewer.shared.NoSuchProbeException
 import otgviewer.shared.Pair
-import otgviewer.shared.AType
 import otgviewer.shared.Pathology
 import otgviewer.shared.RankRule
-import otgviewer.shared.MatchResult
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
  * local Owlim-lite store.
  */
-class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
+class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   import Conversions._
   import UtilsS._
   import Assocations._
@@ -57,42 +58,7 @@ class OwlimServiceImpl extends RemoteServiceServlet with OwlimService {
   def compounds(filter: DataFilter): Array[String] = 
     OTGOwlim.compounds(filter).toArray
     
-  import java.lang.{Double => JDouble}
-  def rankedCompounds(filter: DataFilter, rules: Array[RankRule]): Array[MatchResult] = {
-    val nnr = rules.takeWhile(_ != null)
-    var srs = nnr.map(asScala(_))    
-    var probesRules = nnr.map(_.probe).zip(srs)
-    
-    //Convert the input probes (which may actually be genes) into definite probes
-    probesRules = probesRules.flatMap(pr => {
-      val resolved = OTGMisc.identifiersToProbesQuick(filter, Array(pr._1), true)
-      if (resolved.length == 0) {
-        throw new NoSuchProbeException(pr._1)
-      }
-      resolved.map(r => (r, pr._2))
-    })
-    
-    //TODO: probe is actually irrelevant here but the API is not well designed
-    //Same for timeDose = High
-    val key = asScala(filter, new otgviewer.shared.Series("", probesRules.head._1, "High", null, Array.empty)) 
-    
-    val r = OTGSeriesQuery.rankCompoundsCombined(seriesDB, key, probesRules).map(p => new MatchResult(p._1, p._2._1, p._2._2)).toArray
-    val rr = r.sortWith((x1, x2) => {
-      if (JDouble.isNaN(x1.score)) {
-        false
-      } else if (JDouble.isNaN(x2.score)) {
-        true
-      } else {
-        x1.score > x2.score
-      }
-    })
 
-    for (s <- rr.take(10)) {
-      println(s)
-    }
-    rr
-  }
-  
   def organs(filter: DataFilter, compound: String): Array[String] = 
     OTGOwlim.organs(filter, nullToOption(compound)).toArray
     

@@ -5,8 +5,8 @@ import java.util.List;
 
 import otgviewer.client.KCService;
 import otgviewer.client.KCServiceAsync;
-import otgviewer.client.OwlimService;
-import otgviewer.client.OwlimServiceAsync;
+import otgviewer.client.SparqlService;
+import otgviewer.client.SparqlServiceAsync;
 import otgviewer.client.Utils;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;
@@ -30,7 +30,7 @@ public class ChartGridFactory {
 		void acceptCharts(AdjustableChartGrid cg);
 	}
 	
-	private final OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT.create(OwlimService.class);
+	private final SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT.create(SparqlService.class);
 	private final KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
 	
@@ -42,7 +42,7 @@ public class ChartGridFactory {
 	}
 	
 	public void makeSeriesCharts(final List<Series> series, final boolean rowsAreCompounds,
-			final ChartAcceptor acceptor) {
+			final int highlightDose, final ChartAcceptor acceptor) {
 		
 		owlimService.times(filter, null, new AsyncCallback<String[]>() {
 			@Override
@@ -51,7 +51,7 @@ public class ChartGridFactory {
 			}
 			@Override
 			public void onSuccess(String[] result) {
-				finishSeriesCharts(series, result, rowsAreCompounds, acceptor);												
+				finishSeriesCharts(series, result, rowsAreCompounds, highlightDose, acceptor);												
 			}			
 		});			
 	}
@@ -61,7 +61,7 @@ public class ChartGridFactory {
 			// 3. make chart grid and return
 			
 	private void finishSeriesCharts(List<Series> series, String[] times, boolean rowsAreCompounds,			
-			ChartAcceptor acceptor) {
+			int highlightDose, ChartAcceptor acceptor) {
 		ChartDataSource cds = new ChartDataSource.SeriesSource(series, times);
 		
 		ChartTables ct = new ChartTables.PlainChartTable(cds.getSamples(null), cds.getSamples(null), times, true);
@@ -75,7 +75,8 @@ public class ChartGridFactory {
 			}
 		}
 		
-		ChartGrid cg = new ChartGrid(null, ct, groups, filters, rowsAreCompounds, new String[] { "Low", "Middle", "High" }, false);
+		ChartGrid cg = new ChartGrid(null, ct, groups, filters, rowsAreCompounds, new String[] { "Low", "Middle", "High" }, 
+				highlightDose, false, 400);
 		cg.adjustAndDisplay(cg.getMaxColumnCount());
 		acceptor.acceptCharts(cg);
 	}

@@ -15,7 +15,7 @@ import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.StringSelectionTable;
 import otgviewer.shared.DataFilter;
-import otgviewer.shared.Pair;
+import otgviewer.shared.MatchResult;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;
 
@@ -46,10 +46,10 @@ import com.google.gwt.view.client.NoSelectionModel;
  */
 public class CompoundSelector extends DataListenerWidget implements RequiresResize {
 
-	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
-			.create(OwlimService.class);
-	private KCServiceAsync kcService = (KCServiceAsync) GWT
-			.create(KCService.class);
+	private SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT
+			.create(SparqlService.class);
+	private SeriesServiceAsync seriesService = (SeriesServiceAsync) GWT
+			.create(SeriesService.class);
 	private static Resources resources = GWT.create(Resources.class);
 	
 	private StringSelectionTable compoundTable;
@@ -57,7 +57,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	private boolean hasRankColumns = false;
 	private Button sortButton;
 	
-	private Map<String, Double> scores = new HashMap<String, Double>(); //for compound ranking
+	private Map<String, MatchResult> scores = new HashMap<String, MatchResult>(); //for compound ranking
 	private List<String> rankProbes = new ArrayList<String>();
 	
 	/**
@@ -117,7 +117,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 				@Override
 				public String getValue(String object) {
 					if (scores.containsKey(object)) {
-						return Utils.formatNumber(scores.get(object));					
+						return Utils.formatNumber(scores.get(object).score());					
 					} else {
 						return "N/A";
 					}
@@ -196,13 +196,13 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		addRankColumns();
 		
 		if (rules.size() > 0) { //do we have at least 1 rule?						
-			owlimService.rankedCompounds(chosenDataFilter, rules.toArray(new RankRule[0]),
-					new PendingAsyncCallback<Pair<String, Double>[]>(this) {
-						public void handleSuccess(Pair<String, Double>[] res) {
+			seriesService.rankedCompounds(chosenDataFilter, rules.toArray(new RankRule[0]),
+					new PendingAsyncCallback<MatchResult[]>(this) {
+						public void handleSuccess(MatchResult[] res) {
 							List<String> sortedCompounds = new ArrayList<String>();
-							for (Pair<String, Double> p : res) {
-								scores.put(p.first(), p.second());
-								sortedCompounds.add(p.first());
+							for (MatchResult r : res) {
+								scores.put(r.compound(), r);
+								sortedCompounds.add(r.compound());
 							}									
 							compoundTable.reloadWith(sortedCompounds, false);		
 							sortButton.setEnabled(true);
@@ -224,15 +224,15 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 			this.w = w;
 		}
 		
-		public void onClick(String value) {
+		public void onClick(final String value) {
 			if (rankProbes.size() == 0) {
 				Window.alert("These charts can only be displayed if compounds have been ranked.");
 			} else {
-				kcService.getSeries(chosenDataFilter, rankProbes.toArray(new String[0]), 
+				seriesService.getSeries(chosenDataFilter, rankProbes.toArray(new String[0]), 
 						null, new String[] { value }, new PendingAsyncCallback<List<Series>>(w, "Unable to retrieve data.") {
 					public void handleSuccess(List<Series> ss) {
 						ChartGridFactory cgf = new ChartGridFactory(chosenDataFilter, chosenColumns);
-						cgf.makeSeriesCharts(ss, false, new ChartGridFactory.ChartAcceptor() {
+						cgf.makeSeriesCharts(ss, false, scores.get(value).dose(), new ChartGridFactory.ChartAcceptor() {
 							
 							@Override
 							public void acceptCharts(ChartGrid cg) {

@@ -3,8 +3,8 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.List;
 
-import otgviewer.shared.Pair;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.Pair;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;
@@ -35,8 +35,8 @@ public class GeneOracle extends SuggestOracle {
 		
 	}
 	
-	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
-			.create(OwlimService.class);
+	private SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT
+			.create(SparqlService.class);
 	
 	@Override
 	public void requestSuggestions(final Request request, final Callback callback) {

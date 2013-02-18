@@ -13,10 +13,9 @@ import otgviewer.shared.RankRule;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public interface OwlimServiceAsync {
+public interface SparqlServiceAsync {
 
 	public void compounds(DataFilter filter, AsyncCallback<String[]> callback);
-	public void rankedCompounds(DataFilter filter, RankRule[] rules, AsyncCallback<MatchResult[]> callback);
 	
 	public void organs(DataFilter filter, String compound, AsyncCallback<String[]> callback);	
 	public void doseLevels(DataFilter filter, String compound, AsyncCallback<String[]> callback);	

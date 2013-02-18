@@ -131,7 +131,7 @@ abstract class ChartTables {
 			int nc = samples.size() / categories.length;
 			for (int i = 0; i < nc; ++i) {
 				dt.addColumn(ColumnType.NUMBER);
-				dt.setProperty(0, i + 1, "color", "LightSkyBlue");
+				dt.setProperty(0, i + 1, "color", "DarkBlue");
 			}
 			int[] valCount = new int[categories.length];
 			

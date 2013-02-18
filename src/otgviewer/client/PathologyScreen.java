@@ -44,8 +44,8 @@ public class PathologyScreen extends Screen {
 		return manager.isConfigured(ColumnScreen.key) && chosenDataFilter.cellType == CellType.Vivo;
 	}
 
-	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
-			.create(OwlimService.class);
+	private SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT
+			.create(SparqlService.class);
 	
 	public PathologyScreen(ScreenManager man) {
 		super("Pathologies", key, true, true, man);

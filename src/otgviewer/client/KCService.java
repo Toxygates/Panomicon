@@ -100,25 +100,5 @@ public interface KCService extends RemoteService {
 	 * Get the GeneIDs currently being displayed. If limit is -1, no limit will be applied.
 	 */
 	public String[] getGenes(int limit);
-	
-	/**
-	 * Obtain a single time series or dose series.
-	 * @param filter
-	 * @param probe Must be a probe id.
-	 * @param timeDose A fixed time, or a fixed dose.
-	 * @param compound 
-	 * @return
-	 */
-	public Series getSingleSeries(DataFilter filter, String probe, String timeDose, String compound);
-	
-	/**
-	 * Obtain a number of time series or dose series.
-	 * @param filter Must be specified.
-	 * @param probes Must be specified. Can be genes/proteins/probe ids.
-	 * @param timeDose A fixed time, or a fixed dose. Can optionally be null (no constraint).
-	 * @param compound Can optionally be null (no constraint). If this is null, timeDose must be null.
-	 * @return
-	 */
-	public List<Series> getSeries(DataFilter filter, String[] probes, String timeDose, String[] compounds);
-	
+
 }

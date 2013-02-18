@@ -38,11 +38,6 @@ public interface KCServiceAsync {
 	public void addTwoGroupTest(Synthetic.TwoGroupSynthetic test,
 			AsyncCallback<Void> callback);
 
-	public void getSingleSeries(DataFilter filter, String probe,
-			String timeDose, String compound, AsyncCallback<Series> callback);
-
-	public void getSeries(DataFilter filter, String[] probes, String timeDose,
-			String[] compounds, AsyncCallback<List<Series>> callback);
 	
 	
 }

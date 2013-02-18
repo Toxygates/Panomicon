@@ -46,8 +46,8 @@ public class SampleDetailScreen extends Screen {
 	
 	private Barcode[] barcodes;
 	private DataColumn displayColumn;
-	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
-			.create(OwlimService.class);
+	private SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT
+			.create(SparqlService.class);
 	AnnotationTDGrid atd = new AnnotationTDGrid();
 	
 	private DataFilter lastFilter;

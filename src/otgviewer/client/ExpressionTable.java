@@ -94,7 +94,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 	
 	private final KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
-	private final OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT.create(OwlimService.class);
+	private final SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT.create(SparqlService.class);
 	private static otgviewer.client.Resources resources = GWT.create(otgviewer.client.Resources.class);
 	
 	private List<Synthetic> synthColumns = new ArrayList<Synthetic>();
