@@ -10,10 +10,12 @@ import otgviewer.shared.Group;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -115,8 +117,23 @@ public class Utils {
 		return o;
 	}
 
-	public static void displayInPopup(Widget w) {
-		final PopupPanel pp = new PopupPanel(true, true);
+	private static int lastX = -1, lastY = -1;
+	public static void displayInPopup(String caption, Widget w) {
+		displayInPopup(caption, w, false);
+	}
+	public static void displayInPopup(String caption, Widget w, final boolean trackLocation) {
+		final DialogBox db = new DialogBox(true, false) {
+			@Override
+			protected void endDragging(MouseUpEvent event) {
+				super.endDragging(event);
+				if (trackLocation) {
+					lastX = getAbsoluteLeft();
+					lastY = getAbsoluteTop();
+				}
+			}			
+		};
+		db.setText(caption);		
+//		final PopupPanel pp = new PopupPanel(true, true);
 		DockPanel dp = new DockPanel();
 		HorizontalPanel hp = new HorizontalPanel();
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
@@ -124,7 +141,7 @@ public class Utils {
 		i.addClickHandler(new ClickHandler() {			
 			@Override
 			public void onClick(ClickEvent event) {
-				pp.hide();				
+				db.hide();				
 			}
 		});
 		hp.add(i);		
@@ -132,8 +149,14 @@ public class Utils {
 		
 		dp.add(hp, DockPanel.NORTH);
 		dp.add(w, DockPanel.CENTER);
-		pp.setWidget(dp);
-		pp.setPopupPositionAndShow(displayInCenter(pp, dp, w));		
+		db.setWidget(dp);
+		
+		if (trackLocation) {
+			db.setPopupPosition(lastX, lastY);
+			db.show();
+		} else {
+			db.setPopupPositionAndShow(displayInCenter(db, dp, w));
+		}
 	}
 
 	public static PositionCallback displayInCenter(final PopupPanel pp) {
@@ -258,6 +281,6 @@ public class Utils {
 		sp.setWidth("600px");
 		sp.setWidget(new HTML(helpText.getText()));
 		vp.add(sp);
-		Utils.displayInPopup(vp);
+		Utils.displayInPopup("Help", vp);
 	}
 }

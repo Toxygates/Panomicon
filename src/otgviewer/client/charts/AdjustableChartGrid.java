@@ -26,6 +26,8 @@ public class AdjustableChartGrid extends Composite {
 	private VerticalPanel ivp;
 	private Screen screen;
 	
+	private static int lastType = -1, lastSubtype = -1;
+	
 	public AdjustableChartGrid(Screen screen, ChartDataSource source, List<Group> groups) {
 		this.source = source;
 		this.groups = groups;
@@ -51,19 +53,22 @@ public class AdjustableChartGrid extends Composite {
 		
 		chartCombo.addItem("Expression vs time, fixed dose:");
 		chartCombo.addItem("Expression vs dose, fixed time:");
-		chartCombo.setSelectedIndex(0);
+		setType( (lastType == -1 ? 0 : lastType));
 
 		chartSubtypeCombo = new ListBox();
 		ihp.add(chartSubtypeCombo);
 
 		chartSubtypeCombo.addChangeHandler(new ChangeHandler() {
-			public void onChange(ChangeEvent event) {				
+			public void onChange(ChangeEvent event) {								
+				lastSubtype = chartSubtypeCombo.getSelectedIndex();
 				redraw(false);
 			}
 
 		});
 		chartCombo.addChangeHandler(new ChangeHandler() {
 			public void onChange(ChangeEvent event) {
+				lastType = chartCombo.getSelectedIndex();
+				lastSubtype = -1;
 				updateSeriesSubtypes();
 			}
 		});
@@ -91,38 +96,35 @@ public class AdjustableChartGrid extends Composite {
 	
 	public void redraw(boolean fromUpdate) {
 
-		// make sure something is selected
-		if (chartCombo.getSelectedIndex() == -1) {
-			chartCombo.setSelectedIndex(0);
-		}
 		if (chartSubtypeCombo.getItemCount() == 0 && !fromUpdate) {
 			updateSeriesSubtypes(); // will redraw for us later
 		} else {
 
 			if (chartSubtypeCombo.getSelectedIndex() == -1) {
-				chartSubtypeCombo.setSelectedIndex(0);
+				setSubtype((lastSubtype == -1 ? 0 : lastSubtype));				
 			}
 			
-			ivp.clear();
-								
-			String subtype = chartSubtypeCombo.getItemText(chartSubtypeCombo
+			ivp.clear();								
+			final String subtype = chartSubtypeCombo.getItemText(chartSubtypeCombo
 									.getSelectedIndex());
-			String[] columns = (subtype.equals("All") ? null : new String[] { subtype } );
 			
-			List<ChartGrid> grids = new ArrayList<ChartGrid>();
+			final String[] columns = (subtype.equals("All") ? null : new String[] { subtype } );
 			
+			final List<ChartGrid> grids = new ArrayList<ChartGrid>();
+			
+			final boolean vsTime = chartCombo.getSelectedIndex() == 0;
 			if (groups != null) {
 				for (Group g : groups) {
 					Label l = new Label("Compounds in '" + g.getName() + "'");
 					l.setStyleName("heading");
 					ivp.add(l);
-					ChartGrid gr = gridFor(chartCombo.getSelectedIndex() == 0,
+					final ChartGrid gr = gridFor(vsTime,
 							columns, g.getCompounds());
 					ivp.add(gr);
 					grids.add(gr);					
 				}
 			} else {
-				ChartGrid gr = gridFor(chartCombo.getSelectedIndex() == 0, columns, null);
+				final ChartGrid gr = gridFor(vsTime, columns, null);
 				ivp.add(gr);
 				grids.add(gr);			
 			}
@@ -147,7 +149,7 @@ public class AdjustableChartGrid extends Composite {
 			for (String dose: source.doses()) {
 				chartSubtypeCombo.addItem(dose);
 			}
-		} else {			
+		} else {		
 			for (String time: source.times()) {
 				chartSubtypeCombo.addItem(time);
 			}
@@ -155,9 +157,18 @@ public class AdjustableChartGrid extends Composite {
 		
 		if (chartSubtypeCombo.getItemCount() > 0) {
 			chartSubtypeCombo.addItem("All");
-			chartSubtypeCombo.setSelectedIndex(chartSubtypeCombo.getItemCount() - 1);
+			setSubtype((lastSubtype == -1 ? chartSubtypeCombo.getItemCount() - 2 : lastSubtype));			
 			redraw(true);
 		}
 	}
 	
+	private void setType(int type) {
+		chartCombo.setSelectedIndex(type);
+		lastType = type;
+		lastSubtype = -1;
+	}
+	private void setSubtype(int subtype) {
+		chartSubtypeCombo.setSelectedIndex(subtype);
+		lastSubtype = subtype;
+	}
 }

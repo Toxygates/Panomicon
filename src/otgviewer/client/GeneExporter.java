@@ -77,7 +77,7 @@ public class GeneExporter extends Composite {
 		VerticalPanel vp = Utils.mkVerticalPanel(true);
 		initWidget(vp);
 		vp.setWidth("300px");
-		vp.add(Utils.mkEmphLabel("TargetMine export"));
+//		vp.add(Utils.mkEmphLabel("TargetMine export"));
 		Label l = new Label("This will export the genes you are currently viewing to the TargetMine system for further analysis.");
 		l.setWordWrap(true);
 		vp.add(l);

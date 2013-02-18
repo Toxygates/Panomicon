@@ -326,7 +326,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		
 		MenuItem mi = new MenuItem("Export to TargetMine...", false, new Command() {
 			public void execute() {
-				Utils.displayInPopup(new GeneExporter(w, exprGrid.getRowCount()));
+				Utils.displayInPopup("TargetMine export", new GeneExporter(w, exprGrid.getRowCount()));
 			}
 		});
 		
@@ -672,7 +672,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 			cgf.makeRowCharts(screen, chosenValueType, value, 
 					new AChartAcceptor() {
 				public void acceptCharts(AdjustableChartGrid cg) {
-					Utils.displayInPopup(cg);
+					Utils.displayInPopup("Charts", cg, true);
 				}
 			});			
 		}

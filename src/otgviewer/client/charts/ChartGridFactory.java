@@ -108,15 +108,13 @@ public class ChartGridFactory {
 						finishRowCharts(screen, filter, vt, groups, barcodes, rows, acceptor);										
 					}					
 				});
-			}
-			
+			}			
 		});
 	}
 	
 	// strategy: 1. Make data source,
 	// 2. Make table
-	// 3. make chart grid and return
-	
+	// 3. make chart grid and return	
 	private void finishRowCharts(Screen screen, DataFilter filter, ValueType vt, List<Group> groups, 
 			Barcode[] barcodes, List<ExpressionRow> rows, AChartAcceptor acceptor) {
 		ChartDataSource cds = new ChartDataSource.ExpressionRowSource(barcodes, rows);

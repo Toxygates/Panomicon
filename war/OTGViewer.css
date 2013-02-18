@@ -124,7 +124,7 @@ exprGrid {
 }
 
 .highlightedRow {
-	text-decoration: underline;
+	font-style: italic;	
 }
 
 .dataColumn {
