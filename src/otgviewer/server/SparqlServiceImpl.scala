@@ -35,23 +35,19 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   import UtilsS._
   import Assocations._
   
-  private var seriesDB: DB = _
-  
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config)
     OTGOwlim.connect()
     B2RAffy.connect()
     Uniprot.connect()
-    val homePath = System.getProperty("otg.home")
-    seriesDB = OTGSeriesQuery.open(homePath + "/otgfs.kct")
+    val homePath = System.getProperty("otg.home")    
   }
 
   override def destroy() {
     B2RAffy.close()
     OTGOwlim.close()
-    Uniprot.close()
-    seriesDB.close()
+    Uniprot.close()   
     super.destroy()
   }
 
@@ -141,7 +137,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     import scala.collection.{Map => CMap, Set => CSet}
     
   def associations(filter: DataFilter, types: Array[AType], probes: Array[String], geneIds: Array[String]): Array[Association] = {
-
+    def valNames(m: SMPMap): Set[String] = m.flatMap(_._2).map(_._1).toSet
+    
     def connectorOrEmpty[T <: RDFConnector](c: T, f: T => SMPMap): SMPMap = 
       useConnector(c, f, Map() ++ probes.map(p => (p -> CSet(("(Timeout or error)", null: String)))))
 
@@ -151,7 +148,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       
     //compose by applying a lookup function to U from the first map T->U
     def composeWith(m1: SMPMap, lookup: (Iterable[String]) => SMPMap): SMPMap = 
-      composeMaps(m1, lookup(m1.flatMap(_._2.map(_._1)).toSet))
+      composeMaps(m1, lookup(valNames(m1)))
     
     def union(m1: SMPMap, m2: SMPMap): SMPMap = {
       val allKeys = m1.keySet ++ m2.keySet
@@ -182,9 +179,9 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
               val compounds = OTGOwlim.compounds(filter)
 
               //strictly orthologous proteins
-              val oproteinVs = oproteins.flatMap(_._2).map(_._1).toSet -- proteins.flatMap(_._2).map(_._1).toSet              
+              val oproteinVs = valNames(oproteins) -- valNames(proteins)              
               val allProteins = union(proteins, oproteins)              
-              val allTargets = c.targetingCompoundsForProteins(allProteins.flatMap(_._2).map(_._1).toSet, null, compounds)
+              val allTargets = c.targetingCompoundsForProteins(valNames(allProteins), null, compounds)
               
               composeMaps(allProteins, allTargets.map(x => (x._1 -> x._2.map(c => 
                 if (oproteinVs.contains(x._1)) { (c._1 + "(inf)", c._2) } else { c }))))              
@@ -192,9 +189,9 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       case x: AType.Drugbank.type => connectorOrEmpty(DrugBank,
             (c: DrugBank.type) => {
               val compounds = OTGOwlim.compounds(filter)
-              val oproteinVs = oproteins.flatMap(_._2).map(_._1).toSet -- proteins.flatMap(_._2).map(_._1).toSet              
+              val oproteinVs = valNames(oproteins) -- valNames(proteins)               
               val allProteins = union(proteins, oproteins)              
-              val allTargets = c.targetingCompoundsForProteins(allProteins.flatMap(_._2).map(_._1).toSet, compounds)
+              val allTargets = c.targetingCompoundsForProteins(valNames(allProteins), compounds)
               composeMaps(allProteins, allTargets.map(x => (x._1 -> x._2.map(c => 
                 if (oproteinVs.contains(x._1)) { (c._1 + "(inf)", c._2) } else { c }))))
             })

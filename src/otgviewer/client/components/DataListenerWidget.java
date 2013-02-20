@@ -23,7 +23,6 @@ import com.google.gwt.user.client.ui.RequiresResize;
  * A Composite that is also a DataViewListener.
  * Has default implementations for the change listener methods.
  * 
- * Convention: lists may be empty, but should never be null.
  * @author johan
  *
  */

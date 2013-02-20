@@ -61,7 +61,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		this.screen = scr;
 		sp = new SplitLayoutPanel();
 		initWidget(sp);
-//		
+
 		VerticalPanel vp = Utils.mkTallPanel();
 
 		titleLabel = new Label("Sample group definition");
@@ -72,7 +72,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		vp.add(timeDoseGrid);
 		addListener(timeDoseGrid);
 	
-		vp.setWidth("410px");		
+		vp.setWidth("440px");		
 		
 		toolPanel = Utils.mkHorizontalPanel(true);
 		vp.add(toolPanel);

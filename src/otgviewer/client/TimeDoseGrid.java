@@ -36,7 +36,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	public TimeDoseGrid() {
 		rootPanel = Utils.mkVerticalPanel();
 		initWidget(rootPanel);
-		rootPanel.setWidth("710px");
+		rootPanel.setWidth("730px");
 		mainPanel = new VerticalPanel();
 		
 		

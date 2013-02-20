@@ -19,6 +19,7 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.AType;
 import otgviewer.shared.Association;
+import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Group;
@@ -110,6 +111,8 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 	private List<HideableColumn> hideableColumns = new ArrayList<HideableColumn>();
  	private List<AssociationColumn> associationColumns = new ArrayList<AssociationColumn>();
  	private boolean waitingForAssociations = true, loadedData = false;
+ 	
+ 	private Barcode[] chartBarcodes = null;
 
 	public ExpressionTable(Screen _screen) {
 		screen = _screen;
@@ -555,6 +558,8 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 			groupsel1.setSelectedIndex(0);
 			groupsel2.setSelectedIndex(1);			
 		}
+		
+		chartBarcodes = null;
 	}
 	
 	void refilterData() {
@@ -657,6 +662,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		}
 	}
 	
+	
 	class ToolCell extends ImageClickCell {
 		
 		public ToolCell(DataListenerWidget owner) {
@@ -669,10 +675,14 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 			
 			ChartGridFactory cgf = new ChartGridFactory(chosenDataFilter, chosenColumns);
 			
-			cgf.makeRowCharts(screen, chosenValueType, value, 
+			cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, value, 
 					new AChartAcceptor() {
 				public void acceptCharts(AdjustableChartGrid cg) {
 					Utils.displayInPopup("Charts", cg, true);
+				}
+				
+				public void acceptBarcodes(Barcode[] bcs) {
+					chartBarcodes = bcs;
 				}
 			});			
 		}
