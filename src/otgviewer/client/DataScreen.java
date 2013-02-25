@@ -30,8 +30,8 @@ public class DataScreen extends Screen {
 	@Override
 	protected void addToolbars() {
 		super.addToolbars();
-		addToolbar(et.tools(), 30);
-		addToolbar(et.analysisTools(), 30);
+		addToolbar(et.tools(), 43);
+		addToolbar(et.analysisTools(), 43);	
 	}
 
 	public Widget content() {		

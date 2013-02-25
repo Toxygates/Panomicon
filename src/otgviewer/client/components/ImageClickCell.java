@@ -15,7 +15,7 @@ abstract public class ImageClickCell extends AbstractCell<String> {
 
 	public ImageClickCell(ImageResource image) {
 		super("click");
-		this.image = image;
+		this.image = image;		
 	}
 	
 	public void render(Cell.Context context, String data, SafeHtmlBuilder sb) {		

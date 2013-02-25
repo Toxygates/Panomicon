@@ -79,7 +79,7 @@ import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.NoSelectionModel;
 import com.google.gwt.view.client.Range;
 
-public class ExpressionTable extends DataListenerWidget implements RequiresResize, ProvidesResize {
+public class ExpressionTable extends DataListenerWidget { //implements RequiresResize, ProvidesResize {
 
 	private final int PAGE_SIZE = 25;
 	
@@ -116,12 +116,13 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 
 	public ExpressionTable(Screen _screen) {
 		screen = _screen;
-		dockPanel = new DockLayoutPanel(Unit.EM);
+//		dockPanel = new DockLayoutPanel(Unit.PX);
 		initHideableColumns();
 		
 		exprGrid = new DataGrid<ExpressionRow>();
-		dockPanel.add(exprGrid);
-		initWidget(dockPanel);
+//		dockPanel.add(exprGrid);
+//		initWidget(dockPanel);
+		initWidget(exprGrid);
 		
 		exprGrid.setStyleName("exprGrid");
 		exprGrid.setPageSize(PAGE_SIZE);
@@ -221,15 +222,13 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		analysisDisclosure.addOpenHandler(new OpenHandler<DisclosurePanel>() {			
 			@Override
 			public void onOpen(OpenEvent<DisclosurePanel> event) {
-				analysisTools.setVisible(true);
-				screen.deferredResize();				
+				screen.showToolbar(analysisTools, 35); //hack for IE8!
 			}
 		});
 		analysisDisclosure.addCloseHandler(new CloseHandler<DisclosurePanel>() {			
 			@Override
 			public void onClose(CloseEvent<DisclosurePanel> event) {
-				analysisTools.setVisible(false);
-				screen.deferredResize();
+				screen.hideToolbar(analysisTools);				
 			}
 		});		
 	}
@@ -384,6 +383,7 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 		extraCols = 0;
 		ToolColumn tcl = new ToolColumn(new ToolCell(this));
 		exprGrid.addColumn(tcl, "");
+		tcl.setCellStyleNames("clickCell");
 		exprGrid.setColumnWidth(tcl, "40px");		
 		extraCols += 1;
 		
@@ -466,25 +466,27 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 	
 	private void getAssociations() {
 		waitingForAssociations = true;					
+		AType[] vas = visibleAssociations();
+		if (vas.length > 0) {
+			AsyncCallback<Association[]> assocCallback = new AsyncCallback<Association[]>() {
+				public void onFailure(Throwable caught) {
+					Window.alert("Unable to get associations: " + caught.getMessage());
+				}
 
-		AsyncCallback<Association[]> assocCallback = new AsyncCallback<Association[]>() {
-			public void onFailure(Throwable caught) {
-				Window.alert("Unable to get associations: " + caught.getMessage());
-			}
-			
-			public void onSuccess(Association[] result) {
-				associations.clear();
-				waitingForAssociations = false;
-				for (Association a: result) {
-					associations.put(a.type(), a);	
-				};				
-				exprGrid.redraw();
-			}
-		};
-		
-		owlimService.associations(chosenDataFilter, visibleAssociations(),
-				displayedProbes, 
-				displayedGeneIds.toArray(new String[0]), assocCallback);
+				public void onSuccess(Association[] result) {
+					associations.clear();
+					waitingForAssociations = false;
+					for (Association a: result) {
+						associations.put(a.type(), a);	
+					};				
+					exprGrid.redraw();
+				}
+			};
+
+			owlimService.associations(chosenDataFilter, vas,
+					displayedProbes, 
+					displayedGeneIds.toArray(new String[0]), assocCallback);
+		}
 	}
 	
 	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
@@ -677,8 +679,12 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 			
 			cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, value, 
 					new AChartAcceptor() {
-				public void acceptCharts(AdjustableChartGrid cg) {
-					Utils.displayInPopup("Charts", cg, true);
+				public void acceptCharts(final AdjustableChartGrid cg) {
+					Utils.ensureVisualisationAndThen(new Runnable() {
+						public void run() {
+							Utils.displayInPopup("Charts", cg, true);							
+						}
+					});
 				}
 				
 				public void acceptBarcodes(Barcode[] bcs) {
@@ -812,9 +818,9 @@ public class ExpressionTable extends DataListenerWidget implements RequiresResiz
 	}
 	
 
-	@Override
-	public void onResize() {		
-		dockPanel.onResize();		
-	}
+//	@Override
+//	public void onResize() {		
+//		dockPanel.onResize();		
+//	}
 	
 }

@@ -53,9 +53,9 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
-		Runnable onLoadChart = new Runnable() {
-			public void run() {
-
+//		Runnable onLoadChart = new Runnable() {
+//			public void run() {
+//
 //				 DataTable data = DataTable.create();
 //		         data.addColumn(ColumnType.STRING, "Gene Name");
 //		         data.addColumn(ColumnType.NUMBER, "chip_XXX_XXX_600");
@@ -81,11 +81,11 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 //		         data.setValue(1, 6, 5.5);
 //		         
 //		         bhm.draw(data);
-			}
-		};
-
-		VisualizationUtils
-				.loadVisualizationApi("1.1", onLoadChart, "corechart");
+//			}
+//		};
+//
+//		VisualizationUtils
+//				.loadVisualizationApi("1.1", onLoadChart, "corechart");
 	
 		menuBar = setupMenu();
 
@@ -189,8 +189,9 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		}
 		currentScreen = s;
 		addWorkflowLinks(currentScreen);
-		mainDockPanel.add(currentScreen);
+		mainDockPanel.add(currentScreen);		
 		currentScreen.show();
+		mainDockPanel.forceLayout(); //IE8
 		resizeInterface(); 
 	}
 
@@ -199,7 +200,6 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	 * @return
 	 */
 	private Screen pickScreen(String token) {
-		
 		if (!screens.containsKey(token)) {
 		    return screens.get(DatasetScreen.key); //default			
 		} else {
@@ -277,7 +277,9 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	private void resizeInterface() {
 		if (currentScreen != null) {
 			currentScreen.resizeInterface();
+//			currentScreen.deferredResize();
 		}
+		rootPanel.onResize();
 	}
 	
 	

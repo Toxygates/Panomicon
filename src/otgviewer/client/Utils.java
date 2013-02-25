@@ -8,6 +8,7 @@ import otgviewer.shared.DataColumn;
 import otgviewer.shared.Group;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
@@ -31,6 +32,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.visualization.client.LegendPosition;
+import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
 
 public class Utils {
@@ -121,7 +123,7 @@ public class Utils {
 	public static void displayInPopup(String caption, Widget w) {
 		displayInPopup(caption, w, false);
 	}
-	public static void displayInPopup(String caption, Widget w, final boolean trackLocation) {
+	public static void displayInPopup(String caption, final Widget w, final boolean trackLocation) {
 		final DialogBox db = new DialogBox(true, false) {
 			@Override
 			protected void endDragging(MouseUpEvent event) {
@@ -134,58 +136,62 @@ public class Utils {
 		};
 		db.setText(caption);		
 //		final PopupPanel pp = new PopupPanel(true, true);
-		DockPanel dp = new DockPanel();
-		HorizontalPanel hp = new HorizontalPanel();
-		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-		Image i = new Image(resources.close());
-		i.addClickHandler(new ClickHandler() {			
-			@Override
-			public void onClick(ClickEvent event) {
-				db.hide();				
-			}
-		});
-		hp.add(i);		
-		hp.setWidth("100%");
+		final DockPanel dp = new DockPanel();
+//		HorizontalPanel hp = new HorizontalPanel();
+//		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+//		Image i = new Image(resources.close());
+//		i.addClickHandler(new ClickHandler() {			
+//			@Override
+//			public void onClick(ClickEvent event) {
+//				db.hide();				
+//			}
+//		});
+//		hp.add(i);		
+//		hp.setWidth("100%");
 		
-		dp.add(hp, DockPanel.NORTH);
+//		dp.add(hp, DockPanel.NORTH);
 		dp.add(w, DockPanel.CENTER);
 		db.setWidget(dp);
 		
 		if (trackLocation) {
-			db.setPopupPosition(lastX, lastY);
-			db.show();
+			db.setPopupPositionAndShow(displayAt(db, dp, w, lastX, lastY));
 		} else {
-			db.setPopupPositionAndShow(displayInCenter(db, dp, w));
+			db.setPopupPositionAndShow(displayAt(db, dp, w, -1, -1));
 		}
+
 	}
 
 	public static PositionCallback displayInCenter(final PopupPanel pp) {
-		return displayInCenter(pp, null, null);
+		return displayAt(pp, null, null, -1, -1);
 	}
 	
-	private static PositionCallback displayInCenter(final PopupPanel pp, final DockPanel dp, final Widget center) {
+	private static PositionCallback displayAt(final PopupPanel pp, final DockPanel dp, final Widget center,
+			final int atX, final int atY) {
 		return new PositionCallback() {			
-		public void setPosition(int w, int h) {			
-			if (h > Window.getClientHeight() - 100) {
-				pp.setHeight((Window.getClientHeight() - 100) + "px");
-				if (center != null && dp != null) {					
-					dp.remove(center);					
-					Widget scrl = makeScrolled(center);
-					scrl.setHeight((Window.getClientHeight() - 120) + "px");
-					dp.add(scrl, DockPanel.CENTER);					
-				} else {				
-					Widget wd = pp.getWidget();
-					pp.setWidget(makeScrolled(wd));
-				}				
-				pp.setPopupPosition(Window.getClientWidth() - w - 50, 50);
-			} else {
-				pp.setPopupPosition(Window.getClientWidth() - w - 50, 
-						Window.getClientHeight()/2 - h/2);							
+			public void setPosition(int w, int h) {			
+				if (h > Window.getClientHeight() - 100) {
+					pp.setHeight((Window.getClientHeight() - 100) + "px");
+					if (center != null && dp != null) {					
+						dp.remove(center);					
+						Widget scrl = makeScrolled(center);
+						scrl.setHeight((Window.getClientHeight() - 120) + "px");
+						dp.add(scrl, DockPanel.CENTER);					
+					} else {				
+						Widget wd = pp.getWidget();
+						pp.setWidget(makeScrolled(wd));
+					}			
+					int useX = atX == -1 ? Window.getClientWidth() - w - 50 : atX;
+					int useY = atY == -1 ? 50: atY;
+					pp.setPopupPosition(useX, useY);					
+				} else {
+					int useX = atX == -1 ? Window.getClientWidth() - w - 50 : atX;
+					int useY = atY == -1 ? Window.getClientHeight()/2 - h/2: atY;					
+					pp.setPopupPosition(useX, useY);		
+				}
 			}
-		}
-		};
+			};
 	}
-
+	
 	public static ScrollPanel makeScrolled(Widget w) {
 		ScrollPanel sp = new ScrollPanel(w);
 		return sp;
@@ -283,4 +289,10 @@ public class Utils {
 		vp.add(sp);
 		Utils.displayInPopup("Help", vp);
 	}
+	
+	public static void ensureVisualisationAndThen(final Runnable r) {
+		VisualizationUtils
+		.loadVisualizationApi("1.1", r, "corechart");		
+	}
+
 }

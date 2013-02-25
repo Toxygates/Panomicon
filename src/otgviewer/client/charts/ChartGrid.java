@@ -65,7 +65,6 @@ public class ChartGrid extends Composite {
 		g = new Grid(rowFilters.size() * 2 + 1, timesOrDoses.length);		
 		initWidget(g);
 		
-		
 		for (int r = 0; r < rowFilters.size(); ++r) {
 			g.setWidget(r * 2 + 1, 0, Utils.mkEmphLabel(rowFilters.get(r)));
 		}
@@ -92,18 +91,11 @@ public class ChartGrid extends Composite {
 					}
 
 					public void onFailure(Throwable caught) {
-
+						
 					}
 				});
 		}
 
-//		//TODO move this
-//		VisualizationUtils
-//		.loadVisualizationApi("1.1", new Runnable() {
-//			public void run() {
-//				drawCharts();
-//			}
-//		}, "corechart");
 	}
 	
 	/**

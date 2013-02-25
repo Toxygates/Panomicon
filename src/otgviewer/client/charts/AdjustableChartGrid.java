@@ -102,6 +102,7 @@ public class AdjustableChartGrid extends Composite {
 							
 							intoList.add(cg);
 							intoPanel.add(cg);
+							intoPanel.setHeight("");
 							
 							expectedGrids -= 1;							
 							if (expectedGrids == 0) {
@@ -123,6 +124,13 @@ public class AdjustableChartGrid extends Composite {
 	}
 	
 	int expectedGrids;
+	
+	private SimplePanel makeGridPanel(String[] compounds) {
+		SimplePanel sp = new SimplePanel();
+		int h = 180 * compounds.length;
+		sp.setHeight(h + "px");
+		return sp;
+	}
 	
 	public void redraw(boolean fromUpdate) {
 
@@ -149,13 +157,13 @@ public class AdjustableChartGrid extends Composite {
 					Label l = new Label("Compounds in '" + g.getName() + "'");
 					l.setStyleName("heading");
 					ivp.add(l);
-					SimplePanel sp = new SimplePanel();
+					SimplePanel sp = makeGridPanel(g.getCompounds());					
 					ivp.add(sp);
 					expectedGrids += 1;
 					gridFor(vsTime, columns, g.getCompounds(), grids, sp);		
 				}
 			} else {
-				SimplePanel sp = new SimplePanel();
+				SimplePanel sp = makeGridPanel(compounds.toArray(new String[0]));				
 				ivp.add(sp);
 				expectedGrids += 1;
 				gridFor(vsTime, columns, null, grids, sp);							

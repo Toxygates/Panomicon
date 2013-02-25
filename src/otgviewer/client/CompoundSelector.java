@@ -33,6 +33,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.NoSelectionModel;
 
 /**
@@ -60,6 +61,8 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	private Map<String, MatchResult> scores = new HashMap<String, MatchResult>(); //for compound ranking
 	private List<String> rankProbes = new ArrayList<String>();
 	
+	private Widget north, south;
+	
 	/**
 	 * @wbp.parser.constructor
 	 */
@@ -75,9 +78,11 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		Label lblCompounds = new Label(heading);
 		lblCompounds.setStyleName("heading");
 		dp.addNorth(lblCompounds, 2.5);
-	
+		north = lblCompounds;
+		
 		HorizontalPanel hp = Utils.mkWidePanel();		
 		dp.addSouth(hp, 2.5);
+		south = hp;
 		
 		sortButton = new Button("Sort by name", new ClickHandler() {
 			public void onClick(ClickEvent ce) {
@@ -106,7 +111,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 				
 		dp.add(new ScrollPanel(compoundTable));
 		
-		compoundTable.setWidth("100%");
+		compoundTable.setWidth("300px");
 		compoundTable.table().setSelectionModel(new NoSelectionModel<String>());		
 	}
 	
@@ -184,11 +189,14 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		changeCompounds(compounds);
 	}
 	
-	
-	
 	@Override
 	public void onResize() {		
 		dp.onResize();		
+	}
+	
+	public void resizeInterface() {
+		dp.setWidgetSize(north, 2.5);
+		dp.setWidgetSize(south, 2.5);
 	}
 
 	void performRanking(List<String> rankProbes, List<RankRule> rules) {
@@ -230,15 +238,20 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 			} else {
 				seriesService.getSeries(chosenDataFilter, rankProbes.toArray(new String[0]), 
 						null, new String[] { value }, new PendingAsyncCallback<List<Series>>(w, "Unable to retrieve data.") {
-					public void handleSuccess(List<Series> ss) {
-						ChartGridFactory cgf = new ChartGridFactory(chosenDataFilter, chosenColumns);
-						cgf.makeSeriesCharts(ss, false, scores.get(value).dose(), new ChartGridFactory.ChartAcceptor() {
-							
-							@Override
-							public void acceptCharts(ChartGrid cg) {
-								Utils.displayInPopup("Charts", cg);								
+					public void handleSuccess(final List<Series> ss) {
+						Utils.ensureVisualisationAndThen(new Runnable() {
+							public void run() {
+								ChartGridFactory cgf = new ChartGridFactory(chosenDataFilter, chosenColumns);
+								cgf.makeSeriesCharts(ss, false, scores.get(value).dose(), new ChartGridFactory.ChartAcceptor() {
+									
+									@Override
+									public void acceptCharts(ChartGrid cg) {
+										Utils.displayInPopup("Charts", cg);								
+									}
+								});					
 							}
-						});						
+						});
+							
 					}
 					
 				});

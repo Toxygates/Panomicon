@@ -54,9 +54,12 @@ public class SampleDetailScreen extends Screen {
 	private List<Group> lastColumns;
 	private DataColumn lastCustomColumn;
 	
+	private HorizontalPanel tools;
+	
 	public SampleDetailScreen(ScreenManager man) {
 		super("Sample details", key, true, true, man);						
 		this.addListener(atd);
+		mkTools();
 	}
 	
 	@Override
@@ -115,15 +118,11 @@ public class SampleDetailScreen extends Screen {
 		return manager.isConfigured(ColumnScreen.key);
 	}
 
-	public Widget content() {
-		DockLayoutPanel dp = new DockLayoutPanel(Unit.EM);
-		HorizontalPanel hp = Utils.mkHorizontalPanel(true);		
-		HorizontalPanel hpi = Utils.mkHorizontalPanel();
-		hpi.setWidth("100%");
-		hpi.add(hp);
-//		vp.add(hpi);
-		dp.addNorth(hpi, 3);
-		
+	private void mkTools() {
+		HorizontalPanel hp = Utils.mkHorizontalPanel(true);				
+		tools = Utils.mkWidePanel();		
+		tools.add(hp);
+
 		hp.add(columnList);
 		
 		hp.add(new Button("Grid visualisation...", new ClickHandler() {			
@@ -143,16 +142,20 @@ public class SampleDetailScreen extends Screen {
 			public void onChange(ChangeEvent ce) {
 				displayWith(columnList.getItemText(columnList.getSelectedIndex()));
 			}
-		});
+		});		
+	}
+	
+	public Widget content() {
+		
+//		vp.add(hpi);
 		
 		VerticalPanel vp = Utils.mkVerticalPanel();
 		configureTable(vp, experimentTable);
 		configureTable(vp, biologicalTable);
 
-		hp = Utils.mkWidePanel(); //to make it centered
+		HorizontalPanel hp = Utils.mkWidePanel(); //to make it centered
 		hp.add(vp);
-		dp.add(new ScrollPanel(hp));		
-		return dp;
+		return new ScrollPanel(hp);				
 	}
 	
 	private void configureTable(Panel p, CellTable<String[]> ct) {
@@ -256,4 +259,10 @@ public class SampleDetailScreen extends Screen {
 		}
 	}
 
+	@Override
+	protected void addToolbars() {	
+		super.addToolbars();
+		addToolbar(tools, 30);
+	}
+	
 }

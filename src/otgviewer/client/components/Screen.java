@@ -52,6 +52,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	private Widget bottom;
 	private HorizontalPanel spOuter;
 	private List<Widget> toolbars = new ArrayList<Widget>();
+	private List<Widget> leftbars = new ArrayList<Widget>();
 	
 	protected ScreenManager manager;
 	
@@ -157,6 +158,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	 * If overriding, make sure to call the superclass method.
 	 */
 	public void show() {
+		rootPanel.forceLayout();
 		visible = true;		
 		for (MenuItem mi: menuItems) {
 			mi.setVisible(true);
@@ -204,9 +206,12 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		}		
 	}
 	
-	public void resizeInterface() {
-		for (Widget w: toolbars) {
-			rootPanel.setWidgetSize(w, w.getOffsetHeight());
+	public void resizeInterface() {		
+		for (Widget w: toolbars) {						
+			rootPanel.setWidgetSize(w, w.getOffsetHeight());			
+		}
+		for (Widget w: leftbars) {
+			rootPanel.setWidgetSize(w, w.getOffsetWidth());
 		}
 		rootPanel.forceLayout();
 //		rootPanel.setWidgetSize(spOuter, statusPanel.getOffsetHeight() + 10);
@@ -214,7 +219,27 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	
 	protected void addToolbar(Widget toolbar, int size) {
 		toolbars.add(toolbar);
-		rootPanel.addNorth(toolbar, size);
+		rootPanel.addNorth(toolbar, size);		
+	}
+	
+	public void showToolbar(Widget toolbar) {
+		showToolbar(toolbar, toolbar.getOffsetHeight());
+	}
+	
+	public void showToolbar(Widget toolbar, int size) {
+		toolbar.setVisible(true);
+		rootPanel.setWidgetSize(toolbar, size);		
+		deferredResize();
+	}
+	
+	public void hideToolbar(Widget toolbar) {
+		toolbar.setVisible(false);
+		deferredResize();
+	}
+	
+	protected void addLeftbar(Widget leftbar, int size) {
+//		leftbars.add(leftbar);
+		rootPanel.addWest(leftbar, size);
 	}
 	
 	//Sometimes we need to do a deferred resize, because the layout engine has not finished yet

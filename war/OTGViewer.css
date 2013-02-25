@@ -135,6 +135,10 @@ exprGrid {
 	color: Black;
 }
 
+.clickCell {
+	cursor: pointer;
+}
+
 /* This must correspond to the colors in Group.java
 */
 .Group0 {
