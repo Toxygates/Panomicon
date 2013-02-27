@@ -68,7 +68,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		titleLabel.setStyleName("heading");
 		vp.add(titleLabel);
 		
-		timeDoseGrid = new SelectionTDGrid();
+		timeDoseGrid = new SelectionTDGrid(scr);
 		vp.add(timeDoseGrid);
 		addListener(timeDoseGrid);
 	

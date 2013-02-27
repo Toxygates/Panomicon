@@ -13,6 +13,8 @@ import otgviewer.client.charts.ChartGridFactory;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
+import otgviewer.client.components.Screen.QueuedAction;
 import otgviewer.client.components.StringSelectionTable;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.MatchResult;
@@ -62,16 +64,17 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	private List<String> rankProbes = new ArrayList<String>();
 	
 	private Widget north, south;
+	private Screen screen;
 	
 	/**
 	 * @wbp.parser.constructor
 	 */
 	public CompoundSelector() {
-		this("Compounds");
+		this(null, "Compounds");
 	}
 	
-	public CompoundSelector(String heading) {
-		
+	public CompoundSelector(Screen screen, String heading) {
+		this.screen = screen;
 		dp = new DockLayoutPanel(Unit.EM);
 
 		initWidget(dp);
@@ -151,12 +154,20 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	@Override
 	public void dataFilterChanged(DataFilter filter) {
 		super.dataFilterChanged(filter);
+
 		if (lastFilter == null || !filter.equals(lastFilter)) {
 			removeRankColumns();
 		}
 		lastFilter = filter;
-		loadCompounds();
-		compoundTable.clearSelection();				
+		
+		screen.enqueue(new Screen.QueuedAction("loadCompounds") {			
+			@Override
+			public void run() {
+				loadCompounds();
+				compoundTable.clearSelection();				
+			}
+		});
+		
 	}
 	
 	public List<String> getCompounds() {				

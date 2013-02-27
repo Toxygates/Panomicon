@@ -14,10 +14,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 public class DatasetScreen extends Screen implements DatasetInfo.SelectionListener {
-
-
-	static String key = "ds";
-	
+	static String key = "ds";	
 	VerticalPanel vp;
 	
 	public DatasetScreen(ScreenManager man) {
@@ -26,12 +23,9 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 	
 	public Widget content() {
 		Grid g = new Grid(3, 2);
-//		vp = Utils.mkVerticalPanel();
-//		vp.setWidth("100%");
-		
+
 		HorizontalPanel hp = Utils.mkWidePanel();
 		hp.setHeight("100%");
-//		hp.add(vp);
 
 		final DataFilter[] filters = new DataFilter[] {
 				new DataFilter(CellType.Vitro, Organ.Kidney, RepeatType.Single, Organism.Human),
@@ -72,11 +66,4 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 		}
 	}
 
-//	@Override
-//	public void onResize() {
-//		super.onResize();
-//		vp.setHeight(getOffsetHeight() + "px");
-//	}	
-
-	
 }

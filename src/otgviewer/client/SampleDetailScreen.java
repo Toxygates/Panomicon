@@ -48,7 +48,7 @@ public class SampleDetailScreen extends Screen {
 	private DataColumn displayColumn;
 	private SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT
 			.create(SparqlService.class);
-	AnnotationTDGrid atd = new AnnotationTDGrid();
+	AnnotationTDGrid atd = new AnnotationTDGrid(this);
 	
 	private DataFilter lastFilter;
 	private List<Group> lastColumns;

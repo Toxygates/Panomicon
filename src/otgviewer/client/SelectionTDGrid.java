@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.SharedUtils;
 
@@ -36,6 +37,10 @@ public class SelectionTDGrid extends TimeDoseGrid {
 			this.dose = dose;
 			this.time = time;
 		}
+	}
+	
+	public SelectionTDGrid(Screen screen) {
+		super(screen);
 	}
 	
 	@Override

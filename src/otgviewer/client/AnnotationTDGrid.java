@@ -3,9 +3,9 @@ package otgviewer.client;
 import java.util.List;
 
 import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
 import otgviewer.shared.Annotation;
 import otgviewer.shared.Barcode;
-import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 
@@ -28,6 +28,10 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 	
 	private ListBox annotationSelector;
 	private Button annotationButton;
+	
+	public AnnotationTDGrid(Screen screen) {
+		super(screen);
+	}
 	
 	@Override
 	protected void initTools(HorizontalPanel toolPanel) {

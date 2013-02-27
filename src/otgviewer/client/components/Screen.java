@@ -2,7 +2,9 @@ package otgviewer.client.components;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import otgviewer.client.Resources;
 import otgviewer.client.SampleDetailScreen;
@@ -58,6 +60,29 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	
 	protected TextResource helpHTML;
 	protected ImageResource helpImage;
+	
+	public abstract static class QueuedAction implements Runnable {
+		String name;
+		public QueuedAction(String name) {
+			this.name = name;
+		}
+		
+		public int hashCode() {
+			return name.hashCode();
+		}
+		
+		public boolean equals(Object other) {
+			if (other instanceof QueuedAction) {
+				return name.equals(((QueuedAction) other).name);
+			}
+			return false;
+		}
+		
+		abstract public void run();
+	}
+	
+	private Set<QueuedAction> actionQueue = new HashSet<QueuedAction>(); 
+	
 	
 	public Screen(String title, String key,  
 			boolean showDataFilter, boolean showGroups, 
@@ -165,7 +190,20 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		}
 		loadState();
 		updateStatusPanel(); //needs access to the groups from loadState
+		runActions();
 		deferredResize();
+	}
+	
+	private void runActions() {
+		for (QueuedAction qa: actionQueue) {
+			qa.run();
+		}
+		actionQueue.clear();
+	}
+	
+	public void enqueue(QueuedAction qa) {
+		actionQueue.remove(qa); //remove it if it's already there (so we can update it)
+		actionQueue.add(qa);
 	}
 	
 	private void floatLeft(Widget w) {

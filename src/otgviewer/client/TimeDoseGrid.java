@@ -3,6 +3,7 @@ package otgviewer.client;
 import java.util.List;
 
 import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.Screen;
 import otgviewer.shared.DataFilter;
 
 import com.google.gwt.core.client.GWT;
@@ -29,12 +30,15 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	protected SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT
 			.create(SparqlService.class);
 
+	private Screen screen;
+	
 	protected void initTools(HorizontalPanel toolPanel) {
 		
 	}
 	
-	public TimeDoseGrid() {
+	public TimeDoseGrid(Screen screen) {
 		rootPanel = Utils.mkVerticalPanel();
+		this.screen = screen;
 		initWidget(rootPanel);
 		rootPanel.setWidth("730px");
 		mainPanel = new VerticalPanel();
@@ -57,7 +61,12 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		if (!filter.equals(chosenDataFilter)) {
 			super.dataFilterChanged(filter);
 			availableTimes = null;
-			fetchTimes();
+			screen.enqueue(new Screen.QueuedAction("fetchTimes") {				
+				@Override
+				public void run() {
+					fetchTimes();					
+				}
+			});
 		} else {
 			super.dataFilterChanged(filter);
 		}		

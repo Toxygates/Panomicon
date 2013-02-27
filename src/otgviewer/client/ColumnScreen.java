@@ -29,7 +29,7 @@ public class ColumnScreen extends Screen {
 		super("Sample group definitions", key, true, false, man,
 				resources.groupDefinitionHTML(), resources.groupDefinitionHelp());
 		
-		cs = new CompoundSelector("Compounds");
+		cs = new CompoundSelector(this, "Compounds");
 		this.addListener(cs);
 		cs.setStyleName("compoundSelector");
 	}
