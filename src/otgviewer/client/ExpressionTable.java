@@ -671,26 +671,25 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 			super(resources.chart());
 		}
 		
-		public void onClick(String value) {			
+		public void onClick(final String value) {			
 			highlightedRow = SharedUtils.indexOf(displayedProbes, value);
 			exprGrid.redraw();
 			
-			ChartGridFactory cgf = new ChartGridFactory(chosenDataFilter, chosenColumns);
-			
-			cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, value, 
-					new AChartAcceptor() {
-				public void acceptCharts(final AdjustableChartGrid cg) {
-					Utils.ensureVisualisationAndThen(new Runnable() {
-						public void run() {
+			final ChartGridFactory cgf = new ChartGridFactory(chosenDataFilter, chosenColumns);
+			Utils.ensureVisualisationAndThen(new Runnable() {
+				public void run() {
+					cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, value, 
+							new AChartAcceptor() {
+						public void acceptCharts(final AdjustableChartGrid cg) {
 							Utils.displayInPopup("Charts", cg, true);							
 						}
-					});
+
+						public void acceptBarcodes(Barcode[] bcs) {
+							chartBarcodes = bcs;
+						}
+					});			
 				}
-				
-				public void acceptBarcodes(Barcode[] bcs) {
-					chartBarcodes = bcs;
-				}
-			});			
+			});
 		}
 	}
 	
