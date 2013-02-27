@@ -128,7 +128,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		exprGrid.setPageSize(PAGE_SIZE);
 		exprGrid.setWidth("100%");
 
-		exprGrid.setSelectionModel(new NoSelectionModel());
+		exprGrid.setSelectionModel(new NoSelectionModel<ExpressionRow>());
 		exprGrid.setRowStyles(new RowHighligher());
 		
 		exprGrid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);

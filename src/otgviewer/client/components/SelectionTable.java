@@ -55,7 +55,7 @@ abstract public class SelectionTable<T> extends Composite {
 		});
 		
 		table.addColumn(selectColumn, selectColTitle);
-		table.setSelectionModel(new NoSelectionModel());
+		table.setSelectionModel(new NoSelectionModel<T>());
 		table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 		provider.addDataDisplay(table);		
 		initTable(table);

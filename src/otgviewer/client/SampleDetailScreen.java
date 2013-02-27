@@ -160,7 +160,7 @@ public class SampleDetailScreen extends Screen {
 	
 	private void configureTable(Panel p, CellTable<String[]> ct) {
 		ct.setWidth("100%", true); //use fixed layout so we can control column width explicitly
-		ct.setSelectionModel(new NoSelectionModel());
+		ct.setSelectionModel(new NoSelectionModel<String[]>());
 		ct.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 		p.add(ct);
 	}
