@@ -11,19 +11,18 @@ import otgviewer.shared.DataFilter
 import otgviewer.shared.Synthetic
 import otgviewer.shared.DataColumn
 import otgviewer.shared.ValueType
-import otg.OTGMisc
 import otgviewer.shared.ExpressionRow
 import otgviewer.shared.Group
 import otg.ExprValue
 import otgviewer.shared.Barcode
 import friedrich.statistics.ArrayVector
 import javax.servlet.http.HttpSession
-import otg.sparql.B2RAffy
+import otg.sparql.AffyProbes
 import otg.CSVHelper
 import otgviewer.shared.Series
 import otg.OTGSeriesQuery
 import otgviewer.shared.ExpressionValue
-import otg.sparql.OTGOwlim
+import otg.sparql.OTGSamples
 import otg.OTGCabinet
 
 /**
@@ -89,7 +88,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
   //Should this be in owlimService?
   //Is the separate OTGMisc object needed?
   def identifiersToProbes(filter: DataFilter, identifiers: Array[String], precise: Boolean): Array[String] =
-    OTGMisc.identifiersToProbes(filter, identifiers, precise)
+    AffyProbes.identifiersToProbes(filter, identifiers, precise)
 
   private def filterProbes(filter: DataFilter, probes: Array[String]) =
     if (probes == null || probes.size == 0) {
@@ -244,7 +243,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
    */
   private def insertAnnotations(rows: Seq[ExpressionRow]): Seq[ExpressionRow] = {
     val probes = rows.map(_.getProbe).toArray
-    useConnector(B2RAffy, (c: B2RAffy.type) => {
+    useConnector(AffyProbes, (c: AffyProbes.type) => {
       val probeTitles = c.titles(probes)
       val geneIds = c.geneIds(probes).map(_.toArray)
       val geneSyms = c.geneSyms(probes).map(_.toArray)
@@ -298,7 +297,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     
     val colNames = rendered.sortedColumnMap.map(_._1)
     val rowNames = rendered.sortedRowMap.map(_._1)
-    useConnector(B2RAffy, (c: B2RAffy.type) => {
+    useConnector(AffyProbes, (c: AffyProbes.type) => {
       val gis = c.allGeneIds()      
       val geneIds = rowNames.map(gis.getOrElse(_, Seq.empty)).map(_.mkString(" "))
       CSVHelper.writeCSV(rowNames, colNames, geneIds, session.rendered.data)
@@ -313,7 +312,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     if (limit != -1) {
       rowNames = rowNames.take(limit)
     }
-    useConnector(B2RAffy, (c: B2RAffy.type) => {
+    useConnector(AffyProbes, (c: AffyProbes.type) => {
       val gis = c.allGeneIds()
       val geneIds = rowNames.map(gis.getOrElse(_, Seq.empty))
       geneIds.flatten.toArray

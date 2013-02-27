@@ -7,7 +7,6 @@ import UtilsS.nullToNone
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import kyotocabinet.DB
-import otg.OTGMisc
 import otg.OTGQueries
 import otg.OTGSeriesQuery
 import otg.Series
@@ -34,78 +33,79 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   import Conversions._
   import UtilsS._
   import Assocations._
+  import CommonSPARQL._
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config)
-    OTGOwlim.connect()
-    B2RAffy.connect()
+    OTGSamples.connect()
+    AffyProbes.connect()
     Uniprot.connect()
     val homePath = System.getProperty("otg.home")    
   }
 
   override def destroy() {
-    B2RAffy.close()
-    OTGOwlim.close()
+    AffyProbes.close()
+    OTGSamples.close()
     Uniprot.close()   
     super.destroy()
   }
 
   def compounds(filter: DataFilter): Array[String] = 
-    OTGOwlim.compounds(filter).toArray
+    OTGSamples.compounds(filter).toArray
     
 
   def organs(filter: DataFilter, compound: String): Array[String] = 
-    OTGOwlim.organs(filter, nullToOption(compound)).toArray
+    OTGSamples.organs(filter, nullToOption(compound)).toArray
     
   val orderedDoses = List("Control", "Low", "Middle", "High")
   def doseLevels(filter: DataFilter, compound: String): Array[String] = { 
-    val r = OTGOwlim.doseLevels(filter, nullToOption(compound)).toArray
+    val r = OTGSamples.doseLevels(filter, nullToOption(compound)).toArray
     r.sortWith((d1, d2) => orderedDoses.indexOf(d1) < orderedDoses.indexOf(d2))
   }
   
   def barcodes(filter: DataFilter, compound: String, doseLevel: String, time: String) =
-    OTGOwlim.barcodes(filter, nullToNone(compound), 
+    OTGSamples.barcodes(filter, nullToNone(compound), 
         nullToNone(doseLevel), nullToNone(time)).map(asJava(_)).toArray
   
   def barcodes(filter: DataFilter, compounds: Array[String], doseLevel: String, time: String) =
-    OTGOwlim.barcodes(filter, compounds, 
+    OTGSamples.barcodes(filter, compounds, 
         nullToNone(doseLevel), nullToNone(time)).map(asJava(_)).toArray
     
         
   val orderedTimes = List("2 hr", "3 hr", "6 hr", "8 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day")
   def times(filter: DataFilter, compound: String): Array[String] = { 
-    val r = OTGOwlim.times(filter, nullToOption(compound)).toArray    
+    val r = OTGSamples.times(filter, nullToOption(compound)).toArray    
     r.sortWith((t1, t2) => orderedTimes.indexOf(t1) < orderedTimes.indexOf(t2))
   }
     
   def probeTitle(probe: String): String = 
-    B2RAffy.title(probe)
+    AffyProbes.title(probe)
     
   def probes(filter: DataFilter): Array[String] = 
     OTGQueries.probeIds(filter)
     
   def pathologies(barcode: Barcode): Array[Pathology] = 
-    OTGOwlim.pathologies(barcode.getCode).map(asJava(_))
+    OTGSamples.pathologies(barcode.getCode).map(asJava(_))
     
   def pathologies(column: DataColumn): Array[Pathology] = 
-    column.getBarcodes.flatMap(x => OTGOwlim.pathologies(x.getCode)).map(asJava(_))
+    column.getBarcodes.flatMap(x => OTGSamples.pathologies(x.getCode)).map(asJava(_))
     
-  def annotations(barcode: Barcode): Annotation = asJava(OTGOwlim.annotations(barcode.getCode))
+  def annotations(barcode: Barcode): Annotation = asJava(OTGSamples.annotations(barcode.getCode))
   def annotations(column: DataColumn): Array[Annotation] = 
-    column.getBarcodes.map(x => OTGOwlim.annotations(x.getCode)).map(asJava(_))
+    column.getBarcodes.map(x => OTGSamples.annotations(x.getCode)).map(asJava(_))
     
   def pathways(filter: DataFilter, pattern: String): Array[String] = 
     useConnector(B2RKegg, (c: B2RKegg.type) => c.pathways(pattern, filter)).toArray    
   
   def geneSyms(probes: Array[String]): Array[Array[String]] = 
-    B2RAffy.geneSyms(probes).map(_.toArray).toArray
+    AffyProbes.geneSyms(probes).map(_.toArray).toArray
     
   def probesForPathway(filter: DataFilter, pathway: String): Array[String] = {
     useConnector(B2RKegg, (c: B2RKegg.type) => {
       val geneIds = c.geneIds(pathway, filter)
       println("Probes for " + geneIds.length + " genes")
-      val probes = OTGOwlim.probesForEntrezGenes(geneIds).toArray 
+      val probes = AffyProbes.probesForEntrezGenes(geneIds).toArray 
       OTGQueries.filterProbes(probes, filter)
     })    
   }
@@ -118,21 +118,21 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     })
     val pbs = if (homologous) {
       val oproteins = Uniprot.orthologsForUniprots(proteins).values.flatten
-      OTGOwlim.probesForUniprot(oproteins)
+      AffyProbes.probesForUniprot(oproteins)
 //      OTGOwlim.probesForEntrezGenes(genes)
     } else {
-      OTGOwlim.probesForUniprot(proteins)
+      AffyProbes.probesForUniprot(proteins)
     }
     OTGQueries.filterProbes(pbs.toArray, filter)
   }
   
   def goTerms(pattern: String): Array[String] = 
-    OTGOwlim.goTerms(pattern)
+    OTGSamples.goTerms(pattern)
     
   def probesForGoTerm(filter: DataFilter, goTerm: String): Array[String] = 
-    OTGQueries.filterProbes(OTGOwlim.probesForGoTerm(goTerm), filter)
+    OTGQueries.filterProbes(AffyProbes.probesForGoTerm(goTerm), filter)
 
-    import OTGMisc._
+//    import AffyProbes._
 
     import scala.collection.{Map => CMap, Set => CSet}
     
@@ -160,7 +160,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     //this should be done in a separate future, kind of
     val proteins = if (types.contains(AType.Chembl) || types.contains(AType.Drugbank) ||
         types.contains(AType.KOProts) || types.contains(AType.Uniprot))  {      
-    	double(OTGOwlim.uniprotsForProbes(probes))
+    	double(AffyProbes.uniprotsForProbes(probes))
     } else {
       emptySMPMap
     }
@@ -176,7 +176,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     def lookupFunction(t: AType) = t match {
       case x: AType.Chembl.type => connectorOrEmpty(CHEMBL,
             (c: CHEMBL.type) => {
-              val compounds = OTGOwlim.compounds(filter)
+              val compounds = OTGSamples.compounds(filter)
 
               //strictly orthologous proteins
               val oproteinVs = valNames(oproteins) -- valNames(proteins)              
@@ -188,7 +188,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
             })      
       case x: AType.Drugbank.type => connectorOrEmpty(DrugBank,
             (c: DrugBank.type) => {
-              val compounds = OTGOwlim.compounds(filter)
+              val compounds = OTGSamples.compounds(filter)
               val oproteinVs = valNames(oproteins) -- valNames(proteins)               
               val allProteins = union(proteins, oproteins)              
               val allTargets = c.targetingCompoundsForProteins(valNames(allProteins), compounds)
@@ -197,12 +197,12 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
             })
       case x: AType.Uniprot.type => proteins
       case x: AType.KOProts.type => oproteins
-      case x: AType.GOMF.type => connectorOrEmpty(OTGOwlim,            
-            (c: OTGOwlim.type) => c.mfGoTermsForProbes(probes))         
-      case x: AType.GOBP.type => connectorOrEmpty(OTGOwlim,            
-            (c: OTGOwlim.type) => c.bpGoTermsForProbes(probes))        
-      case x: AType.GOCC.type => connectorOrEmpty(OTGOwlim,            
-            (c: OTGOwlim.type) => c.ccGoTermsForProbes(probes))                  
+      case x: AType.GOMF.type => connectorOrEmpty(AffyProbes,            
+            (c: AffyProbes.type) => c.mfGoTermsForProbes(probes))         
+      case x: AType.GOBP.type => connectorOrEmpty(AffyProbes,            
+            (c: AffyProbes.type) => c.bpGoTermsForProbes(probes))        
+      case x: AType.GOCC.type => connectorOrEmpty(AffyProbes,            
+            (c: AffyProbes.type) => c.ccGoTermsForProbes(probes))                  
       case x: AType.Homologene.type => connectorOrEmpty(B2RHomologene,
             (c: B2RHomologene.type) => double(c.homologousGenes(geneIds)))    
       case x: AType.KEGG.type => connectorOrEmpty(B2RKegg,
@@ -215,7 +215,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   }
   
   def geneSuggestions(partialName: String, filter: DataFilter): Array[Pair[String, String]] = {
-    useConnector(B2RAffy, (c: B2RAffy.type) => c.probesForPartialTitle(partialName, filter)).map(x => 
+    useConnector(AffyProbes, (c: AffyProbes.type) => c.probesForPartialTitle(partialName, filter)).map(x => 
       new Pair(x._1, x._2)).toArray
   }
   
