@@ -491,7 +491,6 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 	
 	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
 		private int start = 0;
-
 		
 		AsyncCallback<List<ExpressionRow>> rowCallback = new AsyncCallback<List<ExpressionRow>>() {
 			public void onFailure(Throwable caught) {

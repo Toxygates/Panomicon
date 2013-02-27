@@ -17,6 +17,8 @@ import otgviewer.shared.Group;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -60,10 +62,21 @@ public class ProbeScreen extends Screen {
 	private ProbeSelector pathwaySel, gotermSel;
 
 	public Widget content() {
-		HorizontalPanel hp = Utils.mkHorizontalPanel();
+		HorizontalPanel hp = Utils.mkHorizontalPanel();				
 		hp.setSpacing(10);
+//		hp.setHeight("492px");
 		
-		StackPanel probeSelStack = new StackPanel();
+		StackPanel probeSelStack = new StackPanel() {
+			// This is to fix a height bug on IE8 - see
+			// http://code.google.com/p/google-web-toolkit/issues/detail?id=2593
+			// Future: use StackLayoutPanel instead!
+			@Override
+			protected void insert(Widget child, Element container, int beforeIndex,	boolean domInsert) {
+				super.insert(child, container, beforeIndex, domInsert);
+				DOM.removeElementAttribute(container, "height");
+			}
+		};
+		
 		hp.add(probeSelStack);
 		probeSelStack.setSize("350px", "492px");
 
@@ -87,7 +100,7 @@ public class ProbeScreen extends Screen {
 			}
 		};
 		probeSelStack.add(pathwaySel, "KEGG pathway search", false);
-		pathwaySel.setSize("100%", "");
+		pathwaySel.setWidth("100%");
 		addListener(pathwaySel);
 		
 		gotermSel = new ProbeSelector(
@@ -108,7 +121,7 @@ public class ProbeScreen extends Screen {
 			}
 		};
 		probeSelStack.add(gotermSel, "GO term search", false);
-		gotermSel.setSize("100%", "");
+		pathwaySel.setWidth("100%");		
 		addListener(gotermSel);		
 
 		Widget chembl = makeTargetLookupPanel(
@@ -139,7 +152,7 @@ public class ProbeScreen extends Screen {
 
 		customProbeText = new TextArea();
 		vpi.add(customProbeText);
-		customProbeText.setSize("95%", "");
+		customProbeText.setWidth("95%");
 		
 		vpi.add(new Button("Add manual list", new ClickHandler() {
 			public void onClick(ClickEvent ev) {
@@ -192,8 +205,8 @@ public class ProbeScreen extends Screen {
 		}));
 
 		HorizontalPanel hpo = Utils.mkWidePanel();
-		hpo.add(hp);
 		hpo.setHeight("100%");
+		hpo.add(hp);
 		
 		return hpo;			
 	}

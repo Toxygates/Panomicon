@@ -8,8 +8,8 @@ import otgviewer.shared.Organ;
 import otgviewer.shared.Organism;
 import otgviewer.shared.RepeatType;
 
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -26,8 +26,12 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 	
 	public Widget content() {
 		Grid g = new Grid(3, 2);
-		vp = Utils.mkTallPanel();
-		vp.setWidth("100%");
+//		vp = Utils.mkVerticalPanel();
+//		vp.setWidth("100%");
+		
+		HorizontalPanel hp = Utils.mkWidePanel();
+		hp.setHeight("100%");
+//		hp.add(vp);
 
 		final DataFilter[] filters = new DataFilter[] {
 				new DataFilter(CellType.Vitro, Organ.Kidney, RepeatType.Single, Organism.Human),
@@ -37,7 +41,7 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 				new DataFilter(CellType.Vivo, Organ.Kidney, RepeatType.Single, Organism.Rat),
 				new DataFilter(CellType.Vivo, Organ.Kidney, RepeatType.Repeat, Organism.Rat)
 		};
-		vp.add(g);
+		hp.add(g);
 		g.setCellSpacing(20);
 		
 		int r = 0;
@@ -50,7 +54,7 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 				c = 0;
 			}
 		}	
-		return vp;
+		return hp;
 	}
 	
 	public void filterSelected(DataFilter filter) {		
@@ -68,11 +72,11 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 		}
 	}
 
-	@Override
-	public void onResize() {
-		super.onResize();
-		vp.setHeight(getOffsetHeight() + "px");
-	}	
+//	@Override
+//	public void onResize() {
+//		super.onResize();
+//		vp.setHeight(getOffsetHeight() + "px");
+//	}	
 
 	
 }
