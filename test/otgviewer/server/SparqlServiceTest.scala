@@ -9,14 +9,28 @@ import otgviewer.shared.Organ
 import otgviewer.shared.Organism
 import otgviewer.shared.RepeatType
 import otgviewer.shared.AType
+import org.scalatest.BeforeAndAfter
+
+object SparqlServiceTest {
+  def testFilter = new DataFilter(CellType.Vivo, Organ.Liver, RepeatType.Single, Organism.Rat)
+}
 
 @RunWith(classOf[JUnitRunner])
-class SparqlServiceTest extends FunSuite {
+class SparqlServiceTest extends FunSuite with BeforeAndAfter {
 
-  val s = new SparqlServiceImpl()
-  s.localInit
+  var s: SparqlServiceImpl = _
   
-  val f = new DataFilter(CellType.Vivo, Organ.Liver, RepeatType.Single, Organism.Rat)
+  before {    
+    s = new SparqlServiceImpl()
+    s.localInit
+  }  
+  
+  after {
+    s.destroy
+  }
+  
+  val f = SparqlServiceTest.testFilter
+  
   val probes = Array("1387936_at", "1391544_at")
   val geneIds = Array("361510", "362972")
   
