@@ -38,10 +38,13 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config)
+    localInit()
+  }
+  
+  def localInit() {
     OTGSamples.connect()
     AffyProbes.connect()
-    Uniprot.connect()
-    val homePath = System.getProperty("otg.home")    
+    Uniprot.connect()    
   }
 
   override def destroy() {
@@ -140,7 +143,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     def valNames(m: SMPMap): Set[String] = m.flatMap(_._2).map(_._1).toSet
     
     def connectorOrEmpty[T <: RDFConnector](c: T, f: T => SMPMap): SMPMap = 
-      useConnector(c, f, Map() ++ probes.map(p => (p -> CSet(("(Timeout or error)", null: String)))))
+      useConnector(c, f, Map() ++ probes.map(p => (p -> CSet(("(Timeout or error)", "(Error)": String)))))
 
     //In the case where m1 maps T->U and m2 maps U->V, produce a map T->V.
     def composeMaps(m1: SMPMap, m2: SMPMap): SMPMap = 

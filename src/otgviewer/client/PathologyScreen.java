@@ -92,7 +92,8 @@ public class PathologyScreen extends Screen {
 		
 		ToolColumn tcl = new ToolColumn(new InspectCell());
 		pathologyTable.addColumn(tcl, "");
-		pathologyTable.setColumnWidth(tcl, "40px");		
+		pathologyTable.setColumnWidth(tcl, "40px");
+		tcl.setCellStyleNames("clickCell");
 		
 		pathologyTable.addColumn(col, "Finding");
 		
