@@ -28,6 +28,10 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config)
+    localInit()
+  }
+  
+  def localInit() {
     val homePath = System.getProperty("otg.home")
     seriesDB = OTGSeriesQuery.open(homePath + "/otgfs.kct")
     println("Series DB is open")
