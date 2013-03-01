@@ -8,8 +8,13 @@
   <!-- Servlets -->
 
 	<servlet>
-		<servlet-name>owlimServlet</servlet-name>
-		<servlet-class>otgviewer.server.OwlimServiceImpl</servlet-class>
+		<servlet-name>sparqlServlet</servlet-name>
+		<servlet-class>otgviewer.server.SparqlServiceImpl</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>seriesServlet</servlet-name>
+		<servlet-class>otgviewer.server.SeriesServiceImpl</servlet-class>
 	</servlet>
 
 	<servlet>
@@ -18,8 +23,13 @@
 	</servlet>
 
 	<servlet-mapping>
-		<servlet-name>owlimServlet</servlet-name>
-		<url-pattern>/toxygates/owlim</url-pattern>
+		<servlet-name>sparqlServlet</servlet-name>
+		<url-pattern>/toxygates/sparql</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>seriesServlet</servlet-name>
+		<url-pattern>/toxygates/series</url-pattern>
 	</servlet-mapping>
 
 	<servlet-mapping>

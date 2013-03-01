@@ -61,18 +61,18 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		this.screen = scr;
 		sp = new SplitLayoutPanel();
 		initWidget(sp);
-//		
+
 		VerticalPanel vp = Utils.mkTallPanel();
 
 		titleLabel = new Label("Sample group definition");
 		titleLabel.setStyleName("heading");
 		vp.add(titleLabel);
 		
-		timeDoseGrid = new SelectionTDGrid();
+		timeDoseGrid = new SelectionTDGrid(scr);
 		vp.add(timeDoseGrid);
 		addListener(timeDoseGrid);
 	
-		vp.setWidth("410px");		
+		vp.setWidth("440px");		
 		
 		toolPanel = Utils.mkHorizontalPanel(true);
 		vp.add(toolPanel);
@@ -372,7 +372,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 	private class GroupColouring implements RowStyles<Group> {
 		@Override
 		public String getStyleNames(Group g, int rowIndex) {
-			return g.getColor() + "Group";	
+			return g.getStyleName();	
 		}
 	}
 	

@@ -62,7 +62,7 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
   def sortedRowMap = rowMap.toSeq.sortWith(_._2 < _._2)
   def sortedColumnMap = columnMap.toSeq.sortWith(_._2 < _._2)
   
-  def asRows: Seq[ExpressionRow] = toRowVectors.zip(annotations).map(x => {
+  lazy val asRows: scala.collection.immutable.Vector[ExpressionRow] = toRowVectors.toVector.zip(annotations).map(x => {
     val ann = x._2    
     new ExpressionRow(ann.probe, ann.title, ann.geneIds, ann.geneSyms,
       x._1.toArray.map(asJava(_)))

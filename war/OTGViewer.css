@@ -124,7 +124,7 @@ exprGrid {
 }
 
 .highlightedRow {
-	text-decoration: underline;
+	font-style: italic;	
 }
 
 .dataColumn {
@@ -135,28 +135,30 @@ exprGrid {
 	color: Black;
 }
 
-/** For the GroupInspector. */
-.DodgerBlueGroup {
-	color: DodgerBlue;
+.clickCell {
+	cursor: pointer;
 }
-.FireBrickGroup {
-	color: FireBrick;
+
+/* This must correspond to the colors in Group.java
+*/
+.Group0 {
+	color: #97BDBD;
 }
-.LightSeaGreenGroup {
-	color: LightSeaGreen;
+.Group1 {
+	color: #C46839;
 }
-.NavyGroup {
-	color: Navy;
+.Group2 {
+	color: #9F6AC8;
 }
-.DarkCyanGroup {
-	color: DarkCyan;
+.Group3 {
+	color: #9CD05B;
 }
-.PeruGroup {
-	color: Peru;
+.Group4 {
+	color: #513C4D;
 }
-.PurpleGroup {
-	color: Purple;
+.Group5 {
+	color: #6B7644;
 }
-.DarkOliveGreenGroup {
-	color: DarkOliveGreen;
+.Group6 {
+	color: #C75880;
 }

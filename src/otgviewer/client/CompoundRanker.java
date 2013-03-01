@@ -167,8 +167,8 @@ public class CompoundRanker extends DataListenerWidget {
 						RankRule r = new RankRule(rt, probe);
 						if (ss.length != 4 && chosenDataFilter.cellType == CellType.Vivo) {
 							Window.alert("Please supply 4 space-separated values as the synthetic curve. (Example: -1 -2 -3 -4)");
-						} else if (ss.length != 3) { //vitro
-							Window.alert("Please supply 4 space-separated values as the synthetic curve. (Example: -1 -2 -3)");
+						} else if (ss.length != 3 && chosenDataFilter.cellType == CellType.Vitro) {
+							Window.alert("Please supply 3 space-separated values as the synthetic curve. (Example: -1 -2 -3)");
 						} else {
 							if (chosenDataFilter.cellType == CellType.Vivo) {
 								data = new double[4];

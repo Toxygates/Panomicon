@@ -5,6 +5,7 @@ import otgviewer.shared.Association;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.MatchResult;
 import otgviewer.shared.NoSuchProbeException;
 import otgviewer.shared.Pair;
 import otgviewer.shared.Pathology;
@@ -13,12 +14,11 @@ import otgviewer.shared.RankRule;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
-@RemoteServiceRelativePath("owlim")
-public interface OwlimService extends RemoteService {
+@RemoteServiceRelativePath("sparql")
+public interface SparqlService extends RemoteService {
 	
 	//Methods relating to metadata about our microarrays.
-	public String[] compounds(DataFilter filter);
-	public Pair<String, Double>[] rankedCompounds(DataFilter filter, RankRule[] rules) throws NoSuchProbeException;
+	public String[] compounds(DataFilter filter);	
 	
 	public String[] organs(DataFilter filter, String compound);
 	public String[] doseLevels(DataFilter filter, String compound);	

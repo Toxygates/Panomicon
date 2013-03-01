@@ -9,7 +9,7 @@ public enum RuleType implements Serializable {
 	MaximalFold("Maximal fold"),		
 	MinimalFold("Minimal fold"),		
 	ReferenceCompound("Reference compound"),		
-	MonotonicUp("Montonic up"),		
+	MonotonicUp("Monotonic up"),		
 	MonotonicDown("Monotonic down"),
 	Unchanged("Unchanged"),
 	LowVariance("Low variance"),

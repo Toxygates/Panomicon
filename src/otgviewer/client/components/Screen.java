@@ -2,7 +2,9 @@ package otgviewer.client.components;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import otgviewer.client.Resources;
 import otgviewer.client.SampleDetailScreen;
@@ -52,11 +54,35 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	private Widget bottom;
 	private HorizontalPanel spOuter;
 	private List<Widget> toolbars = new ArrayList<Widget>();
+	private List<Widget> leftbars = new ArrayList<Widget>();
 	
 	protected ScreenManager manager;
 	
 	protected TextResource helpHTML;
 	protected ImageResource helpImage;
+	
+	public abstract static class QueuedAction implements Runnable {
+		String name;
+		public QueuedAction(String name) {
+			this.name = name;
+		}
+		
+		public int hashCode() {
+			return name.hashCode();
+		}
+		
+		public boolean equals(Object other) {
+			if (other instanceof QueuedAction) {
+				return name.equals(((QueuedAction) other).name);
+			}
+			return false;
+		}
+		
+		abstract public void run();
+	}
+	
+	private Set<QueuedAction> actionQueue = new HashSet<QueuedAction>(); 
+	
 	
 	public Screen(String title, String key,  
 			boolean showDataFilter, boolean showGroups, 
@@ -157,13 +183,27 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	 * If overriding, make sure to call the superclass method.
 	 */
 	public void show() {
+		rootPanel.forceLayout();
 		visible = true;		
 		for (MenuItem mi: menuItems) {
 			mi.setVisible(true);
 		}
 		loadState();
 		updateStatusPanel(); //needs access to the groups from loadState
+		runActions();
 		deferredResize();
+	}
+	
+	private void runActions() {
+		for (QueuedAction qa: actionQueue) {
+			qa.run();
+		}
+		actionQueue.clear();
+	}
+	
+	public void enqueue(QueuedAction qa) {
+		actionQueue.remove(qa); //remove it if it's already there (so we can update it)
+		actionQueue.add(qa);
 	}
 	
 	private void floatLeft(Widget w) {
@@ -190,12 +230,12 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 				Label l = Utils.mkEmphLabel(g.getName() + ":");
 				l.setWordWrap(false);
 				l.getElement().getStyle().setMargin(2, Unit.PX);
-				l.setStyleName(g.getColor() + "Group");
+				l.setStyleName(g.getStyleName());
 				floatLeft(fp, l);
 				l.setTitle(tip);
 				l = new Label(g.getCDTs(2, ", "));
 				l.getElement().getStyle().setMargin(2, Unit.PX);
-				l.setStyleName(g.getColor() + "Group");
+				l.setStyleName(g.getStyleName());
 				floatLeft(fp, l);
 				l.setTitle(tip);
 				l.setWordWrap(false);
@@ -204,9 +244,12 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		}		
 	}
 	
-	public void resizeInterface() {
-		for (Widget w: toolbars) {
-			rootPanel.setWidgetSize(w, w.getOffsetHeight());
+	public void resizeInterface() {		
+		for (Widget w: toolbars) {						
+			rootPanel.setWidgetSize(w, w.getOffsetHeight());			
+		}
+		for (Widget w: leftbars) {
+			rootPanel.setWidgetSize(w, w.getOffsetWidth());
 		}
 		rootPanel.forceLayout();
 //		rootPanel.setWidgetSize(spOuter, statusPanel.getOffsetHeight() + 10);
@@ -214,7 +257,27 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	
 	protected void addToolbar(Widget toolbar, int size) {
 		toolbars.add(toolbar);
-		rootPanel.addNorth(toolbar, size);
+		rootPanel.addNorth(toolbar, size);		
+	}
+	
+	public void showToolbar(Widget toolbar) {
+		showToolbar(toolbar, toolbar.getOffsetHeight());
+	}
+	
+	public void showToolbar(Widget toolbar, int size) {
+		toolbar.setVisible(true);
+		rootPanel.setWidgetSize(toolbar, size);		
+		deferredResize();
+	}
+	
+	public void hideToolbar(Widget toolbar) {
+		toolbar.setVisible(false);
+		deferredResize();
+	}
+	
+	protected void addLeftbar(Widget leftbar, int size) {
+//		leftbars.add(leftbar);
+		rootPanel.addWest(leftbar, size);
 	}
 	
 	//Sometimes we need to do a deferred resize, because the layout engine has not finished yet

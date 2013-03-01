@@ -3,6 +3,8 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.SharedUtils;
 
@@ -11,8 +13,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -37,6 +37,10 @@ public class SelectionTDGrid extends TimeDoseGrid {
 			this.dose = dose;
 			this.time = time;
 		}
+	}
+	
+	public SelectionTDGrid(Screen screen) {
+		super(screen);
 	}
 	
 	@Override
@@ -159,8 +163,8 @@ public class SelectionTDGrid extends TimeDoseGrid {
 						gotSome = true;
 						owlimService.barcodes(chosenDataFilter, compound,
 								dose, time,
-								new AsyncCallback<Barcode[]>() {
-									public void onSuccess(Barcode[] barcodes) {
+								new PendingAsyncCallback<Barcode[]>(this) {
+									public void handleSuccess(Barcode[] barcodes) {
 										if (barcodes.length == 0) {
 											Window.alert("No samples found for " + compound + "/" + dose + "/" + time);
 										} else {
@@ -171,7 +175,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 										decrementOutstanding();
 									}
 
-									public void onFailure(Throwable caught) {
+									public void handleFailure(Throwable caught) {
 										Window.alert("Unable to retrieve sample information.");
 										decrementOutstanding();
 									}

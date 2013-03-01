@@ -17,10 +17,11 @@ import otgviewer.shared.Group;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -34,8 +35,8 @@ import com.google.gwt.user.client.ui.Widget;
 public class ProbeScreen extends Screen {
 
 	public static final String key = "probes";
-	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
-			.create(OwlimService.class);
+	private SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT
+			.create(SparqlService.class);
 	private KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);
 
@@ -49,7 +50,7 @@ public class ProbeScreen extends Screen {
 	private Button proceedSelected;
 	
 	public ProbeScreen(ScreenManager man) {
-		super("Select probes", key, true, true, man,
+		super("Probe selection", key, true, true, man,
 				resources.probeSelectionHTML(), resources.probeSelectionHelp());				
 	}
 
@@ -61,12 +62,23 @@ public class ProbeScreen extends Screen {
 	private ProbeSelector pathwaySel, gotermSel;
 
 	public Widget content() {
-		HorizontalPanel hp = Utils.mkHorizontalPanel();
+		HorizontalPanel hp = Utils.mkHorizontalPanel();				
 		hp.setSpacing(10);
+//		hp.setHeight("492px");
 		
-		StackPanel probeSelStack = new StackPanel();
+		StackPanel probeSelStack = new StackPanel() {
+			// This is to fix a height bug on IE8 - see
+			// http://code.google.com/p/google-web-toolkit/issues/detail?id=2593
+			// Future: use StackLayoutPanel instead!
+			@Override
+			protected void insert(Widget child, Element container, int beforeIndex,	boolean domInsert) {
+				super.insert(child, container, beforeIndex, domInsert);
+				DOM.removeElementAttribute(container, "height");
+			}
+		};
+		
 		hp.add(probeSelStack);
-		probeSelStack.setSize("350px", "592px");
+		probeSelStack.setSize("350px", "492px");
 
 		pathwaySel = new ProbeSelector(
 				"This lets you view probes that correspond to a given KEGG pathway. "
@@ -88,7 +100,7 @@ public class ProbeScreen extends Screen {
 			}
 		};
 		probeSelStack.add(pathwaySel, "KEGG pathway search", false);
-		pathwaySel.setSize("100%", "");
+		pathwaySel.setWidth("100%");
 		addListener(pathwaySel);
 		
 		gotermSel = new ProbeSelector(
@@ -109,7 +121,7 @@ public class ProbeScreen extends Screen {
 			}
 		};
 		probeSelStack.add(gotermSel, "GO term search", false);
-		gotermSel.setSize("100%", "");
+		pathwaySel.setWidth("100%");		
 		addListener(gotermSel);		
 
 		Widget chembl = makeTargetLookupPanel(
@@ -140,7 +152,7 @@ public class ProbeScreen extends Screen {
 
 		customProbeText = new TextArea();
 		vpi.add(customProbeText);
-		customProbeText.setSize("95%", "");
+		customProbeText.setWidth("95%");
 		
 		vpi.add(new Button("Add manual list", new ClickHandler() {
 			public void onClick(ClickEvent ev) {
@@ -180,7 +192,7 @@ public class ProbeScreen extends Screen {
 		l.setStyleName("heading");
 		lp.add(l);
 		probesList = new ListBox();
-		probesList.setVisibleItemCount(30);
+		probesList.setVisibleItemCount(25);
 		probesList.setWidth("350px");
 		lp.add(probesList);
 		hp.add(lp);
@@ -193,7 +205,9 @@ public class ProbeScreen extends Screen {
 		}));
 
 		HorizontalPanel hpo = Utils.mkWidePanel();
+		hpo.setHeight("100%");
 		hpo.add(hp);
+		
 		return hpo;			
 	}
 	

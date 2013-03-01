@@ -3,8 +3,8 @@ package otgviewer.client.charts;
 import java.util.Arrays;
 import java.util.List;
 
-import otgviewer.client.OwlimService;
-import otgviewer.client.OwlimServiceAsync;
+import otgviewer.client.SparqlService;
+import otgviewer.client.SparqlServiceAsync;
 import otgviewer.client.Utils;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;
@@ -34,7 +34,7 @@ import com.google.gwt.visualization.client.visualizations.corechart.Options;
  */
 public class ChartGrid extends Composite {
 	
-	private final OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT.create(OwlimService.class);
+	private final SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT.create(SparqlService.class);
 	
 	Grid g;
 	
@@ -44,22 +44,26 @@ public class ChartGrid extends Composite {
 	ChartTables table;
 	Screen screen;	
 	DataTable[][] tables;
+	final int highlightColumn;
+	final int totalWidth;
 	
 	public ChartGrid(Screen screen, ChartTables table, List<Group> groups, 
 			final List<String> rowFilters, 
 			boolean rowsAreCompounds, 
-			String[] timesOrDoses, boolean columnsAreTimes) {
+			String[] timesOrDoses, int highlightColumn,			
+			boolean columnsAreTimes, int totalWidth) {
 		super();
 		this.rowFilters = rowFilters;
 		this.rowsAreCompounds = rowsAreCompounds;
 		this.timesOrDoses = timesOrDoses;
 		this.table = table;
 		this.columnsAreTimes = columnsAreTimes;
+		this.highlightColumn = highlightColumn;
+		this.totalWidth = totalWidth;
 		this.screen = screen;
 		
 		g = new Grid(rowFilters.size() * 2 + 1, timesOrDoses.length);		
 		initWidget(g);
-		
 		
 		for (int r = 0; r < rowFilters.size(); ++r) {
 			g.setWidget(r * 2 + 1, 0, Utils.mkEmphLabel(rowFilters.get(r)));
@@ -87,18 +91,11 @@ public class ChartGrid extends Composite {
 					}
 
 					public void onFailure(Throwable caught) {
-
+						
 					}
 				});
 		}
 
-//		//TODO move this
-//		VisualizationUtils
-//		.loadVisualizationApi("1.1", new Runnable() {
-//			public void run() {
-//				drawCharts();
-//			}
-//		}, "corechart");
 	}
 	
 	/**
@@ -118,7 +115,7 @@ public class ChartGrid extends Composite {
 	}
 
 	public void adjustAndDisplay(int tableColumnCount) {
-		final int width = 780 / timesOrDoses.length; //width of each individual chart 		
+		final int width = totalWidth / timesOrDoses.length; //width of each individual chart 		
 		for (int c = 0; c < timesOrDoses.length; ++c) {						
 			for (int r = 0; r < rowFilters.size(); ++r) {							
 				displaySeriesAt(r, c, width, tableColumnCount);
@@ -141,7 +138,11 @@ public class ChartGrid extends Composite {
 		
 		String[] colors = new String[columnCount];
 		for (int i = 1; i < dt.getNumberOfColumns(); ++i) {
-			colors[i - 1] = dt.getProperty(0, i, "color");
+			if (column == highlightColumn) {
+				colors[i - 1] = "LightSkyBlue"; 
+			} else {
+				colors[i - 1] = dt.getProperty(0, i, "color");
+			}
 		}
 		while (dt.getNumberOfColumns() < columnCount) {
 			int idx = dt.addColumn(ColumnType.NUMBER);
@@ -160,10 +161,15 @@ public class ChartGrid extends Composite {
 		o.setWidth(useWidth);
 		o.setHeight(170);
 		o.setVAxisOptions(ao);
-		ChartArea ca = ChartArea.create();
-		ca.setWidth(useWidth-50);
-		ca.setHeight(140);		
-		o.setChartArea(ca);
+		
+		//TODO: this is a hack to distinguish between creating series charts or not
+		//(if we are, columnCount is 2)
+		if (columnCount > 2) {
+			ChartArea ca = ChartArea.create();
+			ca.setWidth(useWidth-50);
+			ca.setHeight(140);		
+			o.setChartArea(ca);
+		}
 		
 		final CoreChart c = new ColumnChart(dt, o);
 		if (screen != null) {

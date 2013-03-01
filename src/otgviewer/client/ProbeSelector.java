@@ -63,7 +63,7 @@ abstract public class ProbeSelector extends DataListenerWidget {
 
 		itemList = new ListBox();
 		vp.add(itemList);
-		itemList.setSize("100%", "300px");
+		itemList.setSize("100%", "250px");
 		itemList.setVisibleItemCount(5);
 
 		itemHandler = new ListSelectionHandler<String>("pathways",

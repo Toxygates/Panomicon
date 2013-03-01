@@ -38,10 +38,12 @@ public class GeneExporter extends Composite {
 	}
 	
 	private enum Template {
+		Upstream("Upstream transcription factors",
+				"http://targetmine.nibio.go.jp/targetmine/loadTemplate.do?name=Gene_TFSource&constraint1=Gene&op1=LOOKUP&method=results&value1="),
+		Downstream("Downstream transcription target genes",
+				"http://targetmine.nibio.go.jp/targetmine/loadTemplate.do?name=Gene_TFTarget&constraint1=Gene&op1=LOOKUP&method=results&value1="),
 		Pathways("Pathways",
-				"http://targetmine.nibio.go.jp/targetmine/loadTemplate.do?name=Gene_Pathway&constraint1=Gene&op1=LOOKUP&method=results&value1="),
-		RegulatoryAssociations("Regulatory associations", 
-				"http://targetmine.nibio.go.jp/targetmine/loadTemplate.do?name=Gene_TFBoth&constraint1=Gene&op1=LOOKUP&method=results&value1="),
+				"http://targetmine.nibio.go.jp/targetmine/loadTemplate.do?name=Gene_Pathway&constraint1=Gene&op1=LOOKUP&method=results&value1="),		
 		Biogrid("Interacting genes (BioGRID)",
 				"http://targetmine.nibio.go.jp/targetmine/loadTemplate.do?name=Gene_BioGrid_All&constraint1=Gene&op1=LOOKUP&method=results&value1="),
 		Interactions("All interactions",
@@ -51,7 +53,11 @@ public class GeneExporter extends Composite {
 		Enzyme("Enzymes",
 				"http://targetmine.nibio.go.jp/targetmine/loadTemplate.do?name=Gene_Enzyme&constraint1=Gene&op1=LOOKUP&method=results&value1="),
 		DOAnnotation("DO annotations",
-				"http://targetmine.nibio.go.jp/targetmine/loadTemplate.do?name=Gene_DOAnnotation&constraint1=Gene&op1=LOOKUP&method=results&value1=");
+				"http://targetmine.nibio.go.jp/targetmine/loadTemplate.do?name=Gene_DOAnnotation&constraint1=Gene&op1=LOOKUP&method=results&value1="),
+		Homologues("Homologue genes", 
+			"http://targetmine.nibio.go.jp/targetmine/loadTemplate.do?name=Homologue_Query&constraint1=Gene&op1=LOOKUP&method=results&value1="),
+		GOTermsParents("GO terms with parents",
+				"http://targetmine.nibio.go.jp/targetmine/loadTemplate.do?name=Gene_allGOTerms&constraint1=Gene&op1=LOOKUP&method=results&value1=");
 			
 		String url;		
 		String name;
@@ -71,7 +77,7 @@ public class GeneExporter extends Composite {
 		VerticalPanel vp = Utils.mkVerticalPanel(true);
 		initWidget(vp);
 		vp.setWidth("300px");
-		vp.add(Utils.mkEmphLabel("TargetMine export"));
+//		vp.add(Utils.mkEmphLabel("TargetMine export"));
 		Label l = new Label("This will export the genes you are currently viewing to the TargetMine system for further analysis.");
 		l.setWordWrap(true);
 		vp.add(l);

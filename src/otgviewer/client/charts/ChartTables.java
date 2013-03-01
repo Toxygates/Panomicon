@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import otgviewer.client.Utils;
+import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.Group;
 import otgviewer.shared.SharedUtils;
@@ -28,18 +29,20 @@ abstract class ChartTables {
 	ChartTables(List<ChartDataSource.ChartSample> samples, List<ChartDataSource.ChartSample> allSamples, 
 			String[] categories, boolean categoriesAreTimes) {
 		this.samples = samples;
-		this.categoriesAreTimes = categoriesAreTimes;		
-		
-		for (ChartDataSource.ChartSample s: allSamples) {
+		this.categoriesAreTimes = categoriesAreTimes;				
+		this.categories = categories;		
+		init();
+	}
+	
+	protected void init() {
+		for (ChartDataSource.ChartSample s: samples) {
 			if (s.value < min) { 
 				min = s.value;
 			}
 			if (s.value > max) {
 				max = s.value;
 			}
-		}
-		
-		this.categories = categories;		
+		}		
 	}
 	
 	/**
@@ -131,7 +134,7 @@ abstract class ChartTables {
 			int nc = samples.size() / categories.length;
 			for (int i = 0; i < nc; ++i) {
 				dt.addColumn(ColumnType.NUMBER);
-				dt.setProperty(0, i + 1, "color", "LightSkyBlue");
+				dt.setProperty(0, i + 1, "color", "DarkBlue");
 			}
 			int[] valCount = new int[categories.length];
 			
@@ -150,11 +153,13 @@ abstract class ChartTables {
 	/**
 	 * A table that puts each group in a unique column, allowing for easy
 	 * color coding.
+	 * This table is backed by a fixed dataset, but see DynamicGroupedChartTable
+	 * below.
 	 * @author johan
 	 *
 	 */
 	static class GroupedChartTable extends ChartTables {
-		private static class TableColumn {
+		protected static class TableColumn {
 			Group group; //can be null for the default group
 			
 			String color() {
@@ -307,4 +312,27 @@ abstract class ChartTables {
 		
 		}		
 	}
+	
+	/**
+	 * A grouped chart table that dynamically loads samples on demand.
+	 * @author johan
+	 *
+	 */
+	static class DynamicGroupedChartTable extends GroupedChartTable {
+		DynamicGroupedChartTable(List<Group> groups, 
+				String[] categories, boolean categoriesAreTimes) {
+			super(new ArrayList<ChartDataSource.ChartSample>(), 
+					new ArrayList<ChartDataSource.ChartSample>(),
+					groups, categories, categoriesAreTimes);
+		}
+
+		@Override
+		protected void makeColumns(DataTable dt, List<ChartSample> samples) {
+			//TODO
+			super.makeColumns(dt, samples);
+		}
+		
+		
+	}
+		
 }

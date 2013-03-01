@@ -23,10 +23,15 @@ public class ColumnScreen extends Screen {
 	
 	private GroupInspector gi;
 	private CompoundSelector cs;	
+	private TabLayoutPanel tp;
 	
 	public ColumnScreen(ScreenManager man) {
 		super("Sample group definitions", key, true, false, man,
 				resources.groupDefinitionHTML(), resources.groupDefinitionHelp());
+		
+		cs = new CompoundSelector(this, "Compounds");
+		this.addListener(cs);
+		cs.setStyleName("compoundSelector");
 	}
 	
 	@Override
@@ -34,16 +39,15 @@ public class ColumnScreen extends Screen {
 		return manager.isConfigured(DatasetScreen.key); 
 	}
 
-	public Widget content() {		
-		DockLayoutPanel dp = new DockLayoutPanel(Unit.EM);		
+	
+	@Override
+	protected void addToolbars() {
+		super.addToolbars();
+		addLeftbar(cs, 350);
+	}
 
-		cs = new CompoundSelector("Compounds");
-		this.addListener(cs);
-		cs.setStyleName("compoundSelector");
-		dp.addWest(cs, 29);
-		
-		TabLayoutPanel tp = new TabLayoutPanel(2.5, Unit.EM);
-		dp.add(tp);		
+	public Widget content() {				
+		tp = new TabLayoutPanel(30, Unit.PX);
 		
 		gi = new GroupInspector(cs, this);
 		this.addListener(gi);
@@ -51,11 +55,11 @@ public class ColumnScreen extends Screen {
 		tp.add(gi, "Sample groups");
 		
 		final CompoundRanker cr = new CompoundRanker(cs);
+//		cr.setSize("500px", "500px");
 		tp.add(Utils.makeScrolled(cr), "Compound ranking (optional)");
 		tp.selectTab(0);
-//		tp.setHeight("100%");
-		
-		return dp;
+
+		return tp;
 	}
 
 	@Override
@@ -98,6 +102,14 @@ public class ColumnScreen extends Screen {
 		if (chosenColumns.size() > 0) {		
 			setConfigured(true);
 		}
+	}
+	
+
+	@Override
+	public void resizeInterface() {
+		cs.resizeInterface();
+		tp.forceLayout();
+		super.resizeInterface();		
 	}
 
 }

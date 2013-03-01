@@ -30,8 +30,8 @@ public class DataScreen extends Screen {
 	@Override
 	protected void addToolbars() {
 		super.addToolbars();
-		addToolbar(et.tools(), 30);
-		addToolbar(et.analysisTools(), 30);
+		addToolbar(et.tools(), 43);
+		addToolbar(et.analysisTools(), 43);	
 	}
 
 	public Widget content() {		
@@ -53,16 +53,17 @@ public class DataScreen extends Screen {
 		super.show();
 		//state has finished loading
 		
-		//Attempt to avoid reloading the data
-		if (lastFilter == null || !lastFilter.equals(chosenDataFilter) ||
-				lastColumns == null || !chosenColumns.equals(lastColumns)) {			
-			et.getExpressions(); //false		
-		} else if (!Arrays.equals(chosenProbes, lastProbes)) {				
-			et.refilterData();			
+		// Attempt to avoid reloading the data
+		if (lastFilter == null || !lastFilter.equals(chosenDataFilter)
+				|| lastColumns == null || !chosenColumns.equals(lastColumns)) {
+			et.getExpressions(); // false
+		} else if (!Arrays.equals(chosenProbes, lastProbes)) {
+			et.refilterData();
 		}
-		
+
 		lastProbes = chosenProbes;
 		lastFilter = chosenDataFilter;
 		lastColumns = chosenColumns;
+
 	}
 }
