@@ -28,7 +28,6 @@ class SeriesServiceTest extends FunSuite with BeforeAndAfter {
     
     val res = s.rankedCompounds(f, Array(r))
     println(res take 10)
-    
   }
   
 }

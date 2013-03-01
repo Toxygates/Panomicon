@@ -140,25 +140,12 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     import scala.collection.{Map => CMap, Set => CSet}
     
   def associations(filter: DataFilter, types: Array[AType], probes: Array[String], geneIds: Array[String]): Array[Association] = {
-    def valNames(m: SMPMap): Set[String] = m.flatMap(_._2).map(_._1).toSet
     
     def connectorOrEmpty[T <: RDFConnector](c: T, f: T => SMPMap): SMPMap = 
       useConnector(c, f, Map() ++ probes.map(p => (p -> CSet(("(Timeout or error)", "(Error)": String)))))
-
-    //In the case where m1 maps T->U and m2 maps U->V, produce a map T->V.
-    def composeMaps(m1: SMPMap, m2: SMPMap): SMPMap = 
-      m1.map(x => (x._1 -> x._2.flatMap(titleAndId => m2.getOrElse(titleAndId._1, Set()))))
-      
-    //compose by applying a lookup function to U from the first map T->U
-    def composeWith(m1: SMPMap, lookup: (Iterable[String]) => SMPMap): SMPMap = 
-      composeMaps(m1, lookup(valNames(m1)))
     
-    def union(m1: SMPMap, m2: SMPMap): SMPMap = {
-      val allKeys = m1.keySet ++ m2.keySet
-      Map() ++ allKeys.map(k => k -> (m1.getOrElse(k, Set()) ++ m2.getOrElse(k, Set())))
-    } 
-    
-    def double(m: SMMap): SMPMap = m.map(x => (x._1 -> x._2.map(y => (y, y))))
+    def unpackBio(objs: MMap[String, Pathway]): MMap[String, (String, String)] = 
+      objs.map(kv => (kv._1 -> kv._2.map(v => (v.name, v.identifier))))
     
     //this should be done in a separate future, kind of
     val proteins = if (types.contains(AType.Chembl) || types.contains(AType.Drugbank) ||
@@ -209,7 +196,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       case x: AType.Homologene.type => connectorOrEmpty(B2RHomologene,
             (c: B2RHomologene.type) => double(c.homologousGenes(geneIds)))    
       case x: AType.KEGG.type => connectorOrEmpty(B2RKegg,
-            (c: B2RKegg.type) => c.pathwaysForProbes(probes, filter))
+            (c: B2RKegg.type) => unpackBio(c.pathwaysForProbes(probes, filter)))
             
     }
       
@@ -219,7 +206,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   
   def geneSuggestions(partialName: String, filter: DataFilter): Array[Pair[String, String]] = {
     useConnector(AffyProbes, (c: AffyProbes.type) => c.probesForPartialTitle(partialName, filter)).map(x => 
-      new Pair(x._1, x._2)).toArray
+      new Pair(x.identifier, x.name)).toArray
   }
   
 }
