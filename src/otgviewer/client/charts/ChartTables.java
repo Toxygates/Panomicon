@@ -1,7 +1,6 @@
 package otgviewer.client.charts;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -9,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 import otgviewer.client.Utils;
-import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.Group;
 import otgviewer.shared.SharedUtils;
@@ -312,27 +310,6 @@ abstract class ChartTables {
 		
 		}		
 	}
-	
-	/**
-	 * A grouped chart table that dynamically loads samples on demand.
-	 * @author johan
-	 *
-	 */
-	static class DynamicGroupedChartTable extends GroupedChartTable {
-		DynamicGroupedChartTable(List<Group> groups, 
-				String[] categories, boolean categoriesAreTimes) {
-			super(new ArrayList<ChartDataSource.ChartSample>(), 
-					new ArrayList<ChartDataSource.ChartSample>(),
-					groups, categories, categoriesAreTimes);
-		}
 
-		@Override
-		protected void makeColumns(DataTable dt, List<ChartSample> samples) {
-			//TODO
-			super.makeColumns(dt, samples);
-		}
-		
-		
-	}
 		
 }

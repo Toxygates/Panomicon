@@ -1,11 +1,11 @@
 package otgviewer.client.charts;
 
-import java.util.Arrays;
 import java.util.List;
 
 import otgviewer.client.SparqlService;
 import otgviewer.client.SparqlServiceAsync;
 import otgviewer.client.Utils;
+import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.Group;
@@ -13,8 +13,6 @@ import otgviewer.shared.SharedUtils;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArray;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
@@ -81,8 +79,8 @@ public class ChartGrid extends Composite {
 	
 		if (!rowsAreCompounds) {
 			owlimService.geneSyms(rowFilters.toArray(new String[0]),
-				new AsyncCallback<String[][]>() {
-					public void onSuccess(String[][] results) {
+				new PendingAsyncCallback<String[][]>(screen) {
+					public void handleSuccess(String[][] results) {
 						for (int i = 0; i < results.length; ++i) {
 							g.setWidget(
 									i * 2 + 1, 0,
@@ -90,9 +88,6 @@ public class ChartGrid extends Composite {
 						}
 					}
 
-					public void onFailure(Throwable caught) {
-						
-					}
 				});
 		}
 

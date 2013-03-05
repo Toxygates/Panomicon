@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.Annotation;
@@ -15,7 +16,6 @@ import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -24,9 +24,7 @@ import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Panel;
@@ -233,11 +231,11 @@ public class SampleDetailScreen extends Screen {
 	
 	private void reload() {
 		if (displayColumn != null) {
-			owlimService.annotations(displayColumn, new AsyncCallback<Annotation[]>() {
-				public void onFailure(Throwable caught) {
+			owlimService.annotations(displayColumn, new PendingAsyncCallback<Annotation[]>(this) {
+				public void handleFailure(Throwable caught) {
 					Window.alert("Unable to get array annotations.");
 				}
-				public void onSuccess(Annotation[] as) {
+				public void handleSuccess(Annotation[] as) {
 					List<String[]> annotations = new ArrayList<String[]>();
 					
 					final int numEntries = as[0].getEntries().size();
