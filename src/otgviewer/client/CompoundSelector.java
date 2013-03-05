@@ -134,7 +134,10 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 			table.addColumn(textColumn, "Score");
 			
 			ChartClickCell ccc = new ChartClickCell(this);
-			table.addColumn(new IdentityColumn<String>(ccc), "");
+			IdentityColumn<String> clickCol = new IdentityColumn<String>(ccc);
+			clickCol.setCellStyleNames("clickCell");
+			table.addColumn(clickCol, "");
+			
 			hasRankColumns = true;
 		}
 	}
