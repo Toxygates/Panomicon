@@ -139,7 +139,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 
     import scala.collection.{Map => CMap, Set => CSet}
     
-  def associations(filter: DataFilter, types: Array[AType], probes: Array[String], geneIds: Array[String]): Array[Association] = {
+  def associations(filter: DataFilter, types: Array[AType], _probes: Array[String], geneIds: Array[String]): Array[Association] = {
+    val probes = _probes.map(Probe(_))
     
     def connectorOrEmpty[T <: RDFConnector](c: T, f: T => SMPMap): SMPMap = 
       useConnector(c, f, Map() ++ probes.map(p => (p -> CSet(("(Timeout or error)", "(Error)": String)))))
@@ -150,7 +151,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     //this should be done in a separate future, kind of
     val proteins = if (types.contains(AType.Chembl) || types.contains(AType.Drugbank) ||
         types.contains(AType.KOProts) || types.contains(AType.Uniprot))  {      
-    	double(AffyProbes.uniprotsForProbes(probes))
+    	double(AffyProbes.uniprots(probes))
     } else {
       emptySMPMap
     }
