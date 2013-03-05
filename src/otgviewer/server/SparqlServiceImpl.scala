@@ -210,6 +210,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
             (c: B2RHomologene.type) => double(c.homologousGenes(geneIds)))    
       case x: AType.KEGG.type => connectorOrEmpty(B2RKegg,
             (c: B2RKegg.type) => c.pathwaysForProbes(probes, filter))
+      case x: AType.Enzymes.type => connectorOrEmpty(B2RKegg,
+          (c: B2RKegg.type) => c.enzymesForProbes(probes, filter))
             
     }
       

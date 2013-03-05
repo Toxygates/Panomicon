@@ -177,7 +177,6 @@ abstract class ChartTables {
 				samples = new ChartDataSource.ChartSample[categories];				
 			}
 		}
-		
 	
 		protected List<Group> groups;		
 		
@@ -217,7 +216,6 @@ abstract class ChartTables {
 			}
 			return null;
 		}
-
 		
 		protected void makeColumns(DataTable dt, List<ChartDataSource.ChartSample> samples) {
 			List<TableColumn> tableColumns = new ArrayList<TableColumn>(); //all columns

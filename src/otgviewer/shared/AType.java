@@ -32,6 +32,9 @@ public enum AType {
 	},
 	KOProts("KO orthologous proteins") {
 		 public String formLink(String value) { return formProteinLink(value); }		 
+	},
+	Enzymes("Kegg Enzymes") {
+		public String formLink(String value) { return value; }
 	};
 
 	private String _title;
