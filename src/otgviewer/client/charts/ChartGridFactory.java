@@ -44,7 +44,7 @@ public class ChartGridFactory {
 	}
 	
 	public void makeSeriesCharts(final List<Series> series, final boolean rowsAreCompounds,
-			final int highlightDose, final ChartAcceptor acceptor) {
+			final int highlightDose, final ChartAcceptor acceptor, final Screen screen) {
 		
 		owlimService.times(filter, null, new AsyncCallback<String[]>() {
 			@Override
@@ -53,7 +53,7 @@ public class ChartGridFactory {
 			}
 			@Override
 			public void onSuccess(String[] result) {
-				finishSeriesCharts(series, result, rowsAreCompounds, highlightDose, acceptor);												
+				finishSeriesCharts(series, result, rowsAreCompounds, highlightDose, acceptor, screen);												
 			}			
 		});			
 	}
@@ -64,7 +64,7 @@ public class ChartGridFactory {
 			
 	private void finishSeriesCharts(final List<Series> series, final String[] times, 
 			final boolean rowsAreCompounds,			
-			final int highlightDose, final ChartAcceptor acceptor) {
+			final int highlightDose, final ChartAcceptor acceptor, final Screen screen) {
 		ChartDataSource cds = new ChartDataSource.SeriesSource(series, times);
 		
 		cds.getSamples(null, null, new ChartDataSource.SampleAcceptor() {
@@ -82,7 +82,7 @@ public class ChartGridFactory {
 					}
 				}
 				
-				ChartGrid cg = new ChartGrid(null, ct, groups, filters, rowsAreCompounds, new String[] { "Low", "Middle", "High" }, 
+				ChartGrid cg = new ChartGrid(screen, ct, groups, filters, rowsAreCompounds, new String[] { "Low", "Middle", "High" }, 
 						highlightDose, false, 400);
 				cg.adjustAndDisplay(cg.getMaxColumnCount());
 				acceptor.acceptCharts(cg);				
