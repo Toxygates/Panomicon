@@ -49,7 +49,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     
     //Convert the input probes (which may actually be genes) into definite probes
     probesRules = probesRules.flatMap(pr => {
-      val resolved = AffyProbes.identifiersToProbesQuick(filter, Array(pr._1), true)
+      val resolved = AffyProbes.identifiersToProbes(filter, Array(pr._1), true, true)
       if (resolved.length == 0) {
         throw new NoSuchProbeException(pr._1)
       }
@@ -83,7 +83,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   }
 
   def getSeries(filter: DataFilter, probes: Array[String], timeDose: String, compounds: Array[String]): JList[Series] = {
-    val validated = AffyProbes.identifiersToProbesQuick(filter, probes, true)
+    val validated = AffyProbes.identifiersToProbes(filter, probes, true, true)
     val ss = validated.flatMap(p =>
       compounds.flatMap(c =>
         OTGSeriesQuery.getSeries(seriesDB, asScala(filter, new Series("", p, timeDose, c, Array.empty)))))

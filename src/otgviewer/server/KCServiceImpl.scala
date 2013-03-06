@@ -22,7 +22,7 @@ import otg.CSVHelper
 import otgviewer.shared.Series
 import otg.OTGSeriesQuery
 import otgviewer.shared.ExpressionValue
-import otg.sparql.OTGSamples
+import otg.sparql._
 import otg.OTGCabinet
 
 /**
@@ -88,11 +88,11 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
   //Should this be in owlimService?
   //Is the separate OTGMisc object needed?
   def identifiersToProbes(filter: DataFilter, identifiers: Array[String], precise: Boolean): Array[String] =
-    AffyProbes.identifiersToProbes(filter, identifiers, precise)
+    AffyProbes.identifiersToProbes(filter, identifiers, precise).map(_.identifier).toArray
 
-  private def filterProbes(filter: DataFilter, probes: Array[String]) =
+  private def filterProbes(filter: DataFilter, probes: Seq[String]): Seq[String] =
     if (probes == null || probes.size == 0) {
-      OTGQueries.probeIds(filter)
+      OTGQueries.probeIds(filter).toSeq
     } else {
       OTGQueries.filterProbes(probes, filter)
     }
@@ -102,7 +102,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     case ValueType.Absolute => absDB
   }
 
-  private def getExprValues(filter: DataFilter, barcodes: Seq[String], probes: Array[String],
+  private def getExprValues(filter: DataFilter, barcodes: Seq[String], probes: Seq[String],
                             typ: ValueType, sparseRead: Boolean): ExprMatrix = {
     val db = getDB(typ)
     val sorted = OTGQueries.sortBarcodes(barcodes)
@@ -114,7 +114,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     r
   }
 
-  def loadDataset(filter: DataFilter, columns: JList[DataColumn], probes: Array[String],
+  def loadDataset(filter: DataFilter, columns: JList[DataColumn], probes: Seq[String],
                   typ: ValueType, absValFilter: Double, syntheticColumns: JList[Synthetic]): Int = {
 
     def barcodes(columns: Seq[DataColumn]): Seq[String] = {
@@ -125,7 +125,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
       }).map(_.getCode)
     }
 
-    val filtered = filterProbes(filter, null)
+    val filtered = filterProbes(filter, null).toSeq
     val session = getSessionData()
     
     //load with all probes for this filter
@@ -151,7 +151,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     r
   }
   
-  def refilterData(filter: DataFilter, columns: JList[DataColumn], probes: Array[String], absValFilter: Double,
+  def refilterData(filter: DataFilter, columns: JList[DataColumn], probes: Seq[String], absValFilter: Double,
                    syntheticColumns: JList[Synthetic]): Int = {
     println("Refilter probes: " + probes)
     if (probes != null) {
@@ -173,7 +173,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
 
     //Pick out rows that correspond to the selected probes only, and filter them by absolute value
     val (ngfd, nfd) = groupedData.modifyJointly(data, 
-        _.selectNamedRows(filteredProbes).filterRows(r => f(r, groupedData.columns)))
+        _.selectNamedRows(filteredProbes.toSeq).filterRows(r => f(r, groupedData.columns)))
 
     session.rendered = ngfd
     session.ungroupedFiltered = nfd
@@ -242,15 +242,18 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
    * Unsuitable for large amounts of data.
    */
   private def insertAnnotations(rows: Seq[ExpressionRow]): Seq[ExpressionRow] = {
-    val probes = rows.map(_.getProbe).toArray
+    val probes = rows.map(r => Probe(r.getProbe))
     useConnector(AffyProbes, (c: AffyProbes.type) => {
       val probeTitles = c.titles(probes)
-      val geneIds = c.geneIds(probes).map(_.toArray)
-      val geneSyms = c.geneSyms(probes).map(_.toArray)
-      rows.zip(probeTitles).zip(geneIds).zip(geneSyms).map(r => {
-        val or = r._1._1._1
-        new ExpressionRow(or.getProbe, r._1._1._2, r._1._2, r._2, or.getValues)
-      })
+      //todo: collapse the two gene lookup functions
+      val geneIds = c.geneIds(probes)
+      val geneSyms = c.geneSyms(probes)
+      
+      rows.map(or => {
+        val p = or.getProbe
+        new ExpressionRow(p, probeTitles(p), geneIds(p).map(_.identifier).toArray,
+            geneSyms(p).map(_.symbol).toArray, or.getValues)
+      })      
     })
   }
 
@@ -298,7 +301,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     val colNames = rendered.sortedColumnMap.map(_._1)
     val rowNames = rendered.sortedRowMap.map(_._1)
     useConnector(AffyProbes, (c: AffyProbes.type) => {
-      val gis = c.allGeneIds()      
+      val gis = c.allGeneIds(session.params.filter)      
       val geneIds = rowNames.map(gis.getOrElse(_, Seq.empty)).map(_.mkString(" "))
       CSVHelper.writeCSV(rowNames, colNames, geneIds, session.rendered.data)
     })
@@ -313,9 +316,10 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
       rowNames = rowNames.take(limit)
     }
     useConnector(AffyProbes, (c: AffyProbes.type) => {
-      val gis = c.allGeneIds()
-      val geneIds = rowNames.map(gis.getOrElse(_, Seq.empty))
-      geneIds.flatten.toArray
+      val gis = c.allGeneIds(session.params.filter)
+      val geneIds = rowNames.map(rn => gis.getOrElse(Probe(rn), Set.empty))
+      geneIds.allValues.map(_.identifier).toArray
+//      geneIds.map(_.identifier).toArray
     })
   }
 

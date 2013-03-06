@@ -82,11 +82,11 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     r.sortWith((t1, t2) => orderedTimes.indexOf(t1) < orderedTimes.indexOf(t2))
   }
     
-  def probeTitle(probe: String): String = 
-    AffyProbes.title(probe)
-    
+//  def probeTitle(probe: String): String = 
+//    AffyProbes.title(probe)
+//    
   def probes(filter: DataFilter): Array[String] = 
-    OTGQueries.probeIds(filter)
+    OTGQueries.probeIds(filter).toArray
     
   def pathologies(barcode: Barcode): Array[Pathology] = 
     OTGSamples.pathologies(barcode.getCode).map(asJava(_))
@@ -101,14 +101,17 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   def pathways(filter: DataFilter, pattern: String): Array[String] = 
     useConnector(B2RKegg, (c: B2RKegg.type) => c.pathways(pattern, filter)).toArray    
   
-  def geneSyms(probes: Array[String]): Array[Array[String]] = 
-    AffyProbes.geneSyms(probes).map(_.toArray).toArray
+  def geneSyms(probes: Array[String]): Array[Array[String]] = {
+    val ps = probes.map(p => Probe(p))
+    val gs = AffyProbes.geneSyms(ps)
+    ps.map(p => gs(p).toArray.map(_.symbol))
+  }
     
   def probesForPathway(filter: DataFilter, pathway: String): Array[String] = {
     useConnector(B2RKegg, (c: B2RKegg.type) => {
       val geneIds = c.geneIds(pathway, filter)
       println("Probes for " + geneIds.length + " genes")
-      val probes = AffyProbes.probesForEntrezGenes(geneIds).toArray 
+      val probes = AffyProbes.forEntrezGenes(geneIds).toArray 
       OTGQueries.filterProbes(probes, filter)
     })    
   }
@@ -121,12 +124,12 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     })
     val pbs = if (homologous) {
       val oproteins = Uniprot.orthologsForUniprots(proteins).values.flatten
-      AffyProbes.probesForUniprot(oproteins)
+      AffyProbes.forUniprots(oproteins.map(Protein(_)))
 //      OTGOwlim.probesForEntrezGenes(genes)
     } else {
-      AffyProbes.probesForUniprot(proteins)
+      AffyProbes.forUniprots(proteins.map(Protein(_)))
     }
-    OTGQueries.filterProbes(pbs.toArray, filter)
+    pbs.filter(p => OTGQueries.isProbeForSpecies(p.identifier, filter)).toArray  
   }
   
   def goTerms(pattern: String): Array[String] = 
@@ -189,15 +192,15 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       case x: AType.Uniprot.type => proteins
       case x: AType.KOProts.type => oproteins
       case x: AType.GOMF.type => connectorOrEmpty(AffyProbes,            
-            (c: AffyProbes.type) => c.mfGoTermsForProbes(probes))         
+            (c: AffyProbes.type) => c.mfGoTerms(probes))         
       case x: AType.GOBP.type => connectorOrEmpty(AffyProbes,            
-            (c: AffyProbes.type) => c.bpGoTermsForProbes(probes))        
+            (c: AffyProbes.type) => c.bpGoTerms(probes))        
       case x: AType.GOCC.type => connectorOrEmpty(AffyProbes,            
-            (c: AffyProbes.type) => c.ccGoTermsForProbes(probes))                  
+            (c: AffyProbes.type) => c.ccGoTerms(probes))                  
       case x: AType.Homologene.type => connectorOrEmpty(B2RHomologene,
             (c: B2RHomologene.type) => double(c.homologousGenes(geneIds)))    
       case x: AType.KEGG.type => connectorOrEmpty(B2RKegg,
-            (c: B2RKegg.type) => unpackBio(c.pathwaysForProbes(probes, filter)))
+            (c: B2RKegg.type) => unpackBio(c.pathways(probes, filter)))
             
     }
       
