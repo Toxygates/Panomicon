@@ -83,7 +83,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   }
 
   def getSeries(filter: DataFilter, probes: Array[String], timeDose: String, compounds: Array[String]): JList[Series] = {
-    val validated = AffyProbes.identifiersToProbes(filter, probes, true, true)
+    val validated = AffyProbes.identifiersToProbes(filter, probes, true, true).map(_.identifier)
     val ss = validated.flatMap(p =>
       compounds.flatMap(c =>
         OTGSeriesQuery.getSeries(seriesDB, asScala(filter, new Series("", p, timeDose, c, Array.empty)))))
