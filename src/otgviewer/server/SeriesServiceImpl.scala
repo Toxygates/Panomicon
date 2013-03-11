@@ -50,10 +50,10 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     //Convert the input probes (which may actually be genes) into definite probes
     probesRules = probesRules.flatMap(pr => {
       val resolved = AffyProbes.identifiersToProbes(filter, Array(pr._1), true, true)
-      if (resolved.length == 0) {
+      if (resolved.size == 0) {
         throw new NoSuchProbeException(pr._1)
       }
-      resolved.map(r => (r, pr._2))
+      resolved.map(r => (r.identifier, pr._2))
     })
     
     //TODO: probe is actually irrelevant here but the API is not well designed

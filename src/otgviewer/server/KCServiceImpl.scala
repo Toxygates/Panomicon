@@ -114,7 +114,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     r
   }
 
-  def loadDataset(filter: DataFilter, columns: JList[DataColumn], probes: Seq[String],
+  def loadDataset(filter: DataFilter, columns: JList[DataColumn], probes: Array[String],
                   typ: ValueType, absValFilter: Double, syntheticColumns: JList[Synthetic]): Int = {
 
     def barcodes(columns: Seq[DataColumn]): Seq[String] = {
@@ -151,7 +151,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     r
   }
   
-  def refilterData(filter: DataFilter, columns: JList[DataColumn], probes: Seq[String], absValFilter: Double,
+  def refilterData(filter: DataFilter, columns: JList[DataColumn], probes: Array[String], absValFilter: Double,
                    syntheticColumns: JList[Synthetic]): Int = {
     println("Refilter probes: " + probes)
     if (probes != null) {
@@ -230,7 +230,10 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
         session.rendered = grf
         session.ungroupedFiltered = ugrf
       }
-      new ArrayList[ExpressionRow](insertAnnotations(groupedFiltered.asRows.drop(offset).take(size)))
+      new ArrayList[ExpressionRow](insertAnnotations(
+          groupedFiltered.asRows.drop(offset).take(size), 
+          session.params.filter)
+          )
     } else {
       new ArrayList[ExpressionRow]()
     }
@@ -241,18 +244,21 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
    * appending them to the rows just before sending them back to the client.
    * Unsuitable for large amounts of data.
    */
-  private def insertAnnotations(rows: Seq[ExpressionRow]): Seq[ExpressionRow] = {
+  private def insertAnnotations(rows: Seq[ExpressionRow], f: DataFilter): Seq[ExpressionRow] = {
     val probes = rows.map(r => Probe(r.getProbe))
     useConnector(AffyProbes, (c: AffyProbes.type) => {
-      val probeTitles = c.titles(probes)
-      //todo: collapse the two gene lookup functions
-      val geneIds = c.geneIds(probes)
-      val geneSyms = c.geneSyms(probes)
+      val attribs = c.withAttributes(probes, f)
+      val pm = Map() ++ attribs.map(a => (a.identifier -> a))
+//      val probeTitles = c.titles(probes)
+//      //todo: collapse the two gene lookup functions
+//      val geneIds = c.geneIds(probes)
+//      val geneSyms = c.geneSyms(probes)
       
+      //TODO: could also insert proteins here for free
       rows.map(or => {
-        val p = or.getProbe
-        new ExpressionRow(p, probeTitles(p), geneIds(p).map(_.identifier).toArray,
-            geneSyms(p).map(_.symbol).toArray, or.getValues)
+        val p = pm(or.getProbe)
+        new ExpressionRow(p.identifier, p.name, p.genes.map(_.identifier).toArray,
+            p.symbols.map(_.symbol).toArray, or.getValues)
       })      
     })
   }
@@ -267,7 +273,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     val r = getExprValues(filter, barcodes, realProbes, typ, sparseRead)
     //When we have obtained the data in r, it may no longer be sorted in the order that the user
     //requested. Thus we use selectNamedRows here to force the sort order they wanted.
-    new ArrayList[ExpressionRow](insertAnnotations(r.selectNamedColumns(barcodes).asRows))
+    new ArrayList[ExpressionRow](insertAnnotations(r.selectNamedColumns(barcodes).asRows, filter))
   }
 
   def addTwoGroupTest(test: Synthetic.TwoGroupSynthetic): Unit = {
@@ -302,7 +308,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     val rowNames = rendered.sortedRowMap.map(_._1)
     useConnector(AffyProbes, (c: AffyProbes.type) => {
       val gis = c.allGeneIds(session.params.filter)      
-      val geneIds = rowNames.map(gis.getOrElse(_, Seq.empty)).map(_.mkString(" "))
+      val geneIds = rowNames.map(rn => gis.getOrElse(Probe(rn), Seq.empty)).map(_.mkString(" "))
       CSVHelper.writeCSV(rowNames, colNames, geneIds, session.rendered.data)
     })
   }
@@ -318,7 +324,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     useConnector(AffyProbes, (c: AffyProbes.type) => {
       val gis = c.allGeneIds(session.params.filter)
       val geneIds = rowNames.map(rn => gis.getOrElse(Probe(rn), Set.empty))
-      geneIds.allValues.map(_.identifier).toArray
+      geneIds.flatten.map(_.identifier).toArray
 //      geneIds.map(_.identifier).toArray
     })
   }

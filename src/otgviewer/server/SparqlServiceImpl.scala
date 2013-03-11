@@ -101,18 +101,19 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   def pathways(filter: DataFilter, pattern: String): Array[String] = 
     useConnector(B2RKegg, (c: B2RKegg.type) => c.pathways(pattern, filter)).toArray    
   
-  def geneSyms(probes: Array[String]): Array[Array[String]] = {
+    //TODO: return a map instead
+  def geneSyms(probes: Array[String], filter: DataFilter): Array[Array[String]] = {
     val ps = probes.map(p => Probe(p))
-    val gs = AffyProbes.geneSyms(ps)
-    ps.map(p => gs(p).toArray.map(_.symbol))
+    val attrib = AffyProbes.withAttributes(ps, filter)
+    attrib.toArray.map(_.symbols.toArray.map(_.identifier))    
   }
     
   def probesForPathway(filter: DataFilter, pathway: String): Array[String] = {
     useConnector(B2RKegg, (c: B2RKegg.type) => {
-      val geneIds = c.geneIds(pathway, filter)
+      val geneIds = c.geneIds(pathway, filter).map(Gene(_))
       println("Probes for " + geneIds.length + " genes")
-      val probes = AffyProbes.forEntrezGenes(geneIds).toArray 
-      OTGQueries.filterProbes(probes, filter)
+      val probes = AffyProbes.forGenes(geneIds).toArray 
+      probes.filter(p => OTGQueries.isProbeForSpecies(p.identifier, filter)).map(_.identifier)      
     })    
   }
   def probesTargetedByCompound(filter: DataFilter, compound: String, service: String, homologous: Boolean): Array[String] = {
@@ -129,14 +130,16 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     } else {
       AffyProbes.forUniprots(proteins.map(Protein(_)))
     }
-    pbs.filter(p => OTGQueries.isProbeForSpecies(p.identifier, filter)).toArray  
+    pbs.filter(p => OTGQueries.isProbeForSpecies(p.identifier, filter)).map(_.identifier).toArray  
   }
   
   def goTerms(pattern: String): Array[String] = 
     OTGSamples.goTerms(pattern)
     
   def probesForGoTerm(filter: DataFilter, goTerm: String): Array[String] = 
-    OTGQueries.filterProbes(AffyProbes.probesForGoTerm(goTerm), filter)
+    OTGQueries.filterProbes(
+        AffyProbes.forGoTerm(GOTerm("", goTerm)).map(_.identifier).toSeq, 
+        filter).toArray
 
 //    import AffyProbes._
 
@@ -145,14 +148,15 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   def associations(filter: DataFilter, types: Array[AType], _probes: Array[String], geneIds: Array[String]): Array[Association] = {
     val probes = AffyProbes.withAttributes(_probes.map(Probe(_)), filter)    
     
-    def connectorOrEmpty[T <: RDFConnector](c: T, f: T => SMPMap): SMPMap = 
-      useConnector(c, f, Map() ++ probes.map(p => (p.identifier -> CSet(("(Timeout or error)", null: String)))))
+    def connectorOrEmpty[T <: RDFConnector](c: T, f: T => BBMap): BBMap = 
+      useConnector(c, f, 
+          Map() ++ probes.map(p => (Probe(p.identifier) -> CSet(DefaultBio("(Timeout or error)", null)))))
     
-    def unpackBio(objs: MMap[String, Pathway]): MMap[String, (String, String)] = 
-      objs.map(kv => (kv._1 -> kv._2.map(v => (v.name, v.identifier))))
-    
-    //this should be done in a separate future, kind of
-    val proteins = toBioMap(probes, (p: Probe) => p.proteins) 
+//    def unpackBio(objs: MMap[String, Pathway]): MMap[String, (String, String)] = 
+//      objs.map(kv => (kv._1 -> kv._2.map(v => (v.name, v.identifier))))
+//    
+
+    val proteins: MMap[Probe, Protein] = toBioMap(probes, (p: Probe) => p.proteins) 
       
 //      if (types.contains(AType.Chembl) || types.contains(AType.Drugbank) ||
 //        types.contains(AType.KOProts) || types.contains(AType.Uniprot))  {      
@@ -163,14 +167,19 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     
     val oproteins = if (types.contains(AType.Chembl) || types.contains(AType.Drugbank) ||
         types.contains(AType.KOProts)) {    	
-      composeWith(proteins, (ps: Iterable[Protein]) =>
-        Uniprot.orthologsForUniprots(ps.map(_.identifier)).mapMValues(p => Protein(p)))
+      composeWith(
+          proteins.mapMValues(_.identifier), 
+          (ps: Iterable[String]) =>
+          	Uniprot.orthologsForUniprots(ps).mapMValues((p: String) => Protein(p)))
     } else {
-      CommonSPARQL.MMap[Probe, Protein]()
+      emptyMMap[Probe, Protein]()
     }
     
+    def standardMapping(m: BBMap): MMap[String, (String, String)] = 
+      m.mapKValues(_.identifier).mapMValues(p => (p.name, p.identifier))
+    
     import Association._
-    def lookupFunction(t: AType) = t match {
+    def lookupFunction(t: AType): BBMap = t match {
 //      case x: AType.Chembl.type => connectorOrEmpty(CHEMBL,
 //            (c: CHEMBL.type) => {
 //              val compounds = OTGSamples.compounds(filter)
@@ -197,9 +206,10 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       case x: AType.GOMF.type => connectorOrEmpty(AffyProbes,            
             (c: AffyProbes.type) => c.mfGoTerms(probes))         
       case x: AType.GOBP.type => connectorOrEmpty(AffyProbes,            
-            (c: AffyProbes.type) => c.bpGoTerms(probes))        
+            (c: AffyProbes.type) => c.bpGoTerms(probes))
       case x: AType.GOCC.type => connectorOrEmpty(AffyProbes,            
-            (c: AffyProbes.type) => c.ccGoTerms(probes))                  
+            (c: AffyProbes.type) => c.ccGoTerms(probes))
+      case _ => emptyMMap[DefaultBio, DefaultBio]()
 //      case x: AType.Homologene.type => connectorOrEmpty(B2RHomologene,
 //            (c: B2RHomologene.type) => double(c.homologousGenes(geneIds)))    
 //      case x: AType.KEGG.type => connectorOrEmpty(B2RKegg,
@@ -207,7 +217,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
             
     }
       
-    types.par.map(x => (x,lookupFunction(x))).seq.map(p => new Association(p._1, 
+    types.par.map(x => (x,standardMapping(lookupFunction(x)))).seq.map(p => new Association(p._1, 
         convertPairs(p._2))).toArray     
   }
   
