@@ -105,7 +105,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   def geneSyms(probes: Array[String], filter: DataFilter): Array[Array[String]] = {
     val ps = probes.map(p => Probe(p))
     val attrib = AffyProbes.withAttributes(ps, filter)
-    attrib.toArray.map(_.symbols.toArray.map(_.identifier))    
+    attrib.toArray.map(_.symbols.toArray.map(_.symbol))    
   }
     
   def probesForPathway(filter: DataFilter, pathway: String): Array[String] = {
@@ -113,7 +113,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       val geneIds = c.geneIds(pathway, filter).map(Gene(_))
       println("Probes for " + geneIds.length + " genes")
       val probes = AffyProbes.forGenes(geneIds).toArray 
-      probes.filter(p => OTGQueries.isProbeForSpecies(p.identifier, filter)).map(_.identifier)      
+      OTGQueries.filterProbes(probes.map(_.identifier), filter).toArray  
     })    
   }
   def probesTargetedByCompound(filter: DataFilter, compound: String, service: String, homologous: Boolean): Array[String] = {
