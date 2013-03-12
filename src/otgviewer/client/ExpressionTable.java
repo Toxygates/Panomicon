@@ -105,7 +105,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 	
 	private int highlightedRow = -1;
 	private String[] displayedProbes;
-	private List<String> displayedGeneIds = new ArrayList<String>();
+//	private List<String> displayedGeneIds = new ArrayList<String>();
 	private Map<AType, Association> associations = new HashMap<AType, Association>();
 		
 	private List<HideableColumn> hideableColumns = new ArrayList<HideableColumn>();
@@ -485,7 +485,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 
 			owlimService.associations(chosenDataFilter, vas,
 					displayedProbes, 
-					displayedGeneIds.toArray(new String[0]), assocCallback);
+					assocCallback);
 		}
 	}
 	
@@ -501,12 +501,12 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 				if (result.size() > 0) {
 					exprGrid.setRowData(start, result);
 					displayedProbes = new String[result.size()];
-					List<String> geneIds = new ArrayList<String>();		
+//					List<String> geneIds = new ArrayList<String>();		
 					for (int i = 0; i < displayedProbes.length; ++i) {			
 						displayedProbes[i] = result.get(i).getProbe();
-						geneIds.addAll(Arrays.asList(result.get(i).getGeneIds()));
+//						geneIds.addAll(Arrays.asList(result.get(i).getGeneIds()));
 					}		
-					displayedGeneIds = geneIds;
+//					displayedGeneIds = geneIds;
 					highlightedRow = -1;							
 					getAssociations();
 				} else {

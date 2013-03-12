@@ -122,13 +122,13 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
           if (homologous) { null } else { filter }))              
       case "DrugBank" => useConnector(DrugBank, (c:DrugBank.type) => c.targetProtsForDrug(compound))        
       case _ => throw new Exception("Unexpected probe target service request: " + service)
-    })
+    }).map(Protein(_))
     val pbs = if (homologous) {
       val oproteins = Uniprot.orthologsForUniprots(proteins).values.flatten
-      AffyProbes.forUniprots(oproteins.map(Protein(_)))
+      AffyProbes.forUniprots(oproteins)
 //      OTGOwlim.probesForEntrezGenes(genes)
     } else {
-      AffyProbes.forUniprots(proteins.map(Protein(_)))
+      AffyProbes.forUniprots(proteins)
     }
     pbs.filter(p => OTGQueries.isProbeForSpecies(p.identifier, filter)).map(_.identifier).toArray  
   }
@@ -145,32 +145,19 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 
     import scala.collection.{Map => CMap, Set => CSet}
     
-  def associations(filter: DataFilter, types: Array[AType], _probes: Array[String], geneIds: Array[String]): Array[Association] = {
+  def associations(filter: DataFilter, types: Array[AType], _probes: Array[String]): Array[Association] = {
     val probes = AffyProbes.withAttributes(_probes.map(Probe(_)), filter)    
     
     def connectorOrEmpty[T <: RDFConnector](c: T, f: T => BBMap): BBMap = 
       useConnector(c, f, 
           Map() ++ probes.map(p => (Probe(p.identifier) -> CSet(DefaultBio("(Timeout or error)", null)))))
-    
-//    def unpackBio(objs: MMap[String, Pathway]): MMap[String, (String, String)] = 
-//      objs.map(kv => (kv._1 -> kv._2.map(v => (v.name, v.identifier))))
-//    
 
     val proteins: MMap[Probe, Protein] = toBioMap(probes, (p: Probe) => p.proteins) 
-      
-//      if (types.contains(AType.Chembl) || types.contains(AType.Drugbank) ||
-//        types.contains(AType.KOProts) || types.contains(AType.Uniprot))  {      
-//    	double(AffyProbes.uniprots(probes))
-//    } else {
-//      emptySMPMap
-//    }
-    
+ 
     val oproteins = if (types.contains(AType.Chembl) || types.contains(AType.Drugbank) ||
         types.contains(AType.KOProts)) {    	
-      composeWith(
-          proteins.mapMValues(_.identifier), 
-          (ps: Iterable[String]) =>
-          	Uniprot.orthologsForUniprots(ps).mapMValues((p: String) => Protein(p)))
+      composeWith(proteins, 
+          (ps: Iterable[Protein]) => Uniprot.orthologsForUniprots(ps))
     } else {
       emptyMMap[Probe, Protein]()
     }
@@ -209,9 +196,10 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
             (c: AffyProbes.type) => c.bpGoTerms(probes))
       case x: AType.GOCC.type => connectorOrEmpty(AffyProbes,            
             (c: AffyProbes.type) => c.ccGoTerms(probes))
+      case x: AType.Homologene.type => connectorOrEmpty(B2RHomologene,
+            (c: B2RHomologene.type) => composeBioMaps(probes, (p: Probe) => p.genes, 
+                c.homologousGenes(probes.flatMap(_.genes))))    
       case _ => emptyMMap[DefaultBio, DefaultBio]()
-//      case x: AType.Homologene.type => connectorOrEmpty(B2RHomologene,
-//            (c: B2RHomologene.type) => double(c.homologousGenes(geneIds)))    
 //      case x: AType.KEGG.type => connectorOrEmpty(B2RKegg,
 //            (c: B2RKegg.type) => unpackBio(c.pathways(probes, filter)))
             

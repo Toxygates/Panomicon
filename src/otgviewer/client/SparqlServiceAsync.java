@@ -44,5 +44,5 @@ public interface SparqlServiceAsync {
 	public void goTerms(String pattern, AsyncCallback<String[]> callback);
 	public void probesForGoTerm(DataFilter filter, String term, AsyncCallback<String[]> callback);
 	
-	public void associations(DataFilter filter, AType[] types, String[] probes, String[] geneIds, AsyncCallback<Association[]> callback);
+	public void associations(DataFilter filter, AType[] types, String[] probes, AsyncCallback<Association[]> callback);
 }

@@ -32,9 +32,9 @@ class SparqlServiceTest extends FunSuite with BeforeAndAfter {
   val f = SparqlServiceTest.testFilter
   
   val probes = Array("1387936_at", "1391544_at")
-  val geneIds = Array("361510", "362972")
+//  val geneIds = Array("361510", "362972")
   
-  private def testAssociation(typ: AType) = s.associations(f, Array(typ), probes, geneIds)
+  private def testAssociation(typ: AType) = s.associations(f, Array(typ), probes)
     
   test("BP GO terms") {
     testAssociation(AType.GOBP)

@@ -92,8 +92,7 @@ public interface SparqlService extends RemoteService {
 	 * @param types the association types to get.
 	 * @param filter
 	 * @param probes
-	 * @param geneIds
 	 * @return
 	 */
-	public Association[] associations(DataFilter filter, AType[] types, String[] probes, String[] geneIds);
+	public Association[] associations(DataFilter filter, AType[] types, String[] probes);
 }
