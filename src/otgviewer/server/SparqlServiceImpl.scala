@@ -117,12 +117,13 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     })    
   }
   def probesTargetedByCompound(filter: DataFilter, compound: String, service: String, homologous: Boolean): Array[String] = {
-    val proteins = (service match {
-      case "CHEMBL" => useConnector(CHEMBL, (c:CHEMBL.type) => c.targetProtsForCompound(compound, 
+    val cmp = Compound.make(compound)
+    val proteins = service match {
+      case "CHEMBL" => useConnector(ChEMBL, (c:ChEMBL.type) => c.targetsFor(cmp, 
           if (homologous) { null } else { filter }))              
-      case "DrugBank" => useConnector(DrugBank, (c:DrugBank.type) => c.targetProtsForDrug(compound))        
+      case "DrugBank" => useConnector(DrugBank, (c:DrugBank.type) => c.targetsFor(cmp))        
       case _ => throw new Exception("Unexpected probe target service request: " + service)
-    }).map(Protein(_))
+    }
     val pbs = if (homologous) {
       val oproteins = Uniprot.orthologsForUniprots(proteins).values.flatten
       AffyProbes.forUniprots(oproteins)
@@ -167,27 +168,34 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     
     import Association._
     def lookupFunction(t: AType): BBMap = t match {
-//      case x: AType.Chembl.type => connectorOrEmpty(CHEMBL,
-//            (c: CHEMBL.type) => {
-//              val compounds = OTGSamples.compounds(filter)
-//
-//              //strictly orthologous proteins
-//              val oproteinVs = valNames(oproteins) -- valNames(proteins)              
-//              val allProteins = union(proteins, oproteins)              
-//              val allTargets = c.targetingCompoundsForProteins(valNames(allProteins), null, compounds)
-//              
-//              composeMaps(allProteins, allTargets.map(x => (x._1 -> x._2.map(c => 
-//                if (oproteinVs.contains(x._1)) { (c._1 + "(inf)", c._2) } else { c }))))              
-//            })      
-//      case x: AType.Drugbank.type => connectorOrEmpty(DrugBank,
-//            (c: DrugBank.type) => {
-//              val compounds = OTGSamples.compounds(filter)
-//              val oproteinVs = valNames(oproteins) -- valNames(proteins)               
-//              val allProteins = union(proteins, oproteins)              
-//              val allTargets = c.targetingCompoundsForProteins(valNames(allProteins), compounds)
-//              composeMaps(allProteins, allTargets.map(x => (x._1 -> x._2.map(c => 
-//                if (oproteinVs.contains(x._1)) { (c._1 + "(inf)", c._2) } else { c }))))
-//            })
+      case x: AType.Chembl.type => connectorOrEmpty(ChEMBL,
+            (c: ChEMBL.type) => {
+              val expected = OTGSamples.compounds(filter).map(Compound.make(_))
+
+              //strictly orthologous proteins
+              val oproteinVs = oproteins.allValues.toSet -- proteins.allValues.toSet               
+              val allProteins = union(proteins, oproteins)              
+              val allTargets = c.targetingFor(allProteins.allValues, null, expected)
+              
+              composeBioMaps(allProteins, allTargets.map(x => if (oproteinVs.contains(x._1)) {
+                (x._1 -> x._2.map(c => c.copy(name = c.name + " (inf)"))) 
+              } else {
+                x 
+              }))                              
+            })      
+      case x: AType.Drugbank.type => connectorOrEmpty(DrugBank,
+            (c: DrugBank.type) => {
+              val expected = OTGSamples.compounds(filter).map(Compound.make(_))
+              val oproteinVs = oproteins.allValues.toSet -- proteins.allValues.toSet               
+              val allProteins = union(proteins, oproteins)              
+              val allTargets = c.targetingFor(allProteins.allValues, expected)
+              
+               composeBioMaps(allProteins, allTargets.map(x => if (oproteinVs.contains(x._1)) {
+                (x._1 -> x._2.map(c => c.copy(name = c.name + " (inf)"))) 
+              } else {
+                x 
+              })) 
+            })
       case x: AType.Uniprot.type => proteins
       case x: AType.KOProts.type => oproteins
       case x: AType.GOMF.type => connectorOrEmpty(AffyProbes,            
