@@ -197,7 +197,9 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
                 c.homologousGenes(probes.flatMap(_.genes)))     
       case x: AType.KEGG.type => connectorOrEmpty(B2RKegg,
             (c: B2RKegg.type) => toBioMap(probes, (p: Probe) => p.genes) combine 
-                c.forGenes(probes.flatMap(_.genes), filter))            
+                c.forGenes(probes.flatMap(_.genes), filter))
+      case x: AType.Enzymes.type => connectorOrEmpty(B2RKegg,
+              (c: B2RKegg.type) => c.enzymes(probes.flatMap(_.genes), filter))
     }
       
         

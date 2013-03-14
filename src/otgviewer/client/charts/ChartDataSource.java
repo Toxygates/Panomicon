@@ -5,6 +5,8 @@ import java.util.List;
 
 import otgviewer.client.KCService;
 import otgviewer.client.KCServiceAsync;
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
@@ -16,7 +18,6 @@ import otgviewer.shared.ValueType;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
  * This class brings series and row data into a unified interface for the purposes of
@@ -168,12 +169,14 @@ abstract class ChartDataSource {
 		private DataFilter filter;
 		private String probe;
 		private ValueType type;
+		private Screen screen;
 		
-		DynamicExpressionRowSource(DataFilter filter, String probe, ValueType vt, Barcode[] barcodes) {
+		DynamicExpressionRowSource(DataFilter filter, String probe, ValueType vt, Barcode[] barcodes, Screen screen) {
 			super(barcodes, new ArrayList<ExpressionRow>());
 			this.filter = filter;
 			this.probe = probe;
-			this.type = vt;			
+			this.type = vt;		
+			this.screen = screen;
 		}
 		
 		void loadData(final String[] compounds, final String[] dosesOrTimes, 
@@ -191,14 +194,14 @@ abstract class ChartDataSource {
 			
 			samples.clear();
 			kcService.getFullData(filter, useBarcodes, 
-					new String[] { probe }, type, true, new AsyncCallback<List<ExpressionRow>>() {
+					new String[] { probe }, type, true, new PendingAsyncCallback<List<ExpressionRow>>(screen) {
 				@Override
-				public void onFailure(Throwable caught) {
+				public void handleFailure(Throwable caught) {
 					Window.alert("Unable to obtain chart data.");
 				}
 
 				@Override
-				public void onSuccess(final List<ExpressionRow> rows) {
+				public void handleSuccess(final List<ExpressionRow> rows) {
 					addSamplesFromBarcodes(useBarcodes_.toArray(new Barcode[0]), rows);	
 					getSSamples(compounds, dosesOrTimes, acceptor);
 				}					

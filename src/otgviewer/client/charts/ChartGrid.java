@@ -9,12 +9,11 @@ import otgviewer.client.Utils;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.Group;
+import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.shared.SharedUtils;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArray;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
@@ -82,17 +81,13 @@ public class ChartGrid extends Composite {
 		if (!rowsAreCompounds) {
 			owlimService.geneSyms(rowFilters.toArray(new String[0]),
 					screen.chosenDataFilter,
-				new AsyncCallback<String[][]>() {
-					public void onSuccess(String[][] results) {
+				new PendingAsyncCallback<String[][]>(screen) {
+					public void handleSuccess(String[][] results) {
 						for (int i = 0; i < results.length; ++i) {
 							g.setWidget(
 									i * 2 + 1, 0,
 									Utils.mkEmphLabel(SharedUtils.mkString(results[i]) + "/" + rowFilters.get(i)));										
 						}
-					}
-
-					public void onFailure(Throwable caught) {
-						
 					}
 				});
 		}

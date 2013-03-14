@@ -23,7 +23,10 @@ import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSe
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 public class PathologyScreen extends Screen {
@@ -49,12 +52,25 @@ public class PathologyScreen extends Screen {
 	
 	public PathologyScreen(ScreenManager man) {
 		super("Pathologies", key, true, true, man);
+		mkTools();
+	}
+
+	private HorizontalPanel tools = Utils.mkWidePanel();
+	private void mkTools() {				
+		HTML h = new HTML();
+		h.setHTML("<a href=\"http://toxico.nibio.go.jp/open-tggates/doc/pathology_parameter.pdf\" target=_new>" +
+				"Pathology terms reference</a>");
+		tools.add(h);
+	}
+	
+	@Override
+	protected void addToolbars() {	
+		super.addToolbars();
+		addToolbar(tools, 30);
 	}
 
 	public Widget content() {
-//		hp = new HorizontalPanel();
-//		hp.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
-//		
+		
 		sp.setWidget(pathologyTable);
 		pathologyTable.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 		pathologyTable.setWidth("100%");
@@ -117,8 +133,7 @@ public class PathologyScreen extends Screen {
 			}
 		};
 		pathologyTable.addColumn(col, "Spontaneous");		
-		
-//		hp.add(sp);
+
 		return sp;		
 	}	
 	
