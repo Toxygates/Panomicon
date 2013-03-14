@@ -164,8 +164,6 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     var groupedData = makeGroups(data, columns)
 
     val filteredProbes = filterProbes(filter, probes)
-//    //pick out rows that correspond to the selected probes only
-//    groupedData = groupedData.selectNamedRows(filtered)
 
     //filter by abs. value
     def f(r: ArrayVector[ExprValue], before: Int): Boolean = r.take(before).exists(v =>
@@ -249,6 +247,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     useConnector(AffyProbes, (c: AffyProbes.type) => {
       val attribs = c.withAttributes(probes, f)
       val pm = Map() ++ attribs.map(a => (a.identifier -> a))
+      
 //      val probeTitles = c.titles(probes)
 //      //todo: collapse the two gene lookup functions
 //      val geneIds = c.geneIds(probes)
@@ -256,6 +255,9 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
       
       //TODO: could also insert proteins here for free
       rows.map(or => {
+        if (!pm.containsKey(or.getProbe)) {
+          println("missing key: " + or.getProbe)
+        }
         val p = pm(or.getProbe)
         new ExpressionRow(p.identifier, p.name, p.genes.map(_.identifier).toArray,
             p.symbols.map(_.symbol).toArray, or.getValues)

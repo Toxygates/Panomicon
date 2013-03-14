@@ -99,7 +99,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     column.getBarcodes.map(x => OTGSamples.annotations(x.getCode)).map(asJava(_))
     
   def pathways(filter: DataFilter, pattern: String): Array[String] = 
-    useConnector(B2RKegg, (c: B2RKegg.type) => c.pathways(pattern, filter)).toArray    
+    useConnector(B2RKegg, (c: B2RKegg.type) => c.forPattern(pattern, filter)).toArray    
   
     //TODO: return a map instead
   def geneSyms(probes: Array[String], filter: DataFilter): Array[Array[String]] = {
@@ -125,7 +125,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       case _ => throw new Exception("Unexpected probe target service request: " + service)
     }
     val pbs = if (homologous) {
-      val oproteins = Uniprot.orthologsForUniprots(proteins).values.flatten
+      val oproteins = Uniprot.orthologsFor(proteins).values.flatten
       AffyProbes.forUniprots(oproteins)
 //      OTGOwlim.probesForEntrezGenes(genes)
     } else {
@@ -142,60 +142,48 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
         AffyProbes.forGoTerm(GOTerm("", goTerm)).map(_.identifier).toSeq, 
         filter).toArray
 
-//    import AffyProbes._
-
     import scala.collection.{Map => CMap, Set => CSet}
     
   def associations(filter: DataFilter, types: Array[AType], _probes: Array[String]): Array[Association] = {
     val probes = AffyProbes.withAttributes(_probes.map(Probe(_)), filter)    
     
-    def connectorOrEmpty[T <: RDFConnector](c: T, f: T => BBMap): BBMap = 
+    def connectorOrEmpty[T <: RDFConnector](c: T, f: T => BBMap): BBMap = {
+      val emptyVal = CSet(DefaultBio("(Timeout or error)", null))
       useConnector(c, f, 
-          Map() ++ probes.map(p => (Probe(p.identifier) -> CSet(DefaultBio("(Timeout or error)", null)))))
+          Map() ++ probes.map(p => (Probe(p.identifier) -> emptyVal)))
+    }
 
-    val proteins: MMap[Probe, Protein] = toBioMap(probes, (p: Probe) => p.proteins) 
+    val proteins = toBioMap(probes, (p: Probe) => p.proteins) 
  
+    //orthologous proteins if needed - this is currently slow to look up
     val oproteins = if (types.contains(AType.Chembl) || types.contains(AType.Drugbank) ||
         types.contains(AType.KOProts)) {    	
-      composeWith(proteins, 
-          (ps: Iterable[Protein]) => Uniprot.orthologsForUniprots(ps))
+      proteins combine ((ps: Iterable[Protein]) => Uniprot.orthologsFor(ps))
     } else {
       emptyMMap[Probe, Protein]()
     }
-    
-    def standardMapping(m: BBMap): MMap[String, (String, String)] = 
-      m.mapKValues(_.identifier).mapMValues(p => (p.name, p.identifier))
+
+    def getTargeting(from: CompoundTargets): MMap[Probe, Compound] = {
+      val expected = OTGSamples.compounds(filter).map(Compound.make(_))
+      
+      //strictly orthologous
+      val oproteinVs = oproteins.allValues.toSet -- proteins.allValues.toSet
+      val allProteins = proteins union oproteins
+      val allTargets = from.targetingFor(allProteins.allValues, expected)
+
+      allProteins combine allTargets.map(x => if (oproteinVs.contains(x._1)) {
+        (x._1 -> x._2.map(c => c.copy(name = c.name + " (inf)")))
+      } else {
+        x
+      })
+    }
     
     import Association._
     def lookupFunction(t: AType): BBMap = t match {
       case x: AType.Chembl.type => connectorOrEmpty(ChEMBL,
-            (c: ChEMBL.type) => {
-              val expected = OTGSamples.compounds(filter).map(Compound.make(_))
-
-              //strictly orthologous proteins
-              val oproteinVs = oproteins.allValues.toSet -- proteins.allValues.toSet               
-              val allProteins = union(proteins, oproteins)              
-              val allTargets = c.targetingFor(allProteins.allValues, null, expected)
-              
-              composeBioMaps(allProteins, allTargets.map(x => if (oproteinVs.contains(x._1)) {
-                (x._1 -> x._2.map(c => c.copy(name = c.name + " (inf)"))) 
-              } else {
-                x 
-              }))                              
-            })      
+            (c: ChEMBL.type) => getTargeting(c))    
       case x: AType.Drugbank.type => connectorOrEmpty(DrugBank,
-            (c: DrugBank.type) => {
-              val expected = OTGSamples.compounds(filter).map(Compound.make(_))
-              val oproteinVs = oproteins.allValues.toSet -- proteins.allValues.toSet               
-              val allProteins = union(proteins, oproteins)              
-              val allTargets = c.targetingFor(allProteins.allValues, expected)
-              
-               composeBioMaps(allProteins, allTargets.map(x => if (oproteinVs.contains(x._1)) {
-                (x._1 -> x._2.map(c => c.copy(name = c.name + " (inf)"))) 
-              } else {
-                x 
-              })) 
-            })
+            (c: DrugBank.type) => getTargeting(c))              
       case x: AType.Uniprot.type => proteins
       case x: AType.KOProts.type => oproteins
       case x: AType.GOMF.type => connectorOrEmpty(AffyProbes,            
@@ -205,15 +193,18 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       case x: AType.GOCC.type => connectorOrEmpty(AffyProbes,            
             (c: AffyProbes.type) => c.ccGoTerms(probes))
       case x: AType.Homologene.type => connectorOrEmpty(B2RHomologene,
-            (c: B2RHomologene.type) => composeBioMaps(probes, (p: Probe) => p.genes, 
-                c.homologousGenes(probes.flatMap(_.genes))))    
-      case _ => emptyMMap[DefaultBio, DefaultBio]()
-//      case x: AType.KEGG.type => connectorOrEmpty(B2RKegg,
-//            (c: B2RKegg.type) => unpackBio(c.pathways(probes, filter)))
-            
+            (c: B2RHomologene.type) => toBioMap(probes, (p: Probe) => p.genes) combine 
+                c.homologousGenes(probes.flatMap(_.genes)))     
+      case x: AType.KEGG.type => connectorOrEmpty(B2RKegg,
+            (c: B2RKegg.type) => toBioMap(probes, (p: Probe) => p.genes) combine 
+                c.forGenes(probes.flatMap(_.genes), filter))            
     }
       
-    types.par.map(x => (x,standardMapping(lookupFunction(x)))).seq.map(p => new Association(p._1, 
+        
+    def standardMapping(m: BBMap): MMap[String, (String, String)] = 
+      m.mapKValues(_.identifier).mapMValues(p => (p.name, p.identifier))
+    
+    types.par.map(x => (x, standardMapping(lookupFunction(x)))).seq.map(p => new Association(p._1, 
         convertPairs(p._2))).toArray     
   }
   
