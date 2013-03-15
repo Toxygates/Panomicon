@@ -106,7 +106,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
                             typ: ValueType, sparseRead: Boolean): ExprMatrix = {
     val db = getDB(typ)
     val sorted = OTGQueries.sortBarcodes(barcodes)
-    val data = OTGQueries.presentValuesByBarcodesAndProbes(db, sorted, probes, sparseRead, filter)
+    val data = OTGQueries.presentValuesByBarcodesAndProbes(db, sorted.map(otg.Sample(_)), probes, sparseRead, filter)
     val r = ExprMatrix.withRows(data.map(_.toSeq)) //todo
     r.annotations = probes.map(ExprMatrix.RowAnnotation(_, null, null, null)).toArray
     r.columnMap = Map() ++ sorted.zipWithIndex

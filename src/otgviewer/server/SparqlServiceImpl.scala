@@ -1,7 +1,6 @@
 package otgviewer.server
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-
 import Assocations.convert
 import UtilsS.nullToNone
 import javax.servlet.ServletConfig
@@ -24,6 +23,7 @@ import otgviewer.shared.NoSuchProbeException
 import otgviewer.shared.Pair
 import otgviewer.shared.Pathology
 import otgviewer.shared.RankRule
+import otg.DefaultBio
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
