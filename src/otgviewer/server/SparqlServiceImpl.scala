@@ -89,7 +89,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     OTGQueries.probeIds(filter).toArray
     
   def pathologies(barcode: Barcode): Array[Pathology] = 
-    OTGSamples.pathologies(barcode.getCode).map(asJava(_))
+    OTGSamples.pathologies(barcode.getCode).map(asJava(_)).toArray
     
   def pathologies(column: DataColumn): Array[Pathology] = 
     column.getBarcodes.flatMap(x => OTGSamples.pathologies(x.getCode)).map(asJava(_))
@@ -153,7 +153,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
           Map() ++ probes.map(p => (Probe(p.identifier) -> emptyVal)))
     }
 
-    val proteins = toBioMap(probes, (p: Probe) => p.proteins) 
+    val proteins = toBioMap(probes, (_: Probe).proteins) 
  
     //orthologous proteins if needed - this is currently slow to look up
     val oproteins = if (types.contains(AType.Chembl) || types.contains(AType.Drugbank) ||
@@ -180,10 +180,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     
     import Association._
     def lookupFunction(t: AType): BBMap = t match {
-      case x: AType.Chembl.type => connectorOrEmpty(ChEMBL,
-            (c: ChEMBL.type) => getTargeting(c))    
-      case x: AType.Drugbank.type => connectorOrEmpty(DrugBank,
-            (c: DrugBank.type) => getTargeting(c))              
+      case x: AType.Chembl.type => connectorOrEmpty(ChEMBL, getTargeting(_:ChEMBL.type))    
+      case x: AType.Drugbank.type => connectorOrEmpty(DrugBank, getTargeting(_:DrugBank.type))              
       case x: AType.Uniprot.type => proteins
       case x: AType.KOProts.type => oproteins
       case x: AType.GOMF.type => connectorOrEmpty(AffyProbes,            
@@ -193,10 +191,10 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       case x: AType.GOCC.type => connectorOrEmpty(AffyProbes,            
             (c: AffyProbes.type) => c.ccGoTerms(probes))
       case x: AType.Homologene.type => connectorOrEmpty(B2RHomologene,
-            (c: B2RHomologene.type) => toBioMap(probes, (p: Probe) => p.genes) combine 
+            (c: B2RHomologene.type) => toBioMap(probes, (_:Probe).genes) combine 
                 c.homologousGenes(probes.flatMap(_.genes)))     
       case x: AType.KEGG.type => connectorOrEmpty(B2RKegg,
-            (c: B2RKegg.type) => toBioMap(probes, (p: Probe) => p.genes) combine 
+            (c: B2RKegg.type) => toBioMap(probes, (_:Probe).genes) combine 
                 c.forGenes(probes.flatMap(_.genes), filter))
       case x: AType.Enzymes.type => connectorOrEmpty(B2RKegg,
               (c: B2RKegg.type) => c.enzymes(probes.flatMap(_.genes), filter))
