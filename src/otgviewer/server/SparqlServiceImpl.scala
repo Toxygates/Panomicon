@@ -148,7 +148,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     val probes = AffyProbes.withAttributes(_probes.map(Probe(_)), filter)    
     
     def connectorOrEmpty[T <: RDFConnector](c: T, f: T => BBMap): BBMap = {
-      val emptyVal = CSet(DefaultBio("(Timeout or error)", null))
+      val emptyVal = CSet(DefaultBio("error", "(Timeout or error)"))
       useConnector(c, f, 
           Map() ++ probes.map(p => (Probe(p.identifier) -> emptyVal)))
     }
@@ -157,7 +157,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
  
     //orthologous proteins if needed - this is currently slow to look up
     val oproteins = if (types.contains(AType.Chembl) || types.contains(AType.Drugbank) ||
-        types.contains(AType.KOProts)) {    	
+        types.contains(AType.OrthProts)) {    	
       proteins combine ((ps: Iterable[Protein]) => Uniprot.orthologsFor(ps))
     } else {
       emptyMMap[Probe, Protein]()
@@ -183,7 +183,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       case x: AType.Chembl.type => connectorOrEmpty(ChEMBL, getTargeting(_:ChEMBL.type))    
       case x: AType.Drugbank.type => connectorOrEmpty(DrugBank, getTargeting(_:DrugBank.type))              
       case x: AType.Uniprot.type => proteins
-      case x: AType.KOProts.type => oproteins
+      case x: AType.OrthProts.type => oproteins
       case x: AType.GOMF.type => connectorOrEmpty(AffyProbes,            
             (c: AffyProbes.type) => c.mfGoTerms(probes))         
       case x: AType.GOBP.type => connectorOrEmpty(AffyProbes,            
@@ -204,8 +204,13 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     def standardMapping(m: BBMap): MMap[String, (String, String)] = 
       m.mapKValues(_.identifier).mapMValues(p => (p.name, p.identifier))
     
-    types.par.map(x => (x, standardMapping(lookupFunction(x)))).seq.map(p => new Association(p._1, 
-        convertPairs(p._2))).toArray     
+    val m1 = types.par.map(x => (x, standardMapping(lookupFunction(x)))).seq
+//    for ((t, p) <- m1) {
+//      if (p.allValues.exists(x => x._1 == null || x._2 == null)) {
+//        throw new Exception("Error with assoc type " + t)
+//      }
+//    }
+    m1.map(p => new Association(p._1, convertPairs(p._2))).toArray     
   }
   
   def geneSuggestions(partialName: String, filter: DataFilter): Array[Pair[String, String]] = {

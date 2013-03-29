@@ -56,8 +56,8 @@ class SparqlServiceTest extends FunSuite with BeforeAndAfter {
     testAssociation(AType.Uniprot)
   }
   
-  test ("KO") {
-    testAssociation(AType.KOProts)
+  test ("OrthProts") {
+    testAssociation(AType.OrthProts)
   }
   
   test ("CHEMBL") {
