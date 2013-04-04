@@ -1,19 +1,19 @@
 package otgviewer.client.charts;
 
-import java.util.Arrays;
 import java.util.List;
 
 import otgviewer.client.SparqlService;
 import otgviewer.client.SparqlServiceAsync;
 import otgviewer.client.Utils;
+import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.Group;
-import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.shared.SharedUtils;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
@@ -122,6 +122,7 @@ public class ChartGrid extends Composite {
 	/**
 	 * We normalise the column count of each data table when displaying it
 	 * in order to force the charts to have equally wide bars.
+	 * (To the greatest extent possible)
 	 * @param row
 	 * @param column
 	 * @param width
