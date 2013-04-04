@@ -105,7 +105,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   def geneSyms(probes: Array[String], filter: DataFilter): Array[Array[String]] = {
     val ps = probes.map(p => Probe(p))
     val attrib = AffyProbes.withAttributes(ps, filter)
-    attrib.toArray.map(_.symbols.toArray.map(_.symbol))    
+    probes.map(pi => attrib.find(_.identifier == pi).
+        map(_.symbolStrings.toArray).getOrElse(Array()))    
   }
     
   def probesForPathway(filter: DataFilter, pathway: String): Array[String] = {
