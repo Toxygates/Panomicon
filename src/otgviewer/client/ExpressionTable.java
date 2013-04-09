@@ -31,7 +31,6 @@ import otgviewer.shared.ValueType;
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -48,6 +47,7 @@ import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.cellview.client.ColumnSortList;
+import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.cellview.client.PageSizePager;
@@ -71,8 +71,6 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.ProvidesResize;
-import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.AsyncDataProvider;
 import com.google.gwt.view.client.HasData;
@@ -98,8 +96,13 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 	private final SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT.create(SparqlService.class);
 	private static otgviewer.client.Resources resources = GWT.create(otgviewer.client.Resources.class);
 	
-	private List<Synthetic> synthColumns = new ArrayList<Synthetic>();
-	
+	private List<Synthetic> synthetics = new ArrayList<Synthetic>();
+	private List<Column<ExpressionRow, ?>> synthColumns = new ArrayList<Column<ExpressionRow, ?>>();
+	private List<HideableColumn> hideableColumns = new ArrayList<HideableColumn>();
+ 	private List<AssociationColumn> associationColumns = new ArrayList<AssociationColumn>();
+ 	
+ 	private int dataColumns = 0;
+ 	
 	private ListBox groupsel1 = new ListBox();
 	private ListBox groupsel2 = new ListBox();
 	
@@ -108,8 +111,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 //	private List<String> displayedGeneIds = new ArrayList<String>();
 	private Map<AType, Association> associations = new HashMap<AType, Association>();
 		
-	private List<HideableColumn> hideableColumns = new ArrayList<HideableColumn>();
- 	private List<AssociationColumn> associationColumns = new ArrayList<AssociationColumn>();
+	
  	private boolean waitingForAssociations = true, loadedData = false;
  	
  	private Barcode[] chartBarcodes = null;
@@ -255,9 +257,13 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		
 		analysisTools.add(new Button("Remove tests", new ClickHandler() {
 			public void onClick(ClickEvent ce) {
-				if (!synthColumns.isEmpty()) {
+				if (!synthetics.isEmpty()) {
+					for (int i = 0; i < synthColumns.size(); ++i) {						
+						Column<ExpressionRow, ?> c = synthColumns.get(i);
+						removeColumn(c);
+					}
 					synthColumns.clear();
-					setupColumns();					
+					synthetics.clear();							
 				}
 			}
 		}));
@@ -274,9 +280,8 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 			final Group g2 = Utils.findGroup(chosenColumns, groupsel2.getItemText(groupsel2.getSelectedIndex()));
 			synth.setGroups(g1, g2);
 			kcService.addTwoGroupTest(synth, new AsyncCallback<Void>() {
-				public void onSuccess(Void v) {
-					synthColumns.add(synth);
-					setupColumns();
+				public void onSuccess(Void v) {					
+					addSynthColumn(synth);					
 					//force reload
 					exprGrid.setVisibleRangeAndClearData(exprGrid.getVisibleRange(), true); 
 				}
@@ -395,24 +400,45 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 			}
 		}		
 
-		int i = 0;		
+		dataColumns = 0;		
 		//columns with data
 		for (DataColumn c : chosenColumns) {
-			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);			
+			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, dataColumns);			
 			addDataColumn(valueCol, c.getShortTitle());			
 			valueCol.setCellStyleNames(((Group) c).getStyleName());
-			if (i == 0 && exprGrid.getColumnSortList().size() == 0) {
-				exprGrid.getColumnSortList().push(valueCol);
+			if (dataColumns == 0 && exprGrid.getColumnSortList().size() == 0) {
+				exprGrid.getColumnSortList().push(valueCol); //initial sort
 			}
-			i += 1;
+			dataColumns += 1;
 		}
 		
-		for (Synthetic s: synthColumns) {
-			Column<ExpressionRow, String> ttestCol = new ExpressionColumn(tc, i);
-			addExtraColumn(ttestCol, s.getShortTitle());
-			ttestCol.setSortable(true);
-			i += 1;
+		for (Synthetic s: synthetics) {
+			addSynthColumn(s);			
 		}				
+	}
+	
+	private void addSynthColumn(Synthetic s) {
+		TextCell tc = new TextCell();
+		synthetics.add(s);
+		Column<ExpressionRow, String> ttestCol = new ExpressionColumn(tc, dataColumns);
+		synthColumns.add(ttestCol);
+		addExtraColumn(ttestCol, s.getShortTitle());
+		ttestCol.setSortable(true);
+		dataColumns += 1;
+	}
+	
+	private void removeColumn(Column<ExpressionRow, ?> c) {
+		ColumnSortList csl = exprGrid.getColumnSortList();
+		
+		for (int i = 0; i < csl.size(); ++i) {
+			ColumnSortInfo csi = exprGrid.getColumnSortList().get(i);
+			if (csi.getColumn() == c) {
+				csl.remove(csi);
+				break;
+			}
+		}		
+		exprGrid.removeColumn(c);
+		dataColumns -= 1;
 	}
 
 	private void initHideableColumns() {
@@ -544,7 +570,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		super.columnsChanged(columns);
 		 //invalidate synthetic columns, since they depend on
 		//normal columns
-		synthColumns.clear();
+		synthetics.clear();
 		
 		groupsel1.clear();
 		groupsel2.clear();
@@ -570,7 +596,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 			List<DataColumn> cols = new ArrayList<DataColumn>();
 			cols.addAll(chosenColumns);
 			kcService.refilterData(chosenDataFilter, cols, chosenProbes,
-					absValBox.getValue(), synthColumns,
+					absValBox.getValue(), synthetics,
 					new AsyncCallback<Integer>() {
 						public void onFailure(Throwable caught) {
 							getExpressions(); //the user probably let the session expire							
@@ -595,7 +621,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 
 		//load data
 		kcService.loadDataset(chosenDataFilter, cols, chosenProbes, chosenValueType,
-				absValBox.getValue(), synthColumns, 
+				absValBox.getValue(), synthetics, 
 				new AsyncCallback<Integer>() {
 					public void onFailure(Throwable caught) {						
 						Window.alert("Unable to load dataset");					
@@ -814,11 +840,5 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		public boolean visible() { return this.visible; }
 		public void setVisibility(boolean v) { visible = v; }		
 	}
-	
-
-//	@Override
-//	public void onResize() {		
-//		dockPanel.onResize();		
-//	}
 	
 }
