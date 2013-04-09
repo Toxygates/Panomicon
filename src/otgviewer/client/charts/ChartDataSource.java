@@ -1,7 +1,9 @@
 package otgviewer.client.charts;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import otgviewer.client.KCService;
 import otgviewer.client.KCServiceAsync;
@@ -48,13 +50,43 @@ abstract class ChartDataSource {
 			this.barcode = barcode;
 			this.probe = probe;
 		}
+		
+		@Override
+		public int hashCode() {
+			int r = 0;			
+			if (barcode != null) {
+				r = barcode.hashCode();
+			} else {
+				r = r * 41 + time.hashCode();
+				r = r * 41 + dose.hashCode();
+				r = r * 41 + compound.hashCode();	
+			}
+			return r;
+		}
+		
+		@Override
+		public boolean equals(Object other) {
+			if (other instanceof ChartSample) {
+				if (barcode != null) {
+					return (barcode == ((ChartSample) other).barcode);
+				} else {
+					return (((ChartSample) other).dose == dose &&
+						    ((ChartSample) other).time == time && 
+							((ChartSample) other).compound == compound);
+				}
+
+			} else {
+				return false;
+			}
+		}
 	}
 	
 	void getSamples(String[] compounds, String[] dosesOrTimes, SampleAcceptor acceptor) {
 		if (compounds == null) {
 			acceptor.accept(samples);			
 		} else {
-			List<ChartSample> r = new ArrayList<ChartSample>();
+			//We store these in a set since we may be getting the same samples several times
+			Set<ChartSample> r = new HashSet<ChartSample>();
 			for (ChartSample s: samples) {
 				if (SharedUtils.indexOf(compounds, s.compound) != -1) {
 					if (dosesOrTimes == null || SharedUtils.indexOf(dosesOrTimes, s.dose) != -1 || 
@@ -63,7 +95,7 @@ abstract class ChartDataSource {
 					}
 				}
 			}
-			acceptor.accept(r);			
+			acceptor.accept(new ArrayList(r));			
 		}		 
 	}
 	

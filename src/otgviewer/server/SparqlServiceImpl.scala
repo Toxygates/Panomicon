@@ -112,7 +112,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   def probesForPathway(filter: DataFilter, pathway: String): Array[String] = {
     useConnector(B2RKegg, (c: B2RKegg.type) => {
       val geneIds = c.geneIds(pathway, filter).map(Gene(_))
-      println("Probes for " + geneIds.length + " genes")
+      println("Probes for " + geneIds.size + " genes")
       val probes = AffyProbes.forGenes(geneIds).toArray 
       OTGQueries.filterProbes(probes.map(_.identifier), filter).toArray  
     })    
