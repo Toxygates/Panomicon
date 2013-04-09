@@ -349,10 +349,13 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 				@Override
 				public void stateChange(boolean newState) {
 					c.setVisibility(newState);	
-					setupColumns();
 					if (newState) {
+						addExtraColumn(((Column<ExpressionRow, ?>) c), c.name());
 						getAssociations();
-					}
+					} else {
+						removeExtraColumn((Column<ExpressionRow, ?>) c);
+					}				
+
 				}				
 			};
 		}
@@ -364,8 +367,14 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 
 	
 	private void addExtraColumn(Column<ExpressionRow, ?> col, String name) {
-		col.setCellStyleNames("extraColumn");
-		exprGrid.addColumn(col, name);
+		col.setCellStyleNames("extraColumn");		
+		exprGrid.insertColumn(extraCols, col, name);
+		extraCols += 1;
+	}
+	
+	private void removeExtraColumn(Column<ExpressionRow, ?> col) {
+		exprGrid.removeColumn(col);
+		extraCols -= 1;
 	}
 	
 	private void addDataColumn(Column<ExpressionRow, ?> col, String title) {
@@ -395,8 +404,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		for (HideableColumn c: hideableColumns) {
 			if (c.visible()) {
 				Column<ExpressionRow, ?> cc = (Column<ExpressionRow, ?>) c;
-				addExtraColumn(cc, c.name());								
-				extraCols += 1;				
+				addExtraColumn(cc, c.name());												
 			}
 		}		
 
@@ -417,12 +425,14 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		}				
 	}
 	
+
 	private void addSynthColumn(Synthetic s) {
 		TextCell tc = new TextCell();
 		synthetics.add(s);
 		Column<ExpressionRow, String> ttestCol = new ExpressionColumn(tc, dataColumns);
 		synthColumns.add(ttestCol);
-		addExtraColumn(ttestCol, s.getShortTitle());
+		exprGrid.addColumn(ttestCol, s.getShortTitle());
+		ttestCol.setCellStyleNames("extraColumn");		
 		ttestCol.setSortable(true);
 		dataColumns += 1;
 	}
@@ -570,6 +580,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		super.columnsChanged(columns);
 		 //invalidate synthetic columns, since they depend on
 		//normal columns
+		dataColumns -= synthetics.size();
 		synthetics.clear();
 		
 		groupsel1.clear();
