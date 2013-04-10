@@ -44,6 +44,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.cellview.client.ColumnSortList;
@@ -281,7 +282,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 			synth.setGroups(g1, g2);
 			kcService.addTwoGroupTest(synth, new AsyncCallback<Void>() {
 				public void onSuccess(Void v) {					
-					addSynthColumn(synth);					
+					addSynthColumn(synth, "p-value");					
 					//force reload
 					exprGrid.setVisibleRangeAndClearData(exprGrid.getVisibleRange(), true); 
 				}
@@ -366,23 +367,6 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 	}
 
 	
-	private void addExtraColumn(Column<ExpressionRow, ?> col, String name) {
-		col.setCellStyleNames("extraColumn");		
-		exprGrid.insertColumn(extraCols, col, name);
-		extraCols += 1;
-	}
-	
-	private void removeExtraColumn(Column<ExpressionRow, ?> col) {
-		exprGrid.removeColumn(col);
-		extraCols -= 1;
-	}
-	
-	private void addDataColumn(Column<ExpressionRow, ?> col, String title) {
-		col.setSortable(true);
-		exprGrid.addColumn(col, title);
-		col.setCellStyleNames("dataColumn");		
-	}
-	
 	private int extraCols = 0;
 	private void setupColumns() {
 		// todo: explicitly set the width of each column
@@ -412,7 +396,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		//columns with data
 		for (DataColumn c : chosenColumns) {
 			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, dataColumns);			
-			addDataColumn(valueCol, c.getShortTitle());			
+			addDataColumn(valueCol, c.getShortTitle(), "Average of sample values");			
 			valueCol.setCellStyleNames(((Group) c).getStyleName());
 			if (dataColumns == 0 && exprGrid.getColumnSortList().size() == 0) {
 				exprGrid.getColumnSortList().push(valueCol); //initial sort
@@ -421,17 +405,26 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		}
 		
 		for (Synthetic s: synthetics) {
-			addSynthColumn(s);			
+			addSynthColumn(s, "p-value");			
 		}				
 	}
 	
-
-	private void addSynthColumn(Synthetic s) {
+	private void addColWithTooltip(Column<ExpressionRow, ?> c, String title, String tooltip) {
+		exprGrid.addColumn(c, SafeHtmlUtils.fromSafeConstant("<span title=\"" + 
+				tooltip + "\">" + title + "</span>"));
+	}
+	
+	private void insertColWithTooltip(Column<ExpressionRow, ?> c, int at, String title, String tooltip) {
+		exprGrid.insertColumn(at, c, SafeHtmlUtils.fromSafeConstant("<span title=\"" + 
+				tooltip + "\">" + title + "</span>"));
+	}
+	
+	private void addSynthColumn(Synthetic s, String tooltip) {
 		TextCell tc = new TextCell();
 		synthetics.add(s);
 		Column<ExpressionRow, String> ttestCol = new ExpressionColumn(tc, dataColumns);
-		synthColumns.add(ttestCol);
-		exprGrid.addColumn(ttestCol, s.getShortTitle());
+		synthColumns.add(ttestCol); 		
+		addColWithTooltip(ttestCol, s.getShortTitle(), tooltip);		
 		ttestCol.setCellStyleNames("extraColumn");		
 		ttestCol.setSortable(true);
 		dataColumns += 1;
@@ -451,6 +444,24 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		dataColumns -= 1;
 	}
 
+	
+	private void addExtraColumn(Column<ExpressionRow, ?> col, String name) {
+		col.setCellStyleNames("extraColumn");
+		insertColWithTooltip(col, extraCols, name, name);		
+		extraCols += 1;
+	}
+	
+	private void removeExtraColumn(Column<ExpressionRow, ?> col) {
+		exprGrid.removeColumn(col);
+		extraCols -= 1;
+	}
+	
+	private void addDataColumn(Column<ExpressionRow, ?> col, String title, String tooltip) {
+		col.setSortable(true);		
+		addColWithTooltip(col, title, tooltip);		
+		col.setCellStyleNames("dataColumn");		
+	}
+	
 	private void initHideableColumns() {
 		SafeHtmlCell shc = new SafeHtmlCell();
 		
