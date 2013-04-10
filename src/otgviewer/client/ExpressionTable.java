@@ -15,6 +15,7 @@ import otgviewer.client.charts.ChartGridFactory.AChartAcceptor;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.RichTable;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.AType;
@@ -28,6 +29,7 @@ import otgviewer.shared.SharedUtils;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
 
+import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
@@ -44,15 +46,10 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.cellview.client.ColumnSortList;
-import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
-import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.cellview.client.PageSizePager;
-import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.SimplePager.Resources;
 import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
@@ -78,13 +75,13 @@ import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.NoSelectionModel;
 import com.google.gwt.view.client.Range;
 
-public class ExpressionTable extends DataListenerWidget { //implements RequiresResize, ProvidesResize {
+public class ExpressionTable extends RichTable<ExpressionRow> { 
 
 	private final int PAGE_SIZE = 25;
 	
 	private Screen screen;
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
-	private DataGrid<ExpressionRow> exprGrid;
+	
 	private SimplePager sp;
 	private HorizontalPanel tools, analysisTools;
 	private DockLayoutPanel dockPanel;
@@ -99,47 +96,34 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 	
 	private List<Synthetic> synthetics = new ArrayList<Synthetic>();
 	private List<Column<ExpressionRow, ?>> synthColumns = new ArrayList<Column<ExpressionRow, ?>>();
-	private List<HideableColumn> hideableColumns = new ArrayList<HideableColumn>();
- 	private List<AssociationColumn> associationColumns = new ArrayList<AssociationColumn>();
- 	
- 	private int dataColumns = 0;
+	
+ 	private List<AssociationColumn> associationColumns;
  	
 	private ListBox groupsel1 = new ListBox();
 	private ListBox groupsel2 = new ListBox();
 	
-	private int highlightedRow = -1;
+	
 	private String[] displayedProbes;
 //	private List<String> displayedGeneIds = new ArrayList<String>();
 	private Map<AType, Association> associations = new HashMap<AType, Association>();
-		
 	
  	private boolean waitingForAssociations = true, loadedData = false;
  	
  	private Barcode[] chartBarcodes = null;
 
 	public ExpressionTable(Screen _screen) {
+		super();
 		screen = _screen;
-//		dockPanel = new DockLayoutPanel(Unit.PX);
-		initHideableColumns();
 		
-		exprGrid = new DataGrid<ExpressionRow>();
-//		dockPanel.add(exprGrid);
-//		initWidget(dockPanel);
-		initWidget(exprGrid);
+		grid.setStyleName("exprGrid");
+		grid.setPageSize(PAGE_SIZE);
 		
-		exprGrid.setStyleName("exprGrid");
-		exprGrid.setPageSize(PAGE_SIZE);
-		exprGrid.setWidth("100%");
-
-		exprGrid.setSelectionModel(new NoSelectionModel<ExpressionRow>());
-		exprGrid.setRowStyles(new RowHighligher());
+		grid.setSelectionModel(new NoSelectionModel<ExpressionRow>());
 		
-		exprGrid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
+		grid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 	
-		asyncProvider.addDataDisplay(exprGrid);		
-		AsyncHandler colSortHandler = new AsyncHandler(exprGrid);
-		
-		exprGrid.addColumnSortHandler(colSortHandler);
+		asyncProvider.addDataDisplay(grid);		
+
 		makeTools();
 		makeAnalysisTools();
 		setEnabled(false);
@@ -178,7 +162,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		sp = new SimplePager(TextLocation.CENTER, r, true, 500, true);
 		sp.setStyleName("slightlySpaced");
 		horizontalPanel.add(sp);		
-		sp.setDisplay(exprGrid);
+		sp.setDisplay(grid);
 		
 		PageSizePager pager = new PageSizePager(25) {
 			@Override
@@ -192,7 +176,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		
 		pager.setStyleName("slightlySpaced");
 		horizontalPanel.add(pager);
-		pager.setDisplay(exprGrid);		
+		pager.setDisplay(grid);		
 		
 		Label label = new Label("Magnitude >=");
 		label.setStyleName("highlySpaced");		
@@ -284,7 +268,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 				public void onSuccess(Void v) {					
 					addSynthColumn(synth, "p-value");					
 					//force reload
-					exprGrid.setVisibleRangeAndClearData(exprGrid.getVisibleRange(), true); 
+					grid.setVisibleRangeAndClearData(grid.getVisibleRange(), true); 
 				}
 				public void onFailure(Throwable caught) {
 					Window.alert("Unable to perform " + name);
@@ -334,7 +318,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		
 		MenuItem mi = new MenuItem("Export to TargetMine...", false, new Command() {
 			public void execute() {
-				Utils.displayInPopup("TargetMine export", new GeneExporter(w, exprGrid.getRowCount()));
+				Utils.displayInPopup("TargetMine export", new GeneExporter(w, grid.getRowCount()));
 			}
 		});
 		
@@ -366,40 +350,19 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		return r;
 	}
 
-	
-	private int extraCols = 0;
-	private void setupColumns() {
-		// todo: explicitly set the width of each column
+	@Override
+	protected void setupColumns() {
+		super.setupColumns();
 		TextCell tc = new TextCell();
-
-		int count = exprGrid.getColumnCount();
-		for (int i = 0; i < count; ++i) {
-			exprGrid.removeColumn(0);
-		}
-		exprGrid.getColumnSortList().clear();
-
-		extraCols = 0;
-		ToolColumn tcl = new ToolColumn(new ToolCell(this));
-		exprGrid.addColumn(tcl, "");
-		tcl.setCellStyleNames("clickCell");
-		exprGrid.setColumnWidth(tcl, "40px");		
-		extraCols += 1;
 		
-		for (HideableColumn c: hideableColumns) {
-			if (c.visible()) {
-				Column<ExpressionRow, ?> cc = (Column<ExpressionRow, ?>) c;
-				addExtraColumn(cc, c.name());												
-			}
-		}		
-
 		dataColumns = 0;		
 		//columns with data
 		for (DataColumn c : chosenColumns) {
 			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, dataColumns);			
 			addDataColumn(valueCol, c.getShortTitle(), "Average of sample values");			
 			valueCol.setCellStyleNames(((Group) c).getStyleName());
-			if (dataColumns == 0 && exprGrid.getColumnSortList().size() == 0) {
-				exprGrid.getColumnSortList().push(valueCol); //initial sort
+			if (dataColumns == 0 && grid.getColumnSortList().size() == 0) {
+				grid.getColumnSortList().push(valueCol); //initial sort
 			}
 			dataColumns += 1;
 		}
@@ -409,16 +372,24 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		}				
 	}
 	
-	private void addColWithTooltip(Column<ExpressionRow, ?> c, String title, String tooltip) {
-		exprGrid.addColumn(c, SafeHtmlUtils.fromSafeConstant("<span title=\"" + 
-				tooltip + "\">" + title + "</span>"));
+	@Override
+	protected Column<ExpressionRow, String> toolColumn(Cell<String> cell) {
+		return new Column<ExpressionRow, String>(cell) {
+			public String getValue(ExpressionRow er) {
+				if (er != null) {
+					return er.getProbe();
+				} else {
+					return "";
+				}
+			}
+		};
 	}
 	
-	private void insertColWithTooltip(Column<ExpressionRow, ?> c, int at, String title, String tooltip) {
-		exprGrid.insertColumn(at, c, SafeHtmlUtils.fromSafeConstant("<span title=\"" + 
-				tooltip + "\">" + title + "</span>"));
+	@Override
+	protected Cell<String> toolCell() {
+		return new ToolCell(this);
 	}
-	
+
 	private void addSynthColumn(Synthetic s, String tooltip) {
 		TextCell tc = new TextCell();
 		synthetics.add(s);
@@ -430,42 +401,12 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		dataColumns += 1;
 	}
 	
-	private void removeColumn(Column<ExpressionRow, ?> c) {
-		ColumnSortList csl = exprGrid.getColumnSortList();
-		
-		for (int i = 0; i < csl.size(); ++i) {
-			ColumnSortInfo csi = exprGrid.getColumnSortList().get(i);
-			if (csi.getColumn() == c) {
-				csl.remove(csi);
-				break;
-			}
-		}		
-		exprGrid.removeColumn(c);
-		dataColumns -= 1;
-	}
-
-	
-	private void addExtraColumn(Column<ExpressionRow, ?> col, String name) {
-		col.setCellStyleNames("extraColumn");
-		insertColWithTooltip(col, extraCols, name, name);		
-		extraCols += 1;
-	}
-	
-	private void removeExtraColumn(Column<ExpressionRow, ?> col) {
-		exprGrid.removeColumn(col);
-		extraCols -= 1;
-	}
-	
-	private void addDataColumn(Column<ExpressionRow, ?> col, String title, String tooltip) {
-		col.setSortable(true);		
-		addColWithTooltip(col, title, tooltip);		
-		col.setCellStyleNames("dataColumn");		
-	}
-	
-	private void initHideableColumns() {
+	protected List<HideableColumn> initHideableColumns() {
 		SafeHtmlCell shc = new SafeHtmlCell();
+		List<HideableColumn> r = new ArrayList<HideableColumn>();
+		associationColumns = new ArrayList<AssociationColumn>();
 		
-		hideableColumns.add(new LinkingColumn(shc, "Gene ID", false) {
+		r.add(new LinkingColumn(shc, "Gene ID", false) {
 			@Override
 			String formLink(String value) {
 				return AType.formGeneLink(value);
@@ -476,29 +417,28 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 			}						
 		});
 		
-		hideableColumns.add(new DefHideableColumn("Gene Sym", true) {
+		r.add(new DefHideableColumn<ExpressionRow>("Gene Sym", true) {
 			public String getValue(ExpressionRow er) {				
 				return SharedUtils.mkString(er.getGeneSyms(), ", ");
 			}
 		});
-		hideableColumns.add(new DefHideableColumn("Probe title", true) {
+		r.add(new DefHideableColumn<ExpressionRow>("Probe title", true) {
 			public String getValue(ExpressionRow er) {				
 				return er.getTitle();
 			}
 		});
-		hideableColumns.add(new DefHideableColumn("Probe", true) {
+		r.add(new DefHideableColumn<ExpressionRow>("Probe", true) {
 			public String getValue(ExpressionRow er) {				
 				return er.getProbe();
 			}
-		});
-		
+		});		
 		
 		for (AType at: AType.values()) {
 			AssociationColumn ac = new AssociationColumn(shc, at);
 			associationColumns.add(ac);
-			hideableColumns.add(ac);
+			r.add(ac);
 		}
-		
+		return r;
 	}
 	
 	private AType[] visibleAssociations() {
@@ -526,7 +466,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 					for (Association a: result) {
 						associations.put(a.type(), a);	
 					};				
-					exprGrid.redraw();
+					grid.redraw();
 				}
 			};
 
@@ -546,7 +486,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 
 			public void onSuccess(List<ExpressionRow> result) {
 				if (result.size() > 0) {
-					exprGrid.setRowData(start, result);
+					grid.setRowData(start, result);
 					displayedProbes = new String[result.size()];
 //					List<String> geneIds = new ArrayList<String>();		
 					for (int i = 0; i < displayedProbes.length; ++i) {			
@@ -566,11 +506,11 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 			if (loadedData) {
 				Range range = display.getVisibleRange();
 
-				ColumnSortList csl = exprGrid.getColumnSortList();
+				ColumnSortList csl = grid.getColumnSortList();
 				boolean asc = false;
 				int col = 0;
 				if (csl.size() > 0) {
-					col = exprGrid
+					col = grid
 							.getColumnIndex((Column<ExpressionRow, ?>) csl.get(
 									0).getColumn())
 							- extraCols;
@@ -614,7 +554,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 	void refilterData() {
 		if (loadedData) {
 			setEnabled(false);
-			exprGrid.setRowCount(0, false);
+			grid.setRowCount(0, false);
 			List<DataColumn> cols = new ArrayList<DataColumn>();
 			cols.addAll(chosenColumns);
 			kcService.refilterData(chosenDataFilter, cols, chosenProbes,
@@ -625,8 +565,8 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 						}
 
 						public void onSuccess(Integer result) {
-							exprGrid.setRowCount(result);
-							exprGrid.setVisibleRangeAndClearData(new Range(0,
+							grid.setRowCount(result);
+							grid.setVisibleRangeAndClearData(new Range(0,
 									PAGE_SIZE), true);
 							setEnabled(true);
 						}
@@ -636,7 +576,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 	
 	public void getExpressions() {
 		setEnabled(false);
-		exprGrid.setRowCount(0, false);		
+		grid.setRowCount(0, false);		
 		setupColumns();
 		List<DataColumn> cols = new ArrayList<DataColumn>();
 		cols.addAll(chosenColumns);
@@ -653,8 +593,8 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 						if (result > 0) {
 							loadedData = true;
 							setEnabled(true);
-							exprGrid.setRowCount(result);
-							exprGrid.setVisibleRangeAndClearData(new Range(0, PAGE_SIZE),
+							grid.setRowCount(result);
+							grid.setVisibleRangeAndClearData(new Range(0, PAGE_SIZE),
 									true);
 						} else {
 							Window.alert("No data was available. If you have not used Toxygates for a while, try reloading the page.");
@@ -678,17 +618,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 			}
 		}
 	}
-	
-	private class RowHighligher implements RowStyles<ExpressionRow> {
-		@Override
-		public String getStyleNames(ExpressionRow row, int rowIndex) {
-			if (highlightedRow != -1 && rowIndex == highlightedRow + exprGrid.getVisibleRange().getStart()) {
-				return "highlightedRow";
-			} else {
-				return "";
-			}
-		}		
-	}
+
 	
 	class ExpressionColumn extends Column<ExpressionRow, String> {
 		int i;
@@ -720,7 +650,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		
 		public void onClick(final String value) {			
 			highlightedRow = SharedUtils.indexOf(displayedProbes, value);
-			exprGrid.redraw();
+			grid.redraw();
 			
 			final ChartGridFactory cgf = new ChartGridFactory(chosenDataFilter, chosenColumns);
 			Utils.ensureVisualisationAndThen(new Runnable() {
@@ -739,28 +669,8 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 			});
 		}
 	}
-	
-	class ToolColumn extends Column<ExpressionRow, String> {
-			
-		public ToolColumn(ToolCell tc) {
-			super(tc);			
-		}
-		
-		public String getValue(ExpressionRow er) {
-			if (er != null) {
-				return er.getProbe();
-			} else {
-				return "";
-			}
-		}					
-	}
-	
-	
-	interface HideableColumn {
-		String name();
-		boolean visible();
-		void setVisibility(boolean v);
-	}
+
+
 	
 	abstract class LinkingColumn extends Column<ExpressionRow, SafeHtml> implements HideableColumn {
 		private boolean visible;
@@ -847,20 +757,6 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 			return build.toSafeHtml();
 		}		
 	}
-	
-	
-	abstract class DefHideableColumn extends TextColumn<ExpressionRow> implements HideableColumn {
-		private boolean visible;
-		public DefHideableColumn(String name, boolean initState) {
-			super();
-			visible = initState;
-			_name = name;
-		}
-		
-		private String _name;
-		public String name() { return _name; }
-		public boolean visible() { return this.visible; }
-		public void setVisibility(boolean v) { visible = v; }		
-	}
+
 	
 }
