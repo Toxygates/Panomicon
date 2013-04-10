@@ -3,23 +3,17 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import otgviewer.client.charts.AdjustableChartGrid;
 import otgviewer.client.charts.ChartGridFactory;
 import otgviewer.client.charts.ChartGridFactory.AChartAcceptor;
+import otgviewer.client.components.AssociationTable;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.RichTable;
 import otgviewer.client.components.Screen;
-import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.AType;
-import otgviewer.shared.Association;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.ExpressionRow;
@@ -44,26 +38,19 @@ import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.cellview.client.ColumnSortList;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.cellview.client.PageSizePager;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.SimplePager.Resources;
 import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
-import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DisclosurePanel;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.DoubleBox;
-import com.google.gwt.user.client.ui.FocusWidget;
-import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -75,37 +62,30 @@ import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.NoSelectionModel;
 import com.google.gwt.view.client.Range;
 
-public class ExpressionTable extends RichTable<ExpressionRow> { 
+public class ExpressionTable extends AssociationTable<ExpressionRow> { 
 
 	private final int PAGE_SIZE = 25;
 	
 	private Screen screen;
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
 	
-	private SimplePager sp;
 	private HorizontalPanel tools, analysisTools;
-	private DockLayoutPanel dockPanel;
 	
 	private DoubleBox absValBox;
 	private ListBox valueTypeList = new ListBox();
 	
 	private final KCServiceAsync kcService = (KCServiceAsync) GWT
-			.create(KCService.class);
-	private final SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT.create(SparqlService.class);
+			.create(KCService.class);	
 	private static otgviewer.client.Resources resources = GWT.create(otgviewer.client.Resources.class);
 	
 	private List<Synthetic> synthetics = new ArrayList<Synthetic>();
 	private List<Column<ExpressionRow, ?>> synthColumns = new ArrayList<Column<ExpressionRow, ?>>();
 	
-	private ListBox groupsel1 = new ListBox();
-	private ListBox groupsel2 = new ListBox();
-	
+	private ListBox groupsel1 = new ListBox(), groupsel2 = new ListBox();
 	
 	private String[] displayedProbes;
-//	private List<String> displayedGeneIds = new ArrayList<String>();
-	private Map<AType, Association> associations = new HashMap<AType, Association>();
-	
- 	private boolean waitingForAssociations = true, loadedData = false;
+
+ 	private boolean loadedData = false;
  	
  	private Barcode[] chartBarcodes = null;
 
@@ -133,6 +113,11 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 	
 	public Widget tools() { return this.tools; }
 	
+	private void setEnabled(boolean enabled) {
+		Utils.setEnabled(tools, enabled);
+		Utils.setEnabled(analysisTools, enabled);
+	}
+	
 	private void makeTools() {
 		tools = Utils.mkHorizontalPanel();		
 		
@@ -154,7 +139,8 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 		});
 
 		Resources r = GWT.create(Resources.class);
-		sp = new SimplePager(TextLocation.CENTER, r, true, 500, true);
+
+		SimplePager sp = new SimplePager(TextLocation.CENTER, r, true, 500, true);
 		sp.setStyleName("slightlySpaced");
 		horizontalPanel.add(sp);		
 		sp.setDisplay(grid);
@@ -381,13 +367,13 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 		SafeHtmlCell shc = new SafeHtmlCell();
 		List<HideableColumn> r = new ArrayList<HideableColumn>();
 		
-		r.add(new LinkingColumn(shc, "Gene ID", false) {
+		r.add(new LinkingColumn<ExpressionRow>(shc, "Gene ID", false) {
 			@Override
-			String formLink(String value) {
+			protected String formLink(String value) {
 				return AType.formGeneLink(value);
 			}
 			@Override
-			Collection<Pair<String, String>> getLinkableValues(ExpressionRow er) {
+			protected Collection<Pair<String, String>> getLinkableValues(ExpressionRow er) {
 				return Pair.duplicate(Arrays.asList(er.getGeneIds()));
 			}						
 		});
@@ -408,50 +394,15 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 			}
 		});		
 		
-		for (AType at: AType.values()) {
-			AssociationColumn ac = new AssociationColumn(shc, at);			
-			r.add(ac);
-		}
+		//We want gene sym, probe title etc. to be before the association columns going left to right
+		r.addAll(super.initHideableColumns());
+		
 		return r;
 	}
 	
-	private AType[] visibleAssociations() {
-		List<AType> r = new ArrayList<AType>();
-		for (HideableColumn ac: hideableColumns) {
-			if (ac instanceof AssociationColumn) {
-				AssociationColumn aac = (AssociationColumn) ac;
-				if (aac.visible()) {
-					r.add(aac.assoc);
-				}
-			}
-		}
-		return r.toArray(new AType[0]);
-	}
-	
-	private void getAssociations() {
-		waitingForAssociations = true;					
-		AType[] vas = visibleAssociations();
-		if (vas.length > 0) {
-			AsyncCallback<Association[]> assocCallback = new AsyncCallback<Association[]>() {
-				public void onFailure(Throwable caught) {
-					Window.alert("Unable to get associations: " + caught.getMessage());
-				}
-
-				public void onSuccess(Association[] result) {
-					associations.clear();
-					waitingForAssociations = false;
-					for (Association a: result) {
-						associations.put(a.type(), a);	
-					};				
-					grid.redraw();
-				}
-			};
-
-			owlimService.associations(chosenDataFilter, vas,
-					displayedProbes, 
-					assocCallback);
-		}
-	}
+	protected String[] displayedProbes() { return displayedProbes; }
+	protected String probeForRow(ExpressionRow row) { return row.getProbe(); }
+	protected String[] geneIdsForRow(ExpressionRow row) { return row.getGeneIds(); }
 	
 	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
 		private int start = 0;
@@ -489,7 +440,6 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 				}
 			}
 		}
-
 	}
 
 	@Override
@@ -568,12 +518,7 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 					}
 				});
 	}
-	
-	private void setEnabled(boolean enabled) {
-		Utils.setEnabled(tools, enabled);
-		Utils.setEnabled(analysisTools, enabled);
-	}
-	
+
 	class ExpressionColumn extends Column<ExpressionRow, String> {
 		int i;
 		NumberFormat df = NumberFormat.getDecimalFormat();
@@ -592,8 +537,7 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 			}
 		}
 	}
-	
-	
+		
 	class ToolCell extends ImageClickCell {
 		
 		public ToolCell(DataListenerWidget owner) {
@@ -620,101 +564,5 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 				}
 			});
 		}
-	}
-	
-	abstract class LinkingColumn extends Column<ExpressionRow, SafeHtml> implements HideableColumn {
-		private boolean visible;
-		SafeHtmlCell c;
-		String name;
-		public LinkingColumn(SafeHtmlCell c, String name, boolean initState) {
-			super(c);
-			visible = initState;
-			this.name = name;
-			this.c = c;
-		}
-				
-		public String name() { return name; }
-		public boolean visible() { return this.visible; }
-		public void setVisibility(boolean v) { visible = v; }		
-		
-		protected List<String> makeLinks(Collection<Pair<String, String>> values) {
-			List<String> r = new ArrayList<String>();
-			for (Pair<String, String> v: values) {
-				String l = formLink(v.second());
-				if (l != null) {
-					r.add("<a target=\"_TGassoc\" href=\"" + l + "\">" + v.first() + "</a>");
-				} else {
-					r.add(v.first()); //no link
-				}				
-			}
-			return r;
-		}
-		
-		public SafeHtml getValue(ExpressionRow er) {
-			SafeHtmlBuilder build = new SafeHtmlBuilder();
-			String c = SharedUtils.mkString(makeLinks(getLinkableValues(er))
-							, ", ");
-			build.appendHtmlConstant(c);
-			return build.toSafeHtml();
-		}
-		
-		Collection<Pair<String, String>> getLinkableValues(ExpressionRow er) {
-			return new ArrayList<Pair<String, String>>();
-		}
-		
-		abstract String formLink(String value);
-		
-	}
-	
-	class AssociationColumn extends LinkingColumn implements HideableColumn {
-		AType assoc;		
-		
-		public AssociationColumn(SafeHtmlCell tc, AType association) {
-			super(tc, association.title(), false);
-			this.assoc = association;			
-		}
-		
-		@Override
-		public void setVisibility(boolean v) {
-			super.setVisibility(v);
-			if (v) {
-				getAssociations();
-			}
-		}
-		
-		String formLink(String value) { return assoc.formLink(value); }
-		
-		Collection<Pair<String, String>> getLinkableValues(ExpressionRow er) {
-			Association a = associations.get(assoc);
-			if (a.data().containsKey(er.getProbe())) {
-				return a.data().get(er.getProbe());				
-			} else {
-				String[] geneids = er.getGeneIds();
-				Set<Pair<String, String>> all = new HashSet<Pair<String, String>>();
-				for (String gi : geneids) {
-					if (a.data().containsKey(gi)) {
-						all.addAll(a.data().get(gi));
-					}
-				}
-				return all;				
-			}
-		}
-		
-		public SafeHtml getValue(ExpressionRow er) {		
-			SafeHtmlBuilder build = new SafeHtmlBuilder();
-			if (waitingForAssociations) {
-				build.appendEscaped("(Waiting for data...)");
-				return build.toSafeHtml();
-			} else {
-				if (associations.containsKey(assoc)) {
-					return super.getValue(er);					
-				} else {
-					build.appendEscaped("(Data unavailable)");
-				}
-			}
-			return build.toSafeHtml();
-		}		
-	}
-
-	
+	}	
 }
