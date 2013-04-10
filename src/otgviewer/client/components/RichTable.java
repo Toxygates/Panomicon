@@ -13,6 +13,7 @@ import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.client.ui.MenuBar;
 
 /**
  * A data grid with functionality for hiding columns and displaying clickable icons in the leftmost columns.
@@ -24,19 +25,19 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	protected DataGrid<T> grid;
 	protected List<HideableColumn> hideableColumns = new ArrayList<HideableColumn>();
 	protected int highlightedRow = -1;
-	protected int extraCols = 0;
+	private int extraCols = 0;
 	protected int dataColumns = 0;
  	
-	
 	public RichTable() {
 		hideableColumns = initHideableColumns();
 		grid = new DataGrid<T>();
 		initWidget(grid);
 		grid.setWidth("100%");
-		grid.setRowStyles(new RowHighligher());
+		grid.setRowStyles(new RowHighligher<T>());
 		AsyncHandler colSortHandler = new AsyncHandler(grid);
 		grid.addColumnSortHandler(colSortHandler);
 	}
+	
 	
 	protected void setupColumns() {
 		// todo: explicitly set the width of each column
@@ -48,6 +49,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		}
 		grid.getColumnSortList().clear();
 		
+		dataColumns = 0;
 		extraCols = 0;
 		Column<T, String> tcl = toolColumn(toolCell());
 		
@@ -64,9 +66,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		}		
 	}
 	
-	protected Cell<String> toolCell() {
-		return new TextCell();
-	}
+	protected Cell<String> toolCell() { return new TextCell(); }
 	
 	abstract protected Column<T, String> toolColumn(Cell<String> cell);
 	
@@ -79,12 +79,24 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		grid.insertColumn(at, c, SafeHtmlUtils.fromSafeConstant("<span title=\"" + 
 				tooltip + "\">" + title + "</span>"));
 	}
+
+	
+	public void addDataColumn(Column<T, ?> col, String title, String tooltip) {
+		col.setSortable(true);		
+		addColWithTooltip(col, title, tooltip);		
+		col.setCellStyleNames("dataColumn");		
+		if (dataColumns == 0 && grid.getColumnSortList().size() == 0) {
+			grid.getColumnSortList().push(col); //initial sort
+		}
+		dataColumns += 1;
+	}
+	
 	
 	/**
 	 * Remove a column without altering the sort order, if possible
 	 * @param c
 	 */
-	protected void removeColumn(Column<T, ?> c) {
+	public void removeDataColumn(Column<T, ?> c) {
 		ColumnSortList csl = grid.getColumnSortList();
 		
 		for (int i = 0; i < csl.size(); ++i) {
@@ -98,36 +110,76 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		dataColumns -= 1;
 	}
 
-	
-	protected void addDataColumn(Column<T, ?> col, String title, String tooltip) {
-		col.setSortable(true);		
-		addColWithTooltip(col, title, tooltip);		
-		col.setCellStyleNames("dataColumn");		
+	private int sortCol;
+	private boolean sortAsc;
+	public void computeSortParams() {
+		ColumnSortList csl = grid.getColumnSortList();
+		sortAsc = false;
+		sortCol = 0;
+		if (csl.size() > 0) {
+			sortCol = grid
+					.getColumnIndex((Column<T, ?>) csl.get(
+							0).getColumn())
+					- extraCols;
+			sortAsc = csl.get(0).isAscending();
+		}
 	}
+	
+	/**
+	 * The offset of the data column being sorted (within the data columns only)
+	 */
+	public int sortDataColumnIdx() { 		
+		return sortCol; 
+	}
+		
+	public boolean sortAscending() {		
+		return sortAsc; 
+	}
+		
 	
 	/**
 	 * An "extra" column is a column that is not a data column.
 	 * @param col
 	 * @param name
 	 */
-	protected void addExtraColumn(Column<T, ?> col, String name) {
+	private void addExtraColumn(Column<T, ?> col, String name) {
 		col.setCellStyleNames("extraColumn");
 		insertColWithTooltip(col, extraCols, name, name);		
 		extraCols += 1;
 	}
 	
-	protected void removeExtraColumn(Column<T, ?> col) {
+	private void removeExtraColumn(Column<T, ?> col) {
 		grid.removeColumn(col);
 		extraCols -= 1;
 	}
 	
 	abstract protected List<HideableColumn> initHideableColumns();
 	
+	/**
+	 * Create tick menu items corresponding to the hideable columns.
+	 * @param mb
+	 */
+	protected void setupMenuItems(MenuBar mb) {
+		for (final HideableColumn c: hideableColumns) {
+			new TickMenuItem(mb, c.name(), c.visible()) {
+				@Override
+				public void stateChange(boolean newState) {
+					c.setVisibility(newState);	
+					if (newState) {
+						addExtraColumn(((Column<T, ?>) c), c.name());					
+					} else {
+						removeExtraColumn((Column<T, ?>) c);
+					}				
+
+				}				
+			};
+		}
+	}
 	
 	protected interface HideableColumn {
 		String name();
 		boolean visible();
-		void setVisibility(boolean v);
+		void setVisibility(boolean v);		
 	}
 	
 	/*
@@ -147,12 +199,11 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		public void setVisibility(boolean v) { visible = v; }		
 	}
 	
-	protected class RowHighligher<T> implements RowStyles<T> {
-		
+	protected class RowHighligher<U> implements RowStyles<U> {		
 		public RowHighligher() {}
 
 		@Override
-		public String getStyleNames(T row, int rowIndex) {
+		public String getStyleNames(U row, int rowIndex) {
 			if (highlightedRow != -1 && rowIndex == highlightedRow + grid.getVisibleRange().getStart()) {
 				return "highlightedRow";
 			} else {

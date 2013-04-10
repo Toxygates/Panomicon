@@ -97,8 +97,6 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 	private List<Synthetic> synthetics = new ArrayList<Synthetic>();
 	private List<Column<ExpressionRow, ?>> synthColumns = new ArrayList<Column<ExpressionRow, ?>>();
 	
- 	private List<AssociationColumn> associationColumns;
- 	
 	private ListBox groupsel1 = new ListBox();
 	private ListBox groupsel2 = new ListBox();
 	
@@ -118,16 +116,13 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 		grid.setStyleName("exprGrid");
 		grid.setPageSize(PAGE_SIZE);
 		
-		grid.setSelectionModel(new NoSelectionModel<ExpressionRow>());
-		
-		grid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
-	
+		grid.setSelectionModel(new NoSelectionModel<ExpressionRow>());		
+		grid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);	
 		asyncProvider.addDataDisplay(grid);		
 
 		makeTools();
 		makeAnalysisTools();
 		setEnabled(false);
-
 	}
 	
 	private ValueType getValueType() {
@@ -245,7 +240,7 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 				if (!synthetics.isEmpty()) {
 					for (int i = 0; i < synthColumns.size(); ++i) {						
 						Column<ExpressionRow, ?> c = synthColumns.get(i);
-						removeColumn(c);
+						removeDataColumn(c);
 					}
 					synthColumns.clear();
 					synthetics.clear();							
@@ -255,14 +250,18 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 		analysisTools.setVisible(false); //initially hidden		
 	}
 	
+	private String selectedGroup(ListBox groupSelector) {
+		return groupSelector.getItemText(groupSelector.getSelectedIndex());
+	}
+	
 	private void addTwoGroupSynthetic(final Synthetic.TwoGroupSynthetic synth, final String name) {
 		if (groupsel1.getSelectedIndex() == -1 || groupsel2.getSelectedIndex() == -1) {
 			Window.alert("Please select two groups to perform " + name + ".");
 		} else if (groupsel1.getSelectedIndex() == groupsel2.getSelectedIndex()) {
 			Window.alert("Please select two different groups to perform " + name + ".");
 		} else {
-			final Group g1 = Utils.findGroup(chosenColumns, groupsel1.getItemText(groupsel1.getSelectedIndex()));
-			final Group g2 = Utils.findGroup(chosenColumns, groupsel2.getItemText(groupsel2.getSelectedIndex()));
+			final Group g1 = Utils.findGroup(chosenColumns, selectedGroup(groupsel1));
+			final Group g2 = Utils.findGroup(chosenColumns, selectedGroup(groupsel2));
 			synth.setGroups(g1, g2);
 			kcService.addTwoGroupTest(synth, new AsyncCallback<Void>() {
 				public void onSuccess(Void v) {					
@@ -279,9 +278,9 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 	
 	MenuItem[] menuItems() {
 		MenuItem[] r = new MenuItem[2];
-		MenuBar menuBar_3 = new MenuBar(true);
+		MenuBar menuBar = new MenuBar(true);
 		
-		MenuItem mntmActions_1 = new MenuItem("Actions", false, menuBar_3);		
+		MenuItem mActions = new MenuItem("Actions", false, menuBar);		
 		final DataListenerWidget w = this;
 		MenuItem mntmDownloadCsv = new MenuItem("Download CSV...", false, new Command() {
 			public void execute() {
@@ -314,7 +313,7 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 				
 			}
 		});
-		menuBar_3.addItem(mntmDownloadCsv);
+		menuBar.addItem(mntmDownloadCsv);
 		
 		MenuItem mi = new MenuItem("Export to TargetMine...", false, new Command() {
 			public void execute() {
@@ -322,31 +321,15 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 			}
 		});
 		
-		menuBar_3.addItem(mi);
+		menuBar.addItem(mi);
 		
-		r[0] = mntmActions_1;
+		r[0] = mActions;
 		
-		MenuBar menuBar_2 = new MenuBar(true);
-		MenuItem mntmNewMenu_1 = new MenuItem("New menu", false, menuBar_2);
+		menuBar = new MenuBar(true);
+		MenuItem mColumns = new MenuItem("Columns", false, menuBar);
+		setupMenuItems(menuBar);
 
-		for (final HideableColumn c: hideableColumns) {
-			new TickMenuItem(menuBar_2, c.name(), c.visible()) {
-				@Override
-				public void stateChange(boolean newState) {
-					c.setVisibility(newState);	
-					if (newState) {
-						addExtraColumn(((Column<ExpressionRow, ?>) c), c.name());
-						getAssociations();
-					} else {
-						removeExtraColumn((Column<ExpressionRow, ?>) c);
-					}				
-
-				}				
-			};
-		}
-		
-		mntmNewMenu_1.setHTML("Columns");
-		r[1] = mntmNewMenu_1;
+		r[1] = mColumns;
 		return r;
 	}
 
@@ -354,17 +337,12 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 	protected void setupColumns() {
 		super.setupColumns();
 		TextCell tc = new TextCell();
-		
-		dataColumns = 0;		
+				
 		//columns with data
 		for (DataColumn c : chosenColumns) {
 			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, dataColumns);			
 			addDataColumn(valueCol, c.getShortTitle(), "Average of sample values");			
 			valueCol.setCellStyleNames(((Group) c).getStyleName());
-			if (dataColumns == 0 && grid.getColumnSortList().size() == 0) {
-				grid.getColumnSortList().push(valueCol); //initial sort
-			}
-			dataColumns += 1;
 		}
 		
 		for (Synthetic s: synthetics) {
@@ -394,17 +372,14 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 		TextCell tc = new TextCell();
 		synthetics.add(s);
 		Column<ExpressionRow, String> ttestCol = new ExpressionColumn(tc, dataColumns);
-		synthColumns.add(ttestCol); 		
-		addColWithTooltip(ttestCol, s.getShortTitle(), tooltip);		
-		ttestCol.setCellStyleNames("extraColumn");		
-		ttestCol.setSortable(true);
-		dataColumns += 1;
+		synthColumns.add(ttestCol); 				
+		addDataColumn(ttestCol, s.getShortTitle(), tooltip);		
+		ttestCol.setCellStyleNames("extraColumn");				
 	}
 	
 	protected List<HideableColumn> initHideableColumns() {
 		SafeHtmlCell shc = new SafeHtmlCell();
 		List<HideableColumn> r = new ArrayList<HideableColumn>();
-		associationColumns = new ArrayList<AssociationColumn>();
 		
 		r.add(new LinkingColumn(shc, "Gene ID", false) {
 			@Override
@@ -434,8 +409,7 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 		});		
 		
 		for (AType at: AType.values()) {
-			AssociationColumn ac = new AssociationColumn(shc, at);
-			associationColumns.add(ac);
+			AssociationColumn ac = new AssociationColumn(shc, at);			
 			r.add(ac);
 		}
 		return r;
@@ -443,9 +417,12 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 	
 	private AType[] visibleAssociations() {
 		List<AType> r = new ArrayList<AType>();
-		for (AssociationColumn ac: associationColumns) {
-			if (ac.visible()) {
-				r.add(ac.assoc);
+		for (HideableColumn ac: hideableColumns) {
+			if (ac instanceof AssociationColumn) {
+				AssociationColumn aac = (AssociationColumn) ac;
+				if (aac.visible()) {
+					r.add(aac.assoc);
+				}
 			}
 		}
 		return r.toArray(new AType[0]);
@@ -488,12 +465,11 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 				if (result.size() > 0) {
 					grid.setRowData(start, result);
 					displayedProbes = new String[result.size()];
-//					List<String> geneIds = new ArrayList<String>();		
+		
 					for (int i = 0; i < displayedProbes.length; ++i) {			
 						displayedProbes[i] = result.get(i).getProbe();
-//						geneIds.addAll(Arrays.asList(result.get(i).getGeneIds()));
 					}		
-//					displayedGeneIds = geneIds;
+
 					highlightedRow = -1;							
 					getAssociations();
 				} else {
@@ -504,22 +480,12 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 
 		protected void onRangeChanged(HasData<ExpressionRow> display) {
 			if (loadedData) {
-				Range range = display.getVisibleRange();
-
-				ColumnSortList csl = grid.getColumnSortList();
-				boolean asc = false;
-				int col = 0;
-				if (csl.size() > 0) {
-					col = grid
-							.getColumnIndex((Column<ExpressionRow, ?>) csl.get(
-									0).getColumn())
-							- extraCols;
-					asc = csl.get(0).isAscending();
-				}
+				Range range = display.getVisibleRange();		
 				start = range.getStart();
+				computeSortParams();
 				if (range.getLength() > 0) {
 					kcService.datasetItems(range.getStart(), range.getLength(),
-							col, asc, rowCallback);
+							sortDataColumnIdx(), sortAscending(), rowCallback);
 				}
 			}
 		}
@@ -576,60 +542,46 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 	
 	public void getExpressions() {
 		setEnabled(false);
-		grid.setRowCount(0, false);		
+		grid.setRowCount(0, false);
 		setupColumns();
 		List<DataColumn> cols = new ArrayList<DataColumn>();
 		cols.addAll(chosenColumns);
 
-		//load data
-		kcService.loadDataset(chosenDataFilter, cols, chosenProbes, chosenValueType,
-				absValBox.getValue(), synthetics, 
+		// load data
+		kcService.loadDataset(chosenDataFilter, cols, chosenProbes,
+				chosenValueType, absValBox.getValue(), synthetics,
 				new AsyncCallback<Integer>() {
-					public void onFailure(Throwable caught) {						
-						Window.alert("Unable to load dataset");					
+					public void onFailure(Throwable caught) {
+						Window.alert("Unable to load dataset");
 					}
-					
+
 					public void onSuccess(Integer result) {
 						if (result > 0) {
 							loadedData = true;
 							setEnabled(true);
 							grid.setRowCount(result);
-							grid.setVisibleRangeAndClearData(new Range(0, PAGE_SIZE),
-									true);
+							grid.setVisibleRangeAndClearData(new Range(0,
+									PAGE_SIZE), true);
 						} else {
 							Window.alert("No data was available. If you have not used Toxygates for a while, try reloading the page.");
 						}
 					}
-				});		
+				});
 	}
 	
 	private void setEnabled(boolean enabled) {
-		setEnabled(tools, enabled);
-		setEnabled(analysisTools, enabled);
+		Utils.setEnabled(tools, enabled);
+		Utils.setEnabled(analysisTools, enabled);
 	}
-	
-	private void setEnabled(HasWidgets root, boolean enabled) {
-		for (Widget w: root) {
-			if (w instanceof HasWidgets) {
-				setEnabled((HasWidgets) w, enabled);
-			}
-			if (w instanceof FocusWidget) {
-				((FocusWidget) w).setEnabled(enabled);
-			}
-		}
-	}
-
 	
 	class ExpressionColumn extends Column<ExpressionRow, String> {
 		int i;
-		TextCell tc;
 		NumberFormat df = NumberFormat.getDecimalFormat();
 		NumberFormat sf = NumberFormat.getScientificFormat();
 		
 		public ExpressionColumn(TextCell tc, int i) {
 			super(tc);
-			this.i = i;
-			this.tc = tc;	
+			this.i = i;	
 		}
 
 		public String getValue(ExpressionRow er) {
@@ -669,8 +621,6 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 			});
 		}
 	}
-
-
 	
 	abstract class LinkingColumn extends Column<ExpressionRow, SafeHtml> implements HideableColumn {
 		private boolean visible;
@@ -722,6 +672,14 @@ public class ExpressionTable extends RichTable<ExpressionRow> {
 		public AssociationColumn(SafeHtmlCell tc, AType association) {
 			super(tc, association.title(), false);
 			this.assoc = association;			
+		}
+		
+		@Override
+		public void setVisibility(boolean v) {
+			super.setVisibility(v);
+			if (v) {
+				getAssociations();
+			}
 		}
 		
 		String formLink(String value) { return assoc.formLink(value); }
