@@ -21,6 +21,7 @@ class SparqlServiceTest extends FunSuite with BeforeAndAfter {
   var s: SparqlServiceImpl = _
   
   before {    
+    System.setProperty("otg.home", "/Users/johan/otg/20120221/open-tggates")
     s = new SparqlServiceImpl()
     s.localInit
   }  
@@ -66,5 +67,11 @@ class SparqlServiceTest extends FunSuite with BeforeAndAfter {
   
   test ("DrugBank") {
     testAssociation(AType.Drugbank)
+  }
+  
+  test ("Genes for pathway") {
+    val ps = s.probesForPathway(f, "Glutathione metabolism")
+    println(ps.size + " probes")
+    assert(ps.size === 42)
   }
 }
