@@ -24,8 +24,8 @@ import otgviewer.client.SparqlService
 import otgviewer.shared.AType
 import otgviewer.shared.Association
 import otgviewer.shared.Barcode
-import otgviewer.shared.DataColumn
 import otgviewer.shared.DataFilter
+import otgviewer.shared.BarcodeColumn
 import bioweb.shared.Pair
 import otgviewer.shared.Pathology
 import bioweb.shared.array.Annotation
@@ -39,6 +39,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   import UtilsS._
   import Assocations._
   import CommonSPARQL._
+  
+  type DataColumn = bioweb.shared.array.DataColumn[Barcode]
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
@@ -96,11 +98,11 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   def pathologies(barcode: Barcode): Array[Pathology] = 
     OTGSamples.pathologies(barcode.getCode).map(asJava(_)).toArray
     
-  def pathologies(column: DataColumn): Array[Pathology] = 
+  def pathologies(column: BarcodeColumn): Array[Pathology] = 
     column.getBarcodes.flatMap(x => OTGSamples.pathologies(x.getCode)).map(asJava(_))
     
   def annotations(barcode: Barcode): Annotation = asJava(OTGSamples.annotations(barcode.getCode))
-  def annotations(column: DataColumn): Array[Annotation] = 
+  def annotations(column: BarcodeColumn): Array[Annotation] = 
     column.getBarcodes.map(x => OTGSamples.annotations(x.getCode)).map(asJava(_))
     
   def pathways(filter: DataFilter, pattern: String): Array[String] = 

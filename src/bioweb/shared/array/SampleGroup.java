@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 import bioweb.shared.SharedUtils;
 
-public class SampleGroup<G extends Sample> implements Serializable, Comparable<SampleGroup> {
+public class SampleGroup<S extends Sample> implements Serializable, Comparable<SampleGroup> {
 
 	/**
 	 * This list was generated using the service at
@@ -20,15 +20,15 @@ public class SampleGroup<G extends Sample> implements Serializable, Comparable<S
 	
 	protected String name;
 	protected String color;
-	protected G[] _samples;
+	protected S[] _samples;
 	
-	public SampleGroup(String name, G[] samples, String color) {
+	public SampleGroup(String name, S[] samples, String color) {
 		this.name = name;
 		this._samples = samples;
 		this.color = color;
 	}
 	
-	public SampleGroup(String name, G[] samples) {
+	public SampleGroup(String name, S[] samples) {
 		this(name, samples, pickColor());
 	}
 	
@@ -40,7 +40,7 @@ public class SampleGroup<G extends Sample> implements Serializable, Comparable<S
 		return groupColors[nextColor - 1];
 	}
 	
-	public G[] samples() { return _samples; }
+	public S[] samples() { return _samples; }
 	
 	public String getName() { return name; }
 	
@@ -59,7 +59,7 @@ public class SampleGroup<G extends Sample> implements Serializable, Comparable<S
 		s.append("Group:::");
 		s.append(name + ":::"); //!!
 		s.append(color + ":::");
-		for (G b : _samples) {
+		for (S b : _samples) {
 			s.append(b.pack());
 			s.append("^^^");
 		}

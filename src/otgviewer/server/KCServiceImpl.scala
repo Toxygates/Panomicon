@@ -9,37 +9,32 @@ import otg.OTGQueries
 import java.util.{ List => JList, ArrayList }
 import otgviewer.shared.DataFilter
 import otgviewer.shared.Synthetic
-import otgviewer.shared.DataColumn
 import otgviewer.shared.ValueType
 import otgviewer.shared.ExpressionRow
 import otgviewer.shared.Group
+import otgviewer.shared.BarcodeColumn
+import otgviewer.shared.ExpressionValue
+import otgviewer.shared.Series
 import otg.ExprValue
 import otgviewer.shared.Barcode
 import friedrich.statistics.ArrayVector
 import javax.servlet.http.HttpSession
 import otg.sparql.AffyProbes
 import otg.CSVHelper
-import otgviewer.shared.Series
 import otg.OTGSeriesQuery
-import otgviewer.shared.ExpressionValue
 import otg.sparql._
 import otg.OTGCabinet
+import bioweb.server.array.ArrayServiceImpl
+
 
 /**
  * This servlet is responsible for obtaining and manipulating data from the Kyoto
  * Cabinet databases.
  */
-class KCServiceImpl extends RemoteServiceServlet with KCService {
+class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService {
   import Conversions._
   import scala.collection.JavaConversions._
   import UtilsS._
-
-  class DataViewParams {
-    var sortAsc: Boolean = _
-    var sortColumn: Int = _
-    var mustSort: Boolean = _
-    var filter: DataFilter = _
-  }
 
   private var foldsDB: DB = _
   private var absDB: DB = _
@@ -60,9 +55,10 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     super.destroy()
   }
 
-  private def getSessionData() = new SessionData(getThreadLocalRequest().getSession())
+  //TODO lift up
+  protected def getSessionData() = new SessionData(getThreadLocalRequest().getSession())
 
-  private class SessionData(val session: HttpSession) {
+  protected class SessionData(val session: HttpSession) {
     def ungroupedUnfiltered: ExprMatrix = session.getAttribute("ungroupedUnfiltered").asInstanceOf[ExprMatrix]
     def ungroupedUnfiltered_=(v: ExprMatrix) = session.setAttribute("ungroupedUnfiltered", v)
 
@@ -86,7 +82,6 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
   }
 
   //Should this be in owlimService?
-  //Is the separate OTGMisc object needed?
   def identifiersToProbes(filter: DataFilter, identifiers: Array[String], precise: Boolean): Array[String] =
     AffyProbes.identifiersToProbes(filter, identifiers, precise).map(_.identifier).toArray
 
@@ -114,15 +109,15 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     r
   }
 
-  def loadDataset(filter: DataFilter, columns: JList[DataColumn], probes: Array[String],
+  def loadDataset(filter: DataFilter, columns: JList[BarcodeColumn], probes: Array[String],
                   typ: ValueType, absValFilter: Double, syntheticColumns: JList[Synthetic]): Int = {
 
-    def barcodes(columns: Seq[DataColumn]): Seq[String] = {
+    def barcodes(columns: Seq[BarcodeColumn]): Seq[String] = {
       columns.flatMap(_ match {
         case g: Group   => g.getBarcodes
         case b: Barcode => Vector(b)
         case _          => Vector()
-      }).map(_.getCode)
+      }).map(_.id)
     }
 
     val filtered = filterProbes(filter, null).toSeq
@@ -135,7 +130,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     refilterData(filter, columns, probes, absValFilter, syntheticColumns)
   }
 
-  private def makeGroups(data: ExprMatrix, columns: Seq[DataColumn]) = {    
+  private def makeGroups(data: ExprMatrix, columns: Seq[BarcodeColumn]) = {    
     val groupedColumns = columns.map(_ match {
       case g: Group => {
         new ArrayVector[ExprValue]((0 until data.rows).map(r => {
@@ -151,7 +146,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     r
   }
   
-  def refilterData(filter: DataFilter, columns: JList[DataColumn], probes: Array[String], absValFilter: Double,
+  def refilterData(filter: DataFilter, columns: JList[BarcodeColumn], probes: Array[String], absValFilter: Double,
                    syntheticColumns: JList[Synthetic]): Int = {
     println("Refilter probes: " + probes)
     if (probes != null) {

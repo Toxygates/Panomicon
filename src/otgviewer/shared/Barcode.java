@@ -1,5 +1,6 @@
 package otgviewer.shared;
 
+import bioweb.shared.array.DataColumn;
 import bioweb.shared.array.Sample;
 
 /**
@@ -7,7 +8,7 @@ import bioweb.shared.array.Sample;
  * @author johan
  *
  */
-public class Barcode extends Sample implements DataColumn {
+public class Barcode extends Sample implements BarcodeColumn {
 		
 	private String individual = "";
 	private String dose = "";

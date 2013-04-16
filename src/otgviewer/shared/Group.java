@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import bioweb.shared.SharedUtils;
+import bioweb.shared.array.DataColumn;
 import bioweb.shared.array.SampleGroup;
 
 /**
@@ -11,7 +12,7 @@ import bioweb.shared.array.SampleGroup;
  * @author johan
  *
  */
-public class Group extends SampleGroup<Barcode> implements DataColumn {
+public class Group extends SampleGroup<Barcode> implements BarcodeColumn {
 	
 	public Group() {}
 	
