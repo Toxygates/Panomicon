@@ -1,27 +1,24 @@
-package otgviewer.shared;
+package bioweb.shared.array;
 
 import java.io.Serializable;
 import java.util.List;
 
 /**
  * A set of annotations (such as chemical data and morphological data)
- * corresponding to an array.
+ * corresponding to a microarray sample.
  * @author johan
  */
 public class Annotation implements Serializable {
-	public Annotation(String barcode, List<Entry> annotations) {
-		_barcode = barcode;
+	public Annotation(String id, List<Entry> annotations) {
+		_id = id;
 		_entries = annotations;
 	}
 	
 	public Annotation() { }
 	
-	private String _barcode;	
-	public String barcode() { return _barcode; }
-//	
-//	private Map<String, String> _annotations;
-//	public Map<String, String> annotations() { return _annotations; }
-	
+	private String _id;	
+	public String id() { return _id; }
+
 	private List<Entry> _entries;
 	
 	public static class Entry implements Serializable {
@@ -37,11 +34,7 @@ public class Annotation implements Serializable {
 	}
 	
 	public List<Entry> getEntries() {
-//		List<Entry> r = new ArrayList<Entry>();
-//		for (String k: _annotations.keySet()) {
-//			r.add(new Entry(k, _annotations.get(k)));
-//		}
-//		return r;
+
 		return _entries;
 	}
 	

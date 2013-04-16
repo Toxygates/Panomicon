@@ -10,9 +10,10 @@
 	<!-- <inherits name='com.google.gwt.user.theme.standard.Standard'/> -->
 	<!-- <inherits name='com.google.gwt.user.theme.chrome.Chrome'/> -->
 	<!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
-	<inherits name='com.google.gwt.visualization.Visualization'/>
 
 	<!-- Other module inherits                                      -->
+	<inherits name='com.google.gwt.visualization.Visualization'/>
+	<inherits name='bioweb.BioWeb' />
 
 	<!-- Specify the app entry point class.                         -->
 	<entry-point class='otgviewer.client.OTGViewer' />

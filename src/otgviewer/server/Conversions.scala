@@ -4,7 +4,6 @@ import scala.collection.JavaConversions._
 import otg.Sample
 import otg.SeriesMatching
 import otg.Species
-import otgviewer.shared.Annotation
 import otgviewer.shared.Barcode
 import otgviewer.shared.CellType
 import otgviewer.shared.DataFilter
@@ -14,6 +13,7 @@ import otgviewer.shared.Pathology
 import otgviewer.shared.RankRule
 import otgviewer.shared.Series
 import otgviewer.shared.RuleType
+import bioweb.shared.array.Annotation
 
 object Conversions {
   import language.implicitConversions

@@ -248,12 +248,6 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
       val attribs = c.withAttributes(probes, f)
       val pm = Map() ++ attribs.map(a => (a.identifier -> a))
       
-//      val probeTitles = c.titles(probes)
-//      //todo: collapse the two gene lookup functions
-//      val geneIds = c.geneIds(probes)
-//      val geneSyms = c.geneSyms(probes)
-      
-      //TODO: could also insert proteins here for free
       rows.map(or => {
         if (!pm.containsKey(or.getProbe)) {
           println("missing key: " + or.getProbe)
@@ -273,7 +267,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
 
     val realProbes = filterProbes(filter, probes)
     val r = getExprValues(filter, barcodes, realProbes, typ, sparseRead)
-    //When we have obtained the data in r, it may no longer be sorted in the order that the user
+    //When we have obtained the data in r, it might no longer be sorted in the order that the user
     //requested. Thus we use selectNamedRows here to force the sort order they wanted.
     new ArrayList[ExpressionRow](insertAnnotations(r.selectNamedColumns(barcodes).asRows, filter))
   }

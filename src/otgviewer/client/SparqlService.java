@@ -1,6 +1,5 @@
 package otgviewer.client;
 import otgviewer.shared.AType;
-import otgviewer.shared.Annotation;
 import otgviewer.shared.Association;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
@@ -10,6 +9,8 @@ import otgviewer.shared.NoSuchProbeException;
 import otgviewer.shared.Pair;
 import otgviewer.shared.Pathology;
 import otgviewer.shared.RankRule;
+
+import bioweb.shared.array.Annotation;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;

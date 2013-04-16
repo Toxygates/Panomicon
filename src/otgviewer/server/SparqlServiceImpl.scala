@@ -1,29 +1,34 @@
 package otgviewer.server
 
+import scala.Array.canBuildFrom
+import scala.Array.fallbackCanBuildFrom
+import scala.Option.option2Iterable
+import scala.collection.{Set => CSet}
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-import Assocations.convert
+
+import Assocations.convertPairs
+import Conversions.asJava
+import Conversions.asScala
+import Conversions.nullToOption
+import Conversions.speciesFromFilter
 import UtilsS.nullToNone
+import UtilsS.useConnector
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
-import kyotocabinet.DB
+import otg.DefaultBio
 import otg.OTGQueries
-import otg.OTGSeriesQuery
-import otg.Series
-import otg.Species
+
 import otg.sparql._
 import otgviewer.client.SparqlService
 import otgviewer.shared.AType
-import otgviewer.shared.Annotation
 import otgviewer.shared.Association
 import otgviewer.shared.Barcode
 import otgviewer.shared.DataColumn
 import otgviewer.shared.DataFilter
-import otgviewer.shared.MatchResult
-import otgviewer.shared.NoSuchProbeException
 import otgviewer.shared.Pair
 import otgviewer.shared.Pathology
-import otgviewer.shared.RankRule
-import otg.DefaultBio
+import bioweb.shared.array.Annotation
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
