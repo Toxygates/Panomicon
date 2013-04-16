@@ -1,78 +1,36 @@
 package otgviewer.shared;
 
-import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
 import bioweb.shared.SharedUtils;
+import bioweb.shared.array.SampleGroup;
 
 /**
  * A group of barcodes. Values will be computed as an average.
  * @author johan
  *
  */
-public class Group implements Serializable, DataColumn, Comparable<Group> {
-
-	private static final long serialVersionUID = 2111266740402283063L;
-	
-	/**
-	 * This list was generated using the service at
-	 * http://tools.medialab.sciences-po.fr/iwanthue/
-	 */
-	private static final String[] groupColors = new String[] { "#97BDBD", "#C46839", "#9F6AC8", "#9CD05B", 
-		"#513C4D", "#6B7644", "#C75880" };
-	private static int nextColor = 0;
-	
-	Barcode[] barcodes;
-	String name, color;
+public class Group extends SampleGroup<Barcode> implements DataColumn {
 	
 	public Group() {}
 	
 	public Group(String name, Barcode[] barcodes, String color) {
-		this.name = name;
-		this.barcodes = barcodes;
-		this.color = color;
+		super(name, barcodes, color);		
 	}
 	
-	public Group(String name, Barcode[] barcodes) {
-		this(name, barcodes, pickColor());
-	}
-	
-	private static synchronized String pickColor() {
-		nextColor += 1;
-		if (nextColor > groupColors.length) {
-			nextColor = 1;
-		}
-		return groupColors[nextColor - 1];
-	}
-	
-	public Barcode[] getBarcodes() { return barcodes; }
-	public String getName() { return name; }
-	
-	public String toString() {
-		return name;
-	}
-	
+	public Group(String name, Barcode[] barcodes) { super(name, barcodes); }
+
 	public String getShortTitle() {
 		return name;
 	}
-	
-	public String getColor() {
-		return color;
-	}
-	
-	public String getStyleName() {
-		return "Group" + getColorIndex();
-	}
-	
-	private int getColorIndex() {
-		return SharedUtils.indexOf(groupColors, color);
-	}
+
+	public Barcode[] getBarcodes() { return _samples; }
 	
 	public String getCDTs(final int limit, String separator) {
 		Set<String> CDTs = new HashSet<String>();
 		Set<String> allCDTs = new HashSet<String>();
-		for (Barcode b : barcodes) {			
+		for (Barcode b : _samples) {			
 			if (CDTs.size() < limit || limit == -1) {
 				CDTs.add(b.getCDT());
 			}
@@ -88,22 +46,10 @@ public class Group implements Serializable, DataColumn, Comparable<Group> {
 	
 	public String[] getCompounds() {
 		Set<String> compounds = new HashSet<String>();
-		for (Barcode b : barcodes) {
+		for (Barcode b : _samples) {
 			compounds.add(b.getCompound());
 		}
 		return compounds.toArray(new String[0]);		
-	}
-	
-	public String pack() {
-		StringBuilder s = new StringBuilder();
-		s.append("Group:::");
-		s.append(name + ":::"); //!!
-		s.append(color + ":::");
-		for (Barcode b : barcodes) {
-			s.append(b.pack());
-			s.append("^^^");
-		}
-		return s.toString();
 	}
 	
 	public static Group unpack(String s) {
@@ -138,24 +84,5 @@ public class Group implements Serializable, DataColumn, Comparable<Group> {
 			return new Group(name, new Barcode[0], color);
 		}
 	}
-	
-	@Override
-	public int compareTo(Group other) {
-		return name.compareTo(other.getName());
-	}
-	
-	@Override
-	public int hashCode() {
-		return Arrays.hashCode(barcodes) * 41 + name.hashCode();
-	}
-	
-	@Override
-	public boolean equals(Object other) {
-		if (other instanceof Group) {
-			return (Arrays.deepEquals(this.barcodes, ((Group) other).getBarcodes())) && name.equals(((Group) other).getName())
-					&& color.equals(((Group) other).getColor());
-		}
-		return false;
-	}
-	
+
 }

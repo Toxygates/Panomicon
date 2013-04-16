@@ -1,26 +1,24 @@
 package otgviewer.shared;
 
-import java.io.Serializable;
+import bioweb.shared.array.Sample;
 
 /**
  * A barcode corresponds to a single microarray.
  * @author johan
  *
  */
-public class Barcode implements Serializable, DataColumn {
-	private static final long serialVersionUID = -9107751439620262933L;
-	
-	private String code = "";	
+public class Barcode extends Sample implements DataColumn {
+		
 	private String individual = "";
 	private String dose = "";
 	private String time = "";
 	private String compound = "";
 	
-	public Barcode() { }
+	public Barcode() { super(); }
 	
 	public Barcode(String _code, String _ind, 
 			String _dose, String _time, String _compound) {
-		code = _code;		
+		super(_code);		
 		individual = _ind;
 		dose = _dose;
 		time = _time;		
@@ -28,7 +26,7 @@ public class Barcode implements Serializable, DataColumn {
 	}
 	
 	public String getTitle() {
-		return getShortTitle() + " (" + code + ")";
+		return getShortTitle() + " (" + id() + ")";
 	}
 	
 	public String getShortTitle() {
@@ -40,7 +38,7 @@ public class Barcode implements Serializable, DataColumn {
 	}
 	
 	public String getCode() {
-		return code;
+		return id();
 	}
 	
 	public String getIndividual() {
@@ -78,20 +76,7 @@ public class Barcode implements Serializable, DataColumn {
 	}
 	
 	public String pack() {
-		return "Barcode$$$" + code + "$$$" + individual + "$$$" + dose + "$$$" + time + "$$$" + compound; //!!
-	}
-	
-	@Override
-	public int hashCode() {
-		return code.hashCode();
-	}
-	
-	@Override
-	public boolean equals(Object other) {
-		if (other instanceof Barcode) {
-			return code.equals(((Barcode) other).getCode());
-		}
-		return false;
+		return "Barcode$$$" + id() + "$$$" + individual + "$$$" + dose + "$$$" + time + "$$$" + compound; //!!
 	}
 
 }

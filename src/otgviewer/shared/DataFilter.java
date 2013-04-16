@@ -1,8 +1,8 @@
 package otgviewer.shared;
 
-import java.io.Serializable;
+import bioweb.shared.array.SampleFilter;
 
-public class DataFilter implements Serializable {
+public class DataFilter extends SampleFilter<Barcode> {
 	public CellType cellType;
 	public Organ organ;
 	public RepeatType repeatType;
