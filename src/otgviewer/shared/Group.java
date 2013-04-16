@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import bioweb.shared.SharedUtils;
 
 /**
  * A group of barcodes. Values will be computed as an average.

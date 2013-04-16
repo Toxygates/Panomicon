@@ -26,7 +26,7 @@ import otgviewer.shared.Association
 import otgviewer.shared.Barcode
 import otgviewer.shared.DataColumn
 import otgviewer.shared.DataFilter
-import otgviewer.shared.Pair
+import bioweb.shared.Pair
 import otgviewer.shared.Pathology
 import bioweb.shared.array.Annotation
 
@@ -219,7 +219,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     m1.map(p => new Association(p._1, convertPairs(p._2))).toArray     
   }
   
-  def geneSuggestions(partialName: String, filter: DataFilter): Array[Pair[String, String]] = {
+  def geneSuggestions(partialName: String, filter: DataFilter): Array[bioweb.shared.Pair[String, String]] = {
     useConnector(AffyProbes, (c: AffyProbes.type) => c.probesForPartialTitle(partialName, filter)).map(x => 
       new Pair(x.identifier, x.name)).toArray
   }

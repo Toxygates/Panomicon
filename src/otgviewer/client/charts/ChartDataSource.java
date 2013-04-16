@@ -14,7 +14,7 @@ import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.ExpressionValue;
 import otgviewer.shared.Series;
-import otgviewer.shared.SharedUtils;
+import bioweb.shared.SharedUtils;
 import otgviewer.shared.TimesDoses;
 import otgviewer.shared.ValueType;
 

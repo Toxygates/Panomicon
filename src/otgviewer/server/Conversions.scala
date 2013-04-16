@@ -85,6 +85,6 @@ object Conversions {
     }
   }
   
-  implicit def asJava[T,U](v: (T, U)) = new otgviewer.shared.Pair[T, U](v._1, v._2)
+  implicit def asJava[T,U](v: (T, U)) = new bioweb.shared.Pair(v._1, v._2)
   
 }

@@ -6,10 +6,10 @@ import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.MatchResult;
-import otgviewer.shared.Pair;
 import otgviewer.shared.Pathology;
 import otgviewer.shared.RankRule;
 
+import bioweb.shared.Pair;
 import bioweb.shared.array.Annotation;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;

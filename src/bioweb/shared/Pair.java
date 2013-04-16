@@ -1,4 +1,4 @@
-package otgviewer.shared;
+package bioweb.shared;
 
 import java.io.Serializable;
 import java.util.ArrayList;
