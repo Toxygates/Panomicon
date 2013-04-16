@@ -114,10 +114,7 @@ public class GeneExporter extends Composite {
 			}
 		});
 		
-//		vp.add(Utils.mkEmphLabel("Gene IDs for copy and paste"));
-//		vp.add(geneListText);
-		
-//		Button getGenes = new Button("Show gene IDs");
+
 		Button export = new Button("Export");
 		export.addClickHandler(new ClickHandler() {
 			
@@ -151,7 +148,6 @@ public class GeneExporter extends Composite {
 			}
 		});
 		
-//		vp.add(Utils.mkHorizontalPanel(true, getGenes, export);
 		vp.add(export);
 		
 	}

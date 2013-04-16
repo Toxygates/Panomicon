@@ -325,9 +325,10 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     }
     useConnector(AffyProbes, (c: AffyProbes.type) => {
       val gis = c.allGeneIds(session.params.filter)
+//      println(rowNames.take(10))      
       val geneIds = rowNames.map(rn => gis.getOrElse(Probe(rn), Set.empty))
+//      println(geneIds.take(10))
       geneIds.flatten.map(_.identifier).toArray
-//      geneIds.map(_.identifier).toArray
     })
   }
 
