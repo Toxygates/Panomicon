@@ -1,12 +1,12 @@
 package otgviewer.server
 
-import friedrich.statistics._
+import friedrich.data._
 import otg.ExprValue
 import otgviewer.shared.ExpressionRow
 import otgviewer.shared.ExpressionValue
 import scala.reflect.ClassTag
-import friedrich.statistics.DataMatrixBuilder
-import friedrich.statistics.ArrayMatrix
+import friedrich.data.DataMatrixBuilder
+import friedrich.data.ArrayMatrix
 import org.apache.commons.math3.stat.inference.TTest
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest
 

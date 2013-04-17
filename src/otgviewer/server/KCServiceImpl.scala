@@ -17,7 +17,7 @@ import otgviewer.shared.ExpressionValue
 import otgviewer.shared.Series
 import otg.ExprValue
 import otgviewer.shared.Barcode
-import friedrich.statistics.ArrayVector
+import friedrich.data.ArrayVector
 import javax.servlet.http.HttpSession
 import otg.sparql.AffyProbes
 import otg.CSVHelper
