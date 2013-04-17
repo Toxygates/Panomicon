@@ -5,8 +5,7 @@ import otg.ExprValue
 import otgviewer.shared.ExpressionRow
 import otgviewer.shared.ExpressionValue
 import scala.reflect.ClassTag
-import friedrich.data.DataMatrixBuilder
-import friedrich.data.ArrayMatrix
+import friedrich.data.mutable._
 import org.apache.commons.math3.stat.inference.TTest
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest
 
