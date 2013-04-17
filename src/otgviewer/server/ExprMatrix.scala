@@ -44,7 +44,7 @@ object ExprMatrix extends DataMatrixBuilder {
  * Use immutable rather than mutable matrices.
  */
 class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends ArrayMatrix[ExprValue](rows, columns, ExprValue(0, 'A'))
-  with RowColAllocation[ExprValue, ArrayVector[ExprValue], String, String] {
+  with mutable.RowColAllocation[ExprValue, ArrayVector[ExprValue], String, String] {
 
   import ExprMatrix._
   import Conversions._
@@ -162,7 +162,7 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
     val r = ExprMatrix.withRows(rows.map(row(_)), this)    
     val rowIds = rows.toSet
     r.annotations = rows.map(a => annotations(a)).toArray
-    r.rowMap = Map() ++ rows.map(rowNames(_)).zipWithIndex
+    r.rowMap = Map() ++ rows.map(rowAt(_)).zipWithIndex
     r
   }
   
@@ -177,7 +177,7 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
   def selectColumns(columns: Seq[Int]): ExprMatrix = {
     val r = ExprMatrix.withColumns(columns.map(column(_)), this)
     val colIds = columns.toSet
-    r.columnMap = Map() ++ columns.map(columnNames(_)).zipWithIndex 
+    r.columnMap = Map() ++ columns.map(columnAt(_)).zipWithIndex 
     r
   }
   
