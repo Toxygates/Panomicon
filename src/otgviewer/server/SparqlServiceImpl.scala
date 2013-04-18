@@ -1,7 +1,6 @@
 package otgviewer.server
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-
 import Assocations.convert
 import UtilsS.nullToNone
 import javax.servlet.ServletConfig
@@ -24,6 +23,7 @@ import otgviewer.shared.NoSuchProbeException
 import otgviewer.shared.Pair
 import otgviewer.shared.Pathology
 import otgviewer.shared.RankRule
+import otg.DefaultBio
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -82,14 +82,14 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     r.sortWith((t1, t2) => orderedTimes.indexOf(t1) < orderedTimes.indexOf(t2))
   }
     
-  def probeTitle(probe: String): String = 
-    AffyProbes.title(probe)
-    
+//  def probeTitle(probe: String): String = 
+//    AffyProbes.title(probe)
+//    
   def probes(filter: DataFilter): Array[String] = 
-    OTGQueries.probeIds(filter)
+    OTGQueries.probeIds(filter).toArray
     
   def pathologies(barcode: Barcode): Array[Pathology] = 
-    OTGSamples.pathologies(barcode.getCode).map(asJava(_))
+    OTGSamples.pathologies(barcode.getCode).map(asJava(_)).toArray
     
   def pathologies(column: DataColumn): Array[Pathology] = 
     column.getBarcodes.flatMap(x => OTGSamples.pathologies(x.getCode)).map(asJava(_))
@@ -99,129 +99,124 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     column.getBarcodes.map(x => OTGSamples.annotations(x.getCode)).map(asJava(_))
     
   def pathways(filter: DataFilter, pattern: String): Array[String] = 
-    useConnector(B2RKegg, (c: B2RKegg.type) => c.pathways(pattern, filter)).toArray    
+    useConnector(B2RKegg, (c: B2RKegg.type) => c.forPattern(pattern, filter)).toArray    
   
-  def geneSyms(probes: Array[String]): Array[Array[String]] = 
-    AffyProbes.geneSyms(probes).map(_.toArray).toArray
+    //TODO: return a map instead
+  def geneSyms(probes: Array[String], filter: DataFilter): Array[Array[String]] = {
+    val ps = probes.map(p => Probe(p))
+    val attrib = AffyProbes.withAttributes(ps, filter)
+    probes.map(pi => attrib.find(_.identifier == pi).
+        map(_.symbolStrings.toArray).getOrElse(Array()))    
+  }
     
   def probesForPathway(filter: DataFilter, pathway: String): Array[String] = {
     useConnector(B2RKegg, (c: B2RKegg.type) => {
-      val geneIds = c.geneIds(pathway, filter)
-      println("Probes for " + geneIds.length + " genes")
-      val probes = AffyProbes.probesForEntrezGenes(geneIds).toArray 
-      OTGQueries.filterProbes(probes, filter)
+      val geneIds = c.geneIds(pathway, filter).map(Gene(_))
+      println("Probes for " + geneIds.size + " genes")
+      val probes = AffyProbes.forGenes(geneIds).toArray 
+      OTGQueries.filterProbes(probes.map(_.identifier), filter).toArray  
     })    
   }
   def probesTargetedByCompound(filter: DataFilter, compound: String, service: String, homologous: Boolean): Array[String] = {
-    val proteins = (service match {
-      case "CHEMBL" => useConnector(CHEMBL, (c:CHEMBL.type) => c.targetProtsForCompound(compound, 
+    val cmp = Compound.make(compound)
+    val proteins = service match {
+      case "CHEMBL" => useConnector(ChEMBL, (c:ChEMBL.type) => c.targetsFor(cmp, 
           if (homologous) { null } else { filter }))              
-      case "DrugBank" => useConnector(DrugBank, (c:DrugBank.type) => c.targetProtsForDrug(compound))        
+      case "DrugBank" => useConnector(DrugBank, (c:DrugBank.type) => c.targetsFor(cmp))        
       case _ => throw new Exception("Unexpected probe target service request: " + service)
-    })
+    }
     val pbs = if (homologous) {
-      val oproteins = Uniprot.orthologsForUniprots(proteins).values.flatten
-      AffyProbes.probesForUniprot(oproteins)
+      val oproteins = Uniprot.orthologsFor(proteins).values.flatten
+      AffyProbes.forUniprots(oproteins)
 //      OTGOwlim.probesForEntrezGenes(genes)
     } else {
-      AffyProbes.probesForUniprot(proteins)
+      AffyProbes.forUniprots(proteins)
     }
-    OTGQueries.filterProbes(pbs.toArray, filter)
+    pbs.filter(p => OTGQueries.isProbeForSpecies(p.identifier, filter)).map(_.identifier).toArray  
   }
   
   def goTerms(pattern: String): Array[String] = 
-    OTGSamples.goTerms(pattern)
+    OTGSamples.goTerms(pattern).map(_.name).toArray
     
   def probesForGoTerm(filter: DataFilter, goTerm: String): Array[String] = 
-    OTGQueries.filterProbes(AffyProbes.probesForGoTerm(goTerm), filter)
-
-//    import AffyProbes._
+    OTGQueries.filterProbes(
+        AffyProbes.forGoTerm(GOTerm("", goTerm)).map(_.identifier).toSeq, 
+        filter).toArray
 
     import scala.collection.{Map => CMap, Set => CSet}
     
-  def associations(filter: DataFilter, types: Array[AType], probes: Array[String], geneIds: Array[String]): Array[Association] = {
-    def valNames(m: SMPMap): Set[String] = m.flatMap(_._2).map(_._1).toSet
+  def associations(filter: DataFilter, types: Array[AType], _probes: Array[String]): Array[Association] = {
+    val probes = AffyProbes.withAttributes(_probes.map(Probe(_)), filter)    
     
-    def connectorOrEmpty[T <: RDFConnector](c: T, f: T => SMPMap): SMPMap = 
-      useConnector(c, f, Map() ++ probes.map(p => (p -> CSet(("(Timeout or error)", "(Error)": String)))))
-
-    //In the case where m1 maps T->U and m2 maps U->V, produce a map T->V.
-    def composeMaps(m1: SMPMap, m2: SMPMap): SMPMap = 
-      m1.map(x => (x._1 -> x._2.flatMap(titleAndId => m2.getOrElse(titleAndId._1, Set()))))
-      
-    //compose by applying a lookup function to U from the first map T->U
-    def composeWith(m1: SMPMap, lookup: (Iterable[String]) => SMPMap): SMPMap = 
-      composeMaps(m1, lookup(valNames(m1)))
-    
-    def union(m1: SMPMap, m2: SMPMap): SMPMap = {
-      val allKeys = m1.keySet ++ m2.keySet
-      Map() ++ allKeys.map(k => k -> (m1.getOrElse(k, Set()) ++ m2.getOrElse(k, Set())))
-    } 
-    
-    def double(m: SMMap): SMPMap = m.map(x => (x._1 -> x._2.map(y => (y, y))))
-    
-    //this should be done in a separate future, kind of
-    val proteins = if (types.contains(AType.Chembl) || types.contains(AType.Drugbank) ||
-        types.contains(AType.KOProts) || types.contains(AType.Uniprot))  {      
-    	double(AffyProbes.uniprotsForProbes(probes))
-    } else {
-      emptySMPMap
+    def connectorOrEmpty[T <: RDFConnector](c: T, f: T => BBMap): BBMap = {
+      val emptyVal = CSet(DefaultBio("error", "(Timeout or error)"))
+      useConnector(c, f, 
+          Map() ++ probes.map(p => (Probe(p.identifier) -> emptyVal)))
     }
-    
+
+    val proteins = toBioMap(probes, (_: Probe).proteins) 
+ 
+    //orthologous proteins if needed - this is currently slow to look up
     val oproteins = if (types.contains(AType.Chembl) || types.contains(AType.Drugbank) ||
-        types.contains(AType.KOProts)) {
-      composeWith(proteins, ps => double(Uniprot.orthologsForUniprots(ps)))
+        types.contains(AType.OrthProts)) {    	
+      proteins combine ((ps: Iterable[Protein]) => Uniprot.orthologsFor(ps))
     } else {
-      emptySMPMap
+      emptyMMap[Probe, Protein]()
+    }
+
+    def getTargeting(from: CompoundTargets): MMap[Probe, Compound] = {
+      val expected = OTGSamples.compounds(filter).map(Compound.make(_))
+      
+      //strictly orthologous
+      val oproteinVs = oproteins.allValues.toSet -- proteins.allValues.toSet
+      val allProteins = proteins union oproteins
+      val allTargets = from.targetingFor(allProteins.allValues, expected)
+
+      allProteins combine allTargets.map(x => if (oproteinVs.contains(x._1)) {
+        (x._1 -> x._2.map(c => c.copy(name = c.name + " (inf)")))
+      } else {
+        x
+      })
     }
     
     import Association._
-    def lookupFunction(t: AType) = t match {
-      case x: AType.Chembl.type => connectorOrEmpty(CHEMBL,
-            (c: CHEMBL.type) => {
-              val compounds = OTGSamples.compounds(filter)
-
-              //strictly orthologous proteins
-              val oproteinVs = valNames(oproteins) -- valNames(proteins)              
-              val allProteins = union(proteins, oproteins)              
-              val allTargets = c.targetingCompoundsForProteins(valNames(allProteins), null, compounds)
-              
-              composeMaps(allProteins, allTargets.map(x => (x._1 -> x._2.map(c => 
-                if (oproteinVs.contains(x._1)) { (c._1 + "(inf)", c._2) } else { c }))))              
-            })      
-      case x: AType.Drugbank.type => connectorOrEmpty(DrugBank,
-            (c: DrugBank.type) => {
-              val compounds = OTGSamples.compounds(filter)
-              val oproteinVs = valNames(oproteins) -- valNames(proteins)               
-              val allProteins = union(proteins, oproteins)              
-              val allTargets = c.targetingCompoundsForProteins(valNames(allProteins), compounds)
-              composeMaps(allProteins, allTargets.map(x => (x._1 -> x._2.map(c => 
-                if (oproteinVs.contains(x._1)) { (c._1 + "(inf)", c._2) } else { c }))))
-            })
+    def lookupFunction(t: AType): BBMap = t match {
+      case x: AType.Chembl.type => connectorOrEmpty(ChEMBL, getTargeting(_:ChEMBL.type))    
+      case x: AType.Drugbank.type => connectorOrEmpty(DrugBank, getTargeting(_:DrugBank.type))              
       case x: AType.Uniprot.type => proteins
-      case x: AType.KOProts.type => oproteins
+      case x: AType.OrthProts.type => oproteins
       case x: AType.GOMF.type => connectorOrEmpty(AffyProbes,            
-            (c: AffyProbes.type) => c.mfGoTermsForProbes(probes))         
+            (c: AffyProbes.type) => c.mfGoTerms(probes))         
       case x: AType.GOBP.type => connectorOrEmpty(AffyProbes,            
-            (c: AffyProbes.type) => c.bpGoTermsForProbes(probes))        
+            (c: AffyProbes.type) => c.bpGoTerms(probes))
       case x: AType.GOCC.type => connectorOrEmpty(AffyProbes,            
-            (c: AffyProbes.type) => c.ccGoTermsForProbes(probes))                  
+            (c: AffyProbes.type) => c.ccGoTerms(probes))
       case x: AType.Homologene.type => connectorOrEmpty(B2RHomologene,
-            (c: B2RHomologene.type) => double(c.homologousGenes(geneIds)))    
+            (c: B2RHomologene.type) => toBioMap(probes, (_:Probe).genes) combine 
+                c.homologousGenes(probes.flatMap(_.genes)))     
       case x: AType.KEGG.type => connectorOrEmpty(B2RKegg,
-            (c: B2RKegg.type) => c.pathwaysForProbes(probes, filter))
+            (c: B2RKegg.type) => toBioMap(probes, (_:Probe).genes) combine 
+                c.forGenes(probes.flatMap(_.genes), filter))
       case x: AType.Enzymes.type => connectorOrEmpty(B2RKegg,
-          (c: B2RKegg.type) => c.enzymesForProbes(probes, filter))
-            
+              (c: B2RKegg.type) => c.enzymes(probes.flatMap(_.genes), filter))
     }
       
-    types.par.map(x => (x,lookupFunction(x))).seq.map(p => new Association(p._1, 
-        convertPairs(p._2))).toArray     
+        
+    def standardMapping(m: BBMap): MMap[String, (String, String)] = 
+      m.mapKValues(_.identifier).mapMValues(p => (p.name, p.identifier))
+    
+    val m1 = types.par.map(x => (x, standardMapping(lookupFunction(x)))).seq
+//    for ((t, p) <- m1) {
+//      if (p.allValues.exists(x => x._1 == null || x._2 == null)) {
+//        throw new Exception("Error with assoc type " + t)
+//      }
+//    }
+    m1.map(p => new Association(p._1, convertPairs(p._2))).toArray     
   }
   
   def geneSuggestions(partialName: String, filter: DataFilter): Array[Pair[String, String]] = {
     useConnector(AffyProbes, (c: AffyProbes.type) => c.probesForPartialTitle(partialName, filter)).map(x => 
-      new Pair(x._1, x._2)).toArray
+      new Pair(x.identifier, x.name)).toArray
   }
   
 }

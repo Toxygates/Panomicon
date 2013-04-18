@@ -3,22 +3,17 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import otgviewer.client.charts.AdjustableChartGrid;
 import otgviewer.client.charts.ChartGridFactory;
 import otgviewer.client.charts.ChartGridFactory.AChartAcceptor;
+import otgviewer.client.components.AssociationTable;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.AType;
-import otgviewer.shared.Association;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataColumn;
 import otgviewer.shared.ExpressionRow;
@@ -28,10 +23,10 @@ import otgviewer.shared.SharedUtils;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
 
+import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -43,104 +38,71 @@ import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
-import com.google.gwt.user.cellview.client.ColumnSortList;
-import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.cellview.client.PageSizePager;
-import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.SimplePager.Resources;
 import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
-import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DisclosurePanel;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.DoubleBox;
-import com.google.gwt.user.client.ui.FocusWidget;
-import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.ProvidesResize;
-import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.AsyncDataProvider;
 import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.NoSelectionModel;
 import com.google.gwt.view.client.Range;
 
-public class ExpressionTable extends DataListenerWidget { //implements RequiresResize, ProvidesResize {
+public class ExpressionTable extends AssociationTable<ExpressionRow> { 
 
 	private final int PAGE_SIZE = 25;
 	
 	private Screen screen;
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
-	private DataGrid<ExpressionRow> exprGrid;
-	private SimplePager sp;
+	
 	private HorizontalPanel tools, analysisTools;
-	private DockLayoutPanel dockPanel;
 	
 	private DoubleBox absValBox;
 	private ListBox valueTypeList = new ListBox();
 	
 	private final KCServiceAsync kcService = (KCServiceAsync) GWT
-			.create(KCService.class);
-	private final SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT.create(SparqlService.class);
+			.create(KCService.class);	
 	private static otgviewer.client.Resources resources = GWT.create(otgviewer.client.Resources.class);
 	
-	private List<Synthetic> synthColumns = new ArrayList<Synthetic>();
+	private List<Synthetic> synthetics = new ArrayList<Synthetic>();
+	private List<Column<ExpressionRow, ?>> synthColumns = new ArrayList<Column<ExpressionRow, ?>>();
 	
-	private ListBox groupsel1 = new ListBox();
-	private ListBox groupsel2 = new ListBox();
+	private ListBox groupsel1 = new ListBox(), groupsel2 = new ListBox();
 	
-	private int highlightedRow = -1;
 	private String[] displayedProbes;
-	private List<String> displayedGeneIds = new ArrayList<String>();
-	private Map<AType, Association> associations = new HashMap<AType, Association>();
-		
-	private List<HideableColumn> hideableColumns = new ArrayList<HideableColumn>();
- 	private List<AssociationColumn> associationColumns = new ArrayList<AssociationColumn>();
- 	private boolean waitingForAssociations = true, loadedData = false;
+
+ 	private boolean loadedData = false;
  	
  	private Barcode[] chartBarcodes = null;
 
 	public ExpressionTable(Screen _screen) {
+		super();
 		screen = _screen;
-//		dockPanel = new DockLayoutPanel(Unit.PX);
-		initHideableColumns();
 		
-		exprGrid = new DataGrid<ExpressionRow>();
-//		dockPanel.add(exprGrid);
-//		initWidget(dockPanel);
-		initWidget(exprGrid);
+		grid.setStyleName("exprGrid");
+		grid.setPageSize(PAGE_SIZE);
 		
-		exprGrid.setStyleName("exprGrid");
-		exprGrid.setPageSize(PAGE_SIZE);
-		exprGrid.setWidth("100%");
+		grid.setSelectionModel(new NoSelectionModel<ExpressionRow>());		
+		grid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);	
+		asyncProvider.addDataDisplay(grid);		
 
-		exprGrid.setSelectionModel(new NoSelectionModel<ExpressionRow>());
-		exprGrid.setRowStyles(new RowHighligher());
-		
-		exprGrid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
-	
-		asyncProvider.addDataDisplay(exprGrid);		
-		AsyncHandler colSortHandler = new AsyncHandler(exprGrid);
-		
-		exprGrid.addColumnSortHandler(colSortHandler);
 		makeTools();
 		makeAnalysisTools();
 		setEnabled(false);
-
 	}
 	
 	private ValueType getValueType() {
@@ -150,6 +112,11 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 	}
 	
 	public Widget tools() { return this.tools; }
+	
+	private void setEnabled(boolean enabled) {
+		Utils.setEnabled(tools, enabled);
+		Utils.setEnabled(analysisTools, enabled);
+	}
 	
 	private void makeTools() {
 		tools = Utils.mkHorizontalPanel();		
@@ -172,10 +139,11 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		});
 
 		Resources r = GWT.create(Resources.class);
-		sp = new SimplePager(TextLocation.CENTER, r, true, 500, true);
+
+		SimplePager sp = new SimplePager(TextLocation.CENTER, r, true, 500, true);
 		sp.setStyleName("slightlySpaced");
 		horizontalPanel.add(sp);		
-		sp.setDisplay(exprGrid);
+		sp.setDisplay(grid);
 		
 		PageSizePager pager = new PageSizePager(25) {
 			@Override
@@ -189,7 +157,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		
 		pager.setStyleName("slightlySpaced");
 		horizontalPanel.add(pager);
-		pager.setDisplay(exprGrid);		
+		pager.setDisplay(grid);		
 		
 		Label label = new Label("Magnitude >=");
 		label.setStyleName("highlySpaced");		
@@ -255,13 +223,21 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		
 		analysisTools.add(new Button("Remove tests", new ClickHandler() {
 			public void onClick(ClickEvent ce) {
-				if (!synthColumns.isEmpty()) {
+				if (!synthetics.isEmpty()) {
+					for (int i = 0; i < synthColumns.size(); ++i) {						
+						Column<ExpressionRow, ?> c = synthColumns.get(i);
+						removeDataColumn(c);
+					}
 					synthColumns.clear();
-					setupColumns();					
+					synthetics.clear();							
 				}
 			}
 		}));
 		analysisTools.setVisible(false); //initially hidden		
+	}
+	
+	private String selectedGroup(ListBox groupSelector) {
+		return groupSelector.getItemText(groupSelector.getSelectedIndex());
 	}
 	
 	private void addTwoGroupSynthetic(final Synthetic.TwoGroupSynthetic synth, final String name) {
@@ -270,15 +246,14 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		} else if (groupsel1.getSelectedIndex() == groupsel2.getSelectedIndex()) {
 			Window.alert("Please select two different groups to perform " + name + ".");
 		} else {
-			final Group g1 = Utils.findGroup(chosenColumns, groupsel1.getItemText(groupsel1.getSelectedIndex()));
-			final Group g2 = Utils.findGroup(chosenColumns, groupsel2.getItemText(groupsel2.getSelectedIndex()));
+			final Group g1 = Utils.findGroup(chosenColumns, selectedGroup(groupsel1));
+			final Group g2 = Utils.findGroup(chosenColumns, selectedGroup(groupsel2));
 			synth.setGroups(g1, g2);
 			kcService.addTwoGroupTest(synth, new AsyncCallback<Void>() {
-				public void onSuccess(Void v) {
-					synthColumns.add(synth);
-					setupColumns();
+				public void onSuccess(Void v) {					
+					addSynthColumn(synth, "p-value");					
 					//force reload
-					exprGrid.setVisibleRangeAndClearData(exprGrid.getVisibleRange(), true); 
+					grid.setVisibleRangeAndClearData(grid.getVisibleRange(), true); 
 				}
 				public void onFailure(Throwable caught) {
 					Window.alert("Unable to perform " + name);
@@ -289,9 +264,9 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 	
 	MenuItem[] menuItems() {
 		MenuItem[] r = new MenuItem[2];
-		MenuBar menuBar_3 = new MenuBar(true);
+		MenuBar menuBar = new MenuBar(true);
 		
-		MenuItem mntmActions_1 = new MenuItem("Actions", false, menuBar_3);		
+		MenuItem mActions = new MenuItem("Actions", false, menuBar);		
 		final DataListenerWidget w = this;
 		MenuItem mntmDownloadCsv = new MenuItem("Download CSV...", false, new Command() {
 			public void execute() {
@@ -324,170 +299,110 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 				
 			}
 		});
-		menuBar_3.addItem(mntmDownloadCsv);
+		menuBar.addItem(mntmDownloadCsv);
 		
 		MenuItem mi = new MenuItem("Export to TargetMine...", false, new Command() {
 			public void execute() {
-				Utils.displayInPopup("TargetMine export", new GeneExporter(w, exprGrid.getRowCount()));
+				Utils.displayInPopup("TargetMine export", new GeneExporter(w, grid.getRowCount()));
 			}
 		});
 		
-		menuBar_3.addItem(mi);
+		menuBar.addItem(mi);
 		
-		r[0] = mntmActions_1;
+		r[0] = mActions;
 		
-		MenuBar menuBar_2 = new MenuBar(true);
-		MenuItem mntmNewMenu_1 = new MenuItem("New menu", false, menuBar_2);
+		menuBar = new MenuBar(true);
+		MenuItem mColumns = new MenuItem("Columns", false, menuBar);
+		setupMenuItems(menuBar);
 
-		for (final HideableColumn c: hideableColumns) {
-			new TickMenuItem(menuBar_2, c.name(), c.visible()) {
-				@Override
-				public void stateChange(boolean newState) {
-					c.setVisibility(newState);	
-					setupColumns();
-					if (newState) {
-						getAssociations();
-					}
-				}				
-			};
-		}
-		
-		mntmNewMenu_1.setHTML("Columns");
-		r[1] = mntmNewMenu_1;
+		r[1] = mColumns;
 		return r;
 	}
 
-	
-	private void addExtraColumn(Column<ExpressionRow, ?> col, String name) {
-		col.setCellStyleNames("extraColumn");
-		exprGrid.addColumn(col, name);
-	}
-	
-	private void addDataColumn(Column<ExpressionRow, ?> col, String title) {
-		col.setSortable(true);
-		exprGrid.addColumn(col, title);
-		col.setCellStyleNames("dataColumn");		
-	}
-	
-	private int extraCols = 0;
-	private void setupColumns() {
-		// todo: explicitly set the width of each column
+	@Override
+	protected void setupColumns() {
+		super.setupColumns();
 		TextCell tc = new TextCell();
-
-		int count = exprGrid.getColumnCount();
-		for (int i = 0; i < count; ++i) {
-			exprGrid.removeColumn(0);
-		}
-		exprGrid.getColumnSortList().clear();
-
-		extraCols = 0;
-		ToolColumn tcl = new ToolColumn(new ToolCell(this));
-		exprGrid.addColumn(tcl, "");
-		tcl.setCellStyleNames("clickCell");
-		exprGrid.setColumnWidth(tcl, "40px");		
-		extraCols += 1;
-		
-		for (HideableColumn c: hideableColumns) {
-			if (c.visible()) {
-				Column<ExpressionRow, ?> cc = (Column<ExpressionRow, ?>) c;
-				addExtraColumn(cc, c.name());								
-				extraCols += 1;				
-			}
-		}		
-
-		int i = 0;		
+				
 		//columns with data
 		for (DataColumn c : chosenColumns) {
-			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);			
-			addDataColumn(valueCol, c.getShortTitle());			
+			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, dataColumns);			
+			addDataColumn(valueCol, c.getShortTitle(), "Average of sample values");			
 			valueCol.setCellStyleNames(((Group) c).getStyleName());
-			if (i == 0 && exprGrid.getColumnSortList().size() == 0) {
-				exprGrid.getColumnSortList().push(valueCol);
-			}
-			i += 1;
 		}
 		
-		for (Synthetic s: synthColumns) {
-			Column<ExpressionRow, String> ttestCol = new ExpressionColumn(tc, i);
-			addExtraColumn(ttestCol, s.getShortTitle());
-			ttestCol.setSortable(true);
-			i += 1;
+		for (Synthetic s: synthetics) {
+			addSynthColumn(s, "p-value");			
 		}				
 	}
+	
+	@Override
+	protected Column<ExpressionRow, String> toolColumn(Cell<String> cell) {
+		return new Column<ExpressionRow, String>(cell) {
+			public String getValue(ExpressionRow er) {
+				if (er != null) {
+					return er.getProbe();
+				} else {
+					return "";
+				}
+			}
+		};
+	}
+	
+	@Override
+	protected Cell<String> toolCell() {
+		return new ToolCell(this);
+	}
 
-	private void initHideableColumns() {
+	private void addSynthColumn(Synthetic s, String tooltip) {
+		TextCell tc = new TextCell();
+		synthetics.add(s);
+		Column<ExpressionRow, String> ttestCol = new ExpressionColumn(tc, dataColumns);
+		synthColumns.add(ttestCol); 				
+		addDataColumn(ttestCol, s.getShortTitle(), tooltip);		
+		ttestCol.setCellStyleNames("extraColumn");				
+	}
+	
+	protected List<HideableColumn> initHideableColumns() {
 		SafeHtmlCell shc = new SafeHtmlCell();
+		List<HideableColumn> r = new ArrayList<HideableColumn>();
 		
-		hideableColumns.add(new LinkingColumn(shc, "Gene ID", false) {
+		r.add(new LinkingColumn<ExpressionRow>(shc, "Gene ID", false) {
 			@Override
-			String formLink(String value) {
+			protected String formLink(String value) {
 				return AType.formGeneLink(value);
 			}
 			@Override
-			Collection<Pair<String, String>> getLinkableValues(ExpressionRow er) {
+			protected Collection<Pair<String, String>> getLinkableValues(ExpressionRow er) {
 				return Pair.duplicate(Arrays.asList(er.getGeneIds()));
 			}						
 		});
 		
-		hideableColumns.add(new DefHideableColumn("Gene Sym", true) {
+		r.add(new DefHideableColumn<ExpressionRow>("Gene Sym", true) {
 			public String getValue(ExpressionRow er) {				
 				return SharedUtils.mkString(er.getGeneSyms(), ", ");
 			}
 		});
-		hideableColumns.add(new DefHideableColumn("Probe title", true) {
+		r.add(new DefHideableColumn<ExpressionRow>("Probe title", true) {
 			public String getValue(ExpressionRow er) {				
 				return er.getTitle();
 			}
 		});
-		hideableColumns.add(new DefHideableColumn("Probe", true) {
+		r.add(new DefHideableColumn<ExpressionRow>("Probe", true) {
 			public String getValue(ExpressionRow er) {				
 				return er.getProbe();
 			}
-		});
+		});		
 		
+		//We want gene sym, probe title etc. to be before the association columns going left to right
+		r.addAll(super.initHideableColumns());
 		
-		for (AType at: AType.values()) {
-			AssociationColumn ac = new AssociationColumn(shc, at);
-			associationColumns.add(ac);
-			hideableColumns.add(ac);
-		}
-		
+		return r;
 	}
 	
-	private AType[] visibleAssociations() {
-		List<AType> r = new ArrayList<AType>();
-		for (AssociationColumn ac: associationColumns) {
-			if (ac.visible()) {
-				r.add(ac.assoc);
-			}
-		}
-		return r.toArray(new AType[0]);
-	}
-	
-	private void getAssociations() {
-		waitingForAssociations = true;					
-		AType[] vas = visibleAssociations();
-		if (vas.length > 0) {
-			AsyncCallback<Association[]> assocCallback = new AsyncCallback<Association[]>() {
-				public void onFailure(Throwable caught) {
-					Window.alert("Unable to get associations: " + caught.getMessage());
-				}
-
-				public void onSuccess(Association[] result) {
-					associations.clear();
-					waitingForAssociations = false;
-					for (Association a: result) {
-						associations.put(a.type(), a);	
-					};				
-					exprGrid.redraw();
-				}
-			};
-
-			owlimService.associations(chosenDataFilter, vas,
-					displayedProbes, 
-					displayedGeneIds.toArray(new String[0]), assocCallback);
-		}
-	}
+	protected String[] displayedProbes() { return displayedProbes; }
+	protected String probeForRow(ExpressionRow row) { return row.getProbe(); }
+	protected String[] geneIdsForRow(ExpressionRow row) { return row.getGeneIds(); }
 	
 	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
 		private int start = 0;
@@ -499,14 +414,13 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 
 			public void onSuccess(List<ExpressionRow> result) {
 				if (result.size() > 0) {
-					exprGrid.setRowData(start, result);
+					grid.setRowData(start, result);
 					displayedProbes = new String[result.size()];
-					List<String> geneIds = new ArrayList<String>();		
+		
 					for (int i = 0; i < displayedProbes.length; ++i) {			
 						displayedProbes[i] = result.get(i).getProbe();
-						geneIds.addAll(Arrays.asList(result.get(i).getGeneIds()));
 					}		
-					displayedGeneIds = geneIds;
+
 					highlightedRow = -1;							
 					getAssociations();
 				} else {
@@ -517,26 +431,15 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 
 		protected void onRangeChanged(HasData<ExpressionRow> display) {
 			if (loadedData) {
-				Range range = display.getVisibleRange();
-
-				ColumnSortList csl = exprGrid.getColumnSortList();
-				boolean asc = false;
-				int col = 0;
-				if (csl.size() > 0) {
-					col = exprGrid
-							.getColumnIndex((Column<ExpressionRow, ?>) csl.get(
-									0).getColumn())
-							- extraCols;
-					asc = csl.get(0).isAscending();
-				}
+				Range range = display.getVisibleRange();		
 				start = range.getStart();
+				computeSortParams();
 				if (range.getLength() > 0) {
 					kcService.datasetItems(range.getStart(), range.getLength(),
-							col, asc, rowCallback);
+							sortDataColumnIdx(), sortAscending(), rowCallback);
 				}
 			}
 		}
-
 	}
 
 	@Override
@@ -544,7 +447,8 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		super.columnsChanged(columns);
 		 //invalidate synthetic columns, since they depend on
 		//normal columns
-		synthColumns.clear();
+		dataColumns -= synthetics.size();
+		synthetics.clear();
 		
 		groupsel1.clear();
 		groupsel2.clear();
@@ -566,19 +470,19 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 	void refilterData() {
 		if (loadedData) {
 			setEnabled(false);
-			exprGrid.setRowCount(0, false);
+			grid.setRowCount(0, false);
 			List<DataColumn> cols = new ArrayList<DataColumn>();
 			cols.addAll(chosenColumns);
 			kcService.refilterData(chosenDataFilter, cols, chosenProbes,
-					absValBox.getValue(), synthColumns,
+					absValBox.getValue(), synthetics,
 					new AsyncCallback<Integer>() {
 						public void onFailure(Throwable caught) {
 							getExpressions(); //the user probably let the session expire							
 						}
 
 						public void onSuccess(Integer result) {
-							exprGrid.setRowCount(result);
-							exprGrid.setVisibleRangeAndClearData(new Range(0,
+							grid.setRowCount(result);
+							grid.setVisibleRangeAndClearData(new Range(0,
 									PAGE_SIZE), true);
 							setEnabled(true);
 						}
@@ -588,70 +492,41 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 	
 	public void getExpressions() {
 		setEnabled(false);
-		exprGrid.setRowCount(0, false);		
+		grid.setRowCount(0, false);
 		setupColumns();
 		List<DataColumn> cols = new ArrayList<DataColumn>();
 		cols.addAll(chosenColumns);
 
-		//load data
-		kcService.loadDataset(chosenDataFilter, cols, chosenProbes, chosenValueType,
-				absValBox.getValue(), synthColumns, 
+		// load data
+		kcService.loadDataset(chosenDataFilter, cols, chosenProbes,
+				chosenValueType, absValBox.getValue(), synthetics,
 				new AsyncCallback<Integer>() {
-					public void onFailure(Throwable caught) {						
-						Window.alert("Unable to load dataset");					
+					public void onFailure(Throwable caught) {
+						Window.alert("Unable to load dataset");
 					}
-					
+
 					public void onSuccess(Integer result) {
 						if (result > 0) {
 							loadedData = true;
 							setEnabled(true);
-							exprGrid.setRowCount(result);
-							exprGrid.setVisibleRangeAndClearData(new Range(0, PAGE_SIZE),
-									true);
+							grid.setRowCount(result);
+							grid.setVisibleRangeAndClearData(new Range(0,
+									PAGE_SIZE), true);
 						} else {
 							Window.alert("No data was available. If you have not used Toxygates for a while, try reloading the page.");
 						}
 					}
-				});		
+				});
 	}
-	
-	private void setEnabled(boolean enabled) {
-		setEnabled(tools, enabled);
-		setEnabled(analysisTools, enabled);
-	}
-	
-	private void setEnabled(HasWidgets root, boolean enabled) {
-		for (Widget w: root) {
-			if (w instanceof HasWidgets) {
-				setEnabled((HasWidgets) w, enabled);
-			}
-			if (w instanceof FocusWidget) {
-				((FocusWidget) w).setEnabled(enabled);
-			}
-		}
-	}
-	
-	private class RowHighligher implements RowStyles<ExpressionRow> {
-		@Override
-		public String getStyleNames(ExpressionRow row, int rowIndex) {
-			if (highlightedRow != -1 && rowIndex == highlightedRow + exprGrid.getVisibleRange().getStart()) {
-				return "highlightedRow";
-			} else {
-				return "";
-			}
-		}		
-	}
-	
+
 	class ExpressionColumn extends Column<ExpressionRow, String> {
 		int i;
-		TextCell tc;
 		NumberFormat df = NumberFormat.getDecimalFormat();
 		NumberFormat sf = NumberFormat.getScientificFormat();
 		
 		public ExpressionColumn(TextCell tc, int i) {
 			super(tc);
-			this.i = i;
-			this.tc = tc;	
+			this.i = i;	
 		}
 
 		public String getValue(ExpressionRow er) {
@@ -662,8 +537,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 			}
 		}
 	}
-	
-	
+		
 	class ToolCell extends ImageClickCell {
 		
 		public ToolCell(DataListenerWidget owner) {
@@ -672,7 +546,7 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 		
 		public void onClick(final String value) {			
 			highlightedRow = SharedUtils.indexOf(displayedProbes, value);
-			exprGrid.redraw();
+			grid.redraw();
 			
 			final ChartGridFactory cgf = new ChartGridFactory(chosenDataFilter, chosenColumns);
 			Utils.ensureVisualisationAndThen(new Runnable() {
@@ -690,135 +564,5 @@ public class ExpressionTable extends DataListenerWidget { //implements RequiresR
 				}
 			});
 		}
-	}
-	
-	class ToolColumn extends Column<ExpressionRow, String> {
-			
-		public ToolColumn(ToolCell tc) {
-			super(tc);			
-		}
-		
-		public String getValue(ExpressionRow er) {
-			if (er != null) {
-				return er.getProbe();
-			} else {
-				return "";
-			}
-		}					
-	}
-	
-	
-	interface HideableColumn {
-		String name();
-		boolean visible();
-		void setVisibility(boolean v);
-	}
-	
-	abstract class LinkingColumn extends Column<ExpressionRow, SafeHtml> implements HideableColumn {
-		private boolean visible;
-		SafeHtmlCell c;
-		String name;
-		public LinkingColumn(SafeHtmlCell c, String name, boolean initState) {
-			super(c);
-			visible = initState;
-			this.name = name;
-			this.c = c;
-		}
-				
-		public String name() { return name; }
-		public boolean visible() { return this.visible; }
-		public void setVisibility(boolean v) { visible = v; }		
-		
-		protected List<String> makeLinks(Collection<Pair<String, String>> values) {
-			List<String> r = new ArrayList<String>();
-			for (Pair<String, String> v: values) {
-				String l = formLink(v.second());
-				if (l != null) {
-					r.add("<a target=\"_TGassoc\" href=\"" + l + "\">" + v.first() + "</a>");
-				} else {
-					r.add(v.first()); //no link
-				}				
-			}
-			return r;
-		}
-		
-		public SafeHtml getValue(ExpressionRow er) {
-			SafeHtmlBuilder build = new SafeHtmlBuilder();
-			String c = SharedUtils.mkString(makeLinks(getLinkableValues(er))
-							, ", ");
-			build.appendHtmlConstant(c);
-			return build.toSafeHtml();
-		}
-		
-		Collection<Pair<String, String>> getLinkableValues(ExpressionRow er) {
-			return new ArrayList<Pair<String, String>>();
-		}
-		
-		abstract String formLink(String value);
-		
-	}
-	
-	class AssociationColumn extends LinkingColumn implements HideableColumn {
-		AType assoc;		
-		
-		public AssociationColumn(SafeHtmlCell tc, AType association) {
-			super(tc, association.title(), false);
-			this.assoc = association;			
-		}
-		
-		String formLink(String value) { return assoc.formLink(value); }
-		
-		Collection<Pair<String, String>> getLinkableValues(ExpressionRow er) {
-			Association a = associations.get(assoc);
-			if (a.data().containsKey(er.getProbe())) {
-				return a.data().get(er.getProbe());				
-			} else {
-				String[] geneids = er.getGeneIds();
-				Set<Pair<String, String>> all = new HashSet<Pair<String, String>>();
-				for (String gi : geneids) {
-					if (a.data().containsKey(gi)) {
-						all.addAll(a.data().get(gi));
-					}
-				}
-				return all;				
-			}
-		}
-		
-		public SafeHtml getValue(ExpressionRow er) {		
-			SafeHtmlBuilder build = new SafeHtmlBuilder();
-			if (waitingForAssociations) {
-				build.appendEscaped("(Waiting for data...)");
-				return build.toSafeHtml();
-			} else {
-				if (associations.containsKey(assoc)) {
-					return super.getValue(er);					
-				} else {
-					build.appendEscaped("(Data unavailable)");
-				}
-			}
-			return build.toSafeHtml();
-		}		
-	}
-	
-	
-	abstract class DefHideableColumn extends TextColumn<ExpressionRow> implements HideableColumn {
-		private boolean visible;
-		public DefHideableColumn(String name, boolean initState) {
-			super();
-			visible = initState;
-			_name = name;
-		}
-		
-		private String _name;
-		public String name() { return _name; }
-		public boolean visible() { return this.visible; }
-		public void setVisibility(boolean v) { visible = v; }		
-	}
-	
-
-//	@Override
-//	public void onResize() {		
-//		dockPanel.onResize();		
-//	}
-	
+	}	
 }

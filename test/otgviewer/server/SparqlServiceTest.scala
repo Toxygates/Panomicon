@@ -21,6 +21,7 @@ class SparqlServiceTest extends FunSuite with BeforeAndAfter {
   var s: SparqlServiceImpl = _
   
   before {    
+    System.setProperty("otg.home", "/Users/johan/otg/20120221/open-tggates")
     s = new SparqlServiceImpl()
     s.localInit
   }  
@@ -32,9 +33,9 @@ class SparqlServiceTest extends FunSuite with BeforeAndAfter {
   val f = SparqlServiceTest.testFilter
   
   val probes = Array("1387936_at", "1391544_at")
-  val geneIds = Array("361510", "362972")
+//  val geneIds = Array("361510", "362972")
   
-  private def testAssociation(typ: AType) = s.associations(f, Array(typ), probes, geneIds)
+  private def testAssociation(typ: AType) = s.associations(f, Array(typ), probes)
     
   test("BP GO terms") {
     testAssociation(AType.GOBP)
@@ -56,8 +57,8 @@ class SparqlServiceTest extends FunSuite with BeforeAndAfter {
     testAssociation(AType.Uniprot)
   }
   
-  test ("KO") {
-    testAssociation(AType.KOProts)
+  test ("OrthProts") {
+    testAssociation(AType.OrthProts)
   }
   
   test ("CHEMBL") {
@@ -66,5 +67,11 @@ class SparqlServiceTest extends FunSuite with BeforeAndAfter {
   
   test ("DrugBank") {
     testAssociation(AType.Drugbank)
+  }
+  
+  test ("Genes for pathway") {
+    val ps = s.probesForPathway(f, "Glutathione metabolism")
+    println(ps.size + " probes")
+    assert(ps.size === 42)
   }
 }

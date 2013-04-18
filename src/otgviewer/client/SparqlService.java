@@ -78,7 +78,7 @@ public interface SparqlService extends RemoteService {
 	
 	public String[] probesForGoTerm(DataFilter filter, String goTerm);
 	
-	public String[][] geneSyms(String[] probes);
+	public String[][] geneSyms(String[] probes, DataFilter filter);
 	
 	/**
 	 * Obtain gene suggestions from a partial gene name (natural language)
@@ -92,8 +92,7 @@ public interface SparqlService extends RemoteService {
 	 * @param types the association types to get.
 	 * @param filter
 	 * @param probes
-	 * @param geneIds
 	 * @return
 	 */
-	public Association[] associations(DataFilter filter, AType[] types, String[] probes, String[] geneIds);
+	public Association[] associations(DataFilter filter, AType[] types, String[] probes);
 }

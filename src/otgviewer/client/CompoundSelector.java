@@ -60,6 +60,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	private boolean hasRankColumns = false;
 	private Button sortButton;
 	
+	private Map<String, Integer> ranks = new HashMap<String, Integer>(); //for compound ranking
 	private Map<String, MatchResult> scores = new HashMap<String, MatchResult>(); //for compound ranking
 	private List<String> rankProbes = new ArrayList<String>();
 	
@@ -124,14 +125,20 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
  			TextColumn<String> textColumn = new TextColumn<String>() {
 				@Override
 				public String getValue(String object) {
+					String r = "";
+					
 					if (scores.containsKey(object)) {
-						return Utils.formatNumber(scores.get(object).score());					
+						r += Utils.formatNumber(scores.get(object).score());					
 					} else {
-						return "N/A";
+						r += "N/A";
 					}
+					if (ranks.containsKey(object)) {
+						r += " (" + ranks.get(object) + ")";
+					}
+					return r;
 				}
 			};
-			table.addColumn(textColumn, "Score");
+			table.addColumn(textColumn, "Score");			
 			
 			ChartClickCell ccc = new ChartClickCell(this);
 			IdentityColumn<String> clickCol = new IdentityColumn<String>(ccc);
@@ -149,6 +156,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 			table.removeColumn(2); //score
 			rankProbes.clear();
 			scores.clear();
+			ranks.clear();
 			hasRankColumns = false;
 		}
 	}
@@ -221,10 +229,14 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 			seriesService.rankedCompounds(chosenDataFilter, rules.toArray(new RankRule[0]),
 					new PendingAsyncCallback<MatchResult[]>(this) {
 						public void handleSuccess(MatchResult[] res) {
+							ranks.clear();
+							int rnk = 1;
 							List<String> sortedCompounds = new ArrayList<String>();
 							for (MatchResult r : res) {
 								scores.put(r.compound(), r);
 								sortedCompounds.add(r.compound());
+								ranks.put(r.compound(), rnk);
+								rnk++;
 							}									
 							compoundTable.reloadWith(sortedCompounds, false);		
 							sortButton.setEnabled(true);

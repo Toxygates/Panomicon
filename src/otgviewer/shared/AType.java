@@ -30,7 +30,7 @@ public enum AType {
 	Homologene("Homologene entries") {
 		public String formLink(String value) { return formGeneLink(value); }		
 	},
-	KOProts("KO orthologous proteins") {
+	OrthProts("eggNOG orthologous proteins") {
 		 public String formLink(String value) { return formProteinLink(value); }		 
 	},
 	Enzymes("Kegg Enzymes") {

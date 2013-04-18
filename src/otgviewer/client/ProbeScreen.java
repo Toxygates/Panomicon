@@ -310,7 +310,8 @@ public class ProbeScreen extends Screen {
 		
 		if (probes.length > 0) {
 			//TODO reduce the number of ajax calls done by this screen by collapsing  them
-			owlimService.geneSyms(probesInOrder, new AsyncCallback<String[][]>() {
+			owlimService.geneSyms(probesInOrder, chosenDataFilter, 
+					new AsyncCallback<String[][]>() {
 				public void onSuccess(String[][] syms) {
 					deferredAddProbes(probesInOrder, syms);
 				}

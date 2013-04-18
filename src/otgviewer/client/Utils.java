@@ -8,7 +8,6 @@ import otgviewer.shared.DataColumn;
 import otgviewer.shared.Group;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
@@ -18,9 +17,11 @@ import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
@@ -295,4 +296,14 @@ public class Utils {
 		.loadVisualizationApi("1.1", r, "corechart");		
 	}
 
+	public static void setEnabled(HasWidgets root, boolean enabled) {
+		for (Widget w: root) {
+			if (w instanceof HasWidgets) {
+				setEnabled((HasWidgets) w, enabled);
+			}
+			if (w instanceof FocusWidget) {
+				((FocusWidget) w).setEnabled(enabled);
+			}
+		}
+	}
 }

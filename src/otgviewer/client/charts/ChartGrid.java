@@ -13,6 +13,7 @@ import otgviewer.shared.SharedUtils;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
@@ -79,6 +80,7 @@ public class ChartGrid extends Composite {
 	
 		if (!rowsAreCompounds) {
 			owlimService.geneSyms(rowFilters.toArray(new String[0]),
+					screen.chosenDataFilter,
 				new PendingAsyncCallback<String[][]>(screen) {
 					public void handleSuccess(String[][] results) {
 						for (int i = 0; i < results.length; ++i) {
@@ -87,7 +89,6 @@ public class ChartGrid extends Composite {
 									Utils.mkEmphLabel(SharedUtils.mkString(results[i]) + "/" + rowFilters.get(i)));										
 						}
 					}
-
 				});
 		}
 
@@ -121,6 +122,7 @@ public class ChartGrid extends Composite {
 	/**
 	 * We normalise the column count of each data table when displaying it
 	 * in order to force the charts to have equally wide bars.
+	 * (To the greatest extent possible)
 	 * @param row
 	 * @param column
 	 * @param width

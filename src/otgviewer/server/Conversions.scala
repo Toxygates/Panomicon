@@ -1,7 +1,7 @@
 package otgviewer.server
 
 import scala.collection.JavaConversions._
-import otg.BCode
+import otg.Sample
 import otg.SeriesMatching
 import otg.Species
 import otgviewer.shared.Annotation
@@ -34,8 +34,8 @@ object Conversions {
     new Annotation(annot.barcode, new java.util.ArrayList(annot.data.map(x =>
       new Annotation.Entry(x._1, x._2, otg.Annotation.isNumerical(x._1)))))
 
-  def asJava(bcode: BCode): Barcode = new Barcode(bcode.code, bcode.individual, bcode.dose,
-    bcode.time, bcode.compound);
+  def asJava(s: Sample): Barcode = new Barcode(s.code, s.individual, s.dose,
+    s.time, s.compound);
 
   implicit def speciesFromFilter(filter: DataFilter): Species = {
     filter.organism match {
