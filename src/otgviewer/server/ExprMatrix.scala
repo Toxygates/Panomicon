@@ -1,84 +1,75 @@
 package otgviewer.server
 
-import friedrich.data._
+import friedrich.data.immutable._
 import otgviewer.shared.ExpressionRow
 import bioweb.shared.array.ExpressionValue
 import scala.reflect.ClassTag
 import friedrich.data.mutable._
 import org.apache.commons.math3.stat.inference.TTest
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest
+import scala.collection.immutable.{Vector => SVector}
 
 object ExprMatrix extends DataMatrixBuilder {
   val ttest = new TTest()
   val utest = new MannWhitneyUTest()
 
-  def withRows(data: Seq[Seq[ExpressionValue]], metadata: ExprMatrix = null) = {
-    if (data.size > 0) {
-      val r = new ExprMatrix(data.size, data.head.size, metadata)
-      populate(r, (y, x) => data(y)(x))
-      r
-    } else {
-      new ExprMatrix(0, 0)
-    }
-    
-  }
+//  def withRows(data: Seq[Seq[ExpressionValue]], metadata: ExprMatrix = null) = {
+//    if (data.size > 0) {
+//      val r = new ExprMatrix(data.size, data.head.size, metadata)
+//      populate(r, (y, x) => data(y)(x))
+//      r
+//    } else {
+//      new ExprMatrix(0, 0)
+//    }
+//    
+//  }
+//
+//  def withColumns(data: Seq[ArrayVector[ExpressionValue]], metadata: ExprMatrix = null) = {
+//    if (data.size > 0) {
+//      val r = new ExprMatrix(data.head.size, data.size, metadata)
+//      populate(r, (y, x) => data(x)(y))
+//      r
+//    } else {
+//      new ExprMatrix(0, 0, metadata)
+//    }
+//    
+//  }
 
-  def withColumns(data: Seq[ArrayVector[ExpressionValue]], metadata: ExprMatrix = null) = {
-    if (data.size > 0) {
-      val r = new ExprMatrix(data.head.size, data.size, metadata)
-      populate(r, (y, x) => data(x)(y))
-      r
-    } else {
-      new ExprMatrix(0, 0, metadata)
-    }
-    
-  }
-
-  case class RowAnnotation(probe: String, title: String, geneIds: Array[String], geneSyms: Array[String])
+ 
 }
 
-/**
- * Future: lift up some of this functionality into the Friedrich matrix library.
- * Use immutable rather than mutable matrices.
- */
-class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends 
-ArrayMatrix[ExpressionValue](rows, columns, new ExpressionValue(0, 'A'))
-  with mutable.RowColAllocation[ExpressionValue, ArrayVector[ExpressionValue], String, String] {
+case class RowAnnotation(probe: String, title: String, geneIds: Array[String], geneSyms: Array[String])
+ 
+class ExprMatrix(data: Seq[VVector[ExpressionValue]], val rows: Int, val columns: Int, 
+    rowMap: Map[String, Int], columnMap: Map[String, Int], 
+    val annotations: SVector[RowAnnotation] = Vector.fill(rows)(new RowAnnotation(null, null, null, null)))
+    extends
+AllocatedDataMatrix[ExprMatrix, ExpressionValue, String, String](data, rows, columns, rowMap, columnMap) {
 
-  import ExprMatrix._
   import Conversions._
 
-  var annotations: Array[RowAnnotation] = _
-
-  if (metadata != null) {
-    annotations = metadata.annotations
-    rowMap = metadata.rowMap
-    columnMap = metadata.columnMap
-  } else {
-    annotations = Array.fill(rows)(new RowAnnotation(null, null, null, null))
-  }
+  val emptyVal = new ExpressionValue(0, 'A')
   
-  def sortedRowMap = rowMap.toSeq.sortWith(_._2 < _._2)
-  def sortedColumnMap = columnMap.toSeq.sortWith(_._2 < _._2)
+  def copyWith(rows: Seq[VVector[ExpressionValue]], rowMap: Map[String, Int], columnMap: Map[String, Int], 
+      annotations: SVector[RowAnnotation]): ExprMatrix = 
+        new ExprMatrix(data, data.size, data(0).size, rowMap, columnMap, annotations)
   
-  lazy val asRows: scala.collection.immutable.Vector[ExpressionRow] = toRowVectors.toVector.zip(annotations).map(x => {
+  def copyWith(rows: Seq[VVector[ExpressionValue]], rowMap: Map[String, Int], columnMap: Map[String, Int]): ExprMatrix =
+    copyWith(rows, rowMap, columnMap, annotations)
+    
+  def copyWithAnnotations(annnots: SVector[RowAnnotation]): ExprMatrix = copyWith(data, rowMap, columnMap, annots)
+  
+  lazy val sortedRowMap = rowMap.toSeq.sortWith(_._2 < _._2)
+  lazy val sortedColumnMap = columnMap.toSeq.sortWith(_._2 < _._2)
+  
+  lazy val asRows: SVector[ExpressionRow] = toRowVectors.toVector.zip(annotations).map(x => {
     val ann = x._2    
     new ExpressionRow(ann.probe, ann.title, ann.geneIds, ann.geneSyms, x._1.toArray)
   })
 
-  def filterRows(f: (ArrayVector[ExpressionValue]) => Boolean): ExprMatrix = {
-    val x = toRowVectors.zip(annotations).zip(sortedRowMap.map(_._1)).filter(x => f(x._1._1))
-    val r = ExprMatrix.withRows(x.map(_._1._1), this)
-    r.annotations = x.map(_._1._2).toArray
-    r.rowMap = Map() ++ x.map(_._2).zipWithIndex    
-    r
-  }
-
-  def appendColumn(col: Seq[ExpressionValue]): ExprMatrix = {
-    val r = new ExprMatrix(rows, columns + 1, this)
-    populate(r, (y, x) => if (x < columns) { data(y)(x) } else { col(y) })    
-    r
-  }
+  override def selectRows(rows: Seq[Int]): ExprMatrix = 
+    super.selectRows(rows).copyWithAnnotations(rows.map(annotations(_)))
+  
 
   def appendTwoColTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String], 
       test: (Array[Double], Array[Double]) => Double): ExprMatrix = {
@@ -93,8 +84,7 @@ ArrayMatrix[ExpressionValue](rows, columns, new ExpressionValue(0, 'A'))
         new ExpressionValue(0, 'A')
       }
     })
-    val r = appendColumn(ps.toSeq)
-    r
+    appendColumn(ps.toSeq)    
   }
   
   def appendTTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String]): ExprMatrix = 
@@ -104,84 +94,4 @@ ArrayMatrix[ExpressionValue](rows, columns, new ExpressionValue(0, 'A'))
   	appendTwoColTest(sourceData, group1, group2, utest.mannWhitneyUTest(_, _))
   
 
-  def sortRows(f: (ArrayVector[ExpressionValue], ArrayVector[ExpressionValue]) => Boolean): ExprMatrix = {
-    val sortedKeys = sortedRowMap.map(_._1)
-    val sort = toRowVectors.zip(sortedKeys).zip(annotations)
-    val sorted = sort.sortWith((x, y) => f(x._1._1, y._1._1))
-    val r = ExprMatrix.withRows(sorted.map(_._1._1), this)
-    r.annotations = sorted.map(_._2).toArray
-    r.rowMap = Map() ++ sorted.map(_._1._2).zipWithIndex    
-    r
-  }
-
-  /**
-   * Adjoin another matrix to this one on the right hand side.
-   * The two matrices must have the same number of rows
-   * and be sorted in the same way.
-   * The metadata of the resulting matrix is taken from 'this' where appropriate.
-   */
-  def adjoinRight(other: ExprMatrix): ExprMatrix = {
-    val r = new ExprMatrix(rows, columns + other.columns, this)
-    populate(r, (y, x) => if (x < columns) { data(y)(x) } else { other.data(y)(x - columns) })    
-    r.columnMap = columnMap ++ other.columnMap.map(x => (x._1, x._2 + columns))
-    r
-  }
-
-  /**
-   * Split this matrix vertically so that the first column in the second matrix
-   * has the given offset in this matrix.
-   * The metadata of the resulting matrix is taken from 'this' where appropriate.
-   */
-  def verticalSplit(at: Int): (ExprMatrix, ExprMatrix) = {
-    val r1 = new ExprMatrix(rows, at, this)
-    val r2 = new ExprMatrix(rows, columns - at, this)
-    populate(r1, (y, x) => data(y)(x))
-    populate(r2, (y, x) => data(y)(x + at))
-    
-    r1.columnMap = columnMap.filter(_._2 < at)
-    r2.columnMap = columnMap.filter(_._2 >= at).map(x => (x._1, x._2 - at))
-    (r1, r2)
-  }
-  
-  /**
-   * Adjoin two matrices, modify them together, then split again.
-   * The metadata of the resulting matrix is taken from 'this' where appropriate.
-   */
-  def modifyJointly(other: ExprMatrix, f: (ExprMatrix) => ExprMatrix): (ExprMatrix, ExprMatrix) = {
-    val joined = adjoinRight(other)
-    val modified = f(joined)
-    modified.verticalSplit(columns)
-  }
-  
-  /**
-   * NB this allows for permutation as well as selection
-   */
-  def selectRows(rows: Seq[Int]): ExprMatrix = {
-    val r = ExprMatrix.withRows(rows.map(row(_)), this)    
-    val rowIds = rows.toSet
-    r.annotations = rows.map(a => annotations(a)).toArray
-    r.rowMap = Map() ++ rows.map(rowAt(_)).zipWithIndex
-    r
-  }
-  
-  /**
-   * NB this allows for permutation as well as selection
-   */
-  def selectNamedRows(rows: Seq[String]) = selectRows(rows.map(rowMap(_)))   
-  
-  /**
-   * NB this allows for permutation as well as selection
-   */
-  def selectColumns(columns: Seq[Int]): ExprMatrix = {
-    val r = ExprMatrix.withColumns(columns.map(column(_)), this)
-    val colIds = columns.toSet
-    r.columnMap = Map() ++ columns.map(columnAt(_)).zipWithIndex 
-    r
-  }
-  
-  /**
-   * NB this allows for permutation as well as selection
-   */
-  def selectNamedColumns(columns: Seq[String]) = selectColumns(columns.map(columnMap(_)))
-  
 }
