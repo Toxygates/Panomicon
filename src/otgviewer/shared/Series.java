@@ -2,6 +2,8 @@ package otgviewer.shared;
 
 import java.io.Serializable;
 
+import bioweb.shared.array.ExpressionValue;
+
 public class Series implements Serializable {
 
 	public Series() {

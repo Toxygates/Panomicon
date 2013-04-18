@@ -7,13 +7,12 @@ import otg.Species
 import otgviewer.shared.Barcode
 import otgviewer.shared.CellType
 import otgviewer.shared.DataFilter
-import otgviewer.shared.ExpressionValue
 import otgviewer.shared.Organism
 import otgviewer.shared.Pathology
 import otgviewer.shared.RankRule
 import otgviewer.shared.Series
 import otgviewer.shared.RuleType
-import bioweb.shared.array.Annotation
+import bioweb.shared.array._
 
 object Conversions {
   import language.implicitConversions
@@ -56,6 +55,8 @@ object Conversions {
   }
   
   implicit def asJava(ev: otg.ExprValue): ExpressionValue = new ExpressionValue(ev.value, ev.call)
+  //Loses probe information!
+  implicit def asScala(ev: ExpressionValue): otg.ExprValue = new otg.ExprValue(ev.getValue, ev.getCall, "")
   
   def nullToOption[T](v: T): Option[T] = {
     if (v == null) {

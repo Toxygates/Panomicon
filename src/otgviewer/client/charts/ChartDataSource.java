@@ -12,9 +12,9 @@ import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
-import otgviewer.shared.ExpressionValue;
 import otgviewer.shared.Series;
 import bioweb.shared.SharedUtils;
+import bioweb.shared.array.ExpressionValue;
 import otgviewer.shared.TimesDoses;
 import otgviewer.shared.ValueType;
 

@@ -1,9 +1,8 @@
 package otgviewer.server
 
 import friedrich.data._
-import otg.ExprValue
 import otgviewer.shared.ExpressionRow
-import otgviewer.shared.ExpressionValue
+import bioweb.shared.array.ExpressionValue
 import scala.reflect.ClassTag
 import friedrich.data.mutable._
 import org.apache.commons.math3.stat.inference.TTest
@@ -13,7 +12,7 @@ object ExprMatrix extends DataMatrixBuilder {
   val ttest = new TTest()
   val utest = new MannWhitneyUTest()
 
-  def withRows(data: Seq[Seq[ExprValue]], metadata: ExprMatrix = null) = {
+  def withRows(data: Seq[Seq[ExpressionValue]], metadata: ExprMatrix = null) = {
     if (data.size > 0) {
       val r = new ExprMatrix(data.size, data.head.size, metadata)
       populate(r, (y, x) => data(y)(x))
@@ -24,7 +23,7 @@ object ExprMatrix extends DataMatrixBuilder {
     
   }
 
-  def withColumns(data: Seq[ArrayVector[ExprValue]], metadata: ExprMatrix = null) = {
+  def withColumns(data: Seq[ArrayVector[ExpressionValue]], metadata: ExprMatrix = null) = {
     if (data.size > 0) {
       val r = new ExprMatrix(data.head.size, data.size, metadata)
       populate(r, (y, x) => data(x)(y))
@@ -42,8 +41,9 @@ object ExprMatrix extends DataMatrixBuilder {
  * Future: lift up some of this functionality into the Friedrich matrix library.
  * Use immutable rather than mutable matrices.
  */
-class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends ArrayMatrix[ExprValue](rows, columns, ExprValue(0, 'A'))
-  with mutable.RowColAllocation[ExprValue, ArrayVector[ExprValue], String, String] {
+class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends 
+ArrayMatrix[ExpressionValue](rows, columns, new ExpressionValue(0, 'A'))
+  with mutable.RowColAllocation[ExpressionValue, ArrayVector[ExpressionValue], String, String] {
 
   import ExprMatrix._
   import Conversions._
@@ -63,11 +63,10 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
   
   lazy val asRows: scala.collection.immutable.Vector[ExpressionRow] = toRowVectors.toVector.zip(annotations).map(x => {
     val ann = x._2    
-    new ExpressionRow(ann.probe, ann.title, ann.geneIds, ann.geneSyms,
-      x._1.toArray.map(asJava(_)))
+    new ExpressionRow(ann.probe, ann.title, ann.geneIds, ann.geneSyms, x._1.toArray)
   })
 
-  def filterRows(f: (ArrayVector[ExprValue]) => Boolean): ExprMatrix = {
+  def filterRows(f: (ArrayVector[ExpressionValue]) => Boolean): ExprMatrix = {
     val x = toRowVectors.zip(annotations).zip(sortedRowMap.map(_._1)).filter(x => f(x._1._1))
     val r = ExprMatrix.withRows(x.map(_._1._1), this)
     r.annotations = x.map(_._1._2).toArray
@@ -75,7 +74,7 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
     r
   }
 
-  def appendColumn(col: Seq[ExprValue]): ExprMatrix = {
+  def appendColumn(col: Seq[ExpressionValue]): ExprMatrix = {
     val r = new ExprMatrix(rows, columns + 1, this)
     populate(r, (y, x) => if (x < columns) { data(y)(x) } else { col(y) })    
     r
@@ -86,12 +85,12 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
     val cs1 = group1.toSeq.map(sourceData.column(_))
     val cs2 = group2.toSeq.map(sourceData.column(_))
     val ps = (0 until rows).map(i => {
-      val vs1 = cs1.map(_(i)).filter(_.call != 'A').toArray
-      val vs2 = cs2.map(_(i)).filter(_.call != 'A').toArray
+      val vs1 = cs1.map(_(i)).filter(_.getPresent).toArray
+      val vs2 = cs2.map(_(i)).filter(_.getPresent).toArray
       if (vs1.size >= 2 && vs2.size >= 2) {
-        ExprValue(test(vs1.map(_.value), vs2.map(_.value)), 'P', vs1.head.probe)
+        new ExpressionValue(test(vs1.map(_.getValue), vs2.map(_.getValue)), 'P')
       } else {
-        ExprValue(0, 'A', cs1.head(i).probe)
+        new ExpressionValue(0, 'A')
       }
     })
     val r = appendColumn(ps.toSeq)
@@ -105,7 +104,7 @@ class ExprMatrix(rows: Int, columns: Int, metadata: ExprMatrix = null) extends A
   	appendTwoColTest(sourceData, group1, group2, utest.mannWhitneyUTest(_, _))
   
 
-  def sortRows(f: (ArrayVector[ExprValue], ArrayVector[ExprValue]) => Boolean): ExprMatrix = {
+  def sortRows(f: (ArrayVector[ExpressionValue], ArrayVector[ExpressionValue]) => Boolean): ExprMatrix = {
     val sortedKeys = sortedRowMap.map(_._1)
     val sort = toRowVectors.zip(sortedKeys).zip(annotations)
     val sorted = sort.sortWith((x, y) => f(x._1._1, y._1._1))

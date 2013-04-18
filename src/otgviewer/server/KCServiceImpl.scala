@@ -13,7 +13,6 @@ import otgviewer.shared.ValueType
 import otgviewer.shared.ExpressionRow
 import otgviewer.shared.Group
 import otgviewer.shared.BarcodeColumn
-import otgviewer.shared.ExpressionValue
 import otgviewer.shared.Series
 import otg.ExprValue
 import otgviewer.shared.Barcode
@@ -24,6 +23,7 @@ import otg.CSVHelper
 import otg.OTGSeriesQuery
 import otg.sparql._
 import otg.OTGCabinet
+import bioweb.shared.array.ExpressionValue
 import bioweb.server.array.ArrayServiceImpl
 
 
@@ -102,7 +102,8 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
     val db = getDB(typ)
     val sorted = OTGQueries.sortBarcodes(barcodes.map(otg.Sample(_)))
     val data = OTGQueries.presentValuesByBarcodesAndProbes(db, sorted, probes, sparseRead, filter)
-    val r = ExprMatrix.withRows(data.map(_.toSeq)) //todo
+    val jdata = data.map(_.map(asJava(_)).toSeq)
+    val r = ExprMatrix.withRows(jdata) 
     r.annotations = probes.map(ExprMatrix.RowAnnotation(_, null, null, null)).toArray
     r.columnMap = Map() ++ sorted.map(_.code).zipWithIndex
     r.rowMap = Map() ++ probes.zipWithIndex
@@ -130,12 +131,16 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
     refilterData(filter, columns, probes, absValFilter, syntheticColumns)
   }
 
+  private def presentMean(vs: Seq[ExpressionValue]): ExpressionValue = {
+    asJava(ExprValue.presentMean(vs.map(asScala(_)), "")) //TODO: simplify
+  }
+  
   private def makeGroups(data: ExprMatrix, columns: Seq[BarcodeColumn]) = {    
     val groupedColumns = columns.map(_ match {
       case g: Group => {
-        new ArrayVector[ExprValue]((0 until data.rows).map(r => {
+        new ArrayVector[ExpressionValue]((0 until data.rows).map(r => {
           val vs = g.getBarcodes.map(bc => data.columnMap(bc.getCode)).map(data(r, _))
-          ExprValue.presentMean(vs, "")
+          presentMean(vs)
         }).toArray)
       }
       case b: Barcode => data.column(b.getCode)
@@ -156,12 +161,12 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
     val session = getSessionData()
     val data = session.ungroupedUnfiltered
 
-    var groupedData = makeGroups(data, columns)
+    val groupedData = makeGroups(data, columns)
 
     val filteredProbes = filterProbes(filter, probes)
 
     //filter by abs. value
-    def f(r: ArrayVector[ExprValue], before: Int): Boolean = r.take(before).exists(v =>
+    def f(r: ArrayVector[ExpressionValue], before: Int): Boolean = r.take(before).exists(v =>
       (Math.abs(v.value) >= absValFilter - 0.0001) || (java.lang.Double.isNaN(v.value) && absValFilter == 0))
 
     //Pick out rows that correspond to the selected probes only, and filter them by absolute value
@@ -187,8 +192,8 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
   }
 
   def datasetItems(offset: Int, size: Int, sortColumn: Int, ascending: Boolean): JList[ExpressionRow] = {
-    def sortData(v1: ArrayVector[ExprValue],
-                 v2: ArrayVector[ExprValue]): Boolean = {
+    def sortData(v1: ArrayVector[ExpressionValue],
+                 v2: ArrayVector[ExpressionValue]): Boolean = {
       val ev1 = v1(sortColumn)
       val ev2 = v2(sortColumn)
       if (ev1.call == 'A' && ev2.call != 'A') {
@@ -300,7 +305,7 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
     useConnector(AffyProbes, (c: AffyProbes.type) => {
       val gis = c.allGeneIds(session.params.filter)      
       val geneIds = rowNames.map(rn => gis.getOrElse(Probe(rn), Seq.empty)).map(_.mkString(" "))
-      CSVHelper.writeCSV(rowNames, colNames, geneIds, session.rendered.data)
+      CSVHelper.writeCSV(rowNames, colNames, geneIds, session.rendered.data.map(_.map(asScala(_))))
     })
   }
 

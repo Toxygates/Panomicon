@@ -3,6 +3,8 @@ package otgviewer.shared;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import bioweb.shared.array.ExpressionValue;
+
 public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 	private String probe = "";
 	private String title = "";
