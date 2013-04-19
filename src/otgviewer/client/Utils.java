@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import otgviewer.shared.Barcode;
-import otgviewer.shared.DataColumn;
+import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.Group;
 
 import com.google.gwt.core.client.GWT;
@@ -198,9 +198,9 @@ public class Utils {
 		return sp;
 	}
 	
-	public static String[] allCompounds(List<DataColumn> columns) {
+	public static String[] allCompounds(List<BarcodeColumn> columns) {
 		List<String> r = new ArrayList<String>();
-		for (DataColumn dc : columns) {
+		for (BarcodeColumn dc : columns) {
 			for (String c : dc.getCompounds()) {
 				r.add(c);
 			}

@@ -12,8 +12,9 @@ import otgviewer.client.SparqlService;
 import otgviewer.client.SparqlServiceAsync;
 import otgviewer.shared.AType;
 import otgviewer.shared.Association;
-import otgviewer.shared.Pair;
-import otgviewer.shared.SharedUtils;
+import bioweb.shared.SharedUtils;
+
+import bioweb.shared.Pair;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.core.client.GWT;

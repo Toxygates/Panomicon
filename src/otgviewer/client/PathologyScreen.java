@@ -10,8 +10,8 @@ import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.Barcode;
+import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.CellType;
-import otgviewer.shared.DataColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.Pathology;
@@ -26,7 +26,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 public class PathologyScreen extends Screen {
@@ -143,7 +142,7 @@ public class PathologyScreen extends Screen {
 		if (visible && (lastFilter == null || !lastFilter.equals(chosenDataFilter)
 				|| lastColumns == null || !chosenColumns.equals(lastColumns))) {
 			pathologies.clear();
-			for (DataColumn c : chosenColumns) {
+			for (BarcodeColumn c : chosenColumns) {
 				owlimService.pathologies(c, new AsyncCallback<Pathology[]>() {
 					public void onFailure(Throwable caught) {
 						Window.alert("Unable to get pathologies.");

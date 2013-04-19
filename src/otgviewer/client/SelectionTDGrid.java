@@ -6,7 +6,7 @@ import java.util.List;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;
-import otgviewer.shared.SharedUtils;
+import bioweb.shared.SharedUtils;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

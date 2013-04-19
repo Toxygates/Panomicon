@@ -9,37 +9,32 @@ import otg.OTGQueries
 import java.util.{ List => JList, ArrayList }
 import otgviewer.shared.DataFilter
 import otgviewer.shared.Synthetic
-import otgviewer.shared.DataColumn
 import otgviewer.shared.ValueType
 import otgviewer.shared.ExpressionRow
 import otgviewer.shared.Group
+import otgviewer.shared.BarcodeColumn
+import otgviewer.shared.Series
 import otg.ExprValue
 import otgviewer.shared.Barcode
-import friedrich.statistics.ArrayVector
+import friedrich.data.mutable.ArrayVector
 import javax.servlet.http.HttpSession
 import otg.sparql.AffyProbes
 import otg.CSVHelper
-import otgviewer.shared.Series
 import otg.OTGSeriesQuery
-import otgviewer.shared.ExpressionValue
 import otg.sparql._
 import otg.OTGCabinet
+import bioweb.shared.array.ExpressionValue
+import bioweb.server.array.ArrayServiceImpl
+
 
 /**
  * This servlet is responsible for obtaining and manipulating data from the Kyoto
  * Cabinet databases.
  */
-class KCServiceImpl extends RemoteServiceServlet with KCService {
+class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService {
   import Conversions._
   import scala.collection.JavaConversions._
   import UtilsS._
-
-  class DataViewParams {
-    var sortAsc: Boolean = _
-    var sortColumn: Int = _
-    var mustSort: Boolean = _
-    var filter: DataFilter = _
-  }
 
   private var foldsDB: DB = _
   private var absDB: DB = _
@@ -60,9 +55,10 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     super.destroy()
   }
 
-  private def getSessionData() = new SessionData(getThreadLocalRequest().getSession())
+  //TODO lift up
+  protected def getSessionData() = new SessionData(getThreadLocalRequest().getSession())
 
-  private class SessionData(val session: HttpSession) {
+  protected class SessionData(val session: HttpSession) {
     def ungroupedUnfiltered: ExprMatrix = session.getAttribute("ungroupedUnfiltered").asInstanceOf[ExprMatrix]
     def ungroupedUnfiltered_=(v: ExprMatrix) = session.setAttribute("ungroupedUnfiltered", v)
 
@@ -86,7 +82,6 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
   }
 
   //Should this be in owlimService?
-  //Is the separate OTGMisc object needed?
   def identifiersToProbes(filter: DataFilter, identifiers: Array[String], precise: Boolean): Array[String] =
     AffyProbes.identifiersToProbes(filter, identifiers, precise).map(_.identifier).toArray
 
@@ -107,22 +102,23 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     val db = getDB(typ)
     val sorted = OTGQueries.sortBarcodes(barcodes.map(otg.Sample(_)))
     val data = OTGQueries.presentValuesByBarcodesAndProbes(db, sorted, probes, sparseRead, filter)
-    val r = ExprMatrix.withRows(data.map(_.toSeq)) //todo
+    val jdata = data.map(_.map(asJava(_)).toSeq)
+    val r = ExprMatrix.withRows(jdata) 
     r.annotations = probes.map(ExprMatrix.RowAnnotation(_, null, null, null)).toArray
     r.columnMap = Map() ++ sorted.map(_.code).zipWithIndex
     r.rowMap = Map() ++ probes.zipWithIndex
     r
   }
 
-  def loadDataset(filter: DataFilter, columns: JList[DataColumn], probes: Array[String],
+  def loadDataset(filter: DataFilter, columns: JList[BarcodeColumn], probes: Array[String],
                   typ: ValueType, absValFilter: Double, syntheticColumns: JList[Synthetic]): Int = {
 
-    def barcodes(columns: Seq[DataColumn]): Seq[String] = {
+    def barcodes(columns: Seq[BarcodeColumn]): Seq[String] = {
       columns.flatMap(_ match {
         case g: Group   => g.getBarcodes
         case b: Barcode => Vector(b)
         case _          => Vector()
-      }).map(_.getCode)
+      }).map(_.id)
     }
 
     val filtered = filterProbes(filter, null).toSeq
@@ -135,12 +131,16 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     refilterData(filter, columns, probes, absValFilter, syntheticColumns)
   }
 
-  private def makeGroups(data: ExprMatrix, columns: Seq[DataColumn]) = {    
+  private def presentMean(vs: Seq[ExpressionValue]): ExpressionValue = {
+    asJava(ExprValue.presentMean(vs.map(asScala(_)), "")) //TODO: simplify
+  }
+  
+  private def makeGroups(data: ExprMatrix, columns: Seq[BarcodeColumn]) = {    
     val groupedColumns = columns.map(_ match {
       case g: Group => {
-        new ArrayVector[ExprValue]((0 until data.rows).map(r => {
+        new ArrayVector[ExpressionValue]((0 until data.rows).map(r => {
           val vs = g.getBarcodes.map(bc => data.columnMap(bc.getCode)).map(data(r, _))
-          ExprValue.presentMean(vs, "")
+          presentMean(vs)
         }).toArray)
       }
       case b: Barcode => data.column(b.getCode)
@@ -151,7 +151,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     r
   }
   
-  def refilterData(filter: DataFilter, columns: JList[DataColumn], probes: Array[String], absValFilter: Double,
+  def refilterData(filter: DataFilter, columns: JList[BarcodeColumn], probes: Array[String], absValFilter: Double,
                    syntheticColumns: JList[Synthetic]): Int = {
     println("Refilter probes: " + probes)
     if (probes != null) {
@@ -161,12 +161,12 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     val session = getSessionData()
     val data = session.ungroupedUnfiltered
 
-    var groupedData = makeGroups(data, columns)
+    val groupedData = makeGroups(data, columns)
 
     val filteredProbes = filterProbes(filter, probes)
 
     //filter by abs. value
-    def f(r: ArrayVector[ExprValue], before: Int): Boolean = r.take(before).exists(v =>
+    def f(r: ArrayVector[ExpressionValue], before: Int): Boolean = r.take(before).exists(v =>
       (Math.abs(v.value) >= absValFilter - 0.0001) || (java.lang.Double.isNaN(v.value) && absValFilter == 0))
 
     //Pick out rows that correspond to the selected probes only, and filter them by absolute value
@@ -192,8 +192,8 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
   }
 
   def datasetItems(offset: Int, size: Int, sortColumn: Int, ascending: Boolean): JList[ExpressionRow] = {
-    def sortData(v1: ArrayVector[ExprValue],
-                 v2: ArrayVector[ExprValue]): Boolean = {
+    def sortData(v1: ArrayVector[ExpressionValue],
+                 v2: ArrayVector[ExpressionValue]): Boolean = {
       val ev1 = v1(sortColumn)
       val ev2 = v2(sortColumn)
       if (ev1.call == 'A' && ev2.call != 'A') {
@@ -248,12 +248,6 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
       val attribs = c.withAttributes(probes, f)
       val pm = Map() ++ attribs.map(a => (a.identifier -> a))
       
-//      val probeTitles = c.titles(probes)
-//      //todo: collapse the two gene lookup functions
-//      val geneIds = c.geneIds(probes)
-//      val geneSyms = c.geneSyms(probes)
-      
-      //TODO: could also insert proteins here for free
       rows.map(or => {
         if (!pm.containsKey(or.getProbe)) {
           println("missing key: " + or.getProbe)
@@ -273,7 +267,7 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
 
     val realProbes = filterProbes(filter, probes)
     val r = getExprValues(filter, barcodes, realProbes, typ, sparseRead)
-    //When we have obtained the data in r, it may no longer be sorted in the order that the user
+    //When we have obtained the data in r, it might no longer be sorted in the order that the user
     //requested. Thus we use selectNamedRows here to force the sort order they wanted.
     new ArrayList[ExpressionRow](insertAnnotations(r.selectNamedColumns(barcodes).asRows, filter))
   }
@@ -300,6 +294,8 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
   }
 
   def prepareCSVDownload(): String = {
+    import BioObjects._
+    
     val session = getSessionData()
     val rendered = session.rendered
     if (rendered != null) {
@@ -309,9 +305,9 @@ class KCServiceImpl extends RemoteServiceServlet with KCService {
     val colNames = rendered.sortedColumnMap.map(_._1)
     val rowNames = rendered.sortedRowMap.map(_._1)
     useConnector(AffyProbes, (c: AffyProbes.type) => {
-      val gis = c.allGeneIds(session.params.filter)      
+      val gis = c.allGeneIds(session.params.filter).mapMValues(_.identifier)      
       val geneIds = rowNames.map(rn => gis.getOrElse(Probe(rn), Seq.empty)).map(_.mkString(" "))
-      CSVHelper.writeCSV(rowNames, colNames, geneIds, session.rendered.data)
+      CSVHelper.writeCSV(rowNames, colNames, geneIds, session.rendered.data.map(_.map(asScala(_))))
     })
   }
 

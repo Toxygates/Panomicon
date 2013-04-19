@@ -5,7 +5,7 @@ import java.util.List;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
-import otgviewer.shared.DataColumn;
+import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.Group;
 
 import com.google.gwt.dom.client.Style.Unit;
@@ -13,7 +13,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -86,7 +85,7 @@ public class ColumnScreen extends Screen {
 			//data filter being present.
 			try {
 				List<Group> ics = loadColumns("inactiveColumns", 
-						new ArrayList<DataColumn>(gi.existingGroupsTable.inverseSelection()));
+						new ArrayList<BarcodeColumn>(gi.existingGroupsTable.inverseSelection()));
 				if (ics != null) {
 					gi.inactiveColumnsChanged(ics);
 				}

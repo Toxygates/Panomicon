@@ -2,10 +2,9 @@ package otgviewer.client;
 
 import java.util.List;
 
-import otgviewer.shared.DataColumn;
+import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.ExpressionRow;
-import otgviewer.shared.Series;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
 
@@ -16,11 +15,11 @@ public interface KCServiceAsync {
 	public void identifiersToProbes(DataFilter filter, String[] identifiers,
 			boolean precise, AsyncCallback<String[]> callback);
 
-	public void loadDataset(DataFilter filter, List<DataColumn> columns,
+	public void loadDataset(DataFilter filter, List<BarcodeColumn> columns,
 			String[] probes, ValueType type, double absValFilter,
 			List<Synthetic> synthCols, AsyncCallback<Integer> callback);
 
-	public void refilterData(DataFilter filter, List<DataColumn> columns,
+	public void refilterData(DataFilter filter, List<BarcodeColumn> columns,
 			String[] probes, double absValFilter, List<Synthetic> synthCols,
 			AsyncCallback<Integer> callback);
 

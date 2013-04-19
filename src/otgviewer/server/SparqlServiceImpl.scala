@@ -1,29 +1,34 @@
 package otgviewer.server
 
+import scala.Array.canBuildFrom
+import scala.Array.fallbackCanBuildFrom
+import scala.Option.option2Iterable
+import scala.collection.{Set => CSet}
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-import Assocations.convert
+
+import Assocations.convertPairs
+import Conversions.asJava
+import Conversions.asScala
+import Conversions.nullToOption
+import Conversions.speciesFromFilter
 import UtilsS.nullToNone
+import UtilsS.useConnector
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
-import kyotocabinet.DB
+import otg.DefaultBio
 import otg.OTGQueries
-import otg.OTGSeriesQuery
-import otg.Series
-import otg.Species
+
 import otg.sparql._
 import otgviewer.client.SparqlService
 import otgviewer.shared.AType
-import otgviewer.shared.Annotation
 import otgviewer.shared.Association
 import otgviewer.shared.Barcode
-import otgviewer.shared.DataColumn
 import otgviewer.shared.DataFilter
-import otgviewer.shared.MatchResult
-import otgviewer.shared.NoSuchProbeException
-import otgviewer.shared.Pair
+import otgviewer.shared.BarcodeColumn
+import bioweb.shared.Pair
 import otgviewer.shared.Pathology
-import otgviewer.shared.RankRule
-import otg.DefaultBio
+import bioweb.shared.array.Annotation
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -34,6 +39,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   import UtilsS._
   import Assocations._
   import CommonSPARQL._
+  
+  type DataColumn = bioweb.shared.array.DataColumn[Barcode]
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
@@ -91,11 +98,11 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   def pathologies(barcode: Barcode): Array[Pathology] = 
     OTGSamples.pathologies(barcode.getCode).map(asJava(_)).toArray
     
-  def pathologies(column: DataColumn): Array[Pathology] = 
+  def pathologies(column: BarcodeColumn): Array[Pathology] = 
     column.getBarcodes.flatMap(x => OTGSamples.pathologies(x.getCode)).map(asJava(_))
     
   def annotations(barcode: Barcode): Annotation = asJava(OTGSamples.annotations(barcode.getCode))
-  def annotations(column: DataColumn): Array[Annotation] = 
+  def annotations(column: BarcodeColumn): Array[Annotation] = 
     column.getBarcodes.map(x => OTGSamples.annotations(x.getCode)).map(asJava(_))
     
   def pathways(filter: DataFilter, pattern: String): Array[String] = 
@@ -214,7 +221,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     m1.map(p => new Association(p._1, convertPairs(p._2))).toArray     
   }
   
-  def geneSuggestions(partialName: String, filter: DataFilter): Array[Pair[String, String]] = {
+  def geneSuggestions(partialName: String, filter: DataFilter): Array[bioweb.shared.Pair[String, String]] = {
     useConnector(AffyProbes, (c: AffyProbes.type) => c.probesForPartialTitle(partialName, filter)).map(x => 
       new Pair(x.identifier, x.name)).toArray
   }

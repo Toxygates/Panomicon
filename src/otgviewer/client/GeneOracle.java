@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import otgviewer.shared.DataFilter;
-import otgviewer.shared.Pair;
+
+import bioweb.shared.Pair;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;

@@ -15,13 +15,14 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.AType;
 import otgviewer.shared.Barcode;
-import otgviewer.shared.DataColumn;
+import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Group;
-import otgviewer.shared.Pair;
-import otgviewer.shared.SharedUtils;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
+import bioweb.shared.Pair;
+import bioweb.shared.SharedUtils;
+import bioweb.shared.array.DataColumn;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.SafeHtmlCell;
@@ -471,7 +472,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		if (loadedData) {
 			setEnabled(false);
 			grid.setRowCount(0, false);
-			List<DataColumn> cols = new ArrayList<DataColumn>();
+			List<BarcodeColumn> cols = new ArrayList<BarcodeColumn>();
 			cols.addAll(chosenColumns);
 			kcService.refilterData(chosenDataFilter, cols, chosenProbes,
 					absValBox.getValue(), synthetics,
@@ -494,7 +495,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		setEnabled(false);
 		grid.setRowCount(0, false);
 		setupColumns();
-		List<DataColumn> cols = new ArrayList<DataColumn>();
+		List<BarcodeColumn> cols = new ArrayList<BarcodeColumn>();
 		cols.addAll(chosenColumns);
 
 		// load data

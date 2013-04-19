@@ -9,11 +9,12 @@ import java.util.Set;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
-import otgviewer.shared.Annotation;
 import otgviewer.shared.Barcode;
-import otgviewer.shared.DataColumn;
+import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
+import bioweb.shared.array.Annotation;
+import bioweb.shared.array.DataColumn;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -43,14 +44,14 @@ public class SampleDetailScreen extends Screen {
 	private ListBox columnList = new ListBox();
 	
 	private Barcode[] barcodes;
-	private DataColumn displayColumn;
+	private BarcodeColumn displayColumn;
 	private SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT
 			.create(SparqlService.class);
 	AnnotationTDGrid atd = new AnnotationTDGrid(this);
 	
 	private DataFilter lastFilter;
 	private List<Group> lastColumns;
-	private DataColumn lastCustomColumn;
+	private BarcodeColumn lastCustomColumn;
 	
 	private HorizontalPanel tools;
 	
@@ -102,7 +103,7 @@ public class SampleDetailScreen extends Screen {
 	}
 
 	@Override
-	public void customColumnChanged(DataColumn customColumn) {
+	public void customColumnChanged(BarcodeColumn customColumn) {
 		super.customColumnChanged(customColumn);
 		if (visible) {
 			updateColumnList();
@@ -127,7 +128,7 @@ public class SampleDetailScreen extends Screen {
 			@Override
 			public void onClick(ClickEvent event) {
 				Set<String> compounds = new HashSet<String>();
-				for (DataColumn d: chosenColumns) {
+				for (BarcodeColumn d: chosenColumns) {
 					compounds.addAll(Arrays.asList(((Group) d).getCompounds()));
 				}
 				List<String> compounds_ = new ArrayList<String>(compounds);
@@ -163,7 +164,7 @@ public class SampleDetailScreen extends Screen {
 		p.add(ct);
 	}
 
-	private void setDisplayColumn(DataColumn c) {
+	private void setDisplayColumn(BarcodeColumn c) {
 		barcodes = c.getBarcodes();
 		displayColumn = c;
 	}
@@ -180,7 +181,7 @@ public class SampleDetailScreen extends Screen {
 		if (chosenCustomColumn != null && column.equals(chosenCustomColumn.getShortTitle())) {
 			setDisplayColumn(chosenCustomColumn);
 		} else {
-			for (DataColumn c : chosenColumns) {
+			for (BarcodeColumn c : chosenColumns) {
 				if (c.getShortTitle().equals(column)) {
 					setDisplayColumn(c);					
 				}

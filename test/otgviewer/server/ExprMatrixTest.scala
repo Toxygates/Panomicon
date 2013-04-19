@@ -4,6 +4,7 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import otg.ExprValue
+import bioweb.shared.array.ExpressionValue
 
 @RunWith(classOf[JUnitRunner])
 class ExprMatrixTest extends FunSuite {
@@ -14,7 +15,7 @@ class ExprMatrixTest extends FunSuite {
       List(1, 2, 1, 9, 8, 10),
       List(2, 1, 1, 19, 18, 20),
       List(4, 4, 4, 2, 1, 2),
-      List(5, 2, 3, 2, 4, 3)).map(_.map(ExprValue(_)))
+      List(5, 2, 3, 2, 4, 3)).map(_.map(new ExpressionValue(_)))
     val em = ExprMatrix.withRows(data)
     em.columnMap = Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4, "f" -> 5)
     em.rowMap = Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4)
@@ -130,7 +131,7 @@ class ExprMatrixTest extends FunSuite {
         List(2),
         List(3),
         List(4),
-        List(5)).map(_.map(ExprValue(_))))
+        List(5)).map(_.map(new ExpressionValue(_))))
         
     val (s1, s2) = em.modifyJointly(small, _.sortRows((v1, v2) => v1(0).value < v2(0).value))
     println(em.rowMap)

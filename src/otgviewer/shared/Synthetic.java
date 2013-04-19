@@ -2,6 +2,8 @@ package otgviewer.shared;
 
 import java.io.Serializable;
 
+import bioweb.shared.array.DataColumn;
+
 abstract public class Synthetic implements DataColumn, Serializable {
 
 	public abstract static class TwoGroupSynthetic extends Synthetic {

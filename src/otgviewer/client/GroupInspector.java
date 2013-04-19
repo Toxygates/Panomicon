@@ -13,9 +13,10 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.SelectionTable;
 import otgviewer.shared.Barcode;
-import otgviewer.shared.DataColumn;
+import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
+import bioweb.shared.array.DataColumn;
 
 import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;
@@ -293,7 +294,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 	public void storeColumns() {
 		super.storeColumns();			
 		storeColumns("inactiveColumns", 
-				new ArrayList<DataColumn>(existingGroupsTable.inverseSelection()));
+				new ArrayList<BarcodeColumn>(existingGroupsTable.inverseSelection()));
 	}
 	
 	public Map<String, Group> getGroups() {

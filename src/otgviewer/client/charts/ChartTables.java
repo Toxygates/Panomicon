@@ -10,7 +10,7 @@ import java.util.Map;
 import otgviewer.client.Utils;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.Group;
-import otgviewer.shared.SharedUtils;
+import bioweb.shared.SharedUtils;
 
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;

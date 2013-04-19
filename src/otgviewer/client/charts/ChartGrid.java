@@ -9,7 +9,7 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.Group;
-import otgviewer.shared.SharedUtils;
+import bioweb.shared.SharedUtils;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArray;

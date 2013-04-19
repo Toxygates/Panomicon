@@ -4,10 +4,11 @@ import java.util.List;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.shared.Annotation;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
+
+import bioweb.shared.array.Annotation;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

@@ -1,15 +1,12 @@
 package otgviewer.client;
 import otgviewer.shared.AType;
-import otgviewer.shared.Annotation;
 import otgviewer.shared.Association;
 import otgviewer.shared.Barcode;
-import otgviewer.shared.DataColumn;
+import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
-import otgviewer.shared.MatchResult;
-import otgviewer.shared.NoSuchProbeException;
-import otgviewer.shared.Pair;
 import otgviewer.shared.Pathology;
-import otgviewer.shared.RankRule;
+import bioweb.shared.Pair;
+import bioweb.shared.array.Annotation;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -37,7 +34,7 @@ public interface SparqlService extends RemoteService {
 	public String[] probes(DataFilter filter);
 	
 	public Pathology[] pathologies(Barcode barcode);	
-	public Pathology[] pathologies(DataColumn column);
+	public Pathology[] pathologies(BarcodeColumn column);
 	
 	/**
 	 * Annotations are experiment-associated information such as barcode,
@@ -46,7 +43,7 @@ public interface SparqlService extends RemoteService {
 	 * @return
 	 */
 	public Annotation annotations(Barcode barcode);
-	public Annotation[] annotations(DataColumn column);
+	public Annotation[] annotations(BarcodeColumn column);
 	
 	//Other methods.
 	/**

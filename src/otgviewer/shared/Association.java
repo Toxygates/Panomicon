@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import bioweb.shared.Pair;
+
 public class Association implements Serializable {
 
 	private AType _type;
