@@ -31,7 +31,6 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
-import com.google.gwt.visualization.client.VisualizationUtils;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.

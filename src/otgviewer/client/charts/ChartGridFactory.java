@@ -103,9 +103,6 @@ public class ChartGridFactory {
 
 				@Override
 				public void onSuccess(final Barcode[] barcodes) {
-					final List<String> codes = new ArrayList<String>();
-
-
 					finishRowCharts(screen, filter, probe, vt, groups, barcodes, acceptor);
 					acceptor.acceptBarcodes(barcodes);
 				}			

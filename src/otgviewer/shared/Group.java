@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import bioweb.shared.SharedUtils;
-import bioweb.shared.array.DataColumn;
 import bioweb.shared.array.SampleGroup;
 
 /**

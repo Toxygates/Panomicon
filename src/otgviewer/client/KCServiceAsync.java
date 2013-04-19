@@ -28,6 +28,7 @@ public interface KCServiceAsync {
 
 	public void getFullData(DataFilter filter, List<String> barcodes,
 			String[] probes, ValueType type, boolean sparseRead,
+			boolean withSymbols,
 			AsyncCallback<List<ExpressionRow>> callback);
 
 	public void prepareCSVDownload(AsyncCallback<String> callback);

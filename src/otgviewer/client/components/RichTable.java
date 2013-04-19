@@ -41,7 +41,6 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	
 	protected void setupColumns() {
 		// todo: explicitly set the width of each column
-		TextCell tc = new TextCell();
 
 		int count = grid.getColumnCount();
 		for (int i = 0; i < count; ++i) {
