@@ -3,7 +3,7 @@ package bioweb.shared.array;
 import java.io.Serializable;
 
 /**
- * A microarray sample.
+ * A microarray sample with a unique identifier that can be represented as a string.
  * @author johan
  *
  */

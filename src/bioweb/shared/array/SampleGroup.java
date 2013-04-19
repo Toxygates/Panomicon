@@ -2,10 +2,17 @@ package bioweb.shared.array;
 
 import java.io.Serializable;
 import java.util.Arrays;
-
+import bioweb.shared.*;
 import bioweb.shared.SharedUtils;
 
-public class SampleGroup<S extends Sample> implements Serializable, Comparable<SampleGroup> {
+/**
+ * A way of grouping microarray samples.
+ * Unique colors for each group can be generated.
+ * @author johan
+ *
+ * @param <S>
+ */
+public class SampleGroup<S extends Sample> implements Packable, Serializable, Comparable<SampleGroup> {
 
 	/**
 	 * This list was generated using the service at
