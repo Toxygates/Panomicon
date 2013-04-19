@@ -1,4 +1,5 @@
 package bioweb.shared.array;
+import bioweb.shared.*;
 
 import java.io.Serializable;
 
@@ -7,7 +8,7 @@ import java.io.Serializable;
  * @author johan
  *
  */
-public abstract class Sample implements Serializable {
+public abstract class Sample implements Packable, Serializable {
 
 	public Sample() {}
 	

@@ -13,6 +13,9 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
+/**
+ * This is the first screen, where a dataset can be selected.
+ */
 public class DatasetScreen extends Screen implements DatasetInfo.SelectionListener {
 	static String key = "ds";	
 	VerticalPanel vp;

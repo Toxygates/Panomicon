@@ -29,6 +29,13 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
+/**
+ * This widget is an UI for defining compound ranking rules.
+ * The actual ranking is requested by a compound selector and performed
+ * (obviously) on the server side.
+ * @author johan
+ *
+ */
 public class CompoundRanker extends DataListenerWidget {
 	private static Resources resources = GWT.create(Resources.class);
 	private CompoundSelector selector;
@@ -43,6 +50,10 @@ public class CompoundRanker extends DataListenerWidget {
 	private CheckBox[] rankCheckBox = new CheckBox[RANK_CONDS];
 	private List<String> rankProbes = new ArrayList<String>();
 
+	/**
+	 * 
+	 * @param selector the selector that this CompoundRanker will communicate with.
+	 */
 	public CompoundRanker(CompoundSelector selector) {
 		this.selector = selector;
 		selector.addListener(this);

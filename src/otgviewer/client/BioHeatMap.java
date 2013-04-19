@@ -5,6 +5,13 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.visualization.client.AbstractDrawOptions;
 import com.google.gwt.visualization.client.visualizations.Visualization;
 
+/**
+ * A heatmap that wraps a Javascript heatmap developed by systemsbiology.org.
+ * Note that war/toxygates.html must be modified to load the necessary javascript API
+ * if this is to be used.
+ * @author johan
+ *
+ */
 public class BioHeatMap extends Visualization<BioHeatMap.Options> {
 
 	public static class Options extends AbstractDrawOptions {

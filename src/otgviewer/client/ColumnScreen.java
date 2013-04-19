@@ -17,6 +17,11 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
+/**
+ * This screen allows for column (group) definition as well as compound ranking.
+ * @author johan
+ *
+ */
 public class ColumnScreen extends Screen {
 	public static String key = "columns";
 	
@@ -106,6 +111,7 @@ public class ColumnScreen extends Screen {
 
 	@Override
 	public void resizeInterface() {
+		//Test carefully in IE8, IE9 and all other browsers if changing this method
 		cs.resizeInterface();
 		tp.forceLayout();
 		super.resizeInterface();		

@@ -11,6 +11,12 @@ import otgviewer.shared.Group;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.Widget;
 
+/**
+ * The main data display screen.
+ * Data is displayed in the ExpressionTable widget.
+ * @author johan
+ *
+ */
 public class DataScreen extends Screen {
 
 	public static final String key = "data";
