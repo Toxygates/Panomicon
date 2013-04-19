@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cp -r ../Friedrich/bin/friedrich/util war/WEB-INF/classes/friedrich
-cp -r ../Friedrich/bin/friedrich/statistics war/WEB-INF/classes/friedrich
+cp -r ../Friedrich/bin/friedrich/data war/WEB-INF/classes/friedrich
 cp -r ../OTGTool/bin/otg war/WEB-INF/classes
 cd war
 zip -r toxygates.war *
