@@ -5,6 +5,7 @@ import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import otg.ExprValue
 import bioweb.shared.array.ExpressionValue
+import friedrich.data.immutable._
 
 @RunWith(classOf[JUnitRunner])
 class ExprMatrixTest extends FunSuite {
@@ -16,11 +17,10 @@ class ExprMatrixTest extends FunSuite {
       List(2, 1, 1, 19, 18, 20),
       List(4, 4, 4, 2, 1, 2),
       List(5, 2, 3, 2, 4, 3)).map(_.map(new ExpressionValue(_)))
-    val em = ExprMatrix.withRows(data)
-    em.columnMap = Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4, "f" -> 5)
-    em.rowMap = Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4)
-    em.annotations = (1 to 5).map(x => ExprMatrix.RowAnnotation("p" + x, null, null, null)).toArray
-    em
+    new ExprMatrix(data.map(new VVector(_)), data.size, data(0).size,
+    		Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4),
+    		Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4, "f" -> 5),
+    		(1 to 5).map(x => new RowAnnotation("p" + x, null, null, null)).toVector)    
   }
   
   /**
@@ -40,7 +40,7 @@ class ExprMatrixTest extends FunSuite {
     assert(em.columns === 6)
     assert(em.rows === 5)
     
-    val em2 = em.appendTTest(em, Seq("a", "b", "c"), Seq("d", "e", "f"))
+    val em2 = em.appendTTest(em, Seq("a", "b", "c"), Seq("d", "e", "f"), "TTest")
     assert(em2.columns == 7)
     
     val em3 = em2.sortRows((v1, v2) => v1(6).value < v2(6).value)
@@ -125,7 +125,19 @@ class ExprMatrixTest extends FunSuite {
     assert(f.annotations(2) == em.annotations(4))
   }
   
-  test("join and split") {
+  test("adjoin") {
+    val em = testMatrix
+    val small = ExprMatrix.withRows(List(List(1),
+        List(2),
+        List(3),
+        List(4),
+        List(5)).map(_.map(new ExpressionValue(_))))
+    val r = em.adjoinRight(small)
+    assert(r.columns == 7)
+    assert(r.rows == 5)
+  }
+  
+  test("joint modify") {
     val em = testMatrix
     val small = ExprMatrix.withRows(List(List(1),
         List(2),

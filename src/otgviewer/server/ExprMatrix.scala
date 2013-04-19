@@ -13,16 +13,15 @@ object ExprMatrix extends DataMatrixBuilder {
   val ttest = new TTest()
   val utest = new MannWhitneyUTest()
 
-//  def withRows(data: Seq[Seq[ExpressionValue]], metadata: ExprMatrix = null) = {
-//    if (data.size > 0) {
-//      val r = new ExprMatrix(data.size, data.head.size, metadata)
-//      populate(r, (y, x) => data(y)(x))
-//      r
-//    } else {
-//      new ExprMatrix(0, 0)
-//    }
-//    
-//  }
+  def withRows(data: Seq[Seq[ExpressionValue]], metadata: ExprMatrix = null) = {
+    if (metadata != null) {
+      metadata.copyWith(data)
+    } else {
+      val rows = data.size
+      val columns = data(0).size
+      new ExprMatrix(data.map(new VVector(_)), rows, columns, Map(), Map(), emptyAnnotations(rows))
+    }       
+  }
 //
 //  def withColumns(data: Seq[ArrayVector[ExpressionValue]], metadata: ExprMatrix = null) = {
 //    if (data.size > 0) {
@@ -35,29 +34,36 @@ object ExprMatrix extends DataMatrixBuilder {
 //    
 //  }
 
- 
+  def emptyAnnotations(rows: Int) = Vector.fill(rows)(new RowAnnotation(null, null, null, null))
 }
 
 case class RowAnnotation(probe: String, title: String, geneIds: Array[String], geneSyms: Array[String])
  
-class ExprMatrix(data: Seq[VVector[ExpressionValue]], val rows: Int, val columns: Int, 
+/**
+ * Data is row-major
+ */
+class ExprMatrix(data: Seq[VVector[ExpressionValue]], rows: Int, columns: Int, 
     rowMap: Map[String, Int], columnMap: Map[String, Int], 
-    val annotations: SVector[RowAnnotation] = Vector.fill(rows)(new RowAnnotation(null, null, null, null)))
+    val annotations: SVector[RowAnnotation]) 
     extends
-AllocatedDataMatrix[ExprMatrix, ExpressionValue, String, String](data, rows, columns, rowMap, columnMap) {
-
+    AllocatedDataMatrix[ExprMatrix, ExpressionValue, String, String](data, rows, columns, rowMap, columnMap) {
+  
   import Conversions._
+  import ExprMatrix._
 
   val emptyVal = new ExpressionValue(0, 'A')
   
+  /**
+   * This is the bottom level copyWith method - all the other ones ultimately delegate to this one.
+   */
   def copyWith(rows: Seq[VVector[ExpressionValue]], rowMap: Map[String, Int], columnMap: Map[String, Int], 
       annotations: SVector[RowAnnotation]): ExprMatrix = 
-        new ExprMatrix(data, data.size, data(0).size, rowMap, columnMap, annotations)
+        new ExprMatrix(rows, data.size, data(0).size, rowMap, columnMap, annotations)
   
-  def copyWith(rows: Seq[VVector[ExpressionValue]], rowMap: Map[String, Int], columnMap: Map[String, Int]): ExprMatrix =
-    copyWith(rows, rowMap, columnMap, annotations)
-    
-  def copyWithAnnotations(annnots: SVector[RowAnnotation]): ExprMatrix = copyWith(data, rowMap, columnMap, annots)
+  def copyWith(rows: Seq[Seq[ExpressionValue]], rowMap: Map[String, Int], columnMap: Map[String, Int]): ExprMatrix =
+    copyWith(rows.map(new VVector(_)), rowMap, columnMap, annotations)
+  
+  def copyWithAnnotations(annots: SVector[RowAnnotation]): ExprMatrix = copyWith(data, rowMap, columnMap, annots)
   
   lazy val sortedRowMap = rowMap.toSeq.sortWith(_._2 < _._2)
   lazy val sortedColumnMap = columnMap.toSeq.sortWith(_._2 < _._2)
@@ -68,11 +74,10 @@ AllocatedDataMatrix[ExprMatrix, ExpressionValue, String, String](data, rows, col
   })
 
   override def selectRows(rows: Seq[Int]): ExprMatrix = 
-    super.selectRows(rows).copyWithAnnotations(rows.map(annotations(_)))
-  
+    super.selectRows(rows).copyWithAnnotations(rows.map(annotations(_)).toVector)  
 
   def appendTwoColTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String], 
-      test: (Array[Double], Array[Double]) => Double): ExprMatrix = {
+      test: (Array[Double], Array[Double]) => Double, colName: String): ExprMatrix = {
     val cs1 = group1.toSeq.map(sourceData.column(_))
     val cs2 = group2.toSeq.map(sourceData.column(_))
     val ps = (0 until rows).map(i => {
@@ -84,14 +89,14 @@ AllocatedDataMatrix[ExprMatrix, ExpressionValue, String, String](data, rows, col
         new ExpressionValue(0, 'A')
       }
     })
-    appendColumn(ps.toSeq)    
+    appendColumn(ps.toSeq, colName)    
   }
   
-  def appendTTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String]): ExprMatrix = 
-		  appendTwoColTest(sourceData, group1, group2, ttest.tTest(_, _))
+  def appendTTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String], colName: String): ExprMatrix = 
+		  appendTwoColTest(sourceData, group1, group2, ttest.tTest(_, _), colName)
   
-  def appendUTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String]): ExprMatrix = 
-  	appendTwoColTest(sourceData, group1, group2, utest.mannWhitneyUTest(_, _))
+  def appendUTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String], colName: String): ExprMatrix = 
+  	appendTwoColTest(sourceData, group1, group2, utest.mannWhitneyUTest(_, _), colName)
   
 
 }
