@@ -2,8 +2,6 @@ package bioweb.shared.array;
 
 import java.io.Serializable;
 
-import otgviewer.shared.Barcode;
-
 /**
  * A microarray sample.
  * @author johan

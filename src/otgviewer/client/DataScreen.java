@@ -8,7 +8,6 @@ import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.Widget;
 

@@ -23,7 +23,7 @@ class ExprMatrixTest extends FunSuite {
    *
    */
   
-  def testMatrix = {
+  val testMatrix = {
     val data = List(
       List(3, 3, 5, 3, 3, 5),
       List(1, 2, 1, 9, 8, 10),
@@ -38,10 +38,10 @@ class ExprMatrixTest extends FunSuite {
   
   test("basic operations") {
     val em = testMatrix
-    assert(em.column(0).size == 5)
-    assert(em.row(0).size == 6)
-    assert(em.column("a") == em.column(0))
-    assert(em.row("a") == em.row(0))
+    assert(em.column(0).size === 5)
+    assert(em.row(0).size === 6)
+    assert(em.column("a") === em.column(0))
+    assert(em.row("a") === em.row(0))
     
     def tv(x: Seq[Int]) = x.map(new ExpressionValue(_))
     
@@ -52,19 +52,26 @@ class ExprMatrixTest extends FunSuite {
     
     val transpose = em.copyWith(em.toColVectors)    
     for (i <- 0 until 5) {      
-    	assert(transpose.row(i) == em.column(i))    
+    	assert(transpose.row(i) === em.column(i))    
     }
     
     val transpose2 = em.copyWithColumns(em.toRowVectors)    
     for (i <- 0 until 5) {      
-    	assert(transpose2.row(i) == em.column(i))    
+    	assert(transpose2.row(i) === em.column(i))    
     }
     
     val em2 = em.copyWithColumns(em.toColVectors)
+    assert(em2.rows === 5)
+    assert(em2.columns === 6)
     for (i <- 0 until 5) {
-      assert(em2.row(i) == em.row(i))
-      assert(em2.column(i) == em.column(i))
+      assert(em2.row(i) === em.row(i))
+      assert(em2.column(i) === em.column(i))
     }
+    
+    val em3 = em.copyWithColumns(List(tv(Seq(1,2,3,4))))
+    assert(em3.rows === 4)
+    assert(em3.columns === 1)
+    
   }
   
 
@@ -74,7 +81,7 @@ class ExprMatrixTest extends FunSuite {
     assert(em.rows === 5)
     
     val em2 = em.appendTTest(em, Seq("a", "b", "c"), Seq("d", "e", "f"), "TTest")
-    assert(em2.columns == 7)
+    assert(em2.columns === 7)
     
     val em3 = em2.sortRows((v1, v2) => v1(6).value < v2(6).value)
     println(em3.row(0))
@@ -93,15 +100,15 @@ class ExprMatrixTest extends FunSuite {
     val em2 = em.sortRows((v1, v2) => v1(0).value < v2(0).value)
     println(em2)
     println(em2.rowMap)
-    assert(em2.rowMap("b") == 0)
+    assert(em2.rowMap("b") === 0)
     
-    assert(em2("b", "b").value == 2)
-    assert(em2("b", "c").value == 1)
-    assert(em2("d", "a").value == 4)
+    assert(em2("b", "b").value === 2)
+    assert(em2("b", "c").value === 1)
+    assert(em2("d", "a").value === 4)
     
-    assert(em2.annotations(0).probe == "p2")
-    assert(em2.annotations(1).probe == "p3")
-    assert(em2.annotations(2).probe == "p1")
+    assert(em2.annotations(0).probe === "p2")
+    assert(em2.annotations(1).probe === "p3")
+    assert(em2.annotations(2).probe === "p1")
     
     val em3 = em2.sortRows((v1, v2) => v1(0).value > v2(0).value)
     println(em3)
@@ -110,80 +117,81 @@ class ExprMatrixTest extends FunSuite {
     assert(em2.toRowVectors.reverse === em3.toRowVectors)
   }
   
-  test("row and column select") {
+  test("row select") {
     val em = testMatrix
     val em1 = em.selectRows(List(1,3,4))
-    assert(em1.rows == 3)
-    assert(em1.columns == 6)
+    assert(em1.rows === 3)
+    assert(em1.columns === 6)
     for (i <- 0 until 6) {          	
-    	assert(em1.column(i).size == 3)
+    	assert(em1.column(i).size === 3)
     } 
     for (i <- 0 until 3) {
-      assert(em1.row(i).size == 6)
+      assert(em1.row(i).size === 6)
     }
     
     println(em1.rowMap)
-    assert(em1.rowMap == Map("b" -> 0, "d" -> 1, "e" -> 2))
-    assert(em1.columnMap == em.columnMap)
-    assert(em1.annotations(0).probe == "p2")
-    assert(em1.annotations(1).probe == "p4")
-    assert(em1.annotations(2).probe == "p5")
-    
-    val em2 = em1.selectColumns(List(1,3))
-    println("HERE")
-    println(em2)    
-    assert(em2.columns === 2)
-    assert(em2.rows === 3)
-    for (i <- 0 until 3) {      
-    	assert(em2.row(i).size == 2)
-    }
-    for (i <- 0 until 2) {
-    	assert(em2.column(i).size == 3)
-    }    
-    
-    assert(em2(0,0) == em1(0,1))
-    assert(em2(1,1) == em1(1,3))
-    assert(em2(2,2) == em1(2,4))
-    
-    assert(em2.rowMap == em1.rowMap)
-    assert(em2.columnMap == Map("b" -> 0, "d" -> 1, "e" -> 2))
-    assert(em2.annotations(0).probe == "p2")
-    assert(em2.annotations(1).probe == "p4")
-    assert(em2.annotations(2).probe == "p5")
-    
+    assert(em1.rowMap === Map("b" -> 0, "d" -> 1, "e" -> 2))
+    assert(em1.columnMap === em.columnMap)
+    assert(em1.annotations(0).probe === "p2")
+    assert(em1.annotations(1).probe === "p4")
+    assert(em1.annotations(2).probe === "p5")
+     
     //select and permute
     val em3 = em.selectRows(List(3,1,4))
-    assert(em3.rows == 3)
+    assert(em3.rows === 3)
     println(em3.rowMap)
-    assert(em3.rowMap == Map("d" -> 0, "b" -> 1, "e" -> 2))
-    assert(em3.columnMap == em.columnMap)
-    assert(em3.annotations(0).probe == "p4")
-    assert(em3.annotations(1).probe == "p2")
-    assert(em3.annotations(2).probe == "p5")
+    assert(em3.rowMap === Map("d" -> 0, "b" -> 1, "e" -> 2))
+    assert(em3.columnMap === em.columnMap)
+    assert(em3.annotations(0).probe === "p4")
+    assert(em3.annotations(1).probe === "p2")
+    assert(em3.annotations(2).probe === "p5")
     
     val em4 = em.selectNamedRows(List("e", "d"))
     assert(em4.rows === 2)
     assert(em4.columns === 6)
     println(em4.rowMap)
-    assert(em4.rowMap == Map("e" -> 0, "d" -> 1))
-    assert(em4.annotations(0).probe == "p5")
-    assert(em4.annotations(1).probe == "p4")
+    assert(em4.rowMap === Map("e" -> 0, "d" -> 1))
+    assert(em4.annotations(0).probe === "p5")
+    assert(em4.annotations(1).probe === "p4")
+        
+  }
+  
+  test("column select") {
+    val em = testMatrix
+
+
+    val em2 = em.selectColumns(List(1,3))
+    println(em2)    
+    assert(em2.columns === 2)
+    assert(em2.rows === 5)
+    for (i <- 0 until 5) {      
+    	assert(em2.row(i).size === 2)
+    }
+    for (i <- 0 until 2) {
+    	assert(em2.column(i).size === 5)
+    }    
     
-    val em5 = em.selectNamedColumns(List("d", "e"))
-    println(em5)
-//    assert(em5.columns === 2)
-//    assert(em5.rows === 5)    
-    assert(em5.columnMap == Map("d" -> 0, "e" -> 1))
+    
+    assert(em2.rowMap === em.rowMap)
+    assert(em2.columnMap === Map("b" -> 0, "d" -> 1))
+    assert(em2.annotations(0).probe === "p1")
+    assert(em2.annotations(1).probe === "p2")
+    assert(em2.annotations(2).probe === "p3")
+    
+    val em5 = em.selectNamedColumns(List("d", "e"))    
+    assert(em5.columns === 2)
+    assert(em5.rows === 5)    
+    assert(em5.columnMap === Map("d" -> 0, "e" -> 1))
   }
   
   test("filtering") {
     val em = testMatrix
     val f = em.filterRows(_.head.value > 2)
-    assert(f.columnMap == em.columnMap)
+    assert(f.columnMap === em.columnMap)
     assert(f.rowMap.keySet subsetOf em.rowMap.keySet)
-    assert(f.annotations(0) == em.annotations(0))
-    assert(f.annotations(1) == em.annotations(3))
-    assert(f.annotations(2) == em.annotations(4))
+    assert(f.annotations(0) === em.annotations(0))
+    assert(f.annotations(1) === em.annotations(3))
+    assert(f.annotations(2) === em.annotations(4))
   }
   
   test("adjoin") {
@@ -194,8 +202,8 @@ class ExprMatrixTest extends FunSuite {
         List(4),
         List(5)).map(_.map(new ExpressionValue(_))))
     val r = em.adjoinRight(small)
-    assert(r.columns == 7)
-    assert(r.rows == 5)
+    assert(r.columns === 7)
+    assert(r.rows === 5)
   }
   
   test("joint modify") {
@@ -209,16 +217,14 @@ class ExprMatrixTest extends FunSuite {
     val (s1, s2) = em.modifyJointly(small, _.sortRows((v1, v2) => v1(0).value < v2(0).value))
     println(em.rowMap)
     println(s1.rowMap)
-    assert(s2.rowMap == s1.rowMap)
-    assert(s2.annotations == s1.annotations)
+    assert(s2.rowMap === s1.rowMap)
+    assert(s2.annotations === s1.annotations)
     println(em.annotations.toVector)
     println(s2.annotations.toVector)
     println(s1.annotations.toVector)
-    assert(s2.annotations(0).probe == "p2")
-    assert(s2.annotations(1).probe == "p3")
-    assert(s2.annotations(2).probe == "p1")
-//    assert(em.rowMap == s2.rowMap)
-    
+    assert(s2.annotations(0).probe === "p2")
+    assert(s2.annotations(1).probe === "p3")
+    assert(s2.annotations(2).probe === "p1")
   }
 
 }

@@ -14,7 +14,6 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.client.components.Screen.QueuedAction;
 import otgviewer.client.components.StringSelectionTable;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.MatchResult;

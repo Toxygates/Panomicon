@@ -14,7 +14,6 @@ import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSe
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.NoSelectionModel;
-import com.google.gwt.view.client.SingleSelectionModel;
 
 /**
  * A cell table that displays data and includes a column with checkboxes. By using the checkboxes,
