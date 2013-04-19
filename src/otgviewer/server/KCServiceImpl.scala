@@ -294,6 +294,8 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
   }
 
   def prepareCSVDownload(): String = {
+    import BioObjects._
+    
     val session = getSessionData()
     val rendered = session.rendered
     if (rendered != null) {
@@ -303,7 +305,7 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
     val colNames = rendered.sortedColumnMap.map(_._1)
     val rowNames = rendered.sortedRowMap.map(_._1)
     useConnector(AffyProbes, (c: AffyProbes.type) => {
-      val gis = c.allGeneIds(session.params.filter)      
+      val gis = c.allGeneIds(session.params.filter).mapMValues(_.identifier)      
       val geneIds = rowNames.map(rn => gis.getOrElse(Probe(rn), Seq.empty)).map(_.mkString(" "))
       CSVHelper.writeCSV(rowNames, colNames, geneIds, session.rendered.data.map(_.map(asScala(_))))
     })
