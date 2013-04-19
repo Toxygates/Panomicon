@@ -257,17 +257,24 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
     })
   }
 
+  
   def getFullData(filter: DataFilter, barcodes: JList[String], probes: Array[String],
-                  typ: ValueType, sparseRead: Boolean): JList[ExpressionRow] = {
-    val session = getSessionData()
-    val p = session.params
-    p.filter = filter
-
+                  typ: ValueType, sparseRead: Boolean, withSymbols: Boolean): JList[ExpressionRow] = {
+    val sbc = barcodes.toSeq
+    
     val realProbes = filterProbes(filter, probes)
-    val r = getExprValues(filter, barcodes, realProbes, typ, sparseRead)
+    val r = getExprValues(filter, sbc, realProbes, typ, sparseRead)
+    
     //When we have obtained the data in r, it might no longer be sorted in the order that the user
     //requested. Thus we use selectNamedRows here to force the sort order they wanted.
-    new ArrayList[ExpressionRow](insertAnnotations(r.selectNamedColumns(barcodes).asRows, filter))
+    
+    val raw = r.selectNamedColumns(sbc).asRows
+    val rows = if (withSymbols) {
+      insertAnnotations(raw, filter)
+    } else {
+      raw
+    }
+    new ArrayList[ExpressionRow](rows)
   }
 
   def addTwoGroupTest(test: Synthetic.TwoGroupSynthetic): Unit = {

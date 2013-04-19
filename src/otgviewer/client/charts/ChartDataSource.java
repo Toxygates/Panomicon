@@ -226,7 +226,8 @@ abstract class ChartDataSource {
 			
 			samples.clear();
 			kcService.getFullData(filter, useBarcodes, 
-					new String[] { probe }, type, true, new PendingAsyncCallback<List<ExpressionRow>>(screen) {
+					new String[] { probe }, type, true, false, 
+					new PendingAsyncCallback<List<ExpressionRow>>(screen) {
 				@Override
 				public void handleFailure(Throwable caught) {
 					Window.alert("Unable to obtain chart data.");

@@ -22,18 +22,7 @@ object ExprMatrix extends DataMatrixBuilder {
       new ExprMatrix(data.map(new VVector(_)), rows, columns, Map(), Map(), emptyAnnotations(rows))
     }       
   }
-//
-//  def withColumns(data: Seq[ArrayVector[ExpressionValue]], metadata: ExprMatrix = null) = {
-//    if (data.size > 0) {
-//      val r = new ExprMatrix(data.head.size, data.size, metadata)
-//      populate(r, (y, x) => data(x)(y))
-//      r
-//    } else {
-//      new ExprMatrix(0, 0, metadata)
-//    }
-//    
-//  }
-
+  
   def emptyAnnotations(rows: Int) = Vector.fill(rows)(new RowAnnotation(null, null, null, null))
 }
 
@@ -51,6 +40,8 @@ class ExprMatrix(data: Seq[VVector[ExpressionValue]], rows: Int, columns: Int,
   import Conversions._
   import ExprMatrix._
 
+  println(rows + " x " + columns)
+   
   val emptyVal = new ExpressionValue(0, 'A')
   
   /**
@@ -58,7 +49,7 @@ class ExprMatrix(data: Seq[VVector[ExpressionValue]], rows: Int, columns: Int,
    */
   def copyWith(rows: Seq[VVector[ExpressionValue]], rowMap: Map[String, Int], columnMap: Map[String, Int], 
       annotations: SVector[RowAnnotation]): ExprMatrix = 
-        new ExprMatrix(rows, data.size, data(0).size, rowMap, columnMap, annotations)
+        new ExprMatrix(rows, rows.size, rows(0).size, rowMap, columnMap, annotations)
   
   def copyWith(rows: Seq[Seq[ExpressionValue]], rowMap: Map[String, Int], columnMap: Map[String, Int]): ExprMatrix =
     copyWith(rows.map(new VVector(_)), rowMap, columnMap, annotations)

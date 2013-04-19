@@ -28,4 +28,21 @@ public class ExpressionValue implements Serializable {
 	
 	public char getCall() { return _call; }
 	
+	@Override
+	public String toString() {
+		return "(" + _value + ", " + _call + ")";
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof ExpressionValue) {
+			ExpressionValue that = (ExpressionValue) other;
+			//double comparison!! Use carefully.
+			return that.value() == _value && that.getCall() == _call;
+		} else {
+			return false;
+		}
+	}
+
+	
 }

@@ -83,10 +83,11 @@ public interface KCService extends RemoteService {
 	 * @param probes
 	 * @param type
 	 * @param sparseRead
+	 * @param withSymbols If true, gene IDs and gene symbols will also be loaded into the rows (may be slightly slower)
 	 * @return
 	 */
 	public List<ExpressionRow> getFullData(DataFilter filter, List<String> barcodes, String[] probes, 
-			ValueType type, boolean sparseRead);
+			ValueType type, boolean sparseRead, boolean withSymbols);
 	
 	/**
 	 * Prepare a CSV file representing the loaded data for download. Returns a URL that may be used for downloading.
