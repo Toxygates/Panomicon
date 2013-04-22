@@ -1,6 +1,5 @@
 package otgviewer.shared;
 
-import bioweb.shared.array.DataColumn;
 import bioweb.shared.array.Sample;
 
 /**
