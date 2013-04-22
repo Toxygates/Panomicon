@@ -31,10 +31,14 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
-
 /**
- * Part of a sequence of screens in a workflow.
- * Each screen knows what its parent is, and renders a sequence of links to all the parents.
+ * Screens are a high level building block for user interfaces.
+ * Sequences of screens can form a workflow.
+ * Screens require a ScreenManager to assist inter-screen communication.
+ * Screens can be hidden/visible and configured/deconfigured. A configured screen has been
+ * completely configured by the user, for example by making certain selections. This is a useful
+ * concept when late screens depend on data that is selected in earlier screens. 
+ * 
  * @author johan
  *
  */
@@ -42,25 +46,62 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	protected static Resources resources = GWT.create(Resources.class);
 	
 	protected DockLayoutPanel rootPanel;
-	private String key; //An identifier string
+	
+	/**
+	 * Each screen is uniquely identified by its key.
+	 */
+	private String key; 
 
-	private FlowPanel statusPanel;		
+	private FlowPanel statusPanel;
+	
+	/**
+	 * Is this screen currently visible?
+	 */
 	protected boolean visible = false;
 	private Label viewLabel = new Label();
 	private boolean showDataFilter = false, showGroups = false;
 	private MenuBar menuBar;	
+	
+	/**
+	 * Is this screen currently configured?
+	 */
 	protected boolean configured = false;
 	private List<MenuItem> menuItems = new ArrayList<MenuItem>();
+	
+	/**
+	 * Widgets to be shown below the main content area, if any.
+	 */
 	private Widget bottom;
 	private HorizontalPanel spOuter;
+	
+	/**
+	 * Widgets to be shown above the main content area, if any.
+	 */
 	private List<Widget> toolbars = new ArrayList<Widget>();
-	private List<Widget> leftbars = new ArrayList<Widget>();
+	
+	/**
+	 * Widgets to be shown to the left of the main content area, if any. Analogous
+	 * to "toolbars".
+	 */
+//	private List<Widget> leftbars = new ArrayList<Widget>();
 	
 	protected ScreenManager manager;
 	
+	/**
+	 * Help text for this screen.
+	 */
 	protected TextResource helpHTML;
+	/**
+	 * Image to show alongside the help text for this screen.
+	 */
 	protected ImageResource helpImage;
 	
+	/**
+	 * An action to be invoked at some later time
+	 * (for example when data becomes available)
+	 * @author johan
+	 *
+	 */
 	public abstract static class QueuedAction implements Runnable {
 		String name;
 		public QueuedAction(String name) {
@@ -83,6 +124,17 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	
 	private Set<QueuedAction> actionQueue = new HashSet<QueuedAction>(); 
 	
+	private void runActions() {
+		for (QueuedAction qa: actionQueue) {
+			qa.run();
+		}
+		actionQueue.clear();
+	}
+
+	public void enqueue(QueuedAction qa) {
+		actionQueue.remove(qa); //remove it if it's already there (so we can update it)
+		actionQueue.add(qa);
+	}
 	
 	public Screen(String title, String key,  
 			boolean showDataFilter, boolean showGroups, 
@@ -92,7 +144,11 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		this.showGroups = showGroups;
 		this.helpHTML = helpHTML;
 		this.helpImage = helpImage;
-		rootPanel = new DockLayoutPanel(Unit.PX);
+		
+		//PX must be used for measurements or there will be problems in e.g. internet explorer.
+		//This problem might possibly be solved if everything is changed to use the new-style
+		//LayoutPanels.
+		rootPanel = new DockLayoutPanel(Unit.PX); 
 		
 		initWidget(rootPanel);
 		menuBar = man.getMenuBar();
@@ -146,6 +202,11 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		setConfigured(true);
 	}
 		
+	/**
+	 * Indicate that this screen has finished configuring itself and 
+	 * attempt to display another screen.
+	 * @param key
+	 */
 	protected void configuredProceed(String key) {
 		setConfigured(true);
 		manager.attemptProceed(key);		
@@ -154,7 +215,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	public void initGUI() {
 		statusPanel = new FlowPanel(); 
 		statusPanel.setStyleName("statusPanel");		
-		floatLeft(statusPanel);
+		Utils.floatLeft(statusPanel);
 
 		spOuter = Utils.mkWidePanel();		
 		spOuter.setHeight("30px");
@@ -174,9 +235,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		rootPanel.add(content());
 	}
 	
-	protected void addToolbars() {
-		addToolbar(spOuter, 40);
-	}
+	
 	
 	/**
 	 * This method will be called each time the screen is displayed anew.
@@ -193,33 +252,15 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		runActions();
 		deferredResize();
 	}
-	
-	private void runActions() {
-		for (QueuedAction qa: actionQueue) {
-			qa.run();
-		}
-		actionQueue.clear();
-	}
-	
-	public void enqueue(QueuedAction qa) {
-		actionQueue.remove(qa); //remove it if it's already there (so we can update it)
-		actionQueue.add(qa);
-	}
-	
-	private void floatLeft(Widget w) {
-		w.getElement().getStyle().setFloat(Float.LEFT);
-	}
-	private void floatLeft(FlowPanel fp, Widget w) {
-		floatLeft(w);
-		fp.add(w);
-	}
-	
-	protected void updateStatusPanel() {
-//		statusPanel.setWidth(Window.getClientHeight() + "px");
+
+	/**
+	 * The standard status panel contains a label that indicates the current data set,
+	 * and descriptions of the currently defined groups.
+	 */
+	private void updateStatusPanel() {
 		statusPanel.clear();
 		statusPanel.add(viewLabel);
-		floatLeft(viewLabel);
-//		viewLabel.getElement().getStyle().setFloat(Float.LEFT);
+		Utils.floatLeft(viewLabel);
 		if (showGroups) {
 			Collections.sort(chosenColumns);
 			
@@ -231,15 +272,15 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 				l.setWordWrap(false);
 				l.getElement().getStyle().setMargin(2, Unit.PX);
 				l.setStyleName(g.getStyleName());
-				floatLeft(fp, l);
+				Utils.floatLeft(fp, l);
 				l.setTitle(tip);
 				l = new Label(g.getCDTs(2, ", "));
 				l.getElement().getStyle().setMargin(2, Unit.PX);
 				l.setStyleName(g.getStyleName());
-				floatLeft(fp, l);
+				Utils.floatLeft(fp, l);
 				l.setTitle(tip);
 				l.setWordWrap(false);
-				floatLeft(statusPanel, fp);				
+				Utils.floatLeft(statusPanel, fp);				
 			}
 		}		
 	}
@@ -248,11 +289,18 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		for (Widget w: toolbars) {						
 			rootPanel.setWidgetSize(w, w.getOffsetHeight());			
 		}
-		for (Widget w: leftbars) {
-			rootPanel.setWidgetSize(w, w.getOffsetWidth());
-		}
+//		for (Widget w: leftbars) {
+//			rootPanel.setWidgetSize(w, w.getOffsetWidth());
+//		}
 		rootPanel.forceLayout();
-//		rootPanel.setWidgetSize(spOuter, statusPanel.getOffsetHeight() + 10);
+	}
+	
+	/**
+	 * This can be overridden by subclasses to add more toolbars
+	 * or more "leftbars".
+	 */
+	protected void addToolbars() {
+		addToolbar(spOuter, 40);
 	}
 	
 	protected void addToolbar(Widget toolbar, int size) {
@@ -260,10 +308,21 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		rootPanel.addNorth(toolbar, size);		
 	}
 	
+	/**
+	 * Show the given toolbar (which must previously have been added with addToolbar
+	 * or addLeftbar at the right time).
+	 * @param toolbar
+	 */
 	public void showToolbar(Widget toolbar) {
 		showToolbar(toolbar, toolbar.getOffsetHeight());
 	}
 	
+	/**
+	 * Show the given toolbar (which must previously have been added with addToolbar
+	 * or addLeftbar at the right time).
+	 * @param toolbar
+	 * @param size
+	 */
 	public void showToolbar(Widget toolbar, int size) {
 		toolbar.setVisible(true);
 		rootPanel.setWidgetSize(toolbar, size);		
@@ -280,9 +339,12 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		rootPanel.addWest(leftbar, size);
 	}
 	
-	//Sometimes we need to do a deferred resize, because the layout engine has not finished yet
-	//at the time when we request the resize operation.
-	public void deferredResize() {
+
+	/**
+	 * Sometimes we need to do a deferred resize, because the layout engine has not finished yet
+	 * at the time when we request the resize operation.
+	 */
+	private void deferredResize() {
 		Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand () {
 			public void execute() {
 				resizeInterface();						
@@ -317,6 +379,11 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		return new SimplePanel();
 	}
 	
+	/**
+	 * Override this method to define the widgets that should be displayed
+	 * below the main content.
+	 * @return
+	 */	
 	public Widget bottomContent() {
 		return null;
 	}
@@ -356,7 +423,12 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		}		
 	}
 	
-	//TODO: best location for this?
+	/**
+	 * Display the sample detail screen and show information about the 
+	 * given barcode. 
+	 * TODO: this method should probably be somewhere else.
+	 * @param b
+	 */
 	public void displaySampleDetail(Barcode b) {
 		storeCustomColumn(b);
 		configuredProceed(SampleDetailScreen.key);

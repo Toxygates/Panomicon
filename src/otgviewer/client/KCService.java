@@ -12,6 +12,12 @@ import otgviewer.shared.ValueType;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
+/**
+ * This service helps obtain microarray expression data from the 
+ * underlying data store (Kyoto Cabinet).
+ * @author johan
+ *
+ */
 @RemoteServiceRelativePath("KC")
 public interface KCService extends RemoteService {
 
@@ -77,12 +83,13 @@ public interface KCService extends RemoteService {
 			boolean ascending);
 	
 	/**
-	 * Get all data immediately. Requires that loadDataset was first used to load items.
+	 * Get all data immediately. 
 	 * @param filter
 	 * @param barcodes
 	 * @param probes
-	 * @param type
-	 * @param sparseRead
+	 * @param type 
+	 * @param sparseRead If true, we optimise for the case of reading a single probe from multiple arrays.
+	 * If false, we optimise for reading full arrays. 
 	 * @param withSymbols If true, gene IDs and gene symbols will also be loaded into the rows (may be slightly slower)
 	 * @return
 	 */

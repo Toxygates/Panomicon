@@ -35,7 +35,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.NoSelectionModel;
 
 public class SampleDetailScreen extends Screen {
-
+	
 	public static final String key = "ad";
 	
 	private CellTable<String[]> experimentTable = new CellTable<String[]>();

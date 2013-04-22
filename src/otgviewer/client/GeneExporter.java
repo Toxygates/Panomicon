@@ -19,6 +19,11 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+/**
+ * This is the GUI for exporting gene lists to TargetMine.
+ * @author johan
+ *
+ */
 public class GeneExporter extends Composite {
 	private final KCServiceAsync kcService = (KCServiceAsync) GWT
 			.create(KCService.class);

@@ -38,6 +38,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 /**
  * This widget is intended to help visually define and modify "groups"
  * of microarrays.
+ * The main dose/time grid is implemented in the SelectionTDGrid. The rest is in this class.
  * 
  * Receives: dataFilter, compounds
  * Emits: columns

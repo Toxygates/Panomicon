@@ -9,6 +9,8 @@ import com.google.gwt.visualization.client.visualizations.Visualization;
  * A heatmap that wraps a Javascript heatmap developed by systemsbiology.org.
  * Note that war/toxygates.html must be modified to load the necessary javascript API
  * if this is to be used.
+ * For more info on the bio heat map, see this page
+ * http://informatics.systemsbiology.net/visualizations/heatmap/bioheatmap.html
  * @author johan
  *
  */

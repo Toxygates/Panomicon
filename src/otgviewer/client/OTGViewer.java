@@ -33,14 +33,17 @@ import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 
 /**
- * Entry point classes define <code>onModuleLoad()</code>.
+ * The main entry point for Toxygates.
+ * The old name for the application was OTGViewer. This class could possibly
+ * be renamed in the future.
+ * @author johan
+ *
  */
 public class OTGViewer implements EntryPoint, ScreenManager {
 	private static Resources resources = GWT.create(Resources.class);
 	
 	private RootLayoutPanel rootPanel;
 	private DockLayoutPanel mainDockPanel;
-//	private FlowPanel mainVertPanel;
 	private MenuBar menuBar;
 	private HorizontalPanel navPanel;
 	private List<Screen> workflow = new ArrayList<Screen>();
@@ -52,40 +55,6 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
-//		Runnable onLoadChart = new Runnable() {
-//			public void run() {
-//
-//				 DataTable data = DataTable.create();
-//		         data.addColumn(ColumnType.STRING, "Gene Name");
-//		         data.addColumn(ColumnType.NUMBER, "chip_XXX_XXX_600");
-//		         data.addColumn(ColumnType.NUMBER, "chip2");
-//		         data.addColumn(ColumnType.NUMBER, "chip3");
-//		         data.addColumn(ColumnType.NUMBER, "chip4");
-//		         data.addColumn(ColumnType.NUMBER, "chip5");
-//		         data.addColumn(ColumnType.NUMBER, "chip6");
-//		         data.addRows(2);         
-//		         data.setValue(0, 0, "ATF3");
-//		         data.setValue(0, 1, 0);
-//		         data.setValue(0, 2, 0.5);
-//		         data.setValue(0, 3, 1);
-//		         data.setValue(0, 4, 1.5);
-//		         data.setValue(0, 5, 2);
-//		         data.setValue(0, 6, 2.5);
-//		         data.setValue(1, 0, "INS");
-//		         data.setValue(1, 1, 3);
-//		         data.setValue(1, 2, 3.5);
-//		         data.setValue(1, 3, 4);
-//		         data.setValue(1, 4, 4.5);
-//		         data.setValue(1, 5, 5);
-//		         data.setValue(1, 6, 5.5);
-//		         
-//		         bhm.draw(data);
-//			}
-//		};
-//
-//		VisualizationUtils
-//				.loadVisualizationApi("1.1", onLoadChart, "corechart");
-	
 		menuBar = setupMenu();
 
 		
@@ -96,8 +65,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		});
 		
 		rootPanel = RootLayoutPanel.get();
-//		rootPanel.setSize("100%", "100%");
-		
+
 		Window.addResizeHandler(new ResizeHandler() {
 			public void onResize(ResizeEvent event) {
 				Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand () {
@@ -110,8 +78,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 
 		mainDockPanel = new DockLayoutPanel(Unit.EM);		
 		rootPanel.add(mainDockPanel);
-//		mainDockPanel.setSize("100%", "100%");
-		
+
 		mainDockPanel.addNorth(menuBar, 2.7);
 		
 		navPanel = Utils.mkHorizontalPanel();
@@ -276,7 +243,6 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	private void resizeInterface() {
 		if (currentScreen != null) {
 			currentScreen.resizeInterface();
-//			currentScreen.deferredResize();
 		}
 		rootPanel.onResize();
 	}

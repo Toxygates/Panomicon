@@ -15,8 +15,10 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.dom.client.Style.Float;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -105,6 +107,16 @@ public class Utils {
 		r.setStyleName("emphasized");
 		return r;
 	}
+	
+	public static void floatLeft(Widget w) {
+		w.getElement().getStyle().setFloat(Float.LEFT);
+	}
+	
+	public static void floatLeft(FlowPanel fp, Widget w) {
+		floatLeft(w);
+		fp.add(w);
+	}
+	
 
 	/**
 	 * Colour: for example, MediumAquaMarine or LightSkyBlue
