@@ -199,7 +199,7 @@ abstract class ChartTables {
 		 * @return
 		 */
 		private boolean inGroup(ChartDataSource.ChartSample sample, Group group) {
-			for (Barcode b: group.getBarcodes()) {
+			for (Barcode b: group.getSamples()) {
 				if (b.getTime().equals(sample.time) && b.getDose().equals(sample.dose) &&
 						b.getCompound().equals(sample.compound)) {
 					return true;

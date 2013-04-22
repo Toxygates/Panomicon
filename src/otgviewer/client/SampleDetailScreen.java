@@ -174,7 +174,7 @@ public class SampleDetailScreen extends Screen {
 	}
 
 	private void setDisplayColumn(BarcodeColumn c) {
-		barcodes = c.getBarcodes();
+		barcodes = c.getSamples();
 		displayColumn = c;
 	}
 	

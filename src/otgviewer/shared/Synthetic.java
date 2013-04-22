@@ -63,7 +63,7 @@ abstract public class Synthetic implements DataColumn, Serializable {
 	
 	public Synthetic() { }		
 	public Synthetic(String name) { this.name = name; }
-	public Barcode[] getBarcodes() { return new Barcode[0]; }	
+	public Barcode[] getSamples() { return new Barcode[0]; }	
 	public String[] getCompounds() { return new String[0]; }	
 	public String getShortTitle() { return name; }
 	

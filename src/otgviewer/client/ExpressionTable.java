@@ -16,13 +16,14 @@ import otgviewer.client.components.Screen;
 import otgviewer.shared.AType;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
-import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Group;
+import otgviewer.shared.OTGUtils;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
 import bioweb.shared.Pair;
 import bioweb.shared.SharedUtils;
 import bioweb.shared.array.DataColumn;
+import bioweb.shared.array.ExpressionRow;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.SafeHtmlCell;
@@ -283,8 +284,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		} else if (groupsel1.getSelectedIndex() == groupsel2.getSelectedIndex()) {
 			Window.alert("Please select two different groups to perform " + name + ".");
 		} else {
-			final Group g1 = Utils.findGroup(chosenColumns, selectedGroup(groupsel1));
-			final Group g2 = Utils.findGroup(chosenColumns, selectedGroup(groupsel2));
+			final Group g1 = OTGUtils.findGroup(chosenColumns, selectedGroup(groupsel1));
+			final Group g2 = OTGUtils.findGroup(chosenColumns, selectedGroup(groupsel2));
 			synth.setGroups(g1, g2);
 			kcService.addTwoGroupTest(synth, new AsyncCallback<Void>() {
 				public void onSuccess(Void v) {					

@@ -1,11 +1,5 @@
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import otgviewer.shared.Barcode;
-import otgviewer.shared.BarcodeColumn;
-import otgviewer.shared.Group;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -38,6 +32,11 @@ import com.google.gwt.visualization.client.LegendPosition;
 import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
 
+/**
+ * GUI/GWT utility methods.
+ * @author johan
+ *
+ */
 public class Utils {
 
 	private static NumberFormat df = NumberFormat.getDecimalFormat();
@@ -210,71 +209,6 @@ public class Utils {
 		return sp;
 	}
 	
-	public static String[] allCompounds(List<BarcodeColumn> columns) {
-		List<String> r = new ArrayList<String>();
-		for (BarcodeColumn dc : columns) {
-			for (String c : dc.getCompounds()) {
-				r.add(c);
-			}
-		}
-		return r.toArray(new String[0]);
-	}
-
-	public static Group findGroup(List<Group> groups, String title) {
-		for (Group d : groups) {
-			if (d.getName().equals(title)) {
-				return d;
-			}
-		}
-		return null;
-	}
-
-	public static Group groupFor(List<Group> columns, String barcode) {
-		for (Group c : columns) {
-			for (Barcode b : c.getBarcodes()) {
-				if (b.getCode().equals(barcode)) {
-					return c;						
-				}
-			}
-		}
-		return null;
-	}
-	
-	public static List<Group> groupsFor(List<Group> columns, String barcode) {
-		List<Group> r = new ArrayList<Group>();
-		for (Group c : columns) {
-			for (Barcode b : c.getBarcodes()) {
-				if (b.getCode().equals(barcode)) {
-					r.add(c);
-					break;
-				}
-			}
-		}
-		return r;
-	}
-
-	public static String[] compoundsFor(List<Group> columns) {
-		List<String> compounds = new ArrayList<String>();
-		for (Group g : columns) {
-			for (String c : g.getCompounds()) {
-				if (!compounds.contains(c)) {
-					compounds.add(c);
-				}
-			}
-		}
-		return compounds.toArray(new String[0]);
-	}
-	
-	public static Barcode barcodeFor(List<Group> columns, String barcode) {
-		for (Group c : columns) {
-			for (Barcode b : c.getBarcodes()) {
-				if (b.getCode().equals(barcode)) {
-					return b;
-				}
-			}
-		}
-		return null;
-	}
 	
 	public static Widget mkHelpButton(final TextResource helpText, 
 			final ImageResource helpImage) {

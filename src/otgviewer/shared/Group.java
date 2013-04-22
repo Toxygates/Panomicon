@@ -25,7 +25,7 @@ public class Group extends SampleGroup<Barcode> implements BarcodeColumn {
 		return name;
 	}
 
-	public Barcode[] getBarcodes() { return _samples; }
+	public Barcode[] getSamples() { return _samples; }
 	
 	public String getCDTs(final int limit, String separator) {
 		Set<String> CDTs = new HashSet<String>();

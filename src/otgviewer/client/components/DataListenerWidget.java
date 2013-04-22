@@ -9,7 +9,7 @@ import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import otgviewer.shared.SharedUtils;
+import otgviewer.shared.OTGUtils;
 import otgviewer.shared.ValueType;
 import bioweb.shared.array.DataColumn;
 
@@ -212,7 +212,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	}
 	
 	public void storeColumns() {
-		storeColumns("columns", SharedUtils.asColumns(chosenColumns));
+		storeColumns("columns", OTGUtils.asColumns(chosenColumns));
 	}	
 	
 	protected void storeCustomColumn(DataColumn column) {
@@ -301,7 +301,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 			}
 			if (chosenDataFilter != null) {				
 				try {
-					List<Group> cs = loadColumns("columns", SharedUtils.asColumns(chosenColumns));					
+					List<Group> cs = loadColumns("columns", OTGUtils.asColumns(chosenColumns));					
 					if (cs != null) {						
 						columnsChanged(cs);
 					}						

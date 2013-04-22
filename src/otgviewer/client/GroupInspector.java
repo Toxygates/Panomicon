@@ -109,7 +109,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 				textColumn = new TextColumn<Group>() {
 					@Override
 					public String getValue(Group object) {
-						return "" + object.getBarcodes().length;
+						return "" + object.getSamples().length;
 					}
 				};
 				table.addColumn(textColumn, "Sample count");
@@ -333,7 +333,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		// any combination
 		for (String name : groups.keySet()) {
 			Group g = groups.get(name);
-			if (g.getBarcodes().length == 0) {
+			if (g.getSamples().length == 0) {
 				deleteGroup(name, false);
 			}
 		}
@@ -361,7 +361,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		txtbxGroup.setValue(name);
 		
 		Group g = groups.get(name);
-		timeDoseGrid.setSelection(g.getBarcodes());
+		timeDoseGrid.setSelection(g.getSamples());
 		
 		setEditing(true);
 	}

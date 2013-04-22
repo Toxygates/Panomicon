@@ -12,7 +12,7 @@ import bioweb.shared.SharedUtils;
  *
  * @param <S>
  */
-public class SampleGroup<S extends Sample> implements Packable, Serializable, Comparable<SampleGroup> {
+public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializable, Comparable<SampleGroup> {
 
 	/**
 	 * This list was generated using the service at
@@ -48,8 +48,10 @@ public class SampleGroup<S extends Sample> implements Packable, Serializable, Co
 	}
 	
 	public S[] samples() { return _samples; }
+	public S[] getSamples() { return _samples; }
 	
 	public String getName() { return name; }
+	public String getShortTitle() { return name; }
 	
 	public String toString() { return name; }
 

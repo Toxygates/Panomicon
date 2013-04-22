@@ -99,11 +99,11 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     OTGSamples.pathologies(barcode.getCode).map(asJava(_)).toArray
     
   def pathologies(column: BarcodeColumn): Array[Pathology] = 
-    column.getBarcodes.flatMap(x => OTGSamples.pathologies(x.getCode)).map(asJava(_))
+    column.getSamples.flatMap(x => OTGSamples.pathologies(x.getCode)).map(asJava(_))
     
   def annotations(barcode: Barcode): Annotation = asJava(OTGSamples.annotations(barcode.getCode))
   def annotations(column: BarcodeColumn): Array[Annotation] = 
-    column.getBarcodes.map(x => OTGSamples.annotations(x.getCode)).map(asJava(_))
+    column.getSamples.map(x => OTGSamples.annotations(x.getCode)).map(asJava(_))
     
   def pathways(filter: DataFilter, pattern: String): Array[String] = 
     useConnector(B2RKegg, (c: B2RKegg.type) => c.forPattern(pattern, filter)).toArray    

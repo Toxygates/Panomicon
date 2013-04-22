@@ -15,6 +15,7 @@ import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.Pathology;
+import otgviewer.shared.OTGUtils;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.cellview.client.CellTable;
@@ -78,7 +79,7 @@ public class PathologyScreen extends Screen {
 		
 		TextColumn<Pathology> col = new TextColumn<Pathology>() {
 			public String getValue(Pathology p) {
-				List<Group> gs = Utils.groupsFor(chosenColumns, p.barcode());
+				List<Group> gs = OTGUtils.groupsFor(chosenColumns, p.barcode());
 				StringBuilder sb = new StringBuilder();
 				for (Group g: gs) {
 					sb.append(g.getName());
@@ -95,7 +96,7 @@ public class PathologyScreen extends Screen {
 		
 		col = new TextColumn<Pathology>() {
 			public String getValue(Pathology p) {
-				Barcode b = Utils.barcodeFor(chosenColumns, p.barcode());
+				Barcode b = OTGUtils.barcodeFor(chosenColumns, p.barcode());
 				return b.getCompound() + "/" + b.getShortTitle(); 				
 			}
 		};
@@ -169,7 +170,7 @@ public class PathologyScreen extends Screen {
 		}
 		
 		public void onClick(String value) {
-			displaySampleDetail(Utils.barcodeFor(chosenColumns, value));
+			displaySampleDetail(OTGUtils.barcodeFor(chosenColumns, value));
 		}
 	}
 	
