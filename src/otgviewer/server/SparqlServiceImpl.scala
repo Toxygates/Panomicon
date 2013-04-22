@@ -109,7 +109,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     useConnector(B2RKegg, (c: B2RKegg.type) => c.forPattern(pattern, filter)).toArray    
   
     //TODO: return a map instead
-  def geneSyms(probes: Array[String], filter: DataFilter): Array[Array[String]] = {
+  def geneSyms(filter: DataFilter, probes: Array[String]): Array[Array[String]] = {
     val ps = probes.map(p => Probe(p))
     val attrib = AffyProbes.withAttributes(ps, filter)
     probes.map(pi => attrib.find(_.identifier == pi).
@@ -213,15 +213,11 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       m.mapKValues(_.identifier).mapMValues(p => (p.name, p.identifier))
     
     val m1 = types.par.map(x => (x, standardMapping(lookupFunction(x)))).seq
-//    for ((t, p) <- m1) {
-//      if (p.allValues.exists(x => x._1 == null || x._2 == null)) {
-//        throw new Exception("Error with assoc type " + t)
-//      }
-//    }
+
     m1.map(p => new Association(p._1, convertPairs(p._2))).toArray     
   }
   
-  def geneSuggestions(partialName: String, filter: DataFilter): Array[bioweb.shared.Pair[String, String]] = {
+  def geneSuggestions(filter: DataFilter , partialName: String): Array[bioweb.shared.Pair[String, String]] = {
     useConnector(AffyProbes, (c: AffyProbes.type) => c.probesForPartialTitle(partialName, filter)).map(x => 
       new Pair(x.identifier, x.name)).toArray
   }

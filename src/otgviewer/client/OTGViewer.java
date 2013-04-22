@@ -36,6 +36,9 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
  * The main entry point for Toxygates.
  * The old name for the application was OTGViewer. This class could possibly
  * be renamed in the future.
+ * The main task of this class is to manage the history mechanism and ensure that
+ * the correct screen is being displayed at any given time, as well as provide a 
+ * facility for inter-screen communication.
  * @author johan
  *
  */
@@ -46,9 +49,28 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	private DockLayoutPanel mainDockPanel;
 	private MenuBar menuBar;
 	private HorizontalPanel navPanel;
+	
+	/**
+	 * All screens in the order that the links are displayed at the top.
+	 */
 	private List<Screen> workflow = new ArrayList<Screen>();
+	
+	/**
+	 * All available screens. The key in this map is the "key" field of each
+	 * Screen instance, which also corresponds to the history token used with
+	 * GWT's history tracking mechanism.
+	 */
 	private Map<String, Screen> screens = new HashMap<String, Screen>();
+	
+	/**
+	 * All currently configured screens. See the Screen class for an explanation of the
+	 * "configured" concept.
+	 */
 	private Set<String> configuredScreens = new HashSet<String>();
+	
+	/**
+	 * The screen currently being displayed.
+	 */
 	private Screen currentScreen;
 	
 	/**
@@ -114,10 +136,19 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		return menuBar;
 	}
 
+	/**
+	 * Individual screens call this method to get the menu and install their own menu entries.
+	 */
 	public MenuBar getMenuBar() { 
 		return menuBar;
 	}
 
+	/**
+	 * This method sets up the navigation links that allow the user to jump between screens.
+	 * The enabled() method of each screen is used to test whether that screen is currently 
+	 * available for use or not.
+	 * @param current
+	 */
 	void addWorkflowLinks(Screen current) {
 		navPanel.clear();
 		for (int i = 0; i < workflow.size(); ++i) {
@@ -143,11 +174,19 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		}		
 	}
 	
+	/**
+	 * Display the screen that corresponds to a given history token.
+	 * @param token
+	 */
 	private void setScreenForToken(String token) {
 		Screen s = pickScreen(token);
 		showScreen(s);
 	}
 	
+	/**
+	 * Switch screens.
+	 * @param s
+	 */
 	private void showScreen(Screen s) {
 		if (currentScreen != null) {
 			mainDockPanel.remove(currentScreen);
@@ -162,7 +201,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	}
 
 	/**
-	 * Pick the appropriate screen to display.
+	 * Pick the appropriate screen for a given history token.
 	 * @return
 	 */
 	private Screen pickScreen(String token) {
@@ -186,6 +225,10 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		}
 	}
 	
+	/**
+	 * Helper method for initialising screens
+	 * @param s
+	 */
 	private void addScreenSeq(Screen s) {
 		screens.put(s.key(), s);
 		workflow.add(s);		
@@ -193,6 +236,9 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		s.tryConfigure(); //give it a chance to register itself as configured
 	}
 	
+	/**
+	 * Set up the workflow sequence once.
+	 */
 	private void initScreens() {
 		addScreenSeq(new DatasetScreen(this));		
 		addScreenSeq(new ColumnScreen(this));		
@@ -246,6 +292,5 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		}
 		rootPanel.onResize();
 	}
-	
 	
 }

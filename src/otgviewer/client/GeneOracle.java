@@ -61,7 +61,7 @@ public class GeneOracle extends SuggestOracle {
 	}
 	
 	private void getSuggestions(final Request request, final Callback callback) {
-		owlimService.geneSuggestions(request.getQuery(), filter, new AsyncCallback<Pair<String,String>[]>() {
+		owlimService.geneSuggestions(filter, request.getQuery(), new AsyncCallback<Pair<String,String>[]>() {
 			
 			@Override
 			public void onSuccess(Pair<String, String>[] result) {

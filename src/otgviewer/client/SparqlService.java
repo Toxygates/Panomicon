@@ -11,15 +11,56 @@ import bioweb.shared.array.Annotation;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
+/**
+ * A service for obtaining data from SPARQL endpoints. These can be local or remote.
+ * All methods in this service use their arguments to constrain the result that is being returned.
+ * @author johan
+ *
+ */
 @RemoteServiceRelativePath("sparql")
 public interface SparqlService extends RemoteService {
 	
-	//Methods relating to metadata about our microarrays.
+	/**
+	 * Obtain compounds for the given filter
+	 * @param filter
+	 * @return
+	 */
 	public String[] compounds(DataFilter filter);	
 	
+	/**
+	 * Obtain organs for a given filter and compound
+	 * @param filter
+	 * @param compound
+	 * @return
+	 */
 	public String[] organs(DataFilter filter, String compound);
-	public String[] doseLevels(DataFilter filter, String compound);	
+	
+	/**
+	 * Obtain dose levels for a given filter and compound
+	 * @param filter
+	 * @param compound
+	 * @return
+	 */
+	public String[] doseLevels(DataFilter filter, String compound);
+	
+	/**
+	 * Obtain samples for a given filter, compound, dose level, time
+	 * @param filter
+	 * @param compound
+	 * @param doseLevel
+	 * @param time
+	 * @return
+	 */
 	public Barcode[] barcodes(DataFilter filter, String compound, String doseLevel, String time);
+	
+	/**
+	 * Obtain samples for a given filter, compounds, dose level, time
+	 * @param filter
+	 * @param compounds
+	 * @param doseLevel
+	 * @param time
+	 * @return
+	 */
 	public Barcode[] barcodes(DataFilter filter, String[] compounds, String doseLevel, String time);
 	
 	/**
@@ -31,23 +72,46 @@ public interface SparqlService extends RemoteService {
 	 */
 	public String[] times(DataFilter filter, String compound);		
 		
+	/**
+	 * Obtain probes for the given data filter
+	 * @param filter
+	 * @return
+	 */
 	public String[] probes(DataFilter filter);
 	
-	public Pathology[] pathologies(Barcode barcode);	
+	/**
+	 * Obtain pathologies for the given sample
+	 * @param barcode
+	 * @return
+	 */
+	public Pathology[] pathologies(Barcode barcode);
+	
+	/**
+	 * Obtain pathologies for a set of samples
+	 * @param column
+	 * @return
+	 */
 	public Pathology[] pathologies(BarcodeColumn column);
 	
 	/**
-	 * Annotations are experiment-associated information such as barcode,
+	 * Annotations are experiment-associated information such as
 	 * dose, time, biochemical data etc.
+	 * This method obtains them for a single sample.
 	 * @param barcode
 	 * @return
 	 */
 	public Annotation annotations(Barcode barcode);
+	
+	/**
+	 * Obtain annotations for a set of samples
+	 * @param column
+	 * @return
+	 */
 	public Annotation[] annotations(BarcodeColumn column);
 	
-	//Other methods.
+
 	/**
-	 * Obtain pathway names matching the pattern.
+	 * Obtain pathway names matching the pattern (partial name)
 	 * @param pattern
 	 * @return
 	 */
@@ -71,21 +135,40 @@ public interface SparqlService extends RemoteService {
 	public String[] probesTargetedByCompound(DataFilter filter, String compound, String service, 
 			boolean homologous);
 	
+	/**
+	 * Obtain GO terms matching the given pattern (partial name)
+	 * @param pattern
+	 * @return
+	 */
 	public String[] goTerms(String pattern);
 	
+	/**
+	 * Obtain probes for a given GO term (fully named)
+	 * @param filter
+	 * @param goTerm
+	 * @return
+	 */
 	public String[] probesForGoTerm(DataFilter filter, String goTerm);
 	
-	public String[][] geneSyms(String[] probes, DataFilter filter);
+	/**
+	 * Obtain gene symbols for the given probes.
+	 * The resulting array will contain gene symbol arrays in the same order as
+	 * and corresponding to the probes in the input array.
+	 * @param filter
+	 * @param probes
+	 * @return
+	 */
+	public String[][] geneSyms(DataFilter filter, String[] probes);
 	
 	/**
 	 * Obtain gene suggestions from a partial gene name (natural language)
 	 * @param partialName
 	 * @return An array of pairs, where the first item is the precise gene symbol and the second is the full gene name.
 	 */
-	public Pair<String, String>[] geneSuggestions(String partialName, DataFilter filter);
+	public Pair<String, String>[] geneSuggestions(DataFilter filter, String partialName);
 	
 	/**
-	 * Associations are the "dynamic columns" on the data screen.
+	 * Obtain associations -- the "dynamic columns" on the data screen.
 	 * @param types the association types to get.
 	 * @param filter
 	 * @param probes

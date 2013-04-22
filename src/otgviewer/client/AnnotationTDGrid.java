@@ -188,7 +188,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 	}
 	
 	@Override
-	protected Widget initUnit(int compound, int dose, int time) {		
+	protected Widget guiFor(int compound, int dose, int time) {		
 		HTML r = new HTML(availableTimes[time]);
 		r.setStyleName("slightlySpaced");
 		labels[compound][availableTimes.length * dose + time] = r;

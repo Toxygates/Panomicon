@@ -34,6 +34,15 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.NoSelectionModel;
 
+/**
+ * This screen displays detailed information about a sample or a set of samples,
+ * i.e. experimental conditions, histopathological data, blood composition.
+ * The samples that can be displayed are the currently configured groups.
+ * In addition, a single custom group of samples can be passed to this screen 
+ * (the "custom column") to make it display samples that are not in the configured groups.
+ * @author johan
+ *
+ */
 public class SampleDetailScreen extends Screen {
 	
 	public static final String key = "ad";

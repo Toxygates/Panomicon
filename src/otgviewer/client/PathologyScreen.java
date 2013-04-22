@@ -28,15 +28,17 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 
+/**
+ * This screen displays information about pathological findings in a given set of 
+ * sample groups.
+ */
 public class PathologyScreen extends Screen {
-	public static final String key = "pc";
+	public static final String key = "path";
 
 	private CellTable<Pathology> pathologyTable = new CellTable<Pathology>();
 	private ScrollPanel sp = new ScrollPanel();
-//	private HorizontalPanel hp = new HorizontalPanel();
 	private Set<Pathology> pathologies = new HashSet<Pathology>();
-	final Screen myScreen = this;
-	private static Resources resources = GWT.create(Resources.class);
+	private static Resources resources = GWT.create(Resources.class); 
 	
 	private DataFilter lastFilter;
 	private List<Group> lastColumns;

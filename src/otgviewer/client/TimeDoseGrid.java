@@ -17,7 +17,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 /**
  * A widget that displays times and doses for a number of compounds in a grid
- * layout. Each time and dose combination can be selected individually.
+ * layout. For each position in the grid, an arbitrary widget can be displayed.
  * @author johan
  *
  */
@@ -143,8 +143,22 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		lazyFetchTimes();		
 	}
 	
-	abstract protected Widget initUnit(int compound, int dose, int time);
-	protected Widget finaliseGroup(int compound, int dose) {
+	/**
+	 * Obtain the widget to display for a compound/dose/time combination.
+	 * @param compound
+	 * @param dose
+	 * @param time
+	 * @return
+	 */
+	abstract protected Widget guiFor(int compound, int dose, int time);
+	
+	/**
+	 * An optional extra widget on the right hand side of a compound/dose combination.
+	 * @param compound
+	 * @param dose
+	 * @return
+	 */
+	protected Widget guiFor(int compound, int dose) {
 		return null;
 	}
 
@@ -153,9 +167,9 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			for (int d = 0; d < 3; ++d) {
 				HorizontalPanel hp = Utils.mkHorizontalPanel(true);
 				for (int t = 0; t < availableTimes.length; ++t) {
-					hp.add(initUnit(c, d, t));
+					hp.add(guiFor(c, d, t));
 				}
-				Widget fin = finaliseGroup(c, d);
+				Widget fin = guiFor(c, d);
 				if (fin != null) {
 					hp.add(fin);
 				}

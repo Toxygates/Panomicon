@@ -33,6 +33,9 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
+/**
+ * The probe selection screen.
+ */
 public class ProbeScreen extends Screen {
 
 	public static final String key = "probes";
@@ -65,8 +68,7 @@ public class ProbeScreen extends Screen {
 	public Widget content() {
 		HorizontalPanel hp = Utils.mkHorizontalPanel();				
 		hp.setSpacing(10);
-//		hp.setHeight("492px");
-		
+
 		StackPanel probeSelStack = new StackPanel() {
 			// This is to fix a height bug on IE8 - see
 			// http://code.google.com/p/google-web-toolkit/issues/detail?id=2593
@@ -243,7 +245,7 @@ public class ProbeScreen extends Screen {
 	}
 	
 	private void addManualProbes(String[] probes) {
-		// change the identifiers (which can be mixed format) into a
+		// change the identifiers (which can be mixed format, for example genes and proteins etc) into a
 		// homogenous format (probes only)
 		kcService.identifiersToProbes(chosenDataFilter, probes, true, 
 				new PendingAsyncCallback<String[]>(this, "Unable to obtain manual probes (technical error).") {
@@ -301,6 +303,11 @@ public class ProbeScreen extends Screen {
 		return verticalPanel_2;
 	}
 	
+	/**
+	 * Obtain the gene symbols of the requested probes, then add them and display them.
+	 * Probes must be unique.
+	 * @param probes
+	 */
 	private void addProbes(String[] probes) {			
 		for (String p: probes) {
 			listedProbes.add(p);
@@ -310,8 +317,7 @@ public class ProbeScreen extends Screen {
 		storeProbes();
 		
 		if (probes.length > 0) {
-			//TODO reduce the number of ajax calls done by this screen by collapsing  them
-			owlimService.geneSyms(probesInOrder, chosenDataFilter, 
+			owlimService.geneSyms(chosenDataFilter, probesInOrder, 
 					new AsyncCallback<String[][]>() {
 				public void onSuccess(String[][] syms) {
 					deferredAddProbes(probesInOrder, syms);
@@ -326,7 +332,7 @@ public class ProbeScreen extends Screen {
 	}
 	
 	/**
-	 * deferred add probes. Probes must be unique.
+	 * Display probes with gene symbols. Probes must be unique.
 	 * @param probes
 	 * @param syms
 	 */
@@ -350,9 +356,6 @@ public class ProbeScreen extends Screen {
 		} else {
 			super.dataFilterChanged(filter);
 		}
-//		
-//		probesList.clear();
-//		listedProbes.clear();
 	}
 	
 	@Override
@@ -360,8 +363,7 @@ public class ProbeScreen extends Screen {
 		super.columnsChanged(columns);
 		for (ListBox l: compoundLists) {
 			l.clear();
-			for (DataColumn c : columns) {
-				Group g = (Group) c;
+			for (Group g : columns) {				
 				for (String cmp: g.getCompounds()) {
 					l.addItem(cmp);
 				}
@@ -390,11 +392,6 @@ public class ProbeScreen extends Screen {
 		proceedSelected.setText("Proceed with " + listedProbes.size() + " selected probes >>");		
 	}
 	
-	/**
-	 * The "outgoing" probes signal will
-	 * assume that any widget state changes have already been done
-	 * and store the probes.
-	 */
 	@Override 
 	public void changeProbes(String[] probes) {
 		super.changeProbes(probes);
