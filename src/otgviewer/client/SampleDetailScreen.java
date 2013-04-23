@@ -21,6 +21,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.cellview.client.TextColumn;
@@ -107,8 +108,12 @@ public class SampleDetailScreen extends Screen {
 		super.customColumnChanged(customColumn);
 		if (visible) {
 			updateColumnList();
-			storeCustomColumn(null); // consume the data so it doesn't turn
-										// up again.
+			Storage s = tryGetStorage();
+			if (s != null) {
+				storeCustomColumn(s, null); // consume the data so it doesn't
+											// turn
+											// up again.
+			}
 		}
 	}
 

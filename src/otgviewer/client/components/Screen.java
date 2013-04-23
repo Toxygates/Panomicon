@@ -17,16 +17,21 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Float;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.ProvidesResize;
+import com.google.gwt.user.client.ui.PushButton;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -52,9 +57,10 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	protected boolean configured = false;
 	private List<MenuItem> menuItems = new ArrayList<MenuItem>();
 	private Widget bottom;
-	private HorizontalPanel spOuter;
+	private HorizontalPanel spOuter, guideBar;
 	private List<Widget> toolbars = new ArrayList<Widget>();
-	private List<Widget> leftbars = new ArrayList<Widget>();
+	private List<Widget> leftbars = new ArrayList<Widget>();	
+	private boolean showGuide;
 	
 	protected ScreenManager manager;
 	
@@ -163,6 +169,12 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		statusPanel.setStyleName("statusPanel");
 		spOuter.setStyleName("statusPanel");	
 
+		guideBar = Utils.mkWidePanel();
+		guideBar.setHeight("30px");
+		guideBar.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
+		guideBar.setStyleName("guideBar");
+		guideBar.add(mkGuideTools()); 
+		
 		addToolbars(); //must be called before rootPanel.add()		
 		bottom = bottomContent();
 		if (bottom != null) {
@@ -174,7 +186,41 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		rootPanel.add(content());
 	}
 	
+	private Widget mkGuideTools() {
+		Label l = new Label(getGuideText());
+		floatLeft(l);
+		HorizontalPanel hp = Utils.mkWidePanel();
+		hp.add(l);
+		
+		PushButton i = new PushButton(new Image(resources.close()));
+		i.setStyleName("slightlySpaced");
+		i.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				hideToolbar(guideBar);
+				showGuide = false;
+				storeState();
+			}
+			
+		});
+		floatRight(i);
+		hp.add(i);		
+		
+		return hp;
+	}
+	
+	public void showGuide() {
+		showToolbar(guideBar);
+		showGuide = true;
+		storeState();
+	}
+	
 	protected void addToolbars() {
+		addToolbar(guideBar, 40);
+		if (!showGuide) {
+			guideBar.setVisible(false);
+		} 
 		addToolbar(spOuter, 40);
 	}
 	
@@ -189,9 +235,35 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 			mi.setVisible(true);
 		}
 		loadState();
+		if (showGuide) {
+			showToolbar(guideBar);
+		} else {
+			hideToolbar(guideBar);
+		}
 		updateStatusPanel(); //needs access to the groups from loadState
 		runActions();
 		deferredResize();
+	}
+	
+	@Override
+	public void loadState(Storage s) {
+		super.loadState(s);
+		String v = s.getItem("OTG.showGuide");
+		if (v == null || v.equals("yes")) {
+			showGuide = true;
+		} else {
+			showGuide = false;
+		}
+	}
+	
+	@Override
+	public void storeState(Storage s) {
+		super.storeState(s);
+		if (showGuide) {
+			s.setItem("OTG.showGuide", "yes");
+		} else {
+			s.setItem("OTG.showGuide", "no");
+		}
 	}
 	
 	private void runActions() {
@@ -205,7 +277,10 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		actionQueue.remove(qa); //remove it if it's already there (so we can update it)
 		actionQueue.add(qa);
 	}
-	
+
+	private void floatRight(Widget w) {
+		w.getElement().getStyle().setFloat(Float.RIGHT);
+	}
 	private void floatLeft(Widget w) {
 		w.getElement().getStyle().setFloat(Float.LEFT);
 	}
@@ -344,6 +419,14 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	protected ImageResource getHelpImage() {
 		return helpImage;	
 	}
+	
+	/**
+	 * The text that is displayed to first-time users on each screen to assist them.
+	 * @return
+	 */
+	protected String getGuideText() {
+		return "Use Instructions on the Help menu to get more information.";
+	}
 
 	@Override
 	public void onResize() {
@@ -358,8 +441,11 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	
 	//TODO: best location for this?
 	public void displaySampleDetail(Barcode b) {
-		storeCustomColumn(b);
-		configuredProceed(SampleDetailScreen.key);
+		Storage s = tryGetStorage();
+		if (s != null) {
+			storeCustomColumn(s, b);
+			configuredProceed(SampleDetailScreen.key);
+		}
 	}
 	
 }

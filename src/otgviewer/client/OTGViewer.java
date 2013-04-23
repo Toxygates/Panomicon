@@ -138,6 +138,12 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 			}
 		}));
 		
+		hm.addItem(new MenuItem("Show guide messages", new Command() {
+			public void execute() {
+				currentScreen.showGuide();
+			}		
+		}));
+		
 		hm.addItem(new MenuItem("About Toxygates...", new Command() {
 			public void execute() {
 				Utils.showHelp(getAboutHTML(), getAboutImage());

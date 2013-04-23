@@ -22,6 +22,7 @@ import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.RowStyles;
@@ -149,8 +150,11 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 			
 			protected void selectionChanged(Set<Group> selected) {
 				chosenColumns = new ArrayList<Group>(selected);
-				storeColumns();
-				updateConfigureStatus();
+				Storage s = tryGetStorage();
+				if (s != null) {
+					storeColumns(s);
+					updateConfigureStatus();
+				}
 			}
 		};
 //		vp.add(existingGroupsTable);
@@ -201,10 +205,13 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 	private void reflectGroupChanges() {
 		existingGroupsTable.reloadWith(sortedGroupList(groups.values()), false);
 		chosenColumns = new ArrayList<Group>(existingGroupsTable.selection());
-		storeColumns();
-		txtbxGroup.setText(nextGroupName());
-		updateConfigureStatus();
-		existingGroupsTable.setVisible(groups.values().size() > 0);					
+		Storage s = tryGetStorage();
+		if (s != null) {
+			storeColumns(s);
+			txtbxGroup.setText(nextGroupName());
+			updateConfigureStatus();
+			existingGroupsTable.setVisible(groups.values().size() > 0);
+		}
 	}
 	
 	private void updateConfigureStatus() {		
@@ -291,9 +298,9 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 	}
 	
 	@Override 
-	public void storeColumns() {
-		super.storeColumns();			
-		storeColumns("inactiveColumns", 
+	public void storeColumns(Storage s) {
+		super.storeColumns(s);			
+		storeColumns(s, "inactiveColumns", 
 				new ArrayList<BarcodeColumn>(existingGroupsTable.inverseSelection()));
 	}
 	

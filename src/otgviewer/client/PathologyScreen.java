@@ -180,4 +180,9 @@ public class PathologyScreen extends Screen {
 			return p.barcode();			
 		}
 	}
+	
+	@Override
+	public String getGuideText() {
+		return "This is the list of pathologies in the sample groups you have defined. Click on an icon to see detailed sample information.";
+	}
 }
