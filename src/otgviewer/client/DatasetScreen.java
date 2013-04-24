@@ -8,6 +8,8 @@ import otgviewer.shared.Organ;
 import otgviewer.shared.Organism;
 import otgviewer.shared.RepeatType;
 
+import com.google.gwt.storage.client.Storage;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -56,10 +58,13 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 	
 	public void filterSelected(DataFilter filter) {		
 		changeDataFilter(filter);
-		storeDataFilter();
-		setConfigured(true);
-		manager.deconfigureAll(this);
-		configuredProceed(ColumnScreen.key);		
+		Storage s = tryGetStorage();
+		if (s != null) {			
+			storeDataFilter(s);
+			setConfigured(true);
+			manager.deconfigureAll(this);
+			configuredProceed(ColumnScreen.key);
+		}
 	}
 
 	@Override
@@ -69,4 +74,8 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 		}
 	}
 
+	@Override
+	public String getGuideText() {
+		return "Welcome to Toxygates. Select a dataset to proceed.";
+	}
 }

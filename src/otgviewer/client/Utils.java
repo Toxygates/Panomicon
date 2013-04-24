@@ -111,6 +111,10 @@ public class Utils {
 		w.getElement().getStyle().setFloat(Float.LEFT);
 	}
 	
+	public static void floatRight(Widget w) {
+		w.getElement().getStyle().setFloat(Float.RIGHT);
+	}
+	
 	public static void floatLeft(FlowPanel fp, Widget w) {
 		floatLeft(w);
 		fp.add(w);

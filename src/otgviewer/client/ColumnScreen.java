@@ -11,6 +11,7 @@ import otgviewer.shared.Group;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -83,8 +84,8 @@ public class ColumnScreen extends Screen {
 	}
 	
 	@Override
-	public void loadState() {
-		super.loadState();
+	public void loadState(Storage s) {
+		super.loadState(s);
 		if (visible) {
 			//If we became visible, we must have been enabled, so can count on a
 			//data filter being present.
@@ -107,7 +108,6 @@ public class ColumnScreen extends Screen {
 			setConfigured(true);
 		}
 	}
-	
 
 	@Override
 	public void resizeInterface() {
@@ -117,4 +117,8 @@ public class ColumnScreen extends Screen {
 		super.resizeInterface();		
 	}
 
+	@Override
+	public String getGuideText() {
+		return "Please define at least one sample group to proceed. Start by selecting compounds to the left. Then select doses and times.";
+	}
 }

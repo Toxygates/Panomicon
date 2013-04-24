@@ -71,4 +71,9 @@ public class DataScreen extends Screen {
 		lastColumns = chosenColumns;
 
 	}
+	
+	@Override
+	public String getGuideText() {
+		return "Here you can inspect expression values for the sample groups you have defined. Click on column headers to sort data.";
+	}
 }

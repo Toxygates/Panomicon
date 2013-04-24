@@ -17,16 +17,21 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Float;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.ProvidesResize;
+import com.google.gwt.user.client.ui.PushButton;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -72,7 +77,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	 * Widgets to be shown below the main content area, if any.
 	 */
 	private Widget bottom;
-	private HorizontalPanel spOuter;
+	private HorizontalPanel spOuter, guideBar;
 	
 	/**
 	 * Widgets to be shown above the main content area, if any.
@@ -95,6 +100,8 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	 * Image to show alongside the help text for this screen.
 	 */
 	protected ImageResource helpImage;
+	
+	private boolean showGuide;
 	
 	/**
 	 * An action to be invoked at some later time
@@ -162,7 +169,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	
 	public Screen(String title, String key,  
 			boolean showDataFilter, boolean showGroups, ScreenManager man) {
-		this(title, key, showDataFilter, showGroups, man, resources.defaultHelpHTML(), null);
+		this(title, key, showDataFilter, showGroups, man, null, null);
 	}
 	
 	public ScreenManager manager() {
@@ -212,18 +219,24 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		manager.attemptProceed(key);		
 	}
 	
+	protected HorizontalPanel mkStandardToolbar(Widget content, String styleName) {
+		HorizontalPanel r = Utils.mkWidePanel();		
+		r.setHeight("30px");
+		r.add(content);		
+		r.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);		
+		r.setStyleName(styleName);
+		return r;
+	}
+	
 	public void initGUI() {
 		statusPanel = new FlowPanel(); 
 		statusPanel.setStyleName("statusPanel");		
 		Utils.floatLeft(statusPanel);
 
-		spOuter = Utils.mkWidePanel();		
-		spOuter.setHeight("30px");
-		spOuter.add(statusPanel);		
-		spOuter.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
-		statusPanel.setStyleName("statusPanel");
-		spOuter.setStyleName("statusPanel");	
-
+		spOuter = mkStandardToolbar(statusPanel, "statusPanel");		
+		statusPanel.setStyleName("statusPanel");		
+		guideBar = mkStandardToolbar(mkGuideTools(), "guideBar");		 
+		
 		addToolbars(); //must be called before rootPanel.add()		
 		bottom = bottomContent();
 		if (bottom != null) {
@@ -235,6 +248,50 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		rootPanel.add(content());
 	}
 	
+	private Widget mkGuideTools() {		
+		Label l = new Label(getGuideText());
+		Utils.floatLeft(l);
+		HorizontalPanel hp = Utils.mkWidePanel();
+		hp.add(l);
+		
+		HorizontalPanel hpi = new HorizontalPanel();
+		
+		PushButton i;
+		if (helpAvailable()) {
+			i = new PushButton(new Image(resources.help()));
+			i.setStyleName("slightlySpaced");
+			i.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					showHelp();
+				}
+			});
+			hpi.add(i);
+		}
+		
+		i = new PushButton(new Image(resources.close()));
+		i.setStyleName("slightlySpaced");
+		i.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				hideToolbar(guideBar);
+				showGuide = false;
+				storeState();
+			}			
+		});		
+		hpi.add(i);		
+		
+		Utils.floatRight(hpi);
+		hp.add(hpi);
+		
+		return hp;
+	}
+	
+	public void showGuide() {
+		showToolbar(guideBar);
+		showGuide = true;
+		storeState();
+	}
 	
 	
 	/**
@@ -248,16 +305,44 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 			mi.setVisible(true);
 		}
 		loadState();
+		if (showGuide) {
+			showToolbar(guideBar);
+		} else {
+			hideToolbar(guideBar);
+		}
 		updateStatusPanel(); //needs access to the groups from loadState
 		runActions();
 		deferredResize();
 	}
 
+	@Override
+	public void loadState(Storage s) {
+		super.loadState(s);
+		String v = s.getItem("OTG.showGuide");
+		if (v == null || v.equals("yes")) {
+			showGuide = true;
+		} else {
+			showGuide = false;
+		}
+	}
+	
+	@Override
+	public void storeState(Storage s) {
+		super.storeState(s);
+		if (showGuide) {
+			s.setItem("OTG.showGuide", "yes");
+		} else {
+			s.setItem("OTG.showGuide", "no");
+		}
+	}	
+
 	/**
 	 * The standard status panel contains a label that indicates the current data set,
 	 * and descriptions of the currently defined groups.
 	 */
-	private void updateStatusPanel() {
+	
+	protected void updateStatusPanel() {
+//		statusPanel.setWidth(Window.getClientHeight() + "px");
 		statusPanel.clear();
 		statusPanel.add(viewLabel);
 		Utils.floatLeft(viewLabel);
@@ -300,8 +385,13 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	 * or more "leftbars".
 	 */
 	protected void addToolbars() {
+		addToolbar(guideBar, 40);
+		if (!showGuide) {
+			guideBar.setVisible(false);
+		} 
 		addToolbar(spOuter, 40);
 	}
+	
 	
 	protected void addToolbar(Widget toolbar, int size) {
 		toolbars.add(toolbar);
@@ -379,11 +469,6 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		return new SimplePanel();
 	}
 	
-	/**
-	 * Override this method to define the widgets that should be displayed
-	 * below the main content.
-	 * @return
-	 */	
 	public Widget bottomContent() {
 		return null;
 	}
@@ -400,16 +485,32 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		}
 	}
 	
+	public boolean helpAvailable() {
+		return helpHTML != null;
+	}
+	
 	public void showHelp() {
 		Utils.showHelp(getHelpHTML(), getHelpImage());		
 	}
 	
 	protected TextResource getHelpHTML() {
-		return helpHTML;
+		if (helpHTML == null) {
+			return resources.defaultHelpHTML();
+		} else {
+			return helpHTML;
+		}
 	}
 	
 	protected ImageResource getHelpImage() {
 		return helpImage;	
+	}
+	
+	/**
+	 * The text that is displayed to first-time users on each screen to assist them.
+	 * @return
+	 */
+	protected String getGuideText() {
+		return "Use Instructions on the Help menu to get more information.";
 	}
 
 	@Override
@@ -430,8 +531,11 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	 * @param b
 	 */
 	public void displaySampleDetail(Barcode b) {
-		storeCustomColumn(b);
-		configuredProceed(SampleDetailScreen.key);
+		Storage s = tryGetStorage();
+		if (s != null) {
+			storeCustomColumn(s, b);
+			configuredProceed(SampleDetailScreen.key);
+		}
 	}
 	
 }

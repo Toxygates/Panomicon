@@ -157,12 +157,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}
 	}
 	
-//	protected void changeHeight(int newHeight) {
-//		for (DataViewListener l : listeners) {
-//			l.heightChanged(newHeight);
-//		}
-//	}
-	
 	public void propagateTo(DataViewListener other) {
 		other.dataFilterChanged(chosenDataFilter);
 		other.probesChanged(chosenProbes);
@@ -173,59 +167,63 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		other.customColumnChanged(chosenCustomColumn);
 	}
 
+	protected Storage tryGetStorage() {
+		Storage r = Storage.getLocalStorageIfSupported();
+		if (r == null) {
+			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
+		} 
+		return r;
+	}
+	
+	
 	/**
 	 * Store this widget's state into local storage.
 	 */
 	public void storeState() {
-		storeDataFilter();
-		storeColumns();
-		storeProbes();	
+		Storage r = tryGetStorage();
+		if (r != null) {
+			storeState(r);
+		}
 	}
 	
-	public void storeDataFilter() {
-		Storage s = Storage.getLocalStorageIfSupported();
-		if (s == null) {
-			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
+	/**
+	 * Store this widget's state into local storage.
+	 */
+	public void storeState(Storage s) {
+		storeDataFilter(s);
+		storeColumns(s);
+		storeProbes(s);
+	}
+		
+	public void storeDataFilter(Storage s) {		
+		if (chosenDataFilter != null) {
+			s.setItem("OTG.dataFilter", chosenDataFilter.pack());
 		} else {
-			if (chosenDataFilter != null) {
-				s.setItem("OTG.dataFilter", chosenDataFilter.pack());
+			s.setItem("OTG.dataFilter", "");
+		}			
+	}
+	
+	protected void storeColumns(Storage s, String key, Collection<BarcodeColumn> columns) {				
+		if (chosenDataFilter != null) {
+			if (!columns.isEmpty()) {
+				s.setItem("OTG." + key + "." + chosenDataFilter.pack(),
+						packColumns(columns));
 			} else {
-				s.setItem("OTG.dataFilter", "");
+				s.setItem("OTG." + key + "." + chosenDataFilter.pack(), "");
 			}
 		}		
 	}
 	
-	protected void storeColumns(String key, Collection<BarcodeColumn> columns) {		
-		Storage s = Storage.getLocalStorageIfSupported();
-		if (s == null) {
-			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
-		} else {
-			if (chosenDataFilter != null) {
-				if (!columns.isEmpty()) {
-					s.setItem("OTG." + key + "." + chosenDataFilter.pack(),
-							packColumns(columns));
-				} else {
-					s.setItem("OTG." + key + "." + chosenDataFilter.pack(), "");
-				}
-			}		
-		}
-	}
-	
-	public void storeColumns() {
-		storeColumns("columns", OTGUtils.asColumns(chosenColumns));
+	public void storeColumns(Storage s) {
+		storeColumns(s, "columns", OTGUtils.asColumns(chosenColumns));
 	}	
 	
-	protected void storeCustomColumn(DataColumn column) {
-		Storage s = Storage.getLocalStorageIfSupported();
-		if (s == null) {
-			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
+	protected void storeCustomColumn(Storage s, DataColumn column) {		
+		if (column != null) {
+			s.setItem("OTG.customColumn", column.pack());
 		} else {
-			if (column != null) {
-				s.setItem("OTG.customColumn", column.pack());
-			} else {
-				s.removeItem("OTG.customColumn");
-			}
-		}
+			s.removeItem("OTG.customColumn");
+		}		
 	}
 	
 	private String packColumns(Collection<BarcodeColumn> columns) {
@@ -267,14 +265,10 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		return null;		
 	}
 	
-	public void storeProbes() {		
-		Storage s = Storage.getLocalStorageIfSupported();
-		if (s == null) {
-			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
-		} else {
-			s.setItem("OTG.probes", packProbes());
-		}
+	public void storeProbes(Storage s) {				
+		s.setItem("OTG.probes", packProbes());		
 	}
+	
 	
 	private String packProbes() {
 		StringBuilder sb = new StringBuilder();
@@ -295,36 +289,41 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		if (s == null) {
 			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
 		} else {
-			String v = s.getItem("OTG.dataFilter");
-			if (v != null && (chosenDataFilter == null || !v.equals(chosenDataFilter.pack()))) {				
-				dataFilterChanged(DataFilter.unpack(v));
-			}
-			if (chosenDataFilter != null) {				
-				try {
-					List<Group> cs = loadColumns("columns", OTGUtils.asColumns(chosenColumns));					
-					if (cs != null) {						
-						columnsChanged(cs);
-					}						
-					v = s.getItem("OTG.customColumn");
-					if (v != null) {												
-						BarcodeColumn cc = unpackColumn(v);						
-						customColumnChanged(cc);						
-					}
-				} catch (Exception e) {										
-					//one possible failure source is if data is stored in an incorrect format
-					columnsChanged(new ArrayList<Group>());
-					storeColumns(); //overwrite the old data
-					storeCustomColumn(null); //ditto
-				}
+			loadState(s);			
+		}
+	}
+	
 
+	public void loadState(Storage s) {
+		String v = s.getItem("OTG.dataFilter");
+		if (v != null && (chosenDataFilter == null || !v.equals(chosenDataFilter.pack()))) {				
+			dataFilterChanged(DataFilter.unpack(v));
+		}
+		if (chosenDataFilter != null) {				
+			try {
+				List<Group> cs = loadColumns("columns", OTGUtils.asColumns(chosenColumns));					
+				if (cs != null) {						
+					columnsChanged(cs);
+				}						
+				v = s.getItem("OTG.customColumn");
+				if (v != null) {												
+					BarcodeColumn cc = unpackColumn(v);						
+					customColumnChanged(cc);						
+				}
+			} catch (Exception e) {										
+				//one possible failure source is if data is stored in an incorrect format
+				columnsChanged(new ArrayList<Group>());
+				storeColumns(s); //overwrite the old data
+				storeCustomColumn(s, null); //ditto
 			}
-			v = s.getItem("OTG.probes");			
-			if (v != null && !v.equals("") && !v.equals(packProbes())) {
-				chosenProbes = v.split("###");				
-				probesChanged(chosenProbes);				
-			} else if (v == null || v.equals("")) {
-				probesChanged(new String[0]);
-			}
+
+		}
+		v = s.getItem("OTG.probes");			
+		if (v != null && !v.equals("") && !v.equals(packProbes())) {
+			chosenProbes = v.split("###");				
+			probesChanged(chosenProbes);				
+		} else if (v == null || v.equals("")) {
+			probesChanged(new String[0]);
 		}
 	}
 	

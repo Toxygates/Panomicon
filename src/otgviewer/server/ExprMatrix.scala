@@ -59,7 +59,7 @@ class ExprMatrix(data: Seq[VVector[ExpressionValue]], rows: Int, columns: Int,
   lazy val sortedRowMap = rowMap.toSeq.sortWith(_._2 < _._2)
   lazy val sortedColumnMap = columnMap.toSeq.sortWith(_._2 < _._2)
   
-  lazy val asRows: Seq[ExpressionRow] = toRowVectors.toVector.zip(annotations).map(x => {
+  lazy val asRows: SVector[ExpressionRow] = toRowVectors.toVector.zip(annotations).map(x => {
     val ann = x._2    
     new ExpressionRow(ann.probe, ann.title, ann.geneIds, ann.geneSyms, x._1.toArray)
   })
