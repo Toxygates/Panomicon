@@ -4,7 +4,7 @@ For the most part, the current version of Toxygates helps the user to find inter
 Compound ranking is different from this in that it helps the user to find interesting compounds based on pre-selected probes. 
 This feature is a way of assigning a score to each compound based on some set of conditions. It can be found back on the column definition screen.
 
-￼<p>
+<p>
 When compounds have been ranked, they are automatically sorted by score, the highest scoring compound being first.
  A higher score means that the compound matches the specified rules or patterns better. When a ranking has been performed, 
  it is also possible to click the chart icon to see time series for those probes that are involved in the ranking. 
@@ -21,7 +21,7 @@ When compounds have been ranked, they are automatically sorted by score, the hig
 	  <p>
 	For each rule, a match type must be chosen. The match types specify different kinds of calculations that are to be performed on the 
 	gene’s or probe’s time series of each compound. For matching, fold values are always used (see the discussion of dataset selection above).
-	 For example, if rat/in vivo/liver/single dose is used, four time points will be available at three dose levels. Thus, there will be three 
+	For example, if rat/in vivo/liver/single dose is used, four time points will be available at three dose levels. Thus, there will be three 
 	 time curves, each with four data points (the average of the fold values at each data point). 
 	 
 	 <h4>Match types</h4>
@@ -32,7 +32,7 @@ When compounds have been ranked, they are automatically sorted by score, the hig
 <dt>Synthetic</dt> <dd> This performs a Pearson correlation test against a curve that the user can specify. A curve is specified as four integers, for example 1 2 2 1 or -2 -1 0 1. To the Pearson correlation score, the number 1 is added, so the final result will range between 0 and 2 (but if multiple probes are matched, a product is used, so for two probes, the range is 0-4, etc). The user supplied curve is entered in the field called Synth. curve. This field is meaningless if the Synthetic rule is not being used. Note that the number 0 is added artificially before each curve, so that 1 1 1 1 will really result in “0 1 1 1 1” being used for the match. This is to differentiate from, for example, -1 -1 -1 -1 which becomes “0 -1 -1 -1 -1”, thus containing a decreasing step instead of an increasing one. Due to the nature of the Pearson correlation, it is impossible to match on a curve such as 0 0 0 0, but it is possible to use the Unchanged rule for this case.</dd>
 <dt>MonotonicUp</dt> <dd> This rule favours strictly increasing fold values over time.</dd>
 <dt>MonotonicDown</dt> <dd> This rule favours strictly decreasing fold values over time.</dd>
-<dt>￼ReferenceCompound</dt> <dd> This rule performs a Pearson correlation, like the Synthetic rule above, except that the reference curve is taken from another compound instead of being supplied by the user. The user can thus choose a compound and a dose level that is to act as the reference. This is done by using the fields called ref. compound and ref. dose. These fields are meaningless if the ReferenceCompound rule is not being used.</dd>
+<dt>ReferenceCompound</dt> <dd> This rule performs a Pearson correlation, like the Synthetic rule above, except that the reference curve is taken from another compound instead of being supplied by the user. The user can thus choose a compound and a dose level that is to act as the reference. This is done by using the fields called ref. compound and ref. dose. These fields are meaningless if the ReferenceCompound rule is not being used.</dd>
 <dt>Unchanged</dt> <dd> This rule favours fold values that change very little or not at all.</dd>
 </dl>
 
