@@ -21,6 +21,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.cellview.client.TextColumn;
@@ -34,8 +35,17 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.NoSelectionModel;
 
+/**
+ * This screen displays detailed information about a sample or a set of samples,
+ * i.e. experimental conditions, histopathological data, blood composition.
+ * The samples that can be displayed are the currently configured groups.
+ * In addition, a single custom group of samples can be passed to this screen 
+ * (the "custom column") to make it display samples that are not in the configured groups.
+ * @author johan
+ *
+ */
 public class SampleDetailScreen extends Screen {
-
+	
 	public static final String key = "ad";
 	
 	private CellTable<String[]> experimentTable = new CellTable<String[]>();
@@ -107,8 +117,12 @@ public class SampleDetailScreen extends Screen {
 		super.customColumnChanged(customColumn);
 		if (visible) {
 			updateColumnList();
-			storeCustomColumn(null); // consume the data so it doesn't turn
-										// up again.
+			Storage s = tryGetStorage();
+			if (s != null) {
+				storeCustomColumn(s, null); // consume the data so it doesn't
+											// turn
+											// up again.
+			}
 		}
 	}
 
@@ -124,7 +138,7 @@ public class SampleDetailScreen extends Screen {
 
 		hp.add(columnList);
 		
-		hp.add(new Button("Grid visualisation...", new ClickHandler() {			
+		hp.add(new Button("Heatmap...", new ClickHandler() {			
 			@Override
 			public void onClick(ClickEvent event) {
 				Set<String> compounds = new HashSet<String>();
@@ -165,7 +179,7 @@ public class SampleDetailScreen extends Screen {
 	}
 
 	private void setDisplayColumn(BarcodeColumn c) {
-		barcodes = c.getBarcodes();
+		barcodes = c.getSamples();
 		displayColumn = c;
 	}
 	
@@ -262,6 +276,11 @@ public class SampleDetailScreen extends Screen {
 	protected void addToolbars() {	
 		super.addToolbars();
 		addToolbar(tools, 30);
+	}
+	
+	@Override
+	public String getGuideText() {
+		return "Here you can view experimental information and biological details for each sample in the groups you have defined.";
 	}
 	
 }

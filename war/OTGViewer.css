@@ -118,6 +118,13 @@ exprGrid {
 	color: black;
 }
 
+.guideBar {
+	background: LemonChiffon;
+	color: black;
+	text-align: left;
+	padding: 4px;
+}
+
 .statusBorder {
 	margin: 1px;
 	border: solid DarkBlue 1px;

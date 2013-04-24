@@ -1,13 +1,14 @@
 package bioweb.shared.array;
+import bioweb.shared.*;
 
 import java.io.Serializable;
 
 /**
- * A microarray sample.
+ * A microarray sample with a unique identifier that can be represented as a string.
  * @author johan
  *
  */
-public abstract class Sample implements Serializable {
+public abstract class Sample implements Packable, Serializable {
 
 	public Sample() {}
 	

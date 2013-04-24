@@ -1,7 +1,8 @@
 package otgviewer.shared;
 
 /**
- * Types for associations.
+ * All known association types. In order to add a new type, it is necessary to define it here,
+ * and then add the corresponding lookup code in SparqlServiceImpl.
  * @author johan
  *
  */

@@ -1,10 +1,15 @@
-package otgviewer.shared;
+package bioweb.shared.array;
 
 import java.io.Serializable;
 import java.util.Arrays;
 
-import bioweb.shared.array.ExpressionValue;
 
+/**
+ * Expression data for a particular set of columns for a single probe.
+ * May also contain associated information such as gene IDs and gene symbols.
+ * @author johan
+ *
+ */
 public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 	private String probe = "";
 	private String title = "";

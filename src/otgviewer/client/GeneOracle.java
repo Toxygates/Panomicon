@@ -12,6 +12,13 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.SuggestOracle;
 
+/**
+ * This oracle looks up gene descriptions and names in real time as the user types.
+ * This is used to provide a list of autocomplete suggestions. Used in for example
+ * the probe selection screen (manual selection) and the compound ranking screen.
+ * @author johan
+ *
+ */
 public class GeneOracle extends SuggestOracle {
 	
 	private DataFilter filter;
@@ -54,7 +61,7 @@ public class GeneOracle extends SuggestOracle {
 	}
 	
 	private void getSuggestions(final Request request, final Callback callback) {
-		owlimService.geneSuggestions(request.getQuery(), filter, new AsyncCallback<Pair<String,String>[]>() {
+		owlimService.geneSuggestions(filter, request.getQuery(), new AsyncCallback<Pair<String,String>[]>() {
 			
 			@Override
 			public void onSuccess(Pair<String, String>[] result) {

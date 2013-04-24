@@ -23,6 +23,12 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
 
+/**
+ * A time and dose grid that can show some variable as a heat map.
+ * The variable is supplied as a microarray sample annotation.
+ * @author johan
+ *
+ */
 public class AnnotationTDGrid extends TimeDoseGrid {
 	
 	private HTML[][] labels;
@@ -52,8 +58,6 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 	@Override
 	public void dataFilterChanged(DataFilter filter) {
 		super.dataFilterChanged(filter);		
-//		annotationSelector.setEnabled(annEnab);
-//		annotationButton.setEnabled(annEnab);
 	}
 
 	@Override
@@ -184,7 +188,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 	}
 	
 	@Override
-	protected Widget initUnit(int compound, int dose, int time) {		
+	protected Widget guiFor(int compound, int dose, int time) {		
 		HTML r = new HTML(availableTimes[time]);
 		r.setStyleName("slightlySpaced");
 		labels[compound][availableTimes.length * dose + time] = r;

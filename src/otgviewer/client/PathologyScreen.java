@@ -15,6 +15,7 @@ import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.Pathology;
+import otgviewer.shared.OTGUtils;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.cellview.client.CellTable;
@@ -28,15 +29,17 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 
+/**
+ * This screen displays information about pathological findings in a given set of 
+ * sample groups.
+ */
 public class PathologyScreen extends Screen {
-	public static final String key = "pc";
+	public static final String key = "path";
 
 	private CellTable<Pathology> pathologyTable = new CellTable<Pathology>();
 	private ScrollPanel sp = new ScrollPanel();
-//	private HorizontalPanel hp = new HorizontalPanel();
 	private Set<Pathology> pathologies = new HashSet<Pathology>();
-	final Screen myScreen = this;
-	private static Resources resources = GWT.create(Resources.class);
+	private static Resources resources = GWT.create(Resources.class); 
 	
 	private DataFilter lastFilter;
 	private List<Group> lastColumns;
@@ -76,7 +79,7 @@ public class PathologyScreen extends Screen {
 		
 		TextColumn<Pathology> col = new TextColumn<Pathology>() {
 			public String getValue(Pathology p) {
-				List<Group> gs = Utils.groupsFor(chosenColumns, p.barcode());
+				List<Group> gs = OTGUtils.groupsFor(chosenColumns, p.barcode());
 				StringBuilder sb = new StringBuilder();
 				for (Group g: gs) {
 					sb.append(g.getName());
@@ -93,7 +96,7 @@ public class PathologyScreen extends Screen {
 		
 		col = new TextColumn<Pathology>() {
 			public String getValue(Pathology p) {
-				Barcode b = Utils.barcodeFor(chosenColumns, p.barcode());
+				Barcode b = OTGUtils.barcodeFor(chosenColumns, p.barcode());
 				return b.getCompound() + "/" + b.getShortTitle(); 				
 			}
 		};
@@ -167,7 +170,7 @@ public class PathologyScreen extends Screen {
 		}
 		
 		public void onClick(String value) {
-			displaySampleDetail(Utils.barcodeFor(chosenColumns, value));
+			displaySampleDetail(OTGUtils.barcodeFor(chosenColumns, value));
 		}
 	}
 	
@@ -179,5 +182,10 @@ public class PathologyScreen extends Screen {
 		public String getValue(Pathology p) {
 			return p.barcode();			
 		}
+	}
+	
+	@Override
+	public String getGuideText() {
+		return "This is the list of pathologies in the sample groups you have defined. Click on an icon to see detailed sample information.";
 	}
 }

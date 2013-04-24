@@ -4,9 +4,10 @@ import java.util.List;
 
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
-import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
+
+import bioweb.shared.array.ExpressionRow;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 

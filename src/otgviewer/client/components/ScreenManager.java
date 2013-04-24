@@ -4,12 +4,24 @@ package otgviewer.client.components;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.ProvidesResize;
 
+/**
+ * A screen manager provides screen management services.
+ * @author johan
+ *
+ */
 public interface ScreenManager extends ProvidesResize {
-//
-//	void showTemporary(Screen s);
-//	
+
+	/**
+	 * Obtain the menu bar that menu entries can be installed on
+	 * @return
+	 */
 	MenuBar getMenuBar();
 	
+	/**
+	 * Indicate that the given screen is or is not configured.
+	 * @param s
+	 * @param configured
+	 */
 	void setConfigured(Screen s, boolean configured);
 	
 	/**
@@ -20,10 +32,16 @@ public interface ScreenManager extends ProvidesResize {
 	 */
 	void deconfigureAll(Screen from);
 	
+	/**
+	 * Test whether the given screen is configured.
+	 * @param key
+	 * @return
+	 */
 	boolean isConfigured(String key);
 	
 	/**
-	 * Try to proceed to a new screen.
+	 * Try to proceed to a new screen, displaying it instead of the
+	 * current one.
 	 * @param to
 	 */
 	void attemptProceed(String to);

@@ -12,12 +12,12 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-
 import bioweb.shared.array.DataColumn;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
@@ -33,6 +33,9 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
+/**
+ * The probe selection screen.
+ */
 public class ProbeScreen extends Screen {
 
 	public static final String key = "probes";
@@ -65,8 +68,7 @@ public class ProbeScreen extends Screen {
 	public Widget content() {
 		HorizontalPanel hp = Utils.mkHorizontalPanel();				
 		hp.setSpacing(10);
-//		hp.setHeight("492px");
-		
+
 		StackPanel probeSelStack = new StackPanel() {
 			// This is to fix a height bug on IE8 - see
 			// http://code.google.com/p/google-web-toolkit/issues/detail?id=2593
@@ -223,8 +225,11 @@ public class ProbeScreen extends Screen {
 							Window.alert("Please select the probes you are interested in, or proceed with all probes.");
 						} else {
 							chosenProbes = listedProbes.toArray(new String[0]);
-							storeProbes();
-							configuredProceed(DataScreen.key);
+							Storage s = tryGetStorage();
+							if (s != null) {
+								storeProbes(s);
+								configuredProceed(DataScreen.key);
+							}
 						}
 					}
 				});
@@ -243,7 +248,7 @@ public class ProbeScreen extends Screen {
 	}
 	
 	private void addManualProbes(String[] probes) {
-		// change the identifiers (which can be mixed format) into a
+		// change the identifiers (which can be mixed format, for example genes and proteins etc) into a
 		// homogenous format (probes only)
 		kcService.identifiersToProbes(chosenDataFilter, probes, true, 
 				new PendingAsyncCallback<String[]>(this, "Unable to obtain manual probes (technical error).") {
@@ -301,32 +306,43 @@ public class ProbeScreen extends Screen {
 		return verticalPanel_2;
 	}
 	
+	/**
+	 * Obtain the gene symbols of the requested probes, then add them and display them.
+	 * Probes must be unique.
+	 * @param probes
+	 */
 	private void addProbes(String[] probes) {			
 		for (String p: probes) {
 			listedProbes.add(p);
 		}
 		final String[] probesInOrder = listedProbes.toArray(new String[0]);
 		chosenProbes = probesInOrder;
-		storeProbes();
-		
-		if (probes.length > 0) {
-			//TODO reduce the number of ajax calls done by this screen by collapsing  them
-			owlimService.geneSyms(probesInOrder, chosenDataFilter, 
-					new AsyncCallback<String[][]>() {
-				public void onSuccess(String[][] syms) {
-					deferredAddProbes(probesInOrder, syms);
-				}
+		Storage s = tryGetStorage();
+		if (s != null) {
+			storeProbes(s);
 
-				public void onFailure(Throwable caught) {
-					Window.alert("Unable to get gene symbols for probes.");
-				}
-			});			
+			if (probes.length > 0) {
+				// TODO reduce the number of ajax calls done by this screen by
+				// collapsing them
+				owlimService.geneSyms(chosenDataFilter, probesInOrder, 
+						new AsyncCallback<String[][]>() {
+							public void onSuccess(String[][] syms) {
+								deferredAddProbes(probesInOrder, syms);
+							}
+
+							public void onFailure(Throwable caught) {
+								Window.alert("Unable to get gene symbols for probes.");
+							}
+						});
+			}
+			updateProceedButton();
 		}
-		updateProceedButton();		
+
 	}
 	
+	
 	/**
-	 * deferred add probes. Probes must be unique.
+	 * Display probes with gene symbols. Probes must be unique.
 	 * @param probes
 	 * @param syms
 	 */
@@ -350,9 +366,6 @@ public class ProbeScreen extends Screen {
 		} else {
 			super.dataFilterChanged(filter);
 		}
-//		
-//		probesList.clear();
-//		listedProbes.clear();
 	}
 	
 	@Override
@@ -360,8 +373,7 @@ public class ProbeScreen extends Screen {
 		super.columnsChanged(columns);
 		for (ListBox l: compoundLists) {
 			l.clear();
-			for (DataColumn c : columns) {
-				Group g = (Group) c;
+			for (Group g : columns) {				
 				for (String cmp: g.getCompounds()) {
 					l.addItem(cmp);
 				}
@@ -398,7 +410,15 @@ public class ProbeScreen extends Screen {
 	@Override 
 	public void changeProbes(String[] probes) {
 		super.changeProbes(probes);
-		storeProbes();
+		Storage s = tryGetStorage();
+		if (s != null) {
+			storeProbes(s);
+		}
+	}
+	
+	@Override
+	public String getGuideText() {
+		return "If you want, you can select specific probes to inspect here. If you want to see all probes, use the second button at the bottom."; 
 	}
 
 }

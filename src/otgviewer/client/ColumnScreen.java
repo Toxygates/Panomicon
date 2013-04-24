@@ -11,12 +11,18 @@ import otgviewer.shared.Group;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
+/**
+ * This screen allows for column (group) definition as well as compound ranking.
+ * @author johan
+ *
+ */
 public class ColumnScreen extends Screen {
 	public static String key = "columns";
 	
@@ -78,8 +84,8 @@ public class ColumnScreen extends Screen {
 	}
 	
 	@Override
-	public void loadState() {
-		super.loadState();
+	public void loadState(Storage s) {
+		super.loadState(s);
 		if (visible) {
 			//If we became visible, we must have been enabled, so can count on a
 			//data filter being present.
@@ -102,13 +108,17 @@ public class ColumnScreen extends Screen {
 			setConfigured(true);
 		}
 	}
-	
 
 	@Override
 	public void resizeInterface() {
+		//Test carefully in IE8, IE9 and all other browsers if changing this method
 		cs.resizeInterface();
 		tp.forceLayout();
 		super.resizeInterface();		
 	}
 
+	@Override
+	public String getGuideText() {
+		return "Please define at least one sample group to proceed. Start by selecting compounds to the left. Then select doses and times.";
+	}
 }

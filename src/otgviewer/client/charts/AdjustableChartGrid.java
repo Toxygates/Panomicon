@@ -8,6 +8,7 @@ import otgviewer.client.Utils;
 import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Group;
+import otgviewer.shared.OTGUtils;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -34,7 +35,7 @@ public class AdjustableChartGrid extends Composite {
 		this.source = source;
 		this.groups = groups;
 		this.screen = screen;
-		this.compounds = Arrays.asList(Utils.compoundsFor(groups));		
+		this.compounds = Arrays.asList(OTGUtils.compoundsFor(groups));		
 		
 		vp = Utils.mkVerticalPanel();
 		initWidget(vp);

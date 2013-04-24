@@ -11,9 +11,21 @@ import otgviewer.shared.Series;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
+/**
+ * A service for retrieving averaged time series and for ranking compounds. 
+ * @author johan
+ *
+ */
 @RemoteServiceRelativePath("series")
 public interface SeriesService extends RemoteService {
 	
+	/**
+	 * Rank all available compounds for the given data filter according to the supplied rules.
+	 * @param filter
+	 * @param rules
+	 * @return
+	 * @throws NoSuchProbeException
+	 */
 	public MatchResult[] rankedCompounds(DataFilter filter, RankRule[] rules) throws NoSuchProbeException;
 	
 	/**

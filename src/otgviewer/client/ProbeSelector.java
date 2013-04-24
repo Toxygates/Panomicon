@@ -20,7 +20,13 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  * An interface component that helps users to select probes
- * using some kind of intermediate concept (pathway, GO term etc)
+ * using some kind of higher level concept (pathway, GO term etc)
+ * 
+ * Probe selection is a two-step process.
+ * First the user enters a partial name. A RPC call will then search for items
+ * matching that name (for example pathways). The hits will be displayed.
+ * Next, when the user selects one such object, the corresponding probes will be obtained.
+ * 
  * @author johan
  *
  */
@@ -33,10 +39,7 @@ abstract public class ProbeSelector extends DataListenerWidget {
 	private String[] loadedProbes;
 	private Button addButton;
 	
-//	private OwlimServiceAsync owlimService = (OwlimServiceAsync) GWT
-//			.create(OwlimService.class);
-//
-//	
+
 	public ProbeSelector(String label, boolean wb) {
 		this.withButton = wb;
 		
@@ -88,12 +91,28 @@ abstract public class ProbeSelector extends DataListenerWidget {
 		}
 	}
 	
+	/**
+	 * This callback should be supplied to the RPC method that retrieves
+	 * high level objects for a partial name.
+	 * @return
+	 */
 	public AsyncCallback<String[]> retrieveMatchesCallback() {
 		return itemHandler.retrieveCallback(this, true);
 	}
 	
+	/**
+	 * This method should obtain the high level objects that correspond to the
+	 * partial name. It will be invoked after the user types a partial name
+	 * and presses enter.
+	 * @param key
+	 */
 	abstract protected void getMatches(String key);
 	
+	/**
+	 * This callback should be supplied to the RPC methd that retrieves
+	 * probes for a selection.
+	 * @return
+	 */
 	public AsyncCallback<String[]> retrieveProbesCallback() {
 		return new PendingAsyncCallback<String[]>(this) {
 			public void handleFailure(Throwable caught) {
@@ -113,6 +132,11 @@ abstract public class ProbeSelector extends DataListenerWidget {
 		};
 	}	
 	
+	/**
+	 * This method should obtain the probes that correspond to the exactly named
+	 * high level object. (Will be invoked after the user selects one)
+	 * @param item
+	 */
 	abstract protected void getProbes(String item);
 	
 	void clear() {

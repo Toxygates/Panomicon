@@ -22,6 +22,7 @@ import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.RowStyles;
@@ -38,6 +39,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 /**
  * This widget is intended to help visually define and modify "groups"
  * of microarrays.
+ * The main dose/time grid is implemented in the SelectionTDGrid. The rest is in this class.
  * 
  * Receives: dataFilter, compounds
  * Emits: columns
@@ -108,7 +110,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 				textColumn = new TextColumn<Group>() {
 					@Override
 					public String getValue(Group object) {
-						return "" + object.getBarcodes().length;
+						return "" + object.getSamples().length;
 					}
 				};
 				table.addColumn(textColumn, "Sample count");
@@ -149,8 +151,11 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 			
 			protected void selectionChanged(Set<Group> selected) {
 				chosenColumns = new ArrayList<Group>(selected);
-				storeColumns();
-				updateConfigureStatus();
+				Storage s = tryGetStorage();
+				if (s != null) {
+					storeColumns(s);
+					updateConfigureStatus();
+				}
 			}
 		};
 //		vp.add(existingGroupsTable);
@@ -201,10 +206,13 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 	private void reflectGroupChanges() {
 		existingGroupsTable.reloadWith(sortedGroupList(groups.values()), false);
 		chosenColumns = new ArrayList<Group>(existingGroupsTable.selection());
-		storeColumns();
-		txtbxGroup.setText(nextGroupName());
-		updateConfigureStatus();
-		existingGroupsTable.setVisible(groups.values().size() > 0);					
+		Storage s = tryGetStorage();
+		if (s != null) {
+			storeColumns(s);
+			txtbxGroup.setText(nextGroupName());
+			updateConfigureStatus();
+			existingGroupsTable.setVisible(groups.values().size() > 0);
+		}
 	}
 	
 	private void updateConfigureStatus() {		
@@ -291,9 +299,9 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 	}
 	
 	@Override 
-	public void storeColumns() {
-		super.storeColumns();			
-		storeColumns("inactiveColumns", 
+	public void storeColumns(Storage s) {
+		super.storeColumns(s);			
+		storeColumns(s, "inactiveColumns", 
 				new ArrayList<BarcodeColumn>(existingGroupsTable.inverseSelection()));
 	}
 	
@@ -332,7 +340,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		// any combination
 		for (String name : groups.keySet()) {
 			Group g = groups.get(name);
-			if (g.getBarcodes().length == 0) {
+			if (g.getSamples().length == 0) {
 				deleteGroup(name, false);
 			}
 		}
@@ -360,7 +368,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		txtbxGroup.setValue(name);
 		
 		Group g = groups.get(name);
-		timeDoseGrid.setSelection(g.getBarcodes());
+		timeDoseGrid.setSelection(g.getSamples());
 		
 		setEditing(true);
 	}

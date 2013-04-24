@@ -21,6 +21,12 @@ public class Annotation implements Serializable {
 
 	private List<Entry> _entries;
 	
+	/**
+	 * An entry has a string value and/or a numerical value. The user needs to track
+	 * which value has been set in some external way.
+	 * @author johan
+	 *
+	 */
 	public static class Entry implements Serializable {
 		public String description;
 		public String value;
