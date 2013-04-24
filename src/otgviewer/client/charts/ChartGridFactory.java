@@ -7,15 +7,16 @@ import otgviewer.client.KCService;
 import otgviewer.client.KCServiceAsync;
 import otgviewer.client.SparqlService;
 import otgviewer.client.SparqlServiceAsync;
-import otgviewer.client.Utils;
 import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
-import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Group;
 import otgviewer.shared.Series;
+import otgviewer.shared.OTGUtils;
 import otgviewer.shared.ValueType;
+
+import bioweb.shared.array.ExpressionRow;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
@@ -94,7 +95,7 @@ public class ChartGridFactory {
 	public void makeRowCharts(final Screen screen, final Barcode[] barcodes, final ValueType vt, final String probe,
 			final AChartAcceptor acceptor) {
 		if (barcodes == null) {
-			owlimService.barcodes(filter, Utils.compoundsFor(groups), null, null, new AsyncCallback<Barcode[]>() {
+			owlimService.barcodes(filter, OTGUtils.compoundsFor(groups), null, null, new AsyncCallback<Barcode[]>() {
 
 				@Override
 				public void onFailure(Throwable caught) {

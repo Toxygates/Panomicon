@@ -8,6 +8,11 @@ import java.util.Set;
 
 import bioweb.shared.Pair;
 
+/**
+ * An association is a mapping from probes to other objects. They are used as
+ * "dynamic columns" in the GUI.
+ * The mapped-to objects have names and formal identifiers.
+ */
 public class Association implements Serializable {
 
 	private AType _type;
@@ -18,7 +23,8 @@ public class Association implements Serializable {
 	/**
 	 * 
 	 * @param type
-	 * @param data The first value in pair is the title, the second value is the formal identifier
+	 * @param data Association data keyed on probe id:s.
+	 * The first value in the value pair is the title, the second value is the formal identifier
 	 */
 	public Association(AType type, Map<String, ? extends Set<Pair<String, String>>> data) {
 		_type = type;

@@ -3,7 +3,7 @@ package otgviewer.shared;
 import bioweb.shared.array.Sample;
 
 /**
- * A barcode corresponds to a single microarray.
+ * A barcode corresponds to a single microarray sample.
  * @author johan
  *
  */
@@ -33,6 +33,11 @@ public class Barcode extends Sample implements BarcodeColumn {
 		return dose + "/" + time + "/"+ individual;
 	}
 	
+	/**
+	 * Obtain a short string that identifies the compound/dose/time combination
+	 * for this sample.
+	 * @return
+	 */
 	public String getCDT() {
 		return compound + "/" + dose + "/" + time;
 	}
@@ -61,7 +66,7 @@ public class Barcode extends Sample implements BarcodeColumn {
 		return compound;
 	}
 	
-	public Barcode[] getBarcodes() { 
+	public Barcode[] getSamples() { 
 		return new Barcode[] { this };
 	}
 	

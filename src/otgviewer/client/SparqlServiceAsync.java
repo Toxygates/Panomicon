@@ -36,8 +36,8 @@ public interface SparqlServiceAsync {
 	public void probesTargetedByCompound(DataFilter filter, String compound, String service, 
 			boolean homologous, AsyncCallback<String[]> callback);
 	
-	public void geneSyms(String[] probes, DataFilter filter, AsyncCallback<String[][]> callback);
-	public void geneSuggestions(String partialName, DataFilter filter, AsyncCallback<Pair<String, String>[]> callback);
+	public void geneSyms(DataFilter filter, String[] probes, AsyncCallback<String[][]> callback);
+	public void geneSuggestions(DataFilter filter, String partialName, AsyncCallback<Pair<String, String>[]> callback);
 	
 	public void goTerms(String pattern, AsyncCallback<String[]> callback);
 	public void probesForGoTerm(DataFilter filter, String term, AsyncCallback<String[]> callback);

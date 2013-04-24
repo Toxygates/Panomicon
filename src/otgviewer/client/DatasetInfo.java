@@ -18,6 +18,13 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+/**
+ * This widget is displayed on the first screen, the "dataset selection screen".
+ * It displays images and some basic information about each dataset.
+ * When it is clicked it fires an event.
+ * @author johan
+ *
+ */
 public class DatasetInfo extends Composite implements ClickHandler {
 	public static interface SelectionListener {
 		void filterSelected(DataFilter filter);

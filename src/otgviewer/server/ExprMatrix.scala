@@ -1,7 +1,7 @@
 package otgviewer.server
 
 import friedrich.data.immutable._
-import otgviewer.shared.ExpressionRow
+import bioweb.shared.array.ExpressionRow
 import bioweb.shared.array.ExpressionValue
 import scala.reflect.ClassTag
 import friedrich.data.mutable._

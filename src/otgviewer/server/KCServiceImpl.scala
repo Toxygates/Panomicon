@@ -10,7 +10,6 @@ import java.util.{ List => JList, ArrayList }
 import otgviewer.shared.DataFilter
 import otgviewer.shared.Synthetic
 import otgviewer.shared.ValueType
-import otgviewer.shared.ExpressionRow
 import otgviewer.shared.Group
 import otgviewer.shared.BarcodeColumn
 import otgviewer.shared.Series
@@ -22,6 +21,7 @@ import otg.CSVHelper
 import otg.OTGSeriesQuery
 import otg.sparql._
 import otg.OTGCabinet
+import bioweb.shared.array.ExpressionRow
 import bioweb.shared.array.ExpressionValue
 import bioweb.server.array.ArrayServiceImpl
 import friedrich.data.immutable.VVector
@@ -114,7 +114,7 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
 
     def barcodes(columns: Seq[BarcodeColumn]): Seq[String] = {
       columns.flatMap(_ match {
-        case g: Group   => g.getBarcodes
+        case g: Group   => g.getSamples
         case b: Barcode => Vector(b)
         case _          => Vector()
       }).map(_.id)
@@ -138,7 +138,7 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
     val groupedColumns = columns.map(_ match {
       case g: Group => {
        (0 until data.rows).map(r => {
-          val vs = g.getBarcodes.map(bc => data.obtainColumn(bc.getCode)).map(data(r, _))
+          val vs = g.getSamples.map(bc => data.obtainColumn(bc.getCode)).map(data(r, _))
           presentMean(vs)
         })
       }
@@ -285,12 +285,12 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
     val g2 = test.getGroup2
     val withTest = test match {
       case ut: Synthetic.UTest => {
-        rendered.appendUTest(data, g1.getBarcodes.map(_.getCode),
-          g2.getBarcodes.map(_.getCode), ut.getShortTitle)
+        rendered.appendUTest(data, g1.getSamples.map(_.getCode),
+          g2.getSamples.map(_.getCode), ut.getShortTitle)
       }
       case tt: Synthetic.TTest => {
-        rendered.appendTTest(data, g1.getBarcodes.map(_.getCode),
-          g2.getBarcodes.map(_.getCode), tt.getShortTitle)
+        rendered.appendTTest(data, g1.getSamples.map(_.getCode),
+          g2.getSamples.map(_.getCode), tt.getShortTitle)
       }
     }
     session.rendered = withTest

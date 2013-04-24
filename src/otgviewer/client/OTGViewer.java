@@ -33,59 +33,50 @@ import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 
 /**
- * Entry point classes define <code>onModuleLoad()</code>.
+ * The main entry point for Toxygates.
+ * The old name for the application was OTGViewer. This class could possibly
+ * be renamed in the future.
+ * The main task of this class is to manage the history mechanism and ensure that
+ * the correct screen is being displayed at any given time, as well as provide a 
+ * facility for inter-screen communication.
+ * @author johan
+ *
  */
 public class OTGViewer implements EntryPoint, ScreenManager {
 	private static Resources resources = GWT.create(Resources.class);
 	
 	private RootLayoutPanel rootPanel;
 	private DockLayoutPanel mainDockPanel;
-//	private FlowPanel mainVertPanel;
 	private MenuBar menuBar;
 	private HorizontalPanel navPanel;
+	
+	/**
+	 * All screens in the order that the links are displayed at the top.
+	 */
 	private List<Screen> workflow = new ArrayList<Screen>();
+	
+	/**
+	 * All available screens. The key in this map is the "key" field of each
+	 * Screen instance, which also corresponds to the history token used with
+	 * GWT's history tracking mechanism.
+	 */
 	private Map<String, Screen> screens = new HashMap<String, Screen>();
+	
+	/**
+	 * All currently configured screens. See the Screen class for an explanation of the
+	 * "configured" concept.
+	 */
 	private Set<String> configuredScreens = new HashSet<String>();
+	
+	/**
+	 * The screen currently being displayed.
+	 */
 	private Screen currentScreen;
 	
 	/**
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
-//		Runnable onLoadChart = new Runnable() {
-//			public void run() {
-//
-//				 DataTable data = DataTable.create();
-//		         data.addColumn(ColumnType.STRING, "Gene Name");
-//		         data.addColumn(ColumnType.NUMBER, "chip_XXX_XXX_600");
-//		         data.addColumn(ColumnType.NUMBER, "chip2");
-//		         data.addColumn(ColumnType.NUMBER, "chip3");
-//		         data.addColumn(ColumnType.NUMBER, "chip4");
-//		         data.addColumn(ColumnType.NUMBER, "chip5");
-//		         data.addColumn(ColumnType.NUMBER, "chip6");
-//		         data.addRows(2);         
-//		         data.setValue(0, 0, "ATF3");
-//		         data.setValue(0, 1, 0);
-//		         data.setValue(0, 2, 0.5);
-//		         data.setValue(0, 3, 1);
-//		         data.setValue(0, 4, 1.5);
-//		         data.setValue(0, 5, 2);
-//		         data.setValue(0, 6, 2.5);
-//		         data.setValue(1, 0, "INS");
-//		         data.setValue(1, 1, 3);
-//		         data.setValue(1, 2, 3.5);
-//		         data.setValue(1, 3, 4);
-//		         data.setValue(1, 4, 4.5);
-//		         data.setValue(1, 5, 5);
-//		         data.setValue(1, 6, 5.5);
-//		         
-//		         bhm.draw(data);
-//			}
-//		};
-//
-//		VisualizationUtils
-//				.loadVisualizationApi("1.1", onLoadChart, "corechart");
-	
 		menuBar = setupMenu();
 
 		
@@ -96,8 +87,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		});
 		
 		rootPanel = RootLayoutPanel.get();
-//		rootPanel.setSize("100%", "100%");
-		
+
 		Window.addResizeHandler(new ResizeHandler() {
 			public void onResize(ResizeEvent event) {
 				Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand () {
@@ -110,8 +100,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 
 		mainDockPanel = new DockLayoutPanel(Unit.EM);		
 		rootPanel.add(mainDockPanel);
-//		mainDockPanel.setSize("100%", "100%");
-		
+
 		mainDockPanel.addNorth(menuBar, 2.7);
 		
 		navPanel = Utils.mkHorizontalPanel();
@@ -138,6 +127,12 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 			}
 		}));
 		
+		hm.addItem(new MenuItem("Display guide messages", new Command() {
+			public void execute() {
+				currentScreen.showGuide();
+			}		
+		}));
+		
 		hm.addItem(new MenuItem("About Toxygates...", new Command() {
 			public void execute() {
 				Utils.showHelp(getAboutHTML(), getAboutImage());
@@ -147,10 +142,19 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		return menuBar;
 	}
 
+	/**
+	 * Individual screens call this method to get the menu and install their own menu entries.
+	 */
 	public MenuBar getMenuBar() { 
 		return menuBar;
 	}
 
+	/**
+	 * This method sets up the navigation links that allow the user to jump between screens.
+	 * The enabled() method of each screen is used to test whether that screen is currently 
+	 * available for use or not.
+	 * @param current
+	 */
 	void addWorkflowLinks(Screen current) {
 		navPanel.clear();
 		for (int i = 0; i < workflow.size(); ++i) {
@@ -176,11 +180,19 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		}		
 	}
 	
+	/**
+	 * Display the screen that corresponds to a given history token.
+	 * @param token
+	 */
 	private void setScreenForToken(String token) {
 		Screen s = pickScreen(token);
 		showScreen(s);
 	}
 	
+	/**
+	 * Switch screens.
+	 * @param s
+	 */
 	private void showScreen(Screen s) {
 		if (currentScreen != null) {
 			mainDockPanel.remove(currentScreen);
@@ -195,7 +207,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	}
 
 	/**
-	 * Pick the appropriate screen to display.
+	 * Pick the appropriate screen for a given history token.
 	 * @return
 	 */
 	private Screen pickScreen(String token) {
@@ -219,6 +231,10 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		}
 	}
 	
+	/**
+	 * Helper method for initialising screens
+	 * @param s
+	 */
 	private void addScreenSeq(Screen s) {
 		screens.put(s.key(), s);
 		workflow.add(s);		
@@ -226,6 +242,9 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		s.tryConfigure(); //give it a chance to register itself as configured
 	}
 	
+	/**
+	 * Set up the workflow sequence once.
+	 */
 	private void initScreens() {
 		addScreenSeq(new DatasetScreen(this));		
 		addScreenSeq(new ColumnScreen(this));		
@@ -276,10 +295,8 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	private void resizeInterface() {
 		if (currentScreen != null) {
 			currentScreen.resizeInterface();
-//			currentScreen.deferredResize();
 		}
 		rootPanel.onResize();
 	}
-	
 	
 }

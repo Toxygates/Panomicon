@@ -15,9 +15,7 @@ public class DataFilter extends SampleFilter<Barcode> {
 		organism = _organism;
 	}
 	
-	public DataFilter() {
-		
-	}
+	public DataFilter() { }
 	
 	public boolean equals(Object other) {
 		if (other instanceof DataFilter) {

@@ -78,8 +78,8 @@ public class ChartGrid extends Composite {
 		}
 	
 		if (!rowsAreCompounds) {
-			owlimService.geneSyms(rowFilters.toArray(new String[0]),
-					screen.chosenDataFilter,
+			owlimService.geneSyms(screen.chosenDataFilter,
+					rowFilters.toArray(new String[0]),
 				new PendingAsyncCallback<String[][]>(screen) {
 					public void handleSuccess(String[][] results) {
 						for (int i = 0; i < results.length; ++i) {

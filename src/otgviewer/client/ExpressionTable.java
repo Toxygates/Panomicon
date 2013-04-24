@@ -16,13 +16,14 @@ import otgviewer.client.components.Screen;
 import otgviewer.shared.AType;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
-import otgviewer.shared.ExpressionRow;
 import otgviewer.shared.Group;
+import otgviewer.shared.OTGUtils;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
 import bioweb.shared.Pair;
 import bioweb.shared.SharedUtils;
 import bioweb.shared.array.DataColumn;
+import bioweb.shared.array.ExpressionRow;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.SafeHtmlCell;
@@ -63,8 +64,25 @@ import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.NoSelectionModel;
 import com.google.gwt.view.client.Range;
 
+/**
+ * The main data display table. This class has many different functionalities.
+ * It requests microarray expression data dynamically, displays it, 
+ * as well as displaying additional dynamic data. It also provides functionality for chart popups.
+ * It also has an interface for adding and removing t-tests and u-tests, which can be hidden and 
+ * displayed on demand.
+ * 
+ * Hideable columns and clickable icons are handled by the RichTable superclass.
+ * Dynamic (association) columns are handled by the AssociationTable superclass.
+ * 
+ * @author johan
+ *
+ */
 public class ExpressionTable extends AssociationTable<ExpressionRow> { 
 
+	/**
+	 * Initial number of items to show per page at a time (but note that this number can be adjusted by 
+	 * the user in the 0-100 range)
+	 */
 	private final int PAGE_SIZE = 25;
 	
 	private Screen screen;
@@ -79,11 +97,20 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			.create(KCService.class);	
 	private static otgviewer.client.Resources resources = GWT.create(otgviewer.client.Resources.class);
 	
+	/**
+	 * "Synthetic" columns are tests columns such as t-test and u-test.
+	 */
 	private List<Synthetic> synthetics = new ArrayList<Synthetic>();
 	private List<Column<ExpressionRow, ?>> synthColumns = new ArrayList<Column<ExpressionRow, ?>>();
 	
+	/**
+	 * For selecting sample groups to apply t-test/u-test to
+	 */
 	private ListBox groupsel1 = new ListBox(), groupsel2 = new ListBox();
 	
+	/**
+	 * Names of the microarray probes currently displayed
+	 */
 	private String[] displayedProbes;
 
  	private boolean loadedData = false;
@@ -114,11 +141,18 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	
 	public Widget tools() { return this.tools; }
 	
+	/**
+	 * Enable or disable the GUI
+	 * @param enabled
+	 */
 	private void setEnabled(boolean enabled) {
 		Utils.setEnabled(tools, enabled);
 		Utils.setEnabled(analysisTools, enabled);
 	}
 	
+	/**
+	 * The main (navigation) tool panel
+	 */
 	private void makeTools() {
 		tools = Utils.mkHorizontalPanel();		
 		
@@ -204,6 +238,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	
 	public Widget analysisTools() { return analysisTools; }
 	
+	/**
+	 * The tool panel for controlling t-tests and u-tests
+	 */
 	private void makeAnalysisTools() {
 		analysisTools = Utils.mkHorizontalPanel(true);
 		analysisTools.setStyleName("colored2");
@@ -237,7 +274,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		analysisTools.setVisible(false); //initially hidden		
 	}
 	
-	private String selectedGroup(ListBox groupSelector) {
+	private static String selectedGroup(ListBox groupSelector) {
 		return groupSelector.getItemText(groupSelector.getSelectedIndex());
 	}
 	
@@ -247,8 +284,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		} else if (groupsel1.getSelectedIndex() == groupsel2.getSelectedIndex()) {
 			Window.alert("Please select two different groups to perform " + name + ".");
 		} else {
-			final Group g1 = Utils.findGroup(chosenColumns, selectedGroup(groupsel1));
-			final Group g2 = Utils.findGroup(chosenColumns, selectedGroup(groupsel2));
+			final Group g1 = OTGUtils.findGroup(chosenColumns, selectedGroup(groupsel1));
+			final Group g2 = OTGUtils.findGroup(chosenColumns, selectedGroup(groupsel2));
 			synth.setGroups(g1, g2);
 			kcService.addTwoGroupTest(synth, new AsyncCallback<Void>() {
 				public void onSuccess(Void v) {					
@@ -405,6 +442,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	protected String probeForRow(ExpressionRow row) { return row.getProbe(); }
 	protected String[] geneIdsForRow(ExpressionRow row) { return row.getGeneIds(); }
 	
+	/**
+	 * This class fetches data on demand when the user requests a different page.
+	 * Data must first be loaded with getExpressions.
+	 * @author johan
+	 *
+	 */
 	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
 		private int start = 0;
 		
@@ -468,6 +511,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		chartBarcodes = null;
 	}
 	
+	/**
+	 * Filter data that has already been loaded (by magnitude)
+	 */
 	void refilterData() {
 		if (loadedData) {
 			setEnabled(false);
@@ -491,6 +537,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		}
 	}
 	
+	/**
+	 * Load data (when there is nothing stored in our server side session)
+	 */
 	public void getExpressions() {
 		setEnabled(false);
 		grid.setRowCount(0, false);
@@ -539,6 +588,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		}
 	}
 		
+	/**
+	 * This cell displays an image that can be clicked to display charts.
+	 * @author johan
+	 *
+	 */
 	class ToolCell extends ImageClickCell {
 		
 		public ToolCell(DataListenerWidget owner) {

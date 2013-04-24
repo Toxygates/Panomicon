@@ -18,6 +18,12 @@ import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
+/**
+ * A time/dose grid for defining and editing sample groups in terms of time/dose
+ * combinations for particular compounds.
+ * @author johan
+ *
+ */
 public class SelectionTDGrid extends TimeDoseGrid {
 
 	private CheckBox[][] checkboxes; //for selecting the subgroups	
@@ -46,8 +52,6 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	@Override
 	protected void initTools(HorizontalPanel toolPanel) {
 		super.initTools(toolPanel);
-//		toolPanel.add(new Button("Select all", setAllHandler(true)));		
-//		toolPanel.add(new Button("Select none", setAllHandler(false)));		
 	}
 	
 	@Override
@@ -56,14 +60,6 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		super.compoundsChanged(compounds);
 	}
 
-	private ClickHandler setAllHandler(final boolean val) {
-		return new ClickHandler() {
-		public void onClick(ClickEvent ce) {
-			setAll(val);	
-		}
-		};
-	}
-	
 	public void setAll(boolean val) {
 		if (checkboxes != null) {
 			for (CheckBox[] r : checkboxes) {
@@ -72,12 +68,6 @@ public class SelectionTDGrid extends TimeDoseGrid {
 				}
 			}
 		}
-	}
-	
-	private boolean getSelected(String compound, String time, String dose) {		
-		int t = SharedUtils.indexOf(availableTimes, time);
-		int d = doseToIndex(dose);
-		return getSelected(compound, t, d);		
 	}
 	
 	private void setSelected(String compound, String time, String dose, boolean v) {
@@ -143,6 +133,9 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		}
 	}
 	
+	/**
+	 * How many outstanding RPC calls are we waiting for?
+	 */
 	private int outstanding = 0;
 	private List<Barcode> obtainedBarcodes;
 	private BarcodeListener outstandingListener;
@@ -190,6 +183,9 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		}
 	}
 	
+	/**
+	 * Reduce the number of outstanding RPC responses we are waiting for.
+	 */
 	private synchronized void decrementOutstanding() {
 		outstanding -= 1;
 		if (outstanding == 0) {
@@ -199,7 +195,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 
 	
 	@Override
-	protected Widget initUnit(int compound, int dose, int time) {
+	protected Widget guiFor(int compound, int dose, int time) {
 		CheckBox cb = new CheckBox(availableTimes[time]);
 		cb.setValue(initState);					
 		checkboxes[compound][availableTimes.length * dose + time] = cb;
@@ -208,7 +204,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 
 
 	@Override
-	protected Widget finaliseGroup(int compound, int dose) {
+	protected Widget guiFor(int compound, int dose) {
 		CheckBox all = new CheckBox("All");
 		all.addValueChangeHandler(new MultiSelectHandler(compound,
 				availableTimes.length * dose, availableTimes.length * (dose + 1)));
