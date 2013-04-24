@@ -97,7 +97,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		this.showDataFilter = showDataFilter;
 		this.showGroups = showGroups;
 		this.helpHTML = helpHTML;
-		this.helpImage = helpImage;
+		this.helpImage = helpImage;		
 		rootPanel = new DockLayoutPanel(Unit.PX);
 		
 		initWidget(rootPanel);
@@ -112,7 +112,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	
 	public Screen(String title, String key,  
 			boolean showDataFilter, boolean showGroups, ScreenManager man) {
-		this(title, key, showDataFilter, showGroups, man, resources.defaultHelpHTML(), null);
+		this(title, key, showDataFilter, showGroups, man, null, null);
 	}
 	
 	public ScreenManager manager() {
@@ -186,26 +186,41 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		rootPanel.add(content());
 	}
 	
-	private Widget mkGuideTools() {
+	private Widget mkGuideTools() {		
 		Label l = new Label(getGuideText());
 		floatLeft(l);
 		HorizontalPanel hp = Utils.mkWidePanel();
 		hp.add(l);
 		
-		PushButton i = new PushButton(new Image(resources.close()));
+		HorizontalPanel hpi = new HorizontalPanel();
+		
+		PushButton i;
+		if (helpAvailable()) {
+			i = new PushButton(new Image(resources.help()));
+			i.setStyleName("slightlySpaced");
+			i.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					showHelp();
+				}
+			});
+			hpi.add(i);
+		}
+		
+		i = new PushButton(new Image(resources.close()));
 		i.setStyleName("slightlySpaced");
 		i.addClickHandler(new ClickHandler() {
-
 			@Override
 			public void onClick(ClickEvent event) {
 				hideToolbar(guideBar);
 				showGuide = false;
 				storeState();
-			}
-			
-		});
-		floatRight(i);
-		hp.add(i);		
+			}			
+		});		
+		hpi.add(i);		
+		
+		floatRight(hpi);
+		hp.add(hpi);
 		
 		return hp;
 	}
@@ -408,12 +423,20 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		}
 	}
 	
+	public boolean helpAvailable() {
+		return helpHTML != null;
+	}
+	
 	public void showHelp() {
 		Utils.showHelp(getHelpHTML(), getHelpImage());		
 	}
 	
 	protected TextResource getHelpHTML() {
-		return helpHTML;
+		if (helpHTML == null) {
+			return resources.defaultHelpHTML();
+		} else {
+			return helpHTML;
+		}
 	}
 	
 	protected ImageResource getHelpImage() {

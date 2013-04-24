@@ -129,7 +129,7 @@ public class SampleDetailScreen extends Screen {
 
 		hp.add(columnList);
 		
-		hp.add(new Button("Grid visualisation...", new ClickHandler() {			
+		hp.add(new Button("Heatmap...", new ClickHandler() {			
 			@Override
 			public void onClick(ClickEvent event) {
 				Set<String> compounds = new HashSet<String>();
@@ -267,6 +267,11 @@ public class SampleDetailScreen extends Screen {
 	protected void addToolbars() {	
 		super.addToolbars();
 		addToolbar(tools, 30);
+	}
+	
+	@Override
+	public String getGuideText() {
+		return "Here you can view experimental information and biological details for each sample in the groups you have defined.";
 	}
 	
 }
