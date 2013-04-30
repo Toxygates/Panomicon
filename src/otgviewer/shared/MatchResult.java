@@ -2,6 +2,11 @@ package otgviewer.shared;
 
 import java.io.Serializable;
 
+/**
+ * A result item in a compound ranking.
+ * @author johan
+ *
+ */
 public class MatchResult implements Serializable {
 
 	public MatchResult() { }		

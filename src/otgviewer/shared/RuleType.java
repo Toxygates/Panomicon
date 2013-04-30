@@ -2,6 +2,11 @@ package otgviewer.shared;
 
 import java.io.Serializable;
 
+/**
+ * Rule types for compound ranking.
+ * @author johan
+ *
+ */
 public enum RuleType implements Serializable {
 	Sum("Total upregulation"),
 	NegativeSum("Total downregulation"), 		
