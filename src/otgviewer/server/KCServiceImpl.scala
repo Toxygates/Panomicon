@@ -102,12 +102,13 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
     val db = getDB(typ)
     val sorted = OTGQueries.sortBarcodes(barcodes.map(otg.Sample(_)))
     val data = OTGQueries.presentValuesByBarcodesAndProbes(db, sorted, probes, sparseRead, filter)
-    val jdata = data.toSeq.map(r => new VVector(r.toSeq.map(asJava(_))))
+    val jdata = data.map(r => new VVector(r.map(asJava(_))))
     new ExprMatrix(jdata, jdata.size, jdata(0).size,
         Map() ++ probes.zipWithIndex, //rows
         Map() ++ sorted.map(_.code).zipWithIndex, //columns
         probes.map(new RowAnnotation(_, null, null, null)).toVector)    
   }
+
 
   def loadDataset(filter: DataFilter, columns: JList[BarcodeColumn], probes: Array[String],
                   typ: ValueType, absValFilter: Double, syntheticColumns: JList[Synthetic]): Int = {
