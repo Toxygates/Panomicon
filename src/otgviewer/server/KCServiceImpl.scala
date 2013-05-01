@@ -55,27 +55,49 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
     super.destroy()
   }
 
-  //TODO lift up
   protected def getSessionData() = new SessionData(getThreadLocalRequest().getSession())
 
+  /**
+   * User session data is tracked in this class. The main purpose is to remember the microarray
+   * expression values that have been loaded, so that paging and filtering can happen quickly.
+   * 
+   * Writing back to the "fields" here (e.g. data.rendered = x) writes back directly to the
+   * HttpSession.
+   */
   protected class SessionData(val session: HttpSession) {
+    /**
+     * "Ungrouped" data tracks each sample as its own column. We need to have this data in order to perform
+     * e.g. t-test, u-test. "Unfiltered" means that magnitude and probe 
+     * filtering has not been applied.  This is the most raw form of the data.
+     */
     def ungroupedUnfiltered: ExprMatrix = session.getAttribute("ungroupedUnfiltered").asInstanceOf[ExprMatrix]
     def ungroupedUnfiltered_=(v: ExprMatrix) = session.setAttribute("ungroupedUnfiltered", v)
 
+    /**
+     * Ungrouped but magnitude filtered. Probe and magnitude filtering has been applied to select only relevant
+     * rows.
+     */
     def ungroupedFiltered: ExprMatrix = session.getAttribute("ungroupedFiltered").asInstanceOf[ExprMatrix]
     def ungroupedFiltered_=(v: ExprMatrix) = session.setAttribute("ungroupedFiltered", v)
 
+    /**
+     * Grouped and magnitude filtered. Samples have been collapsed into the groups that the user requested.
+     * This form corresponds exactly to the data columns shown to the user in the GUI (but doesn't have
+     * dynamic columns/associations).
+     */
     def rendered: ExprMatrix = session.getAttribute("groupedFiltered").asInstanceOf[ExprMatrix]
     def rendered_=(v: ExprMatrix) = session.setAttribute("groupedFiltered", v)
 
+    /**
+     * General parameters
+     */
     def params: DataViewParams = {
       val r = session.getAttribute("params").asInstanceOf[DataViewParams]
       if (r != null) {
         r
-      } else {
-        val p = new DataViewParams()
-        this.params = p
-        p
+      } else {        
+        this.params = new DataViewParams()
+        this.params
       }
     }
     def params_=(v: DataViewParams) = session.setAttribute("params", v)
@@ -92,6 +114,10 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
       OTGQueries.filterProbes(probes, filter)
     }
 
+  /**
+   * Obtain the Kyoto Cabinet database corresponding to the given
+   * value type
+   */
   private def getDB(typ: ValueType) = typ match {
     case ValueType.Folds    => foldsDB
     case ValueType.Absolute => absDB
@@ -104,9 +130,9 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
     val data = OTGQueries.presentValuesByBarcodesAndProbes(db, sorted, probes, sparseRead, filter)
     val jdata = data.toSeq.map(r => new VVector(r.toSeq.map(asJava(_))))
     new ExprMatrix(jdata, jdata.size, jdata(0).size,
-        Map() ++ probes.zipWithIndex, //rows
-        Map() ++ sorted.map(_.code).zipWithIndex, //columns
-        probes.map(new RowAnnotation(_, null, null, null)).toVector)    
+      Map() ++ probes.zipWithIndex, //rows
+      Map() ++ sorted.map(_.code).zipWithIndex, //columns
+      probes.map(new RowAnnotation(_, null, null, null)).toVector)
   }
 
   def loadDataset(filter: DataFilter, columns: JList[BarcodeColumn], probes: Array[String],
