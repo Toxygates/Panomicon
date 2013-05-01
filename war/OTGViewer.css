@@ -123,6 +123,7 @@ exprGrid {
 	color: black;
 	text-align: left;
 	padding: 4px;
+	font-size: large;
 }
 
 .statusBorder {

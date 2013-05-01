@@ -3,7 +3,7 @@ package otgviewer.shared;
 import java.io.Serializable;
 
 /**
- * Ranking rules for compounds.
+ * Ranking rules for compounds. Also see RuleType.
  * @author johan
  *
  */

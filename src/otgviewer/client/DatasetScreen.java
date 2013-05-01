@@ -76,6 +76,6 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 
 	@Override
 	public String getGuideText() {
-		return "Welcome to Toxygates. Select a dataset to proceed.";
+		return "Welcome to Toxygates. Click on one of the six datasets below to proceed.";
 	}
 }

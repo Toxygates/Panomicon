@@ -14,6 +14,12 @@ import otgviewer.shared.Series
 import otgviewer.shared.RuleType
 import bioweb.shared.array._
 
+/**
+ * Conversions between Scala and Java types.
+ * In many cases these can be used as implicits.
+ * The main reason why this is sometimes needed is that for RPC,
+ * GWT can only serialise Java classes that follow certain constraints.
+ */
 object Conversions {
   import language.implicitConversions
 

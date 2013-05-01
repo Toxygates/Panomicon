@@ -2,6 +2,11 @@ package otgviewer.shared;
 
 import bioweb.shared.array.SampleFilter;
 
+/**
+ * A set of constraints for filtering OTG samples.
+ * @author johan
+ *
+ */
 public class DataFilter extends SampleFilter<Barcode> {
 	public CellType cellType;
 	public Organ organ;
