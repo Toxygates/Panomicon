@@ -4,12 +4,11 @@ import friedrich.data.immutable._
 import bioweb.shared.array.ExpressionRow
 import bioweb.shared.array.ExpressionValue
 import scala.reflect.ClassTag
-import friedrich.data.mutable._
 import org.apache.commons.math3.stat.inference.TTest
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest
 import scala.collection.immutable.{Vector => SVector}
 
-object ExprMatrix extends DataMatrixBuilder {
+object ExprMatrix {
   val ttest = new TTest()
   val utest = new MannWhitneyUTest()
 

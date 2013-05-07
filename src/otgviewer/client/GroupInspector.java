@@ -252,8 +252,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		super.columnsChanged(columns);
 		groups.clear();
 			
-		for (DataColumn c: columns) {
-			Group g = (Group) c;
+		for (Group g: columns) {			
 			groups.put(g.getName(), g);			
 		}
 		updateConfigureStatus();
