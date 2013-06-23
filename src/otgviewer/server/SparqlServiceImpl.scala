@@ -53,7 +53,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     AffyProbes.connect()
     Uniprot.connect()    
   }
-
+  
   override def destroy() {
     AffyProbes.close()
     OTGSamples.close()
@@ -63,7 +63,6 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 
   def compounds(filter: DataFilter): Array[String] = 
     OTGSamples.compounds(filter).toArray
-    
 
   def organs(filter: DataFilter, compound: String): Array[String] = 
     OTGSamples.organs(filter, nullToOption(compound)).toArray
