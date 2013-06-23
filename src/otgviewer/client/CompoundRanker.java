@@ -39,17 +39,81 @@ import com.google.gwt.user.client.ui.Widget;
 public class CompoundRanker extends DataListenerWidget {
 	private static Resources resources = GWT.create(Resources.class);
 	private CompoundSelector selector;
+	
+	final GeneOracle oracle = new GeneOracle();
+	
+	/**
+	 * Data and widgets that help the user input a rule but do not need to be
+	 * sent to the server when the ranking is performed.
+	 * @author johan
+	 *
+	 */
+	private class RuleInputHelper {
+		RuleInputHelper(RankRule r) {
+			rule = r;
+		}
+		RankRule rule;
+		
+		ListBox refCompound;
+		ListBox refDose;
+		SuggestBox probeText = new SuggestBox(oracle);
+		TextBox syntheticCurveText;
+		CheckBox enabled;		
+		EnumSelector<RuleType> rankType = new EnumSelector<RuleType>() {
+			protected RuleType[] values() { return RuleType.values(); }
+		};
+		
+		void populate(int row) {
+			grid.setWidget(row + 1, 0, enabled);
+			grid.setWidget(row + 1, 1, probeText);
+			grid.setWidget(row + 1, 2, rankType);
+			grid.setWidget(row + 1, 3, syntheticCurveText);
+			grid.setWidget(row + 1, 4, refCompound);
+			grid.setWidget(row + 1, 5, refDose);
+		}
+
+		ChangeHandler rankTypeChangeHandler(final int row) {
+			return new ChangeHandler() {
+				@Override
+				public void onChange(ChangeEvent event) {
+					RuleType rt = selectedRuleType(row);
+					switch (rt) {
+					case Synthetic:
+						syntheticCurveText.setEnabled(true);
+						refCompound.setEnabled(false);
+						refDose.setEnabled(false);
+						break;
+					case ReferenceCompound:
+						syntheticCurveText.setEnabled(false);
+						refCompound.setEnabled(true);
+						refDose.setEnabled(true);
+						break;
+					default:
+						syntheticCurveText.setEnabled(false);
+						refCompound.setEnabled(false);
+						refDose.setEnabled(false);
+						break;
+					}
+				}
+			};
+		}
+	}
 
 	private VerticalPanel csVerticalPanel = new VerticalPanel();
-	private final int RANK_CONDS = 10;
-	private SuggestBox[] rankProbeText = new SuggestBox[RANK_CONDS];
-	private EnumSelector<RuleType>[] rankType = new EnumSelector[RANK_CONDS];
-	private ListBox[] rankRefCompound = new ListBox[RANK_CONDS];
-	private ListBox[] rankRefDose = new ListBox[RANK_CONDS];
-	private TextBox[] syntheticCurveText = new TextBox[RANK_CONDS];
-	private CheckBox[] rankCheckBox = new CheckBox[RANK_CONDS];
+//	private final int RANK_CONDS = 10;
+//	private SuggestBox[] rankProbeText = new SuggestBox[RANK_CONDS];
+//	private EnumSelector<RuleType>[] rankType = new EnumSelector[RANK_CONDS];
+//	private ListBox[] rankRefCompound = new ListBox[RANK_CONDS];
+//	private ListBox[] rankRefDose = new ListBox[RANK_CONDS];
+//	private TextBox[] syntheticCurveText = new TextBox[RANK_CONDS];
+//	private CheckBox[] rankCheckBox = new CheckBox[RANK_CONDS];
 	private List<String> rankProbes = new ArrayList<String>();
+	
+	private List<RuleInputHelper> inputHelpers = new ArrayList<RuleInputHelper>();
+	private List<RankRule> rules = new ArrayList<RankRule>();
 
+	private Grid grid;
+	
 	/**
 	 * 
 	 * @param selector the selector that this CompoundRanker will communicate with.
@@ -62,18 +126,16 @@ public class CompoundRanker extends DataListenerWidget {
 				.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		initWidget(csVerticalPanel);
 
-		Grid g = new Grid(RANK_CONDS + 1, 6);
-		csVerticalPanel.add(g);
+		grid = new Grid(2, 6); //Initially space for 1 rule
+		csVerticalPanel.add(grid);
 		g.setWidget(0, 1, Utils.mkEmphLabel("Gene/probe"));
 		g.setWidget(0, 2, Utils.mkEmphLabel("Match type"));
 		g.setWidget(0, 3, Utils.mkEmphLabel("User ptn."));
 		g.setWidget(0, 4, Utils.mkEmphLabel("Ref. compound"));
 		g.setWidget(0, 5, Utils.mkEmphLabel("Ref. dose"));
-
-		for (int row = 0; row < RANK_CONDS; row++) {
-			makeRankRuleInputs(g, row);
-		}
-
+		
+		addRule();
+		
 		HorizontalPanel hp = Utils.mkHorizontalPanel();
 		csVerticalPanel.add(hp);
 		
@@ -88,15 +150,17 @@ public class CompoundRanker extends DataListenerWidget {
 		hp.add(i);
 	}
 
+	private void addRule() {
+		int ruleIdx = inputHelpers.size();
+		RankRule r = new RankRule();
+		inputHelpers.add(new RuleInputHelper(r));
+		rules.add(new RankRule());
+		makeRankRuleInputs(grid, ruleIdx);
+	}
 	
-	private void makeRankRuleInputs(Grid g, final int row) {
+	private void makeRankRuleInputs(final int row) {
+		RuleInputHelper inputHelper = inputHelpers.get(row);
 		
-		rankProbeText[row] = new SuggestBox(oracle);
-		
-		rankType[row] = new EnumSelector<RuleType>() {
-			protected RuleType[] values() { return RuleType.values(); }
-		};
-
 		rankType[row].listBox().addChangeHandler(rankTypeChangeHandler(row));
 		rankCheckBox[row] = new CheckBox();
 		
@@ -123,39 +187,10 @@ public class CompoundRanker extends DataListenerWidget {
 		lb.addItem("High");
 		lb.setEnabled(false);
 
-		g.setWidget(row + 1, 0, rankCheckBox[row]);
-		g.setWidget(row + 1, 1, rankProbeText[row]);
-		g.setWidget(row + 1, 2, rankType[row]);
-		g.setWidget(row + 1, 3, syntheticCurveText[row]);
-		g.setWidget(row + 1, 4, rankRefCompound[row]);
-		g.setWidget(row + 1, 5, rankRefDose[row]);
+		inputHelper.populate(row);
 	}
 
-	private ChangeHandler rankTypeChangeHandler(final int row) {
-		return new ChangeHandler() {
-			@Override
-			public void onChange(ChangeEvent event) {
-				RuleType rt = selectedRuleType(row);
-				switch (rt) {
-				case Synthetic:
-					syntheticCurveText[row].setEnabled(true);
-					rankRefCompound[row].setEnabled(false);
-					rankRefDose[row].setEnabled(false);
-					break;
-				case ReferenceCompound:
-					syntheticCurveText[row].setEnabled(false);
-					rankRefCompound[row].setEnabled(true);
-					rankRefDose[row].setEnabled(true);
-					break;
-				default:
-					syntheticCurveText[row].setEnabled(false);
-					rankRefCompound[row].setEnabled(false);
-					rankRefDose[row].setEnabled(false);
-					break;
-				}
-			}
-		};
-	}
+	
 
 	private RuleType selectedRuleType(int row) {
 		return rankType[row].value();		
@@ -219,7 +254,6 @@ public class CompoundRanker extends DataListenerWidget {
 		selector.performRanking(rankProbes, rules);
 	}
 
-	final GeneOracle oracle = new GeneOracle();
 	
 	@Override
 	public void dataFilterChanged(DataFilter filter) {
