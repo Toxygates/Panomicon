@@ -51,15 +51,37 @@ public class CompoundRanker extends DataListenerWidget {
 	private class RuleInputHelper {
 		RuleInputHelper(RankRule r) {
 			rule = r;
+			
+			rankType.listBox().addChangeHandler(rankTypeChangeHandler(row));
+			enabled = new CheckBox();
+			
+			probeText.addKeyPressHandler(new KeyPressHandler() {			
+				@Override
+				public void onKeyPress(KeyPressEvent event) {
+					enabled.setValue(true);				
+				}
+			});
+			
+			syntheticCurveText.setWidth("5em");
+			syntheticCurveText.setEnabled(false);
+			
+			refCompound.setStyleName("colored");
+			refCompound.setEnabled(false);
+					
+			refDose.setStyleName("colored");
+			refDose.addItem("Low"); //TODO! read proper doses from db
+			refDose.addItem("Middle");
+			refDose.addItem("High");
+			refDose.setEnabled(false);
 		}
-		RankRule rule;
 		
-		ListBox refCompound;
-		ListBox refDose;
-		SuggestBox probeText = new SuggestBox(oracle);
-		TextBox syntheticCurveText;
-		CheckBox enabled;		
-		EnumSelector<RuleType> rankType = new EnumSelector<RuleType>() {
+		final RankRule rule;		
+		final ListBox refCompound = new ListBox();
+		final ListBox refDose = new ListBox();
+		final SuggestBox probeText = new SuggestBox(oracle);
+		final TextBox syntheticCurveText = new TextBox();
+		final CheckBox enabled = new CheckBox();
+		final EnumSelector<RuleType> rankType = new EnumSelector<RuleType>() {
 			protected RuleType[] values() { return RuleType.values(); }
 		};
 		
@@ -72,11 +94,11 @@ public class CompoundRanker extends DataListenerWidget {
 			grid.setWidget(row + 1, 5, refDose);
 		}
 
-		ChangeHandler rankTypeChangeHandler(final int row) {
+		ChangeHandler rankTypeChangeHandler() {
 			return new ChangeHandler() {
 				@Override
 				public void onChange(ChangeEvent event) {
-					RuleType rt = selectedRuleType(row);
+					RuleType rt = selectedRuleType();
 					switch (rt) {
 					case Synthetic:
 						syntheticCurveText.setEnabled(true);
@@ -97,16 +119,13 @@ public class CompoundRanker extends DataListenerWidget {
 				}
 			};
 		}
+		
+		RuleType selectedRuleType() {
+			return rankType.value();		
+		}
 	}
 
 	private VerticalPanel csVerticalPanel = new VerticalPanel();
-//	private final int RANK_CONDS = 10;
-//	private SuggestBox[] rankProbeText = new SuggestBox[RANK_CONDS];
-//	private EnumSelector<RuleType>[] rankType = new EnumSelector[RANK_CONDS];
-//	private ListBox[] rankRefCompound = new ListBox[RANK_CONDS];
-//	private ListBox[] rankRefDose = new ListBox[RANK_CONDS];
-//	private TextBox[] syntheticCurveText = new TextBox[RANK_CONDS];
-//	private CheckBox[] rankCheckBox = new CheckBox[RANK_CONDS];
 	private List<String> rankProbes = new ArrayList<String>();
 	
 	private List<RuleInputHelper> inputHelpers = new ArrayList<RuleInputHelper>();
@@ -153,49 +172,12 @@ public class CompoundRanker extends DataListenerWidget {
 	private void addRule() {
 		int ruleIdx = inputHelpers.size();
 		RankRule r = new RankRule();
-		inputHelpers.add(new RuleInputHelper(r));
 		rules.add(new RankRule());
-		makeRankRuleInputs(grid, ruleIdx);
+		RuleInputHelper rih = new RuleInputHelper(r);		
+		inputHelpers.add(rih);	
+		rih.populate(ruleIdx);
 	}
 	
-	private void makeRankRuleInputs(final int row) {
-		RuleInputHelper inputHelper = inputHelpers.get(row);
-		
-		rankType[row].listBox().addChangeHandler(rankTypeChangeHandler(row));
-		rankCheckBox[row] = new CheckBox();
-		
-		rankProbeText[row].addKeyPressHandler(new KeyPressHandler() {			
-			@Override
-			public void onKeyPress(KeyPressEvent event) {
-				rankCheckBox[row].setValue(true);				
-			}
-		});
-		
-		syntheticCurveText[row] = new TextBox();
-		syntheticCurveText[row].setWidth("5em");
-		syntheticCurveText[row].setEnabled(false);
-		
-		rankRefCompound[row] = new ListBox();
-		rankRefCompound[row].setStyleName("colored");
-		rankRefCompound[row].setEnabled(false);
-		
-		ListBox lb = new ListBox();
-		rankRefDose[row] = lb;		
-		lb.setStyleName("colored");
-		lb.addItem("Low"); //TODO! read proper doses from db
-		lb.addItem("Middle");
-		lb.addItem("High");
-		lb.setEnabled(false);
-
-		inputHelper.populate(row);
-	}
-
-	
-
-	private RuleType selectedRuleType(int row) {
-		return rankType[row].value();		
-	}
-
 	private void performRanking() {
 		List<RankRule> rules = new ArrayList<RankRule>();
 		rankProbes = new ArrayList<String>();
