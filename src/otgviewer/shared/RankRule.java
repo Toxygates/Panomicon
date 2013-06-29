@@ -17,10 +17,12 @@ public class RankRule implements Serializable {
 	
 	private RuleType _type;
 	public RuleType type() { return _type; }
+	public void setRuleType(RuleType type) { _type = type; }
 	
 	private String _probe;
 	public String probe() { return _probe; }
-		
+	public void setProbe(String probe) { _probe = probe; }	
+	
 	//Used by reference compound rule only
 	private String _compound;
 	public String compound() { return _compound; }	
