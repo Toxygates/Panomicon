@@ -49,14 +49,21 @@ public class CompoundRanker extends DataListenerWidget {
 	 *
 	 */
 	private class RuleInputHelper {
-		RuleInputHelper(RankRule r) {
+		private boolean isFinalRule;
+		
+		RuleInputHelper(RankRule r, boolean finalRule) {
 			rule = r;
+			this.isFinalRule = finalRule;
 			
 			rankType.listBox().addChangeHandler(rankTypeChangeHandler());			
 			probeText.addKeyPressHandler(new KeyPressHandler() {			
 				@Override
 				public void onKeyPress(KeyPressEvent event) {
-					enabled.setValue(true);				
+					enabled.setValue(true);	
+					if (isFinalRule) {
+						addRule(true);
+						isFinalRule = false;
+					}
 				}
 			});
 			
@@ -65,6 +72,9 @@ public class CompoundRanker extends DataListenerWidget {
 			
 			refCompound.setStyleName("colored");
 			refCompound.setEnabled(false);
+			for (String c : chosenCompounds) {
+				refCompound.addItem(c);
+			}
 					
 			refDose.setStyleName("colored");
 			refDose.addItem("Low"); //TODO! read proper doses from db
@@ -142,7 +152,7 @@ public class CompoundRanker extends DataListenerWidget {
 				.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		initWidget(csVerticalPanel);
 
-		grid = new Grid(2, 6); //Initially space for 1 rule
+		grid = new Grid(1, 6); //Initially space for 1 rule
 		csVerticalPanel.add(grid);
 		grid.setWidget(0, 1, Utils.mkEmphLabel("Gene/probe"));
 		grid.setWidget(0, 2, Utils.mkEmphLabel("Match type"));
@@ -150,7 +160,7 @@ public class CompoundRanker extends DataListenerWidget {
 		grid.setWidget(0, 4, Utils.mkEmphLabel("Ref. compound"));
 		grid.setWidget(0, 5, Utils.mkEmphLabel("Ref. dose"));
 		
-		addRule();
+		addRule(true);
 		
 		HorizontalPanel hp = Utils.mkHorizontalPanel();
 		csVerticalPanel.add(hp);
@@ -166,10 +176,11 @@ public class CompoundRanker extends DataListenerWidget {
 		hp.add(i);
 	}
 
-	private void addRule() {
+	private void addRule(boolean isFinal) {
 		int ruleIdx = inputHelpers.size();
+		grid.resize(ruleIdx + 2, 6);
 		RankRule r = new RankRule();		
-		RuleInputHelper rih = new RuleInputHelper(r);		
+		RuleInputHelper rih = new RuleInputHelper(r, isFinal);		
 		inputHelpers.add(rih);	
 		rih.populate(ruleIdx);
 	}
@@ -247,6 +258,7 @@ public class CompoundRanker extends DataListenerWidget {
 	public void availableCompoundsChanged(List<String> compounds) {
 		super.compoundsChanged(compounds);
 		for (RuleInputHelper rih: inputHelpers) {
+			rih.refCompound.clear();
 			for (String c : compounds) {
 				rih.refCompound.addItem(c);
 			}
