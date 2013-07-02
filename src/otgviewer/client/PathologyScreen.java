@@ -136,6 +136,13 @@ public class PathologyScreen extends Screen {
 		};
 		pathologyTable.addColumn(col, "Spontaneous");		
 
+		col = new TextColumn<Pathology>() {
+			public String getValue(Pathology p) {
+				return p.viewerLink();
+			}
+		};
+		pathologyTable.addColumn(col, "Digital viewer");
+		
 		return sp;		
 	}	
 	

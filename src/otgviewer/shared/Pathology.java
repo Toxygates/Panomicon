@@ -9,15 +9,18 @@ public class Pathology implements Serializable {
 	private String finding;
 	private boolean spontaneous;
 	private String grade;
+	private String viewerLink;
 	
 	public Pathology() { }
 		
-	public Pathology(String _barcode, String _topography, String _finding, boolean _spontaneous, String _grade) {
+	public Pathology(String _barcode, String _topography, String _finding, 
+			boolean _spontaneous, String _grade, String _viewerLink) {
 		barcode = _barcode;
 		topography = _topography;
 		finding = _finding;
 		spontaneous = _spontaneous;
 		grade = _grade;
+		viewerLink = _viewerLink;
 	}
 	
 	/**
@@ -39,6 +42,9 @@ public class Pathology implements Serializable {
 	public String grade() {
 		return grade;
 	}
+	public String viewerLink() {
+		return viewerLink;
+	}
 	
 	@Override
 	public int hashCode() {
@@ -58,6 +64,9 @@ public class Pathology implements Serializable {
 		if (spontaneous) {
 			r *= 41;
 		}
+		if (viewerLink != null) {
+			r = r * 41 + viewerLink.hashCode();
+		}
 		return r;
 	}
 	
@@ -65,8 +74,10 @@ public class Pathology implements Serializable {
 	public boolean equals(Object other) {
 		if (other instanceof Pathology) {
 			Pathology op = (Pathology) other;
-			Object[] th = new Object[] { barcode, topography, finding, spontaneous, grade };
-			Object[] oth = new Object[] { op.barcode(), op.topography(), op.finding(), op.spontaneous(), op.grade() } ;
+			Object[] th = new Object[] { barcode, topography, finding, 
+					spontaneous, grade, viewerLink };
+			Object[] oth = new Object[] { op.barcode(), op.topography(), op.finding(), 
+					op.spontaneous(), op.grade(), op.viewerLink()} ;
 			return Arrays.deepEquals(th, oth);			
 		}
 		return false;
