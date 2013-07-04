@@ -14,10 +14,13 @@ import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import otgviewer.shared.Pathology;
 import otgviewer.shared.OTGUtils;
+import otgviewer.shared.Pathology;
 
+import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
@@ -136,12 +139,14 @@ public class PathologyScreen extends Screen {
 		};
 		pathologyTable.addColumn(col, "Spontaneous");		
 
-		col = new TextColumn<Pathology>() {
-			public String getValue(Pathology p) {
-				return p.viewerLink();
+		Column<Pathology, SafeHtml> lcol = new Column<Pathology, SafeHtml>(new SafeHtmlCell()) {
+			public SafeHtml getValue(Pathology p) {
+				SafeHtmlBuilder b = new SafeHtmlBuilder();
+				b.appendHtmlConstant("<a href=\"" + p.viewerLink() +"\">Viewer</a>");
+				return b.toSafeHtml();				
 			}
 		};
-		pathologyTable.addColumn(col, "Digital viewer");
+		pathologyTable.addColumn(lcol, "Digital viewer");
 		
 		return sp;		
 	}	
