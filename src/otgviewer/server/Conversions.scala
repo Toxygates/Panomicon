@@ -33,7 +33,8 @@ object Conversions {
   }
 
   implicit def asJava(path: otg.Pathology): Pathology =
-    new Pathology(path.barcode, path.topography, path.finding, path.spontaneous, path.grade);
+    new Pathology(path.barcode, path.topography, path.finding, 
+        path.spontaneous, path.grade, path.digitalViewerLink);
 
   implicit def asJava(annot: otg.Annotation): Annotation =
     new Annotation(annot.barcode, new java.util.ArrayList(annot.data.map(x =>

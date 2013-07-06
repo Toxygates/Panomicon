@@ -50,7 +50,7 @@ import com.google.gwt.view.client.NoSelectionModel;
  */
 public class CompoundSelector extends DataListenerWidget implements RequiresResize {
 
-	private SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT
+	private SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
 			.create(SparqlService.class);
 	private SeriesServiceAsync seriesService = (SeriesServiceAsync) GWT
 			.create(SeriesService.class);
@@ -190,7 +190,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	}
 
 	void loadCompounds() {		
-		owlimService.compounds(chosenDataFilter, new PendingAsyncCallback<String[]>(this, "Unable to retrieve compounds") {
+		sparqlService.compounds(chosenDataFilter, new PendingAsyncCallback<String[]>(this, "Unable to retrieve compounds") {
 			
 			@Override
 			public void handleSuccess(String[] result) {

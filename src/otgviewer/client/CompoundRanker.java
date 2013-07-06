@@ -39,17 +39,107 @@ import com.google.gwt.user.client.ui.Widget;
 public class CompoundRanker extends DataListenerWidget {
 	private static Resources resources = GWT.create(Resources.class);
 	private CompoundSelector selector;
+	
+	final GeneOracle oracle = new GeneOracle();
+	
+	/**
+	 * Data and widgets that help the user input a rule but do not need to be
+	 * sent to the server when the ranking is performed.
+	 * @author johan
+	 *
+	 */
+	private class RuleInputHelper {
+		private boolean isFinalRule;
+		
+		RuleInputHelper(RankRule r, boolean finalRule) {
+			rule = r;
+			this.isFinalRule = finalRule;
+			
+			rankType.listBox().addChangeHandler(rankTypeChangeHandler());			
+			probeText.addKeyPressHandler(new KeyPressHandler() {			
+				@Override
+				public void onKeyPress(KeyPressEvent event) {
+					enabled.setValue(true);	
+					if (isFinalRule) {
+						addRule(true);
+						isFinalRule = false;
+					}
+				}
+			});
+			
+			syntheticCurveText.setWidth("5em");
+			syntheticCurveText.setEnabled(false);
+			
+			refCompound.setStyleName("colored");
+			refCompound.setEnabled(false);
+			for (String c : chosenCompounds) {
+				refCompound.addItem(c);
+			}
+					
+			refDose.setStyleName("colored");
+			refDose.addItem("Low"); //TODO! read proper doses from db
+			refDose.addItem("Middle");
+			refDose.addItem("High");
+			refDose.setEnabled(false);
+		}
+		
+		final RankRule rule;		
+		final ListBox refCompound = new ListBox();
+		final ListBox refDose = new ListBox();
+		final SuggestBox probeText = new SuggestBox(oracle);
+		final TextBox syntheticCurveText = new TextBox();
+		final CheckBox enabled = new CheckBox();
+		final EnumSelector<RuleType> rankType = new EnumSelector<RuleType>() {
+			protected RuleType[] values() { return RuleType.values(); }
+		};
+		
+		void populate(int row) {
+			grid.setWidget(row + 1, 0, enabled);
+			grid.setWidget(row + 1, 1, probeText);
+			grid.setWidget(row + 1, 2, rankType);
+			grid.setWidget(row + 1, 3, syntheticCurveText);
+			grid.setWidget(row + 1, 4, refCompound);
+			grid.setWidget(row + 1, 5, refDose);
+		}
+
+		ChangeHandler rankTypeChangeHandler() {
+			return new ChangeHandler() {
+				@Override
+				public void onChange(ChangeEvent event) {
+					RuleType rt = selectedRuleType();
+					switch (rt) {
+					case Synthetic:
+						syntheticCurveText.setEnabled(true);
+						refCompound.setEnabled(false);
+						refDose.setEnabled(false);
+						break;
+					case ReferenceCompound:
+						syntheticCurveText.setEnabled(false);
+						refCompound.setEnabled(true);
+						refDose.setEnabled(true);
+						break;
+					default:
+						syntheticCurveText.setEnabled(false);
+						refCompound.setEnabled(false);
+						refDose.setEnabled(false);
+						break;
+					}
+				}
+			};
+		}
+		
+		RuleType selectedRuleType() {
+			return rankType.value();		
+		}
+	}
 
 	private VerticalPanel csVerticalPanel = new VerticalPanel();
-	private final int RANK_CONDS = 10;
-	private SuggestBox[] rankProbeText = new SuggestBox[RANK_CONDS];
-	private EnumSelector<RuleType>[] rankType = new EnumSelector[RANK_CONDS];
-	private ListBox[] rankRefCompound = new ListBox[RANK_CONDS];
-	private ListBox[] rankRefDose = new ListBox[RANK_CONDS];
-	private TextBox[] syntheticCurveText = new TextBox[RANK_CONDS];
-	private CheckBox[] rankCheckBox = new CheckBox[RANK_CONDS];
 	private List<String> rankProbes = new ArrayList<String>();
+	
+	private List<RuleInputHelper> inputHelpers = new ArrayList<RuleInputHelper>();
 
+	private Grid grid;
+	
 	/**
 	 * 
 	 * @param selector the selector that this CompoundRanker will communicate with.
@@ -62,18 +152,16 @@ public class CompoundRanker extends DataListenerWidget {
 				.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		initWidget(csVerticalPanel);
 
-		Grid g = new Grid(RANK_CONDS + 1, 6);
-		csVerticalPanel.add(g);
-		g.setWidget(0, 1, Utils.mkEmphLabel("Gene/probe"));
-		g.setWidget(0, 2, Utils.mkEmphLabel("Match type"));
-		g.setWidget(0, 3, Utils.mkEmphLabel("User ptn."));
-		g.setWidget(0, 4, Utils.mkEmphLabel("Ref. compound"));
-		g.setWidget(0, 5, Utils.mkEmphLabel("Ref. dose"));
-
-		for (int row = 0; row < RANK_CONDS; row++) {
-			makeRankRuleInputs(g, row);
-		}
-
+		grid = new Grid(1, 6); //Initially space for 1 rule
+		csVerticalPanel.add(grid);
+		grid.setWidget(0, 1, Utils.mkEmphLabel("Gene/probe"));
+		grid.setWidget(0, 2, Utils.mkEmphLabel("Match type"));
+		grid.setWidget(0, 3, Utils.mkEmphLabel("User ptn."));
+		grid.setWidget(0, 4, Utils.mkEmphLabel("Ref. compound"));
+		grid.setWidget(0, 5, Utils.mkEmphLabel("Ref. dose"));
+		
+		addRule(true);
+		
 		HorizontalPanel hp = Utils.mkHorizontalPanel();
 		csVerticalPanel.add(hp);
 		
@@ -88,92 +176,28 @@ public class CompoundRanker extends DataListenerWidget {
 		hp.add(i);
 	}
 
+	private void addRule(boolean isFinal) {
+		int ruleIdx = inputHelpers.size();
+		grid.resize(ruleIdx + 2, 6);
+		RankRule r = new RankRule();		
+		RuleInputHelper rih = new RuleInputHelper(r, isFinal);		
+		inputHelpers.add(rih);	
+		rih.populate(ruleIdx);
+	}
 	
-	private void makeRankRuleInputs(Grid g, final int row) {
-		
-		rankProbeText[row] = new SuggestBox(oracle);
-		
-		rankType[row] = new EnumSelector<RuleType>() {
-			protected RuleType[] values() { return RuleType.values(); }
-		};
-
-		rankType[row].listBox().addChangeHandler(rankTypeChangeHandler(row));
-		rankCheckBox[row] = new CheckBox();
-		
-		rankProbeText[row].addKeyPressHandler(new KeyPressHandler() {			
-			@Override
-			public void onKeyPress(KeyPressEvent event) {
-				rankCheckBox[row].setValue(true);				
-			}
-		});
-		
-		syntheticCurveText[row] = new TextBox();
-		syntheticCurveText[row].setWidth("5em");
-		syntheticCurveText[row].setEnabled(false);
-		
-		rankRefCompound[row] = new ListBox();
-		rankRefCompound[row].setStyleName("colored");
-		rankRefCompound[row].setEnabled(false);
-		
-		ListBox lb = new ListBox();
-		rankRefDose[row] = lb;		
-		lb.setStyleName("colored");
-		lb.addItem("Low"); //TODO! read proper doses from db
-		lb.addItem("Middle");
-		lb.addItem("High");
-		lb.setEnabled(false);
-
-		g.setWidget(row + 1, 0, rankCheckBox[row]);
-		g.setWidget(row + 1, 1, rankProbeText[row]);
-		g.setWidget(row + 1, 2, rankType[row]);
-		g.setWidget(row + 1, 3, syntheticCurveText[row]);
-		g.setWidget(row + 1, 4, rankRefCompound[row]);
-		g.setWidget(row + 1, 5, rankRefDose[row]);
-	}
-
-	private ChangeHandler rankTypeChangeHandler(final int row) {
-		return new ChangeHandler() {
-			@Override
-			public void onChange(ChangeEvent event) {
-				RuleType rt = selectedRuleType(row);
-				switch (rt) {
-				case Synthetic:
-					syntheticCurveText[row].setEnabled(true);
-					rankRefCompound[row].setEnabled(false);
-					rankRefDose[row].setEnabled(false);
-					break;
-				case ReferenceCompound:
-					syntheticCurveText[row].setEnabled(false);
-					rankRefCompound[row].setEnabled(true);
-					rankRefDose[row].setEnabled(true);
-					break;
-				default:
-					syntheticCurveText[row].setEnabled(false);
-					rankRefCompound[row].setEnabled(false);
-					rankRefDose[row].setEnabled(false);
-					break;
-				}
-			}
-		};
-	}
-
-	private RuleType selectedRuleType(int row) {
-		return rankType[row].value();		
-	}
-
 	private void performRanking() {
 		List<RankRule> rules = new ArrayList<RankRule>();
-		rankProbes = new ArrayList<String>();
-		for (int i = 0; i < RANK_CONDS; ++i) {
-			if (rankCheckBox[i].getValue()) {
-				if (!rankProbeText[i].getText().equals("")) {
-					String probe = rankProbeText[i].getText();
+		rankProbes = new ArrayList<String>();		
+		for (RuleInputHelper rih: inputHelpers) {
+			if (rih.enabled.getValue()) {
+				if (!rih.probeText.getText().equals("")) {
+					String probe = rih.probeText.getText();
 					rankProbes.add(probe);
-					RuleType rt = selectedRuleType(i);
+					RuleType rt = rih.selectedRuleType();
 					switch (rt) {
 					case Synthetic: {
 						double[] data;
-						String[] ss = syntheticCurveText[i].getText()
+						String[] ss = rih.syntheticCurveText.getText()
 								.split(" ");
 						RankRule r = new RankRule(rt, probe);
 						if (ss.length != 4 && chosenDataFilter.cellType == CellType.Vivo) {
@@ -195,16 +219,16 @@ public class CompoundRanker extends DataListenerWidget {
 					}
 						break;
 					case ReferenceCompound: {
-						String cmp = rankRefCompound[i]
-								.getItemText(rankRefCompound[i]
+						String cmp = rih.refCompound
+								.getItemText(rih.refCompound
 										.getSelectedIndex());
 						RankRule r = new RankRule(rt, probe);
 						r.setCompound(cmp);
-						r.setDose(rankRefDose[i].getItemText(rankRefDose[i]
+						r.setDose(rih.refDose.getItemText(rih.refDose
 								.getSelectedIndex()));
 						rules.add(r);
 					}
-						break;
+					break;
 					default:
 						// rule is not synthetic or ref compound
 						rules.add(new RankRule(rt, probe));
@@ -215,27 +239,28 @@ public class CompoundRanker extends DataListenerWidget {
 					Window.alert("Empty gene name detected. Please specify a gene/probe for each enabled rule.");
 				}
 			}
-		}		
+		}
+			
 		selector.performRanking(rankProbes, rules);
 	}
 
-	final GeneOracle oracle = new GeneOracle();
 	
 	@Override
 	public void dataFilterChanged(DataFilter filter) {
 		super.dataFilterChanged(filter);
-		oracle.setFilter(filter);		
-		for (ListBox lb : rankRefCompound) {
-			lb.clear();
-		}
+		oracle.setFilter(filter);	
+		for (RuleInputHelper rih: inputHelpers) {
+			rih.refCompound.clear();
+		}		
 	}
 
 	@Override
 	public void availableCompoundsChanged(List<String> compounds) {
 		super.compoundsChanged(compounds);
-		for (ListBox lb : rankRefCompound) {
+		for (RuleInputHelper rih: inputHelpers) {
+			rih.refCompound.clear();
 			for (String c : compounds) {
-				lb.addItem(c);
+				rih.refCompound.addItem(c);
 			}
 		}
 	}
