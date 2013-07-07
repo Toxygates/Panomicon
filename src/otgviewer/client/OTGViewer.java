@@ -121,9 +121,15 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		MenuItem mi = new MenuItem("Help", hm);
 		menuBar.addItem(mi);
 		
-		hm.addItem(new MenuItem("Instructions...", new Command() {
+		hm.addItem(new MenuItem("Help for this screen...", new Command() {
 			public void execute() {
 				currentScreen.showHelp();
+			}
+		}));
+		
+		hm.addItem(new MenuItem("Download user guide...", new Command() {
+			public void execute() {
+				Window.open("toxygatesManual.pdf", "_blank", "");			
 			}
 		}));
 		
