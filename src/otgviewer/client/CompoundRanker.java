@@ -41,6 +41,7 @@ public class CompoundRanker extends DataListenerWidget {
 	private CompoundSelector selector;
 	
 	final GeneOracle oracle = new GeneOracle();
+	private List<String> availableCompounds = chosenCompounds;
 	
 	/**
 	 * Data and widgets that help the user input a rule but do not need to be
@@ -72,7 +73,7 @@ public class CompoundRanker extends DataListenerWidget {
 			
 			refCompound.setStyleName("colored");
 			refCompound.setEnabled(false);
-			for (String c : chosenCompounds) {
+			for (String c : availableCompounds) {
 				refCompound.addItem(c);
 			}
 					
@@ -256,7 +257,8 @@ public class CompoundRanker extends DataListenerWidget {
 
 	@Override
 	public void availableCompoundsChanged(List<String> compounds) {
-		super.compoundsChanged(compounds);
+		super.availableCompoundsChanged(compounds);
+		availableCompounds = compounds;
 		for (RuleInputHelper rih: inputHelpers) {
 			rih.refCompound.clear();
 			for (String c : compounds) {
