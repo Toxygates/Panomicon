@@ -67,13 +67,13 @@ class ExprMatrix(data: Seq[VVector[ExpressionValue]], rows: Int, columns: Int,
     super.selectRows(rows).copyWithAnnotations(rows.map(annotations(_)).toVector)  
 
   def appendTwoColTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String], 
-      test: (Array[Double], Array[Double]) => Double, colName: String): ExprMatrix = {
+      test: (Array[Double], Array[Double]) => Double, minValues: Int, colName: String): ExprMatrix = {
     val cs1 = group1.toSeq.map(sourceData.column(_))
     val cs2 = group2.toSeq.map(sourceData.column(_))
     val ps = (0 until rows).map(i => {
       val vs1 = cs1.map(_(i)).filter(_.getPresent).toArray
       val vs2 = cs2.map(_(i)).filter(_.getPresent).toArray
-      if (vs1.size >= 2 && vs2.size >= 2) {
+      if (vs1.size >= minValues && vs2.size >= minValues) {
         new ExpressionValue(test(vs1.map(_.getValue), vs2.map(_.getValue)), 'P')
       } else {
         new ExpressionValue(0, 'A')
@@ -84,18 +84,18 @@ class ExprMatrix(data: Seq[VVector[ExpressionValue]], rows: Int, columns: Int,
 
   def appendTTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String],
     colName: String): ExprMatrix =
-    appendTwoColTest(sourceData, group1, group2, ttest.tTest(_, _), colName)
+    appendTwoColTest(sourceData, group1, group2, ttest.tTest(_, _), 2, colName)
 
   def appendUTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String],
     colName: String): ExprMatrix =
-    appendTwoColTest(sourceData, group1, group2, utest.mannWhitneyUTest(_, _), colName)
+    appendTwoColTest(sourceData, group1, group2, utest.mannWhitneyUTest(_, _), 2, colName)
 
   def appendDiffTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String],
     colName: String): ExprMatrix = {
     import otg.SafeMath._
     def diffTest(a1: Array[Double], a2: Array[Double]): Double = safeMean(a1) - safeMean(a2)
 
-    appendTwoColTest(sourceData, group1, group2, diffTest(_, _), colName)
+    appendTwoColTest(sourceData, group1, group2, diffTest(_, _), 1, colName)
   }
 
 }
