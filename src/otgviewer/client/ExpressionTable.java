@@ -259,6 +259,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			public void onClick(ClickEvent e) { addTwoGroupSynthetic(new Synthetic.UTest(null, null), "U-Test"); }							
 		}));
 		
+		analysisTools.add(new Button("Add fold-change difference", new ClickHandler() {
+			public void onClick(ClickEvent e) { addTwoGroupSynthetic(new Synthetic.MeanDifference(null, null), "Fold-change difference"); }
+		}));
+		
 		analysisTools.add(new Button("Remove tests", new ClickHandler() {
 			public void onClick(ClickEvent ce) {
 				if (!synthetics.isEmpty()) {
@@ -280,7 +284,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	
 	private void addTwoGroupSynthetic(final Synthetic.TwoGroupSynthetic synth, final String name) {
 		if (groupsel1.getSelectedIndex() == -1 || groupsel2.getSelectedIndex() == -1) {
-			Window.alert("Please select two groups to perform " + name + ".");
+			Window.alert("Please select two groups to compute " + name + ".");
 		} else if (groupsel1.getSelectedIndex() == groupsel2.getSelectedIndex()) {
 			Window.alert("Please select two different groups to perform " + name + ".");
 		} else {
@@ -294,7 +298,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 					grid.setVisibleRangeAndClearData(grid.getVisibleRange(), true); 
 				}
 				public void onFailure(Throwable caught) {
-					Window.alert("Unable to perform " + name);
+					Window.alert("Unable to compute " + name);
 				}
 			});
 		}

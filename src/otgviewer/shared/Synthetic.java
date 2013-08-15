@@ -60,11 +60,11 @@ abstract public class Synthetic implements DataColumn, Serializable {
 	}
 	
 	/**
-	 * Sum difference between groups.
+	 * Mean difference between groups.
 	 */
-	public static class SumDifference extends TwoGroupSynthetic {
-		public SumDifference() { super("", null, null); }
-		public SumDifference(Group g1, Group g2) {
+	public static class MeanDifference extends TwoGroupSynthetic {
+		public MeanDifference() { super("", null, null); }
+		public MeanDifference(Group g1, Group g2) {
 			super("", g1, g2);
 		}
 		

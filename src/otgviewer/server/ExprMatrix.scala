@@ -92,7 +92,8 @@ class ExprMatrix(data: Seq[VVector[ExpressionValue]], rows: Int, columns: Int,
 
   def appendDiffTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String],
     colName: String): ExprMatrix = {
-    def diffTest(a1: Array[Double], a2: Array[Double]): Double = Math.abs(a1.sum - a2.sum)
+    import otg.SafeMath._
+    def diffTest(a1: Array[Double], a2: Array[Double]): Double = safeMean(a1) - safeMean(a2)
 
     appendTwoColTest(sourceData, group1, group2, diffTest(_, _), colName)
   }
