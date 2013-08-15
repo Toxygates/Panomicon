@@ -81,12 +81,20 @@ class ExprMatrix(data: Seq[VVector[ExpressionValue]], rows: Int, columns: Int,
     })
     appendColumn(ps.toSeq, colName)    
   }
-  
-  def appendTTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String], colName: String): ExprMatrix = 
-		  appendTwoColTest(sourceData, group1, group2, ttest.tTest(_, _), colName)
-  
-  def appendUTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String], colName: String): ExprMatrix = 
-  	appendTwoColTest(sourceData, group1, group2, utest.mannWhitneyUTest(_, _), colName)
-  
+
+  def appendTTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String],
+    colName: String): ExprMatrix =
+    appendTwoColTest(sourceData, group1, group2, ttest.tTest(_, _), colName)
+
+  def appendUTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String],
+    colName: String): ExprMatrix =
+    appendTwoColTest(sourceData, group1, group2, utest.mannWhitneyUTest(_, _), colName)
+
+  def appendDiffTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String],
+    colName: String): ExprMatrix = {
+    def diffTest(a1: Array[Double], a2: Array[Double]): Double = Math.abs(a1.sum - a2.sum)
+
+    appendTwoColTest(sourceData, group1, group2, diffTest(_, _), colName)
+  }
 
 }
