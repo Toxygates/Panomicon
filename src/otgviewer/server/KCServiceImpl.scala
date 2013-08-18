@@ -293,6 +293,10 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
         rendered.appendTTest(data, g1.getSamples.map(_.getCode),
           g2.getSamples.map(_.getCode), tt.getShortTitle)
       }
+      case md: Synthetic.MeanDifference => {
+        rendered.appendDiffTest(data, g1.getSamples.map(_.getCode),
+            g2.getSamples.map(_.getCode), md.getShortTitle)
+      }
     }
     session.rendered = withTest
 

@@ -57,7 +57,25 @@ abstract public class Synthetic implements DataColumn, Serializable {
 				name = "(U) p(" + g1.getShortTitle() + ", " + g2.getShortTitle() + ")";
 			}
 		}
-	}	
+	}
+	
+	/**
+	 * Mean difference between groups.
+	 */
+	public static class MeanDifference extends TwoGroupSynthetic {
+		public MeanDifference() { super("", null, null); }
+		public MeanDifference(Group g1, Group g2) {
+			super("", g1, g2);
+		}
+		
+		@Override
+		public void setGroups(Group g1, Group g2) {
+			super.setGroups(g1, g2);
+			if (g1 != null && g2 != null) {
+				name = "Diff(" + g1.getShortTitle() + ", " + g2.getShortTitle() + ")";
+			}
+		}
+	}
 
 	protected String name;
 	
