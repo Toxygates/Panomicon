@@ -266,7 +266,17 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				removeDataColumn(c);
 			}
 			synthColumns.clear();
-			synthetics.clear();							
+			synthetics.clear();			
+			kcService.removeTwoGroupTests(new AsyncCallback<Void>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					Window.alert("There was an error removing the test columns.");					
+				}
+
+				@Override
+				public void onSuccess(Void result) {
+				}				
+			});
 		}
 	}
 	

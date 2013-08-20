@@ -62,7 +62,7 @@ public interface KCService extends RemoteService {
 	
 	
 	/**
-	 * Add a T-test column. Requires that loadDataset was
+	 * Add a T-test/U-test/fold change difference column. Requires that loadDataset was
 	 * first used to load items. After this has been done, 
 	 * datasetItems or getFullData can be used as normal to obtain the data.
 	 * The test is two-tailed and does not assume equal sample variances.
@@ -71,6 +71,12 @@ public interface KCService extends RemoteService {
 	 */
 	public void addTwoGroupTest(Synthetic.TwoGroupSynthetic test);
 
+	/**
+	 * Remove all test columns. The result will be reflected in subsequent calls to
+	 * datasetItems or getFullData.
+	 */
+	public void removeTwoGroupTests();
+	
 	/**
 	 * Get one page. Requires that loadDataset was first used to load items.
 	 * @param offset
