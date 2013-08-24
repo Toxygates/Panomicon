@@ -39,6 +39,11 @@ abstract public class Synthetic implements DataColumn, Serializable {
 				name = "(T) p(" + g1.getShortTitle() + ", " + g2.getShortTitle() + ")";
 			}
 		}
+		
+		@Override
+		public String getTooltip() {
+			return "p-value";
+		}
 	}
 	
 	/**
@@ -56,6 +61,10 @@ abstract public class Synthetic implements DataColumn, Serializable {
 			if (g1 != null && g2 != null) {
 				name = "(U) p(" + g1.getShortTitle() + ", " + g2.getShortTitle() + ")";
 			}
+		}
+		@Override
+		public String getTooltip() {
+			return "p-value";
 		}
 	}
 	
@@ -75,6 +84,10 @@ abstract public class Synthetic implements DataColumn, Serializable {
 				name = "Diff(" + g1.getShortTitle() + ", " + g2.getShortTitle() + ")";
 			}
 		}
+		@Override
+		public String getTooltip() {
+			return "Fold change difference";
+		}
 	}
 
 	protected String name;
@@ -83,7 +96,8 @@ abstract public class Synthetic implements DataColumn, Serializable {
 	public Synthetic(String name) { this.name = name; }
 	public Barcode[] getSamples() { return new Barcode[0]; }	
 	public String[] getCompounds() { return new String[0]; }	
-	public String getShortTitle() { return name; }
+	public String getShortTitle() { return name; }	
+	public String getTooltip() { return "Synthetic"; }
 	
 	public String pack() {
 		return "Synthetic:::" + name;

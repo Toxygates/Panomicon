@@ -68,6 +68,10 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
     def rendered: ExprMatrix = session.getAttribute("groupedFiltered").asInstanceOf[ExprMatrix]
     def rendered_=(v: ExprMatrix) = session.setAttribute("groupedFiltered", v)
 
+    // Like rendered but without synthetic columns
+    def noSynthetics: ExprMatrix = session.getAttribute("noSynthetics").asInstanceOf[ExprMatrix]
+    def noSynthetics_=(v: ExprMatrix) = session.setAttribute("noSynthetics", v)
+    
     def params: DataViewParams = {
       val r = session.getAttribute("params").asInstanceOf[DataViewParams]
       if (r != null) {
@@ -173,8 +177,9 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
         _.selectNamedRows(filteredProbes.toSeq).filterRows(r => f(r, groupedData.columns)))
 
     session.rendered = ngfd
-    session.ungroupedFiltered = nfd
-
+    session.noSynthetics = ngfd
+    session.ungroupedFiltered = nfd 
+    
     if (ngfd.rows > 0) {
       println("Stored " + ngfd.rows + " x " + ngfd.columns + " items in session")
     } else {
@@ -220,11 +225,15 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
         params.sortAsc = ascending
         params.mustSort = false
 
+        //sort both the "ungrouped filtered" and the "no synthetics" along with the "rendered"
         val (grf, ugrf) = groupedFiltered.modifyJointly(session.ungroupedFiltered,
+          _.sortRows(sortData))
+        val (_, nosyn) = groupedFiltered.modifyJointly(session.noSynthetics,
           _.sortRows(sortData))
 
         groupedFiltered = grf
         session.rendered = grf
+        session.noSynthetics = nosyn
         session.ungroupedFiltered = ugrf
       }
       new ArrayList[ExpressionRow](insertAnnotations(
@@ -299,7 +308,12 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
       }
     }
     session.rendered = withTest
-
+  }
+  
+  def removeTwoGroupTests(): Unit = {
+    val session = getSessionData()
+    // This is the only reason why we keep the noSynthetics around
+    session.rendered = session.noSynthetics    
   }
 
   def prepareCSVDownload(): String = {

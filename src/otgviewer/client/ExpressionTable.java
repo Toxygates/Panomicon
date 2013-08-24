@@ -266,7 +266,17 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				removeDataColumn(c);
 			}
 			synthColumns.clear();
-			synthetics.clear();							
+			synthetics.clear();			
+			kcService.removeTwoGroupTests(new AsyncCallback<Void>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					Window.alert("There was an error removing the test columns.");					
+				}
+
+				@Override
+				public void onSuccess(Void result) {
+				}				
+			});
 		}
 	}
 	
@@ -318,8 +328,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			final Group g2 = OTGUtils.findGroup(chosenColumns, selectedGroup(groupsel2));
 			synth.setGroups(g1, g2);
 			kcService.addTwoGroupTest(synth, new AsyncCallback<Void>() {
-				public void onSuccess(Void v) {					
-					addSynthColumn(synth, "p-value");					
+				public void onSuccess(Void v) {							
+					addSynthColumn(synth);					
 					//force reload
 					grid.setVisibleRangeAndClearData(grid.getVisibleRange(), true); 
 				}
@@ -400,7 +410,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		}
 		
 		for (Synthetic s: synthetics) {
-			addSynthColumn(s, "p-value");			
+			addSynthColumn(s);			
 		}				
 	}
 	
@@ -422,12 +432,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		return new ToolCell(this);
 	}
 
-	private void addSynthColumn(Synthetic s, String tooltip) {
+	private void addSynthColumn(Synthetic s) {
 		TextCell tc = new TextCell();
 		synthetics.add(s);
 		Column<ExpressionRow, String> ttestCol = new ExpressionColumn(tc, dataColumns);
 		synthColumns.add(ttestCol); 				
-		addDataColumn(ttestCol, s.getShortTitle(), tooltip);		
+		addDataColumn(ttestCol, s.getShortTitle(), s.getTooltip());		
 		ttestCol.setCellStyleNames("extraColumn");				
 	}
 	
