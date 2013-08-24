@@ -64,36 +64,44 @@ class ExprMatrix(data: Seq[VVector[ExpressionValue]], rows: Int, columns: Int,
   })
 
   override def selectRows(rows: Seq[Int]): ExprMatrix = 
-    super.selectRows(rows).copyWithAnnotations(rows.map(annotations(_)).toVector)  
+    super.selectRows(rows).copyWithAnnotations(rows.map(annotations(_)).toVector)
 
-  def appendTwoColTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String], 
-      test: (Array[Double], Array[Double]) => Double, minValues: Int, colName: String): ExprMatrix = {
-    val cs1 = group1.toSeq.map(sourceData.column(_))
-    val cs2 = group2.toSeq.map(sourceData.column(_))
-    val ps = (0 until rows).map(i => {
-      val vs1 = cs1.map(_(i)).filter(_.getPresent).toArray
-      val vs2 = cs2.map(_(i)).filter(_.getPresent).toArray
-      if (vs1.size >= minValues && vs2.size >= minValues) {
+  /**
+   * Append a two column test, which is based on the data in "sourceData".
+   * sourceData must have the same number of rows as this matrix.
+   */
+  def appendTwoColTest(sourceData: ExprMatrix, group1: Seq[String], group2: Seq[String], 
+      test: (Seq[Double], Seq[Double]) => Double, minValues: Int, colName: String): ExprMatrix = {
+    val sourceCols1 = sourceData.selectNamedColumns(group1)
+    val sourceCols2 = sourceData.selectNamedColumns(group2)
+    
+    val ps = sourceCols1.toRowVectors.zip(sourceCols2.toRowVectors)
+    val pvals = ps.map(r => {
+      val vs1 = r._1.filter(_.getPresent)
+      val vs2 = r._2.filter(_.getPresent)
+        if (vs1.size >= minValues && vs2.size >= minValues) {
         new ExpressionValue(test(vs1.map(_.getValue), vs2.map(_.getValue)), 'P')
       } else {
         new ExpressionValue(0, 'A')
       }
     })
-    appendColumn(ps.toSeq, colName)    
+    appendColumn(pvals, colName)
   }
 
-  def appendTTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String],
+  def appendTTest(sourceData: ExprMatrix, group1: Seq[String], group2: Seq[String],
     colName: String): ExprMatrix =
-    appendTwoColTest(sourceData, group1, group2, ttest.tTest(_, _), 2, colName)
+    appendTwoColTest(sourceData, group1, group2, 
+        (x,y) => ttest.tTest(x.toArray, y.toArray), 2, colName)
 
-  def appendUTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String],
+  def appendUTest(sourceData: ExprMatrix, group1: Seq[String], group2: Seq[String],
     colName: String): ExprMatrix =
-    appendTwoColTest(sourceData, group1, group2, utest.mannWhitneyUTest(_, _), 2, colName)
+    appendTwoColTest(sourceData, group1, group2, 
+        (x,y) => utest.mannWhitneyUTest(x.toArray, y.toArray), 2, colName)
 
-  def appendDiffTest(sourceData: ExprMatrix, group1: Iterable[String], group2: Iterable[String],
+  def appendDiffTest(sourceData: ExprMatrix, group1: Seq[String], group2: Seq[String],
     colName: String): ExprMatrix = {
     import otg.SafeMath._
-    def diffTest(a1: Array[Double], a2: Array[Double]): Double = safeMean(a1) - safeMean(a2)
+    def diffTest(a1: Seq[Double], a2: Seq[Double]): Double = safeMean(a1) - safeMean(a2)
 
     appendTwoColTest(sourceData, group1, group2, diffTest(_, _), 1, colName)
   }
