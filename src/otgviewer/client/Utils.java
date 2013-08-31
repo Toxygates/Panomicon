@@ -30,6 +30,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.visualization.client.LegendPosition;
 import com.google.gwt.visualization.client.VisualizationUtils;
+import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
 
 /**
@@ -243,7 +244,8 @@ public class Utils {
 	
 	public static void ensureVisualisationAndThen(final Runnable r) {
 		VisualizationUtils
-		.loadVisualizationApi("1.1", r, "corechart");		
+		.loadVisualizationApi(r, CoreChart.PACKAGE);
+		//.loadVisualizationApi("1.1", r, "corechart");		
 	}
 
 	public static void setEnabled(HasWidgets root, boolean enabled) {
