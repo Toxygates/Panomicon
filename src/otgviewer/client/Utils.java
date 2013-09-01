@@ -236,12 +236,18 @@ public class Utils {
 	public static void showHelp(TextResource helpText, ImageResource helpImage) {
 		VerticalPanel vp = new VerticalPanel();				
 		if (helpImage != null) {
-			vp.add(new Image(helpImage));			
+			HorizontalPanel wp = Utils.mkWidePanel();
+			wp.add(new Image(helpImage));		
+			vp.add(wp);
 		}		
-		SimplePanel sp = new SimplePanel();
-		sp.setWidth("600px");
+		SimplePanel sp = new SimplePanel();	
 		sp.setWidget(new HTML(helpText.getText()));
 		vp.add(sp);
+		if (helpImage != null) {
+			vp.setWidth((helpImage.getWidth() + 50) + "px");
+		} else {
+			vp.setWidth("600px");
+		}
 		Utils.displayInPopup("Help", vp, DialogPosition.Center);
 	}
 	
