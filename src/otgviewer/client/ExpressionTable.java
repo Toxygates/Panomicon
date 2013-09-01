@@ -381,7 +381,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		
 		MenuItem mi = new MenuItem("Export to TargetMine...", false, new Command() {
 			public void execute() {
-				Utils.displayInPopup("TargetMine export", new GeneExporter(w, grid.getRowCount()));
+				Utils.displayInPopup("TargetMine export", 
+						new GeneExporter(w, grid.getRowCount()), DialogPosition.Center);
 			}
 		});
 		
@@ -649,7 +650,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 					cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, value, 
 							new AChartAcceptor() {
 						public void acceptCharts(final AdjustableChartGrid cg) {
-							Utils.displayInPopup("Charts", cg, true);							
+							Utils.displayInPopup("Charts", cg, true, DialogPosition.Side);							
 						}
 
 						public void acceptBarcodes(Barcode[] bcs) {

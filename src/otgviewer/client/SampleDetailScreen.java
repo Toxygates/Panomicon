@@ -147,7 +147,7 @@ public class SampleDetailScreen extends Screen {
 				}
 				List<String> compounds_ = new ArrayList<String>(compounds);
 				atd.compoundsChanged(compounds_);
-				Utils.displayInPopup("Visualisation", atd);								
+				Utils.displayInPopup("Visualisation", atd, DialogPosition.Center);								
 			}
 		}));
 		

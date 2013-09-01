@@ -273,7 +273,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 									
 									@Override
 									public void acceptCharts(ChartGrid cg) {
-										Utils.displayInPopup("Charts", cg);								
+										Utils.displayInPopup("Charts", cg, DialogPosition.Side);								
 									}
 								}, screen);					
 							}
