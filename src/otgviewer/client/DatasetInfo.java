@@ -32,7 +32,7 @@ public class DatasetInfo extends Composite implements ClickHandler {
 	
 	private DataFilter _filter;
 	private SelectionListener _listener;
-	private Resources resources = GWT.create(Resources.class);
+	private static Resources resources = GWT.create(Resources.class);
 	
 	public DatasetInfo(DataFilter filter, SelectionListener listener) {
 		_filter = filter;
@@ -54,33 +54,20 @@ public class DatasetInfo extends Composite implements ClickHandler {
 		if (filter.cellType == CellType.Vivo) {
 			description += ", " + filter.organ.toString() + ", " + filter.repeatType.toString() + " dose";			
 		}
-		
-
+	
 		HorizontalPanel icons = new HorizontalPanel();		
 		icons.setStyleName("darkColored");		
 		icons.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		
-		if (filter.organism == Organism.Human) {
-			icons.add(new Image(resources.human()));
-		} else {
-			icons.add(new Image(resources.rat()));
-		}
+		icons.add(new Image(filter.organism.image()));
 
 		if (filter.cellType == CellType.Vivo) {
-			if (filter.organ == Organ.Liver) {
-				icons.add(new Image(resources.liver()));
-			} else {
-				icons.add(new Image(resources.kidney()));
-			}
+			icons.add(new Image(filter.organ.image()));		
 		} else {
 			icons.add(new Image(resources.vitro()));
 		}
 		
-		if (filter.repeatType == RepeatType.Repeat) {
-			icons.add(new Image(resources.calendar()));					
-		} else {
-			icons.add(new Image(resources.clock()));			
-		}
+		icons.add(new Image(filter.repeatType.image()));
 		icons.add(new Image(resources.bottle()));
 		
 		vp.add(icons);		
