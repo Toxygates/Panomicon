@@ -104,7 +104,7 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
   private def getExprValues(filter: DataFilter, barcodes: Seq[String], probes: Seq[String],
                             typ: ValueType, sparseRead: Boolean): ExprMatrix = {
     val db = getDB(typ)
-    val sorted = OTGQueries.sortBarcodes(barcodes.map(otg.Sample(_)))
+    val sorted = OTGQueries.sortSamples(barcodes.map(otg.Sample(_)))
     val data = OTGQueries.presentValuesByBarcodesAndProbes(db, sorted, probes, sparseRead, filter)
     val jdata = data.map(r => new VVector(r.map(asJava(_))))
     new ExprMatrix(jdata, jdata.size, jdata(0).size,

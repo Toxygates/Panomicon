@@ -27,14 +27,16 @@ object Conversions {
     val or = if (filter.cellType == CellType.Vitro) {
       otg.Vitro
     } else {
-      otg.Organ(filter.organ.toString())
+      otg.Organ(filter.organ.toString()).get
     }
-    new otg.Filter(or, otg.RepeatType(filter.repeatType.toString()), otg.Species(filter.organism.toString()));
+    new otg.Filter(Some(or), otg.RepeatType(filter.repeatType.toString()), 
+        otg.Species(filter.organism.toString()));
   }
 
   implicit def asJava(path: otg.Pathology): Pathology =
-    new Pathology(path.barcode, path.topography, path.finding, 
-        path.spontaneous, path.grade, path.digitalViewerLink);
+    new Pathology(path.barcode, path.topography.getOrElse(null), 
+        path.finding.getOrElse(null), 
+        path.spontaneous, path.grade.getOrElse(null), path.digitalViewerLink);
 
   implicit def asJava(annot: otg.Annotation): Annotation =
     new Annotation(annot.barcode, new java.util.ArrayList(annot.data.map(x =>
@@ -52,7 +54,7 @@ object Conversions {
 
   implicit def asScala(filter: DataFilter, series: Series): otg.Series = {
 	val sf = asScala(filter)
-	new otg.Series(sf.repeatType, sf.organ, sf.species, 
+	new otg.Series(sf.repeatType.get, sf.organ.get, sf.species.get, 
 	    series.probe, series.compound, series.timeDose, Vector())
   }
 
