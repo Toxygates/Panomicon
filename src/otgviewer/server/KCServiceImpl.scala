@@ -38,13 +38,20 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
 
   private var foldsDB: DB = _
   private var absDB: DB = _
+  private var tgConfig: Configuration = _
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config)
-    val homePath = System.getProperty("otg.home")
+    localInit(Configuration.fromServletConfig(config))    
+  }
+  
+  // Useful for testing
+  def localInit(config: Configuration) {
+    val homePath = config.toxygatesHomeDir
     foldsDB = OTGQueries.open(homePath + "/otgf.kct")
-    absDB = OTGQueries.open(homePath + "/otg.kct")    
+    absDB = OTGQueries.open(homePath + "/otg.kct")
+    OwlimLocalRDF.repositoryId = config.owlimRepositoryName
     println("KC databases are open")
   }
 

@@ -45,10 +45,11 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config)
-    localInit()
+    localInit(Configuration.fromServletConfig(config))
   }
   
-  def localInit() {
+  def localInit(conf: Configuration) {
+    OwlimLocalRDF.repositoryId = conf.owlimRepositoryName
     OTGSamples.connect()
     AffyProbes.connect()
     Uniprot.connect()    
@@ -94,17 +95,11 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   def probes(filter: DataFilter): Array[String] = 
     OTGQueries.probeIds(filter).toArray
     
-  def pathologies(barcode: Barcode): Array[Pathology] = {
-    val path = OTGSamples.pathologies(barcode.getCode)
-//    path.foreach(println)
-    path.map(asJava(_)).toArray
-  }
+  def pathologies(barcode: Barcode): Array[Pathology] = 
+    OTGSamples.pathologies(barcode.getCode).map(asJava(_)).toArray
     
-  def pathologies(column: BarcodeColumn): Array[Pathology] = {
-    val path = column.getSamples.flatMap(x => OTGSamples.pathologies(x.getCode))
-//    path.foreach(println)
-    path.map(asJava(_))
-  }
+  def pathologies(column: BarcodeColumn): Array[Pathology] = 
+    column.getSamples.flatMap(x => OTGSamples.pathologies(x.getCode)).map(asJava(_))
     
   def annotations(barcode: Barcode): Annotation = asJava(OTGSamples.annotations(barcode.getCode))
   def annotations(column: BarcodeColumn): Array[Annotation] = 

@@ -14,6 +14,7 @@ import otgviewer.shared.NoSuchProbeException
 import kyotocabinet.DB
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
+import otg.sparql.OwlimLocalRDF
 
 
 class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
@@ -28,12 +29,14 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config)
-    localInit()
+    localInit(Configuration.fromServletConfig(config))
   }
-  
-  def localInit() {
-    val homePath = System.getProperty("otg.home")
+
+  // Useful for testing
+  def localInit(config: Configuration) {
+    val homePath = config.toxygatesHomeDir
     seriesDB = OTGSeriesQuery.open(homePath + "/otgfs.kct")
+    OwlimLocalRDF.repositoryId = config.owlimRepositoryName
     println("Series DB is open")
   }
   
