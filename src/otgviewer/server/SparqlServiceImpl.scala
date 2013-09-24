@@ -49,7 +49,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   }
   
   def localInit(conf: Configuration) {
-    OwlimLocalRDF.repositoryId = conf.owlimRepositoryName
+    otg.Configuration.owlimRepositoryName = conf.owlimRepositoryName    
     OTGSamples.connect()
     AffyProbes.connect()
     Uniprot.connect()    

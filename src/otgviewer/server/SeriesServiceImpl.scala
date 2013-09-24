@@ -36,7 +36,8 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   def localInit(config: Configuration) {
     val homePath = config.toxygatesHomeDir
     seriesDB = OTGSeriesQuery.open(homePath + "/otgfs.kct")
-    OwlimLocalRDF.repositoryId = config.owlimRepositoryName
+    otg.Configuration.otgHomeDir = config.toxygatesHomeDir
+    otg.Configuration.owlimRepositoryName = config.owlimRepositoryName
     println("Series DB is open")
   }
   

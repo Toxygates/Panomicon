@@ -9,6 +9,7 @@ import otgviewer.shared.RepeatType;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -59,15 +60,15 @@ public class DatasetInfo extends Composite implements ClickHandler {
 		icons.setStyleName("darkColored");		
 		icons.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		
-		icons.add(new Image(filter.organism.image()));
+		icons.add(new Image(image(filter.organism)));
 
 		if (filter.cellType == CellType.Vivo) {
-			icons.add(new Image(filter.organ.image()));		
+			icons.add(new Image(image(filter.organ)));		
 		} else {
 			icons.add(new Image(resources.vitro()));
 		}
 		
-		icons.add(new Image(filter.repeatType.image()));
+		icons.add(new Image(image(filter.repeatType)));
 		icons.add(new Image(resources.bottle()));
 		
 		vp.add(icons);		
@@ -92,4 +93,39 @@ public class DatasetInfo extends Composite implements ClickHandler {
 		_listener.filterSelected(_filter);
 	}
 	
+	private ImageResource image(Organ organ) {
+		switch (organ) {
+		case Liver:
+			return resources.liver();
+		case Lung:
+			return resources.close();
+		case Muscle:
+			return resources.close();
+		case Spleen:
+			return resources.close();
+		case Kidney:
+			return resources.kidney();
+		}
+		return null;
+	}
+	
+	private ImageResource image(Organism organism) {
+		switch (organism) {
+		case Human:
+			return resources.human();
+		case Rat:
+			return resources.rat();
+		}
+		return null;
+	}
+	
+	private ImageResource image(RepeatType repeat) {
+		switch (repeat) {
+		case Single:
+			return resources.clock();
+		case Repeat:
+			return resources.calendar();
+		}
+		return null;
+	}
 }

@@ -51,7 +51,9 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
     val homePath = config.toxygatesHomeDir
     foldsDB = OTGQueries.open(homePath + "/otgf.kct")
     absDB = OTGQueries.open(homePath + "/otg.kct")
-    OwlimLocalRDF.repositoryId = config.owlimRepositoryName
+    otg.Configuration.owlimRepositoryName = config.owlimRepositoryName
+    otg.Configuration.otgHomeDir = homePath
+    // TODO: set csv parameters too
     println("KC databases are open")
   }
 
