@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+              http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         version="2.5"
+         xmlns="http://java.sun.com/xml/ns/javaee">
+
+  <!-- Servlets -->
+
+	<servlet>
+		<servlet-name>sparqlServlet</servlet-name>
+		<servlet-class>otgviewer.server.SparqlServiceImpl</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>seriesServlet</servlet-name>
+		<servlet-class>otgviewer.server.SeriesServiceImpl</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>kcServlet</servlet-name>
+		<servlet-class>otgviewer.server.KCServiceImpl</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>sparqlServlet</servlet-name>
+		<url-pattern>/toxygates/sparql</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>seriesServlet</servlet-name>
+		<url-pattern>/toxygates/series</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>kcServlet</servlet-name>
+    <url-pattern>/toxygates/KC</url-pattern>
+  </servlet-mapping>
+  
+  <!-- Default page to serve -->
+  <welcome-file-list>
+    <welcome-file>toxygates.html</welcome-file>
+  </welcome-file-list>
+
+</web-app>
