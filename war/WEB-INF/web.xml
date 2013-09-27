@@ -12,11 +12,11 @@
 		<servlet-class>otgviewer.server.SparqlServiceImpl</servlet-class>
 		<init-param>
 			<param-name>owlimRepositoryName</param-name>
-			<param-value>otg</param-value>
+			<param-value>otg-test</param-value>
 		</init-param>
 		<init-param>
 			<param-name>toxygatesHomeDir</param-name>
-			<param-value>/opt/toxygates</param-value>
+			<param-value>/opt/toxygates-test</param-value>
 		</init-param>
 	</servlet>
 
@@ -25,11 +25,11 @@
 		<servlet-class>otgviewer.server.SeriesServiceImpl</servlet-class>
 		<init-param>
 			<param-name>owlimRepositoryName</param-name>
-			<param-value>otg</param-value>
+			<param-value>otg-test</param-value>
 		</init-param>
 		<init-param>
 			<param-name>toxygatesHomeDir</param-name>
-			<param-value>/opt/toxygates</param-value>
+			<param-value>/opt/toxygates-test</param-value>
 		</init-param>
 	</servlet>
 
@@ -38,11 +38,11 @@
 		<servlet-class>otgviewer.server.KCServiceImpl</servlet-class>
 		<init-param>
 			<param-name>owlimRepositoryName</param-name>
-			<param-value>otg</param-value>
+			<param-value>otg-test</param-value>
 		</init-param>
 		<init-param>
 			<param-name>toxygatesHomeDir</param-name>
-			<param-value>/opt/toxygates</param-value>
+			<param-value>/opt/toxygates-test</param-value>
 		</init-param>
 	</servlet>
 
