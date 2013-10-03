@@ -81,7 +81,6 @@ public class DatasetInfo extends Composite implements ClickHandler {
 		l.setStyleName("heading");
 		ivp.add(l);
 		ivp.setWidth("100%");
-
 		
 		ivp = new VerticalPanel();
 		ivp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
