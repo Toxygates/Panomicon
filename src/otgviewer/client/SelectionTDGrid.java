@@ -24,6 +24,11 @@ import com.google.gwt.user.client.ui.Widget;
 /**
  * A time/dose grid for defining and editing sample groups in terms of time/dose
  * combinations for particular compounds.
+ * 
+ * TODO: There is too much network communication here. (First get the time/dose 
+ * combinations, then enable checkboxes, then eventually get samples.)
+ * Better would be to simply get all samples and their attributes immediately when a
+ * compound has been selected.
  * @author johan
  *
  */
@@ -33,13 +38,6 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	private CheckBox[][] checkboxes; //for selecting the subgroups	
 	private Combination[] oldSelection;
 	
-//	// For holding hidden UIs while we are waiting for time/dose combinations
-//	// Key is <Compound, <Time, Dose>>.
-//	private Map<Pair<String, Pair<String, String>>, SimplePanel> outstandingGUIs 
-//		= new HashMap<Pair<String, Pair<String, String>>, SimplePanel>();
-//	//For holding unpopulated master
-//	private Map<String, SimplePanel> outstandingMasterGUIs = new HashMap<String, SimplePanel>();
-//	
 	public static interface BarcodeListener {
 		void barcodesObtained(List<Barcode> barcodes);
 	}
