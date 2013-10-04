@@ -88,10 +88,10 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     val r = OTGSamples.times(filter, nullToOption(compound)).toArray    
     r.sortWith((t1, t2) => orderedTimes.indexOf(t1) < orderedTimes.indexOf(t2))
   }
-    
-//  def probeTitle(probe: String): String = 
-//    AffyProbes.title(probe)
-//    
+  
+  def timeDoseCombinations(filter: DataFilter, compound: String): Array[Pair[String, String]] = 
+    OTGSamples.timeDoseCombinations(filter, compound).map(asJava(_)).toArray
+  
   def probes(filter: DataFilter): Array[String] = 
     OTGQueries.probeIds(filter).toArray
     
@@ -124,7 +124,9 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       OTGQueries.filterProbes(probes.map(_.identifier), filter).toArray  
     })    
   }
-  def probesTargetedByCompound(filter: DataFilter, compound: String, service: String, homologous: Boolean): Array[String] = {
+  
+  def probesTargetedByCompound(filter: DataFilter, compound: String, service: String, 
+      homologous: Boolean): Array[String] = {
     val cmp = Compound.make(compound)
     val proteins = service match {
       case "CHEMBL" => useConnector(ChEMBL, (c:ChEMBL.type) => c.targetsFor(cmp, 
@@ -152,7 +154,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 
     import scala.collection.{Map => CMap, Set => CSet}
     
-  def associations(filter: DataFilter, types: Array[AType], _probes: Array[String]): Array[Association] = {
+  def associations(filter: DataFilter, types: Array[AType], 
+      _probes: Array[String]): Array[Association] = {
     val probes = AffyProbes.withAttributes(_probes.map(Probe(_)), filter)    
     
     def connectorOrEmpty[T <: RDFConnector](c: T, f: T => BBMap): BBMap = {
@@ -217,9 +220,11 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     m1.map(p => new Association(p._1, convertPairs(p._2))).toArray     
   }
   
-  def geneSuggestions(filter: DataFilter , partialName: String): Array[bioweb.shared.Pair[String, String]] = {
-    useConnector(AffyProbes, (c: AffyProbes.type) => c.probesForPartialTitle(partialName, filter)).map(x => 
-      new Pair(x.identifier, x.name)).toArray
+  def geneSuggestions(filter: DataFilter, partialName: String): 
+	  Array[bioweb.shared.Pair[String, String]] = {
+    useConnector(AffyProbes, 
+        (c: AffyProbes.type) => c.probesForPartialTitle(partialName, filter))
+        .map(x => new Pair(x.identifier, x.name)).toArray
   }
   
 }
