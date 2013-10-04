@@ -66,4 +66,19 @@
     <welcome-file>toxygates.html</welcome-file>
   </welcome-file-list>
 
+<security-constraint>
+  <web-resource-collection>
+     <web-resource-name>Toxygates (Adjuvant test version)</web-resource-name>
+     <url-pattern>/*</url-pattern>
+  </web-resource-collection>
+  <auth-constraint>
+    <role-name>toxygates-test</role-name>
+  </auth-constraint>
+</security-constraint>
+
+<login-config>
+  <auth-method>BASIC</auth-method>
+  <realm-name>Toxygates (Adjuvant test)</realm-name>
+</login-config>
+
 </web-app>
