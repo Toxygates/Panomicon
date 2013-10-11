@@ -97,11 +97,11 @@ public class DatasetInfo extends Composite implements ClickHandler {
 		case Liver:
 			return resources.liver();
 		case Lung:
-			return resources.close();
+			return resources.lung();
 		case Muscle:
-			return resources.close();
+			return resources.muscle();
 		case Spleen:
-			return resources.close();
+			return resources.spleen();
 		case Kidney:
 			return resources.kidney();
 		}
