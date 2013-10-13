@@ -9,6 +9,7 @@ import otgviewer.shared.RepeatType;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -32,7 +33,7 @@ public class DatasetInfo extends Composite implements ClickHandler {
 	
 	private DataFilter _filter;
 	private SelectionListener _listener;
-	private Resources resources = GWT.create(Resources.class);
+	private static Resources resources = GWT.create(Resources.class);
 	
 	public DatasetInfo(DataFilter filter, SelectionListener listener) {
 		_filter = filter;
@@ -54,33 +55,20 @@ public class DatasetInfo extends Composite implements ClickHandler {
 		if (filter.cellType == CellType.Vivo) {
 			description += ", " + filter.organ.toString() + ", " + filter.repeatType.toString() + " dose";			
 		}
-		
-
+	
 		HorizontalPanel icons = new HorizontalPanel();		
 		icons.setStyleName("darkColored");		
 		icons.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		
-		if (filter.organism == Organism.Human) {
-			icons.add(new Image(resources.human()));
-		} else {
-			icons.add(new Image(resources.rat()));
-		}
+		icons.add(new Image(image(filter.organism)));
 
 		if (filter.cellType == CellType.Vivo) {
-			if (filter.organ == Organ.Liver) {
-				icons.add(new Image(resources.liver()));
-			} else {
-				icons.add(new Image(resources.kidney()));
-			}
+			icons.add(new Image(image(filter.organ)));		
 		} else {
 			icons.add(new Image(resources.vitro()));
 		}
 		
-		if (filter.repeatType == RepeatType.Repeat) {
-			icons.add(new Image(resources.calendar()));					
-		} else {
-			icons.add(new Image(resources.clock()));			
-		}
+		icons.add(new Image(image(filter.repeatType)));
 		icons.add(new Image(resources.bottle()));
 		
 		vp.add(icons);		
@@ -93,7 +81,6 @@ public class DatasetInfo extends Composite implements ClickHandler {
 		l.setStyleName("heading");
 		ivp.add(l);
 		ivp.setWidth("100%");
-
 		
 		ivp = new VerticalPanel();
 		ivp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
@@ -105,4 +92,39 @@ public class DatasetInfo extends Composite implements ClickHandler {
 		_listener.filterSelected(_filter);
 	}
 	
+	private ImageResource image(Organ organ) {
+		switch (organ) {
+		case Liver:
+			return resources.liver();
+		case Lung:
+			return resources.lung();
+		case Muscle:
+			return resources.muscle();
+		case Spleen:
+			return resources.spleen();
+		case Kidney:
+			return resources.kidney();
+		}
+		return null;
+	}
+	
+	private ImageResource image(Organism organism) {
+		switch (organism) {
+		case Human:
+			return resources.human();
+		case Rat:
+			return resources.rat();
+		}
+		return null;
+	}
+	
+	private ImageResource image(RepeatType repeat) {
+		switch (repeat) {
+		case Single:
+			return resources.clock();
+		case Repeat:
+			return resources.calendar();
+		}
+		return null;
+	}
 }

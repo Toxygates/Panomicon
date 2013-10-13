@@ -27,18 +27,21 @@ object Conversions {
     val or = if (filter.cellType == CellType.Vitro) {
       otg.Vitro
     } else {
-      otg.Organ(filter.organ.toString())
+      otg.Organ(filter.organ.toString()).get
     }
-    new otg.Filter(or, otg.RepeatType(filter.repeatType.toString()), otg.Species(filter.organism.toString()));
+    new otg.Filter(Some(or), otg.RepeatType(filter.repeatType.toString()), 
+        otg.Species(filter.organism.toString()));
   }
 
   implicit def asJava(path: otg.Pathology): Pathology =
-    new Pathology(path.barcode, path.topography, path.finding, 
-        path.spontaneous, path.grade, path.digitalViewerLink);
+    new Pathology(path.barcode, path.topography.getOrElse(null), 
+        path.finding.getOrElse(null), 
+        path.spontaneous, path.grade.getOrElse(null), path.digitalViewerLink);
 
-  implicit def asJava(annot: otg.Annotation): Annotation =
-    new Annotation(annot.barcode, new java.util.ArrayList(annot.data.map(x =>
-      new Annotation.Entry(x._1, x._2, otg.Annotation.isNumerical(x._1)))))
+  implicit def asJava(annot: otg.Annotation): Annotation = {
+    val entries = annot.data.map(x => new Annotation.Entry(x._1, x._2, otg.Annotation.isNumerical(x._1)))
+    new Annotation(annot.barcode, new java.util.ArrayList(entries))        
+  }
 
   def asJava(s: Sample): Barcode = new Barcode(s.code, s.individual, s.dose,
     s.time, s.compound);
@@ -52,7 +55,7 @@ object Conversions {
 
   implicit def asScala(filter: DataFilter, series: Series): otg.Series = {
 	val sf = asScala(filter)
-	new otg.Series(sf.repeatType, sf.organ, sf.species, 
+	new otg.Series(sf.repeatType.get, sf.organ.get, sf.species.get, 
 	    series.probe, series.compound, series.timeDose, Vector())
   }
 
@@ -73,8 +76,7 @@ object Conversions {
     }
   }
 
-  implicit def asScala(rr: RankRule): SeriesMatching.MatchType = {
-    
+  implicit def asScala(rr: RankRule): SeriesMatching.MatchType = {    
     rr.`type`() match {      
       case s: RuleType.Synthetic.type  => {
         println("Correlation curve: " + rr.data.toVector)

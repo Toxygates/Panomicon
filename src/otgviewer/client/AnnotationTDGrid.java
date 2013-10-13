@@ -65,10 +65,10 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 		super.compoundsChanged(compounds);
 		
 		if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
-			owlimService.barcodes(chosenDataFilter, compounds.get(0), null, null, new AsyncCallback<Barcode[]>() {
+			sparqlService.barcodes(chosenDataFilter, compounds.get(0), null, null, new AsyncCallback<Barcode[]>() {
 				public void onSuccess(Barcode[] bcs) {
 					
-					owlimService.annotations(bcs[0], new AsyncCallback<Annotation>() {
+					sparqlService.annotations(bcs[0], new AsyncCallback<Annotation>() {
 						public void onSuccess(Annotation a) {
 							for (Annotation.Entry e: a.getEntries()) {
 								if (e.numerical) {
@@ -101,7 +101,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 	private void displayAnnotation(final String annotation, final int row, final int col, 
 			final String compound, final String dose, final String time) {		
 		
-		owlimService.barcodes(chosenDataFilter, compound,
+		sparqlService.barcodes(chosenDataFilter, compound,
 				dose, time,
 				new PendingAsyncCallback<Barcode[]>(this, "Unable to retrieve barcodes for the group definition.") {
 					public void handleSuccess(Barcode[] barcodes) {
@@ -114,7 +114,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 			final String time, final Barcode[] barcodes) {
 		final NumberFormat fmt = NumberFormat.getFormat("#0.00");
 		Group g = new Group("temporary", barcodes);
-		owlimService.annotations(g, new PendingAsyncCallback<Annotation[]>(this, "Unable to get annotations.") {
+		sparqlService.annotations(g, new PendingAsyncCallback<Annotation[]>(this, "Unable to get annotations.") {
 			public void handleSuccess(Annotation[] as) {								
 				double sum = 0;
 				int n = 0;

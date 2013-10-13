@@ -10,6 +10,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.dom.client.Style.Float;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -139,6 +140,38 @@ public class Utils {
 	private static int lastX = -1, lastY = -1;
 	public static void displayInPopup(String caption, Widget w, DialogPosition pos) {
 		displayInPopup(caption, w, false, pos);
+	}
+	
+	/**
+	 * Open an URL in a new window or tab. 
+	 * @param message
+	 * @param buttonText
+	 * @param url
+	 */
+	public static void urlInNewWindow(String message, String buttonText, final String url) {
+		final DialogBox db = new DialogBox(false, true);							
+		
+		db.setHTML(message);				
+		HorizontalPanel hp = new HorizontalPanel();
+		
+		hp.add(new Button(buttonText, new ClickHandler() {
+			public void onClick(ClickEvent ev) {
+				// Note that some browsers (e.g. Safari 3.1) are extremely careful in their
+				// handling of this call. If it is not directly inside a button's ClickHandler
+				// it will be ignored.
+				Window.open(url, "_blank", "");
+				db.hide();
+			}
+		}));
+		
+		hp.add(new Button("Cancel", new ClickHandler() {
+			public void onClick(ClickEvent ev) {
+				db.hide();								
+			}
+		}));
+		
+		db.add(hp);
+		db.setPopupPositionAndShow(displayInCenter(db));						
 	}
 	
 	/**

@@ -24,6 +24,8 @@ public interface SparqlServiceAsync {
 	
 	public void times(DataFilter filter, String compound, AsyncCallback<String[]> callback);	
 	public void probes(DataFilter filter, AsyncCallback<String[]> callback);
+	public void timeDoseCombinations(DataFilter filter, String compound, 
+			AsyncCallback<Pair<String,String>[]> callback);
 	
 	public void pathologies(BarcodeColumn column, AsyncCallback<Pathology[]> callback);
 	public void pathologies(Barcode barcode, AsyncCallback<Pathology[]> callback);

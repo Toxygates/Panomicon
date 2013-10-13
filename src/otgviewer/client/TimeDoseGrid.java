@@ -27,7 +27,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	protected VerticalPanel rootPanel;
 	protected VerticalPanel mainPanel;
 	
-	protected SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT
+	protected SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
 			.create(SparqlService.class);
 
 	private Screen screen;
@@ -95,7 +95,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	}
 	
 	private void fetchTimes() {		
-		owlimService.times(chosenDataFilter, null, new AsyncCallback<String[]>() {
+		sparqlService.times(chosenDataFilter, null, new AsyncCallback<String[]>() {
 			public void onSuccess(String[] times) {
 				availableTimes = times;
 				drawGridInner(grid);
@@ -112,8 +112,10 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			return 0;
 		} else if (dose.equals("Middle")) {
 			return 1;
-		} else {
+		} else if (dose.equals("High")){
 			return 2;
+		} else {
+			return -1;
 		}
 	}
 	
@@ -122,21 +124,22 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		case 0:
 			return "Low";			
 		case 1:
-			return "Middle";								
+			return "Middle";
+		case 2: 
+			return "High";
 		}
-		return "High";
+		return null;
 	}
 	
 	private void redrawGrid() {
 		grid.resize(chosenCompounds.size() + 1, 4);
 		
-		for (int i = 1; i < chosenCompounds.size() + 1; ++i) {
-			
+		for (int i = 1; i < chosenCompounds.size() + 1; ++i) {			
 			grid.setWidget(i, 0, Utils.mkEmphLabel(chosenCompounds.get(i - 1)));
 		}
 				
 		grid.setWidget(0, 1, Utils.mkEmphLabel("Low"));		
-		grid.setWidget(0, 2, Utils.mkEmphLabel("Medium"));		
+		grid.setWidget(0, 2, Utils.mkEmphLabel("Middle"));		
 		grid.setWidget(0, 3, Utils.mkEmphLabel("High"));
 		
 		grid.setHeight(50 * (chosenCompounds.size() + 1) + "px");

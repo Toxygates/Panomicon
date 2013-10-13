@@ -146,7 +146,7 @@ public class GeneExporter extends Composite {
 						} 
 						String url = tes.value().url;
 						String geneString = SharedUtils.mkString(Arrays.asList(useGenes), ",");
-						Window.open(url + geneString, "_blank", "");						
+						Utils.urlInNewWindow("Your genes are ready for export.", "Go to TargetMine", url + geneString);									
 					}
 				});
 

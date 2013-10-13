@@ -21,11 +21,20 @@ public interface Resources extends ClientBundle {
 	@Source("images/vitro64.png")
 	ImageResource vitro();
 	
-	@Source("images/liver32.png")
+	@Source("images/liver64.png")
 	ImageResource liver();
 	
-	@Source("images/kidney32.png")
+	@Source("images/kidney64.png")
 	ImageResource kidney();
+	
+	@Source("images/lung64.png")
+	ImageResource lung();
+	
+	@Source("images/spleen64.png")
+	ImageResource spleen();
+	
+	@Source("images/muscle64.png")
+	ImageResource muscle();
 	
 	@Source("images/chip64.png")
 	ImageResource chip();

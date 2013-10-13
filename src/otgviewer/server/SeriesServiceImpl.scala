@@ -14,6 +14,7 @@ import otgviewer.shared.NoSuchProbeException
 import kyotocabinet.DB
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
+import otg.sparql.OwlimLocalRDF
 
 
 class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
@@ -28,12 +29,15 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config)
-    localInit()
+    localInit(Configuration.fromServletConfig(config))
   }
-  
-  def localInit() {
-    val homePath = System.getProperty("otg.home")
+
+  // Useful for testing
+  def localInit(config: Configuration) {
+    val homePath = config.toxygatesHomeDir
     seriesDB = OTGSeriesQuery.open(homePath + "/otgfs.kct")
+    otg.Configuration.otgHomeDir = config.toxygatesHomeDir
+    otg.Configuration.owlimRepositoryName = config.owlimRepositoryName
     println("Series DB is open")
   }
   
@@ -60,7 +64,8 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     //Same for timeDose = High
     val key = asScala(filter, new otgviewer.shared.Series("", probesRules.head._1, "High", null, Array.empty)) 
     
-    val r = OTGSeriesQuery.rankCompoundsCombined(seriesDB, key, probesRules).map(p => new MatchResult(p._1, p._2._1, p._2._2)).toArray
+    val ranked = OTGSeriesQuery.rankCompoundsCombined(seriesDB, key, probesRules) 
+    val r = ranked.map(p => new MatchResult(p._1, p._2._1, p._2._2)).toArray
     val rr = r.sortWith((x1, x2) => {
       if (JDouble.isNaN(x1.score)) {
         false
@@ -79,14 +84,17 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   
   
   def getSingleSeries(filter: DataFilter, probe: String, timeDose: String, compound: String): Series = {
-    OTGSeriesQuery.getSeries(seriesDB, asScala(filter, new Series("", probe, timeDose, compound, Array.empty))).head
+    OTGSeriesQuery.getSeries(seriesDB, 
+        asScala(filter, new Series("", probe, timeDose, compound, Array.empty))
+        ).head
   }
 
   def getSeries(filter: DataFilter, probes: Array[String], timeDose: String, compounds: Array[String]): JList[Series] = {
     val validated = AffyProbes.identifiersToProbes(filter, probes, true, true).map(_.identifier)
     val ss = validated.flatMap(p =>
       compounds.flatMap(c =>
-        OTGSeriesQuery.getSeries(seriesDB, asScala(filter, new Series("", p, timeDose, c, Array.empty)))))
+        OTGSeriesQuery.getSeries(seriesDB, asScala(filter, new Series("", p, timeDose, c, Array.empty)))
+        ))
     val jss = ss.map(asJava(_))
     for (s <- ss) {
       println(s)

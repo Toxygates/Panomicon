@@ -1,34 +1,43 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;
+import bioweb.shared.Pair;
 import bioweb.shared.SharedUtils;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
  * A time/dose grid for defining and editing sample groups in terms of time/dose
  * combinations for particular compounds.
+ * 
+ * TODO: There is too much network communication here. (First get the time/dose 
+ * combinations, then enable checkboxes, then eventually get samples.)
+ * Better would be to simply get all samples and their attributes immediately when a
+ * compound has been selected.
  * @author johan
  *
  */
 public class SelectionTDGrid extends TimeDoseGrid {
 
+	private CheckBox[] masterCheckboxes; //for selecting "all" samples in a subgroup
 	private CheckBox[][] checkboxes; //for selecting the subgroups	
 	private Combination[] oldSelection;
-
+	
 	public static interface BarcodeListener {
 		void barcodesObtained(List<Barcode> barcodes);
 	}
@@ -57,7 +66,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	@Override
 	public void compoundsChanged(List<String> compounds) {
 		oldSelection = getSelection();		
-		super.compoundsChanged(compounds);
+		super.compoundsChanged(compounds);		
 	}
 
 	public void setAll(boolean val) {
@@ -148,31 +157,10 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		for (int c = 0; c < chosenCompounds.size(); ++c) {
 			for (int d = 0; d < 3; ++d) {
 				for (int t = 0; t < availableTimes.length; ++t) {
-					if (checkboxes[c][availableTimes.length * d + t].getValue()) {
-						final String compound = chosenCompounds.get(c);
-						final String dose = indexToDose(d);						
-						final String time = availableTimes[t];						
+					if (checkboxes[c][availableTimes.length * d + t].getValue()) {						
 						outstanding += 1;
 						gotSome = true;
-						owlimService.barcodes(chosenDataFilter, compound,
-								dose, time,
-								new PendingAsyncCallback<Barcode[]>(this) {
-									public void handleSuccess(Barcode[] barcodes) {
-										if (barcodes.length == 0) {
-											Window.alert("No samples found for " + compound + "/" + dose + "/" + time);
-										} else {
-											for (Barcode b: barcodes) {
-												obtainedBarcodes.add(b);
-											}							
-										}
-										decrementOutstanding();
-									}
-
-									public void handleFailure(Throwable caught) {
-										Window.alert("Unable to retrieve sample information.");
-										decrementOutstanding();
-									}
-								});
+						getBarcodes(chosenCompounds.get(c), indexToDose(d), availableTimes[t], obtainedBarcodes);
 					}
 				}
 			}
@@ -181,6 +169,28 @@ public class SelectionTDGrid extends TimeDoseGrid {
 			Window.alert("Please select at least one time/dose combination.");		
 			outstandingListener.barcodesObtained(obtainedBarcodes); //ensure that we always call back at least once
 		}
+	}
+	
+	private void getBarcodes(final String compound, final String dose, final String time, final List<Barcode> addTo) {
+		sparqlService.barcodes(chosenDataFilter, compound, dose, time,
+			new PendingAsyncCallback<Barcode[]>(this) {
+				public void handleSuccess(Barcode[] barcodes) {
+					if (barcodes.length == 0) {
+						Window.alert("No samples found for " + compound
+								+ "/" + dose + "/" + time);
+					} else {
+						for (Barcode b : barcodes) {
+							obtainedBarcodes.add(b);
+						}
+					}
+					decrementOutstanding();
+				}
+
+				public void handleFailure(Throwable caught) {
+					Window.alert("Unable to retrieve sample information.");
+					decrementOutstanding();
+				}
+			});
 	}
 	
 	/**
@@ -192,20 +202,21 @@ public class SelectionTDGrid extends TimeDoseGrid {
 			outstandingListener.barcodesObtained(obtainedBarcodes);
 		}
 	}
-
 	
 	@Override
 	protected Widget guiFor(int compound, int dose, int time) {
 		CheckBox cb = new CheckBox(availableTimes[time]);
+		cb.setEnabled(false); //disabled by default until samples have been confirmed
 		cb.setValue(initState);					
 		checkboxes[compound][availableTimes.length * dose + time] = cb;
 		return cb;
 	}
 
-
 	@Override
 	protected Widget guiFor(int compound, int dose) {
 		CheckBox all = new CheckBox("All");
+		all.setEnabled(false); //disabled by default until samples have been confirmed
+		masterCheckboxes[compound * 3 + dose] = all;
 		all.addValueChangeHandler(new MultiSelectHandler(compound,
 				availableTimes.length * dose, availableTimes.length * (dose + 1)));
 		return all;		
@@ -215,20 +226,56 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	
 	protected void drawGridInner(Grid grid, boolean initState) {
 		this.initState = initState;		
-		super.drawGridInner(grid);		
+		drawGridInner(grid);		
 	}
 	
 	@Override
 	protected void drawGridInner(Grid grid) {		
+		masterCheckboxes = new CheckBox[chosenCompounds.size() * 3];
 		checkboxes = new CheckBox[chosenCompounds.size()][];
 		for (int c = 0; c < chosenCompounds.size(); ++c) {
-			checkboxes[c] = new CheckBox[3 * availableTimes.length];
+			checkboxes[c] = new CheckBox[3 * availableTimes.length];			
 		}
 		super.drawGridInner(grid);
 		this.initState = false;
 		if (oldSelection != null) {
 			setSelection(oldSelection);
 			oldSelection = null;
+		}				
+		for (int c = 0; c < chosenCompounds.size(); ++c) {
+			getTimeDoseCombinations(chosenCompounds.get(c), c);
 		}
 	}
+
+	/**
+	 * Obtain time/dose combinations for a given compound that actually have samples in the database.
+	 * Only enable those checkboxes that have such corresponding samples.
+	 * @param compound
+	 * @param compoundRow
+	 */
+	private void getTimeDoseCombinations(String compound, final int compoundRow) {
+		sparqlService.timeDoseCombinations(chosenDataFilter, compound, new AsyncCallback<Pair<String,String>[]>() {			
+			@Override
+			public void onSuccess(Pair<String, String>[] result) {
+				boolean gotNonControl = false;
+				for (Pair<String, String> timeDose: result) {
+					String time = timeDose.first();
+					String dose = timeDose.second();					
+					int di = doseToIndex(dose);
+					int ti = SharedUtils.indexOf(availableTimes, time);
+					if (di != -1 && ti != -1) {
+						gotNonControl = true;
+						checkboxes[compoundRow][availableTimes.length * di + ti].setEnabled(true);
+						masterCheckboxes[compoundRow * 3 + di].setEnabled(true);
+					}					
+				}
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Error: Unable to obtain time/dose combinations.");
+			}
+		});
+	}
+	
 }

@@ -38,13 +38,22 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
 
   private var foldsDB: DB = _
   private var absDB: DB = _
+  private var tgConfig: Configuration = _
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config)
-    val homePath = System.getProperty("otg.home")
+    localInit(Configuration.fromServletConfig(config))    
+  }
+  
+  // Useful for testing
+  def localInit(config: Configuration) {
+    val homePath = config.toxygatesHomeDir
     foldsDB = OTGQueries.open(homePath + "/otgf.kct")
-    absDB = OTGQueries.open(homePath + "/otg.kct")    
+    absDB = OTGQueries.open(homePath + "/otg.kct")
+    otg.Configuration.owlimRepositoryName = config.owlimRepositoryName
+    otg.Configuration.otgHomeDir = homePath
+    // TODO: set csv parameters too
     println("KC databases are open")
   }
 
@@ -104,7 +113,7 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
   private def getExprValues(filter: DataFilter, barcodes: Seq[String], probes: Seq[String],
                             typ: ValueType, sparseRead: Boolean): ExprMatrix = {
     val db = getDB(typ)
-    val sorted = OTGQueries.sortBarcodes(barcodes.map(otg.Sample(_)))
+    val sorted = OTGQueries.sortSamples(barcodes.map(otg.Sample(_)))
     val data = OTGQueries.presentValuesByBarcodesAndProbes(db, sorted, probes, sparseRead, filter)
     val jdata = data.map(r => new VVector(r.map(asJava(_))))
     new ExprMatrix(jdata, jdata.size, jdata(0).size,
