@@ -351,27 +351,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				kcService.prepareCSVDownload(new PendingAsyncCallback<String>(w, "Unable to prepare the requested data for download.") {
 					
 					public void handleSuccess(String url) {
-						final String downloadUrl = url;
-						final DialogBox db = new DialogBox(false, true);							
-												
-						db.setHTML("Your download is ready.");				
-						HorizontalPanel hp = new HorizontalPanel();
-						
-						hp.add(new Button("Download", new ClickHandler() {
-							public void onClick(ClickEvent ev) {
-								Window.open(downloadUrl, "_blank", "");
-								db.hide();
-							}
-						}));
-						
-						hp.add(new Button("Cancel", new ClickHandler() {
-							public void onClick(ClickEvent ev) {
-								db.hide();								
-							}
-						}));
-						
-						db.add(hp);
-						db.setPopupPositionAndShow(Utils.displayInCenter(db));						
+						Utils.urlInNewWindow("Your download is ready.", "Download", url);					
 					}
 				});
 				
