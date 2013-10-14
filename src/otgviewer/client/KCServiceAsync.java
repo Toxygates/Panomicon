@@ -38,7 +38,7 @@ public interface KCServiceAsync {
 	
 	public void addTwoGroupTest(Synthetic.TwoGroupSynthetic test,
 			AsyncCallback<Void> callback);
-
 	
+	public void removeTwoGroupTests(AsyncCallback<Void> callback);
 	
 }

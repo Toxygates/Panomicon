@@ -16,7 +16,7 @@ object UtilsS {
   }
 
   def useConnector[C <: RDFConnector, T](conn: C, f: C => T, onFailure: T): T =
-    gracefully(() => {
+    tryOrFailWith(() => {
       conn.connect()
       f(conn)
     },
@@ -31,7 +31,7 @@ object UtilsS {
     }
   }
   
-  def gracefully[T](f: () => T, onFailure: T, finalizer: () => Unit): T = {
+  def tryOrFailWith[T](f: () => T, onFailure: T, finalizer: () => Unit): T = {
     try {
       f()
     } catch {
@@ -43,6 +43,4 @@ object UtilsS {
       finalizer()
     }
   }
-
-  
 }

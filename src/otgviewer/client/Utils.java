@@ -10,6 +10,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.dom.client.Style.Float;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -30,6 +31,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.visualization.client.LegendPosition;
 import com.google.gwt.visualization.client.VisualizationUtils;
+import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
 
 /**
@@ -136,10 +138,53 @@ public class Utils {
 	}
 
 	private static int lastX = -1, lastY = -1;
-	public static void displayInPopup(String caption, Widget w) {
-		displayInPopup(caption, w, false);
+	public static void displayInPopup(String caption, Widget w, DialogPosition pos) {
+		displayInPopup(caption, w, false, pos);
 	}
-	public static void displayInPopup(String caption, final Widget w, final boolean trackLocation) {
+	
+	/**
+	 * Open an URL in a new window or tab. 
+	 * @param message
+	 * @param buttonText
+	 * @param url
+	 */
+	public static void urlInNewWindow(String message, String buttonText, final String url) {
+		final DialogBox db = new DialogBox(false, true);							
+		
+		db.setHTML(message);				
+		HorizontalPanel hp = new HorizontalPanel();
+		
+		hp.add(new Button(buttonText, new ClickHandler() {
+			public void onClick(ClickEvent ev) {
+				// Note that some browsers (e.g. Safari 3.1) are extremely careful in their
+				// handling of this call. If it is not directly inside a button's ClickHandler
+				// it will be ignored.
+				Window.open(url, "_blank", "");
+				db.hide();
+			}
+		}));
+		
+		hp.add(new Button("Cancel", new ClickHandler() {
+			public void onClick(ClickEvent ev) {
+				db.hide();								
+			}
+		}));
+		
+		db.add(hp);
+		db.setPopupPositionAndShow(displayInCenter(db));						
+	}
+	
+	/**
+	 * Display a popup dialog.
+	 * @param caption Dialog title
+	 * @param w Widget to show in dialog
+	 * @param trackLocation Whether to remember the location of this dialog box. Only one dialog box
+	 * location can be remembered as we use static variables for this purpose. (TODO: fix by having
+	 * a DialogContext or similar)
+	 * @pos The position to display the dialog at.
+	 */
+	public static void displayInPopup(String caption, final Widget w, final boolean trackLocation,
+			final DialogPosition pos) {
 		final DialogBox db = new DialogBox(true, false) {
 			@Override
 			protected void endDragging(MouseUpEvent event) {
@@ -151,41 +196,38 @@ public class Utils {
 			}			
 		};
 		db.setText(caption);		
-//		final PopupPanel pp = new PopupPanel(true, true);
 		final DockPanel dp = new DockPanel();
-//		HorizontalPanel hp = new HorizontalPanel();
-//		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-//		Image i = new Image(resources.close());
-//		i.addClickHandler(new ClickHandler() {			
-//			@Override
-//			public void onClick(ClickEvent event) {
-//				db.hide();				
-//			}
-//		});
-//		hp.add(i);		
-//		hp.setWidth("100%");
-		
-//		dp.add(hp, DockPanel.NORTH);
 		dp.add(w, DockPanel.CENTER);
 		db.setWidget(dp);
 		
 		if (trackLocation) {
-			db.setPopupPositionAndShow(displayAt(db, dp, w, lastX, lastY));
+			db.setPopupPositionAndShow(displayAt(db, dp, w, lastX, lastY, pos));
 		} else {
-			db.setPopupPositionAndShow(displayAt(db, dp, w, -1, -1));
+			db.setPopupPositionAndShow(displayAt(db, dp, w, -1, -1, pos));
 		}
 
 	}
 
 	public static PositionCallback displayInCenter(final PopupPanel pp) {
-		return displayAt(pp, null, null, -1, -1);
+		return displayAt(pp, null, null, -1, -1, DialogPosition.Center);
 	}
 	
-	private static PositionCallback displayAt(final PopupPanel pp, final DockPanel dp, final Widget center,
-			final int atX, final int atY) {
+	/**
+	 * 
+	 * @param pp
+	 * @param dp
+	 * @param center
+	 * @param atX If not -1, this is the coordinate that is used
+	 * @param atY If not -1, this is the coordinate that is used
+	 * @param pos Used to compute coordinates if atX or atY is -1
+	 * @return
+	 */
+	private static PositionCallback displayAt(final PopupPanel pp, final DockPanel dp, 
+			final Widget center, final int atX, final int atY, final DialogPosition pos) {
 		return new PositionCallback() {			
 			public void setPosition(int w, int h) {			
-				if (h > Window.getClientHeight() - 100) {
+				if (DialogPosition.isTallDialog(h)) {
+					// Have to make it scrolled, too tall
 					pp.setHeight((Window.getClientHeight() - 100) + "px");
 					if (center != null && dp != null) {					
 						dp.remove(center);					
@@ -196,14 +238,9 @@ public class Utils {
 						Widget wd = pp.getWidget();
 						pp.setWidget(makeScrolled(wd));
 					}			
-					int useX = atX == -1 ? Window.getClientWidth() - w - 50 : atX;
-					int useY = atY == -1 ? 50: atY;
-					pp.setPopupPosition(useX, useY);					
-				} else {
-					int useX = atX == -1 ? Window.getClientWidth() - w - 50 : atX;
-					int useY = atY == -1 ? Window.getClientHeight()/2 - h/2: atY;					
-					pp.setPopupPosition(useX, useY);		
-				}
+				}				
+				pp.setPopupPosition(atX != -1 ? atX : pos.computeX(w), 
+						atY != -1 ? atY : pos.computeY(h));
 			}
 			};
 	}
@@ -232,18 +269,25 @@ public class Utils {
 	public static void showHelp(TextResource helpText, ImageResource helpImage) {
 		VerticalPanel vp = new VerticalPanel();				
 		if (helpImage != null) {
-			vp.add(new Image(helpImage));			
+			HorizontalPanel wp = Utils.mkWidePanel();
+			wp.add(new Image(helpImage));		
+			vp.add(wp);
 		}		
-		SimplePanel sp = new SimplePanel();
-		sp.setWidth("600px");
+		SimplePanel sp = new SimplePanel();	
 		sp.setWidget(new HTML(helpText.getText()));
 		vp.add(sp);
-		Utils.displayInPopup("Help", vp);
+		if (helpImage != null) {
+			vp.setWidth((helpImage.getWidth() + 50) + "px");
+		} else {
+			vp.setWidth("600px");
+		}
+		Utils.displayInPopup("Help", vp, DialogPosition.Center);
 	}
 	
 	public static void ensureVisualisationAndThen(final Runnable r) {
 		VisualizationUtils
-		.loadVisualizationApi("1.1", r, "corechart");		
+		.loadVisualizationApi(r, CoreChart.PACKAGE);
+		//.loadVisualizationApi("1.1", r, "corechart");		
 	}
 
 	public static void setEnabled(HasWidgets root, boolean enabled) {

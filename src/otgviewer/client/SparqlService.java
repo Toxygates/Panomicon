@@ -73,6 +73,15 @@ public interface SparqlService extends RemoteService {
 	public String[] times(DataFilter filter, String compound);		
 		
 	/**
+	 * Obtain time and dose combinations corresponding to a data filter and a compound.
+	 * In the resulting pairs, the first item will be a time and the second will be a dose.
+	 * @param filter
+	 * @param compound
+	 * @return
+	 */
+	public Pair<String,String>[] timeDoseCombinations(DataFilter filter, String compound);
+	
+	/**
 	 * Obtain probes for the given data filter
 	 * @param filter
 	 * @return

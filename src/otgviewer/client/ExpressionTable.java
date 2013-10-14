@@ -89,6 +89,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	private KCAsyncProvider asyncProvider = new KCAsyncProvider();
 	
 	private HorizontalPanel tools, analysisTools;
+	//We enable/disable this button when the value type changes
+	private Button foldChangeBtn = new Button("Add fold-change difference");
 	
 	private DoubleBox absValBox;
 	private ListBox valueTypeList = new ListBox();
@@ -148,6 +150,24 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	private void setEnabled(boolean enabled) {
 		Utils.setEnabled(tools, enabled);
 		Utils.setEnabled(analysisTools, enabled);
+		enableFoldChangeUI(enabled);		
+	}
+	
+	private void enableFoldChangeUI(boolean enabled) {
+		switch (chosenValueType) {
+		case Absolute:
+			foldChangeBtn.setEnabled(false);
+			break;
+		case Folds: 
+			foldChangeBtn.setEnabled(true && enabled);
+			break;
+		}		
+	}
+	
+	@Override
+	protected void changeValueType(ValueType type) {
+		super.changeValueType(type);
+		enableFoldChangeUI(true);		
 	}
 	
 	/**
@@ -168,6 +188,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		valueTypeList.addChangeHandler(new ChangeHandler() {			
 			@Override
 			public void onChange(ChangeEvent event) {
+				removeTests();
 				changeValueType(getValueType());
 				getExpressions();
 			}
@@ -238,6 +259,27 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	
 	public Widget analysisTools() { return analysisTools; }
 	
+	private void removeTests() {
+		if (!synthetics.isEmpty()) {
+			for (int i = 0; i < synthColumns.size(); ++i) {						
+				Column<ExpressionRow, ?> c = synthColumns.get(i);
+				removeDataColumn(c);
+			}
+			synthColumns.clear();
+			synthetics.clear();			
+			kcService.removeTwoGroupTests(new AsyncCallback<Void>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					Window.alert("There was an error removing the test columns.");					
+				}
+
+				@Override
+				public void onSuccess(Void result) {
+				}				
+			});
+		}
+	}
+	
 	/**
 	 * The tool panel for controlling t-tests and u-tests
 	 */
@@ -259,16 +301,14 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			public void onClick(ClickEvent e) { addTwoGroupSynthetic(new Synthetic.UTest(null, null), "U-Test"); }							
 		}));
 		
+		foldChangeBtn.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent e) { addTwoGroupSynthetic(new Synthetic.MeanDifference(null, null), "Fold-change difference"); }
+		});
+		analysisTools.add(foldChangeBtn);
+		
 		analysisTools.add(new Button("Remove tests", new ClickHandler() {
 			public void onClick(ClickEvent ce) {
-				if (!synthetics.isEmpty()) {
-					for (int i = 0; i < synthColumns.size(); ++i) {						
-						Column<ExpressionRow, ?> c = synthColumns.get(i);
-						removeDataColumn(c);
-					}
-					synthColumns.clear();
-					synthetics.clear();							
-				}
+				removeTests();				
 			}
 		}));
 		analysisTools.setVisible(false); //initially hidden		
@@ -280,7 +320,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	
 	private void addTwoGroupSynthetic(final Synthetic.TwoGroupSynthetic synth, final String name) {
 		if (groupsel1.getSelectedIndex() == -1 || groupsel2.getSelectedIndex() == -1) {
-			Window.alert("Please select two groups to perform " + name + ".");
+			Window.alert("Please select two groups to compute " + name + ".");
 		} else if (groupsel1.getSelectedIndex() == groupsel2.getSelectedIndex()) {
 			Window.alert("Please select two different groups to perform " + name + ".");
 		} else {
@@ -288,13 +328,13 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			final Group g2 = OTGUtils.findGroup(chosenColumns, selectedGroup(groupsel2));
 			synth.setGroups(g1, g2);
 			kcService.addTwoGroupTest(synth, new AsyncCallback<Void>() {
-				public void onSuccess(Void v) {					
-					addSynthColumn(synth, "p-value");					
+				public void onSuccess(Void v) {							
+					addSynthColumn(synth);					
 					//force reload
 					grid.setVisibleRangeAndClearData(grid.getVisibleRange(), true); 
 				}
 				public void onFailure(Throwable caught) {
-					Window.alert("Unable to perform " + name);
+					Window.alert("Unable to compute " + name);
 				}
 			});
 		}
@@ -311,27 +351,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				kcService.prepareCSVDownload(new PendingAsyncCallback<String>(w, "Unable to prepare the requested data for download.") {
 					
 					public void handleSuccess(String url) {
-						final String downloadUrl = url;
-						final DialogBox db = new DialogBox(false, true);							
-												
-						db.setHTML("Your download is ready.");				
-						HorizontalPanel hp = new HorizontalPanel();
-						
-						hp.add(new Button("Download", new ClickHandler() {
-							public void onClick(ClickEvent ev) {
-								Window.open(downloadUrl, "_blank", "");
-								db.hide();
-							}
-						}));
-						
-						hp.add(new Button("Cancel", new ClickHandler() {
-							public void onClick(ClickEvent ev) {
-								db.hide();								
-							}
-						}));
-						
-						db.add(hp);
-						db.setPopupPositionAndShow(Utils.displayInCenter(db));						
+						Utils.urlInNewWindow("Your download is ready.", "Download", url);					
 					}
 				});
 				
@@ -341,7 +361,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		
 		MenuItem mi = new MenuItem("Export to TargetMine...", false, new Command() {
 			public void execute() {
-				Utils.displayInPopup("TargetMine export", new GeneExporter(w, grid.getRowCount()));
+				Utils.displayInPopup("TargetMine export", 
+						new GeneExporter(w, grid.getRowCount()), DialogPosition.Center);
 			}
 		});
 		
@@ -370,7 +391,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		}
 		
 		for (Synthetic s: synthetics) {
-			addSynthColumn(s, "p-value");			
+			addSynthColumn(s);			
 		}				
 	}
 	
@@ -392,12 +413,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		return new ToolCell(this);
 	}
 
-	private void addSynthColumn(Synthetic s, String tooltip) {
+	private void addSynthColumn(Synthetic s) {
 		TextCell tc = new TextCell();
 		synthetics.add(s);
 		Column<ExpressionRow, String> ttestCol = new ExpressionColumn(tc, dataColumns);
 		synthColumns.add(ttestCol); 				
-		addDataColumn(ttestCol, s.getShortTitle(), tooltip);		
+		addDataColumn(ttestCol, s.getShortTitle(), s.getTooltip());		
 		ttestCol.setCellStyleNames("extraColumn");				
 	}
 	
@@ -609,7 +630,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 					cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, value, 
 							new AChartAcceptor() {
 						public void acceptCharts(final AdjustableChartGrid cg) {
-							Utils.displayInPopup("Charts", cg, true);							
+							Utils.displayInPopup("Charts", cg, true, DialogPosition.Side);							
 						}
 
 						public void acceptBarcodes(Barcode[] bcs) {

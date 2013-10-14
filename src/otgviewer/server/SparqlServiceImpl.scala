@@ -45,10 +45,11 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config)
-    localInit()
+    localInit(Configuration.fromServletConfig(config))
   }
   
-  def localInit() {
+  def localInit(conf: Configuration) {
+    otg.Configuration.owlimRepositoryName = conf.owlimRepositoryName    
     OTGSamples.connect()
     AffyProbes.connect()
     Uniprot.connect()    
@@ -87,24 +88,18 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     val r = OTGSamples.times(filter, nullToOption(compound)).toArray    
     r.sortWith((t1, t2) => orderedTimes.indexOf(t1) < orderedTimes.indexOf(t2))
   }
-    
-//  def probeTitle(probe: String): String = 
-//    AffyProbes.title(probe)
-//    
+  
+  def timeDoseCombinations(filter: DataFilter, compound: String): Array[Pair[String, String]] = 
+    OTGSamples.timeDoseCombinations(filter, compound).map(asJava(_)).toArray
+  
   def probes(filter: DataFilter): Array[String] = 
     OTGQueries.probeIds(filter).toArray
     
-  def pathologies(barcode: Barcode): Array[Pathology] = {
-    val path = OTGSamples.pathologies(barcode.getCode)
-//    path.foreach(println)
-    path.map(asJava(_)).toArray
-  }
+  def pathologies(barcode: Barcode): Array[Pathology] = 
+    OTGSamples.pathologies(barcode.getCode).map(asJava(_)).toArray
     
-  def pathologies(column: BarcodeColumn): Array[Pathology] = {
-    val path = column.getSamples.flatMap(x => OTGSamples.pathologies(x.getCode))
-//    path.foreach(println)
-    path.map(asJava(_))
-  }
+  def pathologies(column: BarcodeColumn): Array[Pathology] = 
+    column.getSamples.flatMap(x => OTGSamples.pathologies(x.getCode)).map(asJava(_))
     
   def annotations(barcode: Barcode): Annotation = asJava(OTGSamples.annotations(barcode.getCode))
   def annotations(column: BarcodeColumn): Array[Annotation] = 
@@ -129,7 +124,9 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       OTGQueries.filterProbes(probes.map(_.identifier), filter).toArray  
     })    
   }
-  def probesTargetedByCompound(filter: DataFilter, compound: String, service: String, homologous: Boolean): Array[String] = {
+  
+  def probesTargetedByCompound(filter: DataFilter, compound: String, service: String, 
+      homologous: Boolean): Array[String] = {
     val cmp = Compound.make(compound)
     val proteins = service match {
       case "CHEMBL" => useConnector(ChEMBL, (c:ChEMBL.type) => c.targetsFor(cmp, 
@@ -157,7 +154,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 
     import scala.collection.{Map => CMap, Set => CSet}
     
-  def associations(filter: DataFilter, types: Array[AType], _probes: Array[String]): Array[Association] = {
+  def associations(filter: DataFilter, types: Array[AType], 
+      _probes: Array[String]): Array[Association] = {
     val probes = AffyProbes.withAttributes(_probes.map(Probe(_)), filter)    
     
     def connectorOrEmpty[T <: RDFConnector](c: T, f: T => BBMap): BBMap = {
@@ -222,9 +220,11 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     m1.map(p => new Association(p._1, convertPairs(p._2))).toArray     
   }
   
-  def geneSuggestions(filter: DataFilter , partialName: String): Array[bioweb.shared.Pair[String, String]] = {
-    useConnector(AffyProbes, (c: AffyProbes.type) => c.probesForPartialTitle(partialName, filter)).map(x => 
-      new Pair(x.identifier, x.name)).toArray
+  def geneSuggestions(filter: DataFilter, partialName: String): 
+	  Array[bioweb.shared.Pair[String, String]] = {
+    useConnector(AffyProbes, 
+        (c: AffyProbes.type) => c.probesForPartialTitle(partialName, filter))
+        .map(x => new Pair(x.identifier, x.name)).toArray
   }
   
 }

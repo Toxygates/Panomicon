@@ -38,13 +38,22 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
 
   private var foldsDB: DB = _
   private var absDB: DB = _
+  private var tgConfig: Configuration = _
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config)
-    val homePath = System.getProperty("otg.home")
+    localInit(Configuration.fromServletConfig(config))    
+  }
+  
+  // Useful for testing
+  def localInit(config: Configuration) {
+    val homePath = config.toxygatesHomeDir
     foldsDB = OTGQueries.open(homePath + "/otgf.kct")
-    absDB = OTGQueries.open(homePath + "/otg.kct")    
+    absDB = OTGQueries.open(homePath + "/otg.kct")
+    otg.Configuration.owlimRepositoryName = config.owlimRepositoryName
+    otg.Configuration.otgHomeDir = homePath
+    // TODO: set csv parameters too
     println("KC databases are open")
   }
 
@@ -68,6 +77,10 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
     def rendered: ExprMatrix = session.getAttribute("groupedFiltered").asInstanceOf[ExprMatrix]
     def rendered_=(v: ExprMatrix) = session.setAttribute("groupedFiltered", v)
 
+    // Like rendered but without synthetic columns
+    def noSynthetics: ExprMatrix = session.getAttribute("noSynthetics").asInstanceOf[ExprMatrix]
+    def noSynthetics_=(v: ExprMatrix) = session.setAttribute("noSynthetics", v)
+    
     def params: DataViewParams = {
       val r = session.getAttribute("params").asInstanceOf[DataViewParams]
       if (r != null) {
@@ -100,7 +113,7 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
   private def getExprValues(filter: DataFilter, barcodes: Seq[String], probes: Seq[String],
                             typ: ValueType, sparseRead: Boolean): ExprMatrix = {
     val db = getDB(typ)
-    val sorted = OTGQueries.sortBarcodes(barcodes.map(otg.Sample(_)))
+    val sorted = OTGQueries.sortSamples(barcodes.map(otg.Sample(_)))
     val data = OTGQueries.presentValuesByBarcodesAndProbes(db, sorted, probes, sparseRead, filter)
     val jdata = data.map(r => new VVector(r.map(asJava(_))))
     new ExprMatrix(jdata, jdata.size, jdata(0).size,
@@ -173,8 +186,9 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
         _.selectNamedRows(filteredProbes.toSeq).filterRows(r => f(r, groupedData.columns)))
 
     session.rendered = ngfd
-    session.ungroupedFiltered = nfd
-
+    session.noSynthetics = ngfd
+    session.ungroupedFiltered = nfd 
+    
     if (ngfd.rows > 0) {
       println("Stored " + ngfd.rows + " x " + ngfd.columns + " items in session")
     } else {
@@ -220,11 +234,15 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
         params.sortAsc = ascending
         params.mustSort = false
 
+        //sort both the "ungrouped filtered" and the "no synthetics" along with the "rendered"
         val (grf, ugrf) = groupedFiltered.modifyJointly(session.ungroupedFiltered,
+          _.sortRows(sortData))
+        val (_, nosyn) = groupedFiltered.modifyJointly(session.noSynthetics,
           _.sortRows(sortData))
 
         groupedFiltered = grf
         session.rendered = grf
+        session.noSynthetics = nosyn
         session.ungroupedFiltered = ugrf
       }
       new ArrayList[ExpressionRow](insertAnnotations(
@@ -293,9 +311,18 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
         rendered.appendTTest(data, g1.getSamples.map(_.getCode),
           g2.getSamples.map(_.getCode), tt.getShortTitle)
       }
+      case md: Synthetic.MeanDifference => {
+        rendered.appendDiffTest(data, g1.getSamples.map(_.getCode),
+            g2.getSamples.map(_.getCode), md.getShortTitle)
+      }
     }
     session.rendered = withTest
-
+  }
+  
+  def removeTwoGroupTests(): Unit = {
+    val session = getSessionData()
+    // This is the only reason why we keep the noSynthetics around
+    session.rendered = session.noSynthetics    
   }
 
   def prepareCSVDownload(): String = {

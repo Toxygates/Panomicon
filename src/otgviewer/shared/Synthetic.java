@@ -39,6 +39,11 @@ abstract public class Synthetic implements DataColumn, Serializable {
 				name = "(T) p(" + g1.getShortTitle() + ", " + g2.getShortTitle() + ")";
 			}
 		}
+		
+		@Override
+		public String getTooltip() {
+			return "p-value";
+		}
 	}
 	
 	/**
@@ -57,7 +62,33 @@ abstract public class Synthetic implements DataColumn, Serializable {
 				name = "(U) p(" + g1.getShortTitle() + ", " + g2.getShortTitle() + ")";
 			}
 		}
-	}	
+		@Override
+		public String getTooltip() {
+			return "p-value";
+		}
+	}
+	
+	/**
+	 * Mean difference between groups.
+	 */
+	public static class MeanDifference extends TwoGroupSynthetic {
+		public MeanDifference() { super("", null, null); }
+		public MeanDifference(Group g1, Group g2) {
+			super("", g1, g2);
+		}
+		
+		@Override
+		public void setGroups(Group g1, Group g2) {
+			super.setGroups(g1, g2);
+			if (g1 != null && g2 != null) {
+				name = "Diff(" + g1.getShortTitle() + ", " + g2.getShortTitle() + ")";
+			}
+		}
+		@Override
+		public String getTooltip() {
+			return "Fold change difference";
+		}
+	}
 
 	protected String name;
 	
@@ -65,7 +96,8 @@ abstract public class Synthetic implements DataColumn, Serializable {
 	public Synthetic(String name) { this.name = name; }
 	public Barcode[] getSamples() { return new Barcode[0]; }	
 	public String[] getCompounds() { return new String[0]; }	
-	public String getShortTitle() { return name; }
+	public String getShortTitle() { return name; }	
+	public String getTooltip() { return "Synthetic"; }
 	
 	public String pack() {
 		return "Synthetic:::" + name;
