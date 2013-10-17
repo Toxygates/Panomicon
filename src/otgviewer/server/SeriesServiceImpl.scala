@@ -96,10 +96,6 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
         OTGSeriesQuery.getSeries(seriesDB, asScala(filter, new Series("", p, timeDose, c, Array.empty)))
         ))
     val jss = ss.map(asJava(_))
-    for (s <- ss) {
-      println(s)
-    }
-
     new ArrayList[Series](asJavaCollection(jss))
   }
 }

@@ -146,7 +146,6 @@ public class ChartGrid extends Composite {
 				dt.setValue(j, idx, 0);
 			}
 			colors[idx - 1] = "DarkGrey";
-
 		}
 
 		ao.setMinValue(table.getMin());
@@ -162,7 +161,7 @@ public class ChartGrid extends Composite {
 		//(if we are, columnCount is 2)
 		if (columnCount > 2) {
 			ChartArea ca = ChartArea.create();
-			ca.setWidth(useWidth-50);
+			ca.setWidth(useWidth - 50);
 			ca.setHeight(140);		
 			o.setChartArea(ca);
 		}
