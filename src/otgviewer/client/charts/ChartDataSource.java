@@ -144,7 +144,6 @@ abstract class ChartDataSource {
 	/**
 	 * An expression row source with a fixed dataset.
 	 * @author johan
-	 *
 	 */
 	static class ExpressionRowSource extends ChartDataSource {
 		protected Barcode[] barcodes;
@@ -249,8 +248,6 @@ abstract class ChartDataSource {
 		
 		void getSSamples(String[] compounds, String[] dosesOrTimes, SampleAcceptor acceptor) {
 			super.getSamples(compounds, dosesOrTimes, acceptor);
-		}
-		
-	}
-	
+		}		
+	}	
 }
