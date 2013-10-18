@@ -64,7 +64,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     //Same for timeDose = High
     val key = asScala(filter, new otgviewer.shared.Series("", probesRules.head._1, "High", null, Array.empty)) 
     
-    val ranked = OTGSeriesQuery.rankCompoundsCombined(seriesDB, key, probesRules) 
+    val ranked = OTGSeriesQuery.rankCompoundsCombined(seriesDB, filter, key, probesRules) 
     val r = ranked.map(p => new MatchResult(p._1, p._2._1, p._2._2)).toArray
     val rr = r.sortWith((x1, x2) => {
       if (JDouble.isNaN(x1.score)) {
