@@ -18,6 +18,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Grid;
@@ -43,6 +44,9 @@ public class CompoundRanker extends DataListenerWidget {
 	final GeneOracle oracle = new GeneOracle();
 	private List<String> availableCompounds = chosenCompounds;
 	
+	protected SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
+			.create(SparqlService.class);
+	
 	/**
 	 * Data and widgets that help the user input a rule but do not need to be
 	 * sent to the server when the ranking is performed.
@@ -51,6 +55,16 @@ public class CompoundRanker extends DataListenerWidget {
 	 */
 	private class RuleInputHelper {
 		private boolean isFinalRule;
+		
+		final RankRule rule;		
+		final ListBox refCompound = new ListBox();
+		final ListBox refDose = new ListBox();
+		final SuggestBox probeText = new SuggestBox(oracle);
+		final TextBox syntheticCurveText = new TextBox();
+		final CheckBox enabled = new CheckBox();
+		final EnumSelector<RuleType> rankType = new EnumSelector<RuleType>() {
+			protected RuleType[] values() { return RuleType.values(); }
+		};
 		
 		RuleInputHelper(RankRule r, boolean finalRule) {
 			rule = r;
@@ -76,23 +90,44 @@ public class CompoundRanker extends DataListenerWidget {
 			for (String c : availableCompounds) {
 				refCompound.addItem(c);
 			}
+
+			refCompound.addChangeHandler(new ChangeHandler() {				
+				@Override
+				public void onChange(ChangeEvent event) {
+					updateDoses();
+					
+				}
+			});
 					
 			refDose.setStyleName("colored");
-			refDose.addItem("Low"); //TODO! read proper doses from db
-			refDose.addItem("Middle");
-			refDose.addItem("High");
 			refDose.setEnabled(false);
 		}
 		
-		final RankRule rule;		
-		final ListBox refCompound = new ListBox();
-		final ListBox refDose = new ListBox();
-		final SuggestBox probeText = new SuggestBox(oracle);
-		final TextBox syntheticCurveText = new TextBox();
-		final CheckBox enabled = new CheckBox();
-		final EnumSelector<RuleType> rankType = new EnumSelector<RuleType>() {
-			protected RuleType[] values() { return RuleType.values(); }
-		};
+		private void updateDoses() {
+			final String selCompound = refCompound.getItemText(refCompound.getSelectedIndex());
+			
+			sparqlService.doseLevels(chosenDataFilter, 
+					selCompound, 
+					new AsyncCallback<String[]>() {
+				
+				// TODO use our custom async task handler
+						
+				@Override
+				public void onSuccess(String[] result) {
+					refDose.clear();
+					for (String i: result) {
+						if (!i.equals("Control")) {
+							refDose.addItem(i);
+						}
+					}							
+				}
+				
+				@Override
+				public void onFailure(Throwable caught) {
+					Window.alert("Unable to retrieve dose levels for " + selCompound);							
+				}
+			});
+		}
 		
 		void populate(int row) {
 			grid.setWidget(row + 1, 0, enabled);
@@ -117,6 +152,10 @@ public class CompoundRanker extends DataListenerWidget {
 					case ReferenceCompound:
 						syntheticCurveText.setEnabled(false);
 						refCompound.setEnabled(true);
+						if (refCompound.getItemCount() > 0) {
+							refCompound.setSelectedIndex(0);
+							updateDoses();
+						}
 						refDose.setEnabled(true);
 						break;
 					default:
@@ -252,6 +291,7 @@ public class CompoundRanker extends DataListenerWidget {
 		oracle.setFilter(filter);	
 		for (RuleInputHelper rih: inputHelpers) {
 			rih.refCompound.clear();
+			rih.refDose.clear();
 		}		
 	}
 
@@ -261,9 +301,11 @@ public class CompoundRanker extends DataListenerWidget {
 		availableCompounds = compounds;
 		for (RuleInputHelper rih: inputHelpers) {
 			rih.refCompound.clear();
+			rih.refDose.clear();
 			for (String c : compounds) {
-				rih.refCompound.addItem(c);
+				rih.refCompound.addItem(c);				
 			}
+			rih.updateDoses();
 		}
 	}
 }
