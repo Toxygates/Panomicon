@@ -25,4 +25,9 @@ public class MatchResult implements Serializable {
 		_compound = compound;
 		_score = score;
 	}
+	
+	@Override
+	public String toString() {
+		return "MatchResult(" + _compound + "/" + _dose + " = " + _score + ")";
+	}
 }
