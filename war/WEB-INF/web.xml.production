@@ -5,54 +5,37 @@
          version="2.5"
          xmlns="http://java.sun.com/xml/ns/javaee">
 
+	<context-param>
+		<param-name>owlimRepositoryName</param-name>
+		<param-value>otg</param-value>
+	</context-param>
+	<context-param>
+		<param-name>toxygatesHomeDir</param-name>
+		<param-value>/opt/toxygates</param-value>
+	</context-param>
+ 	<context-param>
+                 <param-name>csvDir</param-name>
+                 <param-value>/opt/apache-tomcat-6.0.36/webapps/toxygates/csv</param-value>
+        </context-param>
+        <context-param>
+                 <param-name>csvUrlBase</param-name>
+                 <param-value>http://toxygates.nibio.go.jp:8080/toxygates/csv</param-value>
+        </context-param>
   <!-- Servlets -->
 
 	<servlet>
 		<servlet-name>sparqlServlet</servlet-name>
 		<servlet-class>otgviewer.server.SparqlServiceImpl</servlet-class>
-		<init-param>
-			<param-name>owlimRepositoryName</param-name>
-			<param-value>otg</param-value>
-		</init-param>
-		<init-param>
-			<param-name>toxygatesHomeDir</param-name>
-			<param-value>/opt/toxygates</param-value>
-		</init-param>
 	</servlet>
 
 	<servlet>
 		<servlet-name>seriesServlet</servlet-name>
 		<servlet-class>otgviewer.server.SeriesServiceImpl</servlet-class>
-		<init-param>
-			<param-name>owlimRepositoryName</param-name>
-			<param-value>otg</param-value>
-		</init-param>
-		<init-param>
-			<param-name>toxygatesHomeDir</param-name>
-			<param-value>/opt/toxygates</param-value>
-		</init-param>
 	</servlet>
 
 	<servlet>
 		<servlet-name>kcServlet</servlet-name>
 		<servlet-class>otgviewer.server.KCServiceImpl</servlet-class>
-		<init-param>
-			<param-name>owlimRepositoryName</param-name>
-			<param-value>otg</param-value>
-		</init-param>
-		<init-param>
-			<param-name>toxygatesHomeDir</param-name>
-			<param-value>/opt/toxygates</param-value>
-		</init-param>
- 		<init-param>
-                        <param-name>csvDir</param-name>
-                        <param-value>/opt/apache-tomcat-6.0.36/webapps/toxygates/csv</param-value>
-                </init-param>
-                <init-param>
-                        <param-name>csvUrlBase</param-name>
-                        <param-value>http://toxygates.nibio.go.jp:8080/toxygates/csv</param-value>
-                </init-param>
-
 	</servlet>
 
 	<servlet-mapping>
@@ -67,8 +50,8 @@
 
 	<servlet-mapping>
 		<servlet-name>kcServlet</servlet-name>
-    <url-pattern>/toxygates/KC</url-pattern>
-  </servlet-mapping>
+    		<url-pattern>/toxygates/KC</url-pattern>
+  	</servlet-mapping>
   
   <!-- Default page to serve -->
   <welcome-file-list>
