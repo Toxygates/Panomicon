@@ -44,6 +44,14 @@
 			<param-name>toxygatesHomeDir</param-name>
 			<param-value>/opt/toxygates-test</param-value>
 		</init-param>
+		<init-param>
+			<param-name>csvDir</param-name>
+			<param-value>/opt/apache-tomcat-6.0.36/webapps/toxygates/csv</param-value>
+		</init-param>
+		<init-param>
+			<param-name>csvUrlBase</param-name>
+			<param-value>http://toxygates.nibio.go.jp:8080/toxygates/csv</param-value>
+		</init-param>
 	</servlet>
 
 	<servlet-mapping>

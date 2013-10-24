@@ -39,6 +39,8 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
   private var foldsDB: DB = _
   private var absDB: DB = _
   private var tgConfig: Configuration = _
+  private var csvDirectory: String = _
+  private var csvUrlBase: String = _
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
@@ -49,6 +51,8 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
   // Useful for testing
   def localInit(config: Configuration) {
     val homePath = config.toxygatesHomeDir
+    csvDirectory = config.csvDirectory
+    csvUrlBase = config.csvUrlBase
     foldsDB = OTGQueries.open(homePath + "/otgf.kct")
     absDB = OTGQueries.open(homePath + "/otg.kct")
     otg.Configuration.owlimRepositoryName = config.owlimRepositoryName
@@ -339,7 +343,7 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
     useConnector(AffyProbes, (c: AffyProbes.type) => {
       val gis = c.allGeneIds(session.params.filter).mapMValues(_.identifier)      
       val geneIds = rowNames.map(rn => gis.getOrElse(Probe(rn), Seq.empty)).map(_.mkString(" "))
-      CSVHelper.writeCSV(rowNames, colNames, geneIds, session.rendered.data.map(_.map(asScala(_))))
+      CSVHelper.writeCSV(csvDirectory, csvUrlBase, rowNames, colNames, geneIds, session.rendered.data.map(_.map(asScala(_))))
     })
   }
 

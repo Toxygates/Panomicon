@@ -91,13 +91,15 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 	}
 	
 	public void filterSelected(DataFilter filter) {		
-		changeDataFilter(filter);
 		Storage s = tryGetStorage();
-		if (s != null) {			
+		if (s != null) {		
+			changeDataFilter(filter);
 			storeDataFilter(s);
 			setConfigured(true);
 			manager.deconfigureAll(this);
 			configuredProceed(ColumnScreen.key);
+		} else {
+			Window.alert("Your browser does not support local storage. Unable to continue.");
 		}
 	}
 
