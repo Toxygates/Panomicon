@@ -11,15 +11,7 @@
 	</context-param>
 	<context-param>
 		<param-name>toxygatesHomeDir</param-name>
-		<param-value>/opt/toxygates-test</param-value>
-	</context-param>
-	<context-param>
-		<param-name>csvDir</param-name>
-		<param-value>/opt/apache-tomcat-6.0.36/webapps/toxygates/csv</param-value>
-	</context-param>
-	<context-param>
-		<param-name>csvUrlBase</param-name>
-		<param-value>http://toxygates.nibio.go.jp:8080/toxygates/csv</param-value>
+		<param-value>/ext/toxygates</param-value>
 	</context-param>
   <!-- Servlets -->
 
@@ -50,27 +42,11 @@
 
 	<servlet-mapping>
 		<servlet-name>kcServlet</servlet-name>
-    <url-pattern>/toxygates/KC</url-pattern>
-  </servlet-mapping>
+    		<url-pattern>/toxygates/KC</url-pattern>
+  	</servlet-mapping>
   
   <!-- Default page to serve -->
   <welcome-file-list>
     <welcome-file>toxygates.html</welcome-file>
   </welcome-file-list>
-
-<security-constraint>
-  <web-resource-collection>
-     <web-resource-name>Toxygates (Adjuvant test version)</web-resource-name>
-     <url-pattern>/*</url-pattern>
-  </web-resource-collection>
-  <auth-constraint>
-    <role-name>toxygates-test</role-name>
-  </auth-constraint>
-</security-constraint>
-
-<login-config>
-  <auth-method>BASIC</auth-method>
-  <realm-name>Toxygates (Adjuvant test)</realm-name>
-</login-config>
-
 </web-app>

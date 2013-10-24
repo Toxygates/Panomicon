@@ -3,10 +3,27 @@ package otgviewer.server
 import javax.servlet.ServletConfig
 
 object Configuration {
-  def fromServletConfig(config: ServletConfig) =    
-    new Configuration(config.getInitParameter("owlimRepositoryName"), 
-        config.getInitParameter("toxygatesHomeDir"))
+  /**
+   * Create a new Configuration from the ServletConfig.
+   */
+  def fromServletConfig(config: ServletConfig): Configuration = {
+    val context = config.getServletContext()
+    
+    /**
+     * These parameters are read from <context-param> tags in WEB-INF/web.xml.
+     */
+    new Configuration(context.getInitParameter("owlimRepositoryName"),
+      context.getInitParameter("toxygatesHomeDir"),
+      context.getInitParameter("csvDir"),
+      context.getInitParameter("csvUrlBase"))
+  }
+       
 }
 
-// TODO: add CSV parameters
-class Configuration(val owlimRepositoryName: String, val toxygatesHomeDir: String)
+class Configuration(val owlimRepositoryName: String, val toxygatesHomeDir: String,
+    val csvDirectory: String, val csvUrlBase: String) {
+  
+  def this(owlimRepository: String, toxygatesHome:String) = 
+    this(owlimRepository, toxygatesHome, System.getProperty("otg.csvDir"), 
+        System.getProperty("otg.csvUrlBase"))
+}
