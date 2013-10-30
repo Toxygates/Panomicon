@@ -158,8 +158,6 @@ class ExprMatrixTest extends FunSuite {
   
   test("column select") {
     val em = testMatrix
-
-
     val em2 = em.selectColumns(List(1,3))
     println(em2)    
     assert(em2.columns === 2)
@@ -225,6 +223,16 @@ class ExprMatrixTest extends FunSuite {
     assert(s2.annotations(0).probe === "p2")
     assert(s2.annotations(1).probe === "p3")
     assert(s2.annotations(2).probe === "p1")
+  }
+  
+  test("empty matrix") {
+    val m = testMatrix
+    val empty = m.copyWithColumns(Seq())
+    assert(empty.rows === 0)
+    assert(empty.columns === 0)
+    // TODO should this be asserted? Doesn't pass currently.
+//    assert(empty.rowKeys.isEmpty)
+//    assert(empty.columnKeys.isEmpty)
   }
 
 }

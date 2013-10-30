@@ -72,18 +72,23 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
   protected def getSessionData() = new SessionData(getThreadLocalRequest().getSession())
 
   protected class SessionData(val session: HttpSession) {
-    def ungroupedUnfiltered: ExprMatrix = session.getAttribute("ungroupedUnfiltered").asInstanceOf[ExprMatrix]
-    def ungroupedUnfiltered_=(v: ExprMatrix) = session.setAttribute("ungroupedUnfiltered", v)
+    private[this] def readMatrix(name: String): ExprMatrix =
+      session.getAttribute(name).asInstanceOf[ExprMatrix]
+    private[this] def writeMatrix(name: String, v: ExprMatrix): Unit =
+      session.setAttribute(name, v)
+    
+    def ungroupedUnfiltered: ExprMatrix = readMatrix("ungroupedUnfiltered")
+    def ungroupedUnfiltered_=(v: ExprMatrix) = writeMatrix("ungroupedUnfiltered", v)
 
-    def ungroupedFiltered: ExprMatrix = session.getAttribute("ungroupedFiltered").asInstanceOf[ExprMatrix]
-    def ungroupedFiltered_=(v: ExprMatrix) = session.setAttribute("ungroupedFiltered", v)
+    def ungroupedFiltered: ExprMatrix = readMatrix("ungroupedFiltered")
+    def ungroupedFiltered_=(v: ExprMatrix) = writeMatrix("ungroupedFiltered", v)
 
-    def rendered: ExprMatrix = session.getAttribute("groupedFiltered").asInstanceOf[ExprMatrix]
-    def rendered_=(v: ExprMatrix) = session.setAttribute("groupedFiltered", v)
+    def rendered: ExprMatrix = readMatrix("groupedFiltered")
+    def rendered_=(v: ExprMatrix) = writeMatrix("groupedFiltered", v)
 
     // Like rendered but without synthetic columns
-    def noSynthetics: ExprMatrix = session.getAttribute("noSynthetics").asInstanceOf[ExprMatrix]
-    def noSynthetics_=(v: ExprMatrix) = session.setAttribute("noSynthetics", v)
+    def noSynthetics: ExprMatrix = readMatrix("noSynthetics")
+    def noSynthetics_=(v: ExprMatrix) = writeMatrix("noSynthetics", v)
     
     def params: DataViewParams = {
       val r = session.getAttribute("params").asInstanceOf[DataViewParams]
@@ -176,9 +181,7 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
 
     val session = getSessionData()
     val data = session.ungroupedUnfiltered
-
     val groupedData = makeGroups(data, columns)
-
     val filteredProbes = filterProbes(filter, probes)
 
     //filter by abs. value
@@ -279,7 +282,6 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
       })      
     })
   }
-
   
   def getFullData(filter: DataFilter, barcodes: JList[String], probes: Array[String],
                   typ: ValueType, sparseRead: Boolean, withSymbols: Boolean): JList[ExpressionRow] = {
