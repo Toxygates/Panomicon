@@ -24,8 +24,6 @@ import com.google.gwt.user.client.Window;
 /**
  * This class brings series and row data into a unified interface for the purposes of
  * chart drawing.
- * @author johan
- *
  */
 abstract class ChartDataSource {
 	
