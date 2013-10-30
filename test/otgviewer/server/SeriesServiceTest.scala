@@ -13,7 +13,7 @@ class SeriesServiceTest extends FunSuite with BeforeAndAfter {
   var s: SeriesServiceImpl = _
   
   before {   
-    val conf = new Configuration("otg", "/Users/johan/otg/20120221/open-tggates")
+    val conf = new Configuration("otg", "/ext/toxygates")
     s = new SeriesServiceImpl()
     s.localInit(conf)
   }
