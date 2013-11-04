@@ -3,7 +3,6 @@ package otgviewer.server
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
 import otgviewer.shared.DataFilter
 import otg.OTGSeriesQuery
-import otg.SeriesMatchContext
 import otgviewer.shared.RankRule
 import otgviewer.client.SeriesService
 import otg.sparql.AffyProbes
@@ -16,6 +15,9 @@ import kyotocabinet.DB
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import otg.sparql.OwlimLocalRDF
+import otg.db.SeriesDB
+import otg.db.kyotocabinet.KCSeriesDB
+import otg.SeriesRanking
 
 
 class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
@@ -25,7 +27,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
 
   import java.lang.{Double => JDouble}
 
-  private var seriesDB: DB = _
+  private var db: SeriesDB = _
 
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
@@ -36,14 +38,14 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   // Useful for testing
   def localInit(config: Configuration) {
     val homePath = config.toxygatesHomeDir
-    seriesDB = OTGSeriesQuery.open(homePath + "/otgfs.kct")
+    db = new KCSeriesDB(homePath + "/otgfs.kct")
     otg.Configuration.otgHomeDir = config.toxygatesHomeDir
     otg.Configuration.owlimRepositoryName = config.owlimRepositoryName
     println("Series DB is open")
   }
   
   override def destroy() {
-    seriesDB.close()
+    db.close()
     super.destroy()
   }
   
@@ -64,8 +66,8 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     //TODO: probe is actually irrelevant here but the API is not well designed
     //Same for timeDose = High
     val key = asScala(filter, new otgviewer.shared.Series("", probesRules.head._1, "High", null, Array.empty)) 
-    
-    val ranked = OTGSeriesQuery.rankCompoundsCombined(SeriesMatchContext(seriesDB, filter, key), probesRules) 
+    val ranking = new SeriesRanking(db, filter, key)    
+    val ranked = ranking.rankCompoundsCombined(probesRules) 
     val r = ranked.map(p => new MatchResult(p._1, p._2._1, p._2._2)).toArray
     val rr = r.sortWith((x1, x2) => {
       if (JDouble.isNaN(x1.score)) {
@@ -85,17 +87,16 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   
   
   def getSingleSeries(filter: DataFilter, probe: String, timeDose: String, compound: String): Series = {
-    OTGSeriesQuery.getSeries(seriesDB, 
-        asScala(filter, new Series("", probe, timeDose, compound, Array.empty))
-        ).head
+    db.read(asScala(filter, new Series("", probe, timeDose, compound, Array.empty))).head
   }
 
   def getSeries(filter: DataFilter, probes: Array[String], timeDose: String, compounds: Array[String]): JList[Series] = {
     val validated = AffyProbes.identifiersToProbes(filter, probes, true, true).map(_.identifier)
     val ss = validated.flatMap(p =>
       compounds.flatMap(c =>
-        OTGSeriesQuery.getSeries(seriesDB, asScala(filter, new Series("", p, timeDose, c, Array.empty)))
-        ))
+        db.read(asScala(filter, new Series("", p, timeDose, c, Array.empty)))
+        )
+       )
     val jss = ss.map(asJava(_))
     new ArrayList[Series](asJavaCollection(jss))
   }
