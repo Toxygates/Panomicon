@@ -145,6 +145,12 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 			}
 		}));
 		
+		hm.addItem(new MenuItem("Version history...", new Command() {
+			public void execute() {
+				Utils.showHelp(getVersionHTML(), null);
+			}
+		}));
+		
 		return menuBar;
 	}
 
@@ -293,9 +299,13 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	private TextResource getAboutHTML() {
 		return resources.aboutHTML();
 	}
-	
+		
 	private ImageResource getAboutImage() {
 		return resources.about();
+	}
+	
+	private TextResource getVersionHTML() {
+		return resources.versionHTML();
 	}
 	
 	private void resizeInterface() {

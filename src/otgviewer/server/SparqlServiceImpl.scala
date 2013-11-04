@@ -135,13 +135,13 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       case _ => throw new Exception("Unexpected probe target service request: " + service)
     }
     val pbs = if (homologous) {
-      val oproteins = Uniprot.orthologsFor(proteins).values.flatten
+      val oproteins = Uniprot.orthologsFor(proteins).values.flatten.toSet
       AffyProbes.forUniprots(oproteins)
 //      OTGOwlim.probesForEntrezGenes(genes)
     } else {
       AffyProbes.forUniprots(proteins)
     }
-    pbs.filter(p => OTGQueries.isProbeForSpecies(p.identifier, filter)).map(_.identifier).toArray  
+    pbs.toSet.filter(p => OTGQueries.isProbeForSpecies(p.identifier, filter)).map(_.identifier).toArray  
   }
   
   def goTerms(pattern: String): Array[String] = 
