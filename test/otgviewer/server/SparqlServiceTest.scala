@@ -21,7 +21,7 @@ class SparqlServiceTest extends FunSuite with BeforeAndAfter {
   var s: SparqlServiceImpl = _
   
   before {    
-    val conf = new Configuration("otg", "/Users/johan/otg/20120221/open-tggates")    
+    val conf = new Configuration("otg", "/ext/toxygates")    
     s = new SparqlServiceImpl()
     s.localInit(conf)
   }  

@@ -93,4 +93,6 @@ public interface Resources extends ClientBundle {
 	@Source("help/about.png")
 	ImageResource about();
 	
+	@Source("help/versions.html")
+	TextResource versionHTML();
 }

@@ -19,6 +19,11 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+/**
+ * A chart grid where the user can interactively choose what kind of charts 
+ * to display (for example, vs. time or vs. dose, and what particular times or
+ * doses to focus on).
+ */
 public class AdjustableChartGrid extends Composite {
 	private ListBox chartCombo, chartSubtypeCombo;
 	
