@@ -52,13 +52,13 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     otg.Configuration.owlimRepositoryName = conf.owlimRepositoryName    
     OTGSamples.connect()
     AffyProbes.connect()
-    Uniprot.connect()    
+    LocalUniprot.connect()    
   }
   
   override def destroy() {
     AffyProbes.close()
     OTGSamples.close()
-    Uniprot.close()   
+    LocalUniprot.close()   
     super.destroy()
   }
 
@@ -135,13 +135,16 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       case _ => throw new Exception("Unexpected probe target service request: " + service)
     }
     val pbs = if (homologous) {
-      val oproteins = Uniprot.orthologsFor(proteins).values.flatten.toSet
+      val oproteins = LocalUniprot.orthologsFor(proteins).values.flatten.toSet
       AffyProbes.forUniprots(oproteins)
 //      OTGOwlim.probesForEntrezGenes(genes)
     } else {
       AffyProbes.forUniprots(proteins)
     }
-    pbs.toSet.filter(p => OTGQueries.isProbeForSpecies(p.identifier, filter)).map(_.identifier).toArray  
+    println(pbs.size)
+    val f = pbs.toSet.filter(p => OTGQueries.isProbeForSpecies(p.identifier, filter)).map(_.identifier).toArray
+    println(f.size)
+    f
   }
   
   def goTerms(pattern: String): Array[String] = 
@@ -169,7 +172,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     //orthologous proteins if needed - this is currently slow to look up
     val oproteins = if (types.contains(AType.Chembl) || types.contains(AType.Drugbank) ||
         types.contains(AType.OrthProts)) {    	
-      proteins combine ((ps: Iterable[Protein]) => Uniprot.orthologsFor(ps))
+      proteins combine ((ps: Iterable[Protein]) => LocalUniprot.orthologsFor(ps))
     } else {
       emptyMMap[Probe, Protein]()
     }
