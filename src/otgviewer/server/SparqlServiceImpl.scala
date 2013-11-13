@@ -4,9 +4,7 @@ import scala.Array.canBuildFrom
 import scala.Array.fallbackCanBuildFrom
 import scala.Option.option2Iterable
 import scala.collection.{Set => CSet}
-
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-
 import Assocations.convertPairs
 import Conversions.asJava
 import Conversions.asScala
@@ -18,7 +16,6 @@ import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import otg.DefaultBio
 import otg.OTGQueries
-
 import otg.sparql._
 import otgviewer.client.SparqlService
 import otgviewer.shared.AType
@@ -29,6 +26,7 @@ import otgviewer.shared.BarcodeColumn
 import bioweb.shared.Pair
 import otgviewer.shared.Pathology
 import bioweb.shared.array.Annotation
+import otg.Human
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -135,14 +133,14 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       case _ => throw new Exception("Unexpected probe target service request: " + service)
     }
     val pbs = if (homologous) {
-      val oproteins = LocalUniprot.orthologsFor(proteins).values.flatten.toSet
-      AffyProbes.forUniprots(oproteins)
+      val oproteins = LocalUniprot.orthologsFor(proteins, filter).values.flatten.toSet
+      AffyProbes.forUniprots(oproteins ++ proteins)
 //      OTGOwlim.probesForEntrezGenes(genes)
     } else {
       AffyProbes.forUniprots(proteins)
     }
     println(pbs.size)
-    val f = pbs.toSet.filter(p => OTGQueries.isProbeForSpecies(p.identifier, filter)).map(_.identifier).toArray
+    val f = pbs.filter(p => OTGQueries.isProbeForSpecies(p.identifier, filter)).map(_.identifier).toArray
     println(f.size)
     f
   }
@@ -161,6 +159,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       _probes: Array[String]): Array[Association] = {
     val probes = AffyProbes.withAttributes(_probes.map(Probe(_)), filter)    
     
+    
     def connectorOrEmpty[T <: RDFConnector](c: T, f: T => BBMap): BBMap = {
       val emptyVal = CSet(DefaultBio("error", "(Timeout or error)"))
       useConnector(c, f, 
@@ -169,13 +168,19 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 
     val proteins = toBioMap(probes, (_: Probe).proteins) 
  
-    //orthologous proteins if needed - this is currently slow to look up
-    val oproteins = if (types.contains(AType.Chembl) || types.contains(AType.Drugbank) ||
-        types.contains(AType.OrthProts)) {    	
-      proteins combine ((ps: Iterable[Protein]) => LocalUniprot.orthologsFor(ps))
+    //orthologous proteins if needed
+    val oproteins = if (
+        (types.contains(AType.Chembl) || types.contains(AType.Drugbank) || types.contains(AType.OrthProts))
+        && (filter.species.get != Human)
+        && false // Not used currently due to performance issues!
+        ) {    	
+      // This always maps to Human proteins as they are assumed to contain the most targets
+      val r = proteins combine ((ps: Iterable[Protein]) => LocalUniprot.orthologsFor(ps, Human))      
+      r
     } else {
       emptyMMap[Probe, Protein]()
     }
+    println(oproteins.allValues.size + " oproteins")
 
     def getTargeting(from: CompoundTargets): MMap[Probe, Compound] = {
       val expected = OTGSamples.compounds(filter).map(Compound.make(_))
