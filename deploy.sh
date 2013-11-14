@@ -7,4 +7,5 @@ zip -r toxygates.war *
 #scp toxygates.war johan@sontaran:/opt/apache-tomcat-6.0.35/webapps
 cd ..
 rm -r war/WEB-INF/classes/otg
+rm -r war/WEB-INF/classes/friedrich
 
