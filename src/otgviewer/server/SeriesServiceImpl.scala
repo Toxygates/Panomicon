@@ -3,6 +3,7 @@ package otgviewer.server
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
 import otgviewer.shared.DataFilter
 import otg.OTGSeriesQuery
+import otg.SeriesMatchContext
 import otgviewer.shared.RankRule
 import otgviewer.client.SeriesService
 import otg.sparql.AffyProbes
@@ -64,7 +65,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     //Same for timeDose = High
     val key = asScala(filter, new otgviewer.shared.Series("", probesRules.head._1, "High", null, Array.empty)) 
     
-    val ranked = OTGSeriesQuery.rankCompoundsCombined(seriesDB, filter, key, probesRules) 
+    val ranked = OTGSeriesQuery.rankCompoundsCombined(SeriesMatchContext(seriesDB, filter, key), probesRules) 
     val r = ranked.map(p => new MatchResult(p._1, p._2._1, p._2._2)).toArray
     val rr = r.sortWith((x1, x2) => {
       if (JDouble.isNaN(x1.score)) {
