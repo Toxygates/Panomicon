@@ -18,7 +18,8 @@ import otg.sparql.OwlimLocalRDF
 import otg.db.SeriesDB
 import otg.db.kyotocabinet.KCSeriesDB
 import otg.SeriesRanking
-
+import otg.sparql.AffyProbes
+import otg.Context
 
 class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   import Conversions._
@@ -28,6 +29,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   import java.lang.{Double => JDouble}
 
   private var db: SeriesDB = _
+  private implicit var context: Context = _
 
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
@@ -38,9 +40,8 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   // Useful for testing
   def localInit(config: Configuration) {
     val homePath = config.toxygatesHomeDir
-    db = new KCSeriesDB(homePath + "/otgfs.kct")
-    otg.Configuration.otgHomeDir = config.toxygatesHomeDir
-    otg.Configuration.owlimRepositoryName = config.owlimRepositoryName
+    context = config.context
+    db = new KCSeriesDB(homePath + "/otgfs.kct")    
     println("Series DB is open")
   }
   

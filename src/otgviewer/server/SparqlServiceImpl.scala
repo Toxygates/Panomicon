@@ -4,9 +4,7 @@ import scala.Array.canBuildFrom
 import scala.Array.fallbackCanBuildFrom
 import scala.Option.option2Iterable
 import scala.collection.{Set => CSet}
-
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-
 import Assocations.convertPairs
 import Conversions.asJava
 import Conversions.asScala
@@ -17,8 +15,6 @@ import UtilsS.useConnector
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import otg.DefaultBio
-import otg.OTGQueries
-
 import otg.sparql._
 import otgviewer.client.SparqlService
 import otgviewer.shared.AType
@@ -29,6 +25,9 @@ import otgviewer.shared.BarcodeColumn
 import bioweb.shared.Pair
 import otgviewer.shared.Pathology
 import bioweb.shared.array.Annotation
+import otg.Context
+import otg.OTGContext
+import otg.sparql.OwlimLocalRDF
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -42,6 +41,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   
   type DataColumn = bioweb.shared.array.DataColumn[Barcode]
   
+  implicit var context: OTGContext = _
+  
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config)
@@ -49,7 +50,9 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   }
   
   def localInit(conf: Configuration) {
-    otg.Configuration.owlimRepositoryName = conf.owlimRepositoryName    
+    this.context = conf.context
+    OwlimLocalRDF.setContextForAll(context)    
+    
     OTGSamples.connect()
     AffyProbes.connect()
     Uniprot.connect()    
@@ -93,7 +96,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     OTGSamples.timeDoseCombinations(filter, compound).map(asJava(_)).toArray
   
   def probes(filter: DataFilter): Array[String] = 
-    OTGQueries.probeIds(filter).toArray
+    context.probes(filter).tokens.toArray
     
   def pathologies(barcode: Barcode): Array[Pathology] = 
     OTGSamples.pathologies(barcode.getCode).map(asJava(_)).toArray
@@ -121,7 +124,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       val geneIds = c.geneIds(pathway, filter).map(Gene(_))
       println("Probes for " + geneIds.size + " genes")
       val probes = AffyProbes.forGenes(geneIds).toArray 
-      OTGQueries.filterProbes(probes.map(_.identifier), filter).toArray  
+      val pmap = context.probes(filter)
+      probes.map(_.identifier).filter(pmap.isToken).toArray        
     })    
   }
   
@@ -141,16 +145,18 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     } else {
       AffyProbes.forUniprots(proteins)
     }
-    pbs.toSet.filter(p => OTGQueries.isProbeForSpecies(p.identifier, filter)).map(_.identifier).toArray  
+    
+    val pmap = context.probes(filter)
+    pbs.toSet.map((p: Probe) => p.identifier).filter(pmap.isToken).toArray  
   }
   
   def goTerms(pattern: String): Array[String] = 
     OTGSamples.goTerms(pattern).map(_.name).toArray
-    
-  def probesForGoTerm(filter: DataFilter, goTerm: String): Array[String] = 
-    OTGQueries.filterProbes(
-        AffyProbes.forGoTerm(GOTerm("", goTerm)).map(_.identifier).toSeq, 
-        filter).toArray
+
+  def probesForGoTerm(filter: DataFilter, goTerm: String): Array[String] = {
+    val pmap = context.probes(filter)
+    AffyProbes.forGoTerm(GOTerm("", goTerm)).map(_.identifier).filter(pmap.isToken).toArray
+  }
 
     import scala.collection.{Map => CMap, Set => CSet}
     

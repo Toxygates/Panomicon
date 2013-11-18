@@ -13,6 +13,10 @@ import otgviewer.shared.RankRule
 import otgviewer.shared.Series
 import otgviewer.shared.RuleType
 import bioweb.shared.array._
+import otg.Species
+import otg.SeriesRanking
+import otg.Context
+
 
 /**
  * Conversions between Scala and Java types.
@@ -53,13 +57,14 @@ object Conversions {
     }
   }
 
-  implicit def asScala(filter: DataFilter, series: Series): otg.Series = {
+  implicit def asScala(filter: DataFilter, series: Series)(implicit context: Context): otg.Series = {
 	val sf = asScala(filter)
+	val p = speciesFromFilter(filter).probeMap.pack(series.probe)
 	new otg.Series(sf.repeatType.get, sf.organ.get, sf.species.get, 
-	    series.probe, series.compound, series.timeDose, Vector())
+	    p, series.compound, series.timeDose, Vector())
   }
 
-  implicit def asJava(series: otg.Series): Series = {
+  implicit def asJava(series: otg.Series)(implicit context: Context): Series = {
 	new Series(series.compound + " " + series.timeDose, series.probeStr, series.timeDose,
 	    series.compound, series.data.map(asJava).toArray)
   }
