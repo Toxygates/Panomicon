@@ -1,6 +1,7 @@
 package otgviewer.server
 
 import javax.servlet.ServletConfig
+import otg.OTGContext
 
 object Configuration {
   /**
@@ -26,4 +27,7 @@ class Configuration(val owlimRepositoryName: String, val toxygatesHomeDir: Strin
   def this(owlimRepository: String, toxygatesHome:String) = 
     this(owlimRepository, toxygatesHome, System.getProperty("otg.csvDir"), 
         System.getProperty("otg.csvUrlBase"))
+  
+  lazy val context = 
+    new OTGContext(Some(toxygatesHomeDir), Some(owlimRepositoryName)) 
 }

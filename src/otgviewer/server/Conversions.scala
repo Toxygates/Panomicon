@@ -2,7 +2,7 @@ package otgviewer.server
 
 import scala.collection.JavaConversions._
 import otg.Sample
-import otg.SeriesMatching
+import otg.SeriesRanking
 import otg.Species
 import otgviewer.shared.Barcode
 import otgviewer.shared.CellType
@@ -13,6 +13,10 @@ import otgviewer.shared.RankRule
 import otgviewer.shared.Series
 import otgviewer.shared.RuleType
 import bioweb.shared.array._
+import otg.Species
+import otg.SeriesRanking
+import otg.Context
+
 
 /**
  * Conversions between Scala and Java types.
@@ -53,13 +57,14 @@ object Conversions {
     }
   }
 
-  implicit def asScala(filter: DataFilter, series: Series): otg.Series = {
+  implicit def asScala(filter: DataFilter, series: Series)(implicit context: Context): otg.Series = {
 	val sf = asScala(filter)
+	val p = speciesFromFilter(filter).probeMap.pack(series.probe)
 	new otg.Series(sf.repeatType.get, sf.organ.get, sf.species.get, 
-	    series.probe, series.compound, series.timeDose, Vector())
+	    p, series.compound, series.timeDose, Vector())
   }
 
-  implicit def asJava(series: otg.Series): Series = {
+  implicit def asJava(series: otg.Series)(implicit context: Context): Series = {
 	new Series(series.compound + " " + series.timeDose, series.probeStr, series.timeDose,
 	    series.compound, series.data.map(asJava).toArray)
   }
@@ -76,22 +81,22 @@ object Conversions {
     }
   }
 
-  implicit def asScala(rr: RankRule): SeriesMatching.MatchType = {    
+  implicit def asScala(rr: RankRule): SeriesRanking.RankType = {    
     rr.`type`() match {      
       case s: RuleType.Synthetic.type  => {
         println("Correlation curve: " + rr.data.toVector)
-        SeriesMatching.MultiSynthetic(rr.data.toVector)
+        SeriesRanking.MultiSynthetic(rr.data.toVector)
       }
-      case r: RuleType.HighVariance.type => SeriesMatching.HighVariance()
-      case r: RuleType.LowVariance.type => SeriesMatching.LowVariance()
-      case r: RuleType.Sum.type => SeriesMatching.Sum()
-      case r: RuleType.NegativeSum.type => SeriesMatching.NegativeSum()
-      case r: RuleType.Unchanged.type => SeriesMatching.Unchanged()
-      case r: RuleType.MonotonicUp.type => SeriesMatching.MonotonicIncreasing()
-      case r: RuleType.MonotonicDown.type => SeriesMatching.MonotonicDecreasing()
-      case r: RuleType.MaximalFold.type => SeriesMatching.MaxFold()
-      case r: RuleType.MinimalFold.type => SeriesMatching.MinFold()
-      case r: RuleType.ReferenceCompound.type => SeriesMatching.ReferenceCompound(rr.compound, rr.dose)
+      case r: RuleType.HighVariance.type => SeriesRanking.HighVariance()
+      case r: RuleType.LowVariance.type => SeriesRanking.LowVariance()
+      case r: RuleType.Sum.type => SeriesRanking.Sum()
+      case r: RuleType.NegativeSum.type => SeriesRanking.NegativeSum()
+      case r: RuleType.Unchanged.type => SeriesRanking.Unchanged()
+      case r: RuleType.MonotonicUp.type => SeriesRanking.MonotonicIncreasing()
+      case r: RuleType.MonotonicDown.type => SeriesRanking.MonotonicDecreasing()
+      case r: RuleType.MaximalFold.type => SeriesRanking.MaxFold()
+      case r: RuleType.MinimalFold.type => SeriesRanking.MinFold()
+      case r: RuleType.ReferenceCompound.type => SeriesRanking.ReferenceCompound(rr.compound, rr.dose)
     }
   }
   
