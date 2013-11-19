@@ -2,9 +2,10 @@ package otgviewer.server
 
 import scala.Array.canBuildFrom
 import scala.Option.option2Iterable
-import scala.annotation.migration
 import scala.collection.{Set => CSet}
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
+
 import Assocations.convertPairs
 import Conversions.asJava
 import Conversions.asScala
@@ -20,13 +21,10 @@ import otg.DefaultBio
 import otg.Human
 import otg.OTGContext
 import otg.sparql.AffyProbes
-import otg.sparql.AffyProbes
-import otg.sparql.B2RHomologene
 import otg.sparql.B2RHomologene
 import otg.sparql.B2RKegg
-import otg.sparql.B2RKegg
 import otg.sparql.ChEMBL
-import otg.sparql.ChEMBL
+import otg.sparql.CommonSPARQL
 import otg.sparql.CommonSPARQL.BBMap
 import otg.sparql.CommonSPARQL.MMap
 import otg.sparql.CommonSPARQL.emptyMMap
@@ -34,7 +32,6 @@ import otg.sparql.CommonSPARQL.makeRich
 import otg.sparql.CommonSPARQL.toBioMap
 import otg.sparql.Compound
 import otg.sparql.CompoundTargets
-import otg.sparql.DrugBank
 import otg.sparql.DrugBank
 import otg.sparql.GOTerm
 import otg.sparql.Gene
@@ -51,7 +48,6 @@ import otgviewer.shared.Barcode
 import otgviewer.shared.BarcodeColumn
 import otgviewer.shared.DataFilter
 import otgviewer.shared.Pathology
-import otg.sparql.CommonSPARQL
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our

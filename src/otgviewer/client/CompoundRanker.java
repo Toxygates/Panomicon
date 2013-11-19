@@ -104,7 +104,12 @@ public class CompoundRanker extends DataListenerWidget {
 		}
 		
 		private void updateDoses() {
-			final String selCompound = refCompound.getItemText(refCompound.getSelectedIndex());
+			refDose.clear();
+			int selIndex = refCompound.getSelectedIndex();
+			if (selIndex == -1) {
+				return;
+			}
+			final String selCompound = refCompound.getItemText(selIndex);
 			
 			sparqlService.doseLevels(chosenDataFilter, 
 					selCompound, 
@@ -114,7 +119,7 @@ public class CompoundRanker extends DataListenerWidget {
 						
 				@Override
 				public void onSuccess(String[] result) {
-					refDose.clear();
+
 					for (String i: result) {
 						if (!i.equals("Control")) {
 							refDose.addItem(i);
@@ -126,7 +131,7 @@ public class CompoundRanker extends DataListenerWidget {
 				public void onFailure(Throwable caught) {
 					Window.alert("Unable to retrieve dose levels for " + selCompound);							
 				}
-			});
+			});			
 		}
 		
 		void populate(int row) {
