@@ -46,4 +46,10 @@ public interface ScreenManager extends ProvidesResize {
 	 */
 	void attemptProceed(String to);
 	
+	/**
+	 * A string uniquely identifying the user interface we wish to display.
+	 * @return
+	 */
+	String getUIType();
+	
 }
