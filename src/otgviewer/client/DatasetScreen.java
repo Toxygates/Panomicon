@@ -27,13 +27,19 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 	}
 	
 	public Widget content() {
-//		return adjuvantContent();
-		return toxygatesContent();
+		final String uitype = manager.getUIType();
+		if ("toxygates".equals(uitype)) {
+			return toxygatesContent();
+		} else if ("adjuvant".equals(uitype)){
+			return adjuvantContent();
+		} else {
+			// Graceful default
+			return toxygatesContent();
+		}
 	}
 	
 	/**
 	 * For the main Toxygates instance
-	 * TODO: find a better way of configuring this
 	 * @return
 	 */
 	private Widget toxygatesContent() {
@@ -57,7 +63,6 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 	
 	/**
 	 * For the Adjuvant instance
-	 * TODO as above
 	 * @return
 	 */
 	private Widget adjuvantContent() {

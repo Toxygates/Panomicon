@@ -26,7 +26,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   import scala.collection.JavaConversions._
   import UtilsS._
 
-  import java.lang.{Double => JDouble}
+  import java.lang.{ Double => JDouble }
 
   private var db: SeriesDB = _
   private implicit var context: Context = _
@@ -41,20 +41,20 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   def localInit(config: Configuration) {
     val homePath = config.toxygatesHomeDir
     context = config.context
-    db = new KCSeriesDB(homePath + "/otgfs.kct")    
+    db = new KCSeriesDB(homePath + "/otgfs.kct")
     println("Series DB is open")
   }
-  
+
   override def destroy() {
     db.close()
     super.destroy()
   }
-  
+
   def rankedCompounds(filter: DataFilter, rules: Array[RankRule]): Array[MatchResult] = {
     val nnr = rules.takeWhile(_ != null)
-    var srs = nnr.map(asScala(_))    
+    var srs = nnr.map(asScala(_))
     var probesRules = nnr.map(_.probe).zip(srs)
-    
+
     //Convert the input probes (which may actually be genes) into definite probes
     probesRules = probesRules.flatMap(pr => {
       val resolved = AffyProbes.identifiersToProbes(filter, Array(pr._1), true, true)
@@ -63,12 +63,12 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
       }
       resolved.map(r => (r.identifier, pr._2))
     })
-    
+
     //TODO: probe is actually irrelevant here but the API is not well designed
     //Same for timeDose = High
-    val key = asScala(filter, new otgviewer.shared.Series("", probesRules.head._1, "High", null, Array.empty)) 
-    val ranking = new SeriesRanking(db, filter, key)    
-    val ranked = ranking.rankCompoundsCombined(probesRules) 
+    val key = asScala(filter, new otgviewer.shared.Series("", probesRules.head._1, "High", null, Array.empty))
+    val ranking = new SeriesRanking(db, filter, key)
+    val ranked = ranking.rankCompoundsCombined(probesRules)
     val r = ranked.map(p => new MatchResult(p._1, p._2._1, p._2._2)).toArray
     val rr = r.sortWith((x1, x2) => {
       if (JDouble.isNaN(x1.score)) {
@@ -85,8 +85,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     }
     rr
   }
-  
-  
+
   def getSingleSeries(filter: DataFilter, probe: String, timeDose: String, compound: String): Series = {
     db.read(asScala(filter, new Series("", probe, timeDose, compound, Array.empty))).head
   }
@@ -95,9 +94,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     val validated = AffyProbes.identifiersToProbes(filter, probes, true, true).map(_.identifier)
     val ss = validated.flatMap(p =>
       compounds.flatMap(c =>
-        db.read(asScala(filter, new Series("", p, timeDose, c, Array.empty)))
-        )
-       )
+        db.read(asScala(filter, new Series("", p, timeDose, c, Array.empty)))))
     val jss = ss.map(asJava(_))
     new ArrayList[Series](asJavaCollection(jss))
   }

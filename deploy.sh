@@ -1,10 +1,19 @@
 #!/bin/bash
 
-cp -r ../OTGTool/bin/friedrich war/WEB-INF/classes
-cp -r ../OTGTool/bin/otg war/WEB-INF/classes
-cd war
-zip -r toxygates.war *
-#scp toxygates.war johan@sontaran:/opt/apache-tomcat-6.0.35/webapps
-cd ..
-rm -r war/WEB-INF/classes/otg
+function makeWar {
+    VERSION=$1
+    cp -r ../OTGTool/bin/friedrich war/WEB-INF/classes
+    cp -r ../OTGTool/bin/otg war/WEB-INF/classes
+    cd war
+    cp toxygates.html.$VERSION toxygates.html
+    cp WEB-INF/web.xml.$VERSION WEB-INF/web.xml
+    rm toxygates-$VERSION.war
+    zip -x \*.war -r toxygates-$VERSION.war *
+    cd ..
+    rm -r war/WEB-INF/classes/otg
+    rm -r war/WEB-INF/classes/friedrich
+}
+
+makeWar production
+makeWar test
 

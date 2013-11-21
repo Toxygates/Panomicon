@@ -38,7 +38,6 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		grid.addColumnSortHandler(colSortHandler);
 	}
 	
-	
 	protected void setupColumns() {
 		// todo: explicitly set the width of each column
 
@@ -78,10 +77,10 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		grid.insertColumn(at, c, SafeHtmlUtils.fromSafeConstant("<span title=\"" + 
 				tooltip + "\">" + title + "</span>"));
 	}
-
 	
 	public void addDataColumn(Column<T, ?> col, String title, String tooltip) {
-		col.setSortable(true);		
+		col.setSortable(true);	
+		col.setDefaultSortAscending(false);
 		addColWithTooltip(col, title, tooltip);		
 		col.setCellStyleNames("dataColumn");		
 		if (dataColumns == 0 && grid.getColumnSortList().size() == 0) {
@@ -89,7 +88,6 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		}
 		dataColumns += 1;
 	}
-	
 	
 	/**
 	 * Remove a column without altering the sort order, if possible
@@ -134,7 +132,6 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	public boolean sortAscending() {		
 		return sortAsc; 
 	}
-		
 	
 	/**
 	 * An "extra" column is a column that is not a data column.
@@ -210,7 +207,4 @@ abstract public class RichTable<T> extends DataListenerWidget {
 			}
 		}		
 	}
-	
-
-	
 }

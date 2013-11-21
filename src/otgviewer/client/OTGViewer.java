@@ -13,6 +13,10 @@ import otgviewer.client.components.ScreenManager;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.MetaElement;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -79,7 +83,6 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	public void onModuleLoad() {
 		menuBar = setupMenu();
 
-		
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
 			public void onValueChange(ValueChangeEvent<String> vce) {				
 				setScreenForToken(vce.getValue());
@@ -112,6 +115,22 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		deconfigureAll(pickScreen(History.getToken()));
 	}
 	
+	/**
+	 * A <meta> tag in the hosting HTML page identifies the kind of UI we want 
+	 * to show in this application.
+	 * E.g.: <meta name="uitype" content="toxygates"> .
+	 * @return The requested UI type
+	 */
+	public String getUIType() {
+		NodeList<Element> metas = Document.get().getElementsByTagName("meta");
+	    for (int i=0; i<metas.getLength(); i++) {
+	        MetaElement meta = (MetaElement) metas.getItem(i);
+	        if ("uitype".equals(meta.getName())) {
+	        	return meta.getContent();	            
+	        }
+	    }
+	    return "toxygates"; // Default UIType
+	}	
 	
 	private MenuBar setupMenu() {
 		MenuBar menuBar = new MenuBar(false);

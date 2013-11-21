@@ -242,6 +242,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 			groups.clear();
 			existingGroupsTable.reloadWith(new ArrayList<Group>(), true);						
 			compoundsChanged(new ArrayList<String>());
+			newGroup();
 		} else {
 			super.dataFilterChanged(filter);
 		}
@@ -383,7 +384,4 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 			return g.getStyleName();	
 		}
 	}
-	
-	
-	
 }
