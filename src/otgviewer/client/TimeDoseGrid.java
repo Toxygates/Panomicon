@@ -11,6 +11,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -27,6 +28,8 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	protected VerticalPanel rootPanel;
 	protected VerticalPanel mainPanel;
 	
+	protected final boolean hasDoseTimeGUIs;
+	
 	protected SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
 			.create(SparqlService.class);
 
@@ -36,18 +39,19 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		
 	}
 	
-	public TimeDoseGrid(Screen screen) {
+	public TimeDoseGrid(Screen screen, boolean hasDoseTimeGUIs) {
 		rootPanel = Utils.mkVerticalPanel();
 		this.screen = screen;
 		initWidget(rootPanel);
 		rootPanel.setWidth("730px");
 		mainPanel = new VerticalPanel();
 		
-		
 		HorizontalPanel selectionPanel = Utils.mkHorizontalPanel();		
 		mainPanel.add(selectionPanel);
 		initTools(selectionPanel);
 		selectionPanel.setSpacing(2);
+		
+		this.hasDoseTimeGUIs = hasDoseTimeGUIs;
 		
 		grid.setStyleName("highlySpaced");
 		grid.setWidth("100%");
@@ -71,7 +75,6 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			super.dataFilterChanged(filter);
 		}		
 	}
-	
 	
 	@Override
 	public void compoundsChanged(List<String> compounds) {				
@@ -132,15 +135,20 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	}
 	
 	private void redrawGrid() {
-		grid.resize(chosenCompounds.size() + 1, 4);
+		// TODO don't use magic numbers like 4
+		grid.resize(chosenCompounds.size() + 2, 4);
 		
-		for (int i = 1; i < chosenCompounds.size() + 1; ++i) {			
+		for (int i = 2; i < chosenCompounds.size() + 2; ++i) {			
 			grid.setWidget(i, 0, Utils.mkEmphLabel(chosenCompounds.get(i - 1)));
 		}
 				
 		grid.setWidget(0, 1, Utils.mkEmphLabel("Low"));		
 		grid.setWidget(0, 2, Utils.mkEmphLabel("Middle"));		
 		grid.setWidget(0, 3, Utils.mkEmphLabel("High"));
+		
+		if (hasDoseTimeGUIs) {
+			grid.setWidget(1, 0, Utils.mkEmphLabel("All"));
+		}
 		
 		grid.setHeight(50 * (chosenCompounds.size() + 1) + "px");
 		lazyFetchTimes();		
@@ -161,18 +169,34 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	 * @param dose
 	 * @return
 	 */
-	protected Widget guiFor(int compound, int dose) {
+	protected Widget guiForCompoundDose(int compound, int dose) {
+		return null;
+	}
+	
+	/**
+	 * An optional extra widget above all compounds for a given time/dose combination.
+	 * @param compound
+	 * @param time
+	 * @return
+	 */
+	protected Widget guiForDoseTime(int dose, int time) {
 		return null;
 	}
 
 	protected void drawGridInner(Grid grid) {
+		if (hasDoseTimeGUIs) {
+			for (int t = 0; t < availableTimes.length; ++t) {
+				grid.setWidget(1, t + 1, new Label(availableTimes[t]));
+			}
+		}
+		
 		for (int c = 0; c < chosenCompounds.size(); ++c) {
 			for (int d = 0; d < 3; ++d) {
 				HorizontalPanel hp = Utils.mkHorizontalPanel(true);
 				for (int t = 0; t < availableTimes.length; ++t) {
 					hp.add(guiFor(c, d, t));
 				}
-				Widget fin = guiFor(c, d);
+				Widget fin = guiForCompoundDose(c, d);
 				if (fin != null) {
 					hp.add(fin);
 				}

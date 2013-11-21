@@ -55,7 +55,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	}
 	
 	public SelectionTDGrid(Screen screen) {
-		super(screen);
+		super(screen, true);
 	}
 	
 	@Override
@@ -213,13 +213,18 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	}
 
 	@Override
-	protected Widget guiFor(int compound, int dose) {
+	protected Widget guiForCompoundDose(int compound, int dose) {
 		CheckBox all = new CheckBox("All");
 		all.setEnabled(false); //disabled by default until samples have been confirmed
 		masterCheckboxes[compound * 3 + dose] = all;
 		all.addValueChangeHandler(new MultiSelectHandler(compound,
 				availableTimes.length * dose, availableTimes.length * (dose + 1)));
 		return all;		
+	}
+
+	@Override
+	protected Widget guiForDoseTime(int dose, int time) {
+		return new CheckBox(availableTimes[time]);
 	}
 
 	private boolean initState = false;
