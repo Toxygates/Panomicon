@@ -101,6 +101,11 @@ exprGrid {
 	border: solid black 1px;
 }
 
+.invisibleBorder {
+	margin: 1px;
+	border: solid white 1px;
+}
+
 .datasetInfo {
 	margin: 1px;
 	padding: 4px;

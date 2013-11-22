@@ -25,6 +25,7 @@ import com.google.gwt.user.client.ui.Widget;
 abstract public class TimeDoseGrid extends DataListenerWidget {
 	private Grid grid = new Grid();
 	protected String[] availableTimes = null;
+	
 	protected VerticalPanel rootPanel;
 	protected VerticalPanel mainPanel;
 	
@@ -134,20 +135,29 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		return null;
 	}
 	
+	protected int numDoses() {
+		return 3;
+	}
+	
 	private void redrawGrid() {
+		final int numRows = chosenCompounds.size() + 1 + (hasDoseTimeGUIs ? 1 : 0);
 		// TODO don't use magic numbers like 4
-		grid.resize(chosenCompounds.size() + 2, 4);
+		grid.resize(numRows, 4);
 		
-		for (int i = 2; i < chosenCompounds.size() + 2; ++i) {			
-			grid.setWidget(i, 0, Utils.mkEmphLabel(chosenCompounds.get(i - 1)));
+		int r = 0;
+		for (int i = 0; i < numDoses(); ++i) {
+			grid.setWidget(r, i + 1, Utils.mkEmphLabel(indexToDose(i)));
 		}
+		r++;
 				
-		grid.setWidget(0, 1, Utils.mkEmphLabel("Low"));		
-		grid.setWidget(0, 2, Utils.mkEmphLabel("Middle"));		
-		grid.setWidget(0, 3, Utils.mkEmphLabel("High"));
-		
 		if (hasDoseTimeGUIs) {
-			grid.setWidget(1, 0, Utils.mkEmphLabel("All"));
+			grid.setWidget(r, 0, new Label("All"));
+			r++;
+		}
+
+		for (int i = 1; i < chosenCompounds.size() + 1; ++i) {			
+			grid.setWidget(r, 0, Utils.mkEmphLabel(chosenCompounds.get(i - 1)));
+			r++;
 		}
 		
 		grid.setHeight(50 * (chosenCompounds.size() + 1) + "px");
@@ -184,14 +194,22 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	}
 
 	protected void drawGridInner(Grid grid) {
-		if (hasDoseTimeGUIs) {
-			for (int t = 0; t < availableTimes.length; ++t) {
-				grid.setWidget(1, t + 1, new Label(availableTimes[t]));
+		int r = 1;
+		if (hasDoseTimeGUIs && chosenCompounds.size() > 0) {
+			for (int d = 0; d < numDoses(); ++d) {
+				HorizontalPanel hp = Utils.mkHorizontalPanel(true);
+				for (int t = 0; t < availableTimes.length; ++t) {
+					hp.add(guiForDoseTime(d, t));
+				}
+				SimplePanel sp = new SimplePanel(hp);
+				sp.setStyleName("invisibleBorder");				
+				grid.setWidget(r, d + 1, hp);
 			}
+			r++;
 		}
 		
 		for (int c = 0; c < chosenCompounds.size(); ++c) {
-			for (int d = 0; d < 3; ++d) {
+			for (int d = 0; d < numDoses(); ++d) {
 				HorizontalPanel hp = Utils.mkHorizontalPanel(true);
 				for (int t = 0; t < availableTimes.length; ++t) {
 					hp.add(guiFor(c, d, t));
@@ -203,8 +221,9 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 
 				SimplePanel sp = new SimplePanel(hp);
 				sp.setStyleName("border");
-				grid.setWidget(c + 1, d + 1, sp);
+				grid.setWidget(r, d + 1, sp);
 			}
+			r++;
 		}
 	}
 	
