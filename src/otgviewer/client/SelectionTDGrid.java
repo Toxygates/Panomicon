@@ -34,7 +34,8 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class SelectionTDGrid extends TimeDoseGrid {
 
-	private CheckBox[] masterCheckboxes; //for selecting "all" samples in a subgroup
+	private CheckBox[] cmpDoseCheckboxes; //selecting all samples for a cmp/dose combo
+	private CheckBox[] doseTimeCheckboxes; //selecting all samples for a dose/time combo
 	private CheckBox[][] checkboxes; //for selecting the subgroups	
 	private Combination[] oldSelection;
 	
@@ -55,7 +56,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	}
 	
 	public SelectionTDGrid(Screen screen) {
-		super(screen);
+		super(screen, true);
 	}
 	
 	@Override
@@ -101,7 +102,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		List<Combination> r = new ArrayList<Combination>();
 		if (availableTimes != null) {
 			for (String c : chosenCompounds) {
-				for (int d = 0; d < 3; d++) {
+				for (int d = 0; d < numDoses(); d++) {
 					for (int t = 0; t < availableTimes.length; ++t) {
 						if (getSelected(c, t, d)) {
 							r.add(new Combination(c, d, t));
@@ -127,9 +128,9 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		}
 	}
 	
-	private class MultiSelectHandler implements ValueChangeHandler<Boolean> {
+	private class RowMultiSelectHandler implements ValueChangeHandler<Boolean> {
 		private int from, to, row;
-		MultiSelectHandler(int row, int from, int to) {
+		RowMultiSelectHandler(int row, int from, int to) {
 			this.from = from;
 			this.to = to;
 			this.row = row;
@@ -137,7 +138,24 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		
 		public void onValueChange(ValueChangeEvent<Boolean> vce) {
 			for (int i = from; i < to; ++i) {
-				checkboxes[row][i].setValue(vce.getValue());
+				if (checkboxes[row][i].isEnabled()) {
+					checkboxes[row][i].setValue(vce.getValue());
+				}
+			}
+		}
+	}
+	
+	private class ColumnMultiSelectHandler implements ValueChangeHandler<Boolean> {
+		private int col;
+		ColumnMultiSelectHandler(int col) {
+			this.col = col;
+		}
+		
+		public void onValueChange(ValueChangeEvent<Boolean> vce) {
+			for (int i = 0; i < checkboxes.length; ++i) {
+				if (checkboxes[i][col].isEnabled()) {
+					checkboxes[i][col].setValue(vce.getValue());
+				}
 			}
 		}
 	}
@@ -213,13 +231,23 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	}
 
 	@Override
-	protected Widget guiFor(int compound, int dose) {
+	protected Widget guiForCompoundDose(int compound, int dose) {
 		CheckBox all = new CheckBox("All");
 		all.setEnabled(false); //disabled by default until samples have been confirmed
-		masterCheckboxes[compound * 3 + dose] = all;
-		all.addValueChangeHandler(new MultiSelectHandler(compound,
+		cmpDoseCheckboxes[compound * 3 + dose] = all;
+		all.addValueChangeHandler(new RowMultiSelectHandler(compound,
 				availableTimes.length * dose, availableTimes.length * (dose + 1)));
 		return all;		
+	}
+
+	@Override
+	protected Widget guiForDoseTime(int dose, int time) {
+		CheckBox cb = new CheckBox(availableTimes[time]);
+		cb.setEnabled(false); //disabled by default until samples have been confirmed
+		final int col = dose * availableTimes.length + time;
+		doseTimeCheckboxes[col] = cb;
+		cb.addValueChangeHandler(new ColumnMultiSelectHandler(col));
+		return cb;
 	}
 
 	private boolean initState = false;
@@ -231,7 +259,8 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	
 	@Override
 	protected void drawGridInner(Grid grid) {		
-		masterCheckboxes = new CheckBox[chosenCompounds.size() * 3];
+		cmpDoseCheckboxes = new CheckBox[chosenCompounds.size() * 3];
+		doseTimeCheckboxes = new CheckBox[numDoses() * availableTimes.length];
 		checkboxes = new CheckBox[chosenCompounds.size()][];
 		for (int c = 0; c < chosenCompounds.size(); ++c) {
 			checkboxes[c] = new CheckBox[3 * availableTimes.length];			
@@ -266,7 +295,8 @@ public class SelectionTDGrid extends TimeDoseGrid {
 					if (di != -1 && ti != -1) {
 						gotNonControl = true;
 						checkboxes[compoundRow][availableTimes.length * di + ti].setEnabled(true);
-						masterCheckboxes[compoundRow * 3 + di].setEnabled(true);
+						cmpDoseCheckboxes[compoundRow * 3 + di].setEnabled(true);
+						doseTimeCheckboxes[di * availableTimes.length + ti].setEnabled(true);
 					}					
 				}
 			}
@@ -277,5 +307,4 @@ public class SelectionTDGrid extends TimeDoseGrid {
 			}
 		});
 	}
-	
 }
