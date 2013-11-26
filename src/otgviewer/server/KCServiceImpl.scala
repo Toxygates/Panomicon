@@ -27,6 +27,7 @@ import otg.db.MicroarrayDB
 import otg.sparql.Probe
 import otg.db.kyotocabinet.KCMicroarrayDB
 import otg.Context
+import otg.OTGContext
 
 
 /**
@@ -43,14 +44,14 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
   private var tgConfig: Configuration = _
   private var csvDirectory: String = _
   private var csvUrlBase: String = _
-  private implicit var context: Context = _
+  private implicit var context: OTGContext = _
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config)
     localInit(Configuration.fromServletConfig(config))    
   }
-  
+
   // Useful for testing
   def localInit(config: Configuration) {
     val homePath = config.toxygatesHomeDir
@@ -61,6 +62,7 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
     foldsDB = new KCMicroarrayDB(homePath + "/otgf.kct")
     absDB = new KCMicroarrayDB(homePath + "/otg.kct")
 
+    OwlimLocalRDF.setContextForAll(context)
     println("Microarray databases are open")
   }
 

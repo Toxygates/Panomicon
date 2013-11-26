@@ -88,6 +88,11 @@ abstract public class Synthetic implements DataColumn, Serializable {
 		public String getTooltip() {
 			return "Fold change difference";
 		}
+		
+		@Override
+		public boolean isDefaultSortAscending() { 
+			return false; 
+		}
 	}
 
 	protected String name;
@@ -98,6 +103,7 @@ abstract public class Synthetic implements DataColumn, Serializable {
 	public String[] getCompounds() { return new String[0]; }	
 	public String getShortTitle() { return name; }	
 	public String getTooltip() { return "Synthetic"; }
+	public boolean isDefaultSortAscending() { return true; }
 	
 	public String pack() {
 		return "Synthetic:::" + name;
