@@ -22,7 +22,7 @@ import com.google.gwt.view.client.NoSelectionModel;
  *
  * @param <T>
  */
-abstract public class SelectionTable<T> extends Composite {
+abstract public class SelectionTable<T> extends Composite implements SetEditor<T> {
 
 	private CellTable<T> table;
 	private Column<T, Boolean> selectColumn;
@@ -89,6 +89,10 @@ abstract public class SelectionTable<T> extends Composite {
 		table.redraw();
 	}
 	
+	public Set<T> getSelection() {
+		return new HashSet(selected);
+	}
+	
 	public void setSelected(T t) {
 		selected.add(t);
 	}
@@ -123,7 +127,16 @@ abstract public class SelectionTable<T> extends Composite {
 		}
 	}
 	
-	public void reloadWith(List<T> data, boolean clearSelection) {
+	public void setItems(List<T> data) {
+		setItems(data, true);
+	}
+	
+	/**
+	 * TODO: retire this method
+	 * @param data
+	 * @param clearSelection
+	 */
+	public void setItems(List<T> data, boolean clearSelection) {
 		provider.setList(new ArrayList<T>(data));
 		table.setVisibleRange(0, data.size());		
 		if (clearSelection) {

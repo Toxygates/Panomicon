@@ -43,9 +43,8 @@ abstract public class ProbeSelector extends DataListenerWidget {
 	public ProbeSelector(String label, boolean wb) {
 		this.withButton = wb;
 		
-		VerticalPanel vp = new VerticalPanel();
+		VerticalPanel vp = Utils.mkVerticalPanel();
 		initWidget(vp);
-		vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		
 		Label lblPathwaySearch = new Label(label);		
 		vp.add(lblPathwaySearch);
