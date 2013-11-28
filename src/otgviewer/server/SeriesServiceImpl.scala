@@ -11,7 +11,6 @@ import otgviewer.shared.MatchResult
 import java.util.ArrayList
 import java.util.{ List => JList, ArrayList }
 import otgviewer.shared.NoSuchProbeException
-import kyotocabinet.DB
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import otg.sparql.OwlimLocalRDF

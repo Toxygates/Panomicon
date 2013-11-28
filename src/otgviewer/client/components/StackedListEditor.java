@@ -8,16 +8,15 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.Utils;
 import bioweb.shared.SharedUtils;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.StackLayoutPanel;
-import com.google.gwt.user.client.ui.StackPanel;
 import com.google.gwt.user.client.ui.TextArea;
-import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  * A StackedListEditor unifies multiple different methods of editing a list of strings.
@@ -31,17 +30,18 @@ public class StackedListEditor extends Composite implements SetEditor<String> {
 	 * It calls back to the StackedListEditor when the selection changes.
 	 */
 	public abstract static class SelectionMethod extends Composite {
-		protected StackedListEditor listEditor;
-		protected VerticalPanel vp = Utils.mkVerticalPanel();
+		protected StackedListEditor stackedEditor;
+		protected LayoutPanel p = new LayoutPanel();
+//		protected VerticalPanel vp = Utils.mkVerticalPanel();
 		
 		/**
-		 * @param listEditor The editor that this selection method belongs to.
+		 * @param stackedEditor The editor that this selection method belongs to.
 		 */
-		public SelectionMethod(StackedListEditor listEditor) {
-			this.listEditor = listEditor;
-			initWidget(vp);
-			vp.setWidth("100%");
-			vp.setHeight("100%");
+		public SelectionMethod(StackedListEditor stackedEditor) {
+			this.stackedEditor = stackedEditor;
+			initWidget(p);
+			p.setWidth("100%");
+			p.setHeight("100%");
 		}
 		
 		/**
@@ -58,12 +58,7 @@ public class StackedListEditor extends Composite implements SetEditor<String> {
 		 * @param items
 		 */
 		public abstract void setSelection(Collection<String> items);
-//		
-//		/**
-//		 * Get the currently selected items.
-//		 * @return
-//		 */
-//		public abstract String[] getSelectedItems();
+
 	}
 	
 	/**
@@ -71,12 +66,10 @@ public class StackedListEditor extends Composite implements SetEditor<String> {
 	 * Items are separated by commas or whitespace.
 	 */
 	public static class FreeEdit extends SelectionMethod {
-		protected TextArea textArea = new TextArea();
+		protected TextArea textArea = new ResizableTextArea();
 		public FreeEdit(StackedListEditor editor) {
 			super(editor);			
-			vp.add(textArea);
-			textArea.setWidth("100%");
-			textArea.setHeight("100%");
+			p.add(textArea);
 		}
 		
 		public String getTitle() {
@@ -99,14 +92,15 @@ public class StackedListEditor extends Composite implements SetEditor<String> {
 		private StringSelectionTable selTable;
 		public BrowseCheck(StackedListEditor editor, String itemTitle) {
 			super(editor);
+			final BrowseCheck bc = this;
 			this.selTable = new StringSelectionTable("Sel.", itemTitle) {
 				protected void selectionChanged(Set<String> selected) {
-					listEditor.selectionChanged(selected);					
+					stackedEditor.setSelection(selected, bc);					
 				}
 			};
-			vp.add(selTable);
-			selTable.setWidth("100%");
-			selTable.setHeight("100%");
+//			selTable.setSize("100%", "100px");
+			
+			p.add(new ScrollPanel(selTable));
 		}
 		
 		public String getTitle() {
@@ -131,12 +125,12 @@ public class StackedListEditor extends Composite implements SetEditor<String> {
 	protected StringSelectionTable selTable = null;
 	
 	public StackedListEditor(String itemTitle) {
-		StackPanel slp = new StackPanel();
+		StackLayoutPanel slp = new StackLayoutPanel(Unit.EM);
 		initWidget(slp);
 		createSelectionMethods(methods, itemTitle);
 		for (SelectionMethod m: methods) {
-			slp.add(m, m.getTitle());
-			//slp.add(m, m.getTitle(), 2);
+//			slp.add(m, m.getTitle());
+			slp.add(m, m.getTitle(), 2.2);
 		}
 	}
 	
@@ -171,16 +165,7 @@ public class StackedListEditor extends Composite implements SetEditor<String> {
 			return selTable.table();
 		}
 		return null;
-	}
-	
-	/**
-	 * This method is to be called by the selection methods when the
-	 * selection changes. It must not be called too frequently.
-	 * @param items
-	 */
-	protected void selectionChanged(Collection<String> items) {
-		setSelection(items);
-	}
+	}	
 	
 	/**
 	 * Validate items, some of which may have been entered manually.
@@ -222,12 +207,32 @@ public class StackedListEditor extends Composite implements SetEditor<String> {
 		}
 	}
 	
-	public void setSelection(Collection<String> items) {
+	/**
+	 * Change the selection.
+	 * @param items New selection
+	 * @param from The selection method that triggered the change, or null 
+	 * if the change was triggered externally.
+	 */
+	protected void setSelection(Collection<String> items, 
+			@Nullable SelectionMethod from) {
 		for (SelectionMethod m: methods) {
-			m.setSelection(items);
+			if (m != from) {
+				m.setSelection(items);
+			}
 		}
-		selectedItems = new HashSet(items);
+		selectedItems = new HashSet<String>(items);
+		selectionChanged(selectedItems);
 	}
+	
+	public void setSelection(Collection<String> items) {
+		setSelection(items, null);		
+	}
+	
+	/**
+	 * Outgoing signal. Called when the selection has changed.
+	 * @param items
+	 */
+	protected void selectionChanged(Set<String> items) {}
 	
 	public void clearSelection() {
 		setSelection(new HashSet<String>());

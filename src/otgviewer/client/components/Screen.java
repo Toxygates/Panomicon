@@ -428,7 +428,6 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 //		leftbars.add(leftbar);
 		rootPanel.addWest(leftbar, size);
 	}
-	
 
 	/**
 	 * Sometimes we need to do a deferred resize, because the layout engine has not finished yet

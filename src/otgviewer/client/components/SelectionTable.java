@@ -12,6 +12,7 @@ import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.NoSelectionModel;
 
@@ -90,7 +91,7 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
 	}
 	
 	public Set<T> getSelection() {
-		return new HashSet(selected);
+		return new HashSet<T>(selected);
 	}
 	
 	public void setSelected(T t) {
@@ -155,4 +156,10 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
 	public T get(int index) {
 		return provider.getList().get(index);
 	}
+
+//	public void onResize() {
+//		int height = getParent().getOffsetHeight();
+//		int width = getParent().getOffsetWidth();
+//		setSize("100%", (height + 10) + "px");
+//	}
 }

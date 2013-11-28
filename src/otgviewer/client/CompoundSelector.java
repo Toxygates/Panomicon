@@ -2,11 +2,11 @@ package otgviewer.client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import otgviewer.client.charts.ChartGrid;
 import otgviewer.client.charts.ChartGridFactory;
@@ -48,7 +48,7 @@ import com.google.gwt.view.client.NoSelectionModel;
  * @author johan
  *
  */
-public class CompoundSelector extends DataListenerWidget implements RequiresResize {
+public class CompoundSelector extends DataListenerWidget {
 
 	private SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
 			.create(SparqlService.class);
@@ -105,7 +105,8 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		}));
 		
 		compoundEditor = new StackedListEditor("Compound") {
-			protected void selectionChanged(Collection<String> selected) {
+			@Override
+			protected void selectionChanged(Set<String> selected) {
 				List<String> r = new ArrayList<String>();
 				r.addAll(selected);
 				Collections.sort(r);
@@ -114,10 +115,10 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		
 		};		
 				
-		dp.add(new ScrollPanel(compoundEditor));
+		dp.add(compoundEditor);
 		
-		compoundEditor.setWidth("300px");
-		compoundEditor.setHeight("500px");
+//		compoundEditor.setWidth("300px");
+//		compoundEditor.setHeight("500px");
 		compoundEditor.table().setSelectionModel(new NoSelectionModel<String>());		
 	}
 	
@@ -197,11 +198,10 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 			public void handleSuccess(String[] result) {
 				Arrays.sort(result);
 				List<String> r = new ArrayList<String>((Arrays.asList(result)));
-				compoundEditor.setSelection(r);
-//				compoundTable.reloadWith(r, true);				
+				compoundEditor.setItems(r, true);
+//				compoundTable.reloadWith(r, true);
 				changeAvailableCompounds(Arrays.asList(result));								
-			}
-			
+			}			
 		});
 	}
 	
@@ -211,11 +211,11 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		Collections.sort(compounds);
 		changeCompounds(compounds);
 	}
-	
-	@Override
-	public void onResize() {		
-		dp.onResize();		
-	}
+//	
+//	@Override
+//	public void onResize() {		
+//		dp.onResize();		
+//	}
 	
 	public void resizeInterface() {
 		dp.setWidgetSize(north, 2.5);
