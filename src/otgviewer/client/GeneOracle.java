@@ -73,7 +73,6 @@ public class GeneOracle extends SuggestOracle {
 				callback.onSuggestionsReady(request, r);
 			}
 			
-			
 			@Override
 			public void onFailure(Throwable caught) {
 				// TODO Auto-generated method stub
@@ -81,5 +80,4 @@ public class GeneOracle extends SuggestOracle {
 			}
 		});
 	}
-
 }

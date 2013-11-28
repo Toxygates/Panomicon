@@ -48,7 +48,7 @@ import com.google.gwt.view.client.NoSelectionModel;
  * @author johan
  *
  */
-public class CompoundSelector extends DataListenerWidget {
+public class CompoundSelector extends DataListenerWidget implements RequiresResize {
 
 	private SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
 			.create(SparqlService.class);
@@ -211,11 +211,11 @@ public class CompoundSelector extends DataListenerWidget {
 		Collections.sort(compounds);
 		changeCompounds(compounds);
 	}
-//	
-//	@Override
-//	public void onResize() {		
-//		dp.onResize();		
-//	}
+	
+	@Override
+	public void onResize() {		
+		dp.onResize();		
+	}
 	
 	public void resizeInterface() {
 		dp.setWidgetSize(north, 2.5);

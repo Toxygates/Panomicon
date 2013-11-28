@@ -157,9 +157,4 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
 		return provider.getList().get(index);
 	}
 
-//	public void onResize() {
-//		int height = getParent().getOffsetHeight();
-//		int width = getParent().getOffsetWidth();
-//		setSize("100%", (height + 10) + "px");
-//	}
 }
