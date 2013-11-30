@@ -59,13 +59,12 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	private StackedListEditor compoundEditor;
 	private DockLayoutPanel dp;
 	private boolean hasRankColumns = false;
-	private Button sortButton;
 	
 	private Map<String, Integer> ranks = new HashMap<String, Integer>(); //for compound ranking
 	private Map<String, MatchResult> scores = new HashMap<String, MatchResult>(); //for compound ranking
 	private List<String> rankProbes = new ArrayList<String>();
 	
-	private Widget north, south;
+	private Widget north;
 	private Screen screen;
 	
 	/**
@@ -85,26 +84,12 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		dp.addNorth(lblCompounds, 2.5);
 		north = lblCompounds;
 		
-		HorizontalPanel hp = Utils.mkWidePanel();		
-		dp.addSouth(hp, 2.5);
-		south = hp;
+		Map<String, List<String>> predefinedLists = new HashMap<String, List<String>>();
+		String[] predef = new String[] { "Acetaminophen", "Methapyrilene", "Propranolol" };
+		predefinedLists.put("test1", Arrays.asList(predef));
+		predefinedLists.put("test2", Arrays.asList(predef));
 		
-		sortButton = new Button("Sort by name", new ClickHandler() {
-			public void onClick(ClickEvent ce) {
-				loadCompounds();
-				sortButton.setEnabled(false);
-			}
-		});
-		hp.add(sortButton);
-		sortButton.setEnabled(false);
-		
-		hp.add(new Button("Unselect all", new ClickHandler() {
-			public void onClick(ClickEvent ce) {
-				setSelection(new ArrayList<String>());
-			}
-		}));
-		
-		compoundEditor = new StackedListEditor("Compound") {
+		compoundEditor = new StackedListEditor("Compound", predefinedLists) {
 			@Override
 			protected void selectionChanged(Set<String> selected) {
 				List<String> r = new ArrayList<String>();
@@ -198,8 +183,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 			public void handleSuccess(String[] result) {
 				Arrays.sort(result);
 				List<String> r = new ArrayList<String>((Arrays.asList(result)));
-				compoundEditor.setItems(r, true);
-//				compoundTable.reloadWith(r, true);
+				compoundEditor.setItems(r, true, true);
 				changeAvailableCompounds(Arrays.asList(result));								
 			}			
 		});
@@ -218,8 +202,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	}
 	
 	public void resizeInterface() {
-		dp.setWidgetSize(north, 2.5);
-		dp.setWidgetSize(south, 2.5);
+		dp.setWidgetSize(north, 2.5);		
 	}
 
 	void performRanking(List<String> rankProbes, List<RankRule> rules) {
@@ -239,8 +222,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 								ranks.put(r.compound(), rnk);
 								rnk++;
 							}									
-							compoundEditor.setItems(sortedCompounds, false);		
-							sortButton.setEnabled(true);
+							compoundEditor.setItems(sortedCompounds, false, false);		
 						}
 
 						public void handleFailure(Throwable caught) {

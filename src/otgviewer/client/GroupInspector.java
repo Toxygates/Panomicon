@@ -97,7 +97,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		toolPanel.add(saveButton);
 		setEditing(false);
 						
-		existingGroupsTable = new SelectionTable<Group>("Active") {
+		existingGroupsTable = new SelectionTable<Group>("Active", false) {
 			protected void initTable(CellTable<Group> table) {
 				TextColumn<Group> textColumn = new TextColumn<Group>() {
 					@Override

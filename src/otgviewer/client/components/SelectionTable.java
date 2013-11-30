@@ -12,7 +12,6 @@ import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.NoSelectionModel;
 
@@ -24,13 +23,12 @@ import com.google.gwt.view.client.NoSelectionModel;
  * @param <T>
  */
 abstract public class SelectionTable<T> extends Composite implements SetEditor<T> {
-
 	private CellTable<T> table;
 	private Column<T, Boolean> selectColumn;
 	private Set<T> selected = new HashSet<T>();
 	private ListDataProvider<T> provider = new ListDataProvider<T>();
 	
-	public SelectionTable(final String selectColTitle) {
+	public SelectionTable(final String selectColTitle, boolean fixedLayout) {
 		super();
 		table = new CellTable<T>();
 		initWidget(table);
@@ -38,7 +36,6 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
 		selectColumn = new Column<T, Boolean>(new CheckboxCell()) {
 			@Override
 			public Boolean getValue(T object) {
-
 				return selected.contains(object);				
 			}
 		};
@@ -54,7 +51,14 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
 			}
 		});
 		
+		if (fixedLayout) {
+			//Fixed width lets us control column widths explicitly
+			table.setWidth("100%", true);
+		}
 		table.addColumn(selectColumn, selectColTitle);
+		if (fixedLayout) {
+			table.setColumnWidth(selectColumn, "3.5em");
+		}
 		table.setSelectionModel(new NoSelectionModel<T>());
 		table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 		provider.addDataDisplay(table);		
@@ -156,5 +160,4 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
 	public T get(int index) {
 		return provider.getList().get(index);
 	}
-
 }

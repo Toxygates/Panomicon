@@ -3,28 +3,38 @@ package otgviewer.client.components;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import otgviewer.client.Utils;
 import bioweb.shared.SharedUtils;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.ResizeComposite;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.StackLayoutPanel;
 import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  * A StackedListEditor unifies multiple different methods of editing a list of strings.
@@ -38,15 +48,13 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	 * It calls back to the StackedListEditor when the selection changes.
 	 */
 	public abstract static class SelectionMethod extends ResizeComposite {
-		protected StackedListEditor stackedEditor;
-		protected LayoutPanel p = new LayoutPanel();
+		protected final StackedListEditor stackedEditor;		
 		
 		/**
 		 * @param stackedEditor The editor that this selection method belongs to.
 		 */
 		public SelectionMethod(StackedListEditor stackedEditor) {
 			this.stackedEditor = stackedEditor;
-			initWidget(p);
 		}
 		
 		/**
@@ -54,7 +62,13 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		 */
 		public abstract String getTitle();
 		
-		public void setItems(List<String> items, boolean clearSelection) { }
+		/**
+		 * Set the available items.
+		 * @param items available items
+		 * @param clearSelection whether the selection is to be cleared
+		 * @param alreadySorted whether the items are sorted in order or not.
+		 */
+		public void setItems(List<String> items, boolean clearSelection, boolean alreadySorted) { }
 		
 		/**
 		 * Set the currently selected items, reflecting the selection in the GUI.
@@ -71,28 +85,40 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	 */
 	public static class FreeEdit extends SelectionMethod {
 		protected TextArea textArea = new ResizableTextArea();
-		protected long lastChange;
 		private String lastText = "";
+		private Timer t;
+		private LayoutPanel p;
 		public FreeEdit(StackedListEditor editor) {
-			super(editor);			
+			super(editor);
+			p = new LayoutPanel();
+			initWidget(p);
 			p.add(textArea);
+			t = new Timer() {
+				@Override
+				public void run() {
+					refreshItems();
+				}				
+			};
 			
 			textArea.addKeyUpHandler(new KeyUpHandler() {				
 				@Override
 				public void onKeyUp(KeyUpEvent event) {
-					refreshItems();					
-				}
+					lastText = textArea.getText();
+					t.schedule(500);
+				}				
 			});
 		}
 		
 		private void refreshItems() {
 			final FreeEdit fe = this;
-			if (System.currentTimeMillis() - lastChange > 500 && lastText != textArea.getText()) {
-				lastChange = System.currentTimeMillis();
-				lastText = textArea.getText();
+			//Only do the refresh action if the text has been unchanged
+			//for 500 ms.
+			if (lastText.equals(textArea.getText()) && !lastText.equals("")) {
 				String[] items = parseItems();
 				Set<String> valid = stackedEditor.validateItems(Arrays.asList(items));
-				stackedEditor.setSelection(valid, fe);
+				if (!stackedEditor.getSelection().equals(valid)) {
+					stackedEditor.setSelection(valid, fe);
+				}
 			}				
 		}
 		
@@ -120,15 +146,42 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	 */
 	public static class BrowseCheck extends SelectionMethod {
 		private StringSelectionTable selTable;
+		private DockLayoutPanel dlp = new DockLayoutPanel(Unit.EM);
+		private Button sortButton;
+		
 		public BrowseCheck(StackedListEditor editor, String itemTitle) {
 			super(editor);
+			initWidget(dlp);
+			
 			final BrowseCheck bc = this;
-			this.selTable = new StringSelectionTable("Sel.", itemTitle) {
+			this.selTable = new StringSelectionTable("", itemTitle) {
 				protected void selectionChanged(Set<String> selected) {
 					stackedEditor.setSelection(selected, bc);					
 				}
 			};			
-			p.add(new ScrollPanel(selTable));
+			
+			HorizontalPanel hp = Utils.mkWidePanel();		
+			dlp.addSouth(hp, 2.5);
+			
+			sortButton = new Button("Sort by name", new ClickHandler() {
+				public void onClick(ClickEvent ce) {
+					List<String> items = new ArrayList<String>(stackedEditor.availableItems);
+					Collections.sort(items);
+					setItems(items, false, true);					
+					sortButton.setEnabled(false);
+				}
+			});
+			hp.add(sortButton);
+			sortButton.setEnabled(false);
+			
+			hp.add(new Button("Unselect all", new ClickHandler() {
+				public void onClick(ClickEvent ce) {
+					List<String> empty = new ArrayList<String>();
+					setSelection(empty);
+					stackedEditor.setSelection(empty, bc);
+				}
+			}));
+			dlp.add(new ScrollPanel(selTable));
 		}
 		
 		public String getTitle() {
@@ -142,24 +195,69 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		}
 		
 		@Override
-		public void setItems(List<String> items, boolean clearSelection) {
-			selTable.setItems(items, clearSelection);
+		public void setItems(List<String> items, boolean clearSelection, boolean alreadySorted) {
+			selTable.setItems(items, clearSelection);			
+			sortButton.setEnabled(!alreadySorted);			 
 		}
 	}
 	
 	protected List<SelectionMethod> methods = new ArrayList<SelectionMethod>();
 	protected Set<String> selectedItems = new HashSet<String>();
 	protected Set<String> availableItems = new HashSet<String>();
+	protected Map<String, String> caseCorrectItems = new HashMap<String, String>();
+	protected Map<String, List<String>> predefinedLists;
+	
 	protected StringSelectionTable selTable = null;
+	protected DockLayoutPanel dlp;
 	protected StackLayoutPanel slp;
 
-	public StackedListEditor(String itemTitle) {
+	
+	/**
+	 * @param itemTitle Header for the item type being selected (in certain cases) 
+	 * @param predefinedLists Predefined lists that the user may choose from 
+	 */
+	public StackedListEditor(String itemTitle, Map<String, List<String>> predefinedLists) {
+		dlp = new DockLayoutPanel(Unit.EM);
+		initWidget(dlp);
+		
+		this.predefinedLists = predefinedLists;
+		if (!predefinedLists.isEmpty()) {			
+			VerticalPanel vp = Utils.mkVerticalPanel();
+			vp.setWidth("100%");			
+			final ListBox lb = new ListBox();
+			lb.setVisibleItemCount(1);
+			lb.addItem("Click to see predefined lists");
+			for (String s: predefinedLists.keySet()) {
+				lb.addItem(s);
+			}
+			lb.setWidth("100%");
+			lb.addChangeHandler(new ChangeHandler() {				
+				@Override
+				public void onChange(ChangeEvent event) {
+					int idx = lb.getSelectedIndex();
+					if (idx == -1) {
+						return;
+					}
+					String sel = lb.getItemText(idx);
+					setPredefinedList(sel);
+				}
+			});
+			vp.add(lb);
+			dlp.addNorth(vp, 2);
+		}
+		
 		slp = new StackLayoutPanel(Unit.EM);
-		initWidget(slp);
+		dlp.add(slp);
+
 		createSelectionMethods(methods, itemTitle);
 		for (SelectionMethod m: methods) {
-//			slp.add(m, m.getTitle());
 			slp.add(m, m.getTitle(), 2.2);
+		}
+	}
+	
+	protected void setPredefinedList(String list) {
+		if (predefinedLists.containsKey(list)) {
+			setSelection(validateItems(predefinedLists.get(list)));
 		}
 	}
 	
@@ -205,8 +303,9 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	protected Set<String> validateItems(Collection<String> items) {
 		HashSet<String> r = new HashSet<String>();
 		for (String i : items) {
-			if (validateItem(i)) {
-				r.add(i);
+			String v = validateItem(i);
+			if (v != null) {
+				r.add(v);
 			}
 		}
 		return r;
@@ -215,14 +314,23 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	/**
 	 * Validate a single item.
 	 * @param item
-	 * @return True iff the item is valid.
+	 * @return The valid form (with case corrections etc) of the item.
 	 */
-	protected boolean validateItem(String item) {
-		return availableItems.contains(item);		
+	protected @Nullable String validateItem(String item) {
+		String lower = item.toLowerCase();
+		if (caseCorrectItems.containsKey(lower)) {
+			return caseCorrectItems.get(lower);
+		} else {
+			return null;
+		}
 	}
 	
 	public Set<String> getSelection() {
 		return selectedItems;
+	}
+	
+	public void setItems(List<String> items, boolean clearSelection) {
+		setItems(items, clearSelection, false);
 	}
 	
 	/**
@@ -230,10 +338,14 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	 * @param items
 	 * @return
 	 */
-	public void setItems(List<String> items, boolean clearSelection) {
-		for (SelectionMethod m: methods) {
-			m.setItems(items, clearSelection);
+	public void setItems(List<String> items, boolean clearSelection, boolean alreadySorted) {
+		caseCorrectItems.clear();
+		for (String i: items) {
+			caseCorrectItems.put(i.toLowerCase(), i);
 		}
+		for (SelectionMethod m: methods) {
+			m.setItems(items, clearSelection, alreadySorted);
+		}		
 		availableItems = new HashSet<String>(items);
 	}
 	
@@ -241,7 +353,8 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	 * Change the selection.
 	 * @param items New selection
 	 * @param from The selection method that triggered the change, or null 
-	 * if the change was triggered externally.
+	 * if the change was triggered externally. These items should already be
+	 * validated.
 	 */
 	protected void setSelection(Collection<String> items, 
 			@Nullable SelectionMethod from) {
@@ -280,6 +393,9 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		}
 		//Should not get here!
 		Window.alert("Technical error: no such selection method in StackedListEditor");
-	}
+	}	
 	
+	public void resizeInterface() {
+		// TODO, see compoundselector
+	}
 }
