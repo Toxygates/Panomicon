@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,17 +23,23 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.ResizeComposite;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.StackLayoutPanel;
+import com.google.gwt.user.client.ui.SuggestBox;
+import com.google.gwt.user.client.ui.SuggestOracle;
+import com.google.gwt.user.client.ui.SuggestOracle.Request;
+import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -76,7 +83,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		 * The items should already have been validated.
 		 * @param items
 		 */
-		public abstract void setSelection(Collection<String> items);
+		public abstract void setSelection(Collection<String> items);		
 	}
 	
 	/**
@@ -87,16 +94,44 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		protected TextArea textArea = new ResizableTextArea();
 		private String lastText = "";
 		private Timer t;
-		private LayoutPanel p;
+		private DockLayoutPanel dlp;
 		public FreeEdit(StackedListEditor editor) {
 			super(editor);
-			p = new LayoutPanel();
-			initWidget(p);
-			p.add(textArea);
+			dlp = new DockLayoutPanel(Unit.EM);
+			initWidget(dlp);
+			
+			Label l = new Label("Search:");			
+			final SuggestBox sb = new SuggestBox(new SuggestOracle() {				
+				@Override
+				public void requestSuggestions(Request request, Callback callback) {
+					String lc = request.getQuery().toLowerCase();
+					callback.onSuggestionsReady(request, 
+							new Response(stackedEditor.getSuggestions(request)));
+				}
+			});
+			HorizontalPanel hp = Utils.mkHorizontalPanel(true, l, sb);					
+			HorizontalPanel p = Utils.mkWidePanel();
+			p.add(hp);
+			
+			sb.addSelectionHandler(new SelectionHandler<SuggestOracle.Suggestion>() {				
+				@Override
+				public void onSelection(SelectionEvent<Suggestion> event) {
+					Suggestion s = event.getSelectedItem();
+					String selection = s.getDisplayString();
+					String oldText = textArea.getText().trim();
+					String newText = (!"".equals(oldText)) ? (oldText + "\n" + selection) : selection;						
+					textArea.setText(newText);			
+					refreshItems(true);
+					sb.setText("");
+				}
+			});
+			
+			dlp.addNorth(p, 2.4);
+			dlp.add(textArea);
 			t = new Timer() {
 				@Override
 				public void run() {
-					refreshItems();
+					refreshItems(false);
 				}				
 			};
 			
@@ -109,11 +144,11 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 			});
 		}
 		
-		private void refreshItems() {
+		private void refreshItems(boolean immediate) {
 			final FreeEdit fe = this;
-			//Only do the refresh action if the text has been unchanged
-			//for 500 ms.
-			if (lastText.equals(textArea.getText()) && !lastText.equals("")) {
+			//Without the immediate flag, only do the refresh action if 
+			// the text has been unchanged for 500 ms.
+			if (immediate || lastText.equals(textArea.getText())) {
 				String[] items = parseItems();
 				Set<String> valid = stackedEditor.validateItems(Arrays.asList(items));
 				if (!stackedEditor.getSelection().equals(valid)) {
@@ -128,14 +163,14 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		
 		private String[] parseItems() {
 			String s = textArea.getText();
-			String[] split = s.split("[\\s\n]+");
+			String[] split = s.split("\\s*[,\n]+\\s*");
 			return split;
 		}
 
 		@Override
 		public void setSelection(Collection<String> items) {
 			textArea.setText(SharedUtils.mkString(items, "\n"));			
-		}
+		}		
 	}
 	
 	/**
@@ -148,6 +183,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		private StringSelectionTable selTable;
 		private DockLayoutPanel dlp = new DockLayoutPanel(Unit.EM);
 		private Button sortButton;
+		private ScrollPanel scrollPanel;
 		
 		public BrowseCheck(StackedListEditor editor, String itemTitle) {
 			super(editor);
@@ -181,7 +217,8 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 					stackedEditor.setSelection(empty, bc);
 				}
 			}));
-			dlp.add(new ScrollPanel(selTable));
+			scrollPanel = new ScrollPanel(selTable);
+			dlp.add(scrollPanel);
 		}
 		
 		public String getTitle() {
@@ -198,6 +235,10 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		public void setItems(List<String> items, boolean clearSelection, boolean alreadySorted) {
 			selTable.setItems(items, clearSelection);			
 			sortButton.setEnabled(!alreadySorted);			 
+		}
+		
+		public void scrollToTop() {
+			scrollPanel.scrollToTop();
 		}
 	}
 	
@@ -300,16 +341,52 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	 * @param items
 	 * @return Valid items.
 	 */
-	protected Set<String> validateItems(Collection<String> items) {
+	protected Set<String> validateItems(List<String> items) {
 		HashSet<String> r = new HashSet<String>();
-		for (String i : items) {
-			String v = validateItem(i);
+		Iterator<String> i = items.iterator();
+		String s = i.next();
+		while(s != null) {			
+			String v = validateItem(s);
 			if (v != null) {
 				r.add(v);
+				if (i.hasNext()) { s = i.next(); } else { s = null; }
+			} else {
+				if (i.hasNext()) {
+					String s2 = i.next();
+					v = validateWithInfixes(s, s2);					
+					if (v != null) {
+						r.add(v);		
+						if (i.hasNext()) { s = i.next(); } else { s = null; }
+					} else {
+						//Give up and treat s2 normally
+						s = s2;
+					}
+				} else {
+					s = null;
+				}
 			}
-		}
+ 			
+		
+		} 
 		return r;
 	}
+	
+	private String validateWithInfixes(String s1, String s2) {
+		//Some compounds have commas in their names but we also split compounds
+		//on commas. 
+		//E.g. 2,4-dinitrophenol and 'imatinib, methanesulfonate salt'
+		//Test two together to get around this.
+		final String[] infixes = new String[] { ",", ", " };
+		for (String i: infixes) {
+			String test = s1 + i + s2;
+			String v = validateItem(test);
+			if (v != null) {
+				return v;
+			}
+		}
+		return null;
+	}
+	
 	
 	/**
 	 * Validate a single item.
@@ -388,6 +465,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		for (SelectionMethod m: methods) {
 			if (m instanceof BrowseCheck) {
 				slp.showWidget(m);
+				((BrowseCheck) m).scrollToTop();
 				return;
 			}
 		}
@@ -395,7 +473,25 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		Window.alert("Technical error: no such selection method in StackedListEditor");
 	}	
 	
-	public void resizeInterface() {
-		// TODO, see compoundselector
+	protected List<Suggestion> getSuggestions(Request request) {
+		String lc = request.getQuery().toLowerCase();
+		List<Suggestion> r =  new ArrayList<Suggestion>();
+		for (String k : caseCorrectItems.keySet()) {
+			if (k.startsWith(lc)) {
+				final String suggest = caseCorrectItems.get(k);
+				r.add(new Suggestion() {					
+					@Override
+					public String getReplacementString() {
+						return suggest;
+					}
+					
+					@Override
+					public String getDisplayString() {
+						return suggest;
+					}
+				});
+			}
+		}
+		return r;
 	}
 }

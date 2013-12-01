@@ -197,12 +197,14 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	}
 	
 	@Override
-	public void onResize() {		
+	public void onResize() {	
+		// Since this is not a ResizeComposite, we need to pass on this signal manually
 		dp.onResize();		
 	}
 	
 	public void resizeInterface() {
-		dp.setWidgetSize(north, 2.5);		
+		dp.setWidgetSize(north, 2.5);	
+//		compoundEditor.resizeInterface();
 	}
 
 	void performRanking(List<String> rankProbes, List<RankRule> rules) {
@@ -222,7 +224,8 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 								ranks.put(r.compound(), rnk);
 								rnk++;
 							}									
-							compoundEditor.setItems(sortedCompounds, false, false);		
+							compoundEditor.setItems(sortedCompounds, false, false);
+							compoundEditor.displayPicker();
 						}
 
 						public void handleFailure(Throwable caught) {
