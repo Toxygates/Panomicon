@@ -73,7 +73,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	public CompoundSelector() {
 		this(null, "Compounds");
 	}
-	
+
 	public CompoundSelector(Screen screen, String heading) {
 		this.screen = screen;
 		dp = new DockLayoutPanel(Unit.EM);
@@ -84,12 +84,8 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		dp.addNorth(lblCompounds, 2.5);
 		north = lblCompounds;
 		
-		Map<String, List<String>> predefinedLists = new HashMap<String, List<String>>();
-		String[] predef = new String[] { "Acetaminophen", "Methapyrilene", "Propranolol" };
-		predefinedLists.put("test1", Arrays.asList(predef));
-		predefinedLists.put("test2", Arrays.asList(predef));
-		
-		compoundEditor = new StackedListEditor("Compound", predefinedLists) {
+		compoundEditor = new StackedListEditor("Compound", 
+				TemporaryCompoundLists.predefinedLists()) {
 			@Override
 			protected void selectionChanged(Set<String> selected) {
 				List<String> r = new ArrayList<String>();

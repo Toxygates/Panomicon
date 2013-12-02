@@ -91,10 +91,12 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	 * Items are separated by commas or whitespace.
 	 */
 	public static class FreeEdit extends SelectionMethod {
-		protected TextArea textArea = new ResizableTextArea();
+		//TODO: the constants 10, 45 are somewhat ad-hoc -- find a better method in the future
+		protected TextArea textArea = new ResizableTextArea(10, 45);
 		private String lastText = "";
 		private Timer t;
 		private DockLayoutPanel dlp;
+		private HorizontalPanel np;
 		public FreeEdit(StackedListEditor editor) {
 			super(editor);
 			dlp = new DockLayoutPanel(Unit.EM);
@@ -110,8 +112,8 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 				}
 			});
 			HorizontalPanel hp = Utils.mkHorizontalPanel(true, l, sb);					
-			HorizontalPanel p = Utils.mkWidePanel();
-			p.add(hp);
+			np = Utils.mkWidePanel();
+			np.add(hp);
 			
 			sb.addSelectionHandler(new SelectionHandler<SuggestOracle.Suggestion>() {				
 				@Override
@@ -126,14 +128,15 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 				}
 			});
 			
-			dlp.addNorth(p, 2.4);
+			dlp.addNorth(np, 2.6);
+			textArea.setSize("100%", "100%");
 			dlp.add(textArea);
 			t = new Timer() {
 				@Override
 				public void run() {
 					refreshItems(false);
 				}				
-			};
+			};			
 			
 			textArea.addKeyUpHandler(new KeyUpHandler() {				
 				@Override
@@ -252,6 +255,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	protected DockLayoutPanel dlp;
 	protected StackLayoutPanel slp;
 
+	protected VerticalPanel northVp;
 	
 	/**
 	 * @param itemTitle Header for the item type being selected (in certain cases) 
@@ -263,8 +267,8 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		
 		this.predefinedLists = predefinedLists;
 		if (!predefinedLists.isEmpty()) {			
-			VerticalPanel vp = Utils.mkVerticalPanel();
-			vp.setWidth("100%");			
+			northVp = Utils.mkVerticalPanel();
+			northVp.setWidth("100%");			
 			final ListBox lb = new ListBox();
 			lb.setVisibleItemCount(1);
 			lb.addItem("Click to see predefined lists");
@@ -283,8 +287,8 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 					setPredefinedList(sel);
 				}
 			});
-			vp.add(lb);
-			dlp.addNorth(vp, 2);
+			northVp.add(lb);
+			dlp.addNorth(northVp, 2.2);
 		}
 		
 		slp = new StackLayoutPanel(Unit.EM);
