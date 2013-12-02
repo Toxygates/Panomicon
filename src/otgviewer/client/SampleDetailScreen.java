@@ -158,10 +158,7 @@ public class SampleDetailScreen extends Screen {
 		});		
 	}
 	
-	public Widget content() {
-		
-//		vp.add(hpi);
-		
+	public Widget content() {		
 		VerticalPanel vp = Utils.mkVerticalPanel();
 		configureTable(vp, experimentTable);
 		configureTable(vp, biologicalTable);
@@ -237,7 +234,6 @@ public class SampleDetailScreen extends Screen {
 	private String[] makeAnnotItem(int i, Annotation[] as) {
 		String[] item = new String[barcodes.length + 1];
 		item[0] = as[0].getEntries().get(i).description;
-//		Window.alert(item.length + " " + as.length + " " + barcodes.length);
 		for (int j = 0; j < as.length; ++j) {					
 			item[j + 1] = as[j].getEntries().get(i).value;						
 		}
@@ -281,6 +277,5 @@ public class SampleDetailScreen extends Screen {
 	@Override
 	public String getGuideText() {
 		return "Here you can view experimental information and biological details for each sample in the groups you have defined.";
-	}
-	
+	}	
 }

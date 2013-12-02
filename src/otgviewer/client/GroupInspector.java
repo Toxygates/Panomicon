@@ -97,7 +97,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		toolPanel.add(saveButton);
 		setEditing(false);
 						
-		existingGroupsTable = new SelectionTable<Group>("Active") {
+		existingGroupsTable = new SelectionTable<Group>("Active", false) {
 			protected void initTable(CellTable<Group> table) {
 				TextColumn<Group> textColumn = new TextColumn<Group>() {
 					@Override
@@ -204,7 +204,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 	}
 	
 	private void reflectGroupChanges() {
-		existingGroupsTable.reloadWith(sortedGroupList(groups.values()), false);
+		existingGroupsTable.setItems(sortedGroupList(groups.values()), false);
 		chosenColumns = new ArrayList<Group>(existingGroupsTable.selection());
 		Storage s = tryGetStorage();
 		if (s != null) {
@@ -240,7 +240,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		if (!filter.equals(chosenDataFilter)) {			
 			super.dataFilterChanged(filter); //this call changes chosenDataFilter						
 			groups.clear();
-			existingGroupsTable.reloadWith(new ArrayList<Group>(), true);						
+			existingGroupsTable.setItems(new ArrayList<Group>(), true);						
 			compoundsChanged(new ArrayList<String>());
 			newGroup();
 		} else {
@@ -258,7 +258,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		}
 		updateConfigureStatus();
 				
-		existingGroupsTable.reloadWith(sortedGroupList(groups.values()), true);
+		existingGroupsTable.setItems(sortedGroupList(groups.values()), true);
 		existingGroupsTable.setSelection(chosenColumns);		
 		existingGroupsTable.setVisible(groups.size() > 0);		
 		newGroup();
@@ -283,7 +283,7 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 		List<Group> all = new ArrayList<Group>();
 		all.addAll(sortedGroupList(existingGroupsTable.selection()));
 		all.addAll(igs);
-		existingGroupsTable.reloadWith(all, false);		
+		existingGroupsTable.setItems(all, false);		
 		existingGroupsTable.unselectAll(igs);
 		existingGroupsTable.table().redraw();
 		existingGroupsTable.setVisible(groups.size() > 0);

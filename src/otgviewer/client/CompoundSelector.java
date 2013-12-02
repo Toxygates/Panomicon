@@ -14,7 +14,7 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.client.components.StringSelectionTable;
+import otgviewer.client.components.StackedListEditor;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.MatchResult;
 import otgviewer.shared.RankRule;
@@ -56,16 +56,15 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 			.create(SeriesService.class);
 	private static Resources resources = GWT.create(Resources.class);
 	
-	private StringSelectionTable compoundTable;
+	private StackedListEditor compoundEditor;
 	private DockLayoutPanel dp;
 	private boolean hasRankColumns = false;
-	private Button sortButton;
 	
 	private Map<String, Integer> ranks = new HashMap<String, Integer>(); //for compound ranking
 	private Map<String, MatchResult> scores = new HashMap<String, MatchResult>(); //for compound ranking
 	private List<String> rankProbes = new ArrayList<String>();
 	
-	private Widget north, south;
+	private Widget north;
 	private Screen screen;
 	
 	/**
@@ -74,7 +73,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	public CompoundSelector() {
 		this(null, "Compounds");
 	}
-	
+
 	public CompoundSelector(Screen screen, String heading) {
 		this.screen = screen;
 		dp = new DockLayoutPanel(Unit.EM);
@@ -85,26 +84,9 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		dp.addNorth(lblCompounds, 2.5);
 		north = lblCompounds;
 		
-		HorizontalPanel hp = Utils.mkWidePanel();		
-		dp.addSouth(hp, 2.5);
-		south = hp;
-		
-		sortButton = new Button("Sort by name", new ClickHandler() {
-			public void onClick(ClickEvent ce) {
-				loadCompounds();
-				sortButton.setEnabled(false);
-			}
-		});
-		hp.add(sortButton);
-		sortButton.setEnabled(false);
-		
-		hp.add(new Button("Unselect all", new ClickHandler() {
-			public void onClick(ClickEvent ce) {
-				setSelection(new ArrayList<String>());
-			}
-		}));
-		
-		compoundTable = new StringSelectionTable("Sel", "Compound") {
+		compoundEditor = new StackedListEditor("Compound", 
+				TemporaryCompoundLists.predefinedLists()) {
+			@Override
 			protected void selectionChanged(Set<String> selected) {
 				List<String> r = new ArrayList<String>();
 				r.addAll(selected);
@@ -114,15 +96,16 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		
 		};		
 				
-		dp.add(new ScrollPanel(compoundTable));
+		dp.add(compoundEditor);
 		
-		compoundTable.setWidth("300px");
-		compoundTable.table().setSelectionModel(new NoSelectionModel<String>());		
+//		compoundEditor.setWidth("300px");
+//		compoundEditor.setHeight("500px");
+		compoundEditor.table().setSelectionModel(new NoSelectionModel<String>());		
 	}
 	
 	private void addRankColumns() {
 		if (!hasRankColumns) {
-			CellTable<String> table = compoundTable.table();
+			CellTable<String> table = compoundEditor.table();
  			TextColumn<String> textColumn = new TextColumn<String>() {
 				@Override
 				public String getValue(String object) {
@@ -152,7 +135,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	
 	private void removeRankColumns() {
 		if (hasRankColumns) {
-			CellTable<String> table = compoundTable.table();
+			CellTable<String> table = compoundEditor.table();
 			table.removeColumn(3); //chart icons
 			table.removeColumn(2); //score
 			rankProbes.clear();
@@ -176,7 +159,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 			@Override
 			public void run() {
 				loadCompounds();
-				compoundTable.clearSelection();				
+				compoundEditor.clearSelection();				
 			}
 		});
 		
@@ -184,7 +167,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	
 	public List<String> getCompounds() {				
 		List<String> r = new ArrayList<String>();
-		r.addAll(compoundTable.selection());		
+		r.addAll(compoundEditor.getSelection());		
 		Collections.sort(r);
 		return r;
 	}
@@ -196,30 +179,28 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 			public void handleSuccess(String[] result) {
 				Arrays.sort(result);
 				List<String> r = new ArrayList<String>((Arrays.asList(result)));
-				compoundTable.reloadWith(r, true);				
+				compoundEditor.setItems(r, true, true);
 				changeAvailableCompounds(Arrays.asList(result));								
-			}
-			
+			}			
 		});
 	}
 	
-	public void setSelection(List<String> compounds) {		
-		compoundTable.clearSelection();		
-		compoundTable.selectAll(compounds);
-		
-		compoundTable.table().redraw();		
+	public void setSelection(List<String> compounds) {						
+		compoundEditor.setSelection(compounds);
+			
 		Collections.sort(compounds);
 		changeCompounds(compounds);
 	}
 	
 	@Override
-	public void onResize() {		
+	public void onResize() {	
+		// Since this is not a ResizeComposite, we need to pass on this signal manually
 		dp.onResize();		
 	}
 	
 	public void resizeInterface() {
-		dp.setWidgetSize(north, 2.5);
-		dp.setWidgetSize(south, 2.5);
+		dp.setWidgetSize(north, 2.5);	
+//		compoundEditor.resizeInterface();
 	}
 
 	void performRanking(List<String> rankProbes, List<RankRule> rules) {
@@ -239,8 +220,8 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 								ranks.put(r.compound(), rnk);
 								rnk++;
 							}									
-							compoundTable.reloadWith(sortedCompounds, false);		
-							sortButton.setEnabled(true);
+							compoundEditor.setItems(sortedCompounds, false, false);
+							compoundEditor.displayPicker();
 						}
 
 						public void handleFailure(Throwable caught) {
