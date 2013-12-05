@@ -1,4 +1,6 @@
 package otgviewer.client;
+import javax.annotation.Nullable;
+
 import otgviewer.shared.AType;
 import otgviewer.shared.Association;
 import otgviewer.shared.Barcode;
@@ -30,47 +32,48 @@ public interface SparqlService extends RemoteService {
 	/**
 	 * Obtain organs for a given filter and compound
 	 * @param filter
-	 * @param compound
+	 * @param compound the chosen compound, or null for no constraint
 	 * @return
 	 */
-	public String[] organs(DataFilter filter, String compound);
+	public String[] organs(DataFilter filter, @Nullable String compound);
 	
 	/**
 	 * Obtain dose levels for a given filter and compound
 	 * @param filter
-	 * @param compound
+	 * @param compound the chosen compound, or null for no constraint
 	 * @return
 	 */
-	public String[] doseLevels(DataFilter filter, String compound);
+	public String[] doseLevels(DataFilter filter, @Nullable String compound);
 	
 	/**
 	 * Obtain samples for a given filter, compound, dose level, time
-	 * @param filter
-	 * @param compound
-	 * @param doseLevel
-	 * @param time
+	 * @param filter 
+	 * @param compound the chosen compound, or null for no constraint.
+	 * @param doseLevel the chosen dose level, or null for no constraint.
+	 * @param time the chosen time, or null for no constraint.
 	 * @return
 	 */
-	public Barcode[] barcodes(DataFilter filter, String compound, String doseLevel, String time);
+	public Barcode[] barcodes(DataFilter filter, @Nullable String compound,
+			@Nullable String doseLevel, @Nullable String time);
 	
 	/**
 	 * Obtain samples for a given filter, compounds, dose level, time
-	 * @param filter
-	 * @param compounds
-	 * @param doseLevel
-	 * @param time
+	 * @param filter 
+	 * @param compounds the chosen compounds.
+	 * @param doseLevel the chosen dose level, or null for no constraint.
+	 * @param time the chosen time, or null for no constraint.
 	 * @return
 	 */
-	public Barcode[] barcodes(DataFilter filter, String[] compounds, String doseLevel, String time);
+	public Barcode[] barcodes(DataFilter filter, String[] compounds, 
+			@Nullable String doseLevel, @Nullable String time);
 	
 	/**
 	 * Obtain times corresponding to a data filter and a compound.
-	 * Compound may be null, in which case all times for the filter are returned.
-	 * @param filter
-	 * @param compound
+	 * @param filter 
+	 * @param compound the chosen compound, or null for no constraint.
 	 * @return
 	 */
-	public String[] times(DataFilter filter, String compound);		
+	public String[] times(DataFilter filter, @Nullable String compound);		
 		
 	/**
 	 * Obtain time and dose combinations corresponding to a data filter and a compound.
@@ -138,6 +141,7 @@ public interface SparqlService extends RemoteService {
 	 * the named compound.
 	 * @param compound
 	 * @param service Service to use for lookup (currently DrugBank or CHEMBL)
+	 *  (TODO it might be better to use an enum)
 	 * @param homologous Whether to use homologous genes (if not, only direct targets are returned)
 	 * @return
 	 */
