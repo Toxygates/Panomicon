@@ -1,9 +1,13 @@
 package otgviewer.client;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
+import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 
 import com.google.gwt.core.client.GWT;
@@ -36,9 +40,13 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 
 	private Screen screen;
 	
-	protected void initTools(HorizontalPanel toolPanel) {
-		
-	}
+	protected Map<String, List<Barcode>> availableSamples = new HashMap<String, List<Barcode>>();
+	
+	/** 
+	 * To be overridden by subclasses
+	 * @param toolPanel
+	 */
+	protected void initTools(HorizontalPanel toolPanel) { }
 	
 	public TimeDoseGrid(Screen screen, boolean hasDoseTimeGUIs) {
 		rootPanel = Utils.mkVerticalPanel();
@@ -80,13 +88,13 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	@Override
 	public void compoundsChanged(List<String> compounds) {				
 		super.compoundsChanged(compounds);		
+		rootPanel.clear();		
 		if (compounds.isEmpty()) {
-			rootPanel.clear();
 			rootPanel.add(Utils.mkEmphLabel("Please select at least one compound"));
 		} else {
-			rootPanel.clear();
 			rootPanel.add(mainPanel);
 			redrawGrid();
+			fetchSamples();
 		}
 	}
 	
@@ -110,6 +118,38 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			}
 		});			
 	}
+	
+	protected String keyFor(Barcode b) {
+		return b.getCompound() + ":" + b.getDose() + ":" + b.getTime();
+	}
+	
+	protected void fetchSamples() {
+		availableSamples.clear();
+		String[] compounds = chosenCompounds.toArray(new String[0]);
+		sparqlService.barcodes(chosenDataFilter, compounds,
+				null, null, new AsyncCallback<Barcode[]>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Unable to obtain samples.");				
+			}
+
+			@Override
+			public void onSuccess(Barcode[] result) {
+				for (Barcode b: result) {
+					String k = keyFor(b);
+					if (!availableSamples.containsKey(k)) {						
+						availableSamples.put(k, new LinkedList<Barcode>());
+					}					
+					availableSamples.get(k).add(b);
+					Window.alert(availableSamples.get(k).size() + "");
+				}	
+				samplesAvailable();
+			}			
+		});
+	}
+	
+	protected void samplesAvailable() { }
 
 	protected int doseToIndex(String dose) {
 		if (dose.equals("Low")) {

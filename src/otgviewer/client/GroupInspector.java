@@ -46,7 +46,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * @author johan
  *
  */
-public class GroupInspector extends DataListenerWidget implements SelectionTDGrid.BarcodeListener, RequiresResize { 
+public class GroupInspector extends DataListenerWidget implements RequiresResize { 
 
 	private SelectionTDGrid timeDoseGrid;
 	private Map<String, Group> groups = new HashMap<String, Group>();		
@@ -318,13 +318,8 @@ public class GroupInspector extends DataListenerWidget implements SelectionTDGri
 	private void makeGroup(final String name) {		
 		pendingGroup = new Group(name, new Barcode[0]);
 		addGroup(name, pendingGroup);
-		timeDoseGrid.getSelection(this);		
-	}
-	
-	/**
-	 * callback from selectionTDgrid
-	 */
-	public void barcodesObtained(List<Barcode> barcodes) {
+		List<Barcode> barcodes = timeDoseGrid.getSelectedBarcodes();
+		
 		if (barcodes.size() == 0) {
 			 Window.alert("No samples found.");
 			 cullEmptyGroups();
