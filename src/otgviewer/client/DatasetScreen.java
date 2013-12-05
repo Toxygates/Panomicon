@@ -11,6 +11,8 @@ import otgviewer.shared.RepeatType;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -26,68 +28,80 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 		super("Dataset selection", key, false, false, man);		
 	}
 	
-	public Widget content() {
-//		return adjuvantContent();
-		return toxygatesContent();
-	}
+	final DatasetScreen ds = this;
 	
-	/**
-	 * For the main Toxygates instance
-	 * TODO: find a better way of configuring this
-	 * @return
-	 */
-	private Widget toxygatesContent() {
-		Grid g = new Grid(3, 2);
-		HorizontalPanel hp = Utils.mkWidePanel();
-		hp.setHeight("100%");
-
-		final DataFilter[] filters = new DataFilter[] {
-				new DataFilter(CellType.Vitro, Organ.Kidney, RepeatType.Single, Organism.Human),
-				new DataFilter(CellType.Vitro, Organ.Kidney, RepeatType.Single, Organism.Rat),
-				new DataFilter(CellType.Vivo, Organ.Liver, RepeatType.Single, Organism.Rat),
-				new DataFilter(CellType.Vivo, Organ.Liver, RepeatType.Repeat, Organism.Rat),
-				new DataFilter(CellType.Vivo, Organ.Kidney, RepeatType.Single, Organism.Rat),
-				new DataFilter(CellType.Vivo, Organ.Kidney, RepeatType.Repeat, Organism.Rat)
-		};		
-		hp.add(g);
-		g.setCellSpacing(20);
-		fillGrid(g, 3, filters);	
-		return hp;
-	}
-	
-	/**
-	 * For the Adjuvant instance
-	 * TODO as above
-	 * @return
-	 */
-	private Widget adjuvantContent() {
-		Grid g = new Grid(3, 2);
-		HorizontalPanel hp = Utils.mkWidePanel();
-		hp.setHeight("100%");		
-		final DataFilter[] filters = new DataFilter[] {				
-				new DataFilter(CellType.Vivo, Organ.Kidney, RepeatType.Single, Organism.Rat),
-				new DataFilter(CellType.Vivo, Organ.Liver, RepeatType.Single, Organism.Rat),				
-				new DataFilter(CellType.Vivo, Organ.Lung, RepeatType.Single, Organism.Rat),
-				new DataFilter(CellType.Vivo, Organ.Muscle, RepeatType.Single, Organism.Rat),
-				new DataFilter(CellType.Vivo, Organ.Spleen, RepeatType.Single, Organism.Rat)
-		};
-		hp.add(g);
-		g.setCellSpacing(20);
-		fillGrid(g, 3, filters);	
-		return hp;		
-	}
-	
-	private void fillGrid(Grid g, int columns, DataFilter[] filters) {
-		int r = 0;
-		int c = 0;
-		for (DataFilter f: filters) {
-			g.setWidget(r, c, new DatasetInfo(f, this));
-			c += 1;
-			if (c == columns - 1) {
-				r += 1;
-				c = 0;
-			}
+	private abstract class GUI {
+		abstract DataFilter[] filters();
+		Widget content() {
+			Grid g = new Grid(3, 2);
+			HorizontalPanel hp = Utils.mkWidePanel();
+			hp.setHeight("100%");
+			VerticalPanel vp = Utils.mkTallPanel();
+			HTML banner = new HTML(resources.bannerHTML().getText());
+			banner.setWidth("40em");
+			vp.add(banner);			
+			vp.add(g);
+			HTML latest = new HTML(resources.latestVersionHTML().getText());
+			latest.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
+			vp.add(latest);
+			latest.setWidth("40em");
+			hp.add(vp);
+			g.setCellSpacing(20);
+			fillGrid(g, 3, filters());	
+			return Utils.makeScrolled(hp);
+		}
+		
+		void fillGrid(Grid g, int columns, DataFilter[] filters) {
+			int r = 0;
+			int c = 0;
+			for (DataFilter f: filters) {
+				g.setWidget(r, c, new DatasetInfo(f, ds));
+				c += 1;
+				if (c == columns - 1) {
+					r += 1;
+					c = 0;
+				}
+			}		
 		}		
+	}
+
+	private class Toxygates extends GUI {		
+		DataFilter[] filters() {
+			return new DataFilter[] {		
+					new DataFilter(CellType.Vitro, Organ.Kidney, RepeatType.Single, Organism.Human),
+					new DataFilter(CellType.Vitro, Organ.Kidney, RepeatType.Single, Organism.Rat),
+					new DataFilter(CellType.Vivo, Organ.Liver, RepeatType.Single, Organism.Rat),
+					new DataFilter(CellType.Vivo, Organ.Liver, RepeatType.Repeat, Organism.Rat),
+					new DataFilter(CellType.Vivo, Organ.Kidney, RepeatType.Single, Organism.Rat),
+					new DataFilter(CellType.Vivo, Organ.Kidney, RepeatType.Repeat, Organism.Rat)
+			};		
+		}
+	}
+	
+	private class Adjuvant extends GUI {
+		DataFilter[] filters() { 
+			return new DataFilter[] {			
+					new DataFilter(CellType.Vivo, Organ.Kidney, RepeatType.Single, Organism.Rat),
+					new DataFilter(CellType.Vivo, Organ.Liver, RepeatType.Single, Organism.Rat),				
+					new DataFilter(CellType.Vivo, Organ.Lung, RepeatType.Single, Organism.Rat),
+					new DataFilter(CellType.Vivo, Organ.Muscle, RepeatType.Single, Organism.Rat),
+					new DataFilter(CellType.Vivo, Organ.Spleen, RepeatType.Single, Organism.Rat)
+			};
+		}
+	}
+	
+	public Widget content() {
+		final String uitype = manager.getUIType();
+		GUI gui;
+		if ("toxygates".equals(uitype)) {
+			gui = new Toxygates();
+		} else if ("adjuvant".equals(uitype)){
+			gui = new Adjuvant();
+		} else {
+			// Graceful default
+			gui = new Toxygates();
+		}
+		return gui.content();
 	}
 	
 	public void filterSelected(DataFilter filter) {		

@@ -37,7 +37,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 	private Button annotationButton;
 	
 	public AnnotationTDGrid(Screen screen) {
-		super(screen);
+		super(screen, false);
 	}
 	
 	@Override

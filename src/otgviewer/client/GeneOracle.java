@@ -13,7 +13,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.SuggestOracle;
 
 /**
- * This oracle looks up gene descriptions and names in real time as the user types.
+ * This oracle looks up gene symbols in real time as the user types.
  * This is used to provide a list of autocomplete suggestions. Used in for example
  * the probe selection screen (manual selection) and the compound ranking screen.
  * @author johan
@@ -29,21 +29,20 @@ public class GeneOracle extends SuggestOracle {
 	private static String lastRequest = "";
 	
 	private class GeneSuggestion implements Suggestion {
-		private String geneId, fullName;
-		public GeneSuggestion(String fullName, String geneId) {
+		private String geneId;
+		public GeneSuggestion(String geneId) {
 			this.geneId = geneId;
-			this.fullName = fullName;
 		}
 
 		@Override
-		public String getDisplayString() { return fullName; }
+		public String getDisplayString() { return geneId; }
 
 		@Override
 		public String getReplacementString() { return geneId; }		
 		
 	}
 	
-	private SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT
+	private SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
 			.create(SparqlService.class);
 	
 	@Override
@@ -61,18 +60,17 @@ public class GeneOracle extends SuggestOracle {
 	}
 	
 	private void getSuggestions(final Request request, final Callback callback) {
-		owlimService.geneSuggestions(filter, request.getQuery(), new AsyncCallback<Pair<String,String>[]>() {
+		sparqlService.geneSuggestions(filter, request.getQuery(), new AsyncCallback<String[]>() {
 			
 			@Override
-			public void onSuccess(Pair<String, String>[] result) {
+			public void onSuccess(String[] result) {
 				List<Suggestion> ss = new ArrayList<Suggestion>();
-				for (Pair<String, String> sug: result) {
-					ss.add(new GeneSuggestion(sug.second(), sug.first()));
+				for (String sug: result) {
+					ss.add(new GeneSuggestion(sug));
 				}
 				Response r = new Response(ss);
 				callback.onSuggestionsReady(request, r);
 			}
-			
 			
 			@Override
 			public void onFailure(Throwable caught) {
@@ -81,5 +79,4 @@ public class GeneOracle extends SuggestOracle {
 			}
 		});
 	}
-
 }

@@ -385,7 +385,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				
 		//columns with data
 		for (DataColumn c : chosenColumns) {
-			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, dataColumns);			
+			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, dataColumns);		
+			valueCol.setDefaultSortAscending(false);
 			addDataColumn(valueCol, c.getShortTitle(), "Average of sample values");			
 			valueCol.setCellStyleNames(((Group) c).getStyleName());
 		}
@@ -417,7 +418,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		TextCell tc = new TextCell();
 		synthetics.add(s);
 		Column<ExpressionRow, String> ttestCol = new ExpressionColumn(tc, dataColumns);
-		synthColumns.add(ttestCol); 				
+		synthColumns.add(ttestCol);
+		ttestCol.setDefaultSortAscending(s.isDefaultSortAscending());
 		addDataColumn(ttestCol, s.getShortTitle(), s.getTooltip());		
 		ttestCol.setCellStyleNames("extraColumn");				
 	}

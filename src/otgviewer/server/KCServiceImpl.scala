@@ -2,10 +2,8 @@ package otgviewer.server
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
 import otgviewer.client.KCService
-import kyotocabinet.DB
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
-import otg.OTGQueries
 import java.util.{ List => JList, ArrayList }
 import otgviewer.shared.DataFilter
 import otgviewer.shared.Synthetic
@@ -18,47 +16,54 @@ import otgviewer.shared.Barcode
 import javax.servlet.http.HttpSession
 import otg.sparql.AffyProbes
 import otg.CSVHelper
-import otg.OTGSeriesQuery
 import otg.sparql._
-import otg.OTGCabinet
 import bioweb.shared.array.ExpressionRow
 import bioweb.shared.array.ExpressionValue
 import bioweb.server.array.ArrayServiceImpl
 import friedrich.data.immutable.VVector
+import otg.sparql.AffyProbes
+import otg.ExprValue
+import otg.db.MicroarrayDB
+import otg.sparql.Probe
+import otg.db.kyotocabinet.KCMicroarrayDB
+import otg.Context
+import otg.OTGContext
 
 
 /**
- * This servlet is responsible for obtaining and manipulating data from the Kyoto
- * Cabinet databases.
+ * This servlet is responsible for obtaining and manipulating microarray data.
+ * TODO: rename to MicroarrayService
  */
 class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService {
   import Conversions._
   import scala.collection.JavaConversions._
   import UtilsS._
 
-  private var foldsDB: DB = _
-  private var absDB: DB = _
+  private var foldsDB: MicroarrayDB = _
+  private var absDB: MicroarrayDB = _
   private var tgConfig: Configuration = _
   private var csvDirectory: String = _
   private var csvUrlBase: String = _
+  private implicit var context: OTGContext = _
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config)
     localInit(Configuration.fromServletConfig(config))    
   }
-  
+
   // Useful for testing
   def localInit(config: Configuration) {
     val homePath = config.toxygatesHomeDir
     csvDirectory = config.csvDirectory
     csvUrlBase = config.csvUrlBase
-    foldsDB = OTGQueries.open(homePath + "/otgf.kct")
-    absDB = OTGQueries.open(homePath + "/otg.kct")
-    otg.Configuration.owlimRepositoryName = config.owlimRepositoryName
-    otg.Configuration.otgHomeDir = homePath
-    // TODO: set csv parameters too
-    println("KC databases are open")
+    context = config.context
+    // Future: construct DB in context
+    foldsDB = new KCMicroarrayDB(homePath + "/otgf.kct")
+    absDB = new KCMicroarrayDB(homePath + "/otg.kct")
+
+    OwlimLocalRDF.setContextForAll(context)
+    println("Microarray databases are open")
   }
 
   override def destroy() {
@@ -107,12 +112,14 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
   def identifiersToProbes(filter: DataFilter, identifiers: Array[String], precise: Boolean): Array[String] =
     AffyProbes.identifiersToProbes(filter, identifiers, precise).map(_.identifier).toArray
 
-  private def filterProbes(filter: DataFilter, probes: Seq[String]): Seq[String] =
+  private def filterProbes(filter: DataFilter, probes: Seq[String]): Seq[String] = {
+    val pmap = context.probes(filter)
     if (probes == null || probes.size == 0) {
-      OTGQueries.probeIds(filter).toSeq
+      pmap.tokens.toSeq
     } else {
-      OTGQueries.filterProbes(probes, filter)
+      probes.filter(pmap.isToken)      
     }
+  }
 
   private def getDB(typ: ValueType) = typ match {
     case ValueType.Folds    => foldsDB
@@ -122,8 +129,9 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
   private def getExprValues(filter: DataFilter, barcodes: Seq[String], probes: Seq[String],
                             typ: ValueType, sparseRead: Boolean): ExprMatrix = {
     val db = getDB(typ)
-    val sorted = OTGQueries.sortSamples(barcodes.map(otg.Sample(_)))
-    val data = OTGQueries.presentValuesByBarcodesAndProbes(db, sorted, probes, sparseRead, filter)
+    val pmap = context.probes(filter)
+    val sorted = db.sortSamples(barcodes.map(otg.Sample(_)))
+    val data = db.presentValuesForSamplesAndProbes(filter, sorted, probes.map(pmap.pack), sparseRead)
     val jdata = data.map(r => new VVector(r.map(asJava(_))))
     new ExprMatrix(jdata, jdata.size, jdata(0).size,
         Map() ++ probes.zipWithIndex, //rows

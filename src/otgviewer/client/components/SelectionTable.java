@@ -22,14 +22,13 @@ import com.google.gwt.view.client.NoSelectionModel;
  *
  * @param <T>
  */
-abstract public class SelectionTable<T> extends Composite {
-
+abstract public class SelectionTable<T> extends Composite implements SetEditor<T> {
 	private CellTable<T> table;
 	private Column<T, Boolean> selectColumn;
 	private Set<T> selected = new HashSet<T>();
 	private ListDataProvider<T> provider = new ListDataProvider<T>();
 	
-	public SelectionTable(final String selectColTitle) {
+	public SelectionTable(final String selectColTitle, boolean fixedLayout) {
 		super();
 		table = new CellTable<T>();
 		initWidget(table);
@@ -37,7 +36,6 @@ abstract public class SelectionTable<T> extends Composite {
 		selectColumn = new Column<T, Boolean>(new CheckboxCell()) {
 			@Override
 			public Boolean getValue(T object) {
-
 				return selected.contains(object);				
 			}
 		};
@@ -53,7 +51,14 @@ abstract public class SelectionTable<T> extends Composite {
 			}
 		});
 		
+		if (fixedLayout) {
+			//Fixed width lets us control column widths explicitly
+			table.setWidth("100%", true);
+		}
 		table.addColumn(selectColumn, selectColTitle);
+		if (fixedLayout) {
+			table.setColumnWidth(selectColumn, "3.5em");
+		}
 		table.setSelectionModel(new NoSelectionModel<T>());
 		table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 		provider.addDataDisplay(table);		
@@ -87,6 +92,10 @@ abstract public class SelectionTable<T> extends Composite {
 		clearSelection();
 		selected = new HashSet<T>(selection);
 		table.redraw();
+	}
+	
+	public Set<T> getSelection() {
+		return new HashSet<T>(selected);
 	}
 	
 	public void setSelected(T t) {
@@ -123,7 +132,16 @@ abstract public class SelectionTable<T> extends Composite {
 		}
 	}
 	
-	public void reloadWith(List<T> data, boolean clearSelection) {
+	public void setItems(List<T> data) {
+		setItems(data, true);
+	}
+	
+	/**
+	 * TODO: retire this method
+	 * @param data
+	 * @param clearSelection
+	 */
+	public void setItems(List<T> data, boolean clearSelection) {
 		provider.setList(new ArrayList<T>(data));
 		table.setVisibleRange(0, data.size());		
 		if (clearSelection) {

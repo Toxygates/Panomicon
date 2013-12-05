@@ -1,6 +1,5 @@
 package otgviewer.client;
 
-
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -101,7 +100,6 @@ public class Utils {
 		}
 		return vp;
 	}
-	
 
 	public static Label mkEmphLabel(String s) {
 		Label r = new Label(s);
@@ -121,7 +119,6 @@ public class Utils {
 		floatLeft(w);
 		fp.add(w);
 	}
-	
 
 	/**
 	 * Colour: for example, MediumAquaMarine or LightSkyBlue
@@ -249,7 +246,6 @@ public class Utils {
 		ScrollPanel sp = new ScrollPanel(w);
 		return sp;
 	}
-	
 	
 	public static Widget mkHelpButton(final TextResource helpText, 
 			final ImageResource helpImage) {

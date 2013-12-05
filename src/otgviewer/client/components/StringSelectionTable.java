@@ -7,7 +7,7 @@ public class StringSelectionTable extends SelectionTable<String> {
 
 	String _title;
 	public StringSelectionTable(String selectColTitle, String title) {
-		super(selectColTitle);
+		super(selectColTitle, true);
 		_title = title;
 	}
 	
@@ -19,5 +19,6 @@ public class StringSelectionTable extends SelectionTable<String> {
 			}
 		};
 		table.addColumn(textColumn, _title);
+		table.setColumnWidth(textColumn, "12.5em");
 	}
 }
