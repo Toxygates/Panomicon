@@ -261,12 +261,13 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	 * @param itemTitle Header for the item type being selected (in certain cases) 
 	 * @param predefinedLists Predefined lists that the user may choose from 
 	 */
-	public StackedListEditor(String itemTitle, Map<String, List<String>> predefinedLists) {
+	public StackedListEditor(String itemTitle, Map<String, List<String>> predefinedLists,
+			boolean isAdjuvantUI) {
 		dlp = new DockLayoutPanel(Unit.EM);
 		initWidget(dlp);
 		
 		this.predefinedLists = predefinedLists;
-		if (!predefinedLists.isEmpty()) {			
+		if (!predefinedLists.isEmpty() && isAdjuvantUI) {			
 			northVp = Utils.mkVerticalPanel();
 			northVp.setWidth("100%");			
 			final ListBox lb = new ListBox();

@@ -84,8 +84,11 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		dp.addNorth(lblCompounds, 2.5);
 		north = lblCompounds;
 		
+		boolean isAdjuvant = screen.manager().getUIType().equals("adjuvant");
+		
 		compoundEditor = new StackedListEditor("Compound", 
-				TemporaryCompoundLists.predefinedLists()) {
+				TemporaryCompoundLists.predefinedLists(),
+				isAdjuvant) {
 			@Override
 			protected void selectionChanged(Set<String> selected) {
 				List<String> r = new ArrayList<String>();

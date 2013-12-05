@@ -48,7 +48,7 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 			hp.add(vp);
 			g.setCellSpacing(20);
 			fillGrid(g, 3, filters());	
-			return hp;
+			return Utils.makeScrolled(hp);
 		}
 		
 		void fillGrid(Grid g, int columns, DataFilter[] filters) {
