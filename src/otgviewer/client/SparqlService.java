@@ -173,12 +173,12 @@ public interface SparqlService extends RemoteService {
 	 */
 	public String[][] geneSyms(DataFilter filter, String[] probes);
 	
-	/**
-	 * Obtain gene suggestions from a partial gene name (natural language)
+	/*
+	 * Obtain gene suggestions from a partial gene symbol
 	 * @param partialName
 	 * @return An array of pairs, where the first item is the precise gene symbol and the second is the full gene name.
 	 */
-	public Pair<String, String>[] geneSuggestions(DataFilter filter, String partialName);
+	public String[] geneSuggestions(DataFilter filter, String partialName);
 	
 	/**
 	 * Obtain associations -- the "dynamic columns" on the data screen.

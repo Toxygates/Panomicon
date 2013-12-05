@@ -248,10 +248,10 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     m1.map(p => new Association(p._1, convertPairs(p._2))).toArray
   }
 
-  def geneSuggestions(filter: DataFilter, partialName: String): Array[bioweb.shared.Pair[String, String]] = {
+  def geneSuggestions(filter: DataFilter, partialName: String): Array[String] = {
     useConnector(AffyProbes,
-      (c: AffyProbes.type) => c.probesForPartialTitle(partialName, filter))
-      .map(x => new Pair(x.identifier, x.name)).toArray
+      (c: AffyProbes.type) => c.probesForPartialSymbol(partialName, filter))
+      .map(_.identifier).toArray
   }
 
 }
