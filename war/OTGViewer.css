@@ -1,16 +1,6 @@
-/** Add css rules here for your application. */
-/** Example rules used by the template application (remove for your app) */
-h1 {
-	font-size: 2em;
-	font-weight: bold;
-	color: #777777;
-	margin: 40px 0px 70px;
-	text-align: center;
-}
-
-.sendButton {
-	display: block;
-	font-size: 16pt;
+.toxygatesTitle {
+	font-family: 'Play', sans-serif;
+	font-size: 36pt;
 }
 
 /** Most GWT widgets already have a style name defined */
@@ -69,7 +59,7 @@ exprGrid {
 	font-size: 1.2em;
 	color: #777777;
 	margin: 5px;
-	text-align: center;
+	text-align: center;	
 }
 
 .headingBlack {
@@ -110,7 +100,7 @@ exprGrid {
 	margin: 1px;
 	padding: 4px;
 	border: solid black 1px;
-	cursor: pointer;
+	cursor: pointer;	
 }
 
 .emphasized {

@@ -95,4 +95,10 @@ public interface Resources extends ClientBundle {
 	
 	@Source("help/versions.html")
 	TextResource versionHTML();
+	
+	@Source("help/latestVersion.html")
+	TextResource latestVersionHTML();
+	
+	@Source("help/banner.html")
+	TextResource bannerHTML();
 }
