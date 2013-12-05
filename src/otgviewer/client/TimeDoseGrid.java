@@ -123,7 +123,12 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		return b.getCompound() + ":" + b.getDose() + ":" + b.getTime();
 	}
 	
+	private boolean fetchingSamples = false;
 	protected void fetchSamples() {
+		if (fetchingSamples) {
+			return;
+		}
+		fetchingSamples = true;
 		availableSamples.clear();
 		String[] compounds = chosenCompounds.toArray(new String[0]);
 		sparqlService.barcodes(chosenDataFilter, compounds,
@@ -131,7 +136,8 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 
 			@Override
 			public void onFailure(Throwable caught) {
-				Window.alert("Unable to obtain samples.");				
+				Window.alert("Unable to obtain samples.");		
+				fetchingSamples = false;
 			}
 
 			@Override
@@ -141,10 +147,10 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 					if (!availableSamples.containsKey(k)) {						
 						availableSamples.put(k, new LinkedList<Barcode>());
 					}					
-					availableSamples.get(k).add(b);
-					Window.alert(availableSamples.get(k).size() + "");
+					availableSamples.get(k).add(b);					
 				}	
 				samplesAvailable();
+				fetchingSamples = false;
 			}			
 		});
 	}

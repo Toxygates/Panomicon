@@ -156,8 +156,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 					if (checkboxes[c][availableTimes.length * d + t].getValue()) {
 						String compound = chosenCompounds.get(c);
 						String key = compound + ":" + indexToDose(d) + ":" + availableTimes[t];
-						if (availableSamples.containsKey(key)) {
-							if(availableSamples.get(key).size() > 3) { Window.alert(key); }
+						if (availableSamples.containsKey(key)) {							
 							r.addAll(availableSamples.get(key));	
 						}						
 					}
