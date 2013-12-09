@@ -7,27 +7,28 @@ import java.util.List;
 import java.util.Set;
 
 import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.FixedWidthLayoutPanel;
 import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.ResizingDockLayoutPanel;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import bioweb.shared.array.DataColumn;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.storage.client.Storage;
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.StackPanel;
+import com.google.gwt.user.client.ui.StackLayoutPanel;
 import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -53,6 +54,8 @@ public class ProbeScreen extends Screen {
 	final SuggestBox sb = new SuggestBox(oracle);
 	private Button proceedSelected;
 	
+	private static final int STACK_ITEM_HEIGHT = 29;
+	
 	public ProbeScreen(ScreenManager man) {
 		super("Probe selection", key, true, true, man,
 				resources.probeSelectionHTML(), resources.probeSelectionHelp());				
@@ -63,27 +66,8 @@ public class ProbeScreen extends Screen {
 		return manager.isConfigured(ColumnScreen.key);
 	}
 
-	private ProbeSelector pathwaySel, gotermSel;
-
-	public Widget content() {
-		HorizontalPanel hp = Utils.mkHorizontalPanel();				
-		hp.setSpacing(10);
-
-		StackPanel probeSelStack = new StackPanel() {
-			// This is to fix a height bug on IE8 - see
-			// http://code.google.com/p/google-web-toolkit/issues/detail?id=2593
-			// Future: use StackLayoutPanel instead!
-			@Override
-			protected void insert(Widget child, Element container, int beforeIndex,	boolean domInsert) {
-				super.insert(child, container, beforeIndex, domInsert);
-				DOM.removeElementAttribute(container, "height");
-			}
-		};
-		
-		hp.add(probeSelStack);
-		probeSelStack.setSize("350px", "492px");
-
-		pathwaySel = new ProbeSelector(
+	private ProbeSelector pathwaySelector() {
+		return new ProbeSelector(
 				"This lets you view probes that correspond to a given KEGG pathway. "
 						+ "Enter a partial pathway name and press enter to search.", true) {
 			protected void getMatches(String pattern) {
@@ -102,62 +86,53 @@ public class ProbeScreen extends Screen {
 				addProbes(probes);
 			}
 		};
-		probeSelStack.add(pathwaySel, "KEGG pathway search", false);
-		pathwaySel.setWidth("100%");
-		addListener(pathwaySel);
-		
-		gotermSel = new ProbeSelector(
-				"This lets you view probes that correspond to a given GO term. "
-						+ "Enter a partial term name and press enter to search.", true) {
-			protected void getMatches(String pattern) {
-				owlimService.goTerms(pattern, retrieveMatchesCallback());
-			}
+	}
+	
+	private ProbeSelector goTermSelector() {
+		 return new ProbeSelector(
+					"This lets you view probes that correspond to a given GO term. "
+							+ "Enter a partial term name and press enter to search.", true) {
+				protected void getMatches(String pattern) {
+					owlimService.goTerms(pattern, retrieveMatchesCallback());
+				}
 
-			protected void getProbes(String item) {
-				owlimService.probesForGoTerm(chosenDataFilter, item, retrieveProbesCallback());
-			}
-			
-			@Override
-			public void probesChanged(String[] probes) {
-				super.probesChanged(probes);
-				addProbes(probes);
-			}
-		};
-		probeSelStack.add(gotermSel, "GO term search", false);
-		pathwaySel.setWidth("100%");		
-		addListener(gotermSel);		
-
-		Widget chembl = makeTargetLookupPanel(
-				"CHEMBL",
-				"This lets you view probes that are known targets of the currently selected compound.");
-		probeSelStack.add(chembl, "CHEMBL targets", false);
-
-		Widget drugBank = makeTargetLookupPanel(
-				"DrugBank",
-				"This lets you view probes that are known targets of the currently selected compound.");
-		probeSelStack.add(drugBank, "DrugBank targets", false);
-
-		VerticalPanel verticalPanel_3 = new VerticalPanel();
-		verticalPanel_3
-				.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		probeSelStack.add(verticalPanel_3, "Free selection", false);
-		verticalPanel_3.setSize("100%", "");
-
+				protected void getProbes(String item) {
+					owlimService.probesForGoTerm(chosenDataFilter, item, retrieveProbesCallback());
+				}
+				
+				@Override
+				public void probesChanged(String[] probes) {
+					super.probesChanged(probes);
+					addProbes(probes);
+				}
+			};
+	}
+	
+	private Widget manualSelection() {
+		VerticalPanel vp = new VerticalPanel();		
+		vp.setSize("100%", "100%");
+		vp.setSpacing(5);
+		vp.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
 		VerticalPanel vpi = Utils.mkVerticalPanel();
-		vpi.setStyleName("colored");
-		verticalPanel_3.add(vpi);
 		vpi.setWidth("100%");
+		vp.add(vpi);
 		
-		Label label_5 = new Label(
+		VerticalPanel vpii = Utils.mkVerticalPanel();
+		vpii.setWidth("100%");
+		vpii.setStyleName("colored");
+		vpi.add(vpii);
+		
+		Label label = new Label(
 				"Enter a list of probes, genes or proteins, one per line, to display only those.");
-		label_5.setStyleName("none");
-		vpi.add(label_5);
+		label.setStyleName("none");
+		vpii.add(label);
 
 		customProbeText = new TextArea();
 		vpi.add(customProbeText);
+		customProbeText.setVisibleLines(10);
 		customProbeText.setWidth("95%");
 		
-		vpi.add(new Button("Add manual list", new ClickHandler() {
+		vpii.add(new Button("Add manual list", new ClickHandler() {
 			public void onClick(ClickEvent ev) {
 				String text = customProbeText.getText();
 				String[] split = text.split("\n");
@@ -169,49 +144,80 @@ public class ProbeScreen extends Screen {
 				} }
 		}));
 		
-		vpi = Utils.mkVerticalPanel();
-		vpi.setStyleName("colored2");
-		verticalPanel_3.add(vpi);
-		vpi.setWidth("100%");
+		vpii = Utils.mkVerticalPanel();
+		vpii.setStyleName("colored2");
+		vpi.add(vpii);
+		vpii.setWidth("100%");
 		
-		Label l = new Label("Begin typing a gene name to get suggestions.");
-		vpi.add(l);
+		Label l = new Label("Begin typing a gene symbol to get suggestions.");
+		vpii.add(l);
 		
-		vpi.add(sb);
+		vpii.add(sb);
 		sb.setWidth("95%");		
 		vpi.add(new Button("Add gene", new ClickHandler() {
 			public void onClick(ClickEvent ev) {
 				String[] gs = new String[1];
 				if (sb.getText().length() == 0) {
-					Window.alert("Please type a gene name or identifier and try again.");
+					Window.alert("Please type a gene symbol and try again.");
 				}
 				gs[0] = sb.getText();
 				addManualProbes(gs);
 			}
 		}));
+		return vp;
+	}
+	
+	public Widget content() {		
+		StackLayoutPanel probeSelStack = new StackLayoutPanel(Unit.PX);		
+		probeSelStack.setWidth("350px");
+
+		ProbeSelector psel = pathwaySelector();		
+		probeSelStack.add(psel, "KEGG pathway search", STACK_ITEM_HEIGHT);
+		addListener(psel);		
+		psel = goTermSelector();
+		probeSelStack.add(psel, "GO term search", STACK_ITEM_HEIGHT);
+		addListener(psel);		
+
+		Widget chembl = makeTargetLookupPanel(
+				"CHEMBL",
+				"This lets you view probes that are known targets of the currently selected compound.");
+		probeSelStack.add(chembl, "CHEMBL targets", STACK_ITEM_HEIGHT);
+
+		Widget drugBank = makeTargetLookupPanel(
+				"DrugBank",
+				"This lets you view probes that are known targets of the currently selected compound.");
+		probeSelStack.add(drugBank, "DrugBank targets", STACK_ITEM_HEIGHT);
+
+		probeSelStack.add(manualSelection(), "Free selection", STACK_ITEM_HEIGHT);
 		
-		VerticalPanel lp = Utils.mkVerticalPanel();
-		l = new Label("Selected probes");
-		l.setStyleName("heading");
-		lp.add(l);
+		DockLayoutPanel probeListPanel = new ResizingDockLayoutPanel();
+		
+		Label l = new Label("Selected probes");
+		l.setStyleName("heading");		
+		probeListPanel.addNorth(Utils.wideCentered(l), 10);
+
 		probesList = new ListBox();
-		probesList.setVisibleItemCount(25);
-		probesList.setWidth("350px");
-		lp.add(probesList);
-		hp.add(lp);
-		
-		lp.add(new Button("Clear selected probes", new ClickHandler() {			
+		probesList.setVisibleItemCount(15);
+		probesList.setWidth("100%");
+
+		Button b = new Button("Clear selected probes", new ClickHandler() {			
 			@Override
 			public void onClick(ClickEvent event) {				
 				probesChanged(new String[0]);								
 			}
-		}));
+		});
+		probeListPanel.addSouth(Utils.wideCentered(b), 10);
 
-		HorizontalPanel hpo = Utils.mkWidePanel();
-		hpo.setHeight("100%");
-		hpo.add(hp);
+		probeListPanel.add(probesList);
 		
-		return hpo;			
+		DockLayoutPanel dp = new ResizingDockLayoutPanel();
+		dp.addWest(probeSelStack, 100);
+		dp.add(probeListPanel);
+		
+		FixedWidthLayoutPanel fwlp = new FixedWidthLayoutPanel(dp, 700, 10);
+		fwlp.setSize("100%", "100%");
+		
+		return fwlp;
 	}
 	
 	@Override
@@ -287,23 +293,27 @@ public class ProbeScreen extends Screen {
 	}
 	
 	private Widget makeTargetLookupPanel(final String service, String label) {
-		VerticalPanel verticalPanel_2 = Utils.mkVerticalPanel(true);			
-		verticalPanel_2.setSize("100%", "100px");		
+		VerticalPanel vp = new VerticalPanel(); 		
+		vp.setSize("100%", "100%");		
+		vp.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
 		
-		Label label_4 = new Label(label);
-		verticalPanel_2.add(label_4);
+		VerticalPanel vpi = Utils.mkVerticalPanel(true);
+		vpi.setStyleName("colored");
+		Label l = new Label(label);
+		vpi.add(l);
 		
 		final ListBox compoundList = new ListBox();
 		compoundLists.add(compoundList);
-		verticalPanel_2.add(compoundList);
+		vpi.add(compoundList);
 		
 		Button button = new Button("Add direct targets >>", makeTargetLookupCH(compoundList, service, false));
-		verticalPanel_2.add(button);
+		vpi.add(button);
 		
 		button = new Button("Add inferred targets >>", makeTargetLookupCH(compoundList, service, true));
-		verticalPanel_2.add(button);		
+		vpi.add(button);
 		
-		return verticalPanel_2;
+		vp.add(vpi);
+		return vp;
 	}
 	
 	/**

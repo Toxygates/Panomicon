@@ -81,6 +81,12 @@ public class Utils {
 		}
 		return hp;
 	}
+	
+	public static HorizontalPanel wideCentered(Widget w) {
+		HorizontalPanel hp = mkWidePanel();
+		hp.add(w);
+		return hp;
+	}
 
 	public static VerticalPanel mkVerticalPanel() {
 		return mkVerticalPanel(false);
