@@ -28,6 +28,7 @@ import otg.sparql.Probe
 import otg.db.kyotocabinet.KCMicroarrayDB
 import otg.Context
 import otg.OTGContext
+import otg.db.MicroarrayDBReader
 
 
 /**
@@ -39,8 +40,8 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
   import scala.collection.JavaConversions._
   import UtilsS._
 
-  private var foldsDB: MicroarrayDB = _
-  private var absDB: MicroarrayDB = _
+  private var foldsDB: MicroarrayDBReader[ExprValue] = _
+  private var absDB: MicroarrayDBReader[ExprValue] = _
   private var tgConfig: Configuration = _
   private var csvDirectory: String = _
   private var csvUrlBase: String = _
