@@ -80,7 +80,6 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	
 	public void addDataColumn(Column<T, ?> col, String title, String tooltip) {
 		col.setSortable(true);	
-		col.setDefaultSortAscending(false);
 		addColWithTooltip(col, title, tooltip);		
 		col.setCellStyleNames("dataColumn");		
 		if (dataColumns == 0 && grid.getColumnSortList().size() == 0) {
@@ -114,9 +113,8 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		sortAsc = false;
 		sortCol = 0;
 		if (csl.size() > 0) {
-			sortCol = grid
-					.getColumnIndex((Column<T, ?>) csl.get(
-							0).getColumn())
+			sortCol = grid.getColumnIndex(
+					(Column<T, ?>) csl.get(0).getColumn())
 					- extraCols;
 			sortAsc = csl.get(0).isAscending();
 		}
