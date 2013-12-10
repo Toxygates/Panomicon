@@ -93,7 +93,7 @@ abstract class ChartDataSource {
 					}
 				}
 			}
-			acceptor.accept(new ArrayList(r));			
+			acceptor.accept(new ArrayList<ChartSample>(r));			
 		}		 
 	}
 	

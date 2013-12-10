@@ -106,7 +106,6 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 			final SuggestBox sb = new SuggestBox(new SuggestOracle() {				
 				@Override
 				public void requestSuggestions(Request request, Callback callback) {
-					String lc = request.getQuery().toLowerCase();
 					callback.onSuggestionsReady(request, 
 							new Response(stackedEditor.getSuggestions(request)));
 				}
