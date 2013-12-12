@@ -327,6 +327,23 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 			setGroup(pendingGroup.getName(), barcodes);
 			newGroup();
 		}
+		
+		loadTimeWarningIfNeeded();		
+	}
+	
+	private void loadTimeWarningIfNeeded() {
+		int totalSize = 0;
+		for (Group g : groups.values()) {
+			totalSize += g.samples().length;
+		}
+		
+		// Conservatively estimate that we need 1.5 s per sample to load data
+		int loadTime = (int) ((float) totalSize / 1.5);
+
+		if (loadTime > 20) {
+			Window.alert("Warning: You have requested data for " + totalSize + " samples.\n" +
+					"The total loading time is expected to be " + loadTime + " seconds.");
+		}
 	}
 	
 	private void cullEmptyGroups() {
