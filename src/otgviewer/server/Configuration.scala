@@ -8,15 +8,15 @@ object Configuration {
    * Create a new Configuration from the ServletConfig.
    */
   def fromServletConfig(config: ServletConfig): Configuration = {
-    val context = config.getServletContext()
+    val servletContext = config.getServletContext()
     
     /**
      * These parameters are read from <context-param> tags in WEB-INF/web.xml.
      */
-    new Configuration(context.getInitParameter("owlimRepositoryName"),
-      context.getInitParameter("toxygatesHomeDir"),
-      context.getInitParameter("csvDir"),
-      context.getInitParameter("csvUrlBase"))
+    new Configuration(servletContext.getInitParameter("owlimRepositoryName"),
+      servletContext.getInitParameter("toxygatesHomeDir"),
+      servletContext.getInitParameter("csvDir"),
+      servletContext.getInitParameter("csvUrlBase"))
   }
        
 }

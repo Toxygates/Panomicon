@@ -30,10 +30,8 @@ import otg.OTGContext
 import otg.db.MicroarrayDBReader
 import otgviewer.client.MatrixService
 
-
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
- * TODO: rename to MicroarrayService
  */
 class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with MatrixService {
   import Conversions._
@@ -54,14 +52,13 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
   }
 
   // Useful for testing
-  def localInit(config: Configuration) {
-    val homePath = config.toxygatesHomeDir
+  def localInit(config: Configuration) {    
     csvDirectory = config.csvDirectory
     csvUrlBase = config.csvUrlBase
     context = config.context
     // Future: construct DB in context
-    foldsDB = new KCMicroarrayDB(homePath + "/otgf.kct")
-    absDB = new KCMicroarrayDB(homePath + "/otg.kct")
+    foldsDB = context.foldsDBReader
+    absDB = context.absoluteDBReader
 
     OwlimLocalRDF.setContextForAll(context)
     println("Microarray databases are open")
