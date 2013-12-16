@@ -40,8 +40,8 @@ public class ProbeScreen extends Screen {
 	public static final String key = "probes";
 	private SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT
 			.create(SparqlService.class);
-	private KCServiceAsync kcService = (KCServiceAsync) GWT
-			.create(KCService.class);
+	private MatrixServiceAsync kcService = (MatrixServiceAsync) GWT
+			.create(MatrixService.class);
 
 
 	private TextArea customProbeText;

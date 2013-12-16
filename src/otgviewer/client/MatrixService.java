@@ -14,13 +14,13 @@ import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 /**
- * This service helps obtain microarray expression data from the 
- * underlying data store (Kyoto Cabinet).
+ * This service obtains expression data from the 
+ * underlying data store.
  * @author johan
  *
  */
-@RemoteServiceRelativePath("KC")
-public interface KCService extends RemoteService {
+@RemoteServiceRelativePath("matrix")
+public interface MatrixService extends RemoteService {
 
 	/**
 	 * Convert identifiers such as genes, probe IDs and proteins into a list of probes.

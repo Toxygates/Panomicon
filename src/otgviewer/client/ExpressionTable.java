@@ -94,8 +94,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	private DoubleBox absValBox;
 	private ListBox valueTypeList = new ListBox();
 	
-	private final KCServiceAsync kcService = (KCServiceAsync) GWT
-			.create(KCService.class);	
+	private final MatrixServiceAsync kcService = (MatrixServiceAsync) GWT
+			.create(MatrixService.class);	
 	private static otgviewer.client.Resources resources = GWT.create(otgviewer.client.Resources.class);
 	
 	/**

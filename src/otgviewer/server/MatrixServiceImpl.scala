@@ -1,7 +1,6 @@
 package otgviewer.server
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-import otgviewer.client.KCService
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import java.util.{ List => JList, ArrayList }
@@ -29,13 +28,14 @@ import otg.db.kyotocabinet.KCMicroarrayDB
 import otg.Context
 import otg.OTGContext
 import otg.db.MicroarrayDBReader
+import otgviewer.client.MatrixService
 
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
  * TODO: rename to MicroarrayService
  */
-class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService {
+class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with MatrixService {
   import Conversions._
   import scala.collection.JavaConversions._
   import UtilsS._
