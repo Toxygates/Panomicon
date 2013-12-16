@@ -2,6 +2,9 @@ package otgviewer.server
 
 import javax.servlet.ServletConfig
 import otg.OTGContext
+import otg.db.MicroarrayDBReader
+import otg.ExprValue
+import otgviewer.server.ExpressionValueReader
 
 object Configuration {
   /**
@@ -18,7 +21,6 @@ object Configuration {
       servletContext.getInitParameter("csvDir"),
       servletContext.getInitParameter("csvUrlBase"))
   }
-       
 }
 
 class Configuration(val owlimRepositoryName: String, val toxygatesHomeDir: String,
@@ -30,4 +32,11 @@ class Configuration(val owlimRepositoryName: String, val toxygatesHomeDir: Strin
   
   lazy val context = 
     new OTGContext(Some(toxygatesHomeDir), Some(owlimRepositoryName)) 
+  
+  private def readerAndConverter[E <: ExprValue](reader: MicroarrayDBReader[E]) =
+    (reader, ExpressionValueReader[E](reader))
+  
+  def absoluteDBReader = readerAndConverter(context.absoluteDBReader)
+  
+  def foldsDBReader = readerAndConverter(context.foldsDBReader)
 }
