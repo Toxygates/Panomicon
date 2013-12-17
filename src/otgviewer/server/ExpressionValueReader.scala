@@ -14,8 +14,12 @@ object ExpressionValueReader {
    */
   def apply[E <: ExprValue](reader: MicroarrayDBReader[E]): ExpressionValueReader[_ <: ExprValue] = 
     reader match {
-    case emd: ExtMicroarrayDBReader => new ExtConverter(emd)
-    case _ => new BasicConverter(reader)
+    case emd: ExtMicroarrayDBReader => new Converter[PExprValue](emd) {
+      def convert(v: PExprValue) = new ExpressionValue(v.value, v.call, v.p)
+    }
+    case _ => new Converter[ExprValue](reader) {
+      def convert(v: ExprValue) = new ExpressionValue(v.value, v.call)
+    }
   }
 }
 
@@ -34,12 +38,7 @@ trait ExpressionValueReader[E <: ExprValue] {
   protected def convert(v: E): ExpressionValue
 }
 
-class BasicConverter(val db: MicroarrayDBReader[ExprValue]) 
-extends ExpressionValueReader[ExprValue] {
-  protected def convert(v: ExprValue) = new ExpressionValue(v.value, v.call)    
-}
-
-class ExtConverter(val db: MicroarrayDBReader[PExprValue])
-extends ExpressionValueReader[PExprValue] {
-  protected def convert(v: PExprValue) = new ExpressionValue(v.value, v.call, v.p)  
+abstract class Converter[E <: ExprValue](val db: MicroarrayDBReader[E]) 
+extends ExpressionValueReader[E] {
+  protected def convert(v: E): ExpressionValue    
 }
