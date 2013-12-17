@@ -420,7 +420,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	}
 	
 	private void removeSyntheticColumnsLocal() {
-		dataColumns -= synthetics.size();
 		for (int i = 0; i < synthColumns.size(); ++i) {						
 			Column<ExpressionRow, ?> c = synthColumns.get(i);
 			removeDataColumn(c);
