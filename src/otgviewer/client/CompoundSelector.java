@@ -71,12 +71,12 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 
 	public CompoundSelector(Screen screen, String heading) {
 		this.screen = screen;
-		dp = new DockLayoutPanel(Unit.EM);
+		dp = new DockLayoutPanel(Unit.PX);
 
 		initWidget(dp);
 		Label lblCompounds = new Label(heading);
 		lblCompounds.setStyleName("heading");
-		dp.addNorth(lblCompounds, 2.5);
+		dp.addNorth(lblCompounds, 40);
 		north = lblCompounds;
 		
 		boolean isAdjuvant = screen.manager().getUIType().equals("adjuvant");
@@ -94,10 +94,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		
 		};		
 				
-		dp.add(compoundEditor);
-		
-//		compoundEditor.setWidth("300px");
-//		compoundEditor.setHeight("500px");
+		dp.add(compoundEditor);	
 		compoundEditor.table().setSelectionModel(new NoSelectionModel<String>());		
 	}
 	
@@ -197,8 +194,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	}
 	
 	public void resizeInterface() {
-		dp.setWidgetSize(north, 2.5);	
-//		compoundEditor.resizeInterface();
+		dp.setWidgetSize(north, 40);	
 	}
 
 	void performRanking(List<String> rankProbes, List<RankRule> rules) {

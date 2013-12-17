@@ -4,6 +4,7 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ListSelectionHandler;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.ResizingDockLayoutPanel;
+import otgviewer.client.components.ResizingListBox;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -19,6 +20,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -75,9 +77,8 @@ abstract public class ProbeSelector extends DataListenerWidget implements Requir
 		
 		lp.addNorth(topVp, 100);
 
-		itemList = new ListBox();
-		itemList.setWidth(CHILD_WIDTH);
-		itemList.setVisibleItemCount(15);
+		itemList = new ResizingListBox(50);
+		itemList.setWidth(CHILD_WIDTH);		
 		
 		itemHandler = new ListSelectionHandler<String>("pathways",
 				itemList, false) {
@@ -100,13 +101,13 @@ abstract public class ProbeSelector extends DataListenerWidget implements Requir
 			HorizontalPanel hp = Utils.wideCentered(addButton);
 			hp.setStyleName("slightlySpaced");
 			hp.setWidth(CHILD_WIDTH);
-			lp.addSouth(hp, 32);			
+			lp.addSouth(hp, 35);			
 		}
 		
 		lp.add(itemList);
 	}
 	
-	public void onResize() {
+	public void onResize() {	
 		lp.onResize();		
 	}
 	

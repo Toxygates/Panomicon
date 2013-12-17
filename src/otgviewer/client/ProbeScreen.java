@@ -10,6 +10,7 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.FixedWidthLayoutPanel;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.ResizingDockLayoutPanel;
+import otgviewer.client.components.ResizingListBox;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.DataFilter;
@@ -196,8 +197,7 @@ public class ProbeScreen extends Screen {
 		l.setStyleName("heading");		
 		probeListPanel.addNorth(Utils.wideCentered(l), 10);
 
-		probesList = new ListBox();
-		probesList.setVisibleItemCount(15);
+		probesList = new ResizingListBox(0);
 		probesList.setWidth("100%");
 
 		Button b = new Button("Clear selected probes", new ClickHandler() {			
