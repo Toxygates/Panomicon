@@ -3,6 +3,7 @@ package otgviewer.client;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ListSelectionHandler;
 import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.ResizingDockLayoutPanel;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -12,8 +13,12 @@ import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -29,7 +34,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * @author johan
  *
  */
-abstract public class ProbeSelector extends DataListenerWidget {
+abstract public class ProbeSelector extends DataListenerWidget implements RequiresResize {
 
 	TextBox searchBox;
 	ListBox itemList;
@@ -37,21 +42,28 @@ abstract public class ProbeSelector extends DataListenerWidget {
 	private boolean withButton;
 	private String[] loadedProbes;
 	private Button addButton;
-	
+	private DockLayoutPanel lp;
 
+	private final static String CHILD_WIDTH = "100%";
+	
 	public ProbeSelector(String label, boolean wb) {
 		this.withButton = wb;
+		this.lp = new ResizingDockLayoutPanel();		
+		initWidget(lp);		
+		VerticalPanel topVp = new VerticalPanel();
+		topVp.setWidth(CHILD_WIDTH);
+		topVp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		topVp.setStyleName("slightlySpaced");
 		
-		VerticalPanel vp = Utils.mkVerticalPanel();
-		initWidget(vp);
+		Label searchLabel = new Label(label);		
+		searchLabel.setStyleName("slightlySpaced");
+		searchLabel.setWidth("95%");
+		topVp.add(searchLabel);		
 		
-		Label lblPathwaySearch = new Label(label);		
-		vp.add(lblPathwaySearch);
-		lblPathwaySearch.setWidth("100%");
-
 		searchBox = new TextBox();
-		vp.add(searchBox);
-		searchBox.setWidth("90%");
+		topVp.add(searchBox);		
+
+		searchBox.setWidth("100%");
 		searchBox.addKeyPressHandler(new KeyPressHandler() {
 			public void onKeyPress(KeyPressEvent event) {
 				if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
@@ -61,12 +73,12 @@ abstract public class ProbeSelector extends DataListenerWidget {
 			}
 		});
 		
+		lp.addNorth(topVp, 100);
 
 		itemList = new ListBox();
-		vp.add(itemList);
-		itemList.setSize("100%", "250px");
-		itemList.setVisibleItemCount(5);
-
+		itemList.setWidth(CHILD_WIDTH);
+		itemList.setVisibleItemCount(15);
+		
 		itemHandler = new ListSelectionHandler<String>("pathways",
 				itemList, false) {
 			protected void getUpdates(String item) {
@@ -85,8 +97,17 @@ abstract public class ProbeSelector extends DataListenerWidget {
 				}
 			});
 			addButton.setEnabled(false);
-			vp.add(addButton);
+			HorizontalPanel hp = Utils.wideCentered(addButton);
+			hp.setStyleName("slightlySpaced");
+			hp.setWidth(CHILD_WIDTH);
+			lp.addSouth(hp, 32);			
 		}
+		
+		lp.add(itemList);
+	}
+	
+	public void onResize() {
+		lp.onResize();		
 	}
 	
 	/**

@@ -260,12 +260,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	
 	private void removeTests() {
 		if (!synthetics.isEmpty()) {
-			for (int i = 0; i < synthColumns.size(); ++i) {						
-				Column<ExpressionRow, ?> c = synthColumns.get(i);
-				removeDataColumn(c);
-			}
-			synthColumns.clear();
-			synthetics.clear();			
+			removeSyntheticColumnsLocal();					
 			kcService.removeTwoGroupTests(new AsyncCallback<Void>() {
 				@Override
 				public void onFailure(Throwable caught) {
@@ -423,6 +418,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		ttestCol.setCellStyleNames("extraColumn");				
 	}
 	
+	private void removeSyntheticColumnsLocal() {
+		for (int i = 0; i < synthColumns.size(); ++i) {						
+			Column<ExpressionRow, ?> c = synthColumns.get(i);
+			removeDataColumn(c);
+		}
+		synthColumns.clear();
+		synthetics.clear();		
+	}
+	
 	protected List<HideableColumn> initHideableColumns() {
 		SafeHtmlCell shc = new SafeHtmlCell();
 		List<HideableColumn> r = new ArrayList<HideableColumn>();
@@ -513,8 +517,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		super.columnsChanged(columns);
 		 //invalidate synthetic columns, since they depend on
 		//normal columns
-		dataColumns -= synthetics.size();
-		synthetics.clear();
+		removeSyntheticColumnsLocal();
 		
 		groupsel1.clear();
 		groupsel2.clear();

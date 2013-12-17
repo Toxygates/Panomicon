@@ -8,7 +8,11 @@ public enum ValueType implements Serializable {
 			return "Log2 (fold change)";
 		}
 	},
-	Absolute;
+	Absolute {
+		public String toString() {
+			return "Normalized intensity";
+		}
+	};
 	
 	public static ValueType unpack(String type) {
 		if (type.equals(Folds.toString())) {
