@@ -60,9 +60,8 @@ public class ColumnScreen extends Screen {
 		tp.add(gi, "Sample groups");
 		
 		final CompoundRanker cr = new CompoundRanker(cs);
-//		cr.setSize("500px", "500px");
 		tp.add(Utils.makeScrolled(cr), "Compound ranking (optional)");
-		tp.selectTab(0);
+		tp.selectTab(0);		
 
 		return tp;
 	}

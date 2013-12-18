@@ -25,8 +25,8 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  *
  */
 public class GeneExporter extends Composite {
-	private final KCServiceAsync kcService = (KCServiceAsync) GWT
-			.create(KCService.class);
+	private final MatrixServiceAsync kcService = (MatrixServiceAsync) GWT
+			.create(MatrixService.class);
 	
 	private static int rowCount; //!!!
 	

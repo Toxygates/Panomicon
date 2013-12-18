@@ -34,8 +34,8 @@
 	</servlet>
 
 	<servlet>
-		<servlet-name>kcServlet</servlet-name>
-		<servlet-class>otgviewer.server.KCServiceImpl</servlet-class>
+		<servlet-name>matrixServlet</servlet-name>
+		<servlet-class>otgviewer.server.MatrixServiceImpl</servlet-class>
 	</servlet>
 
 	<servlet-mapping>
@@ -49,8 +49,8 @@
 	</servlet-mapping>
 
 	<servlet-mapping>
-		<servlet-name>kcServlet</servlet-name>
-    <url-pattern>/toxygates/KC</url-pattern>
+		<servlet-name>matrixServlet</servlet-name>
+    <url-pattern>/toxygates/matrix</url-pattern>
   </servlet-mapping>
   
   <!-- Default page to serve -->
@@ -60,7 +60,7 @@
 
 <security-constraint>
   <web-resource-collection>
-     <web-resource-name>Toxygates (Adjuvant test version)</web-resource-name>
+     <web-resource-name>Toxygates (Adjuvant/test version)</web-resource-name>
      <url-pattern>/*</url-pattern>
   </web-resource-collection>
   <auth-constraint>

@@ -1,7 +1,6 @@
 package otgviewer.server
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-import otgviewer.client.KCService
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import java.util.{ List => JList, ArrayList }
@@ -28,19 +27,24 @@ import otg.sparql.Probe
 import otg.db.kyotocabinet.KCMicroarrayDB
 import otg.Context
 import otg.OTGContext
-
+import otg.db.MicroarrayDBReader
+import otgviewer.client.MatrixService
+import otgviewer.server.ExpressionValueReader
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
- * TODO: rename to MicroarrayService
  */
-class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService {
+class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with MatrixService {
   import Conversions._
   import scala.collection.JavaConversions._
   import UtilsS._
 
-  private var foldsDB: MicroarrayDB = _
-  private var absDB: MicroarrayDB = _
+  private var foldsDB: MicroarrayDBReader[ExprValue] = _
+  private var foldsDBReader: ExpressionValueReader[_] = _
+  
+  private var absDB: MicroarrayDBReader[ExprValue] = _
+  private var absDBReader: ExpressionValueReader[_] = _
+  
   private var tgConfig: Configuration = _
   private var csvDirectory: String = _
   private var csvUrlBase: String = _
@@ -53,14 +57,19 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
   }
 
   // Useful for testing
-  def localInit(config: Configuration) {
-    val homePath = config.toxygatesHomeDir
+  def localInit(config: Configuration) {    
     csvDirectory = config.csvDirectory
     csvUrlBase = config.csvUrlBase
     context = config.context
     // Future: construct DB in context
-    foldsDB = new KCMicroarrayDB(homePath + "/otgf.kct")
-    absDB = new KCMicroarrayDB(homePath + "/otg.kct")
+    val (fdb, fdbr) = config.foldsDBReader
+    foldsDB = fdb
+    foldsDBReader = fdbr
+    
+    absDB = context.absoluteDBReader
+    val (adb, adbr) = config.foldsDBReader
+    absDB = adb
+    absDBReader = adbr
 
     OwlimLocalRDF.setContextForAll(context)
     println("Microarray databases are open")
@@ -122,18 +131,18 @@ class KCServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with KCService
   }
 
   private def getDB(typ: ValueType) = typ match {
-    case ValueType.Folds    => foldsDB
-    case ValueType.Absolute => absDB
+    case ValueType.Folds    => (foldsDB, foldsDBReader)
+    case ValueType.Absolute => (absDB, absDBReader)
   }
 
   private def getExprValues(filter: DataFilter, barcodes: Seq[String], probes: Seq[String],
                             typ: ValueType, sparseRead: Boolean): ExprMatrix = {
     val db = getDB(typ)
     val pmap = context.probes(filter)
-    val sorted = db.sortSamples(barcodes.map(otg.Sample(_)))
-    val data = db.presentValuesForSamplesAndProbes(filter, sorted, probes.map(pmap.pack), sparseRead)
-    val jdata = data.map(r => new VVector(r.map(asJava(_))))
-    new ExprMatrix(jdata, jdata.size, jdata(0).size,
+    val sorted = db._1.sortSamples(barcodes.map(otg.Sample(_)))
+    val data = db._2.presentValuesForSamplesAndProbes(filter, sorted, 
+        probes.map(pmap.pack), sparseRead)
+    new ExprMatrix(data.map(new VVector(_)), data.size, data(0).size,
         Map() ++ probes.zipWithIndex, //rows
         Map() ++ sorted.map(_.code).zipWithIndex, //columns
         probes.map(new RowAnnotation(_, null, null, null)).toVector)    

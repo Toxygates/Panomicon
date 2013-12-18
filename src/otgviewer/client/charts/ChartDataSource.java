@@ -5,18 +5,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import otgviewer.client.KCService;
-import otgviewer.client.KCServiceAsync;
+import otgviewer.client.MatrixService;
+import otgviewer.client.MatrixServiceAsync;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Series;
+import otgviewer.shared.TimesDoses;
+import otgviewer.shared.ValueType;
 import bioweb.shared.SharedUtils;
 import bioweb.shared.array.ExpressionRow;
 import bioweb.shared.array.ExpressionValue;
-import otgviewer.shared.TimesDoses;
-import otgviewer.shared.ValueType;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
@@ -93,7 +93,7 @@ abstract class ChartDataSource {
 					}
 				}
 			}
-			acceptor.accept(new ArrayList(r));			
+			acceptor.accept(new ArrayList<ChartSample>(r));			
 		}		 
 	}
 	
@@ -192,8 +192,8 @@ abstract class ChartDataSource {
 	 *
 	 */
 	static class DynamicExpressionRowSource extends ExpressionRowSource {
-		private static final KCServiceAsync kcService = (KCServiceAsync) GWT
-				.create(KCService.class);
+		private static final MatrixServiceAsync kcService = (MatrixServiceAsync) GWT
+				.create(MatrixService.class);
 		
 		private DataFilter filter;
 		private String probe;

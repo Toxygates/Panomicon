@@ -6,7 +6,8 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
- * A layout panel that tries to keep a single widget at a fixed width.
+ * A layout panel that tries to keep a single widget at a fixed width, centered,
+ * filling all vertical space.
  *
  */
 public class FixedWidthLayoutPanel extends LayoutPanel {

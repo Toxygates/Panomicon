@@ -11,7 +11,7 @@ import bioweb.shared.array.ExpressionRow;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public interface KCServiceAsync {
+public interface MatrixServiceAsync {
 
 	public void identifiersToProbes(DataFilter filter, String[] identifiers,
 			boolean precise, AsyncCallback<String[]> callback);

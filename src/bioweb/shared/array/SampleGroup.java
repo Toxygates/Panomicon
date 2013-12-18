@@ -2,7 +2,6 @@ package bioweb.shared.array;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import bioweb.shared.*;
 import bioweb.shared.SharedUtils;
 
 /**

@@ -3,8 +3,6 @@ package otgviewer.client.charts;
 import java.util.ArrayList;
 import java.util.List;
 
-import otgviewer.client.KCService;
-import otgviewer.client.KCServiceAsync;
 import otgviewer.client.SparqlService;
 import otgviewer.client.SparqlServiceAsync;
 import otgviewer.client.charts.ChartDataSource.ChartSample;
@@ -12,10 +10,9 @@ import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import otgviewer.shared.Series;
 import otgviewer.shared.OTGUtils;
+import otgviewer.shared.Series;
 import otgviewer.shared.ValueType;
-
 import bioweb.shared.array.ExpressionRow;
 
 import com.google.gwt.core.client.GWT;
@@ -34,8 +31,6 @@ public class ChartGridFactory {
 	}
 	
 	private static final SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT.create(SparqlService.class);
-	private static final KCServiceAsync kcService = (KCServiceAsync) GWT
-			.create(KCService.class);
 	
 	private DataFilter filter;
 	private List<Group> groups;

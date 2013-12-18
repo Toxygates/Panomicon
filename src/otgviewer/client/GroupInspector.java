@@ -16,7 +16,6 @@ import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import bioweb.shared.array.DataColumn;
 
 import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;
@@ -288,14 +287,6 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		existingGroupsTable.table().redraw();
 		existingGroupsTable.setVisible(groups.size() > 0);
 		newGroup();
-	}
-	
-	private List<Group> asGroupList(Collection<DataColumn> dcs) {
-		List<Group> r = new ArrayList<Group>();
-		for (DataColumn dc : dcs) {
-			r.add((Group) dc);
-		}
-		return r;
 	}
 	
 	@Override 

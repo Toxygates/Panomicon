@@ -3,8 +3,9 @@ package otgviewer.client;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ListSelectionHandler;
 import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.ResizingDockLayoutPanel;
+import otgviewer.client.components.ResizingListBox;
 
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -48,7 +49,7 @@ abstract public class ProbeSelector extends DataListenerWidget implements Requir
 	
 	public ProbeSelector(String label, boolean wb) {
 		this.withButton = wb;
-		this.lp = new ResizingDockLayoutPanel();		
+		this.lp = new DockLayoutPanel(Unit.PX);		
 		initWidget(lp);		
 		VerticalPanel topVp = new VerticalPanel();
 		topVp.setWidth(CHILD_WIDTH);
@@ -73,11 +74,10 @@ abstract public class ProbeSelector extends DataListenerWidget implements Requir
 			}
 		});
 		
-		lp.addNorth(topVp, 100);
+		lp.addNorth(topVp, 90);
 
-		itemList = new ListBox();
-		itemList.setWidth(CHILD_WIDTH);
-		itemList.setVisibleItemCount(15);
+		itemList = new ResizingListBox(135);
+		itemList.setWidth(CHILD_WIDTH);		
 		
 		itemHandler = new ListSelectionHandler<String>("pathways",
 				itemList, false) {
@@ -100,13 +100,14 @@ abstract public class ProbeSelector extends DataListenerWidget implements Requir
 			HorizontalPanel hp = Utils.wideCentered(addButton);
 			hp.setStyleName("slightlySpaced");
 			hp.setWidth(CHILD_WIDTH);
-			lp.addSouth(hp, 32);			
+			lp.addSouth(hp, 35);			
 		}
 		
 		lp.add(itemList);
 	}
 	
-	public void onResize() {
+	@Override
+	public void onResize() {	
 		lp.onResize();		
 	}
 	

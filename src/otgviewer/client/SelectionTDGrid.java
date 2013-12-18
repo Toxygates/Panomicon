@@ -2,7 +2,6 @@ package otgviewer.client;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Barcode;

@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class ResizingHorizontalPanel extends HorizontalPanel implements RequiresResize, ProvidesResize {
 
+	@Override
 	public void onResize() {
 		for (Widget w: getChildren()) {
 			if (w instanceof RequiresResize) {

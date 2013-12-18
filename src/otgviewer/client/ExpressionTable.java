@@ -50,7 +50,6 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DisclosurePanel;
 import com.google.gwt.user.client.ui.DoubleBox;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -95,8 +94,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	private DoubleBox absValBox;
 	private ListBox valueTypeList = new ListBox();
 	
-	private final KCServiceAsync kcService = (KCServiceAsync) GWT
-			.create(KCService.class);	
+	private final MatrixServiceAsync kcService = (MatrixServiceAsync) GWT
+			.create(MatrixService.class);	
 	private static otgviewer.client.Resources resources = GWT.create(otgviewer.client.Resources.class);
 	
 	/**

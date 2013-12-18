@@ -71,7 +71,7 @@ object Conversions {
   
   implicit def asJava(ev: otg.ExprValue): ExpressionValue = new ExpressionValue(ev.value, ev.call)
   //Loses probe information!
-  implicit def asScala(ev: ExpressionValue): otg.ExprValue = new otg.ExprValue(ev.getValue, ev.getCall, "")
+  implicit def asScala(ev: ExpressionValue): otg.ExprValue = otg.ExprValue(ev.getValue, ev.getCall, "")
   
   def nullToOption[T](v: T): Option[T] = {
     if (v == null) {

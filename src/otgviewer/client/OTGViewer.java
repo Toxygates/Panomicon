@@ -101,13 +101,13 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 			}
 		});
 
-		mainDockPanel = new DockLayoutPanel(Unit.EM);		
+		mainDockPanel = new DockLayoutPanel(Unit.PX);		
 		rootPanel.add(mainDockPanel);
 
-		mainDockPanel.addNorth(menuBar, 2.7);
+		mainDockPanel.addNorth(menuBar, 35);
 		
 		navPanel = Utils.mkHorizontalPanel();
-		mainDockPanel.addNorth(navPanel, 2.7);
+		mainDockPanel.addNorth(navPanel, 35);
 		
 		initScreens(); //Need access to the nav. panel
 				

@@ -97,16 +97,16 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		private Timer t;
 		private DockLayoutPanel dlp;
 		private HorizontalPanel np;
+		
 		public FreeEdit(StackedListEditor editor) {
 			super(editor);
-			dlp = new DockLayoutPanel(Unit.EM);
+			dlp = new DockLayoutPanel(Unit.PX);
 			initWidget(dlp);
 			
 			Label l = new Label("Search:");			
 			final SuggestBox sb = new SuggestBox(new SuggestOracle() {				
 				@Override
 				public void requestSuggestions(Request request, Callback callback) {
-					String lc = request.getQuery().toLowerCase();
 					callback.onSuggestionsReady(request, 
 							new Response(stackedEditor.getSuggestions(request)));
 				}
@@ -128,7 +128,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 				}
 			});
 			
-			dlp.addNorth(np, 2.6);
+			dlp.addNorth(np, 36);
 			textArea.setSize("100%", "100%");
 			dlp.add(textArea);
 			t = new Timer() {
@@ -184,7 +184,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	 */
 	public static class BrowseCheck extends SelectionMethod {
 		private StringSelectionTable selTable;
-		private DockLayoutPanel dlp = new DockLayoutPanel(Unit.EM);
+		private DockLayoutPanel dlp = new DockLayoutPanel(Unit.PX);
 		private Button sortButton;
 		private ScrollPanel scrollPanel;
 		
@@ -200,7 +200,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 			};			
 			
 			HorizontalPanel hp = Utils.mkWidePanel();		
-			dlp.addSouth(hp, 2.5);
+			dlp.addSouth(hp, 36);
 			
 			sortButton = new Button("Sort by name", new ClickHandler() {
 				public void onClick(ClickEvent ce) {
@@ -263,7 +263,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	 */
 	public StackedListEditor(String itemTitle, Map<String, List<String>> predefinedLists,
 			boolean isAdjuvantUI) {
-		dlp = new DockLayoutPanel(Unit.EM);
+		dlp = new DockLayoutPanel(Unit.PX);
 		initWidget(dlp);
 		
 		this.predefinedLists = predefinedLists;
@@ -289,15 +289,15 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 				}
 			});
 			northVp.add(lb);
-			dlp.addNorth(northVp, 2.2);
+			dlp.addNorth(northVp, 26);
 		}
 		
-		slp = new StackLayoutPanel(Unit.EM);
+		slp = new StackLayoutPanel(Unit.PX);
 		dlp.add(slp);
 
 		createSelectionMethods(methods, itemTitle);
 		for (SelectionMethod m: methods) {
-			slp.add(m, m.getTitle(), 2.2);
+			slp.add(m, m.getTitle(), 30);
 		}
 	}
 	
@@ -498,5 +498,5 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 			}
 		}
 		return r;
-	}
+	}	
 }
