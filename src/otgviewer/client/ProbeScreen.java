@@ -28,6 +28,7 @@ import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.StackLayoutPanel;
 import com.google.gwt.user.client.ui.SuggestBox;
@@ -54,6 +55,11 @@ public class ProbeScreen extends Screen {
 	final GeneOracle oracle = new GeneOracle();
 	final SuggestBox sb = new SuggestBox(oracle);
 	private Button proceedSelected;
+	private FixedWidthLayoutPanel fwlp;
+	private DockLayoutPanel plPanel;
+	private Widget plNorth, plSouth;
+	private static final int PL_NORTH_HEIGHT = 30;
+	private static final int PL_SOUTH_HEIGHT = 30;
 	
 	private static final int STACK_ITEM_HEIGHT = 29;
 	
@@ -191,13 +197,10 @@ public class ProbeScreen extends Screen {
 
 		probeSelStack.add(manualSelection(), "Free selection", STACK_ITEM_HEIGHT);
 		
-		DockLayoutPanel probeListPanel = new ResizingDockLayoutPanel();
-		
 		Label l = new Label("Selected probes");
 		l.setStyleName("heading");		
-		probeListPanel.addNorth(Utils.wideCentered(l), 10);
 
-		probesList = new ResizingListBox(0);
+		probesList = new ResizingListBox(74);
 		probesList.setWidth("100%");
 
 		Button b = new Button("Clear selected probes", new ClickHandler() {			
@@ -206,15 +209,20 @@ public class ProbeScreen extends Screen {
 				probesChanged(new String[0]);								
 			}
 		});
-		probeListPanel.addSouth(Utils.wideCentered(b), 10);
-
-		probeListPanel.add(probesList);
+		
+		plPanel = new ResizingDockLayoutPanel();
+		plNorth = Utils.wideCentered(l);
+		plSouth = Utils.wideCentered(b);
+		
+		plPanel.addNorth(plNorth, PL_NORTH_HEIGHT);
+		plPanel.addSouth(plSouth, PL_SOUTH_HEIGHT);
+		plPanel.add(probesList);
 		
 		DockLayoutPanel dp = new ResizingDockLayoutPanel();
 		dp.addWest(probeSelStack, 100);
-		dp.add(probeListPanel);
+		dp.add(plPanel);
 		
-		FixedWidthLayoutPanel fwlp = new FixedWidthLayoutPanel(dp, 700, 10);
+		fwlp = new FixedWidthLayoutPanel(dp, 700, 10);
 		fwlp.setSize("100%", "100%");
 		
 		return fwlp;
@@ -427,8 +435,23 @@ public class ProbeScreen extends Screen {
 	}
 	
 	@Override
+	public void resizeInterface() {
+		/*
+		 * Test carefully in IE8, IE9 and all other browsers if changing this method.
+		 * Compare with ColumnScreen for a related method.
+		 * Future: extract this kind of functionality to a separate class, for example
+		 * ResizingDockLayoutPanel.
+		*/
+		
+		plPanel.setWidgetSize(plNorth, PL_NORTH_HEIGHT);
+		plPanel.setWidgetSize(plSouth, PL_SOUTH_HEIGHT);
+		plPanel.forceLayout();
+		super.resizeInterface();
+	}
+	
+	@Override
 	public String getGuideText() {
-		return "If you want, you can select specific probes to inspect here. If you want to see all probes, use the second button at the bottom."; 
+		return "If you wish, you can select specific probes to inspect here. To to see all probes, use the second button at the bottom."; 
 	}
 
 }

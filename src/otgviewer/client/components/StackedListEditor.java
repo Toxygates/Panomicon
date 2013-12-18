@@ -498,9 +498,5 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 			}
 		}
 		return r;
-	}
-	
-	public void forceLayout() {
-		dlp.forceLayout();
-	}
+	}	
 }
