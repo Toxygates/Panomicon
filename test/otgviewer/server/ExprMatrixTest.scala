@@ -46,10 +46,10 @@ class ExprMatrixTest extends FunSuite {
     
     def tv(x: Seq[Int]) = x.map(new ExpressionValue(_))
     
-    assert(em.column(0).toList === tv(List(3,1,2,4,5)))
-    assert(em.column(1).toList === tv(List(3,2,1,4,2)))
-    assert(em.row(0).toList === tv(List(3,3,5,3,3,5)))
-    assert(em.row(1).toList === tv(List(1,2,1,9,8,10)))
+    assert(em.column(0) === tv(Seq(3,1,2,4,5)))
+    assert(em.column(1) === tv(Seq(3,2,1,4,2)))
+    assert(em.row(0) === tv(Seq(3,3,5,3,3,5)))
+    assert(em.row(1) === tv(Seq(1,2,1,9,8,10)))
     
     val transpose = em.copyWith(em.toColVectors)    
     for (i <- 0 until 5) {      

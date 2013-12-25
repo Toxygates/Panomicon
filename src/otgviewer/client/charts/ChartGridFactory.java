@@ -3,10 +3,10 @@ package otgviewer.client.charts;
 import java.util.ArrayList;
 import java.util.List;
 
-import otgviewer.client.SparqlService;
-import otgviewer.client.SparqlServiceAsync;
 import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.client.components.Screen;
+import otgviewer.client.rpc.SparqlService;
+import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;

@@ -1,35 +1,48 @@
-package otgviewer.server
+package otgviewer.server.rpc
 
-import com.google.gwt.user.server.rpc.RemoteServiceServlet
-import javax.servlet.ServletConfig
-import javax.servlet.ServletException
-import java.util.{ List => JList, ArrayList }
-import otgviewer.shared.DataFilter
-import otgviewer.shared.Synthetic
-import otgviewer.shared.ValueType
-import otgviewer.shared.Group
-import otgviewer.shared.BarcodeColumn
-import otgviewer.shared.Series
-import otg.ExprValue
-import otgviewer.shared.Barcode
-import javax.servlet.http.HttpSession
-import otg.sparql.AffyProbes
-import otg.CSVHelper
-import otg.sparql._
+import java.util.ArrayList
+import java.util.{List => JList}
+import java.util.{List => JList}
+
+import scala.Array.canBuildFrom
+import scala.Array.fallbackCanBuildFrom
+import scala.collection.JavaConversions.asScalaBuffer
+import scala.collection.JavaConversions.mapAsJavaMap
+import scala.collection.JavaConversions.seqAsJavaList
+
+import Conversions.asJava
+import Conversions.asScala
+import Conversions.speciesFromFilter
+import bioweb.server.array.ArrayServiceImpl
 import bioweb.shared.array.ExpressionRow
 import bioweb.shared.array.ExpressionValue
-import bioweb.server.array.ArrayServiceImpl
 import friedrich.data.immutable.VVector
-import otg.sparql.AffyProbes
+import javax.servlet.ServletConfig
+import javax.servlet.ServletException
+import javax.servlet.ServletException
+import javax.servlet.http.HttpSession
+import otg.CSVHelper
 import otg.ExprValue
-import otg.db.MicroarrayDB
-import otg.sparql.Probe
-import otg.db.kyotocabinet.KCMicroarrayDB
-import otg.Context
+import otg.ExprValue
 import otg.OTGContext
 import otg.db.MicroarrayDBReader
-import otgviewer.client.MatrixService
+import otg.sparql._
+import otg.sparql.AffyProbes
+import otg.sparql.AffyProbes
+import otg.sparql.BioObjects.makeRich
+import otg.sparql.Probe
+import otgviewer.client.rpc.MatrixService
+import otgviewer.server.Configuration
+import otgviewer.server.ExprMatrix
 import otgviewer.server.ExpressionValueReader
+import otgviewer.server.RowAnnotation
+import otgviewer.server.UtilsS
+import otgviewer.shared.Barcode
+import otgviewer.shared.BarcodeColumn
+import otgviewer.shared.DataFilter
+import otgviewer.shared.Group
+import otgviewer.shared.Synthetic
+import otgviewer.shared.ValueType
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.

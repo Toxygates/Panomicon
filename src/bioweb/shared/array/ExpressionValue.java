@@ -55,4 +55,22 @@ public class ExpressionValue implements Serializable {
 	public String toString() {
 		return "(" + _value + ", " + _call + ")";
 	}
+	
+	@Override 
+	public boolean equals(Object o) {
+		if (o instanceof ExpressionValue) {
+			ExpressionValue other = (ExpressionValue) o;
+			return other.getValue() == _value &&
+					other.getCall() == _call &&
+					other.getPValue() == _pValue;
+		}
+		return false;
+	}
+	
+	@Override
+	public int hashCode() {
+		return ((Double)_value).hashCode() + 
+				_call +
+				((Double) _pValue).hashCode();
+	}
 }

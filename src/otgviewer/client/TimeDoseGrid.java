@@ -7,6 +7,8 @@ import java.util.Map;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
+import otgviewer.client.rpc.SparqlService;
+import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 

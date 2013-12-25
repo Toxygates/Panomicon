@@ -13,6 +13,8 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
+import otgviewer.client.rpc.MatrixService;
+import otgviewer.client.rpc.MatrixServiceAsync;
 import otgviewer.shared.AType;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;

@@ -1,24 +1,30 @@
-package otgviewer.server
+package otgviewer.server.rpc
 
-import com.google.gwt.user.server.rpc.RemoteServiceServlet
-import otgviewer.shared.DataFilter
-import otg.OTGSeriesQuery
-import otgviewer.shared.RankRule
-import otgviewer.client.SeriesService
-import otg.sparql.AffyProbes
-import otgviewer.shared.Series
-import otgviewer.shared.MatchResult
+import java.lang.{Double => JDouble}
 import java.util.ArrayList
-import java.util.{ List => JList, ArrayList }
-import otgviewer.shared.NoSuchProbeException
+import java.util.{List => JList}
+import scala.Array.canBuildFrom
+import scala.collection.JavaConversions.asJavaCollection
+import com.google.gwt.user.server.rpc.RemoteServiceServlet
+import Conversions.asJava
+import Conversions.asScala
+import Conversions.speciesFromFilter
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
-import otg.sparql.OwlimLocalRDF
+import otg.Context
+import otg.SeriesRanking
 import otg.db.SeriesDB
 import otg.db.kyotocabinet.KCSeriesDB
-import otg.SeriesRanking
 import otg.sparql.AffyProbes
-import otg.Context
+import otgviewer.client.rpc.SeriesService
+import otgviewer.server.Configuration
+import otgviewer.server.UtilsS
+import otgviewer.shared.DataFilter
+import otgviewer.shared.MatchResult
+import otgviewer.shared.NoSuchProbeException
+import otgviewer.shared.RankRule
+import otgviewer.shared.Series
+import otg.sparql.OwlimLocalRDF
 
 class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   import Conversions._
@@ -42,10 +48,13 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     context = config.context
     db = new KCSeriesDB(homePath + "/otgfs.kct")
     println("Series DB is open")
+    OwlimLocalRDF.setContextForAll(config.context)
+    AffyProbes.connect()
   }
 
   override def destroy() {
     db.close()
+    AffyProbes.close()
     super.destroy()
   }
 

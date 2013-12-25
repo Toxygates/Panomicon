@@ -13,6 +13,10 @@ import otgviewer.client.components.ResizingDockLayoutPanel;
 import otgviewer.client.components.ResizingListBox;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
+import otgviewer.client.rpc.MatrixService;
+import otgviewer.client.rpc.MatrixServiceAsync;
+import otgviewer.client.rpc.SparqlService;
+import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 

@@ -1,4 +1,4 @@
-package otgviewer.server
+package otgviewer.server.rpc
 
 import scala.collection.JavaConversions._
 import otg.Sample
@@ -11,12 +11,11 @@ import otgviewer.shared.Organism
 import otgviewer.shared.Pathology
 import otgviewer.shared.RankRule
 import otgviewer.shared.Series
-import otgviewer.shared.RuleType
 import bioweb.shared.array._
 import otg.Species
 import otg.SeriesRanking
 import otg.Context
-
+import otgviewer.shared.RuleType
 
 /**
  * Conversions between Scala and Java types.

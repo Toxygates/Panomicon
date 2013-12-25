@@ -1,8 +1,7 @@
-package otgviewer.server
+package otgviewer.server.rpc
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
 import otgviewer.shared.DataFilter
 import otgviewer.shared.CellType
 import otgviewer.shared.Organ
@@ -10,6 +9,9 @@ import otgviewer.shared.Organism
 import otgviewer.shared.RepeatType
 import otgviewer.shared.AType
 import org.scalatest.BeforeAndAfter
+import otgviewer.server.rpc.SparqlServiceImpl
+import otgviewer.server.Configuration
+import org.scalatest.junit.JUnitRunner
 
 object SparqlServiceTest {
   def testFilter = new DataFilter(CellType.Vivo, Organ.Liver, RepeatType.Single, Organism.Rat)

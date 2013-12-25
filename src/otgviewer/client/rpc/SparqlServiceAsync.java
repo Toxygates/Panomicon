@@ -1,4 +1,4 @@
-package otgviewer.client;
+package otgviewer.client.rpc;
 
 import otgviewer.shared.AType;
 import otgviewer.shared.Association;

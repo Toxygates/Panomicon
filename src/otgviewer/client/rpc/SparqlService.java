@@ -1,4 +1,4 @@
-package otgviewer.client;
+package otgviewer.client.rpc;
 import javax.annotation.Nullable;
 
 import otgviewer.shared.AType;

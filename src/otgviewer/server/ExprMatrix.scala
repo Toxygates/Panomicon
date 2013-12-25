@@ -7,6 +7,7 @@ import scala.reflect.ClassTag
 import org.apache.commons.math3.stat.inference.TTest
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest
 import scala.collection.immutable.{Vector => SVector}
+import otgviewer.server.rpc.Conversions
 
 object ExprMatrix {
   val ttest = new TTest()

@@ -1,18 +1,12 @@
-package otgviewer.server
+package otgviewer.server.rpc
 
 import scala.Array.canBuildFrom
 import scala.Option.option2Iterable
 import scala.collection.{Set => CSet}
+import scala.collection.{Set => CSet}
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
 
-import Assocations.convertPairs
-import Conversions.asJava
-import Conversions.asScala
-import Conversions.nullToOption
-import Conversions.speciesFromFilter
-import UtilsS.nullToNone
-import UtilsS.useConnector
 import bioweb.shared.Pair
 import bioweb.shared.array.Annotation
 import javax.servlet.ServletConfig
@@ -20,28 +14,9 @@ import javax.servlet.ServletException
 import otg.DefaultBio
 import otg.Human
 import otg.OTGContext
-import otg.sparql.AffyProbes
-import otg.sparql.B2RHomologene
-import otg.sparql.B2RKegg
-import otg.sparql.ChEMBL
-import otg.sparql.CommonSPARQL
-import otg.sparql.CommonSPARQL.BBMap
-import otg.sparql.CommonSPARQL.MMap
-import otg.sparql.CommonSPARQL.emptyMMap
-import otg.sparql.CommonSPARQL.makeRich
-import otg.sparql.CommonSPARQL.toBioMap
-import otg.sparql.Compound
-import otg.sparql.CompoundTargets
-import otg.sparql.DrugBank
-import otg.sparql.GOTerm
-import otg.sparql.Gene
-import otg.sparql.LocalUniprot
-import otg.sparql.OTGSamples
-import otg.sparql.OwlimLocalRDF
-import otg.sparql.Probe
-import otg.sparql.Protein
-import otg.sparql.RDFConnector
-import otgviewer.client.SparqlService
+import otg.sparql._
+import otgviewer.client.rpc.SparqlService
+import otgviewer.server._
 import otgviewer.shared.AType
 import otgviewer.shared.Association
 import otgviewer.shared.Barcode

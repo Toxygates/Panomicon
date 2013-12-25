@@ -8,12 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import otgviewer.client.SparqlService;
-import otgviewer.client.SparqlServiceAsync;
+import otgviewer.client.rpc.SparqlService;
+import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.AType;
 import otgviewer.shared.Association;
 import bioweb.shared.SharedUtils;
-
 import bioweb.shared.Pair;
 
 import com.google.gwt.cell.client.SafeHtmlCell;

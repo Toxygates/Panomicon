@@ -25,17 +25,17 @@
 
 	<servlet>
 		<servlet-name>sparqlServlet</servlet-name>
-		<servlet-class>otgviewer.server.SparqlServiceImpl</servlet-class>
+		<servlet-class>otgviewer.server.rpc.SparqlServiceImpl</servlet-class>
 	</servlet>
 
 	<servlet>
 		<servlet-name>seriesServlet</servlet-name>
-		<servlet-class>otgviewer.server.SeriesServiceImpl</servlet-class>
+		<servlet-class>otgviewer.server.rpc.SeriesServiceImpl</servlet-class>
 	</servlet>
 
 	<servlet>
 		<servlet-name>matrixServlet</servlet-name>
-		<servlet-class>otgviewer.server.MatrixServiceImpl</servlet-class>
+		<servlet-class>otgviewer.server.rpc.MatrixServiceImpl</servlet-class>
 	</servlet>
 
 	<servlet-mapping>

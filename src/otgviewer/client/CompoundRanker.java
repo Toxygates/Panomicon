@@ -5,6 +5,8 @@ import java.util.List;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.EnumSelector;
+import otgviewer.client.rpc.SparqlService;
+import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.RankRule;
