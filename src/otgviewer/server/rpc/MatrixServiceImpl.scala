@@ -52,10 +52,8 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
   import scala.collection.JavaConversions._
   import UtilsS._
 
-  private var foldsDB: MicroarrayDBReader[ExprValue] = _
   private var foldsDBReader: ExpressionValueReader[_] = _
-  
-  private var absDB: MicroarrayDBReader[ExprValue] = _
+
   private var absDBReader: ExpressionValueReader[_] = _
   
   private var tgConfig: Configuration = _
@@ -75,14 +73,8 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     csvUrlBase = config.csvUrlBase
     context = config.context
     // Future: construct DB in context
-    val (fdb, fdbr) = config.foldsDBReader
-    foldsDB = fdb
-    foldsDBReader = fdbr
-    
-    absDB = context.absoluteDBReader
-    val (adb, adbr) = config.foldsDBReader
-    absDB = adb
-    absDBReader = adbr
+    foldsDBReader = config.foldsDBReader        
+    absDBReader = config.absoluteDBReader
 
     OwlimLocalRDF.setContextForAll(context)
     println("Microarray databases are open")
@@ -90,8 +82,8 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
 
   override def destroy() {
     println("Closing KC databases")
-    foldsDB.close()
-    absDB.close()
+    foldsDBReader.close()
+    absDBReader.close()
     super.destroy()
   }
 
@@ -143,17 +135,17 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     }
   }
 
-  private def getDB(typ: ValueType) = typ match {
-    case ValueType.Folds    => (foldsDB, foldsDBReader)
-    case ValueType.Absolute => (absDB, absDBReader)
+  private def getDBReader(typ: ValueType) = typ match {
+    case ValueType.Folds    => foldsDBReader
+    case ValueType.Absolute => absDBReader
   }
 
   private def getExprValues(filter: DataFilter, barcodes: Seq[String], probes: Seq[String],
                             typ: ValueType, sparseRead: Boolean): ExprMatrix = {
-    val db = getDB(typ)
+    val dbr = getDBReader(typ)
     val pmap = context.probes(filter)
-    val sorted = db._1.sortSamples(barcodes.map(otg.Sample(_)))
-    val data = db._2.presentValuesForSamplesAndProbes(filter, sorted, 
+    val sorted = dbr.db.sortSamples(barcodes.map(otg.Sample(_)))
+    val data = dbr.presentValuesForSamplesAndProbes(filter, sorted, 
         probes.map(pmap.pack), sparseRead)
     new ExprMatrix(data.map(new VVector(_)), data.size, data(0).size,
         Map() ++ probes.zipWithIndex, //rows

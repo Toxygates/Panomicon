@@ -28,8 +28,9 @@ object ExpressionValueReader {
  * queried for ExpressionValues.
  */
 trait ExpressionValueReader[E <: ExprValue] {
-  protected def db: MicroarrayDBReader[E]
+  def db: MicroarrayDBReader[E]
   
+  def close() { db.close() }
   def presentValuesForSamplesAndProbes(s: Species, xs: Seq[Sample], 
       probes: Seq[Short], sparseRead: Boolean = false): Vector[Vector[ExpressionValue]] = {
 		db.presentValuesForSamplesAndProbes(s, xs, probes, sparseRead).map(_.map(convert))
