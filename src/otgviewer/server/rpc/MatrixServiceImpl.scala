@@ -149,7 +149,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
         probes.map(pmap.pack), sparseRead)
     new ExprMatrix(data.map(new VVector(_)), data.size, data(0).size,
         Map() ++ probes.zipWithIndex, //rows
-        Map() ++ sorted.map(_.code).zipWithIndex, //columns
+        Map() ++ sorted.map(_.sampleId).zipWithIndex, //columns
         probes.map(new RowAnnotation(_, null, null, null)).toVector)    
   }
 
