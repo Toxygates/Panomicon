@@ -126,7 +126,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
   def identifiersToProbes(filter: DataFilter, identifiers: Array[String], precise: Boolean): Array[String] =
     AffyProbes.identifiersToProbes(filter, identifiers, precise).map(_.identifier).toArray
 
-  private def filterProbes(filter: DataFilter, probes: Seq[String]): Seq[String] = {
+  private def filterProbes(probes: Seq[String])(implicit filter: DataFilter): Seq[String] = {
     val pmap = context.probes(filter)
     if (probes == null || probes.size == 0) {
       pmap.tokens.toSeq
@@ -140,8 +140,8 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     case ValueType.Absolute => absDBReader
   }
 
-  private def getExprValues(filter: DataFilter, barcodes: Seq[String], probes: Seq[String],
-                            typ: ValueType, sparseRead: Boolean): ExprMatrix = {
+  private def getExprValues(barcodes: Seq[String], probes: Seq[String],
+                            typ: ValueType, sparseRead: Boolean)(implicit filter: DataFilter): ExprMatrix = {
     val dbr = getDBReader(typ)
     val pmap = context.probes(filter)
     val sorted = dbr.db.sortSamples(barcodes.map(otg.Sample(_)))
@@ -155,8 +155,11 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
 
 
   def loadDataset(filter: DataFilter, columns: JList[BarcodeColumn], probes: Array[String],
-                  typ: ValueType, absValFilter: Double, syntheticColumns: JList[Synthetic]): Int = {
+                  typ: ValueType, absValFilter: Double, 
+                  syntheticColumns: JList[Synthetic]): Int = {
 
+    implicit val f = filter
+    
     def barcodes(columns: Seq[BarcodeColumn]): Seq[String] = {
       columns.flatMap(_ match {
         case g: Group   => g.getSamples
@@ -165,11 +168,11 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
       }).map(_.id)
     }
 
-    val filtered = filterProbes(filter, null).toSeq
+    val filtered = filterProbes(null).toSeq
     val session = getSessionData()
     
     //load with all probes for this filter
-    val data = getExprValues(filter, barcodes(columns.toVector), filtered, typ, false)
+    val data = getExprValues(barcodes(columns.toVector), filtered, typ, false)
 
     session.ungroupedUnfiltered = data
     refilterData(filter, columns, probes, absValFilter, syntheticColumns)
@@ -201,10 +204,11 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
       println("Length: " + probes.size)
     }
 
+    implicit val fl = filter
     val session = getSessionData()
     val data = session.ungroupedUnfiltered
     val groupedData = makeGroups(data, columns)
-    val filteredProbes = filterProbes(filter, probes)
+    val filteredProbes = filterProbes(probes)
 
     //filter by abs. value
     def f(r: Seq[ExpressionValue], before: Int): Boolean = r.take(before).exists(v =>
@@ -275,8 +279,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
         session.ungroupedFiltered = ugrf
       }
       new ArrayList[ExpressionRow](insertAnnotations(
-          groupedFiltered.asRows.drop(offset).take(size), 
-          session.params.filter)
+          groupedFiltered.asRows.drop(offset).take(size))(session.params.filter)
           )
     } else {
       new ArrayList[ExpressionRow]()
@@ -288,7 +291,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
    * appending them to the rows just before sending them back to the client.
    * Unsuitable for large amounts of data.
    */
-  private def insertAnnotations(rows: Seq[ExpressionRow], f: DataFilter): Seq[ExpressionRow] = {
+  private def insertAnnotations(rows: Seq[ExpressionRow])(implicit f: DataFilter): Seq[ExpressionRow] = {
     val probes = rows.map(r => Probe(r.getProbe))
     useConnector(AffyProbes, (c: AffyProbes.type) => {
       val attribs = c.withAttributes(probes, f)
@@ -308,16 +311,17 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
   def getFullData(filter: DataFilter, barcodes: JList[String], probes: Array[String],
                   typ: ValueType, sparseRead: Boolean, withSymbols: Boolean): JList[ExpressionRow] = {
     val sbc = barcodes.toSeq
+    implicit val f = filter
     
-    val realProbes = filterProbes(filter, probes)
-    val r = getExprValues(filter, sbc, realProbes, typ, sparseRead)
+    val realProbes = filterProbes(probes)
+    val r = getExprValues(sbc, realProbes, typ, sparseRead)
     
     //When we have obtained the data in r, it might no longer be sorted in the order that the user
     //requested. Thus we use selectNamedRows here to force the sort order they wanted.
     
     val raw = r.selectNamedColumns(sbc).asRows
     val rows = if (withSymbols) {
-      insertAnnotations(raw, filter)
+      insertAnnotations(raw)
     } else {
       raw
     }
