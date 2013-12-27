@@ -86,7 +86,7 @@ public class SampleDetailScreen extends Screen {
 		if (chosenColumns.size() > 0) {
 			setDisplayColumn(chosenColumns.get(0));
 			columnList.setSelectedIndex(0);
-			for (DataColumn c : chosenColumns) {
+			for (DataColumn<?> c : chosenColumns) {
 				columnList.addItem(c.getShortTitle());
 			}
 		}

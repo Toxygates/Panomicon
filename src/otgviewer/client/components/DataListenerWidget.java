@@ -218,7 +218,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		storeColumns(s, "columns", OTGUtils.asColumns(chosenColumns));
 	}	
 	
-	protected void storeCustomColumn(Storage s, DataColumn column) {		
+	protected void storeCustomColumn(Storage s, DataColumn<?> column) {		
 		if (column != null) {
 			s.setItem("OTG.customColumn", column.pack());
 		} else {

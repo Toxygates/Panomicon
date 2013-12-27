@@ -11,7 +11,7 @@ import bioweb.shared.SharedUtils;
  *
  * @param <S>
  */
-public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializable, Comparable<SampleGroup> {
+public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializable, Comparable<SampleGroup<?>> {
 
 	/**
 	 * This list was generated using the service at
@@ -76,7 +76,7 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
 	
 	
 	@Override
-	public int compareTo(SampleGroup other) {
+	public int compareTo(SampleGroup<?> other) {
 		return name.compareTo(other.getName());
 	}
 	

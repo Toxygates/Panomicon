@@ -380,7 +380,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		TextCell tc = new TextCell();
 				
 		//columns with data
-		for (DataColumn c : chosenColumns) {
+		for (DataColumn<?> c : chosenColumns) {
 			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, dataColumns);		
 			valueCol.setDefaultSortAscending(false);
 			addDataColumn(valueCol, c.getShortTitle(), "Average of sample values");			
@@ -523,7 +523,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		
 		groupsel1.clear();
 		groupsel2.clear();
-		for (DataColumn dc: columns) {
+		for (DataColumn<?> dc: columns) {
 			if (dc instanceof Group) {
 				groupsel1.addItem(dc.getShortTitle());
 				groupsel2.addItem(dc.getShortTitle());
