@@ -144,7 +144,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   }
 
   def goTerms(pattern: String): Array[String] =
-    OTGSamples.goTerms(pattern).map(_.name).toArray
+    AffyProbes.goTerms(pattern).map(_.name).toArray
 
   def probesForGoTerm(filter: DataFilter, goTerm: String): Array[String] = {
     val pmap = context.probes(filter)

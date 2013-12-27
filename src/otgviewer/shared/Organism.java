@@ -8,5 +8,6 @@ import java.io.Serializable;
  */
 public enum Organism implements Serializable {
 	Human,
-	Rat;
+	Mouse,
+	Rat;	
 }

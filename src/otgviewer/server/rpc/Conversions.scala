@@ -53,6 +53,7 @@ object Conversions {
     filter.organism match {
       case Organism.Rat   => otg.Rat
       case Organism.Human => otg.Human
+      case Organism.Mouse => otg.Mouse
     }
   }
 
