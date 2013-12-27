@@ -50,16 +50,11 @@ public interface MatrixService extends RemoteService {
 	
 	/**
 	 * Filter data that has already been loaded into the session.
-	 * @param filter
-	 * @param columns
-	 * @param absValFilter
-	 * @param synthCols
+	 * @param probes Probes to keep
+	 * @param absValFilter Value cutoff (each row must contain at least one value such that abs(x) > this)
 	 * @return The number of rows that remain after filtering.
 	 */
-	public int refilterData(DataFilter filter, List<BarcodeColumn> columns, 
-			String[] probes, double absValFilter,
-			List<Synthetic> synthCols);
-	
+	public int refilterData(String[] probes, double absValFilter);	
 	
 	/**
 	 * Add a T-test/U-test/fold change difference column. Requires that loadDataset was

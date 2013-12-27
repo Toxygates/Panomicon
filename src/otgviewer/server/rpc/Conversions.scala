@@ -15,6 +15,7 @@ import bioweb.shared.array._
 import otg.Species
 import otg.SeriesRanking
 import otg.Context
+import otg.RepeatType
 import otgviewer.shared.RuleType
 
 /**
@@ -32,7 +33,8 @@ object Conversions {
     } else {
       otg.Organ(filter.organ.toString()).get
     }
-    new otg.Filter(Some(or), otg.RepeatType(filter.repeatType.toString()), 
+    new otg.Filter(Some(or), 
+        Some(RepeatType.withName(filter.repeatType.toString())), 
         otg.Species(filter.organism.toString()));
   }
 

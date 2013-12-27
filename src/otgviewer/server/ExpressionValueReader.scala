@@ -32,7 +32,7 @@ trait ExpressionValueReader[E <: ExprValue] {
   
   def close() { db.close() }
   def presentValuesForSamplesAndProbes(s: Species, xs: Seq[Sample], 
-      probes: Seq[Short], sparseRead: Boolean = false): Vector[Vector[ExpressionValue]] = {
+      probes: Seq[Short], sparseRead: Boolean = false): Vector[Seq[ExpressionValue]] = {
 		db.presentValuesForSamplesAndProbes(s, xs, probes, sparseRead).map(_.map(convert))
   }
   

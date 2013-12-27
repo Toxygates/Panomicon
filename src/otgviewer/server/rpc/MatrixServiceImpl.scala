@@ -87,9 +87,14 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     super.destroy()
   }
 
-  //TODO lift up
+  //TODO lift up to superclass
   protected def getSessionData() = new SessionData(getThreadLocalRequest().getSession())
 
+  class MatrixParams extends DataViewParams {
+    var synthetics: Vector[Synthetic] = Vector()
+    var columns: Seq[BarcodeColumn] = _
+  } 
+  
   protected class SessionData(val session: HttpSession) {
     private[this] def readMatrix(name: String): ExprMatrix =
       session.getAttribute(name).asInstanceOf[ExprMatrix]
@@ -109,17 +114,17 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     def noSynthetics: ExprMatrix = readMatrix("noSynthetics")
     def noSynthetics_=(v: ExprMatrix) = writeMatrix("noSynthetics", v)
     
-    def params: DataViewParams = {
-      val r = session.getAttribute("params").asInstanceOf[DataViewParams]
+    def params: MatrixParams = {
+      val r = session.getAttribute("params").asInstanceOf[MatrixParams]
       if (r != null) {
         r
       } else {
-        val p = new DataViewParams()
+        val p = new MatrixParams()
         this.params = p
         p
       }
     }
-    def params_=(v: DataViewParams) = session.setAttribute("params", v)
+    def params_=(v: MatrixParams) = session.setAttribute("params", v)
   }
 
   //Should this be in owlimService?
@@ -153,7 +158,6 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
         probes.map(new RowAnnotation(_, null, null, null)).toVector)    
   }
 
-
   def loadDataset(filter: DataFilter, columns: JList[BarcodeColumn], probes: Array[String],
                   typ: ValueType, absValFilter: Double, 
                   syntheticColumns: JList[Synthetic]): Int = {
@@ -175,7 +179,10 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     val data = getExprValues(barcodes(columns.toVector), filtered, typ, false)
 
     session.ungroupedUnfiltered = data
-    refilterData(filter, columns, probes, absValFilter, syntheticColumns)
+    session.params.columns = columns.toSeq
+    session.params.filter = filter
+    session.params.synthetics = syntheticColumns.toVector
+    refilterData(probes, absValFilter)
   }
 
   private def presentMean(vs: Seq[ExpressionValue]): ExpressionValue = {
@@ -197,17 +204,17 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     data.copyWithColumns(groupedColumns).copyWithColAlloc(alloc)
   }
   
-  def refilterData(filter: DataFilter, columns: JList[BarcodeColumn], probes: Array[String], absValFilter: Double,
-                   syntheticColumns: JList[Synthetic]): Int = {
+  def refilterData(probes: Array[String], absValFilter: Double): Int = {
     println("Refilter probes: " + probes)
     if (probes != null) {
       println("Length: " + probes.size)
     }
 
-    implicit val fl = filter
     val session = getSessionData()
+    val params = session.params
+    implicit val fl = session.params.filter
     val data = session.ungroupedUnfiltered
-    val groupedData = makeGroups(data, columns)
+    val groupedData = makeGroups(data, params.columns)
     val filteredProbes = filterProbes(probes)
 
     //filter by abs. value
@@ -228,11 +235,8 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
       System.out.println("Stored empty data in session");
     }
 
-    val params = session.params
     params.mustSort = true
-    params.filter = filter
-
-    syntheticColumns.foreach(t => addTwoGroupTest(t.asInstanceOf[Synthetic.TwoGroupSynthetic]))
+    params.synthetics.foreach(t => addTwoGroupTest(t.asInstanceOf[Synthetic.TwoGroupSynthetic]))
 
     ngfd.rows
   }
@@ -348,6 +352,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
             g2.getSamples.map(_.getCode), md.getShortTitle)
       }
     }
+    session.params.synthetics +:= test
     session.rendered = withTest
   }
   
@@ -355,6 +360,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     val session = getSessionData()
     // This is the only reason why we keep the noSynthetics around
     session.rendered = session.noSynthetics    
+    session.params.synthetics = Vector()
   }
 
   def prepareCSVDownload(): String = {
@@ -391,7 +397,4 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
       geneIds.flatten.map(_.identifier).toArray
     })
   }
-
-
-
 }

@@ -547,8 +547,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			grid.setRowCount(0, false);
 			List<BarcodeColumn> cols = new ArrayList<BarcodeColumn>();
 			cols.addAll(chosenColumns);
-			kcService.refilterData(chosenDataFilter, cols, chosenProbes,
-					absValBox.getValue(), synthetics,
+			kcService.refilterData(chosenProbes, absValBox.getValue(),
 					new AsyncCallback<Integer>() {
 						public void onFailure(Throwable caught) {
 							getExpressions(); //the user probably let the session expire							
