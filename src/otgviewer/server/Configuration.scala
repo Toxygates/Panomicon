@@ -4,7 +4,6 @@ import javax.servlet.ServletConfig
 import otg.OTGContext
 import otg.db.MicroarrayDBReader
 import otg.ExprValue
-import otgviewer.server.ExpressionValueReader
 
 object Configuration {
   /**
