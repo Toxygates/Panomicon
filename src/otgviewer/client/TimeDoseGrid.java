@@ -1,14 +1,13 @@
 package otgviewer.client;
 
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
+import otgviewer.shared.BUnit;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 
@@ -42,7 +41,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 
 	private Screen screen;
 	
-	protected Map<String, List<Barcode>> availableSamples = new HashMap<String, List<Barcode>>();
+	protected BUnit[] availableUnits;
 	
 	/** 
 	 * To be overridden by subclasses
@@ -126,15 +125,16 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	}
 	
 	private boolean fetchingSamples = false;
+	
 	protected void fetchSamples() {
 		if (fetchingSamples) {
 			return;
 		}
 		fetchingSamples = true;
-		availableSamples.clear();
+		availableUnits = new BUnit[0];
 		String[] compounds = chosenCompounds.toArray(new String[0]);
-		sparqlService.barcodes(chosenDataFilter, compounds,
-				null, null, new AsyncCallback<Barcode[]>() {
+		sparqlService.units(chosenDataFilter, compounds,
+				null, null, new AsyncCallback<BUnit[]>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
@@ -143,14 +143,8 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			}
 
 			@Override
-			public void onSuccess(Barcode[] result) {
-				for (Barcode b: result) {
-					String k = keyFor(b);
-					if (!availableSamples.containsKey(k)) {						
-						availableSamples.put(k, new LinkedList<Barcode>());
-					}					
-					availableSamples.get(k).add(b);					
-				}	
+			public void onSuccess(BUnit[] result) {
+				availableUnits = result;		
 				samplesAvailable();
 				fetchingSamples = false;
 			}			
@@ -219,7 +213,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	 * @param time
 	 * @return
 	 */
-	abstract protected Widget guiFor(int compound, int dose, int time);
+	abstract protected Widget guiForUnit(BUnit unit);
 	
 	/**
 	 * An optional extra widget on the right hand side of a compound/dose combination.
@@ -256,11 +250,15 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			r++;
 		}
 		
+		List<BUnit> allUnits = new ArrayList<BUnit>();
 		for (int c = 0; c < chosenCompounds.size(); ++c) {
 			for (int d = 0; d < numDoses(); ++d) {
-				HorizontalPanel hp = Utils.mkHorizontalPanel(true);
+				HorizontalPanel hp = Utils.mkHorizontalPanel(true);				
 				for (int t = 0; t < availableTimes.length; ++t) {
-					hp.add(guiFor(c, d, t));
+					BUnit unit = new BUnit(chosenCompounds.get(c), indexToDose(d),
+							availableTimes[t]);
+					allUnits.add(unit);
+					hp.add(guiForUnit(unit));
 				}
 				Widget fin = guiForCompoundDose(c, d);
 				if (fin != null) {
@@ -273,6 +271,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			}
 			r++;
 		}
+		availableUnits = allUnits.toArray(new BUnit[0]);
 	}
 	
 }

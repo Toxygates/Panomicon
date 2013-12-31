@@ -2,10 +2,8 @@ package bioweb.shared.array;
 import bioweb.shared.*;
 
 
-public interface DataColumn<S extends Sample> extends Packable {
+public interface DataColumn<S extends Sample> extends HasSamples<S>, Packable {
 
-	public S[] getSamples();
-	
 	public String getShortTitle();
 	
 	public String pack();	

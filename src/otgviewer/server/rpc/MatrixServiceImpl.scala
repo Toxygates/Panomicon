@@ -77,6 +77,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     absDBReader = config.absoluteDBReader
 
     OwlimLocalRDF.setContextForAll(context)
+    OTGSamples.connect
     println("Microarray databases are open")
   }
 
@@ -190,6 +191,10 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
   }
   
   private def makeGroups(data: ExprMatrix, columns: Seq[BarcodeColumn]) = {    
+    println("MG: " + data.rows + " x " + data.columns)
+    println("Columns: " + data.columnKeys.toList)
+    println("Asked for: " + columns.map(_.getSamples().map(_.id()).toList).toList)
+    
     val groupedColumns = columns.map(_ match {
       case g: Group => {
        (0 until data.rows).map(r => {
@@ -207,7 +212,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
   def refilterData(probes: Array[String], absValFilter: Double): Int = {
     println("Refilter probes: " + probes)
     if (probes != null) {
-      println("Length: " + probes.size)
+      println("Length: " + probes.size)      
     }
 
     val session = getSessionData()

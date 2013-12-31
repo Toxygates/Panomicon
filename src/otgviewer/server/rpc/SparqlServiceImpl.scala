@@ -4,9 +4,7 @@ import scala.Array.canBuildFrom
 import scala.Option.option2Iterable
 import scala.collection.{Set => CSet}
 import scala.collection.{Set => CSet}
-
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-
 import bioweb.shared.Pair
 import bioweb.shared.array.Annotation
 import javax.servlet.ServletConfig
@@ -20,9 +18,11 @@ import otgviewer.server._
 import otgviewer.shared.AType
 import otgviewer.shared.Association
 import otgviewer.shared.Barcode
+import otgviewer.shared.BUnit
 import otgviewer.shared.BarcodeColumn
 import otgviewer.shared.DataFilter
 import otgviewer.shared.Pathology
+import otgviewer.shared.TimesDoses
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -63,31 +63,38 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   def compounds(filter: DataFilter): Array[String] =
     OTGSamples.compounds(filter).toArray
 
-  def organs(filter: DataFilter, compound: String): Array[String] =
-    OTGSamples.organs(filter, nullToOption(compound)).toArray
-
   val orderedDoses = List("Control", "Low", "Middle", "High")
   def doseLevels(filter: DataFilter, compound: String): Array[String] = {
     val r = OTGSamples.doseLevels(filter, nullToOption(compound)).toArray
     r.sortWith((d1, d2) => orderedDoses.indexOf(d1) < orderedDoses.indexOf(d2))
   }
 
-  def barcodes(filter: DataFilter, compound: String, doseLevel: String, time: String) =
+  def barcodes(filter: DataFilter, compound: String, doseLevel: String, 
+      time: String): Array[Barcode] =
     OTGSamples.barcodes(filter, nullToNone(compound),
       nullToNone(doseLevel), nullToNone(time)).map(asJava(_)).toArray
 
-  def barcodes(filter: DataFilter, compounds: Array[String], doseLevel: String, time: String) =
+  def barcodes(filter: DataFilter, compounds: Array[String], doseLevel: String, 
+      time: String): Array[Barcode] =
     OTGSamples.barcodes(filter, compounds,
       nullToNone(doseLevel), nullToNone(time)).map(asJava(_)).toArray
 
-  val orderedTimes = List("2 hr", "3 hr", "6 hr", "8 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day")
+  def units(filter: DataFilter, compounds: Array[String], doseLevel: String, 
+      time: String): Array[BUnit] = {
+    val bcs = OTGSamples.barcodes(filter, compounds,
+      nullToNone(doseLevel), nullToNone(time)).map(asJava(_))
+    val g = bcs.groupBy(new BUnit(_))
+    for ((k, v) <- g) {
+      k.setSamples(v.toArray)
+    }
+    g.keySet.toArray
+  }
+    
+  val orderedTimes = TimesDoses.allTimes.toList
   def times(filter: DataFilter, compound: String): Array[String] = {
     val r = OTGSamples.times(filter, nullToOption(compound)).toArray
     r.sortWith((t1, t2) => orderedTimes.indexOf(t1) < orderedTimes.indexOf(t2))
   }
-
-  def timeDoseCombinations(filter: DataFilter, compound: String): Array[Pair[String, String]] =
-    OTGSamples.timeDoseCombinations(filter, compound).map(asJava(_)).toArray
 
   def probes(filter: DataFilter): Array[String] =
     context.probes(filter).tokens.toArray
