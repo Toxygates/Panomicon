@@ -13,13 +13,23 @@ import bioweb.shared.array.SampleGroup;
  */
 public class Group extends SampleGroup<Barcode> implements BarcodeColumn {
 	
+	protected BUnit[] _units;
+	
 	public Group() {}
 	
 	public Group(String name, Barcode[] barcodes, String color) {
-		super(name, barcodes, color);		
+		super(name, barcodes, color);	
+		_units = BUnit.formUnits(barcodes);
 	}
 	
-	public Group(String name, Barcode[] barcodes) { super(name, barcodes); }
+	public Group(String name, Barcode[] barcodes) { 
+		super(name, barcodes); 
+		_units = BUnit.formUnits(barcodes);
+	}
+	
+	public Group(String name, BUnit[] units, String color) {
+		super(name, BUnit.collectBarcodes(units), color);		
+	}
 
 	public String getShortTitle() {
 		return name;
@@ -27,17 +37,21 @@ public class Group extends SampleGroup<Barcode> implements BarcodeColumn {
 
 	public Barcode[] getSamples() { return _samples; }
 	
+	public BUnit[] getUnits() { return _units; }
+	
 	public String getCDTs(final int limit, String separator) {
 		Set<String> CDTs = new HashSet<String>();
-		Set<String> allCDTs = new HashSet<String>();
-		for (Barcode b : _samples) {			
+		boolean stopped = false;
+		for (BUnit u : _units) {			
 			if (CDTs.size() < limit || limit == -1) {
-				CDTs.add(b.getCDT());
+				CDTs.add(u.toString());
+			} else {
+				stopped = true;
+				break;
 			}
-			allCDTs.add(b.getCDT());
 		}
 		String r = SharedUtils.mkString(CDTs, separator);
-		if (allCDTs.size() > limit && limit != -1) {
+		if (stopped) {
 			return r + "...";
 		} else {
 			return r;

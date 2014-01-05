@@ -1,6 +1,11 @@
 package otgviewer.shared;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import bioweb.shared.array.Unit;
@@ -72,5 +77,34 @@ public class BUnit extends Unit<Barcode> {
 			r.add(b.getDose());
 		}
 		return r.toArray(new String[0]);
+	}
+	
+	public static BUnit[] formUnits(Barcode[] barcodes) {
+		Map<String, List<Barcode>> units = new HashMap<String, List<Barcode>>();
+		for (Barcode b: barcodes) {
+			String cdt = b.getCDT();
+			if (units.containsKey(cdt)) {
+				units.get(cdt).add(b);
+			} else {
+				List<Barcode> n = new ArrayList<Barcode>();
+				n.add(b);
+				units.put(cdt, n);
+			}
+		}
+		ArrayList<BUnit> r = new ArrayList<BUnit>();
+		for (List<Barcode> bcs: units.values()) {
+			BUnit b = new BUnit(bcs.get(0));
+			b.setSamples(bcs.toArray(new Barcode[0]));
+			r.add(b);
+		}
+		return r.toArray(new BUnit[0]);
+	}
+	
+	public static Barcode[] collectBarcodes(BUnit[] units) {
+		List<Barcode> r = new ArrayList<Barcode>();
+		for (BUnit b: units) {
+			Collections.addAll(r, b.getSamples());		
+		}
+		return r.toArray(new Barcode[0]);
 	}
 }

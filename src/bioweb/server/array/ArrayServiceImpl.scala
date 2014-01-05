@@ -6,14 +6,5 @@ import bioweb.shared.array.Sample
 import bioweb.shared.array.DataColumn
 
 class ArrayServiceImpl[S <: Sample, F <: SampleFilter[S]] extends RemoteServiceServlet {
-
-  /**
-   * Various parameters for the data view
-   */
-  class DataViewParams {
-    var sortAsc: Boolean = _
-    var sortColumn: Int = _
-    var mustSort: Boolean = _
-    var filter: F = _
-  }
+  // TODO: lift up code to this class from subclass
 }

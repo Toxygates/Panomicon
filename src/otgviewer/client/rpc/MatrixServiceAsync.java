@@ -4,9 +4,9 @@ import java.util.List;
 
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.ManagedMatrixInfo;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
-
 import bioweb.shared.array.ExpressionRow;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -18,10 +18,10 @@ public interface MatrixServiceAsync {
 
 	public void loadDataset(DataFilter filter, List<BarcodeColumn> columns,
 			String[] probes, ValueType type, double absValFilter,
-			List<Synthetic> synthCols, AsyncCallback<Integer> callback);
+			List<Synthetic> synthCols, AsyncCallback<ManagedMatrixInfo> callback);
 
 	public void refilterData(String[] probes, double absValFilter,
-			AsyncCallback<Integer> callback);
+			AsyncCallback<ManagedMatrixInfo> callback);
 
 	public void datasetItems(int offset, int size, int sortColumn,
 			boolean ascending, AsyncCallback<List<ExpressionRow>> callback);

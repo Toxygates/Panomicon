@@ -31,10 +31,10 @@ class Configuration(val owlimRepositoryName: String, val toxygatesHomeDir: Strin
   
   lazy val context = 
     new OTGContext(Some(toxygatesHomeDir), Some(owlimRepositoryName)) 
-  
-  private def wrapReader[E <: ExprValue](reader: MicroarrayDBReader[E]) =
-    ExpressionValueReader[E](reader)
-  
-  def absoluteDBReader = wrapReader(context.absoluteDBReader)  
-  def foldsDBReader = wrapReader(context.foldsDBReader)
+//  
+//  private def wrapReader[E <: ExprValue](reader: MicroarrayDBReader[E]) =
+//    ExpressionValueReader[E](reader)
+//  
+//  def absoluteDBReader = wrapReader(context.absoluteDBReader)  
+//  def foldsDBReader = wrapReader(context.foldsDBReader)
 }

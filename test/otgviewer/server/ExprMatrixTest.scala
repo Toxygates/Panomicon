@@ -34,7 +34,7 @@ class ExprMatrixTest extends FunSuite {
     new ExprMatrix(data.map(new VVector(_)), data.size, data(0).size,
     		Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4),
     		Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4, "f" -> 5),
-    		(1 to 5).map(x => new RowAnnotation("p" + x, null, null, null)).toVector)    
+    		(1 to 5).map(x => new RowAnnotation("p" + x)).toVector)    
   }
   
   test("basic operations") {

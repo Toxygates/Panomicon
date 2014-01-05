@@ -19,6 +19,7 @@ import otgviewer.shared.AType;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.Group;
+import otgviewer.shared.ManagedMatrixInfo;
 import otgviewer.shared.OTGUtils;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
@@ -548,13 +549,13 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			List<BarcodeColumn> cols = new ArrayList<BarcodeColumn>();
 			cols.addAll(chosenColumns);
 			kcService.refilterData(chosenProbes, absValBox.getValue(),
-					new AsyncCallback<Integer>() {
+					new AsyncCallback<ManagedMatrixInfo>() {
 						public void onFailure(Throwable caught) {
 							getExpressions(); //the user probably let the session expire							
 						}
 
-						public void onSuccess(Integer result) {
-							grid.setRowCount(result);
+						public void onSuccess(ManagedMatrixInfo result) {
+							grid.setRowCount(result.numRows());
 							grid.setVisibleRangeAndClearData(new Range(0,
 									PAGE_SIZE), true);
 							setEnabled(true);
@@ -576,16 +577,16 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		// load data
 		kcService.loadDataset(chosenDataFilter, cols, chosenProbes,
 				chosenValueType, absValBox.getValue(), synthetics,
-				new AsyncCallback<Integer>() {
+				new AsyncCallback<ManagedMatrixInfo>() {
 					public void onFailure(Throwable caught) {
 						Window.alert("Unable to load dataset");
 					}
 
-					public void onSuccess(Integer result) {
-						if (result > 0) {
+					public void onSuccess(ManagedMatrixInfo result) {
+						if (result.numRows() > 0) {
 							loadedData = true;
 							setEnabled(true);
-							grid.setRowCount(result);
+							grid.setRowCount(result.numRows());
 							grid.setVisibleRangeAndClearData(new Range(0,
 									PAGE_SIZE), true);
 						} else {
