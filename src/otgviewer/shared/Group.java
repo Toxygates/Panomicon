@@ -1,6 +1,9 @@
 package otgviewer.shared;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import bioweb.shared.SharedUtils;
@@ -27,8 +30,13 @@ public class Group extends SampleGroup<Barcode> implements BarcodeColumn {
 		_units = BUnit.formUnits(barcodes);
 	}
 	
+	public Group(String name, BUnit[] units) { 
+		super(name, BUnit.collectBarcodes(units)); 
+		_units = units;
+	}
+	
 	public Group(String name, BUnit[] units, String color) {
-		super(name, BUnit.collectBarcodes(units), color);		
+		this(name, BUnit.collectBarcodes(units), color);
 	}
 
 	public String getShortTitle() {
@@ -37,12 +45,35 @@ public class Group extends SampleGroup<Barcode> implements BarcodeColumn {
 
 	public Barcode[] getSamples() { return _samples; }
 	
+	public Barcode[] getTreatedSamples() {
+		List<Barcode> r = new ArrayList<Barcode>();
+		for (BUnit u : _units) {
+			if (!u.getDose().equals("Control")) {
+				r.addAll(Arrays.asList(u.getSamples()));
+			}
+		}
+		return r.toArray(new Barcode[0]);
+	}
+	
+	public Barcode[] getControlSamples() {
+		List<Barcode> r = new ArrayList<Barcode>();
+		for (BUnit u : _units) {
+			if (u.getDose().equals("Control")) {
+				r.addAll(Arrays.asList(u.getSamples()));
+			}
+		}
+		return r.toArray(new Barcode[0]);
+	}
+	
 	public BUnit[] getUnits() { return _units; }
 	
 	public String getCDTs(final int limit, String separator) {
 		Set<String> CDTs = new HashSet<String>();
 		boolean stopped = false;
-		for (BUnit u : _units) {			
+		for (BUnit u : _units) {
+			if (u.getDose().equals("Control")) {
+				continue;
+			}
 			if (CDTs.size() < limit || limit == -1) {
 				CDTs.add(u.toString());
 			} else {

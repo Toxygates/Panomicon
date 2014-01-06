@@ -1,7 +1,8 @@
 package otgviewer.shared;
 
 import java.io.Serializable;
-import java.util.Arrays;
+
+import javax.annotation.Nullable;
 
 import bioweb.shared.SharedUtils;
 
@@ -15,6 +16,7 @@ public class ManagedMatrixInfo implements Serializable {
 	private String[] columnNames = new String[0];
 	private String[] columnHints = new String[0];
 	private boolean[] separateFiltering = new boolean[0];
+	private Group[] columnGroups = new Group[0];
 	
 	public ManagedMatrixInfo() { }
 	
@@ -28,7 +30,8 @@ public class ManagedMatrixInfo implements Serializable {
 	 * @param isSeparateFiltering
 	 */
 	public void addColumn(boolean synthetic, String name, 
-			String hint, boolean isSeparateFiltering) {
+			String hint, boolean isSeparateFiltering,
+			Group baseGroup) {
 		if (synthetic) {
 			_numSynthetics++;
 		} else {
@@ -38,7 +41,8 @@ public class ManagedMatrixInfo implements Serializable {
 		int n = columnNames.length;
 		columnNames = SharedUtils.extend(columnNames, name);
 		columnHints = SharedUtils.extend(columnHints, hint);
-		separateFiltering = SharedUtils.extend(separateFiltering, isSeparateFiltering);		
+		separateFiltering = SharedUtils.extend(separateFiltering, isSeparateFiltering);	
+		columnGroups = SharedUtils.extend(columnGroups, baseGroup);
 	}
 	
 	public void removeSynthetics() {
@@ -46,7 +50,8 @@ public class ManagedMatrixInfo implements Serializable {
 		int n = _numDataColumns;
 		columnNames = SharedUtils.take(columnNames, n);
 		columnHints = SharedUtils.take(columnHints, n);
-		separateFiltering = SharedUtils.take(separateFiltering, n);			
+		separateFiltering = SharedUtils.take(separateFiltering, n);	
+		columnGroups = SharedUtils.take(columnGroups, n);
 	}
 	
 	public int numColumns() {
@@ -84,6 +89,15 @@ public class ManagedMatrixInfo implements Serializable {
 	 */
 	public String columnHint(int column) {
 		return columnHints[column];
+	}
+	
+	/**
+	 * The group that a given column was generated from, if any.
+	 * @param column Column index. Must be 0 <= i < numColumns.
+	 * @return The group that the column was generated from, or null if there is none.
+	 */
+	public @Nullable Group columnGroup(int column) {
+		return columnGroups[column];
 	}
 
 }

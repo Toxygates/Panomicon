@@ -128,16 +128,12 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     }
   }
 
-  def loadDataset(filter: DataFilter, columns: JList[BarcodeColumn], probes: Array[String],
+  def loadDataset(filter: DataFilter, groups: JList[Group], probes: Array[String],
                   typ: ValueType, absValFilter: Double, 
                   syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
-
-    implicit val f = filter
-    val groups = columns.toVector.collect(_ match { case g: Group => g } )
-    val barcodes = groups.flatMap(_.getSamples()).map(_.id)    
-    
+    implicit val f = filter    
     val allProbes = filterProbes(null).toArray
-    val mm = makeMatrix(groups, allProbes, typ)    
+    val mm = makeMatrix(groups.toVector, allProbes, typ)    
     setSessionData(mm)
     refilterData(probes, absValFilter)
   }
@@ -148,7 +144,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     }
     val mm = getSessionData
     
-    mm.filterData(Some(absValFilter))
+    mm.filterData(Some(absValFilter))	
     if (probes != null && probes.length > 0) {
     	mm.selectProbes(probes)
     }
@@ -159,13 +155,11 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     ascending: Boolean): JList[ExpressionRow] = {
 
     println("SortCol: " + sortColumn + " asc: " + ascending)
-
     val session = getSessionData()
-    val mm = session.current
     if (sortColumn != session.sortColumn || ascending != session.sortAscending) {
       session.sort(sortColumn, ascending)
     }
-
+    val mm = session.current
     new ArrayList[ExpressionRow](
       insertAnnotations(mm.asRows.drop(offset).take(size))(session.filter))
   }
@@ -198,13 +192,14 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     implicit val f = filter
     
     val realProbes = filterProbes(probes).toArray
-    val g = new Group("temp", barcodes.toArray(Array[Barcode]()))
+    // TODO pass a full group from client instead
+    val g = new Group("temp", barcodes.map(x => new Barcode(x, "", "", "", "")).toArray)
     val mm = makeMatrix(List(g), realProbes, typ, sparseRead)
     
     //When we have obtained the data in r, it might no longer be sorted in the order that the user
     //requested. Thus we use selectNamedColumns here to force the sort order they wanted.
     
-    val raw = mm.current.selectNamedColumns(sbc).asRows
+    val raw = mm.rawData.selectNamedColumns(sbc).asRows
     val rows = if (withSymbols) {
       insertAnnotations(raw)
     } else {

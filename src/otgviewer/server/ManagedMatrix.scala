@@ -21,7 +21,6 @@ import otg.PExprValue
  * Data is loaded when the matrix is constructed.
  * Once loaded, the data can be modified in various ways without further
  * disk access.
- * The modifications can be reset by using the reset() method.
  * 
  * A managed matrix is constructed on the basis of some number of 
  * "request columns" but may insert additional columns with extra information.
@@ -105,14 +104,14 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
   def sort(col: Int, ascending: Boolean): Unit = {
       def sortData(v1: Seq[ExpressionValue],
                  v2: Seq[ExpressionValue]): Boolean = {
-      val ev1 = v1(_sortColumn)
-      val ev2 = v2(_sortColumn)
+      val ev1 = v1(col)
+      val ev2 = v2(col)
       if (ev1.call == 'A' && ev2.call != 'A') {
         false
       } else if (ev1.call != 'A' && ev2.call == 'A') {
         true
       } else {
-        if (_sortAscending) { ev1.value < ev2.value } else { ev1.value > ev2.value }
+        if (ascending) { ev1.value < ev2.value } else { ev1.value > ev2.value }
       }
     }
       
@@ -143,16 +142,18 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
       case test: Synthetic.TwoGroupSynthetic =>
         val g1s = test.getGroup1.getSamples.map(_.getCode)
         val g2s = test.getGroup2.getSamples.map(_.getCode)
-        rawGroupedMat = test match {
+        currentMat = test match {
           case ut: Synthetic.UTest =>
-            rawGroupedMat.appendUTest(rawUngroupedMat, g1s, g2s, ut.getShortTitle)
+            currentMat.appendUTest(rawUngroupedMat, g1s, g2s, ut.getShortTitle)
           case tt: Synthetic.TTest =>
-            rawGroupedMat.appendTTest(rawUngroupedMat, g1s, g2s, tt.getShortTitle)
+            currentMat.appendTTest(rawUngroupedMat, g1s, g2s, tt.getShortTitle)
           case md: Synthetic.MeanDifference =>
-            rawGroupedMat.appendDiffTest(rawUngroupedMat, g1s, g2s, md.getShortTitle)
+            currentMat.appendDiffTest(rawUngroupedMat, g1s, g2s, md.getShortTitle)
+          case _ => throw new Exception("Unexpected test type!")
         }
+        currentInfo.addColumn(true, test.getShortTitle(), test.getTooltip(), false, null)
       case _ => throw new Exception("Unexpected test type")
-    }   
+    }       
   }
   
   protected def applySynthetics(): Unit = {
@@ -185,6 +186,8 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
    */
   def current: ExprMatrix = currentMat
   
+  def rawData: ExprMatrix = rawUngroupedMat
+  
   /**
    * Initial data loading.
    */
@@ -206,9 +209,9 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
 
     val annotations = initProbes.map(new RowAnnotation(_)).toVector
     
-    rawGroupedMat = groupedParts.reduceLeft(_ adjoinRight _).
+    rawGroupedMat = groupedParts.reverse.reduceLeft(_ adjoinRight _).
     	copyWithAnnotations(annotations)
-    rawUngroupedMat = ungroupedParts.reduceLeft(_ adjoinRight _).
+    rawUngroupedMat = ungroupedParts.reverse.reduceLeft(_ adjoinRight _).
     	copyWithAnnotations(annotations)
     currentMat = rawGroupedMat
     currentInfo.setNumRows(currentMat.rows)
@@ -216,16 +219,24 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
   
   final protected def selectIdx(data: Seq[E], is: Seq[Int]) = is.map(data(_))
   final protected def javaMean(data: Iterable[E]) = 
-    asJava(ExprValue.presentMean(data, "")) 
-   
-  protected def columnsForGroup(g: Group, sortedBarcodes: Seq[otg.Sample], 
-      data: Seq[Seq[E]]): ExprMatrix = {
-     // A simple average column
-      
-      currentInfo.addColumn(false, g.toString, "Average of treated samples", false)      
-      ExprMatrix.withRows(data.map(vs => VVector(javaMean(vs))), initProbes,
-          List(g.toString))
+    asJava(ExprValue.presentMean(data, ""))
+
+  protected def columnsForGroup(g: Group, sortedBarcodes: Seq[otg.Sample],
+    data: Seq[Seq[E]]): ExprMatrix = {
+    // A simple average column
+
+    val (cus, ncus) = g.getUnits().partition(_.getDose == "Control")
+    val controlIds = cus.flatMap(_.getSamples.map(_.getCode)).toSet
+    val isControl = sortedBarcodes.map(s => controlIds.contains(s.sampleId))
+    val treatedIdx = isControl.zipWithIndex.filter(!_._1).map(_._2)
+    
+    currentInfo.addColumn(false, g.toString, "Average of treated samples", false, g)
+    ExprMatrix.withRows(data.map(vs =>
+      VVector(javaMean(selectIdx(vs, treatedIdx)))),
+      initProbes,
+      List(g.toString))
   }
+  
 }
 
 /**
@@ -240,25 +251,29 @@ extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead)
 
   override protected def columnsForGroup(g: Group, sortedBarcodes: Seq[otg.Sample], 
       data: Seq[Seq[ExprValue]]): ExprMatrix = {
-    val us = g.getUnits()
+    val (cus, ncus) = g.getUnits().partition(_.getDose == "Control")
     
-    if (us.size > 1) {
+    if (ncus.size > 1) {
       // A simple average column
       super.columnsForGroup(g, sortedBarcodes, data)      
-    } else if (us.size == 1) {
+    } else if (ncus.size == 1) {
       // Insert a control column as well as the usual one
-      val isControl = sortedBarcodes.map(_.dose == "Control")
+      
+      //TODO: factor out this pattern
+      val controlIds = cus.flatMap(_.getSamples.map(_.getCode)).toSet
+      val isControl = sortedBarcodes.map(s => controlIds.contains(s.sampleId))               
       val controlIdx = isControl.zipWithIndex.filter(_._1).map(_._2)
       val treatedIdx = isControl.zipWithIndex.filter(! _._1).map(_._2)
+      
       val (colName1, colName2) = (g.toString, g.toString + "(cont)")
       val rows = data.map(vs => VVector(
           javaMean(selectIdx(vs, treatedIdx)),
           javaMean(selectIdx(vs, controlIdx))
     	))
     	
-      currentInfo.addColumn(false, colName1, "Average of treated samples", false)
+      currentInfo.addColumn(false, colName1, "Average of treated samples", false, g)
       //TODO: separate filtering
-      currentInfo.addColumn(false, colName2, "Average of control samples", false)
+      currentInfo.addColumn(false, colName2, "Average of control samples", false, g)
       ExprMatrix.withRows(rows, initProbes, List(colName1, colName2))            
     } else {
       throw new Exception("No units in group")
@@ -287,24 +302,28 @@ class ExtFoldValueMatrix(requestColumns: Seq[Group],
  
     override protected def columnsForGroup(g: Group, sortedBarcodes: Seq[otg.Sample], 
       data: Seq[Seq[PExprValue]]): ExprMatrix = {
-    val us = g.getUnits()
+    val (cus, ncus) = g.getUnits().partition(_.getDose == "Control")
     
-    if (us.size > 1) {
+    if (ncus.size > 1) {
       // A simple average column
       super.columnsForGroup(g, sortedBarcodes, data)      
-    } else if (us.size == 1) {
+    } else if (ncus.size == 1) {
       // Insert a p-value column as well as the usual one
             
       val (colName1, colName2) = (g.toString, g.toString + "(p)")
-
-      // TODO: work out call properly
-      val rows = data.map(vs => VVector(
-          javaMean(vs),
-          new ExpressionValue(vs.head.p, vs.head.call)
-          ))          
+      val controlIds = cus.flatMap(_.getSamples.map(_.getCode)).toSet
+      val isControl = sortedBarcodes.map(s => controlIds.contains(s.sampleId))         
+      val treatedIdx = isControl.zipWithIndex.filter(! _._1).map(_._2)
       
-      currentInfo.addColumn(false, colName1, "Average of control samples", false)
-      currentInfo.addColumn(false, colName2, "p-values of treated against control", false)
+      // TODO: work out call properly
+      val rows = data.map(vs => {
+        val treatedVs = selectIdx(vs, treatedIdx)
+        val first = treatedVs.head
+        VVector(javaMean(treatedVs), new ExpressionValue(first.p, first.call))
+      })
+      
+      currentInfo.addColumn(false, colName1, "Average of control samples", false, g)
+      currentInfo.addColumn(false, colName2, "p-values of treated against control", false, g)
       
       ExprMatrix.withRows(rows, initProbes, List(colName1, colName2))
     } else {

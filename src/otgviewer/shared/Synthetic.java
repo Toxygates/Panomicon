@@ -64,7 +64,7 @@ abstract public class Synthetic implements DataColumn<Barcode>, Serializable {
 		}
 		@Override
 		public String getTooltip() {
-			return "p-value";
+			return "p-value (nonparametric)";
 		}
 	}
 	

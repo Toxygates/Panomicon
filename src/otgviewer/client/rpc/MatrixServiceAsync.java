@@ -2,8 +2,8 @@ package otgviewer.client.rpc;
 
 import java.util.List;
 
-import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.Group;
 import otgviewer.shared.ManagedMatrixInfo;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
@@ -16,7 +16,7 @@ public interface MatrixServiceAsync {
 	public void identifiersToProbes(DataFilter filter, String[] identifiers,
 			boolean precise, AsyncCallback<String[]> callback);
 
-	public void loadDataset(DataFilter filter, List<BarcodeColumn> columns,
+	public void loadDataset(DataFilter filter, List<Group> columns,
 			String[] probes, ValueType type, double absValFilter,
 			List<Synthetic> synthCols, AsyncCallback<ManagedMatrixInfo> callback);
 

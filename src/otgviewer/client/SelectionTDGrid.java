@@ -32,7 +32,8 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	private BUnit[] oldSelection;
 	
 	private Map<BUnit, CheckBox> unitCheckboxes = new HashMap<BUnit, CheckBox>();
-
+	private Map<String, BUnit> controlUnits = new HashMap<String, BUnit>();
+	
 	public SelectionTDGrid(Screen screen) {
 		super(screen, true);
 	}
@@ -54,8 +55,10 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	}
 
 	protected void setSelection(BUnit[] units) {
-		for (BUnit u: units) {
-			setSelected(u, true);
+		for (BUnit u: units) {			
+			if (!u.getDose().equals("Control")) {
+				setSelected(u, true);
+			}
 		}
 	}
 	
@@ -77,7 +80,9 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	public void setSelection(Barcode[] barcodes) {
 		setAll(false);
 		for (Barcode b: barcodes) {
-			setSelected(new BUnit(b), true);									
+			if (!b.getDose().equals("Control")) {
+				setSelected(new BUnit(b), true);
+			}
 		}		
 	}
 	
@@ -135,11 +140,20 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		return r;
 	}
 	
+	private BUnit controlUnitFor(BUnit u) {
+		BUnit b = new BUnit(u.getCompound(), "Control", u.getTime());
+		return controlUnits.get(b.toString());
+	}
+	
 	public List<BUnit> getSelectedUnits() {
 		List<BUnit> r = new ArrayList<BUnit>();
 		for (BUnit k : unitCheckboxes.keySet()) {
 			if (unitCheckboxes.get(k).getValue()) {
 				r.add(k);
+				BUnit control = controlUnitFor(k);
+				if (control != null) {
+					r.add(control); 
+				}
 			}
 		}
 		return r;
@@ -192,11 +206,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		
 		super.drawGridInner(grid);
 		this.initState = false;
-		if (oldSelection != null) {
-			setSelection(oldSelection);
-			oldSelection = null;
-		}
-	}
+	}	
 	
 	@Override
 	protected void samplesAvailable() {
@@ -204,6 +214,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		for (BUnit u: availableUnits) {
 //			Window.alert(u.toString());
 			if (u.getDose().equals("Control")) {
+				controlUnits.put(u.toString(), u);
 				continue;
 			}
 			if (u.getSamples() == null || u.getSamples().length == 0) {
@@ -224,5 +235,9 @@ public class SelectionTDGrid extends TimeDoseGrid {
 					.setEnabled(true);
 
 		}
+		if (oldSelection != null) {
+			setSelection(oldSelection);
+			oldSelection = null;
+		}	
 	}
 }

@@ -3,8 +3,8 @@ package otgviewer.client.rpc;
 
 import java.util.List;
 
-import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.Group;
 import otgviewer.shared.ManagedMatrixInfo;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
@@ -44,7 +44,7 @@ public interface MatrixService extends RemoteService {
 	 * from the start.
 	 * @return The number of rows that remain after filtering.
 	 */
-	public ManagedMatrixInfo loadDataset(DataFilter filter, List<BarcodeColumn> columns, 
+	public ManagedMatrixInfo loadDataset(DataFilter filter, List<Group> columns, 
 			String[] probes, ValueType type, double absValFilter,
 			List<Synthetic> synthCols);
 	

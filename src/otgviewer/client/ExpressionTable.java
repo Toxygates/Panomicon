@@ -326,7 +326,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			synth.setGroups(g1, g2);
 			kcService.addTwoGroupTest(synth, new AsyncCallback<Void>() {
 				public void onSuccess(Void v) {							
-					addSynthColumn(synth);					
+					addSynthColumn(synth, synth.getShortTitle(), synth.getTooltip());					
 					//force reload
 					grid.setVisibleRangeAndClearData(grid.getVisibleRange(), true); 
 				}
@@ -375,21 +375,24 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		return r;
 	}
 
-	@Override
-	protected void setupColumns() {
+	protected void setupColumns(ManagedMatrixInfo matrixInfo) {
 		super.setupColumns();
 		TextCell tc = new TextCell();
 				
-		//columns with data
-		for (DataColumn<?> c : chosenColumns) {
-			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, dataColumns);		
+		for (int i = 0; i < matrixInfo.numDataColumns(); ++i) {			
+			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, dataColumns);
 			valueCol.setDefaultSortAscending(false);
-			addDataColumn(valueCol, c.getShortTitle(), "Average of sample values");			
-			valueCol.setCellStyleNames(((Group) c).getStyleName());
-		}
-		
+			addDataColumn(valueCol, matrixInfo.columnName(i), matrixInfo.columnHint(i));
+			Group g = matrixInfo.columnGroup(i);
+			if (g != null) {
+				valueCol.setCellStyleNames(g.getStyleName());
+			}
+		}		
+
+		int i = matrixInfo.numDataColumns();
 		for (Synthetic s: synthetics) {
-			addSynthColumn(s);			
+			addSynthColumn(s, matrixInfo.columnName(i), matrixInfo.columnHint(i));
+			i++;
 		}				
 	}
 	
@@ -411,14 +414,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		return new ToolCell(this);
 	}
 
-	private void addSynthColumn(Synthetic s) {
+	// TODO remove synthetic bookkeeping from this class, now done on server side
+	private void addSynthColumn(Synthetic s, String title, String tooltip) {
 		TextCell tc = new TextCell();
 		synthetics.add(s);
-		Column<ExpressionRow, String> ttestCol = new ExpressionColumn(tc, dataColumns);
-		synthColumns.add(ttestCol);
-		ttestCol.setDefaultSortAscending(s.isDefaultSortAscending());
-		addDataColumn(ttestCol, s.getShortTitle(), s.getTooltip());		
-		ttestCol.setCellStyleNames("extraColumn");				
+		Column<ExpressionRow, String> synCol = new ExpressionColumn(tc, dataColumns);
+		synthColumns.add(synCol);
+		synCol.setDefaultSortAscending(s.isDefaultSortAscending());
+		addDataColumn(synCol, title, tooltip);		
+		synCol.setCellStyleNames("extraColumn");				
 	}
 	
 	private void removeSyntheticColumnsLocal() {
@@ -546,8 +550,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		if (loadedData) {
 			setEnabled(false);
 			grid.setRowCount(0, false);
-			List<BarcodeColumn> cols = new ArrayList<BarcodeColumn>();
-			cols.addAll(chosenColumns);
 			kcService.refilterData(chosenProbes, absValBox.getValue(),
 					new AsyncCallback<ManagedMatrixInfo>() {
 						public void onFailure(Throwable caught) {
@@ -570,12 +572,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	public void getExpressions() {
 		setEnabled(false);
 		grid.setRowCount(0, false);
-		setupColumns();
-		List<BarcodeColumn> cols = new ArrayList<BarcodeColumn>();
-		cols.addAll(chosenColumns);
 
 		// load data
-		kcService.loadDataset(chosenDataFilter, cols, chosenProbes,
+		kcService.loadDataset(chosenDataFilter, chosenColumns, chosenProbes,
 				chosenValueType, absValBox.getValue(), synthetics,
 				new AsyncCallback<ManagedMatrixInfo>() {
 					public void onFailure(Throwable caught) {
@@ -585,6 +584,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 					public void onSuccess(ManagedMatrixInfo result) {
 						if (result.numRows() > 0) {
 							loadedData = true;
+							setupColumns(result);
 							setEnabled(true);
 							grid.setRowCount(result.numRows());
 							grid.setVisibleRangeAndClearData(new Range(0,
