@@ -89,14 +89,15 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
         (java.lang.Double.isNaN(v.value) && thresh == 0))
     }
 
+    currentMat = currentMat.selectNamedRows(requestProbes)
+    
+    //TODO: separate filtering
     generalFilter match {
       case Some(filtVal) =>
         currentMat = currentMat.filterRows(r => f(r, filtVal, currentInfo.numDataColumns()))
       case None =>
     }
     
-    //TODO: separate filtering
-    currentMat = currentMat.selectNamedRows(requestProbes)    
     currentInfo.setNumRows(currentMat.rows)
     sort(_sortColumn, _sortAscending)
   }
@@ -322,7 +323,7 @@ class ExtFoldValueMatrix(requestColumns: Seq[Group],
         VVector(javaMean(treatedVs), new ExpressionValue(first.p, first.call))
       })
       
-      currentInfo.addColumn(false, colName1, "Average of control samples", false, g)
+      currentInfo.addColumn(false, colName1, "Average of treated samples", false, g)
       currentInfo.addColumn(false, colName2, "p-values of treated against control", false, g)
       
       ExprMatrix.withRows(rows, initProbes, List(colName1, colName2))

@@ -147,6 +147,10 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     mm.filterData(Some(absValFilter))	
     if (probes != null && probes.length > 0) {
     	mm.selectProbes(probes)
+    } else {
+      implicit val f = mm.filter
+        val allProbes = filterProbes(null).toArray
+        mm.selectProbes(allProbes)
     }
     mm.info
   }
