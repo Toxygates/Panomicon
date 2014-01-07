@@ -11,6 +11,7 @@ import java.util.Set;
 import otgviewer.client.charts.ChartGrid;
 import otgviewer.client.charts.ChartGridFactory;
 import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.DialogPosition;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
