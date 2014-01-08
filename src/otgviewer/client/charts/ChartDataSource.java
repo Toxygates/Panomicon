@@ -105,7 +105,6 @@ abstract class ChartDataSource {
 	String[] times() { return _times; }
 	String[] doses() { return _doses; }
 	
-	
 	protected void init() {
 		List<String> times = new ArrayList<String>();
 		for (ChartDataSource.ChartSample s: samples) {
@@ -118,7 +117,7 @@ abstract class ChartDataSource {
 	
 		List<String> doses = new ArrayList<String>();
 		for (ChartDataSource.ChartSample s: samples) {
-			if (!doses.contains(s.dose) && !s.dose.equals("Control")) {
+			if (!doses.contains(s.dose)) {
 				doses.add(s.dose);
 			}
 		}
@@ -165,7 +164,7 @@ abstract class ChartDataSource {
 		
 			List<String> doses = new ArrayList<String>();
 			for (Barcode b: barcodes) {
-				if (!doses.contains(b.getDose()) && !b.getDose().equals("Control")) {
+				if (!doses.contains(b.getDose())) {
 					doses.add(b.getDose());
 				}
 			}
@@ -213,9 +212,12 @@ abstract class ChartDataSource {
 			final List<String> useBarcodes = new ArrayList<String>();
 			final List<Barcode> useBarcodes_ = new ArrayList<Barcode>();
 			for (Barcode b: barcodes) {
-				if ((compounds == null || SharedUtils.indexOf(compounds, b.getCompound()) != -1) &&
+				if (
+						(compounds == null || SharedUtils.indexOf(compounds, b.getCompound()) != -1) &&
 						(dosesOrTimes == null || SharedUtils.indexOf(dosesOrTimes, b.getTime()) != -1 || 
-						SharedUtils.indexOf(dosesOrTimes, b.getDose()) != -1)) {
+							SharedUtils.indexOf(dosesOrTimes, b.getDose()) != -1) &&
+						(type == ValueType.Absolute || ! b.getDose().equals("Control"))
+					) {
 					useBarcodes.add(b.getCode());
 					useBarcodes_.add(b);
 				}
