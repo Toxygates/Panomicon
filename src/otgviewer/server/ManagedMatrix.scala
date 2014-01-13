@@ -12,6 +12,7 @@ import otgviewer.server.rpc.Conversions._
 import friedrich.data.immutable.VVector
 import bioweb.shared.array.ExpressionValue
 import otg.PExprValue
+import otgviewer.shared.Barcode
 
 
 /**
@@ -198,7 +199,7 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
     
     val packedProbes = initProbes.map(pmap.pack)
     for (g <- requestColumns) {
-    	val barcodes = g.getSamples()
+    	val barcodes = samplesForDisplay(g)
     	val sortedBarcodes = reader.sortSamples(barcodes.map(b => otg.Sample(b.getCode)))
         val data = reader.valuesForSamplesAndProbes(filter, sortedBarcodes,
         		packedProbes, sparseRead)
@@ -236,6 +237,17 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
       VVector(javaMean(selectIdx(vs, treatedIdx)))),
       initProbes,
       List(g.toString))
+  }
+  
+  protected def samplesForDisplay(g: Group): Iterable[Barcode] = {
+    val (cus, ncus) = g.getUnits().partition(_.getDose == "Control")
+    if (ncus.size > 1) {
+      //treated samples only
+      ncus.flatMap(_.getSamples())
+    } else {
+      //all samples
+      g.getSamples()
+    }
   }
   
 }
@@ -279,7 +291,7 @@ extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead)
     } else {
       throw new Exception("No units in group")
     }
-  } 
+  }
 }
 
 /**
@@ -296,7 +308,7 @@ class FoldValueMatrix(requestColumns: Seq[Group],
  * Columns consisting of fold-values, associated p-values and custom P/A calls.
  */
 class ExtFoldValueMatrix(requestColumns: Seq[Group],
-    reader: MicroarrayDBReader[PExprValue],
+    reader: MicroarrayDBReader[PExprValue], 
     initProbes: Array[String], sparseRead: Boolean)
     (implicit filter: DataFilter, context: OTGContext) 
     extends ManagedMatrix[PExprValue](requestColumns, reader, initProbes, sparseRead) {
