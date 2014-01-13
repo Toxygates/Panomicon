@@ -51,14 +51,15 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	}
 	
 	protected void setSelected(BUnit unit, boolean v) {
-		unitCheckboxes.get(unit).setValue(v);
+		CheckBox cb = unitCheckboxes.get(unit);
+		if (cb != null) {
+			cb.setValue(v);
+		}
 	}
 
 	protected void setSelection(BUnit[] units) {
-		for (BUnit u: units) {			
-			if (!u.getDose().equals("Control")) {
-				setSelected(u, true);
-			}
+		for (BUnit u : units) {
+			setSelected(u, true);
 		}
 	}
 	
