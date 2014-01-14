@@ -221,8 +221,11 @@ public class SelectionTDGrid extends TimeDoseGrid {
 			if (u.getSamples() == null || u.getSamples().length == 0) {
 				continue;
 			}
-
+			
 			CheckBox cb = unitCheckboxes.get(u);
+			if (cb == null) {
+				continue;
+			}
 			unitCheckboxes.remove(u);
 			// Remove the key and replace it since the ones from availableUnits
 			// will be populated with concrete Barcodes (getSamples)

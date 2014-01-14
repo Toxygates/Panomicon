@@ -334,7 +334,11 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private void loadTimeWarningIfNeeded() {
 		int totalSize = 0;
 		for (Group g : groups.values()) {
-			totalSize += g.samples().length;
+			for (Barcode b: g.samples()) {
+				if (!b.getDose().equals("Control")) {
+					totalSize += 1;
+				}
+			}
 		}
 		
 		// Conservatively estimate that we need 1.5 s per sample to load data

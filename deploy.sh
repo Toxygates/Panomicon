@@ -14,6 +14,12 @@ function makeWar {
     rm -r war/WEB-INF/classes/friedrich
 }
 
+cp war/toxygates.html war/toxygates.html.bak
+cp war/WEB-INF/web.xml war/WEB-INF/web.xml.bak
+
 makeWar production
 makeWar test
+
+cp war/toxygates.html.bak war/toxygates.html
+cp war/WEB-INF/web.xml.bak war/WEB-INF/web.xml
 

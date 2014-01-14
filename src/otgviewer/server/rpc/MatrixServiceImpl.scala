@@ -80,6 +80,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
 
   override def destroy() {
     println("Closing KC databases")
+    context.closeReaders
     super.destroy()
   }
   
@@ -110,22 +111,19 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     } else {
       context.foldsDBReader
     }
-    try {
-      reader match {
-        case ext: KCExtMicroarrayDB =>
-          assert(typ == ValueType.Folds)
-          new ExtFoldValueMatrix(requestColumns, ext, initProbes, sparseRead)
-        case db: KCMicroarrayDB =>
-          if (typ == ValueType.Absolute) {
-            new NormalizedIntensityMatrix(requestColumns, db, initProbes, sparseRead)
-          } else {
-            new FoldValueMatrix(requestColumns, db, initProbes, sparseRead)
-          }
-        case _ => throw new Exception("Unexpected DB reader type")
-      }
-    } finally {
-      reader.close
-    }
+
+    reader match {
+      case ext: KCExtMicroarrayDB =>
+        assert(typ == ValueType.Folds)
+        new ExtFoldValueMatrix(requestColumns, ext, initProbes, sparseRead)
+      case db: KCMicroarrayDB =>
+        if (typ == ValueType.Absolute) {
+          new NormalizedIntensityMatrix(requestColumns, db, initProbes, sparseRead)
+        } else {
+          new FoldValueMatrix(requestColumns, db, initProbes, sparseRead)
+        }
+      case _ => throw new Exception("Unexpected DB reader type")
+    }   
   }
 
   def loadDataset(filter: DataFilter, groups: JList[Group], probes: Array[String],
