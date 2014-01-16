@@ -10,7 +10,7 @@ import bioweb.shared.array.Annotation
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import otg.DefaultBio
-import otg.Human
+import otg.Species._
 import otg.OTGContext
 import otg.sparql._
 import otgviewer.client.rpc.SparqlService

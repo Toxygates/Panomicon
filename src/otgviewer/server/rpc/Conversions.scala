@@ -12,11 +12,12 @@ import otgviewer.shared.Pathology
 import otgviewer.shared.RankRule
 import otgviewer.shared.Series
 import bioweb.shared.array._
-import otg.Species
 import otg.SeriesRanking
 import otg.Context
 import otg.RepeatType
 import otgviewer.shared.RuleType
+import otg.Organ._
+import otg.Species._
 
 /**
  * Conversions between Scala and Java types.
@@ -29,13 +30,13 @@ object Conversions {
 
   implicit def asScala(filter: DataFilter): otg.Filter = {
     val or = if (filter.cellType == CellType.Vitro) {
-      otg.Vitro
+      otg.Organ.Vitro
     } else {
-      otg.Organ(filter.organ.toString()).get
+      otg.Organ.withName(filter.organ.toString())
     }
     new otg.Filter(Some(or), 
         Some(RepeatType.withName(filter.repeatType.toString())), 
-        otg.Species(filter.organism.toString()));
+        Some(otg.Species.withName(filter.organism.toString())));
   }
 
   implicit def asJava(path: otg.Pathology): Pathology =
@@ -53,9 +54,9 @@ object Conversions {
 
   implicit def speciesFromFilter(filter: DataFilter): Species = {
     filter.organism match {
-      case Organism.Rat   => otg.Rat
-      case Organism.Human => otg.Human
-      case Organism.Mouse => otg.Mouse
+      case Organism.Rat   => otg.Species.Rat
+      case Organism.Human => otg.Species.Human
+      case Organism.Mouse => otg.Species.Mouse
     }
   }
 
