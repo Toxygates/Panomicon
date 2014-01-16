@@ -15,7 +15,7 @@ public class ManagedMatrixInfo implements Serializable {
 	private int _numDataColumns = 0, _numSynthetics = 0, _numRows = 0;
 	private String[] columnNames = new String[0];
 	private String[] columnHints = new String[0];
-	private boolean[] separateFiltering = new boolean[0];
+	private boolean[] upperBoundFiltering = new boolean[0];
 	private Group[] columnGroups = new Group[0];
 	
 	public ManagedMatrixInfo() { }
@@ -27,10 +27,10 @@ public class ManagedMatrixInfo implements Serializable {
 	 * @param synthetic
 	 * @param name
 	 * @param hint
-	 * @param isSeparateFiltering
+	 * @param isUpperFiltering
 	 */
 	public void addColumn(boolean synthetic, String name, 
-			String hint, boolean isSeparateFiltering,
+			String hint, boolean isUpperFiltering,
 			Group baseGroup) {
 		if (synthetic) {
 			_numSynthetics++;
@@ -41,7 +41,7 @@ public class ManagedMatrixInfo implements Serializable {
 		int n = columnNames.length;
 		columnNames = SharedUtils.extend(columnNames, name);
 		columnHints = SharedUtils.extend(columnHints, hint);
-		separateFiltering = SharedUtils.extend(separateFiltering, isSeparateFiltering);	
+		upperBoundFiltering = SharedUtils.extend(upperBoundFiltering, isUpperFiltering);	
 		columnGroups = SharedUtils.extend(columnGroups, baseGroup);
 	}
 	
@@ -50,7 +50,7 @@ public class ManagedMatrixInfo implements Serializable {
 		int n = _numDataColumns;
 		columnNames = SharedUtils.take(columnNames, n);
 		columnHints = SharedUtils.take(columnHints, n);
-		separateFiltering = SharedUtils.take(separateFiltering, n);	
+		upperBoundFiltering = SharedUtils.take(upperBoundFiltering, n);	
 		columnGroups = SharedUtils.take(columnGroups, n);
 	}
 	
@@ -65,12 +65,11 @@ public class ManagedMatrixInfo implements Serializable {
 	public int numRows() { return _numRows; }
 	
 	/**
-	 * Does the column support its own separate filtering?
 	 * @param column Column index. Must be 0 <= i < numColumns.
 	 * @return
 	 */
-	public boolean hasSeparateFiltering(int column) {
-		return separateFiltering[column];		
+	public boolean isUpperFiltering(int column) {
+		return upperBoundFiltering[column];		
 	}
 	
 	/**

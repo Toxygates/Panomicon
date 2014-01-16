@@ -3,6 +3,8 @@ package otgviewer.client.rpc;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.ManagedMatrixInfo;
@@ -51,10 +53,18 @@ public interface MatrixService extends RemoteService {
 	/**
 	 * Filter data that has already been loaded into the session.
 	 * @param probes Probes to keep
-	 * @param absValFilter Value cutoff (each row must contain at least one value such that abs(x) > this)
-	 * @return The number of rows that remain after filtering.
+	 * @return 
 	 */
-	public ManagedMatrixInfo refilterData(String[] probes, double absValFilter);	
+	public ManagedMatrixInfo selectProbes(String[] probes);
+	
+	/**
+	 * Set the filtering threshold for a single column. The interpretation of the threshold
+	 * depends on the column.
+	 * @param column
+	 * @param threshold the threshold, or null to reset.
+	 * @return
+	 */
+	public ManagedMatrixInfo setColumnThreshold(int column, @Nullable Double threshold);
 	
 	/**
 	 * Add a T-test/U-test/fold change difference column. Requires that loadDataset was

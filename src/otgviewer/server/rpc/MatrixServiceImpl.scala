@@ -133,16 +133,16 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     val allProbes = filterProbes(null).toArray
     val mm = makeMatrix(groups.toVector, allProbes, typ)    
     setSessionData(mm)
-    refilterData(probes, absValFilter)
+    selectProbes(probes)
   }
 
-  def refilterData(probes: Array[String], absValFilter: Double): ManagedMatrixInfo = {
+  def selectProbes(probes: Array[String]): ManagedMatrixInfo = {
     if (probes != null) {
       println("Refilter probes: " + probes.length)      
     }
     val mm = getSessionData
     
-    mm.filterData(Some(absValFilter))	
+//    mm.filterData(Some(absValFilter))	
     if (probes != null && probes.length > 0) {
     	mm.selectProbes(probes)
     } else {
@@ -151,6 +151,11 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
         mm.selectProbes(allProbes)
     }
     mm.info
+  }
+  
+  def setColumnThreshold(column: Int, threshold: java.lang.Double): ManagedMatrixInfo = {
+    // TODO
+    null
   }
 
   def datasetItems(offset: Int, size: Int, sortColumn: Int,

@@ -548,23 +548,25 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	 * Filter data that has already been loaded (by magnitude)
 	 */
 	void refilterData() {
-		if (loadedData) {
-			setEnabled(false);
-			grid.setRowCount(0, false);
-			kcService.refilterData(chosenProbes, absValBox.getValue(),
-					new AsyncCallback<ManagedMatrixInfo>() {
-						public void onFailure(Throwable caught) {
-							getExpressions(); //the user probably let the session expire							
-						}
-
-						public void onSuccess(ManagedMatrixInfo result) {
-							grid.setRowCount(result.numRows());
-							grid.setVisibleRangeAndClearData(new Range(0,
-									PAGE_SIZE), true);
-							setEnabled(true);
-						}
-					});
+		if (!loadedData) {
+			return;
 		}
+		setEnabled(false);
+		grid.setRowCount(0, false);
+		kcService.selectProbes(chosenProbes,
+			new AsyncCallback<ManagedMatrixInfo>() {
+				public void onFailure(Throwable caught) {
+					getExpressions(); // the user probably let the session
+										// expire
+				}
+
+				public void onSuccess(ManagedMatrixInfo result) {
+					grid.setRowCount(result.numRows());
+					grid.setVisibleRangeAndClearData(
+							new Range(0, PAGE_SIZE), true);
+					setEnabled(true);
+				}
+			});
 	}
 	
 	/**
