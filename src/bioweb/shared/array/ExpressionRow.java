@@ -24,7 +24,7 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 		geneIds = _geneId;
 		geneSyms = _geneSym;		
 	}
-
+	
 	public boolean equals(Object o) {
 		if (o instanceof ExpressionRow) {
 			return (probe == ((ExpressionRow) o).probe && 

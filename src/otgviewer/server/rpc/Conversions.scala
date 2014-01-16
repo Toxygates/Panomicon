@@ -1,4 +1,4 @@
-package otgviewer.server
+package otgviewer.server.rpc
 
 import scala.collection.JavaConversions._
 import otg.Sample
@@ -11,12 +11,12 @@ import otgviewer.shared.Organism
 import otgviewer.shared.Pathology
 import otgviewer.shared.RankRule
 import otgviewer.shared.Series
-import otgviewer.shared.RuleType
 import bioweb.shared.array._
 import otg.Species
 import otg.SeriesRanking
 import otg.Context
-
+import otg.RepeatType
+import otgviewer.shared.RuleType
 
 /**
  * Conversions between Scala and Java types.
@@ -33,7 +33,8 @@ object Conversions {
     } else {
       otg.Organ(filter.organ.toString()).get
     }
-    new otg.Filter(Some(or), otg.RepeatType(filter.repeatType.toString()), 
+    new otg.Filter(Some(or), 
+        Some(RepeatType.withName(filter.repeatType.toString())), 
         otg.Species(filter.organism.toString()));
   }
 
@@ -47,13 +48,14 @@ object Conversions {
     new Annotation(annot.barcode, new java.util.ArrayList(entries))        
   }
 
-  def asJava(s: Sample): Barcode = new Barcode(s.code, s.individual, s.dose,
-    s.time, s.compound);
+  def asJava(s: Sample): Barcode = 
+    new Barcode(s.sampleId, s.individual, s.dose, s.time, s.compound);
 
   implicit def speciesFromFilter(filter: DataFilter): Species = {
     filter.organism match {
       case Organism.Rat   => otg.Rat
       case Organism.Human => otg.Human
+      case Organism.Mouse => otg.Mouse
     }
   }
 

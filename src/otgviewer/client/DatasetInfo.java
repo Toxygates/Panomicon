@@ -114,6 +114,8 @@ public class DatasetInfo extends Composite implements ClickHandler {
 			return resources.human();
 		case Rat:
 			return resources.rat();
+		case Mouse:
+			return resources.mouse();
 		}
 		return null;
 	}

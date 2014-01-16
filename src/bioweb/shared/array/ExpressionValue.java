@@ -4,24 +4,17 @@ import java.io.Serializable;
 
 import javax.annotation.Nullable;
 
+/**
+ * A single entry in an ExprMatrix or ExpressionRow.
+ * Future: consider using Doubles instead if possible
+ * (if call can be handled separately)
+ */
 public class ExpressionValue implements Serializable {
 	private double _value = 0;
 	private char _call = 'A';
-	private Double _pValue = null;
 	
 	public ExpressionValue() { }
 
-	/**
-	 * Construct an ExpressionValue with an associated p-value.
-	 * @param value
-	 */
-	public ExpressionValue(double value, char call, 
-			@Nullable Double pValue) {
-		this._value = value;
-		this._call = call;
-		this._pValue = pValue;
-	}
-	
 	/**
 	 * Construct a present ExpressionValue with no associated p-value.
 	 * @param value
@@ -36,7 +29,8 @@ public class ExpressionValue implements Serializable {
 	 * @param call
 	 */
 	public ExpressionValue(double value, char call) {
-		this(value, call, null);
+		_value = value;
+		_call = call;
 	}
 	
 	public double getValue() { return _value; }
@@ -45,14 +39,27 @@ public class ExpressionValue implements Serializable {
 	
 	public char getCall() { return _call; }
 	
-	/**
-	 * @return the p-value associated with this value,
-	 * or null if none exists.
-	 */
-	public @Nullable Double getPValue() { return _pValue; }
-	
 	@Override
 	public String toString() {
 		return "(" + _value + ", " + _call + ")";
+	}
+	
+	/**
+	 * equals and hashCode need to be overridden for
+	 * unit testing to work properly.
+	 */	
+	@Override 
+	public boolean equals(Object o) {
+		if (o instanceof ExpressionValue) {
+			ExpressionValue other = (ExpressionValue) o;
+			return other.getValue() == _value &&
+					other.getCall() == _call;
+		}
+		return false;
+	}
+	
+	@Override
+	public int hashCode() {
+		return ((Double)_value).hashCode() + _call;			
 	}
 }

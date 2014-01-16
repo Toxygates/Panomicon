@@ -16,10 +16,9 @@ import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.ui.MenuBar;
 
 /**
- * A data grid with functionality for hiding columns and displaying clickable icons in the leftmost columns.
+ * A data grid with functionality for hiding columns and displaying 
+ * clickable icons in the leftmost columns.
  * It also has the concepts of data columns and extra columns.
- * @author johan
- *
  */
 abstract public class RichTable<T> extends DataListenerWidget {
 	protected DataGrid<T> grid;
@@ -39,7 +38,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	}
 	
 	protected void setupColumns() {
-		// todo: explicitly set the width of each column
+		// TODO: explicitly set the width of each column
 
 		int count = grid.getColumnCount();
 		for (int i = 0; i < count; ++i) {

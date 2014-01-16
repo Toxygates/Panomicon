@@ -1,7 +1,8 @@
-package otgviewer.client;
+package otgviewer.client.rpc;
 
 import otgviewer.shared.AType;
 import otgviewer.shared.Association;
+import otgviewer.shared.BUnit;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
@@ -14,18 +15,17 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public interface SparqlServiceAsync {
 
 	public void compounds(DataFilter filter, AsyncCallback<String[]> callback);
-	
-	public void organs(DataFilter filter, String compound, AsyncCallback<String[]> callback);	
+		
 	public void doseLevels(DataFilter filter, String compound, AsyncCallback<String[]> callback);	
 	public void barcodes(DataFilter filter, String compound, 
 			String doseLevel, String time, AsyncCallback<Barcode[]> callback);
 	public void barcodes(DataFilter filter, String[] compounds, 
 			String doseLevel, String time, AsyncCallback<Barcode[]> callback);
+	public void units(DataFilter filter, String[] compounds, 
+			String doseLevel, String time, AsyncCallback<BUnit[]> callback);
 	
 	public void times(DataFilter filter, String compound, AsyncCallback<String[]> callback);	
 	public void probes(DataFilter filter, AsyncCallback<String[]> callback);
-	public void timeDoseCombinations(DataFilter filter, String compound, 
-			AsyncCallback<Pair<String,String>[]> callback);
 	
 	public void pathologies(BarcodeColumn column, AsyncCallback<Pathology[]> callback);
 	public void pathologies(Barcode barcode, AsyncCallback<Pathology[]> callback);

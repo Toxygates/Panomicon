@@ -6,9 +6,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import otgviewer.client.components.DialogPosition;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
+import otgviewer.client.rpc.SparqlService;
+import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
@@ -84,7 +87,7 @@ public class SampleDetailScreen extends Screen {
 		if (chosenColumns.size() > 0) {
 			setDisplayColumn(chosenColumns.get(0));
 			columnList.setSelectedIndex(0);
-			for (DataColumn c : chosenColumns) {
+			for (DataColumn<?> c : chosenColumns) {
 				columnList.addItem(c.getShortTitle());
 			}
 		}

@@ -7,6 +7,7 @@ import scala.reflect.ClassTag
 import org.apache.commons.math3.stat.inference.TTest
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest
 import scala.collection.immutable.{Vector => SVector}
+import otgviewer.server.rpc.Conversions
 
 object ExprMatrix {
   val ttest = new TTest()
@@ -22,10 +23,16 @@ object ExprMatrix {
     }       
   }
   
-  def emptyAnnotations(rows: Int) = Vector.fill(rows)(new RowAnnotation(null, null, null, null))
+  def withRows(data: Seq[Seq[ExpressionValue]], rowNames: Seq[String], colNames: Seq[String]) = 
+    new ExprMatrix(data.map(new VVector(_)), data.size, data(0).size, 
+        Map() ++ rowNames.zipWithIndex, Map() ++ colNames.zipWithIndex, 
+        emptyAnnotations(data.size))
+  
+  
+  def emptyAnnotations(rows: Int) = Vector.fill(rows)(new RowAnnotation(null))
 }
 
-case class RowAnnotation(probe: String, title: String, geneIds: Array[String], geneSyms: Array[String])
+case class RowAnnotation(probe: String) //, title: String, geneIds: Array[String], geneSyms: Array[String])
  
 /**
  * Data is row-major
@@ -62,7 +69,7 @@ class ExprMatrix(data: Seq[VVector[ExpressionValue]], rows: Int, columns: Int,
   
   lazy val asRows: SVector[ExpressionRow] = toRowVectors.toVector.zip(annotations).map(x => {
     val ann = x._2    
-    new ExpressionRow(ann.probe, ann.title, ann.geneIds, ann.geneSyms, x._1.toArray)
+    new ExpressionRow(ann.probe, null, null, null, x._1.toArray)
   })
 
   override def selectRows(rows: Seq[Int]): ExprMatrix = 

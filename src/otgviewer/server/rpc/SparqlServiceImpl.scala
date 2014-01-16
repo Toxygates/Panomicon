@@ -1,18 +1,10 @@
-package otgviewer.server
+package otgviewer.server.rpc
 
 import scala.Array.canBuildFrom
 import scala.Option.option2Iterable
 import scala.collection.{Set => CSet}
-
+import scala.collection.{Set => CSet}
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-
-import Assocations.convertPairs
-import Conversions.asJava
-import Conversions.asScala
-import Conversions.nullToOption
-import Conversions.speciesFromFilter
-import UtilsS.nullToNone
-import UtilsS.useConnector
 import bioweb.shared.Pair
 import bioweb.shared.array.Annotation
 import javax.servlet.ServletConfig
@@ -20,34 +12,17 @@ import javax.servlet.ServletException
 import otg.DefaultBio
 import otg.Human
 import otg.OTGContext
-import otg.sparql.AffyProbes
-import otg.sparql.B2RHomologene
-import otg.sparql.B2RKegg
-import otg.sparql.ChEMBL
-import otg.sparql.CommonSPARQL
-import otg.sparql.CommonSPARQL.BBMap
-import otg.sparql.CommonSPARQL.MMap
-import otg.sparql.CommonSPARQL.emptyMMap
-import otg.sparql.CommonSPARQL.makeRich
-import otg.sparql.CommonSPARQL.toBioMap
-import otg.sparql.Compound
-import otg.sparql.CompoundTargets
-import otg.sparql.DrugBank
-import otg.sparql.GOTerm
-import otg.sparql.Gene
-import otg.sparql.LocalUniprot
-import otg.sparql.OTGSamples
-import otg.sparql.OwlimLocalRDF
-import otg.sparql.Probe
-import otg.sparql.Protein
-import otg.sparql.RDFConnector
-import otgviewer.client.SparqlService
+import otg.sparql._
+import otgviewer.client.rpc.SparqlService
+import otgviewer.server._
 import otgviewer.shared.AType
 import otgviewer.shared.Association
 import otgviewer.shared.Barcode
+import otgviewer.shared.BUnit
 import otgviewer.shared.BarcodeColumn
 import otgviewer.shared.DataFilter
 import otgviewer.shared.Pathology
+import otgviewer.shared.TimesDoses
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -88,31 +63,38 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   def compounds(filter: DataFilter): Array[String] =
     OTGSamples.compounds(filter).toArray
 
-  def organs(filter: DataFilter, compound: String): Array[String] =
-    OTGSamples.organs(filter, nullToOption(compound)).toArray
-
   val orderedDoses = List("Control", "Low", "Middle", "High")
   def doseLevels(filter: DataFilter, compound: String): Array[String] = {
     val r = OTGSamples.doseLevels(filter, nullToOption(compound)).toArray
     r.sortWith((d1, d2) => orderedDoses.indexOf(d1) < orderedDoses.indexOf(d2))
   }
 
-  def barcodes(filter: DataFilter, compound: String, doseLevel: String, time: String) =
+  def barcodes(filter: DataFilter, compound: String, doseLevel: String, 
+      time: String): Array[Barcode] =
     OTGSamples.barcodes(filter, nullToNone(compound),
       nullToNone(doseLevel), nullToNone(time)).map(asJava(_)).toArray
 
-  def barcodes(filter: DataFilter, compounds: Array[String], doseLevel: String, time: String) =
+  def barcodes(filter: DataFilter, compounds: Array[String], doseLevel: String, 
+      time: String): Array[Barcode] =
     OTGSamples.barcodes(filter, compounds,
       nullToNone(doseLevel), nullToNone(time)).map(asJava(_)).toArray
 
-  val orderedTimes = List("2 hr", "3 hr", "6 hr", "8 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day")
+  def units(filter: DataFilter, compounds: Array[String], doseLevel: String, 
+      time: String): Array[BUnit] = {
+    val bcs = OTGSamples.barcodes(filter, compounds,
+      nullToNone(doseLevel), nullToNone(time)).map(asJava(_))
+    val g = bcs.groupBy(new BUnit(_))
+    for ((k, v) <- g) {
+      k.setSamples(v.toArray)
+    }
+    g.keySet.toArray
+  }
+    
+  val orderedTimes = TimesDoses.allTimes.toList
   def times(filter: DataFilter, compound: String): Array[String] = {
     val r = OTGSamples.times(filter, nullToOption(compound)).toArray
     r.sortWith((t1, t2) => orderedTimes.indexOf(t1) < orderedTimes.indexOf(t2))
   }
-
-  def timeDoseCombinations(filter: DataFilter, compound: String): Array[Pair[String, String]] =
-    OTGSamples.timeDoseCombinations(filter, compound).map(asJava(_)).toArray
 
   def probes(filter: DataFilter): Array[String] =
     context.probes(filter).tokens.toArray
@@ -169,7 +151,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   }
 
   def goTerms(pattern: String): Array[String] =
-    OTGSamples.goTerms(pattern).map(_.name).toArray
+    AffyProbes.goTerms(pattern).map(_.name).toArray
 
   def probesForGoTerm(filter: DataFilter, goTerm: String): Array[String] = {
     val pmap = context.probes(filter)

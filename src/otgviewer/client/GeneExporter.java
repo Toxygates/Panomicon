@@ -5,6 +5,8 @@ import java.util.Arrays;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.EnumSelector;
 import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.rpc.MatrixService;
+import otgviewer.client.rpc.MatrixServiceAsync;
 import bioweb.shared.SharedUtils;
 
 import com.google.gwt.core.client.GWT;

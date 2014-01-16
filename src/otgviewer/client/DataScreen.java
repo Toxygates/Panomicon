@@ -69,7 +69,6 @@ public class DataScreen extends Screen {
 		lastProbes = chosenProbes;
 		lastFilter = chosenDataFilter;
 		lastColumns = chosenColumns;
-
 	}
 	
 	@Override

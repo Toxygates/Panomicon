@@ -12,6 +12,10 @@ public interface Resources extends ClientBundle {
 	@Source("images/rat64.png")
 	ImageResource rat();
 	
+	// TODO
+	@Source("images/16_close.png")
+	ImageResource mouse();
+	
 	@Source("images/vivo64.png")
 	ImageResource vivo();
 	

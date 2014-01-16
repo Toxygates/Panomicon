@@ -13,6 +13,7 @@ public class Barcode extends Sample implements BarcodeColumn {
 	private String dose = "";
 	private String time = "";
 	private String compound = "";
+	private BUnit unit;
 	
 	public Barcode() { super(); }
 	
@@ -23,6 +24,7 @@ public class Barcode extends Sample implements BarcodeColumn {
 		dose = _dose;
 		time = _time;		
 		compound = _compound;
+		unit = new BUnit(compound, dose, time);
 	}
 	
 	public String getTitle() {
@@ -39,7 +41,11 @@ public class Barcode extends Sample implements BarcodeColumn {
 	 * @return
 	 */
 	public String getCDT() {
-		return compound + "/" + dose + "/" + time;
+		return unit.toString();
+	}
+	
+	public BUnit getUnit() {
+		return unit;
 	}
 	
 	public String getCode() {

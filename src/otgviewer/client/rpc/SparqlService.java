@@ -1,8 +1,9 @@
-package otgviewer.client;
+package otgviewer.client.rpc;
 import javax.annotation.Nullable;
 
 import otgviewer.shared.AType;
 import otgviewer.shared.Association;
+import otgviewer.shared.BUnit;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
@@ -30,14 +31,8 @@ public interface SparqlService extends RemoteService {
 	public String[] compounds(DataFilter filter);	
 	
 	/**
-	 * Obtain organs for a given filter and compound
-	 * @param filter
-	 * @param compound the chosen compound, or null for no constraint
-	 * @return
-	 */
-	public String[] organs(DataFilter filter, @Nullable String compound);
-	
-	/**
+	 * TODO consider removing
+	 * 
 	 * Obtain dose levels for a given filter and compound
 	 * @param filter
 	 * @param compound the chosen compound, or null for no constraint
@@ -46,6 +41,8 @@ public interface SparqlService extends RemoteService {
 	public String[] doseLevels(DataFilter filter, @Nullable String compound);
 	
 	/**
+	 * TODO consider removing
+	 * 
 	 * Obtain samples for a given filter, compound, dose level, time
 	 * @param filter 
 	 * @param compound the chosen compound, or null for no constraint.
@@ -57,6 +54,8 @@ public interface SparqlService extends RemoteService {
 			@Nullable String doseLevel, @Nullable String time);
 	
 	/**
+	 * TODO consider removing
+	 * 
 	 * Obtain samples for a given filter, compounds, dose level, time
 	 * @param filter 
 	 * @param compounds the chosen compounds.
@@ -68,21 +67,26 @@ public interface SparqlService extends RemoteService {
 			@Nullable String doseLevel, @Nullable String time);
 	
 	/**
+	 * TODO consider removing
+	 * 
 	 * Obtain times corresponding to a data filter and a compound.
 	 * @param filter 
 	 * @param compound the chosen compound, or null for no constraint.
 	 * @return
 	 */
 	public String[] times(DataFilter filter, @Nullable String compound);		
-		
+	
 	/**
-	 * Obtain time and dose combinations corresponding to a data filter and a compound.
-	 * In the resulting pairs, the first item will be a time and the second will be a dose.
+	 * Obtain units that are populated with the samples that belong to them.
 	 * @param filter
-	 * @param compound
+	 * @param compounds
+	 * @param doseLevel
+	 * @param time
 	 * @return
 	 */
-	public Pair<String,String>[] timeDoseCombinations(DataFilter filter, String compound);
+	public BUnit[] units(DataFilter filter, @Nullable String[] compounds, 
+			@Nullable String doseLevel, @Nullable String time);
+			
 	
 	/**
 	 * Obtain probes for the given data filter

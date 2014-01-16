@@ -12,6 +12,7 @@ import java.util.Set;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.SelectionTable;
+import otgviewer.shared.BUnit;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
@@ -109,10 +110,18 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 				textColumn = new TextColumn<Group>() {
 					@Override
 					public String getValue(Group object) {
-						return "" + object.getSamples().length;
+						return "" + object.getTreatedSamples().length;
 					}
 				};
-				table.addColumn(textColumn, "Sample count");
+				table.addColumn(textColumn, "#Treated samples");
+				
+				textColumn = new TextColumn<Group>() {
+					@Override
+					public String getValue(Group object) {
+						return "" + object.getControlSamples().length;
+					}
+				};
+				table.addColumn(textColumn, "#Control samples");
 				
 				ButtonCell editCell = new ButtonCell();
 				
@@ -309,13 +318,13 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private void makeGroup(final String name) {		
 		pendingGroup = new Group(name, new Barcode[0]);
 		addGroup(name, pendingGroup);
-		List<Barcode> barcodes = timeDoseGrid.getSelectedBarcodes();
+		List<BUnit> units = timeDoseGrid.getSelectedUnits();
 		
-		if (barcodes.size() == 0) {
+		if (units.size() == 0) {
 			 Window.alert("No samples found.");
 			 cullEmptyGroups();
 		} else {
-			setGroup(pendingGroup.getName(), barcodes);
+			setGroup(pendingGroup.getName(), units);
 			newGroup();
 		}
 		
@@ -325,7 +334,11 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private void loadTimeWarningIfNeeded() {
 		int totalSize = 0;
 		for (Group g : groups.values()) {
-			totalSize += g.samples().length;
+			for (Barcode b: g.samples()) {
+				if (!b.getDose().equals("Control")) {
+					totalSize += 1;
+				}
+			}
 		}
 		
 		// Conservatively estimate that we need 1.5 s per sample to load data
@@ -349,10 +362,10 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 		
-	private void setGroup(String pendingGroupName, List<Barcode> barcodes) {
+	private void setGroup(String pendingGroupName, List<BUnit> units) {
 		Group pendingGroup = groups.get(pendingGroupName);
-		existingGroupsTable.removeItem(pendingGroup);
-		pendingGroup = new Group(pendingGroupName, barcodes.toArray(new Barcode[0]));
+		existingGroupsTable.removeItem(pendingGroup); 
+		pendingGroup = new Group(pendingGroupName, units.toArray(new BUnit[0]));
 		addGroup(pendingGroupName, pendingGroup);
 		reflectGroupChanges();
 	}

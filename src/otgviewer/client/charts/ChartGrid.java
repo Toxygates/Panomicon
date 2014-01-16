@@ -2,11 +2,11 @@ package otgviewer.client.charts;
 
 import java.util.List;
 
-import otgviewer.client.SparqlService;
-import otgviewer.client.SparqlServiceAsync;
 import otgviewer.client.Utils;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
+import otgviewer.client.rpc.SparqlService;
+import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.Group;
 import bioweb.shared.SharedUtils;
@@ -110,10 +110,14 @@ public class ChartGrid extends Composite {
 	}
 
 	public void adjustAndDisplay(int tableColumnCount) {
+		adjustAndDisplay(tableColumnCount, Double.NaN, Double.NaN);
+	}
+	
+	public void adjustAndDisplay(int tableColumnCount, double minVal, double maxVal) {
 		final int width = totalWidth / timesOrDoses.length; //width of each individual chart 		
 		for (int c = 0; c < timesOrDoses.length; ++c) {						
 			for (int r = 0; r < rowFilters.size(); ++r) {							
-				displaySeriesAt(r, c, width, tableColumnCount);
+				displaySeriesAt(r, c, width, tableColumnCount, minVal, maxVal);
 			}
 		}
 	}
@@ -127,7 +131,7 @@ public class ChartGrid extends Composite {
 	 * @param width
 	 * @param columnCount
 	 */
-	private void displaySeriesAt(int row, int column, int width, int columnCount) {		
+	private void displaySeriesAt(int row, int column, int width, int columnCount, double minVal, double maxVal) {		
 		AxisOptions ao = AxisOptions.create();
 		
 		final DataTable dt = tables[row][column];
@@ -148,8 +152,8 @@ public class ChartGrid extends Composite {
 			colors[idx - 1] = "DarkGrey";
 		}
 
-		ao.setMinValue(table.getMin());
-		ao.setMaxValue(table.getMax());		
+		ao.setMinValue(minVal != Double.NaN ? minVal : table.getMin());
+		ao.setMaxValue(maxVal != Double.NaN ? maxVal : table.getMax());		
 		
 		Options o = Utils.createChartOptions(colors);
 		final int useWidth = width <= 400 ? width : 400;
@@ -161,7 +165,7 @@ public class ChartGrid extends Composite {
 		//(if we are, columnCount is 2)
 		if (columnCount > 2) {
 			ChartArea ca = ChartArea.create();
-			ca.setWidth(useWidth - 50);
+			ca.setWidth(useWidth - 75);
 			ca.setHeight(140);		
 			o.setChartArea(ca);
 		}

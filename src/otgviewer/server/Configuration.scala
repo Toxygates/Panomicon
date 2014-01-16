@@ -4,7 +4,6 @@ import javax.servlet.ServletConfig
 import otg.OTGContext
 import otg.db.MicroarrayDBReader
 import otg.ExprValue
-import otgviewer.server.ExpressionValueReader
 
 object Configuration {
   /**
@@ -32,11 +31,10 @@ class Configuration(val owlimRepositoryName: String, val toxygatesHomeDir: Strin
   
   lazy val context = 
     new OTGContext(Some(toxygatesHomeDir), Some(owlimRepositoryName)) 
-  
-  private def readerAndConverter[E <: ExprValue](reader: MicroarrayDBReader[E]) =
-    (reader, ExpressionValueReader[E](reader))
-  
-  def absoluteDBReader = readerAndConverter(context.absoluteDBReader)
-  
-  def foldsDBReader = readerAndConverter(context.foldsDBReader)
+//  
+//  private def wrapReader[E <: ExprValue](reader: MicroarrayDBReader[E]) =
+//    ExpressionValueReader[E](reader)
+//  
+//  def absoluteDBReader = wrapReader(context.absoluteDBReader)  
+//  def foldsDBReader = wrapReader(context.foldsDBReader)
 }

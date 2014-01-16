@@ -1,13 +1,13 @@
-package otgviewer.client;
+package otgviewer.client.rpc;
 
 
 import java.util.List;
 
-import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.Group;
+import otgviewer.shared.ManagedMatrixInfo;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
-
 import bioweb.shared.array.ExpressionRow;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -44,22 +44,17 @@ public interface MatrixService extends RemoteService {
 	 * from the start.
 	 * @return The number of rows that remain after filtering.
 	 */
-	public int loadDataset(DataFilter filter, List<BarcodeColumn> columns, 
+	public ManagedMatrixInfo loadDataset(DataFilter filter, List<Group> columns, 
 			String[] probes, ValueType type, double absValFilter,
 			List<Synthetic> synthCols);
 	
 	/**
 	 * Filter data that has already been loaded into the session.
-	 * @param filter
-	 * @param columns
-	 * @param absValFilter
-	 * @param synthCols
+	 * @param probes Probes to keep
+	 * @param absValFilter Value cutoff (each row must contain at least one value such that abs(x) > this)
 	 * @return The number of rows that remain after filtering.
 	 */
-	public int refilterData(DataFilter filter, List<BarcodeColumn> columns, 
-			String[] probes, double absValFilter,
-			List<Synthetic> synthCols);
-	
+	public ManagedMatrixInfo refilterData(String[] probes, double absValFilter);	
 	
 	/**
 	 * Add a T-test/U-test/fold change difference column. Requires that loadDataset was

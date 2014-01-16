@@ -1,6 +1,9 @@
 package otgviewer.shared;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import bioweb.shared.SharedUtils;
@@ -13,13 +16,28 @@ import bioweb.shared.array.SampleGroup;
  */
 public class Group extends SampleGroup<Barcode> implements BarcodeColumn {
 	
+	protected BUnit[] _units;
+	
 	public Group() {}
 	
 	public Group(String name, Barcode[] barcodes, String color) {
-		super(name, barcodes, color);		
+		super(name, barcodes, color);	
+		_units = BUnit.formUnits(barcodes);
 	}
 	
-	public Group(String name, Barcode[] barcodes) { super(name, barcodes); }
+	public Group(String name, Barcode[] barcodes) { 
+		super(name, barcodes); 
+		_units = BUnit.formUnits(barcodes);
+	}
+	
+	public Group(String name, BUnit[] units) { 
+		super(name, BUnit.collectBarcodes(units)); 
+		_units = units;
+	}
+	
+	public Group(String name, BUnit[] units, String color) {
+		this(name, BUnit.collectBarcodes(units), color);
+	}
 
 	public String getShortTitle() {
 		return name;
@@ -27,17 +45,44 @@ public class Group extends SampleGroup<Barcode> implements BarcodeColumn {
 
 	public Barcode[] getSamples() { return _samples; }
 	
+	public Barcode[] getTreatedSamples() {
+		List<Barcode> r = new ArrayList<Barcode>();
+		for (BUnit u : _units) {
+			if (!u.getDose().equals("Control")) {
+				r.addAll(Arrays.asList(u.getSamples()));
+			}
+		}
+		return r.toArray(new Barcode[0]);
+	}
+	
+	public Barcode[] getControlSamples() {
+		List<Barcode> r = new ArrayList<Barcode>();
+		for (BUnit u : _units) {
+			if (u.getDose().equals("Control")) {
+				r.addAll(Arrays.asList(u.getSamples()));
+			}
+		}
+		return r.toArray(new Barcode[0]);
+	}
+	
+	public BUnit[] getUnits() { return _units; }
+	
 	public String getCDTs(final int limit, String separator) {
 		Set<String> CDTs = new HashSet<String>();
-		Set<String> allCDTs = new HashSet<String>();
-		for (Barcode b : _samples) {			
-			if (CDTs.size() < limit || limit == -1) {
-				CDTs.add(b.getCDT());
+		boolean stopped = false;
+		for (BUnit u : _units) {
+			if (u.getDose().equals("Control")) {
+				continue;
 			}
-			allCDTs.add(b.getCDT());
+			if (CDTs.size() < limit || limit == -1) {
+				CDTs.add(u.toString());
+			} else {
+				stopped = true;
+				break;
+			}
 		}
 		String r = SharedUtils.mkString(CDTs, separator);
-		if (allCDTs.size() > limit && limit != -1) {
+		if (stopped) {
 			return r + "...";
 		} else {
 			return r;

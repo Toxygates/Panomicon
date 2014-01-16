@@ -1,9 +1,13 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import otgviewer.client.components.Screen;
+import otgviewer.shared.BUnit;
 import otgviewer.shared.Barcode;
 import bioweb.shared.SharedUtils;
 
@@ -12,7 +16,6 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -26,28 +29,13 @@ public class SelectionTDGrid extends TimeDoseGrid {
 
 	private CheckBox[] cmpDoseCheckboxes; //selecting all samples for a cmp/dose combo
 	private CheckBox[] doseTimeCheckboxes; //selecting all samples for a dose/time combo
-	private CheckBox[][] checkboxes; //for selecting the subgroups	
-	private Combination[] oldSelection;
-
-	private static class Combination {
-		String compound;
-		int dose;
-		int time;
-		
-		public Combination(String compound, int dose, int time) {
-			this.compound = compound;
-			this.dose = dose;
-			this.time = time;
-		}
-	}
+	private BUnit[] oldSelection;
+	
+	private Map<BUnit, CheckBox> unitCheckboxes = new HashMap<BUnit, CheckBox>();
+	private Map<String, BUnit> controlUnits = new HashMap<String, BUnit>();
 	
 	public SelectionTDGrid(Screen screen) {
 		super(screen, true);
-	}
-	
-	@Override
-	protected void initTools(HorizontalPanel toolPanel) {
-		super.initTools(toolPanel);
 	}
 	
 	@Override
@@ -57,123 +45,127 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	}
 
 	public void setAll(boolean val) {
-		if (checkboxes != null) {
-			for (CheckBox[] r : checkboxes) {
-				for (CheckBox cb : r) {
-					cb.setValue(val);
-				}
+		for (CheckBox cb : unitCheckboxes.values()) {
+			cb.setValue(val);
+		}
+	}
+	
+	protected void setSelected(BUnit unit, boolean v) {
+		CheckBox cb = unitCheckboxes.get(unit);
+		if (cb != null) {
+			cb.setValue(v);
+		}
+	}
+
+	protected void setSelection(BUnit[] units) {
+		for (BUnit u : units) {
+			setSelected(u, true);
+		}
+	}
+	
+	protected boolean getSelected(BUnit unit) {
+		return unitCheckboxes.get(unit).getValue();
+	}
+
+	protected BUnit[] getSelectedCombinations() {
+		List<BUnit> r = new ArrayList<BUnit>();
+		for (BUnit u: unitCheckboxes.keySet()) {
+			CheckBox cb = unitCheckboxes.get(u);
+			if (cb.getValue()) {
+				r.add(u);
 			}
 		}
-	}
-	
-	private void setSelected(String compound, String time, String dose, boolean v) {
-		int t = SharedUtils.indexOf(availableTimes, time);
-		int d = doseToIndex(dose);
-		setSelected(compound, t, d, v);
-	}
-	
-	private boolean getSelected(String compound, int t, int d) {
-		int ci = SharedUtils.indexOf(chosenCompounds, compound);					
-		return checkboxes[ci][d * availableTimes.length + t].getValue();
-	}
-	
-	private void setSelected(String compound, int t, int d, boolean v) {
-		int ci = SharedUtils.indexOf(chosenCompounds, compound);
-		if (ci != -1) {
-			checkboxes[ci][d * availableTimes.length + t].setValue(v);
-		}
-	}
-	
-	protected Combination[] getSelectedCombinations() {
-		List<Combination> r = new ArrayList<Combination>();
-		if (availableTimes != null) {
-			for (String c : chosenCompounds) {
-				for (int d = 0; d < numDoses(); d++) {
-					for (int t = 0; t < availableTimes.length; ++t) {
-						if (getSelected(c, t, d)) {
-							r.add(new Combination(c, d, t));
-						}
-					}
-				}
-			}
-		}
-		return r.toArray(new Combination[0]);
+		return r.toArray(new BUnit[0]);		
 	}
 	
 	public void setSelection(Barcode[] barcodes) {
 		setAll(false);
 		for (Barcode b: barcodes) {
-			String c = b.getCompound();
-			setSelected(c, b.getTime(), b.getDose(), true);						
+			if (!b.getDose().equals("Control")) {
+				setSelected(new BUnit(b), true);
+			}
 		}		
 	}
 	
-	protected void setSelection(Combination[] combinations) {
-		for (Combination c: combinations) {
-			setSelected(c.compound, c.time, c.dose, true);
-		}
-	}
-	
-	private class RowMultiSelectHandler implements ValueChangeHandler<Boolean> {
-		private int from, to, row;
-		RowMultiSelectHandler(int row, int from, int to) {
-			this.from = from;
-			this.to = to;
-			this.row = row;
+	private abstract class UnitMultiSelector implements ValueChangeHandler<Boolean> {
+		public void onValueChange(ValueChangeEvent<Boolean> vce) {
+			for (BUnit b: unitCheckboxes.keySet()) {
+				if (filter(b) && unitCheckboxes.get(b).isEnabled()) {
+					unitCheckboxes.get(b).setValue(vce.getValue());					
+				}
+			}			
 		}
 		
-		public void onValueChange(ValueChangeEvent<Boolean> vce) {
-			for (int i = from; i < to; ++i) {
-				if (checkboxes[row][i].isEnabled()) {
-					checkboxes[row][i].setValue(vce.getValue());
-				}
-			}
-		}
+		abstract protected boolean filter(BUnit b);
 	}
 	
-	private class ColumnMultiSelectHandler implements ValueChangeHandler<Boolean> {
-		private int col;
-		ColumnMultiSelectHandler(int col) {
-			this.col = col;
+	private class CmpDoseSelectHandler extends UnitMultiSelector {
+		private String compound;
+		private String dose;
+		CmpDoseSelectHandler(String compound, String dose) {
+			this.compound = compound;
+			this.dose = dose;
 		}
 		
-		public void onValueChange(ValueChangeEvent<Boolean> vce) {
-			for (int i = 0; i < checkboxes.length; ++i) {
-				if (checkboxes[i][col].isEnabled()) {
-					checkboxes[i][col].setValue(vce.getValue());
-				}
-			}
-		}
+		protected boolean filter(BUnit b) {
+			return b.getCompound().equals(compound) &&
+					b.getDose().equals(dose);
+		}			
 	}
 	
-	public List<Barcode> getSelectedBarcodes() {
-		final int nd = numDoses();
+	private class DoseTimeSelectHandler extends UnitMultiSelector {
+		private String dose;
+		private String time;
+		DoseTimeSelectHandler(String dose, String time) {
+			this.dose = dose;
+			this.time = time;
+		}
+		
+		protected boolean filter(BUnit b) {
+			return b.getTime().equals(time) &&
+					b.getDose().equals(dose);
+		}
+	
+	}
+	
+	public List<Barcode> getSelectedBarcodes() {		
 		List<Barcode> r = new ArrayList<Barcode>();
-		for (int c = 0; c < chosenCompounds.size(); ++c) {
-			for (int d = 0; d < nd; ++d) {
-				for (int t = 0; t < availableTimes.length; ++t) {
-					if (checkboxes[c][availableTimes.length * d + t].getValue()) {
-						String compound = chosenCompounds.get(c);
-						String key = compound + ":" + indexToDose(d) + ":" + availableTimes[t];
-						if (availableSamples.containsKey(key)) {							
-							r.addAll(availableSamples.get(key));	
-						}						
-					}
-				}
+		for (BUnit k : unitCheckboxes.keySet()) {
+			if (unitCheckboxes.get(k).getValue()) {
+				r.addAll(Arrays.asList(k.getSamples()));
 			}
-		}	
+		}
 		if (r.isEmpty()) {
 			Window.alert("Please select at least one time/dose combination.");
 		}		
 		return r;
 	}
 	
+	private BUnit controlUnitFor(BUnit u) {
+		BUnit b = new BUnit(u.getCompound(), "Control", u.getTime());
+		return controlUnits.get(b.toString());
+	}
+	
+	public List<BUnit> getSelectedUnits() {
+		List<BUnit> r = new ArrayList<BUnit>();
+		for (BUnit k : unitCheckboxes.keySet()) {
+			if (unitCheckboxes.get(k).getValue()) {
+				r.add(k);
+				BUnit control = controlUnitFor(k);
+				if (control != null) {
+					r.add(control); 
+				}
+			}
+		}
+		return r;
+	}
+	
 	@Override
-	protected Widget guiFor(int compound, int dose, int time) {
-		CheckBox cb = new CheckBox(availableTimes[time]);
+	protected Widget guiForUnit(BUnit unit) {
+		CheckBox cb = new CheckBox(unit.getTime());
 		cb.setEnabled(false); //disabled by default until samples have been confirmed
-		cb.setValue(initState);					
-		checkboxes[compound][availableTimes.length * dose + time] = cb;
+		unitCheckboxes.put(unit, cb);
+		cb.setValue(initState);							
 		return cb;
 	}
 
@@ -183,8 +175,8 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		CheckBox all = new CheckBox("All");
 		all.setEnabled(false); //disabled by default until samples have been confirmed
 		cmpDoseCheckboxes[compound * nd + dose] = all;
-		all.addValueChangeHandler(new RowMultiSelectHandler(compound,
-				availableTimes.length * dose, availableTimes.length * (dose + 1)));
+		all.addValueChangeHandler(new CmpDoseSelectHandler(chosenCompounds.get(compound),
+				indexToDose(dose)));				
 		return all;		
 	}
 
@@ -194,7 +186,8 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		cb.setEnabled(false); //disabled by default until samples have been confirmed
 		final int col = dose * availableTimes.length + time;
 		doseTimeCheckboxes[col] = cb;
-		cb.addValueChangeHandler(new ColumnMultiSelectHandler(col));
+		cb.addValueChangeHandler(new DoseTimeSelectHandler(indexToDose(dose),
+				availableTimes[time]));
 		return cb;
 	}
 
@@ -210,46 +203,45 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		final int nd = numDoses();
 		cmpDoseCheckboxes = new CheckBox[chosenCompounds.size() * nd];
 		doseTimeCheckboxes = new CheckBox[numDoses() * availableTimes.length];
-		checkboxes = new CheckBox[chosenCompounds.size()][];
-		for (int c = 0; c < chosenCompounds.size(); ++c) {
-			checkboxes[c] = new CheckBox[nd * availableTimes.length];			
-		}
+		unitCheckboxes.clear();
+		
 		super.drawGridInner(grid);
 		this.initState = false;
-		if (oldSelection != null) {
-			setSelection(oldSelection);
-			oldSelection = null;
-		}
-	}
+	}	
 	
 	@Override
 	protected void samplesAvailable() {
-		for (int c = 0; c < chosenCompounds.size(); ++c) {
-			getTimeDoseCombinations(chosenCompounds.get(c), c);
-		}
-	}
-
-	/**
-	 * Obtain time/dose combinations for a given compound that actually have samples in the database.
-	 * Only enable those checkboxes that have such corresponding samples.
-	 * @param compound
-	 * @param compoundRow
-	 */
-	private void getTimeDoseCombinations(String compound, final int compoundRow) {
 		final int nd = numDoses();
-		for (int d = 0; d < nd; ++d) {
-			for (int t = 0; t < availableTimes.length; ++t) {
-				String k = compound + ":" + indexToDose(d) + ":" + availableTimes[t];
-				if (!availableSamples.containsKey(k)) {
-					continue;
-				}
-				List<Barcode> bcs = availableSamples.get(k);
-				if (bcs.size() > 0) {
-					checkboxes[compoundRow][availableTimes.length * d + t].setEnabled(true);
-					cmpDoseCheckboxes[compoundRow * nd + d].setEnabled(true);
-					doseTimeCheckboxes[d * availableTimes.length + t].setEnabled(true);
-				}
+		for (BUnit u: availableUnits) {
+//			Window.alert(u.toString());
+			if (u.getDose().equals("Control")) {
+				controlUnits.put(u.toString(), u);
+				continue;
 			}
+			if (u.getSamples() == null || u.getSamples().length == 0) {
+				continue;
+			}
+			
+			CheckBox cb = unitCheckboxes.get(u);
+			if (cb == null) {
+				continue;
+			}
+			unitCheckboxes.remove(u);
+			// Remove the key and replace it since the ones from availableUnits
+			// will be populated with concrete Barcodes (getSamples)
+			unitCheckboxes.put(u, cb);
+			cb.setEnabled(true);
+			int cIdx = chosenCompounds.indexOf(u.getCompound());
+			int dIdx = doseToIndex(u.getDose());
+			int tIdx = SharedUtils.indexOf(availableTimes, u.getTime());
+			cmpDoseCheckboxes[cIdx * numDoses() + dIdx].setEnabled(true);
+			doseTimeCheckboxes[dIdx * availableTimes.length + tIdx]
+					.setEnabled(true);
+
 		}
+		if (oldSelection != null) {
+			setSelection(oldSelection);
+			oldSelection = null;
+		}	
 	}
 }
