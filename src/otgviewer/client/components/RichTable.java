@@ -5,14 +5,19 @@ import java.util.List;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
+import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.cellview.client.ColumnSortList;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.cellview.client.DataGrid;
+import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.RowStyles;
+import com.google.gwt.user.cellview.client.SafeHtmlHeader;
 import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.MenuBar;
 
 /**
@@ -29,12 +34,32 @@ abstract public class RichTable<T> extends DataListenerWidget {
  	
 	public RichTable() {
 		hideableColumns = initHideableColumns();
-		grid = new DataGrid<T>();
+		grid = new DataGrid<T>() {
+			@Override
+			protected void onBrowserEvent2(Event event) {
+				if ("click".equals(event.getType())) {
+					String target = event.getEventTarget().toString();					
+					if (interceptGridClick(target, event.getClientX(), event.getClientY())) {
+						super.onBrowserEvent2(event);
+					}
+				}
+			}
+		};
+		
 		initWidget(grid);
 		grid.setWidth("100%");
 		grid.setRowStyles(new RowHighligher<T>());
 		AsyncHandler colSortHandler = new AsyncHandler(grid);
 		grid.addColumnSortHandler(colSortHandler);
+	}
+	
+	/**
+	 * TODO clean this mechanism up as much as possible 
+	 * @param target
+	 * @return true if the click event should be propagated further.
+	 */
+	protected boolean interceptGridClick(String target, int x, int y) {
+		return true;
 	}
 	
 	protected void setupColumns() {
@@ -63,18 +88,43 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		}		
 	}
 	
+	/**
+	 * Obtain the index of the column at the given x-position. Only works
+	 * if there is at least one row in the table.
+	 * @param x
+	 * @return
+	 */
+	protected int columnAt(int x) {
+		int prev = 0;
+		for (int i = 0; i < grid.getColumnCount(); ++i) {
+			Column<T, ?> col = grid.getColumn(i);
+			int next = grid.getRowElement(0).getCells().getItem(i).getAbsoluteLeft();
+			if (prev <= x && next > x) {
+				return i;
+			}
+			prev = next;
+		}
+		return grid.getColumnCount() - 1;
+	}
+	
 	protected Cell<String> toolCell() { return new TextCell(); }
 	
 	abstract protected Column<T, String> toolColumn(Cell<String> cell);
 	
-	protected void addColWithTooltip(Column<T, ?> c, String title, String tooltip) {
-		grid.addColumn(c, SafeHtmlUtils.fromSafeConstant("<span title=\"" + 
-				tooltip + "\">" + title + "</span>"));
+	protected SafeHtml headerHtml(String title, String tooltip) {
+		 return SafeHtmlUtils.fromSafeConstant("<span title=\"" + tooltip + "\">" + title + "</span>");
+	}
+	
+	protected void addColWithTooltip(Column<T, ?> c, String title, String tooltip) {		
+		grid.addColumn(c, getColumnHeader(headerHtml(title, tooltip)));
 	}
 	
 	protected void insertColWithTooltip(Column<T, ?> c, int at, String title, String tooltip) {
-		grid.insertColumn(at, c, SafeHtmlUtils.fromSafeConstant("<span title=\"" + 
-				tooltip + "\">" + title + "</span>"));
+		grid.insertColumn(at, c, getColumnHeader(headerHtml(title, tooltip)));
+	}
+	
+	protected Header<SafeHtml> getColumnHeader(SafeHtml safeHtml) {
+		return new SafeHtmlHeader(safeHtml);
 	}
 	
 	public void addDataColumn(Column<T, ?> col, String title, String tooltip) {
@@ -144,6 +194,14 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	private void removeExtraColumn(Column<T, ?> col) {
 		grid.removeColumn(col);
 		extraCols -= 1;
+	}
+	
+	/**
+	 * Obtain the number of leading columns before the main data columns.
+	 * @return
+	 */
+	protected int numExtraColumns() {
+		return extraCols + 1;
 	}
 	
 	abstract protected List<HideableColumn> initHideableColumns();

@@ -64,6 +64,9 @@ public interface Resources extends ClientBundle {
 	@Source("images/16_faq.png")
 	ImageResource help();
 	
+	@Source("images/12_filter.png")
+	ImageResource filter();
+	
 	@Source("help/default.html")
 	TextResource defaultHelpHTML();
 	

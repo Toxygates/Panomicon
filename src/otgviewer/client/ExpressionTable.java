@@ -18,7 +18,6 @@ import otgviewer.client.rpc.MatrixService;
 import otgviewer.client.rpc.MatrixServiceAsync;
 import otgviewer.shared.AType;
 import otgviewer.shared.Barcode;
-import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.Group;
 import otgviewer.shared.ManagedMatrixInfo;
 import otgviewer.shared.OTGUtils;
@@ -44,13 +43,16 @@ import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
+import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.PageSizePager;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.SimplePager.Resources;
 import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -98,7 +100,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	private DoubleBox absValBox;
 	private ListBox valueTypeList = new ListBox();
 	
-	private final MatrixServiceAsync kcService = (MatrixServiceAsync) GWT
+	private final MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
 			.create(MatrixService.class);	
 	private static otgviewer.client.Resources resources = GWT.create(otgviewer.client.Resources.class);
 	
@@ -265,7 +267,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	private void removeTests() {
 		if (!synthetics.isEmpty()) {
 			removeSyntheticColumnsLocal();					
-			kcService.removeTwoGroupTests(new AsyncCallback<Void>() {
+			matrixService.removeTwoGroupTests(new AsyncCallback<Void>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					Window.alert("There was an error removing the test columns.");					
@@ -325,7 +327,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			final Group g1 = OTGUtils.findGroup(chosenColumns, selectedGroup(groupsel1));
 			final Group g2 = OTGUtils.findGroup(chosenColumns, selectedGroup(groupsel2));
 			synth.setGroups(g1, g2);
-			kcService.addTwoGroupTest(synth, new AsyncCallback<Void>() {
+			matrixService.addTwoGroupTest(synth, new AsyncCallback<Void>() {
 				public void onSuccess(Void v) {							
 					addSynthColumn(synth, synth.getShortTitle(), synth.getTooltip());					
 					//force reload
@@ -346,7 +348,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		final DataListenerWidget w = this;
 		MenuItem mntmDownloadCsv = new MenuItem("Download CSV...", false, new Command() {
 			public void execute() {
-				kcService.prepareCSVDownload(new PendingAsyncCallback<String>(w, "Unable to prepare the requested data for download.") {
+				matrixService.prepareCSVDownload(new PendingAsyncCallback<String>(w, "Unable to prepare the requested data for download.") {
 					
 					public void handleSuccess(String url) {
 						Utils.urlInNewWindow("Your download is ready.", "Download", url);					
@@ -435,6 +437,33 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		synthetics.clear();		
 	}
 	
+	@Override
+	protected Header<SafeHtml> getColumnHeader(SafeHtml safeHtml) {
+		return new FilteringHeader(safeHtml);
+	}
+	
+	@Override
+	protected boolean interceptGridClick(String target, int x, int y) {
+		/**
+		 * To prevent unwanted interactions between the sorting system and the
+		 * filtering system, we have to intercept click events at this high level
+		 * and choose whether to pass them (non-filter clicks) on or not 
+		 * (filter clicks).
+		 */
+		
+		// Identify a click on the filter image.
+		// TODO use a more robust identification method
+		boolean isSortClick = (target.startsWith("<img") && target.indexOf("width:12.0px") != -1);
+		if (isSortClick) {
+			// Identify the column that was filtered.
+			int col = columnAt(x);
+			int realCol = col - numExtraColumns();
+			Window.alert("col " + realCol);
+			matrixService.setColumnThreshold(realCol, 0.5, dataUpdateCallback());
+		}
+		return !isSortClick;
+	}
+	
 	protected List<HideableColumn> initHideableColumns() {
 		SafeHtmlCell shc = new SafeHtmlCell();
 		List<HideableColumn> r = new ArrayList<HideableColumn>();
@@ -513,7 +542,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				start = range.getStart();
 				computeSortParams();
 				if (range.getLength() > 0) {
-					kcService.datasetItems(range.getStart(), range.getLength(),
+					matrixService.datasetItems(range.getStart(), range.getLength(),
 							sortDataColumnIdx(), sortAscending(), rowCallback);
 				}
 			}
@@ -553,20 +582,23 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		}
 		setEnabled(false);
 		grid.setRowCount(0, false);
-		kcService.selectProbes(chosenProbes,
-			new AsyncCallback<ManagedMatrixInfo>() {
-				public void onFailure(Throwable caught) {
-					getExpressions(); // the user probably let the session
-										// expire
-				}
+		matrixService.selectProbes(chosenProbes, dataUpdateCallback());			
+	}
+	
+	private AsyncCallback<ManagedMatrixInfo> dataUpdateCallback() {
+		return new AsyncCallback<ManagedMatrixInfo>() {
+			public void onFailure(Throwable caught) {
+				getExpressions(); // the user probably let the session
+									// expire
+			}
 
-				public void onSuccess(ManagedMatrixInfo result) {
-					grid.setRowCount(result.numRows());
-					grid.setVisibleRangeAndClearData(
-							new Range(0, PAGE_SIZE), true);
-					setEnabled(true);
-				}
-			});
+			public void onSuccess(ManagedMatrixInfo result) {
+				grid.setRowCount(result.numRows());
+				grid.setVisibleRangeAndClearData(
+						new Range(0, PAGE_SIZE), true);
+				setEnabled(true);
+			}
+		};
 	}
 	
 	/**
@@ -577,7 +609,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		grid.setRowCount(0, false);
 
 		// load data
-		kcService.loadDataset(chosenDataFilter, chosenColumns, chosenProbes,
+		matrixService.loadDataset(chosenDataFilter, chosenColumns, chosenProbes,
 				chosenValueType, absValBox.getValue(), synthetics,
 				new AsyncCallback<ManagedMatrixInfo>() {
 					public void onFailure(Throwable caught) {
@@ -623,10 +655,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	 * @author johan
 	 *
 	 */
-	class ToolCell extends ImageClickCell {
+	class ToolCell extends ImageClickCell.StringImageClickCell {
 		
 		public ToolCell(DataListenerWidget owner) {
-			super(resources.chart());
+			super(resources.chart(), false);
 		}
 		
 		public void onClick(final String value) {			
@@ -649,5 +681,31 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				}
 			});
 		}
-	}	
+	}
+	
+	class FilterCell extends ImageClickCell.SafeHtmlImageClickCell {
+		public FilterCell() {
+			super(resources.filter(), true);
+		}
+		
+		public void onClick(SafeHtml value) {
+			/*
+			 * The filtering mechanism is not handled here, but in
+			 * ExpressionTable.interceptGridClick.
+			 */ 
+		}
+	}
+	
+	class FilteringHeader extends Header<SafeHtml> {
+		private SafeHtml value;
+		public FilteringHeader(SafeHtml value) {
+			super(new FilterCell());
+			this.value = value;
+		}
+
+		@Override
+		public SafeHtml getValue() {
+			return value;
+		}	
+	}
 }

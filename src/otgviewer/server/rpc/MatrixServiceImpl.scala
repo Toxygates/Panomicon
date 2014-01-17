@@ -154,8 +154,10 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
   }
   
   def setColumnThreshold(column: Int, threshold: java.lang.Double): ManagedMatrixInfo = {
-    // TODO
-    null
+    val mm = getSessionData
+    val thresh = if (threshold == null) None else Some(threshold.toDouble) 
+    mm.setFilterThreshold(column, thresh)
+    mm.info
   }
 
   def datasetItems(offset: Int, size: Int, sortColumn: Int,
