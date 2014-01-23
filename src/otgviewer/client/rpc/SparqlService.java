@@ -121,9 +121,11 @@ public interface SparqlService extends RemoteService {
 	/**
 	 * Obtain annotations for a set of samples
 	 * @param column
+	 * @param importantOnly If true, a smaller set of core annotations will be obtained. If false,
+	 * all annotations will be obtained.
 	 * @return
 	 */
-	public Annotation[] annotations(BarcodeColumn column);
+	public Annotation[] annotations(BarcodeColumn column, boolean importantOnly);
 	
 
 	/**

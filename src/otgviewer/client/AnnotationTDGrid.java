@@ -115,7 +115,8 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 			final String time, final Barcode[] barcodes) {
 		final NumberFormat fmt = NumberFormat.getFormat("#0.00");
 		Group g = new Group("temporary", barcodes);
-		sparqlService.annotations(g, new PendingAsyncCallback<Annotation[]>(this, "Unable to get annotations.") {
+		sparqlService.annotations(g, false, 
+				new PendingAsyncCallback<Annotation[]>(this, "Unable to get annotations.") {
 			public void handleSuccess(Annotation[] as) {								
 				double sum = 0;
 				int n = 0;
