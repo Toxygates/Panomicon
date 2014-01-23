@@ -121,6 +121,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	private String[] displayedProbes;
 
  	private boolean loadedData = false;
+ 	private ManagedMatrixInfo matrixInfo = null;
  	
  	private Barcode[] chartBarcodes = null;
 
@@ -378,7 +379,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		return r;
 	}
 
-	protected void setupColumns(ManagedMatrixInfo matrixInfo) {
+	protected void setupColumns() {
 		super.setupColumns();
 		TextCell tc = new TextCell();
 				
@@ -458,10 +459,21 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			// Identify the column that was filtered.
 			int col = columnAt(x);
 			int realCol = col - numExtraColumns();
-			Window.alert("col " + realCol);
-			matrixService.setColumnThreshold(realCol, 0.5, dataUpdateCallback());
+			editColumnFilter(realCol);			
 		}
+		// If we return true, the click will be passed on to the other widgets
 		return !isSortClick;
+	}
+	
+	protected void editColumnFilter(int column) {
+		Utils.displayInPopup("Edit filter", 
+				new FilterEditor(
+						matrixInfo.columnName(column), 
+						matrixInfo.isUpperFiltering(column),
+						0.1),
+				DialogPosition.Center
+				);				
+//		matrixService.setColumnThreshold(column, 0.5, dataUpdateCallback());
 	}
 	
 	protected List<HideableColumn> initHideableColumns() {
@@ -593,6 +605,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			}
 
 			public void onSuccess(ManagedMatrixInfo result) {
+				matrixInfo = result;
 				grid.setRowCount(result.numRows());
 				grid.setVisibleRangeAndClearData(
 						new Range(0, PAGE_SIZE), true);
@@ -618,8 +631,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
 					public void onSuccess(ManagedMatrixInfo result) {
 						if (result.numRows() > 0) {
+							matrixInfo = result;
 							loadedData = true;
-							setupColumns(result);
+							setupColumns();
 							setEnabled(true);
 							grid.setRowCount(result.numRows());
 							grid.setVisibleRangeAndClearData(new Range(0,
