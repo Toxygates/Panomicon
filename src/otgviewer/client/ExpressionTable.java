@@ -40,8 +40,6 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.OpenHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.Column;
@@ -52,14 +50,12 @@ import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.SimplePager.Resources;
 import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DisclosurePanel;
-import com.google.gwt.user.client.ui.DoubleBox;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
@@ -97,7 +93,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	//We enable/disable this button when the value type changes
 	private Button foldChangeBtn = new Button("Add fold-change difference");
 	
-	private DoubleBox absValBox;
 	private ListBox valueTypeList = new ListBox();
 	
 	private final MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
@@ -125,6 +120,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
  	
  	private Barcode[] chartBarcodes = null;
 
+ 	private DialogBox filterDialog = null;
+ 	
 	public ExpressionTable(Screen _screen) {
 		super();
 		screen = _screen;
@@ -221,32 +218,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		horizontalPanel.add(pager);
 		pager.setDisplay(grid);		
 		
-		Label label = new Label("Magnitude >=");
-		label.setStyleName("highlySpaced");		
-		horizontalPanel.add(label);
-
-		absValBox = new DoubleBox();
-		absValBox.setText("0.00");
-		absValBox.setWidth("5em");
-		horizontalPanel.add(absValBox);
-		absValBox.addValueChangeHandler(new ValueChangeHandler<Double>() {			
-			public void onValueChange(ValueChangeEvent<Double> event) {
-				refilterData();				
-			}
-		});
-		
-		horizontalPanel.add(new Button("Apply", new ClickHandler() {
-			public void onClick(ClickEvent e) {
-				refilterData();
-			}
-		}));
-		horizontalPanel.add(new Button("No filter", new ClickHandler() {
-			public void onClick(ClickEvent e) {
-				absValBox.setValue(0.0);
-				refilterData();
-			}
-		}));
-
 		DisclosurePanel analysisDisclosure = new DisclosurePanel("Analysis");
 		tools.add(analysisDisclosure);
 		analysisDisclosure.addOpenHandler(new OpenHandler<DisclosurePanel>() {			
@@ -439,8 +410,13 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	}
 	
 	@Override
-	protected Header<SafeHtml> getColumnHeader(SafeHtml safeHtml) {
-		return new FilteringHeader(safeHtml);
+	protected Header<SafeHtml> getColumnHeader(int column, SafeHtml safeHtml) {
+		if (column >= numExtraColumns()) {
+			// filterable column
+			return new FilteringHeader(safeHtml);
+		} else {
+			return super.getColumnHeader(column, safeHtml);
+		}		
 	}
 	
 	@Override
@@ -454,26 +430,44 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		
 		// Identify a click on the filter image.
 		// TODO use a more robust identification method
-		boolean isSortClick = (target.startsWith("<img") && target.indexOf("width:12.0px") != -1);
-		if (isSortClick) {
+		boolean isFilterClick = (target.startsWith("<img") && target.indexOf("width:12.0px") != -1);
+		if (isFilterClick) {
 			// Identify the column that was filtered.
-			int col = columnAt(x);
+			int col = columnAt(x);			
 			int realCol = col - numExtraColumns();
 			editColumnFilter(realCol);			
 		}
 		// If we return true, the click will be passed on to the other widgets
-		return !isSortClick;
+		return !isFilterClick;
 	}
 	
 	protected void editColumnFilter(int column) {
-		Utils.displayInPopup("Edit filter", 
-				new FilterEditor(
-						matrixInfo.columnName(column), 
-						matrixInfo.isUpperFiltering(column),
-						0.1),
-				DialogPosition.Center
-				);				
-//		matrixService.setColumnThreshold(column, 0.5, dataUpdateCallback());
+		FilterEditor fe = new FilterEditor(
+				matrixInfo.columnName(column),
+				column,
+				matrixInfo.isUpperFiltering(column),
+				matrixInfo.columnFilter(column)) {
+			
+			@Override
+			protected void onChange(Double newVal) {
+				setEnabled(false);
+				matrixService.setColumnThreshold(editColumn, newVal, new AsyncCallback<ManagedMatrixInfo>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						Window.alert("An error occurred when the column filter was changed.");
+						filterDialog.setVisible(false);
+						setEnabled(true);
+					}
+
+					@Override
+					public void onSuccess(ManagedMatrixInfo result) {
+						setMatrix(result);
+						filterDialog.setVisible(false);
+					}
+				});
+			}			
+		};
+		filterDialog = Utils.displayInPopup("Edit filter", fe, DialogPosition.Center);				
 	}
 	
 	protected List<HideableColumn> initHideableColumns() {
@@ -605,13 +599,17 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			}
 
 			public void onSuccess(ManagedMatrixInfo result) {
-				matrixInfo = result;
-				grid.setRowCount(result.numRows());
-				grid.setVisibleRangeAndClearData(
-						new Range(0, PAGE_SIZE), true);
-				setEnabled(true);
+				setMatrix(result);			
 			}
 		};
+	}
+	
+	protected void setMatrix(ManagedMatrixInfo matrix) {
+		matrixInfo = matrix;
+		grid.setRowCount(matrix.numRows());
+		int displayRows = (matrix.numRows() > PAGE_SIZE) ? PAGE_SIZE : matrix.numRows();
+		grid.setVisibleRangeAndClearData(new Range(0, displayRows), true);
+		setEnabled(true);
 	}
 	
 	/**
@@ -623,21 +621,18 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
 		// load data
 		matrixService.loadDataset(chosenDataFilter, chosenColumns, chosenProbes,
-				chosenValueType, absValBox.getValue(), synthetics,
+				chosenValueType, synthetics,
 				new AsyncCallback<ManagedMatrixInfo>() {
 					public void onFailure(Throwable caught) {
 						Window.alert("Unable to load dataset");
 					}
 
 					public void onSuccess(ManagedMatrixInfo result) {
-						if (result.numRows() > 0) {
+						if (result.numRows() > 0) {							
 							matrixInfo = result;
 							loadedData = true;
 							setupColumns();
-							setEnabled(true);
-							grid.setRowCount(result.numRows());
-							grid.setVisibleRangeAndClearData(new Range(0,
-									PAGE_SIZE), true);
+							setMatrix(result);							
 						} else {
 							Window.alert("No data was available. If you have not used Toxygates for a while, try reloading the page.");
 						}

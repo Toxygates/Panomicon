@@ -17,6 +17,7 @@ public class ManagedMatrixInfo implements Serializable {
 	private String[] columnHints = new String[0];
 	private boolean[] upperBoundFiltering = new boolean[0];
 	private Group[] columnGroups = new Group[0];
+	private Double[] columnFilters = new Double[0];
 	
 	public ManagedMatrixInfo() { }
 	
@@ -38,11 +39,11 @@ public class ManagedMatrixInfo implements Serializable {
 			_numDataColumns++;
 		}
 		
-		int n = columnNames.length;
 		columnNames = SharedUtils.extend(columnNames, name);
 		columnHints = SharedUtils.extend(columnHints, hint);
 		upperBoundFiltering = SharedUtils.extend(upperBoundFiltering, isUpperFiltering);	
 		columnGroups = SharedUtils.extend(columnGroups, baseGroup);
+		columnFilters = SharedUtils.extend(columnFilters, null);
 	}
 	
 	public void removeSynthetics() {
@@ -52,6 +53,7 @@ public class ManagedMatrixInfo implements Serializable {
 		columnHints = SharedUtils.take(columnHints, n);
 		upperBoundFiltering = SharedUtils.take(upperBoundFiltering, n);	
 		columnGroups = SharedUtils.take(columnGroups, n);
+		columnFilters = SharedUtils.take(columnFilters, n);
 	}
 	
 	public int numColumns() {
@@ -97,6 +99,19 @@ public class ManagedMatrixInfo implements Serializable {
 	 */
 	public @Nullable Group columnGroup(int column) {
 		return columnGroups[column];
+	}
+	
+	/**
+	 * The individual filter threshold for a column, if any.
+	 * @param column
+	 * @return The filter, or null if none was set.
+	 */
+	public @Nullable Double columnFilter(int column) {
+		return columnFilters[column];
+	}
+	
+	public void setColumnFilter(int column, @Nullable Double filter) {
+		columnFilters[column] = filter;
 	}
 
 }

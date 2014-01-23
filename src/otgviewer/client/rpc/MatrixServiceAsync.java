@@ -19,8 +19,8 @@ public interface MatrixServiceAsync {
 			boolean precise, AsyncCallback<String[]> callback);
 
 	public void loadDataset(DataFilter filter, List<Group> columns,
-			String[] probes, ValueType type, double absValFilter,
-			List<Synthetic> synthCols, AsyncCallback<ManagedMatrixInfo> callback);
+			String[] probes, ValueType type, List<Synthetic> synthCols, 
+			AsyncCallback<ManagedMatrixInfo> callback);
 
 	public void selectProbes(String[] probes,
 			AsyncCallback<ManagedMatrixInfo> callback);

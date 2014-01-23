@@ -142,10 +142,6 @@ public class Utils {
 		return o;
 	}
 
-	private static int lastX = -1, lastY = -1;
-	public static void displayInPopup(String caption, Widget w, DialogPosition pos) {
-		displayInPopup(caption, w, false, pos);
-	}
 	
 	/**
 	 * Open an URL in a new window or tab. 
@@ -178,6 +174,11 @@ public class Utils {
 		db.add(hp);
 		db.setPopupPositionAndShow(displayInCenter(db));						
 	}
+
+	private static int lastX = -1, lastY = -1;
+	public static DialogBox displayInPopup(String caption, Widget w, DialogPosition pos) {
+		return displayInPopup(caption, w, false, pos);
+	}
 	
 	/**
 	 * Display a popup dialog.
@@ -188,7 +189,7 @@ public class Utils {
 	 * a DialogContext or similar)
 	 * @pos The position to display the dialog at.
 	 */
-	public static void displayInPopup(String caption, final Widget w, final boolean trackLocation,
+	public static DialogBox displayInPopup(String caption, final Widget w, final boolean trackLocation,
 			final DialogPosition pos) {
 		final DialogBox db = new DialogBox(true, false) {
 			@Override
@@ -210,7 +211,7 @@ public class Utils {
 		} else {
 			db.setPopupPositionAndShow(displayAt(db, dp, w, -1, -1, pos));
 		}
-
+		return db;
 	}
 
 	public static PositionCallback displayInCenter(final PopupPanel pp) {

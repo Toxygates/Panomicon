@@ -41,7 +41,6 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
   protected var _sortColumn: Int = 0
   protected var _sortAscending: Boolean = false
   
-  protected var filters: Map[Int, Double] = Map()
   protected var requestProbes: Array[String] = initProbes
   
   loadRawData()
@@ -59,13 +58,8 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
   /**
    * Set the filtering threshold for a column with separate filtering.
    */
-  def setFilterThreshold(col: Int, threshold: Option[Double]): Unit = {
-    threshold match {
-      case Some(t) =>
-        filters += (col -> t)
-      case None =>
-        filters -= col
-    }    
+  def setFilterThreshold(col: Int, threshold: java.lang.Double): Unit = {
+    currentInfo.setColumnFilter(col, threshold)        
     resetSortAndFilter()
     filterAndSort()
   }
@@ -81,7 +75,9 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
   
   protected def filterAndSort(): Unit = {
     def f(r: Seq[ExpressionValue]): Boolean = {
-      for ((col, thresh) <- filters) {
+      for (col <- 0 until currentInfo.numColumns();
+    		  thresh = currentInfo.columnFilter(col);
+    		  if (thresh != null)) {      
         val isUpper = currentInfo.isUpperFiltering(col)
         val pass: Boolean = (if (isUpper) {
           Math.abs(r(col).value) <= thresh

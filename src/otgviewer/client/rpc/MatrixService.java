@@ -40,15 +40,12 @@ public interface MatrixService extends RemoteService {
 	 * @param barcodes
 	 * @param probes
 	 * @param type
-	 * @param absValFilter Require that rows should contain at least one value whose 
-	 * abs. value is >= this threshold. If this is 0, it will be ignored.
 	 * @param synthCols Synthetic columns, such as T-Tests, that should be computed
 	 * from the start.
 	 * @return The number of rows that remain after filtering.
 	 */
 	public ManagedMatrixInfo loadDataset(DataFilter filter, List<Group> columns, 
-			String[] probes, ValueType type, double absValFilter,
-			List<Synthetic> synthCols);
+			String[] probes, ValueType type, List<Synthetic> synthCols);
 	
 	/**
 	 * Filter data that has already been loaded into the session.

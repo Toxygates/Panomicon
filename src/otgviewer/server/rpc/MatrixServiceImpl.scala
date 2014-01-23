@@ -127,8 +127,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
   }
 
   def loadDataset(filter: DataFilter, groups: JList[Group], probes: Array[String],
-                  typ: ValueType, absValFilter: Double, 
-                  syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
+                  typ: ValueType, syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
     implicit val f = filter    
     val allProbes = filterProbes(null).toArray
     val mm = makeMatrix(groups.toVector, allProbes, typ)    
@@ -154,9 +153,9 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
   }
   
   def setColumnThreshold(column: Int, threshold: java.lang.Double): ManagedMatrixInfo = {
-    val mm = getSessionData
-    val thresh = if (threshold == null) None else Some(threshold.toDouble) 
-    mm.setFilterThreshold(column, thresh)
+    val mm = getSessionData 
+    println(s"Filter column $column at $threshold")
+    mm.setFilterThreshold(column, threshold)
     mm.info
   }
 

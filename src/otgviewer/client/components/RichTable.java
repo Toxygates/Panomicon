@@ -76,9 +76,9 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		Column<T, String> tcl = toolColumn(toolCell());
 		
 		grid.addColumn(tcl, "");
+		extraCols += 1;
 		tcl.setCellStyleNames("clickCell");
 		grid.setColumnWidth(tcl, "40px");		
-		extraCols += 1;
 		
 		for (HideableColumn c: hideableColumns) {
 			if (c.visible()) {
@@ -96,9 +96,9 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	 */
 	protected int columnAt(int x) {
 		int prev = 0;
-		for (int i = 0; i < grid.getColumnCount(); ++i) {
+		for (int i = 0; i < grid.getColumnCount() - 1; ++i) {
 			Column<T, ?> col = grid.getColumn(i);
-			int next = grid.getRowElement(0).getCells().getItem(i).getAbsoluteLeft();
+			int next = grid.getRowElement(0).getCells().getItem(i + 1).getAbsoluteLeft();
 			if (prev <= x && next > x) {
 				return i;
 			}
@@ -116,14 +116,14 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	}
 	
 	protected void addColWithTooltip(Column<T, ?> c, String title, String tooltip) {		
-		grid.addColumn(c, getColumnHeader(headerHtml(title, tooltip)));
+		grid.addColumn(c, getColumnHeader(grid.getColumnCount(), headerHtml(title, tooltip)));
 	}
 	
 	protected void insertColWithTooltip(Column<T, ?> c, int at, String title, String tooltip) {
-		grid.insertColumn(at, c, getColumnHeader(headerHtml(title, tooltip)));
+		grid.insertColumn(at, c, getColumnHeader(at, headerHtml(title, tooltip)));
 	}
 	
-	protected Header<SafeHtml> getColumnHeader(SafeHtml safeHtml) {
+	protected Header<SafeHtml> getColumnHeader(int column, SafeHtml safeHtml) {
 		return new SafeHtmlHeader(safeHtml);
 	}
 	
@@ -187,8 +187,8 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	 */
 	private void addExtraColumn(Column<T, ?> col, String name) {
 		col.setCellStyleNames("extraColumn");
-		insertColWithTooltip(col, extraCols, name, name);		
 		extraCols += 1;
+		insertColWithTooltip(col, extraCols - 1, name, name);		
 	}
 	
 	private void removeExtraColumn(Column<T, ?> col) {
@@ -201,7 +201,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	 * @return
 	 */
 	protected int numExtraColumns() {
-		return extraCols + 1;
+		return extraCols;
 	}
 	
 	abstract protected List<HideableColumn> initHideableColumns();
