@@ -236,7 +236,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	/*
 	 * The default hideable column
 	 */
-	protected abstract static class DefHideableColumn<T> extends TextColumn<T> implements HideableColumn {
+	protected abstract static class DefHideableColumn<T> extends SafeTextColumn<T> implements HideableColumn {
 		private boolean visible;
 		public DefHideableColumn(String name, boolean initState) {
 			super();
@@ -246,7 +246,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		
 		private String _name;
 		public String name() { return _name; }
-		public boolean visible() { return this.visible; }
+		public boolean visible() { return this.visible; }				
 		public void setVisibility(boolean v) { visible = v; }		
 	}
 	

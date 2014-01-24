@@ -486,17 +486,17 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		});
 		
 		r.add(new DefHideableColumn<ExpressionRow>("Gene Sym", true) {
-			public String getValue(ExpressionRow er) {				
+			public String safeGetValue(ExpressionRow er) {					
 				return SharedUtils.mkString(er.getGeneSyms(), ", ");
 			}
 		});
 		r.add(new DefHideableColumn<ExpressionRow>("Probe title", true) {
-			public String getValue(ExpressionRow er) {				
+			public String safeGetValue(ExpressionRow er) {				
 				return er.getTitle();
 			}
 		});
 		r.add(new DefHideableColumn<ExpressionRow>("Probe", true) {
-			public String getValue(ExpressionRow er) {				
+			public String safeGetValue(ExpressionRow er) {				
 				return er.getProbe();
 			}
 		});		
@@ -518,7 +518,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	 *
 	 */
 	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
-		private int start = 0;
+		private Range range;
 		
 		AsyncCallback<List<ExpressionRow>> rowCallback = new AsyncCallback<List<ExpressionRow>>() {
 			public void onFailure(Throwable caught) {
@@ -527,9 +527,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
 			public void onSuccess(List<ExpressionRow> result) {
 				if (result.size() > 0) {
-					grid.setRowData(start, result);
-					displayedProbes = new String[result.size()];
-		
+					updateRowData(range.getStart(), result);
+					displayedProbes = new String[result.size()];					
+					
 					for (int i = 0; i < displayedProbes.length; ++i) {			
 						displayedProbes[i] = result.get(i).getProbe();
 					}		
@@ -544,8 +544,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
 		protected void onRangeChanged(HasData<ExpressionRow> display) {
 			if (loadedData) {
-				Range range = display.getVisibleRange();		
-				start = range.getStart();
+				range = display.getVisibleRange();						
 				computeSortParams();
 				if (range.getLength() > 0) {
 					matrixService.datasetItems(range.getStart(), range.getLength(),
@@ -587,7 +586,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			return;
 		}
 		setEnabled(false);
-		grid.setRowCount(0, false);
+		asyncProvider.updateRowCount(0, false);
+//		grid.setRowCount(0, false);
 		matrixService.selectProbes(chosenProbes, dataUpdateCallback());			
 	}
 	
@@ -606,7 +606,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	
 	protected void setMatrix(ManagedMatrixInfo matrix) {
 		matrixInfo = matrix;
-		grid.setRowCount(matrix.numRows());
+		asyncProvider.updateRowCount(matrix.numRows(), true);
 		int displayRows = (matrix.numRows() > PAGE_SIZE) ? PAGE_SIZE : matrix.numRows();
 		grid.setVisibleRangeAndClearData(new Range(0, displayRows), true);
 		setEnabled(true);
@@ -617,7 +617,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	 */
 	public void getExpressions() {
 		setEnabled(false);
-		grid.setRowCount(0, false);
+		asyncProvider.updateRowCount(0, false);
 
 		// load data
 		matrixService.loadDataset(chosenDataFilter, chosenColumns, chosenProbes,
@@ -651,10 +651,14 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		}
 
 		public String getValue(ExpressionRow er) {
-			if (!er.getValue(i).getPresent()) {
-				return "(absent)";
-			} else {	
-				return Utils.formatNumber(er.getValue(i).getValue());								
+			if (er != null) {
+				if (!er.getValue(i).getPresent()) {
+					return "(absent)";
+				} else {
+					return Utils.formatNumber(er.getValue(i).getValue());
+				}
+			} else {
+				return "";
 			}
 		}
 	}
