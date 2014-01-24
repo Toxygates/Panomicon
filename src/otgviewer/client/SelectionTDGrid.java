@@ -6,16 +6,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import otgviewer.client.components.DialogPosition;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.BUnit;
 import otgviewer.shared.Barcode;
+import otgviewer.shared.Group;
 import bioweb.shared.SharedUtils;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -161,12 +168,52 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	}
 	
 	@Override
-	protected Widget guiForUnit(BUnit unit) {
-		CheckBox cb = new CheckBox(unit.getTime());
+	protected Widget guiForUnit(final BUnit unit) {
+		Panel p = new HorizontalPanel();
+		CheckBox cb = new CheckBox(" ");
 		cb.setEnabled(false); //disabled by default until samples have been confirmed
 		unitCheckboxes.put(unit, cb);
-		cb.setValue(initState);							
-		return cb;
+		cb.setValue(initState);
+		p.add(cb);
+		
+		Anchor a = new Anchor(" (?) ");
+		a.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				displaySampleTable(unit);				
+			}			
+		});
+		p.add(a);
+		return p;
+	}
+	
+	private void displaySampleTable(BUnit unit) {
+		SampleDetailTable st = new SampleDetailTable(this, "Experiment detail");
+		BUnit finalUnit = getFinalUnit(unit);
+		if (finalUnit.getSamples() != null && finalUnit.getSamples().length > 0) {
+			BUnit controlUnit = controlUnitFor(finalUnit);
+			BUnit[] units = new BUnit[] { finalUnit, controlUnit };
+			Group g = new Group("data", units);			
+			st.loadFrom(g, true, 0, -1);
+			Utils.displayInPopup("Unit details", st, DialogPosition.Center);
+		} else {
+			Window.alert("No samples available for " + unit.toString());
+		}
+	}
+	
+	/**
+	 * Get the final version of the unit, which is installed
+	 * after sample loading.
+	 * @param key
+	 * @return
+	 */
+	private BUnit getFinalUnit(BUnit key) {
+		for (BUnit b : unitCheckboxes.keySet()) {
+			if (b.equals(key)) {
+				return b;
+			}
+		}
+		return null;
 	}
 
 	@Override

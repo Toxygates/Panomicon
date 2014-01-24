@@ -11,6 +11,7 @@ import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
 import bioweb.shared.array.Annotation;
+import bioweb.shared.array.HasSamples;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.cellview.client.CellTable;
@@ -26,7 +27,7 @@ import com.google.gwt.view.client.NoSelectionModel;
 public class SampleDetailTable extends Composite {
 	private CellTable<String[]> table;
 	private Barcode[] barcodes;
-	private BarcodeColumn displayColumn;
+	private HasSamples<Barcode> displayColumn;
 	private SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT
 			.create(SparqlService.class);
 	private final String title;
@@ -42,7 +43,7 @@ public class SampleDetailTable extends Composite {
 		table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 	}
 	
-	void loadFrom(BarcodeColumn c, boolean importantOnly, 
+	void loadFrom(HasSamples<Barcode> c, boolean importantOnly, 
 			final int rangeStart, final int rangeEnd) {
 		if (Arrays.equals(barcodes, c.getSamples())) {
 			return;

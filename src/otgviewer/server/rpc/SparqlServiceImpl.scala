@@ -23,6 +23,7 @@ import otgviewer.shared.BarcodeColumn
 import otgviewer.shared.DataFilter
 import otgviewer.shared.Pathology
 import otgviewer.shared.TimesDoses
+import bioweb.shared.array.HasSamples
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -106,7 +107,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     column.getSamples.flatMap(x => OTGSamples.pathologies(x.getCode)).map(asJava(_))
 
   def annotations(barcode: Barcode): Annotation = asJava(OTGSamples.annotations(barcode.getCode))
-  def annotations(column: BarcodeColumn, importantOnly: Boolean = false): Array[Annotation] = {	  
+  def annotations(column: HasSamples[Barcode], importantOnly: Boolean = false): Array[Annotation] = {	  
 	  val keys = if (importantOnly) {
 	    List("Individual ID", "Dose", "Dose unit", "Dose level", "Exposure time")
 	  } else {
