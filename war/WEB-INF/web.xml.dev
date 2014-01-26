@@ -11,7 +11,11 @@
 	</context-param>
 	<context-param>
 		<param-name>toxygatesHomeDir</param-name>
-		<param-value>/ext/toxygates</param-value>
+		<param-value>/shiba/toxygates</param-value>
+	</context-param>
+	<context-param>
+		<param-name>csvDir</param-name>
+		<param-value>/shiba/toxygates/csv</param-value>
 	</context-param>
   <!-- Servlets -->
 

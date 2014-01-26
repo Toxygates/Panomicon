@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
+import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.cellview.client.Column;
@@ -15,7 +16,7 @@ import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.cellview.client.SafeHtmlHeader;
-import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.MenuBar;
@@ -38,10 +39,15 @@ abstract public class RichTable<T> extends DataListenerWidget {
 			@Override
 			protected void onBrowserEvent2(Event event) {
 				if ("click".equals(event.getType())) {
-					String target = event.getEventTarget().toString();					
-					if (interceptGridClick(target, event.getClientX(), event.getClientY())) {
-						super.onBrowserEvent2(event);
+					EventTarget et = event.getEventTarget();
+					if (Element.is(et)) {
+						Element e = et.cast();
+						String target = e.getString();
+						if (!interceptGridClick(target, event.getClientX(), event.getClientY())) {
+							return;
+						}
 					}
+					super.onBrowserEvent2(event);
 				}
 			}
 		};

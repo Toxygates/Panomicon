@@ -278,6 +278,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 			// will be populated with concrete Barcodes (getSamples)
 			unitCheckboxes.put(u, cb);
 			cb.setEnabled(true);
+			cb.setText(u.getSamples().length + " ");
 			int cIdx = chosenCompounds.indexOf(u.getCompound());
 			int dIdx = doseToIndex(u.getDose());
 			int tIdx = SharedUtils.indexOf(availableTimes, u.getTime());
