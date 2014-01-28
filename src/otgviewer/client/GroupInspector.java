@@ -84,8 +84,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		lblSaveGroupAs.setStyleName("slightlySpaced");
 		toolPanel.add(lblSaveGroupAs);
 		
-		txtbxGroup = new TextBox();
-		txtbxGroup.setText(nextGroupName());
+		txtbxGroup = new TextBox();		
 		toolPanel.add(txtbxGroup);		
 		
 		saveButton = new Button("Save",
@@ -198,7 +197,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	}
 
 	private void newGroup() {
-		txtbxGroup.setText(nextGroupName());
+		txtbxGroup.setText("");
 		timeDoseGrid.setAll(false);
 		compoundSel.setSelection(new ArrayList<String>());
 		setHeading("new group");
@@ -217,7 +216,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		Storage s = tryGetStorage();
 		if (s != null) {
 			storeColumns(s);
-			txtbxGroup.setText(nextGroupName());
+			txtbxGroup.setText("");
 			updateConfigureStatus();
 			existingGroupsTable.setVisible(groups.values().size() > 0);
 		}
@@ -233,12 +232,22 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 	
-	private String nextGroupName() {
+	private String suggestGroupName(List<BUnit> units) {
+		String g = "";
+		if (!units.isEmpty()) {
+			BUnit b = units.get(0);
+			g = b.toString();
+			if (units.size() > 1) {
+				g += ", ...";
+			}
+		} else {
+			g = "Empty group";
+		}
 		int i = 1;
-		String name = "Group " + i;
+		String name = g;
 		while (groups.containsKey(name)) {
-			i += 1;
-			name = "Group " + i;
+			name = g + " " + i;
+			i++;
 		}
 		return name;
 	}
@@ -315,7 +324,10 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	 * Get here if save button is clicked
 	 * @param name
 	 */
-	private void makeGroup(final String name) {		
+	private void makeGroup(String name) {
+		if (name.equals("")) {
+			name = suggestGroupName(timeDoseGrid.getSelectedUnits());
+		}
 		pendingGroup = new Group(name, new Barcode[0]);
 		addGroup(name, pendingGroup);
 		List<BUnit> units = timeDoseGrid.getSelectedUnits();
