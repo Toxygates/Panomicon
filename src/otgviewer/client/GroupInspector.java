@@ -307,10 +307,14 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		newGroup();
 	}
 	
+	protected void storeColumns(Storage s) {
+		storeColumns(s, keyPrefix(screen));
+	}
+	
 	@Override 
-	public void storeColumns(Storage s) {
-		super.storeColumns(s);			
-		storeColumns(s, "inactiveColumns", 
+	public void storeColumns(Storage s, String prefix) {
+		super.storeColumns(s, prefix);			
+		storeColumns(s, prefix, "inactiveColumns", 
 				new ArrayList<BarcodeColumn>(existingGroupsTable.inverseSelection()));
 	}
 	
@@ -413,3 +417,4 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 }
+ 

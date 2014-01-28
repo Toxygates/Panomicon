@@ -108,7 +108,7 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 		Storage s = tryGetStorage();
 		if (s != null) {		
 			changeDataFilter(filter);
-			storeDataFilter(s);
+			storeDataFilter(s, keyPrefix(this));
 			setConfigured(true);
 			manager.deconfigureAll(this);
 			configuredProceed(ColumnScreen.key);

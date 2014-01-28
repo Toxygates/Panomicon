@@ -48,6 +48,7 @@ public interface ScreenManager extends ProvidesResize {
 	
 	/**
 	 * A string uniquely identifying the user interface we wish to display.
+	 * TODO: replace with enum
 	 * @return
 	 */
 	String getUIType();

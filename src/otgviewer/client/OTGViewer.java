@@ -303,7 +303,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		}		
 		for (Screen s: workflow) {
 			if (s != from) {
-				s.loadState();
+				s.loadState(s);
 				s.tryConfigure();
 			}
 		}

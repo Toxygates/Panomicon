@@ -107,9 +107,8 @@ public class SampleDetailScreen extends Screen {
 			updateColumnList();
 			Storage s = tryGetStorage();
 			if (s != null) {
-				storeCustomColumn(s, null); // consume the data so it doesn't
-											// turn
-											// up again.
+				// consume the data so it doesn't turn up again.
+				storeCustomColumn(s, keyPrefix(this), null); 
 			}
 		}
 	}
