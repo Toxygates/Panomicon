@@ -22,8 +22,10 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -40,8 +42,67 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	private CheckBox[] doseTimeCheckboxes; //selecting all samples for a dose/time combo
 	private BUnit[] oldSelection;
 	
-	private Map<BUnit, CheckBox> unitCheckboxes = new HashMap<BUnit, CheckBox>();
+	private Map<BUnit, UnitUI> unitUis = new HashMap<BUnit, UnitUI>();
 	private Map<String, BUnit> controlUnits = new HashMap<String, BUnit>();
+	
+	private class UnitUI extends Composite {
+		CheckBox cb = new CheckBox();	
+		BUnit unit;
+		Anchor a;
+		Label l;
+		UnitUI(BUnit u) {			
+			Panel p = new HorizontalPanel();
+			p.setWidth("3.5em");
+			initWidget(p);
+			cb.setText("");
+			cb.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					fireUnitsChanged();
+
+				}
+			});			
+			p.add(cb);
+			a = new Anchor("");			
+			p.add(a);
+			l = new Label("(?)");			
+			p.add(l);
+			setUnit(u);
+		}
+		
+		void setUnit(final BUnit u) {
+			this.unit = u;
+			if (unit.getSamples() != null && unit.getSamples().length > 0) {
+				cb.setEnabled(true);
+				l.setText("");
+				a.setEnabled(true);
+				a.setText(" " + unit.getSamples().length + " ");				
+				a.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						displaySampleTable(unit);				
+					}			
+				});
+			} else {
+				cb.setEnabled(false);
+				l.setText("0/0");
+				a.setText("");
+				a.setEnabled(false);
+			}	
+		}
+		
+		void setValue(boolean val) {
+			cb.setValue(val);
+		}
+		
+		boolean getValue() {
+			return cb.getValue();
+		}
+		
+		boolean isEnabled() {
+			return cb.isEnabled();
+		}		
+	}
 	
 	static interface UnitListener {
 		void unitsChanged(List<BUnit> units);
@@ -61,16 +122,16 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	}
 
 	public void setAll(boolean val) {
-		for (CheckBox cb : unitCheckboxes.values()) {
-			cb.setValue(val);
+		for (UnitUI ui : unitUis.values()) {
+			ui.setValue(val);
 		}
 		fireUnitsChanged();
 	}
 	
 	protected void setSelected(BUnit unit, boolean v) {
-		CheckBox cb = unitCheckboxes.get(unit);
-		if (cb != null) {
-			cb.setValue(v);
+		UnitUI ui = unitUis.get(unit);
+		if (ui != null) {
+			ui.setValue(v);
 		}
 		fireUnitsChanged();
 	}
@@ -88,14 +149,14 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	}
 	
 	protected boolean getSelected(BUnit unit) {
-		return unitCheckboxes.get(unit).getValue();
+		return unitUis.get(unit).getValue();
 	}
 
 	protected BUnit[] getSelectedCombinations() {
 		List<BUnit> r = new ArrayList<BUnit>();
-		for (BUnit u: unitCheckboxes.keySet()) {
-			CheckBox cb = unitCheckboxes.get(u);
-			if (cb.getValue()) {
+		for (BUnit u: unitUis.keySet()) {
+			UnitUI ui = unitUis.get(u);
+			if (ui.getValue()) {
 				r.add(u);
 			}
 		}
@@ -113,9 +174,9 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	
 	private abstract class UnitMultiSelector implements ValueChangeHandler<Boolean> {
 		public void onValueChange(ValueChangeEvent<Boolean> vce) {
-			for (BUnit b: unitCheckboxes.keySet()) {
-				if (filter(b) && unitCheckboxes.get(b).isEnabled()) {
-					unitCheckboxes.get(b).setValue(vce.getValue());					
+			for (BUnit b: unitUis.keySet()) {
+				if (filter(b) && unitUis.get(b).isEnabled()) {
+					unitUis.get(b).setValue(vce.getValue());					
 				}
 			}			
 			fireUnitsChanged();
@@ -155,8 +216,8 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	
 	public List<Barcode> getSelectedBarcodes() {		
 		List<Barcode> r = new ArrayList<Barcode>();
-		for (BUnit k : unitCheckboxes.keySet()) {
-			if (unitCheckboxes.get(k).getValue()) {
+		for (BUnit k : unitUis.keySet()) {
+			if (unitUis.get(k).getValue()) {
 				r.addAll(Arrays.asList(k.getSamples()));
 			}
 		}
@@ -173,8 +234,8 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	
 	public List<BUnit> getSelectedUnits(boolean treatedOnly) {
 		List<BUnit> r = new ArrayList<BUnit>();
-		for (BUnit k : unitCheckboxes.keySet()) {
-			if (unitCheckboxes.get(k).getValue()) {
+		for (BUnit k : unitUis.keySet()) {
+			if (unitUis.get(k).getValue()) {
 				r.add(k);
 				if (!treatedOnly) {
 					BUnit control = controlUnitFor(k);
@@ -188,30 +249,10 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	}
 	
 	@Override
-	protected Widget guiForUnit(final BUnit unit) {
-		Panel p = new HorizontalPanel();
-		CheckBox cb = new CheckBox("0");
-		cb.setEnabled(false); //disabled by default until samples have been confirmed
-		unitCheckboxes.put(unit, cb);
-		cb.setValue(initState);
-		cb.addClickHandler(new ClickHandler() {			
-			@Override
-			public void onClick(ClickEvent event) {
-				fireUnitsChanged();
-				
-			}
-		});
-		p.add(cb);
-		
-		Anchor a = new Anchor(" (?) ");
-		a.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				displaySampleTable(unit);				
-			}			
-		});
-		p.add(a);
-		return p;
+	protected Widget guiForUnit(final BUnit unit) {		
+		UnitUI ui = new UnitUI(unit);		
+		unitUis.put(unit, ui);
+		return ui;		
 	}
 	
 	private void displaySampleTable(BUnit unit) {
@@ -235,7 +276,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	 * @return
 	 */
 	private BUnit getFinalUnit(BUnit key) {
-		for (BUnit b : unitCheckboxes.keySet()) {
+		for (BUnit b : unitUis.keySet()) {
 			if (b.equals(key)) {
 				return b;
 			}
@@ -246,7 +287,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	@Override
 	protected Widget guiForCompoundDose(int compound, int dose) {
 		final int nd = numDoses();
-		CheckBox all = new CheckBox("All");
+		CheckBox all = new CheckBox("All");		
 		all.setEnabled(false); //disabled by default until samples have been confirmed
 		cmpDoseCheckboxes[compound * nd + dose] = all;
 		all.addValueChangeHandler(new CmpDoseSelectHandler(chosenCompounds.get(compound),
@@ -256,13 +297,16 @@ public class SelectionTDGrid extends TimeDoseGrid {
 
 	@Override
 	protected Widget guiForDoseTime(int dose, int time) {
+		Panel p = new HorizontalPanel();
+		p.setWidth("4em");
 		CheckBox cb = new CheckBox(availableTimes[time]);
+		p.add(cb);
 		cb.setEnabled(false); //disabled by default until samples have been confirmed
 		final int col = dose * availableTimes.length + time;
 		doseTimeCheckboxes[col] = cb;
 		cb.addValueChangeHandler(new DoseTimeSelectHandler(indexToDose(dose),
 				availableTimes[time]));
-		return cb;
+		return p;
 	}
 
 	private boolean initState = false;
@@ -277,7 +321,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		final int nd = numDoses();
 		cmpDoseCheckboxes = new CheckBox[chosenCompounds.size() * nd];
 		doseTimeCheckboxes = new CheckBox[numDoses() * availableTimes.length];
-		unitCheckboxes.clear();
+		unitUis.clear();
 		
 		super.drawGridInner(grid);
 		this.initState = false;
@@ -296,16 +340,16 @@ public class SelectionTDGrid extends TimeDoseGrid {
 				continue;
 			}
 			
-			CheckBox cb = unitCheckboxes.get(u);
-			if (cb == null) {
+			UnitUI ui = unitUis.get(u);
+			if (ui == null) {
 				continue;
 			}
-			unitCheckboxes.remove(u);
+			unitUis.remove(u);
+			ui.setUnit(u);
 			// Remove the key and replace it since the ones from availableUnits
 			// will be populated with concrete Barcodes (getSamples)
-			unitCheckboxes.put(u, cb);
-			cb.setEnabled(true);
-			cb.setText(u.getSamples().length + " ");
+			unitUis.put(u, ui);
+			
 			int cIdx = chosenCompounds.indexOf(u.getCompound());
 			int dIdx = doseToIndex(u.getDose());
 			int tIdx = SharedUtils.indexOf(availableTimes, u.getTime());
