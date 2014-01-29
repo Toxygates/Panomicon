@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import otgviewer.client.components.DialogPosition;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.BUnit;
@@ -41,8 +43,15 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	private Map<BUnit, CheckBox> unitCheckboxes = new HashMap<BUnit, CheckBox>();
 	private Map<String, BUnit> controlUnits = new HashMap<String, BUnit>();
 	
-	public SelectionTDGrid(Screen screen) {
+	static interface UnitListener {
+		void unitsChanged(List<BUnit> units);
+	}
+	
+	private UnitListener listener;
+	
+	public SelectionTDGrid(Screen screen, @Nullable UnitListener listener) {
 		super(screen, true);
+		this.listener = listener;
 	}
 	
 	@Override
@@ -55,12 +64,20 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		for (CheckBox cb : unitCheckboxes.values()) {
 			cb.setValue(val);
 		}
+		fireUnitsChanged();
 	}
 	
 	protected void setSelected(BUnit unit, boolean v) {
 		CheckBox cb = unitCheckboxes.get(unit);
 		if (cb != null) {
 			cb.setValue(v);
+		}
+		fireUnitsChanged();
+	}
+	
+	private void fireUnitsChanged() {		
+		if (listener != null) {
+			listener.unitsChanged(getSelectedUnits(true));
 		}
 	}
 
@@ -101,6 +118,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 					unitCheckboxes.get(b).setValue(vce.getValue());					
 				}
 			}			
+			fireUnitsChanged();
 		}
 		
 		abstract protected boolean filter(BUnit b);
@@ -153,14 +171,16 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		return controlUnits.get(b.toString());
 	}
 	
-	public List<BUnit> getSelectedUnits() {
+	public List<BUnit> getSelectedUnits(boolean treatedOnly) {
 		List<BUnit> r = new ArrayList<BUnit>();
 		for (BUnit k : unitCheckboxes.keySet()) {
 			if (unitCheckboxes.get(k).getValue()) {
 				r.add(k);
-				BUnit control = controlUnitFor(k);
-				if (control != null) {
-					r.add(control); 
+				if (!treatedOnly) {
+					BUnit control = controlUnitFor(k);
+					if (control != null) {
+						r.add(control);
+					}
 				}
 			}
 		}
@@ -170,10 +190,17 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	@Override
 	protected Widget guiForUnit(final BUnit unit) {
 		Panel p = new HorizontalPanel();
-		CheckBox cb = new CheckBox(" ");
+		CheckBox cb = new CheckBox("0");
 		cb.setEnabled(false); //disabled by default until samples have been confirmed
 		unitCheckboxes.put(unit, cb);
 		cb.setValue(initState);
+		cb.addClickHandler(new ClickHandler() {			
+			@Override
+			public void onClick(ClickEvent event) {
+				fireUnitsChanged();
+				
+			}
+		});
 		p.add(cb);
 		
 		Anchor a = new Anchor(" (?) ");
@@ -265,7 +292,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 				controlUnits.put(u.toString(), u);
 				continue;
 			}
-			if (u.getSamples() == null || u.getSamples().length == 0) {
+			if (u.getSamples() == null || u.getSamples().length == 0) {				
 				continue;
 			}
 			
