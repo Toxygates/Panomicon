@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import otgviewer.client.charts.ChartDataSource.ChartSample;
+import otgviewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
+import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.Screen;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
@@ -62,12 +64,14 @@ public class ChartGridFactory {
 			final boolean rowsAreCompounds,			
 			final int highlightDose, final ChartAcceptor acceptor, final Screen screen) {
 		ChartDataSource cds = new ChartDataSource.SeriesSource(series, times);
+		final String[] doses = new String[] { "Low", "Middle", "High" };
 		
-		cds.getSamples(null, null, new ChartDataSource.SampleAcceptor() {
+		cds.getSamples(null, null, new TimeDoseColorPolicy(doses[highlightDose], "SkyBlue"), 
+				new ChartDataSource.SampleAcceptor() {
 
 			@Override
 			public void accept(final List<ChartSample> samples) {
-				ChartTables ct = new ChartTables.PlainChartTable(samples, samples, times, true);
+				ChartDataset ct = new ChartDataset(samples, samples, times, true);
 				
 				List<String> filters = new ArrayList<String>();
 				for (Series s: series) {			
@@ -78,8 +82,8 @@ public class ChartGridFactory {
 					}
 				}
 				
-				ChartGrid cg = new ChartGrid(screen, ct, groups, filters, rowsAreCompounds, new String[] { "Low", "Middle", "High" }, 
-						highlightDose, false, 400);
+				ChartGrid cg = new GVizChartGrid(screen, ct, groups, filters, rowsAreCompounds, 
+						doses, false, 400);
 				cg.adjustAndDisplay(cg.getMaxColumnCount());
 				acceptor.acceptCharts(cg);				
 			}

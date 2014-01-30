@@ -37,7 +37,8 @@ abstract class ChartDataSource {
 		String compound;
 		double value;
 		Barcode barcode; //may be null
-		String probe; 
+		String probe;
+		String color = "grey";
 		
 		ChartSample(String time, String dose, String compound, 
 				double value, Barcode barcode, String probe) {
@@ -79,8 +80,15 @@ abstract class ChartDataSource {
 		}
 	}
 	
-	void getSamples(String[] compounds, String[] dosesOrTimes, SampleAcceptor acceptor) {
+	private void applyPolicy(ColorPolicy policy, List<ChartSample> samples) {
+		for (ChartSample s: samples) {
+			s.color = policy.colorFor(s);
+		}
+	}
+	
+	void getSamples(String[] compounds, String[] dosesOrTimes, ColorPolicy policy, SampleAcceptor acceptor) {
 		if (compounds == null) {
+			applyPolicy(policy, samples);
 			acceptor.accept(samples);			
 		} else {
 			//We store these in a set since we may be getting the same samples several times
@@ -89,7 +97,8 @@ abstract class ChartDataSource {
 				if (SharedUtils.indexOf(compounds, s.compound) != -1) {
 					if (dosesOrTimes == null || SharedUtils.indexOf(dosesOrTimes, s.dose) != -1 || 
 							SharedUtils.indexOf(dosesOrTimes, s.time) != -1) {
-						r.add(s);					
+						r.add(s);			
+						s.color = policy.colorFor(s);
 					}
 				}
 			}
@@ -208,7 +217,7 @@ abstract class ChartDataSource {
 		}
 		
 		void loadData(final String[] compounds, final String[] dosesOrTimes, 
-				final SampleAcceptor acceptor) {
+				final ColorPolicy policy, final SampleAcceptor acceptor) {
 			final List<String> useBarcodes = new ArrayList<String>();
 			final List<Barcode> useBarcodes_ = new ArrayList<Barcode>();
 			for (Barcode b: barcodes) {
@@ -235,19 +244,19 @@ abstract class ChartDataSource {
 				@Override
 				public void handleSuccess(final List<ExpressionRow> rows) {
 					addSamplesFromBarcodes(useBarcodes_.toArray(new Barcode[0]), rows);	
-					getSSamples(compounds, dosesOrTimes, acceptor);
+					getSSamples(compounds, dosesOrTimes, policy, acceptor);
 				}					
 			});
 			
 		}
 
 		@Override
-		void getSamples(String[] compounds, String[] dosesOrTimes, SampleAcceptor acceptor) {
-			loadData(compounds, dosesOrTimes, acceptor);			
+		void getSamples(String[] compounds, String[] dosesOrTimes, ColorPolicy policy, SampleAcceptor acceptor) {
+			loadData(compounds, dosesOrTimes, policy, acceptor);			
 		}
 		
-		void getSSamples(String[] compounds, String[] dosesOrTimes, SampleAcceptor acceptor) {
-			super.getSamples(compounds, dosesOrTimes, acceptor);
+		void getSSamples(String[] compounds, String[] dosesOrTimes, ColorPolicy policy, SampleAcceptor acceptor) {
+			super.getSamples(compounds, dosesOrTimes, policy, acceptor);
 		}		
 	}	
 }
