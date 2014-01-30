@@ -1,8 +1,10 @@
 package otgviewer.client;
 
+import otgviewer.client.charts.google.GVizCharts;
 import otgviewer.client.components.DialogPosition;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Float;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
@@ -10,7 +12,6 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.dom.client.Style.Float;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
@@ -30,10 +31,6 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.visualization.client.LegendPosition;
-import com.google.gwt.visualization.client.VisualizationUtils;
-import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
-import com.google.gwt.visualization.client.visualizations.corechart.Options;
 
 /**
  * GUI/GWT utility methods.
@@ -128,21 +125,6 @@ public class Utils {
 		fp.add(w);
 	}
 
-	/**
-	 * Colour: for example, MediumAquaMarine or LightSkyBlue
-	 * 
-	 * @param color
-	 * @return
-	 */
-	public static Options createChartOptions(String... colors) {
-		Options o = Options.create();
-		o.setColors(colors);
-		o.set("legend.position", "none");
-		o.setLegend(LegendPosition.NONE);
-		return o;
-	}
-
-	
 	/**
 	 * Open an URL in a new window or tab. 
 	 * @param message
@@ -290,9 +272,7 @@ public class Utils {
 	}
 	
 	public static void ensureVisualisationAndThen(final Runnable r) {
-		VisualizationUtils
-		.loadVisualizationApi(r, CoreChart.PACKAGE);
-		//.loadVisualizationApi("1.1", r, "corechart");		
+		GVizCharts.loadAPIandThen(r);				
 	}
 
 	public static void setEnabled(HasWidgets root, boolean enabled) {
