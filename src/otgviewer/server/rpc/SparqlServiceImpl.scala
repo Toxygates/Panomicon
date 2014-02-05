@@ -38,6 +38,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   type DataColumn = bioweb.shared.array.DataColumn[Barcode]
   
   implicit var context: OTGContext = _
+  var tgConfig: Configuration = _
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
@@ -47,6 +48,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 
   def localInit(conf: Configuration) {
     this.context = conf.context
+    this.tgConfig = conf   
     OwlimLocalRDF.setContextForAll(context)
 
     OTGSamples.connect()
@@ -109,7 +111,11 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   def annotations(barcode: Barcode): Annotation = asJava(OTGSamples.annotations(barcode.getCode))
   def annotations(column: HasSamples[Barcode], importantOnly: Boolean = false): Array[Annotation] = {	  
 	  val keys = if (importantOnly) {
-	    List("Individual ID", "Dose", "Dose unit", "Dose level", "Exposure time")
+	    if (tgConfig.applicationClass == ApplicationClass.Adjuvant) {
+	    	List("Dose", "Dose unit", "Dose level", "Exposure time", "Administration route")
+	    } else {	      
+	    	List("Dose", "Dose unit", "Dose level", "Exposure time")
+	    }
 	  } else {
 	    Nil //fetch everything
 	  }

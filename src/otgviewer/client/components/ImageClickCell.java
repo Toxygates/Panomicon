@@ -48,7 +48,7 @@ abstract public class ImageClickCell<T> extends AbstractCell<T> {
 				String target = e.getString();
 
 				// TODO this is a bit hacky - is there a better way?
-				boolean targetWasImage = target.startsWith("<img");
+				boolean targetWasImage = (target.startsWith("<img") | target.startsWith("<IMG"));
 				if (targetWasImage) {
 					onClick(value);
 					return;
