@@ -108,4 +108,7 @@ public interface Resources extends ClientBundle {
 	
 	@Source("help/banner.html")
 	TextResource bannerHTML();
+	
+	@Source("help/adjuvantBanner.html")
+	TextResource adjuvantBannerHTML();
 }

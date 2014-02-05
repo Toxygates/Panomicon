@@ -8,6 +8,7 @@ import otgviewer.shared.Organ;
 import otgviewer.shared.Organism;
 import otgviewer.shared.RepeatType;
 
+import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Grid;
@@ -32,19 +33,26 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 	
 	private abstract class GUI {
 		abstract DataFilter[] filters();
+		
+		abstract TextResource topBanner();
+		
+		boolean versionHistory() { return true; }
+		
 		Widget content() {
 			Grid g = new Grid(3, 2);
 			HorizontalPanel hp = Utils.mkWidePanel();
 			hp.setHeight("100%");
 			VerticalPanel vp = Utils.mkTallPanel();
-			HTML banner = new HTML(resources.bannerHTML().getText());
+			HTML banner = new HTML(topBanner().getText());
 			banner.setWidth("40em");
 			vp.add(banner);			
 			vp.add(g);
-			HTML latest = new HTML(resources.latestVersionHTML().getText());
-			latest.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
-			vp.add(latest);
-			latest.setWidth("40em");
+			if (versionHistory()) {
+				HTML latest = new HTML(resources.latestVersionHTML().getText());
+				latest.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
+				vp.add(latest);
+				latest.setWidth("40em");
+			}
 			hp.add(vp);
 			g.setCellSpacing(20);
 			fillGrid(g, 3, filters());	
@@ -75,6 +83,9 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 					new DataFilter(CellType.Vivo, Organ.Kidney, RepeatType.Single, Organism.Rat),
 					new DataFilter(CellType.Vivo, Organ.Kidney, RepeatType.Repeat, Organism.Rat)
 			};		
+		}		
+		TextResource topBanner() {
+			return resources.bannerHTML();
 		}
 	}
 	
@@ -88,6 +99,13 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 					new DataFilter(CellType.Vivo, Organ.Spleen, RepeatType.Single, Organism.Rat)
 			};
 		}
+
+		TextResource topBanner() {
+			return resources.adjuvantBannerHTML();
+		}
+		
+		@Override
+		boolean versionHistory() { return false; }
 	}
 	
 	public Widget content() {

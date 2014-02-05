@@ -4,6 +4,7 @@ import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.safehtml.shared.SafeHtml;
@@ -40,14 +41,18 @@ abstract public class ImageClickCell<T> extends AbstractCell<T> {
 	@Override
 	public void onBrowserEvent(Context context, Element parent, T value,
 			NativeEvent event, ValueUpdater<T> valueUpdater) {		
-		if ("click".equals(event.getType())) {
-			String target = event.getEventTarget().toString();
-			
-			// TODO this is a bit hacky - is there a better way?
-			boolean targetWasImage = target.startsWith("<img");
-			if (targetWasImage) {
-				onClick(value);
-				return;
+		if ("click".equals(event.getType())) {			
+			EventTarget et = event.getEventTarget();
+			if (Element.is(et)) {
+				Element e = et.cast();
+				String target = e.getString();
+
+				// TODO this is a bit hacky - is there a better way?
+				boolean targetWasImage = target.startsWith("<img");
+				if (targetWasImage) {
+					onClick(value);
+					return;
+				}
 			}
 		} 
 		super.onBrowserEvent(context, parent, value, event, valueUpdater);		

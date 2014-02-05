@@ -254,7 +254,8 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
  */
 class NormalizedIntensityMatrix(requestColumns: Seq[Group],
     reader: MicroarrayDBReader[ExprValue],
-    initProbes: Array[String], sparseRead: Boolean)
+    initProbes: Array[String], sparseRead: Boolean,
+    enhancedColumns: Boolean)
     (implicit filter: DataFilter, context: OTGContext) 
 extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead) {
 
@@ -262,7 +263,7 @@ extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead)
       data: Seq[Seq[ExprValue]]): ExprMatrix = {
     val (cus, ncus) = g.getUnits().partition(_.getDose == "Control")
     
-    if (ncus.size > 1) {
+    if (ncus.size > 1 || (!enhancedColumns)) {
       // A simple average column
       super.columnsForGroup(g, sortedBarcodes, data)      
     } else if (ncus.size == 1) {
@@ -304,7 +305,8 @@ class FoldValueMatrix(requestColumns: Seq[Group],
  */
 class ExtFoldValueMatrix(requestColumns: Seq[Group],
     reader: MicroarrayDBReader[PExprValue], 
-    initProbes: Array[String], sparseRead: Boolean)
+    initProbes: Array[String], sparseRead: Boolean,
+    enhancedColumns: Boolean)
     (implicit filter: DataFilter, context: OTGContext) 
     extends ManagedMatrix[PExprValue](requestColumns, reader, initProbes, sparseRead) {
  
@@ -312,7 +314,7 @@ class ExtFoldValueMatrix(requestColumns: Seq[Group],
       data: Seq[Seq[PExprValue]]): ExprMatrix = {
     val (cus, ncus) = g.getUnits().partition(_.getDose == "Control")
     
-    if (ncus.size > 1) {
+    if (ncus.size > 1 || (!enhancedColumns)) {
       // A simple average column
       super.columnsForGroup(g, sortedBarcodes, data)      
     } else if (ncus.size == 1) {
