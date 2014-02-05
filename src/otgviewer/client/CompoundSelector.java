@@ -232,10 +232,10 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		}
 	}
 	
-	class ChartClickCell extends ImageClickCell {
+	class ChartClickCell extends ImageClickCell.StringImageClickCell {
 		final DataListenerWidget w;
 		public ChartClickCell(DataListenerWidget w) {
-			super(resources.chart());
+			super(resources.chart(), false);
 			this.w = w;
 		}
 		

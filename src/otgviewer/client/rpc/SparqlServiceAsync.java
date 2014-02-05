@@ -7,8 +7,8 @@ import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Pathology;
-import bioweb.shared.Pair;
 import bioweb.shared.array.Annotation;
+import bioweb.shared.array.HasSamples;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -30,7 +30,8 @@ public interface SparqlServiceAsync {
 	public void pathologies(BarcodeColumn column, AsyncCallback<Pathology[]> callback);
 	public void pathologies(Barcode barcode, AsyncCallback<Pathology[]> callback);
 	
-	public void annotations(BarcodeColumn column, AsyncCallback<Annotation[]> callback);
+	public void annotations(HasSamples<Barcode> column, boolean importantOnly,
+			AsyncCallback<Annotation[]> callback);
 	public void annotations(Barcode barcode, AsyncCallback<Annotation> callback);
 	
 	public void pathways(DataFilter filter, String pattern, AsyncCallback<String[]> callback);
@@ -44,5 +45,6 @@ public interface SparqlServiceAsync {
 	public void goTerms(String pattern, AsyncCallback<String[]> callback);
 	public void probesForGoTerm(DataFilter filter, String term, AsyncCallback<String[]> callback);
 	
-	public void associations(DataFilter filter, AType[] types, String[] probes, AsyncCallback<Association[]> callback);
+	public void associations(DataFilter filter, AType[] types, String[] probes, 
+			AsyncCallback<Association[]> callback);
 }

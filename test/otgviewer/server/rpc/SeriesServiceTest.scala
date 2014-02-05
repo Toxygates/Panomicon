@@ -1,13 +1,11 @@
 package otgviewer.server.rpc
 
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
-import otgviewer.shared.RuleType
-import otgviewer.shared.RankRule
 import org.scalatest.BeforeAndAfter
-import otgviewer.server.rpc.SeriesServiceImpl
+import org.scalatest.FunSuite
 import otgviewer.server.Configuration
-import otgviewer.server.rpc.SparqlServiceTest
+import otgviewer.shared.RankRule
+import otgviewer.shared.RuleType
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
@@ -16,7 +14,7 @@ class SeriesServiceTest extends FunSuite with BeforeAndAfter {
   var s: SeriesServiceImpl = _
   
   before {   
-    val conf = new Configuration("otg", "/ext/toxygates")
+    val conf = new Configuration("otg", "/ext/toxygates", 2)
     s = new SeriesServiceImpl()
     s.localInit(conf)
   }

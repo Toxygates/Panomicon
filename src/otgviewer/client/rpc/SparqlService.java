@@ -8,8 +8,8 @@ import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Pathology;
-import bioweb.shared.Pair;
 import bioweb.shared.array.Annotation;
+import bioweb.shared.array.HasSamples;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -121,9 +121,11 @@ public interface SparqlService extends RemoteService {
 	/**
 	 * Obtain annotations for a set of samples
 	 * @param column
+	 * @param importantOnly If true, a smaller set of core annotations will be obtained. If false,
+	 * all annotations will be obtained.
 	 * @return
 	 */
-	public Annotation[] annotations(BarcodeColumn column);
+	public Annotation[] annotations(HasSamples<Barcode> column, boolean importantOnly);
 	
 
 	/**

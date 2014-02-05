@@ -41,8 +41,6 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
   protected var _sortColumn: Int = 0
   protected var _sortAscending: Boolean = false
   
-  protected var generalFilter: Option[Double] = None
-  protected var separateFilters: Map[Int, Option[Double]] = Map()
   protected var requestProbes: Array[String] = initProbes
   
   loadRawData()
@@ -56,21 +54,12 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
    * Is the current sort type ascending?
    */
   def sortAscending: Boolean = _sortAscending
-
-  /**
-   * Set the normal filtering threshold (applies across all data columns)
-   */
-  def filterData(threshold: Option[Double]): Unit = {
-    generalFilter = threshold
-    resetSortAndFilter()
-    filterAndSort()
-  }  
   
   /**
    * Set the filtering threshold for a column with separate filtering.
    */
-  def filterSeparate(col: Int, threshold: Option[Double]): Unit = {
-    separateFilters += (col -> threshold)
+  def setFilterThreshold(col: Int, threshold: java.lang.Double): Unit = {
+    currentInfo.setColumnFilter(col, threshold)        
     resetSortAndFilter()
     filterAndSort()
   }
@@ -85,19 +74,25 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
   }
   
   protected def filterAndSort(): Unit = {
-    def f(r: Seq[ExpressionValue], thresh: Double, beforeCol: Int): Boolean = {
-      r.take(beforeCol).exists(v => (Math.abs(v.value) >= thresh - 0.0001) ||
-        (java.lang.Double.isNaN(v.value) && thresh == 0))
+    def f(r: Seq[ExpressionValue]): Boolean = {
+      for (col <- 0 until currentInfo.numColumns();
+    		  thresh = currentInfo.columnFilter(col);
+    		  if (thresh != null)) {      
+        val isUpper = currentInfo.isUpperFiltering(col)
+        val pass: Boolean = (if (isUpper) {
+          Math.abs(r(col).value) <= thresh
+        } else {
+          Math.abs(r(col).value) >= thresh
+        })
+        if (! (pass && !java.lang.Double.isNaN(r(col).value))) {        
+          return false
+        }
+      }
+      true
     }
 
-    currentMat = currentMat.selectNamedRows(requestProbes)
-    
-    //TODO: separate filtering
-    generalFilter match {
-      case Some(filtVal) =>
-        currentMat = currentMat.filterRows(r => f(r, filtVal, currentInfo.numDataColumns()))
-      case None =>
-    }
+    currentMat = currentMat.selectNamedRows(requestProbes)    
+    currentMat = currentMat.filterRows(f)
     
     currentInfo.setNumRows(currentMat.rows)
     sort(_sortColumn, _sortAscending)
@@ -144,16 +139,18 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
       case test: Synthetic.TwoGroupSynthetic =>
         val g1s = test.getGroup1.getSamples.filter(_.getDose() != "Control").map(_.getCode)
         val g2s = test.getGroup2.getSamples.filter(_.getDose() != "Control").map(_.getCode)
+        var upper = true
         currentMat = test match {
           case ut: Synthetic.UTest =>
             currentMat.appendUTest(rawUngroupedMat, g1s, g2s, ut.getShortTitle)
           case tt: Synthetic.TTest =>
             currentMat.appendTTest(rawUngroupedMat, g1s, g2s, tt.getShortTitle)
           case md: Synthetic.MeanDifference =>
+            upper = false
             currentMat.appendDiffTest(rawUngroupedMat, g1s, g2s, md.getShortTitle)
           case _ => throw new Exception("Unexpected test type!")
         }
-        currentInfo.addColumn(true, test.getShortTitle(), test.getTooltip(), false, null)
+        currentInfo.addColumn(true, test.getShortTitle(), test.getTooltip(), upper, null)
       case _ => throw new Exception("Unexpected test type")
     }       
   }
@@ -248,8 +245,7 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
       //all samples
       g.getSamples()
     }
-  }
-  
+  } 
 }
 
 /**
@@ -258,7 +254,8 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
  */
 class NormalizedIntensityMatrix(requestColumns: Seq[Group],
     reader: MicroarrayDBReader[ExprValue],
-    initProbes: Array[String], sparseRead: Boolean)
+    initProbes: Array[String], sparseRead: Boolean,
+    enhancedColumns: Boolean)
     (implicit filter: DataFilter, context: OTGContext) 
 extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead) {
 
@@ -266,7 +263,7 @@ extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead)
       data: Seq[Seq[ExprValue]]): ExprMatrix = {
     val (cus, ncus) = g.getUnits().partition(_.getDose == "Control")
     
-    if (ncus.size > 1) {
+    if (ncus.size > 1 || (!enhancedColumns)) {
       // A simple average column
       super.columnsForGroup(g, sortedBarcodes, data)      
     } else if (ncus.size == 1) {
@@ -285,7 +282,6 @@ extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead)
     	))
     	
       currentInfo.addColumn(false, colName1, "Average of treated samples", false, g)
-      //TODO: separate filtering
       currentInfo.addColumn(false, colName2, "Average of control samples", false, g)
       ExprMatrix.withRows(rows, initProbes, List(colName1, colName2))            
     } else {
@@ -309,7 +305,8 @@ class FoldValueMatrix(requestColumns: Seq[Group],
  */
 class ExtFoldValueMatrix(requestColumns: Seq[Group],
     reader: MicroarrayDBReader[PExprValue], 
-    initProbes: Array[String], sparseRead: Boolean)
+    initProbes: Array[String], sparseRead: Boolean,
+    enhancedColumns: Boolean)
     (implicit filter: DataFilter, context: OTGContext) 
     extends ManagedMatrix[PExprValue](requestColumns, reader, initProbes, sparseRead) {
  
@@ -317,7 +314,7 @@ class ExtFoldValueMatrix(requestColumns: Seq[Group],
       data: Seq[Seq[PExprValue]]): ExprMatrix = {
     val (cus, ncus) = g.getUnits().partition(_.getDose == "Control")
     
-    if (ncus.size > 1) {
+    if (ncus.size > 1 || (!enhancedColumns)) {
       // A simple average column
       super.columnsForGroup(g, sortedBarcodes, data)      
     } else if (ncus.size == 1) {
@@ -336,7 +333,7 @@ class ExtFoldValueMatrix(requestColumns: Seq[Group],
       })
       
       currentInfo.addColumn(false, colName1, "Average of treated samples", false, g)
-      currentInfo.addColumn(false, colName2, "p-values of treated against control", false, g)
+      currentInfo.addColumn(false, colName2, "p-values of treated against control", true, g)
       
       ExprMatrix.withRows(rows, initProbes, List(colName1, colName2))
     } else {

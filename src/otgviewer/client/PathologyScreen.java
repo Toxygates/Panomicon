@@ -178,9 +178,9 @@ public class PathologyScreen extends Screen {
 	}
 
 	
-	class InspectCell extends ImageClickCell {
+	class InspectCell extends ImageClickCell.StringImageClickCell {
 		InspectCell() {
-			super(resources.magnify());
+			super(resources.magnify(), false);
 		}
 		
 		public void onClick(String value) {

@@ -19,6 +19,7 @@ cp war/WEB-INF/web.xml war/WEB-INF/web.xml.bak
 
 makeWar production
 makeWar test
+makeWar adju
 
 cp war/toxygates.html.bak war/toxygates.html
 cp war/WEB-INF/web.xml.bak war/WEB-INF/web.xml

@@ -234,6 +234,7 @@ public class ProbeScreen extends Screen {
 	@Override
 	public Widget bottomContent() {
 		HorizontalPanel buttons = Utils.mkHorizontalPanel(false);
+		final Screen sc = this;
 		proceedSelected = new Button("Proceed with selected probes",
 				new ClickHandler() {
 					@Override
@@ -244,7 +245,7 @@ public class ProbeScreen extends Screen {
 							chosenProbes = listedProbes.toArray(new String[0]);
 							Storage s = tryGetStorage();
 							if (s != null) {
-								storeProbes(s);
+								storeProbes(s, keyPrefix(sc));
 								configuredProceed(DataScreen.key);
 							}
 						}
@@ -340,7 +341,7 @@ public class ProbeScreen extends Screen {
 		chosenProbes = probesInOrder;
 		Storage s = tryGetStorage();
 		if (s != null) {
-			storeProbes(s);
+			storeProbes(s, keyPrefix(this));
 
 			if (probes.length > 0) {
 				// TODO reduce the number of ajax calls done by this screen by
@@ -433,7 +434,7 @@ public class ProbeScreen extends Screen {
 		super.changeProbes(probes);
 		Storage s = tryGetStorage();
 		if (s != null) {
-			storeProbes(s);
+			storeProbes(s, keyPrefix(this));
 		}
 	}
 	

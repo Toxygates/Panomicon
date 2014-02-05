@@ -83,13 +83,13 @@ public class ColumnScreen extends Screen {
 	}
 	
 	@Override
-	public void loadState(Storage s) {
-		super.loadState(s);
+	public void loadState(Storage s, Screen sc) {
+		super.loadState(s, sc);
 		if (visible) {
 			//If we became visible, we must have been enabled, so can count on a
 			//data filter being present.
 			try {
-				List<Group> ics = loadColumns("inactiveColumns", 
+				List<Group> ics = loadColumns(keyPrefix(sc), "inactiveColumns", 
 						new ArrayList<BarcodeColumn>(gi.existingGroupsTable.inverseSelection()));
 				if (ics != null) {
 					gi.inactiveColumnsChanged(ics);

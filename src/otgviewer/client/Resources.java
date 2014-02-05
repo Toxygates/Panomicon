@@ -64,6 +64,9 @@ public interface Resources extends ClientBundle {
 	@Source("images/16_faq.png")
 	ImageResource help();
 	
+	@Source("images/12_filter.png")
+	ImageResource filter();
+	
 	@Source("help/default.html")
 	TextResource defaultHelpHTML();
 	
@@ -105,4 +108,7 @@ public interface Resources extends ClientBundle {
 	
 	@Source("help/banner.html")
 	TextResource bannerHTML();
+	
+	@Source("help/adjuvantBanner.html")
+	TextResource adjuvantBannerHTML();
 }

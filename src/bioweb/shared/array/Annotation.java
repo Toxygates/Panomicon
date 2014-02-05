@@ -40,7 +40,6 @@ public class Annotation implements Serializable {
 	}
 	
 	public List<Entry> getEntries() {
-
 		return _entries;
 	}
 	

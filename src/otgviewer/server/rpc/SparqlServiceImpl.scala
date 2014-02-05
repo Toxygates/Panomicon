@@ -10,7 +10,7 @@ import bioweb.shared.array.Annotation
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import otg.DefaultBio
-import otg.Human
+import otg.Species._
 import otg.OTGContext
 import otg.sparql._
 import otgviewer.client.rpc.SparqlService
@@ -23,6 +23,7 @@ import otgviewer.shared.BarcodeColumn
 import otgviewer.shared.DataFilter
 import otgviewer.shared.Pathology
 import otgviewer.shared.TimesDoses
+import bioweb.shared.array.HasSamples
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -106,8 +107,14 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     column.getSamples.flatMap(x => OTGSamples.pathologies(x.getCode)).map(asJava(_))
 
   def annotations(barcode: Barcode): Annotation = asJava(OTGSamples.annotations(barcode.getCode))
-  def annotations(column: BarcodeColumn): Array[Annotation] =
-    column.getSamples.map(x => OTGSamples.annotations(x.getCode)).map(asJava(_))
+  def annotations(column: HasSamples[Barcode], importantOnly: Boolean = false): Array[Annotation] = {	  
+	  val keys = if (importantOnly) {
+	    List("Individual ID", "Dose", "Dose unit", "Dose level", "Exposure time")
+	  } else {
+	    Nil //fetch everything
+	  }
+	  column.getSamples.map(x => OTGSamples.annotations(x.getCode, keys)).map(asJava(_))
+  }
 
   def pathways(filter: DataFilter, pattern: String): Array[String] =
     useConnector(B2RKegg, (c: B2RKegg.type) => c.forPattern(pattern, filter)).toArray

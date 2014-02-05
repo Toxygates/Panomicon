@@ -14,13 +14,21 @@
 		<param-value>/opt/toxygates</param-value>
 	</context-param>
  	<context-param>
-                 <param-name>csvDir</param-name>
-                 <param-value>/opt/apache-tomcat-6.0.36/webapps/toxygates/csv</param-value>
-        </context-param>
-        <context-param>
-                 <param-name>csvUrlBase</param-name>
-                 <param-value>http://toxygates.nibio.go.jp:8080/toxygates/csv</param-value>
-        </context-param>
+		<param-name>csvDir</param-name>
+		<param-value>/opt/apache-tomcat-6.0.36/webapps/toxygates/csv</param-value>
+	</context-param>
+	<context-param>
+		<param-name>csvUrlBase</param-name>
+		<param-value>http://toxygates.nibio.go.jp:8080/toxygates/csv</param-value>
+	</context-param>
+	<context-param>
+		<param-name>foldsDBVersion</param-name>
+		<param-value>1</param-value>
+	</context-param>
+	<context-param>
+		<param-name>applicationClass</param-name>
+		<param-value>Toxygates</param-value>
+	</context-param>
   <!-- Servlets -->
 
 	<servlet>

@@ -47,6 +47,7 @@ import otgviewer.server.NormalizedIntensityMatrix
 import otg.db.kyotocabinet.KCMicroarrayDB
 import otgviewer.server.FoldValueMatrix
 import otgviewer.shared.ManagedMatrixInfo
+import otgviewer.server.ApplicationClass
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
@@ -72,7 +73,8 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     csvDirectory = config.csvDirectory
     csvUrlBase = config.csvUrlBase
     context = config.context
-
+    tgConfig = config
+    
     OwlimLocalRDF.setContextForAll(context)
     OTGSamples.connect
     println("Microarray databases are open")
@@ -109,16 +111,22 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     val reader = if (typ == ValueType.Absolute) {
       context.absoluteDBReader
     } else {
-      context.foldsDBReader
+      if (tgConfig.foldsDBVersion == 2) {
+        context.foldsDBReaderV2
+      } else {
+        context.foldsDBReaderV1
+      }
     }
+    
+    val enhancedCols = tgConfig.applicationClass == ApplicationClass.Adjuvant
 
     reader match {
       case ext: KCExtMicroarrayDB =>
         assert(typ == ValueType.Folds)
-        new ExtFoldValueMatrix(requestColumns, ext, initProbes, sparseRead)
+        new ExtFoldValueMatrix(requestColumns, ext, initProbes, sparseRead, enhancedCols)
       case db: KCMicroarrayDB =>
         if (typ == ValueType.Absolute) {
-          new NormalizedIntensityMatrix(requestColumns, db, initProbes, sparseRead)
+          new NormalizedIntensityMatrix(requestColumns, db, initProbes, sparseRead, enhancedCols)
         } else {
           new FoldValueMatrix(requestColumns, db, initProbes, sparseRead)
         }
@@ -127,22 +135,21 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
   }
 
   def loadDataset(filter: DataFilter, groups: JList[Group], probes: Array[String],
-                  typ: ValueType, absValFilter: Double, 
-                  syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
+                  typ: ValueType, syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
     implicit val f = filter    
     val allProbes = filterProbes(null).toArray
     val mm = makeMatrix(groups.toVector, allProbes, typ)    
     setSessionData(mm)
-    refilterData(probes, absValFilter)
+    selectProbes(probes)
   }
 
-  def refilterData(probes: Array[String], absValFilter: Double): ManagedMatrixInfo = {
+  def selectProbes(probes: Array[String]): ManagedMatrixInfo = {
     if (probes != null) {
       println("Refilter probes: " + probes.length)      
     }
     val mm = getSessionData
     
-    mm.filterData(Some(absValFilter))	
+//    mm.filterData(Some(absValFilter))	
     if (probes != null && probes.length > 0) {
     	mm.selectProbes(probes)
     } else {
@@ -150,6 +157,13 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
         val allProbes = filterProbes(null).toArray
         mm.selectProbes(allProbes)
     }
+    mm.info
+  }
+  
+  def setColumnThreshold(column: Int, threshold: java.lang.Double): ManagedMatrixInfo = {
+    val mm = getSessionData 
+    println(s"Filter column $column at $threshold")
+    mm.setFilterThreshold(column, threshold)
     mm.info
   }
 

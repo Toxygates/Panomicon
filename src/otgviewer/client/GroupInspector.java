@@ -22,6 +22,8 @@ import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
@@ -46,7 +48,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * @author johan
  *
  */
-public class GroupInspector extends DataListenerWidget implements RequiresResize { 
+public class GroupInspector extends DataListenerWidget implements RequiresResize, SelectionTDGrid.UnitListener { 
 
 	private SelectionTDGrid timeDoseGrid;
 	private Map<String, Group> groups = new HashMap<String, Group>();		
@@ -58,6 +60,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private CompoundSelector compoundSel;
 	private HorizontalPanel toolPanel;
 	private SplitLayoutPanel sp;
+	private boolean nameIsAutoGen = false;
 	
 	public GroupInspector(CompoundSelector cs, Screen scr) {
 		compoundSel = cs;
@@ -71,7 +74,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		titleLabel.setStyleName("heading");
 		vp.add(titleLabel);
 		
-		timeDoseGrid = new SelectionTDGrid(scr);
+		timeDoseGrid = new SelectionTDGrid(scr, this);
 		vp.add(timeDoseGrid);
 		addListener(timeDoseGrid);
 	
@@ -85,7 +88,12 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		toolPanel.add(lblSaveGroupAs);
 		
 		txtbxGroup = new TextBox();
-		txtbxGroup.setText(nextGroupName());
+		txtbxGroup.addValueChangeHandler(new ValueChangeHandler<String>() {			
+			@Override
+			public void onValueChange(ValueChangeEvent<String> event) {
+				nameIsAutoGen = false;				
+			}
+		});
 		toolPanel.add(txtbxGroup);		
 		
 		saveButton = new Button("Save",
@@ -175,6 +183,18 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		sp.add(Utils.makeScrolled(vp));
 	}
 	
+	/**
+	 * Callback from SelectionTDGrid
+	 * @param selectedUnits
+	 */
+	@Override
+	public void unitsChanged(List<BUnit> selectedUnits) {
+		if (txtbxGroup.getText().equals("") || nameIsAutoGen) {
+			txtbxGroup.setText(suggestGroupName(selectedUnits));
+			nameIsAutoGen = true;
+		}
+	}
+	
 	private void deleteGroup(String name, boolean createNew) {
 		groups.remove(name);									
 		reflectGroupChanges(); //stores columns
@@ -198,7 +218,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	}
 
 	private void newGroup() {
-		txtbxGroup.setText(nextGroupName());
+		txtbxGroup.setText("");
 		timeDoseGrid.setAll(false);
 		compoundSel.setSelection(new ArrayList<String>());
 		setHeading("new group");
@@ -217,7 +237,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		Storage s = tryGetStorage();
 		if (s != null) {
 			storeColumns(s);
-			txtbxGroup.setText(nextGroupName());
+			txtbxGroup.setText("");
 			updateConfigureStatus();
 			existingGroupsTable.setVisible(groups.values().size() > 0);
 		}
@@ -233,12 +253,24 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 	
-	private String nextGroupName() {
+	private String suggestGroupName(List<BUnit> units) {
+		String g = "";
+		if (!units.isEmpty()) {
+			BUnit b = units.get(0);
+			g = b.getCompound().substring(0,8) + "/" + 
+					b.getDose().substring(0, 1) + "/" + 
+					b.getTime();
+			if (units.size() > 1) {
+				g += ", ...";
+			}
+		} else {
+			g = "Empty group";
+		}
 		int i = 1;
-		String name = "Group " + i;
+		String name = g;
 		while (groups.containsKey(name)) {
-			i += 1;
-			name = "Group " + i;
+			name = g + " " + i;
+			i++;
 		}
 		return name;
 	}
@@ -298,10 +330,14 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		newGroup();
 	}
 	
+	protected void storeColumns(Storage s) {
+		storeColumns(s, keyPrefix(screen));
+	}
+	
 	@Override 
-	public void storeColumns(Storage s) {
-		super.storeColumns(s);			
-		storeColumns(s, "inactiveColumns", 
+	public void storeColumns(Storage s, String prefix) {
+		super.storeColumns(s, prefix);			
+		storeColumns(s, prefix, "inactiveColumns", 
 				new ArrayList<BarcodeColumn>(existingGroupsTable.inverseSelection()));
 	}
 	
@@ -315,10 +351,10 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	 * Get here if save button is clicked
 	 * @param name
 	 */
-	private void makeGroup(final String name) {		
+	private void makeGroup(String name) {		
 		pendingGroup = new Group(name, new Barcode[0]);
 		addGroup(name, pendingGroup);
-		List<BUnit> units = timeDoseGrid.getSelectedUnits();
+		List<BUnit> units = timeDoseGrid.getSelectedUnits(false);
 		
 		if (units.size() == 0) {
 			 Window.alert("No samples found.");
@@ -382,6 +418,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		
 		compoundSel.setSelection(compounds);		
 		txtbxGroup.setValue(name);
+		nameIsAutoGen = false;
 		
 		Group g = groups.get(name);
 		timeDoseGrid.setSelection(g.getSamples());
@@ -401,3 +438,4 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 }
+ 

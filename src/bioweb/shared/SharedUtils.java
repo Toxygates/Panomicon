@@ -81,9 +81,9 @@ public class SharedUtils {
 	
 	/*
 	 * We need this method and the similar ones below since
-	 * GWT doesn't support Arrays.copyOf
-	 */
-	
+	 * GWT doesn't support Arrays.copyOf.
+	 * What to do??
+	 */	
 	public static String[] extend(String[] data, String add) {
 		String[] r = new String[data.length + 1];
 		for (int i = 0; i < data.length; ++i) {
@@ -95,6 +95,15 @@ public class SharedUtils {
 	
 	public static boolean[] extend(boolean[] data, boolean add) {
 		boolean[] r = new boolean[data.length + 1];
+		for (int i = 0; i < data.length; ++i) {
+			r[i] = data[i];
+		}
+		r[data.length] = add;
+		return r;
+	}
+	
+	public static Double[] extend(Double[] data, Double add) {
+		Double[] r = new Double[data.length + 1];
 		for (int i = 0; i < data.length; ++i) {
 			r[i] = data[i];
 		}
@@ -122,6 +131,14 @@ public class SharedUtils {
 	
 	public static boolean[] take(boolean[] data, int n) {
 		boolean[] r = new boolean[n];
+		for (int i = 0; i < n; ++i) {
+			r[i] = data[i];
+		}
+		return r;
+	}
+	
+	public static Double[] take(Double[] data, int n) {
+		Double[] r = new Double[n];
 		for (int i = 0; i < n; ++i) {
 			r[i] = data[i];
 		}

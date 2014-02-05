@@ -2,6 +2,8 @@ package otgviewer.client.rpc;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.ManagedMatrixInfo;
@@ -17,12 +19,15 @@ public interface MatrixServiceAsync {
 			boolean precise, AsyncCallback<String[]> callback);
 
 	public void loadDataset(DataFilter filter, List<Group> columns,
-			String[] probes, ValueType type, double absValFilter,
-			List<Synthetic> synthCols, AsyncCallback<ManagedMatrixInfo> callback);
-
-	public void refilterData(String[] probes, double absValFilter,
+			String[] probes, ValueType type, List<Synthetic> synthCols, 
 			AsyncCallback<ManagedMatrixInfo> callback);
 
+	public void selectProbes(String[] probes,
+			AsyncCallback<ManagedMatrixInfo> callback);
+
+	public void setColumnThreshold(int column, @Nullable Double threshold,
+			AsyncCallback<ManagedMatrixInfo> callback);
+	
 	public void datasetItems(int offset, int size, int sortColumn,
 			boolean ascending, AsyncCallback<List<ExpressionRow>> callback);
 

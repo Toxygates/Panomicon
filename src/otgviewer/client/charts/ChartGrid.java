@@ -32,16 +32,16 @@ import com.google.gwt.visualization.client.visualizations.corechart.Options;
  */
 public class ChartGrid extends Composite {
 	
-	private final SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT.create(SparqlService.class);
+	private final SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT.create(SparqlService.class);
 	
 	Grid g;
 	
 	boolean rowsAreCompounds, columnsAreTimes;
 	List<String> rowFilters;
 	String[] timesOrDoses;
-	ChartTables table;
+	ChartTables ctables;
 	Screen screen;	
-	DataTable[][] tables;
+	DataTable[][] dtables;
 	final int highlightColumn;
 	final int totalWidth;
 	
@@ -54,7 +54,7 @@ public class ChartGrid extends Composite {
 		this.rowFilters = rowFilters;
 		this.rowsAreCompounds = rowsAreCompounds;
 		this.timesOrDoses = timesOrDoses;
-		this.table = table;
+		this.ctables = table;
 		this.columnsAreTimes = columnsAreTimes;
 		this.highlightColumn = highlightColumn;
 		this.totalWidth = totalWidth;
@@ -67,18 +67,18 @@ public class ChartGrid extends Composite {
 			g.setWidget(r * 2 + 1, 0, Utils.mkEmphLabel(rowFilters.get(r)));
 		}
 		
-		tables = new DataTable[rowFilters.size()][timesOrDoses.length];
+		dtables = new DataTable[rowFilters.size()][timesOrDoses.length];
 		for (int c = 0; c < timesOrDoses.length; ++c) {
 			g.setWidget(0, c, Utils.mkEmphLabel(timesOrDoses[c]));				
 			for (int r = 0; r < rowFilters.size(); ++r) {
-				tables[r][c] = table.makeTable(timesOrDoses[c], rowFilters.get(r), 
+				dtables[r][c] = table.makeTable(timesOrDoses[c], rowFilters.get(r), 
 						columnsAreTimes, !rowsAreCompounds);
 				
 			}
 		}
 	
 		if (!rowsAreCompounds) {
-			owlimService.geneSyms(screen.chosenDataFilter,
+			sparqlService.geneSyms(screen.chosenDataFilter,
 					rowFilters.toArray(new String[0]),
 				new PendingAsyncCallback<String[][]>(screen) {
 					public void handleSuccess(String[][] results) {
@@ -101,8 +101,8 @@ public class ChartGrid extends Composite {
 		int max = 0;
 		for (int c = 0; c < timesOrDoses.length; ++c) {						
 			for (int r = 0; r < rowFilters.size(); ++r) {
-				if (tables[r][c].getNumberOfColumns() > max) {
-					max = tables[r][c].getNumberOfColumns();
+				if (dtables[r][c].getNumberOfColumns() > max) {
+					max = dtables[r][c].getNumberOfColumns();
 				}				
 			}
 		}
@@ -134,7 +134,7 @@ public class ChartGrid extends Composite {
 	private void displaySeriesAt(int row, int column, int width, int columnCount, double minVal, double maxVal) {		
 		AxisOptions ao = AxisOptions.create();
 		
-		final DataTable dt = tables[row][column];
+		final DataTable dt = dtables[row][column];
 		
 		String[] colors = new String[columnCount];
 		for (int i = 1; i < dt.getNumberOfColumns(); ++i) {
@@ -152,8 +152,8 @@ public class ChartGrid extends Composite {
 			colors[idx - 1] = "DarkGrey";
 		}
 
-		ao.setMinValue(minVal != Double.NaN ? minVal : table.getMin());
-		ao.setMaxValue(maxVal != Double.NaN ? maxVal : table.getMax());		
+		ao.setMinValue(minVal != Double.NaN ? minVal : ctables.getMin());
+		ao.setMaxValue(maxVal != Double.NaN ? maxVal : ctables.getMax());		
 		
 		Options o = Utils.createChartOptions(colors);
 		final int useWidth = width <= 400 ? width : 400;

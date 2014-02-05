@@ -270,12 +270,13 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		
 		i = new PushButton(new Image(resources.close()));
 		i.setStyleName("slightlySpaced");
+		final Screen sc = this;
 		i.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				hideToolbar(guideBar);
 				showGuide = false;
-				storeState();
+				storeState(sc);
 			}			
 		});		
 		hpi.add(i);		
@@ -289,7 +290,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	public void showGuide() {
 		showToolbar(guideBar);
 		showGuide = true;
-		storeState();
+		storeState(this);
 	}
 	
 	
@@ -303,7 +304,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		for (MenuItem mi: menuItems) {
 			mi.setVisible(true);
 		}
-		loadState();
+		loadState(this);
 		if (showGuide) {
 			showToolbar(guideBar);
 		} else {
@@ -315,8 +316,8 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	}
 
 	@Override
-	public void loadState(Storage s) {
-		super.loadState(s);
+	public void loadState(Storage s, Screen sc) {
+		super.loadState(s, sc);
 		String v = s.getItem("OTG.showGuide");
 		if (v == null || v.equals("yes")) {
 			showGuide = true;
@@ -326,8 +327,8 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	}
 	
 	@Override
-	public void storeState(Storage s) {
-		super.storeState(s);
+	public void storeState(Storage s, Screen sc) {
+		super.storeState(s, sc);
 		if (showGuide) {
 			s.setItem("OTG.showGuide", "yes");
 		} else {
@@ -531,7 +532,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	public void displaySampleDetail(Barcode b) {
 		Storage s = tryGetStorage();
 		if (s != null) {
-			storeCustomColumn(s, b);
+			storeCustomColumn(s, keyPrefix(this), b);
 			configuredProceed(SampleDetailScreen.key);
 		}
 	}

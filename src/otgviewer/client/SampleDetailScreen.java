@@ -7,36 +7,25 @@ import java.util.List;
 import java.util.Set;
 
 import otgviewer.client.components.DialogPosition;
-import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
-import otgviewer.client.rpc.SparqlService;
-import otgviewer.client.rpc.SparqlServiceAsync;
-import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import bioweb.shared.array.Annotation;
 import bioweb.shared.array.DataColumn;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.storage.client.Storage;
-import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
-import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.view.client.NoSelectionModel;
 
 /**
  * This screen displays detailed information about a sample or a set of samples,
@@ -51,15 +40,11 @@ public class SampleDetailScreen extends Screen {
 	
 	public static final String key = "ad";
 	
-	private CellTable<String[]> experimentTable = new CellTable<String[]>();
-	private CellTable<String[]> biologicalTable = new CellTable<String[]>();
+	private SampleDetailTable experimentTable = new SampleDetailTable(this, "Experiment detail");
+	private SampleDetailTable biologicalTable = new SampleDetailTable(this, "Biological detail");
 	
 	private ListBox columnList = new ListBox();
-	
-	private Barcode[] barcodes;
-	private BarcodeColumn displayColumn;
-	private SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT
-			.create(SparqlService.class);
+
 	AnnotationTDGrid atd = new AnnotationTDGrid(this);
 	
 	private DataFilter lastFilter;
@@ -122,9 +107,8 @@ public class SampleDetailScreen extends Screen {
 			updateColumnList();
 			Storage s = tryGetStorage();
 			if (s != null) {
-				storeCustomColumn(s, null); // consume the data so it doesn't
-											// turn
-											// up again.
+				// consume the data so it doesn't turn up again.
+				storeCustomColumn(s, keyPrefix(this), null); 
 			}
 		}
 	}
@@ -162,113 +146,32 @@ public class SampleDetailScreen extends Screen {
 	}
 	
 	public Widget content() {		
-		VerticalPanel vp = Utils.mkVerticalPanel();
-		configureTable(vp, experimentTable);
-		configureTable(vp, biologicalTable);
+		VerticalPanel vp = Utils.mkVerticalPanel(false, experimentTable, biologicalTable);
 
 		HorizontalPanel hp = Utils.mkWidePanel(); //to make it centered
 		hp.add(vp);
 		return new ScrollPanel(hp);				
 	}
 	
-	private void configureTable(Panel p, CellTable<String[]> ct) {
-		ct.setWidth("100%", true); //use fixed layout so we can control column width explicitly
-		ct.setSelectionModel(new NoSelectionModel<String[]>());
-		ct.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
-		p.add(ct);
-	}
-
+	
 	private void setDisplayColumn(BarcodeColumn c) {
-		barcodes = c.getSamples();
-		displayColumn = c;
+		experimentTable.loadFrom(c, false, 0, 23);
+		biologicalTable.loadFrom(c, false, 23, -1);
 	}
 	
-	private void displayWith(String column) {
-		while(biologicalTable.getColumnCount() > 0) {
-			biologicalTable.removeColumn(0);
-		}
-		while(experimentTable.getColumnCount() > 0) {
-			experimentTable.removeColumn(0);
-		}
-		
-		displayColumn = null;
+	private void displayWith(String column) {		
 		if (chosenCustomColumn != null && column.equals(chosenCustomColumn.getShortTitle())) {
 			setDisplayColumn(chosenCustomColumn);
+			return;
 		} else {
 			for (BarcodeColumn c : chosenColumns) {
 				if (c.getShortTitle().equals(column)) {
-					setDisplayColumn(c);					
+					setDisplayColumn(c);
+					return;
 				}
 			}
 		}
-		if (displayColumn == null) {
-			Window.alert("Error: no display column selected.");
-		}
-		
-		makeColumn(experimentTable, 0, "Experiment detail", "15em");
-		makeColumn(biologicalTable, 0, "Biological detail", "15em");		
-		
-		for (int i = 1; i < barcodes.length + 1; ++i) {
-			String name = barcodes[i - 1].getCode().substring(2); //remove leading 00
-			makeColumn(biologicalTable, i, name, "9em");					
-			makeColumn(experimentTable, i, name, "9em");
-		}
-		biologicalTable.setWidth((15 + 9 * barcodes.length) + "em", true);
-		experimentTable.setWidth((15 + 9 * barcodes.length) + "em", true);
-		reload();
-	}
-	
-	private TextColumn<String[]> makeColumn(CellTable<String[]> table, final int idx, String title, String width) {
-		TextColumn<String[]> col = new TextColumn<String[]>() {
-			public String getValue(String[] x) {
-				if (x.length > idx) {
-					return x[idx];
-				} else {
-					return "";
-				}
-			}
-		};
-		
-		table.addColumn(col, title);
-		table.setColumnWidth(col, width);
-		return col;
-	}
-
-	private String[] makeAnnotItem(int i, Annotation[] as) {
-		String[] item = new String[barcodes.length + 1];
-		item[0] = as[0].getEntries().get(i).description;
-		for (int j = 0; j < as.length; ++j) {					
-			item[j + 1] = as[j].getEntries().get(i).value;						
-		}
-		return item;
-	}
-	
-	private void reload() {
-		if (displayColumn != null) {
-			owlimService.annotations(displayColumn, new PendingAsyncCallback<Annotation[]>(this) {
-				public void handleFailure(Throwable caught) {
-					Window.alert("Unable to get array annotations.");
-				}
-				public void handleSuccess(Annotation[] as) {
-					List<String[]> annotations = new ArrayList<String[]>();
-					
-					final int numEntries = as[0].getEntries().size();
-					int i = 0;
-					while(i < numEntries && i < 23) {
-						annotations.add(makeAnnotItem(i, as));						
-						i += 1;
-					}
-					experimentTable.setRowData(annotations);
-					annotations.clear();
-					
-					while(i < numEntries) {
-						annotations.add(makeAnnotItem(i, as));						
-						i += 1;
-					}
-					biologicalTable.setRowData(annotations);
-				}
-			});
-		}
+		Window.alert("Error: no display column selected.");
 	}
 
 	@Override
