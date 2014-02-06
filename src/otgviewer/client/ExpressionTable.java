@@ -11,6 +11,7 @@ import otgviewer.client.charts.ChartGridFactory.AChartAcceptor;
 import otgviewer.client.components.AssociationTable;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.DialogPosition;
+import otgviewer.client.components.ExpressionColumn;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
@@ -40,7 +41,6 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.OpenHandler;
-import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
@@ -430,7 +430,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		
 		// Identify a click on the filter image.
 		// TODO use a more robust identification method (!!)
-		Window.alert(target);
 		boolean isFilterClick = ((target.startsWith("<img") || target.startsWith("<IMG"))
 				&& 
 				(target.indexOf("width:12") != -1 || //most browsers
@@ -643,29 +642,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 						}
 					}
 				});
-	}
-
-	class ExpressionColumn extends Column<ExpressionRow, String> {
-		int i;
-		NumberFormat df = NumberFormat.getDecimalFormat();
-		NumberFormat sf = NumberFormat.getScientificFormat();
-		
-		public ExpressionColumn(TextCell tc, int i) {
-			super(tc);
-			this.i = i;	
-		}
-
-		public String getValue(ExpressionRow er) {
-			if (er != null) {
-				if (!er.getValue(i).getPresent()) {
-					return "(absent)";
-				} else {
-					return Utils.formatNumber(er.getValue(i).getValue());
-				}
-			} else {
-				return "";
-			}
-		}
 	}
 		
 	/**

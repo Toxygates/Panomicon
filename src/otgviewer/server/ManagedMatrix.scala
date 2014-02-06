@@ -217,8 +217,14 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
   }
   
   final protected def selectIdx(data: Seq[E], is: Seq[Int]) = is.map(data(_))
-  final protected def javaMean(data: Iterable[E]) = 
-    asJava(ExprValue.presentMean(data, ""))
+  final protected def javaMean(data: Iterable[E]) = {
+    val mean = ExprValue.presentMean(data, "")
+    var tooltip = data.take(5).map(_.toString).mkString(" ")
+    if (data.size > 5) {
+      tooltip += ", ..."
+    }
+    new ExpressionValue(mean.value, mean.call, tooltip)
+  }
 
   protected def selectIdxs(g: Group,  predicate: (otgviewer.shared.BUnit) => Boolean, 
       barcodes: Seq[otg.Sample]): Seq[Int] = {
