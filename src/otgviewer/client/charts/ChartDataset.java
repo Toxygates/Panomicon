@@ -130,10 +130,12 @@ public class ChartDataset {
 		for (ChartSample s : samples) {
 			int cat = SharedUtils.indexOf(categories, categoryForSample(s));
 			if (cat != -1) {
-				dt.setValue(cat, valCount[cat] * 2 + 1, s.value);
+				int row = valCount[cat] * 2 + 1;
+				dt.setValue(cat, row, s.value);
+				dt.setProperty(cat, row, "barcode", s.barcode.pack());
 				dt.setFormattedValue(cat, valCount[cat] * 2 + 1,
 						Utils.formatNumber(s.value));
-				dt.setValue(cat, valCount[cat] * 2 + 2, s.color);
+				dt.setValue(cat, row + 1, s.color);
 				valCount[cat]++;
 			}
 		}

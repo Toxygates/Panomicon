@@ -96,7 +96,10 @@ public class SampleDetailTable extends Composite {
 	private String[] makeAnnotItem(int i, Annotation[] as) {
 		String[] item = new String[barcodes.length + 1];
 		item[0] = as[0].getEntries().get(i).description;
-		for (int j = 0; j < as.length; ++j) {					
+		
+		// TODO why is as.length sometimes > barcodes.length?
+		
+		for (int j = 0; j < as.length && j < barcodes.length; ++j) {					
 			item[j + 1] = as[j].getEntries().get(i).value;						
 		}
 		return item;

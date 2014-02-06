@@ -71,7 +71,6 @@ public class SampleDetailScreen extends Screen {
 		columnList.clear();
 		if (chosenColumns.size() > 0) {
 			setDisplayColumn(chosenColumns.get(0));
-			columnList.setSelectedIndex(0);
 			for (DataColumn<?> c : chosenColumns) {
 				columnList.addItem(c.getShortTitle());
 			}
@@ -79,6 +78,8 @@ public class SampleDetailScreen extends Screen {
 		if (chosenCustomColumn != null) {
 			columnList.addItem(chosenCustomColumn.getShortTitle());
 			columnList.setSelectedIndex(columnList.getItemCount() - 1);
+		} else {
+			columnList.setSelectedIndex(0);
 		}
 	}
 
@@ -102,7 +103,7 @@ public class SampleDetailScreen extends Screen {
 
 	@Override
 	public void customColumnChanged(BarcodeColumn customColumn) {
-		super.customColumnChanged(customColumn);
+		super.customColumnChanged(customColumn);		
 		if (visible) {
 			updateColumnList();
 			Storage s = tryGetStorage();

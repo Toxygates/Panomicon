@@ -86,11 +86,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		this.chosenCustomColumn = customColumn;
 		changeCustomColumn(customColumn);
 	}
-//	
-//	public void heightChanged(int newHeight) {
-//		changeHeight(newHeight);
-//	}
-	
+
 	//outgoing signals	
 	protected void changeDataFilter(DataFilter filter) {
 		chosenDataFilter = filter;
@@ -314,7 +310,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 				if (cs != null) {						
 					columnsChanged(cs);
 				}						
-				v = s.getItem("OTG.customColumn");
+				v = s.getItem(prefix + ".customColumn");
 				if (v != null) {												
 					BarcodeColumn cc = unpackColumn(v);						
 					customColumnChanged(cc);						
