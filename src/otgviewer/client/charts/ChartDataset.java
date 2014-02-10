@@ -117,25 +117,23 @@ public class ChartDataset {
 	}-*/;
 
 	protected void makeColumns(DataTable dt, List<ChartSample> samples) {
-		// e.g. 9 samples, 3 categories -> 3 columns
-		int numColumns = samples.size() / categories.length;
-
-		for (int i = 0; i < numColumns; ++i) {
-			dt.addColumn(ColumnType.NUMBER);
-			addStyleColumn(dt);
-		}
-
+		int colCount = 0;
 		int[] valCount = new int[categories.length];
 
 		for (ChartSample s : samples) {
 			int cat = SharedUtils.indexOf(categories, categoryForSample(s));
 			if (cat != -1) {
-				int row = valCount[cat] * 2 + 1;
-				dt.setValue(cat, row, s.value);
-				dt.setProperty(cat, row, "barcode", s.barcode.pack());
-				dt.setFormattedValue(cat, valCount[cat] * 2 + 1,
-						Utils.formatNumber(s.value));
-				dt.setValue(cat, row + 1, s.color);
+				if (colCount < valCount[cat] + 1) {
+					dt.addColumn(ColumnType.NUMBER);
+					addStyleColumn(dt);
+					colCount++;
+				}
+				
+				final int col = valCount[cat] * 2 + 1;
+				dt.setValue(cat, col, s.value);
+				dt.setProperty(cat, col, "barcode", s.barcode.pack());
+				dt.setFormattedValue(cat, col, Utils.formatNumber(s.value));
+				dt.setValue(cat, col + 1, "color:" + s.color + "; margin:1px"); // style
 				valCount[cat]++;
 			}
 		}
