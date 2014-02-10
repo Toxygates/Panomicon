@@ -96,10 +96,6 @@ abstract public class ChartGrid extends Composite {
 		return max;
 	}
 
-	public void adjustAndDisplay(int tableColumnCount) {
-		adjustAndDisplay(tableColumnCount, Double.NaN, Double.NaN);
-	}
-	
 	public void adjustAndDisplay(int tableColumnCount, double minVal, double maxVal) {
 		final int width = totalWidth / timesOrDoses.length; //width of each individual chart 		
 		for (int c = 0; c < timesOrDoses.length; ++c) {						

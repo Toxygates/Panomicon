@@ -8,6 +8,7 @@ import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.shared.Barcode;
 import bioweb.shared.SharedUtils;
 
+import com.google.gwt.user.client.Window;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
 
@@ -17,8 +18,8 @@ public class ChartDataset {
 	protected String[] categories;
 	protected boolean categoriesAreTimes;
 	
-	protected double min = Double.MAX_VALUE;
-	protected double max = Double.MIN_VALUE;
+	protected double min = Double.NaN;
+	protected double max = Double.NaN;
 	
 	ChartDataset(List<ChartSample> samples, List<ChartSample> allSamples, 
 			String[] categories, boolean categoriesAreTimes) {
@@ -30,10 +31,10 @@ public class ChartDataset {
 	
 	protected void init() {
 		for (ChartSample s: samples) {
-			if (s.value < min) { 
+			if (s.value < min || Double.isNaN(min)) { 
 				min = s.value;
 			}
-			if (s.value > max) {
+			if (s.value > max || Double.isNaN(max)) {
 				max = s.value;
 			}
 		}		
@@ -131,7 +132,9 @@ public class ChartDataset {
 				
 				final int col = valCount[cat] * 2 + 1;
 				dt.setValue(cat, col, s.value);
-				dt.setProperty(cat, col, "barcode", s.barcode.pack());
+				if (s.barcode != null) {
+					dt.setProperty(cat, col, "barcode", s.barcode.pack());
+				}
 				dt.setFormattedValue(cat, col, Utils.formatNumber(s.value));
 				dt.setValue(cat, col + 1, "color:" + s.color + "; margin:1px"); // style
 				valCount[cat]++;

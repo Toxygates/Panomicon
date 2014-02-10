@@ -15,7 +15,6 @@ import otgviewer.shared.Group;
 import otgviewer.shared.OTGUtils;
 import otgviewer.shared.Series;
 import otgviewer.shared.ValueType;
-import bioweb.shared.array.ExpressionRow;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
@@ -84,7 +83,7 @@ public class ChartGridFactory {
 				
 				ChartGrid cg = new GVizChartGrid(screen, ct, groups, filters, rowsAreCompounds, 
 						doses, false, 400);
-				cg.adjustAndDisplay(cg.getMaxColumnCount());
+				cg.adjustAndDisplay(cg.getMaxColumnCount(), ct.getMin(), ct.getMax());
 				acceptor.acceptCharts(cg);				
 			}
 			
@@ -110,13 +109,6 @@ public class ChartGridFactory {
 		} else {
 			finishRowCharts(screen, filter, probe, vt, groups, barcodes, acceptor);
 		}
-	}
-	
-	private void finishRowCharts(Screen screen, DataFilter filter, ValueType vt, List<Group> groups, 
-			Barcode[] barcodes, List<ExpressionRow> rows, AChartAcceptor acceptor) {
-		ChartDataSource cds = new ChartDataSource.ExpressionRowSource(barcodes, rows);
-		AdjustableChartGrid acg = new AdjustableChartGrid(screen, cds, groups);
-		acceptor.acceptCharts(acg);
 	}
 	
 	private void finishRowCharts(Screen screen, DataFilter filter, String probe, ValueType vt, List<Group> groups, 

@@ -82,9 +82,11 @@ public class GVizChartGrid extends ChartGrid {
 					Selection s = ss.get(0);
 					int col = s.getColumn();
 					int row = s.getRow();
-					Barcode b = Barcode.unpack(dt.getProperty(row, col,
-							"barcode"));
-					screen.displaySampleDetail(b);
+					String bc = dt.getProperty(row, col, "barcode");
+					if (bc != null) {
+						Barcode b = Barcode.unpack(bc);
+						screen.displaySampleDetail(b);
+					}
 				}
 			});
 		}
