@@ -8,9 +8,7 @@ import java.io.Serializable;
  *
  * @param <S>
  */
-abstract public class SampleFilter<S extends Sample> implements Packable, Serializable {
+abstract public class SampleFilter<S extends Sample> implements Serializable {
 
 	public SampleFilter() {}
-	
-	abstract public String pack();
 }

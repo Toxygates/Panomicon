@@ -5,13 +5,13 @@ import java.util.List;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
+import otgviewer.client.components.StorageParser;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.Group;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -83,13 +83,13 @@ public class ColumnScreen extends Screen {
 	}
 	
 	@Override
-	public void loadState(Storage s, Screen sc) {
-		super.loadState(s, sc);
+	public void loadState(StorageParser p) {
+		super.loadState(p);
 		if (visible) {
 			//If we became visible, we must have been enabled, so can count on a
 			//data filter being present.
 			try {
-				List<Group> ics = loadColumns(keyPrefix(sc), "inactiveColumns", 
+				List<Group> ics = loadColumns(p, "inactiveColumns", 
 						new ArrayList<BarcodeColumn>(gi.existingGroupsTable.inverseSelection()));
 				if (ics != null) {
 					gi.inactiveColumnsChanged(ics);

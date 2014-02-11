@@ -9,6 +9,7 @@ import java.util.Set;
 import otgviewer.client.components.DialogPosition;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
+import otgviewer.client.components.StorageParser;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
@@ -18,7 +19,6 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -106,10 +106,10 @@ public class SampleDetailScreen extends Screen {
 		super.customColumnChanged(customColumn);		
 		if (visible) {
 			updateColumnList();
-			Storage s = tryGetStorage();
-			if (s != null) {
+			StorageParser p = getParser(this);
+			if (p != null) {
 				// consume the data so it doesn't turn up again.
-				storeCustomColumn(s, keyPrefix(this), null); 
+				storeCustomColumn(p, null); 
 			}
 		}
 	}
