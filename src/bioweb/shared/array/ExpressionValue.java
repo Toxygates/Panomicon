@@ -2,8 +2,6 @@ package bioweb.shared.array;
 
 import java.io.Serializable;
 
-import javax.annotation.Nullable;
-
 /**
  * A single entry in an ExprMatrix or ExpressionRow.
  * Future: consider using Doubles instead if possible

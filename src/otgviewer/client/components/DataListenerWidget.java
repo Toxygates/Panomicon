@@ -1,12 +1,16 @@
 package otgviewer.client.components;
 
+import static otgviewer.client.components.StorageParser.packColumns;
+import static otgviewer.client.components.StorageParser.packDataFilter;
+import static otgviewer.client.components.StorageParser.packProbes;
+import static otgviewer.client.components.StorageParser.unpackColumn;
+import static otgviewer.client.components.StorageParser.unpackDataFilter;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import otgviewer.client.Utils;
-import otgviewer.shared.Barcode;
-import static otgviewer.client.components.StorageParser.*;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;

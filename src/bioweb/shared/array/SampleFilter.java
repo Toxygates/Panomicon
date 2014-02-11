@@ -1,5 +1,4 @@
 package bioweb.shared.array;
-import bioweb.shared.*;
 import java.io.Serializable;
 
 /**

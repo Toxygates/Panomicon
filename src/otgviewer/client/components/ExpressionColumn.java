@@ -13,8 +13,6 @@ import com.google.gwt.user.cellview.client.Column;
 
 public class ExpressionColumn extends Column<ExpressionRow, String> {
 	final int i;
-	final private static NumberFormat df = NumberFormat.getDecimalFormat();
-	final private static NumberFormat sf = NumberFormat.getScientificFormat();
 
 	private static Utils.Templates TEMPLATES = GWT.create(Utils.Templates.class);
 

@@ -9,7 +9,6 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.Barcode;
-import otgviewer.shared.BarcodeColumn;
 import bioweb.shared.array.Annotation;
 import bioweb.shared.array.HasSamples;
 

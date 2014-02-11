@@ -8,7 +8,6 @@ import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.shared.Barcode;
 import bioweb.shared.SharedUtils;
 
-import com.google.gwt.user.client.Window;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
 
