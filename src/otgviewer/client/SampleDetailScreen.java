@@ -6,10 +6,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import otgviewer.client.components.DialogPosition;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
+import otgviewer.client.dialog.DialogPosition;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;

@@ -1,10 +1,6 @@
 package otgviewer.client.components;
 
-import static otgviewer.client.components.StorageParser.packColumns;
-import static otgviewer.client.components.StorageParser.packDataFilter;
-import static otgviewer.client.components.StorageParser.packProbes;
-import static otgviewer.client.components.StorageParser.unpackColumn;
-import static otgviewer.client.components.StorageParser.unpackDataFilter;
+import static otgviewer.client.components.StorageParser.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,6 +10,7 @@ import otgviewer.client.Utils;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
+import otgviewer.shared.ItemList;
 import otgviewer.shared.OTGUtils;
 import otgviewer.shared.ValueType;
 import bioweb.shared.array.DataColumn;
@@ -41,6 +38,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	protected ValueType chosenValueType;
 	protected List<Group> chosenColumns = new ArrayList<Group>();
 	protected BarcodeColumn chosenCustomColumn;
+	protected List<ItemList> chosenItemLists = new ArrayList<ItemList>();
 	
 	private StorageParser parser;
 	
@@ -92,6 +90,11 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	public void customColumnChanged(BarcodeColumn customColumn) {
 		this.chosenCustomColumn = customColumn;
 		changeCustomColumn(customColumn);
+	}
+	
+	public void itemListsChanged(List<ItemList> lists) {
+		this.chosenItemLists = lists;
+		changeItemLists(lists);
 	}
 
 	//outgoing signals	
@@ -160,6 +163,13 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}
 	}
 	
+	protected void changeItemLists(List<ItemList> lists) {
+		chosenItemLists = lists;
+		for (DataViewListener l: listeners) {
+			l.itemListsChanged(lists);
+		}
+	}
+	
 	public void propagateTo(DataViewListener other) {
 		other.dataFilterChanged(chosenDataFilter);
 		other.probesChanged(chosenProbes);
@@ -168,6 +178,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		other.valueTypeChanged(chosenValueType);
 		other.columnsChanged(chosenColumns);		
 		other.customColumnChanged(chosenCustomColumn);
+		other.itemListsChanged(chosenItemLists);
 	}
 
 	protected Storage tryGetStorage() {
@@ -207,6 +218,8 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	
 	/**
 	 * Store this widget's state into local storage.
+	 * 
+	 * TODO: is it necessary to store all these fields for each screen?
 	 */
 	public void storeState(StorageParser p) {
 		storeDataFilter(p);
@@ -245,6 +258,8 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}		
 	}
 
+	// Separator hierarchy for columns:
+	// ### > ::: > ^^^ > $$$
 	protected List<Group> loadColumns(StorageParser p, String key,
 			Collection<BarcodeColumn> expectedColumns) throws Exception {
 		String v = p.getItem(key + "." + packDataFilter(chosenDataFilter));
@@ -264,6 +279,25 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		p.setItem("probes", packProbes(chosenProbes));	
 	}
 
+	public void storeItemLists(StorageParser p) {
+		p.setItem("lists", packItemLists(chosenItemLists, "###"));
+	}
+	
+	public List<ItemList> loadItemLists(StorageParser p) {
+		List<ItemList> r = new ArrayList<ItemList>();
+		String v = p.getItem("lists");
+		if (v != null) {
+			String[] spl = v.split("###");
+			for (String x: spl) {
+				ItemList il = ItemList.unpack(x);
+				if (il != null) {
+					r.add(il);
+				}
+			}
+		}
+		return r;
+	}	
+	
 	/**
 	 * Load saved state from the local storage.
 	 * If the loaded state is different from what was previously remembered in this widget, the appropriate 
@@ -304,11 +338,13 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		} else if (v == null || v.equals("")) {
 			probesChanged(new String[0]);
 		}
+		List<ItemList> lists = loadItemLists(p);
+		if (lists.size() > 0) {
+			chosenItemLists = lists;
+			itemListsChanged(lists);
+		}
 	}
 	
-//	public void clearState() {	
-//	}
-//	
 	private int numPendingRequests = 0;
 	
 	private DialogBox waitDialog;

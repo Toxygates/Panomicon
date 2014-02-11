@@ -11,16 +11,17 @@ import java.util.Set;
 import otgviewer.client.charts.ChartGrid;
 import otgviewer.client.charts.ChartGridFactory;
 import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.DialogPosition;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.StackedListEditor;
+import otgviewer.client.dialog.DialogPosition;
 import otgviewer.client.rpc.SeriesService;
 import otgviewer.client.rpc.SeriesServiceAsync;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.ItemList;
 import otgviewer.shared.MatchResult;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;
@@ -66,15 +67,8 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	
 	private Widget north;
 	private Screen screen;
-	
-	/**
-	 * @wbp.parser.constructor
-	 */
-	public CompoundSelector() {
-		this(null, "Compounds");
-	}
 
-	public CompoundSelector(Screen screen, String heading) {
+	public CompoundSelector(final Screen screen, String heading) {
 		this.screen = screen;
 		dp = new DockLayoutPanel(Unit.PX);
 
@@ -86,7 +80,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		
 		boolean isAdjuvant = screen.manager().getUIType().equals("adjuvant");
 		
-		compoundEditor = new StackedListEditor("Compound", 
+		compoundEditor = new StackedListEditor(this, "Compound", 
 				TemporaryCompoundLists.predefinedLists(),
 				isAdjuvant) {
 			@Override
@@ -95,8 +89,13 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 				r.addAll(selected);
 				Collections.sort(r);
 				changeCompounds(r);
+			}		
+			
+			@Override
+			protected void listsChanged(List<ItemList> itemLists) {
+				chosenItemLists = itemLists;
+				storeItemLists(getParser(screen));
 			}
-		
 		};		
 				
 		dp.add(compoundEditor);	
@@ -161,10 +160,15 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 				loadCompounds();
 				compoundEditor.clearSelection();				
 			}
-		});
-		
+		});		
 	}
 	
+	@Override
+	public void itemListsChanged(List<ItemList> lists) {
+		super.itemListsChanged(lists);
+		compoundEditor.setLists(lists);
+	}
+
 	public List<String> getCompounds() {				
 		List<String> r = new ArrayList<String>();
 		r.addAll(compoundEditor.getSelection());		

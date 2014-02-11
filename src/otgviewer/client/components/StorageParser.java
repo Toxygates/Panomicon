@@ -12,8 +12,9 @@ import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.Organ;
 import otgviewer.shared.Organism;
+import otgviewer.shared.ItemList;
 import otgviewer.shared.RepeatType;
-import bioweb.shared.array.DataColumn;
+import bioweb.shared.Packable;
 
 import com.google.gwt.storage.client.Storage;
 
@@ -43,15 +44,15 @@ public class StorageParser {
 		storage.removeItem(key);
 	}
 	
-	static String packDataFilter(DataFilter f) {
+	public static String packDataFilter(DataFilter f) {
 		return f.cellType.name() + "," + f.organ.name() + ","  
 			+ f.repeatType.name() + "," + f.organism.name();
 	}
 	
-	static DataFilter unpackDataFilter(String s) {
+	public static DataFilter unpackDataFilter(String s) {
 		if (s == null) {
 			return null;
-		}
+		} 
 		
 		String[] parts = s.split(",");
 		assert(parts.length == 4);
@@ -66,15 +67,11 @@ public class StorageParser {
 		}
 	}
 	
-	static String packColumns(Collection<BarcodeColumn> columns) {
-		List<String> cs = new ArrayList<String>();
-		for (DataColumn<?> c : columns) {
-			cs.add(c.pack());
-		}
-		return packList(cs, "###");
+	public static String packColumns(Collection<BarcodeColumn> columns) {
+		return packPackableList(columns, "###");
 	}
 
-	static BarcodeColumn unpackColumn(String s) {
+	public static BarcodeColumn unpackColumn(String s) {
 		if (s == null) {
 			return null;
 		}
@@ -86,16 +83,28 @@ public class StorageParser {
 		}
 	}
 	
-	static String packProbes(String[] probes) {
+	public static String packProbes(String[] probes) {
 		return packList(Arrays.asList(probes), "###");
 	}
 	
-	static String packList(Collection<String> items, String separator) {
+	public static String packPackableList(Collection<? extends Packable> items, String separator) {
+		List<String> xs = new ArrayList<String>();
+		for (Packable p: items) {
+			xs.add(p.pack());
+		}
+		return packList(xs, separator);
+	}
+	
+	public static String packList(Collection<String> items, String separator) {
 		StringBuilder sb = new StringBuilder();
 		for (String x: items) {
 			sb.append(x);
 			sb.append(separator);
 		}
 		return sb.toString();
+	}
+	
+	public static String packItemLists(Collection<ItemList> lists, String separator) {
+		return packPackableList(lists, separator);		
 	}
 }

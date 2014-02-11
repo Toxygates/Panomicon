@@ -1,4 +1,4 @@
-package otgviewer.client.components;
+package otgviewer.client.dialog;
 
 import com.google.gwt.user.client.Window;
 

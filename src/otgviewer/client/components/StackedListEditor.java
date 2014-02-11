@@ -14,11 +14,10 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import otgviewer.client.Utils;
+import otgviewer.shared.ItemList;
 import bioweb.shared.SharedUtils;
 
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
@@ -32,7 +31,6 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.ResizeComposite;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.StackLayoutPanel;
@@ -62,7 +60,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		 */
 		public SelectionMethod(StackedListEditor stackedEditor) {
 			this.stackedEditor = stackedEditor;
-		}
+		} 
 		
 		/**
 		 * Get the human-readable title of this selection method.
@@ -257,39 +255,39 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 
 	protected VerticalPanel northVp;
 	
+	protected ListChooser listChooser;
+	
 	/**
 	 * @param itemTitle Header for the item type being selected (in certain cases) 
 	 * @param predefinedLists Predefined lists that the user may choose from 
 	 */
-	public StackedListEditor(String itemTitle, Map<String, List<String>> predefinedLists,
-			boolean isAdjuvantUI) {
+	public StackedListEditor(final DataListenerWidget parent, String itemTitle, 
+			Map<String, List<String>> predefinedLists, boolean isAdjuvantUI) {
 		dlp = new DockLayoutPanel(Unit.PX);
 		initWidget(dlp);
 		
 		this.predefinedLists = predefinedLists;
 		if (!predefinedLists.isEmpty() && isAdjuvantUI) {			
 			northVp = Utils.mkVerticalPanel();
-			northVp.setWidth("100%");			
-			final ListBox lb = new ListBox();
-			lb.setVisibleItemCount(1);
-			lb.addItem("Click to see predefined lists");
-			for (String s: predefinedLists.keySet()) {
-				lb.addItem(s);
-			}
-			lb.setWidth("100%");
-			lb.addChangeHandler(new ChangeHandler() {				
+			northVp.setWidth("100%");	
+		
+			final StackedListEditor sle = this;
+			
+			listChooser = new ListChooser(predefinedLists) {
 				@Override
-				public void onChange(ChangeEvent event) {
-					int idx = lb.getSelectedIndex();
-					if (idx == -1) {
-						return;
-					}
-					String sel = lb.getItemText(idx);
-					setPredefinedList(sel);
+				protected void setItems(List<String> items) {
+					setSelection(validateItems(items));
+				}				
+
+				@Override
+				protected void listsChanged(List<ItemList> itemLists) {
+					parent.chosenItemLists = itemLists;
+					sle.listsChanged(itemLists);
 				}
-			});
-			northVp.add(lb);
-			dlp.addNorth(northVp, 26);
+			};
+			parent.addListener(listChooser);
+			northVp.add(listChooser);
+			dlp.addNorth(northVp, 30);
 		}
 		
 		slp = new StackLayoutPanel(Unit.PX);
@@ -298,12 +296,6 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		createSelectionMethods(methods, itemTitle);
 		for (SelectionMethod m: methods) {
 			slp.add(m, m.getTitle(), 30);
-		}
-	}
-	
-	protected void setPredefinedList(String list) {
-		if (predefinedLists.containsKey(list)) {
-			setSelection(validateItems(predefinedLists.get(list)));
 		}
 	}
 	
@@ -431,6 +423,10 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		availableItems = new HashSet<String>(items);
 	}
 	
+	public void setLists(List<ItemList> lists) {
+		listChooser.setLists(lists);
+	}
+	
 	/**
 	 * Change the selection.
 	 * @param items New selection
@@ -446,6 +442,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 			}
 		}
 		selectedItems = new HashSet<String>(items);
+		listChooser.itemsChanged(new ArrayList<String>(items));
 		selectionChanged(selectedItems);
 	}
 	
@@ -458,6 +455,12 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	 * @param items
 	 */
 	protected void selectionChanged(Set<String> items) {}
+	
+	/**
+	 * Ditto
+	 * @param itemLists
+	 */
+	protected void listsChanged(List<ItemList> itemLists) {}
 	
 	public void clearSelection() {
 		setSelection(new HashSet<String>());

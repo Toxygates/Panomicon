@@ -1,7 +1,7 @@
 package otgviewer.client;
 
 import otgviewer.client.charts.google.GVizCharts;
-import otgviewer.client.components.DialogPosition;
+import otgviewer.client.dialog.DialogPosition;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Float;
