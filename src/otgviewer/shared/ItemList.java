@@ -11,8 +11,8 @@ import bioweb.shared.Packable;
  */
 abstract public class ItemList implements Packable {
 
-	protected final String name;
 	protected final String type;
+	protected final String name;
 	public ItemList(String type, String name) {
 		this.name = name;
 		this.type = type;
@@ -23,9 +23,9 @@ abstract public class ItemList implements Packable {
 	
 	public String pack() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(name);
-		sb.append(":::");
 		sb.append(type);
+		sb.append(":::");
+		sb.append(name);
 		sb.append(":::");
 		sb.append(packList(packedItems(), "^^^"));
 		return sb.toString();
@@ -49,7 +49,7 @@ abstract public class ItemList implements Packable {
 	
 		// TODO would be good to avoid having this kind of central registry
 		// of list types here.
-		if (type.equals("genes")) {
+		if (type.equals("probes")) {
 			return new StringList(type, name, items);
 		} else if (type.equals("compounds")) {
 			return new StringList(type, name, items);

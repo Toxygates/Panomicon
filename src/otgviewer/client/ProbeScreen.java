@@ -2,12 +2,14 @@ package otgviewer.client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.FixedWidthLayoutPanel;
+import otgviewer.client.components.ListChooser;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.ResizingDockLayoutPanel;
 import otgviewer.client.components.ResizingListBox;
@@ -20,6 +22,7 @@ import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
+import otgviewer.shared.ItemList;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -60,6 +63,7 @@ public class ProbeScreen extends Screen {
 	private FixedWidthLayoutPanel fwlp;
 	private DockLayoutPanel plPanel;
 	private Widget plNorth, plSouth;
+	private ListChooser listChooser;
 	private static final int PL_NORTH_HEIGHT = 30;
 	private static final int PL_SOUTH_HEIGHT = 30;
 
@@ -223,6 +227,23 @@ public class ProbeScreen extends Screen {
 
 		plPanel.addNorth(plNorth, PL_NORTH_HEIGHT);
 		plPanel.addSouth(plSouth, PL_SOUTH_HEIGHT);
+		
+		final ProbeScreen ps = this;
+		listChooser = new ListChooser(new HashMap<String, List<String>>(), "probes") {
+			@Override
+			protected void itemsChanged(List<String> items) {
+				ps.probesChanged(items.toArray(new String[0]));
+			}				
+			
+			@Override
+			protected void listsChanged(List<ItemList> lists) {
+				ps.chosenItemLists = lists;
+				ps.storeItemLists(ps.getParser(ps));
+			}
+		};
+		listChooser.setStyleName("colored");
+		plPanel.addNorth(listChooser, PL_NORTH_HEIGHT);
+		
 		plPanel.add(probesList);
 
 		DockLayoutPanel dp = new ResizingDockLayoutPanel();
@@ -349,6 +370,8 @@ public class ProbeScreen extends Screen {
 		for (String p : probes) {
 			listedProbes.add(p);
 		}
+		listChooser.setItems(new ArrayList<String>(listedProbes));
+		
 		final String[] probesInOrder = listedProbes.toArray(new String[0]);
 		chosenProbes = probesInOrder;
 		StorageParser p = getParser(this);
@@ -427,6 +450,12 @@ public class ProbeScreen extends Screen {
 		listedProbes.addAll(Arrays.asList(probes));
 		updateProceedButton();
 		super.probesChanged(probes); // calls changeProbes
+	}
+	
+	@Override
+	public void itemListsChanged(List<ItemList> lists) {
+		super.itemListsChanged(lists);
+		listChooser.setLists(lists);
 	}
 
 	private void updateProceedButton() {

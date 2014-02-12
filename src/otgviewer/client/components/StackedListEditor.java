@@ -261,7 +261,8 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	 * @param itemTitle Header for the item type being selected (in certain cases) 
 	 * @param predefinedLists Predefined lists that the user may choose from 
 	 */
-	public StackedListEditor(final DataListenerWidget parent, String itemTitle, 
+	public StackedListEditor(final DataListenerWidget parent, String listType,
+			String itemTitle, 
 			Map<String, List<String>> predefinedLists, boolean isAdjuvantUI) {
 		dlp = new DockLayoutPanel(Unit.PX);
 		initWidget(dlp);
@@ -273,9 +274,9 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		
 			final StackedListEditor sle = this;
 			
-			listChooser = new ListChooser(predefinedLists) {
+			listChooser = new ListChooser(predefinedLists, listType) {
 				@Override
-				protected void setItems(List<String> items) {
+				protected void itemsChanged(List<String> items) {
 					setSelection(validateItems(items));
 				}				
 
@@ -442,7 +443,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 			}
 		}
 		selectedItems = new HashSet<String>(items);
-		listChooser.itemsChanged(new ArrayList<String>(items));
+		listChooser.setItems(new ArrayList<String>(items));
 		selectionChanged(selectedItems);
 	}
 	

@@ -37,11 +37,14 @@ public class ListChooser extends DataListenerWidget {
 	private List<String> currentItems;
 	private DialogBox inputDialog;
 	final private ListBox listBox;
+	final private String listType;
+	private List<ItemList> otherTypeLists = new ArrayList<ItemList>();
 	
-	public ListChooser(Map<String, List<String>> predefinedLists) {
+	public ListChooser(Map<String, List<String>> predefinedLists, String listType) {
 		HorizontalPanel hp = Utils.mkWidePanel();
 		initWidget(hp);
-
+		this.listType = listType;
+		
 		lists.putAll(predefinedLists);
 		this.predefinedLists = predefinedLists;
 		
@@ -60,7 +63,7 @@ public class ListChooser extends DataListenerWidget {
 				String sel = listBox.getItemText(idx);
 				if (lists.containsKey(sel)) {
 					currentItems = lists.get(sel);
-					setItems(currentItems);
+					itemsChanged(currentItems);
 				}
 			}
 		});
@@ -75,11 +78,12 @@ public class ListChooser extends DataListenerWidget {
 					@Override
 					protected void onChange(String value) {
 						if (value == null) {
+							inputDialog.setVisible(false);
 							return;
 						}
 						if (!value.trim().equals("")) {
 							if (!isPredefinedListName(value)) {
-								lists.put(value, currentItems);
+								lists.put(value.trim(), currentItems);
 								refreshSelector();
 								listsChanged(getLists());
 							} else {
@@ -138,7 +142,7 @@ public class ListChooser extends DataListenerWidget {
 	 * To be overridden by subclasses/users.
 	 * Called when the user has triggered a change.
 	 */
-	protected void setItems(List<String> items) { }	
+	protected void itemsChanged(List<String> items) { }	
 	
 	/**
 	 * To be overridden by subclasses/users.
@@ -152,30 +156,43 @@ public class ListChooser extends DataListenerWidget {
 	 * externally.
 	 * @param items
 	 */
-	public void itemsChanged(List<String> items) {
+	public void setItems(List<String> items) {
 		currentItems = items;
 	}
 	
+	/**
+	 * Returns all ItemLists, including the ones of a type not managed by this chooser.
+	 * @return
+	 */
 	public List<ItemList> getLists() {
 		List<ItemList> r = new ArrayList<ItemList>();
+		r.addAll(otherTypeLists);
 		for (String k: lists.keySet()) {
 			if (!isPredefinedListName(k)) {
 				List<String> v = lists.get(k);
-				ItemList il = new StringList(k, "compounds", v.toArray(new String[0]));
+				ItemList il = new StringList(listType, k, v.toArray(new String[0]));
 				r.add(il);
 			}
 		}
 		return r;
 	}
 	
+	/**
+	 * Set all ItemLists. This chooser will identify the ones that have the correct type
+	 * and display those only.
+	 * @param itemLists
+	 */
 	public void setLists(List<ItemList> itemLists) {
 		lists.clear();
+		otherTypeLists.clear();
 		lists.putAll(predefinedLists);
-		for (ItemList il: itemLists) {
-			if (il instanceof StringList) {
+		for (ItemList il : itemLists) {
+			if (il.type().equals(listType) && (il instanceof StringList)) {
 				StringList sl = (StringList) il;
 				lists.put(il.name(), Arrays.asList(sl.items()));
-			}
+			} else {
+				otherTypeLists.add(il);
+			}			
 		}
 		refreshSelector();
 	}
