@@ -1,6 +1,8 @@
-package otgviewer.client;
+package otgviewer.client.dialog;
 
 import javax.annotation.Nullable;
+
+import otgviewer.client.Utils;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -99,5 +101,5 @@ public class FilterEditor extends Composite {
 	 * Called when the filter is changed. To be overridden by subclasses.
 	 */
 	
-	void onChange(@Nullable Double newFilter) { }
+	protected void onChange(@Nullable Double newFilter) { }
 }

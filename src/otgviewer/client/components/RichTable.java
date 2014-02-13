@@ -18,7 +18,6 @@ import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.cellview.client.SafeHtmlHeader;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.MenuBar;
 
 /**
@@ -103,7 +102,6 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	protected int columnAt(int x) {
 		int prev = 0;
 		for (int i = 0; i < grid.getColumnCount() - 1; ++i) {
-			Column<T, ?> col = grid.getColumn(i);
 			int next = grid.getRowElement(0).getCells().getItem(i + 1).getAbsoluteLeft();
 			if (prev <= x && next > x) {
 				return i;

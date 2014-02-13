@@ -20,7 +20,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
-import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -316,9 +315,9 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	}
 
 	@Override
-	public void loadState(Storage s, Screen sc) {
-		super.loadState(s, sc);
-		String v = s.getItem("OTG.showGuide");
+	public void loadState(StorageParser p) {
+		super.loadState(p);
+		String v = p.getItem("OTG.showGuide");
 		if (v == null || v.equals("yes")) {
 			showGuide = true;
 		} else {
@@ -327,12 +326,12 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	}
 	
 	@Override
-	public void storeState(Storage s, Screen sc) {
-		super.storeState(s, sc);
+	public void storeState(StorageParser p) {
+		super.storeState(p);
 		if (showGuide) {
-			s.setItem("OTG.showGuide", "yes");
+			p.setItem("OTG.showGuide", "yes");
 		} else {
-			s.setItem("OTG.showGuide", "no");
+			p.setItem("OTG.showGuide", "no");
 		}
 	}	
 
@@ -530,11 +529,9 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	 * @param b
 	 */
 	public void displaySampleDetail(Barcode b) {
-		Storage s = tryGetStorage();
-		if (s != null) {
-			storeCustomColumn(s, keyPrefix(this), b);
-			configuredProceed(SampleDetailScreen.key);
-		}
+		StorageParser p = getParser(this);
+		storeCustomColumn(p, b);
+		configuredProceed(SampleDetailScreen.key);
 	}
 	
 }

@@ -2,17 +2,20 @@ package otgviewer.client.charts;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import otgviewer.client.Utils;
 import otgviewer.client.charts.ChartDataSource.ChartSample;
+import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.Screen;
+import otgviewer.shared.Barcode;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGUtils;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -109,27 +112,33 @@ public class AdjustableChartGrid extends Composite {
 		return max;
 	}
 	
+	private ColorPolicy makeGroupPolicy() {
+		Map<Barcode, String> colors = new HashMap<Barcode, String>();
+		for (Group g: groups) {
+			for (Barcode b: g.getSamples()) {
+				colors.put(b, g.getColor());
+			}
+		}
+		return new ColorPolicy.MapColorPolicy(colors);
+	}
+	
 	//vsTime is the vs-time-ness of each individual sub-chart. So the overall grid will be vs. dose 	
 	//(in its columns) if each sub-chart is vs.time.
 	private void gridFor(final boolean vsTime, final String[] columns, final String[] useCompounds, 
 			final List<ChartGrid> intoList, final SimplePanel intoPanel) {
 		final String[] useColumns = (columns == null ? (vsTime ? source.doses() : source.times()) : columns);
-		source.getSamples(useCompounds, useColumns, 
+		source.getSamples(useCompounds, useColumns, makeGroupPolicy(),
 				new ChartDataSource.SampleAcceptor() {
 					@Override
 					public void accept(List<ChartSample> samples) {
 						allSamples.addAll(samples);
-						
-						ChartTables ct = (groups != null) ? 
-								new ChartTables.GroupedChartTable(samples, samples, groups, 
-										vsTime ? source.times() : source.doses(), vsTime)
-							:
-								new ChartTables.PlainChartTable(samples, samples, 
-										vsTime ? source.times() : source.doses(), vsTime);
 							
-						ChartGrid cg = new ChartGrid(screen, ct, groups,
+						ChartDataset ct = new ChartDataset(samples, samples, 
+								vsTime ? source.times() : source.doses(), vsTime);
+						
+						ChartGrid cg = new GVizChartGrid(screen, ct, groups,
 								useCompounds == null ? compounds : Arrays.asList(useCompounds), true,
-								useColumns, -1, !vsTime, 780);
+								useColumns, !vsTime, 780);
 
 						intoList.add(cg);
 						intoPanel.add(cg);

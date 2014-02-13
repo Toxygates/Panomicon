@@ -2,6 +2,7 @@ package otgviewer.client;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
+import otgviewer.client.components.StorageParser;
 import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Organ;
@@ -9,8 +10,6 @@ import otgviewer.shared.Organism;
 import otgviewer.shared.RepeatType;
 
 import com.google.gwt.resources.client.TextResource;
-import com.google.gwt.storage.client.Storage;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -122,17 +121,13 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 		return gui.content();
 	}
 	
-	public void filterSelected(DataFilter filter) {		
-		Storage s = tryGetStorage();
-		if (s != null) {		
-			changeDataFilter(filter);
-			storeDataFilter(s, keyPrefix(this));
-			setConfigured(true);
-			manager.deconfigureAll(this);
-			configuredProceed(ColumnScreen.key);
-		} else {
-			Window.alert("Your browser does not support local storage. Unable to continue.");
-		}
+	public void filterSelected(DataFilter filter) {
+		StorageParser p = getParser(this);
+		changeDataFilter(filter);
+		storeDataFilter(p);
+		setConfigured(true);
+		manager.deconfigureAll(this);
+		configuredProceed(ColumnScreen.key);		
 	}
 
 	@Override
