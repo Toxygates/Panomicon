@@ -1,16 +1,19 @@
 package otgviewer.client;
 
-import otgviewer.client.components.DialogPosition;
+import otgviewer.client.charts.google.GVizCharts;
+import otgviewer.client.dialog.DialogPosition;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Float;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
+import com.google.gwt.safehtml.client.SafeHtmlTemplates;
+import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.dom.client.Style.Float;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
@@ -30,10 +33,6 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.visualization.client.LegendPosition;
-import com.google.gwt.visualization.client.VisualizationUtils;
-import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
-import com.google.gwt.visualization.client.visualizations.corechart.Options;
 
 /**
  * GUI/GWT utility methods.
@@ -41,10 +40,8 @@ import com.google.gwt.visualization.client.visualizations.corechart.Options;
  *
  */
 public class Utils {
-
 	private static NumberFormat df = NumberFormat.getDecimalFormat();
 	private static NumberFormat sf = NumberFormat.getScientificFormat();
-	private static Resources resources = GWT.create(Resources.class);
 	
 	public static String formatNumber(double v) {
 		if (Math.abs(v) > 0.001) {
@@ -53,6 +50,8 @@ public class Utils {
 			return sf.format(v);
 		}
 	}
+	
+	private static Resources resources = GWT.create(Resources.class);
 
 	public static HorizontalPanel mkHorizontalPanel() {
 		return mkHorizontalPanel(false);
@@ -128,21 +127,6 @@ public class Utils {
 		fp.add(w);
 	}
 
-	/**
-	 * Colour: for example, MediumAquaMarine or LightSkyBlue
-	 * 
-	 * @param color
-	 * @return
-	 */
-	public static Options createChartOptions(String... colors) {
-		Options o = Options.create();
-		o.setColors(colors);
-		o.set("legend.position", "none");
-		o.setLegend(LegendPosition.NONE);
-		return o;
-	}
-
-	
 	/**
 	 * Open an URL in a new window or tab. 
 	 * @param message
@@ -290,9 +274,7 @@ public class Utils {
 	}
 	
 	public static void ensureVisualisationAndThen(final Runnable r) {
-		VisualizationUtils
-		.loadVisualizationApi(r, CoreChart.PACKAGE);
-		//.loadVisualizationApi("1.1", r, "corechart");		
+		GVizCharts.loadAPIandThen(r);				
 	}
 
 	public static void setEnabled(HasWidgets root, boolean enabled) {
@@ -304,5 +286,14 @@ public class Utils {
 				((FocusWidget) w).setEnabled(enabled);
 			}
 		}
+	}
+	
+	public interface Templates extends SafeHtmlTemplates {
+
+		@Template("<div title=\"{0}\">")
+		SafeHtml startToolTip(String toolTipText);
+
+		@Template("</div>")
+		SafeHtml endToolTip();
 	}
 }

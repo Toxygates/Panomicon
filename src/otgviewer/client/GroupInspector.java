@@ -12,6 +12,7 @@ import java.util.Set;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.SelectionTable;
+import otgviewer.client.components.StorageParser;
 import otgviewer.shared.BUnit;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
@@ -24,7 +25,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.RowStyles;
@@ -167,11 +167,9 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 			
 			protected void selectionChanged(Set<Group> selected) {
 				chosenColumns = new ArrayList<Group>(selected);
-				Storage s = tryGetStorage();
-				if (s != null) {
-					storeColumns(s);
-					updateConfigureStatus();
-				}
+				StorageParser p = getParser(screen);
+				storeColumns(p);
+				updateConfigureStatus();
 			}
 		};
 //		vp.add(existingGroupsTable);
@@ -234,13 +232,11 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private void reflectGroupChanges() {
 		existingGroupsTable.setItems(sortedGroupList(groups.values()), false);
 		chosenColumns = new ArrayList<Group>(existingGroupsTable.selection());
-		Storage s = tryGetStorage();
-		if (s != null) {
-			storeColumns(s);
-			txtbxGroup.setText("");
-			updateConfigureStatus();
-			existingGroupsTable.setVisible(groups.values().size() > 0);
-		}
+		StorageParser p = getParser(screen);		
+		storeColumns(p);
+		txtbxGroup.setText("");
+		updateConfigureStatus();
+		existingGroupsTable.setVisible(groups.values().size() > 0);		
 	}
 	
 	private void updateConfigureStatus() {		
@@ -330,14 +326,14 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		newGroup();
 	}
 	
-	protected void storeColumns(Storage s) {
-		storeColumns(s, keyPrefix(screen));
-	}
-	
+//	protected void storeColumns(StorageParser p) {
+//		storeColumns(s, keyPrefix(screen));
+//	}
+//	
 	@Override 
-	public void storeColumns(Storage s, String prefix) {
-		super.storeColumns(s, prefix);			
-		storeColumns(s, prefix, "inactiveColumns", 
+	public void storeColumns(StorageParser p) {
+		super.storeColumns(p);			
+		storeColumns(p, "inactiveColumns", 
 				new ArrayList<BarcodeColumn>(existingGroupsTable.inverseSelection()));
 	}
 	

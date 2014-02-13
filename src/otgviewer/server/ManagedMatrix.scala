@@ -217,17 +217,33 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
   }
   
   final protected def selectIdx(data: Seq[E], is: Seq[Int]) = is.map(data(_))
-  final protected def javaMean(data: Iterable[E]) = 
-    asJava(ExprValue.presentMean(data, ""))
+  final protected def javaMean(data: Iterable[E]) = {
+    val mean = ExprValue.presentMean(data, "")
+    var tooltip = data.take(5).map(_.toString).mkString(" ")
+    if (data.size > 5) {
+      tooltip += ", ..."
+    }
+    new ExpressionValue(mean.value, mean.call, tooltip)
+  }
+
+  protected def selectIdxs(g: Group,  predicate: (otgviewer.shared.BUnit) => Boolean, 
+      barcodes: Seq[otg.Sample]): Seq[Int] = {
+    val units = g.getUnits().filter(predicate)
+    val ids = units.flatMap(_.getSamples.map(_.getCode)).toSet
+    val inSet = barcodes.map(s => ids.contains(s.sampleId))
+    inSet.zipWithIndex.filter(_._1).map(_._2)
+  }
+  
+  protected def controlIdxs(g: Group, barcodes: Seq[otg.Sample]): Seq[Int] = 
+    selectIdxs(g, _.getDose == "Control", barcodes)    
+
+  protected def treatedIdxs(g: Group, barcodes: Seq[otg.Sample]): Seq[Int] = 
+    selectIdxs(g, _.getDose != "Control", barcodes)    
 
   protected def columnsForGroup(g: Group, sortedBarcodes: Seq[otg.Sample],
     data: Seq[Seq[E]]): ExprMatrix = {
     // A simple average column
-
-    val (cus, ncus) = g.getUnits().partition(_.getDose == "Control")
-    val controlIds = cus.flatMap(_.getSamples.map(_.getCode)).toSet
-    val isControl = sortedBarcodes.map(s => controlIds.contains(s.sampleId))
-    val treatedIdx = isControl.zipWithIndex.filter(!_._1).map(_._2)
+    val treatedIdx = treatedIdxs(g, sortedBarcodes)
     
     currentInfo.addColumn(false, g.toString, "Average of treated samples", false, g)
     ExprMatrix.withRows(data.map(vs =>
@@ -269,11 +285,8 @@ extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead)
     } else if (ncus.size == 1) {
       // Insert a control column as well as the usual one
       
-      //TODO: factor out this pattern
-      val controlIds = cus.flatMap(_.getSamples.map(_.getCode)).toSet
-      val isControl = sortedBarcodes.map(s => controlIds.contains(s.sampleId))               
-      val controlIdx = isControl.zipWithIndex.filter(_._1).map(_._2)
-      val treatedIdx = isControl.zipWithIndex.filter(! _._1).map(_._2)
+      val treatedIdx = treatedIdxs(g, sortedBarcodes)
+      val controlIdx = controlIdxs(g, sortedBarcodes)
       
       val (colName1, colName2) = (g.toString, g.toString + "(cont)")
       val rows = data.map(vs => VVector(
@@ -319,11 +332,9 @@ class ExtFoldValueMatrix(requestColumns: Seq[Group],
       super.columnsForGroup(g, sortedBarcodes, data)      
     } else if (ncus.size == 1) {
       // Insert a p-value column as well as the usual one
-            
+      
       val (colName1, colName2) = (g.toString, g.toString + "(p)")
-      val controlIds = cus.flatMap(_.getSamples.map(_.getCode)).toSet
-      val isControl = sortedBarcodes.map(s => controlIds.contains(s.sampleId))         
-      val treatedIdx = isControl.zipWithIndex.filter(! _._1).map(_._2)
+      val treatedIdx = treatedIdxs(g, sortedBarcodes)
       
       // TODO: work out call properly
       val rows = data.map(vs => {

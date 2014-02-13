@@ -10,7 +10,6 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 
 /**
@@ -48,7 +47,7 @@ abstract public class ImageClickCell<T> extends AbstractCell<T> {
 				String target = e.getString();
 
 				// TODO this is a bit hacky - is there a better way?
-				boolean targetWasImage = target.startsWith("<img");
+				boolean targetWasImage = (target.startsWith("<img") | target.startsWith("<IMG"));
 				if (targetWasImage) {
 					onClick(value);
 					return;

@@ -1,7 +1,8 @@
-package otgviewer.client;
+package otgviewer.client.dialog;
 
 import java.util.Arrays;
 
+import otgviewer.client.Utils;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.EnumSelector;
 import otgviewer.client.components.PendingAsyncCallback;

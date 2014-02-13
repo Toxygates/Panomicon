@@ -6,9 +6,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import otgviewer.client.components.DialogPosition;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
+import otgviewer.client.components.StorageParser;
+import otgviewer.client.dialog.DialogPosition;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
@@ -18,7 +19,6 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -71,7 +71,6 @@ public class SampleDetailScreen extends Screen {
 		columnList.clear();
 		if (chosenColumns.size() > 0) {
 			setDisplayColumn(chosenColumns.get(0));
-			columnList.setSelectedIndex(0);
 			for (DataColumn<?> c : chosenColumns) {
 				columnList.addItem(c.getShortTitle());
 			}
@@ -79,6 +78,8 @@ public class SampleDetailScreen extends Screen {
 		if (chosenCustomColumn != null) {
 			columnList.addItem(chosenCustomColumn.getShortTitle());
 			columnList.setSelectedIndex(columnList.getItemCount() - 1);
+		} else {
+			columnList.setSelectedIndex(0);
 		}
 	}
 
@@ -102,13 +103,13 @@ public class SampleDetailScreen extends Screen {
 
 	@Override
 	public void customColumnChanged(BarcodeColumn customColumn) {
-		super.customColumnChanged(customColumn);
+		super.customColumnChanged(customColumn);		
 		if (visible) {
 			updateColumnList();
-			Storage s = tryGetStorage();
-			if (s != null) {
+			StorageParser p = getParser(this);
+			if (p != null) {
 				// consume the data so it doesn't turn up again.
-				storeCustomColumn(s, keyPrefix(this), null); 
+				storeCustomColumn(p, null); 
 			}
 		}
 	}

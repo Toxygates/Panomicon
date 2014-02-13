@@ -8,8 +8,8 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.components.DialogPosition;
 import otgviewer.client.components.Screen;
+import otgviewer.client.dialog.DialogPosition;
 import otgviewer.shared.BUnit;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.Group;

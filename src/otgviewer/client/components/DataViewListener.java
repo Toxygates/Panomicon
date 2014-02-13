@@ -5,6 +5,7 @@ import java.util.List;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
+import otgviewer.shared.ItemList;
 import otgviewer.shared.ValueType;
 
 public interface DataViewListener {
@@ -25,5 +26,5 @@ public interface DataViewListener {
 	
 	public void customColumnChanged(BarcodeColumn column);
 	
-//	public void heightChanged(int newHeight);
+	public void itemListsChanged(List<ItemList> lists);
 }

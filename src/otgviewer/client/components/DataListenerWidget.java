@@ -1,14 +1,16 @@
 package otgviewer.client.components;
 
+import static otgviewer.client.components.StorageParser.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import otgviewer.client.Utils;
-import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
+import otgviewer.shared.ItemList;
 import otgviewer.shared.OTGUtils;
 import otgviewer.shared.ValueType;
 import bioweb.shared.array.DataColumn;
@@ -36,6 +38,9 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	protected ValueType chosenValueType;
 	protected List<Group> chosenColumns = new ArrayList<Group>();
 	protected BarcodeColumn chosenCustomColumn;
+	protected List<ItemList> chosenItemLists = new ArrayList<ItemList>();
+	
+	private StorageParser parser;
 	
 	public List<Group> chosenColumns() { return this.chosenColumns; }
 	
@@ -86,11 +91,12 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		this.chosenCustomColumn = customColumn;
 		changeCustomColumn(customColumn);
 	}
-//	
-//	public void heightChanged(int newHeight) {
-//		changeHeight(newHeight);
-//	}
 	
+	public void itemListsChanged(List<ItemList> lists) {
+		this.chosenItemLists = lists;
+		changeItemLists(lists);
+	}
+
 	//outgoing signals	
 	protected void changeDataFilter(DataFilter filter) {
 		chosenDataFilter = filter;
@@ -157,6 +163,13 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}
 	}
 	
+	protected void changeItemLists(List<ItemList> lists) {
+		chosenItemLists = lists;
+		for (DataViewListener l: listeners) {
+			l.itemListsChanged(lists);
+		}
+	}
+	
 	public void propagateTo(DataViewListener other) {
 		other.dataFilterChanged(chosenDataFilter);
 		other.probesChanged(chosenProbes);
@@ -165,10 +178,12 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		other.valueTypeChanged(chosenValueType);
 		other.columnsChanged(chosenColumns);		
 		other.customColumnChanged(chosenCustomColumn);
+		other.itemListsChanged(chosenItemLists);
 	}
 
 	protected Storage tryGetStorage() {
 		Storage r = Storage.getLocalStorageIfSupported();
+		// TODO concurrency an issue for GWT here?
 		if (r == null) {
 			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
 		} 
@@ -185,159 +200,149 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}
 	}
 	
+	protected StorageParser getParser(Screen s) {
+		if (parser != null) {
+			return parser;
+		}
+		parser = new StorageParser(tryGetStorage(), keyPrefix(s));
+		return parser;
+	}
+	
 	/**
 	 * Store this widget's state into local storage.
 	 */
 	public void storeState(Screen s) {
-		Storage r = tryGetStorage();
-		if (r != null) {
-			storeState(r, s);
-		}
+		StorageParser p = getParser(s);
+		storeState(p);		
 	}
 	
 	/**
 	 * Store this widget's state into local storage.
+	 * 
+	 * TODO: is it necessary to store all these fields for each screen?
 	 */
-	public void storeState(Storage s, Screen sc) {
-		final String prefix = keyPrefix(sc);
-		storeDataFilter(s, prefix);
-		storeColumns(s, prefix);
-		storeProbes(s, prefix);
+	public void storeState(StorageParser p) {
+		storeDataFilter(p);
+		storeColumns(p);
+		storeProbes(p);
 	}
 		
-	public void storeDataFilter(Storage s, String prefix) {	
+	public void storeDataFilter(StorageParser p) {	
 		if (chosenDataFilter != null) {
-			s.setItem(prefix + ".dataFilter", chosenDataFilter.pack());
+			p.setItem("dataFilter", packDataFilter(chosenDataFilter));			
 		} else {
-			s.setItem(prefix + ".dataFilter", "");
+			p.clearItem("dataFilter");
 		}			
 	}
 	
-	protected void storeColumns(Storage s, String prefix, String key, Collection<BarcodeColumn> columns) {				
+	protected void storeColumns(StorageParser p, String key, Collection<BarcodeColumn> columns) {				
 		if (chosenDataFilter != null) {
+			key = key + "." + packDataFilter(chosenDataFilter);
 			if (!columns.isEmpty()) {
-				s.setItem(prefix + "." + key + "." + chosenDataFilter.pack(),
-						packColumns(columns));
+				p.setItem(key, packColumns(columns));
 			} else {
-				s.setItem(prefix + "." + key + "." + chosenDataFilter.pack(), "");
+				p.clearItem(key);				
 			}
 		}		
 	}
 	
-	public void storeColumns(Storage s, String prefix) {
-		storeColumns(s, prefix, "columns", OTGUtils.asColumns(chosenColumns));
+	public void storeColumns(StorageParser p) {
+		storeColumns(p, "columns", OTGUtils.asColumns(chosenColumns));
 	}	
 	
-	protected void storeCustomColumn(Storage s, String prefix, DataColumn<?> column) {		
+	protected void storeCustomColumn(StorageParser p, DataColumn<?> column) {		
 		if (column != null) {
-			s.setItem(prefix + ".customColumn", column.pack());
+			p.setItem("customColumn", column.pack());
 		} else {
-			s.removeItem(prefix + ".customColumn");
+			p.clearItem("customColumn");
 		}		
 	}
-	
-	private String packColumns(Collection<BarcodeColumn> columns) {
-		StringBuilder sb = new StringBuilder();
-		for (DataColumn<?> c : columns) {
-			sb.append(c.pack());
-			sb.append("###");
+
+	// Separator hierarchy for columns:
+	// ### > ::: > ^^^ > $$$
+	protected List<Group> loadColumns(StorageParser p, String key,
+			Collection<BarcodeColumn> expectedColumns) throws Exception {
+		String v = p.getItem(key + "." + packDataFilter(chosenDataFilter));
+		List<Group> r = new ArrayList<Group>();
+		if (v != null && !v.equals(packColumns(expectedColumns))) {
+			String[] spl = v.split("###");
+			for (String cl : spl) {
+				Group c = (Group) unpackColumn(cl);
+				r.add(c);
+			}
+			return r;
 		}
-		return sb.toString();
+		return null;
 	}
 
-	private BarcodeColumn unpackColumn(String s) {
-		String[] spl = s.split("\\$\\$\\$");
-		if (spl[0].equals("Barcode")) {
-			return Barcode.unpack(s);
-		} else {
-			return Group.unpack(s);
-		}
+	public void storeProbes(StorageParser p) {
+		p.setItem("probes", packProbes(chosenProbes));	
+	}
+
+	public void storeItemLists(StorageParser p) {
+		p.setItem("lists", packItemLists(chosenItemLists, "###"));
 	}
 	
-	protected List<Group> loadColumns(String prefix, String key,
-			Collection<BarcodeColumn> expectedColumns) throws Exception {
-		Storage s = Storage.getLocalStorageIfSupported();
-		if (s == null) {
-			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
-		} else {
-			String v = s.getItem(prefix + "." + key + "." + chosenDataFilter.pack());
-			List<Group> r = new ArrayList<Group>();		
-			if (v != null && !v.equals(packColumns(expectedColumns))) {
-				String[] spl = v.split("###");
-				for (String cl : spl) {
-					Group c = (Group) unpackColumn(cl);
-					r.add(c);
-				}			
-				return r;
+	public List<ItemList> loadItemLists(StorageParser p) {
+		List<ItemList> r = new ArrayList<ItemList>();
+		String v = p.getItem("lists");
+		if (v != null) {
+			String[] spl = v.split("###");
+			for (String x: spl) {
+				ItemList il = ItemList.unpack(x);
+				if (il != null) {
+					r.add(il);
+				}
 			}
 		}
-
-		return null;		
-	}
-	
-	public void storeProbes(Storage s, String prefix) {				
-		s.setItem(prefix + ".probes", packProbes());		
-	}
-	
-	private String packProbes() {
-		StringBuilder sb = new StringBuilder();
-		for (String p: chosenProbes) {			
-			sb.append(p);
-			sb.append("###");
-		}		
-		return sb.toString();
+		return r;
 	}	
-
+	
 	/**
 	 * Load saved state from the local storage.
 	 * If the loaded state is different from what was previously remembered in this widget, the appropriate 
 	 * signals will fire.
 	 */
 	public void loadState(Screen sc) {
-		Storage s = Storage.getLocalStorageIfSupported();
-		if (s == null) {
-			Window.alert("Local storage must be supported in the web browser. The application cannot continue.");
-		} else {
-			loadState(s, sc);			
-		}
+		StorageParser p = getParser(sc);		
+		loadState(p);
 	}
 
-	public void loadState(Storage s, Screen sc) {
-		final String prefix = keyPrefix(sc);
-		String v = s.getItem(prefix + "." + "dataFilter");
-		if (v != null && (chosenDataFilter == null || !v.equals(chosenDataFilter.pack()))) {				
-			dataFilterChanged(DataFilter.unpack(v));
+	public void loadState(StorageParser p) {
+		DataFilter nf = unpackDataFilter(p.getItem("dataFilter")); 
+		if (nf != null && (chosenDataFilter == null || !chosenDataFilter.equals(nf))) { 			
+			dataFilterChanged(nf);
 		}
 		if (chosenDataFilter != null) {				
 			try {
-				List<Group> cs = loadColumns(prefix, "columns", OTGUtils.asColumns(chosenColumns));					
+				List<Group> cs = loadColumns(p, "columns", OTGUtils.asColumns(chosenColumns));					
 				if (cs != null) {						
 					columnsChanged(cs);
 				}						
-				v = s.getItem("OTG.customColumn");
-				if (v != null) {												
-					BarcodeColumn cc = unpackColumn(v);						
+				BarcodeColumn cc = unpackColumn(p.getItem("customColumn"));
+				if (cc != null) {																		
 					customColumnChanged(cc);						
 				}
 			} catch (Exception e) {										
 				//one possible failure source is if data is stored in an incorrect format
 				columnsChanged(new ArrayList<Group>());
-				storeColumns(s, prefix); //overwrite the old data
-				storeCustomColumn(s, prefix, null); //ditto
+				storeColumns(p); //overwrite the old data
+				storeCustomColumn(p, null); //ditto
 			}
 
 		}
-		v = s.getItem(prefix + ".probes");			
-		if (v != null && !v.equals("") && !v.equals(packProbes())) {
+		String v = p.getItem("probes");			
+		if (v != null && !v.equals("") && !v.equals(packProbes(chosenProbes))) {
 			chosenProbes = v.split("###");				
 			probesChanged(chosenProbes);				
 		} else if (v == null || v.equals("")) {
 			probesChanged(new String[0]);
 		}
-	}
-	
-	public void clearState() {
-		
+		List<ItemList> lists = loadItemLists(p);
+		if (lists.size() > 0) {
+			chosenItemLists = lists;
+			itemListsChanged(lists);
+		}
 	}
 	
 	private int numPendingRequests = 0;
@@ -362,5 +367,4 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 			waitDialog.hide();
 		}
 	}
-	
 }	

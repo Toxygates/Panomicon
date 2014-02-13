@@ -97,6 +97,9 @@ public class Group extends SampleGroup<Barcode> implements BarcodeColumn {
 		return compounds.toArray(new String[0]);		
 	}
 	
+	// See SampleGroup for the packing method
+	// TODO lift up the unpacking code to have 
+	// the mirror images in the same class, if possible
 	public static Group unpack(String s) {
 //		Window.alert(s + " as group");
 		String[] s1 = s.split(":::"); // !!
