@@ -48,9 +48,9 @@ import com.google.gwt.user.client.ui.Widget;
 public class ProbeScreen extends Screen {
 
 	public static final String key = "probes";
-	private SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT
+	private SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
 			.create(SparqlService.class);
-	private MatrixServiceAsync kcService = (MatrixServiceAsync) GWT
+	private MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
 			.create(MatrixService.class);
 
 	private TextArea customProbeText;
@@ -85,12 +85,12 @@ public class ProbeScreen extends Screen {
 						+ "Enter a partial pathway name and press enter to search.",
 				true) {
 			protected void getMatches(String pattern) {
-				owlimService.pathways(chosenDataFilter, pattern,
+				sparqlService.pathways(chosenDataFilter, pattern,
 						retrieveMatchesCallback());
 			}
 
 			protected void getProbes(String item) {
-				owlimService.probesForPathway(chosenDataFilter, item,
+				sparqlService.probesForPathway(chosenDataFilter, item,
 						retrieveProbesCallback());
 			}
 
@@ -108,11 +108,11 @@ public class ProbeScreen extends Screen {
 						+ "Enter a partial term name and press enter to search.",
 				true) {
 			protected void getMatches(String pattern) {
-				owlimService.goTerms(pattern, retrieveMatchesCallback());
+				sparqlService.goTerms(pattern, retrieveMatchesCallback());
 			}
 
 			protected void getProbes(String item) {
-				owlimService.probesForGoTerm(chosenDataFilter, item,
+				sparqlService.probesForGoTerm(chosenDataFilter, item,
 						retrieveProbesCallback());
 			}
 
@@ -294,7 +294,7 @@ public class ProbeScreen extends Screen {
 		// change the identifiers (which can be mixed format, for example genes
 		// and proteins etc) into a
 		// homogenous format (probes only)
-		kcService.identifiersToProbes(chosenDataFilter, probes, true,
+		matrixService.identifiersToProbes(chosenDataFilter, probes, true,
 				new PendingAsyncCallback<String[]>(this,
 						"Unable to obtain manual probes (technical error).") {
 					public void handleSuccess(String[] probes) {
@@ -315,7 +315,7 @@ public class ProbeScreen extends Screen {
 				if (compoundList.getSelectedIndex() != -1) {
 					String compound = compoundList.getItemText(compoundList
 							.getSelectedIndex());
-					owlimService.probesTargetedByCompound(chosenDataFilter,
+					sparqlService.probesTargetedByCompound(chosenDataFilter,
 							compound, service, homologs,
 							new PendingAsyncCallback<String[]>(w,
 									"Unable to get probes (technical error).") {
@@ -380,7 +380,7 @@ public class ProbeScreen extends Screen {
 		if (probes.length > 0) {
 			// TODO reduce the number of ajax calls done by this screen by
 			// collapsing them
-			owlimService.geneSyms(chosenDataFilter, probesInOrder,
+			sparqlService.geneSyms(chosenDataFilter, probesInOrder,
 					new AsyncCallback<String[][]>() {
 						public void onSuccess(String[][] syms) {
 							deferredAddProbes(probesInOrder, syms);

@@ -1,14 +1,22 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.EnumSelector;
+import otgviewer.client.components.ListChooser;
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
+import otgviewer.client.rpc.MatrixService;
+import otgviewer.client.rpc.MatrixServiceAsync;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.ItemList;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.RuleType;
 
@@ -20,7 +28,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Grid;
@@ -42,12 +49,16 @@ import com.google.gwt.user.client.ui.Widget;
 public class CompoundRanker extends DataListenerWidget {
 	private static Resources resources = GWT.create(Resources.class);
 	private CompoundSelector selector;
+	private final Screen screen;
+	private ListChooser listChooser;
 	
 	final GeneOracle oracle = new GeneOracle();
 	private List<String> availableCompounds = chosenCompounds;
 	
 	protected SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
 			.create(SparqlService.class);
+	protected MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
+			.create(MatrixService.class);
 	
 	/**
 	 * Data and widgets that help the user input a rule but do not need to be
@@ -56,7 +67,7 @@ public class CompoundRanker extends DataListenerWidget {
 	 *
 	 */
 	private class RuleInputHelper {
-		private boolean isFinalRule;
+		private boolean isLastRule;
 		
 		final RankRule rule;		
 		final ListBox refCompound = new ListBox();
@@ -68,18 +79,18 @@ public class CompoundRanker extends DataListenerWidget {
 			protected RuleType[] values() { return RuleType.values(); }
 		};
 		
-		RuleInputHelper(RankRule r, boolean finalRule) {
+		RuleInputHelper(RankRule r, boolean lastRule) {
 			rule = r;
-			this.isFinalRule = finalRule;
+			this.isLastRule = lastRule;
 			
 			rankType.listBox().addChangeHandler(rankTypeChangeHandler());			
 			probeText.addKeyPressHandler(new KeyPressHandler() {			
 				@Override
 				public void onKeyPress(KeyPressEvent event) {
 					enabled.setValue(true);	
-					if (isFinalRule) {
+					if (isLastRule) {
 						addRule(true);
-						isFinalRule = false;
+						isLastRule = false;
 					}
 				}
 			});
@@ -96,8 +107,7 @@ public class CompoundRanker extends DataListenerWidget {
 			refCompound.addChangeHandler(new ChangeHandler() {				
 				@Override
 				public void onChange(ChangeEvent event) {
-					updateDoses();
-					
+					updateDoses();					
 				}
 			});
 					
@@ -115,12 +125,10 @@ public class CompoundRanker extends DataListenerWidget {
 			
 			sparqlService.doseLevels(chosenDataFilter, 
 					selCompound, 
-					new AsyncCallback<String[]>() {
-				
-				// TODO use our custom async task handler
+					new PendingAsyncCallback<String[]>(selector, "Unable to retrieve dose levels.") {
 						
 				@Override
-				public void onSuccess(String[] result) {
+				public void handleSuccess(String[] result) {
 
 					for (String i: result) {
 						if (!i.equals("Control")) {
@@ -129,10 +137,6 @@ public class CompoundRanker extends DataListenerWidget {
 					}							
 				}
 				
-				@Override
-				public void onFailure(Throwable caught) {
-					Window.alert("Unable to retrieve dose levels for " + selCompound);							
-				}
 			});			
 		}
 		
@@ -178,6 +182,14 @@ public class CompoundRanker extends DataListenerWidget {
 		RuleType selectedRuleType() {
 			return rankType.value();		
 		}
+		
+		void reset() {
+			refCompound.setSelectedIndex(0);
+			syntheticCurveText.setText("");
+			rankType.reset();
+			probeText.setText("");
+			enabled.setValue(false);
+		}
 	}
 
 	private VerticalPanel csVerticalPanel = new VerticalPanel();
@@ -191,13 +203,45 @@ public class CompoundRanker extends DataListenerWidget {
 	 * 
 	 * @param selector the selector that this CompoundRanker will communicate with.
 	 */
-	public CompoundRanker(CompoundSelector selector) {
+	public CompoundRanker(Screen _screen, CompoundSelector selector) {
 		this.selector = selector;
+		screen = _screen;
 		selector.addListener(this);
-
+		listChooser = new ListChooser(new HashMap<String, List<String>>(), "probes") {
+			@Override 
+			protected void preSaveAction() {
+				String[] probes = getProbeList().toArray(new String[0]);
+				//We override this to pull in the probes, because they
+				//may need to be converted from gene symbols.
+				
+				matrixService.identifiersToProbes(chosenDataFilter, probes, true, 
+						new PendingAsyncCallback<String[]>(this) {
+					public void handleSuccess(String[] resolved) {
+						setItems(Arrays.asList(resolved));
+						saveAction(); 
+					}					
+				});
+			}
+			
+			@Override
+			protected void itemsChanged(List<String> items) { 
+				setProbeList(items);
+			}
+			
+			@Override
+			protected void listsChanged(List<ItemList> lists) {
+				screen.itemListsChanged(lists);
+				screen.storeItemLists(getParser(screen));
+			}
+		};
+		listChooser.setStyleName("colored");
+		selector.addListener(listChooser);
+		
 		csVerticalPanel
 				.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		initWidget(csVerticalPanel);
+		HorizontalPanel hp = Utils.mkHorizontalPanel(true, listChooser);
+		csVerticalPanel.add(hp);
 
 		grid = new Grid(1, 6); //Initially space for 1 rule
 		csVerticalPanel.add(grid);
@@ -209,7 +253,7 @@ public class CompoundRanker extends DataListenerWidget {
 		
 		addRule(true);
 		
-		HorizontalPanel hp = Utils.mkHorizontalPanel();
+		hp = Utils.mkHorizontalPanel(true);
 		csVerticalPanel.add(hp);
 		
 		hp.add(new Button("Rank", new ClickHandler() {
@@ -223,13 +267,49 @@ public class CompoundRanker extends DataListenerWidget {
 		hp.add(i);
 	}
 
-	private void addRule(boolean isFinal) {
+	private void addRule(boolean isLast) {
 		int ruleIdx = inputHelpers.size();
 		grid.resize(ruleIdx + 2, 6);
 		RankRule r = new RankRule();		
-		RuleInputHelper rih = new RuleInputHelper(r, isFinal);		
+		RuleInputHelper rih = new RuleInputHelper(r, isLast);		
 		inputHelpers.add(rih);	
 		rih.populate(ruleIdx);
+	}
+	
+	/**
+	 * Map the current ranking rules to a list of probes and return the result.
+	 * @return
+	 */
+	private List<String> getProbeList() {
+		List<String> r = new ArrayList<String>();
+		for (RuleInputHelper rih: inputHelpers) {
+			if (!rih.probeText.getText().equals("")) {
+				String probe = rih.probeText.getText();
+				r.add(probe);
+			}
+		}
+		return r;
+	} 
+	
+	/**
+	 * Replace the current ranking rules with new rules generated from a list of probes.
+	 * @param probes
+	 */
+	private void setProbeList(List<String> probes) {
+		for (RuleInputHelper rih: inputHelpers) {
+			rih.reset();			
+		}
+		for (int i = 0; i < probes.size(); ++i) {
+			String probe = probes.get(i);			
+			if (i >= inputHelpers.size()) {
+				addRule(true);
+			}
+			inputHelpers.get(i).probeText.setText(probe);
+			inputHelpers.get(i).enabled.setValue(true);
+		}				
+		if (probes.size() == inputHelpers.size()) {
+			addRule(true);
+		}
 	}
 	
 	private void performRanking() {
@@ -314,5 +394,11 @@ public class CompoundRanker extends DataListenerWidget {
 			}
 			rih.updateDoses();
 		}
+	}
+	
+	@Override
+	public void itemListsChanged(List<ItemList> lists) {
+		super.itemListsChanged(lists);
+		listChooser.setLists(lists);
 	}
 }
