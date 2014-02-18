@@ -136,8 +136,25 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		MenuBar menuBar = new MenuBar(false);
 		menuBar.setWidth("100%");		
 		
+		MenuBar tm = new MenuBar(true);		
+		MenuItem mi = new MenuItem("TargetMine data", tm);
+		menuBar.addItem(mi);
+		
+		tm.addItem(new MenuItem("Import gene lists...", new Command() {
+			public void execute() {
+				new TargetMineData(currentScreen).importLists(true);
+			}
+		}));
+		
+		tm.addItem(new MenuItem("Export gene lists...", new Command() {
+			public void execute() {
+				
+			}
+		}));
+		menuBar.addItem(mi);
+		
 		MenuBar hm = new MenuBar(true);		
-		MenuItem mi = new MenuItem("Help", hm);
+		mi = new MenuItem("Help", hm);
 		menuBar.addItem(mi);
 		
 		hm.addItem(new MenuItem("Help for this screen...", new Command() {
@@ -169,6 +186,8 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 				Utils.showHelp(getVersionHTML(), null);
 			}
 		}));
+		
+		
 		
 		return menuBar;
 	}

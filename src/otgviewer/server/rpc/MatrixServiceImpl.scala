@@ -48,6 +48,8 @@ import otg.db.kyotocabinet.KCMicroarrayDB
 import otgviewer.server.FoldValueMatrix
 import otgviewer.shared.ManagedMatrixInfo
 import otgviewer.server.ApplicationClass
+import otgviewer.shared.StringList
+import org.intermine.webservice.client.core.ServiceFactory
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
@@ -77,6 +79,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     
     OwlimLocalRDF.setContextForAll(context)
     OTGSamples.connect
+    AffyProbes.connect
     println("Microarray databases are open")
   }
 
@@ -262,5 +265,35 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
       val geneIds = rowNames.map(rn => gis.getOrElse(Probe(rn), Set.empty))
       geneIds.flatten.map(_.identifier).toArray
     })
+  }
+
+  def importTargetmineLists(filter: DataFilter, user: String, pass: String,
+    asProbes: Boolean): Array[StringList] = {
+    println("Connect to TargetMine")
+    // TODO this is insecure - ideally, auth tokens should be used.
+    val sf = new ServiceFactory("http://targetmine.nibio.go.jp/targetmine/service", user, pass)
+    sf.setApplicationName("targetmine")
+    val ls = sf.getListService()
+    val tmLists = ls.getAccessibleLists()
+    tmLists.filter(_.getType == "Gene").map(asTGList(filter, _)).toArray
+  }
+  
+  def asTGList(filter: DataFilter, l: org.intermine.webservice.client.lists.ItemList): StringList = {
+      var items: Vector[Gene] = Vector()
+      for (i <- 0 until l.getSize()) {        
+        val it = l.get(i)
+        items :+= Gene(it.getString("Gene.primaryIdentifier"), filter)        
+      }
+      println(items)
+      val probes = AffyProbes.forGenes(items).map(_.identifier).toSeq
+      println(probes)
+      val filtered = filterProbes(probes)(filter)
+      println(filtered)
+      new StringList("probes", l.getName(), filtered.toArray)    
+  }
+
+  def exportTargetmineLists(filter: DataFilter, user: String, pass: String,
+    lists: Array[StringList]): Unit = {
+
   }
 }

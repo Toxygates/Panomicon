@@ -483,6 +483,10 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		}
 	}
 	
+	public StorageParser getParser() {
+		return getParser(this);
+	}
+	
 	public boolean helpAvailable() {
 		return helpHTML != null;
 	}

@@ -38,7 +38,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	protected ValueType chosenValueType;
 	protected List<Group> chosenColumns = new ArrayList<Group>();
 	protected BarcodeColumn chosenCustomColumn;
-	protected List<ItemList> chosenItemLists = new ArrayList<ItemList>();
+	public List<ItemList> chosenItemLists = new ArrayList<ItemList>(); //TODO
 	
 	private StorageParser parser;
 	
@@ -200,7 +200,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}
 	}
 	
-	protected StorageParser getParser(Screen s) {
+	public StorageParser getParser(Screen s) {
 		if (parser != null) {
 			return parser;
 		}
