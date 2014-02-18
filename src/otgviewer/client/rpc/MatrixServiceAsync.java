@@ -50,6 +50,6 @@ public interface MatrixServiceAsync {
 			boolean asProbes, AsyncCallback<StringList[]> callback);
 	
 	public void exportTargetmineLists(DataFilter fiter, String user, String pass, 
-			StringList[] lists, AsyncCallback<Void> callback);
+			StringList[] lists, boolean replace, AsyncCallback<Void> callback);
 	
 }

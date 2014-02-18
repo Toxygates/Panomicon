@@ -126,8 +126,10 @@ public interface MatrixService extends RemoteService {
 	 * @param asProbes if true, the items will be imported as affymetrix probes. If false, as genes.
 	 * @return
 	 */
-	public StringList[] importTargetmineLists(DataFilter filter, String user, String pass, boolean asProbes);
+	public StringList[] importTargetmineLists(DataFilter filter, String user, 
+			String pass, boolean asProbes);
 
-	public void exportTargetmineLists(DataFilter filter, String user, String pass, StringList[] lists);
+	public void exportTargetmineLists(DataFilter filter, String user, String pass, 
+			StringList[] lists, boolean replace);
 
 }

@@ -3,6 +3,7 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -32,7 +33,7 @@ public class TargetMineData {
 
 	DialogBox dialog;
 	public void importLists(final boolean asProbes) {
-		final Widget ui = new TargetMineSyncDialog() {
+		final Widget ui = new TargetMineSyncDialog("Import") {
 			@Override 
 			protected void userProceed(String user, String pass, boolean replace) {
 				doImport(user, pass, asProbes, replace);
@@ -60,15 +61,44 @@ public class TargetMineData {
 				});
 	}
 
-	public void exportLists(List<StringList> lists) {
-//		matrixService.exportTargetmineLists(parent.chosenDataFilter, user,
-//				pass, lists.toArray(new StringList[0]),
-//				new PendingAsyncCallback<Void>(parent,
-//						"Unable to export lists to TargetMine.") {
-//					public void handleSuccess(Void v) {
-//						Window.alert("The lists were successfully exported.");
-//					}
-//				});
+	public void exportLists() {
+		final Widget ui = new TargetMineSyncDialog("Export") {
+			@Override 
+			protected void userProceed(String user, String pass, boolean replace) {
+				doExport(user, pass, pickProbeLists(parent.chosenItemLists), replace);
+				dialog.setVisible(false);
+			}
+			@Override 
+			protected void userCancelled() {
+				dialog.setVisible(false);
+			}
+		};
+		dialog = Utils.displayInPopup("TargetMine export details", ui, DialogPosition.Center);
+	}
+	
+	 // Could factor out code that is shared with doImport, but the two dialogs may diverge
+	 // further in the future.
+	public void doExport(final String user, final String pass, final List<StringList> lists, 
+			final boolean replace) {
+		matrixService.exportTargetmineLists(parent.chosenDataFilter, user,
+				pass, lists.toArray(new StringList[0]), replace,
+				new PendingAsyncCallback<Void>(parent,
+						"Unable to export lists to TargetMine. Check your username and password. " +
+						"There may also be a server error.") {
+					public void handleSuccess(Void v) {
+						Window.alert("The lists were successfully exported.");
+					}
+				});
+	}
+	
+	List<StringList> pickProbeLists(List<? extends ItemList> from) {
+		List<StringList> r = new LinkedList<StringList>();
+		for (ItemList l: from) {
+			if (l.type().equals("probes")) {
+				r.add((StringList) l);
+			}
+		}
+		return r;
 	}
 	
 	List<ItemList> mergeLists(List<? extends ItemList> into, List<? extends ItemList> from, boolean replace) {
@@ -99,5 +129,4 @@ public class TargetMineData {
 		Window.alert(msg);
 		return new ArrayList<ItemList>(allLists.values());
 	}
-
 }

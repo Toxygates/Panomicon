@@ -21,7 +21,7 @@ public class TargetMineSyncDialog extends Composite {
 	final TextBox passText = new PasswordTextBox();
 	final CheckBox replaceCheck = new CheckBox("Replace lists with identical names");
 	
-	public TargetMineSyncDialog() {
+	public TargetMineSyncDialog(String action) {
 		VerticalPanel vp = new VerticalPanel();
 		vp.setWidth("400px");
 		initWidget(vp);
@@ -42,7 +42,7 @@ public class TargetMineSyncDialog extends Composite {
 		vp.add(g);
 		vp.add(replaceCheck);
 		
-		Button b = new Button("Import");
+		Button b = new Button(action);
 		b.addClickHandler(new ClickHandler() {			
 			@Override
 			public void onClick(ClickEvent event) {
