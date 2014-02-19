@@ -11,7 +11,7 @@
 	</context-param>
 	<context-param>
 		<param-name>toxygatesHomeDir</param-name>
-		<param-value>/opt/toxygates-test</param-value>
+		<param-value>/opt/toxygates-adjuvant</param-value>
 	</context-param>
 	<context-param>
 		<param-name>csvDir</param-name>

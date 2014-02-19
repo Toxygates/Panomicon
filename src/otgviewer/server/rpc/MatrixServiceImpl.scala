@@ -48,6 +48,10 @@ import otg.db.kyotocabinet.KCMicroarrayDB
 import otgviewer.server.FoldValueMatrix
 import otgviewer.shared.ManagedMatrixInfo
 import otgviewer.server.ApplicationClass
+import otgviewer.shared.StringList
+import org.intermine.webservice.client.core.ServiceFactory
+import org.intermine.webservice.client.services.ListService
+import otgviewer.server.TargetMine
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
@@ -77,6 +81,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     
     OwlimLocalRDF.setContextForAll(context)
     OTGSamples.connect
+    AffyProbes.connect
     println("Microarray databases are open")
   }
 
@@ -263,4 +268,18 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
       geneIds.flatten.map(_.identifier).toArray
     })
   }
+  
+  def importTargetmineLists(filter: DataFilter, user: String, pass: String,
+    asProbes: Boolean): Array[StringList] = {
+    val ls = TargetMine.getListService(user, pass)    
+    val tmLists = ls.getAccessibleLists()
+    tmLists.filter(_.getType == "Gene").map(
+        l => TargetMine.asTGList(filter, l, filterProbes(_)(filter))).toArray
+  }
+
+  def exportTargetmineLists(filter: DataFilter, user: String, pass: String,
+    lists: Array[StringList], replace: Boolean): Unit = {
+    val ls = TargetMine.getListService(user, pass)
+    TargetMine.addLists(filter, ls, lists.toList, replace)
+  }    
 }

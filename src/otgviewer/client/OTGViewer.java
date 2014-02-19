@@ -3,6 +3,7 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,6 +53,8 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	private RootLayoutPanel rootPanel;
 	private DockLayoutPanel mainDockPanel;
 	private MenuBar menuBar;
+	private List<MenuItem> preMenuItems = new LinkedList<MenuItem>();
+	private List<MenuItem> postMenuItems = new LinkedList<MenuItem>();
 	private HorizontalPanel navPanel;
 	
 	/**
@@ -136,9 +139,26 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		MenuBar menuBar = new MenuBar(false);
 		menuBar.setWidth("100%");		
 		
-		MenuBar hm = new MenuBar(true);		
-		MenuItem mi = new MenuItem("Help", hm);
+		MenuBar tm = new MenuBar(true);		
+		MenuItem mi = new MenuItem("TargetMine data", tm);
+		postMenuItems.add(mi);
+		
+		tm.addItem(new MenuItem("Import gene lists...", new Command() {
+			public void execute() {
+				new TargetMineData(currentScreen).importLists(true);
+			}
+		}));
+		
+		tm.addItem(new MenuItem("Export gene lists...", new Command() {
+			public void execute() {
+				new TargetMineData(currentScreen).exportLists();
+			}
+		}));
 		menuBar.addItem(mi);
+		
+		MenuBar hm = new MenuBar(true);		
+		mi = new MenuItem("Help", hm);
+		postMenuItems.add(mi);
 		
 		hm.addItem(new MenuItem("Help for this screen...", new Command() {
 			public void execute() {
@@ -170,13 +190,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 			}
 		}));
 		
-		return menuBar;
-	}
-
-	/**
-	 * Individual screens call this method to get the menu and install their own menu entries.
-	 */
-	public MenuBar getMenuBar() { 
+		
 		return menuBar;
 	}
 
@@ -230,6 +244,15 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 			currentScreen.hide();
 		}
 		currentScreen = s;
+		menuBar.clearItems();
+		List<MenuItem> allItems = new LinkedList<MenuItem>(preMenuItems);
+		allItems.addAll(s.menuItems());
+		allItems.addAll(postMenuItems);
+		
+		for (MenuItem mi: allItems) {
+			menuBar.addItem(mi);
+		}
+		
 		addWorkflowLinks(currentScreen);
 		mainDockPanel.add(currentScreen);		
 		currentScreen.show();

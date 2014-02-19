@@ -26,7 +26,6 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.PushButton;
@@ -62,8 +61,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	 */
 	protected boolean visible = false;
 	private Label viewLabel = new Label();
-	private boolean showDataFilter = false, showGroups = false;
-	private MenuBar menuBar;	
+	private boolean showDataFilter = false, showGroups = false;	
 	
 	/**
 	 * Is this screen currently configured?
@@ -156,7 +154,6 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		rootPanel = new DockLayoutPanel(Unit.PX); 
 		
 		initWidget(rootPanel);
-		menuBar = man.getMenuBar();
 		manager = man;				
 		viewLabel.setWordWrap(false);
 		viewLabel.getElement().getStyle().setMargin(2, Unit.PX);
@@ -300,9 +297,6 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	public void show() {
 		rootPanel.forceLayout();
 		visible = true;		
-		for (MenuItem mi: menuItems) {
-			mi.setVisible(true);
-		}
 		loadState(this);
 		if (showGuide) {
 			showToolbar(guideBar);
@@ -446,17 +440,15 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	 */
 	public void hide() {		
 		visible = false;
-		for (MenuItem mi: menuItems) {
-			mi.setVisible(false);
-		}
 	}
 	
 	public void addMenu(MenuItem m) {
-		menuBar.addItem(m);
-		m.setVisible(false);
 		menuItems.add(m);
 	}
-
+	
+	public List<MenuItem> menuItems() {
+		return menuItems;
+	}
 	
 	/**
 	 * Override this method to define the main content of the screen.
@@ -481,6 +473,10 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		if (showDataFilter) {
 			viewLabel.setText(filter.toString());
 		}
+	}
+	
+	public StorageParser getParser() {
+		return getParser(this);
 	}
 	
 	public boolean helpAvailable() {
