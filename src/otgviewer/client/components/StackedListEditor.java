@@ -263,34 +263,33 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	 */
 	public StackedListEditor(final DataListenerWidget parent, String listType,
 			String itemTitle, 
-			Map<String, List<String>> predefinedLists, boolean isAdjuvantUI) {
+			Map<String, List<String>> predefinedLists) {
 		dlp = new DockLayoutPanel(Unit.PX);
 		initWidget(dlp);
 		
 		this.predefinedLists = predefinedLists;
-		if (!predefinedLists.isEmpty() && isAdjuvantUI) {			
-			northVp = Utils.mkVerticalPanel();
-			northVp.setWidth("100%");	
-		
-			final StackedListEditor sle = this;
-			
-			listChooser = new ListChooser(predefinedLists, listType) {
-				@Override
-				protected void itemsChanged(List<String> items) {
-					setSelection(validateItems(items));
-				}				
+					
+		northVp = Utils.mkVerticalPanel();
+		northVp.setWidth("100%");
 
-				@Override
-				protected void listsChanged(List<ItemList> itemLists) {
-					parent.chosenItemLists = itemLists;
-					sle.listsChanged(itemLists);
-				}
-			};
-			listChooser.setStyleName("colored");
-			parent.addListener(listChooser);
-			northVp.add(listChooser);
-			dlp.addNorth(northVp, 30);
-		}
+		final StackedListEditor sle = this;
+
+		listChooser = new ListChooser(predefinedLists, listType) {
+			@Override
+			protected void itemsChanged(List<String> items) {
+				setSelection(validateItems(items));
+			}
+
+			@Override
+			protected void listsChanged(List<ItemList> itemLists) {
+				parent.chosenItemLists = itemLists;
+				sle.listsChanged(itemLists);
+			}
+		};
+		listChooser.setStyleName("colored");
+		parent.addListener(listChooser);
+		northVp.add(listChooser);
+		dlp.addNorth(northVp, 30);
 		
 		slp = new StackLayoutPanel(Unit.PX);
 		dlp.add(slp);
