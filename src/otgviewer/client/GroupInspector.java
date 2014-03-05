@@ -326,10 +326,6 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		newGroup();
 	}
 	
-//	protected void storeColumns(StorageParser p) {
-//		storeColumns(s, keyPrefix(screen));
-//	}
-//	
 	@Override 
 	public void storeColumns(StorageParser p) {
 		super.storeColumns(p);			
@@ -347,7 +343,15 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	 * Get here if save button is clicked
 	 * @param name
 	 */
-	private void makeGroup(String name) {		
+	private void makeGroup(String name) {
+		if (name.trim().equals("")) {
+			Window.alert("Please enter a group name.");
+			return;
+		}
+		if (!StorageParser.isAcceptableString(name, "Unacceptable group name.")) {
+			return;
+		}
+		
 		pendingGroup = new Group(name, new Barcode[0]);
 		addGroup(name, pendingGroup);
 		List<BUnit> units = timeDoseGrid.getSelectedUnits(false);

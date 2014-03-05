@@ -100,19 +100,24 @@ public class ListChooser extends DataListenerWidget {
 					inputDialog.setVisible(false);
 					return;
 				}
-				if (!value.trim().equals("")) {
-					if (!isPredefinedListName(value)) {
-						lists.put(value.trim(), currentItems);
-						refreshSelector();
-						listsChanged(getLists());
-					} else {
-						Window.alert("This name is reserved for the system and cannot be used.");
-					}
-				} else {
+				if (value.trim().equals("")) {
 					Window.alert("You must enter a non-empty name.");
+					inputDialog.setVisible(false);
+					return;
 				}
-
-				inputDialog.setVisible(false);
+				if (isPredefinedListName(value)) {
+					Window.alert("This name is reserved for the system and cannot be used.");
+					inputDialog.setVisible(false);
+					return;
+				}
+				if (!StorageParser.isAcceptableString(value, "Unacceptable list name.")) {
+					inputDialog.setVisible(false);
+					return;
+				}
+				// Passed all the checks
+				lists.put(value.trim(), currentItems);
+				refreshSelector();
+				listsChanged(getLists());
 			}
 		};				
 		inputDialog = Utils.displayInPopup("Name entry", entry, DialogPosition.Center); 	
