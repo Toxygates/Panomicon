@@ -139,7 +139,7 @@ public class ProbeScreen extends Screen {
 		vpi.add(vpii);
 
 		Label label = new Label(
-				"Enter a list of probes, genes or proteins, one per line, to display only those.");
+				"Enter a list of probes, genes or proteins to display only those.");
 		label.setStyleName("none");
 		vpii.add(label);
 
@@ -151,7 +151,7 @@ public class ProbeScreen extends Screen {
 		vpii.add(new Button("Add manual list", new ClickHandler() {
 			public void onClick(ClickEvent ev) {
 				String text = customProbeText.getText();
-				String[] split = text.split("\n");
+				String[] split = text.split("[\n ,\t]");
 
 				if (split.length == 0) {
 					Window.alert("Please enter probes, genes or proteins in the text box and try again.");
