@@ -80,9 +80,12 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		
 		boolean isAdjuvant = screen.manager().getUIType().equals("adjuvant");
 		
+		final Map<String, List<String>> predefLists = 
+				(isAdjuvant ? TemporaryCompoundLists.predefinedLists() 
+						: new HashMap<String, List<String>>());
+		
 		compoundEditor = new StackedListEditor(this, "compounds", "Compound", 
-				TemporaryCompoundLists.predefinedLists(),
-				isAdjuvant) {
+				predefLists) {
 			@Override
 			protected void selectionChanged(Set<String> selected) {
 				List<String> r = new ArrayList<String>();

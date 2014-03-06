@@ -10,13 +10,14 @@ import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
+import otgviewer.shared.ItemList;
 import otgviewer.shared.Organ;
 import otgviewer.shared.Organism;
-import otgviewer.shared.ItemList;
 import otgviewer.shared.RepeatType;
 import bioweb.shared.Packable;
 
 import com.google.gwt.storage.client.Storage;
+import com.google.gwt.user.client.Window;
 
 /**
  * Eventually all storage parsing/serialising code should be centralised here,
@@ -27,6 +28,10 @@ public class StorageParser {
 
 	private final String prefix;
 	private final Storage storage;
+	private static final char [] reservedChars = new char[] { ':', '#', '$', '^' };
+	public static final String unacceptableStringMessage = 
+			"The characters ':', '#', '$' and '^' are reserved and may not be used.";
+	
 	StorageParser(Storage storage, String prefix) {
 		this.prefix = prefix;
 		this.storage = storage;
@@ -107,4 +112,15 @@ public class StorageParser {
 	public static String packItemLists(Collection<ItemList> lists, String separator) {
 		return packPackableList(lists, separator);		
 	}
+	
+	public static boolean isAcceptableString(String test, String failMessage) {
+		for (char c: reservedChars) {
+			if (test.indexOf(c) != -1) {
+				Window.alert(failMessage + " " + unacceptableStringMessage);
+				return false;
+			}
+		}
+		return true;
+	}	
+
 }

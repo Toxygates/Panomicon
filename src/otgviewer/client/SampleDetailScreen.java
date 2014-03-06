@@ -70,7 +70,6 @@ public class SampleDetailScreen extends Screen {
 	private void updateColumnList() {
 		columnList.clear();
 		if (chosenColumns.size() > 0) {
-			setDisplayColumn(chosenColumns.get(0));
 			for (DataColumn<?> c : chosenColumns) {
 				columnList.addItem(c.getShortTitle());
 			}
