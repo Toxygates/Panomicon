@@ -21,6 +21,9 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.Widget;
 
+/**
+ * Client side helper for TargetMine data import/export.
+ */
 public class TargetMineData {
 
 	final Screen parent;

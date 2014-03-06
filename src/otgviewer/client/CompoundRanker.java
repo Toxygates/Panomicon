@@ -224,8 +224,14 @@ public class CompoundRanker extends DataListenerWidget {
 			}
 			
 			@Override
-			protected void itemsChanged(List<String> items) { 
-				setProbeList(items);
+			protected void itemsChanged(List<String> items) {
+				matrixService.identifiersToProbes(chosenDataFilter,
+						items.toArray(new String[0]), true, 
+						new PendingAsyncCallback<String[]>(this) {
+					public void handleSuccess(String[] resolved) {
+						setProbeList(Arrays.asList(resolved));
+					}					
+				});
 			}
 			
 			@Override

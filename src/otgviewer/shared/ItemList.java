@@ -9,7 +9,9 @@ import bioweb.shared.Packable;
 
 /**
  * A typed, named list of items.
- * @author johan
+ * 
+ * Current supported types are "probes" and "compounds".
+ * However, lists of type probes may actually be gene identifiers (entrez).
  */
 abstract public class ItemList implements Packable, Serializable {
 

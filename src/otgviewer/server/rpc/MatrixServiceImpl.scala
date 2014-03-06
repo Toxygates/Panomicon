@@ -101,12 +101,27 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
   def identifiersToProbes(filter: DataFilter, identifiers: Array[String], precise: Boolean): Array[String] =
     AffyProbes.identifiersToProbes(filter, identifiers, precise).map(_.identifier).toArray
 
+    /**
+     * Filter probes for one species.
+     */
   private def filterProbes(probes: Seq[String])(implicit filter: DataFilter): Seq[String] = {
     val pmap = context.probes(filter)
     if (probes == null || probes.size == 0) {
       pmap.tokens.toSeq
     } else {
       probes.filter(pmap.isToken)      
+    }
+  }
+
+  /**
+   * Filter probes for all species.
+   */
+  private def filterProbesAllSpecies(probes: Seq[String]): Seq[String] = {
+    val pmaps = otg.Species.values.toList.map(context.probes(_))
+    if (probes == null || probes.size == 0) {
+      throw new Exception("Requesting all probes for all species is not permitted.")
+    } else {
+      probes.filter(p => pmaps.exists(m => m.isToken(p)))
     }
   }
   
@@ -274,7 +289,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     val ls = TargetMine.getListService(user, pass)    
     val tmLists = ls.getAccessibleLists()
     tmLists.filter(_.getType == "Gene").map(
-        l => TargetMine.asTGList(filter, l, filterProbes(_)(filter))).toArray
+        l => TargetMine.asTGList(l, filterProbesAllSpecies(_))).toArray
   }
 
   def exportTargetmineLists(filter: DataFilter, user: String, pass: String,

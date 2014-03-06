@@ -232,7 +232,13 @@ public class ProbeScreen extends Screen {
 		listChooser = new ListChooser(new HashMap<String, List<String>>(), "probes") {
 			@Override
 			protected void itemsChanged(List<String> items) {
-				ps.probesChanged(items.toArray(new String[0]));
+				matrixService.identifiersToProbes(ps.chosenDataFilter, items.toArray(new String[0]),
+						true, new PendingAsyncCallback<String[]>(ps) {
+							@Override
+							public void handleSuccess(String[] t) {
+								ps.probesChanged(t);								
+							}							
+						});
 			}				
 			
 			@Override
