@@ -12,6 +12,7 @@ public enum Organ implements Serializable {
 	Kidney,
 	Lung,
 	Spleen,
-	Muscle;
+	Muscle,
+	LymphNode;
 }
 	

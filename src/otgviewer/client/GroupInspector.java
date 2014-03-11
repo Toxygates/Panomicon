@@ -249,11 +249,19 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 	
+	private String firstChars(String s) {
+		if (s.length() > 8) {
+			return s;
+		} else {
+			return s.substring(0, 8);
+		}
+	}
+	
 	private String suggestGroupName(List<BUnit> units) {
 		String g = "";
 		if (!units.isEmpty()) {
 			BUnit b = units.get(0);
-			g = b.getCompound().substring(0,8) + "/" + 
+			g = firstChars(b.getCompound()) + "/" + 
 					b.getDose().substring(0, 1) + "/" + 
 					b.getTime();
 			if (units.size() > 1) {
