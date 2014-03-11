@@ -63,8 +63,10 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     super.destroy()
   }
 
-  def compounds(filter: DataFilter): Array[String] =
-    OTGSamples.compounds(filter).toArray
+  def compounds(filter: DataFilter): Array[String] = {
+    //TODO don't have a special case for shared_control here
+    OTGSamples.compounds(filter).filter(_ != "shared_control").toArray
+  }
 
   val orderedDoses = List("Control", "Low", "Middle", "High")
   def doseLevels(filter: DataFilter, compound: String): Array[String] = {

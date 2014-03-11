@@ -20,20 +20,16 @@ object TargetMine {
     sf.getListService()
   }
     
-  def asTGList(filter: DataFilter, 
-      l: org.intermine.webservice.client.lists.ItemList,
+  def asTGList(l: org.intermine.webservice.client.lists.ItemList,
       filterProbes: (Seq[String]) => Seq[String]): StringList = {
       var items: Vector[Gene] = Vector()
       for (i <- 0 until l.getSize()) {        
         val it = l.get(i)
-        items :+= Gene(it.getString("Gene.primaryIdentifier"), filter)        
+        items :+= Gene(it.getString("Gene.primaryIdentifier"))        
       }
-      println(items)
-      val probes = AffyProbes.forGenes(items).map(_.identifier).toSeq
-      println(probes)      
-      val filtered = filterProbes(probes)
-      println(filtered)
-      new StringList("probes", l.getName(), filtered.toArray)    
+      //we will have obtained the genes as ENTREZ identifiers
+      println(items)      
+      new StringList("probes", l.getName(), items.map(_.identifier).toArray);
   }
   
   def addLists(filter: DataFilter, ls: ListService, 
