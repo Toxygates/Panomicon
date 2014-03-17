@@ -250,7 +250,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	}
 	
 	private String firstChars(String s) {
-		if (s.length() > 8) {
+		if (s.length() < 8) {
 			return s;
 		} else {
 			return s.substring(0, 8);
