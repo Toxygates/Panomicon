@@ -1,13 +1,21 @@
 package otgviewer.client;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
+import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.ListChooser;
+import otgviewer.client.components.RichTable.HideableColumn;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
+import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
+import otgviewer.shared.ItemList;
 
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -41,12 +49,74 @@ public class DataScreen extends Screen {
 
 	public Widget content() {		
 		addListener(et);
-		
-		MenuItem[] mis = et.menuItems();
-		for (MenuItem mi: mis) {
-			addMenu(mi);
-		}
+		setupMenuItems();	
 		return et;		
+	}
+	
+	/**
+	 * Create tick menu items corresponding to the hideable columns.
+	 * @param mb
+	 */
+	private void setupMenuItems() {
+		MenuBar mb = new MenuBar(true);		
+		MenuItem mActions = new MenuItem("File", false, mb);		
+		final DataScreen w = this;
+		MenuItem mntmDownloadCsv = new MenuItem("Download CSV...", false, new Command() {
+			public void execute() {
+				et.downloadCSV();
+				
+			}
+		});
+		mb.addItem(mntmDownloadCsv);
+		addMenu(mActions);
+		
+		mb = new MenuBar(true);
+		for (final HideableColumn c: et.getHideableColumns()) {
+			new TickMenuItem(mb, c.name(), c.visible()) {
+				@Override
+				public void stateChange(boolean newState) {
+					et.setVisible(c, newState);
+				}				
+			};
+		}
+		
+		MenuItem mColumns = new MenuItem("View", false, mb);
+		addMenu(mColumns);		
+		
+		addAnalysisMenuItem(new MenuItem("Save visible genes as list...",
+				new Command() {
+					public void execute() {
+						// Create an invisible listChooser that we exploit only for
+						// the sake of saving a new list.
+						ListChooser lc = new ListChooser(
+								new HashMap<String, List<String>>(), "probes") {
+							@Override
+							protected void listsChanged(List<ItemList> lists) {
+								w.itemListsChanged(lists);
+								w.storeItemLists(w.getParser());
+							}
+						};
+						w.propagateTo(lc); // ensure it receives the current
+											// lists
+						lc.setItems(Arrays.asList(et.displayedProbes()));
+						lc.saveAction();
+					}
+				}));
+		
+		// TODO: this is a tick menu item without the tick.
+		// It would be nice to display the tick graphic, but then the textual alignment
+		// of the other items on the menu becomes odd.
+		addAnalysisMenuItem(
+				new TickMenuItem("Compare two sample groups", false, false) {
+					public void stateChange(boolean newState) {
+						if (newState) {
+							showToolbar(et.analysisTools());
+						} else {
+							hideToolbar(et.analysisTools());
+						}
+					}
+				}.menuItem());			
+				
 	}
 	
 	@Override

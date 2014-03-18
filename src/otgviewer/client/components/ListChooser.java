@@ -92,7 +92,7 @@ public class ListChooser extends DataListenerWidget {
 		saveAction();
 	}
 	
-	protected void saveAction() {
+	public void saveAction() {
 		InputDialog entry = new InputDialog("Please enter a name for the list.") {
 			@Override
 			protected void onChange(String value) {

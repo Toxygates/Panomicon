@@ -68,6 +68,8 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	 */
 	protected boolean configured = false;
 	private List<MenuItem> menuItems = new ArrayList<MenuItem>();
+	private List<MenuItem> analysisMenuItems = new ArrayList<MenuItem>();
+	
 	
 	/**
 	 * Widgets to be shown below the main content area, if any.
@@ -446,8 +448,16 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		menuItems.add(m);
 	}
 	
+	public void addAnalysisMenuItem(MenuItem mi) {
+		analysisMenuItems.add(mi);
+	}
+	
 	public List<MenuItem> menuItems() {
 		return menuItems;
+	}
+	
+	public List<MenuItem> analysisMenuItems() {
+		return analysisMenuItems;
 	}
 	
 	/**

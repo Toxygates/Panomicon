@@ -52,9 +52,14 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	
 	private RootLayoutPanel rootPanel;
 	private DockLayoutPanel mainDockPanel;
-	private MenuBar menuBar;
+	private MenuBar menuBar, analysisMenuBar;
+	
+	//Menu items to be shown to the left of menu items belonging to the current screen.
 	private List<MenuItem> preMenuItems = new LinkedList<MenuItem>();
+	
+	//Menu items to be shown to the right of menu items belonging to the current screen.
 	private List<MenuItem> postMenuItems = new LinkedList<MenuItem>();
+	
 	private HorizontalPanel navPanel;
 	
 	/**
@@ -138,27 +143,59 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	private MenuBar setupMenu() {
 		MenuBar menuBar = new MenuBar(false);
 		menuBar.setWidth("100%");		
-		
-		MenuBar tm = new MenuBar(true);		
-		MenuItem mi = new MenuItem("TargetMine data", tm);
+						
+		analysisMenuBar = new MenuBar(true);
+		MenuItem mi = new MenuItem("Tools", analysisMenuBar);
 		postMenuItems.add(mi);
 		
-		tm.addItem(new MenuItem("Import gene lists...", new Command() {
+		MenuBar targetmineMenu = new MenuBar(true);		
+		mi = new MenuItem("TargetMine data", targetmineMenu);
+		
+		targetmineMenu.addItem(new MenuItem("Import gene lists from TargetMine...", new Command() {
 			public void execute() {
 				new TargetMineData(currentScreen).importLists(true);
 			}
 		}));
 		
-		tm.addItem(new MenuItem("Export gene lists...", new Command() {
+		targetmineMenu.addItem(new MenuItem("Export gene lists to TargetMine...", new Command() {
 			public void execute() {
 				new TargetMineData(currentScreen).exportLists();
 			}
 		}));
-		menuBar.addItem(mi);
+		
+		targetmineMenu.addItem(new MenuItem("Go to TargetMine", new Command() {
+			public void execute() {
+				Utils.urlInNewWindow("Go to TargetMine in a new window?", 
+						"Go", "http://targetmine.nibio.go.jp");
+			}
+		}));
+		analysisMenuBar.addItem(mi);		
+		
+		mi = new MenuItem("Rank compounds...", new Command() {
+			public void execute() {				
+				ColumnScreen cs = (ColumnScreen) screens.get("columns");
+				if (cs.enabled()) {
+					showScreen(cs);
+					cs.displayCompoundRankUI();
+				} else {
+					Window.alert("Please select a dataset to rank compounds.");
+				}
+			}
+		});
+		analysisMenuBar.addItem(mi);
 		
 		MenuBar hm = new MenuBar(true);		
-		mi = new MenuItem("Help", hm);
+		mi = new MenuItem("Help / feedback", hm);
 		postMenuItems.add(mi);
+		mi.getElement().setId("helpMenu");	
+		
+		mi = new MenuItem("Leave feedback...", new Command() {
+			public void execute() {
+				// TODO
+			}
+		});		
+		hm.addItem(mi);		
+		mi.addStyleName("feedbackMenuItem");
 		
 		hm.addItem(new MenuItem("Help for this screen...", new Command() {
 			public void execute() {
@@ -242,15 +279,22 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		if (currentScreen != null) {
 			mainDockPanel.remove(currentScreen);
 			currentScreen.hide();
+			for (MenuItem mi: s.analysisMenuItems()) {
+				analysisMenuBar.removeItem(mi);
+			}
 		}
 		currentScreen = s;
 		menuBar.clearItems();
 		List<MenuItem> allItems = new LinkedList<MenuItem>(preMenuItems);
 		allItems.addAll(s.menuItems());
-		allItems.addAll(postMenuItems);
+		allItems.addAll(postMenuItems);		
 		
 		for (MenuItem mi: allItems) {
 			menuBar.addItem(mi);
+		}
+		
+		for (MenuItem mi: s.analysisMenuItems()) {
+			analysisMenuBar.addItem(mi);
 		}
 		
 		addWorkflowLinks(currentScreen);

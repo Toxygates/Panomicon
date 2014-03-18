@@ -11,7 +11,7 @@ public class TickMenuItem {
 	
 	private final String title;
 	
-	public TickMenuItem(MenuBar mb, String title, boolean initState) {
+	public TickMenuItem(String title, boolean initState, final boolean withImage) {
 		ticked = initState;
 		this.title = title;
 		 
@@ -19,17 +19,27 @@ public class TickMenuItem {
 			@Override
 			public void execute() {
 				ticked = !ticked;
-				setHTML();				
+				setHTML(withImage);				
 				stateChange(ticked);
 			}
 			
 		});
-		setHTML();
+		setHTML(withImage);
+	}
+	
+	public TickMenuItem(MenuBar mb, String title, boolean initState) {
+		this(title, initState, true);
 		mb.addItem(mi);
 	}
 	
-	private void setHTML() {
-		if (ticked) {
+	public MenuItem menuItem() {
+		return mi;
+	}
+	
+	private void setHTML(boolean withImage) {
+		if (!withImage) {
+			mi.setHTML(title);
+		} else if (ticked) {
 			mi.setHTML("<img src=\"images/tick_16.png\">" + title);
 		} else {
 			mi.setHTML("<img src=\"images/blank_16.png\">" + title);

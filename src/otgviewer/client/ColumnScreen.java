@@ -120,4 +120,8 @@ public class ColumnScreen extends Screen {
 	public String getGuideText() {
 		return "Please define at least one sample group to proceed. Start by selecting compounds to the left. Then select doses and times.";
 	}
+	
+	public void displayCompoundRankUI() {
+		tp.selectTab(1);
+	}
 }

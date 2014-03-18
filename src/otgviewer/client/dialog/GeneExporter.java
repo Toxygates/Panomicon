@@ -24,8 +24,9 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  * This is the GUI for exporting gene lists to TargetMine.
- * @author johan
  *
+ * TODO retire this as it has been superseded by authenticated
+ * gene list import/export
  */
 public class GeneExporter extends Composite {
 	private final MatrixServiceAsync kcService = (MatrixServiceAsync) GWT
