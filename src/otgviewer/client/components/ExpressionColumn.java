@@ -36,9 +36,13 @@ public class ExpressionColumn extends Column<ExpressionRow, String> {
 	@Override
 	public void render(final Context context, final ExpressionRow object, 
 			final SafeHtmlBuilder sb) {
-		final String tooltip = object.getValue(i).getTooltip();
-		sb.append(TEMPLATES.startToolTip(tooltip));
-		super.render(context, object, sb);
-		sb.append(TEMPLATES.endToolTip());
+		if (object != null) {
+			final String tooltip = object.getValue(i).getTooltip();
+			sb.append(TEMPLATES.startToolTip(tooltip));
+			super.render(context, object, sb);
+			sb.append(TEMPLATES.endToolTip());
+		} else {
+			super.render(context, object, sb);
+		}
 	}
 }

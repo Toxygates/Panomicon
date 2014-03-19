@@ -96,8 +96,8 @@ public class DataScreen extends Screen {
 								w.storeItemLists(w.getParser());
 							}
 						};
-						w.propagateTo(lc); // ensure it receives the current
-											// lists
+						// TODO make ListChooser use the DataListener propagate mechanism?
+						lc.setLists(chosenItemLists);
 						lc.setItems(Arrays.asList(et.displayedProbes()));
 						lc.saveAction();
 					}
