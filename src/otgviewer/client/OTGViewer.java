@@ -10,6 +10,8 @@ import java.util.Set;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
+import otgviewer.client.dialog.DialogPosition;
+import otgviewer.client.dialog.FeedbackForm;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -191,7 +193,8 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		
 		mi = new MenuItem("Leave feedback...", new Command() {
 			public void execute() {
-				// TODO
+				FeedbackForm feedbackDialog = new FeedbackForm(currentScreen);
+				feedbackDialog.display("Leave feedback", DialogPosition.Center);
 			}
 		});		
 		hm.addItem(mi);		

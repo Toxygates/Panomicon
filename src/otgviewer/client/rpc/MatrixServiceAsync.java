@@ -52,4 +52,7 @@ public interface MatrixServiceAsync {
 	public void exportTargetmineLists(DataFilter fiter, String user, String pass, 
 			StringList[] lists, boolean replace, AsyncCallback<Void> callback);
 	
+	public void sendFeedback(String name, String email, String feedback, 
+			AsyncCallback<Void> callback);
+	
 }

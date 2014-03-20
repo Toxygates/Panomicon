@@ -13,7 +13,6 @@ import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
 import bioweb.shared.array.ExpressionRow;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
@@ -121,6 +120,7 @@ public interface MatrixService extends RemoteService {
 
 	/**
 	 * Import gene lists from a targetmine user account.
+	 * This should not necessarily be in MatrixService...
 	 * @param user
 	 * @param pass
 	 * @param asProbes if true, the items will be imported as affymetrix probes. If false, as genes.
@@ -131,5 +131,11 @@ public interface MatrixService extends RemoteService {
 
 	public void exportTargetmineLists(DataFilter filter, String user, String pass, 
 			StringList[] lists, boolean replace);
+	
+	/**
+	 * Send a feedback email from a user.
+	 * This should not necessarily be in MatrixService.
+	 */
+	public void sendFeedback(String name, String email, String feedback);
 
 }
