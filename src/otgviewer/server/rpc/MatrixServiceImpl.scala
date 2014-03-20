@@ -299,6 +299,17 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     TargetMine.addLists(filter, ls, lists.toList, replace)
   }    
   
-  def sendFeedback(name: String, email: String, feedback: String): Unit = Feedback.send(name, email, feedback)
+  def sendFeedback(name: String, email: String, feedback: String): Unit = {
+    val mm = getSessionData()
+    var state = "(No user state available)"
+    if (mm != null) {
+      if (mm.current != null) {        
+    	  state = "Matrix: " + mm.current.rowKeys.size + " x " + mm.current.columnKeys.size
+    	  state += "\nColumns: " + mm.current.columnKeys.mkString(", ")
+    	  state += "\nData filter: " + mm.filter.toString()
+      }
+    }
+    Feedback.send(name, email, feedback, state)
+  }
   
 }
