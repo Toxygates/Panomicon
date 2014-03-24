@@ -44,7 +44,7 @@ public class FeedbackForm extends InteractionDialog {
 		l = new Label("Comments:");
 		vpanel.add(l);
 		commentArea = new TextArea();
-		commentArea.setCharacterWidth(80);
+		commentArea.setCharacterWidth(60);
 		commentArea.setVisibleLines(10);
 		vpanel.add(commentArea);
 		
