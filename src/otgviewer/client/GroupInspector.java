@@ -376,8 +376,8 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	}
 	
 	private void loadTimeWarningIfNeeded() {
-		int totalSize = 0;
-		for (Group g : groups.values()) {
+		int totalSize = 0;		
+		for (Group g : existingGroupsTable.getSelection()) {
 			for (Barcode b: g.samples()) {
 				if (!b.getDose().equals("Control")) {
 					totalSize += 1;
@@ -385,8 +385,8 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 			}
 		}
 		
-		// Conservatively estimate that we need 1.5 s per sample to load data
-		int loadTime = (int) ((float) totalSize / 1.5);
+		// Conservatively estimate that we load 3 samples per second
+		int loadTime = (int) ((float) totalSize / 3);
 
 		if (loadTime > 20) {
 			Window.alert("Warning: You have requested data for " + totalSize + " samples.\n" +
