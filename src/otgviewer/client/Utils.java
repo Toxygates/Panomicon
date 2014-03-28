@@ -19,6 +19,7 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.FocusWidget;
+import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -271,6 +272,13 @@ public class Utils {
 			vp.setWidth("600px");
 		}
 		Utils.displayInPopup("Help", vp, DialogPosition.Center);
+	}
+	
+	public static void showUrl(String caption, String url) {
+		Frame f = new Frame(url);
+		SimplePanel sp = new SimplePanel(f);
+		f.setSize("600px", "600px");		
+		Utils.displayInPopup(caption, sp, DialogPosition.Center);
 	}
 	
 	public static void ensureVisualisationAndThen(final Runnable r) {
