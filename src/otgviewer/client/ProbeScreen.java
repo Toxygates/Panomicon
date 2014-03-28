@@ -23,6 +23,7 @@ import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.ItemList;
+import bioweb.shared.SharedUtils;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -410,7 +411,7 @@ public class ProbeScreen extends Screen {
 		probesList.clear();
 		for (int i = 0; i < probes.length; ++i) {
 			if (syms[i].length > 0) {
-				probesList.addItem(syms[i][0] + " (" + probes[i] + ")");
+				probesList.addItem(SharedUtils.mkString(syms[i], "/") + " (" + probes[i] + ")");
 			} else {
 				probesList.addItem(probes[i]);
 			}
@@ -450,6 +451,7 @@ public class ProbeScreen extends Screen {
 	public void probesChanged(String[] probes) {
 		probesList.clear();
 		for (String p : probes) {
+			// TODO look up syms here? 
 			probesList.addItem(p);
 		}
 		listedProbes.clear();
