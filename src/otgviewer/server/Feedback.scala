@@ -32,9 +32,6 @@ object Feedback {
 
       m.setSubject(s"[System message] Toxygates user feedback from $user")
       m.setText(s"Feedback from: $user <$email>\n\nMessage: $message\n\nUser state: $userState")
-
-      // At this point we have the option of attaching some user state
-
       Transport.send(m)
     } catch {
       case e: Exception =>
