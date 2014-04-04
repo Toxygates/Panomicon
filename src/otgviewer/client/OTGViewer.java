@@ -226,8 +226,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		
 		hm.addItem(new MenuItem("Version history...", new Command() {
 			public void execute() {
-				Utils.showUrl("Version history", "versions.html");
-//				Utils.showHelp(getVersionHTML(), null);
+				Utils.showHelp(getVersionHTML(), null);
 			}
 		}));
 		

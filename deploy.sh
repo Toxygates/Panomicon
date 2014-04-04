@@ -6,6 +6,7 @@ function makeWar {
     cp -r ../OTGTool/bin/otg war/WEB-INF/classes
     cd war
     cp toxygates.html.$VERSION toxygates.html
+    cp news.html.$VERSION news.html
     cp WEB-INF/web.xml.$VERSION WEB-INF/web.xml
     rm toxygates-$VERSION.war
     zip -x \*.war -r toxygates-$VERSION.war *
