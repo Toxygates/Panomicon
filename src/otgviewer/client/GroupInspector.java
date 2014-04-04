@@ -249,11 +249,19 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 	
+	private String firstChars(String s) {
+		if (s.length() < 8) {
+			return s;
+		} else {
+			return s.substring(0, 8);
+		}
+	}
+	
 	private String suggestGroupName(List<BUnit> units) {
 		String g = "";
 		if (!units.isEmpty()) {
 			BUnit b = units.get(0);
-			g = b.getCompound().substring(0,8) + "/" + 
+			g = firstChars(b.getCompound()) + "/" + 
 					b.getDose().substring(0, 1) + "/" + 
 					b.getTime();
 			if (units.size() > 1) {
@@ -326,10 +334,6 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		newGroup();
 	}
 	
-//	protected void storeColumns(StorageParser p) {
-//		storeColumns(s, keyPrefix(screen));
-//	}
-//	
 	@Override 
 	public void storeColumns(StorageParser p) {
 		super.storeColumns(p);			
@@ -347,7 +351,15 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	 * Get here if save button is clicked
 	 * @param name
 	 */
-	private void makeGroup(String name) {		
+	private void makeGroup(String name) {
+		if (name.trim().equals("")) {
+			Window.alert("Please enter a group name.");
+			return;
+		}
+		if (!StorageParser.isAcceptableString(name, "Unacceptable group name.")) {
+			return;
+		}
+		
 		pendingGroup = new Group(name, new Barcode[0]);
 		addGroup(name, pendingGroup);
 		List<BUnit> units = timeDoseGrid.getSelectedUnits(false);
@@ -364,8 +376,8 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	}
 	
 	private void loadTimeWarningIfNeeded() {
-		int totalSize = 0;
-		for (Group g : groups.values()) {
+		int totalSize = 0;		
+		for (Group g : existingGroupsTable.getSelection()) {
 			for (Barcode b: g.samples()) {
 				if (!b.getDose().equals("Control")) {
 					totalSize += 1;
@@ -373,8 +385,8 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 			}
 		}
 		
-		// Conservatively estimate that we need 1.5 s per sample to load data
-		int loadTime = (int) ((float) totalSize / 1.5);
+		// Conservatively estimate that we load 3 samples per second
+		int loadTime = (int) ((float) totalSize / 3);
 
 		if (loadTime > 20) {
 			Window.alert("Warning: You have requested data for " + totalSize + " samples.\n" +

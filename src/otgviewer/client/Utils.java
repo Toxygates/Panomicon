@@ -8,6 +8,12 @@ import com.google.gwt.dom.client.Style.Float;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.RequestException;
+import com.google.gwt.http.client.Response;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
@@ -19,6 +25,7 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.FocusWidget;
+import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -271,6 +278,31 @@ public class Utils {
 			vp.setWidth("600px");
 		}
 		Utils.displayInPopup("Help", vp, DialogPosition.Center);
+	}
+	
+	public static void loadHTML(String url, RequestCallback callback) {
+		try {
+			RequestBuilder rb = new RequestBuilder(RequestBuilder.GET,
+					URL.encode(url));
+			rb.sendRequest(null, callback);
+		} catch (RequestException e) {
+			Window.alert("Server communication error when attempting to get " + url);
+		}
+	}
+	
+	public abstract static class HTMLCallback implements RequestCallback {
+		
+		@Override
+		public void onResponseReceived(Request request, Response response) {
+			setHTML(response.getText());
+		}
+		
+		abstract protected void setHTML(String html);
+
+		@Override
+		public void onError(Request request, Throwable exception) {
+			Window.alert("Server communication error.");
+		}		
 	}
 	
 	public static void ensureVisualisationAndThen(final Runnable r) {

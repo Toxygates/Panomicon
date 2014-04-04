@@ -59,7 +59,7 @@ public class ColumnScreen extends Screen {
 		cs.addListener(gi);
 		tp.add(gi, "Sample groups");
 		
-		final CompoundRanker cr = new CompoundRanker(cs);
+		final CompoundRanker cr = new CompoundRanker(this, cs);
 		tp.add(Utils.makeScrolled(cr), "Compound ranking (optional)");
 		tp.selectTab(0);		
 
@@ -119,5 +119,9 @@ public class ColumnScreen extends Screen {
 	@Override
 	public String getGuideText() {
 		return "Please define at least one sample group to proceed. Start by selecting compounds to the left. Then select doses and times.";
+	}
+	
+	public void displayCompoundRankUI() {
+		tp.selectTab(1);
 	}
 }

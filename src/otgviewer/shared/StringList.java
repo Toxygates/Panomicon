@@ -5,7 +5,13 @@ import java.util.Collection;
 
 public class StringList extends ItemList {
 
-	private final String[] items;
+	private String[] items;
+	
+	/**
+	 * This constructor is here for GWT serialization
+	 */
+	protected StringList() { }
+	
 	public StringList(String type, String name, String[] items) {
 		super(type, name);
 		this.items = items;
@@ -16,5 +22,13 @@ public class StringList extends ItemList {
 	}
 	
 	public String[] items() { return items; }
+	
+	public int size() {
+		if (items == null) {
+			return 0;
+		} else {
+			return items.length;
+		}
+	}
 	
 }

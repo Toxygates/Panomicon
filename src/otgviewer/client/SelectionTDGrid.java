@@ -54,17 +54,17 @@ public class SelectionTDGrid extends TimeDoseGrid {
 			Panel p = new HorizontalPanel();
 			p.setWidth("3.5em");
 			initWidget(p);
-			cb.setText("");
+			cb.setText("");			
 			cb.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
 					fireUnitsChanged();
-
 				}
 			});			
 			p.add(cb);
 			a = new Anchor("");			
 			p.add(a);
+			a.setTitle("Treated samples/Control samples");
 			l = new Label("(?)");			
 			p.add(l);
 			setUnit(u);
@@ -76,7 +76,9 @@ public class SelectionTDGrid extends TimeDoseGrid {
 				cb.setEnabled(true);
 				l.setText("");
 				a.setEnabled(true);
-				a.setText(" " + unit.getSamples().length + " ");				
+				int treatedCount = unit.getSamples().length;
+				int controlCount = controlUnitFor(unit).getSamples().length;
+				a.setText(" " + treatedCount + "/" + controlCount);				
 				a.addClickHandler(new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
@@ -329,11 +331,17 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	
 	@Override
 	protected void samplesAvailable() {
-		final int nd = numDoses();
+		for (BUnit u: availableUnits) {
+			// Register these first so they can be looked up
+			// later
+			if (u.getDose().equals("Control")) {
+				controlUnits.put(u.toString(), u);
+			}	
+		}
+		
 		for (BUnit u: availableUnits) {
 //			Window.alert(u.toString());
 			if (u.getDose().equals("Control")) {
-				controlUnits.put(u.toString(), u);
 				continue;
 			}
 			if (u.getSamples() == null || u.getSamples().length == 0) {				

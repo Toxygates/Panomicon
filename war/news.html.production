@@ -1,3 +1,4 @@
+<div style="text-align:left">
 <H4>News for version 20140205</H4>
 This version has the following major improvements:
 <ul>
@@ -8,3 +9,5 @@ This version has the following major improvements:
 when the window was resized.</li>
 <li>Added an information popup that describes the samples for a given checkbox on the group definition screen.</li>
 </ul>
+
+</div>

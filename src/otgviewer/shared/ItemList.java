@@ -2,17 +2,24 @@ package otgviewer.shared;
 
 import static otgviewer.client.components.StorageParser.packList;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 import bioweb.shared.Packable;
 
 /**
- * TODO consider moving this class and its subclasses to otgviewer.client
+ * A typed, named list of items.
+ * 
+ * Current supported types are "probes" and "compounds".
+ * However, lists of type probes may actually be gene identifiers (entrez).
  */
-abstract public class ItemList implements Packable {
+abstract public class ItemList implements Packable, Serializable {
 
-	protected final String type;
-	protected final String name;
+	protected String type;
+	protected String name;
+	
+	protected ItemList() { }
+	
 	public ItemList(String type, String name) {
 		this.name = name;
 		this.type = type;
@@ -33,6 +40,8 @@ abstract public class ItemList implements Packable {
 	
 	abstract protected Collection<String> packedItems();
 
+	abstract public int size();
+	
 	public static ItemList unpack(String input) {
 		if (input == null) {
 			return null;

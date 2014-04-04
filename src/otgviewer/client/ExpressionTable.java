@@ -16,7 +16,6 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.FilterEditor;
-import otgviewer.client.dialog.GeneExporter;
 import otgviewer.client.rpc.MatrixService;
 import otgviewer.client.rpc.MatrixServiceAsync;
 import otgviewer.shared.AType;
@@ -39,10 +38,6 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.CloseEvent;
-import com.google.gwt.event.logical.shared.CloseHandler;
-import com.google.gwt.event.logical.shared.OpenEvent;
-import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
@@ -51,16 +46,12 @@ import com.google.gwt.user.cellview.client.PageSizePager;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.SimplePager.Resources;
 import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.DisclosurePanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.AsyncDataProvider;
 import com.google.gwt.view.client.HasData;
@@ -218,22 +209,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		
 		pager.setStyleName("slightlySpaced");
 		horizontalPanel.add(pager);
-		pager.setDisplay(grid);		
-		
-		DisclosurePanel analysisDisclosure = new DisclosurePanel("Analysis");
-		tools.add(analysisDisclosure);
-		analysisDisclosure.addOpenHandler(new OpenHandler<DisclosurePanel>() {			
-			@Override
-			public void onOpen(OpenEvent<DisclosurePanel> event) {
-				screen.showToolbar(analysisTools, 35); //hack for IE8!
-			}
-		});
-		analysisDisclosure.addCloseHandler(new CloseHandler<DisclosurePanel>() {			
-			@Override
-			public void onClose(CloseEvent<DisclosurePanel> event) {
-				screen.hideToolbar(analysisTools);				
-			}
-		});		
+		pager.setDisplay(grid);			
 	}
 	
 	public Widget analysisTools() { return analysisTools; }
@@ -313,43 +289,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			});
 		}
 	}
-	
-	MenuItem[] menuItems() {
-		MenuItem[] r = new MenuItem[2];
-		MenuBar menuBar = new MenuBar(true);
-		
-		MenuItem mActions = new MenuItem("Actions", false, menuBar);		
-		final DataListenerWidget w = this;
-		MenuItem mntmDownloadCsv = new MenuItem("Download CSV...", false, new Command() {
-			public void execute() {
-				matrixService.prepareCSVDownload(new PendingAsyncCallback<String>(w, "Unable to prepare the requested data for download.") {
-					
-					public void handleSuccess(String url) {
-						Utils.urlInNewWindow("Your download is ready.", "Download", url);					
-					}
-				});
-				
-			}
-		});
-		menuBar.addItem(mntmDownloadCsv);
-		
-		MenuItem mi = new MenuItem("Export to TargetMine...", false, new Command() {
-			public void execute() {
-				Utils.displayInPopup("TargetMine export", 
-						new GeneExporter(w, grid.getRowCount()), DialogPosition.Center);
-			}
-		});
-		
-		menuBar.addItem(mi);
-		
-		r[0] = mActions;
-		
-		menuBar = new MenuBar(true);
-		MenuItem mColumns = new MenuItem("Columns", false, menuBar);
-		setupMenuItems(menuBar);
 
-		r[1] = mColumns;
-		return r;
+	public void downloadCSV() {		
+		matrixService.prepareCSVDownload(new PendingAsyncCallback<String>(this, 
+				"Unable to prepare the requested data for download.") {
+			
+			public void handleSuccess(String url) {
+				Utils.urlInNewWindow("Your download is ready.", "Download", url);					
+			}
+		});
 	}
 
 	protected void setupColumns() {
@@ -513,7 +461,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		return r;
 	}
 	
-	protected String[] displayedProbes() { return displayedProbes; }
+	public String[] displayedProbes() { return displayedProbes; }
 	protected String probeForRow(ExpressionRow row) { return row.getProbe(); }
 	protected String[] geneIdsForRow(ExpressionRow row) { return row.getGeneIds(); }
 	
@@ -525,10 +473,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	 */
 	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
 		private Range range;
-		
+		final String errMsg = "Unable to obtain data. If you have not used Toxygates in a while, try reloading the page.";
 		AsyncCallback<List<ExpressionRow>> rowCallback = new AsyncCallback<List<ExpressionRow>>() {
 			public void onFailure(Throwable caught) {
-				Window.alert("Unable to get expression values: " + caught.getMessage());
+				loadedData = false;
+				Window.alert(errMsg);
 			}
 
 			public void onSuccess(List<ExpressionRow> result) {
@@ -543,7 +492,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 					highlightedRow = -1;							
 					getAssociations();
 				} else {
-					Window.alert("Unable to obtain data. If you have not used Toxygates in a while, try reloading the page.");
+					Window.alert(errMsg);
 				}
 			}
 		};
@@ -582,6 +531,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		}
 		
 		chartBarcodes = null;
+		loadedData = false;
 	}
 	
 	/**
@@ -640,7 +590,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 							setupColumns();
 							setMatrix(result);							
 						} else {
-							Window.alert("No data was available. If you have not used Toxygates for a while, try reloading the page.");
+							Window.alert("No data was available. If you have not used " +
+									"Toxygates for a while, try reloading the page.");
 						}
 					}
 				});
@@ -649,7 +600,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	/**
 	 * This cell displays an image that can be clicked to display charts.
 	 * @author johan
-	 *
 	 */
 	class ToolCell extends ImageClickCell.StringImageClickCell {
 		

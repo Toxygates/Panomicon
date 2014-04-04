@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.ManagedMatrixInfo;
+import otgviewer.shared.StringList;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
 import bioweb.shared.array.ExpressionRow;
@@ -116,5 +117,25 @@ public interface MatrixService extends RemoteService {
 	 * Get the GeneIDs currently being displayed. If limit is -1, no limit will be applied.
 	 */
 	public String[] getGenes(int limit);
+
+	/**
+	 * Import gene lists from a targetmine user account.
+	 * This should not necessarily be in MatrixService...
+	 * @param user
+	 * @param pass
+	 * @param asProbes if true, the items will be imported as affymetrix probes. If false, as genes.
+	 * @return
+	 */
+	public StringList[] importTargetmineLists(DataFilter filter, String user, 
+			String pass, boolean asProbes);
+
+	public void exportTargetmineLists(DataFilter filter, String user, String pass, 
+			StringList[] lists, boolean replace);
+	
+	/**
+	 * Send a feedback email from a user.
+	 * This should not necessarily be in MatrixService.
+	 */
+	public void sendFeedback(String name, String email, String feedback);
 
 }

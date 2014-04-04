@@ -148,6 +148,16 @@ exprGrid {
 	cursor: pointer;
 }
 
+#helpMenu {
+	font-weight: bold;
+	color: green;
+}
+
+.feedbackMenuItem {
+	font-weight: bold;
+	color: green;
+}
+
 /* This must correspond to the colors in Group.java
 */
 .Group0 {

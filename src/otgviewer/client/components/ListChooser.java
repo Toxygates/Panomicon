@@ -70,33 +70,10 @@ public class ListChooser extends DataListenerWidget {
 		hp.add(listBox);
 		
 		Button b = new Button("Save");
-		b.addClickHandler(new ClickHandler() {
-			
+		b.addClickHandler(new ClickHandler() {			
 			@Override
 			public void onClick(ClickEvent event) {
-				InputDialog entry = new InputDialog("Please enter a name for the list.") {
-					@Override
-					protected void onChange(String value) {
-						if (value == null) {
-							inputDialog.setVisible(false);
-							return;
-						}
-						if (!value.trim().equals("")) {
-							if (!isPredefinedListName(value)) {
-								lists.put(value.trim(), currentItems);
-								refreshSelector();
-								listsChanged(getLists());
-							} else {
-								Window.alert("This name is reserved for the system and cannot be used.");
-							}
-						} else {
-							Window.alert("You must enter a non-empty name.");
-						}
-
-						inputDialog.setVisible(false);
-					}
-				};				
-				inputDialog = Utils.displayInPopup("Name entry", entry, DialogPosition.Center); 				
+				preSaveAction();		
 			}
 		});
 		hp.add(b);
@@ -105,25 +82,65 @@ public class ListChooser extends DataListenerWidget {
 		b.addClickHandler(new ClickHandler() {			
 			@Override
 			public void onClick(ClickEvent event) {
-				int idx = listBox.getSelectedIndex();
-				if (idx == -1) {
-					Window.alert("You must select a list first.");
-					return;
-				}
-				String sel = listBox.getItemText(idx);
-				if (lists.containsKey(sel)) {
-					if (isPredefinedListName(sel)) {
-						Window.alert("Cannot delete a predefined list.");
-					} else {
-						//should probably have confirmation here
-						lists.remove(sel);
-						refreshSelector();
-						listsChanged(getLists());
-					}
-				}				
+				deleteAction();				
 			}
 		});
 		hp.add(b);
+	}
+	
+	protected void preSaveAction() {
+		saveAction();
+	}
+	
+	public void saveAction() {
+		InputDialog entry = new InputDialog("Please enter a name for the list.") {
+			@Override
+			protected void onChange(String value) {
+				try {				
+					if (value == null) {
+						return;
+					}
+					if (value.trim().equals("")) {
+						Window.alert("You must enter a non-empty name.");
+						return;
+					}
+					if (isPredefinedListName(value)) {
+						Window.alert("This name is reserved for the system and cannot be used.");
+						return;
+					}
+					if (!StorageParser.isAcceptableString(value,
+							"Unacceptable list name.")) {
+						return;
+					}
+					// Passed all the checks
+					lists.put(value.trim(), currentItems);
+					refreshSelector();
+					listsChanged(getLists());
+				} finally {
+					inputDialog.setVisible(false);
+				}
+			}
+		};				
+		inputDialog = Utils.displayInPopup("Name entry", entry, DialogPosition.Center); 	
+	}
+	
+	protected void deleteAction() {
+		int idx = listBox.getSelectedIndex();
+		if (idx == -1) {
+			Window.alert("You must select a list first.");
+			return;
+		}
+		String sel = listBox.getItemText(idx);
+		if (lists.containsKey(sel)) {
+			if (isPredefinedListName(sel)) {
+				Window.alert("Cannot delete a predefined list.");
+			} else {
+				//should probably have confirmation here
+				lists.remove(sel);
+				refreshSelector();
+				listsChanged(getLists());
+			}
+		}				
 	}
 	
 	private void refreshSelector() {

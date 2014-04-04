@@ -48,6 +48,12 @@ import otg.db.kyotocabinet.KCMicroarrayDB
 import otgviewer.server.FoldValueMatrix
 import otgviewer.shared.ManagedMatrixInfo
 import otgviewer.server.ApplicationClass
+import otgviewer.shared.StringList
+import org.intermine.webservice.client.core.ServiceFactory
+import org.intermine.webservice.client.services.ListService
+import otgviewer.server.TargetMine
+import otgviewer.server.Feedback
+import otgviewer.shared.NoDataLoadedException
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
@@ -77,6 +83,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     
     OwlimLocalRDF.setContextForAll(context)
     OTGSamples.connect
+    AffyProbes.connect
     println("Microarray databases are open")
   }
 
@@ -86,8 +93,15 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     super.destroy()
   }
   
-  def getSessionData(): ManagedMatrix[_] = 
-    getThreadLocalRequest().getSession().getAttribute("matrix").asInstanceOf[ManagedMatrix[_]]
+  @throws(classOf[NoDataLoadedException])
+  def getSessionData(): ManagedMatrix[_] = {
+    val r = getThreadLocalRequest().getSession().getAttribute("matrix").asInstanceOf[ManagedMatrix[_]]
+    if (r == null) {
+      throw new NoDataLoadedException()
+    }
+    r
+  }
+    
   
   def setSessionData(m: ManagedMatrix[_]) =
     getThreadLocalRequest().getSession().setAttribute("matrix", m)
@@ -96,12 +110,27 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
   def identifiersToProbes(filter: DataFilter, identifiers: Array[String], precise: Boolean): Array[String] =
     AffyProbes.identifiersToProbes(filter, identifiers, precise).map(_.identifier).toArray
 
+    /**
+     * Filter probes for one species.
+     */
   private def filterProbes(probes: Seq[String])(implicit filter: DataFilter): Seq[String] = {
     val pmap = context.probes(filter)
     if (probes == null || probes.size == 0) {
       pmap.tokens.toSeq
     } else {
       probes.filter(pmap.isToken)      
+    }
+  }
+
+  /**
+   * Filter probes for all species.
+   */
+  private def filterProbesAllSpecies(probes: Seq[String]): Seq[String] = {
+    val pmaps = otg.Species.values.toList.map(context.probes(_))
+    if (probes == null || probes.size == 0) {
+      throw new Exception("Requesting all probes for all species is not permitted.")
+    } else {
+      probes.filter(p => pmaps.exists(m => m.isToken(p)))
     }
   }
   
@@ -143,6 +172,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     selectProbes(probes)
   }
 
+  @throws(classOf[NoDataLoadedException])
   def selectProbes(probes: Array[String]): ManagedMatrixInfo = {
     if (probes != null) {
       println("Refilter probes: " + probes.length)      
@@ -160,6 +190,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     mm.info
   }
   
+  @throws(classOf[NoDataLoadedException])
   def setColumnThreshold(column: Int, threshold: java.lang.Double): ManagedMatrixInfo = {
     val mm = getSessionData 
     println(s"Filter column $column at $threshold")
@@ -167,6 +198,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     mm.info
   }
 
+  @throws(classOf[NoDataLoadedException])
   def datasetItems(offset: Int, size: Int, sortColumn: Int,
     ascending: Boolean): JList[ExpressionRow] = {
 
@@ -224,12 +256,15 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     new ArrayList[ExpressionRow](rows)
   }
 
+  @throws(classOf[NoDataLoadedException])
   def addTwoGroupTest(test: Synthetic.TwoGroupSynthetic): Unit = 
     getSessionData.addSynthetic(test)
   
+  @throws(classOf[NoDataLoadedException])
   def removeTwoGroupTests(): Unit = 
     getSessionData.removeSynthetics
     
+  @throws(classOf[NoDataLoadedException])
   def prepareCSVDownload(): String = {
     import BioObjects._
     val mm = getSessionData()
@@ -249,6 +284,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     })
   }
 
+  @throws(classOf[NoDataLoadedException])
   def getGenes(limit: Int): Array[String] = {
     val mm = getSessionData()
 
@@ -263,4 +299,32 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
       geneIds.flatten.map(_.identifier).toArray
     })
   }
+  
+  def importTargetmineLists(filter: DataFilter, user: String, pass: String,
+    asProbes: Boolean): Array[StringList] = {
+    val ls = TargetMine.getListService(user, pass)    
+    val tmLists = ls.getAccessibleLists()
+    tmLists.filter(_.getType == "Gene").map(
+        l => TargetMine.asTGList(l, filterProbesAllSpecies(_))).toArray
+  }
+
+  def exportTargetmineLists(filter: DataFilter, user: String, pass: String,
+    lists: Array[StringList], replace: Boolean): Unit = {
+    val ls = TargetMine.getListService(user, pass)
+    TargetMine.addLists(filter, ls, lists.toList, replace)
+  }    
+  
+  def sendFeedback(name: String, email: String, feedback: String): Unit = {
+    val mm = getSessionData()
+    var state = "(No user state available)"
+    if (mm != null) {
+      if (mm.current != null) {        
+    	  state = "Matrix: " + mm.current.rowKeys.size + " x " + mm.current.columnKeys.size
+    	  state += "\nColumns: " + mm.current.columnKeys.mkString(", ")
+    	  state += "\nData filter: " + mm.filter.toString()
+      }
+    }
+    Feedback.send(name, email, feedback, state)
+  }
+  
 }
