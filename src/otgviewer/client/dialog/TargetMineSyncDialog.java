@@ -1,77 +1,74 @@
 package otgviewer.client.dialog;
 
 import otgviewer.client.Utils;
+import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.InputGrid;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 
-public class TargetMineSyncDialog extends Composite {
-
-	final TextBox userText = new TextBox();
-	final TextBox passText = new PasswordTextBox();
-	final CheckBox replaceCheck = new CheckBox("Replace lists with identical names");
+abstract public class TargetMineSyncDialog extends InteractionDialog {
 	
-	public TargetMineSyncDialog(String action) {
+	CheckBox replaceCheck = new CheckBox("Replace lists with identical names");
+	InputGrid ig;
+	String action;
+	
+	public TargetMineSyncDialog(DataListenerWidget parent, String action) {
+		super(parent);
+		this.action = action;
+	}
+	
+	protected Widget content() {
 		VerticalPanel vp = new VerticalPanel();
 		vp.setWidth("400px");
-		initWidget(vp);
+
 		Label l = new Label("You must have a TargetMine account in order to use " +
 				"this function. If you do not have one, you may create one " +
 				"at http://targetmine.nibio.go.jp.");
 		l.setWordWrap(true);
 		vp.add(l);
-		Grid g = new Grid(2, 2);
-		l = new Label("Account name (e-mail address)");
-		g.setWidget(0, 0, l);
-		l = new Label("Password");
-		g.setWidget(1, 0, l);
-		g.setWidget(0, 1, userText);
-		g.setWidget(1, 1, passText);
-		userText.setWidth("20em");
-		passText.setWidth("20em");
-		vp.add(g);
+		
+		ig = new InputGrid("Account name (e-mail address)", "Password") {
+			@Override
+			protected TextBox initTextBox(int i) {
+				if (i == 1) {
+					return new PasswordTextBox();
+				} else {
+					return super.initTextBox(i);
+				}
+			}
+		};		
+		vp.add(ig);
 		vp.add(replaceCheck);
 		
 		Button b = new Button(action);
 		b.addClickHandler(new ClickHandler() {			
 			@Override
 			public void onClick(ClickEvent event) {
-				if (userText.getValue().trim().equals("") || passText.getValue().trim().equals("")) {
+				if (ig.getValue(0).trim().equals("") || ig.getValue(1).trim().equals("")) {
 					Window.alert("Please enter both your account name and password.");
 				} else {
-					userProceed(userText.getValue(), passText.getValue(), replaceCheck.getValue());
+					userProceed(ig.getValue(0), ig.getValue(1), replaceCheck.getValue());
 				}
 			}
 		});
 
-		Button b2 = new Button("Cancel");
-		b2.addClickHandler(new ClickHandler() {			
-			@Override
-			public void onClick(ClickEvent event) {
-				userCancelled();				
-			}
-		});
+		Button b2 = new Button("Cancel", cancelHandler());
+		
 		HorizontalPanel hp = Utils.mkHorizontalPanel(true, b, b2);
 		vp.add(hp);
+		return vp;
 	}
 	
-	protected void userProceed(String user, String pass, boolean replace) {
-		
-	}
-	
-	// TODO factor out this mechanism
-	protected void userCancelled() {
-		
-	}
+	abstract protected void userProceed(String user, String pass, boolean replace);
 
 }

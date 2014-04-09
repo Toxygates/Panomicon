@@ -18,7 +18,6 @@ import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.cellview.client.SafeHtmlHeader;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.MenuBar;
 
 /**
  * A data grid with functionality for hiding columns and displaying 
@@ -210,30 +209,29 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	
 	abstract protected List<HideableColumn> initHideableColumns();
 	
-	/**
-	 * Create tick menu items corresponding to the hideable columns.
-	 * @param mb
-	 */
-	protected void setupMenuItems(MenuBar mb) {
-		for (final HideableColumn c: hideableColumns) {
-			new TickMenuItem(mb, c.name(), c.visible()) {
-				@Override
-				public void stateChange(boolean newState) {
-					c.setVisibility(newState);	
-					if (newState) {
-						addExtraColumn(((Column<T, ?>) c), c.name());					
-					} else {
-						removeExtraColumn((Column<T, ?>) c);
-					}				
-
-				}				
-			};
-		}
+	public List<HideableColumn> getHideableColumns() {
+		return hideableColumns;
 	}
 	
-	protected interface HideableColumn {
+	/**
+	 * External users should use this to set a column's visibility,
+	 * rather than the hc.setVisibility method.
+	 * @param hc
+	 */
+	public void setVisible(HideableColumn hc, boolean newState) {
+		hc.setVisibility(newState);	
+		if (newState) {
+			addExtraColumn(((Column<T, ?>) hc), hc.name());					
+		} else {
+			removeExtraColumn((Column<T, ?>) hc);
+		}				
+	}
+	
+	public interface HideableColumn {
 		String name();
 		boolean visible();
+		
+		// TODO consider not exposing this
 		void setVisibility(boolean v);		
 	}
 	

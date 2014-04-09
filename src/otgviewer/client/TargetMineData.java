@@ -10,6 +10,7 @@ import java.util.Map;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.dialog.DialogPosition;
+import otgviewer.client.dialog.InteractionDialog;
 import otgviewer.client.dialog.TargetMineSyncDialog;
 import otgviewer.client.rpc.MatrixService;
 import otgviewer.client.rpc.MatrixServiceAsync;
@@ -36,18 +37,15 @@ public class TargetMineData {
 
 	DialogBox dialog;
 	public void importLists(final boolean asProbes) {
-		final Widget ui = new TargetMineSyncDialog("Import") {
+		InteractionDialog ui = new TargetMineSyncDialog(parent, "Import") {
 			@Override 
 			protected void userProceed(String user, String pass, boolean replace) {
 				doImport(user, pass, asProbes, replace);
-				dialog.setVisible(false);
+				super.userProceed();
 			}
-			@Override 
-			protected void userCancelled() {
-				dialog.setVisible(false);
-			}
+			
 		};
-		dialog = Utils.displayInPopup("TargetMine import details", ui, DialogPosition.Center);
+		ui.display("TargetMine import details", DialogPosition.Center);
 	}
 	
 	public void doImport(final String user, final String pass, final boolean asProbes, 
@@ -65,18 +63,15 @@ public class TargetMineData {
 	}
 
 	public void exportLists() {
-		final Widget ui = new TargetMineSyncDialog("Export") {
+		InteractionDialog ui = new TargetMineSyncDialog(parent, "Export") {
 			@Override 
 			protected void userProceed(String user, String pass, boolean replace) {
 				doExport(user, pass, pickProbeLists(parent.chosenItemLists), replace);
-				dialog.setVisible(false);
+				super.userProceed();
 			}
-			@Override 
-			protected void userCancelled() {
-				dialog.setVisible(false);
-			}
+			
 		};
-		dialog = Utils.displayInPopup("TargetMine export details", ui, DialogPosition.Center);
+		ui.display("TargetMine export details", DialogPosition.Center);
 	}
 	
 	 // Could factor out code that is shared with doImport, but the two dialogs may diverge
