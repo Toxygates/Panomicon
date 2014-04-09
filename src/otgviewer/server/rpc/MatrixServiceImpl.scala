@@ -19,7 +19,6 @@ import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import javax.servlet.ServletException
 import javax.servlet.http.HttpSession
-import otg.CSVHelper
 import otg.ExprValue
 import otg.ExprValue
 import otg.OTGContext
@@ -54,6 +53,7 @@ import org.intermine.webservice.client.services.ListService
 import otgviewer.server.TargetMine
 import otgviewer.server.Feedback
 import otgviewer.shared.NoDataLoadedException
+import otgviewer.server.CSVHelper
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
