@@ -53,6 +53,7 @@ import org.intermine.webservice.client.core.ServiceFactory
 import org.intermine.webservice.client.services.ListService
 import otgviewer.server.TargetMine
 import otgviewer.server.Feedback
+import otgviewer.shared.NoDataLoadedException
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
@@ -92,8 +93,15 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     super.destroy()
   }
   
-  def getSessionData(): ManagedMatrix[_] = 
-    getThreadLocalRequest().getSession().getAttribute("matrix").asInstanceOf[ManagedMatrix[_]]
+  @throws(classOf[NoDataLoadedException])
+  def getSessionData(): ManagedMatrix[_] = {
+    val r = getThreadLocalRequest().getSession().getAttribute("matrix").asInstanceOf[ManagedMatrix[_]]
+    if (r == null) {
+      throw new NoDataLoadedException()
+    }
+    r
+  }
+    
   
   def setSessionData(m: ManagedMatrix[_]) =
     getThreadLocalRequest().getSession().setAttribute("matrix", m)
@@ -164,6 +172,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     selectProbes(probes)
   }
 
+  @throws(classOf[NoDataLoadedException])
   def selectProbes(probes: Array[String]): ManagedMatrixInfo = {
     if (probes != null) {
       println("Refilter probes: " + probes.length)      
@@ -181,6 +190,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     mm.info
   }
   
+  @throws(classOf[NoDataLoadedException])
   def setColumnThreshold(column: Int, threshold: java.lang.Double): ManagedMatrixInfo = {
     val mm = getSessionData 
     println(s"Filter column $column at $threshold")
@@ -188,6 +198,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     mm.info
   }
 
+  @throws(classOf[NoDataLoadedException])
   def datasetItems(offset: Int, size: Int, sortColumn: Int,
     ascending: Boolean): JList[ExpressionRow] = {
 
@@ -245,12 +256,15 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     new ArrayList[ExpressionRow](rows)
   }
 
+  @throws(classOf[NoDataLoadedException])
   def addTwoGroupTest(test: Synthetic.TwoGroupSynthetic): Unit = 
     getSessionData.addSynthetic(test)
   
+  @throws(classOf[NoDataLoadedException])
   def removeTwoGroupTests(): Unit = 
     getSessionData.removeSynthetics
     
+  @throws(classOf[NoDataLoadedException])
   def prepareCSVDownload(): String = {
     import BioObjects._
     val mm = getSessionData()
@@ -270,6 +284,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     })
   }
 
+  @throws(classOf[NoDataLoadedException])
   def getGenes(limit: Int): Array[String] = {
     val mm = getSessionData()
 

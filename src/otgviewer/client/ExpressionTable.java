@@ -290,9 +290,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		}
 	}
 
-	public void downloadCSV() {
-		final DataListenerWidget w = this;
-		matrixService.prepareCSVDownload(new PendingAsyncCallback<String>(w, 
+	public void downloadCSV() {		
+		matrixService.prepareCSVDownload(new PendingAsyncCallback<String>(this, 
 				"Unable to prepare the requested data for download.") {
 			
 			public void handleSuccess(String url) {
@@ -474,10 +473,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	 */
 	class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
 		private Range range;
-		
+		final String errMsg = "Unable to obtain data. If you have not used Toxygates in a while, try reloading the page.";
 		AsyncCallback<List<ExpressionRow>> rowCallback = new AsyncCallback<List<ExpressionRow>>() {
 			public void onFailure(Throwable caught) {
-				Window.alert("Unable to get expression values: " + caught.getMessage());
+				loadedData = false;
+				Window.alert(errMsg);
 			}
 
 			public void onSuccess(List<ExpressionRow> result) {
@@ -492,7 +492,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 					highlightedRow = -1;							
 					getAssociations();
 				} else {
-					Window.alert("Unable to obtain data. If you have not used Toxygates in a while, try reloading the page.");
+					Window.alert(errMsg);
 				}
 			}
 		};
@@ -531,6 +531,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		}
 		
 		chartBarcodes = null;
+		loadedData = false;
 	}
 	
 	/**
@@ -589,7 +590,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 							setupColumns();
 							setMatrix(result);							
 						} else {
-							Window.alert("No data was available. If you have not used Toxygates for a while, try reloading the page.");
+							Window.alert("No data was available. If you have not used " +
+									"Toxygates for a while, try reloading the page.");
 						}
 					}
 				});
@@ -598,7 +600,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	/**
 	 * This cell displays an image that can be clicked to display charts.
 	 * @author johan
-	 *
 	 */
 	class ToolCell extends ImageClickCell.StringImageClickCell {
 		
