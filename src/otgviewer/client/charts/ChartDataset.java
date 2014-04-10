@@ -139,11 +139,11 @@ public class ChartDataset {
 				}
 				dt.setFormattedValue(cat, col, Utils.formatNumber(s.value) + ":" + s.call);
 				String style = "fill-color:" + s.color + "; stroke-width:1px; ";
-				if (s.call == 'P') {
-					style += "stroke-color: black";
-				} else {
-					style += "stroke-color: grey";
-				}
+//				if (s.call == 'P') {
+//					style += "stroke-color: black";
+//				} else {
+//					style += "stroke-color: grey";
+//				}
 					
 				dt.setValue(cat, col + 1, style);
 				valCount[cat]++;

@@ -8,6 +8,8 @@ import java.util.List;
 import otgviewer.client.charts.AdjustableChartGrid;
 import otgviewer.client.charts.ChartGridFactory;
 import otgviewer.client.charts.ChartGridFactory.AChartAcceptor;
+import otgviewer.client.charts.google.GVizChartGrid;
+import otgviewer.client.charts.google.GVizCharts;
 import otgviewer.client.components.AssociationTable;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ExpressionColumn;

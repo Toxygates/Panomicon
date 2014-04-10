@@ -40,8 +40,6 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 
 		abstract DatasetInfo[][] makeDatasetInfo();
 		
-		boolean versionHistory() { return true; }
-		
 		final private HTML newsHtml = new HTML();
 		
 		Widget content() {
@@ -136,9 +134,6 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 		TextResource topBanner() {
 			return resources.adjuvantBannerHTML();
 		}
-		
-		@Override
-		boolean versionHistory() { return false; }
 		
 		DatasetInfo makeInfo(DataFilter filter) {
 			return new DatasetInfo(filter, ds, false);
