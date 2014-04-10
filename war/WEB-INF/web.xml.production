@@ -14,28 +14,36 @@
 		<param-value>/opt/toxygates</param-value>
 	</context-param>
  	<context-param>
-                 <param-name>csvDir</param-name>
-                 <param-value>/opt/apache-tomcat-6.0.36/webapps/toxygates/csv</param-value>
-        </context-param>
-        <context-param>
-                 <param-name>csvUrlBase</param-name>
-                 <param-value>http://toxygates.nibio.go.jp:8080/toxygates/csv</param-value>
-        </context-param>
+		<param-name>csvDir</param-name>
+		<param-value>/opt/apache-tomcat-6.0.36/webapps/toxygates/csv</param-value>
+	</context-param>
+	<context-param>
+		<param-name>csvUrlBase</param-name>
+		<param-value>http://toxygates.nibio.go.jp:8080/toxygates/csv</param-value>
+	</context-param>
+	<context-param>
+		<param-name>foldsDBVersion</param-name>
+		<param-value>1</param-value>
+	</context-param>
+	<context-param>
+		<param-name>applicationClass</param-name>
+		<param-value>Toxygates</param-value>
+	</context-param>
   <!-- Servlets -->
 
 	<servlet>
 		<servlet-name>sparqlServlet</servlet-name>
-		<servlet-class>otgviewer.server.SparqlServiceImpl</servlet-class>
+		<servlet-class>otgviewer.server.rpc.SparqlServiceImpl</servlet-class>
 	</servlet>
 
 	<servlet>
 		<servlet-name>seriesServlet</servlet-name>
-		<servlet-class>otgviewer.server.SeriesServiceImpl</servlet-class>
+		<servlet-class>otgviewer.server.rpc.SeriesServiceImpl</servlet-class>
 	</servlet>
 
 	<servlet>
-		<servlet-name>kcServlet</servlet-name>
-		<servlet-class>otgviewer.server.KCServiceImpl</servlet-class>
+		<servlet-name>matrixServlet</servlet-name>
+		<servlet-class>otgviewer.server.rpc.MatrixServiceImpl</servlet-class>
 	</servlet>
 
 	<servlet-mapping>
@@ -49,8 +57,8 @@
 	</servlet-mapping>
 
 	<servlet-mapping>
-		<servlet-name>kcServlet</servlet-name>
-    		<url-pattern>/toxygates/KC</url-pattern>
+		<servlet-name>matrixServlet</servlet-name>
+    	<url-pattern>/toxygates/matrix</url-pattern>
   	</servlet-mapping>
   
   <!-- Default page to serve -->

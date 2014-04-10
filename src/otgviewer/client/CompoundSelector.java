@@ -15,25 +15,26 @@ import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.StackedListEditor;
+import otgviewer.client.dialog.DialogPosition;
+import otgviewer.client.rpc.SeriesService;
+import otgviewer.client.rpc.SeriesServiceAsync;
+import otgviewer.client.rpc.SparqlService;
+import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.ItemList;
 import otgviewer.shared.MatchResult;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.IdentityColumn;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.NoSelectionModel;
 
@@ -66,43 +67,42 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	
 	private Widget north;
 	private Screen screen;
-	
-	/**
-	 * @wbp.parser.constructor
-	 */
-	public CompoundSelector() {
-		this(null, "Compounds");
-	}
 
-	public CompoundSelector(Screen screen, String heading) {
+	public CompoundSelector(final Screen screen, String heading) {
 		this.screen = screen;
-		dp = new DockLayoutPanel(Unit.EM);
+		dp = new DockLayoutPanel(Unit.PX);
 
 		initWidget(dp);
 		Label lblCompounds = new Label(heading);
 		lblCompounds.setStyleName("heading");
-		dp.addNorth(lblCompounds, 2.5);
+		dp.addNorth(lblCompounds, 40);
 		north = lblCompounds;
 		
 		boolean isAdjuvant = screen.manager().getUIType().equals("adjuvant");
 		
-		compoundEditor = new StackedListEditor("Compound", 
-				TemporaryCompoundLists.predefinedLists(),
-				isAdjuvant) {
+		final Map<String, List<String>> predefLists = 
+				(isAdjuvant ? TemporaryCompoundLists.predefinedLists() 
+						: new HashMap<String, List<String>>());
+		
+		compoundEditor = new StackedListEditor(this, "compounds", "Compound", 
+				predefLists) {
 			@Override
 			protected void selectionChanged(Set<String> selected) {
 				List<String> r = new ArrayList<String>();
-				r.addAll(selected);
+				r.addAll(selected); 
 				Collections.sort(r);
 				changeCompounds(r);
+			}		
+			
+			@Override
+			protected void listsChanged(List<ItemList> itemLists) {
+				screen.itemListsChanged(itemLists);
+				screen.storeItemLists(getParser(screen));
 			}
-		
 		};		
-				
-		dp.add(compoundEditor);
 		
-//		compoundEditor.setWidth("300px");
-//		compoundEditor.setHeight("500px");
+		compoundEditor.displayPicker();
+		dp.add(compoundEditor);	
 		compoundEditor.table().setSelectionModel(new NoSelectionModel<String>());		
 	}
 	
@@ -164,10 +164,15 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 				loadCompounds();
 				compoundEditor.clearSelection();				
 			}
-		});
-		
+		});		
 	}
 	
+	@Override
+	public void itemListsChanged(List<ItemList> lists) {
+		super.itemListsChanged(lists);
+		compoundEditor.setLists(lists);
+	}
+
 	public List<String> getCompounds() {				
 		List<String> r = new ArrayList<String>();
 		r.addAll(compoundEditor.getSelection());		
@@ -202,8 +207,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	}
 	
 	public void resizeInterface() {
-		dp.setWidgetSize(north, 2.5);	
-//		compoundEditor.resizeInterface();
+		dp.setWidgetSize(north, 40);	
 	}
 
 	void performRanking(List<String> rankProbes, List<RankRule> rules) {
@@ -236,10 +240,10 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		}
 	}
 	
-	class ChartClickCell extends ImageClickCell {
+	class ChartClickCell extends ImageClickCell.StringImageClickCell {
 		final DataListenerWidget w;
 		public ChartClickCell(DataListenerWidget w) {
-			super(resources.chart());
+			super(resources.chart(), false);
 			this.w = w;
 		}
 		

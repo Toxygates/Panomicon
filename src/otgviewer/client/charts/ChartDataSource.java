@@ -5,18 +5,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import otgviewer.client.KCService;
-import otgviewer.client.KCServiceAsync;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
+import otgviewer.client.rpc.MatrixService;
+import otgviewer.client.rpc.MatrixServiceAsync;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Series;
+import otgviewer.shared.TimesDoses;
+import otgviewer.shared.ValueType;
 import bioweb.shared.SharedUtils;
 import bioweb.shared.array.ExpressionRow;
 import bioweb.shared.array.ExpressionValue;
-import otgviewer.shared.TimesDoses;
-import otgviewer.shared.ValueType;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
@@ -36,17 +36,20 @@ abstract class ChartDataSource {
 		String dose;
 		String compound;
 		double value;
+		char call;
 		Barcode barcode; //may be null
-		String probe; 
+		String probe;
+		String color = "grey";
 		
 		ChartSample(String time, String dose, String compound, 
-				double value, Barcode barcode, String probe) {
+				double value, Barcode barcode, String probe, char call) {
 			this.time = time;
 			this.dose = dose;
 			this.compound = compound;
 			this.value = value;
 			this.barcode = barcode;
 			this.probe = probe;
+			this.call = call;
 		}
 		
 		@Override
@@ -79,8 +82,15 @@ abstract class ChartDataSource {
 		}
 	}
 	
-	void getSamples(String[] compounds, String[] dosesOrTimes, SampleAcceptor acceptor) {
+	private void applyPolicy(ColorPolicy policy, List<ChartSample> samples) {
+		for (ChartSample s: samples) {
+			s.color = policy.colorFor(s);
+		}
+	}
+	
+	void getSamples(String[] compounds, String[] dosesOrTimes, ColorPolicy policy, SampleAcceptor acceptor) {
 		if (compounds == null) {
+			applyPolicy(policy, samples);
 			acceptor.accept(samples);			
 		} else {
 			//We store these in a set since we may be getting the same samples several times
@@ -89,11 +99,12 @@ abstract class ChartDataSource {
 				if (SharedUtils.indexOf(compounds, s.compound) != -1) {
 					if (dosesOrTimes == null || SharedUtils.indexOf(dosesOrTimes, s.dose) != -1 || 
 							SharedUtils.indexOf(dosesOrTimes, s.time) != -1) {
-						r.add(s);					
+						r.add(s);			
+						s.color = policy.colorFor(s);
 					}
 				}
 			}
-			acceptor.accept(new ArrayList(r));			
+			acceptor.accept(new ArrayList<ChartSample>(r));			
 		}		 
 	}
 	
@@ -104,7 +115,6 @@ abstract class ChartDataSource {
 	
 	String[] times() { return _times; }
 	String[] doses() { return _doses; }
-	
 	
 	protected void init() {
 		List<String> times = new ArrayList<String>();
@@ -118,7 +128,7 @@ abstract class ChartDataSource {
 	
 		List<String> doses = new ArrayList<String>();
 		for (ChartDataSource.ChartSample s: samples) {
-			if (!doses.contains(s.dose) && !s.dose.equals("Control")) {
+			if (!doses.contains(s.dose)) {
 				doses.add(s.dose);
 			}
 		}
@@ -131,7 +141,8 @@ abstract class ChartDataSource {
 			for (Series s: series) {				
 				for (int i = 0; i < s.values().length; ++i) {
 					ExpressionValue ev = s.values()[i];					
-					ChartSample cs = new ChartSample(times[i], s.timeDose(), s.compound(), ev.getValue(), null, s.probe());
+					ChartSample cs = new ChartSample(times[i], s.timeDose(), s.compound(), 
+							ev.getValue(), null, s.probe(), ev.getCall());
 					samples.add(cs);
 				}
 			}
@@ -165,7 +176,7 @@ abstract class ChartDataSource {
 		
 			List<String> doses = new ArrayList<String>();
 			for (Barcode b: barcodes) {
-				if (!doses.contains(b.getDose()) && !b.getDose().equals("Control")) {
+				if (!doses.contains(b.getDose())) {
 					doses.add(b.getDose());
 				}
 			}
@@ -177,8 +188,9 @@ abstract class ChartDataSource {
 			for (int i = 0; i < barcodes.length; ++i) {
 				Barcode b = barcodes[i];			
 				for (ExpressionRow er : rows) {
+					ExpressionValue ev = er.getValue(i);
 					ChartSample cs = new ChartSample(b.getTime(), b.getDose(), b.getCompound(), 
-							er.getValue(i).getValue(), b, er.getProbe());
+							ev.getValue(), b, er.getProbe(), ev.getCall());
 					cs.barcode = b;
 					samples.add(cs);
 				}
@@ -192,8 +204,8 @@ abstract class ChartDataSource {
 	 *
 	 */
 	static class DynamicExpressionRowSource extends ExpressionRowSource {
-		private static final KCServiceAsync kcService = (KCServiceAsync) GWT
-				.create(KCService.class);
+		private static final MatrixServiceAsync kcService = (MatrixServiceAsync) GWT
+				.create(MatrixService.class);
 		
 		private DataFilter filter;
 		private String probe;
@@ -209,13 +221,16 @@ abstract class ChartDataSource {
 		}
 		
 		void loadData(final String[] compounds, final String[] dosesOrTimes, 
-				final SampleAcceptor acceptor) {
+				final ColorPolicy policy, final SampleAcceptor acceptor) {
 			final List<String> useBarcodes = new ArrayList<String>();
 			final List<Barcode> useBarcodes_ = new ArrayList<Barcode>();
 			for (Barcode b: barcodes) {
-				if ((compounds == null || SharedUtils.indexOf(compounds, b.getCompound()) != -1) &&
+				if (
+						(compounds == null || SharedUtils.indexOf(compounds, b.getCompound()) != -1) &&
 						(dosesOrTimes == null || SharedUtils.indexOf(dosesOrTimes, b.getTime()) != -1 || 
-						SharedUtils.indexOf(dosesOrTimes, b.getDose()) != -1)) {
+							SharedUtils.indexOf(dosesOrTimes, b.getDose()) != -1) &&
+						(type == ValueType.Absolute || ! b.getDose().equals("Control"))
+					) {
 					useBarcodes.add(b.getCode());
 					useBarcodes_.add(b);
 				}
@@ -233,19 +248,19 @@ abstract class ChartDataSource {
 				@Override
 				public void handleSuccess(final List<ExpressionRow> rows) {
 					addSamplesFromBarcodes(useBarcodes_.toArray(new Barcode[0]), rows);	
-					getSSamples(compounds, dosesOrTimes, acceptor);
+					getSSamples(compounds, dosesOrTimes, policy, acceptor);
 				}					
 			});
 			
 		}
 
 		@Override
-		void getSamples(String[] compounds, String[] dosesOrTimes, SampleAcceptor acceptor) {
-			loadData(compounds, dosesOrTimes, acceptor);			
+		void getSamples(String[] compounds, String[] dosesOrTimes, ColorPolicy policy, SampleAcceptor acceptor) {
+			loadData(compounds, dosesOrTimes, policy, acceptor);			
 		}
 		
-		void getSSamples(String[] compounds, String[] dosesOrTimes, SampleAcceptor acceptor) {
-			super.getSamples(compounds, dosesOrTimes, acceptor);
+		void getSSamples(String[] compounds, String[] dosesOrTimes, ColorPolicy policy, SampleAcceptor acceptor) {
+			super.getSamples(compounds, dosesOrTimes, policy, acceptor);
 		}		
 	}	
 }

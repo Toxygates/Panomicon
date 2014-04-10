@@ -3,9 +3,9 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import otgviewer.client.rpc.SparqlService;
+import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.DataFilter;
-
-import bioweb.shared.Pair;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;

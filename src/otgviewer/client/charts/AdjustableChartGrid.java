@@ -2,13 +2,18 @@ package otgviewer.client.charts;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import otgviewer.client.Utils;
 import otgviewer.client.charts.ChartDataSource.ChartSample;
+import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.Screen;
+import otgviewer.shared.Barcode;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGUtils;
+import otgviewer.shared.ValueType;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -25,6 +30,8 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * doses to focus on).
  */
 public class AdjustableChartGrid extends Composite {
+	public static final int TOTAL_WIDTH = 780;
+	
 	private ListBox chartCombo, chartSubtypeCombo;
 	
 	private ChartDataSource source;
@@ -33,14 +40,17 @@ public class AdjustableChartGrid extends Composite {
 	private VerticalPanel vp;
 	private VerticalPanel ivp;
 	private Screen screen;
+	private int computedWidth;
+	private ValueType vt;
 	
 	private static int lastType = -1, lastSubtype = -1;
 	
-	public AdjustableChartGrid(Screen screen, ChartDataSource source, List<Group> groups) {
+	public AdjustableChartGrid(Screen screen, ChartDataSource source, List<Group> groups, ValueType vt) {
 		this.source = source;
 		this.groups = groups;
 		this.screen = screen;
-		this.compounds = Arrays.asList(OTGUtils.compoundsFor(groups));		
+		this.compounds = Arrays.asList(OTGUtils.compoundsFor(groups));
+		this.vt = vt;
 		
 		vp = Utils.mkVerticalPanel();
 		initWidget(vp);
@@ -69,6 +79,7 @@ public class AdjustableChartGrid extends Composite {
 		chartSubtypeCombo.addChangeHandler(new ChangeHandler() {
 			public void onChange(ChangeEvent event) {								
 				lastSubtype = chartSubtypeCombo.getSelectedIndex();
+				computedWidth = 0;
 				redraw(false);
 			}
 
@@ -77,6 +88,7 @@ public class AdjustableChartGrid extends Composite {
 			public void onChange(ChangeEvent event) {
 				lastType = chartCombo.getSelectedIndex();
 				lastSubtype = -1;
+				computedWidth = 0;
 				updateSeriesSubtypes();
 			}
 		});
@@ -86,45 +98,103 @@ public class AdjustableChartGrid extends Composite {
 		redraw(false);
 	}
 	
+	public int computedWidth() {
+		return computedWidth;
+	}
+	
+	private List<ChartSample> allSamples = new ArrayList<ChartSample>();
+	
+	private double findMinValue() {
+		Double min = null;
+		for (ChartSample s: allSamples) {
+			if (min == null || (s.value < min && s.value != Double.NaN)) {
+				min = s.value;
+			}
+		}
+		return min;
+	}
+	
+	private double findMaxValue() {
+		Double max = null;
+		for (ChartSample s: allSamples) {
+			if (max == null || (s.value > max && s.value != Double.NaN)) {
+				max = s.value;
+			}
+		}
+		return max;
+	}
+	
+	private ColorPolicy makeGroupPolicy() {
+		Map<Barcode, String> colors = new HashMap<Barcode, String>();
+		for (Group g: groups) {
+			for (Barcode b: g.getSamples()) {
+				colors.put(b, g.getColor());
+			}
+		}
+		return new ColorPolicy.MapColorPolicy(colors);
+	}
+	
+	private static String[] withoutControl(String[] columns) {
+		List<String> r = new ArrayList<String>();
+		for (String c: columns) {
+			if (!c.equals("Control")) {
+				r.add(c);
+			}
+		}
+		return r.toArray(new String[0]);
+	}
+	
 	//vsTime is the vs-time-ness of each individual sub-chart. So the overall grid will be vs. dose 	
 	//(in its columns) if each sub-chart is vs.time.
 	private void gridFor(final boolean vsTime, final String[] columns, final String[] useCompounds, 
 			final List<ChartGrid> intoList, final SimplePanel intoPanel) {
-		final String[] useColumns = (columns == null ? (vsTime ? source.doses() : source.times()) : columns);
-		source.getSamples(useCompounds, useColumns, 
+		String[] preColumns = (columns == null ? (vsTime ? source.doses() : source.times()) : columns);
+		final String[] useColumns = (vt == ValueType.Folds ? withoutControl(preColumns) : preColumns);		
+		
+		if (computedWidth == 0) {
+			int theoretical = useColumns.length * GVizChartGrid.MAX_WIDTH;
+			if (theoretical > TOTAL_WIDTH) {
+				computedWidth = TOTAL_WIDTH;
+			} else {
+				computedWidth = theoretical;
+			}
+			setWidth(computedWidth + "px");
+		}
+		
+		source.getSamples(useCompounds, useColumns, makeGroupPolicy(),
 				new ChartDataSource.SampleAcceptor() {
 					@Override
 					public void accept(List<ChartSample> samples) {
-						ChartTables ct = (groups != null) ? 
-								new ChartTables.GroupedChartTable(samples, samples, groups, 
-										vsTime ? source.times() : source.doses(), vsTime)
-							:
-								new ChartTables.PlainChartTable(samples, samples, 
-										vsTime ? source.times() : source.doses(), vsTime);
-										
+						allSamples.addAll(samples);
 							
-							ChartGrid cg = new ChartGrid(screen, ct, groups, useCompounds == null ? compounds : Arrays.asList(useCompounds), true, 
-									useColumns, -1, !vsTime, 780);
-							
-							intoList.add(cg);
-							intoPanel.add(cg);
-							intoPanel.setHeight("");
-							
-							expectedGrids -= 1;							
-							if (expectedGrids == 0) {
-								//got all the grids
-								//harmonise the column count across all grids
-								int max = 0;
-								for (ChartGrid gr: intoList) {
-									if (gr.getMaxColumnCount() > max) {
-										max = gr.getMaxColumnCount();
-									}
-								}
-								for (ChartGrid gr: intoList) {
-									gr.adjustAndDisplay(max);
+						ChartDataset ct = new ChartDataset(samples, samples, 
+								vsTime ? source.times() : source.doses(), vsTime);
+						
+						ChartGrid cg = new GVizChartGrid(screen, ct, groups,
+								useCompounds == null ? compounds : Arrays.asList(useCompounds), true,
+								useColumns, !vsTime, TOTAL_WIDTH);
+						
+						intoList.add(cg);
+						intoPanel.add(cg);
+						intoPanel.setHeight("");
+
+						expectedGrids -= 1;
+						if (expectedGrids == 0) {
+							double minVal = findMinValue();
+							double maxVal = findMaxValue();							
+							// got all the grids
+							// harmonise the column count across all grids
+							int maxCols = 0;
+							for (ChartGrid gr : intoList) {
+								if (gr.getMaxColumnCount() > maxCols) {
+									maxCols = gr.getMaxColumnCount();
 								}
 							}
-					}			
+							for (ChartGrid gr : intoList) {
+								gr.adjustAndDisplay(maxCols, minVal, maxVal);
+							}
+						}
+					}
 		});
 
 	}
@@ -156,6 +226,7 @@ public class AdjustableChartGrid extends Composite {
 			
 			final List<ChartGrid> grids = new ArrayList<ChartGrid>();
 			expectedGrids = 0;
+			allSamples.clear();
 			
 			final boolean vsTime = chartCombo.getSelectedIndex() == 0;
 			if (groups != null) {

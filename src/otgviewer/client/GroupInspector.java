@@ -12,17 +12,19 @@ import java.util.Set;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.SelectionTable;
+import otgviewer.client.components.StorageParser;
+import otgviewer.shared.BUnit;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import bioweb.shared.array.DataColumn;
 
 import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.storage.client.Storage;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.RowStyles;
@@ -46,7 +48,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * @author johan
  *
  */
-public class GroupInspector extends DataListenerWidget implements RequiresResize { 
+public class GroupInspector extends DataListenerWidget implements RequiresResize, SelectionTDGrid.UnitListener { 
 
 	private SelectionTDGrid timeDoseGrid;
 	private Map<String, Group> groups = new HashMap<String, Group>();		
@@ -58,6 +60,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private CompoundSelector compoundSel;
 	private HorizontalPanel toolPanel;
 	private SplitLayoutPanel sp;
+	private boolean nameIsAutoGen = false;
 	
 	public GroupInspector(CompoundSelector cs, Screen scr) {
 		compoundSel = cs;
@@ -71,7 +74,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		titleLabel.setStyleName("heading");
 		vp.add(titleLabel);
 		
-		timeDoseGrid = new SelectionTDGrid(scr);
+		timeDoseGrid = new SelectionTDGrid(scr, this);
 		vp.add(timeDoseGrid);
 		addListener(timeDoseGrid);
 	
@@ -85,7 +88,12 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		toolPanel.add(lblSaveGroupAs);
 		
 		txtbxGroup = new TextBox();
-		txtbxGroup.setText(nextGroupName());
+		txtbxGroup.addValueChangeHandler(new ValueChangeHandler<String>() {			
+			@Override
+			public void onValueChange(ValueChangeEvent<String> event) {
+				nameIsAutoGen = false;				
+			}
+		});
 		toolPanel.add(txtbxGroup);		
 		
 		saveButton = new Button("Save",
@@ -110,10 +118,18 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 				textColumn = new TextColumn<Group>() {
 					@Override
 					public String getValue(Group object) {
-						return "" + object.getSamples().length;
+						return "" + object.getTreatedSamples().length;
 					}
 				};
-				table.addColumn(textColumn, "Sample count");
+				table.addColumn(textColumn, "#Treated samples");
+				
+				textColumn = new TextColumn<Group>() {
+					@Override
+					public String getValue(Group object) {
+						return "" + object.getControlSamples().length;
+					}
+				};
+				table.addColumn(textColumn, "#Control samples");
 				
 				ButtonCell editCell = new ButtonCell();
 				
@@ -151,11 +167,9 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 			
 			protected void selectionChanged(Set<Group> selected) {
 				chosenColumns = new ArrayList<Group>(selected);
-				Storage s = tryGetStorage();
-				if (s != null) {
-					storeColumns(s);
-					updateConfigureStatus();
-				}
+				StorageParser p = getParser(screen);
+				storeColumns(p);
+				updateConfigureStatus();
 			}
 		};
 //		vp.add(existingGroupsTable);
@@ -165,6 +179,18 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		sp.addSouth(Utils.makeScrolled(existingGroupsTable), 200);
 		
 		sp.add(Utils.makeScrolled(vp));
+	}
+	
+	/**
+	 * Callback from SelectionTDGrid
+	 * @param selectedUnits
+	 */
+	@Override
+	public void unitsChanged(List<BUnit> selectedUnits) {
+		if (txtbxGroup.getText().equals("") || nameIsAutoGen) {
+			txtbxGroup.setText(suggestGroupName(selectedUnits));
+			nameIsAutoGen = true;
+		}
 	}
 	
 	private void deleteGroup(String name, boolean createNew) {
@@ -190,7 +216,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	}
 
 	private void newGroup() {
-		txtbxGroup.setText(nextGroupName());
+		txtbxGroup.setText("");
 		timeDoseGrid.setAll(false);
 		compoundSel.setSelection(new ArrayList<String>());
 		setHeading("new group");
@@ -206,13 +232,11 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private void reflectGroupChanges() {
 		existingGroupsTable.setItems(sortedGroupList(groups.values()), false);
 		chosenColumns = new ArrayList<Group>(existingGroupsTable.selection());
-		Storage s = tryGetStorage();
-		if (s != null) {
-			storeColumns(s);
-			txtbxGroup.setText(nextGroupName());
-			updateConfigureStatus();
-			existingGroupsTable.setVisible(groups.values().size() > 0);
-		}
+		StorageParser p = getParser(screen);		
+		storeColumns(p);
+		txtbxGroup.setText("");
+		updateConfigureStatus();
+		existingGroupsTable.setVisible(groups.values().size() > 0);		
 	}
 	
 	private void updateConfigureStatus() {		
@@ -225,12 +249,32 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 	
-	private String nextGroupName() {
+	private String firstChars(String s) {
+		if (s.length() < 8) {
+			return s;
+		} else {
+			return s.substring(0, 8);
+		}
+	}
+	
+	private String suggestGroupName(List<BUnit> units) {
+		String g = "";
+		if (!units.isEmpty()) {
+			BUnit b = units.get(0);
+			g = firstChars(b.getCompound()) + "/" + 
+					b.getDose().substring(0, 1) + "/" + 
+					b.getTime();
+			if (units.size() > 1) {
+				g += ", ...";
+			}
+		} else {
+			g = "Empty group";
+		}
 		int i = 1;
-		String name = "Group " + i;
+		String name = g;
 		while (groups.containsKey(name)) {
-			i += 1;
-			name = "Group " + i;
+			name = g + " " + i;
+			i++;
 		}
 		return name;
 	}
@@ -290,18 +334,10 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		newGroup();
 	}
 	
-	private List<Group> asGroupList(Collection<DataColumn> dcs) {
-		List<Group> r = new ArrayList<Group>();
-		for (DataColumn dc : dcs) {
-			r.add((Group) dc);
-		}
-		return r;
-	}
-	
 	@Override 
-	public void storeColumns(Storage s) {
-		super.storeColumns(s);			
-		storeColumns(s, "inactiveColumns", 
+	public void storeColumns(StorageParser p) {
+		super.storeColumns(p);			
+		storeColumns(p, "inactiveColumns", 
 				new ArrayList<BarcodeColumn>(existingGroupsTable.inverseSelection()));
 	}
 	
@@ -315,19 +351,48 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	 * Get here if save button is clicked
 	 * @param name
 	 */
-	private void makeGroup(final String name) {		
+	private void makeGroup(String name) {
+		if (name.trim().equals("")) {
+			Window.alert("Please enter a group name.");
+			return;
+		}
+		if (!StorageParser.isAcceptableString(name, "Unacceptable group name.")) {
+			return;
+		}
+		
 		pendingGroup = new Group(name, new Barcode[0]);
 		addGroup(name, pendingGroup);
-		List<Barcode> barcodes = timeDoseGrid.getSelectedBarcodes();
+		List<BUnit> units = timeDoseGrid.getSelectedUnits(false);
 		
-		if (barcodes.size() == 0) {
+		if (units.size() == 0) {
 			 Window.alert("No samples found.");
 			 cullEmptyGroups();
 		} else {
-			setGroup(pendingGroup.getName(), barcodes);
+			setGroup(pendingGroup.getName(), units);
 			newGroup();
 		}
+		
+		loadTimeWarningIfNeeded();		
 	}
+	
+	private void loadTimeWarningIfNeeded() {
+		int totalSize = 0;
+		for (Group g : groups.values()) {
+			for (Barcode b: g.samples()) {
+				if (!b.getDose().equals("Control")) {
+					totalSize += 1;
+				}
+			}
+		}
+		
+		// Conservatively estimate that we load 4 samples per second
+		int loadTime = (int) (totalSize / 4);
+
+		if (loadTime > 20) {
+			Window.alert("Warning: You have requested data for " + totalSize + " samples.\n" +
+					"The total loading time is expected to be " + loadTime + " seconds.");
+		}
+	} 
 	
 	private void cullEmptyGroups() {
 		// look for empty groups, undo the saving
@@ -341,10 +406,10 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 		
-	private void setGroup(String pendingGroupName, List<Barcode> barcodes) {
+	private void setGroup(String pendingGroupName, List<BUnit> units) {
 		Group pendingGroup = groups.get(pendingGroupName);
-		existingGroupsTable.removeItem(pendingGroup);
-		pendingGroup = new Group(pendingGroupName, barcodes.toArray(new Barcode[0]));
+		existingGroupsTable.removeItem(pendingGroup); 
+		pendingGroup = new Group(pendingGroupName, units.toArray(new BUnit[0]));
 		addGroup(pendingGroupName, pendingGroup);
 		reflectGroupChanges();
 	}
@@ -361,6 +426,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		
 		compoundSel.setSelection(compounds);		
 		txtbxGroup.setValue(name);
+		nameIsAutoGen = false;
 		
 		Group g = groups.get(name);
 		timeDoseGrid.setSelection(g.getSamples());
@@ -380,3 +446,4 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 }
+ 

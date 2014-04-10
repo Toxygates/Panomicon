@@ -42,4 +42,6 @@ public abstract class Sample implements Packable, Serializable {
 	
 	abstract public String pack();
 	
+	abstract public Unit<? extends Sample> getUnit();
+	
 }

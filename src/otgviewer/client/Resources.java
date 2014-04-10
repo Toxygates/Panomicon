@@ -12,6 +12,10 @@ public interface Resources extends ClientBundle {
 	@Source("images/rat64.png")
 	ImageResource rat();
 	
+	// TODO
+	@Source("images/16_close.png")
+	ImageResource mouse();
+	
 	@Source("images/vivo64.png")
 	ImageResource vivo();
 	
@@ -60,6 +64,9 @@ public interface Resources extends ClientBundle {
 	@Source("images/16_faq.png")
 	ImageResource help();
 	
+	@Source("images/12_filter.png")
+	ImageResource filter();
+	
 	@Source("help/default.html")
 	TextResource defaultHelpHTML();
 	
@@ -96,9 +103,9 @@ public interface Resources extends ClientBundle {
 	@Source("help/versions.html")
 	TextResource versionHTML();
 	
-	@Source("help/latestVersion.html")
-	TextResource latestVersionHTML();
-	
 	@Source("help/banner.html")
 	TextResource bannerHTML();
+	
+	@Source("help/adjuvantBanner.html")
+	TextResource adjuvantBannerHTML();
 }

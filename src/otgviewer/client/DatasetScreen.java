@@ -2,18 +2,23 @@ package otgviewer.client;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
+import otgviewer.client.components.StorageParser;
 import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Organ;
 import otgviewer.shared.Organism;
 import otgviewer.shared.RepeatType;
 
-import com.google.gwt.storage.client.Storage;
-import com.google.gwt.user.client.Window;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.Response;
+import com.google.gwt.resources.client.TextResource;
+import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -21,7 +26,7 @@ import com.google.gwt.user.client.ui.Widget;
  * This is the first screen, where a dataset can be selected.
  */
 public class DatasetScreen extends Screen implements DatasetInfo.SelectionListener {
-	static String key = "ds";	
+	public static String key = "ds";	
 	VerticalPanel vp;
 	
 	public DatasetScreen(ScreenManager man) {
@@ -30,44 +35,55 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 	
 	final DatasetScreen ds = this;
 	
-	private abstract class GUI {
-		abstract DataFilter[] filters();
+	private abstract class GUI {		
+		abstract TextResource topBanner();
+
+		abstract DatasetInfo[][] makeDatasetInfo();
+		
+		final private HTML newsHtml = new HTML();
+		
 		Widget content() {
-			Grid g = new Grid(3, 2);
+			DatasetInfo[][] infos = makeDatasetInfo();
+			Grid g = new Grid(infos.length, infos[0].length);
 			HorizontalPanel hp = Utils.mkWidePanel();
 			hp.setHeight("100%");
 			VerticalPanel vp = Utils.mkTallPanel();
-			HTML banner = new HTML(resources.bannerHTML().getText());
+			HTML banner = new HTML(topBanner().getText());
 			banner.setWidth("40em");
 			vp.add(banner);			
 			vp.add(g);
-			HTML latest = new HTML(resources.latestVersionHTML().getText());
-			latest.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
-			vp.add(latest);
-			latest.setWidth("40em");
+
+			vp.add(newsHtml);
+			newsHtml.setWidth("40em");
+			Utils.loadHTML("news.html", new Utils.HTMLCallback() {				
+				@Override
+				protected void setHTML(String html) {
+					newsHtml.setHTML(html);
+				}			
+			});
+			
 			hp.add(vp);
-			g.setCellSpacing(20);
-			fillGrid(g, 3, filters());	
+			g.setCellSpacing(10);
+			fillGrid(g, infos);	
 			return Utils.makeScrolled(hp);
 		}
 		
-		void fillGrid(Grid g, int columns, DataFilter[] filters) {
-			int r = 0;
-			int c = 0;
-			for (DataFilter f: filters) {
-				g.setWidget(r, c, new DatasetInfo(f, ds));
-				c += 1;
-				if (c == columns - 1) {
-					r += 1;
-					c = 0;
+		void fillGrid(Grid g, DatasetInfo[][] infos) {
+			final int rows = infos.length;
+			final int columns = infos[0].length;
+			for (int r = 0; r < rows; r++) {
+				for (int c = 0; c < columns; c++) {
+					if (infos[r][c] != null) {
+						g.setWidget(r, c, infos[r][c]);
+					}
 				}
-			}		
-		}		
+			}			
+		}				
 	}
 
-	private class Toxygates extends GUI {		
-		DataFilter[] filters() {
-			return new DataFilter[] {		
+	private class Toxygates extends GUI {
+		DatasetInfo[][] makeDatasetInfo() {
+			DataFilter[] filters = new DataFilter[] {		
 					new DataFilter(CellType.Vitro, Organ.Kidney, RepeatType.Single, Organism.Human),
 					new DataFilter(CellType.Vitro, Organ.Kidney, RepeatType.Single, Organism.Rat),
 					new DataFilter(CellType.Vivo, Organ.Liver, RepeatType.Single, Organism.Rat),
@@ -75,18 +91,52 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 					new DataFilter(CellType.Vivo, Organ.Kidney, RepeatType.Single, Organism.Rat),
 					new DataFilter(CellType.Vivo, Organ.Kidney, RepeatType.Repeat, Organism.Rat)
 			};		
+			
+			return new DatasetInfo[][] { 
+					{ makeInfo(filters[0]), makeInfo(filters[1]) },
+					{ makeInfo(filters[2]), makeInfo(filters[3]) },
+					{ makeInfo(filters[4]), makeInfo(filters[5]) }					
+			};
+		}
+		
+		TextResource topBanner() {
+			return resources.bannerHTML();
+		}
+		
+		DatasetInfo makeInfo(DataFilter filter) {
+			return new DatasetInfo(filter, ds, true);
 		}
 	}
 	
 	private class Adjuvant extends GUI {
-		DataFilter[] filters() { 
-			return new DataFilter[] {			
+		DatasetInfo[][] makeDatasetInfo() {
+			DataFilter[] filters = new DataFilter[] {			
 					new DataFilter(CellType.Vivo, Organ.Kidney, RepeatType.Single, Organism.Rat),
 					new DataFilter(CellType.Vivo, Organ.Liver, RepeatType.Single, Organism.Rat),				
 					new DataFilter(CellType.Vivo, Organ.Lung, RepeatType.Single, Organism.Rat),
 					new DataFilter(CellType.Vivo, Organ.Muscle, RepeatType.Single, Organism.Rat),
-					new DataFilter(CellType.Vivo, Organ.Spleen, RepeatType.Single, Organism.Rat)
+					new DataFilter(CellType.Vivo, Organ.Spleen, RepeatType.Single, Organism.Rat),
+					
+					new DataFilter(CellType.Vivo, Organ.Kidney, RepeatType.Single, Organism.Mouse),
+					new DataFilter(CellType.Vivo, Organ.Liver, RepeatType.Single, Organism.Mouse),
+					new DataFilter(CellType.Vivo, Organ.Spleen, RepeatType.Single, Organism.Mouse),
+					new DataFilter(CellType.Vivo, Organ.Lung, RepeatType.Single, Organism.Mouse),
+					new DataFilter(CellType.Vivo, Organ.LymphNode, RepeatType.Single, Organism.Mouse)			
 			};
+			return new DatasetInfo[][] { 
+					{ makeInfo(filters[0]), makeInfo(filters[1]), makeInfo(filters[2]) },
+					{ makeInfo(filters[3]), makeInfo(filters[4]), null },
+					{ makeInfo(filters[5]), makeInfo(filters[6]), makeInfo(filters[7]) },
+					{ makeInfo(filters[8]), makeInfo(filters[9]), null },
+			};
+		}
+
+		TextResource topBanner() {
+			return resources.adjuvantBannerHTML();
+		}
+		
+		DatasetInfo makeInfo(DataFilter filter) {
+			return new DatasetInfo(filter, ds, false);
 		}
 	}
 	
@@ -104,17 +154,13 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 		return gui.content();
 	}
 	
-	public void filterSelected(DataFilter filter) {		
-		Storage s = tryGetStorage();
-		if (s != null) {		
-			changeDataFilter(filter);
-			storeDataFilter(s);
-			setConfigured(true);
-			manager.deconfigureAll(this);
-			configuredProceed(ColumnScreen.key);
-		} else {
-			Window.alert("Your browser does not support local storage. Unable to continue.");
-		}
+	public void filterSelected(DataFilter filter) {
+		StorageParser p = getParser(this);
+		changeDataFilter(filter);
+		storeDataFilter(p);
+		setConfigured(true);
+		manager.deconfigureAll(this);
+		configuredProceed(ColumnScreen.key);		
 	}
 
 	@Override

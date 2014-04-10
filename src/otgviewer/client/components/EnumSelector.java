@@ -42,5 +42,9 @@ public abstract class EnumSelector<T extends Enum<T>> extends Composite {
 		return parse(lb.getItemText(lb.getSelectedIndex()));
 	}
 	
+	public void reset() {
+		lb.setSelectedIndex(0);
+	}
+	
 	protected abstract T[] values();
 }

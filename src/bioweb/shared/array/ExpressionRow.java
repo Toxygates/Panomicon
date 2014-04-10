@@ -7,8 +7,6 @@ import java.util.Arrays;
 /**
  * Expression data for a particular set of columns for a single probe.
  * May also contain associated information such as gene IDs and gene symbols.
- * @author johan
- *
  */
 public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 	private String probe = "";
@@ -24,13 +22,13 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 		val = _val;
 		title = _title;		
 		geneIds = _geneId;
-		geneSyms = _geneSym;
-		
+		geneSyms = _geneSym;		
 	}
-
+	
 	public boolean equals(Object o) {
 		if (o instanceof ExpressionRow) {
-			return (probe == ((ExpressionRow) o).probe && Arrays.equals(val, ((ExpressionRow)o).val));
+			return (probe == ((ExpressionRow) o).probe && 
+					Arrays.equals(val, ((ExpressionRow)o).val));
 		}
 		return false;
 	}
@@ -43,8 +41,12 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 		if (i < val.length) {
 			return val[i];
 		} else {
-			return new ExpressionValue(0, 'A');
+			return emptyValue();
 		}
+	}
+	
+	private ExpressionValue emptyValue() {
+		return new ExpressionValue(0, 'A');
 	}
 	
 	public ExpressionValue[] getValues() {

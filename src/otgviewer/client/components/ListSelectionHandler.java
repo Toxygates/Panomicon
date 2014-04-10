@@ -14,6 +14,11 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.ListBox;
 
+/**
+ * TODO retire/update this class in the future. Old code, only used by ProbeSelector.
+ *
+ * @param <T>
+ */
 public abstract class ListSelectionHandler<T> {
 
 	protected List<ListSelectionHandler<?>> afterHandlers = new ArrayList<ListSelectionHandler<?>>();

@@ -15,20 +15,17 @@ import otgviewer.shared.Group;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.Style.Float;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
-import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.PushButton;
@@ -64,14 +61,15 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	 */
 	protected boolean visible = false;
 	private Label viewLabel = new Label();
-	private boolean showDataFilter = false, showGroups = false;
-	private MenuBar menuBar;	
+	private boolean showDataFilter = false, showGroups = false;	
 	
 	/**
 	 * Is this screen currently configured?
 	 */
 	protected boolean configured = false;
 	private List<MenuItem> menuItems = new ArrayList<MenuItem>();
+	private List<MenuItem> analysisMenuItems = new ArrayList<MenuItem>();
+	
 	
 	/**
 	 * Widgets to be shown below the main content area, if any.
@@ -158,7 +156,6 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		rootPanel = new DockLayoutPanel(Unit.PX); 
 		
 		initWidget(rootPanel);
-		menuBar = man.getMenuBar();
 		manager = man;				
 		viewLabel.setWordWrap(false);
 		viewLabel.getElement().getStyle().setMargin(2, Unit.PX);
@@ -271,12 +268,13 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		
 		i = new PushButton(new Image(resources.close()));
 		i.setStyleName("slightlySpaced");
+		final Screen sc = this;
 		i.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				hideToolbar(guideBar);
 				showGuide = false;
-				storeState();
+				storeState(sc);
 			}			
 		});		
 		hpi.add(i);		
@@ -290,7 +288,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	public void showGuide() {
 		showToolbar(guideBar);
 		showGuide = true;
-		storeState();
+		storeState(this);
 	}
 	
 	
@@ -301,10 +299,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	public void show() {
 		rootPanel.forceLayout();
 		visible = true;		
-		for (MenuItem mi: menuItems) {
-			mi.setVisible(true);
-		}
-		loadState();
+		loadState(this);
 		if (showGuide) {
 			showToolbar(guideBar);
 		} else {
@@ -316,9 +311,9 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	}
 
 	@Override
-	public void loadState(Storage s) {
-		super.loadState(s);
-		String v = s.getItem("OTG.showGuide");
+	public void loadState(StorageParser p) {
+		super.loadState(p);
+		String v = p.getItem("OTG.showGuide");
 		if (v == null || v.equals("yes")) {
 			showGuide = true;
 		} else {
@@ -327,12 +322,12 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	}
 	
 	@Override
-	public void storeState(Storage s) {
-		super.storeState(s);
+	public void storeState(StorageParser p) {
+		super.storeState(p);
 		if (showGuide) {
-			s.setItem("OTG.showGuide", "yes");
+			p.setItem("OTG.showGuide", "yes");
 		} else {
-			s.setItem("OTG.showGuide", "no");
+			p.setItem("OTG.showGuide", "no");
 		}
 	}	
 
@@ -447,17 +442,23 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	 */
 	public void hide() {		
 		visible = false;
-		for (MenuItem mi: menuItems) {
-			mi.setVisible(false);
-		}
 	}
 	
 	public void addMenu(MenuItem m) {
-		menuBar.addItem(m);
-		m.setVisible(false);
 		menuItems.add(m);
 	}
-
+	
+	public void addAnalysisMenuItem(MenuItem mi) {
+		analysisMenuItems.add(mi);
+	}
+	
+	public List<MenuItem> menuItems() {
+		return menuItems;
+	}
+	
+	public List<MenuItem> analysisMenuItems() {
+		return analysisMenuItems;
+	}
 	
 	/**
 	 * Override this method to define the main content of the screen.
@@ -482,6 +483,10 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		if (showDataFilter) {
 			viewLabel.setText(filter.toString());
 		}
+	}
+	
+	public StorageParser getParser() {
+		return getParser(this);
 	}
 	
 	public boolean helpAvailable() {
@@ -530,11 +535,9 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	 * @param b
 	 */
 	public void displaySampleDetail(Barcode b) {
-		Storage s = tryGetStorage();
-		if (s != null) {
-			storeCustomColumn(s, b);
-			configuredProceed(SampleDetailScreen.key);
-		}
+		StorageParser p = getParser(this);
+		storeCustomColumn(p, b);
+		configuredProceed(SampleDetailScreen.key);
 	}
 	
 }

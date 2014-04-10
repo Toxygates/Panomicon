@@ -1,19 +1,31 @@
 package otgviewer.client;
 
+import otgviewer.client.charts.google.GVizCharts;
+import otgviewer.client.dialog.DialogPosition;
+
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Float;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.RequestException;
+import com.google.gwt.http.client.Response;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
+import com.google.gwt.safehtml.client.SafeHtmlTemplates;
+import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.dom.client.Style.Float;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.FocusWidget;
+import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -28,10 +40,6 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.visualization.client.LegendPosition;
-import com.google.gwt.visualization.client.VisualizationUtils;
-import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
-import com.google.gwt.visualization.client.visualizations.corechart.Options;
 
 /**
  * GUI/GWT utility methods.
@@ -39,10 +47,8 @@ import com.google.gwt.visualization.client.visualizations.corechart.Options;
  *
  */
 public class Utils {
-
 	private static NumberFormat df = NumberFormat.getDecimalFormat();
 	private static NumberFormat sf = NumberFormat.getScientificFormat();
-	private static Resources resources = GWT.create(Resources.class);
 	
 	public static String formatNumber(double v) {
 		if (Math.abs(v) > 0.001) {
@@ -51,6 +57,8 @@ public class Utils {
 			return sf.format(v);
 		}
 	}
+	
+	private static Resources resources = GWT.create(Resources.class);
 
 	public static HorizontalPanel mkHorizontalPanel() {
 		return mkHorizontalPanel(false);
@@ -79,6 +87,12 @@ public class Utils {
 		for (Widget w: widgets) {
 			hp.add(w);
 		}
+		return hp;
+	}
+	
+	public static HorizontalPanel wideCentered(Widget w) {
+		HorizontalPanel hp = mkWidePanel();
+		hp.add(w);
 		return hp;
 	}
 
@@ -121,25 +135,6 @@ public class Utils {
 	}
 
 	/**
-	 * Colour: for example, MediumAquaMarine or LightSkyBlue
-	 * 
-	 * @param color
-	 * @return
-	 */
-	public static Options createChartOptions(String... colors) {
-		Options o = Options.create();
-		o.setColors(colors);
-		o.set("legend.position", "none");
-		o.setLegend(LegendPosition.NONE);
-		return o;
-	}
-
-	private static int lastX = -1, lastY = -1;
-	public static void displayInPopup(String caption, Widget w, DialogPosition pos) {
-		displayInPopup(caption, w, false, pos);
-	}
-	
-	/**
 	 * Open an URL in a new window or tab. 
 	 * @param message
 	 * @param buttonText
@@ -170,6 +165,11 @@ public class Utils {
 		db.add(hp);
 		db.setPopupPositionAndShow(displayInCenter(db));						
 	}
+
+	private static int lastX = -1, lastY = -1;
+	public static DialogBox displayInPopup(String caption, Widget w, DialogPosition pos) {
+		return displayInPopup(caption, w, false, pos);
+	}
 	
 	/**
 	 * Display a popup dialog.
@@ -180,7 +180,7 @@ public class Utils {
 	 * a DialogContext or similar)
 	 * @pos The position to display the dialog at.
 	 */
-	public static void displayInPopup(String caption, final Widget w, final boolean trackLocation,
+	public static DialogBox displayInPopup(String caption, final Widget w, final boolean trackLocation,
 			final DialogPosition pos) {
 		final DialogBox db = new DialogBox(true, false) {
 			@Override
@@ -202,7 +202,7 @@ public class Utils {
 		} else {
 			db.setPopupPositionAndShow(displayAt(db, dp, w, -1, -1, pos));
 		}
-
+		return db;
 	}
 
 	public static PositionCallback displayInCenter(final PopupPanel pp) {
@@ -228,22 +228,31 @@ public class Utils {
 					pp.setHeight((Window.getClientHeight() - 100) + "px");
 					if (center != null && dp != null) {					
 						dp.remove(center);					
-						Widget scrl = makeScrolled(center);
+						Widget scrl = makeScrolledSize(center, w);
 						scrl.setHeight((Window.getClientHeight() - 120) + "px");
 						dp.add(scrl, DockPanel.CENTER);					
 					} else {				
 						Widget wd = pp.getWidget();
-						pp.setWidget(makeScrolled(wd));
+						pp.setWidget(makeScrolledSize(wd, w));
 					}			
 				}				
 				pp.setPopupPosition(atX != -1 ? atX : pos.computeX(w), 
 						atY != -1 ? atY : pos.computeY(h));
+				pp.setWidth("auto");
 			}
 			};
 	}
 	
 	public static ScrollPanel makeScrolled(Widget w) {
 		ScrollPanel sp = new ScrollPanel(w);
+		sp.setWidth("auto");
+		return sp;
+	}
+	
+	public static ScrollPanel makeScrolledSize(Widget w, int width) {
+		ScrollPanel sp = makeScrolled(w);
+		sp.setWidth("auto");
+//		sp.setWidth(width + "px");		
 		return sp;
 	}
 	
@@ -272,18 +281,42 @@ public class Utils {
 		SimplePanel sp = new SimplePanel();	
 		sp.setWidget(new HTML(helpText.getText()));
 		vp.add(sp);
+		sp.setWidth("600px");
 		if (helpImage != null) {
 			vp.setWidth((helpImage.getWidth() + 50) + "px");
 		} else {
-			vp.setWidth("600px");
+			vp.setWidth("650px");
 		}
 		Utils.displayInPopup("Help", vp, DialogPosition.Center);
 	}
 	
+	public static void loadHTML(String url, RequestCallback callback) {
+		try {
+			RequestBuilder rb = new RequestBuilder(RequestBuilder.GET,
+					URL.encode(url));
+			rb.sendRequest(null, callback);
+		} catch (RequestException e) {
+			Window.alert("Server communication error when attempting to get " + url);
+		}
+	}
+	
+	public abstract static class HTMLCallback implements RequestCallback {
+		
+		@Override
+		public void onResponseReceived(Request request, Response response) {
+			setHTML(response.getText());
+		}
+		
+		abstract protected void setHTML(String html);
+
+		@Override
+		public void onError(Request request, Throwable exception) {
+			Window.alert("Server communication error.");
+		}		
+	}
+	
 	public static void ensureVisualisationAndThen(final Runnable r) {
-		VisualizationUtils
-		.loadVisualizationApi(r, CoreChart.PACKAGE);
-		//.loadVisualizationApi("1.1", r, "corechart");		
+		GVizCharts.loadAPIandThen(r);				
 	}
 
 	public static void setEnabled(HasWidgets root, boolean enabled) {
@@ -295,5 +328,14 @@ public class Utils {
 				((FocusWidget) w).setEnabled(enabled);
 			}
 		}
+	}
+	
+	public interface Templates extends SafeHtmlTemplates {
+
+		@Template("<div title=\"{0}\">")
+		SafeHtml startToolTip(String toolTipText);
+
+		@Template("</div>")
+		SafeHtml endToolTip();
 	}
 }

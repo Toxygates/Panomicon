@@ -2,7 +2,6 @@ package bioweb.shared.array;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import bioweb.shared.*;
 import bioweb.shared.SharedUtils;
 
 /**
@@ -12,7 +11,7 @@ import bioweb.shared.SharedUtils;
  *
  * @param <S>
  */
-public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializable, Comparable<SampleGroup> {
+public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializable, Comparable<SampleGroup<?>> {
 
 	/**
 	 * This list was generated using the service at
@@ -77,7 +76,7 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
 	
 	
 	@Override
-	public int compareTo(SampleGroup other) {
+	public int compareTo(SampleGroup<?> other) {
 		return name.compareTo(other.getName());
 	}
 	

@@ -37,24 +37,6 @@ public class DataFilter extends SampleFilter<Barcode> {
 				41 * (repeatType.hashCode() + 41 * organism.hashCode()));
 	}
 	
-	public static DataFilter unpack(String s) {
-		String[] parts = s.split(",");
-		assert(parts.length == 4);
-		
-		try {
-			DataFilter r = new DataFilter(CellType.valueOf(parts[0]),
-					Organ.valueOf(parts[1]), RepeatType.valueOf(parts[2]),
-					Organism.valueOf(parts[3]));			
-			return r;
-		} catch (Exception e) {			
-			return null;
-		}
-	}
-	
-	public String pack() {
-		return cellType.name() + "," + organ.name() + "," + repeatType.name() + "," + organism.name();
-	}
-	
 	public String toString() {
 		StringBuilder s = new StringBuilder();
 		s.append(organism.name());

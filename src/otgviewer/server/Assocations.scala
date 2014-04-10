@@ -5,6 +5,7 @@ import otgviewer.shared.DataFilter
 import java.util.{ Map => JMap, HashMap => JHMap, Set => JSet, HashSet => JHSet, List => JList }
 import otgviewer.shared.Association
 import bioweb.shared.Pair
+import otgviewer.server.rpc.Conversions
 
 object Assocations {
   import scala.collection.{Map => CMap, Set => CSet}

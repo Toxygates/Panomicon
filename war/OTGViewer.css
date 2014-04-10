@@ -4,8 +4,14 @@
 }
 
 /** Most GWT widgets already have a style name defined */
+/**
 .gwt-DialogBox {
 	width: 400px;
+}
+*/
+
+.resizingListBox {
+	font-size: 13px;
 }
 
 .dialogVPanel {
@@ -140,6 +146,16 @@ exprGrid {
 
 .clickCell {
 	cursor: pointer;
+}
+
+#helpMenu {
+	font-weight: bold;
+	color: green;
+}
+
+.feedbackMenuItem {
+	font-weight: bold;
+	color: green;
 }
 
 /* This must correspond to the colors in Group.java

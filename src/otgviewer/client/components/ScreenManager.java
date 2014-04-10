@@ -12,12 +12,6 @@ import com.google.gwt.user.client.ui.ProvidesResize;
 public interface ScreenManager extends ProvidesResize {
 
 	/**
-	 * Obtain the menu bar that menu entries can be installed on
-	 * @return
-	 */
-	MenuBar getMenuBar();
-	
-	/**
 	 * Indicate that the given screen is or is not configured.
 	 * @param s
 	 * @param configured
@@ -48,6 +42,7 @@ public interface ScreenManager extends ProvidesResize {
 	
 	/**
 	 * A string uniquely identifying the user interface we wish to display.
+	 * TODO: replace with enum
 	 * @return
 	 */
 	String getUIType();

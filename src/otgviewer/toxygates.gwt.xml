@@ -13,6 +13,7 @@
 
 	<!-- Other module inherits                                      -->
 	<inherits name='com.google.gwt.visualization.Visualization'/>
+	<inherits name='com.google.gwt.http.HTTP'/>
 	<inherits name='bioweb.BioWeb' />
 
 	<!-- Specify the app entry point class.                         -->

@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import bioweb.shared.array.DataColumn;
 
-abstract public class Synthetic implements DataColumn, Serializable {
+abstract public class Synthetic implements DataColumn<Barcode>, Serializable {
 
 	public abstract static class TwoGroupSynthetic extends Synthetic {
 		protected Group g1, g2;
@@ -64,7 +64,7 @@ abstract public class Synthetic implements DataColumn, Serializable {
 		}
 		@Override
 		public String getTooltip() {
-			return "p-value";
+			return "p-value (nonparametric)";
 		}
 	}
 	

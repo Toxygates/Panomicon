@@ -5,13 +5,13 @@ import java.util.List;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
+import otgviewer.client.components.StorageParser;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.Group;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -59,10 +59,9 @@ public class ColumnScreen extends Screen {
 		cs.addListener(gi);
 		tp.add(gi, "Sample groups");
 		
-		final CompoundRanker cr = new CompoundRanker(cs);
-//		cr.setSize("500px", "500px");
+		final CompoundRanker cr = new CompoundRanker(this, cs);
 		tp.add(Utils.makeScrolled(cr), "Compound ranking (optional)");
-		tp.selectTab(0);
+		tp.selectTab(0);		
 
 		return tp;
 	}
@@ -84,13 +83,13 @@ public class ColumnScreen extends Screen {
 	}
 	
 	@Override
-	public void loadState(Storage s) {
-		super.loadState(s);
+	public void loadState(StorageParser p) {
+		super.loadState(p);
 		if (visible) {
 			//If we became visible, we must have been enabled, so can count on a
 			//data filter being present.
 			try {
-				List<Group> ics = loadColumns("inactiveColumns", 
+				List<Group> ics = loadColumns(p, "inactiveColumns", 
 						new ArrayList<BarcodeColumn>(gi.existingGroupsTable.inverseSelection()));
 				if (ics != null) {
 					gi.inactiveColumnsChanged(ics);
@@ -120,5 +119,9 @@ public class ColumnScreen extends Screen {
 	@Override
 	public String getGuideText() {
 		return "Please define at least one sample group to proceed. Start by selecting compounds to the left. Then select doses and times.";
+	}
+	
+	public void displayCompoundRankUI() {
+		tp.selectTab(1);
 	}
 }

@@ -4,10 +4,11 @@ import java.util.List;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
+import otgviewer.shared.BUnit;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-
+import bioweb.shared.SharedUtils;
 import bioweb.shared.array.Annotation;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -114,7 +115,8 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 			final String time, final Barcode[] barcodes) {
 		final NumberFormat fmt = NumberFormat.getFormat("#0.00");
 		Group g = new Group("temporary", barcodes);
-		sparqlService.annotations(g, new PendingAsyncCallback<Annotation[]>(this, "Unable to get annotations.") {
+		sparqlService.annotations(g, false, 
+				new PendingAsyncCallback<Annotation[]>(this, "Unable to get annotations.") {
 			public void handleSuccess(Annotation[] as) {								
 				double sum = 0;
 				int n = 0;
@@ -188,8 +190,11 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 	}
 	
 	@Override
-	protected Widget guiFor(int compound, int dose, int time) {		
-		HTML r = new HTML(availableTimes[time]);
+	protected Widget guiForUnit(BUnit unit) {
+		int time = SharedUtils.indexOf(availableTimes, unit.getTime());
+		int compound = chosenCompounds.indexOf(unit.getCompound());
+		int dose = doseToIndex(unit.getDose());
+		HTML r = new HTML(unit.getTime());
 		r.setStyleName("slightlySpaced");
 		labels[compound][availableTimes.length * dose + time] = r;
 		return r;

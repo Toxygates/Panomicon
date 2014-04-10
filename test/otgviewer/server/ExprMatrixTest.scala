@@ -10,7 +10,7 @@ import friedrich.data.immutable._
 @RunWith(classOf[JUnitRunner])
 class ExprMatrixTest extends FunSuite {
 
-    /**
+  /**
    * Test data
    *
    * 3	3	5	3	3	5	0.422649731
@@ -19,7 +19,8 @@ class ExprMatrixTest extends FunSuite {
    * 4	4	4	2	1	2	0.125665916
    * 5	2	3	2	4	3	0.822206065
    *
-   * First 3 columns are group 1, following 3 group 2, last column expected p-value
+   * First 3 columns are group 1, following 3 group 2,
+   *  last column expected p-value of comparison between the two groups.
    *
    */
   
@@ -33,7 +34,7 @@ class ExprMatrixTest extends FunSuite {
     new ExprMatrix(data.map(new VVector(_)), data.size, data(0).size,
     		Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4),
     		Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4, "f" -> 5),
-    		(1 to 5).map(x => new RowAnnotation("p" + x, null, null, null)).toVector)    
+    		(1 to 5).map(x => new RowAnnotation("p" + x)).toVector)    
   }
   
   test("basic operations") {
@@ -73,7 +74,6 @@ class ExprMatrixTest extends FunSuite {
     assert(em3.columns === 1)
     
   }
-  
 
   test("t-test and sorting") {    
     val em = testMatrix
@@ -83,34 +83,34 @@ class ExprMatrixTest extends FunSuite {
     val em2 = em.appendTTest(em, Seq("a", "b", "c"), Seq("d", "e", "f"), "TTest")
     assert(em2.columns === 7)
     
-    val em3 = em2.sortRows((v1, v2) => v1(6).value < v2(6).value)
+    val em3 = em2.sortRows((v1, v2) => v1(6).getValue < v2(6).getValue)
     println(em3.row(0))
-    assert(em3(0,6).value < 0.002)    
-    assert(em3(4,6).value > 0.8)
+    assert(em3(0,6).getValue < 0.002)    
+    assert(em3(4,6).getValue > 0.8)
     
-    val em4 = em3.sortRows((v1, v2) => v1(6).value > v2(6).value)
+    val em4 = em3.sortRows((v1, v2) => v1(6).getValue > v2(6).getValue)
     println(em4.row(0))
-    assert(em4(4,6).value < 0.002)    
-    assert(em4(0,6).value > 0.8)
+    assert(em4(4,6).getValue < 0.002)    
+    assert(em4(0,6).getValue > 0.8)
     
   }
   
   test("sorting") {
     val em = testMatrix
-    val em2 = em.sortRows((v1, v2) => v1(0).value < v2(0).value)
+    val em2 = em.sortRows((v1, v2) => v1(0).getValue < v2(0).getValue)
     println(em2)
     println(em2.rowMap)
     assert(em2.rowMap("b") === 0)
     
-    assert(em2("b", "b").value === 2)
-    assert(em2("b", "c").value === 1)
-    assert(em2("d", "a").value === 4)
+    assert(em2("b", "b").getValue === 2)
+    assert(em2("b", "c").getValue === 1)
+    assert(em2("d", "a").getValue === 4)
     
     assert(em2.annotations(0).probe === "p2")
     assert(em2.annotations(1).probe === "p3")
     assert(em2.annotations(2).probe === "p1")
     
-    val em3 = em2.sortRows((v1, v2) => v1(0).value > v2(0).value)
+    val em3 = em2.sortRows((v1, v2) => v1(0).getValue > v2(0).getValue)
     println(em3)
     println(em3.rowMap)
     
@@ -184,7 +184,7 @@ class ExprMatrixTest extends FunSuite {
   
   test("filtering") {
     val em = testMatrix
-    val f = em.filterRows(_.head.value > 2)
+    val f = em.filterRows(_.head.getValue > 2)
     assert(f.columnMap === em.columnMap)
     assert(f.rowMap.keySet subsetOf em.rowMap.keySet)
     assert(f.annotations(0) === em.annotations(0))
@@ -212,7 +212,7 @@ class ExprMatrixTest extends FunSuite {
         List(4),
         List(5)).map(_.map(new ExpressionValue(_))))
         
-    val (s1, s2) = em.modifyJointly(small, _.sortRows((v1, v2) => v1(0).value < v2(0).value))
+    val (s1, s2) = em.modifyJointly(small, _.sortRows((v1, v2) => v1(0).getValue < v2(0).getValue))
     println(em.rowMap)
     println(s1.rowMap)
     assert(s2.rowMap === s1.rowMap)
@@ -234,5 +234,4 @@ class ExprMatrixTest extends FunSuite {
 //    assert(empty.rowKeys.isEmpty)
 //    assert(empty.columnKeys.isEmpty)
   }
-
 }
