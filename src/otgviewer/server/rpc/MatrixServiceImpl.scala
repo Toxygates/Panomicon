@@ -2,58 +2,44 @@ package otgviewer.server.rpc
 
 import java.util.ArrayList
 import java.util.{List => JList}
-import java.util.{List => JList}
-import scala.Array.canBuildFrom
-import scala.Array.fallbackCanBuildFrom
 import scala.collection.JavaConversions.asScalaBuffer
 import scala.collection.JavaConversions.mapAsJavaMap
 import scala.collection.JavaConversions.seqAsJavaList
-import Conversions.asJava
 import Conversions.asScala
 import Conversions.speciesFromFilter
 import bioweb.server.array.ArrayServiceImpl
 import bioweb.shared.array.ExpressionRow
-import bioweb.shared.array.ExpressionValue
-import friedrich.data.immutable.VVector
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
-import javax.servlet.ServletException
-import javax.servlet.http.HttpSession
-import otg.ExprValue
-import otg.ExprValue
 import otg.OTGContext
-import otg.db.MicroarrayDBReader
-import otg.sparql._
 import otg.sparql.AffyProbes
-import otg.sparql.AffyProbes
+import otg.sparql.BioObjects
 import otg.sparql.BioObjects.makeRich
+import otg.sparql.OTGSamples
+import otg.sparql.OwlimLocalRDF
 import otg.sparql.Probe
 import otgviewer.client.rpc.MatrixService
+import otgviewer.server.ApplicationClass
+import otgviewer.server.CSVHelper
 import otgviewer.server.Configuration
-import otgviewer.server.ExprMatrix
-import otgviewer.server.RowAnnotation
-import otgviewer.server.UtilsS
+import otgviewer.server.ExtFoldValueMatrix
+import otgviewer.server.Feedback
+import otgviewer.server.FoldValueMatrix
+import otgviewer.server.ManagedMatrix
+import otgviewer.server.NormalizedIntensityMatrix
+import otgviewer.server.TargetMine
+import otgviewer.server.UtilsS.useConnector
 import otgviewer.shared.Barcode
-import otgviewer.shared.BarcodeColumn
 import otgviewer.shared.DataFilter
 import otgviewer.shared.Group
+import otgviewer.shared.ManagedMatrixInfo
+import otgviewer.shared.NoDataLoadedException
+import otgviewer.shared.StringList
 import otgviewer.shared.Synthetic
 import otgviewer.shared.ValueType
-import otgviewer.server.ManagedMatrix
-import otg.db.kyotocabinet.KCExtMicroarrayDB
-import otgviewer.server.ExtFoldValueMatrix
-import otgviewer.server.NormalizedIntensityMatrix
-import otg.db.kyotocabinet.KCMicroarrayDB
-import otgviewer.server.FoldValueMatrix
-import otgviewer.shared.ManagedMatrixInfo
-import otgviewer.server.ApplicationClass
-import otgviewer.shared.StringList
-import org.intermine.webservice.client.core.ServiceFactory
-import org.intermine.webservice.client.services.ListService
-import otgviewer.server.TargetMine
-import otgviewer.server.Feedback
-import otgviewer.shared.NoDataLoadedException
-import otgviewer.server.CSVHelper
+import otgviewer.server.UtilsS
+import t.db.kyotocabinet.KCMatrixDB
+import t.db.kyotocabinet.KCExtMatrixDB
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
@@ -101,7 +87,6 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     }
     r
   }
-    
   
   def setSessionData(m: ManagedMatrix[_]) =
     getThreadLocalRequest().getSession().setAttribute("matrix", m)
@@ -150,10 +135,10 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     val enhancedCols = tgConfig.applicationClass == ApplicationClass.Adjuvant
 
     reader match {
-      case ext: KCExtMicroarrayDB =>
+      case ext: KCExtMatrixDB =>
         assert(typ == ValueType.Folds)
         new ExtFoldValueMatrix(requestColumns, ext, initProbes, sparseRead, enhancedCols)
-      case db: KCMicroarrayDB =>
+      case db: KCMatrixDB =>
         if (typ == ValueType.Absolute) {
           new NormalizedIntensityMatrix(requestColumns, db, initProbes, sparseRead, enhancedCols)
         } else {

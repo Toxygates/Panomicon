@@ -1,10 +1,9 @@
 package otgviewer.server
 
+import ApplicationClass.ApplicationClass
+import ApplicationClass.Toxygates
 import javax.servlet.ServletConfig
 import otg.OTGContext
-import otg.db.MicroarrayDBReader
-import otg.ExprValue
-import ApplicationClass._
 
 object Configuration {
   /**

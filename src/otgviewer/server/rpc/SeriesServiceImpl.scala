@@ -13,18 +13,18 @@ import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import otg.Context
 import otg.SeriesRanking
-import otg.db.SeriesDB
-import otg.db.kyotocabinet.KCSeriesDB
 import otg.sparql.AffyProbes
+import otg.sparql.OwlimLocalRDF
 import otgviewer.client.rpc.SeriesService
 import otgviewer.server.Configuration
-import otgviewer.server.UtilsS
 import otgviewer.shared.DataFilter
 import otgviewer.shared.MatchResult
 import otgviewer.shared.NoSuchProbeException
 import otgviewer.shared.RankRule
 import otgviewer.shared.Series
-import otg.sparql.OwlimLocalRDF
+import t.db.SeriesDB
+import t.db.kyotocabinet.KCSeriesDB
+import otgviewer.server.UtilsS
 
 class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   import Conversions._

@@ -6,13 +6,13 @@ import otgviewer.shared.ManagedMatrixInfo
 import otgviewer.shared.DataFilter
 import otgviewer.shared.Group
 import otg.ExprValue
-import otg.db.MicroarrayDBReader
 import otg.OTGContext
 import otgviewer.server.rpc.Conversions._
 import friedrich.data.immutable.VVector
 import bioweb.shared.array.ExpressionValue
 import otg.PExprValue
 import otgviewer.shared.Barcode
+import t.db.MatrixDBReader
 
 
 /**
@@ -30,7 +30,7 @@ import otgviewer.shared.Barcode
  * 
  */
 abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
-    val reader: MicroarrayDBReader[E],
+    val reader: MatrixDBReader[E],
     initProbes: Array[String], sparseRead: Boolean)
     (implicit val filter: DataFilter, context: OTGContext) {
   
@@ -269,7 +269,7 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
  * for both treated and control samples. 
  */
 class NormalizedIntensityMatrix(requestColumns: Seq[Group],
-    reader: MicroarrayDBReader[ExprValue],
+    reader: MatrixDBReader[ExprValue],
     initProbes: Array[String], sparseRead: Boolean,
     enhancedColumns: Boolean)
     (implicit filter: DataFilter, context: OTGContext) 
@@ -307,7 +307,7 @@ extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead)
  * No extra columns. Simple averaged fold values.
  */
 class FoldValueMatrix(requestColumns: Seq[Group],
-    reader: MicroarrayDBReader[ExprValue],
+    reader: MatrixDBReader[ExprValue],
     initProbes: Array[String], sparseRead: Boolean)
     (implicit filter: DataFilter, context: OTGContext) 
     extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead) {
@@ -317,7 +317,7 @@ class FoldValueMatrix(requestColumns: Seq[Group],
  * Columns consisting of fold-values, associated p-values and custom P/A calls.
  */
 class ExtFoldValueMatrix(requestColumns: Seq[Group],
-    reader: MicroarrayDBReader[PExprValue], 
+    reader: MatrixDBReader[PExprValue], 
     initProbes: Array[String], sparseRead: Boolean,
     enhancedColumns: Boolean)
     (implicit filter: DataFilter, context: OTGContext) 
