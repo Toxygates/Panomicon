@@ -100,7 +100,8 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 				screen.storeItemLists(getParser(screen));
 			}
 		};		
-				
+		
+		compoundEditor.displayPicker();
 		dp.add(compoundEditor);	
 		compoundEditor.table().setSelectionModel(new NoSelectionModel<String>());		
 	}

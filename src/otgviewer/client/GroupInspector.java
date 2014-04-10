@@ -376,8 +376,8 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	}
 	
 	private void loadTimeWarningIfNeeded() {
-		int totalSize = 0;		
-		for (Group g : existingGroupsTable.getSelection()) {
+		int totalSize = 0;
+		for (Group g : groups.values()) {
 			for (Barcode b: g.samples()) {
 				if (!b.getDose().equals("Control")) {
 					totalSize += 1;
@@ -385,14 +385,14 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 			}
 		}
 		
-		// Conservatively estimate that we load 3 samples per second
-		int loadTime = (int) ((float) totalSize / 3);
+		// Conservatively estimate that we load 4 samples per second
+		int loadTime = (int) (totalSize / 4);
 
 		if (loadTime > 20) {
 			Window.alert("Warning: You have requested data for " + totalSize + " samples.\n" +
 					"The total loading time is expected to be " + loadTime + " seconds.");
 		}
-	}
+	} 
 	
 	private void cullEmptyGroups() {
 		// look for empty groups, undo the saving

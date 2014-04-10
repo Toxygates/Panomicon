@@ -25,6 +25,8 @@ import com.google.gwt.visualization.client.visualizations.corechart.Options;
  */
 public class GVizChartGrid extends ChartGrid {
 	
+	public static final int MAX_WIDTH = 400;
+	
 	public GVizChartGrid(Screen screen, ChartDataset table, List<Group> groups, 
 			final List<String> rowFilters, 
 			boolean rowsAreCompounds, 
@@ -59,7 +61,7 @@ public class GVizChartGrid extends ChartGrid {
 		ao.setMaxValue(maxVal != Double.NaN ? maxVal : table.getMax());		
 		
 		Options o = GVizCharts.createChartOptions();
-		final int useWidth = width <= 400 ? width : 400;
+		final int useWidth = width <= MAX_WIDTH ? width : MAX_WIDTH;
 		o.setWidth(useWidth);
 		o.setHeight(170);
 		o.setVAxisOptions(ao);

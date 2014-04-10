@@ -95,6 +95,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	/**
 	 * Obtain the index of the column at the given x-position. Only works
 	 * if there is at least one row in the table.
+	 * (!!)
 	 * @param x
 	 * @return
 	 */
