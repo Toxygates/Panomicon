@@ -54,11 +54,7 @@ public class ChartGridFactory {
 			}			
 		});			
 	}
-	
-	// strategy: 1. Make data source,
-			// 2. Make table
-			// 3. make chart grid and return
-			
+
 	private void finishSeriesCharts(final List<Series> series, final String[] times, 
 			final boolean rowsAreCompounds,			
 			final int highlightDose, final ChartAcceptor acceptor, final Screen screen) {
@@ -114,7 +110,7 @@ public class ChartGridFactory {
 	private void finishRowCharts(Screen screen, DataFilter filter, String probe, ValueType vt, List<Group> groups, 
 			Barcode[] barcodes, AChartAcceptor acceptor) {
 		ChartDataSource cds = new ChartDataSource.DynamicExpressionRowSource(filter, probe, vt, barcodes, screen);
-		AdjustableChartGrid acg = new AdjustableChartGrid(screen, cds, groups);
+		AdjustableChartGrid acg = new AdjustableChartGrid(screen, cds, groups, vt);
 		acceptor.acceptCharts(acg);
 	}
 }

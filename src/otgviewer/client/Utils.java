@@ -228,22 +228,31 @@ public class Utils {
 					pp.setHeight((Window.getClientHeight() - 100) + "px");
 					if (center != null && dp != null) {					
 						dp.remove(center);					
-						Widget scrl = makeScrolled(center);
+						Widget scrl = makeScrolledSize(center, w);
 						scrl.setHeight((Window.getClientHeight() - 120) + "px");
 						dp.add(scrl, DockPanel.CENTER);					
 					} else {				
 						Widget wd = pp.getWidget();
-						pp.setWidget(makeScrolled(wd));
+						pp.setWidget(makeScrolledSize(wd, w));
 					}			
 				}				
 				pp.setPopupPosition(atX != -1 ? atX : pos.computeX(w), 
 						atY != -1 ? atY : pos.computeY(h));
+				pp.setWidth("auto");
 			}
 			};
 	}
 	
 	public static ScrollPanel makeScrolled(Widget w) {
 		ScrollPanel sp = new ScrollPanel(w);
+		sp.setWidth("auto");
+		return sp;
+	}
+	
+	public static ScrollPanel makeScrolledSize(Widget w, int width) {
+		ScrollPanel sp = makeScrolled(w);
+		sp.setWidth("auto");
+//		sp.setWidth(width + "px");		
 		return sp;
 	}
 	
@@ -272,10 +281,11 @@ public class Utils {
 		SimplePanel sp = new SimplePanel();	
 		sp.setWidget(new HTML(helpText.getText()));
 		vp.add(sp);
+		sp.setWidth("600px");
 		if (helpImage != null) {
 			vp.setWidth((helpImage.getWidth() + 50) + "px");
 		} else {
-			vp.setWidth("600px");
+			vp.setWidth("650px");
 		}
 		Utils.displayInPopup("Help", vp, DialogPosition.Center);
 	}

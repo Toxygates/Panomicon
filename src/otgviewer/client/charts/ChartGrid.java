@@ -3,6 +3,7 @@ package otgviewer.client.charts;
 import java.util.List;
 
 import otgviewer.client.Utils;
+import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.rpc.SparqlService;
@@ -78,6 +79,15 @@ abstract public class ChartGrid extends Composite {
 				});
 		}
 
+	}
+	
+	public int computedTotalWidth() {
+		int theoretical = g.getColumnCount() * GVizChartGrid.MAX_WIDTH;
+		if (theoretical > totalWidth) {
+			return totalWidth;
+		} else {
+			return theoretical;
+		}
 	}
 	
 	/**

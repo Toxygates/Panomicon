@@ -8,6 +8,8 @@ import java.util.List;
 import otgviewer.client.charts.AdjustableChartGrid;
 import otgviewer.client.charts.ChartGridFactory;
 import otgviewer.client.charts.ChartGridFactory.AChartAcceptor;
+import otgviewer.client.charts.google.GVizChartGrid;
+import otgviewer.client.charts.google.GVizCharts;
 import otgviewer.client.components.AssociationTable;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ExpressionColumn;
@@ -404,24 +406,33 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			
 			@Override
 			protected void onChange(Double newVal) {
-				setEnabled(false);
-				matrixService.setColumnThreshold(editColumn, newVal, new AsyncCallback<ManagedMatrixInfo>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						Window.alert("An error occurred when the column filter was changed.");
-						filterDialog.setVisible(false);
-						setEnabled(true);
-					}
-
-					@Override
-					public void onSuccess(ManagedMatrixInfo result) {
-						setMatrix(result);
-						filterDialog.setVisible(false);
-					}
-				});
+				applyColumnFilter(editColumn, newVal);
 			}			
 		};
 		filterDialog = Utils.displayInPopup("Edit filter", fe, DialogPosition.Center);				
+	}
+	
+	protected void applyColumnFilter(final int column, final Double filter) {
+		setEnabled(false);
+		matrixService.setColumnThreshold(column, filter, new AsyncCallback<ManagedMatrixInfo>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("An error occurred when the column filter was changed.");
+				filterDialog.setVisible(false);
+				setEnabled(true);
+			}
+
+			@Override
+			public void onSuccess(ManagedMatrixInfo result) {
+				if (result.numRows() == 0 && filter != null) {
+					Window.alert("No rows match the selected filter. The filter will be reset.");
+					applyColumnFilter(column, null);					
+				} else {
+					setMatrix(result);
+					filterDialog.setVisible(false);
+				}
+			}
+		});
 	}
 	
 	protected List<HideableColumn> initHideableColumns() {

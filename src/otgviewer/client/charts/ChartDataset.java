@@ -70,6 +70,9 @@ public class ChartDataset {
 	 * Make a table corresponding to the given time or dose.
 	 * If a time is given, the table will be grouped by dose.
 	 * If a dose is given, the table will be grouped by time.
+	 * 
+	 * TODO factor out into charts.google
+	 * 
 	 * @param timeOrDose
 	 * @param probeOrCompound Filter samples by probe or compound 
 	 * (use null for no filtering)
@@ -134,8 +137,15 @@ public class ChartDataset {
 				if (s.barcode != null) {
 					dt.setProperty(cat, col, "barcode", s.barcode.pack());
 				}
-				dt.setFormattedValue(cat, col, Utils.formatNumber(s.value));
-				dt.setValue(cat, col + 1, "color:" + s.color + "; margin:1px"); // style
+				dt.setFormattedValue(cat, col, Utils.formatNumber(s.value) + ":" + s.call);
+				String style = "fill-color:" + s.color + "; stroke-width:1px; ";
+//				if (s.call == 'P') {
+//					style += "stroke-color: black";
+//				} else {
+//					style += "stroke-color: grey";
+//				}
+					
+				dt.setValue(cat, col + 1, style);
 				valCount[cat]++;
 			}
 		}
