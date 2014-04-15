@@ -11,13 +11,13 @@ import java.util.Set;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
-import otgviewer.client.components.SelectionTable;
 import otgviewer.client.components.StorageParser;
 import otgviewer.shared.BUnit;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
+import bioweb.client.components.SelectionTable;
 
 import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;

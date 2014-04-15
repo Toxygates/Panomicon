@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
 
 import otgviewer.client.Utils;
 import otgviewer.shared.ItemList;
+import bioweb.client.components.SetEditor;
 import bioweb.shared.SharedUtils;
 
 import com.google.gwt.dom.client.Style.Unit;

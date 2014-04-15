@@ -1,4 +1,4 @@
-package otgviewer.client.components;
+package bioweb.client.components;
 
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ProvidesResize;

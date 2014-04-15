@@ -1,4 +1,4 @@
-package otgviewer.client.components;
+package bioweb.client.components;
 
 import java.util.Collection;
 import java.util.List;

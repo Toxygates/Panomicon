@@ -11,8 +11,6 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.FixedWidthLayoutPanel;
 import otgviewer.client.components.ListChooser;
 import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.ResizingDockLayoutPanel;
-import otgviewer.client.components.ResizingListBox;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
@@ -23,6 +21,8 @@ import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.ItemList;
+import bioweb.client.components.ResizingDockLayoutPanel;
+import bioweb.client.components.ResizingListBox;
 import bioweb.shared.SharedUtils;
 
 import com.google.gwt.core.client.GWT;

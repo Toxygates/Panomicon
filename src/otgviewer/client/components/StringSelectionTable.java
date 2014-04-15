@@ -1,5 +1,7 @@
 package otgviewer.client.components;
 
+import bioweb.client.components.SelectionTable;
+
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;
 
