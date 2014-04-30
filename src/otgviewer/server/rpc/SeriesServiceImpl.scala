@@ -3,18 +3,20 @@ package otgviewer.server.rpc
 import java.lang.{Double => JDouble}
 import java.util.ArrayList
 import java.util.{List => JList}
+
 import scala.Array.canBuildFrom
 import scala.collection.JavaConversions.asJavaCollection
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
+
 import Conversions.asJava
 import Conversions.asScala
 import Conversions.speciesFromFilter
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
-import otg.Context
+import otg.OTGContext
 import otg.SeriesRanking
 import otg.sparql.AffyProbes
-import otg.sparql.OwlimLocalRDF
 import otgviewer.client.rpc.SeriesService
 import otgviewer.server.Configuration
 import otgviewer.shared.DataFilter
@@ -24,18 +26,17 @@ import otgviewer.shared.RankRule
 import otgviewer.shared.Series
 import t.db.SeriesDB
 import t.db.kyotocabinet.KCSeriesDB
-import otgviewer.server.UtilsS
 
 class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   import Conversions._
-  import scala.collection.JavaConversions._
-  import UtilsS._
+  import scala.collection.JavaConversions._  
 
   import java.lang.{ Double => JDouble }
 
   private var db: SeriesDB = _
-  private implicit var context: Context = _
-
+  private implicit var context: OTGContext = _
+  var affyProbes: AffyProbes = _
+  
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config)
@@ -48,13 +49,12 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     context = config.context
     db = new KCSeriesDB(homePath + "/otgfs.kct")
     println("Series DB is open")
-    OwlimLocalRDF.setContextForAll(config.context)
-    AffyProbes.connect()
+    affyProbes = new AffyProbes(context.triplestoreConfig)    
   }
 
   override def destroy() {
-    db.close()
-    AffyProbes.close()
+    affyProbes.close()
+    db.close()    
     super.destroy()
   }
 
@@ -65,7 +65,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
 
     //Convert the input probes (which may actually be genes) into definite probes
     probesRules = probesRules.flatMap(pr => {
-      val resolved = AffyProbes.identifiersToProbes(filter, Array(pr._1), true, true)
+      val resolved = affyProbes.identifiersToProbes(filter, Array(pr._1), true, true)
       if (resolved.size == 0) {
         throw new NoSuchProbeException(pr._1)
       }
@@ -99,7 +99,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   }
 
   def getSeries(filter: DataFilter, probes: Array[String], timeDose: String, compounds: Array[String]): JList[Series] = {
-    val validated = AffyProbes.identifiersToProbes(filter, probes, true, true).map(_.identifier)
+    val validated = affyProbes.identifiersToProbes(filter, probes, true, true).map(_.identifier)
     val ss = validated.flatMap(p =>
       compounds.flatMap(c =>
         db.read(asScala(filter, new Series("", p, timeDose, c, Array.empty)))))

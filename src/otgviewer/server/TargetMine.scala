@@ -32,7 +32,7 @@ object TargetMine {
       new StringList("probes", l.getName(), items.map(_.identifier).toArray);
   }
   
-  def addLists(filter: DataFilter, ls: ListService, 
+  def addLists(ap: AffyProbes, filter: DataFilter, ls: ListService, 
       lists: List[StringList], replace: Boolean): Unit = {
     for (l <- lists) {
       var serverList = ls.getList(l.name)
@@ -43,7 +43,7 @@ object TargetMine {
         val ci = new ls.ListCreationInfo("Gene")
         val probes = l.items.map(Probe(_)).toSeq
         //TODO we have the option of doing a fuzzy (e.g. symbol-based) export here
-        val genes = AffyProbes.withAttributes(probes, filter).flatMap(_.genes.map(_.identifier))
+        val genes = ap.withAttributes(probes, filter).flatMap(_.genes.map(_.identifier))
         ci.setContent(asJavaList(genes.toList))
         var newList = ls.createList(ci)
         newList = ls.rename(newList, l.name)

@@ -16,7 +16,6 @@ import otg.sparql.AffyProbes
 import otg.sparql.BioObjects
 import otg.sparql.BioObjects.makeRich
 import otg.sparql.OTGSamples
-import otg.sparql.OwlimLocalRDF
 import otg.sparql.Probe
 import otgviewer.client.rpc.MatrixService
 import otgviewer.server.ApplicationClass
@@ -28,7 +27,6 @@ import otgviewer.server.FoldValueMatrix
 import otgviewer.server.ManagedMatrix
 import otgviewer.server.NormalizedIntensityMatrix
 import otgviewer.server.TargetMine
-import otgviewer.server.UtilsS.useConnector
 import otgviewer.shared.Barcode
 import otgviewer.shared.DataFilter
 import otgviewer.shared.Group
@@ -53,6 +51,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
   private var csvDirectory: String = _
   private var csvUrlBase: String = _
   private implicit var context: OTGContext = _
+  var affyProbes: AffyProbes = _ 
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
@@ -67,13 +66,12 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     context = config.context
     tgConfig = config
     
-    OwlimLocalRDF.setContextForAll(context)
-    OTGSamples.connect
-    AffyProbes.connect
+    affyProbes = new AffyProbes(context.triplestoreConfig)           
     println("Microarray databases are open")
   }
 
   override def destroy() {
+	affyProbes.close()	
     println("Closing KC databases")
     context.closeReaders
     super.destroy()
@@ -93,7 +91,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
 
   //Should this be in sparqlService?
   def identifiersToProbes(filter: DataFilter, identifiers: Array[String], precise: Boolean): Array[String] =
-    AffyProbes.identifiersToProbes(filter, identifiers, precise).map(_.identifier).toArray
+    affyProbes.identifiersToProbes(filter, identifiers, precise).map(_.identifier).toArray
 
     /**
      * Filter probes for one species.
@@ -204,18 +202,17 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
    */
   private def insertAnnotations(rows: Seq[ExpressionRow])(implicit f: DataFilter): Seq[ExpressionRow] = {
     val probes = rows.map(r => Probe(r.getProbe))
-    useConnector(AffyProbes, (c: AffyProbes.type) => {
-      val attribs = c.withAttributes(probes, f)
-      val pm = Map() ++ attribs.map(a => (a.identifier -> a))
-      
-      rows.map(or => {
-        if (!pm.containsKey(or.getProbe)) {
-          println("missing key: " + or.getProbe)
-        }
-        val p = pm(or.getProbe)
-        new ExpressionRow(p.identifier, p.name, p.genes.map(_.identifier).toArray,
-            p.symbols.map(_.symbol).toArray, or.getValues)
-      })      
+
+    val attribs = affyProbes.withAttributes(probes, f)
+    val pm = Map() ++ attribs.map(a => (a.identifier -> a))
+
+    rows.map(or => {
+      if (!pm.containsKey(or.getProbe)) {
+        println("missing key: " + or.getProbe)
+      }
+      val p = pm(or.getProbe)
+      new ExpressionRow(p.identifier, p.name, p.genes.map(_.identifier).toArray,
+        p.symbols.map(_.symbol).toArray, or.getValues)
     })
   }
   
@@ -261,12 +258,11 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     
     val colNames = rendered.sortedColumnMap.map(_._1)
     val rowNames = rendered.sortedRowMap.map(_._1)
-    useConnector(AffyProbes, (c: AffyProbes.type) => {
-      val gis = c.allGeneIds(mm.filter).mapMValues(_.identifier)      
-      val geneIds = rowNames.map(rn => gis.getOrElse(Probe(rn), Seq.empty)).map(_.mkString(" "))
-      CSVHelper.writeCSV(csvDirectory, csvUrlBase, rowNames, colNames, 
-          geneIds, rendered.data.map(_.map(asScala(_))))
-    })
+
+    val gis = affyProbes.allGeneIds(mm.filter).mapMValues(_.identifier)
+    val geneIds = rowNames.map(rn => gis.getOrElse(Probe(rn), Seq.empty)).map(_.mkString(" "))
+    CSVHelper.writeCSV(csvDirectory, csvUrlBase, rowNames, colNames,
+      geneIds, rendered.data.map(_.map(asScala(_))))
   }
 
   @throws(classOf[NoDataLoadedException])
@@ -278,11 +274,10 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     if (limit != -1) {
       rowNames = rowNames.take(limit)
     }
-    useConnector(AffyProbes, (c: AffyProbes.type) => {
-      val gis = c.allGeneIds(mm.filter)
-      val geneIds = rowNames.map(rn => gis.getOrElse(Probe(rn), Set.empty))
-      geneIds.flatten.map(_.identifier).toArray
-    })
+
+    val gis = affyProbes.allGeneIds(mm.filter)
+    val geneIds = rowNames.map(rn => gis.getOrElse(Probe(rn), Set.empty))
+    geneIds.flatten.map(_.identifier).toArray
   }
   
   def importTargetmineLists(filter: DataFilter, user: String, pass: String,
@@ -296,7 +291,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
   def exportTargetmineLists(filter: DataFilter, user: String, pass: String,
     lists: Array[StringList], replace: Boolean): Unit = {
     val ls = TargetMine.getListService(user, pass)
-    TargetMine.addLists(filter, ls, lists.toList, replace)
+    TargetMine.addLists(affyProbes, filter, ls, lists.toList, replace)
   }    
   
   def sendFeedback(name: String, email: String, feedback: String): Unit = {

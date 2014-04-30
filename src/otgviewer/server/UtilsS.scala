@@ -2,27 +2,20 @@ package otgviewer.server
 
 import otgviewer.shared.DataFilter
 import otg.Filter
-import otg.sparql.RDFConnector
 import javax.servlet.http.HttpSession
+import t.sparql.Triplestore
 
 object UtilsS {
-  def useConnector[C <: RDFConnector, T](conn: C, f: C => T): T = {
+  def useTriplestore[C <: Triplestore, T](conn: C, f: C => T, onFailure: T): T = {
     try {
-      conn.connect()
       f(conn)
-    } finally {
-      conn.close()
+    } catch {
+      case e: Exception =>
+        e.printStackTrace()
+        onFailure
     }
   }
-
-  def useConnector[C <: RDFConnector, T](conn: C, f: C => T, onFailure: T): T =
-    tryOrFailWith(() => {
-      conn.connect()
-      f(conn)
-    },
-      onFailure,
-      () => conn.close())
-  
+      
   def nullToNone[T <: AnyRef](x: T): Option[T] = {
     if (x == null) {
       None
@@ -35,10 +28,9 @@ object UtilsS {
     try {
       f()
     } catch {
-      case e => {
+      case e: Exception =>
         e.printStackTrace()
         onFailure
-      }
     } finally {
       finalizer()
     }
