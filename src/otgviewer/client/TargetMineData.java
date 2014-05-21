@@ -20,7 +20,6 @@ import otgviewer.shared.StringList;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.Widget;
 
 /**
  * Client side helper for TargetMine data import/export.
