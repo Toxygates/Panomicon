@@ -48,8 +48,6 @@ public class FeedbackForm extends InteractionDialog {
 		commentArea.setVisibleLines(10);
 		vpanel.add(commentArea);
 		
-		final FeedbackForm f = this;
-		
 		Button b1 = new Button("Send", new ClickHandler() {			
 			@Override
 			public void onClick(ClickEvent event) {

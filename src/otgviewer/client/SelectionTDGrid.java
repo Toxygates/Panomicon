@@ -311,13 +311,6 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		return p;
 	}
 
-	private boolean initState = false;
-	
-	protected void drawGridInner(Grid grid, boolean initState) {
-		this.initState = initState;		
-		drawGridInner(grid);		
-	}
-	
 	@Override
 	protected void drawGridInner(Grid grid) {		
 		final int nd = numDoses();
@@ -326,7 +319,6 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		unitUis.clear();
 		
 		super.drawGridInner(grid);
-		this.initState = false;
 	}	
 	
 	@Override

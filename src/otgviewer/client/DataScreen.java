@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ListChooser;
 import otgviewer.client.components.RichTable.HideableColumn;
 import otgviewer.client.components.Screen;

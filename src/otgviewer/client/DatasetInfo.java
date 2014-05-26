@@ -106,6 +106,8 @@ public class DatasetInfo extends Composite implements ClickHandler {
 			return resources.spleen();
 		case Kidney:
 			return resources.kidney();
+		case LymphNode:
+			return null; //TODO
 		}
 		return null;
 	}
