@@ -360,7 +360,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 			return;
 		}
 		
-		pendingGroup = new Group(name, new Barcode[0]);
+		pendingGroup = new Group(name, new Barcode[0], null);
 		addGroup(name, pendingGroup);
 		List<BUnit> units = timeDoseGrid.getSelectedUnits(false);
 		
@@ -429,7 +429,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		nameIsAutoGen = false;
 		
 		Group g = groups.get(name);
-		timeDoseGrid.setSelection(g.getSamples());
+		timeDoseGrid.setSelection(g.getUnits());
 		
 		setEditing(true);
 	}

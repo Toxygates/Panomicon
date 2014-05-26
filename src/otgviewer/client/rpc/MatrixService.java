@@ -30,14 +30,15 @@ public interface MatrixService extends RemoteService {
 	 * 
 	 * @param filter
 	 * @param identifiers
-	 * @param precise If true, names must be an exact match, otherwise partial name matching is used.
+	 * @param precise If true, names must be an exact match, otherwise partial 
+	 * 	name matching is used.
 	 * @return
 	 */
-	public String[] identifiersToProbes(DataFilter filter, String[] identifiers, boolean precise);
+	public String[] identifiersToProbes(DataFilter filter, String[] identifiers, 
+			boolean precise);
 	
 	/**
-	 * Load data into the user's session. Also perform an initial filtering.
-	 * @param filter
+	 * Load data into the user's session. Also perform an initial filtering. 
 	 * @param barcodes
 	 * @param probes
 	 * @param type
@@ -45,7 +46,7 @@ public interface MatrixService extends RemoteService {
 	 * from the start.
 	 * @return The number of rows that remain after filtering.
 	 */
-	public ManagedMatrixInfo loadDataset(DataFilter filter, List<Group> columns, 
+	public ManagedMatrixInfo loadDataset(List<Group> columns, 
 			String[] probes, ValueType type, List<Synthetic> synthCols);
 	
 	/**
@@ -94,21 +95,21 @@ public interface MatrixService extends RemoteService {
 	
 	/**
 	 * Get all data immediately. 
-	 * @param filter
 	 * @param barcodes
 	 * @param probes
 	 * @param type 
-	 * @param sparseRead If true, we optimise for the case of reading a single probe from multiple arrays.
-	 * If false, we optimise for reading full arrays. 
-	 * @param withSymbols If true, gene IDs and gene symbols will also be loaded into the rows (may be slightly slower)
+	 * @param sparseRead If true, we optimise for the case of reading a 
+	 * 	single probe from multiple arrays. If false, we optimise for reading full arrays. 
+	 * @param withSymbols If true, gene IDs and gene symbols will also be loaded 
+	 * 	into the rows (may be slightly slower)
 	 * @return
 	 */
-	public List<ExpressionRow> getFullData(DataFilter filter, List<String> barcodes, String[] probes, 
-			ValueType type, boolean sparseRead, boolean withSymbols);
+	public List<ExpressionRow> getFullData(Group g, String[] probes, 
+			boolean sparseRead, boolean withSymbols, ValueType type);
 	
 	/**
-	 * Prepare a CSV file representing the loaded data for download. Returns a URL that may be used for downloading.
-	 * Requires that loadDataset was first used to load items.
+	 * Prepare a CSV file representing the loaded data for download. Returns a URL 
+	 * that may be used for downloading. Requires that loadDataset was first used to load items.
 	 * @return
 	 */
 	public String prepareCSVDownload();

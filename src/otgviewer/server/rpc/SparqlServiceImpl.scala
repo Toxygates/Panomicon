@@ -108,7 +108,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       time: String): Array[BUnit] = {
     val bcs = otgSamples.barcodes(filter, compounds,
       nullToNone(doseLevel), nullToNone(time)).map(asJava(_))
-    val g = bcs.groupBy(new BUnit(_))
+    val g = bcs.groupBy(x => new BUnit(x, filter))
     for ((k, v) <- g) {
       k.setSamples(v.toArray)
     }

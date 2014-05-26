@@ -49,11 +49,14 @@ object Conversions {
     new Annotation(annot.barcode, new java.util.ArrayList(entries))        
   }
 
+  //TODO pass in DataFilter?
   def asJava(s: Sample): Barcode = 
-    new Barcode(s.sampleId, s.individual, s.dose, s.time, s.compound);
+    new Barcode(s.sampleId, s.individual, s.dose, s.time, s.compound, null);
 
-  implicit def speciesFromFilter(filter: DataFilter): Species = {
-    filter.organism match {
+  implicit def speciesFromFilter(filter: DataFilter): Species = asScala(filter.organism)
+    
+  implicit def asScala(org: Organism): Species = {
+    org match {
       case Organism.Rat   => otg.Species.Rat
       case Organism.Human => otg.Species.Human
       case Organism.Mouse => otg.Species.Mouse

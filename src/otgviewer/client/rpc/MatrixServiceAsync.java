@@ -19,7 +19,7 @@ public interface MatrixServiceAsync {
 	public void identifiersToProbes(DataFilter filter, String[] identifiers,
 			boolean precise, AsyncCallback<String[]> callback);
 
-	public void loadDataset(DataFilter filter, List<Group> columns,
+	public void loadDataset(List<Group> columns,
 			String[] probes, ValueType type, List<Synthetic> synthCols, 
 			AsyncCallback<ManagedMatrixInfo> callback);
 
@@ -32,9 +32,8 @@ public interface MatrixServiceAsync {
 	public void datasetItems(int offset, int size, int sortColumn,
 			boolean ascending, AsyncCallback<List<ExpressionRow>> callback);
 
-	public void getFullData(DataFilter filter, List<String> barcodes,
-			String[] probes, ValueType type, boolean sparseRead,
-			boolean withSymbols,
+	public void getFullData(Group g, String[] probes,
+			boolean sparseRead, boolean withSymbols, ValueType typ,
 			AsyncCallback<List<ExpressionRow>> callback);
 
 	public void prepareCSVDownload(AsyncCallback<String> callback);

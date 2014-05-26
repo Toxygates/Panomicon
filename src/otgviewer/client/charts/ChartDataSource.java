@@ -11,6 +11,7 @@ import otgviewer.client.rpc.MatrixService;
 import otgviewer.client.rpc.MatrixServiceAsync;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
+import otgviewer.shared.Group;
 import otgviewer.shared.Series;
 import otgviewer.shared.TimesDoses;
 import otgviewer.shared.ValueType;
@@ -237,8 +238,9 @@ abstract class ChartDataSource {
 			}
 			
 			samples.clear();
-			kcService.getFullData(filter, useBarcodes, 
-					new String[] { probe }, type, true, false, 
+			Group g = new Group("temporary", useBarcodes.toArray(new Barcode[0]), filter);
+			kcService.getFullData(g, 
+					new String[] { probe }, true, false, type,  
 					new PendingAsyncCallback<List<ExpressionRow>>(screen) {
 				@Override
 				public void handleFailure(Throwable caught) {

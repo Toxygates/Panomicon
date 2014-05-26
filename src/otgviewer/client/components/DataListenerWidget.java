@@ -267,7 +267,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		if (v != null && !v.equals(packColumns(expectedColumns))) {
 			String[] spl = v.split("###");
 			for (String cl : spl) {
-				Group c = (Group) unpackColumn(cl);
+				Group c = (Group) unpackColumn(cl, chosenDataFilter);
 				r.add(c);
 			}
 			return r;
@@ -319,7 +319,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 				if (cs != null) {						
 					columnsChanged(cs);
 				}						
-				BarcodeColumn cc = unpackColumn(p.getItem("customColumn"));
+				BarcodeColumn cc = unpackColumn(p.getItem("customColumn"), chosenDataFilter);
 				if (cc != null) {																		
 					customColumnChanged(cc);						
 				}

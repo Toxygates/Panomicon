@@ -585,7 +585,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		asyncProvider.updateRowCount(0, false);
 
 		// load data
-		matrixService.loadDataset(chosenDataFilter, chosenColumns, chosenProbes,
+		matrixService.loadDataset(chosenColumns, chosenProbes,
 				chosenValueType, synthetics,
 				new AsyncCallback<ManagedMatrixInfo>() {
 					public void onFailure(Throwable caught) {

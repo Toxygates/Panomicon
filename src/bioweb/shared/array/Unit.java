@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
  * parameters.
  */
 public class Unit<S extends Sample> implements HasSamples<S>, Serializable {
-	private String _name;
+	protected String _name;
 	private S[] _samples = null;
 	
 	protected Unit() {}

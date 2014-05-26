@@ -145,8 +145,11 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	}
 
 	protected void setSelection(BUnit[] units) {
+		setAll(false);
 		for (BUnit u : units) {
-			setSelected(u, true);
+			if (!u.getDose().equals("Control")) {		
+				setSelected(u, true);
+			}
 		}
 	}
 	
@@ -164,15 +167,15 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		}
 		return r.toArray(new BUnit[0]);		
 	}
-	
-	public void setSelection(Barcode[] barcodes) {
-		setAll(false);
-		for (Barcode b: barcodes) {
-			if (!b.getDose().equals("Control")) {
-				setSelected(new BUnit(b), true);
-			}
-		}		
-	}
+//	
+//	public void setSelection(Barcode[] barcodes) {
+//		setAll(false);
+//		for (Barcode b: barcodes) {
+//			if (!b.getDose().equals("Control")) {
+//				setSelected(new BUnit(b), true);
+//			}
+//		}		
+//	}
 	
 	private abstract class UnitMultiSelector implements ValueChangeHandler<Boolean> {
 		public void onValueChange(ValueChangeEvent<Boolean> vce) {
@@ -231,6 +234,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	
 	private BUnit controlUnitFor(BUnit u) {
 		BUnit b = new BUnit(u.getCompound(), "Control", u.getTime());
+		b.setDataFilter(chosenDataFilter);
 		return controlUnits.get(b.toString());
 	}
 	
@@ -252,7 +256,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	
 	@Override
 	protected Widget guiForUnit(final BUnit unit) {		
-		UnitUI ui = new UnitUI(unit);		
+		UnitUI ui = new UnitUI(unit);	
 		unitUis.put(unit, ui);
 		return ui;		
 	}
@@ -340,8 +344,8 @@ public class SelectionTDGrid extends TimeDoseGrid {
 				continue;
 			}
 			
-			UnitUI ui = unitUis.get(u);
-			if (ui == null) {
+			UnitUI ui = unitUis.get(u);			
+			if (ui == null) {											
 				continue;
 			}
 			unitUis.remove(u);

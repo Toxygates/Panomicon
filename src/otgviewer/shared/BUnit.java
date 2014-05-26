@@ -8,12 +8,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import bioweb.shared.array.Unit;
 
+/**
+ * A BUnit is a Unit of Barcodes.
+ */
 public class BUnit extends Unit<Barcode> {
 
 	protected BUnit() { super(); }
 	private String _time, _dose, _compound;
+	
+	//TODO consider extracting an interface SampleParameter and lifting up some of these
+	//TODO think about how these should be preserved across the various transformation
+	//methods. Should ideally store in Barcode too.
+	private Organ _organ = null;
+	private Organism _organism = null;
+	private CellType _cellType = null;
+	private RepeatType _repeatType = null;
 	
 	public BUnit(String compound, String dose, String time) {
 		super(compound + "/" + dose + "/" + time);
@@ -22,8 +35,21 @@ public class BUnit extends Unit<Barcode> {
 		_compound = compound;
 	}
 	
-	public BUnit(Barcode b) {
+	public BUnit(Barcode b, @Nullable DataFilter filter) {
 		this(b.getCompound(), b.getDose(), b.getTime());
+		if (filter != null) {
+			setDataFilter(filter);
+		}
+	}
+	
+	public void setDataFilter(DataFilter filter) {
+		_organ = filter.organ;
+		_organism = filter.organism;
+		_cellType = filter.cellType;
+		_repeatType = filter.repeatType;
+
+		_name = _organ + "/" + _organism + "/" + _cellType + "/" + _repeatType
+				+ "/" + _name;
 	}
 	
 	public String getTime() {
@@ -38,18 +64,60 @@ public class BUnit extends Unit<Barcode> {
 		return _compound;
 	}
 	
+	@Nullable
+	public Organ getOrgan() {
+		return _organ;
+	}
+	
+	@Nullable
+	public Organism getOrganism() {
+		return _organism;
+	}
+	
+	@Nullable
+	public CellType getCellType() {
+		return _cellType;
+	}
+	
+	@Nullable
+	public RepeatType getRepeatType() {
+		return _repeatType;
+	}
+	
 	@Override 
 	public int hashCode() {
-		return _time.hashCode() + _dose.hashCode() + _compound.hashCode();
+		int r = _time.hashCode() + _dose.hashCode() + _compound.hashCode();
+		if (_organ != null) {
+			r = r + _organ.hashCode() + _organism.hashCode() + _repeatType.hashCode() +
+					_cellType.hashCode();
+		}
+		return r;
 	}
 	
 	@Override
 	public boolean equals(Object other) {
 		if ((other instanceof BUnit)) {
 			BUnit that = (BUnit) other;
-			return _time.equals(that.getTime()) && 
-					_dose.equals(that.getDose()) && 
-					_compound.equals(that.getCompound());
+			
+			//TODO in the future, organism, organ etc should never be null
+			
+			return _time.equals(that.getTime()) && _dose.equals(that.getDose())
+					&& _compound.equals(that.getCompound())
+					&& safeCompare(_organ, that.getOrgan())
+					&& safeCompare(_organism, that.getOrganism())
+					&& safeCompare(_repeatType, that.getRepeatType())
+					&& safeCompare(_cellType, that.getCellType());
+							
+		} else {
+			return false;
+		}
+	}
+	
+	private static boolean safeCompare(Object v1, Object v2) {
+		if (v1 == null && v2 == null) {
+			return true;
+		} else if (v1 != null && v2 != null) {
+			return v1.equals(v2);
 		} else {
 			return false;
 		}
@@ -79,10 +147,10 @@ public class BUnit extends Unit<Barcode> {
 		return r.toArray(new String[0]);
 	}
 	
-	public static BUnit[] formUnits(Barcode[] barcodes) {
+	public static BUnit[] formUnits(Barcode[] barcodes, DataFilter filter) {
 		Map<String, List<Barcode>> units = new HashMap<String, List<Barcode>>();
 		for (Barcode b: barcodes) {
-			String cdt = b.getCDT();
+			String cdt = b.getParamString();
 			if (units.containsKey(cdt)) {
 				units.get(cdt).add(b);
 			} else {
@@ -93,7 +161,9 @@ public class BUnit extends Unit<Barcode> {
 		}
 		ArrayList<BUnit> r = new ArrayList<BUnit>();
 		for (List<Barcode> bcs: units.values()) {
-			BUnit b = new BUnit(bcs.get(0));
+			Barcode first = bcs.get(0);
+			BUnit b = (first.getUnit().getOrgan() == null) ? 
+					new BUnit(bcs.get(0), filter) : first.getUnit(); 
 			b.setSamples(bcs.toArray(new Barcode[0]));
 			r.add(b);
 		}

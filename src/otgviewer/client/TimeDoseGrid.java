@@ -257,6 +257,8 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 				for (int t = 0; t < availableTimes.length; ++t) {
 					BUnit unit = new BUnit(chosenCompounds.get(c), indexToDose(d),
 							availableTimes[t]);
+					unit.setDataFilter(chosenDataFilter);
+					Window.alert(unit.toString());
 					allUnits.add(unit);
 					hp.add(guiForUnit(unit));
 				}

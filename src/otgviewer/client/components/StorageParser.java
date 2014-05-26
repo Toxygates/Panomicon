@@ -76,7 +76,7 @@ public class StorageParser {
 		return packPackableList(columns, "###");
 	}
 
-	public static BarcodeColumn unpackColumn(String s) {
+	public static BarcodeColumn unpackColumn(String s, DataFilter filter) {
 		if (s == null) {
 			return null;
 		}
@@ -84,7 +84,7 @@ public class StorageParser {
 		if (spl[0].equals("Barcode")) {
 			return Barcode.unpack(s);
 		} else {
-			return Group.unpack(s);
+			return Group.unpack(s, filter);
 		}
 	}
 	

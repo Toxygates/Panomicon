@@ -27,12 +27,11 @@ import t.db.MatrixDBReader
  * "request columns" but may insert additional columns with extra information.
  * The info object should be used to query what columns have actually been 
  * constructed.
- * 
  */
 abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
     val reader: MatrixDBReader[E],
     initProbes: Array[String], sparseRead: Boolean)
-    (implicit val filter: DataFilter, context: OTGContext) {
+    (implicit val context: OTGContext) {
   
   protected var currentInfo: ManagedMatrixInfo = new ManagedMatrixInfo()
   protected var rawUngroupedMat, rawGroupedMat, currentMat: ExprMatrix = _
@@ -191,14 +190,14 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
    * Initial data loading.
    */
   protected def loadRawData(): Unit = {
-    val pmap = context.probes(filter)
+    val pmap = context.unifiedProbes
     var groupedParts, ungroupedParts: List[ExprMatrix] = Nil
     
     val packedProbes = initProbes.map(pmap.pack)
     for (g <- requestColumns) {
     	val barcodes = samplesForDisplay(g)
     	val sortedBarcodes = reader.sortSamples(barcodes.map(b => otg.Sample(b.getCode)))
-        val data = reader.valuesForSamplesAndProbes(filter, sortedBarcodes,
+        val data = reader.valuesForSamplesAndProbes(sortedBarcodes,
         		packedProbes, sparseRead)
         groupedParts ::= columnsForGroup(g, sortedBarcodes, data)
         
@@ -269,10 +268,8 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
  * for both treated and control samples. 
  */
 class NormalizedIntensityMatrix(requestColumns: Seq[Group],
-    reader: MatrixDBReader[ExprValue],
-    initProbes: Array[String], sparseRead: Boolean,
-    enhancedColumns: Boolean)
-    (implicit filter: DataFilter, context: OTGContext) 
+    reader: MatrixDBReader[ExprValue], initProbes: Array[String], sparseRead: Boolean,
+    enhancedColumns: Boolean)(implicit context: OTGContext) 
 extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead) {
 
   override protected def columnsForGroup(g: Group, sortedBarcodes: Seq[otg.Sample], 
@@ -307,9 +304,8 @@ extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead)
  * No extra columns. Simple averaged fold values.
  */
 class FoldValueMatrix(requestColumns: Seq[Group],
-    reader: MatrixDBReader[ExprValue],
-    initProbes: Array[String], sparseRead: Boolean)
-    (implicit filter: DataFilter, context: OTGContext) 
+    reader: MatrixDBReader[ExprValue], initProbes: Array[String], sparseRead: Boolean)
+    (implicit context: OTGContext) 
     extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead) {
 }
 
@@ -320,7 +316,7 @@ class ExtFoldValueMatrix(requestColumns: Seq[Group],
     reader: MatrixDBReader[PExprValue], 
     initProbes: Array[String], sparseRead: Boolean,
     enhancedColumns: Boolean)
-    (implicit filter: DataFilter, context: OTGContext) 
+    (implicit context: OTGContext) 
     extends ManagedMatrix[PExprValue](requestColumns, reader, initProbes, sparseRead) {
  
     override protected def columnsForGroup(g: Group, sortedBarcodes: Seq[otg.Sample], 

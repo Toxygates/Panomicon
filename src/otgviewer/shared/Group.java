@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import bioweb.shared.SharedUtils;
 import bioweb.shared.array.SampleGroup;
 
@@ -20,14 +22,14 @@ public class Group extends SampleGroup<Barcode> implements BarcodeColumn {
 	
 	public Group() {}
 	
-	public Group(String name, Barcode[] barcodes, String color) {
+	public Group(String name, Barcode[] barcodes, String color, @Nullable DataFilter filter) {
 		super(name, barcodes, color);	
-		_units = BUnit.formUnits(barcodes);
+		_units = BUnit.formUnits(barcodes, filter);
 	}
 	
-	public Group(String name, Barcode[] barcodes) { 
+	public Group(String name, Barcode[] barcodes, @Nullable DataFilter filter) { 
 		super(name, barcodes); 
-		_units = BUnit.formUnits(barcodes);
+		_units = BUnit.formUnits(barcodes, filter);
 	}
 	
 	public Group(String name, BUnit[] units) { 
@@ -35,8 +37,8 @@ public class Group extends SampleGroup<Barcode> implements BarcodeColumn {
 		_units = units;
 	}
 	
-	public Group(String name, BUnit[] units, String color) {
-		this(name, BUnit.collectBarcodes(units), color);
+	public Group(String name, BUnit[] units, String color, @Nullable DataFilter filter) {
+		this(name, BUnit.collectBarcodes(units), color, filter);
 	}
 
 	public String getShortTitle() {
@@ -100,7 +102,7 @@ public class Group extends SampleGroup<Barcode> implements BarcodeColumn {
 	// See SampleGroup for the packing method
 	// TODO lift up the unpacking code to have 
 	// the mirror images in the same class, if possible
-	public static Group unpack(String s) {
+	public static Group unpack(String s, DataFilter filter) {
 //		Window.alert(s + " as group");
 		String[] s1 = s.split(":::"); // !!
 		String name = s1[1];
@@ -126,10 +128,12 @@ public class Group extends SampleGroup<Barcode> implements BarcodeColumn {
 			for (int i = 0; i < s2.length; ++i) {
 				Barcode b = Barcode.unpack(s2[i]);
 				bcs[i] = b;
-			}
-			return new Group(name, bcs, color);
+			}			
+			DataFilter useFilter = (bcs[0].getUnit().getOrgan() == null) ? filter : null;
+			return new Group(name, bcs, color, useFilter);
+			
 		} else {
-			return new Group(name, new Barcode[0], color);
+			return new Group(name, new Barcode[0], color, null);
 		}
 	}
 

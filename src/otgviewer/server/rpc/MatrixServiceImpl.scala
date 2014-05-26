@@ -7,7 +7,6 @@ import scala.collection.JavaConversions.mapAsJavaMap
 import scala.collection.JavaConversions.seqAsJavaList
 import Conversions.asScala
 import Conversions.speciesFromFilter
-import bioweb.server.array.ArrayServiceImpl
 import bioweb.shared.array.ExpressionRow
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
@@ -38,11 +37,13 @@ import otgviewer.shared.ValueType
 import otgviewer.server.UtilsS
 import t.db.kyotocabinet.KCMatrixDB
 import t.db.kyotocabinet.KCExtMatrixDB
+import com.google.gwt.user.server.rpc.RemoteServiceServlet
+import otg.Species.Species
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
  */
-class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with MatrixService {
+class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   import Conversions._
   import scala.collection.JavaConversions._
   import UtilsS._
@@ -55,7 +56,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
-    super.init(config)
+    super.init(config) 
     localInit(Configuration.fromServletConfig(config))    
   }
 
@@ -96,13 +97,22 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     /**
      * Filter probes for one species.
      */
-  private def filterProbes(probes: Seq[String])(implicit filter: DataFilter): Seq[String] = {
-    val pmap = context.probes(filter)
+  private def filterProbes(probes: Seq[String], s: Species): Seq[String] = {
+    val pmap = context.probes(s)
     if (probes == null || probes.size == 0) {
       pmap.tokens.toSeq
     } else {
       probes.filter(pmap.isToken)      
     }
+  }
+  
+  /**
+   * Filter probes for a number of species.
+   * If probes is null or empty, all probes for all supplied species will be returned.
+   */
+  private def filterProbes(probes: Seq[String], 
+      species: Iterable[Species]): Map[Species, Seq[String]] = {
+    Map() ++ species.map(s => (s -> filterProbes(probes, s)))
   }
 
   /**
@@ -117,9 +127,8 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     }
   }
   
-  private[this] def makeMatrix(requestColumns: Seq[Group],
-    initProbes: Array[String], typ: ValueType, sparseRead: Boolean = false)
-  (implicit filter: DataFilter): ManagedMatrix[_] = {
+  private[this] def makeMatrix(requestColumns: Seq[Group], initProbes: Array[String], typ: ValueType, 
+    sparseRead: Boolean = false): ManagedMatrix[_] = {
     val reader = if (typ == ValueType.Absolute) {
       context.absoluteDBReader
     } else {
@@ -146,11 +155,15 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     }   
   }
 
-  def loadDataset(filter: DataFilter, groups: JList[Group], probes: Array[String],
+  private[this] def speciesForGroups(gs: Iterable[Group]) = 
+    gs.flatMap(_.getUnits()).map(x => asScala(x.getOrganism())).toSet
+  
+  def loadDataset(groups: JList[Group], probes: Array[String],
                   typ: ValueType, syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
-    implicit val f = filter    
-    val allProbes = filterProbes(null).toArray
-    val mm = makeMatrix(groups.toVector, allProbes, typ)    
+    val species = speciesForGroups(groups) 
+    val allProbes = filterProbes(null, species).toArray
+    //TODO use not only the first species
+    val mm = makeMatrix(groups.toVector, allProbes.head._2.toArray, typ)    
     setSessionData(mm)
     selectProbes(probes)
   }
@@ -166,9 +179,11 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     if (probes != null && probes.length > 0) {
     	mm.selectProbes(probes)
     } else {
-      implicit val f = mm.filter
-        val allProbes = filterProbes(null).toArray
-        mm.selectProbes(allProbes)
+      val groups = (0 to mm.info.numColumns()).map(i => mm.info.columnGroup(i))
+      val ss = speciesForGroups(groups)
+      val allProbes = filterProbes(null, ss).toArray
+      //TODO
+      mm.selectProbes(allProbes.head._2.toArray)
     }
     mm.info
   }
@@ -192,7 +207,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     }
     val mm = session.current
     new ArrayList[ExpressionRow](
-      insertAnnotations(mm.asRows.drop(offset).take(size))(session.filter))
+      insertAnnotations(mm.asRows.drop(offset).take(size)))
   }
 
   /**
@@ -200,10 +215,10 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
    * appending them to the rows just before sending them back to the client.
    * Unsuitable for large amounts of data.
    */
-  private def insertAnnotations(rows: Seq[ExpressionRow])(implicit f: DataFilter): Seq[ExpressionRow] = {
+  private def insertAnnotations(rows: Seq[ExpressionRow]): Seq[ExpressionRow] = {
     val probes = rows.map(r => Probe(r.getProbe))
 
-    val attribs = affyProbes.withAttributes(probes, f)
+    val attribs = affyProbes.withAttributes(probes)
     val pm = Map() ++ attribs.map(a => (a.identifier -> a))
 
     rows.map(or => {
@@ -216,20 +231,18 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     })
   }
   
-  def getFullData(filter: DataFilter, barcodes: JList[String], probes: Array[String],
-                  typ: ValueType, sparseRead: Boolean, withSymbols: Boolean): JList[ExpressionRow] = {
-    val sbc = barcodes.toSeq
-    implicit val f = filter
+  def getFullData(g: Group, probes: Array[String], sparseRead: Boolean, 
+      withSymbols: Boolean, typ: ValueType): JList[ExpressionRow] = {        
+    val species = g.getUnits().map(x => asScala(x.getOrganism())).toSet
     
-    val realProbes = filterProbes(probes).toArray
-    // TODO pass a full group from client instead
-    val g = new Group("temp", barcodes.map(x => new Barcode(x, "", "", "", "")).toArray)
-    val mm = makeMatrix(List(g), realProbes, typ, sparseRead)
+    val realProbes = filterProbes(probes, species).toArray
+    //TODO! use other species as well, instead of just first one
+    val mm = makeMatrix(List(g), realProbes.head._2.toArray, typ, sparseRead)
     
     //When we have obtained the data in r, it might no longer be sorted in the order that the user
     //requested. Thus we use selectNamedColumns here to force the sort order they wanted.
     
-    val raw = mm.rawData.selectNamedColumns(sbc).asRows
+    val raw = mm.rawData.asRows
     val rows = if (withSymbols) {
       insertAnnotations(raw)
     } else {
@@ -259,7 +272,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     val colNames = rendered.sortedColumnMap.map(_._1)
     val rowNames = rendered.sortedRowMap.map(_._1)
 
-    val gis = affyProbes.allGeneIds(mm.filter).mapMValues(_.identifier)
+    val gis = affyProbes.allGeneIds(null).mapMValues(_.identifier)
     val geneIds = rowNames.map(rn => gis.getOrElse(Probe(rn), Seq.empty)).map(_.mkString(" "))
     CSVHelper.writeCSV(csvDirectory, csvUrlBase, rowNames, colNames,
       geneIds, rendered.data.map(_.map(asScala(_))))
@@ -275,7 +288,7 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
       rowNames = rowNames.take(limit)
     }
 
-    val gis = affyProbes.allGeneIds(mm.filter)
+    val gis = affyProbes.allGeneIds()
     val geneIds = rowNames.map(rn => gis.getOrElse(Probe(rn), Set.empty))
     geneIds.flatten.map(_.identifier).toArray
   }
@@ -301,7 +314,6 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
       if (mm.current != null) {        
     	  state = "Matrix: " + mm.current.rowKeys.size + " x " + mm.current.columnKeys.size
     	  state += "\nColumns: " + mm.current.columnKeys.mkString(", ")
-    	  state += "\nData filter: " + mm.filter.toString()
       }
     }
     Feedback.send(name, email, feedback, state)

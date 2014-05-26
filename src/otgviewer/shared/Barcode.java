@@ -1,11 +1,13 @@
 package otgviewer.shared;
 
+import javax.annotation.Nullable;
+
 import bioweb.shared.array.Sample;
 
 /**
  * A barcode corresponds to a single microarray sample.
- * @author johan
- *
+ * 
+ * TODO: rename, Barcode is not a good name
  */
 public class Barcode extends Sample implements BarcodeColumn {
 		
@@ -18,13 +20,14 @@ public class Barcode extends Sample implements BarcodeColumn {
 	public Barcode() { super(); }
 	
 	public Barcode(String _code, String _ind, 
-			String _dose, String _time, String _compound) {
+			String _dose, String _time, String _compound,
+			@Nullable DataFilter filter) {
 		super(_code);		
 		individual = _ind;
 		dose = _dose;
 		time = _time;		
 		compound = _compound;
-		unit = new BUnit(compound, dose, time);
+		unit = new BUnit(this, filter);
 	}
 	
 	public String getTitle() {
@@ -40,7 +43,7 @@ public class Barcode extends Sample implements BarcodeColumn {
 	 * for this sample.
 	 * @return
 	 */
-	public String getCDT() {
+	public String getParamString() {
 		return unit.toString();
 	}
 	
@@ -82,12 +85,39 @@ public class Barcode extends Sample implements BarcodeColumn {
 	
 	public static Barcode unpack(String s) {
 //		Window.alert(s + " as barcode");
-		String[] s1 = s.split("\\$\\$\\$");		
-		return new Barcode(s1[1], s1[2], s1[3], s1[4], s1[5]);
+		String[] s1 = s.split("\\$\\$\\$");
+		
+		if (s1.length == 6) {		
+			//Version 1
+			return new Barcode(s1[1], s1[2], s1[3], s1[4], s1[5], null);
+		} else if (s1.length == 10) {
+			//Version 2
+			return new Barcode(s1[1], s1[2], s1[3], s1[4], s1[5],
+					new DataFilter(CellType.valueOf(s1[6]),
+							Organ.valueOf(s1[7]), RepeatType.valueOf(s1[8]),
+							Organism.valueOf(s1[9]))
+			);			
+		} else {			
+			return null;
+		}
 	}
 	
 	public String pack() {
-		return "Barcode$$$" + id() + "$$$" + individual + "$$$" + dose + "$$$" + time + "$$$" + compound; //!!
+		final String sep = "$$$";
+		StringBuilder sb = new StringBuilder();
+		sb.append("Barcode").append(sep);
+		sb.append(id()).append(sep);
+		sb.append(individual).append(sep);
+		sb.append(dose).append(sep);
+		sb.append(time).append(sep);
+		sb.append(compound).append(sep);
+		if (unit.getCellType() != null) {
+			sb.append(unit.getCellType().name()).append(sep);
+			sb.append(unit.getOrgan().name()).append(sep);
+			sb.append(unit.getRepeatType().name()).append(sep);
+			sb.append(unit.getOrganism().name()).append(sep);
+		}
+		return sb.toString();
 	}
 
 }

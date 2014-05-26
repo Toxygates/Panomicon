@@ -1,17 +1,20 @@
 package otgviewer.shared;
 
-import bioweb.shared.array.SampleFilter;
+import java.io.Serializable;
+
 
 /**
  * A set of constraints for filtering OTG samples.
+ * TODO: This is deprecated, to be removed
  * @author johan
- *
  */
-public class DataFilter extends SampleFilter<Barcode> {
+public class DataFilter implements Serializable {
 	public CellType cellType;
 	public Organ organ;
 	public RepeatType repeatType;
 	public Organism organism;
+
+	public DataFilter() { }
 	
 	public DataFilter(CellType _cellType, Organ _organ, RepeatType _repeatType, Organism _organism) {
 		cellType = _cellType;
@@ -19,8 +22,6 @@ public class DataFilter extends SampleFilter<Barcode> {
 		repeatType = _repeatType;
 		organism = _organism;
 	}
-	
-	public DataFilter() { }
 	
 	public boolean equals(Object other) {
 		if (other instanceof DataFilter) {
