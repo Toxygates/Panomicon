@@ -92,9 +92,15 @@ public class Group extends SampleGroup<Barcode> implements BarcodeColumn {
 	}
 	
 	public String[] getCompounds() {
+		return getCompounds(null);
+	}
+	
+	public String[] getCompounds(@Nullable DataFilter filter) {
 		Set<String> compounds = new HashSet<String>();
 		for (Barcode b : _samples) {
-			compounds.add(b.getCompound());
+			if (filter == null || filter.permits(b)) {
+				compounds.add(b.getCompound());
+			}
 		}
 		return compounds.toArray(new String[0]);		
 	}

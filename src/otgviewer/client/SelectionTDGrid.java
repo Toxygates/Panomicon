@@ -8,6 +8,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import otgviewer.client.dialog.DialogPosition;
 import otgviewer.shared.BUnit;
@@ -107,14 +108,15 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	}
 	
 	static interface UnitListener {
-		void unitsChanged(List<BUnit> units);
+		void unitsChanged(DataListenerWidget sender, List<BUnit> units);
 	}
 	
 	private UnitListener listener;
 	
-	public SelectionTDGrid(Screen screen, @Nullable UnitListener listener) {
+	public SelectionTDGrid(Screen screen,  
+			@Nullable UnitListener listener) {
 		super(screen, true);
-		this.listener = listener;
+		this.listener = listener;		
 	}
 	
 	@Override
@@ -131,16 +133,22 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	}
 	
 	protected void setSelected(BUnit unit, boolean v) {
+		setSelected(unit, v, true);
+	}
+	
+	protected void setSelected(BUnit unit, boolean v, boolean fire) {
 		UnitUI ui = unitUis.get(unit);
 		if (ui != null) {
 			ui.setValue(v);
 		}
-		fireUnitsChanged();
+		if (fire) {
+			fireUnitsChanged();
+		}
 	}
 	
 	private void fireUnitsChanged() {		
 		if (listener != null) {
-			listener.unitsChanged(getSelectedUnits(true));
+			listener.unitsChanged(this, getSelectedUnits(true));
 		}
 	}
 
@@ -148,9 +156,10 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		setAll(false);
 		for (BUnit u : units) {
 			if (!u.getDose().equals("Control")) {		
-				setSelected(u, true);
+				setSelected(u, true, false);
 			}
 		}
+		fireUnitsChanged();
 	}
 	
 	protected boolean getSelected(BUnit unit) {
@@ -357,6 +366,12 @@ public class SelectionTDGrid extends TimeDoseGrid {
 			int cIdx = chosenCompounds.indexOf(u.getCompound());
 			int dIdx = doseToIndex(u.getDose());
 			int tIdx = SharedUtils.indexOf(availableTimes, u.getTime());
+			
+			if (cIdx == -1 || dIdx == -1 || tIdx == -1) {
+				Window.alert("Data error");
+				return;
+			}
+			
 			cmpDoseCheckboxes[cIdx * numDoses() + dIdx].setEnabled(true);
 			doseTimeCheckboxes[dIdx * availableTimes.length + tIdx]
 					.setEnabled(true);

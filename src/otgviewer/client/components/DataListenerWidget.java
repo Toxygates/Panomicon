@@ -33,7 +33,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	
 	public DataFilter chosenDataFilter; //TODO
 	protected String[] chosenProbes = new String[0];
-	protected List<String> chosenCompounds = new ArrayList<String>();
+	public List<String> chosenCompounds = new ArrayList<String>();
 	protected String chosenCompound;
 	protected ValueType chosenValueType;
 	protected List<Group> chosenColumns = new ArrayList<Group>();

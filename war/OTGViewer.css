@@ -113,6 +113,12 @@ exprGrid {
 	font-weight: bold;
 }
 
+.heavyEmphasized {
+	font-weight: bold;
+	font-size: 1.1em;
+	margin: 2px;	
+}
+
 .statusPanel {
 	background: White;
 	text-align: left;

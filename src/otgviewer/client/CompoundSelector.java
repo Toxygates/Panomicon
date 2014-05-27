@@ -149,6 +149,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	}
 	
 	private DataFilter lastFilter;
+	
 	@Override
 	public void dataFilterChanged(DataFilter filter) {
 		super.dataFilterChanged(filter);
@@ -180,7 +181,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		return r;
 	}
 
-	void loadCompounds() {		
+	void loadCompounds() {				
 		sparqlService.compounds(chosenDataFilter, new PendingAsyncCallback<String[]>(this, "Unable to retrieve compounds") {
 			
 			@Override

@@ -9,7 +9,6 @@ import otgviewer.shared.Organism
 import otgviewer.shared.RepeatType
 import otgviewer.shared.AType
 import org.scalatest.BeforeAndAfter
-import otgviewer.server.rpc.SparqlServiceImpl
 import otgviewer.server.Configuration
 import org.scalatest.junit.JUnitRunner
 

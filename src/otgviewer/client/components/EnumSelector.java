@@ -1,5 +1,10 @@
 package otgviewer.client.components;
 
+import java.util.Arrays;
+
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.ListBox;
 
@@ -19,7 +24,13 @@ public abstract class EnumSelector<T extends Enum<T>> extends Composite {
 		lb.setVisibleItemCount(1);
 		for (T t: values()) {
 			lb.addItem(t.toString());
-		}
+		}		
+		lb.addChangeHandler(new ChangeHandler() {			
+			@Override
+			public void onChange(ChangeEvent event) {				
+				onValueChange(value());			
+			}  
+		});		
 	}
 	
 	public ListBox listBox() {
@@ -47,4 +58,13 @@ public abstract class EnumSelector<T extends Enum<T>> extends Composite {
 	}
 	
 	protected abstract T[] values();
+	
+	public void setSelected(T t) {
+		int idx = Arrays.binarySearch(values(), t);
+		if (idx != -1) {
+			lb.setSelectedIndex(idx);
+		}
+	}
+	
+	protected void onValueChange(T selected) { }
 }

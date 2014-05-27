@@ -129,7 +129,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	
 	private Set<QueuedAction> actionQueue = new HashSet<QueuedAction>(); 
 	
-	private void runActions() {
+	protected void runActions() {
 		for (QueuedAction qa: actionQueue) {
 			qa.run();
 		}
@@ -375,6 +375,10 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		rootPanel.forceLayout();
 	}
 	
+	protected boolean shouldShowStatusBar() {
+		return true;
+	}
+	
 	/**
 	 * This can be overridden by subclasses to add more toolbars
 	 * or more "leftbars".
@@ -383,10 +387,11 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		addToolbar(guideBar, 40);
 		if (!showGuide) {
 			guideBar.setVisible(false);
-		} 
-		addToolbar(spOuter, 40);
+		}
+		if (shouldShowStatusBar()) {
+			addToolbar(spOuter, 40);
+		}		
 	}
-	
 	
 	protected void addToolbar(Widget toolbar, int size) {
 		toolbars.add(toolbar);

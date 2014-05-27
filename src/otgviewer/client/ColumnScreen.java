@@ -3,10 +3,12 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import otgviewer.client.components.DataFilterEditor;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.shared.BarcodeColumn;
+import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 
 import com.google.gwt.dom.client.Style.Unit;
@@ -27,7 +29,8 @@ public class ColumnScreen extends Screen {
 	public static String key = "columns";
 	
 	private GroupInspector gi;
-	private CompoundSelector cs;	
+	private CompoundSelector cs;
+	private HorizontalPanel filterTools;
 	private TabLayoutPanel tp;
 	
 	public ColumnScreen(ScreenManager man) {
@@ -35,6 +38,7 @@ public class ColumnScreen extends Screen {
 				resources.groupDefinitionHTML(), resources.groupDefinitionHelp());
 		
 		cs = new CompoundSelector(this, "Compounds");
+		filterTools = mkFilterTools();
 		this.addListener(cs);
 		cs.setStyleName("compoundSelector");
 	}
@@ -44,11 +48,34 @@ public class ColumnScreen extends Screen {
 		return manager.isConfigured(DatasetScreen.key); 
 	}
 
+	private HorizontalPanel mkFilterTools() {
+		final Screen s = this;
+		HorizontalPanel r = new HorizontalPanel();
+		DataFilterEditor dfe = new DataFilterEditor() {
+			@Override
+			protected void changeDataFilter(DataFilter df) {
+				super.changeDataFilter(df);				
+				s.dataFilterChanged(df);
+				//TODO I'm not sure that exposing the action queue mechanism 
+				//like this is a good thing to do. Think of a better way.
+				runActions();
+			}
+		};
+		this.addListener(dfe);
+		r.add(dfe);		
+		return r;
+	}
 	
 	@Override
 	protected void addToolbars() {
 		super.addToolbars();
+		addToolbar(filterTools, 45);
 		addLeftbar(cs, 350);
+	}
+	
+	@Override
+	protected boolean shouldShowStatusBar() {
+		return false;
 	}
 
 	public Widget content() {				
