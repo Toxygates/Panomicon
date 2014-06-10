@@ -3,8 +3,8 @@ package otgviewer.client;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Logger;
 
-import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ListChooser;
 import otgviewer.client.components.RichTable.HideableColumn;
 import otgviewer.client.components.Screen;
@@ -128,10 +128,13 @@ public class DataScreen extends Screen {
 		super.show();
 		//state has finished loading
 		
+		logger.info("chosenProbes: " + chosenProbes.length +
+				" lastProbes: " + (lastProbes == null ? "null" : "" + lastProbes.length));
+		
 		// Attempt to avoid reloading the data
 		if (lastFilter == null || !lastFilter.equals(chosenDataFilter)
 				|| lastColumns == null || !chosenColumns.equals(lastColumns)) {
-			et.getExpressions(); // false
+			et.getExpressions(); 
 		} else if (!Arrays.equals(chosenProbes, lastProbes)) {
 			et.refilterData();
 		}
@@ -145,4 +148,11 @@ public class DataScreen extends Screen {
 	public String getGuideText() {
 		return "Here you can inspect expression values for the sample groups you have defined. Click on column headers to sort data.";
 	}
+
+	@Override
+	public void probesChanged(String[] probes) {
+		super.probesChanged(probes);
+		logger.info("received " + probes.length + " probes");
+	}
+	
 }

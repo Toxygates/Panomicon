@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
@@ -123,6 +124,9 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 				
 		setScreenForToken(History.getToken());						
 		deconfigureAll(pickScreen(History.getToken()));
+		
+		Logger l = Utils.getLogger();
+		l.info("onModuleLoad() finished");
 	}
 	
 	/**

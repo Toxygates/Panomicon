@@ -3,13 +3,13 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Logger;
 
 import otgviewer.client.charts.AdjustableChartGrid;
 import otgviewer.client.charts.ChartGridFactory;
 import otgviewer.client.charts.ChartGridFactory.AChartAcceptor;
-import otgviewer.client.charts.google.GVizChartGrid;
-import otgviewer.client.charts.google.GVizCharts;
 import otgviewer.client.components.AssociationTable;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ExpressionColumn;
@@ -116,6 +116,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
  	private Barcode[] chartBarcodes = null;
 
  	private DialogBox filterDialog = null;
+ 	
+ 	private final Logger logger = Utils.getLogger("expressionTable");
  	
 	public ExpressionTable(Screen _screen) {
 		super();
@@ -522,6 +524,13 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
 	@Override
 	public void columnsChanged(List<Group> columns) {
+		HashSet<Group> oldColumns = new HashSet<Group>(chosenColumns);
+		HashSet<Group> newColumns = new HashSet<Group>(columns);
+		if (newColumns.equals(oldColumns) && newColumns.size() > 0) {
+			logger.info("Ignoring column change signal");
+			return;
+		}
+		
 		super.columnsChanged(columns);
 		 //invalidate synthetic columns, since they depend on
 		//normal columns
@@ -543,18 +552,22 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		
 		chartBarcodes = null;
 		loadedData = false;
+		
+		logger.info("Columns changed (" + columns.size() + ")");
 	}
 	
 	/**
-	 * Filter data that has already been loaded (by magnitude)
+	 * Filter data that has already been loaded
 	 */
 	void refilterData() {
 		if (!loadedData) {
+			logger.info("Request to refilter but data was not loaded");
 			return;
 		}
 		setEnabled(false);
 		asyncProvider.updateRowCount(0, false);
 //		grid.setRowCount(0, false);
+		logger.info("Refilter for " + chosenProbes.length + " probes");
 		matrixService.selectProbes(chosenProbes, dataUpdateCallback());			
 	}
 	
@@ -586,6 +599,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		setEnabled(false);
 		asyncProvider.updateRowCount(0, false);
 
+		logger.info("begin loading data for " + chosenColumns.size() + " columns and " +
+				chosenProbes.length + " probes");
 		// load data
 		matrixService.loadDataset(chosenDataFilter, chosenColumns, chosenProbes,
 				chosenValueType, synthetics,
@@ -599,7 +614,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 							matrixInfo = result;
 							loadedData = true;
 							setupColumns();
-							setMatrix(result);							
+							setMatrix(result);
+							
+							logger.info("Data successfully loaded");
 						} else {
 							Window.alert("No data was available. If you have not used " +
 									"Toxygates for a while, try reloading the page.");
