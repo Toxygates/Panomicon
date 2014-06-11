@@ -251,19 +251,33 @@ public class AdjustableChartGrid extends Composite {
 	
 	private void updateSeriesSubtypes() {
 		chartSubtypeCombo.clear();
+		String prefItem = "";
+		int prefIdx = -1;
 		if (chartCombo.getSelectedIndex() == 0) {
+			prefItem = groups.get(0).getUnits()[0].getDose();
+			int i = 0;
 			for (String dose: source.doses()) {
 				chartSubtypeCombo.addItem(dose);
+				if (dose.equals(prefItem)) {
+					prefIdx = i;
+				}
+				i += 1;
 			}
 		} else {		
+			prefItem = groups.get(0).getUnits()[0].getTime();
+			int i = 0;
 			for (String time: source.times()) {
 				chartSubtypeCombo.addItem(time);
+				if (time.equals(prefItem)) {
+					prefIdx = i;
+				}
+				i += 1;
 			}
 		}
 		
 		if (chartSubtypeCombo.getItemCount() > 0) {
-			chartSubtypeCombo.addItem("All");
-			setSubtype((lastSubtype == -1 ? chartSubtypeCombo.getItemCount() - 2 : lastSubtype));			
+			chartSubtypeCombo.addItem("All");			
+			setSubtype((lastSubtype == -1 ? prefIdx : lastSubtype));			
 			redraw(true);
 		}
 	}
