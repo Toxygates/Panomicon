@@ -104,6 +104,7 @@ public class TargetMineData {
 		int addedLists = 0;
 		int addedItems = 0;
 		int nonImported = 0;
+		int hadGenesForSpecies = 0;
 		
 		for (ItemList l: into) {
 			allLists.put(l.name(), l);
@@ -114,13 +115,24 @@ public class TargetMineData {
 				allLists.put(l.name(), l);
 				addedLists++;
 				addedItems += l.size();
+				Integer genesForSpecies = Integer.parseInt(((StringList) l).getComment());
+				if (genesForSpecies > 0) {
+					hadGenesForSpecies++;
+				}
 			} else if (allLists.containsKey(l.name())) {
 				nonImported += 1;
 			}
 		}
 		
 		String msg = addedLists + " lists with " + addedItems + 
-				" items were successfully imported.";
+				" items were successfully imported.\nOf these, ";
+		if (hadGenesForSpecies == 0) {
+			msg += "no list ";
+		} else {
+			msg += hadGenesForSpecies + " list(s) ";
+		}
+		msg += " contained genes for " + parent.chosenDataFilter.organism + ".";
+		
 		if (nonImported > 0) {
 			msg = msg + "\n" + nonImported + " lists with identical names were not imported.";
 		}

@@ -234,7 +234,6 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 			}
 		}));
 		
-		
 		return menuBar;
 	}
 

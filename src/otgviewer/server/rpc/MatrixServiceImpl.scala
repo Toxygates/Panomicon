@@ -300,12 +300,18 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     })
   }
   
+  // TODO: pass in a preferred species, get status info back
   def importTargetmineLists(filter: DataFilter, user: String, pass: String,
     asProbes: Boolean): Array[StringList] = {
     val ls = TargetMine.getListService(user, pass)    
     val tmLists = ls.getAccessibleLists()
     tmLists.filter(_.getType == "Gene").map(
-        l => TargetMine.asTGList(l, filterProbesAllSpecies(_))).toArray
+        l => {
+          val tglist = TargetMine.asTGList(l, filterProbesAllSpecies(_))
+          val probesForCurrent = filterProbes(tglist.items)(filter)
+          tglist.setComment(probesForCurrent.size + "");
+          tglist
+        }).toArray
   }
 
   def exportTargetmineLists(filter: DataFilter, user: String, pass: String,
