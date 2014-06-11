@@ -203,7 +203,21 @@ public class AdminConsole implements EntryPoint {
 //		
 		List<Command> commands = new ArrayList<Command>();
 		commands.add(new Command("Upload new...") {
-			public void run() {}
+			public void run() {
+				final DialogBox db = new DialogBox(true, true);
+				db.setWidget(new BatchUploader() {
+					public void onOK() {
+						
+					}
+					
+					public void onCancel() {
+						db.hide();
+					}
+				});
+				db.setText("Upload batch");
+				db.setWidth("500px");
+				db.show();
+			}
 		});
 		commands.add(new Command("Delete") {
 			public void run() {}

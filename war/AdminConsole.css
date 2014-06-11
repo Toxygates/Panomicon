@@ -1,3 +1,18 @@
 .withMargin {
 	margin: 10px;	
 }
+
+.uploader {
+	margin: 5px;
+	padding: 5px;
+	border: solid grey 1px;	
+	width: 100%;
+}
+
+.success {
+	color: green;
+}
+
+.failure {
+	color: red;
+}
