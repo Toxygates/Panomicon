@@ -1,9 +1,10 @@
 package t.admin.client;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
-
 import t.admin.shared.AddBatchResult;
 import t.admin.shared.AddPlatformResult;
+import t.admin.shared.Progress;
+
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface MaintenanceServiceAsync {
 
@@ -14,4 +15,8 @@ public interface MaintenanceServiceAsync {
 	void tryDeleteBatch(String id, AsyncCallback<Boolean> callback);
 	
 	void tryDeletePlatform(String id, AsyncCallback<Boolean> calback);
+	
+	void cancelTask(AsyncCallback<Void> callback);
+	
+	void getProgress(AsyncCallback<Progress> callback);
 }

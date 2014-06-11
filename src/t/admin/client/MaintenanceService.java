@@ -2,6 +2,7 @@ package t.admin.client;
 
 import t.admin.shared.AddBatchResult;
 import t.admin.shared.AddPlatformResult;
+import t.admin.shared.Progress;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -24,6 +25,16 @@ public interface MaintenanceService extends RemoteService {
 	boolean tryDeleteBatch(String id);
 	
 	boolean tryDeletePlatform(String id);
-	
+
+	/**
+	 * Cancel the current task, if any.
+	 */
+	void cancelTask();
+
+	/**
+	 * Get the status of the current task.
+	 * @return
+	 */
+	Progress getProgress();
 	// etc. TODO
 }

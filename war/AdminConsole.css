@@ -16,3 +16,20 @@
 .failure {
 	color: red;
 }
+
+.taskStatus {
+	font-size: large;
+	margin: 10px;
+}
+
+.taskLog {
+	font-size: small;
+	margin: 2px;
+	padding: 2px;
+	border: solid grey 1px;
+	width: 490px;
+}
+
+.taskLogEntry {
+	margin: 5px;
+}
