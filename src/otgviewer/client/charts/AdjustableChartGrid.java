@@ -337,14 +337,14 @@ public class AdjustableChartGrid extends Composite {
 	}
 	
 	private void setSubtype(String subtype) {
-		int idx = -1;	
+		int idx = -1;
 		if (subtype != null) {
 			idx = chartSubtypes.indexOf(subtype);
 		}
 		if (idx != -1) {
 			chartSubtypeCombo.setSelectedIndex(idx);
 			lastSubtype = subtype;
-		} else {
+		} else if (chartSubtypeCombo.getItemCount() > 0) {
 			chartSubtypeCombo.setSelectedIndex(0);			
 		}
 	}	
