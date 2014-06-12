@@ -6,6 +6,7 @@ import java.util.Collection;
 public class StringList extends ItemList {
 
 	private String[] items;
+	private String comment;
 	
 	/**
 	 * This constructor is here for GWT serialization
@@ -31,4 +32,11 @@ public class StringList extends ItemList {
 		}
 	}
 	
+	public String getComment() {
+		return comment;
+	}
+	
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
 }

@@ -5,11 +5,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import otgviewer.client.Utils;
 import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.Screen;
+import otgviewer.shared.BUnit;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGUtils;
@@ -43,7 +45,11 @@ public class AdjustableChartGrid extends Composite {
 	private int computedWidth;
 	private ValueType vt;
 	
-	private static int lastType = -1, lastSubtype = -1;
+	private Logger logger = Utils.getLogger("chart");
+	
+	private static int lastType = -1;
+	private static String lastSubtype = null;
+	private List<String> chartSubtypes = new ArrayList<String>();
 	
 	public AdjustableChartGrid(Screen screen, ChartDataSource source, List<Group> groups, ValueType vt) {
 		this.source = source;
@@ -78,7 +84,7 @@ public class AdjustableChartGrid extends Composite {
 
 		chartSubtypeCombo.addChangeHandler(new ChangeHandler() {
 			public void onChange(ChangeEvent event) {								
-				lastSubtype = chartSubtypeCombo.getSelectedIndex();
+				lastSubtype = chartSubtypes.get(chartSubtypeCombo.getSelectedIndex());
 				computedWidth = 0;
 				redraw(false);
 			}
@@ -87,7 +93,7 @@ public class AdjustableChartGrid extends Composite {
 		chartCombo.addChangeHandler(new ChangeHandler() {
 			public void onChange(ChangeEvent event) {
 				lastType = chartCombo.getSelectedIndex();
-				lastSubtype = -1;
+				lastSubtype = null;
 				computedWidth = 0;
 				updateSeriesSubtypes();
 			}
@@ -215,7 +221,8 @@ public class AdjustableChartGrid extends Composite {
 		} else {
 
 			if (chartSubtypeCombo.getSelectedIndex() == -1) {
-				setSubtype((lastSubtype == -1 ? 0 : lastSubtype));				
+				boolean isDose = chartCombo.getSelectedIndex() == 0;
+				setSubtype(lastSubtype != null ? lastSubtype : findPreferredItem(isDose));				
 			}
 			
 			ivp.clear();								
@@ -249,21 +256,74 @@ public class AdjustableChartGrid extends Composite {
 		}
 	}
 	
+	/**
+	 * Find a dose or time that is present in the user-defined sample groups and that
+	 * can be displayed in these charts.
+	 * @param isDose
+	 * @return
+	 */
+	private String findPreferredItem(boolean isDose) {
+		if (lastSubtype != null) {
+			if (lastSubtype.equals("All")) {
+				return lastSubtype;
+			}
+			// Try to reuse the most recent one
+			for (Group g : groups) {
+				if (isDose) {
+					if (BUnit.containsDose(g.getUnits(), lastSubtype)) {
+						return lastSubtype;
+					}
+				} else {
+					if (BUnit.containsTime(g.getUnits(), lastSubtype)) {
+						return lastSubtype;
+					}
+				}
+			}
+		}
+		//Find a new item to use
+		for (BUnit u: groups.get(0).getUnits()) {
+			if (isDose) {
+				final String[] useDoses = 
+						(vt == ValueType.Folds ? withoutControl(source.doses()) : source.doses());
+				String dose = u.getDose();
+				if (Arrays.binarySearch(useDoses, dose) != -1) {
+					return dose;
+				}
+			} else {
+				String time = u.getTime();
+				if (Arrays.binarySearch(source.times(), time) != -1) {
+					return time;
+				}
+			}
+		}
+		return null;
+	}
+	
 	private void updateSeriesSubtypes() {
-		chartSubtypeCombo.clear();
+		chartSubtypeCombo.clear();		
+		chartSubtypes.clear();
+		String prefItem;
 		if (chartCombo.getSelectedIndex() == 0) {
+			prefItem = findPreferredItem(true);
+			logger.info("Preferred dose: " + prefItem);			
 			for (String dose: source.doses()) {
 				chartSubtypeCombo.addItem(dose);
+				chartSubtypes.add(dose);
+				
 			}
 		} else {		
+			prefItem = findPreferredItem(false);
+			logger.info("Preferred time: " + prefItem);			
 			for (String time: source.times()) {
 				chartSubtypeCombo.addItem(time);
+				chartSubtypes.add(time);				
 			}
 		}
 		
 		if (chartSubtypeCombo.getItemCount() > 0) {
-			chartSubtypeCombo.addItem("All");
-			setSubtype((lastSubtype == -1 ? chartSubtypeCombo.getItemCount() - 2 : lastSubtype));			
+			chartSubtypeCombo.addItem("All");		
+			chartSubtypes.add("All");
+			setSubtype(prefItem);			
 			redraw(true);
 		}
 	}
@@ -272,11 +332,20 @@ public class AdjustableChartGrid extends Composite {
 		chartCombo.setSelectedIndex(type);
 		if (lastType != type) {
 			lastType = type;		
-			lastSubtype = -1;
+			lastSubtype = null;
 		}
 	}
-	private void setSubtype(int subtype) {
-		chartSubtypeCombo.setSelectedIndex(subtype);
-		lastSubtype = subtype;
-	}
+	
+	private void setSubtype(String subtype) {
+		int idx = -1;
+		if (subtype != null) {
+			idx = chartSubtypes.indexOf(subtype);
+		}
+		if (idx != -1) {
+			chartSubtypeCombo.setSelectedIndex(idx);
+			lastSubtype = subtype;
+		} else if (chartSubtypeCombo.getItemCount() > 0) {
+			chartSubtypeCombo.setSelectedIndex(0);			
+		}
+	}	
 }

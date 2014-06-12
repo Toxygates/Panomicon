@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import otgviewer.client.Resources;
 import otgviewer.client.SampleDetailScreen;
@@ -90,6 +91,8 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	
 	protected ScreenManager manager;
 	
+	protected final Logger logger;
+	
 	/**
 	 * Help text for this screen.
 	 */
@@ -160,7 +163,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		viewLabel.setWordWrap(false);
 		viewLabel.getElement().getStyle().setMargin(2, Unit.PX);
 		this.key = key;
-		
+		this.logger = Utils.getLogger(key);
 		setTitle(title);		
 	}
 	
@@ -168,7 +171,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 			boolean showDataFilter, boolean showGroups, ScreenManager man) {
 		this(title, key, showDataFilter, showGroups, man, null, null);
 	}
-	
+
 	public ScreenManager manager() {
 		return this.manager;
 	}

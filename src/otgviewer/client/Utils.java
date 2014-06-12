@@ -1,5 +1,7 @@
 package otgviewer.client;
 
+import java.util.logging.Logger;
+
 import otgviewer.client.charts.google.GVizCharts;
 import otgviewer.client.dialog.DialogPosition;
 
@@ -336,5 +338,13 @@ public class Utils {
 
 		@Template("</div>")
 		SafeHtml endToolTip();
+	}
+	
+	public static Logger getLogger() {
+		return getLogger("default");		
+	}
+	
+	public static Logger getLogger(String suffix) {
+		return Logger.getLogger("jp.level-five.tframework." + suffix);
 	}
 }
