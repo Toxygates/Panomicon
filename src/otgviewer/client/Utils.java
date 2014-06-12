@@ -1,5 +1,7 @@
 package otgviewer.client;
 
+import java.util.logging.Logger;
+
 import otgviewer.client.charts.google.GVizCharts;
 import otgviewer.client.dialog.DialogPosition;
 
@@ -25,7 +27,6 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.FocusWidget;
-import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -337,5 +338,13 @@ public class Utils {
 
 		@Template("</div>")
 		SafeHtml endToolTip();
+	}
+	
+	public static Logger getLogger() {
+		return getLogger("default");		
+	}
+	
+	public static Logger getLogger(String suffix) {
+		return Logger.getLogger("jp.level-five.tframework." + suffix);
 	}
 }

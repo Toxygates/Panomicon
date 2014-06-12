@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
@@ -20,7 +21,6 @@ import otgviewer.shared.StringList;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.Widget;
 
 /**
  * Client side helper for TargetMine data import/export.
@@ -31,6 +31,8 @@ public class TargetMineData {
 	final MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
 			.create(MatrixService.class);
 
+	private Logger logger = Utils.getLogger("targetmine");
+	
 	public TargetMineData(Screen parent) {
 		this.parent = parent;
 	}
@@ -104,6 +106,7 @@ public class TargetMineData {
 		int addedLists = 0;
 		int addedItems = 0;
 		int nonImported = 0;
+		int hadGenesForSpecies = 0;
 		
 		for (ItemList l: into) {
 			allLists.put(l.name(), l);
@@ -114,13 +117,29 @@ public class TargetMineData {
 				allLists.put(l.name(), l);
 				addedLists++;
 				addedItems += l.size();
+				String comment = ((StringList) l).getComment();
+				Integer genesForSpecies = Integer.parseInt(comment);
+				
+				logger.info("Import list " + l.name() + " size " + l.size() + 
+						" comment " + comment); 
+				if (genesForSpecies > 0) {
+					hadGenesForSpecies++;
+				}
 			} else if (allLists.containsKey(l.name())) {
+				logger.info("Do not import list " + l.name());
 				nonImported += 1;
 			}
 		}
 		
 		String msg = addedLists + " lists with " + addedItems + 
-				" items were successfully imported.";
+				" items were successfully imported.\nOf these, ";
+		if (hadGenesForSpecies == 0) {
+			msg += "no list ";
+		} else {
+			msg += hadGenesForSpecies + " list(s) ";
+		}
+		msg += " contained genes for " + parent.chosenDataFilter.organism + ".";
+		
 		if (nonImported > 0) {
 			msg = msg + "\n" + nonImported + " lists with identical names were not imported.";
 		}
