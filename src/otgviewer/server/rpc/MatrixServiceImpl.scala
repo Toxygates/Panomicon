@@ -128,7 +128,8 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
   private def filterProbesAllSpecies(probes: Seq[String]): Seq[String] = {
     val pmaps = otg.Species.values.toList.map(context.probes(_))
     if (probes == null || probes.size == 0) {
-      throw new Exception("Requesting all probes for all species is not permitted.")
+      //Requesting all probes for all species is not permitted.
+      List()      
     } else {
       probes.filter(p => pmaps.exists(m => m.isToken(p)))
     }
@@ -306,12 +307,16 @@ class MatrixServiceImpl extends ArrayServiceImpl[Barcode, DataFilter] with Matri
     val ls = TargetMine.getListService(user, pass)    
     val tmLists = ls.getAccessibleLists()
     tmLists.filter(_.getType == "Gene").map(
-        l => {
-          val tglist = TargetMine.asTGList(l, filterProbesAllSpecies(_))
+      l => {
+        val tglist = TargetMine.asTGList(l, filterProbesAllSpecies(_))
+        if (tglist.items.size > 0) {
           val probesForCurrent = filterProbes(tglist.items)(filter)
           tglist.setComment(probesForCurrent.size + "");
-          tglist
-        }).toArray
+        } else {
+          tglist.setComment("0")
+        }
+        tglist
+      }).toArray
   }
 
   def exportTargetmineLists(filter: DataFilter, user: String, pass: String,
