@@ -9,7 +9,7 @@ function makeWar {
     cp news.html.$VERSION news.html
     cp WEB-INF/web.xml.$VERSION WEB-INF/web.xml
     rm toxygates-$VERSION.war
-    zip -x \*.war -r toxygates-$VERSION.war *
+    zip -r toxygates-$VERSION.war toxygates csv *.html *.pdf *.css images WEB-INF
     cd ..
     rm -r war/WEB-INF/classes/otg
     rm -r war/WEB-INF/classes/friedrich
