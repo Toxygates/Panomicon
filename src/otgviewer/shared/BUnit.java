@@ -79,6 +79,22 @@ public class BUnit extends Unit<Barcode> {
 		return r.toArray(new String[0]);
 	}
 	
+	public static boolean containsTime(BUnit[] units, String time) {
+		Set<String> r = new HashSet<String>();
+		for (BUnit b : units) {
+			r.add(b.getTime());
+		}
+		return r.contains(time);
+	}
+	
+	public static boolean containsDose(BUnit[] units, String dose) {
+		Set<String> r = new HashSet<String>();
+		for (BUnit b : units) {
+			r.add(b.getDose());
+		}
+		return r.contains(dose);
+	}
+	
 	public static BUnit[] formUnits(Barcode[] barcodes) {
 		Map<String, List<Barcode>> units = new HashMap<String, List<Barcode>>();
 		for (Barcode b: barcodes) {
