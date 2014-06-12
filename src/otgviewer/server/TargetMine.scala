@@ -29,7 +29,12 @@ object TargetMine {
       }
       //we will have obtained the genes as ENTREZ identifiers
       println(items)      
-      new StringList("probes", l.getName(), items.map(_.identifier).toArray);
+      val probes = AffyProbes.forGenes(items).map(_.identifier).toSeq
+      println(probes)    
+      val filtered = filterProbes(probes)
+      println(filtered)
+    
+      new StringList("probes", l.getName(), filtered.toArray);
   }
   
   def addLists(filter: DataFilter, ls: ListService, 

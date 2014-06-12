@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.FixedWidthLayoutPanel;
@@ -69,6 +70,8 @@ public class ProbeScreen extends Screen {
 	private static final int PL_SOUTH_HEIGHT = 30;
 
 	private static final int STACK_ITEM_HEIGHT = 29;
+	
+	private final Logger logger = Utils.getLogger();
 
 	public ProbeScreen(ScreenManager man) {
 		super("Probe selection", key, true, true, man, resources
@@ -274,9 +277,10 @@ public class ProbeScreen extends Screen {
 						if (listedProbes.size() == 0) {
 							Window.alert("Please select the probes you are interested in, or proceed with all probes.");
 						} else {
-							chosenProbes = listedProbes.toArray(new String[0]);
+							probesChanged(listedProbes.toArray(new String[0]));						
 							StorageParser p = getParser(sc);
 							storeProbes(p);
+							logger.info("Saved list of " + chosenProbes.length + " probes");
 							configuredProceed(DataScreen.key);
 						}
 					}
@@ -290,7 +294,12 @@ public class ProbeScreen extends Screen {
 						|| Window.confirm("Proceeding will erase your list of "
 								+ listedProbes.size() + " selected probes.")) {
 					probesChanged(new String[0]);
+					StorageParser p = getParser(sc);
+					storeProbes(p);
+					logger.info("Saved empty probe list");
 					configuredProceed(DataScreen.key);
+				} else {
+					logger.info("User refused to proceed.");
 				}
 			}
 		}));
@@ -444,7 +453,7 @@ public class ProbeScreen extends Screen {
 	}
 
 	/**
-	 * The "incoming" probes signal will reset all the probes tracking state as
+	 * The incoming probes signal will set the probes 
 	 * well as call the outgoing signal.
 	 */
 	@Override
