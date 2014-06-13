@@ -14,7 +14,7 @@ public interface MaintenanceService extends RemoteService {
 	 * Try to add a batch, based on files that were previously uploaded.
 	 * @return
 	 */
-	AddBatchResult tryAddBatch();
+	AddBatchResult tryAddBatch(String id);
 	
 	/**
 	 * Try to add a platform, based on files that were previously uploaded.

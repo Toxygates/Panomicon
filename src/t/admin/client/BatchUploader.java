@@ -44,7 +44,7 @@ public class BatchUploader extends Composite {
 		
 		Label l = new Label("ID (no spaces, must be unique)");
 		vp.add(l);
-		TextBox nameText = new TextBox();
+		final TextBox nameText = new TextBox();
 		vp.add(nameText);
 		
 		UploadWrapper uploader = new UploadWrapper("Metadata file (TSV)", 
@@ -67,13 +67,14 @@ public class BatchUploader extends Composite {
 		commands.add(new Command("OK") {
 			@Override 
 			void run() { 
-				maintenanceService.tryAddBatch(new AsyncCallback<AddBatchResult>() {					
+				maintenanceService.tryAddBatch(nameText.getText(),
+						new AsyncCallback<AddBatchResult>() {					
 					@Override
 					public void onSuccess(AddBatchResult result) {
 						ProgressDisplay pd = new ProgressDisplay("Add batch");
 						DialogBox db = new DialogBox();
 						db.setWidget(pd);
-						db.setTitle("Progress");
+						db.setText("Progress");
 						db.show();
 					}
 					

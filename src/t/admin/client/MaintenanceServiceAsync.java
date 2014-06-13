@@ -8,7 +8,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface MaintenanceServiceAsync {
 
-	void tryAddBatch(AsyncCallback<AddBatchResult> callback);
+	void tryAddBatch(String id, AsyncCallback<AddBatchResult> callback);
 	
 	void tryAddPlatform(AsyncCallback<AddPlatformResult> callback);
 	

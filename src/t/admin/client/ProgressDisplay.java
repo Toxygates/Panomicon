@@ -2,8 +2,11 @@ package t.admin.client;
 
 import t.admin.shared.Progress;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
@@ -19,9 +22,13 @@ public class ProgressDisplay extends Composite {
 	final int POLL_INTERVAL = 2000; //ms
 	
 	Label statusLabel = new Label("0%");
-	String lastTask = "";
 	
 	VerticalPanel logPanel;
+	
+	Timer timer;
+	
+	final MaintenanceServiceAsync maintenanceService = (MaintenanceServiceAsync) GWT
+			.create(MaintenanceService.class);
 	
 	public ProgressDisplay(String taskName) {
 		VerticalPanel vp = new VerticalPanel();
@@ -44,19 +51,41 @@ public class ProgressDisplay extends Composite {
 			}
 		});
 		vp.add(b);
+		
+		timer = new Timer() {
+			@Override
+			public void run() {
+				maintenanceService.getProgress(new AsyncCallback<Progress>() {					
+					@Override
+					public void onSuccess(Progress result) {
+						setProgress(result);						
+					}
+					
+					@Override
+					public void onFailure(Throwable caught) {
+						addLog("Error: unable to obtain current job status from server");
+						addLog(caught.getMessage());
+					
+					}
+				});
+			}
+		};
+		timer.scheduleRepeating(POLL_INTERVAL);
 	}
 	
 	void setProgress(Progress p) {
 		String task = p.getTask();
 		statusLabel.setText(task + " (" + p.getPercentage() + "%)");
 		
-		if (!task.equals(lastTask)) {
-			addLog("Finished: " + lastTask);
-			lastTask = task;
+		for (String m: p.getMessages()) {
+			addLog(m);
 		}
 		
-		if (p.getPercentage() == 100) {
+		if (p.isAllFinished()) {
 			onDone();
+			//TODO should check for exception here as well?
+			statusLabel.setText("All finished (100%)");
+			timer.cancel();
 		}
 	}
 	
@@ -67,7 +96,20 @@ public class ProgressDisplay extends Composite {
 	}
 	
 	protected void onCancel() {
-		
+		maintenanceService.cancelTask(new AsyncCallback<Void>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+				addLog("Unable to cancel task: " + caught.getMessage());				
+			}
+
+			@Override
+			public void onSuccess(Void result) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		});
 	}
 	
 	protected void onDone() {
