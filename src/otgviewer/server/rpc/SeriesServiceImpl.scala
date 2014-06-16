@@ -49,7 +49,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     context = config.context
     db = new KCSeriesDB(homePath + "/otgfs.kct")
     println("Series DB is open")
-    affyProbes = new AffyProbes(context.triplestoreConfig)    
+    affyProbes = new AffyProbes(context.triplestoreConfig.triplestore)
   }
 
   override def destroy() {

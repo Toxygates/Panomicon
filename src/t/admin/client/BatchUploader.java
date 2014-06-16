@@ -15,8 +15,6 @@ import gwtupload.client.Uploader;
 import java.util.ArrayList;
 import java.util.List;
 
-import t.admin.shared.AddBatchResult;
-
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -68,9 +66,9 @@ public class BatchUploader extends Composite {
 			@Override 
 			void run() { 
 				maintenanceService.tryAddBatch(nameText.getText(),
-						new AsyncCallback<AddBatchResult>() {					
+						new AsyncCallback<Void>() {					
 					@Override
-					public void onSuccess(AddBatchResult result) {
+					public void onSuccess(Void result) {
 						ProgressDisplay pd = new ProgressDisplay("Add batch");
 						DialogBox db = new DialogBox();
 						db.setWidget(pd);
@@ -87,7 +85,9 @@ public class BatchUploader extends Composite {
 		});
 		commands.add(new Command("Cancel") {
 			@Override 
-			void run() { onCancel(); }
+			void run() {
+				onCancel();
+			}
 		});
 		
 		vp.add(makeButtons(commands));	

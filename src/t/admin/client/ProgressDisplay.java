@@ -2,6 +2,7 @@ package t.admin.client;
 
 import java.util.Date;
 
+import t.admin.shared.OperationResults;
 import t.admin.shared.Progress;
 
 import com.google.gwt.core.client.GWT;
@@ -10,13 +11,14 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.ibm.icu.util.Calendar;
 
 /**
  * A widget that periodically polls and displays the current progress status from the server.
@@ -29,6 +31,7 @@ public class ProgressDisplay extends Composite {
 	Label statusLabel = new Label("0%");
 	
 	VerticalPanel logPanel;
+	Button cancelButton, doneButton;
 	
 	Timer timer;
 	
@@ -44,18 +47,33 @@ public class ProgressDisplay extends Composite {
 		logPanel.setStylePrimaryName("taskLog");
 		ScrollPanel sp = new ScrollPanel(logPanel);
 		vp.add(sp);
-		sp.setHeight("200px");
+		sp.setHeight("500px");
 		sp.setWidth("500px");
 		addLog("Begin task: " + taskName);
 		
-		Button b = new Button("Cancel");
-		b.addClickHandler(new ClickHandler() {			
+		HorizontalPanel hp = new HorizontalPanel();
+		hp.setSpacing(4);
+		vp.add(hp);
+		
+		cancelButton = new Button("Cancel");
+		cancelButton.addClickHandler(new ClickHandler() {			
 			@Override
 			public void onClick(ClickEvent event) {
-				onCancel();			
+				onCancel();
+			}
+		});		
+		hp.add(cancelButton);
+		cancelButton.setEnabled(true);
+		
+		doneButton = new Button("Close");
+		doneButton.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				onDone();
 			}
 		});
-		vp.add(b);
+		hp.add(doneButton);
+		doneButton.setEnabled(false);
 		
 		timer = new Timer() {
 			@Override
@@ -63,7 +81,7 @@ public class ProgressDisplay extends Composite {
 				maintenanceService.getProgress(new AsyncCallback<Progress>() {					
 					@Override
 					public void onSuccess(Progress result) {
-						setProgress(result);						
+						setProgress(result);		
 					}
 					
 					@Override
@@ -79,18 +97,44 @@ public class ProgressDisplay extends Composite {
 	}
 	
 	void setProgress(Progress p) {
-		String task = p.getTask();
-		statusLabel.setText(task + " (" + p.getPercentage() + "%)");
-		
+	
 		for (String m: p.getMessages()) {
 			addLog(m);
 		}
 		
-		if (p.isAllFinished()) {
-			onDone();
-			//TODO should check for exception here as well?
-			statusLabel.setText("All finished (100%)");
+		if (p.isAllFinished()) {			
+			statusLabel.setText("All done (100%)");
 			timer.cancel();
+			cancelButton.setEnabled(false);
+			doneButton.setEnabled(true);
+			
+			maintenanceService.getOperationResults(new AsyncCallback<OperationResults>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					Window.alert("Error while obtaining operation results");					
+				}
+
+				@Override
+				public void onSuccess(OperationResults result) {
+					int i = 0;
+					
+					if (result != null && result.successful()) {
+						logPanel.insert(infoLabel("* * * Operation successful * * *"), i++);
+					} else {
+						logPanel.insert(infoLabel("* * * Operation failed * * *"), i++);
+					}
+					if (result != null) {
+						for (String s : result.infoStrings()) {
+							logPanel.insert(infoLabel(s), i++);
+						}
+					}
+
+				}
+				
+			});
+		} else {
+			String task = p.getTask();			
+			statusLabel.setText(task + " (" + p.getPercentage() + "%)");			
 		}
 	}
 	
@@ -103,20 +147,23 @@ public class ProgressDisplay extends Composite {
 		logPanel.insert(l, 0);
 	}
 	
+	Label infoLabel(String message) {
+		Label l = new Label(message);
+		l.setStylePrimaryName("taskInfoEntry");
+		return l;
+	}
+	
 	protected void onCancel() {
+		cancelButton.setEnabled(false);
+		doneButton.setEnabled(true);
 		maintenanceService.cancelTask(new AsyncCallback<Void>() {
-
 			@Override
 			public void onFailure(Throwable caught) {
 				addLog("Unable to cancel task: " + caught.getMessage());				
 			}
 
 			@Override
-			public void onSuccess(Void result) {
-				// TODO Auto-generated method stub
-				
-			}
-			
+			public void onSuccess(Void result) { }			
 		});
 	}
 	

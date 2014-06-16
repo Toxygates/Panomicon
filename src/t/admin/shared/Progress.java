@@ -23,5 +23,10 @@ public class Progress implements Serializable {
 	public String getTask() { return task; }
 	public int getPercentage() { return percentage; }
 	public String[] getMessages() { return messages; }
+	
+	/**
+	 * Is every task finished?
+	 * @return
+	 */
 	public boolean isAllFinished() { return allFinished; }
 }

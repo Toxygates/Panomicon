@@ -31,5 +31,11 @@
 }
 
 .taskLogEntry {
-	margin: 5px;
+	margin: 2px;
+}
+
+.taskInfoEntry {
+	font-weight: bold;
+	margin: 2px;
+	color: blue;
 }

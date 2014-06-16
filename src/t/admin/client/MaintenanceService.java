@@ -1,7 +1,6 @@
 package t.admin.client;
 
-import t.admin.shared.AddBatchResult;
-import t.admin.shared.AddPlatformResult;
+import t.admin.shared.OperationResults;
 import t.admin.shared.Progress;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -12,20 +11,26 @@ public interface MaintenanceService extends RemoteService {
 
 	/**
 	 * Try to add a batch, based on files that were previously uploaded.
-	 * @return
+	 * The results can be obtained after completion by using getOperationResults.
 	 */
-	AddBatchResult tryAddBatch(String id);
+	void tryAddBatch(String id);
 	
 	/**
 	 * Try to add a platform, based on files that were previously uploaded.
-	 * @return
-	 */
-	AddPlatformResult tryAddPlatform();
+	 * The results can be obtained after completion by using getOperationResults.
+	 */ 
+	void tryAddPlatform();
 	
 	boolean tryDeleteBatch(String id);
 	
 	boolean tryDeletePlatform(String id);
 
+	/**
+	 * The results of the last completed long-running operation.
+	 * @return
+	 */
+	OperationResults getOperationResults();
+	
 	/**
 	 * Cancel the current task, if any.
 	 */

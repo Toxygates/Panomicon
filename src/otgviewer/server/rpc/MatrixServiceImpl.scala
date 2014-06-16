@@ -67,7 +67,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     context = config.context
     tgConfig = config
     
-    affyProbes = new AffyProbes(context.triplestoreConfig)           
+    affyProbes = new AffyProbes(context.triplestoreConfig.triplestore)
     println("Microarray databases are open")
   }
 

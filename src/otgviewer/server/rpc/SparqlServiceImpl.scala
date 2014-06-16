@@ -63,10 +63,11 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     this.tgConfig = conf   
 
     val tsConf = context.triplestoreConfig
-    otgSamples = new OTGSamples(tsConf)
-    affyProbes = new AffyProbes(tsConf)
-    uniprot = new LocalUniprot(tsConf) 
-    b2rKegg = new B2RKegg(tsConf)
+    val ts = tsConf.triplestore
+    otgSamples = new OTGSamples(ts)
+    affyProbes = new AffyProbes(ts)
+    uniprot = new LocalUniprot(ts) 
+    b2rKegg = new B2RKegg(ts)
     chembl = new ChEMBL()
     drugBank = new DrugBank()
     homologene = new B2RHomologene()

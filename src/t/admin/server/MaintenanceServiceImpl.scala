@@ -7,14 +7,13 @@ import gwtupload.server.UploadServlet
 import javax.annotation.Nullable
 import t.BaseConfig
 import t.admin.client.MaintenanceService
-import t.admin.shared.AddBatchResult
-import t.admin.shared.AddPlatformResult
 import t.admin.shared.Progress
 import t.TriplestoreConfig
 import t.DataConfig
 import t.TaskRunner
 import t.BatchManager
 import t.admin.shared.MaintenanceConstants._
+import t.admin.shared.OperationResults
 
 class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceService {
   def configuration(): BaseConfig = {
@@ -23,15 +22,25 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
         null, null, null),
         DataConfig("/shiba/toxygates/data_dev"))
   }
-
   
-  def tryAddBatch(title: String): AddBatchResult = {
+  private def setLastTask(task: String) =
+    getThreadLocalRequest().getSession().setAttribute("lastTask", task)  
+  private def lastTask: String = 
+    getThreadLocalRequest().getSession().getAttribute("lastTask").asInstanceOf[String]
+  private def setLastResults(results: OperationResults) =
+    getThreadLocalRequest().getSession().setAttribute("lastResults", results)    
+  private def lastResults: OperationResults = 
+    getThreadLocalRequest().getSession().getAttribute("lastResults").asInstanceOf[OperationResults]
+  
+  
+  def tryAddBatch(title: String): Unit = {
 	showUploadedFiles()
-	if (TaskRunner.busy) {
+	if (TaskRunner.currentTask != None) {
 	  throw new Exception("Another task is already in progress.")
 	}
 	val bm = new BatchManager(configuration())
 	TaskRunner.start()
+	setLastTask("Add batch")
 	
 	var tempFiles: List[java.io.File] = List()
 	val metaFile = getAsTempFile(metaPrefix, metaPrefix, "tsv").
@@ -40,12 +49,10 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
     //TODO store tempFiles in HTTP session and do a cleanup later, as well as
 	//print any remaining log messages
 
-    TaskRunner ++= bm.addBatch(title, metaFile.getAbsolutePath(), null, null, null)
-    null
+    TaskRunner ++= bm.addBatch(title, metaFile.getAbsolutePath(), null, null, null)   
   }
 
-  def tryAddPlatform(): AddPlatformResult = {
-    null
+  def tryAddPlatform(): Unit = {    
   }
 
   def tryDeleteBatch(id: String): Boolean = {
@@ -54,6 +61,10 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
 
   def tryDeletePlatform(id: String): Boolean = {
     false;
+  }
+  
+  def getOperationResults(): OperationResults = {
+    lastResults
   }
 
   def cancelTask(): Unit = {
@@ -68,9 +79,15 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
     }
     val p = TaskRunner.currentTask match {
       case None => new Progress("No task in progress", 0, true)
-      case Some(t) => new Progress(t.name, t.percentComplete, !TaskRunner.busy)
+      case Some(t) => new Progress(t.name, t.percentComplete, false)
     }
     p.setMessages(messages)
+    
+    if (TaskRunner.currentTask == None) {
+      setLastResults(new OperationResults(lastTask, 
+          TaskRunner.errorCause == None, 
+          TaskRunner.resultMessages.toArray))
+    }
     p    
   }
 
