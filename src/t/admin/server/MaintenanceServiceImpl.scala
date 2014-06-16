@@ -19,7 +19,8 @@ import t.admin.shared.MaintenanceConstants._
 class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceService {
   def configuration(): BaseConfig = {
     //TODO
-    BaseConfig(TriplestoreConfig("http://localhost:3030", null, null, null, null),
+    BaseConfig(TriplestoreConfig("http://localhost:3030/data/query", "http://localhost:3030/data/update", 
+        null, null, null),
         DataConfig("/shiba/toxygates/data_dev"))
   }
 

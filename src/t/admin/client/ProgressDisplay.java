@@ -1,10 +1,14 @@
 package t.admin.client;
 
+import java.util.Date;
+
 import t.admin.shared.Progress;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -12,6 +16,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.ibm.icu.util.Calendar;
 
 /**
  * A widget that periodically polls and displays the current progress status from the server.
@@ -90,7 +95,10 @@ public class ProgressDisplay extends Composite {
 	}
 	
 	void addLog(String message) {
-		Label l = new Label(message);
+		Date now = new Date();
+		String time = DateTimeFormat.getFormat(PredefinedFormat.TIME_SHORT).format(now);
+		
+		Label l = new Label(time + " " + message);
 		l.setStylePrimaryName("taskLogEntry");		
 		logPanel.insert(l, 0);
 	}
