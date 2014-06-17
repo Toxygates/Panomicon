@@ -65,7 +65,7 @@ object Conversions {
 
   implicit def asScala(filter: DataFilter, series: Series)(implicit context: Context): otg.Series = {
 	val sf = asScala(filter)
-	val p = speciesFromFilter(filter).probeMap.pack(series.probe)
+	val p = context.unifiedProbes.pack(series.probe) //TODO filtering
 	new otg.Series(sf.repeatType.get, sf.organ.get, sf.species.get, 
 	    p, series.compound, series.timeDose, Vector())
   }

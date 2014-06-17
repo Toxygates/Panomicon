@@ -92,17 +92,18 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
 
   //Should this be in sparqlService?
   def identifiersToProbes(filter: DataFilter, identifiers: Array[String], precise: Boolean): Array[String] =
-    affyProbes.identifiersToProbes(filter, identifiers, precise).map(_.identifier).toArray
+    affyProbes.identifiersToProbes(context.unifiedProbes, filter, 
+        identifiers, precise).map(_.identifier).toArray
 
-    /**
-     * Filter probes for one species.
-     */
+  /**
+   * Filter probes for one species.
+   */
   private def filterProbes(probes: Seq[String], s: Species): Seq[String] = {
-    val pmap = context.probes(s)
+    val pmap = context.unifiedProbes
     if (probes == null || probes.size == 0) {
       pmap.tokens.toSeq
     } else {
-      probes.filter(pmap.isToken)      
+      probes.filter(pmap.isToken)   //TODO   
     }
   }
   
@@ -116,15 +117,15 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   }
 
   /**
-   * Filter probes for all species.
+   * Filter probes for all species.   
    */
   private def filterProbesAllSpecies(probes: Seq[String]): Seq[String] = {
-    val pmaps = otg.Species.values.toList.map(context.probes(_))
+    val pmap = context.unifiedProbes
     if (probes == null || probes.size == 0) {
       //Requesting all probes for all species is not permitted.
       List()      
     } else {
-      probes.filter(p => pmaps.exists(m => m.isToken(p)))
+      probes.filter(pmap.isToken) //TODO
     }
   }
   

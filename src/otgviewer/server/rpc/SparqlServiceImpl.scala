@@ -123,7 +123,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   }
 
   def probes(filter: DataFilter): Array[String] =
-    context.probes(filter).tokens.toArray
+    context.unifiedProbes.tokens.toArray //TODO filtering    
 
   def pathologies(barcode: Barcode): Array[Pathology] =
     otgSamples.pathologies(barcode.getCode).map(asJava(_)).toArray
@@ -160,7 +160,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     val geneIds = b2rKegg.geneIds(pathway, filter).map(Gene(_))
     println("Probes for " + geneIds.size + " genes")
     val probes = affyProbes.forGenes(geneIds).toArray
-    val pmap = context.probes(filter)
+    val pmap = context.unifiedProbes //TODO
     probes.map(_.identifier).filter(pmap.isToken).toArray
   }
 
@@ -179,7 +179,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     } else {
       affyProbes.forUniprots(proteins)
     }
-    val pmap = context.probes(filter)
+    val pmap = context.unifiedProbes //TODO context.probes(filter)
     pbs.toSet.map((p: Probe) => p.identifier).filter(pmap.isToken).toArray
   }
 
@@ -187,7 +187,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     affyProbes.goTerms(pattern).map(_.name).toArray
 
   def probesForGoTerm(filter: DataFilter, goTerm: String): Array[String] = {
-    val pmap = context.probes(filter)
+    val pmap = context.unifiedProbes //TODO context.probes(filter)
     affyProbes.forGoTerm(GOTerm("", goTerm)).map(_.identifier).filter(pmap.isToken).toArray
   }
 

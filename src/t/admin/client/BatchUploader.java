@@ -69,8 +69,13 @@ public class BatchUploader extends Composite {
 						new AsyncCallback<Void>() {					
 					@Override
 					public void onSuccess(Void result) {
-						ProgressDisplay pd = new ProgressDisplay("Add batch");
-						DialogBox db = new DialogBox();
+						final DialogBox db = new DialogBox();
+						ProgressDisplay pd = new ProgressDisplay("Add batch") {
+							@Override
+							protected void onDone() {
+								db.hide();
+							}							
+						};
 						db.setWidget(pd);
 						db.setText("Progress");
 						db.show();

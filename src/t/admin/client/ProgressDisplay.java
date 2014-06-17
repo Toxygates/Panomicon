@@ -153,7 +153,7 @@ public class ProgressDisplay extends Composite {
 		return l;
 	}
 	
-	protected void onCancel() {
+	void onCancel() {
 		cancelButton.setEnabled(false);
 		doneButton.setEnabled(true);
 		maintenanceService.cancelTask(new AsyncCallback<Void>() {
