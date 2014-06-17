@@ -14,6 +14,7 @@ import t.TaskRunner
 import t.BatchManager
 import t.admin.shared.MaintenanceConstants._
 import t.admin.shared.OperationResults
+import t.util.TempFiles
 
 class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceService {
   def configuration(): BaseConfig = {
@@ -23,33 +24,48 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
         DataConfig("/shiba/toxygates/data_dev"))
   }
   
-  private def setLastTask(task: String) =
-    getThreadLocalRequest().getSession().setAttribute("lastTask", task)  
-  private def lastTask: String = 
-    getThreadLocalRequest().getSession().getAttribute("lastTask").asInstanceOf[String]
-  private def setLastResults(results: OperationResults) =
-    getThreadLocalRequest().getSession().setAttribute("lastResults", results)    
-  private def lastResults: OperationResults = 
-    getThreadLocalRequest().getSession().getAttribute("lastResults").asInstanceOf[OperationResults]
+  private def getAttribute[T](name: String) = 
+    getThreadLocalRequest().getSession().getAttribute(name).asInstanceOf[T]
   
+  private def setAttribute(name: String, x: AnyRef) = 
+  	getThreadLocalRequest().getSession().setAttribute(name, x)
+  
+  private def setLastTask(task: String) = setAttribute("lastTask", task)  
+  private def lastTask: String = getAttribute("lastTask")
+  private def setLastResults(results: OperationResults) = setAttribute("lastResults", results)    
+  private def lastResults: OperationResults = getAttribute("lastResults")    
+  
+  private def afterTaskCleanup(): Unit = {
+    val tc: TempFiles = getAttribute("tempFiles")
+    tc.dropAll()
+  }
   
   def tryAddBatch(title: String): Unit = {
 	showUploadedFiles()
 	if (TaskRunner.currentTask != None) {
 	  throw new Exception("Another task is already in progress.")
 	}
-	val bm = new BatchManager(configuration())
+	val bm = new BatchManager(configuration()) //TODO configuration parsing
 	TaskRunner.start()
 	setLastTask("Add batch")
 	
-	var tempFiles: List[java.io.File] = List()
-	val metaFile = getAsTempFile(metaPrefix, metaPrefix, "tsv").
+	val tempFiles = new TempFiles()
+	setAttribute("tempFiles", tempFiles)	
+	
+	val metaFile = getAsTempFile(tempFiles, metaPrefix, metaPrefix, "tsv").
 		getOrElse(throw new Exception("The metadata file has not been uploaded yet."))
-	tempFiles ::= metaFile
-    //TODO store tempFiles in HTTP session and do a cleanup later, as well as
-	//print any remaining log messages
-
-    TaskRunner ++= bm.addBatch(title, metaFile.getAbsolutePath(), null, null, null)   
+	
+	val niFile = getAsTempFile(tempFiles, niPrefix, niPrefix, "csv").
+		getOrElse(throw new Exception("The normalized intensity file has not been uploaded yet."))
+	val mas5File = getAsTempFile(tempFiles, mas5Prefix, mas5Prefix, "csv").
+		getOrElse(throw new Exception("The MAS5 normalized file has not been uploaded yet."))	
+	val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv"). 
+		getOrElse(throw new Exception("The calls file has not been uploaded yet.")) 
+	
+    TaskRunner ++= bm.addBatch(title, metaFile.getAbsolutePath(), 
+        niFile.getAbsolutePath(), 
+        mas5File.getAbsolutePath(), 
+        callsFile.getAbsolutePath())   
   }
 
   def tryAddPlatform(): Unit = {    
@@ -87,6 +103,7 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
       setLastResults(new OperationResults(lastTask, 
           TaskRunner.errorCause == None, 
           TaskRunner.resultMessages.toArray))
+      afterTaskCleanup()
     }
     p    
   }
@@ -115,11 +132,12 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
    * Get an uploaded file as a temporary file.
    * Should be deleted after use.
    */
-  def getAsTempFile(tag: String, prefix: String, suffix: String): Option[java.io.File] = {
+  def getAsTempFile(tempFiles: TempFiles, tag: String, prefix: String, 
+      suffix: String): Option[java.io.File] = {
     getFile(tag) match {
       case None => None
-      case Some(fi) =>
-        val f = java.io.File.createTempFile(prefix, suffix)
+      case Some(fi) =>        
+        val f = tempFiles.makeNew(prefix, suffix)
         fi.write(f)
         Some(f)
     }

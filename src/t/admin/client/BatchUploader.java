@@ -24,7 +24,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-public class BatchUploader extends Composite {
+public class BatchUploader extends Composite implements UploadManager {
 	protected MaintenanceServiceAsync maintenanceService = (MaintenanceServiceAsync) GWT
 			.create(MaintenanceService.class);
 	
@@ -45,20 +45,20 @@ public class BatchUploader extends Composite {
 		final TextBox nameText = new TextBox();
 		vp.add(nameText);
 		
-		UploadWrapper uploader = new UploadWrapper("Metadata file (TSV)", 
+		UploadWrapper uploader = new UploadWrapper(this, "Metadata file (TSV)", 
 				metaPrefix, "tsv");				
 		vp.add(uploader);
 		
-		uploader = new UploadWrapper("Normalized intensity data file (TSV)", 
-				niPrefix, "tsv");
+		uploader = new UploadWrapper(this, "Normalized intensity data file (CSV)", 
+				niPrefix, "csv");
 		vp.add(uploader);
 		
-		uploader = new UploadWrapper("MAS5 normalized data file (for fold change) (TSV)", 
-				mas5Prefix, "tsv");
+		uploader = new UploadWrapper(this, "MAS5 normalized data file (for fold change) (CSV)", 
+				mas5Prefix, "csv");
 		vp.add(uploader);
 		
-		uploader = new UploadWrapper("Calls file (TSV)", 
-				callPrefix, "tsv");
+		uploader = new UploadWrapper(this, "Calls file (CSV)", 
+				callPrefix, "csv");
 		vp.add(uploader);
 		
 		List<Command> commands = new ArrayList<Command>();
@@ -98,63 +98,8 @@ public class BatchUploader extends Composite {
 		vp.add(makeButtons(commands));	
 	}
 	
-	class UploadWrapper extends Composite {
-		Uploader u;		
-		boolean finished;		
-		Label statusLabel = new Label();		
-		VerticalPanel vp = new VerticalPanel();
-		UploadWrapper(String description, String prefix, String ... extensions) {
-			initWidget(vp);
-			Label l = new Label(description);
-			vp.add(l);
-			vp.setStylePrimaryName("uploader");
-			
-			u = new SingleUploader();
-			u.setFileInputPrefix(prefix);
-			u.setValidExtensions(extensions);
-			u.setAutoSubmit(true);
-			
-			u.addOnStartUploadHandler(new OnStartUploaderHandler() {				
-				@Override
-				public void onStart(IUploader uploader) {
-					setFailure();					
-					statusLabel.setText("In progress");									
-				}
-			});
-			u.addOnFinishUploadHandler(new OnFinishUploaderHandler() {				
-				@Override
-				public void onFinish(IUploader uploader) {
-					setFinished();					
-				}
-			});	
-			u.addOnCancelUploadHandler(new OnCancelUploaderHandler() {				
-				@Override
-				public void onCancel(IUploader uploader) {
-					setFailure();										
-				}
-			});
-			vp.add(u);
-			vp.add(statusLabel);
-			setFailure();
-		}
-		
-		void setFinished() {
-			finished = true;
-			statusLabel.setText("OK");
-			statusLabel.setStylePrimaryName("success");
-			updateStatus();
-		}
-		
-		void setFailure() {
-			finished = false;
-			statusLabel.setStylePrimaryName("failure");
-			statusLabel.setText("Please upload a file");
-			updateStatus();
-		}
-	}
-	
-	private void updateStatus() {
-		
+	public void updateStatus() {
+		// enable/disable buttons
 	}
 	
 	public void onOK() {
