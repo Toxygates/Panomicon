@@ -133,12 +133,8 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     sparseRead: Boolean = false): ManagedMatrix[_] = {
     val reader = if (typ == ValueType.Absolute) {
       context.absoluteDBReader
-    } else {
-      if (tgConfig.foldsDBVersion == 2) {
-        context.foldsDBReaderV2
-      } else {
-        context.foldsDBReaderV1
-      }
+    } else {     
+      context.foldsDBReader    
     }
     
     val enhancedCols = tgConfig.applicationClass == ApplicationClass.Adjuvant

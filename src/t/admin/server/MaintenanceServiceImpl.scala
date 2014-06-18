@@ -15,6 +15,7 @@ import t.BatchManager
 import t.admin.shared.MaintenanceConstants._
 import t.admin.shared.OperationResults
 import t.util.TempFiles
+import t.admin.shared.MaintenanceException
 
 class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceService {
   def configuration(): BaseConfig = {
@@ -35,9 +36,14 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
   private def setLastResults(results: OperationResults) = setAttribute("lastResults", results)    
   private def lastResults: OperationResults = getAttribute("lastResults")    
   
-  private def afterTaskCleanup(): Unit = {
+  private def afterTaskCleanup() {
     val tc: TempFiles = getAttribute("tempFiles")
     tc.dropAll()
+    UploadServlet.removeSessionFileItems(getThreadLocalRequest())
+  }
+  
+  private def beforeTaskCleanup() {
+    UploadServlet.removeSessionFileItems(getThreadLocalRequest())
   }
   
   def tryAddBatch(title: String): Unit = {
@@ -52,15 +58,23 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
 	val tempFiles = new TempFiles()
 	setAttribute("tempFiles", tempFiles)	
 	
-	val metaFile = getAsTempFile(tempFiles, metaPrefix, metaPrefix, "tsv").
-		getOrElse(throw new Exception("The metadata file has not been uploaded yet."))
+	if (getFile(metaPrefix) == None) {
+	  throw new MaintenanceException("The metadata file has not been uploaded yet.")
+	}
+	if (getFile(niPrefix) == None) {
+	  throw new MaintenanceException("The normalized intensity file has not been uploaded yet.")
+	}
+	if (getFile(mas5Prefix) == None) {
+	  throw new MaintenanceException("The MAS5 normalized file has not been uploaded yet.")
+	}
+	if (getFile(callPrefix) == None) {
+	  throw new MaintenanceException("The calls file has not been uploaded yet.")
+	}
 	
-	val niFile = getAsTempFile(tempFiles, niPrefix, niPrefix, "csv").
-		getOrElse(throw new Exception("The normalized intensity file has not been uploaded yet."))
-	val mas5File = getAsTempFile(tempFiles, mas5Prefix, mas5Prefix, "csv").
-		getOrElse(throw new Exception("The MAS5 normalized file has not been uploaded yet."))	
-	val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv"). 
-		getOrElse(throw new Exception("The calls file has not been uploaded yet.")) 
+	val metaFile = getAsTempFile(tempFiles, metaPrefix, metaPrefix, "tsv").get			
+	val niFile = getAsTempFile(tempFiles, niPrefix, niPrefix, "csv").get		
+	val mas5File = getAsTempFile(tempFiles, mas5Prefix, mas5Prefix, "csv").get		
+	val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv").get		
 	
     TaskRunner ++= bm.addBatch(title, metaFile.getAbsolutePath(), 
         niFile.getAbsolutePath(), 
@@ -113,18 +127,22 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
    * @param tag the tag to look for.
    * @return
    */
-  def getFile(tag: String): Option[FileItem] = {
-    var last: FileItem = null
-    val items = UploadServlet.getSessionFileItems(getThreadLocalRequest());
-    for (fi <- items) {
+  def getFile(tag: String): Option[FileItem] = {       
+    val items = UploadServlet.getSessionFileItems(getThreadLocalRequest());    
+    if (items == null) {
+      throw new MaintenanceException("No files have been uploaded yet.")
+    }
+    
+    var item: FileItem = null
+    for (fi <- items) {      
       if (fi.getFieldName().startsWith(tag)) {
-        last = fi
+        item = fi
       }
     }    
-    if (last == null) {
+    if (item == null) {
       None
     } else {
-      Some(last)
+      Some(item)
     }    
   }
   
@@ -137,7 +155,7 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
     getFile(tag) match {
       case None => None
       case Some(fi) =>        
-        val f = tempFiles.makeNew(prefix, suffix)
+        val f = tempFiles.makeNew(prefix, suffix)        
         fi.write(f)
         Some(f)
     }

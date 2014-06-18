@@ -4,6 +4,9 @@ import ApplicationClass.ApplicationClass
 import ApplicationClass.Toxygates
 import javax.servlet.ServletConfig
 import otg.OTGContext
+import t.TriplestoreConfig
+import t.DataConfig
+import t.BaseConfig
 
 object Configuration {
   /**
@@ -15,12 +18,13 @@ object Configuration {
     /**
      * These parameters are read from <context-param> tags in WEB-INF/web.xml.
      */
-    new Configuration(servletContext.getInitParameter("owlimRepositoryName"),
-      servletContext.getInitParameter("toxygatesHomeDir"),
+    new Configuration(servletContext.getInitParameter("repositoryName"),
+      servletContext.getInitParameter("dataDir"),
       servletContext.getInitParameter("csvDir"),
-      servletContext.getInitParameter("csvUrlBase"),
-      parseVersion(servletContext.getInitParameter("foldsDBVersion")),
-      parseAClass(servletContext.getInitParameter("applicationClass")))
+      servletContext.getInitParameter("csvUrlBase"),      
+      parseAClass(servletContext.getInitParameter("applicationClass")),
+      servletContext.getInitParameter("repositoryURL"),
+      servletContext.getInitParameter("updateURL"))
   }
   
   def parseAClass(v: String): ApplicationClass = {
@@ -29,31 +33,28 @@ object Configuration {
     } else {
       ApplicationClass.withName(v)
     }
-  }
-  def parseVersion(v: String): Int = {
-    if (v == null) {
-      1
-    } else if (v == "2") {
-      2
-    } else {
-      1
-    }
-  }
+  } 
 }
 
 class Configuration(val owlimRepositoryName: String, 
     val toxygatesHomeDir: String,
-    val csvDirectory: String, val csvUrlBase: String, 
-    val foldsDBVersion: Int,
-    val applicationClass: ApplicationClass = Toxygates) {
+    val csvDirectory: String, val csvUrlBase: String,     
+    val applicationClass: ApplicationClass = Toxygates,
+    val repositoryUrl: String = null,
+    val updateUrl: String = null) {
   
   def this(owlimRepository: String, toxygatesHome:String, foldsDBVersion: Int) = 
     this(owlimRepository, toxygatesHome, System.getProperty("otg.csvDir"), 
-        System.getProperty("otg.csvUrlBase"), foldsDBVersion)
+        System.getProperty("otg.csvUrlBase"))
   
-  def usePrefixIdMap: Boolean = (foldsDBVersion == 1)
-        
   lazy val context = 
     new OTGContext(Some(toxygatesHomeDir), Some(owlimRepositoryName),
-        None, usePrefixIdMap) 
+        None)
+  
+  def baseConfig = {
+    val tsConfig = TriplestoreConfig(repositoryUrl, updateUrl, 
+        "toxygates", "toxygates", owlimRepositoryName)
+    val dataConfig = DataConfig(toxygatesHomeDir)
+    BaseConfig(tsConfig, dataConfig)
+  }    
 }

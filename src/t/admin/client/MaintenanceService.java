@@ -1,5 +1,6 @@
 package t.admin.client;
 
+import t.admin.shared.MaintenanceException;
 import t.admin.shared.OperationResults;
 import t.admin.shared.Progress;
 
@@ -13,7 +14,7 @@ public interface MaintenanceService extends RemoteService {
 	 * Try to add a batch, based on files that were previously uploaded.
 	 * The results can be obtained after completion by using getOperationResults.
 	 */
-	void tryAddBatch(String id);
+	void tryAddBatch(String id) throws MaintenanceException;
 	
 	/**
 	 * Try to add a platform, based on files that were previously uploaded.
