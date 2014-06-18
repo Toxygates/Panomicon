@@ -16,15 +16,23 @@ import t.admin.shared.MaintenanceConstants._
 import t.admin.shared.OperationResults
 import t.util.TempFiles
 import t.admin.shared.MaintenanceException
+import otgviewer.server.Configuration
+import javax.servlet.ServletConfig
+import javax.servlet.ServletException
+import t.admin.shared.Batch
+import t.sparql.Batches
 
 class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceService {
-  def configuration(): BaseConfig = {
-    //TODO
-    BaseConfig(TriplestoreConfig("http://localhost:3030/data/query", "http://localhost:3030/data/update", 
-        null, null, null),
-        DataConfig("/shiba/toxygates/data_dev"))
-  }
+  var baseConfig: BaseConfig = _
   
+  @throws(classOf[ServletException])
+  override def init(config: ServletConfig) {
+    super.init(config)
+    
+    val conf = Configuration.fromServletConfig(config)
+    baseConfig = conf.baseConfig
+  }
+    
   private def getAttribute[T](name: String) = 
     getThreadLocalRequest().getSession().getAttribute(name).asInstanceOf[T]
   
@@ -40,6 +48,7 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
     val tc: TempFiles = getAttribute("tempFiles")
     tc.dropAll()
     UploadServlet.removeSessionFileItems(getThreadLocalRequest())
+    TaskRunner.shutdown()
   }
   
   private def beforeTaskCleanup() {
@@ -51,35 +60,42 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
 	if (TaskRunner.currentTask != None) {
 	  throw new Exception("Another task is already in progress.")
 	}
-	val bm = new BatchManager(configuration()) //TODO configuration parsing
-	TaskRunner.start()
-	setLastTask("Add batch")
-	
-	val tempFiles = new TempFiles()
-	setAttribute("tempFiles", tempFiles)	
-	
-	if (getFile(metaPrefix) == None) {
-	  throw new MaintenanceException("The metadata file has not been uploaded yet.")
+	val bm = new BatchManager(baseConfig) //TODO configuration parsing
+
+    try {
+      TaskRunner.start()
+      setLastTask("Add batch")
+
+      val tempFiles = new TempFiles()
+      setAttribute("tempFiles", tempFiles)
+
+      if (getFile(metaPrefix) == None) {
+        throw new MaintenanceException("The metadata file has not been uploaded yet.")
+      }
+      if (getFile(niPrefix) == None) {
+        throw new MaintenanceException("The normalized intensity file has not been uploaded yet.")
+      }
+      if (getFile(mas5Prefix) == None) {
+        throw new MaintenanceException("The MAS5 normalized file has not been uploaded yet.")
+      }
+      if (getFile(callPrefix) == None) {
+        throw new MaintenanceException("The calls file has not been uploaded yet.")
+      }
+
+      val metaFile = getAsTempFile(tempFiles, metaPrefix, metaPrefix, "tsv").get
+      val niFile = getAsTempFile(tempFiles, niPrefix, niPrefix, "csv").get
+      val mas5File = getAsTempFile(tempFiles, mas5Prefix, mas5Prefix, "csv").get
+      val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv").get
+
+      TaskRunner ++= bm.addBatch(title, metaFile.getAbsolutePath(),
+        niFile.getAbsolutePath(),
+        mas5File.getAbsolutePath(),
+        callsFile.getAbsolutePath())
+    } catch {
+	  case e: Exception =>
+	    afterTaskCleanup()
+	    throw e	  
 	}
-	if (getFile(niPrefix) == None) {
-	  throw new MaintenanceException("The normalized intensity file has not been uploaded yet.")
-	}
-	if (getFile(mas5Prefix) == None) {
-	  throw new MaintenanceException("The MAS5 normalized file has not been uploaded yet.")
-	}
-	if (getFile(callPrefix) == None) {
-	  throw new MaintenanceException("The calls file has not been uploaded yet.")
-	}
-	
-	val metaFile = getAsTempFile(tempFiles, metaPrefix, metaPrefix, "tsv").get			
-	val niFile = getAsTempFile(tempFiles, niPrefix, niPrefix, "csv").get		
-	val mas5File = getAsTempFile(tempFiles, mas5Prefix, mas5Prefix, "csv").get		
-	val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv").get		
-	
-    TaskRunner ++= bm.addBatch(title, metaFile.getAbsolutePath(), 
-        niFile.getAbsolutePath(), 
-        mas5File.getAbsolutePath(), 
-        callsFile.getAbsolutePath())   
   }
 
   def tryAddPlatform(): Unit = {    
@@ -99,7 +115,7 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
 
   def cancelTask(): Unit = {
     //TODO
-	TaskRunner.shutdown()
+    afterTaskCleanup()	
   }
 
   def getProgress(): Progress = {    
@@ -116,18 +132,23 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
     if (TaskRunner.currentTask == None) {
       setLastResults(new OperationResults(lastTask, 
           TaskRunner.errorCause == None, 
-          TaskRunner.resultMessages.toArray))
+          TaskRunner.resultMessages.toArray))      
       afterTaskCleanup()
     }
     p    
   }
+  
+//  def getBatches: Array[Batch] = {
+//    val bs = new Batches(baseConfig.triplestore)
+//    bs.list.map(new Batch())
+//  }
 
   /**
    * Retrive the last uploaded file with a particular tag.
    * @param tag the tag to look for.
    * @return
    */
-  def getFile(tag: String): Option[FileItem] = {       
+  private def getFile(tag: String): Option[FileItem] = {       
     val items = UploadServlet.getSessionFileItems(getThreadLocalRequest());    
     if (items == null) {
       throw new MaintenanceException("No files have been uploaded yet.")
@@ -150,7 +171,7 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
    * Get an uploaded file as a temporary file.
    * Should be deleted after use.
    */
-  def getAsTempFile(tempFiles: TempFiles, tag: String, prefix: String, 
+  private def getAsTempFile(tempFiles: TempFiles, tag: String, prefix: String, 
       suffix: String): Option[java.io.File] = {
     getFile(tag) match {
       case None => None
@@ -161,7 +182,7 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
     }
   }
   
-  def showUploadedFiles(): Unit = {
+  private def showUploadedFiles(): Unit = {
     val items = UploadServlet.getSessionFileItems(getThreadLocalRequest())
     if (items != null) {
       for (fi <- items) {

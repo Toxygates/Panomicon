@@ -24,7 +24,9 @@ object Configuration {
       servletContext.getInitParameter("csvUrlBase"),      
       parseAClass(servletContext.getInitParameter("applicationClass")),
       servletContext.getInitParameter("repositoryURL"),
-      servletContext.getInitParameter("updateURL"))
+      servletContext.getInitParameter("updateURL"),
+      servletContext.getInitParameter("repositoryUser"),
+      servletContext.getInitParameter("repositoryPassword"))
   }
   
   def parseAClass(v: String): ApplicationClass = {
@@ -41,7 +43,9 @@ class Configuration(val owlimRepositoryName: String,
     val csvDirectory: String, val csvUrlBase: String,     
     val applicationClass: ApplicationClass = Toxygates,
     val repositoryUrl: String = null,
-    val updateUrl: String = null) {
+    val updateUrl: String = null,
+    val repositoryUser: String = null,
+    val repositoryPass: String = null) {
   
   def this(owlimRepository: String, toxygatesHome:String, foldsDBVersion: Int) = 
     this(owlimRepository, toxygatesHome, System.getProperty("otg.csvDir"), 
@@ -53,7 +57,7 @@ class Configuration(val owlimRepositoryName: String,
   
   def baseConfig = {
     val tsConfig = TriplestoreConfig(repositoryUrl, updateUrl, 
-        "toxygates", "toxygates", owlimRepositoryName)
+        repositoryUser, repositoryPass, owlimRepositoryName)
     val dataConfig = DataConfig(toxygatesHomeDir)
     BaseConfig(tsConfig, dataConfig)
   }    
