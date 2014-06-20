@@ -1,32 +1,32 @@
 package t.admin.client;
 
+import static t.admin.client.Utils.makeButtons;
+
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Date;
 import java.util.List;
 
-import otgviewer.shared.Group;
 import t.admin.shared.Batch;
 import t.admin.shared.Instance;
 import t.admin.shared.Platform;
 import t.admin.shared.TitleItem;
-import bioweb.client.components.SelectionTable;
 
 import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
+import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
@@ -34,14 +34,14 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.NoSelectionModel;
 
-import static t.admin.client.Utils.*;
-
 /**
  * Entry point for the data and instance management tool.
  */
 public class AdminConsole implements EntryPoint {
 
 	private RootLayoutPanel rootPanel;
+	protected MaintenanceServiceAsync maintenanceService = (MaintenanceServiceAsync) GWT
+			.create(MaintenanceService.class);
 	
 	final Instance[] instances = new Instance[] {
 			new Instance("Toxygates"),
@@ -49,16 +49,7 @@ public class AdminConsole implements EntryPoint {
 			new Instance("Private")
 	};
 	
-	final Batch[] batches = new Batch[] {
-			new Batch("Open TG-Gates", 18000, 
-					new String[] {"Toxygates", "Adjuvant", "Private"}), 
-			new Batch("Rat adjuvant", 200,
-					new String[] {"Adjuvant", "Private"}), 
-			new Batch("Mouse adjuvant", 200,
-					new String[] {"Adjuvant", "Private"}), 
-			new Batch("Secret", 300,
-					new String[] { "Private" })
-			};
+	final ListDataProvider<Batch> batchData = new ListDataProvider<Batch>();	
 	
 	final Platform[] platforms = new Platform[] {
 			new Platform("Affymetrix Human", 50000),
@@ -122,7 +113,22 @@ public class AdminConsole implements EntryPoint {
 		
 		List<Command> cmds = new ArrayList<Command>();
 		cmds.add(new Command("Upload new...") {
-			public void run() {} 
+			public void run() {
+				final DialogBox db = new DialogBox(true, true);
+				db.setWidget(new PlatformUploader() {
+					public void onOK() {
+						db.hide();
+						refreshPlatforms();
+					}
+					
+					public void onCancel() {
+						db.hide();
+					}
+				});
+				db.setText("Upload platform");
+				db.setWidth("500px");
+				db.show();
+			} 
 		});
 		cmds.add(new Command("Delete") {
 			public void run() {}
@@ -165,9 +171,27 @@ public class AdminConsole implements EntryPoint {
 			}
 		};
 
-		table.addColumn(visibilityColumn, "Visibility");				
-		ListDataProvider<Batch> p = new ListDataProvider<Batch>(Arrays.asList(batches));
-		p.addDataDisplay(table);		
+		table.addColumn(visibilityColumn, "Visibility");								
+		batchData.addDataDisplay(table);		
+		
+		TextColumn<Batch> dateColumn = new TextColumn<Batch>() {
+			@Override
+			public String getValue(Batch object) {
+				Date d = object.getDate();
+				String time = DateTimeFormat.
+						getFormat(PredefinedFormat.DATE_TIME_SHORT).format(d);
+				return time;				
+			}
+		};
+		table.addColumn(dateColumn, "Added");
+		
+		TextColumn<Batch> commentColumn = new TextColumn<Batch>() {
+			@Override
+			public String getValue(Batch object) {
+				return object.getComment();				
+			}
+		};
+		table.addColumn(commentColumn, "Comment");
 		
 		ButtonCell editCell = new ButtonCell();
 		Column<Batch, String> editColumn = new Column<Batch, String>(editCell) {
@@ -178,36 +202,34 @@ public class AdminConsole implements EntryPoint {
 		editColumn.setFieldUpdater(new FieldUpdater<Batch, String>() {
 			@Override
 			public void update(int index, final Batch object, String value) {
-				final DialogBox db = new DialogBox(true, true);				
-				db.setWidget(new VisibilityEditor(object, Arrays.asList(instances)) {
-					public void onOK() {
-						object.setEnabledInstances(getSelection());
-						table.redraw();
-						db.hide();
-					}
-					
-					public void onCancel() {
-						db.hide();
-					}
-				});
-				db.setText("Change visibility of '" + object.getTitle() + "'");
-//				db.setSize("300px", "300px");
-				db.setWidth("500px");
-				db.show();
+				editVisibility(table, object);				
 			}
 			
-		});
+		});		
 		table.addColumn(editColumn);
-//		table.setSelectionModel(new NoSelectionModel<Batch>());
-//		table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
-//		
+		
+		ButtonCell deleteCell = new ButtonCell();		
+		Column<Batch, String> deleteColumn = new Column<Batch, String>(deleteCell) {
+			public String getValue(Batch b) {
+				return "Delete";
+			}
+		};
+		table.addColumn(deleteColumn);
+		deleteColumn.setFieldUpdater(new FieldUpdater<Batch, String>() {
+			@Override
+			public void update(int index, Batch object, String value) {
+				deleteBatch(table, object);				
+			}			
+		});
+		
 		List<Command> commands = new ArrayList<Command>();
 		commands.add(new Command("Upload new...") {
 			public void run() {
 				final DialogBox db = new DialogBox(true, true);
 				db.setWidget(new BatchUploader() {
 					public void onOK() {
-						
+						db.hide();
+						refreshBatches();
 					}
 					
 					public void onCancel() {
@@ -228,15 +250,53 @@ public class AdminConsole implements EntryPoint {
 		
 		dp.addSouth(makeButtons(commands), 35);
 		dp.add(table);
+		refreshBatches();
 		return dp;
+	}
+	
+	private void editVisibility(final CellTable<Batch> table, final Batch object) {
+		final DialogBox db = new DialogBox(true, true);				
+		db.setWidget(new VisibilityEditor(object, Arrays.asList(instances)) {
+			public void onOK() {
+				object.setEnabledInstances(getSelection());				
+				table.redraw();
+				db.hide();
+			}
+			
+			public void onCancel() {
+				db.hide();
+			}
+		});
+		db.setText("Change visibility of '" + object.getTitle() + "'");
+//		db.setSize("300px", "300px");
+		db.setWidth("500px");
+		db.show();
+	}
+	
+	private void deleteBatch(final CellTable<Batch> table, final Batch object) {
+		String title = object.getTitle();
+		if (!Window.confirm("Are you sure you want to delete the batch " + title + "?")) {
+			return;
+		}
+		maintenanceService.tryDeleteBatch(object.getTitle(), new AsyncCallback<Boolean>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Failed to delete the batch: " + caught.getMessage());						
+			}
+
+			@Override
+			public void onSuccess(Boolean result) {
+				// TODO result is not used
+				Window.alert("Batch deleted");
+				refreshBatches();						
+			}					
+		});				
 	}
 	
 	private Widget makeAccessEditor() {
 		return new SimplePanel();
 	}
-	
 
-	
 	private <T extends TitleItem> CellTable<T> makeTable() {
 		CellTable<T> table = new CellTable<T>();		
 		TextColumn<T> textColumn = new TextColumn<T>() {
@@ -247,7 +307,32 @@ public class AdminConsole implements EntryPoint {
 		};				
 		table.addColumn(textColumn, "ID");
 		table.setColumnWidth(textColumn, "12.5em");
+		table.setSelectionModel(new NoSelectionModel<T>());
+		table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 		return table;
+	}
+	
+	private void refreshBatches() {
+		maintenanceService.getBatches(new AsyncCallback<Batch[]>() {
+			
+			@Override
+			public void onSuccess(Batch[] result) {
+				batchData.setList(Arrays.asList(result));				
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Unable to obtain batch list from server : " + caught.getMessage());				
+			}
+		});
+	}
+	
+	private void refreshInstances() {
+		
+	}
+	
+	private void refreshPlatforms() {
+		
 	}
 
 }

@@ -1,7 +1,10 @@
 package t.admin.client;
 
+import t.admin.shared.Batch;
+import t.admin.shared.Instance;
 import t.admin.shared.MaintenanceException;
 import t.admin.shared.OperationResults;
+import t.admin.shared.Platform;
 import t.admin.shared.Progress;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -10,6 +13,12 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 @RemoteServiceRelativePath("maintenance")
 public interface MaintenanceService extends RemoteService {
 
+	Batch[] getBatches();
+	
+	Instance[] getInstances();
+	
+	Platform[] getPlatforms();
+	
 	/**
 	 * Try to add a batch, based on files that were previously uploaded.
 	 * The results can be obtained after completion by using getOperationResults.
@@ -22,9 +31,20 @@ public interface MaintenanceService extends RemoteService {
 	 */ 
 	void tryAddPlatform();
 	
+	
+	/**
+	 * Delete a batch.
+	 * @param id
+	 */
 	boolean tryDeleteBatch(String id);
 	
 	boolean tryDeletePlatform(String id);
+
+	/**
+	 * Modify the batch, altering fields such as visibility and comment.
+	 * @param b
+	 */
+	void updateBatch(Batch b);
 
 	/**
 	 * The results of the last completed long-running operation.

@@ -16,9 +16,9 @@ class UploadWrapper extends Composite {
 	boolean finished;		
 	Label statusLabel = new Label();		
 	VerticalPanel vp = new VerticalPanel();
-	UploadManager manager;
+	UploadDialog manager;
 	
-	UploadWrapper(UploadManager manager, String description, 
+	UploadWrapper(UploadDialog manager, String description, 
 			String prefix, String ... extensions) {
 		this.manager = manager;
 		initWidget(vp);		
@@ -34,7 +34,7 @@ class UploadWrapper extends Composite {
 		u.addOnStartUploadHandler(new OnStartUploaderHandler() {				
 			@Override
 			public void onStart(IUploader uploader) {
-				setFailure();					
+				setFailure(true);					
 				statusLabel.setText("In progress");									
 			}
 		});
@@ -47,12 +47,12 @@ class UploadWrapper extends Composite {
 		u.addOnCancelUploadHandler(new OnCancelUploaderHandler() {				
 			@Override
 			public void onCancel(IUploader uploader) {
-				setFailure();										
+				setFailure(true);										
 			}
 		});
 		vp.add(u);
 		vp.add(statusLabel);
-		setFailure();
+		setFailure(false);
 	}
 	
 	void setFinished() {
@@ -62,10 +62,14 @@ class UploadWrapper extends Composite {
 		manager.updateStatus();
 	}
 	
-	void setFailure() {
+	void setFailure(boolean signal) {
 		finished = false;
 		statusLabel.setStylePrimaryName("failure");
 		statusLabel.setText("Please upload a file");
-		manager.updateStatus();
+		if (signal) {
+			manager.updateStatus();
+		}
 	}
+	
+	boolean hasFile() { return finished; }
 }

@@ -1,84 +1,58 @@
 package t.admin.client;
 
-import static t.admin.client.Utils.makeButtons;
 import static t.admin.shared.MaintenanceConstants.callPrefix;
 import static t.admin.shared.MaintenanceConstants.mas5Prefix;
 import static t.admin.shared.MaintenanceConstants.metaPrefix;
-import static t.admin.shared.MaintenanceConstants.niPrefix;
-import gwtupload.client.IUploader;
-import gwtupload.client.IUploader.OnCancelUploaderHandler;
-import gwtupload.client.IUploader.OnFinishUploaderHandler;
-import gwtupload.client.IUploader.OnStartUploaderHandler;
-import gwtupload.client.SingleUploader;
-import gwtupload.client.Uploader;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-public class BatchUploader extends Composite implements UploadManager {
+public class BatchUploader extends UploadDialog {
 	protected MaintenanceServiceAsync maintenanceService = (MaintenanceServiceAsync) GWT
 			.create(MaintenanceService.class);
 	
-	boolean metadataIsOK;
-	boolean IDIsOK;
-	boolean normalizedIsOK;
-	boolean mas5IsOK;
-	boolean callsIsOK;
+	private UploadWrapper metadata; 
+	private UploadWrapper normalized; 
+	private UploadWrapper mas5;
+	private UploadWrapper calls;
 	
-	List<UploadWrapper> uploaders = new ArrayList<UploadWrapper>();
+	private Button proceed;
 	
-	public BatchUploader() {
-		VerticalPanel vp = new VerticalPanel();
-		initWidget(vp);
-		
+	protected void makeGUI(VerticalPanel vp) {
+	
 		Label l = new Label("ID (no spaces, must be unique)");
 		vp.add(l);
 		final TextBox nameText = new TextBox();
 		vp.add(nameText);
 		
-		UploadWrapper uploader = new UploadWrapper(this, "Metadata file (TSV)", 
-				metaPrefix, "tsv");				
-		vp.add(uploader);
-		
-		uploader = new UploadWrapper(this, "Normalized intensity data file (CSV)", 
-				niPrefix, "csv");
-		vp.add(uploader);
-		
-		uploader = new UploadWrapper(this, "MAS5 normalized data file (for fold change) (CSV)", 
+		metadata = new UploadWrapper(this, "Metadata file (TSV)", 
+				metaPrefix, "tsv");	
+		normalized = new UploadWrapper(this, "Metadata file (TSV)", 
+				metaPrefix, "tsv");
+		mas5 = new UploadWrapper(this, "MAS5 normalized data file (for fold change) (CSV)", 
 				mas5Prefix, "csv");
-		vp.add(uploader);
-		
-		uploader = new UploadWrapper(this, "Calls file (CSV)", 
+		calls = new UploadWrapper(this, "Calls file (CSV)", 
 				callPrefix, "csv");
-		vp.add(uploader);
+
+		vp.add(metadata);
+		vp.add(normalized);
+		vp.add(mas5);
+		vp.add(calls);
 		
-		List<Command> commands = new ArrayList<Command>();
-		commands.add(new Command("OK") {
+		Command c = new Command("Proceed") {
 			@Override 
 			void run() { 
 				maintenanceService.tryAddBatch(nameText.getText(),
 						new AsyncCallback<Void>() {					
 					@Override
 					public void onSuccess(Void result) {
-						final DialogBox db = new DialogBox();
-						ProgressDisplay pd = new ProgressDisplay("Add batch") {
-							@Override
-							protected void onDone() {
-								db.hide();
-							}							
-						};
-						db.setWidget(pd);
-						db.setText("Progress");
-						db.show();
+						showProgress("Upload batch");						
 					}
 					
 					@Override
@@ -87,26 +61,33 @@ public class BatchUploader extends Composite implements UploadManager {
 					}
 				});
 			}
-		});
-		commands.add(new Command("Cancel") {
+		};
+		proceed = Utils.makeButton(c);
+		HorizontalPanel hp = new HorizontalPanel();
+		hp.setSpacing(4);
+		hp.add(proceed);
+		
+		c = new Command("Cancel") {
 			@Override 
 			void run() {
 				onCancel();
 			}
-		});
-		
-		vp.add(makeButtons(commands));	
+		};
+		hp.add(Utils.makeButton(c));		
+		vp.add(hp);	
+		updateStatus();
 	}
 	
 	public void updateStatus() {
-		// enable/disable buttons
+		if (metadata.hasFile() && normalized.hasFile() && mas5.hasFile() &&
+				calls.hasFile()) {
+			proceed.setEnabled(true);
+		} else {
+			proceed.setEnabled(false);
+		}
 	}
 	
-	public void onOK() {
-		
-	}
+	public void onOK() { }
 	
-	public void onCancel() {
-		
-	}
+	public void onCancel() { }
 }

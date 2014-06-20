@@ -1,6 +1,7 @@
 package t.admin.shared;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -8,6 +9,8 @@ public class Batch extends TitleItem {
 
 	private int numSamples;
 	private Set<String> enabledInstances;
+	private Date date = new Date();
+	private String comment = "Comment";
 	
 	public Batch() { }
 	
@@ -50,4 +53,8 @@ public class Batch extends TitleItem {
 		}
 		setEnabledInstanceTitles(en);
 	}
+	
+	public String getComment() { return comment; }
+	public void setComment(String c) { comment = c; }
+	public Date getDate() { return date; }
 }

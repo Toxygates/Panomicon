@@ -21,6 +21,8 @@ import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import t.admin.shared.Batch
 import t.sparql.Batches
+import t.admin.shared.Instance
+import t.admin.shared.Platform
 
 class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceService {
   var baseConfig: BaseConfig = _
@@ -138,10 +140,26 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
     p    
   }
   
-//  def getBatches: Array[Batch] = {
-//    val bs = new Batches(baseConfig.triplestore)
-//    bs.list.map(new Batch())
-//  }
+  def getBatches: Array[Batch] = {
+    val bs = new Batches(baseConfig.triplestore)
+    val ns = bs.numSamples
+    bs.list.map(b => {
+      val samples = ns.getOrElse(b, 0)
+      new Batch(b, samples, Array[String]())
+    }).toArray    
+  }
+  
+  def getPlatforms: Array[Platform] = {
+    Array()
+  }
+  
+  def getInstances: Array[Instance] = {
+    Array()
+  }
+  
+  def updateBatch(b: Batch): Unit = {
+    
+  }
 
   /**
    * Retrive the last uploaded file with a particular tag.

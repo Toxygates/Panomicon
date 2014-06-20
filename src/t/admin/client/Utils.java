@@ -14,15 +14,20 @@ public class Utils {
 		HorizontalPanel buttons = new HorizontalPanel();
 		buttons.setSpacing(4);
 		for (final Command c: commands) {
-			Button b = new Button(c.getTitle());
-			b.addClickHandler(new ClickHandler() {				
-				@Override
-				public void onClick(ClickEvent event) {
-					c.run();					
-				}
-			});
+			Button b = makeButton(c);			
 			buttons.add(b);
 		}
 		return buttons;
+	}
+	
+	static Button makeButton(final Command c) {
+		Button b = new Button(c.getTitle());
+		b.addClickHandler(new ClickHandler() {				
+			@Override
+			public void onClick(ClickEvent event) {
+				c.run();					
+			}
+		});
+		return b;
 	}
 }
