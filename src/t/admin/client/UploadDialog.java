@@ -15,19 +15,6 @@ abstract public class UploadDialog extends Composite {
 		makeGUI(vp);
 	}
 	
-	protected void showProgress(String title) {
-		final DialogBox db = new DialogBox();
-		ProgressDisplay pd = new ProgressDisplay(title) {
-			@Override
-			protected void onDone() {
-				db.hide();
-			}
-		};
-		db.setWidget(pd);
-		db.setText("Progress");
-		db.show();
-	}
-	
 	abstract protected void makeGUI(VerticalPanel vp);
 	
 	public void updateStatus() { }

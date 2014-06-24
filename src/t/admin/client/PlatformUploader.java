@@ -45,18 +45,8 @@ public class PlatformUploader extends UploadDialog {
 		Command c = new Command("Proceed") {
 			@Override 
 			void run() { 
-				maintenanceService.tryAddBatch(nameText.getText(),
-						new AsyncCallback<Void>() {					
-					@Override
-					public void onSuccess(Void result) {
-						showProgress("Add platform");
-					}
-					
-					@Override
-					public void onFailure(Throwable caught) {
-						Window.alert("Failed to add batch: " + caught.getMessage());
-					}
-				});
+				maintenanceService.addBatchAsync(nameText.getText(),
+						new TaskCallback("Add platform"));						
 			}
 		};
 		

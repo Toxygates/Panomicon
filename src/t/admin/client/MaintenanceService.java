@@ -23,7 +23,7 @@ public interface MaintenanceService extends RemoteService {
 	 * Try to add a batch, based on files that were previously uploaded.
 	 * The results can be obtained after completion by using getOperationResults.
 	 */
-	void tryAddBatch(String id) throws MaintenanceException;
+	void addBatchAsync(String id) throws MaintenanceException;
 	
 	/**
 	 * Try to add a platform, based on files that were previously uploaded.
@@ -33,10 +33,10 @@ public interface MaintenanceService extends RemoteService {
 	
 	
 	/**
-	 * Delete a batch.
+	 * Delete a batch. 
 	 * @param id
 	 */
-	boolean tryDeleteBatch(String id);
+	void deleteBatchAsync(String id);
 	
 	boolean tryDeletePlatform(String id);
 
@@ -47,7 +47,7 @@ public interface MaintenanceService extends RemoteService {
 	void updateBatch(Batch b);
 
 	/**
-	 * The results of the last completed long-running operation.
+	 * The results of the last completed asynchronous operation.
 	 * @return
 	 */
 	OperationResults getOperationResults();

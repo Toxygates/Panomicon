@@ -16,11 +16,11 @@ public interface MaintenanceServiceAsync {
 	
 	void getPlatforms(AsyncCallback<Platform[]> callback);
 	
-	void tryAddBatch(String id, AsyncCallback<Void> callback);
+	void addBatchAsync(String id, AsyncCallback<Void> callback);
 	
 	void tryAddPlatform(AsyncCallback<Void> callback);
-	
-	void tryDeleteBatch(String id, AsyncCallback<Boolean> callback);
+
+	void deleteBatchAsync(String id, AsyncCallback<Void> callback);
 	
 	void tryDeletePlatform(String id, AsyncCallback<Boolean> calback);
 	

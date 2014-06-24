@@ -278,19 +278,8 @@ public class AdminConsole implements EntryPoint {
 		if (!Window.confirm("Are you sure you want to delete the batch " + title + "?")) {
 			return;
 		}
-		maintenanceService.tryDeleteBatch(object.getTitle(), new AsyncCallback<Boolean>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				Window.alert("Failed to delete the batch: " + caught.getMessage());						
-			}
-
-			@Override
-			public void onSuccess(Boolean result) {
-				// TODO result is not used
-				Window.alert("Batch deleted");
-				refreshBatches();						
-			}					
-		});				
+		maintenanceService.deleteBatchAsync(object.getTitle(),
+				new TaskCallback("Delete batch"));		
 	}
 	
 	private Widget makeAccessEditor() {

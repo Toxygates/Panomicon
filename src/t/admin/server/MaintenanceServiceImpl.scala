@@ -48,7 +48,9 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
   
   private def afterTaskCleanup() {
     val tc: TempFiles = getAttribute("tempFiles")
-    tc.dropAll()
+    if (tc != null) {
+    	tc.dropAll()
+    }
     UploadServlet.removeSessionFileItems(getThreadLocalRequest())
     TaskRunner.shutdown()
   }
@@ -57,7 +59,8 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
     UploadServlet.removeSessionFileItems(getThreadLocalRequest())
   }
   
-  def tryAddBatch(title: String): Unit = {
+  
+  def addBatchAsync(title: String): Unit = {
 	showUploadedFiles()
 	if (TaskRunner.currentTask != None) {
 	  throw new Exception("Another task is already in progress.")
@@ -101,10 +104,23 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
   }
 
   def tryAddPlatform(): Unit = {    
+    
   }
 
-  def tryDeleteBatch(id: String): Boolean = {
-    false
+  def deleteBatchAsync(id: String): Unit = {
+    if (TaskRunner.currentTask != None) {
+      throw new Exception("Another task is already in progress.")
+    }
+    val bm = new BatchManager(baseConfig) //TODO configuration parsing
+    try {
+      TaskRunner.start()
+      setLastTask("Delete batch")
+      TaskRunner ++= bm.deleteBatch(id)
+    } catch {
+      case e: Exception =>
+        afterTaskCleanup()
+        throw e
+    }
   }
 
   def tryDeletePlatform(id: String): Boolean = {

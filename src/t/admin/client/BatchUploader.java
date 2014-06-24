@@ -1,6 +1,7 @@
 package t.admin.client;
 
 import static t.admin.shared.MaintenanceConstants.callPrefix;
+import static t.admin.shared.MaintenanceConstants.niPrefix;
 import static t.admin.shared.MaintenanceConstants.mas5Prefix;
 import static t.admin.shared.MaintenanceConstants.metaPrefix;
 
@@ -33,8 +34,8 @@ public class BatchUploader extends UploadDialog {
 		
 		metadata = new UploadWrapper(this, "Metadata file (TSV)", 
 				metaPrefix, "tsv");	
-		normalized = new UploadWrapper(this, "Metadata file (TSV)", 
-				metaPrefix, "tsv");
+		normalized = new UploadWrapper(this, "Normalized intensity data file (CSV)", 
+				niPrefix, "csv");
 		mas5 = new UploadWrapper(this, "MAS5 normalized data file (for fold change) (CSV)", 
 				mas5Prefix, "csv");
 		calls = new UploadWrapper(this, "Calls file (CSV)", 
@@ -48,18 +49,8 @@ public class BatchUploader extends UploadDialog {
 		Command c = new Command("Proceed") {
 			@Override 
 			void run() { 
-				maintenanceService.tryAddBatch(nameText.getText(),
-						new AsyncCallback<Void>() {					
-					@Override
-					public void onSuccess(Void result) {
-						showProgress("Upload batch");						
-					}
-					
-					@Override
-					public void onFailure(Throwable caught) {
-						Window.alert("Failed to add batch: " + caught.getMessage());
-					}
-				});
+				maintenanceService.addBatchAsync(nameText.getText(),
+						new TaskCallback("Upload batch"));						
 			}
 		};
 		proceed = Utils.makeButton(c);
