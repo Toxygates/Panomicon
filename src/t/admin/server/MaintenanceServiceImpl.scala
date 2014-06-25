@@ -1,28 +1,32 @@
 package t.admin.server
 
 import scala.collection.JavaConversions._
+
 import org.apache.commons.fileupload.FileItem
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
+
 import gwtupload.server.UploadServlet
-import javax.annotation.Nullable
-import t.BaseConfig
-import t.admin.client.MaintenanceService
-import t.admin.shared.Progress
-import t.TriplestoreConfig
-import t.DataConfig
-import t.TaskRunner
-import t.BatchManager
-import t.admin.shared.MaintenanceConstants._
-import t.admin.shared.OperationResults
-import t.util.TempFiles
-import t.admin.shared.MaintenanceException
-import otgviewer.server.Configuration
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
+import otgviewer.server.Configuration
+import t.BaseConfig
+import t.BatchManager
+import t.PlatformManager
+import t.TaskRunner
+import t.TriplestoreConfig
+import t.admin.client.MaintenanceService
 import t.admin.shared.Batch
-import t.sparql.Batches
 import t.admin.shared.Instance
+import t.admin.shared.MaintenanceConstants._
+import t.admin.shared.MaintenanceException
+import t.admin.shared.OperationResults
 import t.admin.shared.Platform
+import t.admin.shared.Progress
+import t.sparql.Batches
+import t.sparql.Platforms
+import t.sparql.Probes
+import t.util.TempFiles
 
 class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceService {
   var baseConfig: BaseConfig = _
@@ -59,12 +63,16 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
     UploadServlet.removeSessionFileItems(getThreadLocalRequest())
   }
   
-  
-  def addBatchAsync(title: String): Unit = {
-	showUploadedFiles()
-	if (TaskRunner.currentTask != None) {
+  private def grabRunner() {
+    if (TaskRunner.currentTask != None) {
 	  throw new Exception("Another task is already in progress.")
 	}
+  }
+  
+  def addBatchAsync(title: String, comment: String): Unit = {
+	showUploadedFiles()
+	grabRunner()
+	
 	val bm = new BatchManager(baseConfig) //TODO configuration parsing
 
     try {
@@ -92,7 +100,7 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
       val mas5File = getAsTempFile(tempFiles, mas5Prefix, mas5Prefix, "csv").get
       val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv").get
 
-      TaskRunner ++= bm.addBatch(title, metaFile.getAbsolutePath(),
+      TaskRunner ++= bm.addBatch(title, comment, metaFile.getAbsolutePath(),
         niFile.getAbsolutePath(),
         mas5File.getAbsolutePath(),
         callsFile.getAbsolutePath())
@@ -103,14 +111,31 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
 	}
   }
 
-  def tryAddPlatform(): Unit = {    
-    
+  def addPlatformAsync(id: String, comment: String, affymetrixFormat: Boolean): Unit = {    
+    showUploadedFiles()
+	grabRunner()
+	val pm = new PlatformManager(baseConfig) //TODO configuration parsing
+    try {      
+      val tempFiles = new TempFiles()
+      setAttribute("tempFiles", tempFiles)
+      
+      TaskRunner.start() 
+      setLastTask("Add platform")
+      if (getFile(platformPrefix) == None) {
+        throw new MaintenanceException("The platform file has not been uploaded yet.")
+      }
+      
+      val metaFile = getAsTempFile(tempFiles, platformPrefix, platformPrefix, "dat").get
+      TaskRunner ++= pm.addPlatform(id, comment, metaFile.getAbsolutePath(), affymetrixFormat)
+    } catch {
+      case e: Exception =>
+        afterTaskCleanup()
+        throw e
+    }
   }
 
   def deleteBatchAsync(id: String): Unit = {
-    if (TaskRunner.currentTask != None) {
-      throw new Exception("Another task is already in progress.")
-    }
+    grabRunner()
     val bm = new BatchManager(baseConfig) //TODO configuration parsing
     try {
       TaskRunner.start()
@@ -123,8 +148,18 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
     }
   }
 
-  def tryDeletePlatform(id: String): Boolean = {
-    false;
+  def deletePlatformAsync(id: String): Unit = {
+    grabRunner()
+    val pm = new PlatformManager(baseConfig)
+    try {
+      TaskRunner.start()
+      setLastTask("Delete platform")
+      TaskRunner ++= pm.deletePlatform(id)
+    } catch {
+      case e: Exception =>
+        afterTaskCleanup()
+        throw e
+    }
   }
   
   def getOperationResults(): OperationResults = {
@@ -159,14 +194,25 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
   def getBatches: Array[Batch] = {
     val bs = new Batches(baseConfig.triplestore)
     val ns = bs.numSamples
+    val comments = bs.comments
+    val dates = bs.timestamps
     bs.list.map(b => {
       val samples = ns.getOrElse(b, 0)
-      new Batch(b, samples, Array[String]())
+      new Batch(b, samples, comments.getOrElse(b, ""),
+          dates.getOrElse(b, null), Array[String]())
     }).toArray    
   }
   
   def getPlatforms: Array[Platform] = {
-    Array()
+    val prs = new Probes(baseConfig.triplestore)
+    val np = prs.numProbes()
+    val ps = new Platforms(baseConfig.triplestore)
+    val comments = ps.comments
+    val dates = ps.timestamps
+    ps.list.map(p => {
+      new Platform(p, np.getOrElse(p, 0), comments.getOrElse(p, ""),
+          dates.getOrElse(p, null))
+    }).toArray
   }
   
   def getInstances: Array[Instance] = {

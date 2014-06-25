@@ -13,6 +13,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RadioButton;
+import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -23,6 +24,7 @@ public class PlatformUploader extends UploadDialog {
 	private UploadWrapper platform;		
 	private Button proceed;
 	private RadioButton affyRadio, tRadio;
+	private TextArea commentText;
 	
 	protected void makeGUI(VerticalPanel vp) {		
 		Label l = new Label("ID (no spaces, must be unique)");
@@ -44,11 +46,19 @@ public class PlatformUploader extends UploadDialog {
 		
 		Command c = new Command("Proceed") {
 			@Override 
-			void run() { 
-				maintenanceService.addBatchAsync(nameText.getText(),
-						new TaskCallback("Add platform"));						
+			void run() { 				
+				boolean affyFormat = affyRadio.getValue();
+				maintenanceService.addPlatformAsync(nameText.getText(),
+						commentText.getText(),
+						affyFormat, new TaskCallback("Add platform"));						
 			}
 		};
+		
+		vp.add(new Label("Comment"));
+		
+		commentText = new TextArea();
+		commentText.setSize("400px", "100px");
+		vp.add(commentText);
 		
 		proceed = Utils.makeButton(c);
 		HorizontalPanel hp = new HorizontalPanel();

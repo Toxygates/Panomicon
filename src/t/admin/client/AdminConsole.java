@@ -51,11 +51,7 @@ public class AdminConsole implements EntryPoint {
 	
 	final ListDataProvider<Batch> batchData = new ListDataProvider<Batch>();	
 	
-	final Platform[] platforms = new Platform[] {
-			new Platform("Affymetrix Human", 50000),
-			new Platform("Affymetrix Rat", 30000),
-			new Platform("Affymetrix Mouse", 40000)
-			};
+	final ListDataProvider<Platform> platformData = new ListDataProvider<Platform>();
 	
 	@Override
 	public void onModuleLoad() {
@@ -75,9 +71,7 @@ public class AdminConsole implements EntryPoint {
 		cmds.add(new Command("Add new...") {
 			public void run() {}
 		});
-		cmds.add(new Command("Delete") {
-			public void run() {}
-		});		
+	
 		dp.addSouth(makeButtons(cmds), 35);		
 		dp.add(table);
 		
@@ -96,10 +90,17 @@ public class AdminConsole implements EntryPoint {
 	
 	private Widget makePlatformEditor() {
 		DockLayoutPanel dp = new DockLayoutPanel(Unit.PX);
-		ListDataProvider<Platform> p = new ListDataProvider<Platform>(Arrays.asList(platforms));
 		
 		CellTable<Platform> table = makeTable();
-		p.addDataDisplay(table);
+		platformData.addDataDisplay(table);		
+		
+		StandardColumns<Platform> sc = new StandardColumns<Platform>(table) {
+			void onDelete(Platform object) {
+				deletePlatform(object);
+			}
+		};
+		
+		sc.addStartColumns();
 		
 		TextColumn<Platform> textColumn = new TextColumn<Platform>() {
 			@Override
@@ -110,6 +111,8 @@ public class AdminConsole implements EntryPoint {
 		
 		table.addColumn(textColumn, "Probes");
 		table.setColumnWidth(textColumn, "12.5em");
+		
+		sc.addDeleteColumn();
 		
 		List<Command> cmds = new ArrayList<Command>();
 		cmds.add(new Command("Upload new...") {
@@ -130,9 +133,7 @@ public class AdminConsole implements EntryPoint {
 				db.show();
 			} 
 		});
-		cmds.add(new Command("Delete") {
-			public void run() {}
-		});
+		
 		
 		dp.addSouth(makeButtons(cmds), 35);
 		dp.add(table);
@@ -143,7 +144,13 @@ public class AdminConsole implements EntryPoint {
 		DockLayoutPanel dp = new DockLayoutPanel(Unit.PX);
 		
 		final CellTable<Batch> table = makeTable();
-				
+		StandardColumns<Batch> sc = new StandardColumns<Batch>(table) {
+			void onDelete(Batch object) {
+				deleteBatch(object);
+			}
+		};
+		sc.addStartColumns();
+		
 		TextColumn<Batch> samplesColumn = new TextColumn<Batch>() {
 			@Override
 			public String getValue(Batch object) {
@@ -174,25 +181,6 @@ public class AdminConsole implements EntryPoint {
 		table.addColumn(visibilityColumn, "Visibility");								
 		batchData.addDataDisplay(table);		
 		
-		TextColumn<Batch> dateColumn = new TextColumn<Batch>() {
-			@Override
-			public String getValue(Batch object) {
-				Date d = object.getDate();
-				String time = DateTimeFormat.
-						getFormat(PredefinedFormat.DATE_TIME_SHORT).format(d);
-				return time;				
-			}
-		};
-		table.addColumn(dateColumn, "Added");
-		
-		TextColumn<Batch> commentColumn = new TextColumn<Batch>() {
-			@Override
-			public String getValue(Batch object) {
-				return object.getComment();				
-			}
-		};
-		table.addColumn(commentColumn, "Comment");
-		
 		ButtonCell editCell = new ButtonCell();
 		Column<Batch, String> editColumn = new Column<Batch, String>(editCell) {
 			public String getValue(Batch b) {
@@ -207,20 +195,8 @@ public class AdminConsole implements EntryPoint {
 			
 		});		
 		table.addColumn(editColumn);
-		
-		ButtonCell deleteCell = new ButtonCell();		
-		Column<Batch, String> deleteColumn = new Column<Batch, String>(deleteCell) {
-			public String getValue(Batch b) {
-				return "Delete";
-			}
-		};
-		table.addColumn(deleteColumn);
-		deleteColumn.setFieldUpdater(new FieldUpdater<Batch, String>() {
-			@Override
-			public void update(int index, Batch object, String value) {
-				deleteBatch(table, object);				
-			}			
-		});
+	
+		sc.addDeleteColumn();
 		
 		List<Command> commands = new ArrayList<Command>();
 		commands.add(new Command("Upload new...") {
@@ -240,17 +216,12 @@ public class AdminConsole implements EntryPoint {
 				db.setWidth("500px");
 				db.show();
 			}
-		});
-		commands.add(new Command("Delete") {
-			public void run() {}
-		});
-		commands.add(new Command("Publish changes") {
-			public void run() {}
-		});
+		});	
 		
 		dp.addSouth(makeButtons(commands), 35);
 		dp.add(table);
 		refreshBatches();
+		refreshPlatforms();
 		return dp;
 	}
 	
@@ -273,7 +244,7 @@ public class AdminConsole implements EntryPoint {
 		db.show();
 	}
 	
-	private void deleteBatch(final CellTable<Batch> table, final Batch object) {
+	private void deleteBatch(final Batch object) {
 		String title = object.getTitle();
 		if (!Window.confirm("Are you sure you want to delete the batch " + title + "?")) {
 			return;
@@ -282,38 +253,31 @@ public class AdminConsole implements EntryPoint {
 				new TaskCallback("Delete batch"));		
 	}
 	
+	private void deletePlatform(final Platform object) {
+		//TODO
+	}
+	
 	private Widget makeAccessEditor() {
 		return new SimplePanel();
 	}
 
 	private <T extends TitleItem> CellTable<T> makeTable() {
 		CellTable<T> table = new CellTable<T>();		
-		TextColumn<T> textColumn = new TextColumn<T>() {
-			@Override
-			public String getValue(T object) {
-				return object.getTitle();
-			}
-		};				
-		table.addColumn(textColumn, "ID");
-		table.setColumnWidth(textColumn, "12.5em");
+//		TextColumn<T> textColumn = new TextColumn<T>() {
+//			@Override
+//			public String getValue(T object) {
+//				return object.getTitle();
+//			}
+//		};				
+//		table.addColumn(textColumn, "ID");
+//		table.setColumnWidth(textColumn, "12.5em");
 		table.setSelectionModel(new NoSelectionModel<T>());
 		table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 		return table;
 	}
 	
 	private void refreshBatches() {
-		maintenanceService.getBatches(new AsyncCallback<Batch[]>() {
-			
-			@Override
-			public void onSuccess(Batch[] result) {
-				batchData.setList(Arrays.asList(result));				
-			}
-			
-			@Override
-			public void onFailure(Throwable caught) {
-				Window.alert("Unable to obtain batch list from server : " + caught.getMessage());				
-			}
-		});
+		maintenanceService.getBatches(new ListDataCallback<Batch>(batchData, "batch list"));
 	}
 	
 	private void refreshInstances() {
@@ -321,7 +285,7 @@ public class AdminConsole implements EntryPoint {
 	}
 	
 	private void refreshPlatforms() {
-		
+		maintenanceService.getPlatforms(new ListDataCallback<Platform>(platformData, "platform list"));
 	}
 
 }

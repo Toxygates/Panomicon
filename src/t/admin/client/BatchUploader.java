@@ -50,9 +50,11 @@ public class BatchUploader extends UploadDialog {
 			@Override 
 			void run() { 
 				maintenanceService.addBatchAsync(nameText.getText(),
+						"",
 						new TaskCallback("Upload batch"));						
 			}
 		};
+		
 		proceed = Utils.makeButton(c);
 		HorizontalPanel hp = new HorizontalPanel();
 		hp.setSpacing(4);
