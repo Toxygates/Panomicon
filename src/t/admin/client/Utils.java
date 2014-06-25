@@ -39,11 +39,11 @@ public class Utils {
 		ProgressDisplay pd = new ProgressDisplay(title) {
 			@Override
 			protected void onDone() {
-				db.hide();
+				db.hide();			
 			}
 		};
 		db.setWidget(pd);
 		db.setText("Progress");
-		db.show();
+		db.show();		
 	}
 }

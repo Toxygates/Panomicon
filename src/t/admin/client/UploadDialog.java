@@ -9,6 +9,8 @@ abstract public class UploadDialog extends Composite {
 	protected MaintenanceServiceAsync maintenanceService = (MaintenanceServiceAsync) GWT
 			.create(MaintenanceService.class);
 	
+	protected boolean completed;
+	
 	public UploadDialog() {
 		VerticalPanel vp = new VerticalPanel();
 		initWidget(vp);
@@ -22,5 +24,17 @@ abstract public class UploadDialog extends Composite {
 	public void onOK() { }
 	
 	public void onCancel() { }
+	
+	void onCompletion() {}
+	
+	void onFailure() {}
+	
+	void onFinish() {
+		if (completed) {
+			onOK();
+		} else {
+			onCancel();
+		}
+	}
 
 }

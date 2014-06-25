@@ -22,7 +22,7 @@ public class PlatformUploader extends UploadDialog {
 			.create(MaintenanceService.class);
 	
 	private UploadWrapper platform;		
-	private Button proceed;
+	private Button proceed, cancel;
 	private RadioButton affyRadio, tRadio;
 	private TextArea commentText;
 	
@@ -44,13 +44,20 @@ public class PlatformUploader extends UploadDialog {
 		tRadio = makeRadio("type", "T platform TSV");
 		vp.add(tRadio);
 		
+		final PlatformUploader pu = this;
 		Command c = new Command("Proceed") {
 			@Override 
 			void run() { 				
 				boolean affyFormat = affyRadio.getValue();
 				maintenanceService.addPlatformAsync(nameText.getText(),
 						commentText.getText(),
-						affyFormat, new TaskCallback("Add platform"));						
+						affyFormat, new TaskCallback("Add platform") {
+					@Override
+					void onCompletion() {
+						completed = true;
+						cancel.setText("OK");						
+					}
+				});
 			}
 		};
 		
@@ -64,13 +71,13 @@ public class PlatformUploader extends UploadDialog {
 		HorizontalPanel hp = new HorizontalPanel();
 		hp.setSpacing(4);
 		hp.add(proceed);
-		Button b = new Button("Cancel");
-		hp.add(b);
-		b.addClickHandler(new ClickHandler() {
+		cancel = new Button("Cancel");
+		hp.add(cancel);
+		cancel.addClickHandler(new ClickHandler() {
 			
 			@Override
 			public void onClick(ClickEvent event) {
-				onCancel();
+				onFinish();
 			}
 		});
 		
@@ -98,7 +105,4 @@ public class PlatformUploader extends UploadDialog {
 		}
 	}
 	
-	public void onOK() { }
-	
-	public void onCancel() { }
 }

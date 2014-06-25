@@ -15,6 +15,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ScrollPanel;
@@ -163,12 +164,14 @@ public class ProgressDisplay extends Composite {
 			}
 
 			@Override
-			public void onSuccess(Void result) { }			
+			public void onSuccess(Void result) { 
+				onCancelled();
+			}			
 		});
 	}
 	
-	protected void onDone() {
-		
-	}
+	protected void onDone() { }
+	
+	protected void onCancelled() { }
 	
 }

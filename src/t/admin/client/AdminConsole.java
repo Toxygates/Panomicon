@@ -209,8 +209,8 @@ public class AdminConsole implements EntryPoint {
 					}
 					
 					public void onCancel() {
-						db.hide();
-					}
+						db.hide();						
+					}					
 				});
 				db.setText("Upload batch");
 				db.setWidth("500px");
@@ -250,11 +250,27 @@ public class AdminConsole implements EntryPoint {
 			return;
 		}
 		maintenanceService.deleteBatchAsync(object.getTitle(),
-				new TaskCallback("Delete batch"));		
+				new TaskCallback("Delete batch") {
+			@Override
+			void onCompletion() {
+				refreshBatches();
+			}
+		});
 	}
 	
 	private void deletePlatform(final Platform object) {
-		//TODO
+		String title = object.getTitle();
+		if (!Window.confirm("Are you sure you want to delete the platform " + title + "?")) {
+			return;
+		}
+		maintenanceService.deletePlatformAsync(object.getTitle(),
+				new TaskCallback("Delete platform") {
+			@Override
+			void onCompletion() {
+				refreshPlatforms();
+			}
+			
+		});
 	}
 	
 	private Widget makeAccessEditor() {

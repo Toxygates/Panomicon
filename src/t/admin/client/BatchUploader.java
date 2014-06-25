@@ -1,16 +1,15 @@
 package t.admin.client;
 
 import static t.admin.shared.MaintenanceConstants.callPrefix;
-import static t.admin.shared.MaintenanceConstants.niPrefix;
 import static t.admin.shared.MaintenanceConstants.mas5Prefix;
 import static t.admin.shared.MaintenanceConstants.metaPrefix;
+import static t.admin.shared.MaintenanceConstants.niPrefix;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -23,7 +22,9 @@ public class BatchUploader extends UploadDialog {
 	private UploadWrapper mas5;
 	private UploadWrapper calls;
 	
-	private Button proceed;
+	private Button proceed, cancel;
+	private boolean completed;
+	private TextArea comments;
 	
 	protected void makeGUI(VerticalPanel vp) {
 	
@@ -46,12 +47,23 @@ public class BatchUploader extends UploadDialog {
 		vp.add(mas5);
 		vp.add(calls);
 		
+		comments = new TextArea();
+		comments.setSize("400px", "100px");
+		vp.add(comments);
+		
 		Command c = new Command("Proceed") {
 			@Override 
 			void run() { 
 				maintenanceService.addBatchAsync(nameText.getText(),
-						"",
-						new TaskCallback("Upload batch"));						
+						comments.getText(),
+						new TaskCallback("Upload batch") {
+
+					@Override
+					void onCompletion() {
+						completed = true;
+						cancel.setText("OK");
+					}
+				});
 			}
 		};
 		
@@ -63,10 +75,11 @@ public class BatchUploader extends UploadDialog {
 		c = new Command("Cancel") {
 			@Override 
 			void run() {
-				onCancel();
+				onFinish();
 			}
 		};
-		hp.add(Utils.makeButton(c));		
+		cancel = Utils.makeButton(c);
+		hp.add(cancel);		
 		vp.add(hp);	
 		updateStatus();
 	}
@@ -80,7 +93,6 @@ public class BatchUploader extends UploadDialog {
 		}
 	}
 	
-	public void onOK() { }
-	
 	public void onCancel() { }
+
 }

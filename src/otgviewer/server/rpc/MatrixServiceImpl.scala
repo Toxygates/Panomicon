@@ -39,6 +39,7 @@ import t.db.kyotocabinet.KCMatrixDB
 import t.db.kyotocabinet.KCExtMatrixDB
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
 import otg.Species.Species
+import t.BaseConfig
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
@@ -48,6 +49,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   import scala.collection.JavaConversions._
   import UtilsS._
 
+  private var baseConfig: BaseConfig = _
   private var tgConfig: Configuration = _
   private var csvDirectory: String = _
   private var csvUrlBase: String = _
@@ -66,6 +68,8 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     csvUrlBase = config.csvUrlBase
     context = config.context
     tgConfig = config
+    //TODO parse baseConfig directly somewhere
+    baseConfig = config.baseConfig
     
     affyProbes = new AffyProbes(context.triplestoreConfig.triplestore)
     println("Microarray databases are open")
