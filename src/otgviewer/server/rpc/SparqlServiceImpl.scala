@@ -29,6 +29,7 @@ import otg.sparql.LocalUniprot
 import otg.sparql.DrugBank
 import otg.sparql.ChEMBL
 import t.sparql.Triplestore
+import t.BaseConfig
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -43,6 +44,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   type DataColumn = bioweb.shared.array.DataColumn[Barcode]
   
   implicit var context: OTGContext = _
+  var baseConfig: BaseConfig = _
   var tgConfig: Configuration = _
   var affyProbes: AffyProbes = _
   var uniprot: Uniprot = _
@@ -61,9 +63,9 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   def localInit(conf: Configuration) {
     this.context = conf.context
     this.tgConfig = conf   
-
-    val tsConf = context.triplestoreConfig
-    val ts = tsConf.triplestore
+    this.baseConfig = conf.baseConfig
+    
+    val ts = baseConfig.triplestore.triplestore
     otgSamples = new OTGSamples(ts)
     affyProbes = new AffyProbes(ts)
     uniprot = new LocalUniprot(ts) 

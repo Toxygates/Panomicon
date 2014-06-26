@@ -27,7 +27,7 @@ object Configuration {
       servletContext.getInitParameter("updateURL"),
       servletContext.getInitParameter("repositoryUser"),
       servletContext.getInitParameter("repositoryPassword"))
-  }
+  } 
   
   def parseAClass(v: String): ApplicationClass = {
     if (v == null) {
@@ -51,14 +51,13 @@ class Configuration(val owlimRepositoryName: String,
     this(owlimRepository, toxygatesHome, System.getProperty("otg.csvDir"), 
         System.getProperty("otg.csvUrlBase"))
   
-  lazy val context = 
-    new OTGContext(Some(toxygatesHomeDir), Some(owlimRepositoryName),
-        None)
-  
   def baseConfig = {
     val tsConfig = TriplestoreConfig(repositoryUrl, updateUrl, 
         repositoryUser, repositoryPass, owlimRepositoryName)
     val dataConfig = DataConfig(toxygatesHomeDir)
     BaseConfig(tsConfig, dataConfig)
-  }    
+  }
+  
+  def context = new OTGContext(baseConfig)
+  
 }
