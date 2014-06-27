@@ -6,6 +6,7 @@ import static t.admin.shared.MaintenanceConstants.metaPrefix;
 import static t.admin.shared.MaintenanceConstants.niPrefix;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -22,8 +23,7 @@ public class BatchUploader extends UploadDialog {
 	private UploadWrapper mas5;
 	private UploadWrapper calls;
 	
-	private Button proceed, cancel;
-	private boolean completed;
+	private Button proceed, cancel;	
 	private TextArea comments;
 	
 	protected void makeGUI(VerticalPanel vp) {
@@ -37,9 +37,9 @@ public class BatchUploader extends UploadDialog {
 				metaPrefix, "tsv");	
 		normalized = new UploadWrapper(this, "Normalized intensity data file (CSV)", 
 				niPrefix, "csv");
-		mas5 = new UploadWrapper(this, "MAS5 normalized data file (for fold change) (CSV)", 
+		mas5 = new UploadWrapper(this, "Fold change data file (CSV)", 
 				mas5Prefix, "csv");
-		calls = new UploadWrapper(this, "Calls file (CSV)", 
+		calls = new UploadWrapper(this, "Calls file (CSV) (optional)", 
 				callPrefix, "csv");
 
 		vp.add(metadata);
@@ -47,6 +47,7 @@ public class BatchUploader extends UploadDialog {
 		vp.add(mas5);
 		vp.add(calls);
 		
+		vp.add(new Label("Comments"));
 		comments = new TextArea();
 		comments.setSize("400px", "100px");
 		vp.add(comments);
@@ -54,6 +55,11 @@ public class BatchUploader extends UploadDialog {
 		Command c = new Command("Proceed") {
 			@Override 
 			void run() { 
+				if (!calls.hasFile() && 
+						!Window.confirm("Upload batch without calls data (all values present)?")) {
+					return;
+				}
+				
 				maintenanceService.addBatchAsync(nameText.getText(),
 						comments.getText(),
 						new TaskCallback("Upload batch") {
@@ -85,14 +91,10 @@ public class BatchUploader extends UploadDialog {
 	}
 	
 	public void updateStatus() {
-		if (metadata.hasFile() && normalized.hasFile() && mas5.hasFile() &&
-				calls.hasFile()) {
+		if (metadata.hasFile() && normalized.hasFile() && mas5.hasFile()) {
 			proceed.setEnabled(true);
 		} else {
 			proceed.setEnabled(false);
 		}
 	}
-	
-	public void onCancel() { }
-
 }

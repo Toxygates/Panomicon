@@ -181,7 +181,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     if (probes != null && probes.length > 0) {
     	mm.selectProbes(probes)
     } else {
-      val groups = (0 to mm.info.numColumns()).map(i => mm.info.columnGroup(i))
+      val groups = (0 until mm.info.numColumns()).map(i => mm.info.columnGroup(i))
       val ss = speciesForGroups(groups)
       val allProbes = filterProbes(null, ss).toArray
       //TODO
@@ -222,7 +222,8 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
 
     val attribs = affyProbes.withAttributes(probes)
     val pm = Map() ++ attribs.map(a => (a.identifier -> a))
-
+    println(pm.take(5))
+    
     rows.map(or => {
       if (!pm.containsKey(or.getProbe)) {
         println("missing key: " + or.getProbe)

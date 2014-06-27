@@ -73,8 +73,7 @@ public class PlatformUploader extends UploadDialog {
 		hp.add(proceed);
 		cancel = new Button("Cancel");
 		hp.add(cancel);
-		cancel.addClickHandler(new ClickHandler() {
-			
+		cancel.addClickHandler(new ClickHandler() {			
 			@Override
 			public void onClick(ClickEvent event) {
 				onFinish();
