@@ -1,9 +1,6 @@
 package t.admin.client;
 
-import static t.admin.shared.MaintenanceConstants.callPrefix;
-import static t.admin.shared.MaintenanceConstants.mas5Prefix;
-import static t.admin.shared.MaintenanceConstants.metaPrefix;
-import static t.admin.shared.MaintenanceConstants.niPrefix;
+import static t.admin.shared.MaintenanceConstants.*;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
@@ -18,10 +15,7 @@ public class BatchUploader extends UploadDialog {
 	protected MaintenanceServiceAsync maintenanceService = (MaintenanceServiceAsync) GWT
 			.create(MaintenanceService.class);
 	
-	private UploadWrapper metadata; 
-	private UploadWrapper normalized; 
-	private UploadWrapper mas5;
-	private UploadWrapper calls;
+	private UploadWrapper metadata, normalized, fold, calls, foldCalls, foldP; 
 	
 	private Button proceed, cancel;	
 	private TextArea comments;
@@ -37,15 +31,22 @@ public class BatchUploader extends UploadDialog {
 				metaPrefix, "tsv");	
 		normalized = new UploadWrapper(this, "Normalized intensity data file (CSV)", 
 				niPrefix, "csv");
-		mas5 = new UploadWrapper(this, "Fold change data file (CSV)", 
-				mas5Prefix, "csv");
 		calls = new UploadWrapper(this, "Calls file (CSV) (optional)", 
 				callPrefix, "csv");
+		fold = new UploadWrapper(this, "Fold change data file (CSV)", 
+				foldPrefix, "csv");
+		foldCalls = new UploadWrapper(this, "Fold change calls file (CSV) (optional)",
+				foldCallPrefix, "csv");
+		foldP = new UploadWrapper(this, "Fold change p-values (CSV) (optional)",
+				foldPPrefix, "csv");
+
 
 		vp.add(metadata);
 		vp.add(normalized);
-		vp.add(mas5);
 		vp.add(calls);
+		vp.add(fold);
+		vp.add(foldCalls);
+		vp.add(foldP);
 		
 		vp.add(new Label("Comments"));
 		comments = new TextArea();
@@ -55,8 +56,13 @@ public class BatchUploader extends UploadDialog {
 		Command c = new Command("Proceed") {
 			@Override 
 			void run() { 
-				if (!calls.hasFile() && 
-						!Window.confirm("Upload batch without calls data (all values present)?")) {
+				if ((!calls.hasFile() || !foldCalls.hasFile()) && 
+						!Window.confirm("One or both of the call data files are missing. " +
+								"Upload batch without calls data (all values present)?")) {
+					return;
+				}
+				
+				if (!foldP.hasFile() && !Window.confirm("Upload batch without fold p-values?")) {
 					return;
 				}
 				
@@ -91,7 +97,7 @@ public class BatchUploader extends UploadDialog {
 	}
 	
 	public void updateStatus() {
-		if (metadata.hasFile() && normalized.hasFile() && mas5.hasFile()) {
+		if (metadata.hasFile() && normalized.hasFile() && fold.hasFile()) {
 			proceed.setEnabled(true);
 		} else {
 			proceed.setEnabled(false);

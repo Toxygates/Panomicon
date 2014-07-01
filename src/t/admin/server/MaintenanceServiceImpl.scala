@@ -88,22 +88,26 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
       if (getFile(niPrefix) == None) {
         throw new MaintenanceException("The normalized intensity file has not been uploaded yet.")
       }
-      if (getFile(mas5Prefix) == None) {
-        throw new MaintenanceException("The MAS5 normalized file has not been uploaded yet.")
+      if (getFile(foldPrefix) == None) {
+        throw new MaintenanceException("The fold expression file has not been uploaded yet.")
       }
-      if (getFile(callPrefix) == None) {
-        throw new MaintenanceException("The calls file has not been uploaded yet.")
-      }
+      
 
       val metaFile = getAsTempFile(tempFiles, metaPrefix, metaPrefix, "tsv").get
       val niFile = getAsTempFile(tempFiles, niPrefix, niPrefix, "csv").get
-      val mas5File = getAsTempFile(tempFiles, mas5Prefix, mas5Prefix, "csv").get
-      val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv").get
+      val foldFile = getAsTempFile(tempFiles, foldPrefix, foldPrefix, "csv").get
+      val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv")
+      val foldCallsFile = getAsTempFile(tempFiles, foldCallPrefix, foldCallPrefix, "csv")
+      val foldPValueFile = getAsTempFile(tempFiles, foldPPrefix, foldPPrefix, "csv")
 
-      TaskRunner ++= bm.addBatch(title, comment, metaFile.getAbsolutePath(),
+      TaskRunner ++= bm.addBatch(title, comment, 
+        metaFile.getAbsolutePath(),
         niFile.getAbsolutePath(),
-        mas5File.getAbsolutePath(),
-        callsFile.getAbsolutePath())
+        callsFile.map(_.getAbsolutePath()),
+        foldFile.getAbsolutePath(),
+        foldCallsFile.map(_.getAbsolutePath()),
+        foldPValueFile.map(_.getAbsolutePath()))
+        
     } catch {
 	  case e: Exception =>
 	    afterTaskCleanup()
@@ -234,17 +238,12 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
       throw new MaintenanceException("No files have been uploaded yet.")
     }
     
-    var item: FileItem = null
     for (fi <- items) {      
       if (fi.getFieldName().startsWith(tag)) {
-        item = fi
+        return Some(fi)
       }
-    }    
-    if (item == null) {
-      None
-    } else {
-      Some(item)
-    }    
+    }
+    return None        
   }
   
   /**

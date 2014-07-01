@@ -27,10 +27,10 @@ import t.db.MatrixDBReader
  * "request columns" but may insert additional columns with extra information.
  * The info object should be used to query what columns have actually been 
  * constructed.
+ * 
  */
 abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
-    val reader: MatrixDBReader[E],
-    initProbes: Array[String], sparseRead: Boolean)
+    val reader: MatrixDBReader[E], initProbes: Array[String], sparseRead: Boolean)
     (implicit val context: OTGContext) {
   
   protected var currentInfo: ManagedMatrixInfo = new ManagedMatrixInfo()
@@ -313,8 +313,7 @@ class FoldValueMatrix(requestColumns: Seq[Group],
  * Columns consisting of fold-values, associated p-values and custom P/A calls.
  */
 class ExtFoldValueMatrix(requestColumns: Seq[Group],
-    reader: MatrixDBReader[PExprValue], 
-    initProbes: Array[String], sparseRead: Boolean,
+    reader: MatrixDBReader[PExprValue], initProbes: Array[String], sparseRead: Boolean,
     enhancedColumns: Boolean)
     (implicit context: OTGContext) 
     extends ManagedMatrix[PExprValue](requestColumns, reader, initProbes, sparseRead) {
@@ -322,6 +321,8 @@ class ExtFoldValueMatrix(requestColumns: Seq[Group],
     override protected def columnsForGroup(g: Group, sortedBarcodes: Seq[otg.Sample], 
       data: Seq[Seq[PExprValue]]): ExprMatrix = {
     val (cus, ncus) = g.getUnits().partition(_.getDose == "Control")
+    
+    println(s"#Control units: ${cus.size} #Non-control units: ${ncus.size}")
     
     if (ncus.size > 1 || (!enhancedColumns)) {
       // A simple average column

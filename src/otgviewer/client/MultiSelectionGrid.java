@@ -1,9 +1,11 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import otgviewer.client.SelectionTDGrid.UnitListener;
 import otgviewer.client.components.DataListenerWidget;
@@ -11,7 +13,6 @@ import otgviewer.client.components.Screen;
 import otgviewer.shared.BUnit;
 import otgviewer.shared.DataFilter;
 
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -26,11 +27,12 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 	private UnitListener listener;
 	private VerticalPanel vp;
 	private final Screen scr;
+	protected final Logger logger = Utils.getLogger("group");
 	
 	public MultiSelectionGrid(Screen scr) {		
 		vp = new VerticalPanel();
 		initWidget(vp);
-		this.scr = scr;			
+		this.scr = scr;					
 	}
 	
 	private SelectionTDGrid findOrCreateSection(Screen scr, DataFilter filter) {
@@ -93,13 +95,16 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 	}
 	
 	void setSelection(BUnit[] selection) {
+		logger.info("Set selection: " + selection.length + " units");
 		for (SelectionTDGrid g: sections.values()) {
 			g.setAll(false);
 		}
+		String[] compounds = BUnit.compounds(selection);
 		for (BUnit u: selection) {
 			DataFilter df = new DataFilter(u.getCellType(), u.getOrgan(),
 					 u.getRepeatType(), u.getOrganism());
 			SelectionTDGrid g = findOrCreateSection(scr, df);
+			g.compoundsChanged(Arrays.asList(compounds));
 			g.setSelected(u, true);			
 		}
 		clearEmptyGrids();

@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
@@ -63,6 +64,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private VerticalPanel vp;
 	private boolean nameIsAutoGen = false;
 
+	protected final Logger logger = Utils.getLogger("group");
 	
 	public GroupInspector(CompoundSelector cs, Screen scr) {
 		compoundSel = cs;
@@ -362,13 +364,11 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 			return;
 		}
 		
-		pendingGroup = new Group(name, new Barcode[0], null);
-		addGroup(name, pendingGroup);
+		pendingGroup = new Group(name, new Barcode[0], null);		
 		List<BUnit> units = msg.fullSelection(false);
 		
 		if (units.size() == 0) {
-			 Window.alert("No samples found.");
-			 cullEmptyGroups();
+			 Window.alert("No samples found.");			 
 		} else {
 			setGroup(pendingGroup.getName(), units);
 			newGroup();
@@ -395,19 +395,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 					"The total loading time is expected to be " + loadTime + " seconds.");
 		}
 	} 
-	
-	private void cullEmptyGroups() {
-		// look for empty groups, undo the saving
-		// this is needed if we found no barcodes or if the user didn't select
-		// any combination
-		for (String name : groups.keySet()) {
-			Group g = groups.get(name);
-			if (g.getSamples().length == 0) {
-				deleteGroup(name, false);
-			}
-		}
-	}
-		
+
 	private void setGroup(String pendingGroupName, List<BUnit> units) {
 		Group pendingGroup = groups.get(pendingGroupName);
 		existingGroupsTable.removeItem(pendingGroup); 
@@ -418,6 +406,9 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	
 	private void addGroup(String name, Group group) {
 		groups.put(name, group);
+		logger.info("Add group " + name + " with " + group.getSamples().length + " samples " +
+				"and " + group.getUnits().length + " units ");
+		
 		existingGroupsTable.addItem(group);
 		existingGroupsTable.setSelected(group);
 	}

@@ -42,8 +42,6 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 
 /**
  * The main entry point for Toxygates.
- * The old name for the application was OTGViewer. This class could possibly
- * be renamed in the future.
  * The main task of this class is to manage the history mechanism and ensure that
  * the correct screen is being displayed at any given time, as well as provide a 
  * facility for inter-screen communication.
