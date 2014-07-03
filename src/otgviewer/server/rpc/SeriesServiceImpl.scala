@@ -3,12 +3,9 @@ package otgviewer.server.rpc
 import java.lang.{Double => JDouble}
 import java.util.ArrayList
 import java.util.{List => JList}
-
 import scala.Array.canBuildFrom
 import scala.collection.JavaConversions.asJavaCollection
-
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-
 import Conversions.asJava
 import Conversions.asScala
 import Conversions.speciesFromFilter
@@ -26,6 +23,13 @@ import otgviewer.shared.RankRule
 import otgviewer.shared.Series
 import t.db.SeriesDB
 import t.db.kyotocabinet.KCSeriesDB
+import otg.OTGContext
+import otg.SeriesRanking
+import t.db.SeriesDB
+import otg.OTGSeries
+import scala.annotation.tailrec
+import otg.TimeDose
+import otgviewer.shared.TimesDoses
 
 class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   import Conversions._
@@ -33,7 +37,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
 
   import java.lang.{ Double => JDouble }
 
-  private var db: SeriesDB = _
+  private var db: SeriesDB[OTGSeries] = _
   private implicit var context: OTGContext = _
   var affyProbes: AffyProbes = _
   
@@ -47,7 +51,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   def localInit(config: Configuration) {
     val homePath = config.toxygatesHomeDir
     context = config.context
-    db = new KCSeriesDB(homePath + "/otgfs.kct")
+//    db = new KCSeriesDB(context.)
     println("Series DB is open")
     affyProbes = new AffyProbes(context.triplestoreConfig.triplestore)
   }
@@ -58,6 +62,20 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     super.destroy()
   }
 
+  @tailrec
+  private def bestPerCompound(results: Iterable[(Double, OTGSeries)], 
+      acc: List[(Double, OTGSeries)] = List(), seen: Set[String] = Set()): 
+	  List[(Double, OTGSeries)] = {
+    if (results.isEmpty) {
+      acc
+    } else if (seen.contains(results.head._2.compound)) {
+      bestPerCompound(results.tail, acc, seen)
+    } else {
+      bestPerCompound(results.tail, results.head :: acc,
+        seen + results.head._2.compound)
+    }
+  }
+  
   def rankedCompounds(filter: DataFilter, rules: Array[RankRule]): Array[MatchResult] = {
     val nnr = rules.takeWhile(_ != null)
     var srs = nnr.map(asScala(_))
@@ -76,29 +94,33 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     //TODO: probe is actually irrelevant here but the API is not well designed
     //Same for timeDose = High
     val key = asScala(filter, new otgviewer.shared.Series("", probesRules.head._1, "High", null, Array.empty))
-    val ranking = new SeriesRanking(db, filter, key)
+    val ranking = new SeriesRanking(db, key)
     val ranked = ranking.rankCompoundsCombined(probesRules)
-    val r = ranked.map(p => new MatchResult(p._1, p._2._1, p._2._2)).toArray
-    val rr = r.sortWith((x1, x2) => {
-      if (JDouble.isNaN(x1.score)) {
+    val rr = ranked.toList.sortWith((x1, x2) => {
+      if (JDouble.isNaN(x1._1)) {
         false
-      } else if (JDouble.isNaN(x2.score)) {
+      } else if (JDouble.isNaN(x2._1)) {
         true
       } else {
-        x1.score > x2.score
+        x1._1 > x2._1
       }
     })
-
-    for (s <- rr.take(10)) {
+    val best = bestPerCompound(rr).reverse
+    val r = best.map(p => new MatchResult(p._2.compound, p._1,
+        TimesDoses.allDoses.indexOf(p._2.dose)))        
+    
+    for (s <- r.take(10)) {
       println(s)
     }
-    rr
+    r.toArray
   }
 
+  //TODO normalize
   def getSingleSeries(filter: DataFilter, probe: String, timeDose: String, compound: String): Series = {
     db.read(asScala(filter, new Series("", probe, timeDose, compound, Array.empty))).head
   }
 
+  //TODO normalize
   def getSeries(filter: DataFilter, probes: Array[String], timeDose: String, compounds: Array[String]): JList[Series] = {
     val validated = affyProbes.identifiersToProbes(context.unifiedProbes, filter, 
         probes, true, true).map(_.identifier)

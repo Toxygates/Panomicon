@@ -18,6 +18,7 @@ import otg.RepeatType
 import otgviewer.shared.RuleType
 import otg.Organ._
 import otg.Species._
+import otg.OTGSeries
 
 /**
  * Conversions between Scala and Java types.
@@ -63,16 +64,16 @@ object Conversions {
     }
   }
 
-  implicit def asScala(filter: DataFilter, series: Series)(implicit context: Context): otg.Series = {
+  implicit def asScala(filter: DataFilter, series: Series)(implicit context: Context): OTGSeries = {
 	val sf = asScala(filter)
 	val p = context.unifiedProbes.pack(series.probe) //TODO filtering
-	new otg.Series(sf.repeatType.get, sf.organ.get, sf.species.get, 
+	new OTGSeries(sf.repeatType.get.toString, sf.organ.get.toString(), sf.species.get.toString, 
 	    p, series.compound, series.timeDose, Vector())
   }
 
-  implicit def asJava(series: otg.Series)(implicit context: Context): Series = {
+  implicit def asJava(series: OTGSeries)(implicit context: Context): Series = {
 	new Series(series.compound + " " + series.timeDose, series.probeStr, series.timeDose,
-	    series.compound, series.data.map(asJava).toArray)
+	    series.compound, series.values.map(asJava).toArray)
   }
   
   implicit def asJava(ev: otg.ExprValue): ExpressionValue = new ExpressionValue(ev.value, ev.call)
@@ -93,15 +94,15 @@ object Conversions {
         println("Correlation curve: " + rr.data.toVector)
         SeriesRanking.MultiSynthetic(rr.data.toVector)
       }
-      case r: RuleType.HighVariance.type => SeriesRanking.HighVariance()
-      case r: RuleType.LowVariance.type => SeriesRanking.LowVariance()
-      case r: RuleType.Sum.type => SeriesRanking.Sum()
-      case r: RuleType.NegativeSum.type => SeriesRanking.NegativeSum()
-      case r: RuleType.Unchanged.type => SeriesRanking.Unchanged()
-      case r: RuleType.MonotonicUp.type => SeriesRanking.MonotonicIncreasing()
-      case r: RuleType.MonotonicDown.type => SeriesRanking.MonotonicDecreasing()
-      case r: RuleType.MaximalFold.type => SeriesRanking.MaxFold()
-      case r: RuleType.MinimalFold.type => SeriesRanking.MinFold()
+      case r: RuleType.HighVariance.type => SeriesRanking.HighVariance
+      case r: RuleType.LowVariance.type => SeriesRanking.LowVariance
+      case r: RuleType.Sum.type => SeriesRanking.Sum
+      case r: RuleType.NegativeSum.type => SeriesRanking.NegativeSum
+      case r: RuleType.Unchanged.type => SeriesRanking.Unchanged
+      case r: RuleType.MonotonicUp.type => SeriesRanking.MonotonicIncreasing
+      case r: RuleType.MonotonicDown.type => SeriesRanking.MonotonicDecreasing
+      case r: RuleType.MaximalFold.type => SeriesRanking.MaxFold
+      case r: RuleType.MinimalFold.type => SeriesRanking.MinFold
       case r: RuleType.ReferenceCompound.type => SeriesRanking.ReferenceCompound(rr.compound, rr.dose)
     }
   }
