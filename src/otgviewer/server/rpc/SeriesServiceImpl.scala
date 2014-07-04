@@ -55,7 +55,12 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     baseConfig = config.baseConfig
     context = config.context
     
-    db = new KCSeriesDB(baseConfig.data.enumIndex, OTGSeries, false)
+    db = new KCSeriesDB(baseConfig.data.seriesDb, OTGSeries, false) {
+    	override def read(key: OTGSeries): Iterable[OTGSeries] = {
+    	  OTGSeries.normalize(super.read(key))
+    	}
+    }
+    
     println("Series DB is open")
     affyProbes = new AffyProbes(context.triplestoreConfig.triplestore)
   }
@@ -112,7 +117,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     })
     val best = bestPerCompound(rr).reverse
     val r = best.map(p => new MatchResult(p._2.compound, p._1,
-        TimesDoses.allDoses.indexOf(p._2.dose)))        
+        TimesDoses.allDoses.indexOf(p._2.dose) - 1))        
     
     for (s <- r.take(10)) {
       println(s)
@@ -120,19 +125,19 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     r.toArray
   }
 
-  //TODO normalize
   def getSingleSeries(filter: DataFilter, probe: String, timeDose: String, compound: String): Series = {
     db.read(asScala(filter, new Series("", probe, timeDose, compound, Array.empty))).head
   }
 
-  //TODO normalize
   def getSeries(filter: DataFilter, probes: Array[String], timeDose: String, compounds: Array[String]): JList[Series] = {
     val validated = affyProbes.identifiersToProbes(context.unifiedProbes, filter, 
         probes, true, true).map(_.identifier)
     val ss = validated.flatMap(p =>
       compounds.flatMap(c =>
         db.read(asScala(filter, new Series("", p, timeDose, c, Array.empty)))))
-    val jss = ss.map(asJava(_))
+    println(s"Read ${ss.size} series")
+    println(ss.take(5).mkString("\n"))
+    val jss = ss.map(asJava(_))    
     new ArrayList[Series](asJavaCollection(jss))
   }
 }

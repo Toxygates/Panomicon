@@ -25,6 +25,7 @@ class UploadWrapper extends Composite {
 		Label l = new Label(description);
 		vp.add(l);
 		vp.setStylePrimaryName("uploader");
+		vp.setHeight("80px");
 		
 		u = new SingleUploader();
 		u.setFileInputPrefix(prefix);
