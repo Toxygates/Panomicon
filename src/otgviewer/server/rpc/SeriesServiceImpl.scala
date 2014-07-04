@@ -30,6 +30,7 @@ import otg.OTGSeries
 import scala.annotation.tailrec
 import otg.TimeDose
 import otgviewer.shared.TimesDoses
+import t.BaseConfig
 
 class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   import Conversions._
@@ -40,6 +41,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   private var db: SeriesDB[OTGSeries] = _
   private implicit var context: OTGContext = _
   var affyProbes: AffyProbes = _
+  var baseConfig: BaseConfig = _
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
@@ -50,8 +52,10 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   // Useful for testing
   def localInit(config: Configuration) {
     val homePath = config.toxygatesHomeDir
+    baseConfig = config.baseConfig
     context = config.context
-//    db = new KCSeriesDB(context.)
+    
+    db = new KCSeriesDB(baseConfig.data.enumIndex, OTGSeries, false)
     println("Series DB is open")
     affyProbes = new AffyProbes(context.triplestoreConfig.triplestore)
   }
@@ -93,7 +97,8 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
 
     //TODO: probe is actually irrelevant here but the API is not well designed
     //Same for timeDose = High
-    val key = asScala(filter, new otgviewer.shared.Series("", probesRules.head._1, "High", null, Array.empty))
+    val key = asScala(filter, 
+        new otgviewer.shared.Series("", probesRules.head._1, "High", null, Array.empty))
     val ranking = new SeriesRanking(db, key)
     val ranked = ranking.rankCompoundsCombined(probesRules)
     val rr = ranked.toList.sortWith((x1, x2) => {
