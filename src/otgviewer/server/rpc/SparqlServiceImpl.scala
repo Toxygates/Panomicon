@@ -97,19 +97,20 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     r.sortWith((d1, d2) => orderedDoses.indexOf(d1) < orderedDoses.indexOf(d2))
   }
 
+  // TODO rename to "sample" methods
   def barcodes(filter: DataFilter, compound: String, doseLevel: String, 
       time: String): Array[Barcode] =
-    otgSamples.barcodes(filter, nullToNone(compound),
+    otgSamples.samples(filter, nullToNone(compound),
       nullToNone(doseLevel), nullToNone(time)).map(asJava(_)).toArray
 
   def barcodes(filter: DataFilter, compounds: Array[String], doseLevel: String, 
       time: String): Array[Barcode] =
-    otgSamples.barcodes(filter, compounds,
+    otgSamples.samples(filter, compounds,
       nullToNone(doseLevel), nullToNone(time)).map(asJava(_)).toArray
 
   def units(filter: DataFilter, compounds: Array[String], doseLevel: String, 
       time: String): Array[BUnit] = {
-    val bcs = otgSamples.barcodes(filter, compounds,
+    val bcs = otgSamples.samples(filter, compounds,
       nullToNone(doseLevel), nullToNone(time)).map(asJava(_))
     val g = bcs.groupBy(x => new BUnit(x, filter))
     for ((k, v) <- g) {

@@ -91,7 +91,6 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
       if (getFile(foldPrefix) == None) {
         throw new MaintenanceException("The fold expression file has not been uploaded yet.")
       }
-      
 
       val metaFile = getAsTempFile(tempFiles, metaPrefix, metaPrefix, "tsv").get
       val niFile = getAsTempFile(tempFiles, niPrefix, niPrefix, "csv").get
@@ -106,7 +105,8 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
         callsFile.map(_.getAbsolutePath()),
         foldFile.getAbsolutePath(),
         foldCallsFile.map(_.getAbsolutePath()),
-        foldPValueFile.map(_.getAbsolutePath()))
+        foldPValueFile.map(_.getAbsolutePath()),
+        false)
         
     } catch {
 	  case e: Exception =>
