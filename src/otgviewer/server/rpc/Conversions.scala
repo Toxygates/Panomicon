@@ -72,7 +72,7 @@ object Conversions {
   }
 
   implicit def asJava(series: OTGSeries)(implicit context: Context): Series = {
-	new Series(series.compound + " " + series.timeDose, series.probeStr, series.timeDose,
+	new Series(series.compound + " " + series.dose, series.probeStr, series.dose,
 	    series.compound, series.values.map(asJava).toArray)
   }
   
@@ -84,7 +84,7 @@ object Conversions {
     if (v == null) {
       None
     } else {
-      Some(v)
+      Some(v) 
     }
   }
 
