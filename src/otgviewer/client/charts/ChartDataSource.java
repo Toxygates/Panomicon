@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
+import otgviewer.client.Utils;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.rpc.MatrixService;
@@ -31,6 +33,8 @@ abstract class ChartDataSource {
 	interface SampleAcceptor {
 		void accept(List<ChartSample> samples);
 	}
+	
+	private static Logger logger = Utils.getLogger("chartdata");
 	
 	static class ChartSample {
 		String time;
@@ -160,6 +164,8 @@ abstract class ChartDataSource {
 		
 		ExpressionRowSource(Barcode[] barcodes, List<ExpressionRow> rows) {
 			this.barcodes = barcodes;
+			logger.info("ER source: " + barcodes.length + " barcodes");
+			
 			addSamplesFromBarcodes(barcodes, rows);
 			init();
 		}
@@ -215,6 +221,7 @@ abstract class ChartDataSource {
 		
 		DynamicExpressionRowSource(DataFilter filter, String probe, ValueType vt, Barcode[] barcodes, Screen screen) {
 			super(barcodes, new ArrayList<ExpressionRow>());
+			logger.info("Dynamic source: filter is " + filter.toString());
 			this.filter = filter;
 			this.probe = probe;
 			this.type = vt;		
@@ -223,8 +230,9 @@ abstract class ChartDataSource {
 		
 		void loadData(final String[] compounds, final String[] dosesOrTimes, 
 				final ColorPolicy policy, final SampleAcceptor acceptor) {
-			final List<String> useBarcodes = new ArrayList<String>();
-			final List<Barcode> useBarcodes_ = new ArrayList<Barcode>();
+			logger.info("Dynamic source: load for " + compounds.length + " compounds");
+			
+			final List<Barcode> useBarcodes = new ArrayList<Barcode>();
 			for (Barcode b: barcodes) {
 				if (
 						(compounds == null || SharedUtils.indexOf(compounds, b.getCompound()) != -1) &&
@@ -232,8 +240,7 @@ abstract class ChartDataSource {
 							SharedUtils.indexOf(dosesOrTimes, b.getDose()) != -1) &&
 						(type == ValueType.Absolute || ! b.getDose().equals("Control"))
 					) {
-					useBarcodes.add(b.getCode());
-					useBarcodes_.add(b);
+					useBarcodes.add(b);
 				}
 			}
 			
@@ -249,7 +256,7 @@ abstract class ChartDataSource {
 
 				@Override
 				public void handleSuccess(final List<ExpressionRow> rows) {
-					addSamplesFromBarcodes(useBarcodes_.toArray(new Barcode[0]), rows);	
+					addSamplesFromBarcodes(useBarcodes.toArray(new Barcode[0]), rows);	
 					getSSamples(compounds, dosesOrTimes, policy, acceptor);
 				}					
 			});

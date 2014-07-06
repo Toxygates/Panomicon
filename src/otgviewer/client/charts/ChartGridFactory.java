@@ -31,7 +31,7 @@ public class ChartGridFactory {
 		void acceptBarcodes(Barcode[] barcodes);
 	}
 	
-	private static final SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT.create(SparqlService.class);
+	private static final SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT.create(SparqlService.class);
 	
 	private DataFilter filter;
 	private List<Group> groups;
@@ -43,7 +43,7 @@ public class ChartGridFactory {
 	public void makeSeriesCharts(final List<Series> series, final boolean rowsAreCompounds,
 			final int highlightDose, final ChartAcceptor acceptor, final Screen screen) {
 		
-		owlimService.times(filter, null, new AsyncCallback<String[]>() {
+		sparqlService.times(filter, null, new AsyncCallback<String[]>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				Window.alert("Unable to obtain sample times");
@@ -89,7 +89,7 @@ public class ChartGridFactory {
 	public void makeRowCharts(final Screen screen, final Barcode[] barcodes, final ValueType vt, final String probe,
 			final AChartAcceptor acceptor) {
 		if (barcodes == null) {
-			owlimService.barcodes(filter, OTGUtils.compoundsFor(groups), null, null, new AsyncCallback<Barcode[]>() {
+			sparqlService.barcodes(filter, OTGUtils.compoundsFor(groups), null, null, new AsyncCallback<Barcode[]>() {
 
 				@Override
 				public void onFailure(Throwable caught) {
