@@ -72,13 +72,10 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     baseConfig = config.baseConfig
     
     affyProbes = new AffyProbes(context.triplestoreConfig.triplestore)
-    println("Microarray databases are open")
   }
 
   override def destroy() {
 	affyProbes.close()	
-    println("Closing KC databases")
-    context.closeReaders
     super.destroy()
   }
   
@@ -133,28 +130,32 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     }
   }
   
-  private[this] def makeMatrix(requestColumns: Seq[Group], initProbes: Array[String], typ: ValueType, 
-    sparseRead: Boolean = false): ManagedMatrix[_] = {
+  private[this] def makeMatrix(requestColumns: Seq[Group], initProbes: Array[String], 
+      typ: ValueType, sparseRead: Boolean = false): ManagedMatrix[_] = {
     val reader = if (typ == ValueType.Absolute) {
       context.absoluteDBReader
     } else {     
       context.foldsDBReader    
     }
-    
-    val enhancedCols = tgConfig.applicationClass == ApplicationClass.Adjuvant
 
-    reader match {
-      case ext: KCExtMatrixDB =>
-        assert(typ == ValueType.Folds)
-        new ExtFoldValueMatrix(requestColumns, ext, initProbes, sparseRead, enhancedCols)
-      case db: KCMatrixDB =>
-        if (typ == ValueType.Absolute) {
-          new NormalizedIntensityMatrix(requestColumns, db, initProbes, sparseRead, enhancedCols)
-        } else {
-          new FoldValueMatrix(requestColumns, db, initProbes, sparseRead)
-        }
-      case _ => throw new Exception("Unexpected DB reader type")
-    }   
+    try {
+      val enhancedCols = tgConfig.applicationClass == ApplicationClass.Adjuvant
+
+      reader match {
+        case ext: KCExtMatrixDB =>
+          assert(typ == ValueType.Folds)
+          new ExtFoldValueMatrix(requestColumns, ext, initProbes, sparseRead, enhancedCols)
+        case db: KCMatrixDB =>
+          if (typ == ValueType.Absolute) {
+            new NormalizedIntensityMatrix(requestColumns, db, initProbes, sparseRead, enhancedCols)
+          } else {
+            new FoldValueMatrix(requestColumns, db, initProbes, sparseRead)
+          }
+        case _ => throw new Exception("Unexpected DB reader type")
+      }
+    } finally {
+      reader.close()
+    }
   }
 
   private[this] def speciesForGroups(gs: Iterable[Group]) = 

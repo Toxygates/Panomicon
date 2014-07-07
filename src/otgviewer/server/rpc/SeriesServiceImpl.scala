@@ -38,7 +38,6 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
 
   import java.lang.{ Double => JDouble }
 
-  private var db: SeriesDB[OTGSeries] = _
   private implicit var context: OTGContext = _
   var affyProbes: AffyProbes = _
   var baseConfig: BaseConfig = _
@@ -55,35 +54,35 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     baseConfig = config.baseConfig
     context = config.context
     
-    db = new KCSeriesDB(baseConfig.data.seriesDb, OTGSeries, false) {
-    	override def read(key: OTGSeries): Iterable[OTGSeries] = {
-    	  OTGSeries.normalize(super.read(key))
-    	}
-    }
-    
-    println("Series DB is open")
     affyProbes = new AffyProbes(context.triplestoreConfig.triplestore)
   }
 
   override def destroy() {
-    affyProbes.close()
-    db.close()    
+    affyProbes.close()      
     super.destroy()
   }
-
-  @tailrec
-  private def bestPerCompound(results: Iterable[(Double, OTGSeries)], 
-      acc: List[(Double, OTGSeries)] = List(), seen: Set[String] = Set()): 
-	  List[(Double, OTGSeries)] = {
-    if (results.isEmpty) {
-      acc
-    } else if (seen.contains(results.head._2.compound)) {
-      bestPerCompound(results.tail, acc, seen)
-    } else {
-      bestPerCompound(results.tail, results.head :: acc,
-        seen + results.head._2.compound)
+  
+  private def getDB(): SeriesDB[OTGSeries] = {
+    new KCSeriesDB(baseConfig.data.seriesDb, OTGSeries, false) {
+    	override def read(key: OTGSeries): Iterable[OTGSeries] = {
+    	  OTGSeries.normalize(super.read(key))
+    	}
     }
   }
+//
+//  @tailrec
+//  private def bestPerCompound(results: Iterable[(Double, OTGSeries)], 
+//      acc: List[(Double, OTGSeries)] = List(), seen: Set[String] = Set()): 
+//	  List[(Double, OTGSeries)] = {
+//    if (results.isEmpty) {
+//      acc
+//    } else if (seen.contains(results.head._2.compound)) {
+//      bestPerCompound(results.tail, acc, seen)
+//    } else {
+//      bestPerCompound(results.tail, results.head :: acc,
+//        seen + results.head._2.compound)
+//    }
+//  }
   
   def rankedCompounds(filter: DataFilter, rules: Array[RankRule]): Array[MatchResult] = {
     val nnr = rules.takeWhile(_ != null)
@@ -100,44 +99,60 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
       resolved.map(r => (r.identifier, pr._2))
     })
 
-    //TODO: probe is actually irrelevant here but the API is not well designed
-    //Same for timeDose = High
-    val key = asScala(filter, 
+    val db = getDB()
+    try {
+      //TODO: probe is actually irrelevant here but the API is not well designed
+      //Same for timeDose = High
+      val key = asScala(filter,
         new otgviewer.shared.Series("", probesRules.head._1, "High", null, Array.empty))
-    val ranking = new SeriesRanking(db, key)
-    val ranked = ranking.rankCompoundsCombined(probesRules)
-    val rr = ranked.toList.sortWith((x1, x2) => {
-      if (JDouble.isNaN(x1._1)) {
-        false
-      } else if (JDouble.isNaN(x2._1)) {
-        true
-      } else {
-        x1._1 > x2._1
+      val ranking = new SeriesRanking(db, key)
+      val ranked = ranking.rankCompoundsCombined(probesRules)
+
+      val rr = ranked.toList.sortWith((x1, x2) => {
+        if (JDouble.isNaN(x1._3)) {
+          false
+        } else if (JDouble.isNaN(x2._3)) {
+          true
+        } else {
+          x1._3 > x2._3
+        }
+      })
+      
+      val r = rr.map(p => new MatchResult(p._1, p._3, 
+        TimesDoses.allDoses.indexOf(p._2) - 1))
+
+      for (s <- r.take(10)) {
+        println(s)
       }
-    })
-    val best = bestPerCompound(rr).reverse
-    val r = best.map(p => new MatchResult(p._2.compound, p._1,
-        TimesDoses.allDoses.indexOf(p._2.dose) - 1))        
-    
-    for (s <- r.take(10)) {
-      println(s)
-    }
-    r.toArray
+      r.toArray
+    } finally {
+      db.close()
+    }    
   }
 
   def getSingleSeries(filter: DataFilter, probe: String, timeDose: String, compound: String): Series = {
-    db.read(asScala(filter, new Series("", probe, timeDose, compound, Array.empty))).head
+    val db = getDB()
+    try {
+      db.read(asScala(filter, new Series("", probe, timeDose, compound, Array.empty))).head
+    } finally {
+      db.close()
+    }
   }
 
   def getSeries(filter: DataFilter, probes: Array[String], timeDose: String, compounds: Array[String]): JList[Series] = {
     val validated = affyProbes.identifiersToProbes(context.unifiedProbes, filter, 
         probes, true, true).map(_.identifier)
-    val ss = validated.flatMap(p =>
-      compounds.flatMap(c =>
-        db.read(asScala(filter, new Series("", p, timeDose, c, Array.empty)))))
-    println(s"Read ${ss.size} series")
-    println(ss.take(5).mkString("\n"))
-    val jss = ss.map(asJava(_))    
-    new ArrayList[Series](asJavaCollection(jss))
+    val db = getDB()
+    try {
+      val ss = validated.flatMap(p =>
+        compounds.flatMap(c =>
+          db.read(asScala(filter, new Series("", p, timeDose, c, Array.empty)))))
+      println(s"Read ${ss.size} series")
+      println(ss.take(5).mkString("\n"))
+      val jss = ss.map(asJava(_))
+      new ArrayList[Series](asJavaCollection(jss))
+    } finally {
+      db.close()
+    }
   }
 }
