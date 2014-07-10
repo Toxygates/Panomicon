@@ -1,17 +1,14 @@
 package otgviewer.server
 
-import otgviewer.shared.BarcodeColumn
-import otgviewer.shared.Synthetic
-import otgviewer.shared.ManagedMatrixInfo
-import otgviewer.shared.DataFilter
-import otgviewer.shared.Group
+import bioweb.shared.array.ExpressionValue
 import otg.ExprValue
 import otg.OTGContext
-import otgviewer.server.rpc.Conversions._
-import friedrich.data.immutable.VVector
-import bioweb.shared.array.ExpressionValue
 import otg.PExprValue
+import otgviewer.server.rpc.Conversions._
 import otgviewer.shared.Barcode
+import otgviewer.shared.Group
+import otgviewer.shared.ManagedMatrixInfo
+import otgviewer.shared.Synthetic
 import t.db.MatrixDBReader
 
 
@@ -246,7 +243,7 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
     
     currentInfo.addColumn(false, g.toString, "Average of treated samples", false, g)
     ExprMatrix.withRows(data.map(vs =>
-      VVector(javaMean(selectIdx(vs, treatedIdx)))),
+      Vector(javaMean(selectIdx(vs, treatedIdx)))),
       initProbes,
       List(g.toString))
   }
@@ -286,7 +283,7 @@ extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead)
       val controlIdx = controlIdxs(g, sortedBarcodes)
       
       val (colName1, colName2) = (g.toString, g.toString + "(cont)")
-      val rows = data.map(vs => VVector(
+      val rows = data.map(vs => Vector(
           javaMean(selectIdx(vs, treatedIdx)),
           javaMean(selectIdx(vs, controlIdx))
     	))
@@ -337,7 +334,7 @@ class ExtFoldValueMatrix(requestColumns: Seq[Group],
       val rows = data.map(vs => {
         val treatedVs = selectIdx(vs, treatedIdx)
         val first = treatedVs.head
-        VVector(javaMean(treatedVs), new ExpressionValue(first.p, first.call))
+        Vector(javaMean(treatedVs), new ExpressionValue(first.p, first.call))
       })
       
       currentInfo.addColumn(false, colName1, "Average of treated samples", false, g)

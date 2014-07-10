@@ -31,7 +31,7 @@ class ExprMatrixTest extends FunSuite {
       List(2, 1, 1, 19, 18, 20),
       List(4, 4, 4, 2, 1, 2),
       List(5, 2, 3, 2, 4, 3)).map(_.map(new ExpressionValue(_)))
-    new ExprMatrix(data.map(new VVector(_)), data.size, data(0).size,
+    new ExprMatrix(data.map(_.toVector), data.size, data(0).size,
     		Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4),
     		Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4, "f" -> 5),
     		(1 to 5).map(x => new RowAnnotation("p" + x)).toVector)    

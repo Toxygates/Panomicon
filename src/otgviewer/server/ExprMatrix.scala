@@ -19,12 +19,12 @@ object ExprMatrix {
     } else {
       val rows = data.size
       val columns = data(0).size
-      new ExprMatrix(data.map(new VVector(_)), rows, columns, Map(), Map(), emptyAnnotations(rows))
+      new ExprMatrix(data.map(_.toVector), rows, columns, Map(), Map(), emptyAnnotations(rows))
     }       
   }
   
   def withRows(data: Seq[Seq[ExpressionValue]], rowNames: Seq[String], colNames: Seq[String]) = 
-    new ExprMatrix(data.map(new VVector(_)), data.size, data(0).size, 
+    new ExprMatrix(data.map(_.toVector), data.size, data(0).size, 
         Map() ++ rowNames.zipWithIndex, Map() ++ colNames.zipWithIndex, 
         emptyAnnotations(data.size))
   
@@ -37,7 +37,7 @@ case class RowAnnotation(probe: String) //, title: String, geneIds: Array[String
 /**
  * Data is row-major
  */
-class ExprMatrix(data: Seq[VVector[ExpressionValue]], rows: Int, columns: Int, 
+class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int, 
     rowMap: Map[String, Int], columnMap: Map[String, Int], 
     val annotations: SVector[RowAnnotation]) 
     extends
@@ -53,14 +53,14 @@ class ExprMatrix(data: Seq[VVector[ExpressionValue]], rows: Int, columns: Int,
   /**
    * This is the bottom level copyWith method - all the other ones ultimately delegate to this one.
    */
-  def copyWith(rowData: Seq[VVector[ExpressionValue]], rowMap: Map[String, Int], columnMap: Map[String, Int], 
+  def copyWith(rowData: Seq[Vector[ExpressionValue]], rowMap: Map[String, Int], columnMap: Map[String, Int], 
       annotations: SVector[RowAnnotation]): ExprMatrix = 
         new ExprMatrix(rowData, rowData.size, 
             if (rowData.isEmpty) { 0 } else { rowData(0).size }, 
             rowMap, columnMap, annotations)
   
   def copyWith(rowData: Seq[Seq[ExpressionValue]], rowMap: Map[String, Int], columnMap: Map[String, Int]): ExprMatrix =
-    copyWith(rowData.map(new VVector(_)), rowMap, columnMap, annotations)
+    copyWith(rowData.map(_.toVector), rowMap, columnMap, annotations)
   
   def copyWithAnnotations(annots: SVector[RowAnnotation]): ExprMatrix = copyWith(data, rowMap, columnMap, annots)
   
