@@ -29,15 +29,18 @@ import otg.OTGSeries
 object Conversions {
   import language.implicitConversions
 
-  implicit def asScala(filter: DataFilter): otg.Filter = {
-    val or = if (filter.cellType == CellType.Vitro) {
-      otg.Organ.Vitro
-    } else {
-      otg.Organ.withName(filter.organ.toString())
+  implicit def asScala(filter: DataFilter): otg.Filter = {    
+    val or = otg.Organ.withName(filter.organ.toString())
+    
+    val ct = filter.cellType match {
+      case t: CellType.Vivo.type => "in vivo"
+      case _ => "in vitro"
     }
+    
     new otg.Filter(Some(or), 
         Some(RepeatType.withName(filter.repeatType.toString())), 
-        Some(otg.Species.withName(filter.organism.toString())));
+        Some(otg.Species.withName(filter.organism.toString())),
+            Some(ct));
   }
 
   implicit def asJava(path: otg.Pathology): Pathology =
@@ -67,8 +70,9 @@ object Conversions {
   implicit def asScala(filter: DataFilter, series: Series)(implicit context: Context): OTGSeries = {
 	val sf = asScala(filter)
 	val p = context.unifiedProbes.pack(series.probe) //TODO filtering
+	
 	new OTGSeries(sf.repeatType.get.toString, sf.organ.get.toString(), sf.species.get.toString, 
-	    p, series.compound, series.timeDose, Vector())
+	    p, series.compound, series.timeDose, sf.cellType.get, Vector())
   }
 
   implicit def asJava(series: OTGSeries)(implicit context: Context): Series = {
