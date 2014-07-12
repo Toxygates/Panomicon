@@ -4,6 +4,7 @@ import scala.Array.canBuildFrom
 import scala.Option.option2Iterable
 import scala.collection.{Set => CSet}
 import scala.collection.{Set => CSet}
+import scala.collection.JavaConversions._
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
 import bioweb.shared.Pair
 import bioweb.shared.array.Annotation
@@ -30,6 +31,7 @@ import otg.sparql.DrugBank
 import otg.sparql.ChEMBL
 import t.sparql.Triplestore
 import t.BaseConfig
+import otgviewer.shared.SampleClass
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -97,17 +99,20 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     r.sortWith((d1, d2) => orderedDoses.indexOf(d1) < orderedDoses.indexOf(d2))
   }
 
-  // TODO rename to "sample" methods
-  def barcodes(filter: DataFilter, compound: String, doseLevel: String, 
+  def samples(filter: DataFilter, compound: String, doseLevel: String, 
       time: String): Array[Barcode] =
     otgSamples.samples(filter, nullToNone(compound),
       nullToNone(doseLevel), nullToNone(time)).map(asJava(_)).toArray
 
-  def barcodes(filter: DataFilter, compounds: Array[String], doseLevel: String, 
+  def samples(filter: DataFilter, compounds: Array[String], doseLevel: String, 
       time: String): Array[Barcode] =
     otgSamples.samples(filter, compounds,
       nullToNone(doseLevel), nullToNone(time)).map(asJava(_)).toArray
 
+  def sampleClasses(): Array[SampleClass] = {
+	otgSamples.sampleClasses().map(x => new SampleClass(asJavaMap(x))).toArray
+  }
+      
   def units(filter: DataFilter, compounds: Array[String], doseLevel: String, 
       time: String): Array[BUnit] = {
     val bcs = otgSamples.samples(filter, compounds,

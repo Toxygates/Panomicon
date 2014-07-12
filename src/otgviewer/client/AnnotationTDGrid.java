@@ -66,7 +66,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 		super.compoundsChanged(compounds);
 		
 		if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
-			sparqlService.barcodes(chosenDataFilter, compounds.get(0), null, null, new AsyncCallback<Barcode[]>() {
+			sparqlService.samples(chosenDataFilter, compounds.get(0), null, null, new AsyncCallback<Barcode[]>() {
 				public void onSuccess(Barcode[] bcs) {
 					
 					sparqlService.annotations(bcs[0], new AsyncCallback<Annotation>() {
@@ -102,7 +102,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 	private void displayAnnotation(final String annotation, final int row, final int col, 
 			final String compound, final String dose, final String time) {		
 		
-		sparqlService.barcodes(chosenDataFilter, compound,
+		sparqlService.samples(chosenDataFilter, compound,
 				dose, time,
 				new PendingAsyncCallback<Barcode[]>(this, "Unable to retrieve barcodes for the group definition.") {
 					public void handleSuccess(Barcode[] barcodes) {

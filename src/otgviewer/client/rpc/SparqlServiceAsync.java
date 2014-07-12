@@ -7,6 +7,7 @@ import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Pathology;
+import otgviewer.shared.SampleClass;
 import bioweb.shared.array.Annotation;
 import bioweb.shared.array.HasSamples;
 
@@ -17,12 +18,14 @@ public interface SparqlServiceAsync {
 	public void compounds(DataFilter filter, AsyncCallback<String[]> callback);
 		
 	public void doseLevels(DataFilter filter, String compound, AsyncCallback<String[]> callback);	
-	public void barcodes(DataFilter filter, String compound, 
+	public void samples(DataFilter filter, String compound, 
 			String doseLevel, String time, AsyncCallback<Barcode[]> callback);
-	public void barcodes(DataFilter filter, String[] compounds, 
+	public void samples(DataFilter filter, String[] compounds, 
 			String doseLevel, String time, AsyncCallback<Barcode[]> callback);
 	public void units(DataFilter filter, String[] compounds, 
 			String doseLevel, String time, AsyncCallback<BUnit[]> callback);
+	
+	public void sampleClasses(AsyncCallback<SampleClass[]> callback);
 	
 	public void times(DataFilter filter, String compound, AsyncCallback<String[]> callback);	
 	public void probes(DataFilter filter, AsyncCallback<String[]> callback);

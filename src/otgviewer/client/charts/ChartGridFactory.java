@@ -89,7 +89,7 @@ public class ChartGridFactory {
 	public void makeRowCharts(final Screen screen, final Barcode[] barcodes, final ValueType vt, final String probe,
 			final AChartAcceptor acceptor) {
 		if (barcodes == null) {
-			sparqlService.barcodes(filter, OTGUtils.compoundsFor(groups), null, null, new AsyncCallback<Barcode[]>() {
+			sparqlService.samples(filter, OTGUtils.compoundsFor(groups), null, null, new AsyncCallback<Barcode[]>() {
 
 				@Override
 				public void onFailure(Throwable caught) {

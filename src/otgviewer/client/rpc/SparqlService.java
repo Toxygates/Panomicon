@@ -8,6 +8,7 @@ import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Pathology;
+import otgviewer.shared.SampleClass;
 import bioweb.shared.array.Annotation;
 import bioweb.shared.array.HasSamples;
 
@@ -50,7 +51,7 @@ public interface SparqlService extends RemoteService {
 	 * @param time the chosen time, or null for no constraint.
 	 * @return
 	 */
-	public Barcode[] barcodes(DataFilter filter, @Nullable String compound,
+	public Barcode[] samples(DataFilter filter, @Nullable String compound,
 			@Nullable String doseLevel, @Nullable String time);
 	
 	/**
@@ -63,8 +64,14 @@ public interface SparqlService extends RemoteService {
 	 * @param time the chosen time, or null for no constraint.
 	 * @return
 	 */
-	public Barcode[] barcodes(DataFilter filter, String[] compounds, 
+	public Barcode[] samples(DataFilter filter, String[] compounds, 
 			@Nullable String doseLevel, @Nullable String time);
+	
+	/**
+	 * Obtain all sample classes in the triple store
+	 * @return
+	 */
+	public SampleClass[] sampleClasses();
 	
 	/**
 	 * TODO consider removing
