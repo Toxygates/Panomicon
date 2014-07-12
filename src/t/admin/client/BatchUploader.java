@@ -40,13 +40,20 @@ public class BatchUploader extends UploadDialog {
 		foldP = new UploadWrapper(this, "Fold change p-values (CSV) (optional)",
 				foldPPrefix, "csv");
 
-
-		vp.add(metadata);
-		vp.add(normalized);
-		vp.add(calls);
-		vp.add(fold);
-		vp.add(foldCalls);
-		vp.add(foldP);
+		HorizontalPanel hp = new HorizontalPanel();
+		hp.add(metadata);
+		hp.add(normalized);
+		vp.add(hp);
+		
+		hp = new HorizontalPanel();
+		hp.add(fold);
+		hp.add(foldP);
+		vp.add(hp);
+		
+		hp = new HorizontalPanel();
+		hp.add(calls);
+		hp.add(foldCalls);
+		vp.add(hp);
 		
 		vp.add(new Label("Comments"));
 		comments = new TextArea();
@@ -80,7 +87,7 @@ public class BatchUploader extends UploadDialog {
 		};
 		
 		proceed = Utils.makeButton(c);
-		HorizontalPanel hp = new HorizontalPanel();
+		hp = new HorizontalPanel();
 		hp.setSpacing(4);
 		hp.add(proceed);
 		

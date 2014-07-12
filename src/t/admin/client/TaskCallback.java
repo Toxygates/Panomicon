@@ -13,7 +13,7 @@ public class TaskCallback implements AsyncCallback<Void> {
 
 	@Override
 	public void onSuccess(Void result) {
-		final DialogBox db = new DialogBox();
+		final DialogBox db = new DialogBox(false, true);
 		ProgressDisplay pd = new ProgressDisplay(title) {
 			@Override
 			protected void onDone() {

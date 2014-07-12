@@ -117,7 +117,7 @@ public class AdminConsole implements EntryPoint {
 		List<Command> cmds = new ArrayList<Command>();
 		cmds.add(new Command("Upload new...") {
 			public void run() {
-				final DialogBox db = new DialogBox(true, true);
+				final DialogBox db = new DialogBox(false, true);
 				db.setWidget(new PlatformUploader() {
 					public void onOK() {
 						db.hide();
@@ -201,7 +201,7 @@ public class AdminConsole implements EntryPoint {
 		List<Command> commands = new ArrayList<Command>();
 		commands.add(new Command("Upload new...") {
 			public void run() {
-				final DialogBox db = new DialogBox(true, true);
+				final DialogBox db = new DialogBox(false, true);
 				db.setWidget(new BatchUploader() {
 					public void onOK() {
 						db.hide();
