@@ -71,7 +71,7 @@
   	
   	  <!-- For AdminGUI -->
 	<context-param>
-		<!-- 64 MB -->
+		<!-- 256 MB -->
 		<param-name>maxSize</param-name>
 		<param-value>268435456</param-value>
 	</context-param>
