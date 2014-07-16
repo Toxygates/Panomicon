@@ -3,8 +3,10 @@ package otgviewer.shared;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A sample class identifies a group of samples.
@@ -30,8 +32,8 @@ public class SampleClass implements Serializable {
 		data.put(key, value);
 	}
 	
-	public static List<String> collect(List<SampleClass> from, String key) {
-		List<String> r = new ArrayList<String>();
+	public static Set<String> collect(List<SampleClass> from, String key) {
+		Set<String> r = new HashSet<String>();
 		for (SampleClass sc: from) {
 			r.add(sc.get(key));
 		}
@@ -47,5 +49,14 @@ public class SampleClass implements Serializable {
 			}
 		}	
 		return r;
+	}
+	
+	// TODO this is temporary - DataFilter is to be removed
+	public DataFilter asDataFilter() {
+		Organ o = Organ.valueOf(get("organ"));
+		Organism s = Organism.valueOf(get("organism"));
+		RepeatType r = RepeatType.valueOf(get("repType"));
+		CellType c = get("testType").equals("in vivo") ? CellType.Vivo : CellType.Vitro;
+		return new DataFilter(c, o, r, s);
 	}
 }

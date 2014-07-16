@@ -109,8 +109,10 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     otgSamples.samples(filter, compounds,
       nullToNone(doseLevel), nullToNone(time)).map(asJava(_)).toArray
 
-  def sampleClasses(): Array[SampleClass] = {
-	otgSamples.sampleClasses().map(x => new SampleClass(asJavaMap(x))).toArray
+  def sampleClasses(): Array[SampleClass] = {    
+	otgSamples.sampleClasses().map(x => 
+	  new SampleClass(new java.util.HashMap(asJavaMap(x)))
+	  ).toArray
   }
       
   def units(filter: DataFilter, compounds: Array[String], doseLevel: String, 

@@ -1,22 +1,29 @@
 package otgviewer.client.components;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import otgviewer.client.rpc.SparqlService;
+import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.SampleClass;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 
 public class DataFilterEditor extends DataListenerWidget {
-	final List<SampleClass> sampleClasses;
-	
+	List<SampleClass> sampleClasses;	
 	final SCListBox organismSelector, organSelector, cellTypeSelector, repeatTypeSelector;
+	private final SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT.create(SparqlService.class);
 	
 	class SCListBox extends ListBox {
 		void setItems(List<String> items) {
@@ -39,7 +46,7 @@ public class DataFilterEditor extends DataListenerWidget {
 		}
 		
 		void setItemsFrom(List<SampleClass> scs, String key) {
-			setItems(SampleClass.collect(scs, key));		
+			setItems(asList(SampleClass.collect(scs, key)));		
 		}
 				
 		String getSelected() {
@@ -52,10 +59,22 @@ public class DataFilterEditor extends DataListenerWidget {
 		}		
 	}
 
-	public DataFilterEditor(SampleClass[] sampleClasses) {
+	public DataFilterEditor() {
 		HorizontalPanel hp = new HorizontalPanel();
 		initWidget(hp);
-		this.sampleClasses = Arrays.asList(sampleClasses);
+		sparqlService.sampleClasses(new AsyncCallback<SampleClass[]>() {
+			
+			@Override
+			public void onSuccess(SampleClass[] result) {
+				setAvailable(result);		
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Unable to obtain sample classes from server");				
+			}
+		});
+		
 		
 		organismSelector = new SCListBox();
 		organSelector = new SCListBox();
@@ -66,9 +85,7 @@ public class DataFilterEditor extends DataListenerWidget {
 		hp.add(organSelector);
 		hp.add(cellTypeSelector);
 		hp.add(repeatTypeSelector);
-		
-		List<String> organisms = SampleClass.collect(this.sampleClasses, "organism");
-		organismSelector.setItems(organisms);
+	
 		
 		organismSelector.addChangeHandler(new ChangeHandler() {			
 			@Override
@@ -77,7 +94,8 @@ public class DataFilterEditor extends DataListenerWidget {
 				if (sel != null) {
 					List<SampleClass> selected = constrain1(sel);
 					organSelector.setItemsFrom(selected, "organ");
-				}				
+				}			
+				propagate();
 			}
 		});
 		
@@ -88,8 +106,9 @@ public class DataFilterEditor extends DataListenerWidget {
 				String sel2 = organSelector.getSelected();
 				if (sel1 != null && sel2 != null) {
 					List<SampleClass> selected = constrain2(sel1, sel2);
-					cellTypeSelector.setItemsFrom(selected, "cellType");
+					cellTypeSelector.setItemsFrom(selected, "testType");
 				}
+				propagate();
 			}
 		});
 
@@ -101,29 +120,52 @@ public class DataFilterEditor extends DataListenerWidget {
 				String sel3 = cellTypeSelector.getSelected();
 				if (sel1 != null && sel2 != null && sel3 != null) {
 					List<SampleClass> selected = constrain3(sel1, sel2, sel3);
-					repeatTypeSelector.setItemsFrom(selected, "repeatType");
+					repeatTypeSelector.setItemsFrom(selected, "repType");
 				}
+				propagate();
 			}
 		});
 
 		repeatTypeSelector.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
-				String sel1 = organismSelector.getSelected();
-				String sel2 = organSelector.getSelected();
-				String sel3 = cellTypeSelector.getSelected();
-				String sel4 = repeatTypeSelector.getSelected();
-				if (sel1 != null && sel2 != null && sel3 != null && sel4 != null) {
-					Map<String, String> sc = new HashMap<String, String>();
-					sc.put("organism", sel1);
-					sc.put("organ", sel2);
-					sc.put("cellType", sel3);
-					sc.put("repeatType", sel4);
-					SampleClass r = new SampleClass(sc);
-					//TODO send out
-				}
+				propagate();
 			}
 		});
+	}
+	
+	private List<String> asList(Set<String> xs) {
+		ArrayList<String> r = new ArrayList<String>(xs);
+		return r;
+	}
+	
+	private void propagate() {
+		String sel1 = organismSelector.getSelected();
+		String sel2 = organSelector.getSelected();
+		String sel3 = cellTypeSelector.getSelected();
+		String sel4 = repeatTypeSelector.getSelected();
+		if (sel1 != null && sel2 != null && sel3 != null && sel4 != null) {
+			Map<String, String> sc = new HashMap<String, String>();
+			sc.put("organism", sel1);
+			sc.put("organ", sel2);
+			sc.put("testType", sel3);
+			sc.put("repType", sel4);
+			SampleClass r = new SampleClass(sc);
+			try {
+				changeDataFilter(r.asDataFilter());
+			} catch (IllegalArgumentException iae) {
+				//bad data
+			}
+		}
+	}
+	
+	public void setAvailable(SampleClass[] sampleClasses) {
+		this.sampleClasses = Arrays.asList(sampleClasses);	
+		organismSelector.setItemsFrom(this.sampleClasses, "organism");		
+		organSelector.setItemsFrom(this.sampleClasses, "organ");		
+		cellTypeSelector.setItemsFrom(this.sampleClasses, "testType");		
+		repeatTypeSelector.setItemsFrom(this.sampleClasses, "repType");	
+		propagate();
 	}
 	
 	public List<SampleClass> constrain1(String organism) {
@@ -144,9 +186,9 @@ public class DataFilterEditor extends DataListenerWidget {
 		chosenDataFilter = filter;
 		
 		//TODO update
-//		organismSelector.setSelected(filter.organism);
-//		organSelector.setSelected(filter.organ);
-//		cellTypeSelector.setSelected(filter.cellType);
-//		repeatTypeSelector.setSelected(filter.repeatType);
+		organismSelector.trySelect(filter.organism.toString());
+		organSelector.trySelect(filter.organ.toString());
+		cellTypeSelector.trySelect(filter.cellType.toString());
+		repeatTypeSelector.trySelect(filter.repeatType.toString());
 	}
 }

@@ -10,6 +10,7 @@ import otgviewer.client.components.StorageParser;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
+import otgviewer.shared.SampleClass;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;

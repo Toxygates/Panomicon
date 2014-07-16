@@ -8,6 +8,7 @@ import java.io.Serializable;
  * TODO: This is deprecated, to be removed
  * @author johan
  */
+@Deprecated
 public class DataFilter implements Serializable {
 	public CellType cellType;
 	public Organ organ;
