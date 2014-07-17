@@ -1,4 +1,4 @@
-package bioweb.shared.array;
+package t.common.shared.sample;
 
 public class SimpleProbe extends Probe {
 

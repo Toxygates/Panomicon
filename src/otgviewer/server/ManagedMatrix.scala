@@ -1,6 +1,6 @@
 package otgviewer.server
 
-import bioweb.shared.array.ExpressionValue
+import t.common.shared.sample.ExpressionValue
 import otg.ExprValue
 import otg.OTGContext
 import otg.PExprValue

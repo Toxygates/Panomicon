@@ -11,7 +11,7 @@ import otgviewer.shared.ManagedMatrixInfo;
 import otgviewer.shared.StringList;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
-import bioweb.shared.array.ExpressionRow;
+import t.common.shared.sample.ExpressionRow;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;

@@ -9,8 +9,8 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.Barcode;
-import bioweb.shared.array.Annotation;
-import bioweb.shared.array.HasSamples;
+import t.common.shared.sample.Annotation;
+import t.common.shared.sample.HasSamples;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.cellview.client.CellTable;

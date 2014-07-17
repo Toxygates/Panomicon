@@ -22,9 +22,9 @@ import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.ItemList;
-import bioweb.client.components.ResizingDockLayoutPanel;
-import bioweb.client.components.ResizingListBox;
-import bioweb.shared.SharedUtils;
+import t.common.client.components.ResizingDockLayoutPanel;
+import t.common.client.components.ResizingListBox;
+import t.common.shared.SharedUtils;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;

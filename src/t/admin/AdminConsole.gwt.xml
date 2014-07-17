@@ -2,7 +2,7 @@
 <!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.5.1//EN" "http://google-web-toolkit.googlecode.com/svn/tags/2.5.1/distro-source/core/src/gwt-module.dtd">
 <module rename-to="AdminConsole">
 	<inherits name="com.google.gwt.user.User" />
-	<inherits name='bioweb.BioWeb' />
+	<inherits name='t.common.Common' />
 	<inherits name='com.google.gwt.user.theme.clean.Clean' />
 	<inherits name='gwtupload.GWTUpload' />
 	

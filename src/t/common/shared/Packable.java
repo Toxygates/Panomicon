@@ -1,4 +1,4 @@
-package bioweb.shared;
+package t.common.shared;
 
 /**
  * A packable object can serialise itself to a string.

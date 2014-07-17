@@ -8,8 +8,8 @@ import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Pathology;
 import otgviewer.shared.SampleClass;
-import bioweb.shared.array.Annotation;
-import bioweb.shared.array.HasSamples;
+import t.common.shared.sample.Annotation;
+import t.common.shared.sample.HasSamples;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 

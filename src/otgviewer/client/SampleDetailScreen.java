@@ -13,7 +13,7 @@ import otgviewer.client.dialog.DialogPosition;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import bioweb.shared.array.DataColumn;
+import t.common.shared.sample.DataColumn;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;

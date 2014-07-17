@@ -15,7 +15,7 @@
 	<inherits name='com.google.gwt.visualization.Visualization'/>
 	<inherits name='com.google.gwt.http.HTTP'/>
 	<inherits name="com.google.gwt.logging.Logging"/>
-	<inherits name='bioweb.BioWeb' />
+	<inherits name='t.common.Common' />
 
 	<!-- Specify the app entry point class.                         -->
 	<entry-point class='otgviewer.client.OTGViewer' />

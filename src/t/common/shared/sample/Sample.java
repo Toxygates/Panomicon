@@ -1,7 +1,7 @@
-package bioweb.shared.array;
-import bioweb.shared.*;
-
+package t.common.shared.sample;
 import java.io.Serializable;
+
+import t.common.shared.*;
 
 /**
  * A microarray sample with a unique identifier that can be represented as a string.

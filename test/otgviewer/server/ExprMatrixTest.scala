@@ -4,7 +4,7 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import otg.ExprValue
-import bioweb.shared.array.ExpressionValue
+import t.common.shared.sample.ExpressionValue
 import friedrich.data.immutable._
 
 @RunWith(classOf[JUnitRunner])

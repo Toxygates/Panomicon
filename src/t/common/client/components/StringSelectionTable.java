@@ -1,4 +1,4 @@
-package bioweb.client.components;
+package t.common.client.components;
 
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;

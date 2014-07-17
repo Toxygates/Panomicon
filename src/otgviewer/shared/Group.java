@@ -8,8 +8,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import bioweb.shared.SharedUtils;
-import bioweb.shared.array.SampleGroup;
+import t.common.shared.SharedUtils;
+import t.common.shared.sample.SampleGroup;
 
 /**
  * A group of barcodes. Values will be computed as an average.

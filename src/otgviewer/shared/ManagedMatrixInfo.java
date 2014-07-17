@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import javax.annotation.Nullable;
 
-import bioweb.shared.SharedUtils;
+import t.common.shared.SharedUtils;
 
 /**
  * Information about a ManagedMatrix that the server maintains on behalf of the client. 

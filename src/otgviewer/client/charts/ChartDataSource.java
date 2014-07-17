@@ -17,9 +17,9 @@ import otgviewer.shared.Group;
 import otgviewer.shared.Series;
 import otgviewer.shared.TimesDoses;
 import otgviewer.shared.ValueType;
-import bioweb.shared.SharedUtils;
-import bioweb.shared.array.ExpressionRow;
-import bioweb.shared.array.ExpressionValue;
+import t.common.shared.SharedUtils;
+import t.common.shared.sample.ExpressionRow;
+import t.common.shared.sample.ExpressionValue;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;

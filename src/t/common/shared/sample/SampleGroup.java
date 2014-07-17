@@ -1,8 +1,9 @@
-package bioweb.shared.array;
+package t.common.shared.sample;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import bioweb.shared.SharedUtils;
+
+import t.common.shared.SharedUtils;
 
 /**
  * A way of grouping microarray samples.

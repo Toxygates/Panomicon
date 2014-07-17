@@ -13,7 +13,7 @@ import otgviewer.shared.Group;
 import otgviewer.shared.ItemList;
 import otgviewer.shared.OTGUtils;
 import otgviewer.shared.ValueType;
-import bioweb.shared.array.DataColumn;
+import t.common.shared.sample.DataColumn;
 
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;

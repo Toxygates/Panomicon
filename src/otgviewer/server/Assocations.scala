@@ -4,7 +4,7 @@ import scala.collection.JavaConversions._
 import otgviewer.shared.DataFilter
 import java.util.{ Map => JMap, HashMap => JHMap, Set => JSet, HashSet => JHSet, List => JList }
 import otgviewer.shared.Association
-import bioweb.shared.Pair
+import t.common.shared.Pair
 import otgviewer.server.rpc.Conversions
 
 object Assocations {
@@ -34,6 +34,4 @@ object Assocations {
       }
     }
   }  
-    
- 
 }

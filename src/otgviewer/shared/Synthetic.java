@@ -2,7 +2,7 @@ package otgviewer.shared;
 
 import java.io.Serializable;
 
-import bioweb.shared.array.DataColumn;
+import t.common.shared.sample.DataColumn;
 
 abstract public class Synthetic implements DataColumn<Barcode>, Serializable {
 

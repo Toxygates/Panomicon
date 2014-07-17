@@ -2,7 +2,7 @@ package otgviewer.shared;
 
 import java.io.Serializable;
 
-import bioweb.shared.array.ExpressionValue;
+import t.common.shared.sample.ExpressionValue;
 
 public class Series implements Serializable {
 

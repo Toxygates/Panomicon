@@ -8,8 +8,8 @@ import otgviewer.shared.BUnit;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import bioweb.shared.SharedUtils;
-import bioweb.shared.array.Annotation;
+import t.common.shared.SharedUtils;
+import t.common.shared.sample.Annotation;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

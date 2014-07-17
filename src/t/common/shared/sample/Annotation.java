@@ -1,4 +1,4 @@
-package bioweb.shared.array;
+package t.common.shared.sample;
 
 import java.io.Serializable;
 import java.util.List;

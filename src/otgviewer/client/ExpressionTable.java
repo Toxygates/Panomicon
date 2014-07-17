@@ -27,10 +27,10 @@ import otgviewer.shared.ManagedMatrixInfo;
 import otgviewer.shared.OTGUtils;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
-import bioweb.shared.Pair;
-import bioweb.shared.SharedUtils;
-import bioweb.shared.array.DataColumn;
-import bioweb.shared.array.ExpressionRow;
+import t.common.shared.Pair;
+import t.common.shared.SharedUtils;
+import t.common.shared.sample.DataColumn;
+import t.common.shared.sample.ExpressionRow;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.SafeHtmlCell;

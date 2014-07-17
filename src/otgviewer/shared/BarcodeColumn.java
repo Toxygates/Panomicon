@@ -1,8 +1,8 @@
 package otgviewer.shared;
 
-import bioweb.shared.Packable;
-import bioweb.shared.array.DataColumn;
-import bioweb.shared.array.HasSamples;
+import t.common.shared.Packable;
+import t.common.shared.sample.DataColumn;
+import t.common.shared.sample.HasSamples;
 
 public interface BarcodeColumn extends Packable, DataColumn<Barcode>, HasSamples<Barcode> {
 	/**

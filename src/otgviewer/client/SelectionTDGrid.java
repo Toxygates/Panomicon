@@ -14,7 +14,7 @@ import otgviewer.client.dialog.DialogPosition;
 import otgviewer.shared.BUnit;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.Group;
-import bioweb.shared.SharedUtils;
+import t.common.shared.SharedUtils;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

@@ -1,4 +1,4 @@
-package bioweb.client.components;
+package t.common.client.components;
 
 import java.util.Collection;
 import java.util.List;

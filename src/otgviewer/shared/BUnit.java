@@ -10,7 +10,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import bioweb.shared.array.Unit;
+import t.common.shared.sample.Unit;
 
 /**
  * A BUnit is a Unit of Barcodes.

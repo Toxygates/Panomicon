@@ -1,4 +1,4 @@
-package bioweb.client.components;
+package t.common.client.components;
 
 import java.util.ArrayList;
 import java.util.Collection;

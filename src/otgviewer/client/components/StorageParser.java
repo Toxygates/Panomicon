@@ -14,7 +14,7 @@ import otgviewer.shared.ItemList;
 import otgviewer.shared.Organ;
 import otgviewer.shared.Organism;
 import otgviewer.shared.RepeatType;
-import bioweb.shared.Packable;
+import t.common.shared.Packable;
 
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;

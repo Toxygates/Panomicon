@@ -6,7 +6,7 @@ import java.util.List;
 import otgviewer.client.Utils;
 import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.shared.Barcode;
-import bioweb.shared.SharedUtils;
+import t.common.shared.SharedUtils;
 
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;

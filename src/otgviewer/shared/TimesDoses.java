@@ -2,7 +2,8 @@ package otgviewer.shared;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import bioweb.shared.SharedUtils;
+
+import t.common.shared.SharedUtils;
 
 public class TimesDoses {
 	public final static String[] allTimes = new String[] { "2 hr", "3 hr", "6 hr", "8 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day" };

@@ -5,7 +5,7 @@ import static otgviewer.client.components.StorageParser.packList;
 import java.io.Serializable;
 import java.util.Collection;
 
-import bioweb.shared.Packable;
+import t.common.shared.Packable;
 
 /**
  * A typed, named list of items.

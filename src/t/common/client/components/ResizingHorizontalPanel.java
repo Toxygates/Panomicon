@@ -1,4 +1,4 @@
-package bioweb.client.components;
+package t.common.client.components;
 
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ProvidesResize;

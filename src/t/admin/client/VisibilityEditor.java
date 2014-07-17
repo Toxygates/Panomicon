@@ -10,7 +10,7 @@ import java.util.Set;
 
 import t.admin.shared.Batch;
 import t.admin.shared.Instance;
-import bioweb.client.components.SelectionTable;
+import t.common.client.components.SelectionTable;
 
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;

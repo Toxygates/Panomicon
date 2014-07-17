@@ -7,7 +7,7 @@ import scala.collection.JavaConversions.mapAsJavaMap
 import scala.collection.JavaConversions.seqAsJavaList
 import Conversions.asScala
 import Conversions.speciesFromFilter
-import bioweb.shared.array.ExpressionRow
+import t.common.shared.sample.ExpressionRow
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import otg.OTGContext

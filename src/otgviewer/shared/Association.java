@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import bioweb.shared.Pair;
+import t.common.shared.Pair;
 
 /**
  * An association is a mapping from probes to other objects. They are used as

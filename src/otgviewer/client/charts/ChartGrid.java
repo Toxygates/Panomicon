@@ -9,7 +9,7 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.Group;
-import bioweb.shared.SharedUtils;
+import t.common.shared.SharedUtils;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Composite;

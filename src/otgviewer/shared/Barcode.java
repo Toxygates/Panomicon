@@ -2,7 +2,7 @@ package otgviewer.shared;
 
 import javax.annotation.Nullable;
 
-import bioweb.shared.array.Sample;
+import t.common.shared.sample.Sample;
 
 /**
  * A barcode corresponds to a single microarray sample.

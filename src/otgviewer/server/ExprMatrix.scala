@@ -1,8 +1,8 @@
 package otgviewer.server
 
 import friedrich.data.immutable._
-import bioweb.shared.array.ExpressionRow
-import bioweb.shared.array.ExpressionValue
+import t.common.shared.sample.ExpressionRow
+import t.common.shared.sample.ExpressionValue
 import scala.reflect.ClassTag
 import org.apache.commons.math3.stat.inference.TTest
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest

@@ -6,8 +6,8 @@ import scala.collection.{Set => CSet}
 import scala.collection.{Set => CSet}
 import scala.collection.JavaConversions._
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-import bioweb.shared.Pair
-import bioweb.shared.array.Annotation
+import t.common.shared.Pair
+import t.common.shared.sample.Annotation
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import otg.DefaultBio
@@ -24,7 +24,7 @@ import otgviewer.shared.BarcodeColumn
 import otgviewer.shared.DataFilter
 import otgviewer.shared.Pathology
 import otgviewer.shared.TimesDoses
-import bioweb.shared.array.HasSamples
+import t.common.shared.sample.HasSamples
 import otg.sparql.AffyProbes
 import otg.sparql.LocalUniprot
 import otg.sparql.DrugBank
@@ -43,7 +43,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   import Assocations._
   import CommonSPARQL._
 
-  type DataColumn = bioweb.shared.array.DataColumn[Barcode]
+  type DataColumn = t.common.shared.sample.DataColumn[Barcode]
   
   implicit var context: OTGContext = _
   var baseConfig: BaseConfig = _

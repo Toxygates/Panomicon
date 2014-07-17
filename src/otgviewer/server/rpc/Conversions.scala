@@ -11,7 +11,7 @@ import otgviewer.shared.Organism
 import otgviewer.shared.Pathology
 import otgviewer.shared.RankRule
 import otgviewer.shared.Series
-import bioweb.shared.array._
+import t.common.shared.sample._
 import otg.SeriesRanking
 import otg.Context
 import otg.RepeatType
@@ -111,6 +111,6 @@ object Conversions {
     }
   }
   
-  implicit def asJava[T,U](v: (T, U)) = new bioweb.shared.Pair(v._1, v._2)
+  implicit def asJava[T,U](v: (T, U)) = new t.common.shared.Pair(v._1, v._2)
   
 }
