@@ -55,6 +55,8 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   private var csvUrlBase: String = _
   private implicit var context: OTGContext = _
   var affyProbes: AffyProbes = _ 
+  //TODO update mechanism
+  var platforms: Map[String, Iterable[String]] = _
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
@@ -72,6 +74,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     baseConfig = config.baseConfig
     
     affyProbes = new AffyProbes(context.triplestoreConfig.triplestore)
+    platforms = affyProbes.platforms
   }
 
   override def destroy() {
@@ -104,27 +107,27 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     if (probes == null || probes.size == 0) {
       pmap.tokens.toSeq
     } else {
-      probes.filter(pmap.isToken)   //TODO   
+      probes.filter(pmap.isToken) //TODO   
     }
   }
-  
+
   /**
    * Filter probes for a number of species.
    * If probes is null or empty, all probes for all supplied species will be returned.
    */
-  private def filterProbes(probes: Seq[String], 
-      species: Iterable[Species]): Map[Species, Seq[String]] = {
+  private def filterProbes(probes: Seq[String],
+    species: Iterable[Species]): Map[Species, Seq[String]] = {
     Map() ++ species.map(s => (s -> filterProbes(probes, s)))
   }
 
   /**
-   * Filter probes for all species.   
+   * Filter probes for all species.
    */
   private def filterProbesAllSpecies(probes: Seq[String]): Seq[String] = {
     val pmap = context.unifiedProbes
     if (probes == null || probes.size == 0) {
       //Requesting all probes for all species is not permitted.
-      List()      
+      List()
     } else {
       probes.filter(pmap.isToken) //TODO
     }

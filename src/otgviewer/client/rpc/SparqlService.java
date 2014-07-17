@@ -94,13 +94,13 @@ public interface SparqlService extends RemoteService {
 	public BUnit[] units(DataFilter filter, @Nullable String[] compounds, 
 			@Nullable String doseLevel, @Nullable String time);
 			
-	
-	/**
-	 * Obtain probes for the given data filter
-	 * @param filter
-	 * @return
-	 */
-	public String[] probes(DataFilter filter);
+//	
+//	/**
+//	 * Obtain probes for the given barcodes
+//	 * @param columns
+//	 * @return
+//	 */
+//	public String[] probes(BarcodeColumn[] columns);
 	
 	/**
 	 * Obtain pathologies for the given sample

@@ -55,6 +55,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   var chembl: ChEMBL = _
   var drugBank: DrugBank = _
   var homologene: B2RHomologene = _
+  //TODO update mechanism for this
+  var platforms: Map[String, Iterable[String]] = _
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
@@ -75,6 +77,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     chembl = new ChEMBL()
     drugBank = new DrugBank()
     homologene = new B2RHomologene()
+    platforms = affyProbes.platforms
   }
 
   override def destroy() {
@@ -132,9 +135,18 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     r.sortWith((t1, t2) => orderedTimes.indexOf(t1) < orderedTimes.indexOf(t2))
   }
 
-  def probes(filter: DataFilter): Array[String] =
-    context.unifiedProbes.tokens.toArray //TODO filtering    
+//  def probes(filter: DataFilter): Array[String] =
+//    context.unifiedProbes.tokens.toArray //TODO filtering    
 
+  def probes(columns: Array[BarcodeColumn]): Array[String] = {
+    val samples = columns.flatMap(_.getSamples)
+    val metadata = new TriplestoreMetadata(otgSamples, None)    
+    val usePlatforms = samples.map(s => metadata.parameter(
+        otg.Sample(s.getCode), "platform_id")
+        ).toSet
+    usePlatforms.toVector.flatMap(platforms).toArray
+  }
+  
   def pathologies(barcode: Barcode): Array[Pathology] =
     otgSamples.pathologies(barcode.getCode).map(asJava(_)).toArray
 
