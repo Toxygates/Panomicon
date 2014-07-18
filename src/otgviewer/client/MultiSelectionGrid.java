@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.annotation.Nullable;
+
 import otgviewer.client.SelectionTDGrid.UnitListener;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
@@ -29,10 +31,11 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 	private final Screen scr;
 	protected final Logger logger = Utils.getLogger("group");
 	
-	public MultiSelectionGrid(Screen scr) {		
+	public MultiSelectionGrid(Screen scr, @Nullable SelectionTDGrid.UnitListener listener) {		
 		vp = new VerticalPanel();
 		initWidget(vp);
-		this.scr = scr;					
+		this.scr = scr;
+		this.listener = listener;
 	}
 	
 	private SelectionTDGrid findOrCreateSection(Screen scr, DataFilter filter) {

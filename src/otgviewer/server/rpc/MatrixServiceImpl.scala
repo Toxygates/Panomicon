@@ -56,7 +56,8 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   private implicit var context: OTGContext = _
   var affyProbes: AffyProbes = _ 
   //TODO update mechanism
-  var platforms: Map[String, Iterable[String]] = _
+  var platforms: Map[String, Set[String]] = _
+  var otgSamples: OTGSamples = _
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
@@ -73,8 +74,10 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     //TODO parse baseConfig directly somewhere
     baseConfig = config.baseConfig
     
-    affyProbes = new AffyProbes(context.triplestoreConfig.triplestore)
-    platforms = affyProbes.platforms
+    val ts = context.triplestoreConfig.triplestore
+    affyProbes = new AffyProbes(ts)
+    otgSamples = new OTGSamples(ts)
+    platforms = affyProbes.platforms.map( x => x._1 -> x._2.toSet)
   }
 
   override def destroy() {
@@ -100,37 +103,28 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
         identifiers, precise).map(_.identifier).toArray
 
   /**
-   * Filter probes for one species.
+   * Filter probes for one platform.
    */
-  private def filterProbes(probes: Seq[String], s: Species): Seq[String] = {
-    val pmap = context.unifiedProbes
-    if (probes == null || probes.size == 0) {
-      pmap.tokens.toSeq
+  private def filterProbes(probes: Seq[String], platform: String) = {
+    if (probes.size == 0) {
+      platforms(platform)
     } else {
-      probes.filter(pmap.isToken) //TODO   
+      probes.filter(p => platforms(platform).contains(p))
     }
   }
 
   /**
-   * Filter probes for a number of species.
-   * If probes is null or empty, all probes for all supplied species will be returned.
+   * Filter probes for a number of platforms.
    */
-  private def filterProbes(probes: Seq[String],
-    species: Iterable[Species]): Map[Species, Seq[String]] = {
-    Map() ++ species.map(s => (s -> filterProbes(probes, s)))
-  }
+  private def filterProbes(probes: Seq[String], platforms: Iterable[String]): Seq[String] = 
+    platforms.toSeq.flatMap(pf => filterProbes(probes, pf))
 
   /**
-   * Filter probes for all species.
+   * Filter probes for all platforms.
    */
-  private def filterProbesAllSpecies(probes: Seq[String]): Seq[String] = {
-    val pmap = context.unifiedProbes
-    if (probes == null || probes.size == 0) {
-      //Requesting all probes for all species is not permitted.
-      List()
-    } else {
-      probes.filter(pmap.isToken) //TODO
-    }
+  private def filterProbesAllPlatforms(probes: Seq[String]): Seq[String] = {
+    val pfs = platforms.keys
+    filterProbes(probes, pfs)    
   }
   
   private[this] def makeMatrix(requestColumns: Seq[Group], initProbes: Array[String], 
@@ -164,12 +158,17 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   private[this] def speciesForGroups(gs: Iterable[Group]) = 
     gs.flatMap(_.getUnits()).map(x => asScala(x.getOrganism())).toSet
   
+  private def platformsForGroups(gs: Iterable[Group]): Iterable[String] = {
+    val samples = gs.toList.flatMap(_.getSamples().map(_.getCode))
+    otgSamples.platforms(samples)
+  }
+    
   def loadDataset(groups: JList[Group], probes: Array[String],
                   typ: ValueType, syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
-    val species = speciesForGroups(groups) 
-    val allProbes = filterProbes(null, species).toArray
+    val platforms = platformsForGroups(groups.toList)   
+    val allProbes = filterProbes(List(), platforms).toArray
     //TODO use not only the first species
-    val mm = makeMatrix(groups.toVector, allProbes.head._2.toArray, typ)    
+    val mm = makeMatrix(groups.toVector, allProbes.toArray, typ)    
     setSessionData(mm)
     selectProbes(probes)
   }
@@ -186,10 +185,9 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     	mm.selectProbes(probes)
     } else {
       val groups = (0 until mm.info.numColumns()).map(i => mm.info.columnGroup(i))
-      val ss = speciesForGroups(groups)
-      val allProbes = filterProbes(null, ss).toArray
-      //TODO
-      mm.selectProbes(allProbes.head._2.toArray)
+      val ps = platformsForGroups(groups)
+      val allProbes = filterProbes(List(), ps).toArray
+      mm.selectProbes(allProbes)
     }
     mm.info
   }
@@ -241,10 +239,10 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   def getFullData(g: Group, probes: Array[String], sparseRead: Boolean, 
       withSymbols: Boolean, typ: ValueType): JList[ExpressionRow] = {        
     val species = g.getUnits().map(x => asScala(x.getOrganism())).toSet
+    val platforms = otgSamples.platforms(g.getSamples().map(_.getCode))
     
-    val realProbes = filterProbes(probes, species).toArray
-    //TODO! use other species as well, instead of just first one
-    val mm = makeMatrix(List(g), realProbes.head._2.toArray, typ, sparseRead)
+    val realProbes = filterProbes(probes, platforms).toArray
+    val mm = makeMatrix(List(g), realProbes.toArray, typ, sparseRead)
     
     //When we have obtained the data in r, it might no longer be sorted in the order that the user
     //requested. Thus we use selectNamedColumns here to force the sort order they wanted.
@@ -307,9 +305,9 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     val tmLists = ls.getAccessibleLists()
     tmLists.filter(_.getType == "Gene").map(
       l => {
-        val tglist = TargetMine.asTGList(l, affyProbes, filterProbesAllSpecies(_))
+        val tglist = TargetMine.asTGList(l, affyProbes, filterProbesAllPlatforms(_))
         if (tglist.items.size > 0) {
-          val probesForCurrent = filterProbes(tglist.items, filter.species)
+          val probesForCurrent = filterProbes(tglist.items, List())
           tglist.setComment(probesForCurrent.size + "");
         } else {
           tglist.setComment("0")

@@ -78,7 +78,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		titleLabel.setStyleName("heading");
 		vp.add(titleLabel);
 		
-		msg = new MultiSelectionGrid(scr);
+		msg = new MultiSelectionGrid(scr, this);
 		vp.add(msg);
 		addListener(msg);
 		

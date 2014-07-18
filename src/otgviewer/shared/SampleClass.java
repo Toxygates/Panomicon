@@ -59,4 +59,15 @@ public class SampleClass implements Serializable {
 		CellType c = get("testType").equals("in vivo") ? CellType.Vivo : CellType.Vitro;
 		return new DataFilter(c, o, r, s);
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("SC(");
+		for (String k : data.keySet()) {
+			sb.append(k + ":" + data.get(k) + ",");
+		}
+		sb.append(")");
+		return sb.toString();
+	}
 }

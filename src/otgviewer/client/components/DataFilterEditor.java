@@ -6,7 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
+import otgviewer.client.Utils;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.DataFilter;
@@ -24,6 +26,7 @@ public class DataFilterEditor extends DataListenerWidget {
 	List<SampleClass> sampleClasses;	
 	final SCListBox organismSelector, organSelector, cellTypeSelector, repeatTypeSelector;
 	private final SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT.create(SparqlService.class);
+	protected final Logger logger;
 	
 	class SCListBox extends ListBox {
 		void setItems(List<String> items) {
@@ -62,6 +65,8 @@ public class DataFilterEditor extends DataListenerWidget {
 	public DataFilterEditor() {
 		HorizontalPanel hp = new HorizontalPanel();
 		initWidget(hp);
+		logger = Utils.getLogger("dfeditor");
+		
 		sparqlService.sampleClasses(new AsyncCallback<SampleClass[]>() {
 			
 			@Override
@@ -154,6 +159,7 @@ public class DataFilterEditor extends DataListenerWidget {
 			try {
 				changeDataFilter(r.asDataFilter());
 			} catch (IllegalArgumentException iae) {
+				logger.warning("Illegal argument (unable to parse " + r + ")");
 				//bad data
 			}
 		}

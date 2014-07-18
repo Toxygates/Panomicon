@@ -57,6 +57,7 @@ public class ColumnScreen extends Screen {
 			protected void changeDataFilter(DataFilter df) {
 				super.changeDataFilter(df);				
 				s.dataFilterChanged(df);
+				s.storeDataFilter(s.getParser());
 				//TODO I'm not sure that exposing the action queue mechanism 
 				//like this is a good thing to do. Think of a better way.
 				runActions();
