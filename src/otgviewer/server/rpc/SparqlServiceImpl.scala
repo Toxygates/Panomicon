@@ -162,35 +162,37 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 	  column.getSamples.map(x => otgSamples.annotations(x.getCode, keys)).map(asJava(_))
   }
 
-  def pathways(filter: DataFilter, pattern: String): Array[String] =
-    b2rKegg.forPattern(pattern, filter).toArray
+  def pathways(sc: SampleClass, pattern: String): Array[String] =
+    b2rKegg.forPattern(pattern, sc).toArray
 
   //TODO: return a map instead
-  def geneSyms(filter: DataFilter, probes: Array[String]): Array[Array[String]] = {
+  def geneSyms(probes: Array[String]): Array[Array[String]] = {
     val ps = probes.map(p => Probe(p))
     val attrib = affyProbes.withAttributes(ps)
     probes.map(pi => attrib.find(_.identifier == pi).
       map(_.symbolStrings.toArray).getOrElse(Array()))
   }
 
-  def probesForPathway(filter: DataFilter, pathway: String): Array[String] = {
-    val geneIds = b2rKegg.geneIds(pathway, filter).map(Gene(_))
+  def probesForPathway(sc: SampleClass, pathway: String): Array[String] = {
+    val sp = asSpecies(sc)
+    val geneIds = b2rKegg.geneIds(pathway, sp).map(Gene(_))
     println("Probes for " + geneIds.size + " genes")
     val probes = affyProbes.forGenes(geneIds).toArray
     val pmap = context.unifiedProbes //TODO
     probes.map(_.identifier).filter(pmap.isToken).toArray
   }
 
-  def probesTargetedByCompound(filter: DataFilter, compound: String, service: String,
+  def probesTargetedByCompound(sc: SampleClass, compound: String, service: String,
     homologous: Boolean): Array[String] = {
     val cmp = Compound.make(compound)
+    val sp = asSpecies(sc)
     val proteins = service match {
-      case "CHEMBL" => chembl.targetsFor(cmp, if (homologous) { null } else { filter })
+      case "CHEMBL" => chembl.targetsFor(cmp, if (homologous) { null } else { sp })
       case "DrugBank" => drugBank.targetsFor(cmp)
       case _ => throw new Exception("Unexpected probe target service request: " + service)
     }
     val pbs = if (homologous) {
-      val oproteins = uniprot.orthologsFor(proteins, filter).values.flatten.toSet
+      val oproteins = uniprot.orthologsFor(proteins, sp).values.flatten.toSet
       affyProbes.forUniprots(oproteins ++ proteins)
       //      OTGOwlim.probesForEntrezGenes(genes)
     } else {
@@ -203,16 +205,17 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   def goTerms(pattern: String): Array[String] =
     affyProbes.goTerms(pattern).map(_.name).toArray
 
-  def probesForGoTerm(filter: DataFilter, goTerm: String): Array[String] = {
-    val pmap = context.unifiedProbes //TODO context.probes(filter)
+  def probesForGoTerm(goTerm: String): Array[String] = {
+    val pmap = context.unifiedProbes 
     affyProbes.forGoTerm(GOTerm("", goTerm)).map(_.identifier).filter(pmap.isToken).toArray
   }
 
   import scala.collection.{ Map => CMap, Set => CSet }
 
-  def associations(filter: DataFilter, types: Array[AType],
+  def associations(sc: SampleClass, types: Array[AType],
     _probes: Array[String]): Array[Association] = {
     val probes = affyProbes.withAttributes(_probes.map(Probe(_)))
+    val sp = asSpecies(sc)
 
     def queryOrEmpty[T <: Triplestore](c: T, f: T => BBMap): BBMap = {
       val emptyVal = CSet(DefaultBio("error", "(Timeout or error)"))
@@ -224,7 +227,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 
     //orthologous proteins if needed
     val oproteins = if ((types.contains(AType.Chembl) || types.contains(AType.Drugbank) || types.contains(AType.OrthProts))
-      && (filter.species.get != Human)
+      && (sp != Human)
       && false // Not used currently due to performance issues!
       ) {
       // This always maps to Human proteins as they are assumed to contain the most targets
@@ -236,7 +239,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     println(oproteins.allValues.size + " oproteins")
 
     def getTargeting(from: CompoundTargets): MMap[Probe, Compound] = {
-      val expected = otgSamples.compounds(filter).map(Compound.make(_))
+      val expected = otgSamples.compounds(sc).map(Compound.make(_))
 
       //strictly orthologous
       val oproteinVs = oproteins.allValues.toSet -- proteins.allValues.toSet
@@ -267,9 +270,9 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
           c.homologousGenes(probes.flatMap(_.genes)))
       case x: AType.KEGG.type => queryOrEmpty(b2rKegg,
         (c: B2RKegg) => toBioMap(probes, (_: Probe).genes) combine
-          c.forGenes(probes.flatMap(_.genes), filter))
+          c.forGenes(probes.flatMap(_.genes), sp))
       case x: AType.Enzymes.type => queryOrEmpty(b2rKegg,
-        (c: B2RKegg) => c.enzymes(probes.flatMap(_.genes), filter))
+        (c: B2RKegg) => c.enzymes(probes.flatMap(_.genes), sp))
     }
 
     def standardMapping(m: BBMap): MMap[String, (String, String)] =
@@ -280,8 +283,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     m1.map(p => new Association(p._1, convertPairs(p._2))).toArray
   }
 
-  def geneSuggestions(filter: DataFilter, partialName: String): Array[String] = {    
-      affyProbes.probesForPartialSymbol(partialName, filter).map(_.identifier).toArray
+  def geneSuggestions(sc: SampleClass, partialName: String): Array[String] = {    
+      affyProbes.probesForPartialSymbol(partialName, sc).map(_.identifier).toArray
   }
 
 }

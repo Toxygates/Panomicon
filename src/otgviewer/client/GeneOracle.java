@@ -5,7 +5,7 @@ import java.util.List;
 
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
-import otgviewer.shared.DataFilter;
+import t.viewer.shared.SampleClass;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;
@@ -21,9 +21,9 @@ import com.google.gwt.user.client.ui.SuggestOracle;
  */
 public class GeneOracle extends SuggestOracle {
 	
-	private DataFilter filter;
-	public void setFilter(DataFilter filter) {
-		this.filter = filter;
+	private SampleClass sampleClass;
+	public void setFilter(SampleClass sc) {
+		this.sampleClass = sc;
 	}
 	
 	private static String lastRequest = "";
@@ -60,7 +60,7 @@ public class GeneOracle extends SuggestOracle {
 	}
 	
 	private void getSuggestions(final Request request, final Callback callback) {
-		sparqlService.geneSuggestions(filter, request.getQuery(), new AsyncCallback<String[]>() {
+		sparqlService.geneSuggestions(sampleClass, request.getQuery(), new AsyncCallback<String[]>() {
 			
 			@Override
 			public void onSuccess(String[] result) {

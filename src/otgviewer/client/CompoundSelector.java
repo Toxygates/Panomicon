@@ -32,6 +32,7 @@ import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.IdentityColumn;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RequiresResize;
@@ -216,7 +217,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		addRankColumns();
 		
 		if (rules.size() > 0) { //do we have at least 1 rule?						
-			seriesService.rankedCompounds(chosenDataFilter, rules.toArray(new RankRule[0]),
+			seriesService.rankedCompounds(chosenSampleClass, rules.toArray(new RankRule[0]),
 					new PendingAsyncCallback<MatchResult[]>(this) {
 						public void handleSuccess(MatchResult[] res) {
 							ranks.clear();
@@ -252,26 +253,33 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 			if (rankProbes.size() == 0) {
 				Window.alert("These charts can only be displayed if compounds have been ranked.");
 			} else {
-				seriesService.getSeries(chosenDataFilter, rankProbes.toArray(new String[0]), 
-						null, new String[] { value }, new PendingAsyncCallback<List<Series>>(w, "Unable to retrieve data.") {
+				seriesService.getSeries(chosenSampleClass, rankProbes.toArray(new String[0]), 
+						null, new String[] { value }, getSeriesCallback(value));					
+			}
+		}
+		
+		private AsyncCallback<List<Series>> getSeriesCallback(final String value) {
+			 return new PendingAsyncCallback<List<Series>>(w, "Unable to retrieve data.") {
 					public void handleSuccess(final List<Series> ss) {
 						Utils.ensureVisualisationAndThen(new Runnable() {
 							public void run() {
-								ChartGridFactory cgf = new ChartGridFactory(chosenSampleClass, chosenColumns);
-								cgf.makeSeriesCharts(ss, false, scores.get(value).dose(), new ChartGridFactory.ChartAcceptor() {
-									
-									@Override
-									public void acceptCharts(ChartGrid cg) {
-										Utils.displayInPopup("Charts", cg, DialogPosition.Side);								
-									}
-								}, screen);					
+								makeSeriesCharts(value, ss);		
 							}
 						});
 							
 					}
-					
-				});
-			}
+			 };
+		}
+		
+		private void makeSeriesCharts(final String value, final List<Series> ss) {
+			ChartGridFactory cgf = new ChartGridFactory(chosenSampleClass, chosenColumns);
+			cgf.makeSeriesCharts(ss, false, scores.get(value).dose(), new ChartGridFactory.ChartAcceptor() {
+				
+				@Override
+				public void acceptCharts(ChartGrid cg) {
+					Utils.displayInPopup("Charts", cg, DialogPosition.Side);								
+				}
+			}, screen);			
 		}
 	}
 }

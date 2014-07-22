@@ -36,17 +36,17 @@ public interface SparqlServiceAsync {
 			AsyncCallback<Annotation[]> callback);
 	public void annotations(Barcode barcode, AsyncCallback<Annotation> callback);
 	
-	public void pathways(DataFilter filter, String pattern, AsyncCallback<String[]> callback);
-	public void probesForPathway(DataFilter filter, String pathway, AsyncCallback<String[]> callback);
-	public void probesTargetedByCompound(DataFilter filter, String compound, String service, 
+	public void pathways(SampleClass sc, String pattern, AsyncCallback<String[]> callback);
+	public void probesForPathway(SampleClass sc, String pathway, AsyncCallback<String[]> callback);
+	public void probesTargetedByCompound(SampleClass sc, String compound, String service, 
 			boolean homologous, AsyncCallback<String[]> callback);
 	
-	public void geneSyms(DataFilter filter, String[] probes, AsyncCallback<String[][]> callback);
-	public void geneSuggestions(DataFilter filter, String partialName, AsyncCallback<String[]> callback);
+	public void geneSyms(String[] probes, AsyncCallback<String[][]> callback);
+	public void geneSuggestions(SampleClass sc, String partialName, AsyncCallback<String[]> callback);
 	
 	public void goTerms(String pattern, AsyncCallback<String[]> callback);
-	public void probesForGoTerm(DataFilter filter, String term, AsyncCallback<String[]> callback);
+	public void probesForGoTerm(String term, AsyncCallback<String[]> callback);
 	
-	public void associations(DataFilter filter, AType[] types, String[] probes, 
+	public void associations(SampleClass sc, AType[] types, String[] probes, 
 			AsyncCallback<Association[]> callback);
 }

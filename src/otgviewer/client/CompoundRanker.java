@@ -381,9 +381,9 @@ public class CompoundRanker extends DataListenerWidget {
 
 	
 	@Override
-	public void dataFilterChanged(DataFilter filter) {
-		super.dataFilterChanged(filter);
-		oracle.setFilter(filter);	
+	public void sampleClassChanged(SampleClass sc) {
+		super.sampleClassChanged(sc);
+		oracle.setFilter(sc);	
 		for (RuleInputHelper rih: inputHelpers) {
 			rih.refCompound.clear();
 			rih.refDose.clear();

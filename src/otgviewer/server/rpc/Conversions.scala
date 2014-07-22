@@ -19,6 +19,7 @@ import otgviewer.shared.RuleType
 import otg.Organ._
 import otg.Species._
 import otg.OTGSeries
+import t.viewer.shared.SampleClass
 
 /**
  * Conversions between Scala and Java types.
@@ -29,19 +30,19 @@ import otg.OTGSeries
 object Conversions {
   import language.implicitConversions
 
-  implicit def asScala(filter: DataFilter): otg.Filter = {    
-    val or = otg.Organ.withName(filter.organ.toString())
-    
-    val ct = filter.cellType match {
-      case t: CellType.Vivo.type => "in vivo"
-      case _ => "in vitro"
-    }
-    
-    new otg.Filter(Some(or), 
-        Some(RepeatType.withName(filter.repeatType.toString())), 
-        Some(otg.Species.withName(filter.organism.toString())),
-            Some(ct));
-  }
+//  private def asScala(filter: DataFilter): otg.Filter = {    
+//    val or = otg.Organ.withName(filter.organ.toString())
+//    
+//    val ct = filter.cellType match {
+//      case t: CellType.Vivo.type => "in vivo"
+//      case _ => "in vitro"
+//    }
+//    
+//    new otg.Filter(Some(or), 
+//        Some(RepeatType.withName(filter.repeatType.toString())), 
+//        Some(otg.Species.withName(filter.organism.toString())),
+//            Some(ct));
+//  }
 
   implicit def asJava(path: otg.Pathology): Pathology =
     new Pathology(path.barcode, path.topography.getOrElse(null), 
@@ -67,12 +68,12 @@ object Conversions {
     }
   }
 
-  implicit def asScala(filter: DataFilter, series: Series)(implicit context: Context): OTGSeries = {
-	val sf = asScala(filter)
+  implicit def asScala(sc: SampleClass, series: Series)(implicit context: Context): OTGSeries = {
 	val p = context.unifiedProbes.pack(series.probe) //TODO filtering
 	
-	new OTGSeries(sf.repeatType.get.toString, sf.organ.get.toString(), sf.species.get.toString, 
-	    p, series.compound, series.timeDose, sf.cellType.get, Vector())
+	new OTGSeries(sc.get("sin_rep_type"), 
+	    sc.get("organ_id"), sc.get("organism"), 
+	    p, series.compound, series.timeDose, sc.get("test_type"), Vector())
   }
 
   implicit def asJava(series: OTGSeries)(implicit context: Context): Series = {

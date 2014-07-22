@@ -122,14 +122,14 @@ public interface SparqlService extends RemoteService {
 	 * @param pattern
 	 * @return
 	 */
-	public String[] pathways(DataFilter filter, String pattern);
+	public String[] pathways(SampleClass sc, String pattern);
 	
 	/**
 	 * Obtain probes that belong to the named pathway.
 	 * @param pathway
 	 * @return
 	 */
-	public String[] probesForPathway(DataFilter filter, String pathway);
+	public String[] probesForPathway(SampleClass sc, String pathway);
 	
 	/**
 	 * Obtain probes that correspond to proteins targeted by
@@ -140,7 +140,7 @@ public interface SparqlService extends RemoteService {
 	 * @param homologous Whether to use homologous genes (if not, only direct targets are returned)
 	 * @return
 	 */
-	public String[] probesTargetedByCompound(DataFilter filter, String compound, String service, 
+	public String[] probesTargetedByCompound(SampleClass sc, String compound, String service, 
 			boolean homologous);
 	
 	/**
@@ -152,28 +152,26 @@ public interface SparqlService extends RemoteService {
 	
 	/**
 	 * Obtain probes for a given GO term (fully named)
-	 * @param filter
 	 * @param goTerm
 	 * @return
 	 */
-	public String[] probesForGoTerm(DataFilter filter, String goTerm);
+	public String[] probesForGoTerm(String goTerm);
 	
 	/**
 	 * Obtain gene symbols for the given probes.
 	 * The resulting array will contain gene symbol arrays in the same order as
 	 * and corresponding to the probes in the input array.
-	 * @param filter
 	 * @param probes
 	 * @return
 	 */
-	public String[][] geneSyms(DataFilter filter, String[] probes);
+	public String[][] geneSyms(String[] probes);
 	
 	/*
 	 * Obtain gene suggestions from a partial gene symbol
 	 * @param partialName
 	 * @return An array of pairs, where the first item is the precise gene symbol and the second is the full gene name.
 	 */
-	public String[] geneSuggestions(DataFilter filter, String partialName);
+	public String[] geneSuggestions(SampleClass sc, String partialName);
 	
 	/**
 	 * Obtain associations -- the "dynamic columns" on the data screen.
@@ -182,5 +180,5 @@ public interface SparqlService extends RemoteService {
 	 * @param probes
 	 * @return
 	 */
-	public Association[] associations(DataFilter filter, AType[] types, String[] probes);
+	public Association[] associations(SampleClass sc, AType[] types, String[] probes);
 }

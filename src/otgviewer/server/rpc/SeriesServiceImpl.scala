@@ -31,6 +31,7 @@ import scala.annotation.tailrec
 import otg.TimeDose
 import otgviewer.shared.TimesDoses
 import t.BaseConfig
+import t.viewer.shared.SampleClass
 
 class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   import Conversions._
@@ -70,7 +71,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     }
   }
   
-  def rankedCompounds(filter: DataFilter, rules: Array[RankRule]): Array[MatchResult] = {
+  def rankedCompounds(sc: SampleClass, rules: Array[RankRule]): Array[MatchResult] = {
     val nnr = rules.takeWhile(_ != null)
     var srs = nnr.map(asScala(_))
     var probesRules = nnr.map(_.probe).zip(srs)
@@ -89,7 +90,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     try {
       //TODO: probe is actually irrelevant here but the API is not well designed
       //Same for timeDose = High
-      val key = asScala(filter,
+      val key = asScala(sc,
         new otgviewer.shared.Series("", probesRules.head._1, "High", null, Array.empty))
       val ranking = new SeriesRanking(db, key)
       val ranked = ranking.rankCompoundsCombined(probesRules)
@@ -116,23 +117,23 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     }    
   }
 
-  def getSingleSeries(filter: DataFilter, probe: String, timeDose: String, compound: String): Series = {
+  def getSingleSeries(sc: SampleClass, probe: String, timeDose: String, compound: String): Series = {
     val db = getDB()
     try {
-      db.read(asScala(filter, new Series("", probe, timeDose, compound, Array.empty))).head
+      db.read(asScala(sc, new Series("", probe, timeDose, compound, Array.empty))).head
     } finally {
       db.close()
     }
   }
 
-  def getSeries(filter: DataFilter, probes: Array[String], timeDose: String, compounds: Array[String]): JList[Series] = {
+  def getSeries(sc: SampleClass, probes: Array[String], timeDose: String, compounds: Array[String]): JList[Series] = {
     val validated = affyProbes.identifiersToProbes(context.unifiedProbes, 
         probes, true, true).map(_.identifier)
     val db = getDB()
     try {
       val ss = validated.flatMap(p =>
         compounds.flatMap(c =>
-          db.read(asScala(filter, new Series("", p, timeDose, c, Array.empty)))))
+          db.read(asScala(sc, new Series("", p, timeDose, c, Array.empty)))))
       println(s"Read ${ss.size} series")
       println(ss.take(5).mkString("\n"))
       val jss = ss.map(asJava(_))

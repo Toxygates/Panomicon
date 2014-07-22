@@ -19,12 +19,12 @@ import otgviewer.client.rpc.MatrixService;
 import otgviewer.client.rpc.MatrixServiceAsync;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
-import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
 import t.common.shared.SharedUtils;
 import t.viewer.shared.ItemList;
+import t.viewer.shared.SampleClass;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -89,12 +89,12 @@ public class ProbeScreen extends Screen {
 						+ "Enter a partial pathway name and press enter to search.",
 				true) {
 			protected void getMatches(String pattern) {
-				sparqlService.pathways(chosenDataFilter, pattern,
+				sparqlService.pathways(chosenSampleClass, pattern,
 						retrieveMatchesCallback());
 			}
 
 			protected void getProbes(String item) {
-				sparqlService.probesForPathway(chosenDataFilter, item,
+				sparqlService.probesForPathway(chosenSampleClass, item,
 						retrieveProbesCallback());
 			}
 
@@ -116,7 +116,7 @@ public class ProbeScreen extends Screen {
 			}
 
 			protected void getProbes(String item) {
-				sparqlService.probesForGoTerm(chosenDataFilter, item,
+				sparqlService.probesForGoTerm(item,
 						retrieveProbesCallback());
 			}
 
@@ -331,7 +331,7 @@ public class ProbeScreen extends Screen {
 				if (compoundList.getSelectedIndex() != -1) {
 					String compound = compoundList.getItemText(compoundList
 							.getSelectedIndex());
-					sparqlService.probesTargetedByCompound(chosenDataFilter,
+					sparqlService.probesTargetedByCompound(chosenSampleClass,
 							compound, service, homologs,
 							new PendingAsyncCallback<String[]>(w,
 									"Unable to get probes (technical error).") {
@@ -396,7 +396,7 @@ public class ProbeScreen extends Screen {
 		if (probes.length > 0) {
 			// TODO reduce the number of ajax calls done by this screen by
 			// collapsing them
-			sparqlService.geneSyms(chosenDataFilter, probesInOrder,
+			sparqlService.geneSyms(probesInOrder,
 					new AsyncCallback<String[][]>() {
 						public void onSuccess(String[][] syms) {
 							deferredAddProbes(probesInOrder, syms);
@@ -428,14 +428,14 @@ public class ProbeScreen extends Screen {
 	}
 
 	@Override
-	public void dataFilterChanged(DataFilter filter) {
-		oracle.setFilter(filter);
-		if (chosenDataFilter != null
-				&& !filter.organism.equals(chosenDataFilter.organism)) {
-			super.dataFilterChanged(filter);
+	public void sampleClassChanged(SampleClass sc) {
+		oracle.setFilter(sc);
+		if (chosenDataFilter != null				
+				&& !sc.get("organism").equals(chosenSampleClass.get("organism"))) {
+			super.sampleClassChanged(sc);
 			probesChanged(new String[0]);
 		} else {
-			super.dataFilterChanged(filter);
+			super.sampleClassChanged(sc);
 		}
 	}
 

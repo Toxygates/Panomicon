@@ -24,10 +24,10 @@ class SeriesServiceTest extends FunSuite with BeforeAndAfter {
   }
   
   test("Ranking") {
-    val f = SparqlServiceTest.testFilter
+    val sc = SparqlServiceTest.testSampleClass
     val r = new RankRule(RuleType.MaximalFold, "1370365_at") //GSS gene
     
-    val res = s.rankedCompounds(f, Array(r)).toSeq
+    val res = s.rankedCompounds(sc, Array(r)).toSeq
     println(res take 10)
   }
   

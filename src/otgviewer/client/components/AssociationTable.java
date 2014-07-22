@@ -79,7 +79,7 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 				}
 			};
 
-			owlimService.associations(chosenDataFilter, vas,
+			owlimService.associations(chosenSampleClass, vas,
 					displayedProbes(), 
 					assocCallback);
 		}
