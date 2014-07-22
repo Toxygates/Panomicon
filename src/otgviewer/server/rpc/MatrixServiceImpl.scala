@@ -31,7 +31,6 @@ import otgviewer.shared.DataFilter
 import otgviewer.shared.Group
 import otgviewer.shared.ManagedMatrixInfo
 import otgviewer.shared.NoDataLoadedException
-import otgviewer.shared.StringList
 import otgviewer.shared.Synthetic
 import otgviewer.shared.ValueType
 import otgviewer.server.UtilsS
@@ -40,6 +39,7 @@ import t.db.kyotocabinet.KCExtMatrixDB
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
 import otg.Species.Species
 import t.BaseConfig
+import t.viewer.shared.StringList
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
@@ -77,11 +77,12 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     val ts = context.triplestoreConfig.triplestore
     affyProbes = new AffyProbes(ts)
     otgSamples = new OTGSamples(ts)
-    platforms = affyProbes.platforms.map( x => x._1 -> x._2.toSet)
+    platforms = affyProbes.platforms.map(x => x._1 -> x._2.toSet)
   }
 
   override def destroy() {
 	affyProbes.close()	
+	otgSamples.close()
     super.destroy()
   }
   
@@ -98,8 +99,9 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     getThreadLocalRequest().getSession().setAttribute("matrix", m)
 
   //Should this be in sparqlService?
-  def identifiersToProbes(filter: DataFilter, identifiers: Array[String], precise: Boolean): Array[String] =
-    affyProbes.identifiersToProbes(context.unifiedProbes, filter, 
+  //TODO: filter by platforms
+  def identifiersToProbes(identifiers: Array[String], precise: Boolean): Array[String] =
+    affyProbes.identifiersToProbes(context.unifiedProbes,  
         identifiers, precise).map(_.identifier).toArray
 
   /**
@@ -299,8 +301,8 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   }
   
   // TODO: pass in a preferred species, get status info back
-  def importTargetmineLists(filter: DataFilter, user: String, pass: String,
-    asProbes: Boolean): Array[StringList] = {
+  def importTargetmineLists(user: String, pass: String,
+    asProbes: Boolean): Array[t.viewer.shared.StringList] = {
     val ls = TargetMine.getListService(user, pass)    
     val tmLists = ls.getAccessibleLists()
     tmLists.filter(_.getType == "Gene").map(
@@ -316,10 +318,10 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
       }).toArray
   }
 
-  def exportTargetmineLists(filter: DataFilter, user: String, pass: String,
-    lists: Array[StringList], replace: Boolean): Unit = {
+  def exportTargetmineLists(user: String, pass: String, 
+      lists: Array[StringList], replace: Boolean): Unit = {
     val ls = TargetMine.getListService(user, pass)
-    TargetMine.addLists(affyProbes, filter, ls, lists.toList, replace)
+    TargetMine.addLists(affyProbes, ls, lists.toList, replace)
   }    
   
   def sendFeedback(name: String, email: String, feedback: String): Unit = {

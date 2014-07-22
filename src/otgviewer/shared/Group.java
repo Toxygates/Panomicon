@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.SampleGroup;
+import t.viewer.shared.SampleClass;
 
 /**
  * A group of barcodes. Values will be computed as an average.
@@ -24,12 +25,12 @@ public class Group extends SampleGroup<Barcode> implements BarcodeColumn {
 	
 	public Group(String name, Barcode[] barcodes, String color, @Nullable DataFilter filter) {
 		super(name, barcodes, color);	
-		_units = BUnit.formUnits(barcodes, filter);
+		_units = BUnit.formUnits(barcodes, SampleClass.fromDataFilter(filter));
 	}
 	
 	public Group(String name, Barcode[] barcodes, @Nullable DataFilter filter) { 
 		super(name, barcodes); 
-		_units = BUnit.formUnits(barcodes, filter);
+		_units = BUnit.formUnits(barcodes, SampleClass.fromDataFilter(filter));
 	}
 	
 	public Group(String name, BUnit[] units) { 

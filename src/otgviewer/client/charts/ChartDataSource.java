@@ -12,7 +12,6 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.rpc.MatrixService;
 import otgviewer.client.rpc.MatrixServiceAsync;
 import otgviewer.shared.Barcode;
-import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.Series;
 import otgviewer.shared.TimesDoses;
@@ -20,6 +19,7 @@ import otgviewer.shared.ValueType;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.ExpressionValue;
+import t.viewer.shared.SampleClass;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
@@ -214,15 +214,15 @@ abstract class ChartDataSource {
 		private static final MatrixServiceAsync kcService = (MatrixServiceAsync) GWT
 				.create(MatrixService.class);
 		
-		private DataFilter filter;
+		private SampleClass sampleClass;
 		private String probe;
 		private ValueType type;
 		private Screen screen;
 		
-		DynamicExpressionRowSource(DataFilter filter, String probe, ValueType vt, Barcode[] barcodes, Screen screen) {
+		DynamicExpressionRowSource(SampleClass sampleClass, String probe, ValueType vt, Barcode[] barcodes, Screen screen) {
 			super(barcodes, new ArrayList<ExpressionRow>());
-			logger.info("Dynamic source: filter is " + filter.toString());
-			this.filter = filter;
+			logger.info("Dynamic source: filter is " + sampleClass.toString());
+			this.sampleClass = sampleClass;
 			this.probe = probe;
 			this.type = vt;		
 			this.screen = screen;
@@ -245,7 +245,8 @@ abstract class ChartDataSource {
 			}
 			
 			samples.clear();
-			Group g = new Group("temporary", useBarcodes.toArray(new Barcode[0]), filter);
+			Group g = new Group("temporary", useBarcodes.toArray(new Barcode[0]), 
+					sampleClass.asDataFilter());
 			kcService.getFullData(g, 
 					new String[] { probe }, true, false, type,  
 					new PendingAsyncCallback<List<ExpressionRow>>(screen) {

@@ -243,7 +243,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	
 	private BUnit controlUnitFor(BUnit u) {
 		BUnit b = new BUnit(u.getCompound(), "Control", u.getTime());
-		b.setDataFilter(chosenDataFilter);
+		b.setSampleClass(chosenSampleClass);
 		return controlUnits.get(b.toString());
 	}
 	

@@ -14,6 +14,7 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.BUnit;
 import otgviewer.shared.DataFilter;
+import t.viewer.shared.SampleClass;
 
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -25,7 +26,8 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class MultiSelectionGrid extends DataListenerWidget implements SelectionTDGrid.UnitListener {
 
 	private SelectionTDGrid currentGrid;
-	private Map<DataFilter, SelectionTDGrid> sections = new HashMap<DataFilter, SelectionTDGrid>();
+	private Map<SampleClass, SelectionTDGrid> sections = 
+			new HashMap<SampleClass, SelectionTDGrid>();
 	private UnitListener listener;
 	private VerticalPanel vp;
 	private final Screen scr;
@@ -38,15 +40,15 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 		this.listener = listener;
 	}
 	
-	private SelectionTDGrid findOrCreateSection(Screen scr, DataFilter filter) {
-		SelectionTDGrid g = sections.get(filter);
+	private SelectionTDGrid findOrCreateSection(Screen scr, SampleClass sc) {
+		SelectionTDGrid g = sections.get(sc);
+		logger.info("Find or create for " + sc.toString());
 		if (g == null) {
 			g = new SelectionTDGrid(scr, this);			
-			g.dataFilterChanged(filter);
-			sections.put(filter, g);
-			g.compoundsChanged(chosenCompounds);
-			
-			Label l = new Label(filter.toString());
+			g.sampleClassChanged(sc);
+			sections.put(sc, g);
+			g.compoundsChanged(chosenCompounds);			
+			Label l = new Label(sc.label());
 			l.setStylePrimaryName("heavyEmphasized");
 			vp.add(l);
 			vp.add(g); 
@@ -79,10 +81,13 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 	}
 
 	@Override
-	public void dataFilterChanged(DataFilter filter) {
-		SelectionTDGrid g = findOrCreateSection(scr, filter);		
-		currentGrid = g;
-		clearEmptyGrids();
+	public void sampleClassChanged(SampleClass sc) {		
+		SelectionTDGrid g = findOrCreateSection(scr, sc);
+		if (g != currentGrid) {
+			logger.info("SC change " + sc.toString());
+			currentGrid = g;
+			clearEmptyGrids();
+		}
 	}
 
 	@Override
@@ -92,8 +97,8 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 		}
 	}	
 	
-	List<String> compoundsFor(DataFilter filter) {
-		SelectionTDGrid g = findOrCreateSection(scr, filter);
+	List<String> compoundsFor(SampleClass sc) {
+		SelectionTDGrid g = findOrCreateSection(scr, sc);
 		return g.chosenCompounds;
 	}
 	
@@ -106,7 +111,8 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 		for (BUnit u: selection) {
 			DataFilter df = new DataFilter(u.getCellType(), u.getOrgan(),
 					 u.getRepeatType(), u.getOrganism());
-			SelectionTDGrid g = findOrCreateSection(scr, df);
+			SampleClass sc = SampleClass.fromDataFilter(df);
+			SelectionTDGrid g = findOrCreateSection(scr, sc);
 			g.compoundsChanged(Arrays.asList(compounds));
 			g.setSelected(u, true);			
 		}

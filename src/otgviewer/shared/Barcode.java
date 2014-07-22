@@ -3,6 +3,7 @@ package otgviewer.shared;
 import javax.annotation.Nullable;
 
 import t.common.shared.sample.Sample;
+import t.viewer.shared.SampleClass;
 
 /**
  * A barcode corresponds to a single microarray sample.
@@ -27,7 +28,7 @@ public class Barcode extends Sample implements BarcodeColumn {
 		dose = _dose;
 		time = _time;		
 		compound = _compound;
-		unit = new BUnit(this, filter);
+		unit = new BUnit(this, SampleClass.fromDataFilter(filter));
 	}
 	
 	public String getTitle() {

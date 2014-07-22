@@ -639,7 +639,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			highlightedRow = SharedUtils.indexOf(displayedProbes, value);
 			grid.redraw();
 			
-			final ChartGridFactory cgf = new ChartGridFactory(chosenDataFilter, chosenColumns);
+			final ChartGridFactory cgf = new ChartGridFactory(chosenSampleClass, chosenColumns);
 			Utils.ensureVisualisationAndThen(new Runnable() {
 				public void run() {
 					cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, value, 

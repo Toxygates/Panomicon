@@ -21,10 +21,10 @@ import otgviewer.client.rpc.SeriesServiceAsync;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.DataFilter;
-import otgviewer.shared.ItemList;
 import otgviewer.shared.MatchResult;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;
+import t.viewer.shared.ItemList;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -182,7 +182,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	}
 
 	void loadCompounds() {				
-		sparqlService.compounds(chosenDataFilter, new PendingAsyncCallback<String[]>(this, "Unable to retrieve compounds") {
+		sparqlService.compounds(chosenSampleClass, new PendingAsyncCallback<String[]>(this, "Unable to retrieve compounds") {
 			
 			@Override
 			public void handleSuccess(String[] result) {
@@ -257,7 +257,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 					public void handleSuccess(final List<Series> ss) {
 						Utils.ensureVisualisationAndThen(new Runnable() {
 							public void run() {
-								ChartGridFactory cgf = new ChartGridFactory(chosenDataFilter, chosenColumns);
+								ChartGridFactory cgf = new ChartGridFactory(chosenSampleClass, chosenColumns);
 								cgf.makeSeriesCharts(ss, false, scores.get(value).dose(), new ChartGridFactory.ChartAcceptor() {
 									
 									@Override

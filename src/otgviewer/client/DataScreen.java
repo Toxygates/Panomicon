@@ -12,7 +12,7 @@ import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import otgviewer.shared.ItemList;
+import t.viewer.shared.ItemList;
 
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.MenuBar;

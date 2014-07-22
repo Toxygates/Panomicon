@@ -7,16 +7,16 @@ import javax.annotation.Nullable;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.ManagedMatrixInfo;
-import otgviewer.shared.StringList;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
+import t.viewer.shared.StringList;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface MatrixServiceAsync {
 
-	public void identifiersToProbes(DataFilter filter, String[] identifiers,
+	public void identifiersToProbes(String[] identifiers,
 			boolean precise, AsyncCallback<String[]> callback);
 
 	public void loadDataset(List<Group> columns,
@@ -45,10 +45,10 @@ public interface MatrixServiceAsync {
 	
 	public void removeTwoGroupTests(AsyncCallback<Void> callback);
 	
-	public void importTargetmineLists(DataFilter filter, String user, String pass, 
+	public void importTargetmineLists(String user, String pass, 
 			boolean asProbes, AsyncCallback<StringList[]> callback);
 	
-	public void exportTargetmineLists(DataFilter fiter, String user, String pass, 
+	public void exportTargetmineLists(String user, String pass, 
 			StringList[] lists, boolean replace, AsyncCallback<Void> callback);
 	
 	public void sendFeedback(String name, String email, String feedback, 

@@ -10,7 +10,7 @@ import otgviewer.client.components.StorageParser;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import otgviewer.shared.SampleClass;
+import t.viewer.shared.SampleClass;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -23,8 +23,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 /**
  * This screen allows for column (group) definition as well as compound ranking.
- * @author johan
- *
  */
 public class ColumnScreen extends Screen {
 	public static String key = "columns";
@@ -42,7 +40,7 @@ public class ColumnScreen extends Screen {
 		filterTools = mkFilterTools();
 		this.addListener(cs);
 		cs.setStyleName("compoundSelector");
-	}
+	} 
 	
 	@Override
 	public boolean enabled() {
@@ -54,9 +52,10 @@ public class ColumnScreen extends Screen {
 		HorizontalPanel r = new HorizontalPanel();
 		DataFilterEditor dfe = new DataFilterEditor() {
 			@Override
-			protected void changeDataFilter(DataFilter df) {
-				super.changeDataFilter(df);				
-				s.dataFilterChanged(df);
+			protected void changeSampleClass(SampleClass sc) {
+				super.changeSampleClass(sc);				
+				s.dataFilterChanged(sc.asDataFilter());
+				s.sampleClassChanged(sc);
 				s.storeDataFilter(s.getParser());
 				//TODO I'm not sure that exposing the action queue mechanism 
 				//like this is a good thing to do. Think of a better way.

@@ -9,7 +9,7 @@ import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.BUnit;
 import otgviewer.shared.Barcode;
-import otgviewer.shared.DataFilter;
+import t.viewer.shared.SampleClass;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
@@ -71,9 +71,9 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	}
 	
 	@Override
-	public void dataFilterChanged(DataFilter filter) {
-		if (!filter.equals(chosenDataFilter)) {
-			super.dataFilterChanged(filter);
+	public void sampleClassChanged(SampleClass sc) {
+		if (!sc.equals(chosenSampleClass)) {
+			super.sampleClassChanged(sc);
 			availableTimes = null;
 			screen.enqueue(new Screen.QueuedAction("fetchTimes") {				
 				@Override
@@ -82,7 +82,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 				}
 			});
 		} else {
-			super.dataFilterChanged(filter);
+			super.sampleClassChanged(sc);
 		}		
 	}
 	
@@ -108,7 +108,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	}
 	
 	private void fetchTimes() {		
-		sparqlService.times(chosenDataFilter, null, new AsyncCallback<String[]>() {
+		sparqlService.times(chosenSampleClass, new AsyncCallback<String[]>() {
 			public void onSuccess(String[] times) {
 				availableTimes = times;
 				drawGridInner(grid);
@@ -133,8 +133,8 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		fetchingSamples = true;
 		availableUnits = new BUnit[0];
 		String[] compounds = chosenCompounds.toArray(new String[0]);
-		sparqlService.units(chosenDataFilter, compounds,
-				null, null, new AsyncCallback<BUnit[]>() {
+		sparqlService.units(chosenSampleClass, compounds,
+				new AsyncCallback<BUnit[]>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
@@ -257,7 +257,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 				for (int t = 0; t < availableTimes.length; ++t) {
 					BUnit unit = new BUnit(chosenCompounds.get(c), indexToDose(d),
 							availableTimes[t]);
-					unit.setDataFilter(chosenDataFilter);					
+					unit.setSampleClass(chosenSampleClass);					
 					allUnits.add(unit);
 					hp.add(guiForUnit(unit));
 				}

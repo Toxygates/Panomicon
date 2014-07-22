@@ -9,8 +9,8 @@ import java.util.Map;
 import otgviewer.client.Utils;
 import otgviewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.InputDialog;
-import otgviewer.shared.ItemList;
-import otgviewer.shared.StringList;
+import t.viewer.shared.ItemList;
+import t.viewer.shared.StringList;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;

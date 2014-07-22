@@ -1,14 +1,13 @@
 package otgviewer.server
 
+import scala.collection.JavaConversions._
 import org.intermine.webservice.client.core.ServiceFactory
 import org.intermine.webservice.client.services.ListService
-import otgviewer.shared.DataFilter
-import otg.sparql.Gene
 import otg.sparql.AffyProbes
-import otgviewer.shared.StringList
-import otgviewer.server.rpc.Conversions
-import scala.collection.JavaConversions._
+import otg.sparql.Gene
 import otg.sparql.Probe
+import t.viewer.shared.StringList
+import otgviewer.server.rpc.Conversions
 
 object TargetMine {
   import Conversions._
@@ -38,7 +37,7 @@ object TargetMine {
       new StringList("probes", l.getName(), filtered.toArray);
   }
   
-  def addLists(ap: AffyProbes, filter: DataFilter, ls: ListService, 
+  def addLists(ap: AffyProbes, ls: ListService, 
       lists: List[StringList], replace: Boolean): Unit = {
     for (l <- lists) {
       var serverList = ls.getList(l.name)
@@ -49,7 +48,7 @@ object TargetMine {
         val ci = new ls.ListCreationInfo("Gene")
         val probes = l.items.map(Probe(_)).toSeq
         //TODO we have the option of doing a fuzzy (e.g. symbol-based) export here
-        val genes = ap.withAttributes(probes, filter).flatMap(_.genes.map(_.identifier))
+        val genes = ap.withAttributes(probes).flatMap(_.genes.map(_.identifier))
         ci.setContent(asJavaList(genes.toList))
         var newList = ls.createList(ci)
         newList = ls.rename(newList, l.name)

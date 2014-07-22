@@ -1,4 +1,4 @@
-package otgviewer.shared;
+package t.viewer.shared;
 
 import static otgviewer.client.components.StorageParser.packList;
 

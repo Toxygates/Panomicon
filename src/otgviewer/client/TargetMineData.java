@@ -15,8 +15,8 @@ import otgviewer.client.dialog.InteractionDialog;
 import otgviewer.client.dialog.TargetMineSyncDialog;
 import otgviewer.client.rpc.MatrixService;
 import otgviewer.client.rpc.MatrixServiceAsync;
-import otgviewer.shared.ItemList;
-import otgviewer.shared.StringList;
+import t.viewer.shared.ItemList;
+import t.viewer.shared.StringList;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
@@ -52,8 +52,8 @@ public class TargetMineData {
 	
 	public void doImport(final String user, final String pass, final boolean asProbes, 
 			final boolean replace) {
-		matrixService.importTargetmineLists(parent.chosenDataFilter, user,
-				pass, asProbes, new PendingAsyncCallback<StringList[]>(parent,
+		matrixService.importTargetmineLists(user, pass, asProbes, 
+				new PendingAsyncCallback<StringList[]>(parent,
 						"Unable to import lists from TargetMine. Check your username and password. " +
 						"There may also be a server error.") {
 					public void handleSuccess(StringList[] data) {			
@@ -80,8 +80,8 @@ public class TargetMineData {
 	 // further in the future.
 	public void doExport(final String user, final String pass, final List<StringList> lists, 
 			final boolean replace) {
-		matrixService.exportTargetmineLists(parent.chosenDataFilter, user,
-				pass, lists.toArray(new StringList[0]), replace,
+		matrixService.exportTargetmineLists(user, pass, 
+				lists.toArray(new StringList[0]), replace,
 				new PendingAsyncCallback<Void>(parent,
 						"Unable to export lists to TargetMine. Check your username and password. " +
 						"There may also be a server error.") {

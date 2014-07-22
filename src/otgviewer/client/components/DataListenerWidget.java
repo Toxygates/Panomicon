@@ -1,19 +1,26 @@
 package otgviewer.client.components;
 
-import static otgviewer.client.components.StorageParser.*;
+import static otgviewer.client.components.StorageParser.packColumns;
+import static otgviewer.client.components.StorageParser.packDataFilter;
+import static otgviewer.client.components.StorageParser.packItemLists;
+import static otgviewer.client.components.StorageParser.packProbes;
+import static otgviewer.client.components.StorageParser.unpackColumn;
+import static otgviewer.client.components.StorageParser.unpackDataFilter;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 
 import otgviewer.client.Utils;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import otgviewer.shared.ItemList;
 import otgviewer.shared.OTGUtils;
 import otgviewer.shared.ValueType;
 import t.common.shared.sample.DataColumn;
+import t.viewer.shared.ItemList;
+import t.viewer.shared.SampleClass;
 
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
@@ -32,6 +39,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	private List<DataViewListener> listeners = new ArrayList<DataViewListener>();
 	
 	public DataFilter chosenDataFilter; //TODO
+	protected SampleClass chosenSampleClass;
 	protected String[] chosenProbes = new String[0];
 	public List<String> chosenCompounds = new ArrayList<String>();
 	protected String chosenCompound;
@@ -40,6 +48,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	protected BarcodeColumn chosenCustomColumn;
 	public List<ItemList> chosenItemLists = new ArrayList<ItemList>(); //TODO
 	
+	protected final Logger logger = Utils.getLogger("dlwidget");
 	private StorageParser parser;
 	
 	public List<Group> chosenColumns() { return this.chosenColumns; }
@@ -53,9 +62,15 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	}
 	
 	//incoming signals
+	@Deprecated
 	public void dataFilterChanged(DataFilter filter) {		
 		chosenDataFilter = filter;
 		changeDataFilter(filter);
+	}
+	
+	public void sampleClassChanged(SampleClass sc) {
+		chosenSampleClass = sc;
+		changeSampleClass(sc);
 	}
 
 	public void probesChanged(String[] probes) {
@@ -98,10 +113,18 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	}
 
 	//outgoing signals	
+	@Deprecated
 	protected void changeDataFilter(DataFilter filter) {
 		chosenDataFilter = filter;
 		for (DataViewListener l : listeners) {
 			l.dataFilterChanged(filter);
+		}		
+	}
+
+	protected void changeSampleClass(SampleClass sc) {
+		chosenSampleClass = sc;
+		for (DataViewListener l : listeners) {
+			l.sampleClassChanged(sc);
 		}		
 	}
 	
@@ -311,7 +334,11 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	public void loadState(StorageParser p) {
 		DataFilter nf = unpackDataFilter(p.getItem("dataFilter")); 
 		if (nf != null && (chosenDataFilter == null || !chosenDataFilter.equals(nf))) { 			
-			dataFilterChanged(nf);
+			dataFilterChanged(nf);			
+			logger.info("Unpacked " + nf.toString());
+			SampleClass sc = SampleClass.fromDataFilter(nf);
+			sampleClassChanged(sc);
+			logger.info("Unpacked " + sc.toString());
 		}
 		if (chosenDataFilter != null) {				
 			try {

@@ -16,9 +16,9 @@ import otgviewer.client.components.StorageParser;
 import otgviewer.shared.BUnit;
 import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
-import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import t.common.client.components.SelectionTable;
+import t.viewer.shared.SampleClass;
 
 import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;
@@ -40,14 +40,9 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
- * This widget is intended to help visually define and modify "groups"
- * of microarrays.
- * The main dose/time grid is implemented in the SelectionTDGrid. The rest is in this class.
- * 
- * Receives: dataFilter, compounds
- * Emits: columns
- * @author johan
- *
+ * This widget is intended to help visually define and modify groups
+ * of samples.
+ * The main dose/time grid is implemented in the SelectionTDGrid. The rest is in this class. 
  */
 public class GroupInspector extends DataListenerWidget implements RequiresResize, SelectionTDGrid.UnitListener { 
 
@@ -214,7 +209,6 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		toolPanel.setVisible(val);
 	}
 
-	
 	private void setHeading(String title) {
 		titleLabel.setText("Sample group definition - " + title);
 	}
@@ -284,15 +278,15 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	}
 	
 	@Override
-	public void dataFilterChanged(DataFilter filter) {		
-		if (!filter.equals(chosenDataFilter)) {			
-			super.dataFilterChanged(filter); //this call changes chosenDataFilter						
+	public void sampleClassChanged(SampleClass sc) {		
+		if (!sc.equals(chosenSampleClass)) {			
+			super.sampleClassChanged(sc); //this call changes chosenDataFilter						
 //			groups.clear();
 //			existingGroupsTable.setItems(new ArrayList<Group>(), true);			
 			compoundsChanged(new ArrayList<String>());
 //			newGroup();
 		} else {
-			super.dataFilterChanged(filter);
+			super.sampleClassChanged(sc);
 		}
 	}
 	

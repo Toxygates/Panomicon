@@ -16,9 +16,10 @@ import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
-import otgviewer.shared.ItemList;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.RuleType;
+import t.viewer.shared.ItemList;
+import t.viewer.shared.SampleClass;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -122,9 +123,10 @@ public class CompoundRanker extends DataListenerWidget {
 				return;
 			}
 			final String selCompound = refCompound.getItemText(selIndex);
+			SampleClass sc = chosenSampleClass.copy();
+			sc.put("compound_name", selCompound);
 			
-			sparqlService.doseLevels(chosenDataFilter, 
-					selCompound, 
+			sparqlService.doseLevels(sc,
 					new PendingAsyncCallback<String[]>(selector, "Unable to retrieve dose levels.") {
 						
 				@Override
@@ -214,7 +216,7 @@ public class CompoundRanker extends DataListenerWidget {
 				//We override this to pull in the probes, because they
 				//may need to be converted from gene symbols.
 				
-				matrixService.identifiersToProbes(chosenDataFilter, probes, true, 
+				matrixService.identifiersToProbes(probes, true, 
 						new PendingAsyncCallback<String[]>(this) {
 					public void handleSuccess(String[] resolved) {
 						setItems(Arrays.asList(resolved));
@@ -225,7 +227,7 @@ public class CompoundRanker extends DataListenerWidget {
 			
 			@Override
 			protected void itemsChanged(List<String> items) {
-				matrixService.identifiersToProbes(chosenDataFilter,
+				matrixService.identifiersToProbes(
 						items.toArray(new String[0]), true, 
 						new PendingAsyncCallback<String[]>(this) {
 					public void handleSuccess(String[] resolved) {

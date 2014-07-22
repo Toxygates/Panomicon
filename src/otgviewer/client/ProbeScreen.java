@@ -21,10 +21,10 @@ import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import otgviewer.shared.ItemList;
 import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
 import t.common.shared.SharedUtils;
+import t.viewer.shared.ItemList;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -236,7 +236,7 @@ public class ProbeScreen extends Screen {
 		listChooser = new ListChooser(new HashMap<String, List<String>>(), "probes") {
 			@Override
 			protected void itemsChanged(List<String> items) {
-				matrixService.identifiersToProbes(ps.chosenDataFilter, items.toArray(new String[0]),
+				matrixService.identifiersToProbes(items.toArray(new String[0]),
 						true, new PendingAsyncCallback<String[]>(ps) {
 							@Override
 							public void handleSuccess(String[] t) {
@@ -310,7 +310,7 @@ public class ProbeScreen extends Screen {
 		// change the identifiers (which can be mixed format, for example genes
 		// and proteins etc) into a
 		// homogenous format (probes only)
-		matrixService.identifiersToProbes(chosenDataFilter, probes, true,
+		matrixService.identifiersToProbes(probes, true,
 				new PendingAsyncCallback<String[]>(this,
 						"Unable to obtain manual probes (technical error).") {
 					public void handleSuccess(String[] probes) {

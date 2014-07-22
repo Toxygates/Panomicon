@@ -1,4 +1,4 @@
-package otgviewer.shared;
+package t.viewer.shared;
 
 import java.util.Arrays;
 import java.util.Collection;

@@ -31,7 +31,7 @@ import otg.sparql.DrugBank
 import otg.sparql.ChEMBL
 import t.sparql.Triplestore
 import t.BaseConfig
-import otgviewer.shared.SampleClass
+import t.viewer.shared.SampleClass
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -39,6 +39,7 @@ import otgviewer.shared.SampleClass
  */
 class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   import Conversions._
+  import t.viewer.server.Conversions._
   import UtilsS._
   import Assocations._
   import CommonSPARQL._
@@ -91,38 +92,32 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     super.destroy()
   }
 
-  def compounds(filter: DataFilter): Array[String] = {
+  def compounds(sc: SampleClass): Array[String] = {
     //TODO don't have a special case for shared_control here
-    otgSamples.compounds(filter).filter(_ != "shared_control").toArray
+    otgSamples.compounds(scAsScala(sc)).toArray
   }
 
   val orderedDoses = List("Control", "Low", "Middle", "High")
-  def doseLevels(filter: DataFilter, compound: String): Array[String] = {
-    val r = otgSamples.doseLevels(filter, nullToOption(compound)).toArray
+  def doseLevels(sc: SampleClass): Array[String] = {
+    val r = otgSamples.doseLevels(sc).toArray
     r.sortWith((d1, d2) => orderedDoses.indexOf(d1) < orderedDoses.indexOf(d2))
   }
 
-  def samples(filter: DataFilter, compound: String, doseLevel: String, 
-      time: String): Array[Barcode] =
-    otgSamples.samples(filter, nullToNone(compound),
-      nullToNone(doseLevel), nullToNone(time)).map(asJava(_)).toArray
+  def samples(sc: SampleClass): Array[Barcode] =
+    otgSamples.samples(scAsScala(sc), List()).map(asJava(_)).toArray
 
-  def samples(filter: DataFilter, compounds: Array[String], doseLevel: String, 
-      time: String): Array[Barcode] =
-    otgSamples.samples(filter, compounds,
-      nullToNone(doseLevel), nullToNone(time)).map(asJava(_)).toArray
+  def samples(sc: SampleClass, compounds: Array[String]): Array[Barcode] =
+    otgSamples.samples(sc, compounds).map(asJava(_)).toArray
 
-  def sampleClasses(): Array[SampleClass] = {    
+  def sampleClasses(): Array[t.viewer.shared.SampleClass] = {    
 	otgSamples.sampleClasses().map(x => 
 	  new SampleClass(new java.util.HashMap(asJavaMap(x)))
 	  ).toArray
   }
       
-  def units(filter: DataFilter, compounds: Array[String], doseLevel: String, 
-      time: String): Array[BUnit] = {
-    val bcs = otgSamples.samples(filter, compounds,
-      nullToNone(doseLevel), nullToNone(time)).map(asJava(_))
-    val g = bcs.groupBy(x => new BUnit(x, filter))
+  def units(sc: SampleClass, compounds: Array[String]): Array[BUnit] = {
+    val bcs = otgSamples.samples(sc, compounds).map(asJava(_))
+    val g = bcs.groupBy(x => new BUnit(x, sc))
     for ((k, v) <- g) {
       k.setSamples(v.toArray)
     }
@@ -130,8 +125,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   }
     
   val orderedTimes = TimesDoses.allTimes.toList
-  def times(filter: DataFilter, compound: String): Array[String] = {
-    val r = otgSamples.times(filter, nullToOption(compound)).toArray
+  def times(sc: SampleClass): Array[String] = {
+    val r = otgSamples.times(sc).toArray
     r.sortWith((t1, t2) => orderedTimes.indexOf(t1) < orderedTimes.indexOf(t2))
   }
 
@@ -173,7 +168,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   //TODO: return a map instead
   def geneSyms(filter: DataFilter, probes: Array[String]): Array[Array[String]] = {
     val ps = probes.map(p => Probe(p))
-    val attrib = affyProbes.withAttributes(ps, filter)
+    val attrib = affyProbes.withAttributes(ps)
     probes.map(pi => attrib.find(_.identifier == pi).
       map(_.symbolStrings.toArray).getOrElse(Array()))
   }
@@ -217,7 +212,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 
   def associations(filter: DataFilter, types: Array[AType],
     _probes: Array[String]): Array[Association] = {
-    val probes = affyProbes.withAttributes(_probes.map(Probe(_)), filter)
+    val probes = affyProbes.withAttributes(_probes.map(Probe(_)))
 
     def queryOrEmpty[T <: Triplestore](c: T, f: T => BBMap): BBMap = {
       val emptyVal = CSet(DefaultBio("error", "(Timeout or error)"))

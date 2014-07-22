@@ -11,6 +11,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import t.common.shared.sample.Unit;
+import t.viewer.shared.SampleClass;
 
 /**
  * A BUnit is a Unit of Barcodes.
@@ -35,14 +36,16 @@ public class BUnit extends Unit<Barcode> {
 		_compound = compound;
 	}
 	
-	public BUnit(Barcode b, @Nullable DataFilter filter) {
+	public BUnit(Barcode b, @Nullable SampleClass sc) {
 		this(b.getCompound(), b.getDose(), b.getTime());
-		if (filter != null) {
-			setDataFilter(filter);
+		if (sc != null) {
+			setSampleClass(sc);
 		}
 	}
 	
-	public void setDataFilter(DataFilter filter) {
+	public void setSampleClass(SampleClass sc) {
+		DataFilter filter = sc.asDataFilter();
+	
 		_organ = filter.organ;
 		_organism = filter.organism;
 		_cellType = filter.cellType;
@@ -147,7 +150,7 @@ public class BUnit extends Unit<Barcode> {
 		return r.toArray(new String[0]);
 	}
 	
-	public static BUnit[] formUnits(Barcode[] barcodes, DataFilter filter) {
+	public static BUnit[] formUnits(Barcode[] barcodes, SampleClass sc) {
 		Map<String, List<Barcode>> units = new HashMap<String, List<Barcode>>();
 		for (Barcode b: barcodes) {
 			String cdt = b.getParamString();
@@ -163,7 +166,7 @@ public class BUnit extends Unit<Barcode> {
 		for (List<Barcode> bcs: units.values()) {
 			Barcode first = bcs.get(0);
 			BUnit b = (first.getUnit().getOrgan() == null) ? 
-					new BUnit(bcs.get(0), filter) : first.getUnit(); 
+					new BUnit(bcs.get(0), sc) : first.getUnit(); 
 			b.setSamples(bcs.toArray(new Barcode[0]));
 			r.add(b);
 		}

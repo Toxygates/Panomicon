@@ -69,20 +69,6 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     	}
     }
   }
-//
-//  @tailrec
-//  private def bestPerCompound(results: Iterable[(Double, OTGSeries)], 
-//      acc: List[(Double, OTGSeries)] = List(), seen: Set[String] = Set()): 
-//	  List[(Double, OTGSeries)] = {
-//    if (results.isEmpty) {
-//      acc
-//    } else if (seen.contains(results.head._2.compound)) {
-//      bestPerCompound(results.tail, acc, seen)
-//    } else {
-//      bestPerCompound(results.tail, results.head :: acc,
-//        seen + results.head._2.compound)
-//    }
-//  }
   
   def rankedCompounds(filter: DataFilter, rules: Array[RankRule]): Array[MatchResult] = {
     val nnr = rules.takeWhile(_ != null)
@@ -91,7 +77,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
 
     //Convert the input probes (which may actually be genes) into definite probes
     probesRules = probesRules.flatMap(pr => {
-      val resolved = affyProbes.identifiersToProbes(context.unifiedProbes, filter, 
+      val resolved = affyProbes.identifiersToProbes(context.unifiedProbes,  
           Array(pr._1), true, true)
       if (resolved.size == 0) {
         throw new NoSuchProbeException(pr._1)
@@ -140,7 +126,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   }
 
   def getSeries(filter: DataFilter, probes: Array[String], timeDose: String, compounds: Array[String]): JList[Series] = {
-    val validated = affyProbes.identifiersToProbes(context.unifiedProbes, filter, 
+    val validated = affyProbes.identifiersToProbes(context.unifiedProbes, 
         probes, true, true).map(_.identifier)
     val db = getDB()
     try {

@@ -14,10 +14,10 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import otgviewer.client.Utils;
-import otgviewer.shared.ItemList;
 import t.common.client.components.SetEditor;
 import t.common.client.components.StringSelectionTable;
 import t.common.shared.SharedUtils;
+import t.viewer.shared.ItemList;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;

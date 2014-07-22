@@ -10,6 +10,7 @@ import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.Annotation;
+import t.viewer.shared.SampleClass;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -66,7 +67,9 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 		super.compoundsChanged(compounds);
 		
 		if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
-			sparqlService.samples(chosenDataFilter, compounds.get(0), null, null, new AsyncCallback<Barcode[]>() {
+			SampleClass sc = chosenSampleClass.copy();
+			sc.put("compound_name", compounds.get(0));
+			sparqlService.samples(sc, new AsyncCallback<Barcode[]>() {
 				public void onSuccess(Barcode[] bcs) {
 					
 					sparqlService.annotations(bcs[0], new AsyncCallback<Annotation>() {
@@ -102,8 +105,12 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 	private void displayAnnotation(final String annotation, final int row, final int col, 
 			final String compound, final String dose, final String time) {		
 		
-		sparqlService.samples(chosenDataFilter, compound,
-				dose, time,
+		SampleClass sc = chosenSampleClass.copy();
+		sc.put("dose_level", dose);
+		sc.put("exposure_time", time);
+		sc.put("compound_name", compound);
+		
+		sparqlService.samples(sc,
 				new PendingAsyncCallback<Barcode[]>(this, "Unable to retrieve barcodes for the group definition.") {
 					public void handleSuccess(Barcode[] barcodes) {
 						processAnnotationBarcodes(annotation, row, col, time, barcodes);						

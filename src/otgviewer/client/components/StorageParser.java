@@ -10,11 +10,11 @@ import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import otgviewer.shared.ItemList;
 import otgviewer.shared.Organ;
 import otgviewer.shared.Organism;
 import otgviewer.shared.RepeatType;
 import t.common.shared.Packable;
+import t.viewer.shared.ItemList;
 
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;

@@ -8,9 +8,9 @@ import otgviewer.shared.Barcode;
 import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Pathology;
-import otgviewer.shared.SampleClass;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
+import t.viewer.shared.SampleClass;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -26,47 +26,32 @@ public interface SparqlService extends RemoteService {
 	
 	/**
 	 * Obtain compounds for the given filter
-	 * @param filter
+	 * @param sc
 	 * @return
 	 */
-	public String[] compounds(DataFilter filter);	
+	public String[] compounds(SampleClass sc);	
 	
 	/**
-	 * TODO consider removing
-	 * 
-	 * Obtain dose levels for a given filter and compound
-	 * @param filter
-	 * @param compound the chosen compound, or null for no constraint
+	 * Obtain dose levels for a given filter 
+	 * @param sc
 	 * @return
 	 */
-	public String[] doseLevels(DataFilter filter, @Nullable String compound);
+	public String[] doseLevels(SampleClass sc);
 	
 	/**
-	 * TODO consider removing
-	 * 
-	 * Obtain samples for a given filter, compound, dose level, time
-	 * @param filter 
-	 * @param compound the chosen compound, or null for no constraint.
-	 * @param doseLevel the chosen dose level, or null for no constraint.
-	 * @param time the chosen time, or null for no constraint.
+	 * Obtain samples for a given sample class.
+	 * @param sc
 	 * @return
 	 */
-	public Barcode[] samples(DataFilter filter, @Nullable String compound,
-			@Nullable String doseLevel, @Nullable String time);
+	public Barcode[] samples(SampleClass sc);
 	
 	/**
-	 * TODO consider removing
-	 * 
-	 * Obtain samples for a given filter, compounds, dose level, time
-	 * @param filter 
-	 * @param compounds the chosen compounds.
-	 * @param doseLevel the chosen dose level, or null for no constraint.
-	 * @param time the chosen time, or null for no constraint.
+	 * Obtain samples for a given sample class and a set of compounds.
+	 * @param sc
 	 * @return
 	 */
-	public Barcode[] samples(DataFilter filter, String[] compounds, 
-			@Nullable String doseLevel, @Nullable String time);
-	
+	public Barcode[] samples(SampleClass sc, String[] compounds);
+
 	/**
 	 * Obtain all sample classes in the triple store
 	 * @return
@@ -81,18 +66,15 @@ public interface SparqlService extends RemoteService {
 	 * @param compound the chosen compound, or null for no constraint.
 	 * @return
 	 */
-	public String[] times(DataFilter filter, @Nullable String compound);		
+	public String[] times(SampleClass sc);		
 	
 	/**
 	 * Obtain units that are populated with the samples that belong to them.
-	 * @param filter
+	 * @param sc
 	 * @param compounds
-	 * @param doseLevel
-	 * @param time
 	 * @return
 	 */
-	public BUnit[] units(DataFilter filter, @Nullable String[] compounds, 
-			@Nullable String doseLevel, @Nullable String time);
+	public BUnit[] units(SampleClass sc, @Nullable String[] compounds);
 			
 //	
 //	/**

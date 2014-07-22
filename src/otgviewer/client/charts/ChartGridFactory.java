@@ -15,6 +15,7 @@ import otgviewer.shared.Group;
 import otgviewer.shared.OTGUtils;
 import otgviewer.shared.Series;
 import otgviewer.shared.ValueType;
+import t.viewer.shared.SampleClass;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
@@ -33,17 +34,17 @@ public class ChartGridFactory {
 	
 	private static final SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT.create(SparqlService.class);
 	
-	private DataFilter filter;
+	private SampleClass sampleClass;
 	private List<Group> groups;
-	public ChartGridFactory(DataFilter filter, List<Group> groups) {
+	public ChartGridFactory(SampleClass sc, List<Group> groups) {
 		this.groups = groups;
-		this.filter = filter;
+		this.sampleClass = sc;
 	}
 	
 	public void makeSeriesCharts(final List<Series> series, final boolean rowsAreCompounds,
 			final int highlightDose, final ChartAcceptor acceptor, final Screen screen) {
 		
-		sparqlService.times(filter, null, new AsyncCallback<String[]>() {
+		sparqlService.times(sampleClass, new AsyncCallback<String[]>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				Window.alert("Unable to obtain sample times");
@@ -89,7 +90,7 @@ public class ChartGridFactory {
 	public void makeRowCharts(final Screen screen, final Barcode[] barcodes, final ValueType vt, final String probe,
 			final AChartAcceptor acceptor) {
 		if (barcodes == null) {
-			sparqlService.samples(filter, OTGUtils.compoundsFor(groups), null, null, new AsyncCallback<Barcode[]>() {
+			sparqlService.samples(sampleClass, OTGUtils.compoundsFor(groups), new AsyncCallback<Barcode[]>() {
 
 				@Override
 				public void onFailure(Throwable caught) {
@@ -98,18 +99,18 @@ public class ChartGridFactory {
 
 				@Override
 				public void onSuccess(final Barcode[] barcodes) {
-					finishRowCharts(screen, filter, probe, vt, groups, barcodes, acceptor);
+					finishRowCharts(screen, probe, vt, groups, barcodes, acceptor);
 					acceptor.acceptBarcodes(barcodes);
 				}			
 			});
 		} else {
-			finishRowCharts(screen, filter, probe, vt, groups, barcodes, acceptor);
+			finishRowCharts(screen, probe, vt, groups, barcodes, acceptor);
 		}
 	}
 	
-	private void finishRowCharts(Screen screen, DataFilter filter, String probe, ValueType vt, List<Group> groups, 
+	private void finishRowCharts(Screen screen, String probe, ValueType vt, List<Group> groups, 
 			Barcode[] barcodes, AChartAcceptor acceptor) {
-		ChartDataSource cds = new ChartDataSource.DynamicExpressionRowSource(filter, probe, vt, barcodes, screen);
+		ChartDataSource cds = new ChartDataSource.DynamicExpressionRowSource(sampleClass, probe, vt, barcodes, screen);
 		AdjustableChartGrid acg = new AdjustableChartGrid(screen, cds, groups, vt);
 		acceptor.acceptCharts(acg);
 	}
