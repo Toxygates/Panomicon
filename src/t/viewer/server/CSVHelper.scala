@@ -1,4 +1,4 @@
-package otgviewer.server
+package t.viewer.server
 
 import otg.ExprValue
 
@@ -62,7 +62,7 @@ object CSVHelper {
    * The given probes and geneIds only will be written.
    * The generated url will be returned.
    */
-  def writeCSV(dir: String, urlbase: String,
+  def writeCSV(dir: String, urlbase: String, 
       probes: Seq[String], titles: Seq[String], 
       geneIds: Seq[String], expr: Seq[Seq[ExprValue]]): String = {
 

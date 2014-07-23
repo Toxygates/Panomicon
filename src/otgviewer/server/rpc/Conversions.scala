@@ -4,7 +4,6 @@ import scala.collection.JavaConversions._
 import otg.Sample
 import otg.SeriesRanking
 import otg.Species
-import otgviewer.shared.Barcode
 import otgviewer.shared.CellType
 import otgviewer.shared.DataFilter
 import otgviewer.shared.Organism
@@ -20,6 +19,7 @@ import otg.Organ._
 import otg.Species._
 import otg.OTGSeries
 import t.viewer.shared.SampleClass
+import otgviewer.shared.OTGSample
 
 /**
  * Conversions between Scala and Java types.
@@ -29,20 +29,6 @@ import t.viewer.shared.SampleClass
  */
 object Conversions {
   import language.implicitConversions
-
-//  private def asScala(filter: DataFilter): otg.Filter = {    
-//    val or = otg.Organ.withName(filter.organ.toString())
-//    
-//    val ct = filter.cellType match {
-//      case t: CellType.Vivo.type => "in vivo"
-//      case _ => "in vitro"
-//    }
-//    
-//    new otg.Filter(Some(or), 
-//        Some(RepeatType.withName(filter.repeatType.toString())), 
-//        Some(otg.Species.withName(filter.organism.toString())),
-//            Some(ct));
-//  }
 
   implicit def asJava(path: otg.Pathology): Pathology =
     new Pathology(path.barcode, path.topography.getOrElse(null), 
@@ -55,8 +41,8 @@ object Conversions {
   }
 
   //TODO pass in DataFilter?
-  def asJava(s: Sample): Barcode = 
-    new Barcode(s.sampleId, s.individual, s.dose, s.time, s.compound, null);
+  def asJava(s: Sample): OTGSample = 
+    new OTGSample(s.sampleId, s.individual, s.dose, s.time, s.compound, null);
 
   implicit def speciesFromFilter(filter: DataFilter): Species = asScala(filter.organism)
     

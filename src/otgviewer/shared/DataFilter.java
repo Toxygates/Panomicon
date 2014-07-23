@@ -31,7 +31,7 @@ public class DataFilter implements Serializable {
 		organism = _organism;
 	}
 	
-	public boolean permits(Barcode b) {
+	public boolean permits(OTGSample b) {
 		BUnit u = b.getUnit();
 		if (organ != null && organ != u.getOrgan()) {
 			return false;

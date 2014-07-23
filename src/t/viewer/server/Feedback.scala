@@ -1,4 +1,4 @@
-package otgviewer.server
+package t.viewer.server
 
 import java.util.Properties
 import javax.mail.Session
@@ -7,6 +7,7 @@ import javax.mail.internet.InternetAddress
 import javax.mail.Message
 import javax.mail.Address
 import javax.mail.Transport
+import scala.Array.canBuildFrom
 
 object Feedback {
   

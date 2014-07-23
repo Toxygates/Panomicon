@@ -5,12 +5,7 @@ import javax.annotation.Nullable;
 import t.common.shared.sample.Sample;
 import t.viewer.shared.SampleClass;
 
-/**
- * A barcode corresponds to a single microarray sample.
- * 
- * TODO: rename, Barcode is not a good name
- */
-public class Barcode extends Sample implements BarcodeColumn {
+public class OTGSample extends Sample implements OTGColumn {
 		
 	private String individual = "";
 	private String dose = "";
@@ -18,9 +13,9 @@ public class Barcode extends Sample implements BarcodeColumn {
 	private String compound = "";
 	private BUnit unit;
 	
-	public Barcode() { super(); }
+	public OTGSample() { super(); }
 	
-	public Barcode(String _code, String _ind, 
+	public OTGSample(String _code, String _ind, 
 			String _dose, String _time, String _compound,
 			@Nullable DataFilter filter) {
 		super(_code);		
@@ -76,24 +71,24 @@ public class Barcode extends Sample implements BarcodeColumn {
 		return compound;
 	}
 	
-	public Barcode[] getSamples() { 
-		return new Barcode[] { this };
+	public OTGSample[] getSamples() { 
+		return new OTGSample[] { this };
 	}
 	
 	public String[] getCompounds() {
 		return new String[] { compound };
 	}
 	
-	public static Barcode unpack(String s) {
+	public static OTGSample unpack(String s) {
 //		Window.alert(s + " as barcode");
 		String[] s1 = s.split("\\$\\$\\$");
 		
 		if (s1.length == 6) {		
 			//Version 1
-			return new Barcode(s1[1], s1[2], s1[3], s1[4], s1[5], null);
+			return new OTGSample(s1[1], s1[2], s1[3], s1[4], s1[5], null);
 		} else if (s1.length == 10) {
 			//Version 2
-			return new Barcode(s1[1], s1[2], s1[3], s1[4], s1[5],
+			return new OTGSample(s1[1], s1[2], s1[3], s1[4], s1[5],
 					new DataFilter(CellType.valueOf(s1[6]),
 							Organ.valueOf(s1[7]), RepeatType.valueOf(s1[8]),
 							Organism.valueOf(s1[9]))

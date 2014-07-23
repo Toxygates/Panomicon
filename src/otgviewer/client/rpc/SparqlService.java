@@ -4,8 +4,8 @@ import javax.annotation.Nullable;
 import otgviewer.shared.AType;
 import otgviewer.shared.Association;
 import otgviewer.shared.BUnit;
-import otgviewer.shared.Barcode;
-import otgviewer.shared.BarcodeColumn;
+import otgviewer.shared.OTGSample;
+import otgviewer.shared.OTGColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Pathology;
 import t.common.shared.sample.Annotation;
@@ -43,14 +43,14 @@ public interface SparqlService extends RemoteService {
 	 * @param sc
 	 * @return
 	 */
-	public Barcode[] samples(SampleClass sc);
+	public OTGSample[] samples(SampleClass sc);
 	
 	/**
 	 * Obtain samples for a given sample class and a set of compounds.
 	 * @param sc
 	 * @return
 	 */
-	public Barcode[] samples(SampleClass sc, String[] compounds);
+	public OTGSample[] samples(SampleClass sc, String[] compounds);
 
 	/**
 	 * Obtain all sample classes in the triple store
@@ -89,14 +89,14 @@ public interface SparqlService extends RemoteService {
 	 * @param barcode
 	 * @return
 	 */
-	public Pathology[] pathologies(Barcode barcode);
+	public Pathology[] pathologies(OTGSample barcode);
 	
 	/**
 	 * Obtain pathologies for a set of samples
 	 * @param column
 	 * @return
 	 */
-	public Pathology[] pathologies(BarcodeColumn column);
+	public Pathology[] pathologies(OTGColumn column);
 	
 	/**
 	 * Annotations are experiment-associated information such as
@@ -105,7 +105,7 @@ public interface SparqlService extends RemoteService {
 	 * @param barcode
 	 * @return
 	 */
-	public Annotation annotations(Barcode barcode);
+	public Annotation annotations(OTGSample barcode);
 	
 	/**
 	 * Obtain annotations for a set of samples
@@ -114,7 +114,7 @@ public interface SparqlService extends RemoteService {
 	 * all annotations will be obtained.
 	 * @return
 	 */
-	public Annotation[] annotations(HasSamples<Barcode> column, boolean importantOnly);
+	public Annotation[] annotations(HasSamples<OTGSample> column, boolean importantOnly);
 	
 
 	/**

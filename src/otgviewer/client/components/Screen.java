@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 import otgviewer.client.Resources;
 import otgviewer.client.SampleDetailScreen;
 import otgviewer.client.Utils;
-import otgviewer.shared.Barcode;
+import otgviewer.shared.OTGSample;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 
@@ -542,7 +542,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	 * TODO: this method should probably be somewhere else.
 	 * @param b
 	 */
-	public void displaySampleDetail(Barcode b) {
+	public void displaySampleDetail(OTGSample b) {
 		StorageParser p = getParser(this);
 		storeCustomColumn(p, b);
 		configuredProceed(SampleDetailScreen.key);

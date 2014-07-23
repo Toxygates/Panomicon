@@ -10,7 +10,7 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.dialog.DialogPosition;
-import otgviewer.shared.BarcodeColumn;
+import otgviewer.shared.OTGColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import t.common.shared.sample.DataColumn;
@@ -49,7 +49,7 @@ public class SampleDetailScreen extends Screen {
 	
 	private DataFilter lastFilter;
 	private List<Group> lastColumns;
-	private BarcodeColumn lastCustomColumn;
+	private OTGColumn lastCustomColumn;
 	
 	private HorizontalPanel tools;
 	
@@ -101,7 +101,7 @@ public class SampleDetailScreen extends Screen {
 	}
 
 	@Override
-	public void customColumnChanged(BarcodeColumn customColumn) {
+	public void customColumnChanged(OTGColumn customColumn) {
 		super.customColumnChanged(customColumn);		
 		if (visible) {
 			updateColumnList();
@@ -129,7 +129,7 @@ public class SampleDetailScreen extends Screen {
 			@Override
 			public void onClick(ClickEvent event) {
 				Set<String> compounds = new HashSet<String>();
-				for (BarcodeColumn d: chosenColumns) {
+				for (OTGColumn d: chosenColumns) {
 					compounds.addAll(Arrays.asList(((Group) d).getCompounds()));
 				}
 				List<String> compounds_ = new ArrayList<String>(compounds);
@@ -154,7 +154,7 @@ public class SampleDetailScreen extends Screen {
 	}
 	
 	
-	private void setDisplayColumn(BarcodeColumn c) {
+	private void setDisplayColumn(OTGColumn c) {
 		experimentTable.loadFrom(c, false, 0, 23);
 		biologicalTable.loadFrom(c, false, 23, -1);
 	}
@@ -164,7 +164,7 @@ public class SampleDetailScreen extends Screen {
 			setDisplayColumn(chosenCustomColumn);
 			return;
 		} else {
-			for (BarcodeColumn c : chosenColumns) {
+			for (OTGColumn c : chosenColumns) {
 				if (c.getShortTitle().equals(column)) {
 					setDisplayColumn(c);
 					return;

@@ -5,8 +5,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import otgviewer.shared.Barcode;
-import otgviewer.shared.BarcodeColumn;
+import otgviewer.shared.OTGSample;
+import otgviewer.shared.OTGColumn;
 import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
@@ -72,17 +72,17 @@ public class StorageParser {
 		}
 	}
 	
-	public static String packColumns(Collection<BarcodeColumn> columns) {
+	public static String packColumns(Collection<OTGColumn> columns) {
 		return packPackableList(columns, "###");
 	}
 
-	public static BarcodeColumn unpackColumn(String s, DataFilter filter) {
+	public static OTGColumn unpackColumn(String s, DataFilter filter) {
 		if (s == null) {
 			return null;
 		}
 		String[] spl = s.split("\\$\\$\\$");
 		if (spl[0].equals("Barcode")) {
-			return Barcode.unpack(s);
+			return OTGSample.unpack(s);
 		} else {
 			return Group.unpack(s, filter);
 		}

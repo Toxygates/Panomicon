@@ -18,9 +18,8 @@ import otgviewer.client.rpc.SparqlService
 import otgviewer.server._
 import otgviewer.shared.AType
 import otgviewer.shared.Association
-import otgviewer.shared.Barcode
 import otgviewer.shared.BUnit
-import otgviewer.shared.BarcodeColumn
+import otgviewer.shared.OTGColumn
 import otgviewer.shared.DataFilter
 import otgviewer.shared.Pathology
 import otgviewer.shared.TimesDoses
@@ -32,6 +31,8 @@ import otg.sparql.ChEMBL
 import t.sparql.Triplestore
 import t.BaseConfig
 import t.viewer.shared.SampleClass
+import otgviewer.shared.OTGSample
+import otgviewer.server.ScalaUtils
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -40,11 +41,11 @@ import t.viewer.shared.SampleClass
 class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   import Conversions._
   import t.viewer.server.Conversions._
-  import UtilsS._
+  import ScalaUtils._
   import Assocations._
   import CommonSPARQL._
 
-  type DataColumn = t.common.shared.sample.DataColumn[Barcode]
+  type DataColumn = t.common.shared.sample.DataColumn[OTGSample]
   
   implicit var context: OTGContext = _
   var baseConfig: BaseConfig = _
@@ -103,10 +104,10 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     r.sortWith((d1, d2) => orderedDoses.indexOf(d1) < orderedDoses.indexOf(d2))
   }
 
-  def samples(sc: SampleClass): Array[Barcode] =
+  def samples(sc: SampleClass): Array[OTGSample] =
     otgSamples.samples(scAsScala(sc), List()).map(asJava(_)).toArray
 
-  def samples(sc: SampleClass, compounds: Array[String]): Array[Barcode] =
+  def samples(sc: SampleClass, compounds: Array[String]): Array[OTGSample] =
     otgSamples.samples(sc, compounds).map(asJava(_)).toArray
 
   def sampleClasses(): Array[t.viewer.shared.SampleClass] = {    
@@ -133,7 +134,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 //  def probes(filter: DataFilter): Array[String] =
 //    context.unifiedProbes.tokens.toArray //TODO filtering    
 
-  def probes(columns: Array[BarcodeColumn]): Array[String] = {
+  def probes(columns: Array[OTGColumn]): Array[String] = {
     val samples = columns.flatMap(_.getSamples)
     val metadata = new TriplestoreMetadata(otgSamples, None)    
     val usePlatforms = samples.map(s => metadata.parameter(
@@ -142,14 +143,14 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     usePlatforms.toVector.flatMap(platforms).toArray
   }
   
-  def pathologies(barcode: Barcode): Array[Pathology] =
+  def pathologies(barcode: OTGSample): Array[Pathology] =
     otgSamples.pathologies(barcode.getCode).map(asJava(_)).toArray
 
-  def pathologies(column: BarcodeColumn): Array[Pathology] =
+  def pathologies(column: OTGColumn): Array[Pathology] =
     column.getSamples.flatMap(x => otgSamples.pathologies(x.getCode)).map(asJava(_))
 
-  def annotations(barcode: Barcode): Annotation = asJava(otgSamples.annotations(barcode.getCode))
-  def annotations(column: HasSamples[Barcode], importantOnly: Boolean = false): Array[Annotation] = {	  
+  def annotations(barcode: OTGSample): Annotation = asJava(otgSamples.annotations(barcode.getCode))
+  def annotations(column: HasSamples[OTGSample], importantOnly: Boolean = false): Array[Annotation] = {	  
 	  val keys = if (importantOnly) {
 	    if (tgConfig.applicationClass == ApplicationClass.Adjuvant) {
 	    	List("Dose", "Dose unit", "Dose level", "Exposure time", "Administration route")

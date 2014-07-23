@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import otgviewer.client.Utils;
-import otgviewer.shared.BarcodeColumn;
+import otgviewer.shared.OTGColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGUtils;
@@ -45,7 +45,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	protected String chosenCompound;
 	protected ValueType chosenValueType;
 	protected List<Group> chosenColumns = new ArrayList<Group>();
-	protected BarcodeColumn chosenCustomColumn;
+	protected OTGColumn chosenCustomColumn;
 	public List<ItemList> chosenItemLists = new ArrayList<ItemList>(); //TODO
 	
 	protected final Logger logger = Utils.getLogger("dlwidget");
@@ -102,7 +102,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		changeColumns(columns);
 	}
 	
-	public void customColumnChanged(BarcodeColumn customColumn) {
+	public void customColumnChanged(OTGColumn customColumn) {
 		this.chosenCustomColumn = customColumn;
 		changeCustomColumn(customColumn);
 	}
@@ -179,7 +179,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}
 	}
 	
-	protected void changeCustomColumn(BarcodeColumn customColumn) {
+	protected void changeCustomColumn(OTGColumn customColumn) {
 		this.chosenCustomColumn = customColumn;
 		for (DataViewListener l: listeners) {
 			l.customColumnChanged(customColumn);
@@ -258,7 +258,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}			
 	}
 	
-	protected void storeColumns(StorageParser p, String key, Collection<BarcodeColumn> columns) {				
+	protected void storeColumns(StorageParser p, String key, Collection<OTGColumn> columns) {				
 		if (chosenDataFilter != null) {
 			key = key + "." + packDataFilter(chosenDataFilter);
 			if (!columns.isEmpty()) {
@@ -284,7 +284,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	// Separator hierarchy for columns:
 	// ### > ::: > ^^^ > $$$
 	protected List<Group> loadColumns(StorageParser p, String key,
-			Collection<BarcodeColumn> expectedColumns) throws Exception {
+			Collection<OTGColumn> expectedColumns) throws Exception {
 		String v = p.getItem(key + "." + packDataFilter(chosenDataFilter));
 		List<Group> r = new ArrayList<Group>();
 		if (v != null && !v.equals(packColumns(expectedColumns))) {
@@ -346,7 +346,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 				if (cs != null) {						
 					columnsChanged(cs);
 				}						
-				BarcodeColumn cc = unpackColumn(p.getItem("customColumn"), chosenDataFilter);
+				OTGColumn cc = unpackColumn(p.getItem("customColumn"), chosenDataFilter);
 				if (cc != null) {																		
 					customColumnChanged(cc);						
 				}

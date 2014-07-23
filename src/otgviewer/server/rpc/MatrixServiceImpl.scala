@@ -5,9 +5,9 @@ import java.util.{List => JList}
 import scala.collection.JavaConversions.asScalaBuffer
 import scala.collection.JavaConversions.mapAsJavaMap
 import scala.collection.JavaConversions.seqAsJavaList
+import com.google.gwt.user.server.rpc.RemoteServiceServlet
 import Conversions.asScala
 import Conversions.speciesFromFilter
-import t.common.shared.sample.ExpressionRow
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import otg.OTGContext
@@ -18,28 +18,25 @@ import otg.sparql.OTGSamples
 import otg.sparql.Probe
 import otgviewer.client.rpc.MatrixService
 import otgviewer.server.ApplicationClass
-import otgviewer.server.CSVHelper
 import otgviewer.server.Configuration
 import otgviewer.server.ExtFoldValueMatrix
-import otgviewer.server.Feedback
 import otgviewer.server.FoldValueMatrix
 import otgviewer.server.ManagedMatrix
 import otgviewer.server.NormalizedIntensityMatrix
 import otgviewer.server.TargetMine
-import otgviewer.shared.Barcode
-import otgviewer.shared.DataFilter
 import otgviewer.shared.Group
 import otgviewer.shared.ManagedMatrixInfo
 import otgviewer.shared.NoDataLoadedException
 import otgviewer.shared.Synthetic
 import otgviewer.shared.ValueType
-import otgviewer.server.UtilsS
-import t.db.kyotocabinet.KCMatrixDB
-import t.db.kyotocabinet.KCExtMatrixDB
-import com.google.gwt.user.server.rpc.RemoteServiceServlet
-import otg.Species.Species
 import t.BaseConfig
+import t.common.shared.sample.ExpressionRow
+import t.db.kyotocabinet.KCExtMatrixDB
+import t.db.kyotocabinet.KCMatrixDB
+import t.viewer.server.CSVHelper
+import t.viewer.server.Feedback
 import t.viewer.shared.StringList
+import otgviewer.server.ScalaUtils
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
@@ -47,7 +44,7 @@ import t.viewer.shared.StringList
 class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   import Conversions._
   import scala.collection.JavaConversions._
-  import UtilsS._
+  import ScalaUtils._
 
   private var baseConfig: BaseConfig = _
   private var tgConfig: Configuration = _

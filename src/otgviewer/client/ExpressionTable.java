@@ -21,7 +21,7 @@ import otgviewer.client.dialog.FilterEditor;
 import otgviewer.client.rpc.MatrixService;
 import otgviewer.client.rpc.MatrixServiceAsync;
 import otgviewer.shared.AType;
-import otgviewer.shared.Barcode;
+import otgviewer.shared.OTGSample;
 import otgviewer.shared.Group;
 import otgviewer.shared.ManagedMatrixInfo;
 import otgviewer.shared.OTGUtils;
@@ -113,7 +113,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
  	private boolean loadedData = false;
  	private ManagedMatrixInfo matrixInfo = null;
  	
- 	private Barcode[] chartBarcodes = null;
+ 	private OTGSample[] chartBarcodes = null;
 
  	private DialogBox filterDialog = null;
  	
@@ -648,7 +648,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 							Utils.displayInPopup("Charts", cg, true, DialogPosition.Side);							
 						}
 
-						public void acceptBarcodes(Barcode[] bcs) {
+						public void acceptBarcodes(OTGSample[] bcs) {
 							chartBarcodes = bcs;
 						}
 					});			

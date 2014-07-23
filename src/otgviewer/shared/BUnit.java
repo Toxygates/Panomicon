@@ -16,7 +16,7 @@ import t.viewer.shared.SampleClass;
 /**
  * A BUnit is a Unit of Barcodes.
  */
-public class BUnit extends Unit<Barcode> {
+public class BUnit extends Unit<OTGSample> {
 
 	protected BUnit() { super(); }
 	private String _time, _dose, _compound;
@@ -36,7 +36,7 @@ public class BUnit extends Unit<Barcode> {
 		_compound = compound;
 	}
 	
-	public BUnit(Barcode b, @Nullable SampleClass sc) {
+	public BUnit(OTGSample b, @Nullable SampleClass sc) {
 		this(b.getCompound(), b.getDose(), b.getTime());
 		if (sc != null) {
 			setSampleClass(sc);
@@ -150,35 +150,35 @@ public class BUnit extends Unit<Barcode> {
 		return r.toArray(new String[0]);
 	}
 	
-	public static BUnit[] formUnits(Barcode[] barcodes, SampleClass sc) {
-		Map<String, List<Barcode>> units = new HashMap<String, List<Barcode>>();
-		for (Barcode b: barcodes) {
+	public static BUnit[] formUnits(OTGSample[] barcodes, SampleClass sc) {
+		Map<String, List<OTGSample>> units = new HashMap<String, List<OTGSample>>();
+		for (OTGSample b: barcodes) {
 			String cdt = b.getParamString();
 			if (units.containsKey(cdt)) {
 				units.get(cdt).add(b);
 			} else {
-				List<Barcode> n = new ArrayList<Barcode>();
+				List<OTGSample> n = new ArrayList<OTGSample>();
 				n.add(b);
 				units.put(cdt, n);
 			}
 		}
 		ArrayList<BUnit> r = new ArrayList<BUnit>();
-		for (List<Barcode> bcs: units.values()) {
-			Barcode first = bcs.get(0);
+		for (List<OTGSample> bcs: units.values()) {
+			OTGSample first = bcs.get(0);
 			BUnit b = (first.getUnit().getOrgan() == null) ? 
 					new BUnit(bcs.get(0), sc) : first.getUnit(); 
-			b.setSamples(bcs.toArray(new Barcode[0]));
+			b.setSamples(bcs.toArray(new OTGSample[0]));
 			r.add(b);
 		}
 		return r.toArray(new BUnit[0]);
 	}
 	
-	public static Barcode[] collectBarcodes(BUnit[] units) {
-		List<Barcode> r = new ArrayList<Barcode>();
+	public static OTGSample[] collectBarcodes(BUnit[] units) {
+		List<OTGSample> r = new ArrayList<OTGSample>();
 		for (BUnit b: units) {
 			Collections.addAll(r, b.getSamples());		
 		}
-		return r.toArray(new Barcode[0]);
+		return r.toArray(new OTGSample[0]);
 	}
 	
 	public static boolean containsTime(BUnit[] units, String time) {

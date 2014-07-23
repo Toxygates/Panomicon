@@ -3,8 +3,8 @@ package otgviewer.client.rpc;
 import otgviewer.shared.AType;
 import otgviewer.shared.Association;
 import otgviewer.shared.BUnit;
-import otgviewer.shared.Barcode;
-import otgviewer.shared.BarcodeColumn;
+import otgviewer.shared.OTGSample;
+import otgviewer.shared.OTGColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Pathology;
 import t.common.shared.sample.Annotation;
@@ -18,9 +18,9 @@ public interface SparqlServiceAsync {
 	public void compounds(SampleClass sc, AsyncCallback<String[]> callback);
 		
 	public void doseLevels(SampleClass sc, AsyncCallback<String[]> callback);	
-	public void samples(SampleClass sc, AsyncCallback<Barcode[]> callback);	
+	public void samples(SampleClass sc, AsyncCallback<OTGSample[]> callback);	
 	public void samples(SampleClass sc, String[] compounds, 
-			AsyncCallback<Barcode[]> callback);
+			AsyncCallback<OTGSample[]> callback);
 	public void units(SampleClass sc, String[] compounds, 
 			AsyncCallback<BUnit[]> callback);
 	
@@ -29,12 +29,12 @@ public interface SparqlServiceAsync {
 	public void times(SampleClass sc, AsyncCallback<String[]> callback);	
 //	public void probes(BarcodeColumn[] columns, AsyncCallback<String[]> callback);
 	
-	public void pathologies(BarcodeColumn column, AsyncCallback<Pathology[]> callback);
-	public void pathologies(Barcode barcode, AsyncCallback<Pathology[]> callback);
+	public void pathologies(OTGColumn column, AsyncCallback<Pathology[]> callback);
+	public void pathologies(OTGSample barcode, AsyncCallback<Pathology[]> callback);
 	
-	public void annotations(HasSamples<Barcode> column, boolean importantOnly,
+	public void annotations(HasSamples<OTGSample> column, boolean importantOnly,
 			AsyncCallback<Annotation[]> callback);
-	public void annotations(Barcode barcode, AsyncCallback<Annotation> callback);
+	public void annotations(OTGSample barcode, AsyncCallback<Annotation> callback);
 	
 	public void pathways(SampleClass sc, String pattern, AsyncCallback<String[]> callback);
 	public void probesForPathway(SampleClass sc, String pathway, AsyncCallback<String[]> callback);

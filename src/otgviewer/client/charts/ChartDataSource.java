@@ -11,7 +11,7 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.rpc.MatrixService;
 import otgviewer.client.rpc.MatrixServiceAsync;
-import otgviewer.shared.Barcode;
+import otgviewer.shared.OTGSample;
 import otgviewer.shared.Group;
 import otgviewer.shared.Series;
 import otgviewer.shared.TimesDoses;
@@ -42,12 +42,12 @@ abstract class ChartDataSource {
 		String compound;
 		double value;
 		char call;
-		Barcode barcode; //may be null
+		OTGSample barcode; //may be null
 		String probe;
 		String color = "grey";
 		
 		ChartSample(String time, String dose, String compound, 
-				double value, Barcode barcode, String probe, char call) {
+				double value, OTGSample barcode, String probe, char call) {
 			this.time = time;
 			this.dose = dose;
 			this.compound = compound;
@@ -160,9 +160,9 @@ abstract class ChartDataSource {
 	 * @author johan
 	 */
 	static class ExpressionRowSource extends ChartDataSource {
-		protected Barcode[] barcodes;
+		protected OTGSample[] barcodes;
 		
-		ExpressionRowSource(Barcode[] barcodes, List<ExpressionRow> rows) {
+		ExpressionRowSource(OTGSample[] barcodes, List<ExpressionRow> rows) {
 			this.barcodes = barcodes;
 			logger.info("ER source: " + barcodes.length + " barcodes");
 			
@@ -173,7 +173,7 @@ abstract class ChartDataSource {
 		@Override
 		protected void init() {
 			List<String> times = new ArrayList<String>();
-			for (Barcode b: barcodes) {
+			for (OTGSample b: barcodes) {
 				if (!times.contains(b.getTime())) {
 					times.add(b.getTime());
 				}
@@ -182,7 +182,7 @@ abstract class ChartDataSource {
 			TimesDoses.sortTimes(_times);		
 		
 			List<String> doses = new ArrayList<String>();
-			for (Barcode b: barcodes) {
+			for (OTGSample b: barcodes) {
 				if (!doses.contains(b.getDose())) {
 					doses.add(b.getDose());
 				}
@@ -191,9 +191,9 @@ abstract class ChartDataSource {
 			TimesDoses.sortDoses(_doses);
 		}
 		
-		protected void addSamplesFromBarcodes(Barcode[] barcodes, List<ExpressionRow> rows) {
+		protected void addSamplesFromBarcodes(OTGSample[] barcodes, List<ExpressionRow> rows) {
 			for (int i = 0; i < barcodes.length; ++i) {
-				Barcode b = barcodes[i];			
+				OTGSample b = barcodes[i];			
 				for (ExpressionRow er : rows) {
 					ExpressionValue ev = er.getValue(i);
 					ChartSample cs = new ChartSample(b.getTime(), b.getDose(), b.getCompound(), 
@@ -219,7 +219,7 @@ abstract class ChartDataSource {
 		private ValueType type;
 		private Screen screen;
 		
-		DynamicExpressionRowSource(SampleClass sampleClass, String probe, ValueType vt, Barcode[] barcodes, Screen screen) {
+		DynamicExpressionRowSource(SampleClass sampleClass, String probe, ValueType vt, OTGSample[] barcodes, Screen screen) {
 			super(barcodes, new ArrayList<ExpressionRow>());
 			logger.info("Dynamic source: filter is " + sampleClass.toString());
 			this.sampleClass = sampleClass;
@@ -232,8 +232,8 @@ abstract class ChartDataSource {
 				final ColorPolicy policy, final SampleAcceptor acceptor) {
 			logger.info("Dynamic source: load for " + compounds.length + " compounds");
 			
-			final List<Barcode> useBarcodes = new ArrayList<Barcode>();
-			for (Barcode b: barcodes) {
+			final List<OTGSample> useBarcodes = new ArrayList<OTGSample>();
+			for (OTGSample b: barcodes) {
 				if (
 						(compounds == null || SharedUtils.indexOf(compounds, b.getCompound()) != -1) &&
 						(dosesOrTimes == null || SharedUtils.indexOf(dosesOrTimes, b.getTime()) != -1 || 
@@ -245,7 +245,7 @@ abstract class ChartDataSource {
 			}
 			
 			samples.clear();
-			Group g = new Group("temporary", useBarcodes.toArray(new Barcode[0]), 
+			Group g = new Group("temporary", useBarcodes.toArray(new OTGSample[0]), 
 					sampleClass.asDataFilter());
 			kcService.getFullData(g, 
 					new String[] { probe }, true, false, type,  
@@ -257,7 +257,7 @@ abstract class ChartDataSource {
 
 				@Override
 				public void handleSuccess(final List<ExpressionRow> rows) {
-					addSamplesFromBarcodes(useBarcodes.toArray(new Barcode[0]), rows);	
+					addSamplesFromBarcodes(useBarcodes.toArray(new OTGSample[0]), rows);	
 					getSSamples(compounds, dosesOrTimes, policy, acceptor);
 				}					
 			});

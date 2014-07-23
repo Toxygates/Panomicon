@@ -12,7 +12,7 @@ import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.BUnit;
-import otgviewer.shared.Barcode;
+import otgviewer.shared.OTGSample;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGUtils;
 import otgviewer.shared.ValueType;
@@ -131,9 +131,9 @@ public class AdjustableChartGrid extends Composite {
 	}
 	
 	private ColorPolicy makeGroupPolicy() {
-		Map<Barcode, String> colors = new HashMap<Barcode, String>();
+		Map<OTGSample, String> colors = new HashMap<OTGSample, String>();
 		for (Group g: groups) {
-			for (Barcode b: g.getSamples()) {
+			for (OTGSample b: g.getSamples()) {
 				colors.put(b, g.getColor());
 			}
 		}

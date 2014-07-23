@@ -8,7 +8,7 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.BUnit;
-import otgviewer.shared.Barcode;
+import otgviewer.shared.OTGSample;
 import t.viewer.shared.SampleClass;
 
 import com.google.gwt.core.client.GWT;
@@ -120,7 +120,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		});			
 	}
 	
-	protected String keyFor(Barcode b) {
+	protected String keyFor(OTGSample b) {
 		return b.getCompound() + ":" + b.getDose() + ":" + b.getTime();
 	}
 	

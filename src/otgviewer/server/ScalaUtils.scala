@@ -5,7 +5,7 @@ import otg.Filter
 import javax.servlet.http.HttpSession
 import t.sparql.Triplestore
 
-object UtilsS {
+object ScalaUtils {
   def useTriplestore[C <: Triplestore, T](conn: C, f: C => T, onFailure: T): T = {
     try {
       f(conn)

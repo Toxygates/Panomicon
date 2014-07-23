@@ -11,8 +11,8 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
-import otgviewer.shared.Barcode;
-import otgviewer.shared.BarcodeColumn;
+import otgviewer.shared.OTGSample;
+import otgviewer.shared.OTGColumn;
 import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
@@ -101,7 +101,7 @@ public class PathologyScreen extends Screen {
 		
 		col = new TextColumn<Pathology>() {
 			public String getValue(Pathology p) {
-				Barcode b = OTGUtils.barcodeFor(chosenColumns, p.barcode());
+				OTGSample b = OTGUtils.barcodeFor(chosenColumns, p.barcode());
 				return b.getCompound() + "/" + b.getShortTitle(); 				
 			}
 		};
@@ -159,7 +159,7 @@ public class PathologyScreen extends Screen {
 		if (visible && (lastFilter == null || !lastFilter.equals(chosenDataFilter)
 				|| lastColumns == null || !chosenColumns.equals(lastColumns))) {
 			pathologies.clear();
-			for (BarcodeColumn c : chosenColumns) {
+			for (OTGColumn c : chosenColumns) {
 				owlimService.pathologies(c, new AsyncCallback<Pathology[]>() {
 					public void onFailure(Throwable caught) {
 						Window.alert("Unable to get pathologies.");

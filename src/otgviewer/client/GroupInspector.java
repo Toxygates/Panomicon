@@ -14,8 +14,8 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.StorageParser;
 import otgviewer.shared.BUnit;
-import otgviewer.shared.Barcode;
-import otgviewer.shared.BarcodeColumn;
+import otgviewer.shared.OTGSample;
+import otgviewer.shared.OTGColumn;
 import otgviewer.shared.Group;
 import t.common.client.components.SelectionTable;
 import t.viewer.shared.SampleClass;
@@ -336,7 +336,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	public void storeColumns(StorageParser p) {
 		super.storeColumns(p);			
 		storeColumns(p, "inactiveColumns", 
-				new ArrayList<BarcodeColumn>(existingGroupsTable.inverseSelection()));
+				new ArrayList<OTGColumn>(existingGroupsTable.inverseSelection()));
 	}
 	
 	public Map<String, Group> getGroups() {
@@ -358,7 +358,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 			return;
 		}
 		
-		pendingGroup = new Group(name, new Barcode[0], null);		
+		pendingGroup = new Group(name, new OTGSample[0], null);		
 		List<BUnit> units = msg.fullSelection(false);
 		
 		if (units.size() == 0) {
@@ -374,7 +374,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private void loadTimeWarningIfNeeded() {
 		int totalSize = 0;
 		for (Group g : groups.values()) {
-			for (Barcode b: g.samples()) {
+			for (OTGSample b: g.samples()) {
 				if (!b.getDose().equals("Control")) {
 					totalSize += 1;
 				}

@@ -5,11 +5,11 @@ import otg.ExprValue
 import otg.OTGContext
 import otg.PExprValue
 import otgviewer.server.rpc.Conversions._
-import otgviewer.shared.Barcode
 import otgviewer.shared.Group
 import otgviewer.shared.ManagedMatrixInfo
 import otgviewer.shared.Synthetic
 import t.db.MatrixDBReader
+import otgviewer.shared.OTGSample
 
 
 /**
@@ -248,7 +248,7 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
       List(g.toString))
   }
   
-  protected def samplesForDisplay(g: Group): Iterable[Barcode] = {
+  protected def samplesForDisplay(g: Group): Iterable[OTGSample] = {
     val (cus, ncus) = g.getUnits().partition(_.getDose == "Control")
     if (ncus.size > 1) {
       //treated samples only

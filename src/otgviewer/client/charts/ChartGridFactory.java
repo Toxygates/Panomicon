@@ -9,7 +9,7 @@ import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.Screen;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
-import otgviewer.shared.Barcode;
+import otgviewer.shared.OTGSample;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGUtils;
@@ -29,7 +29,7 @@ public class ChartGridFactory {
 	
 	public static interface AChartAcceptor {
 		void acceptCharts(AdjustableChartGrid cg);
-		void acceptBarcodes(Barcode[] barcodes);
+		void acceptBarcodes(OTGSample[] barcodes);
 	}
 	
 	private static final SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT.create(SparqlService.class);
@@ -87,10 +87,10 @@ public class ChartGridFactory {
 		});
 	}
 	
-	public void makeRowCharts(final Screen screen, final Barcode[] barcodes, final ValueType vt, final String probe,
+	public void makeRowCharts(final Screen screen, final OTGSample[] barcodes, final ValueType vt, final String probe,
 			final AChartAcceptor acceptor) {
 		if (barcodes == null) {
-			sparqlService.samples(sampleClass, OTGUtils.compoundsFor(groups), new AsyncCallback<Barcode[]>() {
+			sparqlService.samples(sampleClass, OTGUtils.compoundsFor(groups), new AsyncCallback<OTGSample[]>() {
 
 				@Override
 				public void onFailure(Throwable caught) {
@@ -98,7 +98,7 @@ public class ChartGridFactory {
 				}
 
 				@Override
-				public void onSuccess(final Barcode[] barcodes) {
+				public void onSuccess(final OTGSample[] barcodes) {
 					finishRowCharts(screen, probe, vt, groups, barcodes, acceptor);
 					acceptor.acceptBarcodes(barcodes);
 				}			
@@ -109,7 +109,7 @@ public class ChartGridFactory {
 	}
 	
 	private void finishRowCharts(Screen screen, String probe, ValueType vt, List<Group> groups, 
-			Barcode[] barcodes, AChartAcceptor acceptor) {
+			OTGSample[] barcodes, AChartAcceptor acceptor) {
 		ChartDataSource cds = new ChartDataSource.DynamicExpressionRowSource(sampleClass, probe, vt, barcodes, screen);
 		AdjustableChartGrid acg = new AdjustableChartGrid(screen, cds, groups, vt);
 		acceptor.acceptCharts(acg);

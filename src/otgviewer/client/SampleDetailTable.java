@@ -8,7 +8,7 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
-import otgviewer.shared.Barcode;
+import otgviewer.shared.OTGSample;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
 
@@ -25,8 +25,8 @@ import com.google.gwt.view.client.NoSelectionModel;
  */
 public class SampleDetailTable extends Composite {
 	private CellTable<String[]> table;
-	private Barcode[] barcodes;
-	private HasSamples<Barcode> displayColumn;
+	private OTGSample[] barcodes;
+	private HasSamples<OTGSample> displayColumn;
 	private SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT
 			.create(SparqlService.class);
 	private final String title;
@@ -42,7 +42,7 @@ public class SampleDetailTable extends Composite {
 		table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 	}
 	
-	void loadFrom(HasSamples<Barcode> c, boolean importantOnly, 
+	void loadFrom(HasSamples<OTGSample> c, boolean importantOnly, 
 			final int rangeStart, final int rangeEnd) {
 		if (Arrays.equals(barcodes, c.getSamples())) {
 			return;

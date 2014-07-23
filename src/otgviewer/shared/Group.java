@@ -17,18 +17,18 @@ import t.viewer.shared.SampleClass;
  * @author johan
  *
  */
-public class Group extends SampleGroup<Barcode> implements BarcodeColumn {
+public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 	
 	protected BUnit[] _units;
 	
 	public Group() {}
 	
-	public Group(String name, Barcode[] barcodes, String color, @Nullable DataFilter filter) {
+	public Group(String name, OTGSample[] barcodes, String color, @Nullable DataFilter filter) {
 		super(name, barcodes, color);	
 		_units = BUnit.formUnits(barcodes, SampleClass.fromDataFilter(filter));
 	}
 	
-	public Group(String name, Barcode[] barcodes, @Nullable DataFilter filter) { 
+	public Group(String name, OTGSample[] barcodes, @Nullable DataFilter filter) { 
 		super(name, barcodes); 
 		_units = BUnit.formUnits(barcodes, SampleClass.fromDataFilter(filter));
 	}
@@ -46,26 +46,26 @@ public class Group extends SampleGroup<Barcode> implements BarcodeColumn {
 		return name;
 	}
 
-	public Barcode[] getSamples() { return _samples; }
+	public OTGSample[] getSamples() { return _samples; }
 	
-	public Barcode[] getTreatedSamples() {
-		List<Barcode> r = new ArrayList<Barcode>();
+	public OTGSample[] getTreatedSamples() {
+		List<OTGSample> r = new ArrayList<OTGSample>();
 		for (BUnit u : _units) {
 			if (!u.getDose().equals("Control")) {
 				r.addAll(Arrays.asList(u.getSamples()));
 			}
 		}
-		return r.toArray(new Barcode[0]);
+		return r.toArray(new OTGSample[0]);
 	}
 	
-	public Barcode[] getControlSamples() {
-		List<Barcode> r = new ArrayList<Barcode>();
+	public OTGSample[] getControlSamples() {
+		List<OTGSample> r = new ArrayList<OTGSample>();
 		for (BUnit u : _units) {
 			if (u.getDose().equals("Control")) {
 				r.addAll(Arrays.asList(u.getSamples()));
 			}
 		}
-		return r.toArray(new Barcode[0]);
+		return r.toArray(new OTGSample[0]);
 	}
 	
 	public BUnit[] getUnits() { return _units; }
@@ -98,7 +98,7 @@ public class Group extends SampleGroup<Barcode> implements BarcodeColumn {
 	
 	public String[] getCompounds(@Nullable DataFilter filter) {
 		Set<String> compounds = new HashSet<String>();
-		for (Barcode b : _samples) {
+		for (OTGSample b : _samples) {
 			if (filter == null || filter.permits(b)) {
 				compounds.add(b.getCompound());
 			}
@@ -131,16 +131,16 @@ public class Group extends SampleGroup<Barcode> implements BarcodeColumn {
 		}
 		if (s1.length >= 3) {
 			String[] s2 = barcodes.split("\\^\\^\\^");
-			Barcode[] bcs = new Barcode[s2.length];			
+			OTGSample[] bcs = new OTGSample[s2.length];			
 			for (int i = 0; i < s2.length; ++i) {
-				Barcode b = Barcode.unpack(s2[i]);
+				OTGSample b = OTGSample.unpack(s2[i]);
 				bcs[i] = b;
 			}			
 			DataFilter useFilter = (bcs[0].getUnit().getOrgan() == null) ? filter : null;
 			return new Group(name, bcs, color, useFilter);
 			
 		} else {
-			return new Group(name, new Barcode[0], color, null);
+			return new Group(name, new OTGSample[0], color, null);
 		}
 	}
 

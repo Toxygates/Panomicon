@@ -2,7 +2,7 @@ package otgviewer.client.components;
 
 import java.util.List;
 
-import otgviewer.shared.BarcodeColumn;
+import otgviewer.shared.OTGColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.ValueType;
@@ -25,7 +25,7 @@ public interface DataViewListener {
 	
 	public void columnsChanged(List<Group> columns);
 	
-	public void customColumnChanged(BarcodeColumn column);
+	public void customColumnChanged(OTGColumn column);
 	
 	public void itemListsChanged(List<ItemList> lists);
 	

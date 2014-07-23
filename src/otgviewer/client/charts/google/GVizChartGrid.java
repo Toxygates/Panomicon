@@ -5,7 +5,7 @@ import java.util.List;
 import otgviewer.client.charts.ChartDataset;
 import otgviewer.client.charts.ChartGrid;
 import otgviewer.client.components.Screen;
-import otgviewer.shared.Barcode;
+import otgviewer.shared.OTGSample;
 import otgviewer.shared.Group;
 
 import com.google.gwt.core.client.JsArray;
@@ -86,7 +86,7 @@ public class GVizChartGrid extends ChartGrid {
 					int row = s.getRow();
 					String bc = dt.getProperty(row, col, "barcode");
 					if (bc != null) {
-						Barcode b = Barcode.unpack(bc);
+						OTGSample b = OTGSample.unpack(bc);
 						screen.displaySampleDetail(b);
 					}
 				}

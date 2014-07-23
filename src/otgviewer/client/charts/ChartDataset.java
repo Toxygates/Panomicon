@@ -5,7 +5,7 @@ import java.util.List;
 
 import otgviewer.client.Utils;
 import otgviewer.client.charts.ChartDataSource.ChartSample;
-import otgviewer.shared.Barcode;
+import otgviewer.shared.OTGSample;
 import t.common.shared.SharedUtils;
 
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
@@ -62,7 +62,7 @@ public class ChartDataset {
 	 * @param column
 	 * @return
 	 */
-	Barcode getBarcode(int row, int column) {
+	OTGSample getBarcode(int row, int column) {
 		return null;
 	}
 

@@ -7,7 +7,7 @@ import otgviewer.client.components.DataFilterEditor;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
-import otgviewer.shared.BarcodeColumn;
+import otgviewer.shared.OTGColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import t.viewer.shared.SampleClass;
@@ -118,7 +118,7 @@ public class ColumnScreen extends Screen {
 			//data filter being present.
 			try {
 				List<Group> ics = loadColumns(p, "inactiveColumns", 
-						new ArrayList<BarcodeColumn>(gi.existingGroupsTable.inverseSelection()));
+						new ArrayList<OTGColumn>(gi.existingGroupsTable.inverseSelection()));
 				if (ics != null) {
 					gi.inactiveColumnsChanged(ics);
 				}

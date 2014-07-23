@@ -10,17 +10,17 @@ import java.util.List;
  */
 public class OTGUtils {
 
-	public static List<BarcodeColumn> asColumns(List<Group> groups) {		
-		List<BarcodeColumn> r = new ArrayList<BarcodeColumn>(groups.size());	
+	public static List<OTGColumn> asColumns(List<Group> groups) {		
+		List<OTGColumn> r = new ArrayList<OTGColumn>(groups.size());	
 		for (Group g: groups) {
 			r.add(g);
 		}		
 		return r;
 	}
 	
-	public static String[] allCompounds(List<BarcodeColumn> columns) {
+	public static String[] allCompounds(List<OTGColumn> columns) {
 		List<String> r = new ArrayList<String>();
-		for (BarcodeColumn dc : columns) {
+		for (OTGColumn dc : columns) {
 			for (String c : dc.getCompounds()) {
 				r.add(c);
 			}
@@ -51,7 +51,7 @@ public class OTGUtils {
 	 */
 	public static Group groupFor(List<Group> columns, String barcode) {
 		for (Group c : columns) {
-			for (Barcode b : c.getSamples()) {
+			for (OTGSample b : c.getSamples()) {
 				if (b.getCode().equals(barcode)) {
 					return c;						
 				}
@@ -69,7 +69,7 @@ public class OTGUtils {
 	public static List<Group> groupsFor(List<Group> columns, String barcode) {
 		List<Group> r = new ArrayList<Group>();
 		for (Group c : columns) {
-			for (Barcode b : c.getSamples()) {
+			for (OTGSample b : c.getSamples()) {
 				if (b.getCode().equals(barcode)) {
 					r.add(c);
 					break;
@@ -98,9 +98,9 @@ public class OTGUtils {
 	 * @param barcode
 	 * @return
 	 */
-	public static Barcode barcodeFor(List<Group> columns, String barcode) {
+	public static OTGSample barcodeFor(List<Group> columns, String barcode) {
 		for (Group c : columns) {
-			for (Barcode b : c.getSamples()) {
+			for (OTGSample b : c.getSamples()) {
 				if (b.getCode().equals(barcode)) {
 					return b;
 				}
