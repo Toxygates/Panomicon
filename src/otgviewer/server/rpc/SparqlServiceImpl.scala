@@ -2,37 +2,37 @@ package otgviewer.server.rpc
 
 import scala.Array.canBuildFrom
 import scala.Option.option2Iterable
-import scala.collection.{Set => CSet}
-import scala.collection.{Set => CSet}
 import scala.collection.JavaConversions._
+import scala.collection.{Set => CSet}
+import scala.collection.{Set => CSet}
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-import t.common.shared.Pair
-import t.common.shared.sample.Annotation
+
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
-import otg.DefaultBio
-import otg.Species._
 import otg.OTGContext
+import otg.Species._
 import otg.sparql._
+import otg.sparql.AffyProbes
+import otg.sparql.ChEMBL
+import otg.sparql.DrugBank
+import otg.sparql.LocalUniprot
 import otgviewer.client.rpc.SparqlService
 import otgviewer.server._
+import otgviewer.server.ScalaUtils
 import otgviewer.shared.AType
 import otgviewer.shared.Association
 import otgviewer.shared.BUnit
 import otgviewer.shared.OTGColumn
-import otgviewer.shared.DataFilter
+import otgviewer.shared.OTGSample
 import otgviewer.shared.Pathology
 import otgviewer.shared.TimesDoses
-import t.common.shared.sample.HasSamples
-import otg.sparql.AffyProbes
-import otg.sparql.LocalUniprot
-import otg.sparql.DrugBank
-import otg.sparql.ChEMBL
-import t.sparql.Triplestore
 import t.BaseConfig
-import t.viewer.shared.SampleClass
-import otgviewer.shared.OTGSample
-import otgviewer.server.ScalaUtils
+import t.common.shared.SampleClass
+import t.common.shared.sample.Annotation
+import t.common.shared.sample.HasSamples
+import t.db.DefaultBio
+import t.sparql.Triplestore
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -105,19 +105,19 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   }
 
   def samples(sc: SampleClass): Array[OTGSample] =
-    otgSamples.samples(scAsScala(sc), List()).map(asJava(_)).toArray
+    otgSamples.samples(scAsScala(sc), List()).map(asJavaSample(_)).toArray
 
   def samples(sc: SampleClass, compounds: Array[String]): Array[OTGSample] =
-    otgSamples.samples(sc, compounds).map(asJava(_)).toArray
+    otgSamples.samples(sc, compounds).map(asJavaSample(_)).toArray
 
-  def sampleClasses(): Array[t.viewer.shared.SampleClass] = {    
+  def sampleClasses(): Array[SampleClass] = {    
 	otgSamples.sampleClasses().map(x => 
 	  new SampleClass(new java.util.HashMap(asJavaMap(x)))
 	  ).toArray
   }
       
   def units(sc: SampleClass, compounds: Array[String]): Array[BUnit] = {
-    val bcs = otgSamples.samples(sc, compounds).map(asJava(_))
+    val bcs = otgSamples.samples(sc, compounds).map(asJavaSample(_))
     val g = bcs.groupBy(x => new BUnit(x, sc))
     for ((k, v) <- g) {
       k.setSamples(v.toArray)
@@ -138,7 +138,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     val samples = columns.flatMap(_.getSamples)
     val metadata = new TriplestoreMetadata(otgSamples, None)    
     val usePlatforms = samples.map(s => metadata.parameter(
-        otg.Sample(s.getCode), "platform_id")
+        t.db.Sample(s.getCode), "platform_id")
         ).toSet
     usePlatforms.toVector.flatMap(platforms).toArray
   }
@@ -174,9 +174,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       map(_.symbolStrings.toArray).getOrElse(Array()))
   }
 
-  def probesForPathway(sc: SampleClass, pathway: String): Array[String] = {
-    val sp = asSpecies(sc)
-    val geneIds = b2rKegg.geneIds(pathway, sp).map(Gene(_))
+  def probesForPathway(sc: SampleClass, pathway: String): Array[String] = {    
+    val geneIds = b2rKegg.geneIds(pathway).map(Gene(_))
     println("Probes for " + geneIds.size + " genes")
     val probes = affyProbes.forGenes(geneIds).toArray
     val pmap = context.unifiedProbes //TODO

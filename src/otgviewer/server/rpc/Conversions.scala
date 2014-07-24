@@ -1,7 +1,6 @@
 package otgviewer.server.rpc
 
 import scala.collection.JavaConversions._
-import otg.Sample
 import otg.SeriesRanking
 import otg.Species
 import otgviewer.shared.CellType
@@ -18,7 +17,7 @@ import otgviewer.shared.RuleType
 import otg.Organ._
 import otg.Species._
 import otg.OTGSeries
-import t.viewer.shared.SampleClass
+import t.common.shared.SampleClass
 import otgviewer.shared.OTGSample
 
 /**
@@ -29,6 +28,7 @@ import otgviewer.shared.OTGSample
  */
 object Conversions {
   import language.implicitConversions
+  import t.viewer.server.Conversions._
 
   implicit def asJava(path: otg.Pathology): Pathology =
     new Pathology(path.barcode, path.topography.getOrElse(null), 
@@ -41,8 +41,10 @@ object Conversions {
   }
 
   //TODO pass in DataFilter?
-  def asJava(s: Sample): OTGSample = 
-    new OTGSample(s.sampleId, s.individual, s.dose, s.time, s.compound, null);
+  def asJavaSample(s: t.db.Sample): OTGSample = {
+    val sc = scAsJava(s.sampleClass)
+    new OTGSample(s.sampleId, sc)
+  }
 
   implicit def speciesFromFilter(filter: DataFilter): Species = asScala(filter.organism)
     

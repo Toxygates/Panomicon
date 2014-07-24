@@ -11,7 +11,7 @@ import otgviewer.shared.AType
 import org.scalatest.BeforeAndAfter
 import otgviewer.server.Configuration
 import org.scalatest.junit.JUnitRunner
-import t.viewer.shared.SampleClass
+import t.common.shared.SampleClass
 
 object SparqlServiceTest {
   def testFilter = new DataFilter(CellType.Vivo, Organ.Liver, RepeatType.Single, Organism.Rat)

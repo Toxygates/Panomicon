@@ -9,7 +9,7 @@ import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.BUnit;
 import otgviewer.shared.OTGSample;
-import t.viewer.shared.SampleClass;
+import t.common.shared.SampleClass;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;

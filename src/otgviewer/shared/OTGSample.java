@@ -1,9 +1,10 @@
 package otgviewer.shared;
 
-import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 
+import t.common.shared.SampleClass;
 import t.common.shared.sample.Sample;
-import t.viewer.shared.SampleClass;
 
 public class OTGSample extends Sample implements OTGColumn {
 		
@@ -11,19 +12,17 @@ public class OTGSample extends Sample implements OTGColumn {
 	private String dose = "";
 	private String time = "";
 	private String compound = "";
-	private BUnit unit;
+	private BUnit unit;	
 	
 	public OTGSample() { super(); }
 	
-	public OTGSample(String _code, String _ind, 
-			String _dose, String _time, String _compound,
-			@Nullable DataFilter filter) {
-		super(_code);		
-		individual = _ind;
-		dose = _dose;
-		time = _time;		
-		compound = _compound;
-		unit = new BUnit(this, SampleClass.fromDataFilter(filter));
+	public OTGSample(String _code, SampleClass _sampleClass) {
+		super(_code, _sampleClass);		
+		individual = sampleClass.get("individual_id");
+		dose = sampleClass.get("dose_level");
+		time = sampleClass.get("exposure_time");
+		compound = sampleClass.get("compound_name");
+		unit = new BUnit(this, sampleClass);
 	}
 	
 	public String getTitle() {
@@ -83,16 +82,23 @@ public class OTGSample extends Sample implements OTGColumn {
 //		Window.alert(s + " as barcode");
 		String[] s1 = s.split("\\$\\$\\$");
 		
+		Map<String, String> sc = new HashMap<String, String>();
+		String id = s1[1];
+		sc.put("individual_id", s1[2]);
+		sc.put("dose_level", s1[3]);
+		sc.put("exposure_time", s1[4]);
+		sc.put("compound_name", s1[5]);
+		
 		if (s1.length == 6) {		
 			//Version 1
-			return new OTGSample(s1[1], s1[2], s1[3], s1[4], s1[5], null);
+			return new OTGSample(id, new SampleClass(sc));
 		} else if (s1.length == 10) {
 			//Version 2
-			return new OTGSample(s1[1], s1[2], s1[3], s1[4], s1[5],
-					new DataFilter(CellType.valueOf(s1[6]),
-							Organ.valueOf(s1[7]), RepeatType.valueOf(s1[8]),
-							Organism.valueOf(s1[9]))
-			);			
+			sc.put("test_type", s1[6]);
+			sc.put("organ_id", s1[7]);
+			sc.put("sin_rep_type", s1[8]);
+			sc.put("organism", s1[9]);
+			return new OTGSample(id, new SampleClass(sc));						
 		} else {			
 			return null;
 		}

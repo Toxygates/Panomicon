@@ -22,9 +22,9 @@ import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.Group;
 import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
+import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.viewer.shared.ItemList;
-import t.viewer.shared.SampleClass;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -430,7 +430,7 @@ public class ProbeScreen extends Screen {
 	@Override
 	public void sampleClassChanged(SampleClass sc) {
 		oracle.setFilter(sc);
-		if (chosenDataFilter != null				
+		if (chosenSampleClass != null				
 				&& !sc.get("organism").equals(chosenSampleClass.get("organism"))) {
 			super.sampleClassChanged(sc);
 			probesChanged(new String[0]);

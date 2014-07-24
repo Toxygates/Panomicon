@@ -18,9 +18,9 @@ import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGUtils;
 import otgviewer.shared.ValueType;
+import t.common.shared.SampleClass;
 import t.common.shared.sample.DataColumn;
 import t.viewer.shared.ItemList;
-import t.viewer.shared.SampleClass;
 
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
@@ -38,8 +38,8 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 
 	private List<DataViewListener> listeners = new ArrayList<DataViewListener>();
 	
-	public DataFilter chosenDataFilter; //TODO
-	protected SampleClass chosenSampleClass;
+	public DataFilter chosenDataFilter; //TODO public
+	public SampleClass chosenSampleClass; //TODO public
 	protected String[] chosenProbes = new String[0];
 	public List<String> chosenCompounds = new ArrayList<String>();
 	protected String chosenCompound;

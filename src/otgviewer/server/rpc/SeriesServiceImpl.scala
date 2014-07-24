@@ -31,7 +31,7 @@ import scala.annotation.tailrec
 import otg.TimeDose
 import otgviewer.shared.TimesDoses
 import t.BaseConfig
-import t.viewer.shared.SampleClass
+import t.common.shared.SampleClass
 
 class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   import Conversions._

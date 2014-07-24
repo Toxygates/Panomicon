@@ -10,8 +10,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import t.common.shared.SampleClass;
 import t.common.shared.sample.Unit;
-import t.viewer.shared.SampleClass;
 
 /**
  * A BUnit is a Unit of Barcodes.

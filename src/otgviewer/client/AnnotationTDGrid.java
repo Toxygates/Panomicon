@@ -8,9 +8,9 @@ import otgviewer.shared.BUnit;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
+import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.Annotation;
-import t.viewer.shared.SampleClass;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

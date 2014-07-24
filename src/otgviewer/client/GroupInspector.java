@@ -18,7 +18,7 @@ import otgviewer.shared.OTGSample;
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.Group;
 import t.common.client.components.SelectionTable;
-import t.viewer.shared.SampleClass;
+import t.common.shared.SampleClass;
 
 import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;

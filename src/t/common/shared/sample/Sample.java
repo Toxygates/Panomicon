@@ -1,27 +1,34 @@
 package t.common.shared.sample;
 import java.io.Serializable;
 
-import t.common.shared.*;
+import t.common.shared.HasClass;
+import t.common.shared.Packable;
+import t.common.shared.SampleClass;
 
 /**
  * A microarray sample with a unique identifier that can be represented as a string.
  * @author johan
+ * 
+ * TODO make non-abstract
  *
  */
-public abstract class Sample implements Packable, Serializable {
+abstract public class Sample implements Packable, Serializable, HasClass {
 
+	protected SampleClass sampleClass;
+	
 	public Sample() {}
 	
-	public Sample(String id) {
-		_id = id;
+	public Sample(String _id, SampleClass _sampleClass) {
+		id = _id;
+		sampleClass = _sampleClass;
 	}
 	
-	private String _id;	
-	public String id() { return _id; }
+	private String id;	
+	public String id() { return id; }
 	
 	@Override
 	public int hashCode() {
-		return _id.hashCode();
+		return id.hashCode();
 	}
 	
 	/**
@@ -31,7 +38,7 @@ public abstract class Sample implements Packable, Serializable {
 	public boolean equals(Object other) {
 		if (other instanceof Sample) {
 			Sample that = (Sample) other;
-			return that.canEqual(this) && _id.equals(that.id());
+			return that.canEqual(this) && id.equals(that.id());
 		}
 		return false;
 	}
@@ -39,6 +46,8 @@ public abstract class Sample implements Packable, Serializable {
 	protected boolean canEqual(Sample other) {
 		return other instanceof Sample;
 	}
+	
+	public SampleClass sampleClass() { return sampleClass; }
 	
 	abstract public String pack();
 	

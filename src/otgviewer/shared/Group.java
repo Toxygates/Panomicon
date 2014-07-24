@@ -8,9 +8,9 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.SampleGroup;
-import t.viewer.shared.SampleClass;
 
 /**
  * A group of barcodes. Values will be computed as an average.

@@ -14,7 +14,7 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.BUnit;
 import otgviewer.shared.DataFilter;
-import t.viewer.shared.SampleClass;
+import t.common.shared.SampleClass;
 
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -126,7 +126,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 			if (tg != currentGrid && tg.getSelectedUnits(true).size() == 0) {				
 				vp.remove(i);
 				vp.remove(i - 1);
-				sections.remove(tg.chosenDataFilter);
+				sections.remove(tg.chosenSampleClass);
 				clearEmptyGrids();
 				// TODO not the best flow logic
 				return;

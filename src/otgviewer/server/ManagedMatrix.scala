@@ -10,6 +10,7 @@ import otgviewer.shared.ManagedMatrixInfo
 import otgviewer.shared.Synthetic
 import t.db.MatrixDBReader
 import otgviewer.shared.OTGSample
+import t.db.Sample
 
 
 /**
@@ -193,7 +194,7 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
     val packedProbes = initProbes.map(pmap.pack)
     for (g <- requestColumns) {
     	val barcodes = samplesForDisplay(g)
-    	val sortedBarcodes = reader.sortSamples(barcodes.map(b => otg.Sample(b.getCode)))
+    	val sortedBarcodes = reader.sortSamples(barcodes.map(b => Sample(b.getCode)))
         val data = reader.valuesForSamplesAndProbes(sortedBarcodes,
         		packedProbes, sparseRead)
         groupedParts ::= columnsForGroup(g, sortedBarcodes, data)
@@ -223,20 +224,20 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
   }
 
   protected def selectIdxs(g: Group,  predicate: (otgviewer.shared.BUnit) => Boolean, 
-      barcodes: Seq[otg.Sample]): Seq[Int] = {
+      barcodes: Seq[Sample]): Seq[Int] = {
     val units = g.getUnits().filter(predicate)
     val ids = units.flatMap(_.getSamples.map(_.getCode)).toSet
     val inSet = barcodes.map(s => ids.contains(s.sampleId))
     inSet.zipWithIndex.filter(_._1).map(_._2)
   }
   
-  protected def controlIdxs(g: Group, barcodes: Seq[otg.Sample]): Seq[Int] = 
+  protected def controlIdxs(g: Group, barcodes: Seq[Sample]): Seq[Int] = 
     selectIdxs(g, _.getDose == "Control", barcodes)    
 
-  protected def treatedIdxs(g: Group, barcodes: Seq[otg.Sample]): Seq[Int] = 
+  protected def treatedIdxs(g: Group, barcodes: Seq[Sample]): Seq[Int] = 
     selectIdxs(g, _.getDose != "Control", barcodes)    
 
-  protected def columnsForGroup(g: Group, sortedBarcodes: Seq[otg.Sample],
+  protected def columnsForGroup(g: Group, sortedBarcodes: Seq[Sample],
     data: Seq[Seq[E]]): ExprMatrix = {
     // A simple average column
     val treatedIdx = treatedIdxs(g, sortedBarcodes)
@@ -269,7 +270,7 @@ class NormalizedIntensityMatrix(requestColumns: Seq[Group],
     enhancedColumns: Boolean)(implicit context: OTGContext) 
 extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead) {
 
-  override protected def columnsForGroup(g: Group, sortedBarcodes: Seq[otg.Sample], 
+  override protected def columnsForGroup(g: Group, sortedBarcodes: Seq[Sample], 
       data: Seq[Seq[ExprValue]]): ExprMatrix = {
     val (cus, ncus) = g.getUnits().partition(_.getDose == "Control")
     
@@ -315,7 +316,7 @@ class ExtFoldValueMatrix(requestColumns: Seq[Group],
     (implicit context: OTGContext) 
     extends ManagedMatrix[PExprValue](requestColumns, reader, initProbes, sparseRead) {
  
-    override protected def columnsForGroup(g: Group, sortedBarcodes: Seq[otg.Sample], 
+    override protected def columnsForGroup(g: Group, sortedBarcodes: Seq[Sample], 
       data: Seq[Seq[PExprValue]]): ExprMatrix = {
     val (cus, ncus) = g.getUnits().partition(_.getDose == "Control")
     

@@ -18,8 +18,8 @@ import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.RuleType;
+import t.common.shared.SampleClass;
 import t.viewer.shared.ItemList;
-import t.viewer.shared.SampleClass;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;

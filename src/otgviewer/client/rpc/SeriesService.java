@@ -6,7 +6,7 @@ import otgviewer.shared.MatchResult;
 import otgviewer.shared.NoSuchProbeException;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;
-import t.viewer.shared.SampleClass;
+import t.common.shared.SampleClass;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;

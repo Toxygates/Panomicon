@@ -15,7 +15,7 @@ import otgviewer.shared.Group;
 import otgviewer.shared.OTGUtils;
 import otgviewer.shared.Series;
 import otgviewer.shared.ValueType;
-import t.viewer.shared.SampleClass;
+import t.common.shared.SampleClass;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;

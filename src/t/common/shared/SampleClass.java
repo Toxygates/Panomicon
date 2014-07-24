@@ -1,4 +1,4 @@
-package t.viewer.shared;
+package t.common.shared;
 
 import java.io.Serializable;
 import java.util.ArrayList;

@@ -6,8 +6,8 @@ import otgviewer.shared.OTGColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.ValueType;
+import t.common.shared.SampleClass;
 import t.viewer.shared.ItemList;
-import t.viewer.shared.SampleClass;
 
 public interface DataViewListener {
 
