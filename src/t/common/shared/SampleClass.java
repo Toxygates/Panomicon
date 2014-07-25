@@ -108,7 +108,12 @@ public class SampleClass implements Serializable {
 		SampleClass r = new SampleClass();
 		r.put("organ_id", df.organ);
 		r.put("organism", df.organism);
-		r.put("test_type", df.cellType);		
+		//TODO resolve the handling of this
+		if (df.cellType.equals("Vivo")) {
+			r.put("test_type", "in vivo");
+		} else {
+			r.put("test_type", "in vitro");
+		}			
 		r.put("sin_rep_type", df.repeatType);
 		return r;
 	}
