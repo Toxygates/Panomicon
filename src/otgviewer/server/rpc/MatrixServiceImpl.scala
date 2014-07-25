@@ -71,9 +71,10 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     //TODO parse baseConfig directly somewhere
     baseConfig = config.baseConfig
     
-    val ts = context.triplestoreConfig.triplestore
+    val tsCon = context.triplestoreConfig
+    val ts = tsCon.triplestore
     affyProbes = new AffyProbes(ts)
-    otgSamples = new OTGSamples(ts)
+    otgSamples = new OTGSamples(tsCon)
     platforms = affyProbes.platforms.map(x => x._1 -> x._2.toSet)
   }
 

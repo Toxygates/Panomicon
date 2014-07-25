@@ -5,9 +5,7 @@ import scala.Option.option2Iterable
 import scala.collection.JavaConversions._
 import scala.collection.{Set => CSet}
 import scala.collection.{Set => CSet}
-
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import otg.OTGContext
@@ -33,6 +31,7 @@ import t.common.shared.sample.Annotation
 import t.common.shared.sample.HasSamples
 import t.db.DefaultBio
 import t.sparql.Triplestore
+import t.sparql.TriplestoreMetadata
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -71,8 +70,9 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     this.tgConfig = conf   
     this.baseConfig = conf.baseConfig
     
-    val ts = baseConfig.triplestore.triplestore
-    otgSamples = new OTGSamples(ts)
+    val tsCon = baseConfig.triplestore
+    val ts = tsCon.triplestore
+    otgSamples = new OTGSamples(tsCon)
     affyProbes = new AffyProbes(ts)
     uniprot = new LocalUniprot(ts) 
     b2rKegg = new B2RKegg(ts)
