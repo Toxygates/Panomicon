@@ -50,8 +50,8 @@ public class StorageParser {
 	}
 	
 	public static String packDataFilter(DataFilter f) {
-		return f.cellType.name() + "," + f.organ.name() + ","  
-			+ f.repeatType.name() + "," + f.organism.name();
+		return f.cellType + "," + f.organ + ","  
+			+ f.repeatType + "," + f.organism;
 	}
 	
 	public static DataFilter unpackDataFilter(String s) {
@@ -63,9 +63,7 @@ public class StorageParser {
 		assert(parts.length == 4);
 		
 		try {
-			DataFilter r = new DataFilter(CellType.valueOf(parts[0]),
-					Organ.valueOf(parts[1]), RepeatType.valueOf(parts[2]),
-					Organism.valueOf(parts[3]));			
+			DataFilter r = new DataFilter(parts[0], parts[1], parts[2], parts[3]);					
 			return r;
 		} catch (Exception e) {			
 			return null;

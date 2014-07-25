@@ -33,7 +33,7 @@ public class ColumnScreen extends Screen {
 	private TabLayoutPanel tp;
 	
 	public ColumnScreen(ScreenManager man) {
-		super("Sample group definitions", key, true, false, man,
+		super("Sample group definitions", key, false, man,
 				resources.groupDefinitionHTML(), resources.groupDefinitionHelp());
 		
 		cs = new CompoundSelector(this, "Compounds");
@@ -54,9 +54,9 @@ public class ColumnScreen extends Screen {
 			@Override
 			protected void changeSampleClass(SampleClass sc) {
 				super.changeSampleClass(sc);				
-				s.dataFilterChanged(sc.asDataFilter());
+//				s.dataFilterChanged(sc.asDataFilter());
 				s.sampleClassChanged(sc);
-				s.storeDataFilter(s.getParser());
+//				s.storeDataFilter(s.getParser());
 				//TODO I'm not sure that exposing the action queue mechanism 
 				//like this is a good thing to do. Think of a better way.
 				runActions();

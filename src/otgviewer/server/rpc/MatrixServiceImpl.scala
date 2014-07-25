@@ -7,7 +7,6 @@ import scala.collection.JavaConversions.mapAsJavaMap
 import scala.collection.JavaConversions.seqAsJavaList
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
 import Conversions.asScala
-import Conversions.speciesFromFilter
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import otg.OTGContext
@@ -155,9 +154,9 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     }
   }
 
-  private[this] def speciesForGroups(gs: Iterable[Group]) = 
-    gs.flatMap(_.getUnits()).map(x => asScala(x.getOrganism())).toSet
-  
+//  private[this] def speciesForGroups(gs: Iterable[Group]) = 
+//    gs.flatMap(_.getUnits()).map(x => asScala(x.getOrganism())).toSet
+//  
   private def platformsForGroups(gs: Iterable[Group]): Iterable[String] = {
     val samples = gs.toList.flatMap(_.getSamples().map(_.getCode))
     otgSamples.platforms(samples)
@@ -238,7 +237,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   
   def getFullData(g: Group, probes: Array[String], sparseRead: Boolean, 
       withSymbols: Boolean, typ: ValueType): JList[ExpressionRow] = {        
-    val species = g.getUnits().map(x => asScala(x.getOrganism())).toSet
+//    val species = g.getUnits().map(x => asScala(x.getOrganism())).toSet
     val platforms = otgSamples.platforms(g.getSamples().map(_.getCode))
     
     val realProbes = filterProbes(probes, platforms).toArray

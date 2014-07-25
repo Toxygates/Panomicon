@@ -24,6 +24,7 @@ import otgviewer.shared.DataFilter;
 import otgviewer.shared.MatchResult;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;
+import t.common.shared.SampleClass;
 import t.viewer.shared.ItemList;
 
 import com.google.gwt.core.client.GWT;
@@ -149,16 +150,16 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		}
 	}
 	
-	private DataFilter lastFilter;
+	private SampleClass lastClass;
 	
 	@Override
-	public void dataFilterChanged(DataFilter filter) {
-		super.dataFilterChanged(filter);
+	public void sampleClassChanged(SampleClass sc) {
+		super.sampleClassChanged(sc);		
 
-		if (lastFilter == null || !filter.equals(lastFilter)) {
+		if (lastClass == null || !sc.equals(lastClass)) {
 			removeRankColumns();
 		}
-		lastFilter = filter;
+		lastClass = sc;
 		
 		screen.enqueue(new Screen.QueuedAction("loadCompounds") {			
 			@Override

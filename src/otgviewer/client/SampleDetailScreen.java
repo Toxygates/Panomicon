@@ -54,7 +54,7 @@ public class SampleDetailScreen extends Screen {
 	private HorizontalPanel tools;
 	
 	public SampleDetailScreen(ScreenManager man) {
-		super("Sample details", key, true, true, man);						
+		super("Sample details", key, true, man);						
 		this.addListener(atd);
 		mkTools();
 	}

@@ -108,7 +108,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 			g.setAll(false);
 		}
 		String[] compounds = BUnit.compounds(selection);
-		for (BUnit u: selection) {
+		for (BUnit u: selection) {			
 			DataFilter df = new DataFilter(u.getCellType(), u.getOrgan(),
 					 u.getRepeatType(), u.getOrganism());
 			SampleClass sc = SampleClass.fromDataFilter(df);

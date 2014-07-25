@@ -46,15 +46,15 @@ object Conversions {
     new OTGSample(s.sampleId, sc)
   }
 
-  implicit def speciesFromFilter(filter: DataFilter): Species = asScala(filter.organism)
+//  implicit def speciesFromFilter(filter: DataFilter): Species = asScala(filter.organism)
     
-  implicit def asScala(org: Organism): Species = {
-    org match {
-      case Organism.Rat   => otg.Species.Rat
-      case Organism.Human => otg.Species.Human
-      case Organism.Mouse => otg.Species.Mouse
-    }
-  }
+//  implicit def asScala(org: Organism): Species = {
+//    org match {
+//      case Organism.Rat   => otg.Species.Rat
+//      case Organism.Human => otg.Species.Human
+//      case Organism.Mouse => otg.Species.Mouse
+//    }
+//  }
 
   implicit def asScala(sc: SampleClass, series: Series)(implicit context: Context): OTGSeries = {
 	val p = context.unifiedProbes.pack(series.probe) //TODO filtering

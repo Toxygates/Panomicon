@@ -52,7 +52,8 @@ public class DatasetInfo extends Composite implements ClickHandler {
 		String description = filter.organism.toString();
 		description += ", " + filter.cellType.toString();
 		
-		if (filter.cellType == CellType.Vivo) {
+		CellType ct = CellType.valueOf(filter.cellType);
+		if (ct == CellType.Vivo) {
 			description += ", " + filter.organ.toString() + ", " + filter.repeatType.toString() + " dose";			
 		}
 
@@ -61,15 +62,15 @@ public class DatasetInfo extends Composite implements ClickHandler {
 			icons.setStyleName("darkColored");
 			icons.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 
-			icons.add(new Image(image(filter.organism)));
+			icons.add(new Image(image(Organism.valueOf(filter.organism))));
 
-			if (filter.cellType == CellType.Vivo) {
-				icons.add(new Image(image(filter.organ)));
+			if (ct == CellType.Vivo) {
+				icons.add(new Image(image(Organ.valueOf(filter.organ))));
 			} else {
 				icons.add(new Image(resources.vitro()));
 			}
 
-			icons.add(new Image(image(filter.repeatType)));
+			icons.add(new Image(image(RepeatType.valueOf(filter.repeatType))));
 			icons.add(new Image(resources.bottle()));
 
 			vp.add(icons);

@@ -8,7 +8,6 @@ import scala.collection.JavaConversions.asJavaCollection
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
 import Conversions.asJava
 import Conversions.asScala
-import Conversions.speciesFromFilter
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import otg.OTGContext

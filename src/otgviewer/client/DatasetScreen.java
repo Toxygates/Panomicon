@@ -24,7 +24,7 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 	VerticalPanel vp;
 	
 	public DatasetScreen(ScreenManager man) {
-		super("Dataset selection", key, false, false, man);		
+		super("Dataset selection", key, false, man);		
 	}
 	
 	final DatasetScreen ds = this;

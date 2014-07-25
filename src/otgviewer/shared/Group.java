@@ -96,10 +96,10 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 		return getCompounds(null);
 	}
 	
-	public String[] getCompounds(@Nullable DataFilter filter) {
+	public String[] getCompounds(@Nullable SampleClass sc) {
 		Set<String> compounds = new HashSet<String>();
 		for (OTGSample b : _samples) {
-			if (filter == null || filter.permits(b)) {
+			if (sc == null || sc.permits(b)) {
 				compounds.add(b.getCompound());
 			}
 		}

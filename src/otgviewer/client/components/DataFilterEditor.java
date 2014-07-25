@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import otgviewer.client.Utils;
@@ -174,8 +175,9 @@ public class DataFilterEditor extends DataListenerWidget {
 			try {
 //				changeDataFilter(r.asDataFilter());
 				changeSampleClass(r);
-			} catch (IllegalArgumentException iae) {
+			} catch (IllegalArgumentException iae) {				
 				logger.warning("Illegal argument (unable to parse " + r + ")");
+				logger.log(Level.WARNING, "Unable to parse", iae);
 				//bad data
 			}
 		}

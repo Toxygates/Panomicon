@@ -29,13 +29,12 @@ public class DataScreen extends Screen {
 
 	public static final String key = "data";
 	private ExpressionTable et;
-	
-	private DataFilter lastFilter;
+		
 	private String[] lastProbes;
 	private List<Group> lastColumns;
 	
 	public DataScreen(ScreenManager man) {
-		super("View data", key, true, true, man,
+		super("View data", key, true, man,
 				resources.dataDisplayHTML(), resources.dataDisplayHelp());
 		et = new ExpressionTable(this);
 	}
@@ -132,15 +131,13 @@ public class DataScreen extends Screen {
 				" lastProbes: " + (lastProbes == null ? "null" : "" + lastProbes.length));
 		
 		// Attempt to avoid reloading the data
-		if (lastFilter == null || !lastFilter.equals(chosenDataFilter)
-				|| lastColumns == null || !chosenColumns.equals(lastColumns)) {
+		if (lastColumns == null || !chosenColumns.equals(lastColumns)) {
 			et.getExpressions(); 
 		} else if (!Arrays.equals(chosenProbes, lastProbes)) {
 			et.refilterData();
 		}
 
-		lastProbes = chosenProbes;
-		lastFilter = chosenDataFilter;
+		lastProbes = chosenProbes;		
 		lastColumns = chosenColumns;
 	}
 	

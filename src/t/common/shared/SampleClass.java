@@ -44,6 +44,29 @@ public class SampleClass implements Serializable {
  	
 	public Map<String, String> getMap() { return new HashMap<String,String> (data); }
 	
+	/**
+	 * Does the HasClass match the constraints specified in this SampleClass?
+	 * @param hc
+	 * @return
+	 */
+	public boolean permits(HasClass hc) {
+		return subsumes(hc.sampleClass());
+	}
+	
+	/**
+	 * Is this SampleClass more specific than the other one?
+	 * @param other
+	 * @return
+	 */
+	public boolean subsumes(SampleClass other) {
+		for (String k: data.keySet()) {
+			if (other.get(k) != null && !other.get(k).equals(get(k))) {
+				return false;
+			}
+		}
+		return true;		
+	}
+	
 	public static Set<String> collect(List<SampleClass> from, String key) {
 		Set<String> r = new HashSet<String>();
 		for (SampleClass sc: from) {
@@ -83,14 +106,10 @@ public class SampleClass implements Serializable {
 		}
 		
 		SampleClass r = new SampleClass();
-		r.put("organ_id", df.organ.toString());
-		r.put("organism", df.organism.toString());
-		if (df.cellType == CellType.Vivo) {
-			r.put("test_type", "in vivo");
-		} else {
-			r.put("test_type", "in vitro");
-		}
-		r.put("sin_rep_type", df.repeatType.toString());
+		r.put("organ_id", df.organ);
+		r.put("organism", df.organism);
+		r.put("test_type", df.cellType);		
+		r.put("sin_rep_type", df.repeatType);
 		return r;
 	}
 	

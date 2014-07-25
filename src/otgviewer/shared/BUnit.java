@@ -21,13 +21,10 @@ public class BUnit extends Unit<OTGSample> {
 	protected BUnit() { super(); }
 	private String _time, _dose, _compound;
 	
-	//TODO consider extracting an interface SampleParameter and lifting up some of these
-	//TODO think about how these should be preserved across the various transformation
-	//methods. Should ideally store in Barcode too.
-	private Organ _organ = null;
-	private Organism _organism = null;
-	private CellType _cellType = null;
-	private RepeatType _repeatType = null;
+	private String _organ = null;
+	private String _organism = null;
+	private String _cellType = null;
+	private String _repeatType = null;
 	
 	public BUnit(String compound, String dose, String time) {
 		super(compound + "/" + dose + "/" + time);
@@ -43,13 +40,11 @@ public class BUnit extends Unit<OTGSample> {
 		}
 	}
 	
-	public void setSampleClass(SampleClass sc) {
-		DataFilter filter = sc.asDataFilter();
-	
-		_organ = filter.organ;
-		_organism = filter.organism;
-		_cellType = filter.cellType;
-		_repeatType = filter.repeatType;
+	public void setSampleClass(SampleClass sc) {	
+		_organ = sc.get("organ_id");
+		_organism = sc.get("organism");
+		_cellType = sc.get("test_type");
+		_repeatType = sc.get("sin_rep_type");
 
 		_name = _organ + "/" + _organism + "/" + _cellType + "/" + _repeatType
 				+ "/" + _name;
@@ -68,23 +63,23 @@ public class BUnit extends Unit<OTGSample> {
 	}
 	
 	@Nullable
-	public Organ getOrgan() {
-		return _organ;
+	public String getOrgan() {
+		return _organ.toString();
 	}
 	
 	@Nullable
-	public Organism getOrganism() {
-		return _organism;
+	public String getOrganism() {
+		return _organism.toString();
 	}
 	
 	@Nullable
-	public CellType getCellType() {
-		return _cellType;
+	public String getCellType() {
+		return _cellType.toString();
 	}
 	
 	@Nullable
-	public RepeatType getRepeatType() {
-		return _repeatType;
+	public String getRepeatType() {
+		return _repeatType.toString();
 	}
 	
 	@Override 

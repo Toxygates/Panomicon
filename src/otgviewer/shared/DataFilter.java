@@ -10,10 +10,10 @@ import java.io.Serializable;
  */
 @Deprecated
 public class DataFilter implements Serializable {
-	public CellType cellType;
-	public Organ organ;
-	public RepeatType repeatType;
-	public Organism organism;
+	public String cellType;
+	public String organ;
+	public String repeatType;
+	public String organism;
 
 	public DataFilter() { }
 	
@@ -24,29 +24,34 @@ public class DataFilter implements Serializable {
 		organism = copy.organism;
 	}
 	
-	public DataFilter(CellType _cellType, Organ _organ, RepeatType _repeatType, Organism _organism) {
+	@Deprecated
+	public DataFilter(CellType ct, Organ organ, RepeatType rt, Organism o) {
+		this(ct.name(), organ.name(), rt.name(), o.name());
+	}
+	
+	public DataFilter(String _cellType, String _organ, String _repeatType, String _organism) {
 		cellType = _cellType;
 		organ = _organ;
 		repeatType = _repeatType;
 		organism = _organism;
 	}
 	
-	public boolean permits(OTGSample b) {
-		BUnit u = b.getUnit();
-		if (organ != null && organ != u.getOrgan()) {
-			return false;
-		}
-		if (organism != null && organism != u.getOrganism()) {
-			return false;
-		}
-		if (cellType != null && cellType != u.getCellType()) {
-			return false;
-		}
-		if (repeatType != null && repeatType != u.getRepeatType()) {
-			return false;
-		}
-		return true;
-	}
+//	public boolean permits(OTGSample b) {
+//		BUnit u = b.getUnit();
+//		if (organ != null && organ != u.getOrgan()) {
+//			return false;
+//		}
+//		if (organism != null && organism != u.getOrganism()) {
+//			return false;
+//		}
+//		if (cellType != null && cellType != u.getCellType()) {
+//			return false;
+//		}
+//		if (repeatType != null && repeatType != u.getRepeatType()) {
+//			return false;
+//		}
+//		return true;
+//	}
 	
 	public boolean equals(Object other) {
 		if (other instanceof DataFilter) {
@@ -65,18 +70,13 @@ public class DataFilter implements Serializable {
 	
 	public String toString() {
 		StringBuilder s = new StringBuilder();
-		s.append(organism.name());
+		s.append(organism);
 		s.append(", ");
-		s.append(cellType.name());
+		s.append(cellType);
 		s.append(", ");
-		switch (cellType) {
-		case Vivo:
-			s.append(organ.name());
-			s.append(", ");
-		case Vitro:
-			break;
-		}
-		s.append(repeatType.name());		
+		s.append(organ);
+		s.append(", ");
+		s.append(repeatType);		
 		return s.toString();
 	}
 }

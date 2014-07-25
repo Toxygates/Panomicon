@@ -74,7 +74,7 @@ public class ProbeScreen extends Screen {
 	private final Logger logger = Utils.getLogger();
 
 	public ProbeScreen(ScreenManager man) {
-		super("Probe selection", key, true, true, man, resources
+		super("Probe selection", key, true, man, resources
 				.probeSelectionHTML(), resources.probeSelectionHelp());
 	}
 

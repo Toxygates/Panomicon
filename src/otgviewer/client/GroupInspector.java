@@ -410,7 +410,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private void displayGroup(String name) {
 		setHeading("editing " + name);
 		List<String> compounds =				
-				Arrays.asList(groups.get(name).getCompounds(chosenDataFilter));
+				Arrays.asList(groups.get(name).getCompounds(chosenSampleClass));
 		
 		compoundSel.setSelection(compounds);		
 		txtbxGroup.setValue(name);

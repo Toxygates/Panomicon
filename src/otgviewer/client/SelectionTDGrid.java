@@ -78,7 +78,9 @@ public class SelectionTDGrid extends TimeDoseGrid {
 				l.setText("");
 				a.setEnabled(true);
 				int treatedCount = unit.getSamples().length;
-				int controlCount = controlUnitFor(unit).getSamples().length;
+				BUnit controlUnit = controlUnitFor(unit);
+				String controlCount = 
+					(controlUnit != null ? controlUnit.getSamples().length + "" : "?");
 				a.setText(" " + treatedCount + "/" + controlCount);				
 				a.addClickHandler(new ClickHandler() {
 					@Override
@@ -274,8 +276,10 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		SampleDetailTable st = new SampleDetailTable(this, "Experiment detail");
 		BUnit finalUnit = getFinalUnit(unit);
 		if (finalUnit.getSamples() != null && finalUnit.getSamples().length > 0) {
-			BUnit controlUnit = controlUnitFor(finalUnit);
-			BUnit[] units = new BUnit[] { finalUnit, controlUnit };
+			BUnit controlUnit = controlUnitFor(finalUnit);			
+			BUnit[] units = (controlUnit != null ?
+					new BUnit[] { finalUnit, controlUnit } :
+					new BUnit[] { finalUnit });
 			Group g = new Group("data", units);			
 			st.loadFrom(g, true, 0, -1);
 			Utils.displayInPopup("Unit details", st, DialogPosition.Center);

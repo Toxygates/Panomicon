@@ -114,10 +114,10 @@ public class OTGSample extends Sample implements OTGColumn {
 		sb.append(time).append(sep);
 		sb.append(compound).append(sep);
 		if (unit.getCellType() != null) {
-			sb.append(unit.getCellType().name()).append(sep);
-			sb.append(unit.getOrgan().name()).append(sep);
-			sb.append(unit.getRepeatType().name()).append(sep);
-			sb.append(unit.getOrganism().name()).append(sep);
+			sb.append(unit.getCellType()).append(sep);
+			sb.append(unit.getOrgan()).append(sep);
+			sb.append(unit.getRepeatType()).append(sep);
+			sb.append(unit.getOrganism()).append(sep);
 		}
 		return sb.toString();
 	}
