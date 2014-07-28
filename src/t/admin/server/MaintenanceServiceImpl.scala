@@ -93,7 +93,7 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
       }
 
       val metaFile = getAsTempFile(tempFiles, metaPrefix, metaPrefix, "tsv").get
-      val niFile = getAsTempFile(tempFiles, niPrefix, niPrefix, "csv").get
+      val niFile = getAsTempFile(tempFiles, niPrefix, niPrefix, "csv")
       val foldFile = getAsTempFile(tempFiles, foldPrefix, foldPrefix, "csv").get
       val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv")
       val foldCallsFile = getAsTempFile(tempFiles, foldCallPrefix, foldCallPrefix, "csv")
@@ -101,12 +101,12 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
 
       TaskRunner ++= bm.addBatch(title, comment, 
         metaFile.getAbsolutePath(),
-        niFile.getAbsolutePath(),
+        niFile.map(_.getAbsolutePath()),
         callsFile.map(_.getAbsolutePath()),
         foldFile.getAbsolutePath(),
         foldCallsFile.map(_.getAbsolutePath()),
         foldPValueFile.map(_.getAbsolutePath()),
-        false)
+        false, baseConfig.seriesBuilder)
         
     } catch {
 	  case e: Exception =>
@@ -144,7 +144,7 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
     try {
       TaskRunner.start()
       setLastTask("Delete batch")
-      TaskRunner ++= bm.deleteBatch(id)
+      TaskRunner ++= bm.deleteBatch(id, baseConfig.seriesBuilder)
     } catch {
       case e: Exception =>
         afterTaskCleanup()

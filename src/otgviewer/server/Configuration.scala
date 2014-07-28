@@ -7,6 +7,7 @@ import otg.OTGContext
 import t.TriplestoreConfig
 import t.DataConfig
 import t.BaseConfig
+import otg.OTGBConfig
 
 object Configuration {
   /**
@@ -55,7 +56,7 @@ class Configuration(val owlimRepositoryName: String,
     val tsConfig = TriplestoreConfig(repositoryUrl, updateUrl, 
         repositoryUser, repositoryPass, owlimRepositoryName)
     val dataConfig = DataConfig(toxygatesHomeDir)
-    BaseConfig(tsConfig, dataConfig)
+    OTGBConfig(tsConfig, dataConfig)
   }
   
   def context = new OTGContext(baseConfig)
