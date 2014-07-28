@@ -110,7 +110,7 @@ public class ChartGridFactory {
 	
 	private void finishRowCharts(Screen screen, String probe, ValueType vt, List<Group> groups, 
 			OTGSample[] barcodes, AChartAcceptor acceptor) {
-		ChartDataSource cds = new ChartDataSource.DynamicExpressionRowSource(sampleClass, probe, vt, barcodes, screen);
+		ChartDataSource cds = new ChartDataSource.DynamicExpressionRowSource(probe, vt, barcodes, screen);
 		AdjustableChartGrid acg = new AdjustableChartGrid(screen, cds, groups, vt);
 		acceptor.acceptCharts(acg);
 	}

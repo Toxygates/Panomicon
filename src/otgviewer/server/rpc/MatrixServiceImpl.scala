@@ -108,7 +108,10 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     if (probes.size == 0) {
       platforms(platform)
     } else {
-      probes.filter(p => platforms(platform).contains(p))
+      println(s"Filter ${probes}")
+      val r = probes.filter(p => platforms(platform).contains(p))
+      println(s"Result $r")
+      r
     }
   }
 
@@ -238,7 +241,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   def getFullData(g: Group, probes: Array[String], sparseRead: Boolean, 
       withSymbols: Boolean, typ: ValueType): JList[ExpressionRow] = {        
 //    val species = g.getUnits().map(x => asScala(x.getOrganism())).toSet
-    val platforms = otgSamples.platforms(g.getSamples().map(_.getCode))
+    val platforms = platformsForGroups(List(g))    
     
     val realProbes = filterProbes(probes, platforms).toArray
     val mm = makeMatrix(List(g), realProbes.toArray, typ, sparseRead)

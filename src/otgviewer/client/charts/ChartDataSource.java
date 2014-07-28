@@ -211,18 +211,15 @@ abstract class ChartDataSource {
 	 *
 	 */
 	static class DynamicExpressionRowSource extends ExpressionRowSource {
-		private static final MatrixServiceAsync kcService = (MatrixServiceAsync) GWT
+		private static final MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
 				.create(MatrixService.class);
 		
-		private SampleClass sampleClass;
 		private String probe;
 		private ValueType type;
 		private Screen screen;
 		
-		DynamicExpressionRowSource(SampleClass sampleClass, String probe, ValueType vt, OTGSample[] barcodes, Screen screen) {
-			super(barcodes, new ArrayList<ExpressionRow>());
-			logger.info("Dynamic source: filter is " + sampleClass.toString());
-			this.sampleClass = sampleClass;
+		DynamicExpressionRowSource(String probe, ValueType vt, OTGSample[] barcodes, Screen screen) {
+			super(barcodes, new ArrayList<ExpressionRow>());			
 			this.probe = probe;
 			this.type = vt;		
 			this.screen = screen;
@@ -245,9 +242,8 @@ abstract class ChartDataSource {
 			}
 			
 			samples.clear();
-			Group g = new Group("temporary", useBarcodes.toArray(new OTGSample[0]), 
-					sampleClass.asDataFilter());
-			kcService.getFullData(g, 
+			Group g = new Group("temporary", useBarcodes.toArray(new OTGSample[0]));
+			matrixService.getFullData(g, 
 					new String[] { probe }, true, false, type,  
 					new PendingAsyncCallback<List<ExpressionRow>>(screen) {
 				@Override

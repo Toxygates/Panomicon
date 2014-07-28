@@ -23,14 +23,26 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 	
 	public Group() {}
 	
-	public Group(String name, OTGSample[] barcodes, String color, @Nullable DataFilter filter) {
-		super(name, barcodes, color);	
-		_units = BUnit.formUnits(barcodes, SampleClass.fromDataFilter(filter));
+	public Group(String name, OTGSample[] barcodes, String color) {
+		super(name, barcodes, color);
+		//TODO unit formation will not work if the barcodes have different sample classes 
+		// - fix
+		if (barcodes.length > 0) {
+			_units = BUnit.formUnits(barcodes, barcodes[0].sampleClass());
+		} else {
+			_units = new BUnit[] {};
+		}
 	}
 	
-	public Group(String name, OTGSample[] barcodes, @Nullable DataFilter filter) { 
-		super(name, barcodes); 
-		_units = BUnit.formUnits(barcodes, SampleClass.fromDataFilter(filter));
+	public Group(String name, OTGSample[] barcodes) { 
+		super(name, barcodes);
+		//TODO unit formation will not work if the barcodes have different sample classes 
+		// - fix
+		if (barcodes.length > 0) {
+			_units = BUnit.formUnits(barcodes, barcodes[0].sampleClass());
+		} else {
+			_units = new BUnit[] {};
+		}
 	}
 	
 	public Group(String name, BUnit[] units) { 
@@ -38,8 +50,8 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 		_units = units;
 	}
 	
-	public Group(String name, BUnit[] units, String color, @Nullable DataFilter filter) {
-		this(name, BUnit.collectBarcodes(units), color, filter);
+	public Group(String name, BUnit[] units, String color) {
+		this(name, BUnit.collectBarcodes(units), color);
 	}
 
 	public String getShortTitle() {
@@ -136,11 +148,11 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 				OTGSample b = OTGSample.unpack(s2[i]);
 				bcs[i] = b;
 			}			
-			DataFilter useFilter = (bcs[0].getUnit().getOrgan() == null) ? filter : null;
-			return new Group(name, bcs, color, useFilter);
+			//DataFilter useFilter = (bcs[0].getUnit().getOrgan() == null) ? filter : null;
+			return new Group(name, bcs, color);
 			
 		} else {
-			return new Group(name, new OTGSample[0], color, null);
+			return new Group(name, new OTGSample[0], color);
 		}
 	}
 

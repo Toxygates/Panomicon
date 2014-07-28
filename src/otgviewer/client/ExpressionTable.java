@@ -21,13 +21,14 @@ import otgviewer.client.dialog.FilterEditor;
 import otgviewer.client.rpc.MatrixService;
 import otgviewer.client.rpc.MatrixServiceAsync;
 import otgviewer.shared.AType;
-import otgviewer.shared.OTGSample;
 import otgviewer.shared.Group;
 import otgviewer.shared.ManagedMatrixInfo;
+import otgviewer.shared.OTGSample;
 import otgviewer.shared.OTGUtils;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
 import t.common.shared.Pair;
+import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.DataColumn;
 import t.common.shared.sample.ExpressionRow;
@@ -639,7 +640,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			highlightedRow = SharedUtils.indexOf(displayedProbes, value);
 			grid.redraw();
 			
-			final ChartGridFactory cgf = new ChartGridFactory(chosenSampleClass, chosenColumns);
+			//TODO this will not work for multi-class groups
+			SampleClass sc = chosenColumns.get(0).getSamples()[0].sampleClass().asMacroClass();		
+			logger.info("Create charts for " + sc.toString());
+					
+			
+			final ChartGridFactory cgf = new ChartGridFactory(sc, chosenColumns);
 			Utils.ensureVisualisationAndThen(new Runnable() {
 				public void run() {
 					cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, value, 

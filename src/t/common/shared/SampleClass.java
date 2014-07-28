@@ -2,6 +2,8 @@ package t.common.shared;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -40,6 +42,29 @@ public class SampleClass implements Serializable {
 	
 	public SampleClass copy() {
 		return new SampleClass(getMap());
+	}
+	
+	public SampleClass copyOnly(Collection<String> keys) {
+		Map<String, String> data = new HashMap<String, String>();
+		for (String k: keys) {
+			data.put(k, get(k));			
+		}
+		return new SampleClass(data);
+	}
+	
+	static final String[] macroKeys = new String[] { "organism", "organ_id", "sin_rep_type", "test_type" };
+	
+	public SampleClass asMacroClass() {
+		List<String> keys = new ArrayList<String>();
+		Collections.addAll(keys, macroKeys);
+		return copyOnly(keys);
+	}
+	
+	public SampleClass asUnit() {
+		List<String> keys = new ArrayList<String>();
+		Collections.addAll(keys, macroKeys);
+		Collections.addAll(keys, "dose_level", "exposure_time", "compound_name");
+		return copyOnly(keys);		
 	}
  	
 	public Map<String, String> getMap() { return new HashMap<String,String> (data); }
