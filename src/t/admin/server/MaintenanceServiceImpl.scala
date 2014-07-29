@@ -111,7 +111,8 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
     } catch {
 	  case e: Exception =>
 	    afterTaskCleanup()
-	    throw e	  
+	    e.printStackTrace()
+	    throw new MaintenanceException(e.getMessage())	  
 	}
   }
 
