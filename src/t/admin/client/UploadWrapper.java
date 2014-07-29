@@ -74,4 +74,8 @@ class UploadWrapper extends Composite {
 	}
 	
 	boolean hasFile() { return finished; }
+	
+	void reset() {		
+		setFailure(true);
+	}
 }

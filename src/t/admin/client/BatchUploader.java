@@ -1,6 +1,14 @@
 package t.admin.client;
 
-import static t.admin.shared.MaintenanceConstants.*;
+import static t.admin.shared.MaintenanceConstants.callPrefix;
+import static t.admin.shared.MaintenanceConstants.foldCallPrefix;
+import static t.admin.shared.MaintenanceConstants.foldPPrefix;
+import static t.admin.shared.MaintenanceConstants.foldPrefix;
+import static t.admin.shared.MaintenanceConstants.metaPrefix;
+import static t.admin.shared.MaintenanceConstants.niPrefix;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
@@ -29,16 +37,22 @@ public class BatchUploader extends UploadDialog {
 		
 		metadata = new UploadWrapper(this, "Metadata file (TSV)", 
 				metaPrefix, "tsv");	
+		uploaders.add(metadata);
 		normalized = new UploadWrapper(this, "Normalized intensity data file (CSV)", 
 				niPrefix, "csv");
+		uploaders.add(normalized);
 		calls = new UploadWrapper(this, "Calls file (CSV) (optional)", 
 				callPrefix, "csv");
+		uploaders.add(calls);
 		fold = new UploadWrapper(this, "Fold change data file (CSV)", 
 				foldPrefix, "csv");
+		uploaders.add(fold);
 		foldCalls = new UploadWrapper(this, "Fold change calls file (CSV) (optional)",
 				foldCallPrefix, "csv");
+		uploaders.add(foldCalls);
 		foldP = new UploadWrapper(this, "Fold change p-values (CSV) (optional)",
 				foldPPrefix, "csv");
+		uploaders.add(foldP);
 
 		HorizontalPanel hp = new HorizontalPanel();
 		hp.add(metadata);
@@ -80,7 +94,13 @@ public class BatchUploader extends UploadDialog {
 					@Override
 					void onCompletion() {
 						completed = true;
-						cancel.setText("OK");
+						cancel.setText("Close");
+						resetAll();
+					}
+					
+					@Override
+					void onFailure() {
+						resetAll();
 					}
 				});
 			}

@@ -1,5 +1,8 @@
 package t.admin.client;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -10,11 +13,18 @@ abstract public class UploadDialog extends Composite {
 			.create(MaintenanceService.class);
 	
 	protected boolean completed;
+	protected List<UploadWrapper> uploaders = new ArrayList<UploadWrapper>();
 	
 	public UploadDialog() {
 		VerticalPanel vp = new VerticalPanel();
 		initWidget(vp);
 		makeGUI(vp);
+	}
+	
+	protected void resetAll() {
+		for (UploadWrapper u: uploaders) {
+			u.reset();
+		}
 	}
 	
 	abstract protected void makeGUI(VerticalPanel vp);
@@ -24,11 +34,7 @@ abstract public class UploadDialog extends Composite {
 	public void onOK() { }
 	
 	public void onCancel() { }
-	
-	void onCompletion() {}
-	
-	void onFailure() {}
-	
+
 	void onFinish() {
 		if (completed) {
 			onOK();
