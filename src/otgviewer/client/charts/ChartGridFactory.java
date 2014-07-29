@@ -9,11 +9,11 @@ import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.Screen;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
-import otgviewer.shared.OTGSample;
-import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
+import otgviewer.shared.OTGSample;
 import otgviewer.shared.OTGUtils;
 import otgviewer.shared.Series;
+import otgviewer.shared.TimesDoses;
 import otgviewer.shared.ValueType;
 import t.common.shared.SampleClass;
 
@@ -59,7 +59,8 @@ public class ChartGridFactory {
 	private void finishSeriesCharts(final List<Series> series, final String[] times, 
 			final boolean rowsAreCompounds,			
 			final int highlightDose, final ChartAcceptor acceptor, final Screen screen) {
-		ChartDataSource cds = new ChartDataSource.SeriesSource(series, times);
+		ChartDataSource cds = new ChartDataSource.SeriesSource(
+				new TimesDoses(), series, times);
 		final String[] doses = new String[] { "Low", "Middle", "High" };
 		
 		cds.getSamples(null, null, new TimeDoseColorPolicy(doses[highlightDose], "SkyBlue"), 
@@ -110,7 +111,8 @@ public class ChartGridFactory {
 	
 	private void finishRowCharts(Screen screen, String probe, ValueType vt, List<Group> groups, 
 			OTGSample[] barcodes, AChartAcceptor acceptor) {
-		ChartDataSource cds = new ChartDataSource.DynamicExpressionRowSource(probe, vt, barcodes, screen);
+		ChartDataSource cds = new ChartDataSource.DynamicExpressionRowSource(new TimesDoses(), 
+				probe, vt, barcodes, screen);
 		AdjustableChartGrid acg = new AdjustableChartGrid(screen, cds, groups, vt);
 		acceptor.acceptCharts(acg);
 	}

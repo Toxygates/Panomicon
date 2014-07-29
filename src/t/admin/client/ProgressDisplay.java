@@ -35,6 +35,7 @@ public class ProgressDisplay extends Composite {
 	Button cancelButton, doneButton;
 	
 	Timer timer;
+	private boolean cancelled = false;
 	
 	final MaintenanceServiceAsync maintenanceService = (MaintenanceServiceAsync) GWT
 			.create(MaintenanceService.class);
@@ -119,7 +120,9 @@ public class ProgressDisplay extends Composite {
 				public void onSuccess(OperationResults result) {
 					int i = 0;
 					
-					if (result != null && result.successful()) {
+					if (cancelled) {
+						logPanel.insert(infoLabel("* * * Operation cancelled * * *"), i++);
+					} else if (result != null && result.successful()) {
 						logPanel.insert(infoLabel("* * * Operation successful * * *"), i++);
 					} else {
 						logPanel.insert(infoLabel("* * * Operation failed * * *"), i++);
@@ -129,9 +132,7 @@ public class ProgressDisplay extends Composite {
 							logPanel.insert(infoLabel(s), i++);
 						}
 					}
-
-				}
-				
+				}				
 			});
 		} else {
 			String task = p.getTask();			
@@ -155,8 +156,8 @@ public class ProgressDisplay extends Composite {
 	}
 	
 	void onCancel() {
-		cancelButton.setEnabled(false);
-		doneButton.setEnabled(true);
+		cancelButton.setEnabled(false);		
+		cancelled = true;
 		maintenanceService.cancelTask(new AsyncCallback<Void>() {
 			@Override
 			public void onFailure(Throwable caught) {

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import otgviewer.client.Utils;
@@ -11,12 +12,12 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.rpc.MatrixService;
 import otgviewer.client.rpc.MatrixServiceAsync;
-import otgviewer.shared.OTGSample;
 import otgviewer.shared.Group;
+import otgviewer.shared.OTGSample;
 import otgviewer.shared.Series;
 import otgviewer.shared.TimesDoses;
 import otgviewer.shared.ValueType;
-import t.common.shared.SampleClass;
+import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.ExpressionValue;
@@ -121,6 +122,12 @@ abstract class ChartDataSource {
 	String[] times() { return _times; }
 	String[] doses() { return _doses; }
 	
+	protected DataSchema schema;
+	
+	ChartDataSource(DataSchema schema) {
+		this.schema = schema;
+	}
+	
 	protected void init() {
 		List<String> times = new ArrayList<String>();
 		for (ChartDataSource.ChartSample s: samples) {
@@ -128,21 +135,28 @@ abstract class ChartDataSource {
 				times.add(s.time);
 			}
 		}
-		_times = times.toArray(new String[0]);
-		TimesDoses.sortTimes(_times);		
-	
-		List<String> doses = new ArrayList<String>();
-		for (ChartDataSource.ChartSample s: samples) {
-			if (!doses.contains(s.dose)) {
-				doses.add(s.dose);
+		
+		try {
+			_times = times.toArray(new String[0]);
+			// TODO avoid magic constants
+			schema.sort("exposure_time", _times);
+
+			List<String> doses = new ArrayList<String>();
+			for (ChartDataSource.ChartSample s : samples) {
+				if (!doses.contains(s.dose)) {
+					doses.add(s.dose);
+				}
 			}
+			_doses = doses.toArray(new String[0]);
+			schema.sort("dose_level", _doses);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Unable to sort chart data", e);
 		}
-		_doses = doses.toArray(new String[0]);
-		TimesDoses.sortDoses(_doses);
 	}
 	
 	static class SeriesSource extends ChartDataSource {
-		SeriesSource(List<Series> series, String[] times) {
+		SeriesSource(DataSchema schema, List<Series> series, String[] times) {
+			super(schema);
 			for (Series s: series) {				
 				for (int i = 0; i < s.values().length; ++i) {
 					ExpressionValue ev = s.values()[i];					
@@ -162,7 +176,8 @@ abstract class ChartDataSource {
 	static class ExpressionRowSource extends ChartDataSource {
 		protected OTGSample[] barcodes;
 		
-		ExpressionRowSource(OTGSample[] barcodes, List<ExpressionRow> rows) {
+		ExpressionRowSource(DataSchema schema, OTGSample[] barcodes, List<ExpressionRow> rows) {
+			super(schema);
 			this.barcodes = barcodes;
 			logger.info("ER source: " + barcodes.length + " barcodes");
 			
@@ -178,17 +193,22 @@ abstract class ChartDataSource {
 					times.add(b.getTime());
 				}
 			}
-			_times = times.toArray(new String[0]);
-			TimesDoses.sortTimes(_times);		
-		
-			List<String> doses = new ArrayList<String>();
-			for (OTGSample b: barcodes) {
-				if (!doses.contains(b.getDose())) {
-					doses.add(b.getDose());
+			try {
+				//TODO magic constants and code duplication with above
+				_times = times.toArray(new String[0]);
+				schema.sort("exposure_time", _times);
+
+				List<String> doses = new ArrayList<String>();
+				for (OTGSample b : barcodes) {
+					if (!doses.contains(b.getDose())) {
+						doses.add(b.getDose());
+					}
 				}
+				_doses = doses.toArray(new String[0]);
+				schema.sort("dose_level", _doses);
+			} catch (Exception e) {
+				logger.log(Level.WARNING, "Unable to sort chart data", e);
 			}
-			_doses = doses.toArray(new String[0]);
-			TimesDoses.sortDoses(_doses);
 		}
 		
 		protected void addSamplesFromBarcodes(OTGSample[] barcodes, List<ExpressionRow> rows) {
@@ -218,8 +238,9 @@ abstract class ChartDataSource {
 		private ValueType type;
 		private Screen screen;
 		
-		DynamicExpressionRowSource(String probe, ValueType vt, OTGSample[] barcodes, Screen screen) {
-			super(barcodes, new ArrayList<ExpressionRow>());			
+		DynamicExpressionRowSource(DataSchema schema, String probe, 
+				ValueType vt, OTGSample[] barcodes, Screen screen) {
+			super(schema, barcodes, new ArrayList<ExpressionRow>());			
 			this.probe = probe;
 			this.type = vt;		
 			this.screen = screen;

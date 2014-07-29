@@ -64,7 +64,7 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
   }
   
   private def grabRunner() {
-    if (TaskRunner.currentTask != None) {
+    if (TaskRunner.queueSize > 0 || TaskRunner.waitingForTask) {
 	  throw new Exception("Another task is already in progress.")
 	}
   }
@@ -171,28 +171,33 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
   }
 
   def cancelTask(): Unit = {
-    //TODO
-    afterTaskCleanup()	
+    TaskRunner.log("* * * Cancel requested * * *")
+    TaskRunner.shutdown()
+    //It may still take time for the current task to respond to the cancel request.
+    //Progress should be checked repeatedly.
   }
 
-  def getProgress(): Progress = {    
-    val messages = TaskRunner.logMessages.toArray
-    for (m <- messages) {
-      println(m)
+  def getProgress(): Progress = {
+    TaskRunner.synchronized {
+      val messages = TaskRunner.logMessages.toArray
+      for (m <- messages) {
+        println(m)
+      }
+      val p = if (TaskRunner.queueSize == 0 && !TaskRunner.waitingForTask) {
+        setLastResults(new OperationResults(lastTask,
+        		   TaskRunner.errorCause == None,
+        		   TaskRunner.resultMessages.toArray))
+          afterTaskCleanup()
+          new Progress("No task in progress", 0, true)
+      } else {
+        TaskRunner.currentTask match {
+          case Some(t) => new Progress(t.name, t.percentComplete, false)
+          case None => new Progress("??", 0, false)
+        }        
+      }          
+      p.setMessages(messages)      
+      p
     }
-    val p = TaskRunner.currentTask match {
-      case None => new Progress("No task in progress", 0, true)
-      case Some(t) => new Progress(t.name, t.percentComplete, false)
-    }
-    p.setMessages(messages)
-    
-    if (TaskRunner.currentTask == None) {
-      setLastResults(new OperationResults(lastTask, 
-          TaskRunner.errorCause == None, 
-          TaskRunner.resultMessages.toArray))      
-      afterTaskCleanup()
-    }
-    p    
   }
   
   def getBatches: Array[Batch] = {

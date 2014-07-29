@@ -27,7 +27,6 @@ import otg.SeriesRanking
 import t.db.SeriesDB
 import otg.OTGSeries
 import scala.annotation.tailrec
-import otg.TimeDose
 import otgviewer.shared.TimesDoses
 import t.BaseConfig
 import t.common.shared.SampleClass
