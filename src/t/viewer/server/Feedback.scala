@@ -19,7 +19,8 @@ object Feedback {
    *  Send a feedback message, as well as some application state,
    *  by e-mail.
    */
-  def send(user: String, email: String, message: String, userState: String): Unit = {
+  def send(user: String, email: String, message: String, userState: String,
+      receiverList: String): Unit = {
     val p = new Properties()
     p.setProperty("mail.smtp.host", "localhost")
 
@@ -29,7 +30,7 @@ object Feedback {
       m.setFrom(new InternetAddress("root@nibio.go.jp"))
 
       m.setRecipients(Message.RecipientType.TO,
-        InternetAddress.parse("johan@monomorphic.org,kenji@nibio.go.jp,y-igarashi@nibio.go.jp"))
+        InternetAddress.parse(receiverList))
 
       m.setSubject(s"[System message] Toxygates user feedback from $user")
       m.setText(s"Feedback from: $user <$email>\n\nMessage: $message\n\nUser state: $userState")

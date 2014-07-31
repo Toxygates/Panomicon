@@ -263,7 +263,8 @@ abstract class ChartDataSource {
 			}
 			
 			samples.clear();
-			Group g = new Group("temporary", useBarcodes.toArray(new OTGSample[0]));
+			Group g = new Group(schema, "temporary", 
+					useBarcodes.toArray(new OTGSample[0]));
 			matrixService.getFullData(g, 
 					new String[] { probe }, true, false, type,  
 					new PendingAsyncCallback<List<ExpressionRow>>(screen) {

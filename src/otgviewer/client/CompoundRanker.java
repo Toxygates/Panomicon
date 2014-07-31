@@ -126,7 +126,8 @@ public class CompoundRanker extends DataListenerWidget {
 			SampleClass sc = chosenSampleClass.copy();
 			sc.put("compound_name", selCompound);
 			
-			sparqlService.doseLevels(sc,
+			//TODO
+			sparqlService.parameterValues(sc, "dose_level",
 					new PendingAsyncCallback<String[]>(selector, "Unable to retrieve dose levels.") {
 						
 				@Override

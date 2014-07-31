@@ -3,12 +3,12 @@ import javax.annotation.Nullable;
 
 import otgviewer.shared.AType;
 import otgviewer.shared.Association;
-import otgviewer.shared.BUnit;
-import otgviewer.shared.OTGSample;
 import otgviewer.shared.OTGColumn;
-import otgviewer.shared.DataFilter;
+import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
+import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
+import t.common.shared.Unit;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
 
@@ -23,20 +23,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  */
 @RemoteServiceRelativePath("sparql")
 public interface SparqlService extends RemoteService {
-	
-	/**
-	 * Obtain compounds for the given filter
-	 * @param sc
-	 * @return
-	 */
-	public String[] compounds(SampleClass sc);	
-	
-	/**
-	 * Obtain dose levels for a given filter 
-	 * @param sc
-	 * @return
-	 */
-	public String[] doseLevels(SampleClass sc);
+	public String[] parameterValues(SampleClass sc, String parameter);
 	
 	/**
 	 * Obtain samples for a given sample class.
@@ -46,11 +33,11 @@ public interface SparqlService extends RemoteService {
 	public OTGSample[] samples(SampleClass sc);
 	
 	/**
-	 * Obtain samples for a given sample class and a set of compounds.
+	 * Obtain samples with a filter on one parameter.
 	 * @param sc
 	 * @return
 	 */
-	public OTGSample[] samples(SampleClass sc, String[] compounds);
+	public OTGSample[] samples(SampleClass sc, String param, String[] paramValues);
 
 	/**
 	 * Obtain all sample classes in the triple store
@@ -59,22 +46,14 @@ public interface SparqlService extends RemoteService {
 	public SampleClass[] sampleClasses();
 	
 	/**
-	 * TODO consider removing
-	 * 
-	 * Obtain times corresponding to a data filter and a compound.
-	 * @param filter 
-	 * @param compound the chosen compound, or null for no constraint.
-	 * @return
-	 */
-	public String[] times(SampleClass sc);		
-	
-	/**
-	 * Obtain units that are populated with the samples that belong to them.
+	 * Obtain units that are populated with the samples that belong to them,
+	 * with a filter on one parameeter.
 	 * @param sc
-	 * @param compounds
+	 * @param 
 	 * @return
 	 */
-	public BUnit[] units(SampleClass sc, @Nullable String[] compounds);
+	public Unit[] units(SampleClass sc, DataSchema schema,
+			String param, @Nullable String[] paramValues);
 			
 //	
 //	/**

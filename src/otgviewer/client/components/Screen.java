@@ -10,9 +10,9 @@ import java.util.logging.Logger;
 import otgviewer.client.Resources;
 import otgviewer.client.SampleDetailScreen;
 import otgviewer.client.Utils;
-import otgviewer.shared.OTGSample;
-import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
+import otgviewer.shared.OTGSample;
+import t.common.shared.DataSchema;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -175,6 +175,10 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		return this.manager;
 	}
 	
+	public DataSchema schema() {
+		return this.manager.schema();
+	}
+	
 	/**
 	 * Is this screen ready for use?
 	 * @return
@@ -313,8 +317,8 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	}
 
 	@Override
-	public void loadState(StorageParser p) {
-		super.loadState(p);
+	public void loadState(StorageParser p, DataSchema schema) {
+		super.loadState(p, schema);
 		String v = p.getItem("OTG.showGuide");
 		if (v == null || v.equals("yes")) {
 			showGuide = true;
@@ -349,14 +353,14 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 			for (Group g: chosenColumns) {				
 				FlowPanel fp = new FlowPanel(); 
 				fp.setStyleName("statusBorder");
-				String tip = g.getCDTs(-1, ", ");
+				String tip = g.getTriples(schema(), -1, ", ");
 				Label l = Utils.mkEmphLabel(g.getName() + ":");
 				l.setWordWrap(false);
 				l.getElement().getStyle().setMargin(2, Unit.PX);
 				l.setStyleName(g.getStyleName());
 				Utils.floatLeft(fp, l);
 				l.setTitle(tip);
-				l = new Label(g.getCDTs(2, ", "));
+				l = new Label(g.getTriples(schema(), 2, ", "));
 				l.getElement().getStyle().setMargin(2, Unit.PX);
 				l.setStyleName(g.getStyleName());
 				Utils.floatLeft(fp, l);

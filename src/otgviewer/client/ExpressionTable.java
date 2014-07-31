@@ -641,11 +641,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			grid.redraw();
 			
 			//TODO this will not work for multi-class groups
-			SampleClass sc = chosenColumns.get(0).getSamples()[0].sampleClass().asMacroClass();		
+			SampleClass sc = chosenColumns.get(0).getSamples()[0].
+					sampleClass().asMacroClass(screen.schema());		
 			logger.info("Create charts for " + sc.toString());
-					
 			
-			final ChartGridFactory cgf = new ChartGridFactory(sc, chosenColumns);
+			//TODO
+			final ChartGridFactory cgf = new ChartGridFactory(sc, screen.schema(), chosenColumns);
 			Utils.ensureVisualisationAndThen(new Runnable() {
 				public void run() {
 					cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, value, 

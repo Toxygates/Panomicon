@@ -16,6 +16,7 @@ import t.common.shared.sample.Unit;
 /**
  * A BUnit is a Unit of Barcodes.
  */
+@Deprecated
 public class BUnit extends Unit<OTGSample> {
 
 	protected BUnit() { super(); }
@@ -145,28 +146,28 @@ public class BUnit extends Unit<OTGSample> {
 		return r.toArray(new String[0]);
 	}
 	
-	public static BUnit[] formUnits(OTGSample[] barcodes, SampleClass sc) {
-		Map<String, List<OTGSample>> units = new HashMap<String, List<OTGSample>>();
-		for (OTGSample b: barcodes) {
-			String cdt = b.getParamString();
-			if (units.containsKey(cdt)) {
-				units.get(cdt).add(b);
-			} else {
-				List<OTGSample> n = new ArrayList<OTGSample>();
-				n.add(b);
-				units.put(cdt, n);
-			}
-		}
-		ArrayList<BUnit> r = new ArrayList<BUnit>();
-		for (List<OTGSample> bcs: units.values()) {
-			OTGSample first = bcs.get(0);
-			BUnit b = (first.getUnit().getOrgan() == null) ? 
-					new BUnit(bcs.get(0), sc) : first.getUnit(); 
-			b.setSamples(bcs.toArray(new OTGSample[0]));
-			r.add(b);
-		}
-		return r.toArray(new BUnit[0]);
-	}
+//	public static BUnit[] formUnits(OTGSample[] barcodes, SampleClass sc) {
+//		Map<String, List<OTGSample>> units = new HashMap<String, List<OTGSample>>();
+//		for (OTGSample b: barcodes) {
+//			String cdt = b.getParamString();
+//			if (units.containsKey(cdt)) {
+//				units.get(cdt).add(b);
+//			} else {
+//				List<OTGSample> n = new ArrayList<OTGSample>();
+//				n.add(b);
+//				units.put(cdt, n);
+//			}
+//		}
+//		ArrayList<BUnit> r = new ArrayList<BUnit>();
+//		for (List<OTGSample> bcs: units.values()) {
+//			OTGSample first = bcs.get(0);
+//			BUnit b = (first.getUnit().getOrgan() == null) ? 
+//					new BUnit(bcs.get(0), sc) : first.getUnit(); 
+//			b.setSamples(bcs.toArray(new OTGSample[0]));
+//			r.add(b);
+//		}
+//		return r.toArray(new BUnit[0]);
+//	}
 	
 	public static OTGSample[] collectBarcodes(BUnit[] units) {
 		List<OTGSample> r = new ArrayList<OTGSample>();

@@ -1,11 +1,9 @@
 package otgviewer.client.components;
 
 import static otgviewer.client.components.StorageParser.packColumns;
-import static otgviewer.client.components.StorageParser.packDataFilter;
 import static otgviewer.client.components.StorageParser.packItemLists;
 import static otgviewer.client.components.StorageParser.packProbes;
 import static otgviewer.client.components.StorageParser.unpackColumn;
-import static otgviewer.client.components.StorageParser.unpackDataFilter;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,11 +11,12 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import otgviewer.client.Utils;
-import otgviewer.shared.OTGColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
+import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGUtils;
 import otgviewer.shared.ValueType;
+import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.DataColumn;
 import t.viewer.shared.ItemList;
@@ -214,13 +213,8 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	}
 	
 	protected String keyPrefix(Screen s) {
-		// TODO use enum
-		String uit = s.manager().getUIType();
-		if (uit.equals("toxygates")) {
-			return "OTG";
-		} else {
-			return "Toxy_" + uit;
-		}
+		// TODO use enum		
+		return s.manager.storagePrefix();		
 	}
 	
 	public StorageParser getParser(Screen s) {
@@ -245,27 +239,25 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	 * TODO: is it necessary to store all these fields for each screen?
 	 */
 	public void storeState(StorageParser p) {
-		storeDataFilter(p);
+//		storeDataFilter(p);
 		storeColumns(p);
 		storeProbes(p);
 	}
-		
-	public void storeDataFilter(StorageParser p) {	
-		if (chosenDataFilter != null) {
-			p.setItem("dataFilter", packDataFilter(chosenDataFilter));			
-		} else {
-			p.clearItem("dataFilter");
-		}			
-	}
+//		
+//	public void storeDataFilter(StorageParser p) {	
+//		if (chosenDataFilter != null) {
+//			p.setItem("dataFilter", packDataFilter(chosenDataFilter));			
+//		} else {
+//			p.clearItem("dataFilter");
+//		}			
+//	}
 	
-	protected void storeColumns(StorageParser p, String key, Collection<OTGColumn> columns) {				
-		if (chosenDataFilter != null) {
-			key = key + "." + packDataFilter(chosenDataFilter);
-			if (!columns.isEmpty()) {
-				p.setItem(key, packColumns(columns));
-			} else {
-				p.clearItem(key);				
-			}
+	protected void storeColumns(StorageParser p, String key, 
+			Collection<OTGColumn> columns) {
+		if (!columns.isEmpty()) {
+			p.setItem(key, packColumns(columns));
+		} else {
+			p.clearItem(key);
 		}		
 	}
 	
@@ -283,14 +275,16 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 
 	// Separator hierarchy for columns:
 	// ### > ::: > ^^^ > $$$
-	protected List<Group> loadColumns(StorageParser p, String key,
+	protected List<Group> loadColumns(StorageParser p, DataSchema schema,
+			String key,
 			Collection<OTGColumn> expectedColumns) throws Exception {
-		String v = p.getItem(key + "." + packDataFilter(chosenDataFilter));
+		//TODO unpack old format columns
+		String v = p.getItem(key); // + "." + packDataFilter(chosenDataFilter));
 		List<Group> r = new ArrayList<Group>();
 		if (v != null && !v.equals(packColumns(expectedColumns))) {
 			String[] spl = v.split("###");
 			for (String cl : spl) {
-				Group c = (Group) unpackColumn(cl, chosenDataFilter);
+				Group c = (Group) unpackColumn(schema, cl, chosenDataFilter);
 				r.add(c);
 			}
 			return r;
@@ -328,36 +322,40 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	 */
 	public void loadState(Screen sc) {
 		StorageParser p = getParser(sc);		
-		loadState(p);
+		loadState(p, sc.schema());
 	}
 
-	public void loadState(StorageParser p) {
-		DataFilter nf = unpackDataFilter(p.getItem("dataFilter")); 
-		if (nf != null && (chosenDataFilter == null || !chosenDataFilter.equals(nf))) { 			
-			dataFilterChanged(nf);			
-			logger.info("Unpacked " + nf.toString());
-			SampleClass sc = SampleClass.fromDataFilter(nf);
-			sampleClassChanged(sc);
-			logger.info("Unpacked " + sc.toString());
-		}
-		if (chosenDataFilter != null) {				
-			try {
-				List<Group> cs = loadColumns(p, "columns", OTGUtils.asColumns(chosenColumns));					
-				if (cs != null) {						
-					columnsChanged(cs);
-				}						
-				OTGColumn cc = unpackColumn(p.getItem("customColumn"), chosenDataFilter);
-				if (cc != null) {																		
-					customColumnChanged(cc);						
-				}
-			} catch (Exception e) {										
-				//one possible failure source is if data is stored in an incorrect format
-				columnsChanged(new ArrayList<Group>());
-				storeColumns(p); //overwrite the old data
-				storeCustomColumn(p, null); //ditto
+	public void loadState(StorageParser p, DataSchema schema) {
+//		DataFilter nf = unpackDataFilter(p.getItem("dataFilter")); 
+//		if (nf != null && (chosenDataFilter == null || !chosenDataFilter.equals(nf))) { 			
+//			dataFilterChanged(nf);			
+//			logger.info("Unpacked " + nf.toString());
+//			SampleClass sc = SampleClass.fromDataFilter(nf);
+//			sampleClassChanged(sc);
+//			logger.info("Unpacked " + sc.toString());
+//		}
+		logger.info("Set default (blank) sample class");
+		SampleClass sc = new SampleClass();
+		sampleClassChanged(sc);
+		
+		try {
+			List<Group> cs = loadColumns(p, schema, 
+					"columns", OTGUtils.asColumns(chosenColumns));					
+			if (cs != null) {						
+				columnsChanged(cs);
+			}						
+			OTGColumn cc = unpackColumn(schema, p.getItem("customColumn"), 
+					chosenDataFilter);
+			if (cc != null) {																		
+				customColumnChanged(cc);						
 			}
-
+		} catch (Exception e) {										
+			//one possible failure source is if data is stored in an incorrect format
+			columnsChanged(new ArrayList<Group>());
+			storeColumns(p); //overwrite the old data
+			storeCustomColumn(p, null); //ditto
 		}
+
 		String v = p.getItem("probes");			
 		if (v != null && !v.equals("") && !v.equals(packProbes(chosenProbes))) {
 			chosenProbes = v.split("###");				

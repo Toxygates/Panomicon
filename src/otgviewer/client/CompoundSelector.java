@@ -69,24 +69,27 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	
 	private Widget north;
 	private Screen screen;
+	private final String majorParameter;
 
 	public CompoundSelector(final Screen screen, String heading) {
 		this.screen = screen;
 		dp = new DockLayoutPanel(Unit.PX);
-
+		this.majorParameter = screen.schema().majorParameter();
+		
 		initWidget(dp);
 		Label lblCompounds = new Label(heading);
 		lblCompounds.setStyleName("heading");
 		dp.addNorth(lblCompounds, 40);
 		north = lblCompounds;
 		
+		//TODO factor out
 		boolean isAdjuvant = screen.manager().getUIType().equals("adjuvant");
 		
 		final Map<String, List<String>> predefLists = 
 				(isAdjuvant ? TemporaryCompoundLists.predefinedLists() 
 						: new HashMap<String, List<String>>());
 		
-		compoundEditor = new StackedListEditor(this, "compounds", "Compound", 
+		compoundEditor = new StackedListEditor(this, "compounds", heading, 
 				predefLists) {
 			@Override
 			protected void selectionChanged(Set<String> selected) {
@@ -184,7 +187,8 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	}
 
 	void loadCompounds() {				
-		sparqlService.compounds(chosenSampleClass, new PendingAsyncCallback<String[]>(this, "Unable to retrieve compounds") {
+		sparqlService.parameterValues(chosenSampleClass, majorParameter, 
+				new PendingAsyncCallback<String[]>(this, "Unable to retrieve compounds") {
 			
 			@Override
 			public void handleSuccess(String[] result) {
@@ -273,7 +277,9 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		}
 		
 		private void makeSeriesCharts(final String value, final List<Series> ss) {
-			ChartGridFactory cgf = new ChartGridFactory(chosenSampleClass, chosenColumns);
+			//TODO
+			ChartGridFactory cgf = new ChartGridFactory(chosenSampleClass, 
+					screen.schema(), chosenColumns);
 			cgf.makeSeriesCharts(ss, false, scores.get(value).dose(), new ChartGridFactory.ChartAcceptor() {
 				
 				@Override

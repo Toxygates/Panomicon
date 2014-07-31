@@ -3,6 +3,7 @@ package t.common.shared.sample;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 
 /**
@@ -28,15 +29,16 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
 	protected String name;
 	protected String color;
 	protected S[] _samples;
+	protected DataSchema schema;
 	
-	public SampleGroup(String name, S[] samples, String color) {
+	public SampleGroup(DataSchema schema, String name, S[] samples, String color) {
 		this.name = name;
 		this._samples = samples;
 		this.color = color;
 	}
 	
-	public SampleGroup(String name, S[] samples) {
-		this(name, samples, pickColor());
+	public SampleGroup(DataSchema schema, String name, S[] samples) {
+		this(schema, name, samples, pickColor());
 	}
 	
 	private static synchronized String pickColor() {

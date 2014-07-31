@@ -51,6 +51,6 @@ abstract public class Sample implements Packable, Serializable, HasClass {
 	
 	abstract public String pack();
 	
-	abstract public Unit<? extends Sample> getUnit();
+//	abstract public Unit<? extends Sample> getUnit();
 	
 }

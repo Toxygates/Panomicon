@@ -1,15 +1,19 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.logging.Logger;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
-import otgviewer.shared.BUnit;
 import otgviewer.shared.OTGSample;
+import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
+import t.common.shared.Unit;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
@@ -29,7 +33,6 @@ import com.google.gwt.user.client.ui.Widget;
  */
 abstract public class TimeDoseGrid extends DataListenerWidget {
 	private Grid grid = new Grid();
-	protected String[] availableTimes = null;
 	
 	protected VerticalPanel rootPanel;
 	protected VerticalPanel mainPanel;
@@ -40,8 +43,15 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			.create(SparqlService.class);
 
 	private Screen screen;
+	protected final String majorParameter, 
+		mediumParameter, minorParameter, timeParameter;
+	protected final DataSchema schema;
 	
-	protected BUnit[] availableUnits;
+	protected List<String> mediumValues = new ArrayList<String>();
+	protected List<String> minorValues = new ArrayList<String>();
+	
+	protected Unit[] availableUnits;
+	protected Logger logger = Utils.getLogger("tdgrid");
 	
 	/** 
 	 * To be overridden by subclasses
@@ -55,6 +65,13 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		initWidget(rootPanel);
 		rootPanel.setWidth("730px");
 		mainPanel = new VerticalPanel();
+		this.schema = screen.schema();
+		this.majorParameter = schema.majorParameter();
+		this.mediumParameter = schema.mediumParameter();
+		this.minorParameter = schema.minorParameter();
+		this.timeParameter = schema.timeParameter();
+		
+		logger.info("Medium: " + mediumParameter + " minor: " + minorParameter);
 		
 		HorizontalPanel selectionPanel = Utils.mkHorizontalPanel();		
 		mainPanel.add(selectionPanel);
@@ -74,11 +91,11 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	public void sampleClassChanged(SampleClass sc) {
 		if (!sc.equals(chosenSampleClass)) {
 			super.sampleClassChanged(sc);
-			availableTimes = null;
+			minorValues = new ArrayList();			
 			screen.enqueue(new Screen.QueuedAction("fetchTimes") {				
 				@Override
 				public void run() {
-					fetchTimes();					
+					fetchMinor();					
 				}
 			});
 		} else {
@@ -99,20 +116,27 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		}
 	}
 	
-	private void lazyFetchTimes() {
-		if (availableTimes != null && availableTimes.length > 0) {
+	private void lazyFetchMinor() {
+		if (minorValues != null && minorValues.size() > 0) {
 			drawGridInner(grid);
 		} else {
-			fetchTimes();						
+			fetchMinor();						
 		}		
 	}
 	
-	private void fetchTimes() {		
-		sparqlService.times(chosenSampleClass, new AsyncCallback<String[]>() {
+	private void fetchMinor() {		
+		sparqlService.parameterValues(chosenSampleClass, minorParameter,
+				new AsyncCallback<String[]>() {
 			public void onSuccess(String[] times) {
-				availableTimes = times;
-				drawGridInner(grid);
-				//TODO: block compound selection until we have obtained this data
+				try {
+					logger.info("Sort " + times.length + " times");
+					schema.sort(minorParameter, times);
+					minorValues = Arrays.asList(times);				
+					drawGridInner(grid);
+					//TODO: block compound selection until we have obtained this data
+				} catch (Exception e) {
+					logger.warning("Unable to sort times " + e.getMessage());
+				}
 			}
 			public void onFailure(Throwable caught) {
 				Window.alert("Unable to get sample times.");
@@ -121,7 +145,8 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	}
 	
 	protected String keyFor(OTGSample b) {
-		return b.getCompound() + ":" + b.getDose() + ":" + b.getTime();
+		//TODO efficiency
+		return b.sampleClass().tripleString(schema);		
 	}
 	
 	private boolean fetchingSamples = false;
@@ -131,10 +156,10 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			return;
 		}
 		fetchingSamples = true;
-		availableUnits = new BUnit[0];
+		availableUnits = new Unit[0];
 		String[] compounds = chosenCompounds.toArray(new String[0]);
-		sparqlService.units(chosenSampleClass, compounds,
-				new AsyncCallback<BUnit[]>() {
+		sparqlService.units(chosenSampleClass, schema, majorParameter, compounds,
+				new AsyncCallback<Unit[]>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
@@ -143,9 +168,18 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			}
 
 			@Override
-			public void onSuccess(BUnit[] result) {
-				availableUnits = result;		
-				samplesAvailable();
+			public void onSuccess(Unit[] result) {
+				availableUnits = result;
+				Set<String> mv = Unit.collect(Arrays.asList(result), mediumParameter);
+				String[] mvs = mv.toArray(new String[0]);
+				try {
+					schema.sort(mediumParameter, mvs);
+					mediumValues = Arrays.asList(mvs);
+
+					samplesAvailable();
+				} catch (Exception e) {
+					logger.warning("Unable to sort medium parameters " + e.getMessage());
+				}
 				fetchingSamples = false;
 			}			
 		});
@@ -153,42 +187,18 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	
 	protected void samplesAvailable() { }
 
-	protected int doseToIndex(String dose) {
-		if (dose.equals("Low")) {
-			return 0;
-		} else if (dose.equals("Middle")) {
-			return 1;
-		} else if (dose.equals("High")){
-			return 2;
-		} else {
-			return -1;
-		}
-	}
-	
-	protected String indexToDose(int dose) {
-		switch (dose) {
-		case 0:
-			return "Low";			
-		case 1:
-			return "Middle";
-		case 2: 
-			return "High";
-		}
-		return null;
-	}
-	
-	protected int numDoses() {
-		return 3;
-	}
-	
 	private void redrawGrid() {
 		final int numRows = chosenCompounds.size() + 1 + (hasDoseTimeGUIs ? 1 : 0);
-		// TODO don't use magic numbers like 4
-		grid.resize(numRows, 4);
+
+		if (mediumValues == null) {
+			logger.info("Not redrawing grid since no medium values available");
+			return;
+		}
+		grid.resize(numRows, mediumValues.size() + 1);
 		
 		int r = 0;
-		for (int i = 0; i < numDoses(); ++i) {
-			grid.setWidget(r, i + 1, Utils.mkEmphLabel(indexToDose(i)));
+		for (int i = 0; i < mediumValues.size(); ++i) {
+			grid.setWidget(r, i + 1, Utils.mkEmphLabel(mediumValues.get(i)));
 		}
 		r++;
 				
@@ -203,7 +213,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		}
 		
 		grid.setHeight(50 * (chosenCompounds.size() + 1) + "px");
-		lazyFetchTimes();		
+		lazyFetchMinor();		
 	}
 	
 	/**
@@ -213,7 +223,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	 * @param time
 	 * @return
 	 */
-	abstract protected Widget guiForUnit(BUnit unit);
+	abstract protected Widget guiForUnit(Unit unit);
 	
 	/**
 	 * An optional extra widget on the right hand side of a compound/dose combination.
@@ -237,10 +247,12 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 
 	protected void drawGridInner(Grid grid) {
 		int r = 1;
+		final int numMed = mediumValues.size();
+		final int numMin = minorValues.size();
 		if (hasDoseTimeGUIs && chosenCompounds.size() > 0) {
-			for (int d = 0; d < numDoses(); ++d) {
+			for (int d = 0; d < numMed; ++d) {
 				HorizontalPanel hp = Utils.mkHorizontalPanel(true);
-				for (int t = 0; t < availableTimes.length; ++t) {
+				for (int t = 0; t < numMin; ++t) {
 					hp.add(guiForDoseTime(d, t));
 				}
 				SimplePanel sp = new SimplePanel(hp);
@@ -250,14 +262,17 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			r++;
 		}
 		
-		List<BUnit> allUnits = new ArrayList<BUnit>();
+		List<Unit> allUnits = new ArrayList<Unit>();
 		for (int c = 0; c < chosenCompounds.size(); ++c) {
-			for (int d = 0; d < numDoses(); ++d) {
+			for (int d = 0; d < numMed; ++d) {
 				HorizontalPanel hp = Utils.mkHorizontalPanel(true);				
-				for (int t = 0; t < availableTimes.length; ++t) {
-					BUnit unit = new BUnit(chosenCompounds.get(c), indexToDose(d),
-							availableTimes[t]);
-					unit.setSampleClass(chosenSampleClass);					
+				for (int t = 0; t < numMin; ++t) {
+					SampleClass sc = new SampleClass();
+					sc.put(majorParameter, chosenCompounds.get(c));
+					sc.put(mediumParameter, mediumValues.get(d));
+					sc.put(minorParameter, minorValues.get(t));
+					sc.mergeDeferred(chosenSampleClass);
+					Unit unit = new Unit(sc, new OTGSample[] {});									
 					allUnits.add(unit);
 					hp.add(guiForUnit(unit));
 				}
@@ -272,7 +287,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			}
 			r++;
 		}
-		availableUnits = allUnits.toArray(new BUnit[0]);
+		availableUnits = allUnits.toArray(new Unit[0]);
 	}
 	
 }

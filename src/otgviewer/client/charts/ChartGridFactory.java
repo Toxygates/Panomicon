@@ -15,6 +15,7 @@ import otgviewer.shared.OTGUtils;
 import otgviewer.shared.Series;
 import otgviewer.shared.TimesDoses;
 import otgviewer.shared.ValueType;
+import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 
 import com.google.gwt.core.client.GWT;
@@ -36,15 +37,19 @@ public class ChartGridFactory {
 	
 	private SampleClass sampleClass;
 	private List<Group> groups;
-	public ChartGridFactory(SampleClass sc, List<Group> groups) {
+	final private DataSchema schema;
+	
+	public ChartGridFactory(SampleClass sc, DataSchema schema, List<Group> groups) {
 		this.groups = groups;
 		this.sampleClass = sc;
+		this.schema = schema;		
 	}
 	
 	public void makeSeriesCharts(final List<Series> series, final boolean rowsAreCompounds,
 			final int highlightDose, final ChartAcceptor acceptor, final Screen screen) {
 		
-		sparqlService.times(sampleClass, new AsyncCallback<String[]>() {
+		sparqlService.parameterValues(sampleClass, 
+				schema.timeParameter(), new AsyncCallback<String[]>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				Window.alert("Unable to obtain sample times");
@@ -61,6 +66,7 @@ public class ChartGridFactory {
 			final int highlightDose, final ChartAcceptor acceptor, final Screen screen) {
 		ChartDataSource cds = new ChartDataSource.SeriesSource(
 				new TimesDoses(), series, times);
+		//TODO get from schema or data
 		final String[] doses = new String[] { "Low", "Middle", "High" };
 		
 		cds.getSamples(null, null, new TimeDoseColorPolicy(doses[highlightDose], "SkyBlue"), 
@@ -91,7 +97,9 @@ public class ChartGridFactory {
 	public void makeRowCharts(final Screen screen, final OTGSample[] barcodes, final ValueType vt, final String probe,
 			final AChartAcceptor acceptor) {
 		if (barcodes == null) {
-			sparqlService.samples(sampleClass, OTGUtils.compoundsFor(groups), new AsyncCallback<OTGSample[]>() {
+			//TODO
+			sparqlService.samples(sampleClass, "compound_name", 
+					OTGUtils.compoundsFor(groups), new AsyncCallback<OTGSample[]>() {
 
 				@Override
 				public void onFailure(Throwable caught) {

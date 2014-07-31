@@ -430,13 +430,9 @@ public class ProbeScreen extends Screen {
 	@Override
 	public void sampleClassChanged(SampleClass sc) {
 		oracle.setFilter(sc);
-		if (chosenSampleClass != null				
-				&& !sc.get("organism").equals(chosenSampleClass.get("organism"))) {
-			super.sampleClassChanged(sc);
-			probesChanged(new String[0]);
-		} else {
-			super.sampleClassChanged(sc);
-		}
+		super.sampleClassChanged(sc);
+		//TODO think about what to do for the probes here
+		//probesChanged(new String[0]);
 	}
 
 	@Override

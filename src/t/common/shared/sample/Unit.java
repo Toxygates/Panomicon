@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
  * i.e. all samples corresponding to a particular combination of experimental
  * parameters.
  */
+@Deprecated
 public class Unit<S extends Sample> implements HasSamples<S>, Serializable {
 	protected String _name;
 	private S[] _samples = null;

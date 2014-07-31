@@ -5,9 +5,12 @@ import scala.Option.option2Iterable
 import scala.collection.JavaConversions._
 import scala.collection.{Set => CSet}
 import scala.collection.{Set => CSet}
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
+
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
+import otg.OTGBConfig
 import otg.OTGContext
 import otg.Species._
 import otg.sparql._
@@ -20,12 +23,14 @@ import otgviewer.server._
 import otgviewer.server.ScalaUtils
 import otgviewer.shared.AType
 import otgviewer.shared.Association
-import otgviewer.shared.BUnit
 import otgviewer.shared.OTGColumn
 import otgviewer.shared.OTGSample
 import otgviewer.shared.Pathology
 import otgviewer.shared.TimesDoses
 import t.BaseConfig
+import t.DataConfig
+import t.TriplestoreConfig
+import t.common.shared.DataSchema
 import t.common.shared.SampleClass
 import t.common.shared.sample.Annotation
 import t.common.shared.sample.HasSamples
@@ -64,15 +69,15 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     super.init(config)
     localInit(Configuration.fromServletConfig(config))
   }
-
+  
   def localInit(conf: Configuration) {
-    this.context = conf.context
+	this.baseConfig = baseConfig(conf.tsConfig, conf.dataConfig)
+    this.context = conf.context(baseConfig)
     this.tgConfig = conf   
-    this.baseConfig = conf.baseConfig
     
     val tsCon = baseConfig.triplestore
     val ts = tsCon.triplestore
-    otgSamples = new OTGSamples(tsCon)
+    otgSamples = new OTGSamples(baseConfig)
     affyProbes = new AffyProbes(ts)
     uniprot = new LocalUniprot(ts) 
     b2rKegg = new B2RKegg(ts)
@@ -81,7 +86,10 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     homologene = new B2RHomologene()
     platforms = affyProbes.platforms
   }
+  
+  def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig = OTGBConfig(ts, data)
 
+  //TODO is this handled properly?
   override def destroy() {
     affyProbes.close()
     otgSamples.close()
@@ -93,22 +101,29 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     super.destroy()
   }
 
-  def compounds(sc: SampleClass): Array[String] = {
-    //TODO don't have a special case for shared_control here
-    otgSamples.compounds(scAsScala(sc)).toArray
+  def parameterValues(sc: SampleClass, parameter: String): Array[String] = {
+    otgSamples.attributeValues(scAsScala(sc), parameter, None).toArray
   }
+  
+//  def compounds(sc: SampleClass): Array[String] = {
+//    //TODO don't have a special case for shared_control here
+//    otgSamples.compounds(scAsScala(sc)).toArray
+//  }
 
-  val orderedDoses = List("Control", "Low", "Middle", "High")
-  def doseLevels(sc: SampleClass): Array[String] = {
-    val r = otgSamples.doseLevels(sc).toArray
-    r.sortWith((d1, d2) => orderedDoses.indexOf(d1) < orderedDoses.indexOf(d2))
-  }
+//  val orderedDoses = List("Control", "Low", "Middle", "High")
+//  def doseLevels(sc: SampleClass): Array[String] = {
+//    val r = otgSamples.doseLevels(sc).toArray
+//    r.sortWith((d1, d2) => orderedDoses.indexOf(d1) < orderedDoses.indexOf(d2))
+//  }
 
+  //TODO compound_name is a dummy parameter below
   def samples(sc: SampleClass): Array[OTGSample] =
-    otgSamples.samples(scAsScala(sc), List()).map(asJavaSample(_)).toArray
+    otgSamples.samples(scAsScala(sc), "?compound_name", 
+        List()).map(asJavaSample(_)).toArray
 
-  def samples(sc: SampleClass, compounds: Array[String]): Array[OTGSample] =
-    otgSamples.samples(sc, compounds).map(asJavaSample(_)).toArray
+  def samples(sc: SampleClass, param: String, 
+      paramValues: Array[String]): Array[OTGSample] =
+    otgSamples.samples(sc, param, paramValues).map(asJavaSample(_)).toArray
 
   def sampleClasses(): Array[SampleClass] = {    
 	otgSamples.sampleClasses().map(x => 
@@ -116,20 +131,19 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 	  ).toArray
   }
       
-  def units(sc: SampleClass, compounds: Array[String]): Array[BUnit] = {
-    val bcs = otgSamples.samples(sc, compounds).map(asJavaSample(_))
-    val g = bcs.groupBy(x => new BUnit(x, sc))
-    for ((k, v) <- g) {
-      k.setSamples(v.toArray)
-    }
-    g.keySet.toArray
+  //TODO don't pass schema from client
+  def units(sc: SampleClass, schema: DataSchema, 
+      param: String, paramValues: Array[String]): Array[t.common.shared.Unit] = {
+    val bcs = otgSamples.samples(sc, param, paramValues).map(asJavaSample(_))
+    val g = bcs.groupBy(x => x.sampleClass().asUnit(schema))
+    g.map(x => new t.common.shared.Unit(x._1, x._2.toArray)).toArray
   }
     
   val orderedTimes = TimesDoses.allTimes.toList
-  def times(sc: SampleClass): Array[String] = {
-    val r = otgSamples.times(sc).toArray
-    r.sortWith((t1, t2) => orderedTimes.indexOf(t1) < orderedTimes.indexOf(t2))
-  }
+//  def times(sc: SampleClass): Array[String] = {
+//    val r = otgSamples.times(sc).toArray
+//    r.sortWith((t1, t2) => orderedTimes.indexOf(t1) < orderedTimes.indexOf(t2))
+//  }
 
 //  def probes(filter: DataFilter): Array[String] =
 //    context.unifiedProbes.tokens.toArray //TODO filtering    

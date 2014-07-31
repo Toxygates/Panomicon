@@ -51,14 +51,10 @@ class Configuration(val owlimRepositoryName: String,
   def this(owlimRepository: String, toxygatesHome:String, foldsDBVersion: Int) = 
     this(owlimRepository, toxygatesHome, System.getProperty("otg.csvDir"), 
         System.getProperty("otg.csvUrlBase"))
-  
-  def baseConfig = {
-    val tsConfig = TriplestoreConfig(repositoryUrl, updateUrl, 
-        repositoryUser, repositoryPass, owlimRepositoryName)
-    val dataConfig = DataConfig(toxygatesHomeDir)
-    OTGBConfig(tsConfig, dataConfig)
-  }
-  
-  def context = new OTGContext(baseConfig)
-  
+
+  def tsConfig = TriplestoreConfig(repositoryUrl, updateUrl,
+    repositoryUser, repositoryPass, owlimRepositoryName)
+  def dataConfig = DataConfig(toxygatesHomeDir)
+    
+  def context(bc: BaseConfig) = new OTGContext(bc)  
 }

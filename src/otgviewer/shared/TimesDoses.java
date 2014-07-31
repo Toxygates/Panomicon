@@ -1,15 +1,12 @@
 package otgviewer.shared;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import otgviewer.client.Utils;
 import t.common.shared.DataSchema;
+import t.common.shared.SampleClass;
+import t.common.shared.Unit;
 
-public class TimesDoses extends DataSchema {
-	Logger logger = Utils.getLogger("dataschema");
-	public final static String[] allTimes = new String[] { "2 hr", "3 hr", "6 hr", "8 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day" };
-	public final static String[] allDoses = new String[] { "Control", "Low", "Middle", "High" };
+public class TimesDoses extends DataSchema {	
+	public static String[] allTimes = new String[] { "2 hr", "3 hr", "6 hr", "8 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day" };
+	public static String[] allDoses = new String[] { "Control", "Low", "Middle", "High" };
 	
 	public String[] sortedValues(String parameter) throws Exception {
 		if (parameter.equals("exposure_time")) {
@@ -20,21 +17,62 @@ public class TimesDoses extends DataSchema {
 			throw new Exception("Invalid parameter (not sortable): " + parameter);
 		}
 	}
+
+	public void sortDoses(String[] doses) throws Exception {		
+		sort("dose_level", doses);		
+	}
+
+	@Override
+	public String majorParameter() { 
+		return "compound_name";
+	}
+
+	@Override
+	public String mediumParameter() {
+		return "dose_level";
+	}
+
+	@Override
+	public String minorParameter() {
+		return "exposure_time"; 
+	}
+
+	@Override
+	public String timeParameter() {
+		return "exposure_time";
+	}
+
+	@Override
+	public String timeGroupParameter() {
+		return "dose_level";
+	}
+
+	@Override
+	public String title(String parameter) {
+		if (parameter.equals("exposure_time")) {
+			return "Time";
+		} else if (parameter.equals("compound_name")) {
+			return "Compound";
+		} else if (parameter.equals("dose_level")) {
+			return "Dose";
+		} else {
+			return "???";
+		}
+	}
 	
-	public void sortTimes(String[] times) {
-		try {
-			sort("exposure_time", times);
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Unable to sort times", e);
-		}
-	}
+	private final String[] macroParams = new String[] { "organism", "sin_rep_type",
+			"test_type", "organ_id" };
+	public String[] macroParameters() { return macroParams; }
 
-	public void sortDoses(String[] doses) {
-		try {
-			sort("dose_level", doses);
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Unable to sort doses", e);
-		}
+	@Override
+	public boolean isSelectionControl(SampleClass sc) {
+		return sc.get("dose_level").equals("Control");
 	}
-
+	
+	@Override
+	public Unit selectionControlUnitFor(Unit u) {
+		Unit u2 = new Unit(u, new OTGSample[] {});
+		u2.put("dose_level", "Control");
+		return u2;
+	}
 }

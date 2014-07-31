@@ -17,6 +17,7 @@ function makeWar {
 }
 
 cp war/toxygates.html war/toxygates.html.bak
+cp war/news.html war/news.html.bak
 cp war/WEB-INF/web.xml war/WEB-INF/web.xml.bak
 
 makeWar production
@@ -24,5 +25,6 @@ makeWar test
 makeWar adju
 
 cp war/toxygates.html.bak war/toxygates.html
+cp war/news.html.bak war/news.html
 cp war/WEB-INF/web.xml.bak war/WEB-INF/web.xml
 

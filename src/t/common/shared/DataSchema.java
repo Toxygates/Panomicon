@@ -1,13 +1,18 @@
 package t.common.shared;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import otgviewer.client.Utils;
 
 /**
  * Information about the data schema in a particular T application.
  */
-public abstract class DataSchema {
-
+public abstract class DataSchema implements Serializable {	
+	
 	/**
 	 * All the possible values, in their natural order, for a sortable
 	 * parameter.
@@ -26,5 +31,56 @@ public abstract class DataSchema {
 				return i1.compareTo(i2);
 			}
 		});
+	}
+	
+	public void sortTimes(String[] times) throws Exception {		
+		sort(timeParameter(), times);		
+	}
+	
+	/**
+	 * Used in the "compound list", and other places
+	 * @return
+	 */
+	public abstract String majorParameter();
+	
+	/**
+	 * Used for columns in the time/dose selection grid
+	 * @return
+	 */
+	public abstract String mediumParameter();
+	
+	/**
+	 * Used for subcolumns (checkboxes) in the time/dose selection grid
+	 * @return
+	 */
+	public abstract String minorParameter();
+	
+	/**
+	 * Used for charts
+	 * @return
+	 */
+	public abstract String timeParameter();
+	
+	/**
+	 * Used to group charts in columns, when possible
+	 * @return
+	 */
+	public abstract String timeGroupParameter();
+	
+	public abstract String[] macroParameters();
+	
+	/**
+	 * Human-readable title
+	 * @param parameter
+	 * @return
+	 */
+	public abstract String title(String parameter);
+	
+	public boolean isSelectionControl(SampleClass sc) {
+		return false;
+	}
+	
+	public Unit selectionControlUnitFor(Unit u) {
+		return null;
 	}
 }

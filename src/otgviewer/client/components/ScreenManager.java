@@ -1,5 +1,7 @@
 package otgviewer.client.components;
 
+import t.common.shared.DataSchema;
+
 import com.google.gwt.user.client.ui.ProvidesResize;
 
 /**
@@ -44,5 +46,9 @@ public interface ScreenManager extends ProvidesResize {
 	 * @return
 	 */
 	String getUIType();
+	
+	DataSchema schema();
+	
+	String storagePrefix();
 	
 }

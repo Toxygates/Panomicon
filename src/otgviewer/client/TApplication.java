@@ -48,18 +48,18 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
  * @author johan
  *
  */
-public class OTGViewer implements EntryPoint, ScreenManager {
+abstract public class TApplication implements ScreenManager, EntryPoint {
 	private static Resources resources = GWT.create(Resources.class);
 	
 	private RootLayoutPanel rootPanel;
 	private DockLayoutPanel mainDockPanel;
-	private MenuBar menuBar, analysisMenuBar;
+	protected MenuBar menuBar, analysisMenuBar;
 	
 	//Menu items to be shown to the left of menu items belonging to the current screen.
-	private List<MenuItem> preMenuItems = new LinkedList<MenuItem>();
+	protected List<MenuItem> preMenuItems = new LinkedList<MenuItem>();
 	
 	//Menu items to be shown to the right of menu items belonging to the current screen.
-	private List<MenuItem> postMenuItems = new LinkedList<MenuItem>();
+	protected List<MenuItem> postMenuItems = new LinkedList<MenuItem>();
 	
 	private HorizontalPanel navPanel;
 	
@@ -73,7 +73,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	 * Screen instance, which also corresponds to the history token used with
 	 * GWT's history tracking mechanism.
 	 */
-	private Map<String, Screen> screens = new HashMap<String, Screen>();
+	protected Map<String, Screen> screens = new HashMap<String, Screen>();
 	
 	/**
 	 * All currently configured screens. See the Screen class for an explanation of the
@@ -84,7 +84,9 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	/**
 	 * The screen currently being displayed.
 	 */
-	private Screen currentScreen;
+	protected Screen currentScreen;
+	
+	protected final Logger logger = Utils.getLogger("application");
 	
 	/**
 	 * This is the entry point method.
@@ -143,8 +145,8 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	    }
 	    return "toxygates"; // Default UIType
 	}	
-	
-	private MenuBar setupMenu() {
+		
+	protected MenuBar setupMenu() {
 		MenuBar menuBar = new MenuBar(false);
 		menuBar.setWidth("100%");		
 						
@@ -244,10 +246,9 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	void addWorkflowLinks(Screen current) {
 		navPanel.clear();
 		for (int i = 0; i < workflow.size(); ++i) {
-			final Screen s = workflow.get(i);
-		
+			final Screen s = workflow.get(i);		
 			String link = (i < workflow.size() - 1) ? (s.getTitle()  + " >> ") : s.getTitle();
-			Label l = new Label(link);
+			Label l = new Label(link);			
 			if (s.enabled() && s != current) {								
 				l.addClickHandler(new ClickHandler() {
 					public void onClick(ClickEvent e) {
@@ -279,7 +280,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	 * Switch screens.
 	 * @param s
 	 */
-	private void showScreen(Screen s) {
+	protected void showScreen(Screen s) {
 		if (currentScreen != null) {
 			mainDockPanel.remove(currentScreen);
 			currentScreen.hide();
@@ -312,12 +313,16 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	 * Pick the appropriate screen for a given history token.
 	 * @return
 	 */
-	private Screen pickScreen(String token) {
+	protected Screen pickScreen(String token) {
 		if (!screens.containsKey(token)) {
-		    return screens.get(DatasetScreen.key); //default			
+		    return screens.get(defaultScreenKey()); //default			
 		} else {
 			return screens.get(token);
 		}		
+	}
+	
+	protected String defaultScreenKey() {
+		return DataScreen.key;
 	}
 	
 	/**
@@ -329,7 +334,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 			History.newItem(to);
 		} else {			
 			//proceed to default screen (must always be enabled!)
-			History.newItem(DatasetScreen.key);
+			History.newItem(defaultScreenKey());
 		}
 	}
 	
@@ -337,7 +342,8 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	 * Helper method for initialising screens
 	 * @param s
 	 */
-	private void addScreenSeq(Screen s) {
+	protected void addScreenSeq(Screen s) {
+		logger.info("Configure screen: " + s.getTitle() + " -> " + s.key());
 		screens.put(s.key(), s);
 		workflow.add(s);		
 		s.initGUI();
@@ -347,14 +353,7 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 	/**
 	 * Set up the workflow sequence once.
 	 */
-	private void initScreens() {
-		addScreenSeq(new DatasetScreen(this));		
-		addScreenSeq(new ColumnScreen(this));		
-		addScreenSeq(new ProbeScreen(this));		
-		addScreenSeq(new DataScreen(this));		
-		addScreenSeq(new PathologyScreen(this));
-		addScreenSeq(new SampleDetailScreen(this));
-	}
+	abstract protected void initScreens();		
 	
 	@Override
 	public void setConfigured(Screen s, boolean configured) {
@@ -386,15 +385,15 @@ public class OTGViewer implements EntryPoint, ScreenManager {
 		return configuredScreens.contains(key);
 	}
 	
-	private TextResource getAboutHTML() {
+	protected TextResource getAboutHTML() {
 		return resources.aboutHTML();
 	}
 		
-	private ImageResource getAboutImage() {
+	protected ImageResource getAboutImage() {
 		return resources.about();
 	}
 	
-	private TextResource getVersionHTML() {
+	protected TextResource getVersionHTML() {
 		return resources.versionHTML();
 	}
 	

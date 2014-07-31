@@ -7,9 +7,9 @@ import otgviewer.client.components.DataFilterEditor;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
-import otgviewer.shared.OTGColumn;
-import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
+import otgviewer.shared.OTGColumn;
+import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 
 import com.google.gwt.dom.client.Style.Unit;
@@ -31,22 +31,21 @@ public class ColumnScreen extends Screen {
 	private CompoundSelector cs;
 	private HorizontalPanel filterTools;
 	private TabLayoutPanel tp;
+	private final String rankingLabel;
 	
-	public ColumnScreen(ScreenManager man) {
+	public ColumnScreen(ScreenManager man, String rankingLabel) {
 		super("Sample group definitions", key, false, man,
 				resources.groupDefinitionHTML(), resources.groupDefinitionHelp());
 		
-		cs = new CompoundSelector(this, "Compounds");
+		this.rankingLabel = rankingLabel;
+		
+		String majorParam = man.schema().majorParameter();
+		cs = new CompoundSelector(this, man.schema().title(majorParam));
 		filterTools = mkFilterTools();
 		this.addListener(cs);
 		cs.setStyleName("compoundSelector");
 	} 
 	
-	@Override
-	public boolean enabled() {
-		return manager.isConfigured(DatasetScreen.key); 
-	}
-
 	private HorizontalPanel mkFilterTools() {
 		final Screen s = this;
 		HorizontalPanel r = new HorizontalPanel();
@@ -88,7 +87,7 @@ public class ColumnScreen extends Screen {
 		tp.add(gi, "Sample groups");
 		
 		final CompoundRanker cr = new CompoundRanker(this, cs);
-		tp.add(Utils.makeScrolled(cr), "Compound ranking (optional)");
+		tp.add(Utils.makeScrolled(cr), rankingLabel);
 		tp.selectTab(0);		
 
 		return tp;
@@ -111,13 +110,13 @@ public class ColumnScreen extends Screen {
 	}
 	
 	@Override
-	public void loadState(StorageParser p) {
-		super.loadState(p);
+	public void loadState(StorageParser p, DataSchema schema) {
+		super.loadState(p, schema);
 		if (visible) {
 			//If we became visible, we must have been enabled, so can count on a
 			//data filter being present.
 			try {
-				List<Group> ics = loadColumns(p, "inactiveColumns", 
+				List<Group> ics = loadColumns(p, schema(), "inactiveColumns", 
 						new ArrayList<OTGColumn>(gi.existingGroupsTable.inverseSelection()));
 				if (ics != null) {
 					gi.inactiveColumnsChanged(ics);

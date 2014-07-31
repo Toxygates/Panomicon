@@ -14,11 +14,13 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.StorageParser;
 import otgviewer.shared.BUnit;
-import otgviewer.shared.OTGSample;
-import otgviewer.shared.OTGColumn;
 import otgviewer.shared.Group;
+import otgviewer.shared.OTGColumn;
+import otgviewer.shared.OTGSample;
 import t.common.client.components.SelectionTable;
+import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
+import t.common.shared.Unit;
 
 import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;
@@ -48,7 +50,8 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 
 	private MultiSelectionGrid msg;
 	private Map<String, Group> groups = new HashMap<String, Group>();		
-	private Screen screen;
+	private final Screen screen;
+	private final DataSchema schema;
 	private Label titleLabel;
 	private TextBox txtbxGroup;
 	private Button saveButton;
@@ -64,6 +67,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	public GroupInspector(CompoundSelector cs, Screen scr) {
 		compoundSel = cs;
 		this.screen = scr;
+		this.schema = scr.schema();
 		sp = new SplitLayoutPanel();
 		initWidget(sp);
 
@@ -185,7 +189,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	 * @param selectedUnits
 	 */
 	@Override
-	public void unitsChanged(DataListenerWidget sender, List<BUnit> selectedUnits) {
+	public void unitsChanged(DataListenerWidget sender, List<Unit> selectedUnits) {
 		if (txtbxGroup.getText().equals("") || nameIsAutoGen) {
 			txtbxGroup.setText(suggestGroupName(selectedUnits));
 			nameIsAutoGen = true;
@@ -230,6 +234,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private void reflectGroupChanges() {
 		existingGroupsTable.setItems(sortedGroupList(groups.values()), false);
 		chosenColumns = new ArrayList<Group>(existingGroupsTable.selection());
+		logger.info(chosenColumns.size() + " columns have been chosen");
 		StorageParser p = getParser(screen);		
 		storeColumns(p);
 		txtbxGroup.setText("");
@@ -255,13 +260,13 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 	
-	private String suggestGroupName(List<BUnit> units) {
+	private String suggestGroupName(List<Unit> units) {
 		String g = "";
 		if (!units.isEmpty()) {
-			BUnit b = units.get(0);
-			g = firstChars(b.getCompound()) + "/" + 
-					b.getDose().substring(0, 1) + "/" + 
-					b.getTime();
+			Unit b = units.get(0);
+			g = firstChars(b.get(schema.majorParameter())) + "/" + 
+					b.get(schema.mediumParameter()).substring(0, 1) + "/" + 
+					b.get(schema.minorParameter());
 			if (units.size() > 1) {
 				g += ", ...";
 			}
@@ -358,8 +363,8 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 			return;
 		}
 		
-		pendingGroup = new Group(name, new OTGSample[0], null);		
-		List<BUnit> units = msg.fullSelection(false);
+		pendingGroup = new Group(schema, name, new OTGSample[0], null);		
+		List<Unit> units = msg.fullSelection(false);
 		
 		if (units.size() == 0) {
 			 Window.alert("No samples found.");			 
@@ -390,10 +395,10 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	} 
 
-	private void setGroup(String pendingGroupName, List<BUnit> units) {
+	private void setGroup(String pendingGroupName, List<Unit> units) {
 		Group pendingGroup = groups.get(pendingGroupName);
 		existingGroupsTable.removeItem(pendingGroup); 
-		pendingGroup = new Group(pendingGroupName, units.toArray(new BUnit[0]));
+		pendingGroup = new Group(schema, pendingGroupName, units.toArray(new Unit[0]));
 		addGroup(pendingGroupName, pendingGroup);
 		reflectGroupChanges();
 	}

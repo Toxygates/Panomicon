@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
@@ -12,9 +13,8 @@ import javax.annotation.Nullable;
 import otgviewer.client.SelectionTDGrid.UnitListener;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
-import otgviewer.shared.BUnit;
-import otgviewer.shared.DataFilter;
 import t.common.shared.SampleClass;
+import t.common.shared.Unit;
 
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -57,14 +57,14 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 	}
 
 	@Override
-	public void unitsChanged(DataListenerWidget sender, List<BUnit> units) {
+	public void unitsChanged(DataListenerWidget sender, List<Unit> units) {
 		if (listener != null) {
 			listener.unitsChanged(this, fullSelection(true));
 		} 		
 	}
 	
-	List<BUnit> fullSelection(boolean treatedOnly) {
-		List<BUnit> r = new ArrayList<BUnit>();
+	List<Unit> fullSelection(boolean treatedOnly) {
+		List<Unit> r = new ArrayList<Unit>();
 		for (SelectionTDGrid g: sections.values()) {
 			r.addAll(g.getSelectedUnits(treatedOnly));
 		}
@@ -102,18 +102,17 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 		return g.chosenCompounds;
 	}
 	
-	void setSelection(BUnit[] selection) {
+	void setSelection(Unit[] selection) {
 		logger.info("Set selection: " + selection.length + " units");
 		for (SelectionTDGrid g: sections.values()) {
 			g.setAll(false);
 		}
-		String[] compounds = BUnit.compounds(selection);
-		for (BUnit u: selection) {			
-			DataFilter df = new DataFilter(u.getCellType(), u.getOrgan(),
-					 u.getRepeatType(), u.getOrganism());
-			SampleClass sc = SampleClass.fromDataFilter(df);
+		Set<String> compounds = Unit.collect(Arrays.asList(selection), 
+				scr.schema().majorParameter());
+		for (Unit u: selection) {						
+			SampleClass sc = u.asMacroClass(scr.schema());
 			SelectionTDGrid g = findOrCreateSection(scr, sc);
-			g.compoundsChanged(Arrays.asList(compounds));
+			g.compoundsChanged(new java.util.ArrayList(compounds));
 			g.setSelected(u, true);			
 		}
 		clearEmptyGrids();

@@ -5,14 +5,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import otgviewer.shared.OTGSample;
-import otgviewer.shared.OTGColumn;
-import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import otgviewer.shared.Organ;
-import otgviewer.shared.Organism;
-import otgviewer.shared.RepeatType;
+import otgviewer.shared.OTGColumn;
+import otgviewer.shared.OTGSample;
+import t.common.shared.DataSchema;
 import t.common.shared.Packable;
 import t.viewer.shared.ItemList;
 
@@ -49,32 +46,11 @@ public class StorageParser {
 		storage.removeItem(key);
 	}
 	
-	public static String packDataFilter(DataFilter f) {
-		return f.cellType + "," + f.organ + ","  
-			+ f.repeatType + "," + f.organism;
-	}
-	
-	public static DataFilter unpackDataFilter(String s) {
-		if (s == null) {
-			return null;
-		} 
-		
-		String[] parts = s.split(",");
-		assert(parts.length == 4);
-		
-		try {
-			DataFilter r = new DataFilter(parts[0], parts[1], parts[2], parts[3]);					
-			return r;
-		} catch (Exception e) {			
-			return null;
-		}
-	}
-	
 	public static String packColumns(Collection<OTGColumn> columns) {
 		return packPackableList(columns, "###");
 	}
 
-	public static OTGColumn unpackColumn(String s, DataFilter filter) {
+	public static OTGColumn unpackColumn(DataSchema schema, String s, DataFilter filter) {
 		if (s == null) {
 			return null;
 		}
@@ -82,7 +58,7 @@ public class StorageParser {
 		if (spl[0].equals("Barcode")) {
 			return OTGSample.unpack(s);
 		} else {
-			return Group.unpack(s, filter);
+			return Group.unpack(schema, s);
 		}
 	}
 	

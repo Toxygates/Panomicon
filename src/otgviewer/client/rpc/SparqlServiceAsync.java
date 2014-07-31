@@ -2,12 +2,12 @@ package otgviewer.client.rpc;
 
 import otgviewer.shared.AType;
 import otgviewer.shared.Association;
-import otgviewer.shared.BUnit;
-import otgviewer.shared.OTGSample;
 import otgviewer.shared.OTGColumn;
-import otgviewer.shared.DataFilter;
+import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
+import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
+import t.common.shared.Unit;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
 
@@ -15,18 +15,18 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface SparqlServiceAsync {
 
-	public void compounds(SampleClass sc, AsyncCallback<String[]> callback);
+	public void sampleClasses(AsyncCallback<SampleClass[]> callback);	
+	public void parameterValues(SampleClass sc, String parameter, 
+			AsyncCallback<String[]> callback);
 		
-	public void doseLevels(SampleClass sc, AsyncCallback<String[]> callback);	
 	public void samples(SampleClass sc, AsyncCallback<OTGSample[]> callback);	
-	public void samples(SampleClass sc, String[] compounds, 
+	public void samples(SampleClass sc, String param, String[] paramValues, 
 			AsyncCallback<OTGSample[]> callback);
-	public void units(SampleClass sc, String[] compounds, 
-			AsyncCallback<BUnit[]> callback);
+	public void units(SampleClass sc, DataSchema schema,
+			String param, String[] paramValues, 
+			AsyncCallback<Unit[]> callback);
 	
-	public void sampleClasses(AsyncCallback<SampleClass[]> callback);
 	
-	public void times(SampleClass sc, AsyncCallback<String[]> callback);	
 //	public void probes(BarcodeColumn[] columns, AsyncCallback<String[]> callback);
 	
 	public void pathologies(OTGColumn column, AsyncCallback<Pathology[]> callback);

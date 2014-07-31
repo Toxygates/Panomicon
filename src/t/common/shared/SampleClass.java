@@ -2,8 +2,8 @@ package t.common.shared;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,7 +22,7 @@ import otgviewer.shared.RepeatType;
  * Standard keys for OTG: time, dose, organism, organ_id, test_type, sin_rep_type
  * Optional keys: compound_name, exposure_time, dose_level
  */
-public class SampleClass implements Serializable {
+public class SampleClass implements Serializable, Packable {
 
 	public SampleClass() { }
 	
@@ -52,18 +52,30 @@ public class SampleClass implements Serializable {
 		return new SampleClass(data);
 	}
 	
-	static final String[] macroKeys = new String[] { "organism", "organ_id", "sin_rep_type", "test_type" };
+	public void mergeDeferred(SampleClass from) {
+		for (String k: from.getMap().keySet()) {
+			if (!data.containsKey(k)) {
+				data.put(k, from.get(k));
+			}
+		}
+	}
 	
-	public SampleClass asMacroClass() {
+	public SampleClass asMacroClass(DataSchema schema) {
 		List<String> keys = new ArrayList<String>();
-		Collections.addAll(keys, macroKeys);
+		for (String s: schema.macroParameters()) {
+			keys.add(s);
+		}		
 		return copyOnly(keys);
 	}
 	
-	public SampleClass asUnit() {
-		List<String> keys = new ArrayList<String>();
-		Collections.addAll(keys, macroKeys);
-		Collections.addAll(keys, "dose_level", "exposure_time", "compound_name");
+	public SampleClass asUnit(DataSchema schema) {
+		List<String> keys = new ArrayList<String>();		
+		for (String s: schema.macroParameters()) {
+			keys.add(s);
+		}
+		keys.add(schema.majorParameter());
+		keys.add(schema.mediumParameter());
+		keys.add(schema.minorParameter());
 		return copyOnly(keys);		
 	}
  	
@@ -92,7 +104,7 @@ public class SampleClass implements Serializable {
 		return true;		
 	}
 	
-	public static Set<String> collect(List<SampleClass> from, String key) {
+	public static Set<String> collect(List<? extends SampleClass> from, String key) {
 		Set<String> r = new HashSet<String>();
 		for (SampleClass sc: from) {
 			String x = sc.get(key);
@@ -103,10 +115,16 @@ public class SampleClass implements Serializable {
 		return r;
 	}
 	
-	public static List<SampleClass> filter(List<SampleClass>from, 
+	public static <T extends SampleClass> List<T> filter(T[] from, 
 			String key, String constraint) {
-		List<SampleClass> r = new ArrayList<SampleClass>();
-		for (SampleClass sc: from) {
+		List<T> ff = Arrays.asList(from);
+		return filter(ff, key, constraint);
+	}
+	
+	public static <T extends SampleClass> List<T> filter(List<T>from, 
+			String key, String constraint) {
+		List<T> r = new ArrayList<T>();
+		for (T sc: from) {
 			if (sc.get(key).equals(constraint)) {
 				r.add(sc);
 			}
@@ -168,8 +186,34 @@ public class SampleClass implements Serializable {
 		return sb.toString();
 	}
 	
+	@Deprecated
 	public String label() {
 		return get("organism") + "/" + get("test_type") + "/" + 
 				get("organ_id") + "/" + get("sin_rep_type"); 
+	}
+	
+	public String tripleString(DataSchema sc) {
+		String maj = get(sc.majorParameter());
+		String med = get(sc.mediumParameter());
+		String min = get(sc.minorParameter());
+		return maj + "/" + med + "/" + min;
+	}
+	
+	public String pack() {
+		StringBuilder sb = new StringBuilder();
+		for (String k : data.keySet()) {
+			sb.append(k + ",,,");
+			sb.append(data.get(k) + ",,,");
+		}
+		return sb.toString();
+	}
+	
+	static SampleClass unpack(String data) {
+		String[] spl = data.split(",,,");
+		Map<String, String> d = new HashMap<String, String>();
+		for (int i = 0; i < spl.length; i+= 2) {
+			d.put(spl[i], spl[i+1]);
+		}
+		return new SampleClass(d);		
 	}
 }

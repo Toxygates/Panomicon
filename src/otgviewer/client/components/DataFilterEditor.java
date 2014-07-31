@@ -204,18 +204,6 @@ public class DataFilterEditor extends DataListenerWidget {
 	public List<SampleClass> constrain3(String organism, String organ, String testType) {
 		return SampleClass.filter(constrain2(organism, organ), "test_type", testType);
 	}
-
-	@Override
-	public void dataFilterChanged(DataFilter filter) {
-		//do NOT call superclass method. Prevent signal from being passed on.
-//		chosenDataFilter = filter;
-		
-//		//TODO update
-//		organismSelector.trySelect(filter.organism.toString());
-//		organSelector.trySelect(filter.organ.toString());
-//		cellTypeSelector.trySelect(filter.cellType.toString());
-//		repeatTypeSelector.trySelect(filter.repeatType.toString());
-	}
 	
 	@Override
 	public void sampleClassChanged(SampleClass sc) {

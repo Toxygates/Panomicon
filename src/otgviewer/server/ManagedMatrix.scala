@@ -223,7 +223,7 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
     new ExpressionValue(mean.value, mean.call, tooltip)
   }
 
-  protected def selectIdxs(g: Group,  predicate: (otgviewer.shared.BUnit) => Boolean, 
+  protected def selectIdxs(g: Group,  predicate: (t.common.shared.Unit) => Boolean, 
       barcodes: Seq[Sample]): Seq[Int] = {
     val units = g.getUnits().filter(predicate)
     val ids = units.flatMap(_.getSamples.map(_.getCode)).toSet
@@ -231,11 +231,12 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
     inSet.zipWithIndex.filter(_._1).map(_._2)
   }
   
+  //TODO
   protected def controlIdxs(g: Group, barcodes: Seq[Sample]): Seq[Int] = 
-    selectIdxs(g, _.getDose == "Control", barcodes)    
+    selectIdxs(g, _.get("dose_level") == "Control", barcodes)    
 
   protected def treatedIdxs(g: Group, barcodes: Seq[Sample]): Seq[Int] = 
-    selectIdxs(g, _.getDose != "Control", barcodes)    
+    selectIdxs(g, _.get("dose_level") != "Control", barcodes)    
 
   protected def columnsForGroup(g: Group, sortedBarcodes: Seq[Sample],
     data: Seq[Seq[E]]): ExprMatrix = {
@@ -250,7 +251,8 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
   }
   
   protected def samplesForDisplay(g: Group): Iterable[OTGSample] = {
-    val (cus, ncus) = g.getUnits().partition(_.getDose == "Control")
+    //TODO
+    val (cus, ncus) = g.getUnits().partition(_.get("dose_level") == "Control")
     if (ncus.size > 1) {
       //treated samples only
       ncus.flatMap(_.getSamples())
@@ -272,7 +274,8 @@ extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead)
 
   override protected def columnsForGroup(g: Group, sortedBarcodes: Seq[Sample], 
       data: Seq[Seq[ExprValue]]): ExprMatrix = {
-    val (cus, ncus) = g.getUnits().partition(_.getDose == "Control")
+    //TODO
+    val (cus, ncus) = g.getUnits().partition(_.get("dose_level") == "Control")
     
     if (ncus.size > 1 || (!enhancedColumns)) {
       // A simple average column
@@ -318,7 +321,8 @@ class ExtFoldValueMatrix(requestColumns: Seq[Group],
  
     override protected def columnsForGroup(g: Group, sortedBarcodes: Seq[Sample], 
       data: Seq[Seq[PExprValue]]): ExprMatrix = {
-    val (cus, ncus) = g.getUnits().partition(_.getDose == "Control")
+      //TODO
+    val (cus, ncus) = g.getUnits().partition(_.get("dose_level") == "Control")
     
     println(s"#Control units: ${cus.size} #Non-control units: ${ncus.size}")
     

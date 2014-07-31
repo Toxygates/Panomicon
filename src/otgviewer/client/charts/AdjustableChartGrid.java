@@ -11,11 +11,11 @@ import otgviewer.client.Utils;
 import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.Screen;
-import otgviewer.shared.BUnit;
-import otgviewer.shared.OTGSample;
 import otgviewer.shared.Group;
+import otgviewer.shared.OTGSample;
 import otgviewer.shared.OTGUtils;
 import otgviewer.shared.ValueType;
+import t.common.shared.Unit;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -270,27 +270,29 @@ public class AdjustableChartGrid extends Composite {
 			// Try to reuse the most recent one
 			for (Group g : groups) {
 				if (isDose) {
-					if (BUnit.containsDose(g.getUnits(), lastSubtype)) {
+					//TODO
+					if (Unit.contains(g.getUnits(), "dose_level", lastSubtype)) {						
 						return lastSubtype;
 					}
 				} else {
-					if (BUnit.containsTime(g.getUnits(), lastSubtype)) {
+					if (Unit.contains(g.getUnits(), "exposure_time", lastSubtype)) {
 						return lastSubtype;
 					}
 				}
 			}
 		}
 		//Find a new item to use
-		for (BUnit u: groups.get(0).getUnits()) {
+		for (Unit u: groups.get(0).getUnits()) {
 			if (isDose) {
 				final String[] useDoses = 
 						(vt == ValueType.Folds ? withoutControl(source.doses()) : source.doses());
-				String dose = u.getDose();
+				//TODO
+				String dose = u.get("dose_level");
 				if (Arrays.binarySearch(useDoses, dose) != -1) {
 					return dose;
 				}
 			} else {
-				String time = u.getTime();
+				String time = u.get("exposure_time");
 				if (Arrays.binarySearch(source.times(), time) != -1) {
 					return time;
 				}

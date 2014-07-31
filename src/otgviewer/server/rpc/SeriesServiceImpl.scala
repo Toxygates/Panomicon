@@ -30,6 +30,9 @@ import scala.annotation.tailrec
 import otgviewer.shared.TimesDoses
 import t.BaseConfig
 import t.common.shared.SampleClass
+import t.DataConfig
+import otg.OTGBConfig
+import t.TriplestoreConfig
 
 class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   import Conversions._
@@ -50,11 +53,14 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   // Useful for testing
   def localInit(config: Configuration) {
     val homePath = config.toxygatesHomeDir
-    baseConfig = config.baseConfig
-    context = config.context
+    baseConfig = baseConfig(config.tsConfig, config.dataConfig)
+    context = config.context(baseConfig)
     
     affyProbes = new AffyProbes(context.triplestoreConfig.triplestore)
   }
+  
+  def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig = 
+    OTGBConfig(ts, data)
 
   override def destroy() {
     affyProbes.close()      

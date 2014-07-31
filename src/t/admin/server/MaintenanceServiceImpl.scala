@@ -1,11 +1,8 @@
 package t.admin.server
 
 import scala.collection.JavaConversions._
-
 import org.apache.commons.fileupload.FileItem
-
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-
 import gwtupload.server.UploadServlet
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
@@ -27,6 +24,8 @@ import t.sparql.Batches
 import t.sparql.Platforms
 import t.sparql.Probes
 import t.util.TempFiles
+import t.DataConfig
+import otg.OTGBConfig
 
 class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceService {
   var baseConfig: BaseConfig = _
@@ -36,8 +35,10 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
     super.init(config)
     
     val conf = Configuration.fromServletConfig(config)
-    baseConfig = conf.baseConfig
+    baseConfig = baseConfig(conf.tsConfig, conf.dataConfig)
   }
+  
+  def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig = new OTGBConfig(ts, data)
     
   private def getAttribute[T](name: String) = 
     getThreadLocalRequest().getSession().getAttribute(name).asInstanceOf[T]
@@ -99,8 +100,8 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
       val foldCallsFile = getAsTempFile(tempFiles, foldCallPrefix, foldCallPrefix, "csv")
       val foldPValueFile = getAsTempFile(tempFiles, foldPPrefix, foldPPrefix, "csv")
 
-      TaskRunner ++= bm.addBatch(title, comment, 
-        metaFile.getAbsolutePath(),
+      val md = baseConfig.tsvMetadata(metaFile.getAbsolutePath())
+      TaskRunner ++= bm.addBatch(title, comment, md,
         niFile.map(_.getAbsolutePath()),
         callsFile.map(_.getAbsolutePath()),
         foldFile.getAbsolutePath(),

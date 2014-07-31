@@ -4,12 +4,12 @@ import java.util.List;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.shared.BUnit;
-import otgviewer.shared.OTGSample;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
+import otgviewer.shared.OTGSample;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
+import t.common.shared.Unit;
 import t.common.shared.sample.Annotation;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -121,7 +121,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 	private void processAnnotationBarcodes(final String annotation, final int row, final int col,
 			final String time, final OTGSample[] barcodes) {
 		final NumberFormat fmt = NumberFormat.getFormat("#0.00");
-		Group g = new Group("temporary", barcodes, null);
+		Group g = new Group(schema, "temporary", barcodes, null);
 		sparqlService.annotations(g, false, 
 				new PendingAsyncCallback<Annotation[]>(this, "Unable to get annotations.") {
 			public void handleSuccess(Annotation[] as) {								
@@ -179,17 +179,18 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 	}
 	
 	private void displayAnnotation(String name) {
-		annotValues = new double[chosenCompounds.size()][availableTimes.length * 3];
-		annotValuesRemaining = chosenCompounds.size() * availableTimes.length * 3;
+		int numMin = minorValues.size();
+		annotValues = new double[chosenCompounds.size()][numMin * 3];
+		annotValuesRemaining = chosenCompounds.size() * numMin * 3;
 		
 		for (int c = 0; c < chosenCompounds.size(); ++c) {
 			for (int d = 0; d < 3; ++d) {
-				for (int t = 0; t < availableTimes.length; ++t) {
+				for (int t = 0; t < numMin; ++t) {
 					final String compound = chosenCompounds.get(c);
-					final String dose = indexToDose(d);
+					final String dose = mediumValues.get(d);
 
-					final String time = availableTimes[t];
-					displayAnnotation(name, c, d * availableTimes.length + t,
+					final String time = minorValues.get(t);
+					displayAnnotation(name, c, d * numMin + t,
 							compound, dose, time);
 				}
 			}
@@ -197,13 +198,13 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 	}
 	
 	@Override
-	protected Widget guiForUnit(BUnit unit) {
-		int time = SharedUtils.indexOf(availableTimes, unit.getTime());
-		int compound = chosenCompounds.indexOf(unit.getCompound());
-		int dose = doseToIndex(unit.getDose());
-		HTML r = new HTML(unit.getTime());
+	protected Widget guiForUnit(Unit unit) {
+		int time = minorValues.indexOf(unit.get(timeParameter));
+		int compound = chosenCompounds.indexOf(unit.get(majorParameter));
+		int dose = mediumValues.indexOf(unit.get(mediumParameter));
+		HTML r = new HTML(unit.get(timeParameter));
 		r.setStyleName("slightlySpaced");
-		labels[compound][availableTimes.length * dose + time] = r;
+		labels[compound][minorValues.size() * dose + time] = r;
 		return r;
 	}
 
@@ -211,7 +212,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 	protected void drawGridInner(Grid grid) {
 		labels = new HTML[chosenCompounds.size()][];
 		for (int c = 0; c < chosenCompounds.size(); ++c) {
-			labels[c] = new HTML[3 * availableTimes.length];
+			labels[c] = new HTML[3 * minorValues.size()];
 		}
 		super.drawGridInner(grid);
 	}

@@ -12,7 +12,7 @@ public class OTGSample extends Sample implements OTGColumn {
 	private String dose = "";
 	private String time = "";
 	private String compound = "";
-	private BUnit unit;	
+//	private Unit unit;	
 	
 	public OTGSample() { super(); }
 	
@@ -21,8 +21,7 @@ public class OTGSample extends Sample implements OTGColumn {
 		individual = sampleClass.get("individual_id");
 		dose = sampleClass.get("dose_level");
 		time = sampleClass.get("exposure_time");
-		compound = sampleClass.get("compound_name");
-		unit = new BUnit(this, sampleClass);
+		compound = sampleClass.get("compound_name");		 
 	}
 	
 	public String getTitle() {
@@ -38,26 +37,29 @@ public class OTGSample extends Sample implements OTGColumn {
 	 * for this sample.
 	 * @return
 	 */
-	public String getParamString() {
-		return unit.toString();
-	}
+//	public String getParamString() {
+//		return unit.toString();
+//	}
 	
-	public BUnit getUnit() {
-		return unit;
-	}
+//	public BUnit getUnit() {
+//		return unit;
+//	}
 	
 	public String getCode() {
 		return id();
 	}
 	
+	@Deprecated
 	public String getIndividual() {
 		return individual;
 	}
 	
+	@Deprecated
 	public String getDose() {
 		return dose;
 	}
 	
+	@Deprecated
 	public String getTime() {
 		return time;
 	}
@@ -66,6 +68,7 @@ public class OTGSample extends Sample implements OTGColumn {
 		return getShortTitle();
 	}
 	
+	@Deprecated
 	public String getCompound() { 
 		return compound;
 	}
@@ -74,6 +77,7 @@ public class OTGSample extends Sample implements OTGColumn {
 		return new OTGSample[] { this };
 	}
 	
+	@Deprecated
 	public String[] getCompounds() {
 		return new String[] { compound };
 	}
@@ -113,11 +117,12 @@ public class OTGSample extends Sample implements OTGColumn {
 		sb.append(dose).append(sep);
 		sb.append(time).append(sep);
 		sb.append(compound).append(sep);
-		if (unit.getCellType() != null) {
-			sb.append(unit.getCellType()).append(sep);
-			sb.append(unit.getOrgan()).append(sep);
-			sb.append(unit.getRepeatType()).append(sep);
-			sb.append(unit.getOrganism()).append(sep);
+		
+		if (sampleClass.get("test_type") != null) {
+			sb.append(sampleClass.get("test_type")).append(sep);
+			sb.append(sampleClass.get("organ_id")).append(sep);
+			sb.append(sampleClass.get("sin_rep_type")).append(sep);
+			sb.append(sampleClass.get("organism")).append(sep);
 		}
 		return sb.toString();
 	}

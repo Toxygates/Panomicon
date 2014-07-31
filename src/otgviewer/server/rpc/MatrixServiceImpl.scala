@@ -36,6 +36,9 @@ import t.viewer.server.CSVHelper
 import t.viewer.server.Feedback
 import t.viewer.shared.StringList
 import otgviewer.server.ScalaUtils
+import t.DataConfig
+import otg.OTGBConfig
+import t.TriplestoreConfig
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
@@ -65,17 +68,20 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   def localInit(config: Configuration) {    
     csvDirectory = config.csvDirectory
     csvUrlBase = config.csvUrlBase
-    context = config.context
     tgConfig = config
     //TODO parse baseConfig directly somewhere
-    baseConfig = config.baseConfig
+    baseConfig = baseConfig(config.tsConfig, config.dataConfig)
+    context = config.context(baseConfig)
     
     val tsCon = context.triplestoreConfig
     val ts = tsCon.triplestore
     affyProbes = new AffyProbes(ts)
-    otgSamples = new OTGSamples(tsCon)
+    otgSamples = new OTGSamples(baseConfig)
     platforms = affyProbes.platforms.map(x => x._1 -> x._2.toSet)
   }
+  
+  def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig =
+    OTGBConfig(ts, data)
 
   override def destroy() {
 	affyProbes.close()	
@@ -129,7 +135,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     filterProbes(probes, pfs)    
   }
   
-  private[this] def makeMatrix(requestColumns: Seq[Group], initProbes: Array[String], 
+  private def makeMatrix(requestColumns: Seq[Group], initProbes: Array[String], 
       typ: ValueType, sparseRead: Boolean = false): ManagedMatrix[_] = {
     val reader = if (typ == ValueType.Absolute) {
       context.absoluteDBReader
@@ -324,6 +330,8 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     TargetMine.addLists(affyProbes, ls, lists.toList, replace)
   }    
   
+  protected def feedbackReceivers: String = "johan@monomorphic.org,kenji@nibio.go.jp,y-igarashi@nibio.go.jp"
+  
   def sendFeedback(name: String, email: String, feedback: String): Unit = {
     val mm = getSessionData()
     var state = "(No user state available)"
@@ -332,8 +340,8 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     	  state = "Matrix: " + mm.current.rowKeys.size + " x " + mm.current.columnKeys.size
     	  state += "\nColumns: " + mm.current.columnKeys.mkString(", ")
       }
-    }
-    Feedback.send(name, email, feedback, state)
+    }    
+    Feedback.send(name, email, feedback, state, feedbackReceivers)
   }
   
 }

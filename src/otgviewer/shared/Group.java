@@ -8,8 +8,10 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
+import t.common.shared.Unit;
 import t.common.shared.sample.SampleGroup;
 
 /**
@@ -19,39 +21,39 @@ import t.common.shared.sample.SampleGroup;
  */
 public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 	
-	protected BUnit[] _units;
+	protected Unit[] _units;
 	
 	public Group() {}
 	
-	public Group(String name, OTGSample[] barcodes, String color) {
-		super(name, barcodes, color);
+	public Group(DataSchema schema, String name, OTGSample[] barcodes, String color) {
+		super(schema, name, barcodes, color);
 		//TODO unit formation will not work if the barcodes have different sample classes 
 		// - fix
 		if (barcodes.length > 0) {
-			_units = BUnit.formUnits(barcodes, barcodes[0].sampleClass());
+			_units = Unit.formUnits(schema, barcodes);
 		} else {
-			_units = new BUnit[] {};
+			_units = new Unit[] {};
 		}
 	}
 	
-	public Group(String name, OTGSample[] barcodes) { 
-		super(name, barcodes);
+	public Group(DataSchema schema, String name, OTGSample[] barcodes) { 
+		super(schema, name, barcodes);
 		//TODO unit formation will not work if the barcodes have different sample classes 
 		// - fix
 		if (barcodes.length > 0) {
-			_units = BUnit.formUnits(barcodes, barcodes[0].sampleClass());
+			_units = Unit.formUnits(schema, barcodes);
 		} else {
-			_units = new BUnit[] {};
+			_units = new Unit[] {};
 		}
 	}
 	
-	public Group(String name, BUnit[] units) { 
-		super(name, BUnit.collectBarcodes(units)); 
+	public Group(DataSchema schema, String name, Unit[] units) { 
+		super(schema, name, Unit.collectBarcodes(units)); 
 		_units = units;
 	}
 	
-	public Group(String name, BUnit[] units, String color) {
-		this(name, BUnit.collectBarcodes(units), color);
+	public Group(DataSchema schema, String name, Unit[] units, String color) {
+		this(schema, name, Unit.collectBarcodes(units), color);
 	}
 
 	public String getShortTitle() {
@@ -61,9 +63,9 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 	public OTGSample[] getSamples() { return _samples; }
 	
 	public OTGSample[] getTreatedSamples() {
-		List<OTGSample> r = new ArrayList<OTGSample>();
-		for (BUnit u : _units) {
-			if (!u.getDose().equals("Control")) {
+		List<OTGSample> r = new ArrayList<OTGSample>();		
+		for (Unit u : _units) {
+			if (!SharedUtils.safeCmp(u.get("dose_level"), "Control")) {
 				r.addAll(Arrays.asList(u.getSamples()));
 			}
 		}
@@ -72,31 +74,31 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 	
 	public OTGSample[] getControlSamples() {
 		List<OTGSample> r = new ArrayList<OTGSample>();
-		for (BUnit u : _units) {
-			if (u.getDose().equals("Control")) {
+		for (Unit u : _units) {
+			if (SharedUtils.safeCmp(u.get("dose_level"), "Control")) {
 				r.addAll(Arrays.asList(u.getSamples()));
 			}
 		}
 		return r.toArray(new OTGSample[0]);
 	}
 	
-	public BUnit[] getUnits() { return _units; }
+	public Unit[] getUnits() { return _units; }
 	
-	public String getCDTs(final int limit, String separator) {
-		Set<String> CDTs = new HashSet<String>();
+	public String getTriples(DataSchema schema, int limit, String separator) {
+		Set<String> triples = new HashSet<String>();
 		boolean stopped = false;
-		for (BUnit u : _units) {
-			if (u.getDose().equals("Control")) {
-				continue;
-			}
-			if (CDTs.size() < limit || limit == -1) {
-				CDTs.add(u.toString());
+		for (Unit u : _units) {
+//			if (u.getDose().equals("Control")) {
+//				continue;
+//			}
+			if (triples.size() < limit || limit == -1) {
+				triples.add(u.tripleString(schema));
 			} else {
 				stopped = true;
 				break;
 			}
 		}
-		String r = SharedUtils.mkString(CDTs, separator);
+		String r = SharedUtils.mkString(triples, separator);
 		if (stopped) {
 			return r + "...";
 		} else {
@@ -121,7 +123,7 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 	// See SampleGroup for the packing method
 	// TODO lift up the unpacking code to have 
 	// the mirror images in the same class, if possible
-	public static Group unpack(String s, DataFilter filter) {
+	public static Group unpack(DataSchema schema, String s) {
 //		Window.alert(s + " as group");
 		String[] s1 = s.split(":::"); // !!
 		String name = s1[1];
@@ -149,10 +151,10 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 				bcs[i] = b;
 			}			
 			//DataFilter useFilter = (bcs[0].getUnit().getOrgan() == null) ? filter : null;
-			return new Group(name, bcs, color);
+			return new Group(schema, name, bcs, color);
 			
 		} else {
-			return new Group(name, new OTGSample[0], color);
+			return new Group(schema, name, new OTGSample[0], color);
 		}
 	}
 

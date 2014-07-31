@@ -151,17 +151,10 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 	public void filterSelected(DataFilter filter) {
 		StorageParser p = getParser(this);
 		changeDataFilter(filter);
-		storeDataFilter(p);
+//		storeDataFilter(p);
 		setConfigured(true);
 		manager.deconfigureAll(this);
 		configuredProceed(ColumnScreen.key);		
-	}
-
-	@Override
-	public void tryConfigure() {
-		if (chosenDataFilter != null) {
-			setConfigured(true);
-		}
 	}
 
 	@Override
