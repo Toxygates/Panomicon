@@ -243,7 +243,19 @@ public class AdminConsole implements EntryPoint {
 		final DialogBox db = new DialogBox(true, true);				
 		db.setWidget(new VisibilityEditor(object, instanceData.getList()) {
 			public void onOK() {
-				object.setEnabledInstances(getSelection());				
+				object.setEnabledInstances(getSelection());
+				maintenanceService.updateBatch(object,new AsyncCallback<Void>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						Window.alert("Unable to edit visibility: " + caught.getMessage());
+					}
+
+					@Override
+					public void onSuccess(Void result) {
+						refreshBatches();						
+					}
+					
+				});
 				table.redraw();
 				db.hide();
 			}

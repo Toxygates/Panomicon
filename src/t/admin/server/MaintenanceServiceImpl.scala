@@ -222,7 +222,7 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
     bs.list.map(b => {
       val samples = ns.getOrElse(b, 0)
       new Batch(b, samples, comments.getOrElse(b, ""),
-          dates.getOrElse(b, null), Array[String]())
+          dates.getOrElse(b, null), bs.listAccess(b).toArray)
     }).toArray    
   }
   
@@ -247,7 +247,15 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
   }
   
   def updateBatch(b: Batch): Unit = {
-    
+    val bs = new Batches(baseConfig.triplestore)
+    val existingAccess = bs.listAccess(b.getTitle())
+    val newAccess = b.getEnabledInstances()
+    for (i <- newAccess; if !existingAccess.contains(i)) {
+      bs.enableAccess(b.getTitle(), i)
+    }
+    for (i <- existingAccess; if !newAccess.contains(i)) {
+      bs.disableAccess(b.getTitle(), i)
+    }
   }
 
   /**
