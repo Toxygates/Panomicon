@@ -14,7 +14,7 @@ import otg.OTGContext
 import otg.SeriesRanking
 import otg.sparql.AffyProbes
 import otgviewer.client.rpc.SeriesService
-import otgviewer.server.Configuration
+import t.viewer.server.Configuration
 import otgviewer.shared.DataFilter
 import otgviewer.shared.MatchResult
 import otgviewer.shared.NoSuchProbeException

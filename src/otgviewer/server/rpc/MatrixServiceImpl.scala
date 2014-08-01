@@ -16,8 +16,7 @@ import otg.sparql.BioObjects.makeRich
 import otg.sparql.OTGSamples
 import otg.sparql.Probe
 import otgviewer.client.rpc.MatrixService
-import otgviewer.server.ApplicationClass
-import otgviewer.server.Configuration
+import t.viewer.server.Configuration
 import otgviewer.server.ExtFoldValueMatrix
 import otgviewer.server.FoldValueMatrix
 import otgviewer.server.ManagedMatrix
@@ -39,6 +38,7 @@ import otgviewer.server.ScalaUtils
 import t.DataConfig
 import otg.OTGBConfig
 import t.TriplestoreConfig
+import t.viewer.server.ApplicationClass
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.

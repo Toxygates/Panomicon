@@ -3,7 +3,7 @@ package otgviewer.server.rpc
 import org.junit.runner.RunWith
 import org.scalatest.BeforeAndAfter
 import org.scalatest.FunSuite
-import otgviewer.server.Configuration
+import t.viewer.server.Configuration
 import otgviewer.shared.RankRule
 import otgviewer.shared.RuleType
 import org.scalatest.junit.JUnitRunner

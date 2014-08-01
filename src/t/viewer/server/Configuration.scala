@@ -1,4 +1,4 @@
-package otgviewer.server
+package t.viewer.server
 
 import ApplicationClass.ApplicationClass
 import ApplicationClass.Toxygates
@@ -7,7 +7,6 @@ import otg.OTGContext
 import t.TriplestoreConfig
 import t.DataConfig
 import t.BaseConfig
-import otg.OTGBConfig
 
 object Configuration {
   /**
@@ -27,7 +26,8 @@ object Configuration {
       servletContext.getInitParameter("repositoryURL"),
       servletContext.getInitParameter("updateURL"),
       servletContext.getInitParameter("repositoryUser"),
-      servletContext.getInitParameter("repositoryPassword"))
+      servletContext.getInitParameter("repositoryPassword"),
+      servletContext.getInitParameter("instanceName"))
   } 
   
   def parseAClass(v: String): ApplicationClass = {
@@ -39,21 +39,22 @@ object Configuration {
   } 
 }
 
-class Configuration(val owlimRepositoryName: String, 
+class Configuration(val repositoryName: String, 
     val toxygatesHomeDir: String,
-    val csvDirectory: String, val csvUrlBase: String,     
-    val applicationClass: ApplicationClass = Toxygates,
+    val csvDirectory: String, val csvUrlBase: String,         
+    @Deprecated val applicationClass: ApplicationClass = Toxygates,
     val repositoryUrl: String = null,
     val updateUrl: String = null,
     val repositoryUser: String = null,
-    val repositoryPass: String = null) {
+    val repositoryPass: String = null,
+    val instanceName: String = null) {
   
   def this(owlimRepository: String, toxygatesHome:String, foldsDBVersion: Int) = 
     this(owlimRepository, toxygatesHome, System.getProperty("otg.csvDir"), 
         System.getProperty("otg.csvUrlBase"))
 
   def tsConfig = TriplestoreConfig(repositoryUrl, updateUrl,
-    repositoryUser, repositoryPass, owlimRepositoryName)
+    repositoryUser, repositoryPass, repositoryName)
   def dataConfig = DataConfig(toxygatesHomeDir)
     
   def context(bc: BaseConfig) = new OTGContext(bc)  

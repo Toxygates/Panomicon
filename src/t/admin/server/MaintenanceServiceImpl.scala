@@ -6,7 +6,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet
 import gwtupload.server.UploadServlet
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
-import otgviewer.server.Configuration
+import t.viewer.server.Configuration
 import t.BaseConfig
 import t.BatchManager
 import t.PlatformManager

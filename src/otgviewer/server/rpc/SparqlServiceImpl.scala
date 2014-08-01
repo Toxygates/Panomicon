@@ -1,26 +1,39 @@
 package otgviewer.server.rpc
 
 import scala.Array.canBuildFrom
-import scala.Option.option2Iterable
-import scala.collection.JavaConversions._
+import scala.collection.JavaConversions.asJavaMap
 import scala.collection.{Set => CSet}
-import scala.collection.{Set => CSet}
-
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-
+import Conversions.asJava
+import Conversions.asJavaSample
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import otg.OTGBConfig
 import otg.OTGContext
-import otg.Species._
-import otg.sparql._
+import otg.Species.Human
 import otg.sparql.AffyProbes
+import otg.sparql.B2RHomologene
+import otg.sparql.B2RKegg
 import otg.sparql.ChEMBL
+import otg.sparql.CommonSPARQL.BBMap
+import otg.sparql.CommonSPARQL.MMap
+import otg.sparql.CommonSPARQL.emptyMMap
+import otg.sparql.CommonSPARQL.makeRich
+import otg.sparql.CommonSPARQL.toBioMap
+import otg.sparql.Compound
+import otg.sparql.CompoundTargets
 import otg.sparql.DrugBank
+import otg.sparql.GOTerm
+import otg.sparql.Gene
 import otg.sparql.LocalUniprot
+import otg.sparql.OTGSamples
+import otg.sparql.Probe
+import otg.sparql.Protein
+import otg.sparql.Uniprot
 import otgviewer.client.rpc.SparqlService
-import otgviewer.server._
-import otgviewer.server.ScalaUtils
+import t.viewer.server.ApplicationClass
+import otgviewer.server.Assocations.convertPairs
+import otgviewer.server.ScalaUtils.useTriplestore
 import otgviewer.shared.AType
 import otgviewer.shared.Association
 import otgviewer.shared.OTGColumn
@@ -37,6 +50,13 @@ import t.common.shared.sample.HasSamples
 import t.db.DefaultBio
 import t.sparql.Triplestore
 import t.sparql.TriplestoreMetadata
+import t.viewer.server.Configuration
+import t.viewer.server.Conversions.asSpecies
+import t.viewer.server.Conversions.scAsScala
+import otgviewer.server.Assocations
+import otg.sparql.CommonSPARQL
+import otgviewer.server.ScalaUtils
+import t.sparql.Instances
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -63,6 +83,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   var homologene: B2RHomologene = _
   //TODO update mechanism for this
   var platforms: Map[String, Iterable[String]] = _
+  var instanceURI: Option[String] = None
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
@@ -85,6 +106,11 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     drugBank = new DrugBank()
     homologene = new B2RHomologene()
     platforms = affyProbes.platforms
+    if (conf.instanceName == null || conf.instanceName == "") {
+      instanceURI = None
+    } else {
+      instanceURI = Some(Instances.defaultPrefix + "/" + conf.instanceName)
+    }
   }
   
   def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig = OTGBConfig(ts, data)
@@ -102,31 +128,20 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   }
 
   def parameterValues(sc: SampleClass, parameter: String): Array[String] = {
-    otgSamples.attributeValues(scAsScala(sc), parameter, None).toArray
+    otgSamples.attributeValues(scAsScala(sc), parameter, instanceURI).toArray
   }
-  
-//  def compounds(sc: SampleClass): Array[String] = {
-//    //TODO don't have a special case for shared_control here
-//    otgSamples.compounds(scAsScala(sc)).toArray
-//  }
-
-//  val orderedDoses = List("Control", "Low", "Middle", "High")
-//  def doseLevels(sc: SampleClass): Array[String] = {
-//    val r = otgSamples.doseLevels(sc).toArray
-//    r.sortWith((d1, d2) => orderedDoses.indexOf(d1) < orderedDoses.indexOf(d2))
-//  }
 
   //TODO compound_name is a dummy parameter below
   def samples(sc: SampleClass): Array[OTGSample] =
     otgSamples.samples(scAsScala(sc), "?compound_name", 
-        List()).map(asJavaSample(_)).toArray
+        List(), instanceURI).map(asJavaSample(_)).toArray
 
   def samples(sc: SampleClass, param: String, 
       paramValues: Array[String]): Array[OTGSample] =
-    otgSamples.samples(sc, param, paramValues).map(asJavaSample(_)).toArray
+    otgSamples.samples(sc, param, paramValues, instanceURI).map(asJavaSample(_)).toArray
 
   def sampleClasses(): Array[SampleClass] = {    
-	otgSamples.sampleClasses().map(x => 
+	otgSamples.sampleClasses(instanceURI).map(x => 
 	  new SampleClass(new java.util.HashMap(asJavaMap(x)))
 	  ).toArray
   }
@@ -134,7 +149,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   //TODO don't pass schema from client
   def units(sc: SampleClass, schema: DataSchema, 
       param: String, paramValues: Array[String]): Array[t.common.shared.Unit] = {
-    val bcs = otgSamples.samples(sc, param, paramValues).map(asJavaSample(_))
+    val bcs = otgSamples.samples(sc, param, paramValues, instanceURI).map(asJavaSample(_))
     val g = bcs.groupBy(x => x.sampleClass().asUnit(schema))
     g.map(x => new t.common.shared.Unit(x._1, x._2.toArray)).toArray
   }
@@ -150,7 +165,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 
   def probes(columns: Array[OTGColumn]): Array[String] = {
     val samples = columns.flatMap(_.getSamples)
-    val metadata = new TriplestoreMetadata(otgSamples, None)    
+    val metadata = new TriplestoreMetadata(otgSamples, instanceURI)    
     val usePlatforms = samples.map(s => metadata.parameter(
         t.db.Sample(s.getCode), "platform_id")
         ).toSet
@@ -163,7 +178,9 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   def pathologies(column: OTGColumn): Array[Pathology] =
     column.getSamples.flatMap(x => otgSamples.pathologies(x.getCode)).map(asJava(_))
 
-  def annotations(barcode: OTGSample): Annotation = asJava(otgSamples.annotations(barcode.getCode))
+  def annotations(barcode: OTGSample): Annotation = 
+    asJava( otgSamples.annotations(barcode.getCode, List(), instanceURI) )
+    
   def annotations(column: HasSamples[OTGSample], importantOnly: Boolean = false): Array[Annotation] = {	  
 	  val keys = if (importantOnly) {
 	    if (tgConfig.applicationClass == ApplicationClass.Adjuvant) {
@@ -174,7 +191,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 	  } else {
 	    Nil //fetch everything
 	  }
-	  column.getSamples.map(x => otgSamples.annotations(x.getCode, keys)).map(asJava(_))
+	  column.getSamples.map(x => otgSamples.annotations(x.getCode, keys, instanceURI)).map(asJava(_))
   }
 
   def pathways(sc: SampleClass, pattern: String): Array[String] =
@@ -253,7 +270,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     println(oproteins.allValues.size + " oproteins")
 
     def getTargeting(from: CompoundTargets): MMap[Probe, Compound] = {
-      val expected = otgSamples.compounds(sc).map(Compound.make(_))
+      val expected = otgSamples.compounds(sc, instanceURI).map(Compound.make(_))
 
       //strictly orthologous
       val oproteinVs = oproteins.allValues.toSet -- proteins.allValues.toSet

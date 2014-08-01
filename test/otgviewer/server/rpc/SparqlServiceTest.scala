@@ -9,7 +9,7 @@ import otgviewer.shared.Organism
 import otgviewer.shared.RepeatType
 import otgviewer.shared.AType
 import org.scalatest.BeforeAndAfter
-import otgviewer.server.Configuration
+import t.viewer.server.Configuration
 import org.scalatest.junit.JUnitRunner
 import t.common.shared.SampleClass
 
