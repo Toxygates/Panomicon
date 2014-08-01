@@ -1,10 +1,12 @@
 package t.admin.shared;
 
-public class Instance extends TitleItem {
+import java.util.Date;
+
+public class Instance extends ManagedItem {
 
 	public Instance() { }
 
-	public Instance(String title) {
-		super(title);
+	public Instance(String title, String comment, Date date) {
+		super(title, comment, date);
 	}
 }

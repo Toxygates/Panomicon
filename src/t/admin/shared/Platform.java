@@ -2,27 +2,18 @@ package t.admin.shared;
 
 import java.util.Date;
 
-public class Platform extends TitleItem implements DataRecord {
+public class Platform extends ManagedItem {
 
-	private int numProbes;
-	private String comment;
-	private Date date;
+	private int numProbes;	
 	
 	public Platform() { }
 	
 	public Platform(String title, int numProbes, String comment, Date date) {
-		super(title);
-		this.numProbes = numProbes;
-		this.comment = comment;
-		this.date = date;
+		super(title, comment, date);
+		this.numProbes = numProbes;		
 	}
 	
 	public int getNumProbes() {
 		return numProbes;
 	}
-	
-	public Date getDate() { return date; }	
-	
-	public String getComment() { return comment; }
-
 }

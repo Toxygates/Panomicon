@@ -10,7 +10,7 @@ import java.util.List;
 import t.admin.shared.Batch;
 import t.admin.shared.Instance;
 import t.admin.shared.Platform;
-import t.admin.shared.TitleItem;
+import t.admin.shared.ManagedItem;
 
 import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;
@@ -43,15 +43,9 @@ public class AdminConsole implements EntryPoint {
 	protected MaintenanceServiceAsync maintenanceService = (MaintenanceServiceAsync) GWT
 			.create(MaintenanceService.class);
 	
-	final Instance[] instances = new Instance[] {
-			new Instance("Toxygates"),
-			new Instance("Adjuvant"),
-			new Instance("Private")
-	};
-	
-	final ListDataProvider<Batch> batchData = new ListDataProvider<Batch>();	
-	
+	final ListDataProvider<Batch> batchData = new ListDataProvider<Batch>();		
 	final ListDataProvider<Platform> platformData = new ListDataProvider<Platform>();
+	final ListDataProvider<Instance> instanceData = new ListDataProvider<Instance>();
 	
 	@Override
 	public void onModuleLoad() {
@@ -62,28 +56,48 @@ public class AdminConsole implements EntryPoint {
 	private Widget makeInstanceEditor() {
 		DockLayoutPanel dp = new DockLayoutPanel(Unit.PX);
 		
-		ListDataProvider<Instance> p = new ListDataProvider<Instance>(Arrays.asList(instances));
-		
 		CellTable<Instance> table = makeTable();
-		p.addDataDisplay(table);
+		instanceData.addDataDisplay(table);
 		
 		List<Command> cmds = new ArrayList<Command>();
 		cmds.add(new Command("Add new...") {
-			public void run() {}
+			public void run() {
+				String name = Window.prompt("Please enter the name of the new instance:", "Untitled");
+				maintenanceService.addInstance(name, "", new AsyncCallback<Void>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						Window.alert("Unable to add instance : " + caught.getMessage());
+					}
+
+					@Override
+					public void onSuccess(Void result) {
+						refreshInstances();						
+					}					
+				});				
+			}
 		});
+		
+		StandardColumns<Instance> sc = new StandardColumns<Instance>(table) {
+			void onDelete(Instance object) {
+				deleteInstance(object);
+			}
+		};
+		
+		sc.addStartColumns();
+		sc.addDeleteColumn();
 	
 		dp.addSouth(makeButtons(cmds), 35);		
 		dp.add(table);
 		
+		refreshInstances();
 		return dp; 
 	}
-
 	
 	private Widget makeTabPanel() {
-		TabLayoutPanel tlp = new TabLayoutPanel(2, Unit.EM);
-		tlp.add(makeInstanceEditor(), "Instances");
+		TabLayoutPanel tlp = new TabLayoutPanel(2, Unit.EM);		
 		tlp.add(makeBatchEditor(), "Batches");
 		tlp.add(makePlatformEditor(), "Platforms");
+		tlp.add(makeInstanceEditor(), "Instances");
 		tlp.add(makeAccessEditor(), "Access");				
 		return tlp;
 	}
@@ -137,6 +151,7 @@ public class AdminConsole implements EntryPoint {
 		
 		dp.addSouth(makeButtons(cmds), 35);
 		dp.add(table);
+		refreshPlatforms();
 		return dp;
 	}
 	
@@ -221,13 +236,12 @@ public class AdminConsole implements EntryPoint {
 		dp.addSouth(makeButtons(commands), 35);
 		dp.add(table);
 		refreshBatches();
-		refreshPlatforms();
 		return dp;
 	}
 	
 	private void editVisibility(final CellTable<Batch> table, final Batch object) {
 		final DialogBox db = new DialogBox(true, true);				
-		db.setWidget(new VisibilityEditor(object, Arrays.asList(instances)) {
+		db.setWidget(new VisibilityEditor(object, instanceData.getList()) {
 			public void onOK() {
 				object.setEnabledInstances(getSelection());				
 				table.redraw();
@@ -268,16 +282,35 @@ public class AdminConsole implements EntryPoint {
 			@Override
 			void onCompletion() {
 				refreshPlatforms();
-			}
-			
+			}			
 		});
+	}
+	
+	private void deleteInstance(final Instance object) {
+		String title = object.getTitle();
+		if (!Window.confirm("Are you sure you want to delete the instance " + title + "?")) {
+			return;
+		}
+		maintenanceService.deleteInstance(object.getTitle(), new AsyncCallback<Void>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Unable to delete instance: " + caught.getMessage());
+			}
+
+			@Override
+			public void onSuccess(Void result) {
+				refreshInstances();				
+			}			
+		});
+			
 	}
 	
 	private Widget makeAccessEditor() {
 		return new SimplePanel();
 	}
 
-	private <T extends TitleItem> CellTable<T> makeTable() {
+	private <T extends ManagedItem> CellTable<T> makeTable() {
 		CellTable<T> table = new CellTable<T>();		
 //		TextColumn<T> textColumn = new TextColumn<T>() {
 //			@Override
@@ -297,7 +330,7 @@ public class AdminConsole implements EntryPoint {
 	}
 	
 	private void refreshInstances() {
-		
+		maintenanceService.getInstances(new ListDataCallback<Instance>(instanceData, "instance list"));
 	}
 	
 	private void refreshPlatforms() {

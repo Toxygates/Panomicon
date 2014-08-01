@@ -5,33 +5,27 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Batch extends TitleItem implements DataRecord {
+public class Batch extends ManagedItem {
 
 	private int numSamples;
 	private Set<String> enabledInstances;
-	private Date date;
-	private String comment;
 	
 	public Batch() { }
 	
 	public Batch(String title, int numSamples, String comment,
 			Date date, Set<String> enabledInstances) {
-		super(title);		
+		super(title, comment, date);		
 		this.numSamples = numSamples;
-		this.enabledInstances = enabledInstances;
-		this.comment = comment;
-		this.date = date;
+		this.enabledInstances = enabledInstances;		
 	}
 	
 	public Batch(String title, int numSamples, 
 			String comment, Date date, String[] enabledInstances) {
-		super(title);
+		super(title, comment, date);
 		Set<String> enabled = new HashSet<String>();
 		Collections.addAll(enabled,  enabledInstances);
 		this.numSamples = numSamples;
-		this.enabledInstances = enabled;
-		this.comment = comment;
-		this.date = date;
+		this.enabledInstances = enabled;		
 	}
 
 	public int getNumSamples() { return numSamples; }
@@ -59,8 +53,5 @@ public class Batch extends TitleItem implements DataRecord {
 		}
 		setEnabledInstanceTitles(en);
 	}
-	
-	public String getComment() { return comment; }
-	public void setComment(String c) { comment = c; }
-	public Date getDate() { return date; }
+
 }

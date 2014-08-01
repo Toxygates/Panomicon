@@ -31,26 +31,29 @@ public interface MaintenanceService extends RemoteService {
 	 */ 
 	void addPlatformAsync(String id, String comment, boolean affymetrixFormat);
 	
+	void addInstance(String id, String comment) throws MaintenanceException;
 	
 	/**
 	 * Delete a batch. 
 	 * @param id
 	 */
-	void deleteBatchAsync(String id);
+	void deleteBatchAsync(String id) throws MaintenanceException;
 	
-	void deletePlatformAsync(String id);
+	void deletePlatformAsync(String id) throws MaintenanceException;
+	
+	void deleteInstance(String id) throws MaintenanceException;
 
 	/**
 	 * Modify the batch, altering fields such as visibility and comment.
 	 * @param b
 	 */
-	void updateBatch(Batch b);
+	void updateBatch(Batch b) throws MaintenanceException;
 
 	/**
 	 * The results of the last completed asynchronous operation.
 	 * @return
 	 */
-	OperationResults getOperationResults();
+	OperationResults getOperationResults() throws MaintenanceException;
 	
 	/**
 	 * Cancel the current task, if any.

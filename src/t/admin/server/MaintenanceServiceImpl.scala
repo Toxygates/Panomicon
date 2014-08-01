@@ -26,6 +26,8 @@ import t.sparql.Probes
 import t.util.TempFiles
 import t.DataConfig
 import otg.OTGBConfig
+import t.sparql.Instances
+import t.InstanceManager
 
 class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceService {
   var baseConfig: BaseConfig = _
@@ -70,13 +72,30 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
 	}
   }
   
+  private def maintenance[T](task: => T): T = try {
+    task
+  } catch {
+    case e: Exception =>
+      e.printStackTrace()
+      throw new MaintenanceException(e)
+  }
+  
+  private def cleanMaintenance[T](task: => T): T = try {
+    task
+  } catch {
+    case e: Exception =>
+      e.printStackTrace()
+      afterTaskCleanup()
+      throw new MaintenanceException(e)
+  }
+  
   def addBatchAsync(title: String, comment: String): Unit = {
 	showUploadedFiles()
 	grabRunner()
 	
 	val bm = new BatchManager(baseConfig) //TODO configuration parsing
 
-    try {
+    cleanMaintenance {
       TaskRunner.start()
       setLastTask("Add batch")
 
@@ -109,19 +128,14 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
         foldPValueFile.map(_.getAbsolutePath()),
         false, baseConfig.seriesBuilder)
         
-    } catch {
-	  case e: Exception =>
-	    afterTaskCleanup()
-	    e.printStackTrace()
-	    throw new MaintenanceException(e.getMessage())	  
-	}
+    }
   }
 
   def addPlatformAsync(id: String, comment: String, affymetrixFormat: Boolean): Unit = {    
     showUploadedFiles()
 	grabRunner()
 	val pm = new PlatformManager(baseConfig) //TODO configuration parsing
-    try {      
+    cleanMaintenance {      
       val tempFiles = new TempFiles()
       setAttribute("tempFiles", tempFiles)
       
@@ -133,39 +147,37 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
       
       val metaFile = getAsTempFile(tempFiles, platformPrefix, platformPrefix, "dat").get
       TaskRunner ++= pm.addPlatform(id, comment, metaFile.getAbsolutePath(), affymetrixFormat)
-    } catch {
-      case e: Exception =>
-        afterTaskCleanup()
-        throw e
-    }
+    } 
   }
 
+  def addInstance(id: String, comment: String): Unit = {
+    val im = new Instances(baseConfig.triplestore)
+    maintenance { im.addWithTimestamp(id, comment) }    
+  }
+ 
   def deleteBatchAsync(id: String): Unit = {
     grabRunner()
     val bm = new BatchManager(baseConfig) //TODO configuration parsing
-    try {
+    cleanMaintenance {
       TaskRunner.start()
       setLastTask("Delete batch")
       TaskRunner ++= bm.deleteBatch(id, baseConfig.seriesBuilder)
-    } catch {
-      case e: Exception =>
-        afterTaskCleanup()
-        throw e
-    }
+    } 
   }
-
+  
   def deletePlatformAsync(id: String): Unit = {
     grabRunner()
     val pm = new PlatformManager(baseConfig)
-    try {
+    cleanMaintenance {
       TaskRunner.start()
       setLastTask("Delete platform")
       TaskRunner ++= pm.deletePlatform(id)
-    } catch {
-      case e: Exception =>
-        afterTaskCleanup()
-        throw e
-    }
+    } 
+  }
+  
+  def deleteInstance(id: String): Unit = {
+    val im = new Instances(baseConfig.triplestore)
+    maintenance { im.delete(id) }
   }
   
   def getOperationResults(): OperationResults = {
@@ -227,7 +239,11 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
   }
   
   def getInstances: Array[Instance] = {
-    Array()
+    val is = new Instances(baseConfig.triplestore)
+    val com = is.comments
+    val ts = is.timestamps
+    is.list.map(i => new Instance(i, com.getOrElse(i, ""),
+        ts.getOrElse(i, null))).toArray    
   }
   
   def updateBatch(b: Batch): Unit = {
