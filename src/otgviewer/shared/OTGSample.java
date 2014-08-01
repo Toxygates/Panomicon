@@ -49,6 +49,10 @@ public class OTGSample extends Sample implements OTGColumn {
 		return id();
 	}
 	
+	public String get(String parameter) {
+		return sampleClass.get(parameter);
+	}
+	
 	@Deprecated
 	public String getIndividual() {
 		return individual;

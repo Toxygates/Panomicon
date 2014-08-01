@@ -1,7 +1,9 @@
 package otgviewer.shared;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Data manipulation utility methods.
@@ -79,16 +81,14 @@ public class OTGUtils {
 		return r;
 	}
 
-	public static String[] compoundsFor(List<Group> columns) {
-		List<String> compounds = new ArrayList<String>();
+	public static Set<String> collect(List<Group> columns, String parameter) {
+		Set<String> r = new HashSet<String>();
 		for (Group g : columns) {
-			for (String c : g.getCompounds()) {
-				if (!compounds.contains(c)) {
-					compounds.add(c);
-				}
+			for (String c : g.collect(parameter)) {			
+				r.add(c);			
 			}
 		}
-		return compounds.toArray(new String[0]);
+		return r;
 	}
 	
 	/**

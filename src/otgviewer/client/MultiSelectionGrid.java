@@ -112,7 +112,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 		for (Unit u: selection) {						
 			SampleClass sc = u.asMacroClass(scr.schema());
 			SelectionTDGrid g = findOrCreateSection(scr, sc);
-			g.compoundsChanged(new java.util.ArrayList(compounds));
+			g.compoundsChanged(new java.util.ArrayList<String>(compounds));
 			g.setSelected(u, true);			
 		}
 		clearEmptyGrids();

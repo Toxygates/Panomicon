@@ -15,6 +15,7 @@ import otgviewer.shared.Group;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.OTGUtils;
 import otgviewer.shared.ValueType;
+import t.common.shared.DataSchema;
 import t.common.shared.Unit;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -37,7 +38,7 @@ public class AdjustableChartGrid extends Composite {
 	private ListBox chartCombo, chartSubtypeCombo;
 	
 	private ChartDataSource source;
-	private List<String> compounds;
+	private List<String> majorVals;
 	private List<Group> groups;
 	private VerticalPanel vp;
 	private VerticalPanel ivp;
@@ -51,11 +52,17 @@ public class AdjustableChartGrid extends Composite {
 	private static String lastSubtype = null;
 	private List<String> chartSubtypes = new ArrayList<String>();
 	
+	private final DataSchema schema;
+	
 	public AdjustableChartGrid(Screen screen, ChartDataSource source, List<Group> groups, ValueType vt) {
 		this.source = source;
 		this.groups = groups;
 		this.screen = screen;
-		this.compounds = Arrays.asList(OTGUtils.compoundsFor(groups));
+		schema = screen.schema();
+		
+		String majorParam = screen.schema().majorParameter();
+		this.majorVals = 
+				new ArrayList<String>(OTGUtils.collect(groups, majorParam));
 		this.vt = vt;
 		
 		vp = Utils.mkVerticalPanel();
@@ -140,7 +147,7 @@ public class AdjustableChartGrid extends Composite {
 		return new ColorPolicy.MapColorPolicy(colors);
 	}
 	
-	private static String[] withoutControl(String[] columns) {
+	private String[] withoutControl(String[] columns) {
 		List<String> r = new ArrayList<String>();
 		for (String c: columns) {
 			if (!c.equals("Control")) {
@@ -150,12 +157,13 @@ public class AdjustableChartGrid extends Composite {
 		return r.toArray(new String[0]);
 	}
 	
-	//vsTime is the vs-time-ness of each individual sub-chart. So the overall grid will be vs. dose 	
-	//(in its columns) if each sub-chart is vs.time.
-	private void gridFor(final boolean vsTime, final String[] columns, final String[] useCompounds, 
+	//vsMinor is the vs-minor-ness of each individual sub-chart. So the overall grid will be vs. dose 	
+	//(in its columns) if each sub-chart is vs.minor.
+	private void gridFor(final boolean vsMinor, final String[] columns, final String[] useCompounds, 
 			final List<ChartGrid> intoList, final SimplePanel intoPanel) {
-		String[] preColumns = (columns == null ? (vsTime ? source.doses() : source.times()) : columns);
-		final String[] useColumns = (vt == ValueType.Folds ? withoutControl(preColumns) : preColumns);		
+		String[] preColumns = (columns == null ? (vsMinor ? source.doses() : source.times()) : columns);
+		//TODO
+		final String[] useColumns = preColumns; //(vt == ValueType.Folds ? withoutControl(preColumns) : preColumns);		
 		
 		if (computedWidth == 0) {
 			int theoretical = useColumns.length * GVizChartGrid.MAX_WIDTH;
@@ -174,11 +182,11 @@ public class AdjustableChartGrid extends Composite {
 						allSamples.addAll(samples);
 							
 						ChartDataset ct = new ChartDataset(samples, samples, 
-								vsTime ? source.times() : source.doses(), vsTime);
-						
+								vsMinor ? source.times() : source.doses(), vsMinor);
+												
 						ChartGrid cg = new GVizChartGrid(screen, ct, groups,
-								useCompounds == null ? compounds : Arrays.asList(useCompounds), true,
-								useColumns, !vsTime, TOTAL_WIDTH);
+								useCompounds == null ? majorVals : Arrays.asList(useCompounds), true,
+								useColumns, !vsMinor, TOTAL_WIDTH);
 						
 						intoList.add(cg);
 						intoPanel.add(cg);
@@ -247,7 +255,7 @@ public class AdjustableChartGrid extends Composite {
 					gridFor(vsTime, columns, g.getCompounds(), grids, sp);		
 				}
 			} else {
-				SimplePanel sp = makeGridPanel(compounds.toArray(new String[0]));				
+				SimplePanel sp = makeGridPanel(majorVals.toArray(new String[0]));				
 				ivp.add(sp);
 				expectedGrids += 1;
 				gridFor(vsTime, columns, null, grids, sp);							
@@ -259,23 +267,25 @@ public class AdjustableChartGrid extends Composite {
 	/**
 	 * Find a dose or time that is present in the user-defined sample groups and that
 	 * can be displayed in these charts.
-	 * @param isDose
+	 * @param isMed
 	 * @return
 	 */
-	private String findPreferredItem(boolean isDose) {
+	private String findPreferredItem(boolean isMed) {
+		final String medParam = schema.mediumParameter();
+		final String minParam = schema.minorParameter();
 		if (lastSubtype != null) {
 			if (lastSubtype.equals("All")) {
 				return lastSubtype;
 			}
 			// Try to reuse the most recent one
 			for (Group g : groups) {
-				if (isDose) {
+				if (isMed) {
 					//TODO
-					if (Unit.contains(g.getUnits(), "dose_level", lastSubtype)) {						
+					if (Unit.contains(g.getUnits(), medParam, lastSubtype)) {						
 						return lastSubtype;
 					}
 				} else {
-					if (Unit.contains(g.getUnits(), "exposure_time", lastSubtype)) {
+					if (Unit.contains(g.getUnits(), minParam, lastSubtype)) {
 						return lastSubtype;
 					}
 				}
@@ -283,16 +293,17 @@ public class AdjustableChartGrid extends Composite {
 		}
 		//Find a new item to use
 		for (Unit u: groups.get(0).getUnits()) {
-			if (isDose) {
-				final String[] useDoses = 
-						(vt == ValueType.Folds ? withoutControl(source.doses()) : source.doses());
+			if (isMed) {
+				final String[] useDoses = source.doses();
+						//TODO
+						//(vt == ValueType.Folds ? withoutControl(source.doses()) : source.doses());
 				//TODO
-				String dose = u.get("dose_level");
+				String dose = u.get(medParam);
 				if (Arrays.binarySearch(useDoses, dose) != -1) {
 					return dose;
 				}
 			} else {
-				String time = u.get("exposure_time");
+				String time = u.get(minParam);
 				if (Arrays.binarySearch(source.times(), time) != -1) {
 					return time;
 				}

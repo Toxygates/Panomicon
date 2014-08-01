@@ -5,8 +5,8 @@ import java.util.List;
 import otgviewer.client.charts.ChartDataset;
 import otgviewer.client.charts.ChartGrid;
 import otgviewer.client.components.Screen;
-import otgviewer.shared.OTGSample;
 import otgviewer.shared.Group;
+import otgviewer.shared.OTGSample;
 
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.user.client.ui.Widget;

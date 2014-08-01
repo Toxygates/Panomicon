@@ -104,6 +104,17 @@ public class SampleClass implements Serializable, Packable {
 		return true;		
 	}
 	
+	public static Set<String> collectInner(List<? extends HasClass> from, String key) {
+		Set<String> r = new HashSet<String>();
+		for (HasClass hc: from) {
+			String x = hc.sampleClass().get(key);
+			if (x != null) {
+				r.add(x);
+			}		
+		}
+		return r;
+	}
+	
 	public static Set<String> collect(List<? extends SampleClass> from, String key) {
 		Set<String> r = new HashSet<String>();
 		for (SampleClass sc: from) {

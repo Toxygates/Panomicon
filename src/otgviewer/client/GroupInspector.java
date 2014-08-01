@@ -13,7 +13,6 @@ import java.util.logging.Logger;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.StorageParser;
-import otgviewer.shared.BUnit;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;

@@ -1,5 +1,6 @@
 package otgviewer.client.charts;
 
+import java.util.Collection;
 import java.util.List;
 
 import otgviewer.client.Utils;

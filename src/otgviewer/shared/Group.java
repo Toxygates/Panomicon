@@ -120,6 +120,10 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 		return compounds.toArray(new String[0]);		
 	}
 	
+	public Set<String> collect(String parameter) {
+		return SampleClass.collectInner(Arrays.asList(_samples), parameter);
+	}
+	
 	// See SampleGroup for the packing method
 	// TODO lift up the unpacking code to have 
 	// the mirror images in the same class, if possible

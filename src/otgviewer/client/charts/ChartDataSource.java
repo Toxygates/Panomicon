@@ -123,9 +123,13 @@ abstract class ChartDataSource {
 	String[] doses() { return _doses; }
 	
 	protected DataSchema schema;
+	final protected String minorParam, medParam, majorParam;
 	
 	ChartDataSource(DataSchema schema) {
 		this.schema = schema;
+		minorParam = schema.minorParameter();
+		medParam = schema.mediumParameter();
+		majorParam = schema.majorParameter();
 	}
 	
 	protected void init() {
@@ -139,7 +143,7 @@ abstract class ChartDataSource {
 		try {
 			_times = times.toArray(new String[0]);
 			// TODO avoid magic constants
-			schema.sort("exposure_time", _times);
+			schema.sort(schema.minorParameter(), _times);
 
 			List<String> doses = new ArrayList<String>();
 			for (ChartDataSource.ChartSample s : samples) {
@@ -148,7 +152,7 @@ abstract class ChartDataSource {
 				}
 			}
 			_doses = doses.toArray(new String[0]);
-			schema.sort("dose_level", _doses);
+			schema.sort(schema.mediumParameter(), _doses);
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Unable to sort chart data", e);
 		}
@@ -186,11 +190,11 @@ abstract class ChartDataSource {
 		}
 		
 		@Override
-		protected void init() {
+		protected void init() {			
 			List<String> times = new ArrayList<String>();
 			for (OTGSample b: barcodes) {
-				if (!times.contains(b.getTime())) {
-					times.add(b.getTime());
+				if (!times.contains(b.get(minorParam))) {
+					times.add(b.get(minorParam));
 				}
 			}
 			try {
@@ -200,8 +204,8 @@ abstract class ChartDataSource {
 
 				List<String> doses = new ArrayList<String>();
 				for (OTGSample b : barcodes) {
-					if (!doses.contains(b.getDose())) {
-						doses.add(b.getDose());
+					if (!doses.contains(b.get(medParam))) {
+						doses.add(b.get(medParam));
 					}
 				}
 				_doses = doses.toArray(new String[0]);
@@ -216,7 +220,8 @@ abstract class ChartDataSource {
 				OTGSample b = barcodes[i];			
 				for (ExpressionRow er : rows) {
 					ExpressionValue ev = er.getValue(i);
-					ChartSample cs = new ChartSample(b.getTime(), b.getDose(), b.getCompound(), 
+					ChartSample cs = new ChartSample(b.get(minorParam), b.get(medParam),
+							b.get(majorParam), 
 							ev.getValue(), b, er.getProbe(), ev.getCall());
 					cs.barcode = b;
 					samples.add(cs);
@@ -246,17 +251,18 @@ abstract class ChartDataSource {
 			this.screen = screen;
 		}
 		
-		void loadData(final String[] compounds, final String[] dosesOrTimes, 
+		void loadData(final String[] majors, final String[] medsOrMins, 
 				final ColorPolicy policy, final SampleAcceptor acceptor) {
-			logger.info("Dynamic source: load for " + compounds.length + " compounds");
+			logger.info("Dynamic source: load for " + majors.length + " compounds");
 			
 			final List<OTGSample> useBarcodes = new ArrayList<OTGSample>();
 			for (OTGSample b: barcodes) {
 				if (
-						(compounds == null || SharedUtils.indexOf(compounds, b.getCompound()) != -1) &&
-						(dosesOrTimes == null || SharedUtils.indexOf(dosesOrTimes, b.getTime()) != -1 || 
-							SharedUtils.indexOf(dosesOrTimes, b.getDose()) != -1) &&
-						(type == ValueType.Absolute || ! b.getDose().equals("Control"))
+						(majors == null || SharedUtils.indexOf(majors, b.get(majorParam)) != -1) &&
+						(medsOrMins == null || SharedUtils.indexOf(medsOrMins, b.get(minorParam)) != -1 || 					
+						SharedUtils.indexOf(medsOrMins, b.get(medParam)) != -1)
+						// TODO &&
+						//	(type == ValueType.Absolute || ! b.getDose().equals("Control"))
 					) {
 					useBarcodes.add(b);
 				}
@@ -276,7 +282,7 @@ abstract class ChartDataSource {
 				@Override
 				public void handleSuccess(final List<ExpressionRow> rows) {
 					addSamplesFromBarcodes(useBarcodes.toArray(new OTGSample[0]), rows);	
-					getSSamples(compounds, dosesOrTimes, policy, acceptor);
+					getSSamples(majors, medsOrMins, policy, acceptor);
 				}					
 			});
 			
