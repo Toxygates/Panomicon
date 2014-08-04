@@ -106,18 +106,18 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 		}
 	}
 	
-	public String[] getCompounds() {
-		return getCompounds(null);
+	public String[] getMajors(DataSchema schema) {
+		return getMajors((SampleClass) null);
 	}
 	
-	public String[] getCompounds(@Nullable SampleClass sc) {
-		Set<String> compounds = new HashSet<String>();
+	public String[] getMajors(@Nullable SampleClass sc) {
+		Set<String> majorVals = new HashSet<String>();
 		for (OTGSample b : _samples) {
 			if (sc == null || sc.permits(b)) {
-				compounds.add(b.getCompound());
+				majorVals.add(b.get(schema.majorParameter()));
 			}
 		}
-		return compounds.toArray(new String[0]);		
+		return majorVals.toArray(new String[0]);		
 	}
 	
 	public Set<String> collect(String parameter) {

@@ -29,7 +29,7 @@ class ColorPolicy {
 		
 		@Override
 		String colorFor(ChartSample sample) {
-			if (sample.time.equals(timeDose) || sample.dose.equals(timeDose)) {
+			if (sample.minor.equals(timeDose) || sample.medium.equals(timeDose)) {
 				return color;
 			}
 			return super.colorFor(sample);

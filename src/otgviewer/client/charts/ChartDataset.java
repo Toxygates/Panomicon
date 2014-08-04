@@ -92,9 +92,9 @@ public class ChartDataset {
 		List<ChartSample> fsamples = new ArrayList<ChartSample>();
 		for (ChartSample s: samples) {
 			if (((s.probe.equals(probeOrCompound) && isProbe) ||
-					(s.compound.equals(probeOrCompound) && !isProbe) || probeOrCompound == null) &&
-					((s.time.equals(timeOrDose) && isTime) ||
-							(s.dose.equals(timeOrDose) && !isTime) ||
+					(s.major.equals(probeOrCompound) && !isProbe) || probeOrCompound == null) &&
+					((s.minor.equals(timeOrDose) && isTime) ||
+							(s.medium.equals(timeOrDose) && !isTime) ||
 							timeOrDose == null)) {
 				fsamples.add(s);
 			}
@@ -106,9 +106,9 @@ public class ChartDataset {
 	
 	protected String categoryForSample(ChartSample sample) {
 		for (String c : categories) {
-			if (categoriesAreTimes && sample.time.equals(c)) {
+			if (categoriesAreTimes && sample.minor.equals(c)) {
 				return c;
-			} else if (!categoriesAreTimes && sample.dose.equals(c)) {
+			} else if (!categoriesAreTimes && sample.medium.equals(c)) {
 				return c;
 			}
 		}

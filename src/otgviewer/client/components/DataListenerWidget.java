@@ -14,7 +14,6 @@ import otgviewer.client.Utils;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
-import otgviewer.shared.OTGUtils;
 import otgviewer.shared.ValueType;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
@@ -243,26 +242,21 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		storeColumns(p);
 		storeProbes(p);
 	}
-//		
-//	public void storeDataFilter(StorageParser p) {	
-//		if (chosenDataFilter != null) {
-//			p.setItem("dataFilter", packDataFilter(chosenDataFilter));			
-//		} else {
-//			p.clearItem("dataFilter");
-//		}			
-//	}
 	
 	protected void storeColumns(StorageParser p, String key, 
-			Collection<OTGColumn> columns) {
+			Collection<? extends OTGColumn> columns) {
 		if (!columns.isEmpty()) {
+			OTGColumn first = columns.iterator().next();
+			logger.info("Storing columns: " + first + " : " + first.getSamples()[0] + " ...");
 			p.setItem(key, packColumns(columns));
 		} else {
+			logger.info("No columns defined, not storing");
 			p.clearItem(key);
 		}		
 	}
 	
 	public void storeColumns(StorageParser p) {
-		storeColumns(p, "columns", OTGUtils.asColumns(chosenColumns));
+		storeColumns(p, "columns", chosenColumns);
 	}	
 	
 	protected void storeCustomColumn(StorageParser p, DataColumn<?> column) {		
@@ -277,7 +271,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	// ### > ::: > ^^^ > $$$
 	protected List<Group> loadColumns(StorageParser p, DataSchema schema,
 			String key,
-			Collection<OTGColumn> expectedColumns) throws Exception {
+			Collection<? extends OTGColumn> expectedColumns) throws Exception {
 		//TODO unpack old format columns
 		String v = p.getItem(key); // + "." + packDataFilter(chosenDataFilter));
 		List<Group> r = new ArrayList<Group>();
@@ -340,8 +334,9 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		
 		try {
 			List<Group> cs = loadColumns(p, schema, 
-					"columns", OTGUtils.asColumns(chosenColumns));					
-			if (cs != null) {						
+					"columns", chosenColumns);					
+			if (cs != null) {		
+				logger.info("Unpacked columns: " + cs.get(0) + ": " + cs.get(0).getSamples()[0] + " ... ");
 				columnsChanged(cs);
 			}						
 			OTGColumn cc = unpackColumn(schema, p.getItem("customColumn"), 

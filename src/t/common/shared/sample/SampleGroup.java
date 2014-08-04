@@ -35,6 +35,7 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
 		this.name = name;
 		this._samples = samples;
 		this.color = color;
+		this.schema = schema;
 	}
 	
 	public SampleGroup(DataSchema schema, String name, S[] samples) {
@@ -53,7 +54,7 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
 	public S[] getSamples() { return _samples; }
 	
 	public String getName() { return name; }
-	public String getShortTitle() { return name; }
+	public String getShortTitle(DataSchema schema) { return name; }
 	
 	public String toString() { return name; }
 

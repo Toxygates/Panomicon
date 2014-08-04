@@ -65,7 +65,7 @@ public class ChartGridFactory {
 			final boolean rowsAreCompounds,			
 			final int highlightMed, final ChartAcceptor acceptor, final Screen screen) {
 		ChartDataSource cds = new ChartDataSource.SeriesSource(
-				new TimesDoses(), series, times);
+				schema, series, times);
 		//TODO get from schema or data
 		try {
 		final String[] medVals = schema.sortedValues(schema.mediumParameter());
@@ -124,7 +124,7 @@ public class ChartGridFactory {
 	
 	private void finishRowCharts(Screen screen, String probe, ValueType vt, List<Group> groups, 
 			OTGSample[] barcodes, AChartAcceptor acceptor) {
-		ChartDataSource cds = new ChartDataSource.DynamicExpressionRowSource(new TimesDoses(), 
+		ChartDataSource cds = new ChartDataSource.DynamicExpressionRowSource(schema, 
 				probe, vt, barcodes, screen);
 		AdjustableChartGrid acg = new AdjustableChartGrid(screen, cds, groups, vt);
 		acceptor.acceptCharts(acg);

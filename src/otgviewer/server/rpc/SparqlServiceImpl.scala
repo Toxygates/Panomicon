@@ -154,14 +154,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     g.map(x => new t.common.shared.Unit(x._1, x._2.toArray)).toArray
   }
     
-  val orderedTimes = TimesDoses.allTimes.toList
-//  def times(sc: SampleClass): Array[String] = {
-//    val r = otgSamples.times(sc).toArray
-//    r.sortWith((t1, t2) => orderedTimes.indexOf(t1) < orderedTimes.indexOf(t2))
-//  }
-
-//  def probes(filter: DataFilter): Array[String] =
-//    context.unifiedProbes.tokens.toArray //TODO filtering    
+//  val orderedTimes = TimesDoses.allTimes.toList 
 
   def probes(columns: Array[OTGColumn]): Array[String] = {
     val samples = columns.flatMap(_.getSamples)

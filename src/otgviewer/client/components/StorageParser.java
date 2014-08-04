@@ -46,7 +46,7 @@ public class StorageParser {
 		storage.removeItem(key);
 	}
 	
-	public static String packColumns(Collection<OTGColumn> columns) {
+	public static String packColumns(Collection<? extends OTGColumn> columns) {
 		return packPackableList(columns, "###");
 	}
 

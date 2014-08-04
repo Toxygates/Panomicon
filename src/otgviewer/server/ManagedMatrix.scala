@@ -134,20 +134,21 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
   protected def addOneSynthetic(s: Synthetic): Unit = {
     s match {
       case test: Synthetic.TwoGroupSynthetic =>
-        val g1s = test.getGroup1.getSamples.filter(_.getDose() != "Control").map(_.getCode)
-        val g2s = test.getGroup2.getSamples.filter(_.getDose() != "Control").map(_.getCode)
+        //TODO
+        val g1s = test.getGroup1.getSamples.filter(_.get("dose_level") != "Control").map(_.getCode)
+        val g2s = test.getGroup2.getSamples.filter(_.get("dose_level") != "Control").map(_.getCode)       
         var upper = true
         currentMat = test match {
           case ut: Synthetic.UTest =>
-            currentMat.appendUTest(rawUngroupedMat, g1s, g2s, ut.getShortTitle)
+            currentMat.appendUTest(rawUngroupedMat, g1s, g2s, ut.getShortTitle(null)) //TODO don't pass null
           case tt: Synthetic.TTest =>
-            currentMat.appendTTest(rawUngroupedMat, g1s, g2s, tt.getShortTitle)
+            currentMat.appendTTest(rawUngroupedMat, g1s, g2s, tt.getShortTitle(null)) //TODO
           case md: Synthetic.MeanDifference =>
             upper = false
-            currentMat.appendDiffTest(rawUngroupedMat, g1s, g2s, md.getShortTitle)
+            currentMat.appendDiffTest(rawUngroupedMat, g1s, g2s, md.getShortTitle(null)) //TODO
           case _ => throw new Exception("Unexpected test type!")
         }
-        currentInfo.addColumn(true, test.getShortTitle(), test.getTooltip(), upper, null)
+        currentInfo.addColumn(true, test.getShortTitle(null), test.getTooltip(), upper, null) //TODO
       case _ => throw new Exception("Unexpected test type")
     }       
   }

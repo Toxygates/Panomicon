@@ -18,6 +18,7 @@ import otgviewer.shared.Series;
 import otgviewer.shared.TimesDoses;
 import otgviewer.shared.ValueType;
 import t.common.shared.DataSchema;
+import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.ExpressionValue;
@@ -38,20 +39,20 @@ abstract class ChartDataSource {
 	private static Logger logger = Utils.getLogger("chartdata");
 	
 	static class ChartSample {
-		String time;
-		String dose;
-		String compound;
+		String minor;
+		String medium;
+		String major;
 		double value;
 		char call;
 		OTGSample barcode; //may be null
 		String probe;
 		String color = "grey";
 		
-		ChartSample(String time, String dose, String compound, 
+		ChartSample(String minor, String medium, String major, 
 				double value, OTGSample barcode, String probe, char call) {
-			this.time = time;
-			this.dose = dose;
-			this.compound = compound;
+			this.minor = minor;
+			this.medium = medium;
+			this.major = major;
 			this.value = value;
 			this.barcode = barcode;
 			this.probe = probe;
@@ -64,9 +65,9 @@ abstract class ChartDataSource {
 			if (barcode != null) {
 				r = barcode.hashCode();
 			} else {
-				r = r * 41 + time.hashCode();
-				r = r * 41 + dose.hashCode();
-				r = r * 41 + compound.hashCode();	
+				r = r * 41 + minor.hashCode();
+				r = r * 41 + medium.hashCode();
+				r = r * 41 + major.hashCode();	
 			}
 			return r;
 		}
@@ -77,9 +78,9 @@ abstract class ChartDataSource {
 				if (barcode != null) {
 					return (barcode == ((ChartSample) other).barcode);
 				} else {
-					return (((ChartSample) other).dose == dose &&
-						    ((ChartSample) other).time == time && 
-							((ChartSample) other).compound == compound);
+					return (((ChartSample) other).medium == medium &&
+						    ((ChartSample) other).minor == minor && 
+							((ChartSample) other).major == major);
 				}
 
 			} else {
@@ -102,9 +103,9 @@ abstract class ChartDataSource {
 			//We store these in a set since we may be getting the same samples several times
 			Set<ChartSample> r = new HashSet<ChartSample>();
 			for (ChartSample s: samples) {
-				if (SharedUtils.indexOf(compounds, s.compound) != -1) {
-					if (dosesOrTimes == null || SharedUtils.indexOf(dosesOrTimes, s.dose) != -1 || 
-							SharedUtils.indexOf(dosesOrTimes, s.time) != -1) {
+				if (SharedUtils.indexOf(compounds, s.major) != -1) {
+					if (dosesOrTimes == null || SharedUtils.indexOf(dosesOrTimes, s.medium) != -1 || 
+							SharedUtils.indexOf(dosesOrTimes, s.minor) != -1) {
 						r.add(s);			
 						s.color = policy.colorFor(s);
 					}
@@ -116,11 +117,11 @@ abstract class ChartDataSource {
 	
 	protected List<ChartSample> samples = new ArrayList<ChartSample>();
 
-	protected String[] _times;
-	protected String[] _doses;
+	protected String[] _minorVals;
+	protected String[] _mediumVals;
 	
-	String[] times() { return _times; }
-	String[] doses() { return _doses; }
+	String[] minorVals() { return _minorVals; }
+	String[] mediumVals() { return _mediumVals; }
 	
 	protected DataSchema schema;
 	final protected String minorParam, medParam, majorParam;
@@ -133,26 +134,26 @@ abstract class ChartDataSource {
 	}
 	
 	protected void init() {
-		List<String> times = new ArrayList<String>();
+		List<String> minorVals = new ArrayList<String>();
 		for (ChartDataSource.ChartSample s: samples) {
-			if (!times.contains(s.time)) {
-				times.add(s.time);
+			if (!minorVals.contains(s.minor)) {
+				minorVals.add(s.minor);
 			}
 		}
 		
 		try {
-			_times = times.toArray(new String[0]);
+			_minorVals = minorVals.toArray(new String[0]);
 			// TODO avoid magic constants
-			schema.sort(schema.minorParameter(), _times);
+			schema.sort(schema.minorParameter(), _minorVals);
 
-			List<String> doses = new ArrayList<String>();
-			for (ChartDataSource.ChartSample s : samples) {
-				if (!doses.contains(s.dose)) {
-					doses.add(s.dose);
+			List<String> medVals = new ArrayList<String>();
+			for (ChartDataSource.ChartSample s : samples) {				
+				if (!medVals.contains(s.medium)) {
+					medVals.add(s.medium);
 				}
 			}
-			_doses = doses.toArray(new String[0]);
-			schema.sort(schema.mediumParameter(), _doses);
+			_mediumVals = medVals.toArray(new String[0]);
+			schema.sort(schema.mediumParameter(), _mediumVals);
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Unable to sort chart data", e);
 		}
@@ -199,25 +200,26 @@ abstract class ChartDataSource {
 			}
 			try {
 				//TODO magic constants and code duplication with above
-				_times = times.toArray(new String[0]);
-				schema.sort("exposure_time", _times);
+				_minorVals = times.toArray(new String[0]);
+				schema.sort(schema.minorParameter(), _minorVals);
 
 				List<String> doses = new ArrayList<String>();
 				for (OTGSample b : barcodes) {
+					logger.info("Inspect " + b + " for " + medParam);
 					if (!doses.contains(b.get(medParam))) {
-						doses.add(b.get(medParam));
+						doses.add(b.get(medParam));						
 					}
 				}
-				_doses = doses.toArray(new String[0]);
-				schema.sort("dose_level", _doses);
+				_mediumVals = doses.toArray(new String[0]);				
+				schema.sort(schema.mediumParameter(), _mediumVals);
 			} catch (Exception e) {
 				logger.log(Level.WARNING, "Unable to sort chart data", e);
 			}
 		}
 		
-		protected void addSamplesFromBarcodes(OTGSample[] barcodes, List<ExpressionRow> rows) {
+		protected void addSamplesFromBarcodes(OTGSample[] barcodes, List<ExpressionRow> rows) {			
 			for (int i = 0; i < barcodes.length; ++i) {
-				OTGSample b = barcodes[i];			
+				OTGSample b = barcodes[i];							
 				for (ExpressionRow er : rows) {
 					ExpressionValue ev = er.getValue(i);
 					ChartSample cs = new ChartSample(b.get(minorParam), b.get(medParam),
@@ -253,7 +255,7 @@ abstract class ChartDataSource {
 		
 		void loadData(final String[] majors, final String[] medsOrMins, 
 				final ColorPolicy policy, final SampleAcceptor acceptor) {
-			logger.info("Dynamic source: load for " + majors.length + " compounds");
+			logger.info("Dynamic source: load for " + majors.length + " majors");
 			
 			final List<OTGSample> useBarcodes = new ArrayList<OTGSample>();
 			for (OTGSample b: barcodes) {

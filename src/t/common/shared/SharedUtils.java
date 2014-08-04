@@ -34,8 +34,15 @@ public class SharedUtils {
 		return mkString(Arrays.asList(ar), separator);		
 	}
 	
-	public static String mkString(Collection<String> cl, String separator) {
-		List<String> ss = new ArrayList<String>(cl);
+	public static String mkString(Collection<? extends Object> cl, String separator) {
+		List<String> ss = new ArrayList<String>();
+		for (Object o: cl) {
+			if (o == null) {
+				ss.add("null");
+			} else {
+				ss.add(o.toString());
+			}
+		}
 		java.util.Collections.sort(ss);
 		StringBuilder sb = new StringBuilder();		
 		for (String s: ss) {

@@ -3,33 +3,26 @@ package otgviewer.shared;
 import java.util.HashMap;
 import java.util.Map;
 
+import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.Sample;
 
 public class OTGSample extends Sample implements OTGColumn {
-		
-	private String individual = "";
-	private String dose = "";
-	private String time = "";
-	private String compound = "";
+
 //	private Unit unit;	
 	
 	public OTGSample() { super(); }
 	
 	public OTGSample(String _code, SampleClass _sampleClass) {
-		super(_code, _sampleClass);		
-		individual = sampleClass.get("individual_id");
-		dose = sampleClass.get("dose_level");
-		time = sampleClass.get("exposure_time");
-		compound = sampleClass.get("compound_name");		 
+		super(_code, _sampleClass);			 
 	}
 	
-	public String getTitle() {
-		return getShortTitle() + " (" + id() + ")";
+	public String getTitle(DataSchema schema) {
+		return getShortTitle(schema) + " (" + id() + ")";
 	}
 	
-	public String getShortTitle() {
-		return dose + "/" + time + "/"+ individual;
+	public String getShortTitle(DataSchema schema) {
+		return get(schema.mediumParameter()) + "/" + get(schema.minorParameter());
 	}
 	
 	/**
@@ -37,14 +30,7 @@ public class OTGSample extends Sample implements OTGColumn {
 	 * for this sample.
 	 * @return
 	 */
-//	public String getParamString() {
-//		return unit.toString();
-//	}
-	
-//	public BUnit getUnit() {
-//		return unit;
-//	}
-	
+
 	public String getCode() {
 		return id();
 	}
@@ -53,40 +39,20 @@ public class OTGSample extends Sample implements OTGColumn {
 		return sampleClass.get(parameter);
 	}
 	
-	@Deprecated
-	public String getIndividual() {
-		return individual;
-	}
-	
-	@Deprecated
-	public String getDose() {
-		return dose;
-	}
-	
-	@Deprecated
-	public String getTime() {
-		return time;
-	}
-	
 	public String toString() {
-		return getShortTitle();
-	}
-	
-	@Deprecated
-	public String getCompound() { 
-		return compound;
+		return sampleClass.toString();
 	}
 	
 	public OTGSample[] getSamples() { 
 		return new OTGSample[] { this };
 	}
 	
-	@Deprecated
-	public String[] getCompounds() {
-		return new String[] { compound };
+	public String[] getMajors(DataSchema schema) {
+		return new String[] { get(schema.majorParameter()) };
 	}
 	
-	public static OTGSample unpack(String s) {
+	//TODO remove or upgrade to use DataSchema 
+	public static OTGSample unpack_v1_2(String s) {
 //		Window.alert(s + " as barcode");
 		String[] s1 = s.split("\\$\\$\\$");
 		
@@ -112,23 +78,47 @@ public class OTGSample extends Sample implements OTGColumn {
 		}
 	}
 	
+	public static OTGSample unpack(String s) {
+		String[] spl = s.split("\\$\\$\\$");
+		String v = spl[0];
+		if (!v.equals("Barcode_v3")) {
+			return unpack_v1_2(s);
+		} 
+		String id = spl[1];
+		SampleClass sc = SampleClass.unpack(spl[2]);
+		return new OTGSample(id, sc);
+		
+	}
+	
+	//V 1/2 packing function
+//	
+//	public String pack() {
+//		final String sep = "$$$";
+//		StringBuilder sb = new StringBuilder();
+//		sb.append("Barcode").append(sep);
+//		sb.append(id()).append(sep);
+//		sb.append(individual).append(sep);
+//		sb.append(dose).append(sep);
+//		sb.append(time).append(sep);
+//		sb.append(compound).append(sep);
+//		
+//		if (sampleClass.get("test_type") != null) {
+//			sb.append(sampleClass.get("test_type")).append(sep);
+//			sb.append(sampleClass.get("organ_id")).append(sep);
+//			sb.append(sampleClass.get("sin_rep_type")).append(sep);
+//			sb.append(sampleClass.get("organism")).append(sep);
+//		}
+//		return sb.toString();
+//	}
+	
 	public String pack() {
 		final String sep = "$$$";
 		StringBuilder sb = new StringBuilder();
-		sb.append("Barcode").append(sep);
+		sb.append("Barcode_v3").append(sep);
 		sb.append(id()).append(sep);
-		sb.append(individual).append(sep);
-		sb.append(dose).append(sep);
-		sb.append(time).append(sep);
-		sb.append(compound).append(sep);
-		
-		if (sampleClass.get("test_type") != null) {
-			sb.append(sampleClass.get("test_type")).append(sep);
-			sb.append(sampleClass.get("organ_id")).append(sep);
-			sb.append(sampleClass.get("sin_rep_type")).append(sep);
-			sb.append(sampleClass.get("organism")).append(sep);
-		}
+		sb.append(sampleClass.pack()).append(sep);
 		return sb.toString();
 	}
+	
 
 }

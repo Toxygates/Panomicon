@@ -2,6 +2,7 @@ package otgviewer.shared;
 
 import java.io.Serializable;
 
+import t.common.shared.DataSchema;
 import t.common.shared.sample.DataColumn;
 
 abstract public class Synthetic implements DataColumn<OTGSample>, Serializable {
@@ -101,7 +102,7 @@ abstract public class Synthetic implements DataColumn<OTGSample>, Serializable {
 	public Synthetic(String name) { this.name = name; }
 	public OTGSample[] getSamples() { return new OTGSample[0]; }	
 	public String[] getCompounds() { return new String[0]; }	
-	public String getShortTitle() { return name; }	
+	public String getShortTitle(DataSchema schema) { return name; }	
 	public String getTooltip() { return "Synthetic"; }
 	public boolean isDefaultSortAscending() { return true; }
 	

@@ -5,30 +5,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import t.common.shared.DataSchema;
+
 /**
  * Data manipulation utility methods.
  * @author johan
  *
  */
 public class OTGUtils {
-
-	public static List<OTGColumn> asColumns(List<Group> groups) {		
-		List<OTGColumn> r = new ArrayList<OTGColumn>(groups.size());	
-		for (Group g: groups) {
-			r.add(g);
-		}		
-		return r;
-	}
-	
-	public static String[] allCompounds(List<OTGColumn> columns) {
-		List<String> r = new ArrayList<String>();
-		for (OTGColumn dc : columns) {
-			for (String c : dc.getCompounds()) {
-				r.add(c);
-			}
-		}
-		return r.toArray(new String[0]);
-	}
 
 	/**
 	 * In the list of groups, find the one that has the given title.

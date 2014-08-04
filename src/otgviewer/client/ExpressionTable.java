@@ -27,6 +27,7 @@ import otgviewer.shared.OTGSample;
 import otgviewer.shared.OTGUtils;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
+import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
@@ -284,7 +285,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			synth.setGroups(g1, g2);
 			matrixService.addTwoGroupTest(synth, new AsyncCallback<Void>() {
 				public void onSuccess(Void v) {							
-					addSynthColumn(synth, synth.getShortTitle(), synth.getTooltip());					
+					addSynthColumn(synth, synth.getShortTitle(screen.schema()), synth.getTooltip());					
 					//force reload
 					grid.setVisibleRangeAndClearData(grid.getVisibleRange(), true); 
 				}
@@ -539,10 +540,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		
 		groupsel1.clear();
 		groupsel2.clear();
+		DataSchema schema = screen.schema();
 		for (DataColumn<?> dc: columns) {
 			if (dc instanceof Group) {
-				groupsel1.addItem(dc.getShortTitle());
-				groupsel2.addItem(dc.getShortTitle());
+				groupsel1.addItem(dc.getShortTitle(schema));
+				groupsel2.addItem(dc.getShortTitle(schema));
 			}
 		}
 		

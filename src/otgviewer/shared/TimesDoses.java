@@ -60,7 +60,7 @@ public class TimesDoses extends DataSchema {
 		}
 	}
 	
-	private final String[] macroParams = new String[] { "organism", "sin_rep_type",
+	private String[] macroParams = new String[] { "organism", "sin_rep_type",
 			"test_type", "organ_id" };
 	public String[] macroParameters() { return macroParams; }
 

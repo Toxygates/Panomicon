@@ -441,7 +441,7 @@ public class ProbeScreen extends Screen {
 		for (ListBox l : compoundLists) {
 			l.clear();
 			for (Group g : columns) {
-				for (String cmp : g.getCompounds()) {
+				for (String cmp : g.getMajors(schema())) {
 					l.addItem(cmp);
 				}
 			}

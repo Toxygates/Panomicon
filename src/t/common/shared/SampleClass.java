@@ -219,7 +219,7 @@ public class SampleClass implements Serializable, Packable {
 		return sb.toString();
 	}
 	
-	static SampleClass unpack(String data) {
+	public static SampleClass unpack(String data) {
 		String[] spl = data.split(",,,");
 		Map<String, String> d = new HashMap<String, String>();
 		for (int i = 0; i < spl.length; i+= 2) {

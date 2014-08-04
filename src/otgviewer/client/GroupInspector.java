@@ -19,6 +19,7 @@ import otgviewer.shared.OTGSample;
 import t.common.client.components.SelectionTable;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
+import t.common.shared.SharedUtils;
 import t.common.shared.Unit;
 
 import com.google.gwt.cell.client.ButtonCell;
@@ -347,8 +348,6 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		return groups;
 	}
 	
-	private Group pendingGroup;
-	
 	/**
 	 * Get here if save button is clicked
 	 * @param name
@@ -361,14 +360,13 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		if (!StorageParser.isAcceptableString(name, "Unacceptable group name.")) {
 			return;
 		}
-		
-		pendingGroup = new Group(schema, name, new OTGSample[0], null);		
+				
 		List<Unit> units = msg.fullSelection(false);
 		
 		if (units.size() == 0) {
 			 Window.alert("No samples found.");			 
 		} else {
-			setGroup(pendingGroup.getName(), units);
+			setGroup(name, units);
 			newGroup();
 		}
 		
@@ -379,7 +377,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		int totalSize = 0;
 		for (Group g : groups.values()) {
 			for (OTGSample b: g.samples()) {
-				if (!b.getDose().equals("Control")) {
+				if (!schema.isSelectionControl(b.sampleClass())) {				
 					totalSize += 1;
 				}
 			}
@@ -395,6 +393,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	} 
 
 	private void setGroup(String pendingGroupName, List<Unit> units) {
+		logger.info("Set group with " + SharedUtils.mkString(units, ","));
 		Group pendingGroup = groups.get(pendingGroupName);
 		existingGroupsTable.removeItem(pendingGroup); 
 		pendingGroup = new Group(schema, pendingGroupName, units.toArray(new Unit[0]));
@@ -414,7 +413,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private void displayGroup(String name) {
 		setHeading("editing " + name);
 		List<String> compounds =				
-				Arrays.asList(groups.get(name).getCompounds(chosenSampleClass));
+				Arrays.asList(groups.get(name).getMajors(chosenSampleClass));
 		
 		compoundSel.setSelection(compounds);		
 		txtbxGroup.setValue(name);

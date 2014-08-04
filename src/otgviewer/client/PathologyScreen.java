@@ -104,7 +104,7 @@ public class PathologyScreen extends Screen {
 		col = new TextColumn<Pathology>() {
 			public String getValue(Pathology p) {
 				OTGSample b = OTGUtils.barcodeFor(chosenColumns, p.barcode());
-				return b.getCompound() + "/" + b.getShortTitle(); 				
+				return b.get("compound_name") + "/" + b.getShortTitle(schema()) + "/" + b.get("individual_id") ; 				
 			}
 		};
 		pathologyTable.addColumn(col, "Sample");
