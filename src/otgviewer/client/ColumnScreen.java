@@ -127,6 +127,15 @@ public class ColumnScreen extends Screen {
 			}
 		}
 	}
+	
+	@Override
+	public void changeSampleClass(SampleClass sc) {
+		//On this screen, ignore the blank sample class set by
+		//DataListenerWidget
+		if (!sc.getMap().isEmpty()) {
+			super.changeSampleClass(sc);
+		}
+	}
 
 	@Override
 	public void tryConfigure() {

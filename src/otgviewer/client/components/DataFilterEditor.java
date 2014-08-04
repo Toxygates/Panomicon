@@ -214,7 +214,7 @@ public class DataFilterEditor extends DataListenerWidget {
 		organismSelector.trySelect(sc.get("organism"));
 		organSelector.trySelect(sc.get("organ_id"));
 		testTypeSelector.trySelect(sc.get("test_type"));
-		repTypeSelector.trySelect(sc.get("sin_rep_type"));
+		repTypeSelector.trySelect(sc.get("sin_rep_type"));		
 	}
 	
 	
