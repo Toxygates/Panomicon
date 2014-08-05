@@ -32,7 +32,6 @@ import otg.sparql.Protein
 import otg.sparql.Uniprot
 import otgviewer.client.rpc.SparqlService
 import t.viewer.server.ApplicationClass
-import otgviewer.server.Assocations.convertPairs
 import otgviewer.server.ScalaUtils.useTriplestore
 import otgviewer.shared.AType
 import otgviewer.shared.Association
@@ -53,7 +52,6 @@ import t.sparql.TriplestoreMetadata
 import t.viewer.server.Configuration
 import t.viewer.server.Conversions.asSpecies
 import t.viewer.server.Conversions.scAsScala
-import otgviewer.server.Assocations
 import otg.sparql.CommonSPARQL
 import otgviewer.server.ScalaUtils
 import t.sparql.Instances
@@ -66,7 +64,6 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   import Conversions._
   import t.viewer.server.Conversions._
   import ScalaUtils._
-  import Assocations._
   import CommonSPARQL._
 
   type DataColumn = t.common.shared.sample.DataColumn[OTGSample]
