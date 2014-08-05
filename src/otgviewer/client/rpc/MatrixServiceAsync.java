@@ -38,18 +38,11 @@ public interface MatrixServiceAsync {
 
 	public void prepareCSVDownload(AsyncCallback<String> callback);
 
-	public void getGenes(int limit, AsyncCallback<String[]> callback);
-	
 	public void addTwoGroupTest(Synthetic.TwoGroupSynthetic test,
 			AsyncCallback<Void> callback);
 	
 	public void removeTwoGroupTests(AsyncCallback<Void> callback);
-	
-	public void importTargetmineLists(String user, String pass, 
-			boolean asProbes, AsyncCallback<StringList[]> callback);
-	
-	public void exportTargetmineLists(String user, String pass, 
-			StringList[] lists, boolean replace, AsyncCallback<Void> callback);
+
 	
 	public void sendFeedback(String name, String email, String feedback, 
 			AsyncCallback<Void> callback);

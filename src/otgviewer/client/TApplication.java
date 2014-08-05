@@ -13,6 +13,7 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.FeedbackForm;
+import otgviewer.client.targetmine.TargetMineData;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;

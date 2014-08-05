@@ -68,7 +68,11 @@
 		<servlet-name>matrixServlet</servlet-name>
     	<url-pattern>/toxygates/matrix</url-pattern>
   	</servlet-mapping>
-  	
+  	<servlet>
+		<servlet-name>targetmineServlet</servlet-name>
+		<servlet-class>otgviewer.server.targetmine.TargetmineServiceImpl</servlet-class>
+	</servlet>
+	
   	  <!-- For AdminGUI -->
 	<context-param>
 		<!-- 64 MB -->
