@@ -11,7 +11,7 @@ import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGSample;
-import otgviewer.shared.OTGUtils;
+import otgviewer.shared.GroupUtils;
 import otgviewer.shared.Series;
 import otgviewer.shared.TimesDoses;
 import otgviewer.shared.ValueType;
@@ -103,7 +103,7 @@ public class ChartGridFactory {
 		if (barcodes == null) {
 			//TODO
 			sparqlService.samples(sampleClass, schema.majorParameter(), 
-					OTGUtils.collect(groups, schema.majorParameter()).toArray(new String[0]),
+					GroupUtils.collect(groups, schema.majorParameter()).toArray(new String[0]),
 					new AsyncCallback<OTGSample[]>() {
 
 				@Override

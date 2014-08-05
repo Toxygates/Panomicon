@@ -24,7 +24,7 @@ import otgviewer.shared.AType;
 import otgviewer.shared.Group;
 import otgviewer.shared.ManagedMatrixInfo;
 import otgviewer.shared.OTGSample;
-import otgviewer.shared.OTGUtils;
+import otgviewer.shared.GroupUtils;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
 import t.common.shared.DataSchema;
@@ -280,8 +280,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		} else if (groupsel1.getSelectedIndex() == groupsel2.getSelectedIndex()) {
 			Window.alert("Please select two different groups to perform " + name + ".");
 		} else {
-			final Group g1 = OTGUtils.findGroup(chosenColumns, selectedGroup(groupsel1));
-			final Group g2 = OTGUtils.findGroup(chosenColumns, selectedGroup(groupsel2));
+			final Group g1 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel1));
+			final Group g2 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel2));
 			synth.setGroups(g1, g2);
 			matrixService.addTwoGroupTest(synth, new AsyncCallback<Void>() {
 				public void onSuccess(Void v) {							

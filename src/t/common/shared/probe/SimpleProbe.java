@@ -1,4 +1,4 @@
-package t.common.shared.sample;
+package t.common.shared.probe;
 
 public class SimpleProbe extends Probe {
 

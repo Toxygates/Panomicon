@@ -13,7 +13,7 @@ import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGSample;
-import otgviewer.shared.OTGUtils;
+import otgviewer.shared.GroupUtils;
 import otgviewer.shared.ValueType;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
@@ -63,7 +63,7 @@ public class AdjustableChartGrid extends Composite {
 		
 		String majorParam = screen.schema().majorParameter();
 		this.majorVals = 
-				new ArrayList<String>(OTGUtils.collect(groups, majorParam));
+				new ArrayList<String>(GroupUtils.collect(groups, majorParam));
 		this.vt = vt;
 		
 		vp = Utils.mkVerticalPanel();

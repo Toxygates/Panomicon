@@ -15,7 +15,7 @@ import otgviewer.shared.CellType;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
-import otgviewer.shared.OTGUtils;
+import otgviewer.shared.GroupUtils;
 import otgviewer.shared.Pathology;
 import t.common.shared.SampleClass;
 
@@ -86,7 +86,7 @@ public class PathologyScreen extends Screen {
 		
 		TextColumn<Pathology> col = new TextColumn<Pathology>() {
 			public String getValue(Pathology p) {
-				List<Group> gs = OTGUtils.groupsFor(chosenColumns, p.barcode());
+				List<Group> gs = GroupUtils.groupsFor(chosenColumns, p.barcode());
 				StringBuilder sb = new StringBuilder();
 				for (Group g: gs) {
 					sb.append(g.getName());
@@ -103,7 +103,7 @@ public class PathologyScreen extends Screen {
 		
 		col = new TextColumn<Pathology>() {
 			public String getValue(Pathology p) {
-				OTGSample b = OTGUtils.barcodeFor(chosenColumns, p.barcode());
+				OTGSample b = GroupUtils.barcodeFor(chosenColumns, p.barcode());
 				return b.get("compound_name") + "/" + b.getShortTitle(schema()) + "/" + b.get("individual_id") ; 				
 			}
 		};
@@ -186,7 +186,7 @@ public class PathologyScreen extends Screen {
 		}
 		
 		public void onClick(String value) {
-			displaySampleDetail(OTGUtils.barcodeFor(chosenColumns, value));
+			displaySampleDetail(GroupUtils.barcodeFor(chosenColumns, value));
 		}
 	}
 	

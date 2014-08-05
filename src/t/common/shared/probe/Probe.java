@@ -1,4 +1,4 @@
-package t.common.shared.sample;
+package t.common.shared.probe;
 
 import java.io.Serializable;
 

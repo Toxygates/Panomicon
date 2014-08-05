@@ -5,14 +5,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import t.common.shared.DataSchema;
-
 /**
  * Data manipulation utility methods.
  * @author johan
  *
  */
-public class OTGUtils {
+public class GroupUtils {
 
 	/**
 	 * In the list of groups, find the one that has the given title.

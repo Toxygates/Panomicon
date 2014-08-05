@@ -7,7 +7,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 /**
  * A HorizontalPanel that passes the resize signal on to its children.
- *
  */
 public class ResizingHorizontalPanel extends HorizontalPanel implements RequiresResize, ProvidesResize {
 

@@ -18,9 +18,6 @@ import com.google.gwt.view.client.NoSelectionModel;
 /**
  * A cell table that displays data and includes a column with checkboxes. By using the checkboxes,
  * the user can select some set of rows.
- * @author johan
- *
- * @param <T>
  */
 abstract public class SelectionTable<T> extends Composite implements SetEditor<T> {
 	private CellTable<T> table;
