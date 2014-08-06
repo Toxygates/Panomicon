@@ -40,22 +40,21 @@ public class ColumnScreen extends Screen {
 		this.rankingLabel = rankingLabel;
 		
 		String majorParam = man.schema().majorParameter();
-		cs = new CompoundSelector(this, man.schema().title(majorParam));
-		filterTools = mkFilterTools();
+		cs = new CompoundSelector(this, man.schema().title(majorParam));		
 		this.addListener(cs);
 		cs.setStyleName("compoundSelector");
+		filterTools = mkFilterTools();
 	} 
 	
 	private HorizontalPanel mkFilterTools() {
 		final Screen s = this;
 		HorizontalPanel r = new HorizontalPanel();
-		DataFilterEditor dfe = new DataFilterEditor() {
+
+		DataFilterEditor dfe = new DataFilterEditor(schema()) {
 			@Override
 			protected void changeSampleClass(SampleClass sc) {
 				super.changeSampleClass(sc);				
-//				s.dataFilterChanged(sc.asDataFilter());
 				s.sampleClassChanged(sc);
-//				s.storeDataFilter(s.getParser());
 				//TODO I'm not sure that exposing the action queue mechanism 
 				//like this is a good thing to do. Think of a better way.
 				runActions();

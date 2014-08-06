@@ -157,8 +157,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	
 	@Override
 	public void sampleClassChanged(SampleClass sc) {
-		super.sampleClassChanged(sc);		
-
+		super.sampleClassChanged(sc);				
 		if (lastClass == null || !sc.equals(lastClass)) {
 			removeRankColumns();
 		}
@@ -167,7 +166,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		screen.enqueue(new Screen.QueuedAction("loadCompounds") {			
 			@Override
 			public void run() {
-				loadCompounds();
+				loadMajors();
 				compoundEditor.clearSelection();				
 			}
 		});		
@@ -186,9 +185,10 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		return r;
 	}
 
-	void loadCompounds() {				
+	void loadMajors() {				
 		sparqlService.parameterValues(chosenSampleClass, majorParameter, 
-				new PendingAsyncCallback<String[]>(this, "Unable to retrieve compounds") {
+				new PendingAsyncCallback<String[]>(this, 
+						"Unable to retrieve values for parameter: " + majorParameter) {
 			
 			@Override
 			public void handleSuccess(String[] result) {

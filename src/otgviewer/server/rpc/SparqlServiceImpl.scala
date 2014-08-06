@@ -171,6 +171,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   def annotations(barcode: OTGSample): Annotation = 
     asJava( otgSamples.annotations(barcode.getCode, List(), instanceURI) )
     
+  //TODO get these from schema, etc.
   def annotations(column: HasSamples[OTGSample], importantOnly: Boolean = false): Array[Annotation] = {	  
 	  val keys = if (importantOnly) {
 	    if (tgConfig.applicationClass == ApplicationClass.Adjuvant) {

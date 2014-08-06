@@ -67,7 +67,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	}
 	
 	public void sampleClassChanged(SampleClass sc) {
-		chosenSampleClass = sc;
+		chosenSampleClass = sc;		
 		changeSampleClass(sc);
 	}
 
@@ -120,7 +120,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	}
 
 	protected void changeSampleClass(SampleClass sc) {
-		chosenSampleClass = sc;
+		chosenSampleClass = sc;		
 		for (DataViewListener l : listeners) {
 			l.sampleClassChanged(sc);
 		}		
@@ -234,8 +234,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	
 	/**
 	 * Store this widget's state into local storage.
-	 * 
-	 * TODO: is it necessary to store all these fields for each screen?
 	 */
 	public void storeState(StorageParser p) {
 //		storeDataFilter(p);
@@ -250,7 +248,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 			logger.info("Storing columns: " + first + " : " + first.getSamples()[0] + " ...");
 			p.setItem(key, packColumns(columns));
 		} else {
-			logger.info("No columns defined, not storing");
 			p.clearItem(key);
 		}		
 	}
@@ -320,15 +317,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	}
 
 	public void loadState(StorageParser p, DataSchema schema) {
-//		DataFilter nf = unpackDataFilter(p.getItem("dataFilter")); 
-//		if (nf != null && (chosenDataFilter == null || !chosenDataFilter.equals(nf))) { 			
-//			dataFilterChanged(nf);			
-//			logger.info("Unpacked " + nf.toString());
-//			SampleClass sc = SampleClass.fromDataFilter(nf);
-//			sampleClassChanged(sc);
-//			logger.info("Unpacked " + sc.toString());
-//		}
-		logger.info("Set default (blank) sample class");
 		SampleClass sc = new SampleClass();
 		sampleClassChanged(sc);
 		

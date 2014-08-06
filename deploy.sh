@@ -10,7 +10,7 @@ function makeWar {
     cp news.html.$VERSION news.html
     cp WEB-INF/web.xml.$VERSION WEB-INF/web.xml
     rm toxygates-$VERSION.war
-    zip -r toxygates-$VERSION.war toxygates AdminConsole csv *.html *.pdf *.css images WEB-INF
+    zip -r toxygates-$VERSION.war toxygates otggui AdminConsole csv *.html *.pdf *.css images WEB-INF
     cd ..
     rm -r war/WEB-INF/classes/otg
     rm -r war/WEB-INF/classes/friedrich
@@ -23,6 +23,8 @@ cp war/WEB-INF/web.xml war/WEB-INF/web.xml.bak
 makeWar production
 makeWar test
 makeWar adju
+makeWar test2
+makeWar test3
 
 cp war/toxygates.html.bak war/toxygates.html
 cp war/news.html.bak war/news.html
