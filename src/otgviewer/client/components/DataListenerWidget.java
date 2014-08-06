@@ -8,6 +8,7 @@ import static otgviewer.client.components.StorageParser.unpackColumn;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import otgviewer.client.Utils;
@@ -221,9 +222,10 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 			Collection<? extends OTGColumn> columns) {
 		if (!columns.isEmpty()) {
 			OTGColumn first = columns.iterator().next();
-			logger.info("Storing columns: " + first + " : " + first.getSamples()[0] + " ...");
+			logger.info("Storing columns for " + key + " : " + first + " : " + first.getSamples()[0] + " ...");
 			p.setItem(key, packColumns(columns));
 		} else {
+			logger.info("Clearing stored columns for: " + key);			
 			p.clearItem(key);
 		}		
 	}
@@ -308,7 +310,8 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 			if (cc != null) {																		
 				customColumnChanged(cc);						
 			}
-		} catch (Exception e) {										
+		} catch (Exception e) {						
+			logger.log(Level.WARNING, "Unable to load state", e);
 			//one possible failure source is if data is stored in an incorrect format
 			columnsChanged(new ArrayList<Group>());
 			storeColumns(p); //overwrite the old data

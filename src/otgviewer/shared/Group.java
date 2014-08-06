@@ -14,6 +14,8 @@ import t.common.shared.SharedUtils;
 import t.common.shared.Unit;
 import t.common.shared.sample.SampleGroup;
 
+import com.google.gwt.user.client.Window;
+
 /**
  * A group of barcodes. Values will be computed as an average.
  * @author johan

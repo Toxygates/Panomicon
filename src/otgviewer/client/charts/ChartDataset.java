@@ -2,6 +2,7 @@ package otgviewer.client.charts;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import otgviewer.client.Utils;
 import otgviewer.client.charts.ChartDataSource.ChartSample;
@@ -15,16 +16,19 @@ public class ChartDataset {
 
 	protected List<ChartSample> samples;
 	protected String[] categories;
-	protected boolean categoriesAreTimes;
+	protected boolean categoriesAreMins;
 	
 	protected double min = Double.NaN;
 	protected double max = Double.NaN;
 	
+	protected Logger logger = Utils.getLogger("ChartDataset");
+	
 	ChartDataset(List<ChartSample> samples, List<ChartSample> allSamples, 
-			String[] categories, boolean categoriesAreTimes) {
+			String[] categories, boolean categoriesAreMins) {
 		this.samples = samples;
-		this.categoriesAreTimes = categoriesAreTimes;				
+		this.categoriesAreMins = categoriesAreMins;				
 		this.categories = categories;		
+		logger.info(categories.length + " categories");
 		init();
 	}
 	
@@ -106,9 +110,9 @@ public class ChartDataset {
 	
 	protected String categoryForSample(ChartSample sample) {
 		for (String c : categories) {
-			if (categoriesAreTimes && sample.minor.equals(c)) {
+			if (categoriesAreMins && sample.minor.equals(c)) {
 				return c;
-			} else if (!categoriesAreTimes && sample.medium.equals(c)) {
+			} else if (!categoriesAreMins && sample.medium.equals(c)) {
 				return c;
 			}
 		}
@@ -126,6 +130,7 @@ public class ChartDataset {
 		for (ChartSample s : samples) {
 			int cat = SharedUtils.indexOf(categories, categoryForSample(s));
 			if (cat != -1) {
+//				logger.info("Add " + s.major + " " + s.medium + " " + s.minor + " " + s.value + " " + s.barcode.getCode());
 				if (colCount < valCount[cat] + 1) {
 					dt.addColumn(ColumnType.NUMBER);
 					addStyleColumn(dt);
@@ -147,6 +152,7 @@ public class ChartDataset {
 					
 				dt.setValue(cat, col + 1, style);
 				valCount[cat]++;
+//				logger.info(valCount[cat] + " values in category " + cat);
 			}
 		}
 	}

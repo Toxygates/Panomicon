@@ -74,7 +74,7 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
 		for (S b : _samples) {
 			s.append(b.pack());
 			s.append("^^^");
-		}
+		}		
 		return s.toString();
 	}
 	

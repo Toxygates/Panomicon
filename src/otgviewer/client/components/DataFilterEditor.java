@@ -3,8 +3,6 @@ package otgviewer.client.components;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import otgviewer.client.Utils;
@@ -16,8 +14,6 @@ import t.common.shared.SampleClass;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 
@@ -105,16 +101,12 @@ public class DataFilterEditor extends DataListenerWidget {
 		initWidget(hp);
 		logger = Utils.getLogger("dfeditor");
 		
-		sparqlService.sampleClasses(new AsyncCallback<SampleClass[]>() {			
+		sparqlService.sampleClasses(new PendingAsyncCallback<SampleClass[]>(this, 
+				"Unable to obtain sample classes from server") {			
 			@Override
-			public void onSuccess(SampleClass[] result) {
+			public void handleSuccess(SampleClass[] result) {
 				setAvailable(result);		
-			}
-			
-			@Override
-			public void onFailure(Throwable caught) {
-				Window.alert("Unable to obtain sample classes from server");				
-			}
+			}					
 		});
 		
 		parameters = schema.macroParameters();

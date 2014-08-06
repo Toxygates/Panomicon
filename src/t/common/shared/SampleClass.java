@@ -146,11 +146,16 @@ public class SampleClass implements Serializable, Packable {
 	// TODO this is temporary - DataFilter is to be removed
 	@Deprecated
 	public DataFilter asDataFilter() {
-		Organ o = Organ.valueOf(get("organ_id"));
-		Organism s = Organism.valueOf(get("organism"));
-		RepeatType r = RepeatType.valueOf(get("sin_rep_type"));
-		CellType c = get("test_type").equals("in vivo") ? CellType.Vivo : CellType.Vitro;
-		return new DataFilter(c, o, r, s);
+		try {
+			Organ o = Organ.valueOf(get("organ_id"));
+			Organism s = Organism.valueOf(get("organism"));
+			RepeatType r = RepeatType.valueOf(get("sin_rep_type"));
+			CellType c = get("test_type").equals("in vivo") ? CellType.Vivo
+					: CellType.Vitro;
+			return new DataFilter(c, o, r, s);
+		} catch (Exception e) {
+			return null;
+		}
 	}
 	
 	@Deprecated

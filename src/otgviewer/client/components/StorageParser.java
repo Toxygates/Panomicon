@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 
+import otgviewer.client.Utils;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
@@ -29,6 +31,8 @@ public class StorageParser {
 	public static final String unacceptableStringMessage = 
 			"The characters ':', '#', '$' and '^' are reserved and may not be used.";
 	
+	protected final Logger logger = Utils.getLogger("storage");
+	
 	StorageParser(Storage storage, String prefix) {
 		this.prefix = prefix;
 		this.storage = storage;
@@ -36,10 +40,14 @@ public class StorageParser {
 	
 	void setItem(String key, String value) {
 		storage.setItem(prefix + "." + key, value);
+		logger.info("SET " + key + " -> " + value);
 	}
 	
 	String getItem(String key) {
-		return storage.getItem(prefix + "." + key);
+		String v = storage.getItem(prefix + "." + key);
+		logger.info("GET " + key + " -> " + v);
+		return v;
+		
 	}
 	
 	void clearItem(String key) {
@@ -55,7 +63,7 @@ public class StorageParser {
 			return null;
 		}
 		String[] spl = s.split("\\$\\$\\$");
-		if (spl[0].equals("Barcode")) {
+		if (spl[0].equals("Barcode") || spl[0].equals("Barcode_v3")) {		
 			return OTGSample.unpack(s);
 		} else {
 			return Group.unpack(schema, s);

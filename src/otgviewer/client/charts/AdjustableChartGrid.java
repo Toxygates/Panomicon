@@ -83,8 +83,11 @@ public class AdjustableChartGrid extends Composite {
 		chartCombo = new ListBox();
 		ihp.add(chartCombo);
 		
-		chartCombo.addItem("Expression vs time, fixed dose:");
-		chartCombo.addItem("Expression vs dose, fixed time:");
+		String medTitle = schema.title(schema.mediumParameter());
+		String minTitle = schema.title(schema.minorParameter());
+		
+		chartCombo.addItem("Expression vs " + minTitle + ", fixed " + medTitle + ":");
+		chartCombo.addItem("Expression vs " + medTitle + ", fixed " + minTitle + ":");
 		setType( (lastType == -1 ? 0 : lastType));
 
 		chartSubtypeCombo = new ListBox();
@@ -148,16 +151,6 @@ public class AdjustableChartGrid extends Composite {
 		return new ColorPolicy.MapColorPolicy(colors);
 	}
 	
-	private String[] withoutControl(String[] columns) {
-		List<String> r = new ArrayList<String>();
-		for (String c: columns) {
-			if (!c.equals("Control")) {
-				r.add(c);
-			}
-		}
-		return r.toArray(new String[0]);
-	}
-	
 	//vsMinor is the vs-minor-ness of each individual sub-chart. So the overall grid will be vs. dose 	
 	//(in its columns) if each sub-chart is vs.minor.
 	private void gridFor(final boolean vsMinor, final String[] columns, final String[] useCompounds, 
@@ -180,8 +173,7 @@ public class AdjustableChartGrid extends Composite {
 				new ChartDataSource.SampleAcceptor() {
 					@Override
 					public void accept(List<ChartSample> samples) {
-						allSamples.addAll(samples);
-							
+						allSamples.addAll(samples);						
 						ChartDataset ct = new ChartDataset(samples, samples, 
 								vsMinor ? source.minorVals() : source.mediumVals(), vsMinor);
 												
@@ -230,8 +222,8 @@ public class AdjustableChartGrid extends Composite {
 		} else {
 
 			if (chartSubtypeCombo.getSelectedIndex() == -1) {
-				boolean isDose = chartCombo.getSelectedIndex() == 0;
-				setSubtype(lastSubtype != null ? lastSubtype : findPreferredItem(isDose));				
+				boolean medVsMin = chartCombo.getSelectedIndex() == 0;
+				setSubtype(lastSubtype != null ? lastSubtype : findPreferredItem(medVsMin));				
 			}
 			
 			ivp.clear();								
@@ -298,14 +290,14 @@ public class AdjustableChartGrid extends Composite {
 				final String[] useMeds = source.mediumVals();				
 						//TODO
 						//(vt == ValueType.Folds ? withoutControl(source.doses()) : source.doses());				
-				String dose = u.get(medParam);				
-				if (Arrays.binarySearch(useMeds, dose) != -1) {
-					return dose;
+				String med = u.get(medParam);				
+				if (Arrays.binarySearch(useMeds, med) != -1) {
+					return med;
 				}
 			} else {
-				String time = u.get(minParam);
-				if (Arrays.binarySearch(source.minorVals(), time) != -1) {
-					return time;
+				String min = u.get(minParam);
+				if (Arrays.binarySearch(source.minorVals(), min) != -1) {
+					return min;
 				}
 			}
 		}

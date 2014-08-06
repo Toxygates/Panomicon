@@ -67,7 +67,8 @@ abstract class ChartDataSource {
 			} else {
 				r = r * 41 + minor.hashCode();
 				r = r * 41 + medium.hashCode();
-				r = r * 41 + major.hashCode();	
+				r = r * 41 + major.hashCode();
+				r = r * 41 + ((Double) value).hashCode();
 			}
 			return r;
 		}
@@ -78,9 +79,9 @@ abstract class ChartDataSource {
 				if (barcode != null) {
 					return (barcode == ((ChartSample) other).barcode);
 				} else {
-					return (((ChartSample) other).medium == medium &&
-						    ((ChartSample) other).minor == minor && 
-							((ChartSample) other).major == major);
+					ChartSample ocs = (ChartSample) other;
+					return (ocs.medium == medium && ocs.minor == minor && 
+							ocs.major == major && ocs.value == value);
 				}
 
 			} else {
@@ -134,20 +135,19 @@ abstract class ChartDataSource {
 	}
 	
 	protected void init() {
-		List<String> minorVals = new ArrayList<String>();
-		for (ChartDataSource.ChartSample s: samples) {
-			if (!minorVals.contains(s.minor)) {
-				minorVals.add(s.minor);
-			}
-		}
-		
 		try {
+			List<String> minorVals = new ArrayList<String>();
+			for (ChartDataSource.ChartSample s : samples) {
+				if (!minorVals.contains(s.minor)) {
+					minorVals.add(s.minor);
+				}
+			}
 			_minorVals = minorVals.toArray(new String[0]);
 			// TODO avoid magic constants
 			schema.sort(schema.minorParameter(), _minorVals);
 
 			List<String> medVals = new ArrayList<String>();
-			for (ChartDataSource.ChartSample s : samples) {				
+			for (ChartDataSource.ChartSample s : samples) {
 				if (!medVals.contains(s.medium)) {
 					medVals.add(s.medium);
 				}
@@ -159,6 +159,7 @@ abstract class ChartDataSource {
 		}
 	}
 	
+	//TODO upgrade to schema
 	static class SeriesSource extends ChartDataSource {
 		SeriesSource(DataSchema schema, List<Series> series, String[] times) {
 			super(schema);
@@ -176,7 +177,6 @@ abstract class ChartDataSource {
 	
 	/**
 	 * An expression row source with a fixed dataset.
-	 * @author johan
 	 */
 	static class ExpressionRowSource extends ChartDataSource {
 		protected OTGSample[] barcodes;
@@ -217,9 +217,11 @@ abstract class ChartDataSource {
 			}
 		}
 		
-		protected void addSamplesFromBarcodes(OTGSample[] barcodes, List<ExpressionRow> rows) {			
+		protected void addSamplesFromBarcodes(OTGSample[] barcodes, List<ExpressionRow> rows) {
+			logger.info("Add samples from " + barcodes.length + " samples and " + rows.size() + " rows");
 			for (int i = 0; i < barcodes.length; ++i) {
-				OTGSample b = barcodes[i];							
+				OTGSample b = barcodes[i];				
+//				logger.info("Consider " + b.toString());
 				for (ExpressionRow er : rows) {
 					ExpressionValue ev = er.getValue(i);
 					ChartSample cs = new ChartSample(b.get(minorParam), b.get(medParam),

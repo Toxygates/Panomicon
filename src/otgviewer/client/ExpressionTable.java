@@ -550,8 +550,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		}
 		
 		chartBarcodes = null;
-		loadedData = false;
-		
+		loadedData = false;		
 		logger.info("Columns changed (" + columns.size() + ")");
 	}
 	
