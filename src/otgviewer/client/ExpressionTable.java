@@ -121,6 +121,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
  	
  	private final Logger logger = Utils.getLogger("expressionTable");
  	
+ 	protected ValueType chosenValueType;
+ 	
 	public ExpressionTable(Screen _screen) {
 		super();
 		screen = _screen;
@@ -166,12 +168,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		}		
 	}
 	
-	@Override
-	protected void changeValueType(ValueType type) {
-		super.changeValueType(type);
-		enableFoldChangeUI(true);		
-	}
-	
 	/**
 	 * The main (navigation) tool panel
 	 */
@@ -184,14 +180,14 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		
 		valueTypeList.addItem(ValueType.Folds.toString());
 		valueTypeList.addItem(ValueType.Absolute.toString());
-		changeValueType(ValueType.Folds);
+		chosenValueType = ValueType.Folds;
 		valueTypeList.setVisibleItemCount(1);
 		horizontalPanel.add(valueTypeList);
 		valueTypeList.addChangeHandler(new ChangeHandler() {			
 			@Override
 			public void onChange(ChangeEvent event) {
 				removeTests();
-				changeValueType(getValueType());
+				chosenValueType = getValueType();
 				getExpressions();
 			}
 		});

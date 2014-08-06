@@ -35,13 +35,13 @@ import com.google.gwt.user.client.ui.DialogBox;
 public class DataListenerWidget extends Composite implements DataViewListener {
 
 	private List<DataViewListener> listeners = new ArrayList<DataViewListener>();
-	
-	public DataFilter chosenDataFilter; //TODO public
+		
+	@Deprecated
+	public DataFilter chosenDataFilter;
 	public SampleClass chosenSampleClass; //TODO public
 	protected String[] chosenProbes = new String[0];
 	public List<String> chosenCompounds = new ArrayList<String>();
-	protected String chosenCompound;
-	protected ValueType chosenValueType;
+	protected String chosenCompound;	
 	protected List<Group> chosenColumns = new ArrayList<Group>();
 	protected OTGColumn chosenCustomColumn;
 	public List<ItemList> chosenItemLists = new ArrayList<ItemList>(); //TODO
@@ -59,15 +59,10 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		listeners.add(l);
 	}
 	
-	//incoming signals
-	@Deprecated
-	public void dataFilterChanged(DataFilter filter) {		
-		chosenDataFilter = filter;
-		changeDataFilter(filter);
-	}
-	
+	//incoming signals	
 	public void sampleClassChanged(SampleClass sc) {
 		chosenSampleClass = sc;		
+		chosenDataFilter = sc.asDataFilter();
 		changeSampleClass(sc);
 	}
 
@@ -90,11 +85,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		changeCompound(compound);
 	}
 	
-	public void valueTypeChanged(ValueType type) {
-		chosenValueType = type;
-		changeValueType(type);
-	}
-	
 	public void columnsChanged(List<Group> columns) {
 		chosenColumns = columns;		
 		changeColumns(columns);
@@ -111,16 +101,10 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	}
 
 	//outgoing signals	
-	@Deprecated
-	protected void changeDataFilter(DataFilter filter) {
-		chosenDataFilter = filter;
-		for (DataViewListener l : listeners) {
-			l.dataFilterChanged(filter);
-		}		
-	}
 
 	protected void changeSampleClass(SampleClass sc) {
 		chosenSampleClass = sc;		
+		chosenDataFilter = sc.asDataFilter();
 		for (DataViewListener l : listeners) {
 			l.sampleClassChanged(sc);
 		}		
@@ -162,13 +146,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}
 	}
 	
-	protected void changeValueType(ValueType type) {
-		chosenValueType = type;
-		for (DataViewListener l : listeners) {
-			l.valueTypeChanged(type);
-		}
-	}
-	
 	protected void changeColumns(List<Group> columns) {
 		chosenColumns = columns;
 		assert(columns != null);
@@ -191,12 +168,11 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}
 	}
 	
-	public void propagateTo(DataViewListener other) {
-		other.dataFilterChanged(chosenDataFilter);
+	public void propagateTo(DataViewListener other) {		
+		other.sampleClassChanged(chosenSampleClass);
 		other.probesChanged(chosenProbes);
 		other.compoundsChanged(chosenCompounds);
-		other.compoundChanged(chosenCompound);
-		other.valueTypeChanged(chosenValueType);
+		other.compoundChanged(chosenCompound);		
 		other.columnsChanged(chosenColumns);		
 		other.customColumnChanged(chosenCustomColumn);
 		other.itemListsChanged(chosenItemLists);

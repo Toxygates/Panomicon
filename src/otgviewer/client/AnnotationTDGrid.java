@@ -58,11 +58,6 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 	}
 
 	@Override
-	public void dataFilterChanged(DataFilter filter) {
-		super.dataFilterChanged(filter);		
-	}
-
-	@Override
 	public void compoundsChanged(List<String> compounds) {
 		super.compoundsChanged(compounds);
 		

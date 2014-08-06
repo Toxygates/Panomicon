@@ -8,6 +8,7 @@ import otgviewer.shared.DataFilter;
 import otgviewer.shared.Organ;
 import otgviewer.shared.Organism;
 import otgviewer.shared.RepeatType;
+import t.common.shared.SampleClass;
 
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.ui.Grid;
@@ -150,7 +151,7 @@ public class DatasetScreen extends Screen implements DatasetInfo.SelectionListen
 	
 	public void filterSelected(DataFilter filter) {
 		StorageParser p = getParser(this);
-		changeDataFilter(filter);
+		changeSampleClass(SampleClass.fromDataFilter(filter));		
 //		storeDataFilter(p);
 		setConfigured(true);
 		manager.deconfigureAll(this);
