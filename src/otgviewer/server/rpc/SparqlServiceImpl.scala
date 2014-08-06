@@ -6,6 +6,7 @@ import scala.collection.{Set => CSet}
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
 import Conversions.asJava
 import Conversions.asJavaSample
+import Conversions.convertPairs
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import otg.OTGBConfig
@@ -31,14 +32,10 @@ import otg.sparql.Probe
 import otg.sparql.Protein
 import otg.sparql.Uniprot
 import otgviewer.client.rpc.SparqlService
-import t.viewer.server.ApplicationClass
 import otgviewer.server.ScalaUtils.useTriplestore
-import otgviewer.shared.AType
-import otgviewer.shared.Association
 import otgviewer.shared.OTGColumn
 import otgviewer.shared.OTGSample
 import otgviewer.shared.Pathology
-import otgviewer.shared.TimesDoses
 import t.BaseConfig
 import t.DataConfig
 import t.TriplestoreConfig
@@ -47,14 +44,17 @@ import t.common.shared.SampleClass
 import t.common.shared.sample.Annotation
 import t.common.shared.sample.HasSamples
 import t.db.DefaultBio
+import t.sparql.Instances
 import t.sparql.Triplestore
 import t.sparql.TriplestoreMetadata
+import t.viewer.server.ApplicationClass
 import t.viewer.server.Configuration
 import t.viewer.server.Conversions.asSpecies
 import t.viewer.server.Conversions.scAsScala
+import t.viewer.shared.AType
+import t.viewer.shared.Association
 import otg.sparql.CommonSPARQL
 import otgviewer.server.ScalaUtils
-import t.sparql.Instances
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -237,19 +237,18 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   def associations(sc: SampleClass, types: Array[AType],
     _probes: Array[String]): Array[Association] = {
     val probes = affyProbes.withAttributes(_probes.map(Probe(_)))
-    val sp = asSpecies(sc)
 
     def queryOrEmpty[T <: Triplestore](c: T, f: T => BBMap): BBMap = {
       val emptyVal = CSet(DefaultBio("error", "(Timeout or error)"))
       useTriplestore(c, f,
         Map() ++ probes.map(p => (Probe(p.identifier) -> emptyVal)))
     }
-
     val proteins = toBioMap(probes, (_: Probe).proteins)
 
+//    val sp = asSpecies(sc)
     //orthologous proteins if needed
     val oproteins = if ((types.contains(AType.Chembl) || types.contains(AType.Drugbank) || types.contains(AType.OrthProts))
-      && (sp != Human)
+//      && (sp != Human)
       && false // Not used currently due to performance issues!
       ) {
       // This always maps to Human proteins as they are assumed to contain the most targets
@@ -287,13 +286,19 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
           (a: AffyProbes) => a.bpGoTerms(probes))        
       case x: AType.GOCC.type => queryOrEmpty(affyProbes, 
           (a: AffyProbes) => a.ccGoTerms(probes))        
+      case x: AType.GO.type => queryOrEmpty(affyProbes, 
+          (a: AffyProbes) => a.goTerms(probes))
       case x: AType.Homologene.type => queryOrEmpty(homologene,
         (c: B2RHomologene) => toBioMap(probes, (_: Probe).genes) combine
           c.homologousGenes(probes.flatMap(_.genes)))
-      case x: AType.KEGG.type => queryOrEmpty(b2rKegg,
+      case x: AType.KEGG.type =>
+        val sp = asSpecies(sc)
+        queryOrEmpty(b2rKegg,
         (c: B2RKegg) => toBioMap(probes, (_: Probe).genes) combine
           c.forGenes(probes.flatMap(_.genes), sp))
-      case x: AType.Enzymes.type => queryOrEmpty(b2rKegg,
+      case x: AType.Enzymes.type =>
+        val sp = asSpecies(sc)
+        queryOrEmpty(b2rKegg,
         (c: B2RKegg) => c.enzymes(probes.flatMap(_.genes), sp))
     }
 

@@ -3,10 +3,8 @@ package t.common.shared;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import otgviewer.client.Utils;
+import t.viewer.shared.AType;
 
 /**
  * Information about the data schema in a particular T application.
@@ -83,4 +81,6 @@ public abstract class DataSchema implements Serializable {
 	public Unit selectionControlUnitFor(Unit u) {
 		return null;
 	}
+	
+	public AType[] associations() { return new AType[] {}; }
 }

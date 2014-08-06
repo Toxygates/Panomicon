@@ -1,4 +1,4 @@
-package otgviewer.shared;
+package t.viewer.shared;
 
 /**
  * All known association types. In order to add a new type, it is necessary to define it here,
@@ -18,7 +18,10 @@ public enum AType {
 	},
 	Uniprot("UniProt proteins") {
 		 public String formLink(String value) { return formProteinLink(value); }		 
-	}, 
+	},
+	GO("GO term") {
+		public String formLink(String value) { return formGOLink(value); }
+	},
 	GOCC("GO Cellular component") {
 		public String formLink(String value) { return formGOLink(value); }		
 	},

@@ -1,7 +1,5 @@
 package otgviewer.client.rpc;
 
-import otgviewer.shared.AType;
-import otgviewer.shared.Association;
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
@@ -10,6 +8,8 @@ import t.common.shared.SampleClass;
 import t.common.shared.Unit;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
+import t.viewer.shared.AType;
+import t.viewer.shared.Association;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 

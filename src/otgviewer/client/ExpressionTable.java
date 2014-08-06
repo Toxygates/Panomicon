@@ -20,11 +20,10 @@ import otgviewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.FilterEditor;
 import otgviewer.client.rpc.MatrixService;
 import otgviewer.client.rpc.MatrixServiceAsync;
-import otgviewer.shared.AType;
 import otgviewer.shared.Group;
+import otgviewer.shared.GroupUtils;
 import otgviewer.shared.ManagedMatrixInfo;
 import otgviewer.shared.OTGSample;
-import otgviewer.shared.GroupUtils;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
 import t.common.shared.DataSchema;
@@ -33,6 +32,7 @@ import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.DataColumn;
 import t.common.shared.sample.ExpressionRow;
+import t.viewer.shared.AType;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.SafeHtmlCell;
@@ -124,7 +124,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
  	protected ValueType chosenValueType;
  	
 	public ExpressionTable(Screen _screen) {
-		super();
+		super(_screen);
 		screen = _screen;
 		
 		grid.setStyleName("exprGrid");
@@ -281,7 +281,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			synth.setGroups(g1, g2);
 			matrixService.addTwoGroupTest(synth, new AsyncCallback<Void>() {
 				public void onSuccess(Void v) {							
-					addSynthColumn(synth, synth.getShortTitle(screen.schema()), synth.getTooltip());					
+					addSynthColumn(synth, synth.getShortTitle(schema), synth.getTooltip());					
 					//force reload
 					grid.setVisibleRangeAndClearData(grid.getVisibleRange(), true); 
 				}
@@ -435,7 +435,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		});
 	}
 	
-	protected List<HideableColumn> initHideableColumns() {
+	protected List<HideableColumn> initHideableColumns(DataSchema schema) {
 		SafeHtmlCell shc = new SafeHtmlCell();
 		List<HideableColumn> r = new ArrayList<HideableColumn>();
 		
@@ -467,7 +467,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		});		
 		
 		//We want gene sym, probe title etc. to be before the association columns going left to right
-		r.addAll(super.initHideableColumns());
+		r.addAll(super.initHideableColumns(schema));
 		
 		return r;
 	}
@@ -535,8 +535,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		removeSyntheticColumnsLocal();
 		
 		groupsel1.clear();
-		groupsel2.clear();
-		DataSchema schema = screen.schema();
+		groupsel2.clear();		
 		for (DataColumn<?> dc: columns) {
 			if (dc instanceof Group) {
 				groupsel1.addItem(dc.getShortTitle(schema));
@@ -639,11 +638,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			
 			//TODO this will not work for multi-class groups
 			SampleClass sc = chosenColumns.get(0).getSamples()[0].
-					sampleClass().asMacroClass(screen.schema());		
+					sampleClass().asMacroClass(schema);		
 			logger.info("Create charts for " + sc.toString());
 			
 			//TODO
-			final ChartGridFactory cgf = new ChartGridFactory(sc, screen.schema(), chosenColumns);
+			final ChartGridFactory cgf = new ChartGridFactory(sc, schema, chosenColumns);
 			Utils.ensureVisualisationAndThen(new Runnable() {
 				public void run() {
 					cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, value, 

@@ -1,4 +1,4 @@
-package otgviewer.shared;
+package t.viewer.shared;
 
 import java.io.Serializable;
 import java.util.HashMap;

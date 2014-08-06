@@ -3,6 +3,7 @@ package otgviewer.shared;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.Unit;
+import t.viewer.shared.AType;
 
 public class TimesDoses extends DataSchema {	
 	public static String[] allTimes = new String[] { "2 hr", "3 hr", "6 hr", "8 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day" };
@@ -74,5 +75,15 @@ public class TimesDoses extends DataSchema {
 		Unit u2 = new Unit(u, new OTGSample[] {});
 		u2.put("dose_level", "Control");
 		return u2;
+	}
+	
+	private static AType[] associations = new AType[] {
+		AType.Chembl, AType.Drugbank, AType.Enzymes,
+		AType.GOBP, AType.GOCC, AType.GOMF, AType.Homologene,
+		AType.KEGG, AType.OrthProts, AType.Uniprot
+	};
+	
+	public AType[] associations() {
+		return associations;
 	}
 }

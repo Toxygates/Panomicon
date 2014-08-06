@@ -10,10 +10,11 @@ import java.util.Set;
 
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
-import otgviewer.shared.AType;
-import otgviewer.shared.Association;
+import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.SharedUtils;
+import t.viewer.shared.AType;
+import t.viewer.shared.Association;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.core.client.GWT;
@@ -33,14 +34,14 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 	protected Map<AType, Association> associations = new HashMap<AType, Association>();
 	private boolean waitingForAssociations = true;
 	
-	public AssociationTable() {
-		super();
+	public AssociationTable(Screen screen) {
+		super(screen.schema());
 	}
 	
-	protected List<HideableColumn> initHideableColumns() {
+	protected List<HideableColumn> initHideableColumns(DataSchema schema) {
 		SafeHtmlCell shc = new SafeHtmlCell();
 		List<HideableColumn> r = new ArrayList<HideableColumn>();
-		for (AType at: AType.values()) {
+		for (AType at: schema.associations()) {
 			AssociationColumn ac = new AssociationColumn(shc, at);			
 			r.add(ac);
 		}
