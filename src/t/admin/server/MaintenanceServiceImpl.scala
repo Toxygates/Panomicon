@@ -28,6 +28,7 @@ import t.DataConfig
 import otg.OTGBConfig
 import t.sparql.Instances
 import t.InstanceManager
+import t.sparql.TRDF
 
 class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceService {
   var baseConfig: BaseConfig = _
@@ -126,8 +127,7 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
         foldFile.getAbsolutePath(),
         foldCallsFile.map(_.getAbsolutePath()),
         foldPValueFile.map(_.getAbsolutePath()),
-        false, baseConfig.seriesBuilder)
-        
+        false, baseConfig.seriesBuilder)        
     }
   }
 
@@ -152,7 +152,10 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
 
   def addInstance(id: String, comment: String): Unit = {
     val im = new Instances(baseConfig.triplestore)
-    maintenance { im.addWithTimestamp(id, comment) }    
+    if (!TRDF.isValidIdentifier(id)) {
+      throw new MaintenanceException(s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
+    }
+    maintenance { im.addWithTimestamp(id, TRDF.escape(comment)) }    
   }
  
   def deleteBatchAsync(id: String): Unit = {
