@@ -90,7 +90,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	//We enable/disable this button when the value type changes
 	private Button foldChangeBtn = new Button("Add fold-change difference");
 	
-	private ListBox valueTypeList = new ListBox();
+	protected ListBox tableList = new ListBox();
 	
 	private final MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
 			.create(MatrixService.class);	
@@ -139,8 +139,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		setEnabled(false);
 	}
 	
-	private ValueType getValueType() {
-		String vt = valueTypeList.getItemText(valueTypeList
+	protected ValueType getValueType() {
+		String vt = tableList.getItemText(tableList
 				.getSelectedIndex());
 		return ValueType.unpack(vt);		
 	}
@@ -177,13 +177,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		HorizontalPanel horizontalPanel = Utils.mkHorizontalPanel(true);		
 		horizontalPanel.setStyleName("colored");
 		tools.add(horizontalPanel);
-		
-		valueTypeList.addItem(ValueType.Folds.toString());
-		valueTypeList.addItem(ValueType.Absolute.toString());
-		chosenValueType = ValueType.Folds;
-		valueTypeList.setVisibleItemCount(1);
-		horizontalPanel.add(valueTypeList);
-		valueTypeList.addChangeHandler(new ChangeHandler() {			
+	
+		tableList.setVisibleItemCount(1);
+		horizontalPanel.add(tableList);
+		initTableList();
+		tableList.addChangeHandler(new ChangeHandler() {			
 			@Override
 			public void onChange(ChangeEvent event) {
 				removeTests();
@@ -212,6 +210,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		pager.setStyleName("slightlySpaced");
 		horizontalPanel.add(pager);
 		pager.setDisplay(grid);			
+	}
+	
+	protected void initTableList() {		
+		tableList.addItem(ValueType.Folds.toString());
+		tableList.addItem(ValueType.Absolute.toString());
+		chosenValueType = ValueType.Folds;
 	}
 	
 	public Widget analysisTools() { return analysisTools; }

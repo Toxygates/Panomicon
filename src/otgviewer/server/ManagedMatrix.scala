@@ -105,7 +105,13 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
       } else if (ev1.call != 'A' && ev2.call == 'A') {
         true
       } else {
-        if (ascending) { ev1.value < ev2.value } else { ev1.value > ev2.value }
+        //Use this to handle NaN correctly (comparison method MUST be transitive)
+        def cmp(x: Double, y: Double) = java.lang.Double.compare(x, y)
+        if (ascending) {
+          cmp(ev1.value, ev2.value) < 0
+        } else {
+          cmp(ev1.value, ev2.value) > 0
+        }
       }
     }
       
