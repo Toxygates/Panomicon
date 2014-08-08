@@ -202,10 +202,12 @@ public class SampleClass implements Serializable, Packable {
 		return sb.toString();
 	}
 	
-	@Deprecated
-	public String label() {
-		return get("organism") + "/" + get("test_type") + "/" + 
-				get("organ_id") + "/" + get("sin_rep_type"); 
+	public String label(DataSchema schema) {
+		StringBuilder sb = new StringBuilder();
+		for (String p: schema.macroParameters()) {
+			sb.append(get(p)).append("/");
+		}
+		return sb.toString(); 
 	}
 	
 	public String tripleString(DataSchema sc) {

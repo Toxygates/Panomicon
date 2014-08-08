@@ -36,7 +36,11 @@ public class DataScreen extends Screen {
 	public DataScreen(ScreenManager man) {
 		super("View data", key, true, man,
 				resources.dataDisplayHTML(), resources.dataDisplayHelp());
-		et = new ExpressionTable(this);
+		et = makeExpressionTable();
+	}
+	
+	protected ExpressionTable makeExpressionTable() {
+		return new ExpressionTable(this);
 	}
 	
 	@Override

@@ -455,7 +455,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				return SharedUtils.mkString(er.getGeneSyms(), ", ");
 			}
 		});
-		r.add(new DefHideableColumn<ExpressionRow>("Probe title", true) {
+		r.add(new DefHideableColumn<ExpressionRow>("Probe title", showTitleColumnOnInit()) {
 			public String safeGetValue(ExpressionRow er) {				
 				return er.getTitle();
 			}
@@ -470,6 +470,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		r.addAll(super.initHideableColumns(schema));
 		
 		return r;
+	}
+	
+	protected boolean showTitleColumnOnInit() {
+		return true;
 	}
 	
 	public String[] displayedProbes() { return displayedProbes; }

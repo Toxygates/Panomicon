@@ -48,7 +48,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 			g.sampleClassChanged(sc);
 			sections.put(sc, g);
 			g.compoundsChanged(chosenCompounds);			
-			Label l = new Label(sc.label());
+			Label l = new Label(sc.label(scr.schema()));
 			l.setStylePrimaryName("heavyEmphasized");
 			vp.add(l);
 			vp.add(g); 

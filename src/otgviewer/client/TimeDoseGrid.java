@@ -7,10 +7,12 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.OTGSample;
+import scala.reflect.macros.internal.macroImpl;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.Unit;
@@ -70,6 +72,11 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		this.mediumParameter = schema.mediumParameter();
 		this.minorParameter = schema.minorParameter();
 		this.timeParameter = schema.timeParameter();
+		try {
+			mediumValues = Arrays.asList(schema.sortedValues(schema.mediumParameter()));
+		} catch (Exception e) {
+			logger.warning("Unable to sort medium parameters");
+		}
 		
 		logger.info("Medium: " + mediumParameter + " minor: " + minorParameter);
 		
@@ -108,7 +115,8 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		super.compoundsChanged(compounds);		
 		rootPanel.clear();		
 		if (compounds.isEmpty()) {
-			rootPanel.add(Utils.mkEmphLabel("Please select at least one compound"));
+			String mTitle = schema.title(schema.majorParameter());
+			rootPanel.add(Utils.mkEmphLabel("Please select at least one " + mTitle));
 		} else {
 			rootPanel.add(mainPanel);
 			redrawGrid();
@@ -118,6 +126,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	
 	private void lazyFetchMinor() {
 		if (minorValues != null && minorValues.size() > 0) {
+			logger.info("Reuse cached minor values");
 			drawGridInner(grid);
 		} else {
 			fetchMinor();						
@@ -125,9 +134,10 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	}
 	
 	private void fetchMinor() {		
+		logger.info("Fetch minor");
 		sparqlService.parameterValues(chosenSampleClass, minorParameter,
-				new AsyncCallback<String[]>() {
-			public void onSuccess(String[] times) {
+				new PendingAsyncCallback<String[]>(this, "Unable to fetch minor parameter for samples") {
+			public void handleSuccess(String[] times) {
 				try {
 					logger.info("Sort " + times.length + " times");
 					schema.sort(minorParameter, times);
@@ -137,10 +147,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 				} catch (Exception e) {
 					logger.warning("Unable to sort times " + e.getMessage());
 				}
-			}
-			public void onFailure(Throwable caught) {
-				Window.alert("Unable to get sample times.");
-			}
+			}			
 		});			
 	}
 	
@@ -159,27 +166,18 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		availableUnits = new Unit[0];
 		String[] compounds = chosenCompounds.toArray(new String[0]);
 		sparqlService.units(chosenSampleClass, schema, majorParameter, compounds,
-				new AsyncCallback<Unit[]>() {
+				new PendingAsyncCallback<Unit[]>(this, "Unable to obtain samples.") {
 
 			@Override
-			public void onFailure(Throwable caught) {
-				Window.alert("Unable to obtain samples.");		
+			public void handleFailure(Throwable caught) {
+				super.handleFailure(caught);		
 				fetchingSamples = false;
 			}
 
 			@Override
-			public void onSuccess(Unit[] result) {
-				availableUnits = result;
-				Set<String> mv = Unit.collect(Arrays.asList(result), mediumParameter);
-				String[] mvs = mv.toArray(new String[0]);
-				try {
-					schema.sort(mediumParameter, mvs);
-					mediumValues = Arrays.asList(mvs);
-
-					samplesAvailable();
-				} catch (Exception e) {
-					logger.warning("Unable to sort medium parameters " + e.getMessage());
-				}
+			public void handleSuccess(Unit[] result) {
+				availableUnits = result;							
+				samplesAvailable();				
 				fetchingSamples = false;
 			}			
 		});
@@ -190,10 +188,6 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	private void redrawGrid() {
 		final int numRows = chosenCompounds.size() + 1 + (hasDoseTimeGUIs ? 1 : 0);
 
-		if (mediumValues == null) {
-			logger.info("Not redrawing grid since no medium values available");
-			return;
-		}
 		grid.resize(numRows, mediumValues.size() + 1);
 		
 		int r = 0;
@@ -213,6 +207,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		}
 		
 		grid.setHeight(50 * (chosenCompounds.size() + 1) + "px");
+		//This will eventually draw the unit UIs
 		lazyFetchMinor();		
 	}
 	
@@ -249,6 +244,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		int r = 1;
 		final int numMed = mediumValues.size();
 		final int numMin = minorValues.size();
+		logger.info("Draw grid inner: " + numMed + ", " + numMin);
 		if (hasDoseTimeGUIs && chosenCompounds.size() > 0) {
 			for (int d = 0; d < numMed; ++d) {
 				HorizontalPanel hp = Utils.mkHorizontalPanel(true);
@@ -273,7 +269,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 					sc.put(minorParameter, minorValues.get(t));
 					sc.mergeDeferred(chosenSampleClass);
 					Unit unit = new Unit(sc, new OTGSample[] {});									
-					allUnits.add(unit);
+					allUnits.add(unit); 
 					hp.add(guiForUnit(unit));
 				}
 				Widget fin = guiForCompoundDose(c, d);
