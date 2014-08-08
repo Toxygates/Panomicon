@@ -539,7 +539,8 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	 */
 	public void displaySampleDetail(OTGSample b) {
 		StorageParser p = getParser(this);
-		storeCustomColumn(p, b);
+		Group g = new Group(schema(), "custom", new OTGSample[] { b });
+		storeCustomColumn(p, g);
 		configuredProceed(SampleDetailScreen.key);
 	}
 	

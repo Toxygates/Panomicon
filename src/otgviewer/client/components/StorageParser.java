@@ -50,15 +50,16 @@ public class StorageParser {
 		return packPackableList(columns, "###");
 	}
 
-	public static OTGColumn unpackColumn(DataSchema schema, String s, DataFilter filter) {
+	public static Group unpackColumn(DataSchema schema, String s) throws Exception {
 		if (s == null) {
 			return null;
 		}
 		String[] spl = s.split("\\$\\$\\$");
-		if (spl[0].equals("Barcode")) {
-			return OTGSample.unpack(s);
-		} else {
+		if (!spl[0].equals("Barcode")) {			
 			return Group.unpack(schema, s);
+		} else {
+			//legacy
+			throw new Exception("Unexpected column format");
 		}
 	}
 	

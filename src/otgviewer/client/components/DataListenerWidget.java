@@ -8,6 +8,7 @@ import static otgviewer.client.components.StorageParser.unpackColumn;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import otgviewer.client.Utils;
@@ -278,7 +279,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		if (v != null && !v.equals(packColumns(expectedColumns))) {
 			String[] spl = v.split("###");
 			for (String cl : spl) {
-				Group c = (Group) unpackColumn(schema, cl, chosenDataFilter);
+				Group c = unpackColumn(schema, cl);
 				r.add(c);
 			}
 			return r;
@@ -339,16 +340,16 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 				logger.info("Unpacked columns: " + cs.get(0) + ": " + cs.get(0).getSamples()[0] + " ... ");
 				columnsChanged(cs);
 			}						
-			OTGColumn cc = unpackColumn(schema, p.getItem("customColumn"), 
-					chosenDataFilter);
-			if (cc != null) {																		
-				customColumnChanged(cc);						
+			Group g = unpackColumn(schema, p.getItem("customColumn"));
+			if (g != null) {																		
+				customColumnChanged(g);						
 			}
 		} catch (Exception e) {										
 			//one possible failure source is if data is stored in an incorrect format
 			columnsChanged(new ArrayList<Group>());
 			storeColumns(p); //overwrite the old data
 			storeCustomColumn(p, null); //ditto
+			logger.log(Level.WARNING, "Exception while parsing state", e);
 		}
 
 		String v = p.getItem("probes");			

@@ -13,5 +13,4 @@ public interface OTGColumn extends Packable, DataColumn<OTGSample>, HasSamples<O
 	
 	public String[] getMajors(DataSchema schema);
 	
-	public String pack();
 }

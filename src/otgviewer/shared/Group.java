@@ -111,7 +111,7 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 	}
 	
 	public String[] getMajors(@Nullable SampleClass sc) {
-		Set<String> majorVals = new HashSet<String>();
+		Set<String> majorVals = new HashSet<String>();		
 		for (OTGSample b : _samples) {
 			if (sc == null || sc.permits(b)) {
 				majorVals.add(b.get(schema.majorParameter()));
