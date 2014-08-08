@@ -56,11 +56,11 @@ public class BatchUploader extends UploadDialog {
 
 		HorizontalPanel hp = new HorizontalPanel();
 		hp.add(metadata);
-		hp.add(normalized);
+		hp.add(fold);
 		vp.add(hp);
 		
 		hp = new HorizontalPanel();
-		hp.add(fold);
+		hp.add(normalized);
 		hp.add(foldP);
 		vp.add(hp);
 		

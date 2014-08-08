@@ -40,12 +40,12 @@ public class StorageParser {
 	
 	void setItem(String key, String value) {
 		storage.setItem(prefix + "." + key, value);
-		logger.info("SET " + key + " -> " + value);
+//		logger.info("SET " + key + " -> " + value);
 	}
 	
 	String getItem(String key) {
 		String v = storage.getItem(prefix + "." + key);
-		logger.info("GET " + key + " -> " + v);
+//		logger.info("GET " + key + " -> " + v);
 		return v;
 		
 	}
@@ -58,15 +58,16 @@ public class StorageParser {
 		return packPackableList(columns, "###");
 	}
 
-	public static OTGColumn unpackColumn(DataSchema schema, String s, DataFilter filter) {
+	public static Group unpackColumn(DataSchema schema, String s) throws Exception {
 		if (s == null) {
 			return null;
 		}
 		String[] spl = s.split("\\$\\$\\$");
-		if (spl[0].equals("Barcode") || spl[0].equals("Barcode_v3")) {		
-			return OTGSample.unpack(s);
-		} else {
+		if (!spl[0].equals("Barcode")) {			
 			return Group.unpack(schema, s);
+		} else {
+			//legacy
+			throw new Exception("Unexpected column format");
 		}
 	}
 	

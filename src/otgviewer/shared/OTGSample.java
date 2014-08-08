@@ -7,10 +7,8 @@ import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.Sample;
 
-public class OTGSample extends Sample implements OTGColumn {
+public class OTGSample extends Sample {
 
-//	private Unit unit;	
-	
 	public OTGSample() { super(); }
 	
 	public OTGSample(String _code, SampleClass _sampleClass) {
@@ -42,15 +40,7 @@ public class OTGSample extends Sample implements OTGColumn {
 	public String toString() {
 		return sampleClass.toString();
 	}
-	
-	public OTGSample[] getSamples() { 
-		return new OTGSample[] { this };
-	}
-	
-	public String[] getMajors(DataSchema schema) {
-		return new String[] { get(schema.majorParameter()) };
-	}
-	
+
 	//TODO remove or upgrade to use DataSchema 
 	public static OTGSample unpack_v1_2(String s) {
 //		Window.alert(s + " as barcode");
@@ -119,6 +109,4 @@ public class OTGSample extends Sample implements OTGColumn {
 		sb.append(sampleClass.pack()).append(sep);
 		return sb.toString();
 	}
-	
-
 }

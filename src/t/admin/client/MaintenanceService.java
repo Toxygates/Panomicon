@@ -29,7 +29,7 @@ public interface MaintenanceService extends RemoteService {
 	 * Try to add a platform, based on files that were previously uploaded.
 	 * The results can be obtained after completion by using getOperationResults.
 	 */ 
-	void addPlatformAsync(String id, String comment, boolean affymetrixFormat);
+	void addPlatformAsync(String id, String comment, boolean affymetrixFormat) throws MaintenanceException;
 	
 	void addInstance(String id, String comment) throws MaintenanceException;
 	

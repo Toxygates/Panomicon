@@ -253,7 +253,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		if (v != null && !v.equals(packColumns(expectedColumns))) {
 			String[] spl = v.split("###");
 			for (String cl : spl) {
-				Group c = (Group) unpackColumn(schema, cl, chosenDataFilter);
+				Group c = unpackColumn(schema, cl);
 				r.add(c);
 			}
 			return r;
@@ -305,10 +305,9 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 				logger.info("Unpacked columns: " + cs.get(0) + ": " + cs.get(0).getSamples()[0] + " ... ");
 				columnsChanged(cs);
 			}						
-			OTGColumn cc = unpackColumn(schema, p.getItem("customColumn"), 
-					chosenDataFilter);
-			if (cc != null) {																		
-				customColumnChanged(cc);						
+			Group g = unpackColumn(schema, p.getItem("customColumn"));
+			if (g != null) {																		
+				customColumnChanged(g);						
 			}
 		} catch (Exception e) {						
 			logger.log(Level.WARNING, "Unable to load state", e);
@@ -316,6 +315,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 			columnsChanged(new ArrayList<Group>());
 			storeColumns(p); //overwrite the old data
 			storeCustomColumn(p, null); //ditto
+			logger.log(Level.WARNING, "Exception while parsing state", e);
 		}
 
 		String v = p.getItem("probes");			
