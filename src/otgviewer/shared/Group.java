@@ -88,7 +88,7 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 	
 	public String getTriples(DataSchema schema, int limit, String separator) {
 		Set<String> triples = new HashSet<String>();
-		boolean stopped = false;
+		boolean stopped = false; 
 		for (Unit u : _units) {
 //			if (u.getDose().equals("Control")) {
 //				continue;

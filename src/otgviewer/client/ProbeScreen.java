@@ -187,11 +187,15 @@ public class ProbeScreen extends Screen {
 		}));
 		return vp;
 	}
+	
+	protected boolean hasChembl() { return true; }
+	
+	protected boolean hasDrugbank() { return true; }
 
 	public Widget content() {
 		StackLayoutPanel probeSelStack = new StackLayoutPanel(Unit.PX);
 		probeSelStack.setWidth("350px");
-
+		
 		ProbeSelector psel = pathwaySelector();
 		probeSelStack.add(psel, "KEGG pathway search", STACK_ITEM_HEIGHT);
 		addListener(psel);
@@ -199,15 +203,19 @@ public class ProbeScreen extends Screen {
 		probeSelStack.add(psel, "GO term search", STACK_ITEM_HEIGHT);
 		addListener(psel);
 
-		Widget chembl = makeTargetLookupPanel(
-				"CHEMBL",
-				"This lets you view probes that are known targets of the currently selected compound.");
-		probeSelStack.add(chembl, "CHEMBL targets", STACK_ITEM_HEIGHT);
+		if (hasChembl()) {
+			Widget chembl = makeTargetLookupPanel(
+					"CHEMBL",
+					"This lets you view probes that are known targets of the currently selected compound.");
+			probeSelStack.add(chembl, "CHEMBL targets", STACK_ITEM_HEIGHT);
+		}
 
-		Widget drugBank = makeTargetLookupPanel(
-				"DrugBank",
-				"This lets you view probes that are known targets of the currently selected compound.");
-		probeSelStack.add(drugBank, "DrugBank targets", STACK_ITEM_HEIGHT);
+		if (hasDrugbank()) {
+			Widget drugBank = makeTargetLookupPanel(
+					"DrugBank",
+					"This lets you view probes that are known targets of the currently selected compound.");
+			probeSelStack.add(drugBank, "DrugBank targets", STACK_ITEM_HEIGHT);
+		}
 
 		probeSelStack.add(manualSelection(), "Free selection",
 				STACK_ITEM_HEIGHT);

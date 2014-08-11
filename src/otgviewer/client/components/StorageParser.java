@@ -6,11 +6,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javax.annotation.Nullable;
+
 import otgviewer.client.Utils;
-import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
-import otgviewer.shared.OTGSample;
 import t.common.shared.DataSchema;
 import t.common.shared.Packable;
 import t.viewer.shared.ItemList;
@@ -31,7 +31,7 @@ public class StorageParser {
 	public static final String unacceptableStringMessage = 
 			"The characters ':', '#', '$' and '^' are reserved and may not be used.";
 	
-	protected final Logger logger = Utils.getLogger("storage");
+	protected static final Logger logger = Utils.getLogger("storage");
 	
 	StorageParser(Storage storage, String prefix) {
 		this.prefix = prefix;
@@ -58,16 +58,18 @@ public class StorageParser {
 		return packPackableList(columns, "###");
 	}
 
-	public static Group unpackColumn(DataSchema schema, String s) throws Exception {
+	@Nullable
+	public static Group unpackColumn(DataSchema schema, String s) {
 		if (s == null) {
 			return null;
-		}
+		}				
 		String[] spl = s.split("\\$\\$\\$");
-		if (!spl[0].equals("Barcode")) {			
+		if (!spl[0].equals("Barcode") && !spl[0].equals("Barcode_v3")) {			
 			return Group.unpack(schema, s);
 		} else {
-			//legacy
-			throw new Exception("Unexpected column format");
+			//Legacy or incorrect format
+			logger.warning("Unexpected column format: " + s);
+			return null;
 		}
 	}
 	

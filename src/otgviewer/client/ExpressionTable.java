@@ -443,7 +443,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		SafeHtmlCell shc = new SafeHtmlCell();
 		List<HideableColumn> r = new ArrayList<HideableColumn>();
 		
-		r.add(new LinkingColumn<ExpressionRow>(shc, "Gene ID", false) {
+		r.add(new LinkingColumn<ExpressionRow>(shc, "Gene ID", 
+				initVisibility(StandardColumns.GeneID)) {
 			@Override
 			protected String formLink(String value) {
 				return AType.formGeneLink(value);
@@ -454,17 +455,20 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			}						
 		});
 		
-		r.add(new DefHideableColumn<ExpressionRow>("Gene Sym", true) {
+		r.add(new DefHideableColumn<ExpressionRow>("Gene Sym", 
+				initVisibility(StandardColumns.GeneSym)) {
 			public String safeGetValue(ExpressionRow er) {					
 				return SharedUtils.mkString(er.getGeneSyms(), ", ");
 			}
 		});
-		r.add(new DefHideableColumn<ExpressionRow>("Probe title", showTitleColumnOnInit()) {
+		r.add(new DefHideableColumn<ExpressionRow>("Probe title", 
+				initVisibility(StandardColumns.ProbeTitle)) {
 			public String safeGetValue(ExpressionRow er) {				
 				return er.getTitle();
 			}
 		});
-		r.add(new DefHideableColumn<ExpressionRow>("Probe", true) {
+		r.add(new DefHideableColumn<ExpressionRow>("Probe", 
+				initVisibility(StandardColumns.Probe)) {
 			public String safeGetValue(ExpressionRow er) {				
 				return er.getProbe();
 			}
@@ -476,8 +480,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		return r;
 	}
 	
-	protected boolean showTitleColumnOnInit() {
-		return true;
+	protected boolean initVisibility(StandardColumns col) {
+		return col != StandardColumns.GeneID;			
 	}
 	
 	public String[] displayedProbes() { return displayedProbes; }

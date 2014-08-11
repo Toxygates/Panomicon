@@ -28,6 +28,8 @@ public interface MatrixService extends RemoteService {
 	/**
 	 * Convert identifiers such as genes, probe IDs and proteins into a list of probes.
 	 * 
+	 * TODO not clear that this should be in MatrixService
+	 * 
 	 * @param filter
 	 * @param identifiers
 	 * @param precise If true, names must be an exact match, otherwise partial 
