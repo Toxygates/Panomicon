@@ -14,7 +14,7 @@ import org.scalatest.junit.JUnitRunner
 import t.viewer.shared.AType
 
 object SparqlServiceTest {
-  def testFilter = new DataFilter(CellType.Vivo, Organ.Liver, RepeatType.Single, Organism.Rat)
+  def testFilter = new DataFilter("In Vivo", "Liver", "Single", "Rat")
   def testSampleClass = SampleClass.fromDataFilter(testFilter)
 }
 

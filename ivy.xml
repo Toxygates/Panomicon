@@ -28,10 +28,14 @@
   -->
   
   <!-- for intermine -->
+  <!--
   <dependency org="stax" name="stax-api" rev="1.0.1"/>
   <dependency org="stax" name="stax" rev="1.2.0"/>
-  <dependency org="org.json" name="json" rev="20140107"/>
+  -->
+  <dependency org="log4j" name="log4j" rev="1.2.17"/>
+  <dependency org="org.json" name="json" rev="20090211"/>
   <dependency org="commons-lang" name="commons-lang" rev="2.6"/>
+  <dependency org="org.apache.httpcomponents" name="fluent-hc" rev="4.2.2"/>
   
   </dependencies>
 </ivy-module>

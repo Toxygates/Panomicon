@@ -17,7 +17,7 @@ function makeWar {
 }
 
 WARLIB=war/WEB-INF/lib
-rm $WARLIB/*
+#rm $WARLIB/*
 ivy.sh -retrieve lib/[type]/[artifact]-[revision].[ext] 
 cp lib/*.jar $WARLIB
 cp lib/jar/* $WARLIB
