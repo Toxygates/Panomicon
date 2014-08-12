@@ -5,9 +5,6 @@ import org.scalatest.BeforeAndAfter
 import org.scalatest.FunSuite
 import otgviewer.shared.CellType
 import otgviewer.shared.DataFilter
-import otgviewer.shared.Organ
-import otgviewer.shared.Organism
-import otgviewer.shared.RepeatType
 import t.common.shared.SampleClass
 import t.viewer.server.Configuration
 import org.scalatest.junit.JUnitRunner

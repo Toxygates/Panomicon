@@ -8,7 +8,6 @@ import otg.SeriesRanking
 import otg.Species
 import otgviewer.shared.CellType
 import otgviewer.shared.DataFilter
-import otgviewer.shared.Organism
 import otgviewer.shared.Pathology
 import otgviewer.shared.RankRule
 import otgviewer.shared.Series

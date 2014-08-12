@@ -2,10 +2,10 @@ package otgviewer.gui.client;
 
 import otgviewer.client.ColumnScreen;
 import otgviewer.client.DataScreen;
-import otgviewer.client.DatasetScreen;
 import otgviewer.client.PathologyScreen;
 import otgviewer.client.ProbeScreen;
 import otgviewer.client.SampleDetailScreen;
+import otgviewer.client.StartScreen;
 import otgviewer.client.TApplication;
 import otgviewer.shared.TimesDoses;
 import t.common.shared.DataSchema;
@@ -22,7 +22,7 @@ public class OTGViewer extends TApplication {
 	
 	@Override
 	protected void initScreens() {		
-		addScreenSeq(new DatasetScreen(this));		
+		addScreenSeq(new StartScreen(this));		
 		addScreenSeq(new ColumnScreen(this, "Compound ranking (optional)"));		
 		addScreenSeq(new ProbeScreen(this));		
 		addScreenSeq(new DataScreen(this));		

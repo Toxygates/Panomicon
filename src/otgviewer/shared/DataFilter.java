@@ -24,10 +24,10 @@ public class DataFilter implements Serializable {
 		organism = copy.organism;
 	}
 	
-	@Deprecated
-	public DataFilter(CellType ct, Organ organ, RepeatType rt, Organism o) {
-		this(ct.name(), organ.name(), rt.name(), o.name());
-	}
+//	@Deprecated
+//	public DataFilter(CellType ct, Organ organ, RepeatType rt, Organism o) {
+//		this(ct.name(), organ.name(), rt.name(), o.name());
+//	}
 	
 	public DataFilter(String _cellType, String _organ, String _repeatType, String _organism) {
 		cellType = _cellType;

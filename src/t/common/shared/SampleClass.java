@@ -10,11 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
-import otgviewer.shared.Organ;
-import otgviewer.shared.Organism;
-import otgviewer.shared.RepeatType;
 
 /**
  * A sample class identifies a group of samples.
@@ -146,16 +142,11 @@ public class SampleClass implements Serializable, Packable {
 	// TODO this is temporary - DataFilter is to be removed
 	@Deprecated
 	public DataFilter asDataFilter() {
-		try {
-			Organ o = Organ.valueOf(get("organ_id"));
-			Organism s = Organism.valueOf(get("organism"));
-			RepeatType r = RepeatType.valueOf(get("sin_rep_type"));
-			CellType c = get("test_type").equals("in vivo") ? CellType.Vivo
-					: CellType.Vitro;
-			return new DataFilter(c, o, r, s);
-		} catch (Exception e) {
-			return null;
-		}
+		String o = get("organ_id");
+		String s = get("organism");
+		String r = get("sin_rep_type");
+		String c = get("test_type").equals("in vivo") ? "In Vivo" : "In Vitro";
+		return new DataFilter(c, o, r, s);
 	}
 	
 	@Deprecated
