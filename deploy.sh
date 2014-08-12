@@ -16,6 +16,13 @@ function makeWar {
     rm -r war/WEB-INF/classes/friedrich
 }
 
+WARLIB=war/WEB-INF/lib
+rm $WARLIB/*
+ivy.sh -retrieve lib/[type]/[artifact]-[revision].[ext] 
+cp lib/*.jar $WARLIB
+cp lib/jar/* $WARLIB
+cp lib/bundle/*.jar $WARLIB
+
 cp war/toxygates.html war/toxygates.html.bak
 cp war/news.html war/news.html.bak
 cp war/WEB-INF/web.xml war/WEB-INF/web.xml.bak
