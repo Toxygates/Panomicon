@@ -111,11 +111,19 @@ public class DataScreen extends Screen {
 		// of the other items on the menu becomes odd.
 		addAnalysisMenuItem(
 				new TickMenuItem("Compare two sample groups", false, false) {
-					public void stateChange(boolean newState) {
-						if (newState) {
+					public void stateChange(boolean newState) {						
+						if (!visible) {
+							//Trigger screen
+							manager.attemptProceed(DataScreen.key);
+							setState(true);							
 							showToolbar(et.analysisTools());
-						} else {
-							hideToolbar(et.analysisTools());
+						} else {			
+							//Just toggle
+							if (newState) {
+								showToolbar(et.analysisTools());
+							} else {
+								hideToolbar(et.analysisTools());
+							}
 						}
 					}
 				}.menuItem());			

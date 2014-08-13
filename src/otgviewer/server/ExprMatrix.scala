@@ -97,10 +97,21 @@ class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int,
     appendColumn(pvals, colName)
   }
 
+  private def equals0(x: Double) = java.lang.Double.compare(x, 0d) == 0
+  
   def appendTTest(sourceData: ExprMatrix, group1: Seq[String], group2: Seq[String],
-    colName: String): ExprMatrix =
+    colName: String): ExprMatrix = 
     appendTwoColTest(sourceData, group1, group2, 
-        (x,y) => ttest.tTest(x.toArray, y.toArray), 2, colName)
+        (x,y) => {
+          //We get weird (small nonzero) values from t-test when both arrays are all zero.
+          val hasNz = x.exists(!equals0(_)) || y.exists(!equals0(_))
+          if (hasNz) {
+        	ttest.tTest(x.toArray, y.toArray)
+          } else {
+            1.0
+          }
+        }, 2, colName)
+  
 
   def appendUTest(sourceData: ExprMatrix, group1: Seq[String], group2: Seq[String],
     colName: String): ExprMatrix =
