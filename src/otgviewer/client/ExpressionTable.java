@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import otgviewer.client.charts.AdjustableChartGrid;
@@ -283,14 +284,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			final Group g1 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel1));
 			final Group g2 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel2));
 			synth.setGroups(g1, g2);
-			matrixService.addTwoGroupTest(synth, new AsyncCallback<Void>() {
-				public void onSuccess(Void v) {							
+			matrixService.addTwoGroupTest(synth, new PendingAsyncCallback<Void>(this, 
+					"Adding test column failed") {
+				public void handleSuccess(Void v) {							
 					addSynthColumn(synth, synth.getShortTitle(schema), synth.getTooltip());					
 					//force reload
 					grid.setVisibleRangeAndClearData(grid.getVisibleRange(), true); 
-				}
-				public void onFailure(Throwable caught) {
-					Window.alert("Unable to compute " + name);
 				}
 			});
 		}
@@ -583,6 +582,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	private AsyncCallback<ManagedMatrixInfo> dataUpdateCallback() {
 		return new AsyncCallback<ManagedMatrixInfo>() {
 			public void onFailure(Throwable caught) {
+				logger.log(Level.WARNING, "Exception in data update callback", caught);
 				getExpressions(); // the user probably let the session
 									// expire
 			}

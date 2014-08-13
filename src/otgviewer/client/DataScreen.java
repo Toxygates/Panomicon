@@ -144,8 +144,10 @@ public class DataScreen extends Screen {
 		
 		// Attempt to avoid reloading the data
 		if (lastColumns == null || !chosenColumns.equals(lastColumns)) {
+			logger.info("Data reloading needed");
 			et.getExpressions(); 
 		} else if (!Arrays.equals(chosenProbes, lastProbes)) {
+			logger.info("Only refiltering is needed");
 			et.refilterData();
 		}
 

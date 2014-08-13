@@ -84,14 +84,16 @@ class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int,
     val sourceCols1 = sourceData.selectNamedColumns(group1)
     val sourceCols2 = sourceData.selectNamedColumns(group2)
     
-    val ps = sourceCols1.toRowVectors.zip(sourceCols2.toRowVectors)
-    val pvals = ps.map(r => {
-      val vs1 = r._1.filter(_.getPresent)
-      val vs2 = r._2.filter(_.getPresent)
-        if (vs1.size >= minValues && vs2.size >= minValues) {
-        new ExpressionValue(test(vs1.map(_.getValue), vs2.map(_.getValue)), 'P')
+    val ps = sourceCols1.toRowVectors.zip(sourceCols2.toRowVectors) zipWithIndex
+    val pvals = ps.map(r => {      
+      val probe = sourceData.rowAt(r._2)
+      val vs1 = r._1._1.filter(_.getPresent).map(_.getValue())
+      val vs2 = r._1._2.filter(_.getPresent).map(_.getValue())
+      
+      if (vs1.size >= minValues && vs2.size >= minValues) {
+        new ExpressionValue(test(vs1, vs2), 'P')
       } else {
-        new ExpressionValue(0, 'A')
+        new ExpressionValue(Double.NaN, 'A')
       }
     })
     appendColumn(pvals, colName)
@@ -102,17 +104,8 @@ class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int,
   def appendTTest(sourceData: ExprMatrix, group1: Seq[String], group2: Seq[String],
     colName: String): ExprMatrix = 
     appendTwoColTest(sourceData, group1, group2, 
-        (x,y) => {
-          //We get weird (small nonzero) values from t-test when both arrays are all zero.
-          val hasNz = x.exists(!equals0(_)) || y.exists(!equals0(_))
-          if (hasNz) {
-        	ttest.tTest(x.toArray, y.toArray)
-          } else {
-            1.0
-          }
-        }, 2, colName)
+        (x,y) => ttest.tTest(x.toArray, y.toArray), 2, colName)
   
-
   def appendUTest(sourceData: ExprMatrix, group1: Seq[String], group2: Seq[String],
     colName: String): ExprMatrix =
     appendTwoColTest(sourceData, group1, group2, 

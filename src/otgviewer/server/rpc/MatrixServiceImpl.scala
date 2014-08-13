@@ -166,7 +166,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     if (probes != null && probes.length > 0) {
     	mm.selectProbes(probes)
     } else {
-      val groups = (0 until mm.info.numColumns()).map(i => mm.info.columnGroup(i))
+      val groups = (0 until mm.info.numDataColumns()).map(i => mm.info.columnGroup(i))
       val ps = platformsForGroups(groups)
       val allProbes = platforms.filterProbes(List(), ps).toArray
       mm.selectProbes(allProbes)

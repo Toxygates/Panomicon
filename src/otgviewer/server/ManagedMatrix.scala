@@ -134,8 +134,7 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
   }
   
   /**
-   * Adds one two-group test to the raw grouped matrix.
-   * Re-filtering will be necessary to produce the final matrix.
+   * Adds one two-group test to the current matrix.
    */
   protected def addOneSynthetic(s: Synthetic): Unit = {
     s match {
@@ -144,14 +143,19 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
         val g1s = test.getGroup1.getSamples.filter(_.get("dose_level") != "Control").map(_.getCode)
         val g2s = test.getGroup2.getSamples.filter(_.get("dose_level") != "Control").map(_.getCode)       
         var upper = true
+        
+        val currentRows = (0 until currentMat.rows).map(i => currentMat.rowAt(i))
+        //Need this to take into account sorting and filtering of currentMat
+        val rawData = rawUngroupedMat.selectNamedRows(currentRows)
+        
         currentMat = test match {
           case ut: Synthetic.UTest =>
-            currentMat.appendUTest(rawUngroupedMat, g1s, g2s, ut.getShortTitle(null)) //TODO don't pass null
+            currentMat.appendUTest(rawData, g1s, g2s, ut.getShortTitle(null)) //TODO don't pass null
           case tt: Synthetic.TTest =>
-            currentMat.appendTTest(rawUngroupedMat, g1s, g2s, tt.getShortTitle(null)) //TODO
+            currentMat.appendTTest(rawData, g1s, g2s, tt.getShortTitle(null)) //TODO
           case md: Synthetic.MeanDifference =>
             upper = false
-            currentMat.appendDiffTest(rawUngroupedMat, g1s, g2s, md.getShortTitle(null)) //TODO
+            currentMat.appendDiffTest(rawData, g1s, g2s, md.getShortTitle(null)) //TODO
           case _ => throw new Exception("Unexpected test type!")
         }
         currentInfo.addColumn(true, test.getShortTitle(null), test.getTooltip(), upper, null) //TODO
