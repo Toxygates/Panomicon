@@ -132,7 +132,7 @@ public class SampleDetailScreen extends Screen {
 			public void onClick(ClickEvent event) {
 				Set<String> compounds = new HashSet<String>();
 				for (OTGColumn d: chosenColumns) {
-					compounds.addAll(Arrays.asList(((Group) d).getMajors(schema())));
+					compounds.addAll(((Group) d).getMajors(schema()));
 				}
 				List<String> compounds_ = new ArrayList<String>(compounds);
 				atd.compoundsChanged(compounds_);

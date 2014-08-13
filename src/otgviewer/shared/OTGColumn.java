@@ -1,5 +1,7 @@
 package otgviewer.shared;
 
+import java.util.Set;
+
 import t.common.shared.DataSchema;
 import t.common.shared.Packable;
 import t.common.shared.sample.DataColumn;
@@ -11,6 +13,6 @@ public interface OTGColumn extends Packable, DataColumn<OTGSample>, HasSamples<O
 	 * @return
 	 */
 	
-	public String[] getMajors(DataSchema schema);
+	public Set<String> getMajors(DataSchema schema);
 	
 }

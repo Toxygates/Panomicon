@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.Nullable;
+
 import otgviewer.client.Utils;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
@@ -15,10 +17,8 @@ import otgviewer.client.rpc.MatrixServiceAsync;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Series;
-import otgviewer.shared.TimesDoses;
 import otgviewer.shared.ValueType;
 import t.common.shared.DataSchema;
-import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.ExpressionValue;
@@ -38,15 +38,23 @@ abstract class ChartDataSource {
 	
 	private static Logger logger = Utils.getLogger("chartdata");
 	
+	//TODO consider deprecating/simplifying this class
 	static class ChartSample {
-		String minor;
-		String medium;
-		String major;
-		double value;
-		char call;
-		OTGSample barcode; //may be null
-		String probe;
+		final String minor;
+		final String medium;
+		final String major;
+		final double value;
+		final char call;
+		final @Nullable OTGSample barcode; 
+		final String probe;
 		String color = "grey";
+		
+		ChartSample(OTGSample sample, DataSchema schema,
+				double value, String probe, char call) {
+			this(schema.getMinor(sample), schema.getMedium(sample),
+					schema.getMajor(sample),
+					value, sample, probe, call);					
+		}
 		
 		ChartSample(String minor, String medium, String major, 
 				double value, OTGSample barcode, String probe, char call) {
@@ -199,7 +207,7 @@ abstract class ChartDataSource {
 				}
 			}
 			try {
-				//TODO magic constants and code duplication with above
+				//TODO code duplication with above
 				_minorVals = times.toArray(new String[0]);
 				schema.sort(schema.minorParameter(), _minorVals);
 
@@ -224,10 +232,8 @@ abstract class ChartDataSource {
 //				logger.info("Consider " + b.toString());
 				for (ExpressionRow er : rows) {
 					ExpressionValue ev = er.getValue(i);
-					ChartSample cs = new ChartSample(b.get(minorParam), b.get(medParam),
-							b.get(majorParam), 
-							ev.getValue(), b, er.getProbe(), ev.getCall());
-					cs.barcode = b;
+					ChartSample cs = new ChartSample(b, schema,
+							ev.getValue(), er.getProbe(), ev.getCall());
 					samples.add(cs);
 				}
 			}		

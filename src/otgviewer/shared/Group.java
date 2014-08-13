@@ -14,8 +14,6 @@ import t.common.shared.SharedUtils;
 import t.common.shared.Unit;
 import t.common.shared.sample.SampleGroup;
 
-import com.google.gwt.user.client.Window;
-
 /**
  * A group of barcodes. Values will be computed as an average.
  * @author johan
@@ -108,18 +106,18 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 		}
 	}
 	
-	public String[] getMajors(DataSchema schema) {
+	public Set<String> getMajors(DataSchema schema) {
 		return getMajors((SampleClass) null);
 	}
 	
-	public String[] getMajors(@Nullable SampleClass sc) {
+	public Set<String> getMajors(@Nullable SampleClass sc) {
 		Set<String> majorVals = new HashSet<String>();		
 		for (OTGSample b : _samples) {
 			if (sc == null || sc.permits(b)) {
 				majorVals.add(b.get(schema.majorParameter()));
 			}
 		}
-		return majorVals.toArray(new String[0]);		
+		return majorVals;		
 	}
 	
 	public Set<String> collect(String parameter) {

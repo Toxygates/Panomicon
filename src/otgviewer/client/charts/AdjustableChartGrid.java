@@ -3,8 +3,10 @@ package otgviewer.client.charts;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import otgviewer.client.Utils;
@@ -12,11 +14,10 @@ import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Group;
-import otgviewer.shared.OTGSample;
 import otgviewer.shared.GroupUtils;
+import otgviewer.shared.OTGSample;
 import otgviewer.shared.ValueType;
 import t.common.shared.DataSchema;
-import t.common.shared.SharedUtils;
 import t.common.shared.Unit;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -235,25 +236,25 @@ public class AdjustableChartGrid extends Composite {
 			final List<ChartGrid> grids = new ArrayList<ChartGrid>();
 			expectedGrids = 0;
 			allSamples.clear();
-			
+						
 			final boolean vsTime = chartCombo.getSelectedIndex() == 0;
 			if (groups != null) {
+				Set<String> majors = new HashSet<String>();
 				for (Group g : groups) {
-					Label l = new Label("Compounds in '" + g.getName() + "'");
-					l.setStyleName("heading");
-					ivp.add(l);
-					SimplePanel sp = makeGridPanel(g.getMajors(schema));					
-					ivp.add(sp);
-					expectedGrids += 1;
-					gridFor(vsTime, columns, g.getMajors(schema), grids, sp);		
-				}
+					majors.addAll(g.getMajors(schema));
+				}		
+				String[] majorsA = majors.toArray(new String[0]);
+				SimplePanel sp = makeGridPanel(majorsA);
+				ivp.add(sp);
+				expectedGrids += 1;
+				gridFor(vsTime, columns, majorsA, grids, sp);						
 			} else {
+				//TODO when is this case used? fuse with above?
 				SimplePanel sp = makeGridPanel(majorVals.toArray(new String[0]));				
 				ivp.add(sp);
 				expectedGrids += 1;
 				gridFor(vsTime, columns, null, grids, sp);							
-			}
-			
+			}			
 		}
 	}
 	

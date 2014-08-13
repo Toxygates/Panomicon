@@ -95,8 +95,9 @@ public interface MatrixService extends RemoteService {
 			boolean ascending);
 	
 	/**
-	 * Get all data immediately. 
-	 * @param barcodes
+	 * Get all data immediately, on the level of individual values (not averaged).
+	 * @param g Samples to request. The order of the columns returned will correspond to 
+	 * the internal order of this group.
 	 * @param probes
 	 * @param type 
 	 * @param sparseRead If true, we optimise for the case of reading a 

@@ -145,7 +145,9 @@ public class SampleClass implements Serializable, Packable {
 		String o = get("organ_id");
 		String s = get("organism");
 		String r = get("sin_rep_type");
-		String c = get("test_type").equals("in vivo") ? "In Vivo" : "In Vitro";
+		String tt = get("test_type");		
+		String c = (tt != null && 
+					tt.equals("in vivo")) ? "In Vivo" : "In Vitro";
 		return new DataFilter(c, o, r, s);
 	}
 	

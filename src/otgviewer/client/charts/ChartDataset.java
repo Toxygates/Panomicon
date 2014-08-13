@@ -128,9 +128,11 @@ public class ChartDataset {
 		int[] valCount = new int[categories.length];
 
 		for (ChartSample s : samples) {
-			int cat = SharedUtils.indexOf(categories, categoryForSample(s));
+			String scat = categoryForSample(s);
+			int cat = SharedUtils.indexOf(categories, scat);
 			if (cat != -1) {
 //				logger.info("Add " + s.major + " " + s.medium + " " + s.minor + " " + s.value + " " + s.barcode.getCode());
+//				logger.info("Category: " + scat);
 				if (colCount < valCount[cat] + 1) {
 					dt.addColumn(ColumnType.NUMBER);
 					addStyleColumn(dt);

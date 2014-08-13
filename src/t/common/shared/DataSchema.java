@@ -83,4 +83,16 @@ public abstract class DataSchema implements Serializable {
 	}
 	
 	public AType[] associations() { return new AType[] {}; }
+	
+	public String getMinor(HasClass hc) {
+		return hc.sampleClass().get(minorParameter());
+	}
+	
+	public String getMedium(HasClass hc) {
+		return hc.sampleClass().get(mediumParameter());
+	}
+	
+	public String getMajor(HasClass hc) {
+		return hc.sampleClass().get(majorParameter());
+	}
 }

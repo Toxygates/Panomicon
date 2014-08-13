@@ -226,10 +226,10 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     val realProbes = platforms.filterProbes(probes, pfs).toArray
     val mm = makeMatrix(List(g), realProbes.toArray, typ, sparseRead)
     
-    //When we have obtained the data in r, it might no longer be sorted in the order that the user
+    //When we have obtained the data, it might no longer be sorted in the order that the user
     //requested. Thus we use selectNamedColumns here to force the sort order they wanted.
     
-    val raw = mm.rawData.asRows
+    val raw = mm.rawData.selectNamedColumns(g.getSamples().map(_.id())).asRows    
     val rows = if (withSymbols) {
       insertAnnotations(raw)
     } else {
