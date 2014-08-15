@@ -217,7 +217,7 @@ public class CompoundRanker extends DataListenerWidget {
 				//We override this to pull in the probes, because they
 				//may need to be converted from gene symbols.
 				
-				matrixService.identifiersToProbes(probes, true, 
+				matrixService.identifiersToProbes(probes, true, false,  
 						new PendingAsyncCallback<String[]>(this) {
 					public void handleSuccess(String[] resolved) {
 						setItems(Arrays.asList(resolved));
@@ -229,7 +229,7 @@ public class CompoundRanker extends DataListenerWidget {
 			@Override
 			protected void itemsChanged(List<String> items) {
 				matrixService.identifiersToProbes(
-						items.toArray(new String[0]), true, 
+						items.toArray(new String[0]), true, false,
 						new PendingAsyncCallback<String[]>(this) {
 					public void handleSuccess(String[] resolved) {
 						setProbeList(Arrays.asList(resolved));

@@ -43,6 +43,13 @@ exprGrid {
 	background: Beige;
 }
 
+.colored-margin {
+	background: Beige;
+	padding: 5px;
+	border: grey solid 1px;
+	margin: 2px;
+}
+
 .darkColored {
 	background: White;
 	margin: 2px;

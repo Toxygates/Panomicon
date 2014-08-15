@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.Nullable;
+
 import otgviewer.client.charts.AdjustableChartGrid;
 import otgviewer.client.charts.ChartGridFactory;
 import otgviewer.client.charts.ChartGridFactory.AChartAcceptor;
@@ -438,6 +440,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		});
 	}
 	
+	protected @Nullable String probeLink(String identifier) {
+		return null;
+	}
+	
 	protected List<HideableColumn> initHideableColumns(DataSchema schema) {
 		SafeHtmlCell shc = new SafeHtmlCell();
 		List<HideableColumn> r = new ArrayList<HideableColumn>();
@@ -459,19 +465,31 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			public String safeGetValue(ExpressionRow er) {					
 				return SharedUtils.mkString(er.getGeneSyms(), ", ");
 			}
+			
 		});
+		
 		r.add(new DefHideableColumn<ExpressionRow>("Probe title", 
 				initVisibility(StandardColumns.ProbeTitle)) {
 			public String safeGetValue(ExpressionRow er) {				
 				return er.getTitle();
 			}
 		});
-		r.add(new DefHideableColumn<ExpressionRow>("Probe", 
+		
+		r.add(new LinkingColumn<ExpressionRow>(shc, "Probe", 
 				initVisibility(StandardColumns.Probe)) {
-			public String safeGetValue(ExpressionRow er) {				
-				return er.getProbe();
+
+			@Override
+			protected String formLink(String value) {
+				return probeLink(value);
 			}
-		});		
+			@Override
+			protected Collection<Pair<String, String>> getLinkableValues(ExpressionRow er) {
+				List<String> r = new ArrayList<String>();
+				r.add(er.getProbe());
+				return Pair.duplicate(r);
+			}	
+			
+		});			
 		
 		//We want gene sym, probe title etc. to be before the association columns going left to right
 		r.addAll(super.initHideableColumns(schema));

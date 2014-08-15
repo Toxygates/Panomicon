@@ -17,7 +17,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public interface MatrixServiceAsync {
 
 	public void identifiersToProbes(String[] identifiers,
-			boolean precise, AsyncCallback<String[]> callback);
+			boolean precise, boolean titlePatternMatch,
+			AsyncCallback<String[]> callback);
 
 	public void loadDataset(List<Group> columns,
 			String[] probes, ValueType type, List<Synthetic> synthCols, 

@@ -104,11 +104,17 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
 
   //Should this be in sparqlService?
   //TODO: filter by platforms
-  def identifiersToProbes(identifiers: Array[String], precise: Boolean): Array[String] =
-    affyProbes.identifiersToProbes(context.unifiedProbes,  
+  def identifiersToProbes(identifiers: Array[String], precise: Boolean, 
+      titlePatternMatch: Boolean): Array[String] = {
+    if (titlePatternMatch) {
+      affyProbes.forTitlePatterns(identifiers).map(_.identifier).toArray
+    } else {
+      affyProbes.identifiersToProbes(context.unifiedProbes,
         identifiers, precise).map(_.identifier).toArray
-
+    }
+  }
   
+
   private def makeMatrix(requestColumns: Seq[Group], initProbes: Array[String], 
       typ: ValueType, sparseRead: Boolean = false): ManagedMatrix[_] = {
     val reader = if (typ == ValueType.Absolute) {

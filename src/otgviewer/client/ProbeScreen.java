@@ -41,6 +41,7 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.StackLayoutPanel;
 import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -58,9 +59,7 @@ public class ProbeScreen extends Screen {
 	private TextArea customProbeText;
 	private ListBox probesList;
 	private Set<String> listedProbes = new HashSet<String>();
-	private List<ListBox> compoundLists = new ArrayList<ListBox>();
-	final GeneOracle oracle = new GeneOracle();
-	final SuggestBox sb = new SuggestBox(oracle);
+	private List<ListBox> compoundLists = new ArrayList<ListBox>();	
 	private Button proceedSelected;
 	private FixedWidthLayoutPanel fwlp;
 	private DockLayoutPanel plPanel;
@@ -70,7 +69,7 @@ public class ProbeScreen extends Screen {
 	private static final int PL_SOUTH_HEIGHT = 30;
 
 	private static final int STACK_ITEM_HEIGHT = 29;
-	
+	final GeneOracle oracle = new GeneOracle();
 	private final Logger logger = Utils.getLogger();
 
 	public ProbeScreen(ScreenManager man) {
@@ -127,6 +126,16 @@ public class ProbeScreen extends Screen {
 			}
 		};
 	}
+	
+	private VerticalPanel innerVP(String l) {
+		VerticalPanel vpii = Utils.mkVerticalPanel();
+		vpii.setWidth("100%");		
+		vpii.setStylePrimaryName("colored-margin");		
+		
+		Label label = new Label(l);
+		vpii.add(label);
+		return vpii;
+	}
 
 	private Widget manualSelection() {
 		VerticalPanel vp = new VerticalPanel();
@@ -137,18 +146,12 @@ public class ProbeScreen extends Screen {
 		vpi.setWidth("100%");
 		vp.add(vpi);
 
-		VerticalPanel vpii = Utils.mkVerticalPanel();
-		vpii.setWidth("100%");
-		vpii.setStyleName("colored");
+		VerticalPanel vpii = innerVP(
+				"Enter a list of probes, genes or proteins to display only those.");		
 		vpi.add(vpii);
 
-		Label label = new Label(
-				"Enter a list of probes, genes or proteins to display only those.");
-		label.setStyleName("none");
-		vpii.add(label);
-
 		customProbeText = new TextArea();
-		vpi.add(customProbeText);
+		vpii.add(customProbeText);
 		customProbeText.setVisibleLines(10);
 		customProbeText.setWidth("95%");
 
@@ -160,31 +163,45 @@ public class ProbeScreen extends Screen {
 				if (split.length == 0) {
 					Window.alert("Please enter probes, genes or proteins in the text box and try again.");
 				} else {
-					addManualProbes(split);
+					addManualProbes(split, false);
 				}
 			}
 		}));
 
-		vpii = Utils.mkVerticalPanel();
-		vpii.setStyleName("colored2");
-		vpi.add(vpii);
-		vpii.setWidth("100%");
-
-		Label l = new Label("Begin typing a gene symbol to get suggestions.");
-		vpii.add(l);
-
+		vpii = innerVP("Begin typing a gene symbol to get suggestions.");		
+		vpi.add(vpii);		
+		
+		final SuggestBox sb = new SuggestBox(oracle);
 		vpii.add(sb);
 		sb.setWidth("95%");
-		vpi.add(new Button("Add gene", new ClickHandler() {
+		vpii.add(new Button("Add gene", new ClickHandler() {
 			public void onClick(ClickEvent ev) {
 				String[] gs = new String[1];
 				if (sb.getText().length() == 0) {
-					Window.alert("Please type a gene symbol and try again.");
+					Window.alert("Please enter a gene symbol and try again.");
 				}
 				gs[0] = sb.getText();
-				addManualProbes(gs);
+				addManualProbes(gs, false);
 			}
 		}));
+		
+		vpii = innerVP("Match by partial probe name:");		
+		vpi.add(vpii);		
+		
+		final TextBox tb = new TextBox();
+		vpii.add(tb);
+		tb.setWidth("95%");
+		vpii.add(new Button("Add", new ClickHandler() {
+			public void onClick(ClickEvent ev) {		
+				String[] gs = new String[1];
+				if (tb.getText().length() == 0) {
+					Window.alert("Please enter a pattern and try again.");
+				}
+				gs[0] = tb.getText();
+				addManualProbes(gs, true);
+			}
+		}));
+		
 		return vp;
 	}
 	
@@ -245,7 +262,7 @@ public class ProbeScreen extends Screen {
 			@Override
 			protected void itemsChanged(List<String> items) {
 				matrixService.identifiersToProbes(items.toArray(new String[0]),
-						true, new PendingAsyncCallback<String[]>(ps) {
+						true, false, new PendingAsyncCallback<String[]>(ps) {
 							@Override
 							public void handleSuccess(String[] t) {
 								ps.probesChanged(t);								
@@ -314,11 +331,11 @@ public class ProbeScreen extends Screen {
 		return buttons;
 	}
 
-	private void addManualProbes(String[] probes) {
+	private void addManualProbes(String[] probes, boolean titleMatch) {
 		// change the identifiers (which can be mixed format, for example genes
 		// and proteins etc) into a
 		// homogenous format (probes only)
-		matrixService.identifiersToProbes(probes, true,
+		matrixService.identifiersToProbes(probes, true, titleMatch,
 				new PendingAsyncCallback<String[]>(this,
 						"Unable to obtain manual probes (technical error).") {
 					public void handleSuccess(String[] probes) {

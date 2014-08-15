@@ -34,9 +34,12 @@ public interface MatrixService extends RemoteService {
 	 * @param identifiers
 	 * @param precise If true, names must be an exact match, otherwise partial 
 	 * 	name matching is used.
+	 * @param titlePatternMatch If true, the query is assumed to be a partial pattern match
+	 * on probe titles.
 	 * @return
 	 */
-	public String[] identifiersToProbes(String[] identifiers, boolean precise);
+	public String[] identifiersToProbes(String[] identifiers, boolean precise,
+			boolean titlePatternMatch);
 	
 	/**
 	 * Load data into the user's session. Also perform an initial filtering. 
