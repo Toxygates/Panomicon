@@ -321,7 +321,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 	
-	public void inactiveColumnsChanged(List<Group> columns) {
+	protected void inactiveColumnsChanged(List<Group> columns) {
 		Collection<Group> igs = sortedGroupList(columns);
 		for (Group g : igs) {
 			groups.put(g.getName(), g);

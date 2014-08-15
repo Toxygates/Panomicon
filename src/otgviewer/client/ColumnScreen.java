@@ -2,6 +2,7 @@ package otgviewer.client;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import otgviewer.client.components.DataFilterEditor;
 import otgviewer.client.components.Screen;
@@ -117,11 +118,15 @@ public class ColumnScreen extends Screen {
 			try {
 				List<Group> ics = loadColumns(p, schema(), "inactiveColumns", 
 						new ArrayList<OTGColumn>(gi.existingGroupsTable.inverseSelection()));
-				if (ics != null) {
+				if (ics != null && ics.size() > 0) {
+					logger.info("Unpacked i. columns: " + ics.get(0) + ": " + ics.get(0).getSamples()[0] + " ... ");
 					gi.inactiveColumnsChanged(ics);
+				} else {
+					logger.info("No i. columns available");
 				}
 
 			} catch (Exception e) {
+				logger.log(Level.WARNING, "Unable to load i. columns", e);
 				Window.alert("Unable to load inactive columns.");
 			}
 		}

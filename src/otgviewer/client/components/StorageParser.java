@@ -51,7 +51,7 @@ public class StorageParser {
 	}
 	
 	void clearItem(String key) {
-		storage.removeItem(key);
+		storage.removeItem(prefix + "." + key);
 	}
 	
 	public static String packColumns(Collection<? extends OTGColumn> columns) {
