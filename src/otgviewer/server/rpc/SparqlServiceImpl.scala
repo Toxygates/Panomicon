@@ -12,10 +12,8 @@ import javax.servlet.ServletException
 import otg.OTGBConfig
 import otg.OTGContext
 import otg.Species.Human
-import otg.sparql.AffyProbes
-import otg.sparql.B2RHomologene
-import otg.sparql.B2RKegg
-import otg.sparql.ChEMBL
+import t.sparql.secondary._
+import otg.sparql.Probes
 import otg.sparql._
 import t.sparql._
 import otgviewer.client.rpc.SparqlService
@@ -41,6 +39,7 @@ import t.viewer.server.Conversions.scAsScala
 import t.viewer.shared.AType
 import t.viewer.shared.Association
 import otgviewer.server.ScalaUtils
+import otg.sparql.Probes
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -56,7 +55,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   implicit var context: OTGContext = _
   var baseConfig: BaseConfig = _
   var tgConfig: Configuration = _
-  var affyProbes: AffyProbes = _
+  var affyProbes: Probes = _
   var uniprot: Uniprot = _
   var otgSamples: OTGSamples = _
   var b2rKegg: B2RKegg = _
@@ -81,7 +80,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     val tsCon = baseConfig.triplestore
     val ts = tsCon.triplestore
     otgSamples = new OTGSamples(baseConfig)
-    affyProbes = new AffyProbes(ts)
+    affyProbes = new Probes(ts)
     uniprot = new LocalUniprot(ts) 
     b2rKegg = new B2RKegg(ts)
     chembl = new ChEMBL()
@@ -266,13 +265,13 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       case x: AType.Uniprot.type => proteins
       case x: AType.OrthProts.type => oproteins
       case x: AType.GOMF.type => queryOrEmpty(affyProbes, 
-          (a: AffyProbes) => a.mfGoTerms(probes))        
+          (a: Probes) => a.mfGoTerms(probes))        
       case x: AType.GOBP.type => queryOrEmpty(affyProbes, 
-          (a: AffyProbes) => a.bpGoTerms(probes))        
+          (a: Probes) => a.bpGoTerms(probes))        
       case x: AType.GOCC.type => queryOrEmpty(affyProbes, 
-          (a: AffyProbes) => a.ccGoTerms(probes))        
+          (a: Probes) => a.ccGoTerms(probes))        
       case x: AType.GO.type => queryOrEmpty(affyProbes, 
-          (a: AffyProbes) => a.goTerms(probes))
+          (a: Probes) => a.goTerms(probes))
       case x: AType.Homologene.type => queryOrEmpty(homologene,
         (c: B2RHomologene) => toBioMap(probes, (_: Probe).genes) combine
           c.homologousGenes(probes.flatMap(_.genes)))

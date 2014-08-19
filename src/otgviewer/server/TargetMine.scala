@@ -3,11 +3,12 @@ package otgviewer.server
 import scala.collection.JavaConversions._
 import org.intermine.webservice.client.core.ServiceFactory
 import org.intermine.webservice.client.services.ListService
-import otg.sparql.AffyProbes
-import otg.sparql.Gene
-import otg.sparql.Probe
+import t.sparql.secondary._
+import t.sparql._
+import otg.sparql._
 import t.viewer.shared.StringList
 import otgviewer.server.rpc.Conversions
+import otg.sparql.Probes
 
 object TargetMine {
   import Conversions._
@@ -20,7 +21,7 @@ object TargetMine {
   }
     
   def asTGList(l: org.intermine.webservice.client.lists.ItemList,
-      ap: AffyProbes,
+      ap: Probes,
       filterProbes: (Seq[String]) => Seq[String]): StringList = {
       var items: Vector[Gene] = Vector()
       for (i <- 0 until l.getSize()) {        
@@ -37,7 +38,7 @@ object TargetMine {
       new StringList("probes", l.getName(), filtered.toArray);
   }
   
-  def addLists(ap: AffyProbes, ls: ListService, 
+  def addLists(ap: Probes, ls: ListService, 
       lists: List[StringList], replace: Boolean): Unit = {
     for (l <- lists) {
       var serverList = ls.getList(l.name)

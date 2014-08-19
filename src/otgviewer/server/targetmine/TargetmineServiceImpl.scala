@@ -5,7 +5,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet
 import otgviewer.server.TargetMine
 import t.viewer.shared.StringList
 import otgviewer.client.targetmine.TargetmineService
-import otg.sparql.AffyProbes
+import otg.sparql.Probes
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import t.viewer.server.Configuration
@@ -16,7 +16,7 @@ import t.BaseConfig
 import t.viewer.server.Platforms
 
 class TargetmineServiceImpl extends RemoteServiceServlet with TargetmineService {
-  var affyProbes: AffyProbes = _ 
+  var affyProbes: Probes = _ 
   var platforms: Platforms = _
   
     @throws(classOf[ServletException])
@@ -27,7 +27,7 @@ class TargetmineServiceImpl extends RemoteServiceServlet with TargetmineService 
 
   // Useful for testing
   def localInit(config: Configuration) {            
-    affyProbes = new AffyProbes(config.tsConfig.triplestore)
+    affyProbes = new Probes(config.tsConfig.triplestore)
     platforms = Platforms(affyProbes)
   }
   

@@ -12,7 +12,7 @@ import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import otg.OTGContext
 import otg.SeriesRanking
-import otg.sparql.AffyProbes
+import otg.sparql.Probes
 import otgviewer.client.rpc.SeriesService
 import t.viewer.server.Configuration
 import otgviewer.shared.DataFilter
@@ -41,7 +41,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   import java.lang.{ Double => JDouble }
 
   private implicit var context: OTGContext = _
-  var affyProbes: AffyProbes = _
+  var affyProbes: Probes = _
   var baseConfig: BaseConfig = _
   
   @throws(classOf[ServletException])
@@ -56,7 +56,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     baseConfig = baseConfig(config.tsConfig, config.dataConfig)
     context = config.context(baseConfig)
     
-    affyProbes = new AffyProbes(context.triplestoreConfig.triplestore)
+    affyProbes = new Probes(context.triplestoreConfig.triplestore)
   }
   
   def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig = 

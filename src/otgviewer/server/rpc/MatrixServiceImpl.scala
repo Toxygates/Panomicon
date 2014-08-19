@@ -10,7 +10,7 @@ import Conversions.asScala
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import otg.OTGContext
-import otg.sparql.AffyProbes
+import otg.sparql.Probes
 import t.sparql._
 import otg.sparql.OTGSamples
 import otg.sparql.Probe
@@ -53,7 +53,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   private var csvDirectory: String = _
   private var csvUrlBase: String = _
   private implicit var context: OTGContext = _
-  var affyProbes: AffyProbes = _ 
+  var affyProbes: Probes = _ 
   //TODO update mechanism
   var otgSamples: OTGSamples = _
   var platforms: Platforms = _
@@ -75,7 +75,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     
     val tsCon = context.triplestoreConfig
     val ts = tsCon.triplestore
-    affyProbes = new AffyProbes(ts)
+    affyProbes = new Probes(ts)
     otgSamples = new OTGSamples(baseConfig)
     platforms = Platforms(affyProbes)
   }

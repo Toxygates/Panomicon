@@ -1,9 +1,9 @@
 package t.viewer.server
 
-import otg.sparql.AffyProbes
+import otg.sparql.Probes
 
 object Platforms {
-  def apply(probes: AffyProbes): Platforms = {
+  def apply(probes: Probes): Platforms = {
     new Platforms(probes.platforms.map(x => x._1 -> x._2.toSet)) 
   }
 }
