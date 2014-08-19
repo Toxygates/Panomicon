@@ -3,7 +3,7 @@ package otgviewer.server
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import otg.ExprValue
+import t.db.ExprValue
 import t.common.shared.sample.ExpressionValue
 import friedrich.data.immutable._
 

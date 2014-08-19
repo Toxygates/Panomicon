@@ -22,6 +22,7 @@ import otg.OTGSeries
 import t.common.shared.SampleClass
 import t.common.shared.Pair
 import otgviewer.shared.OTGSample
+import t.db.{ExprValue => TExprValue}
 
 
 /**
@@ -63,9 +64,9 @@ object Conversions {
 	    series.compound, series.values.map(asJava).toArray)
   }
   
-  implicit def asJava(ev: otg.ExprValue): ExpressionValue = new ExpressionValue(ev.value, ev.call)
+  implicit def asJava(ev: TExprValue): ExpressionValue = new ExpressionValue(ev.value, ev.call)
   //Loses probe information!
-  implicit def asScala(ev: ExpressionValue): otg.ExprValue = otg.ExprValue(ev.getValue, ev.getCall, "")
+  implicit def asScala(ev: ExpressionValue): TExprValue = TExprValue(ev.getValue, ev.getCall, "")
   
   def nullToOption[T](v: T): Option[T] = {
     if (v == null) {

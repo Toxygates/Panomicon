@@ -1,9 +1,6 @@
 package otgviewer.server
 
 import t.common.shared.sample.ExpressionValue
-import otg.ExprValue
-import otg.OTGContext
-import otg.PExprValue
 import otgviewer.server.rpc.Conversions._
 import otgviewer.shared.Group
 import otgviewer.shared.ManagedMatrixInfo
@@ -11,6 +8,9 @@ import otgviewer.shared.Synthetic
 import t.db.MatrixDBReader
 import otgviewer.shared.OTGSample
 import t.db.Sample
+import t.db.PExprValue
+import otg.OTGContext
+import t.db.ExprValue
 
 
 /**

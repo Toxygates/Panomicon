@@ -1,8 +1,5 @@
 package otgviewer.server
 
-import otgviewer.shared.DataFilter
-import otg.Filter
-import javax.servlet.http.HttpSession
 import t.sparql.Triplestore
 
 object ScalaUtils {
