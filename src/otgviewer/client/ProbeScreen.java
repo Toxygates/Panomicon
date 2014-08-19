@@ -168,39 +168,43 @@ public class ProbeScreen extends Screen {
 			}
 		}));
 
-		vpii = innerVP("Begin typing a gene symbol to get suggestions.");		
-		vpi.add(vpii);		
-		
-		final SuggestBox sb = new SuggestBox(oracle);
-		vpii.add(sb);
-		sb.setWidth("95%");
-		vpii.add(new Button("Add gene", new ClickHandler() {
-			public void onClick(ClickEvent ev) {
-				String[] gs = new String[1];
-				if (sb.getText().length() == 0) {
-					Window.alert("Please enter a gene symbol and try again.");
+		if (hasSymbolFinder()) {
+			vpii = innerVP("Begin typing a gene symbol to get suggestions.");
+			vpi.add(vpii);
+
+			final SuggestBox sb = new SuggestBox(oracle);
+			vpii.add(sb);
+			sb.setWidth("95%");
+			vpii.add(new Button("Add gene", new ClickHandler() {
+				public void onClick(ClickEvent ev) {
+					String[] gs = new String[1];
+					if (sb.getText().length() == 0) {
+						Window.alert("Please enter a gene symbol and try again.");
+					}
+					gs[0] = sb.getText();
+					addManualProbes(gs, false);
 				}
-				gs[0] = sb.getText();
-				addManualProbes(gs, false);
-			}
-		}));
+			}));
+		}
 		
-		vpii = innerVP("Match by partial probe name:");		
-		vpi.add(vpii);		
-		
-		final TextBox tb = new TextBox();
-		vpii.add(tb);
-		tb.setWidth("95%");
-		vpii.add(new Button("Add", new ClickHandler() {
-			public void onClick(ClickEvent ev) {		
-				String[] gs = new String[1];
-				if (tb.getText().length() == 0) {
-					Window.alert("Please enter a pattern and try again.");
+		if (hasPartialMatcher()) {
+			vpii = innerVP("Match by partial probe name:");
+			vpi.add(vpii);
+
+			final TextBox tb = new TextBox();
+			vpii.add(tb);
+			tb.setWidth("95%");
+			vpii.add(new Button("Add", new ClickHandler() {
+				public void onClick(ClickEvent ev) {
+					String[] gs = new String[1];
+					if (tb.getText().length() == 0) {
+						Window.alert("Please enter a pattern and try again.");
+					}
+					gs[0] = tb.getText();
+					addManualProbes(gs, true);
 				}
-				gs[0] = tb.getText();
-				addManualProbes(gs, true);
-			}
-		}));
+			}));
+		}
 		
 		return vp;
 	}
@@ -208,6 +212,10 @@ public class ProbeScreen extends Screen {
 	protected boolean hasChembl() { return true; }
 	
 	protected boolean hasDrugbank() { return true; }
+	
+	protected boolean hasSymbolFinder() { return true; }
+	
+	protected boolean hasPartialMatcher() { return false; }
 
 	public Widget content() {
 		StackLayoutPanel probeSelStack = new StackLayoutPanel(Unit.PX);

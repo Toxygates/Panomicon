@@ -11,8 +11,7 @@ import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import otg.OTGContext
 import otg.sparql.AffyProbes
-import otg.sparql.BioObjects
-import otg.sparql.BioObjects.makeRich
+import t.sparql._
 import otg.sparql.OTGSamples
 import otg.sparql.Probe
 import otgviewer.client.rpc.MatrixService
@@ -254,7 +253,6 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     
   @throws(classOf[NoDataLoadedException])
   def prepareCSVDownload(): String = {
-    import BioObjects._
     val mm = getSessionData()
 
     val rendered = mm.current

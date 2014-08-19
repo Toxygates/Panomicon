@@ -16,21 +16,8 @@ import otg.sparql.AffyProbes
 import otg.sparql.B2RHomologene
 import otg.sparql.B2RKegg
 import otg.sparql.ChEMBL
-import otg.sparql.CommonSPARQL.BBMap
-import otg.sparql.CommonSPARQL.MMap
-import otg.sparql.CommonSPARQL.emptyMMap
-import otg.sparql.CommonSPARQL.makeRich
-import otg.sparql.CommonSPARQL.toBioMap
-import otg.sparql.Compound
-import otg.sparql.CompoundTargets
-import otg.sparql.DrugBank
-import otg.sparql.GOTerm
-import otg.sparql.Gene
-import otg.sparql.LocalUniprot
-import otg.sparql.OTGSamples
-import otg.sparql.Probe
-import otg.sparql.Protein
-import otg.sparql.Uniprot
+import otg.sparql._
+import t.sparql._
 import otgviewer.client.rpc.SparqlService
 import otgviewer.server.ScalaUtils.useTriplestore
 import otgviewer.shared.OTGColumn
@@ -53,7 +40,6 @@ import t.viewer.server.Conversions.asSpecies
 import t.viewer.server.Conversions.scAsScala
 import t.viewer.shared.AType
 import t.viewer.shared.Association
-import otg.sparql.CommonSPARQL
 import otgviewer.server.ScalaUtils
 
 /**
@@ -64,7 +50,6 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   import Conversions._
   import t.viewer.server.Conversions._
   import ScalaUtils._
-  import CommonSPARQL._
 
   type DataColumn = t.common.shared.sample.DataColumn[OTGSample]
   
