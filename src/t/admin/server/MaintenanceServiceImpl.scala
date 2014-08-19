@@ -29,15 +29,17 @@ import otg.OTGBConfig
 import t.sparql.Instances
 import t.InstanceManager
 import t.sparql.TRDF
+import scala.sys.process._
 
 class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceService {
   var baseConfig: BaseConfig = _
+  var conf: Configuration = _
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config)
     
-    val conf = Configuration.fromServletConfig(config)
+    conf = Configuration.fromServletConfig(config)
     baseConfig = baseConfig(conf.tsConfig, conf.dataConfig)
   }
   
@@ -153,9 +155,18 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
   def addInstance(id: String, comment: String): Unit = {
     val im = new Instances(baseConfig.triplestore)
     if (!TRDF.isValidIdentifier(id)) {
-      throw new MaintenanceException(s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
+      throw new MaintenanceException(
+          s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
     }
-    maintenance { im.addWithTimestamp(id, TRDF.escape(comment)) }    
+    maintenance {
+      val home = conf.webappHomeDir      
+      val policy = "public"
+      val p = Process(s"sh $home/new_instance.${policy}.sh $id $id").!
+      if (p != 0) {
+        throw new MaintenanceException(s"Creating webapp instance failed: return code $p")
+      }
+      im.addWithTimestamp(id, TRDF.escape(comment)) 
+    }    
   }
  
   def deleteBatchAsync(id: String): Unit = {
@@ -180,7 +191,15 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
   
   def deleteInstance(id: String): Unit = {
     val im = new Instances(baseConfig.triplestore)
-    maintenance { im.delete(id) }
+    maintenance {
+      val home = conf.webappHomeDir
+      val p = Process(s"sh $home/delete_instance.sh $id $id").!
+      if (p != 0) {
+        throw new MaintenanceException(s"Deleting webapp instance failed: return code $p")
+      }
+      
+      im.delete(id) 
+    }
   }
   
   def getOperationResults(): OperationResults = {

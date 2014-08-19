@@ -15,19 +15,22 @@ object Configuration {
   def fromServletConfig(config: ServletConfig): Configuration = {
     val servletContext = config.getServletContext()
     
+    def p(x: String) = servletContext.getInitParameter(x)
+    
     /**
      * These parameters are read from <context-param> tags in WEB-INF/web.xml.
      */
-    new Configuration(servletContext.getInitParameter("repositoryName"),
-      servletContext.getInitParameter("dataDir"),
-      servletContext.getInitParameter("csvDir"),
-      servletContext.getInitParameter("csvUrlBase"),      
-      parseAClass(servletContext.getInitParameter("applicationClass")),
-      servletContext.getInitParameter("repositoryURL"),
-      servletContext.getInitParameter("updateURL"),
-      servletContext.getInitParameter("repositoryUser"),
-      servletContext.getInitParameter("repositoryPassword"),
-      servletContext.getInitParameter("instanceName"))
+    new Configuration(p("repositoryName"),
+      p("dataDir"),
+      p("csvDir"),
+      p("csvUrlBase"),      
+      parseAClass(p("applicationClass")),
+      p("repositoryURL"),
+      p("updateURL"),
+      p("repositoryUser"),
+      p("repositoryPassword"),
+      p("instanceName"),
+      p("webappHomeDir"))
   } 
   
   def parseAClass(v: String): ApplicationClass = {
@@ -47,7 +50,8 @@ class Configuration(val repositoryName: String,
     val updateUrl: String = null,
     val repositoryUser: String = null,
     val repositoryPass: String = null,
-    val instanceName: String = null) {
+    val instanceName: String = null,
+    val webappHomeDir: String = null) {
   
   def this(owlimRepository: String, toxygatesHome:String, foldsDBVersion: Int) = 
     this(owlimRepository, toxygatesHome, System.getProperty("otg.csvDir"), 
