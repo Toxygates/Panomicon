@@ -62,18 +62,23 @@ public class AdminConsole implements EntryPoint {
 		List<Command> cmds = new ArrayList<Command>();
 		cmds.add(new Command("Add new...") {
 			public void run() {
-				String name = Window.prompt("Please enter the name of the new instance:", "Untitled");
-				maintenanceService.addInstance(name, "", new AsyncCallback<Void>() {
+				final DialogBox db = new DialogBox(false, true);
+				db.setTitle("Add or update instance");
+				db.setWidget(new InstanceEditor() {
+
 					@Override
-					public void onFailure(Throwable caught) {
-						Window.alert("Unable to add instance : " + caught.getMessage());
+					protected void onFinish() {
+						db.hide();
+						refreshInstances();			
 					}
 
 					@Override
-					public void onSuccess(Void result) {
-						refreshInstances();						
+					protected void onAbort() {
+						db.hide();
+						refreshInstances();			
 					}					
-				});				
+				});
+				db.show();			
 			}
 		});
 		
@@ -97,8 +102,7 @@ public class AdminConsole implements EntryPoint {
 		TabLayoutPanel tlp = new TabLayoutPanel(2, Unit.EM);		
 		tlp.add(makeBatchEditor(), "Batches");
 		tlp.add(makePlatformEditor(), "Platforms");
-		tlp.add(makeInstanceEditor(), "Instances");
-		tlp.add(makeAccessEditor(), "Access");				
+		tlp.add(makeInstanceEditor(), "Instances");					
 		return tlp;
 	}
 	
@@ -316,10 +320,6 @@ public class AdminConsole implements EntryPoint {
 			}			
 		});
 			
-	}
-	
-	private Widget makeAccessEditor() {
-		return new SimplePanel();
 	}
 
 	private <T extends ManagedItem> CellTable<T> makeTable() {

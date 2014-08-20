@@ -15,6 +15,7 @@ import t.common.client.components.SelectionTable;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
@@ -27,6 +28,9 @@ public class VisibilityEditor extends Composite {
 	public VisibilityEditor(Batch batch, Collection<Instance> instances) {
 		VerticalPanel vp = new VerticalPanel();
 		initWidget(vp);
+		
+		Label l = new Label("Please select the instances in which this batch should be\n visible. Changes are saved immediately.");
+		vp.add(l);
 		
 		st = new SelectionTable<Instance>("", true) {
 			@Override

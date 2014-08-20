@@ -152,20 +152,35 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
     } 
   }
 
-  def addInstance(id: String, comment: String): Unit = {
+  def addInstance(i: Instance): Unit = {
     val im = new Instances(baseConfig.triplestore)
+    
+    val id = i.getTitle()    
     if (!TRDF.isValidIdentifier(id)) {
       throw new MaintenanceException(
           s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
     }
+    val param = i.getPolicyParameter()
+    if (!TRDF.isValidIdentifier(param)) {
+      throw new MaintenanceException(
+          s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
+    }
+    if (im.list.contains(id)) {
+      throw new MaintenanceException(s"The instance $id already exists, please choose a different name")
+    }
+    
     maintenance {
-      val home = conf.webappHomeDir      
-      val policy = "public"
-      val p = Process(s"sh $home/new_instance.${policy}.sh $id $id").!
+      val home = conf.webappHomeDir
+      val ap = i.getAccessPolicy()
+      val policy = ap.toString().toLowerCase();
+  
+      val cmd = s"sh $home/new_instance.${policy}.sh $id $id $param"
+      println(s"Run command: $cmd")
+      val p = Process(cmd).!
       if (p != 0) {
         throw new MaintenanceException(s"Creating webapp instance failed: return code $p")
       }
-      im.addWithTimestamp(id, TRDF.escape(comment)) 
+      im.addWithTimestamp(id, TRDF.escape(i.getComment)) 
     }    
   }
  
@@ -193,7 +208,9 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
     val im = new Instances(baseConfig.triplestore)
     maintenance {
       val home = conf.webappHomeDir
-      val p = Process(s"sh $home/delete_instance.sh $id $id").!
+      val cmd = s"sh $home/delete_instance.sh $id $id"
+      println(s"Run command: $cmd")
+      val p = Process(cmd).!
       if (p != 0) {
         throw new MaintenanceException(s"Deleting webapp instance failed: return code $p")
       }

@@ -1,5 +1,7 @@
 package t.admin.shared;
 
-public enum AccessPolicy {
-	Public, Password;
+import java.io.Serializable;
+
+public enum AccessPolicy implements Serializable {
+	Public, Password;		
 }

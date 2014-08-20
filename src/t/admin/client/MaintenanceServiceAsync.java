@@ -21,7 +21,7 @@ public interface MaintenanceServiceAsync {
 	void addPlatformAsync(String id, String comment, boolean affymetrixFormat, 
 			AsyncCallback<Void> callback);
 	
-	void addInstance(String id, String comment, AsyncCallback<Void> callback);
+	void addInstance(Instance i, AsyncCallback<Void> callback);
 
 	void deleteBatchAsync(String id, AsyncCallback<Void> callback);
 	

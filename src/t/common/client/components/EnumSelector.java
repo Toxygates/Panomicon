@@ -1,4 +1,4 @@
-package otgviewer.client.components;
+package t.common.client.components;
 
 import java.util.Arrays;
 

@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.EnumSelector;
 import otgviewer.client.components.ListChooser;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
@@ -18,6 +17,7 @@ import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.RuleType;
+import t.common.client.components.EnumSelector;
 import t.common.shared.SampleClass;
 import t.viewer.shared.ItemList;
 

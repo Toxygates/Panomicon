@@ -31,7 +31,7 @@ public interface MaintenanceService extends RemoteService {
 	 */ 
 	void addPlatformAsync(String id, String comment, boolean affymetrixFormat) throws MaintenanceException;
 	
-	void addInstance(String id, String comment) throws MaintenanceException;
+	void addInstance(Instance i) throws MaintenanceException;
 	
 	/**
 	 * Delete a batch. 
