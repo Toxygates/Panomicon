@@ -3,7 +3,12 @@ package t.common.shared;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 
+import javax.annotation.Nullable;
+
+import otgviewer.shared.Group;
+import t.common.shared.probe.ProbeCombiner;
 import t.viewer.shared.AType;
 
 /**
@@ -95,4 +100,12 @@ public abstract class DataSchema implements Serializable {
 	public String getMajor(HasClass hc) {
 		return hc.sampleClass().get(majorParameter());
 	}
+	
+	@Nullable
+	/**
+	 * Obtain the probe combiner to be applied for a given set of groups.
+	 * @param groups
+	 * @return
+	 */
+	public ProbeCombiner probeCombiner(List<Group> groups) { return null; }
 }

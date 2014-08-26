@@ -13,6 +13,7 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.dialog.DialogPosition;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGSample;
+import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.Unit;
 
@@ -44,7 +45,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	private Unit[] oldSelection;
 	
 	private Map<Unit, UnitUI> unitUis = new HashMap<Unit, UnitUI>();
-	private Map<String, Unit> controlUnits = new HashMap<String, Unit>();
+	private Map<Unit, Unit> controlUnits = new HashMap<Unit, Unit>();
 	
 	private class UnitUI extends Composite {
 		CheckBox cb = new CheckBox();	
@@ -78,7 +79,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 				l.setText("");
 				a.setEnabled(true);
 				int treatedCount = unit.getSamples().length;				
-				Unit controlUnit = controlUnitFor(unit);
+				Unit controlUnit = controlUnits.get(unit);
 				String controlCount = 
 					(controlUnit != null ? controlUnit.getSamples().length + "" : "?");
 				a.setText(" " + treatedCount + "/" + controlCount);				
@@ -226,25 +227,14 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		sc.put(mediumParameter, medium);
 		sc.put(minorParameter, minor);
 	}
-	
-	@Nullable
-	private Unit controlUnitFor(Unit u) {
-		Unit b = schema.selectionControlUnitFor(u);		
-		if (b != null) {
-			b.mergeDeferred(chosenSampleClass);
-			return controlUnits.get(b.toString());
-		} else {
-			return null;
-		}
-	}
-	
+
 	public List<Unit> getSelectedUnits(boolean treatedOnly) {
 		List<Unit> r = new ArrayList<Unit>();
 		for (Unit k : unitUis.keySet()) {
 			if (unitUis.get(k).getValue()) {
 				r.add(k);
 				if (!treatedOnly) {
-					Unit control = controlUnitFor(k);
+					Unit control = controlUnits.get(k);
 					if (control != null) {
 						r.add(control);
 					}
@@ -265,7 +255,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		SampleDetailTable st = new SampleDetailTable(this, "Experiment detail");
 		Unit finalUnit = getFinalUnit(unit);
 		if (finalUnit.getSamples() != null && finalUnit.getSamples().length > 0) {
-			Unit controlUnit = controlUnitFor(finalUnit);			
+			Unit controlUnit = controlUnits.get(finalUnit);			
 			Unit[] units = (controlUnit != null ?
 					new Unit[] { finalUnit, controlUnit } :
 					new Unit[] { finalUnit });
@@ -334,21 +324,12 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	@Override
 	protected void samplesAvailable() {
 		logger.info("Samples available: " + availableUnits.length + " units");
-		for (Unit u: availableUnits) {
-			// Register these first so they can be looked up
-			// later
-			
-			if (schema.isSelectionControl(u)) {			
-				controlUnits.put(u.toString(), u);
-			}	
+		for (Pair<Unit, Unit> u: availableUnits) {			
+			controlUnits.put(u.first(), u.second()); 			
 		}
 		
-		for (Unit u: availableUnits) {
-//			Window.alert(u.toString());
-			//TODO
-			if (schema.isSelectionControl(u)) {
-				continue;
-			}
+		for (Pair<Unit, Unit> treatedControl: availableUnits) {
+			Unit u = treatedControl.first();
 			if (u.getSamples() == null || u.getSamples().length == 0) {				
 				continue;
 			}

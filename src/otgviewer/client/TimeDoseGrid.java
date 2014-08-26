@@ -3,7 +3,6 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import otgviewer.client.components.DataListenerWidget;
@@ -12,14 +11,12 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.OTGSample;
-import scala.reflect.macros.internal.macroImpl;
 import t.common.shared.DataSchema;
+import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.Unit;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -52,7 +49,8 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	protected List<String> mediumValues = new ArrayList<String>();
 	protected List<String> minorValues = new ArrayList<String>();
 	
-	protected Unit[] availableUnits;
+	//First pair member: treated samples, second: control samples or null
+	protected Pair<Unit, Unit>[] availableUnits;
 	protected Logger logger = Utils.getLogger("tdgrid");
 	
 	/** 
@@ -72,7 +70,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		this.mediumParameter = schema.mediumParameter();
 		this.minorParameter = schema.minorParameter();
 		this.timeParameter = schema.timeParameter();
-		try {
+		try {			
 			mediumValues = Arrays.asList(schema.sortedValues(schema.mediumParameter()));
 		} catch (Exception e) {
 			logger.warning("Unable to sort medium parameters");
@@ -98,7 +96,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	public void sampleClassChanged(SampleClass sc) {
 		if (!sc.equals(chosenSampleClass)) {
 			super.sampleClassChanged(sc);
-			minorValues = new ArrayList();			
+			minorValues = new ArrayList<String>();			
 			screen.enqueue(new Screen.QueuedAction("fetchTimes") {				
 				@Override
 				public void run() {
@@ -163,10 +161,10 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			return;
 		}
 		fetchingSamples = true;
-		availableUnits = new Unit[0];
+		availableUnits = new Pair[0];
 		String[] compounds = chosenCompounds.toArray(new String[0]);
 		sparqlService.units(chosenSampleClass, schema, majorParameter, compounds,
-				new PendingAsyncCallback<Unit[]>(this, "Unable to obtain samples.") {
+				new PendingAsyncCallback<Pair<Unit, Unit>[]>(this, "Unable to obtain samples.") {
 
 			@Override
 			public void handleFailure(Throwable caught) {
@@ -175,7 +173,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			}
 
 			@Override
-			public void handleSuccess(Unit[] result) {
+			public void handleSuccess(Pair<Unit, Unit>[] result) {
 				availableUnits = result;							
 				samplesAvailable();				
 				fetchingSamples = false;
@@ -258,7 +256,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			r++;
 		}
 		
-		List<Unit> allUnits = new ArrayList<Unit>();
+		List<Pair<Unit, Unit>> allUnits = new ArrayList<Pair<Unit, Unit>>();
 		for (int c = 0; c < chosenCompounds.size(); ++c) {
 			for (int d = 0; d < numMed; ++d) {
 				HorizontalPanel hp = Utils.mkHorizontalPanel(true);				
@@ -269,7 +267,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 					sc.put(minorParameter, minorValues.get(t));
 					sc.mergeDeferred(chosenSampleClass);
 					Unit unit = new Unit(sc, new OTGSample[] {});									
-					allUnits.add(unit); 
+					allUnits.add(new Pair<Unit, Unit>(unit, null)); 
 					hp.add(guiForUnit(unit));
 				}
 				Widget fin = guiForCompoundDose(c, d);
@@ -283,7 +281,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			}
 			r++;
 		}
-		availableUnits = allUnits.toArray(new Unit[0]);
+		availableUnits = allUnits.toArray(new Pair[0]);
 	}
 	
 }

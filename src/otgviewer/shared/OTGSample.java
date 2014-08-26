@@ -3,6 +3,8 @@ package otgviewer.shared;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.Sample;
@@ -11,8 +13,9 @@ public class OTGSample extends Sample {
 
 	public OTGSample() { super(); }
 	
-	public OTGSample(String _code, SampleClass _sampleClass) {
-		super(_code, _sampleClass);			 
+	public OTGSample(String _code, SampleClass _sampleClass, 
+			@Nullable String controlGroup) {
+		super(_code, _sampleClass, controlGroup);			 
 	}
 	
 	public String getTitle(DataSchema schema) {
@@ -55,14 +58,14 @@ public class OTGSample extends Sample {
 		
 		if (s1.length == 6) {		
 			//Version 1
-			return new OTGSample(id, new SampleClass(sc));
+			return new OTGSample(id, new SampleClass(sc), null);
 		} else if (s1.length == 10) {
 			//Version 2
 			sc.put("test_type", s1[6]);
 			sc.put("organ_id", s1[7]);
 			sc.put("sin_rep_type", s1[8]);
 			sc.put("organism", s1[9]);
-			return new OTGSample(id, new SampleClass(sc));						
+			return new OTGSample(id, new SampleClass(sc), null);
 		} else {			
 			return null;
 		}
@@ -76,7 +79,7 @@ public class OTGSample extends Sample {
 		} 
 		String id = spl[1];
 		SampleClass sc = SampleClass.unpack(spl[2]);
-		return new OTGSample(id, sc);
+		return new OTGSample(id, sc, null);
 		
 	}
 	
@@ -107,6 +110,7 @@ public class OTGSample extends Sample {
 		sb.append("Barcode_v3").append(sep);
 		sb.append(id()).append(sep);
 		sb.append(sampleClass.pack()).append(sep);
+		//Packing does not preserve controlGroup
 		return sb.toString();
 	}
 }

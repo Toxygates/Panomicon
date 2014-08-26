@@ -32,7 +32,6 @@ import t.db.{ExprValue => TExprValue}
  * GWT can only serialise Java classes that follow certain constraints.
  */
 object Conversions {
-  import language.implicitConversions
   import t.viewer.server.Conversions._
 
   implicit def asJava(path: otg.Pathology): Pathology =
@@ -48,7 +47,7 @@ object Conversions {
   //TODO pass in DataFilter?
   def asJavaSample(s: t.db.Sample): OTGSample = {
     val sc = scAsJava(s.sampleClass)
-    new OTGSample(s.sampleId, sc)
+    new OTGSample(s.sampleId, sc, s.cgroup.getOrElse(null))
   }
 
   implicit def asScala(sc: SampleClass, series: Series)(implicit context: Context): OTGSeries = {

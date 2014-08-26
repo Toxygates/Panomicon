@@ -5,6 +5,7 @@ import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
 import t.common.shared.DataSchema;
+import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.Unit;
 import t.common.shared.sample.Annotation;
@@ -47,12 +48,13 @@ public interface SparqlService extends RemoteService {
 	
 	/**
 	 * Obtain units that are populated with the samples that belong to them,
-	 * with a filter on one parameeter.
+	 * with a filter on one parameter.
 	 * @param sc
 	 * @param 
-	 * @return
+	 * @return Pairs of units, where the first is treated samples and the second
+	 * the corresponding control samples, or null if there are none.
 	 */
-	public Unit[] units(SampleClass sc, DataSchema schema,
+	public Pair<Unit, Unit>[] units(SampleClass sc, DataSchema schema,
 			String param, @Nullable String[] paramValues);
 			
 //	

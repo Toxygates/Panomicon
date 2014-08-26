@@ -1,6 +1,8 @@
 package t.common.shared.sample;
 import java.io.Serializable;
 
+import javax.annotation.Nullable;
+
 import t.common.shared.HasClass;
 import t.common.shared.Packable;
 import t.common.shared.SampleClass;
@@ -15,10 +17,12 @@ import t.common.shared.SampleClass;
 abstract public class Sample implements Packable, Serializable, HasClass {
 
 	protected SampleClass sampleClass;
+	protected @Nullable String controlGroup;
 	
 	public Sample() {}
 	
-	public Sample(String _id, SampleClass _sampleClass) {
+	public Sample(String _id, SampleClass _sampleClass, 
+			@Nullable String controlGroup) {
 		id = _id;
 		sampleClass = _sampleClass;
 	}
@@ -51,6 +55,5 @@ abstract public class Sample implements Packable, Serializable, HasClass {
 	
 	abstract public String pack();
 	
-//	abstract public Unit<? extends Sample> getUnit();
-	
+	@Nullable String controlGroup() { return controlGroup; }
 }

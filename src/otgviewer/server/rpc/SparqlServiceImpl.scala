@@ -28,6 +28,7 @@ import t.common.shared.DataSchema
 import t.common.shared.SampleClass
 import t.common.shared.sample.Annotation
 import t.common.shared.sample.HasSamples
+import t.common.shared.Pair
 import t.db.DefaultBio
 import t.sparql.Instances
 import t.sparql.Triplestore
@@ -127,12 +128,37 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 	  ).toArray
   }
       
+  import t.common.shared.{Unit => TUnit}
   //TODO don't pass schema from client
   def units(sc: SampleClass, schema: DataSchema, 
-      param: String, paramValues: Array[String]): Array[t.common.shared.Unit] = {
-    val bcs = otgSamples.samples(sc, param, paramValues, instanceURI).map(asJavaSample(_))
-    val g = bcs.groupBy(x => x.sampleClass().asUnit(schema))
-    g.map(x => new t.common.shared.Unit(x._1, x._2.toArray)).toArray
+      param: String, paramValues: Array[String]): Array[Pair[TUnit, TUnit]] = {
+    val ss = otgSamples.samples(sc, param, paramValues, instanceURI).
+    		groupBy(x =>(x.sampleClass("batch"), 
+    		    x.sampleClass(schema.timeParameter()), 
+    		    x.sampleClass.get("control_group")))
+    
+    //Samples are grouped by batch and "control group".  
+    //For each unit of treated samples inside a control group, all
+    //control samples in that group are assigned as control.
+    var r = Vector[Pair[TUnit, TUnit]]()
+    for (((b, t, cg), samples) <- ss;
+    		treatedControl = samples.partition(_.sampleClass("dose_level") != "Control")) {
+    	val treatedUnits = treatedControl._1.map(asJavaSample).
+    			groupBy(_.sampleClass.asUnit(schema))
+    			
+    	val cus = treatedControl._2.map(asJavaSample)
+    	val cu = if (!cus.isEmpty) {
+    	  new TUnit(cus.head.sampleClass().asUnit(schema),    	
+    	    cus.toArray)
+    	} else {
+    	  null
+    	}
+    	
+    	r ++= treatedUnits.map(u => new Pair(
+    	    new TUnit(u._1, u._2.toArray), cu))
+    	r :+= new Pair(cu, null: TUnit) //add this as a pseudo-treated unit by itself
+    }    
+    r.toArray
   }
     
 //  val orderedTimes = TimesDoses.allTimes.toList 

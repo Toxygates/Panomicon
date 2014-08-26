@@ -4,14 +4,12 @@ import java.io.Serializable;
 
 /**
  * A single entry in an ExprMatrix or ExpressionRow.
- * Future: consider using Doubles instead if possible
- * (if call can be handled separately)
  */
 public class ExpressionValue implements Serializable {
 	private double _value = 0;
 	private char _call = 'A';
 	private String _tooltip = "";
-	
+
 	public ExpressionValue() { }
 
 	/**

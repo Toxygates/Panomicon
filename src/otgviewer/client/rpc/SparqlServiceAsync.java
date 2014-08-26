@@ -4,6 +4,7 @@ import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
 import t.common.shared.DataSchema;
+import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.Unit;
 import t.common.shared.sample.Annotation;
@@ -24,8 +25,7 @@ public interface SparqlServiceAsync {
 			AsyncCallback<OTGSample[]> callback);
 	public void units(SampleClass sc, DataSchema schema,
 			String param, String[] paramValues, 
-			AsyncCallback<Unit[]> callback);
-	
+			AsyncCallback<Pair<Unit, Unit>[]> callback);
 	
 //	public void probes(BarcodeColumn[] columns, AsyncCallback<String[]> callback);
 	
