@@ -71,6 +71,11 @@ public class TimesDoses extends DataSchema {
 	}
 	
 	@Override
+	public boolean isControlParameter(String value) {
+		return (value != null) && ("Control".equals(value));
+	}
+	
+	@Override
 	public Unit selectionControlUnitFor(Unit u) {
 		Unit u2 = new Unit(u, new OTGSample[] {});
 		u2.put("dose_level", "Control");

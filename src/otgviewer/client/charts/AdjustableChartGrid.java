@@ -312,17 +312,20 @@ public class AdjustableChartGrid extends Composite {
 		if (chartCombo.getSelectedIndex() == 0) {
 			prefItem = findPreferredItem(true);
 			logger.info("Preferred medium: " + prefItem);			
-			for (String dose: source.mediumVals()) {
-				chartSubtypeCombo.addItem(dose);
-				chartSubtypes.add(dose);
+			for (String mv: source.mediumVals()) {
+				if (!schema.isControlParameter(mv)) {
+					//TODO for NI values in OTG
+					chartSubtypeCombo.addItem(mv);
+					chartSubtypes.add(mv);
+				}
 				
 			}
 		} else {		
 			prefItem = findPreferredItem(false);
 			logger.info("Preferred minor: " + prefItem);			
-			for (String time: source.minorVals()) {
-				chartSubtypeCombo.addItem(time);
-				chartSubtypes.add(time);				
+			for (String minv: source.minorVals()) {
+				chartSubtypeCombo.addItem(minv);
+				chartSubtypes.add(minv);				
 			}
 		}
 		

@@ -71,7 +71,13 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		this.minorParameter = schema.minorParameter();
 		this.timeParameter = schema.timeParameter();
 		try {			
-			mediumValues = Arrays.asList(schema.sortedValues(schema.mediumParameter()));
+			mediumValues = new ArrayList<String>();
+			String[] mvs = schema.sortedValues(schema.mediumParameter());
+			for (String v: mvs) {
+				if (!schema.isControlParameter(v)) {
+					mediumValues.add(v);
+				}
+			}
 		} catch (Exception e) {
 			logger.warning("Unable to sort medium parameters");
 		}
@@ -161,7 +167,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			return;
 		}
 		fetchingSamples = true;
-		availableUnits = new Pair[0];
+		availableUnits = new Pair[0]; 
 		String[] compounds = chosenCompounds.toArray(new String[0]);
 		sparqlService.units(chosenSampleClass, schema, majorParameter, compounds,
 				new PendingAsyncCallback<Pair<Unit, Unit>[]>(this, "Unable to obtain samples.") {

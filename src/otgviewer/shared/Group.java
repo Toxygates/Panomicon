@@ -65,7 +65,7 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 	public OTGSample[] getTreatedSamples() {
 		List<OTGSample> r = new ArrayList<OTGSample>();		
 		for (Unit u : _units) {
-			if (!SharedUtils.safeCmp(u.get("dose_level"), "Control")) {
+			if (!schema.isSelectionControl(u)) {
 				r.addAll(Arrays.asList(u.getSamples()));
 			}
 		}
@@ -75,7 +75,7 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 	public OTGSample[] getControlSamples() {
 		List<OTGSample> r = new ArrayList<OTGSample>();
 		for (Unit u : _units) {
-			if (SharedUtils.safeCmp(u.get("dose_level"), "Control")) {
+			if (schema.isSelectionControl(u)) {
 				r.addAll(Arrays.asList(u.getSamples()));
 			}
 		}

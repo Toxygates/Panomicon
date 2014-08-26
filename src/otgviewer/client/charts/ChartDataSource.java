@@ -156,7 +156,8 @@ abstract class ChartDataSource {
 
 			List<String> medVals = new ArrayList<String>();
 			for (ChartDataSource.ChartSample s : samples) {
-				if (!medVals.contains(s.medium)) {
+				//TODO generalise control-check better
+				if (!schema.isControlParameter(s.medium) && !medVals.contains(s.medium)) {
 					medVals.add(s.medium);
 				}
 			}
@@ -270,9 +271,9 @@ abstract class ChartDataSource {
 				if (
 						(majors == null || SharedUtils.indexOf(majors, b.get(majorParam)) != -1) &&
 						(medsOrMins == null || SharedUtils.indexOf(medsOrMins, b.get(minorParam)) != -1 || 					
-						SharedUtils.indexOf(medsOrMins, b.get(medParam)) != -1)
-						// TODO &&
-						//	(type == ValueType.Absolute || ! b.getDose().equals("Control"))
+						SharedUtils.indexOf(medsOrMins, b.get(medParam)) != -1) &&
+						!schema.isControlParameter(b.get(medParam))
+						//TODO generalise the control-check better
 					) {
 					useBarcodes.add(b);
 				}

@@ -83,6 +83,10 @@ public abstract class DataSchema implements Serializable {
 		return false;
 	}
 	
+	public boolean isControlParameter(String value) {
+		return false;
+	}
+	
 	public Unit selectionControlUnitFor(Unit u) {
 		return null;
 	}
