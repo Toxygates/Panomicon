@@ -22,6 +22,8 @@ ivy.sh -retrieve lib/[type]/[artifact]-[revision].[ext]
 cp lib/*.jar $WARLIB
 cp lib/jar/* $WARLIB
 cp lib/bundle/*.jar $WARLIB
+#This should be in the shared tomcat lib dir
+rm $WARLIB/kyotocabinet*jar
 
 cp war/toxygates.html war/toxygates.html.bak
 cp war/news.html war/news.html.bak
@@ -30,8 +32,6 @@ cp war/WEB-INF/web.xml war/WEB-INF/web.xml.bak
 makeWar production
 makeWar test
 makeWar adju
-makeWar test2
-makeWar test3
 
 cp war/toxygates.html.bak war/toxygates.html
 cp war/news.html.bak war/news.html
