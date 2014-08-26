@@ -6,49 +6,6 @@ import com.google.gwt.resources.client.TextResource;
 
 public interface Resources extends ClientBundle {
 
-	@Source("images/human64.png")
-	ImageResource human();
-	
-	@Source("images/rat64.png")
-	ImageResource rat();
-	
-	// TODO
-	@Source("images/16_close.png")
-	ImageResource mouse();
-	
-	@Source("images/vivo64.png")
-	ImageResource vivo();
-	
-	@Source("images/calendar64.png")
-	ImageResource calendar();
-	
-	@Source("images/vitro64.png")
-	ImageResource vitro();
-	
-	@Source("images/liver64.png")
-	ImageResource liver();
-	
-	@Source("images/kidney64.png")
-	ImageResource kidney();
-	
-	@Source("images/lung64.png")
-	ImageResource lung();
-	
-	@Source("images/spleen64.png")
-	ImageResource spleen();
-	
-	@Source("images/muscle64.png")
-	ImageResource muscle();
-	
-	@Source("images/chip64.png")
-	ImageResource chip();
-	
-	@Source("images/bottle64.png")
-	ImageResource bottle();
-	
-	@Source("images/clock64.png")
-	ImageResource clock();
-	
 	@Source("images/16_statistics.png")
 	ImageResource chart();
 	

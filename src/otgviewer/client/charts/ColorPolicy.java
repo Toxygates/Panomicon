@@ -4,7 +4,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import otgviewer.client.charts.ChartDataSource.ChartSample;
-import otgviewer.shared.Barcode;
+import otgviewer.shared.OTGSample;
 
 /**
  * A ColorPolicy is a way of coloring samples in a chart.
@@ -29,7 +29,7 @@ class ColorPolicy {
 		
 		@Override
 		String colorFor(ChartSample sample) {
-			if (sample.time.equals(timeDose) || sample.dose.equals(timeDose)) {
+			if (sample.minor.equals(timeDose) || sample.medium.equals(timeDose)) {
 				return color;
 			}
 			return super.colorFor(sample);
@@ -37,9 +37,9 @@ class ColorPolicy {
 	}
 	
 	static class MapColorPolicy extends ColorPolicy {
-		Map<Barcode, String> colors;
+		Map<OTGSample, String> colors;
 		
-		MapColorPolicy(Map<Barcode, String> colors) {
+		MapColorPolicy(Map<OTGSample, String> colors) {
 			this.colors = colors;
 		}
 		

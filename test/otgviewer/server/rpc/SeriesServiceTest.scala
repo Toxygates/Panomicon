@@ -3,7 +3,7 @@ package otgviewer.server.rpc
 import org.junit.runner.RunWith
 import org.scalatest.BeforeAndAfter
 import org.scalatest.FunSuite
-import otgviewer.server.Configuration
+import t.viewer.server.Configuration
 import otgviewer.shared.RankRule
 import otgviewer.shared.RuleType
 import org.scalatest.junit.JUnitRunner
@@ -14,7 +14,7 @@ class SeriesServiceTest extends FunSuite with BeforeAndAfter {
   var s: SeriesServiceImpl = _
   
   before {   
-    val conf = new Configuration("otg", "/ext/toxygates", 2)
+    val conf = new Configuration("otg", "/shiba/toxygates", 2)
     s = new SeriesServiceImpl()
     s.localInit(conf)
   }
@@ -24,10 +24,10 @@ class SeriesServiceTest extends FunSuite with BeforeAndAfter {
   }
   
   test("Ranking") {
-    val f = SparqlServiceTest.testFilter
+    val sc = SparqlServiceTest.testSampleClass
     val r = new RankRule(RuleType.MaximalFold, "1370365_at") //GSS gene
     
-    val res = s.rankedCompounds(f, Array(r)).toSeq
+    val res = s.rankedCompounds(sc, Array(r)).toSeq
     println(res take 10)
   }
   

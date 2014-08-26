@@ -1,19 +1,25 @@
 package otgviewer.client.components;
 
-import static otgviewer.client.components.StorageParser.*;
+import static otgviewer.client.components.StorageParser.packColumns;
+import static otgviewer.client.components.StorageParser.packItemLists;
+import static otgviewer.client.components.StorageParser.packProbes;
+import static otgviewer.client.components.StorageParser.unpackColumn;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import otgviewer.client.Utils;
-import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import otgviewer.shared.ItemList;
-import otgviewer.shared.OTGUtils;
+import otgviewer.shared.OTGColumn;
 import otgviewer.shared.ValueType;
-import bioweb.shared.array.DataColumn;
+import t.common.shared.DataSchema;
+import t.common.shared.SampleClass;
+import t.common.shared.sample.DataColumn;
+import t.viewer.shared.ItemList;
 
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
@@ -30,16 +36,18 @@ import com.google.gwt.user.client.ui.DialogBox;
 public class DataListenerWidget extends Composite implements DataViewListener {
 
 	private List<DataViewListener> listeners = new ArrayList<DataViewListener>();
-	
-	public DataFilter chosenDataFilter; //TODO
+		
+	@Deprecated
+	public DataFilter chosenDataFilter;
+	public SampleClass chosenSampleClass; //TODO public
 	protected String[] chosenProbes = new String[0];
-	protected List<String> chosenCompounds = new ArrayList<String>();
-	protected String chosenCompound;
-	protected ValueType chosenValueType;
+	public List<String> chosenCompounds = new ArrayList<String>();
+	protected String chosenCompound;	
 	protected List<Group> chosenColumns = new ArrayList<Group>();
-	protected BarcodeColumn chosenCustomColumn;
+	protected OTGColumn chosenCustomColumn;
 	public List<ItemList> chosenItemLists = new ArrayList<ItemList>(); //TODO
 	
+	protected final Logger logger = Utils.getLogger("dlwidget");
 	private StorageParser parser;
 	
 	public List<Group> chosenColumns() { return this.chosenColumns; }
@@ -52,10 +60,11 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		listeners.add(l);
 	}
 	
-	//incoming signals
-	public void dataFilterChanged(DataFilter filter) {		
-		chosenDataFilter = filter;
-		changeDataFilter(filter);
+	//incoming signals	
+	public void sampleClassChanged(SampleClass sc) {
+		chosenSampleClass = sc;		
+		chosenDataFilter = sc.asDataFilter();
+		changeSampleClass(sc);
 	}
 
 	public void probesChanged(String[] probes) {
@@ -77,17 +86,12 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		changeCompound(compound);
 	}
 	
-	public void valueTypeChanged(ValueType type) {
-		chosenValueType = type;
-		changeValueType(type);
-	}
-	
 	public void columnsChanged(List<Group> columns) {
 		chosenColumns = columns;		
 		changeColumns(columns);
 	}
 	
-	public void customColumnChanged(BarcodeColumn customColumn) {
+	public void customColumnChanged(OTGColumn customColumn) {
 		this.chosenCustomColumn = customColumn;
 		changeCustomColumn(customColumn);
 	}
@@ -98,10 +102,12 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	}
 
 	//outgoing signals	
-	protected void changeDataFilter(DataFilter filter) {
-		chosenDataFilter = filter;
+
+	protected void changeSampleClass(SampleClass sc) {
+		chosenSampleClass = sc;		
+		chosenDataFilter = sc.asDataFilter();
 		for (DataViewListener l : listeners) {
-			l.dataFilterChanged(filter);
+			l.sampleClassChanged(sc);
 		}		
 	}
 	
@@ -141,13 +147,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}
 	}
 	
-	protected void changeValueType(ValueType type) {
-		chosenValueType = type;
-		for (DataViewListener l : listeners) {
-			l.valueTypeChanged(type);
-		}
-	}
-	
 	protected void changeColumns(List<Group> columns) {
 		chosenColumns = columns;
 		assert(columns != null);
@@ -156,7 +155,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}
 	}
 	
-	protected void changeCustomColumn(BarcodeColumn customColumn) {
+	protected void changeCustomColumn(OTGColumn customColumn) {
 		this.chosenCustomColumn = customColumn;
 		for (DataViewListener l: listeners) {
 			l.customColumnChanged(customColumn);
@@ -170,12 +169,11 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}
 	}
 	
-	public void propagateTo(DataViewListener other) {
-		other.dataFilterChanged(chosenDataFilter);
+	public void propagateTo(DataViewListener other) {		
+		other.sampleClassChanged(chosenSampleClass);
 		other.probesChanged(chosenProbes);
 		other.compoundsChanged(chosenCompounds);
-		other.compoundChanged(chosenCompound);
-		other.valueTypeChanged(chosenValueType);
+		other.compoundChanged(chosenCompound);		
 		other.columnsChanged(chosenColumns);		
 		other.customColumnChanged(chosenCustomColumn);
 		other.itemListsChanged(chosenItemLists);
@@ -191,13 +189,8 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	}
 	
 	protected String keyPrefix(Screen s) {
-		// TODO use enum
-		String uit = s.manager().getUIType();
-		if (uit.equals("toxygates")) {
-			return "OTG";
-		} else {
-			return "Toxy_" + uit;
-		}
+		// TODO use enum		
+		return s.manager.storagePrefix();		
 	}
 	
 	public StorageParser getParser(Screen s) {
@@ -218,36 +211,27 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	
 	/**
 	 * Store this widget's state into local storage.
-	 * 
-	 * TODO: is it necessary to store all these fields for each screen?
 	 */
 	public void storeState(StorageParser p) {
-		storeDataFilter(p);
+//		storeDataFilter(p);
 		storeColumns(p);
 		storeProbes(p);
 	}
-		
-	public void storeDataFilter(StorageParser p) {	
-		if (chosenDataFilter != null) {
-			p.setItem("dataFilter", packDataFilter(chosenDataFilter));			
-		} else {
-			p.clearItem("dataFilter");
-		}			
-	}
 	
-	protected void storeColumns(StorageParser p, String key, Collection<BarcodeColumn> columns) {				
-		if (chosenDataFilter != null) {
-			key = key + "." + packDataFilter(chosenDataFilter);
-			if (!columns.isEmpty()) {
-				p.setItem(key, packColumns(columns));
-			} else {
-				p.clearItem(key);				
-			}
+	protected void storeColumns(StorageParser p, String key, 
+			Collection<? extends OTGColumn> columns) {
+		if (!columns.isEmpty()) {
+			OTGColumn first = columns.iterator().next();
+			logger.info("Storing columns for " + key + " : " + first + " : " + first.getSamples()[0] + " ...");
+			p.setItem(key, packColumns(columns));
+		} else {
+			logger.info("Clearing stored columns for: " + key);			
+			p.clearItem(key);
 		}		
 	}
 	
 	public void storeColumns(StorageParser p) {
-		storeColumns(p, "columns", OTGUtils.asColumns(chosenColumns));
+		storeColumns(p, "columns", chosenColumns);
 	}	
 	
 	protected void storeCustomColumn(StorageParser p, DataColumn<?> column) {		
@@ -260,14 +244,16 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 
 	// Separator hierarchy for columns:
 	// ### > ::: > ^^^ > $$$
-	protected List<Group> loadColumns(StorageParser p, String key,
-			Collection<BarcodeColumn> expectedColumns) throws Exception {
-		String v = p.getItem(key + "." + packDataFilter(chosenDataFilter));
+	protected List<Group> loadColumns(StorageParser p, DataSchema schema,
+			String key,
+			Collection<? extends OTGColumn> expectedColumns) throws Exception {
+		//TODO unpack old format columns
+		String v = p.getItem(key); // + "." + packDataFilter(chosenDataFilter));
 		List<Group> r = new ArrayList<Group>();
 		if (v != null && !v.equals(packColumns(expectedColumns))) {
 			String[] spl = v.split("###");
 			for (String cl : spl) {
-				Group c = (Group) unpackColumn(cl);
+				Group c = unpackColumn(schema, cl);
 				r.add(c);
 			}
 			return r;
@@ -305,32 +291,33 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	 */
 	public void loadState(Screen sc) {
 		StorageParser p = getParser(sc);		
-		loadState(p);
+		loadState(p, sc.schema());
 	}
 
-	public void loadState(StorageParser p) {
-		DataFilter nf = unpackDataFilter(p.getItem("dataFilter")); 
-		if (nf != null && (chosenDataFilter == null || !chosenDataFilter.equals(nf))) { 			
-			dataFilterChanged(nf);
-		}
-		if (chosenDataFilter != null) {				
-			try {
-				List<Group> cs = loadColumns(p, "columns", OTGUtils.asColumns(chosenColumns));					
-				if (cs != null) {						
-					columnsChanged(cs);
-				}						
-				BarcodeColumn cc = unpackColumn(p.getItem("customColumn"));
-				if (cc != null) {																		
-					customColumnChanged(cc);						
-				}
-			} catch (Exception e) {										
-				//one possible failure source is if data is stored in an incorrect format
-				columnsChanged(new ArrayList<Group>());
-				storeColumns(p); //overwrite the old data
-				storeCustomColumn(p, null); //ditto
+	public void loadState(StorageParser p, DataSchema schema) {
+		SampleClass sc = new SampleClass();
+		sampleClassChanged(sc);
+		
+		try {
+			List<Group> cs = loadColumns(p, schema, 
+					"columns", chosenColumns);					
+			if (cs != null) {		
+				logger.info("Unpacked columns: " + cs.get(0) + ": " + cs.get(0).getSamples()[0] + " ... ");
+				columnsChanged(cs);
+			}						
+			Group g = unpackColumn(schema, p.getItem("customColumn"));
+			if (g != null) {																		
+				customColumnChanged(g);						
 			}
-
+		} catch (Exception e) {						
+			logger.log(Level.WARNING, "Unable to load state", e);
+			//one possible failure source is if data is stored in an incorrect format
+			columnsChanged(new ArrayList<Group>());
+			storeColumns(p); //overwrite the old data
+			storeCustomColumn(p, null); //ditto
+			logger.log(Level.WARNING, "Exception while parsing state", e);
 		}
+
 		String v = p.getItem("probes");			
 		if (v != null && !v.equals("") && !v.equals(packProbes(chosenProbes))) {
 			chosenProbes = v.split("###");				

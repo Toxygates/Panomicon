@@ -9,12 +9,14 @@ import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.Screen;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
-import otgviewer.shared.Barcode;
-import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import otgviewer.shared.OTGUtils;
+import otgviewer.shared.OTGSample;
+import otgviewer.shared.GroupUtils;
 import otgviewer.shared.Series;
+import otgviewer.shared.TimesDoses;
 import otgviewer.shared.ValueType;
+import t.common.shared.DataSchema;
+import t.common.shared.SampleClass;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
@@ -28,22 +30,26 @@ public class ChartGridFactory {
 	
 	public static interface AChartAcceptor {
 		void acceptCharts(AdjustableChartGrid cg);
-		void acceptBarcodes(Barcode[] barcodes);
+		void acceptBarcodes(OTGSample[] barcodes);
 	}
 	
-	private static final SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT.create(SparqlService.class);
+	private static final SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT.create(SparqlService.class);
 	
-	private DataFilter filter;
+	private SampleClass sampleClass;
 	private List<Group> groups;
-	public ChartGridFactory(DataFilter filter, List<Group> groups) {
+	final private DataSchema schema;
+	
+	public ChartGridFactory(SampleClass sc, DataSchema schema, List<Group> groups) {
 		this.groups = groups;
-		this.filter = filter;
+		this.sampleClass = sc;
+		this.schema = schema;		
 	}
 	
 	public void makeSeriesCharts(final List<Series> series, final boolean rowsAreCompounds,
 			final int highlightDose, final ChartAcceptor acceptor, final Screen screen) {
 		
-		owlimService.times(filter, null, new AsyncCallback<String[]>() {
+		sparqlService.parameterValues(sampleClass, 
+				schema.timeParameter(), new AsyncCallback<String[]>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				Window.alert("Unable to obtain sample times");
@@ -57,17 +63,20 @@ public class ChartGridFactory {
 
 	private void finishSeriesCharts(final List<Series> series, final String[] times, 
 			final boolean rowsAreCompounds,			
-			final int highlightDose, final ChartAcceptor acceptor, final Screen screen) {
-		ChartDataSource cds = new ChartDataSource.SeriesSource(series, times);
-		final String[] doses = new String[] { "Low", "Middle", "High" };
+			final int highlightMed, final ChartAcceptor acceptor, final Screen screen) {
+		ChartDataSource cds = new ChartDataSource.SeriesSource(
+				schema, series, times);
+		//TODO get from schema or data
+		try {
+		final String[] medVals = schema.sortedValues(schema.mediumParameter());
 		
-		cds.getSamples(null, null, new TimeDoseColorPolicy(doses[highlightDose], "SkyBlue"), 
+		cds.getSamples(null, null, new TimeDoseColorPolicy(medVals[highlightMed], "SkyBlue"), 
 				new ChartDataSource.SampleAcceptor() {
 
 			@Override
 			public void accept(final List<ChartSample> samples) {
 				ChartDataset ct = new ChartDataset(samples, samples, times, true);
-				
+
 				List<String> filters = new ArrayList<String>();
 				for (Series s: series) {			
 					if (rowsAreCompounds && !filters.contains(s.compound())) {
@@ -76,20 +85,26 @@ public class ChartGridFactory {
 						filters.add(s.probe());
 					}
 				}
-				
+
 				ChartGrid cg = new GVizChartGrid(screen, ct, groups, filters, rowsAreCompounds, 
-						doses, false, 400);
+						medVals, false, 400);
 				cg.adjustAndDisplay(cg.getMaxColumnCount(), ct.getMin(), ct.getMax());
 				acceptor.acceptCharts(cg);				
 			}
-			
+
 		});
+		} catch (Exception e) {
+			Window.alert("Unable to display charts: " + e.getMessage());
+		}
 	}
 	
-	public void makeRowCharts(final Screen screen, final Barcode[] barcodes, final ValueType vt, final String probe,
+	public void makeRowCharts(final Screen screen, final OTGSample[] barcodes, final ValueType vt, final String probe,
 			final AChartAcceptor acceptor) {
 		if (barcodes == null) {
-			owlimService.barcodes(filter, OTGUtils.compoundsFor(groups), null, null, new AsyncCallback<Barcode[]>() {
+			//TODO
+			sparqlService.samples(sampleClass, schema.majorParameter(), 
+					GroupUtils.collect(groups, schema.majorParameter()).toArray(new String[0]),
+					new AsyncCallback<OTGSample[]>() {
 
 				@Override
 				public void onFailure(Throwable caught) {
@@ -97,19 +112,20 @@ public class ChartGridFactory {
 				}
 
 				@Override
-				public void onSuccess(final Barcode[] barcodes) {
-					finishRowCharts(screen, filter, probe, vt, groups, barcodes, acceptor);
+				public void onSuccess(final OTGSample[] barcodes) {
+					finishRowCharts(screen, probe, vt, groups, barcodes, acceptor);
 					acceptor.acceptBarcodes(barcodes);
 				}			
 			});
 		} else {
-			finishRowCharts(screen, filter, probe, vt, groups, barcodes, acceptor);
+			finishRowCharts(screen, probe, vt, groups, barcodes, acceptor);
 		}
 	}
 	
-	private void finishRowCharts(Screen screen, DataFilter filter, String probe, ValueType vt, List<Group> groups, 
-			Barcode[] barcodes, AChartAcceptor acceptor) {
-		ChartDataSource cds = new ChartDataSource.DynamicExpressionRowSource(filter, probe, vt, barcodes, screen);
+	private void finishRowCharts(Screen screen, String probe, ValueType vt, List<Group> groups, 
+			OTGSample[] barcodes, AChartAcceptor acceptor) {
+		ChartDataSource cds = new ChartDataSource.DynamicExpressionRowSource(schema, 
+				probe, vt, barcodes, screen);
 		AdjustableChartGrid acg = new AdjustableChartGrid(screen, cds, groups, vt);
 		acceptor.acceptCharts(acg);
 	}

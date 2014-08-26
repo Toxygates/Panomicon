@@ -1,18 +1,16 @@
 package otgviewer.server
 
-import otgviewer.shared.BarcodeColumn
-import otgviewer.shared.Synthetic
-import otgviewer.shared.ManagedMatrixInfo
-import otgviewer.shared.DataFilter
-import otgviewer.shared.Group
-import otg.ExprValue
-import otg.db.MicroarrayDBReader
-import otg.OTGContext
+import t.common.shared.sample.ExpressionValue
 import otgviewer.server.rpc.Conversions._
-import friedrich.data.immutable.VVector
-import bioweb.shared.array.ExpressionValue
-import otg.PExprValue
-import otgviewer.shared.Barcode
+import otgviewer.shared.Group
+import otgviewer.shared.ManagedMatrixInfo
+import otgviewer.shared.Synthetic
+import t.db.MatrixDBReader
+import otgviewer.shared.OTGSample
+import t.db.Sample
+import t.db.PExprValue
+import otg.OTGContext
+import t.db.ExprValue
 
 
 /**
@@ -30,9 +28,8 @@ import otgviewer.shared.Barcode
  * 
  */
 abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
-    val reader: MicroarrayDBReader[E],
-    initProbes: Array[String], sparseRead: Boolean)
-    (implicit val filter: DataFilter, context: OTGContext) {
+    val reader: MatrixDBReader[E], initProbes: Array[String], sparseRead: Boolean)
+    (implicit val context: OTGContext) {
   
   protected var currentInfo: ManagedMatrixInfo = new ManagedMatrixInfo()
   protected var rawUngroupedMat, rawGroupedMat, currentMat: ExprMatrix = _
@@ -108,7 +105,13 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
       } else if (ev1.call != 'A' && ev2.call == 'A') {
         true
       } else {
-        if (ascending) { ev1.value < ev2.value } else { ev1.value > ev2.value }
+        //Use this to handle NaN correctly (comparison method MUST be transitive)
+        def cmp(x: Double, y: Double) = java.lang.Double.compare(x, y)
+        if (ascending) {
+          cmp(ev1.value, ev2.value) < 0
+        } else {
+          cmp(ev1.value, ev2.value) > 0
+        }
       }
     }
       
@@ -131,26 +134,31 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
   }
   
   /**
-   * Adds one two-group test to the raw grouped matrix.
-   * Re-filtering will be necessary to produce the final matrix.
+   * Adds one two-group test to the current matrix.
    */
   protected def addOneSynthetic(s: Synthetic): Unit = {
     s match {
       case test: Synthetic.TwoGroupSynthetic =>
-        val g1s = test.getGroup1.getSamples.filter(_.getDose() != "Control").map(_.getCode)
-        val g2s = test.getGroup2.getSamples.filter(_.getDose() != "Control").map(_.getCode)
+        //TODO
+        val g1s = test.getGroup1.getSamples.filter(_.get("dose_level") != "Control").map(_.getCode)
+        val g2s = test.getGroup2.getSamples.filter(_.get("dose_level") != "Control").map(_.getCode)       
         var upper = true
+        
+        val currentRows = (0 until currentMat.rows).map(i => currentMat.rowAt(i))
+        //Need this to take into account sorting and filtering of currentMat
+        val rawData = rawUngroupedMat.selectNamedRows(currentRows)
+        
         currentMat = test match {
           case ut: Synthetic.UTest =>
-            currentMat.appendUTest(rawUngroupedMat, g1s, g2s, ut.getShortTitle)
+            currentMat.appendUTest(rawData, g1s, g2s, ut.getShortTitle(null)) //TODO don't pass null
           case tt: Synthetic.TTest =>
-            currentMat.appendTTest(rawUngroupedMat, g1s, g2s, tt.getShortTitle)
+            currentMat.appendTTest(rawData, g1s, g2s, tt.getShortTitle(null)) //TODO
           case md: Synthetic.MeanDifference =>
             upper = false
-            currentMat.appendDiffTest(rawUngroupedMat, g1s, g2s, md.getShortTitle)
+            currentMat.appendDiffTest(rawData, g1s, g2s, md.getShortTitle(null)) //TODO
           case _ => throw new Exception("Unexpected test type!")
         }
-        currentInfo.addColumn(true, test.getShortTitle(), test.getTooltip(), upper, null)
+        currentInfo.addColumn(true, test.getShortTitle(null), test.getTooltip(), upper, null) //TODO
       case _ => throw new Exception("Unexpected test type")
     }       
   }
@@ -191,14 +199,14 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
    * Initial data loading.
    */
   protected def loadRawData(): Unit = {
-    val pmap = context.probes(filter)
+    val pmap = context.unifiedProbes
     var groupedParts, ungroupedParts: List[ExprMatrix] = Nil
     
     val packedProbes = initProbes.map(pmap.pack)
     for (g <- requestColumns) {
     	val barcodes = samplesForDisplay(g)
-    	val sortedBarcodes = reader.sortSamples(barcodes.map(b => otg.Sample(b.getCode)))
-        val data = reader.valuesForSamplesAndProbes(filter, sortedBarcodes,
+    	val sortedBarcodes = reader.sortSamples(barcodes.map(b => Sample(b.getCode)))
+        val data = reader.valuesForSamplesAndProbes(sortedBarcodes,
         		packedProbes, sparseRead)
         groupedParts ::= columnsForGroup(g, sortedBarcodes, data)
         
@@ -219,41 +227,43 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
   final protected def selectIdx(data: Seq[E], is: Seq[Int]) = is.map(data(_))
   final protected def javaMean(data: Iterable[E]) = {
     val mean = ExprValue.presentMean(data, "")
-    var tooltip = data.take(5).map(_.toString).mkString(" ")
-    if (data.size > 5) {
+    var tooltip = data.take(10).map(_.toString).mkString(" ")
+    if (data.size > 10) {
       tooltip += ", ..."
     }
     new ExpressionValue(mean.value, mean.call, tooltip)
   }
 
-  protected def selectIdxs(g: Group,  predicate: (otgviewer.shared.BUnit) => Boolean, 
-      barcodes: Seq[otg.Sample]): Seq[Int] = {
+  protected def selectIdxs(g: Group,  predicate: (t.common.shared.Unit) => Boolean, 
+      barcodes: Seq[Sample]): Seq[Int] = {
     val units = g.getUnits().filter(predicate)
     val ids = units.flatMap(_.getSamples.map(_.getCode)).toSet
     val inSet = barcodes.map(s => ids.contains(s.sampleId))
     inSet.zipWithIndex.filter(_._1).map(_._2)
   }
   
-  protected def controlIdxs(g: Group, barcodes: Seq[otg.Sample]): Seq[Int] = 
-    selectIdxs(g, _.getDose == "Control", barcodes)    
+  //TODO
+  protected def controlIdxs(g: Group, barcodes: Seq[Sample]): Seq[Int] = 
+    selectIdxs(g, _.get("dose_level") == "Control", barcodes)    
 
-  protected def treatedIdxs(g: Group, barcodes: Seq[otg.Sample]): Seq[Int] = 
-    selectIdxs(g, _.getDose != "Control", barcodes)    
+  protected def treatedIdxs(g: Group, barcodes: Seq[Sample]): Seq[Int] = 
+    selectIdxs(g, _.get("dose_level") != "Control", barcodes)    
 
-  protected def columnsForGroup(g: Group, sortedBarcodes: Seq[otg.Sample],
+  protected def columnsForGroup(g: Group, sortedBarcodes: Seq[Sample],
     data: Seq[Seq[E]]): ExprMatrix = {
     // A simple average column
     val treatedIdx = treatedIdxs(g, sortedBarcodes)
     
     currentInfo.addColumn(false, g.toString, "Average of treated samples", false, g)
     ExprMatrix.withRows(data.map(vs =>
-      VVector(javaMean(selectIdx(vs, treatedIdx)))),
+      Vector(javaMean(selectIdx(vs, treatedIdx)))),
       initProbes,
       List(g.toString))
   }
   
-  protected def samplesForDisplay(g: Group): Iterable[Barcode] = {
-    val (cus, ncus) = g.getUnits().partition(_.getDose == "Control")
+  protected def samplesForDisplay(g: Group): Iterable[OTGSample] = {
+    //TODO
+    val (cus, ncus) = g.getUnits().partition(_.get("dose_level") == "Control")
     if (ncus.size > 1) {
       //treated samples only
       ncus.flatMap(_.getSamples())
@@ -269,15 +279,14 @@ abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
  * for both treated and control samples. 
  */
 class NormalizedIntensityMatrix(requestColumns: Seq[Group],
-    reader: MicroarrayDBReader[ExprValue],
-    initProbes: Array[String], sparseRead: Boolean,
-    enhancedColumns: Boolean)
-    (implicit filter: DataFilter, context: OTGContext) 
+    reader: MatrixDBReader[ExprValue], initProbes: Array[String], sparseRead: Boolean,
+    enhancedColumns: Boolean)(implicit context: OTGContext) 
 extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead) {
 
-  override protected def columnsForGroup(g: Group, sortedBarcodes: Seq[otg.Sample], 
+  override protected def columnsForGroup(g: Group, sortedBarcodes: Seq[Sample], 
       data: Seq[Seq[ExprValue]]): ExprMatrix = {
-    val (cus, ncus) = g.getUnits().partition(_.getDose == "Control")
+    //TODO
+    val (cus, ncus) = g.getUnits().partition(_.get("dose_level") == "Control")
     
     if (ncus.size > 1 || (!enhancedColumns)) {
       // A simple average column
@@ -289,7 +298,7 @@ extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead)
       val controlIdx = controlIdxs(g, sortedBarcodes)
       
       val (colName1, colName2) = (g.toString, g.toString + "(cont)")
-      val rows = data.map(vs => VVector(
+      val rows = data.map(vs => Vector(
           javaMean(selectIdx(vs, treatedIdx)),
           javaMean(selectIdx(vs, controlIdx))
     	))
@@ -307,9 +316,8 @@ extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead)
  * No extra columns. Simple averaged fold values.
  */
 class FoldValueMatrix(requestColumns: Seq[Group],
-    reader: MicroarrayDBReader[ExprValue],
-    initProbes: Array[String], sparseRead: Boolean)
-    (implicit filter: DataFilter, context: OTGContext) 
+    reader: MatrixDBReader[ExprValue], initProbes: Array[String], sparseRead: Boolean)
+    (implicit context: OTGContext) 
     extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead) {
 }
 
@@ -317,15 +325,17 @@ class FoldValueMatrix(requestColumns: Seq[Group],
  * Columns consisting of fold-values, associated p-values and custom P/A calls.
  */
 class ExtFoldValueMatrix(requestColumns: Seq[Group],
-    reader: MicroarrayDBReader[PExprValue], 
-    initProbes: Array[String], sparseRead: Boolean,
+    reader: MatrixDBReader[PExprValue], initProbes: Array[String], sparseRead: Boolean,
     enhancedColumns: Boolean)
-    (implicit filter: DataFilter, context: OTGContext) 
+    (implicit context: OTGContext) 
     extends ManagedMatrix[PExprValue](requestColumns, reader, initProbes, sparseRead) {
  
-    override protected def columnsForGroup(g: Group, sortedBarcodes: Seq[otg.Sample], 
+    override protected def columnsForGroup(g: Group, sortedBarcodes: Seq[Sample], 
       data: Seq[Seq[PExprValue]]): ExprMatrix = {
-    val (cus, ncus) = g.getUnits().partition(_.getDose == "Control")
+      //TODO
+    val (cus, ncus) = g.getUnits().partition(_.get("dose_level") == "Control")
+    
+    println(s"#Control units: ${cus.size} #Non-control units: ${ncus.size}")
     
     if (ncus.size > 1 || (!enhancedColumns)) {
       // A simple average column
@@ -340,7 +350,7 @@ class ExtFoldValueMatrix(requestColumns: Seq[Group],
       val rows = data.map(vs => {
         val treatedVs = selectIdx(vs, treatedIdx)
         val first = treatedVs.head
-        VVector(javaMean(treatedVs), new ExpressionValue(first.p, first.call))
+        Vector(javaMean(treatedVs), new ExpressionValue(first.p, first.call))
       })
       
       currentInfo.addColumn(false, colName1, "Average of treated samples", false, g)

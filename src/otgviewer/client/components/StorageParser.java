@@ -4,17 +4,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 
-import otgviewer.shared.Barcode;
-import otgviewer.shared.BarcodeColumn;
-import otgviewer.shared.CellType;
-import otgviewer.shared.DataFilter;
+import javax.annotation.Nullable;
+
+import otgviewer.client.Utils;
 import otgviewer.shared.Group;
-import otgviewer.shared.ItemList;
-import otgviewer.shared.Organ;
-import otgviewer.shared.Organism;
-import otgviewer.shared.RepeatType;
-import bioweb.shared.Packable;
+import otgviewer.shared.OTGColumn;
+import t.common.shared.DataSchema;
+import t.common.shared.Packable;
+import t.viewer.shared.ItemList;
 
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
@@ -32,6 +31,8 @@ public class StorageParser {
 	public static final String unacceptableStringMessage = 
 			"The characters ':', '#', '$' and '^' are reserved and may not be used.";
 	
+	protected static final Logger logger = Utils.getLogger("storage");
+	
 	StorageParser(Storage storage, String prefix) {
 		this.prefix = prefix;
 		this.storage = storage;
@@ -39,52 +40,36 @@ public class StorageParser {
 	
 	void setItem(String key, String value) {
 		storage.setItem(prefix + "." + key, value);
+//		logger.info("SET " + key + " -> " + value);
 	}
 	
 	String getItem(String key) {
-		return storage.getItem(prefix + "." + key);
+		String v = storage.getItem(prefix + "." + key);
+//		logger.info("GET " + key + " -> " + v);
+		return v;
+		
 	}
 	
 	void clearItem(String key) {
-		storage.removeItem(key);
+		storage.removeItem(prefix + "." + key);
 	}
 	
-	public static String packDataFilter(DataFilter f) {
-		return f.cellType.name() + "," + f.organ.name() + ","  
-			+ f.repeatType.name() + "," + f.organism.name();
-	}
-	
-	public static DataFilter unpackDataFilter(String s) {
-		if (s == null) {
-			return null;
-		} 
-		
-		String[] parts = s.split(",");
-		assert(parts.length == 4);
-		
-		try {
-			DataFilter r = new DataFilter(CellType.valueOf(parts[0]),
-					Organ.valueOf(parts[1]), RepeatType.valueOf(parts[2]),
-					Organism.valueOf(parts[3]));			
-			return r;
-		} catch (Exception e) {			
-			return null;
-		}
-	}
-	
-	public static String packColumns(Collection<BarcodeColumn> columns) {
+	public static String packColumns(Collection<? extends OTGColumn> columns) {
 		return packPackableList(columns, "###");
 	}
 
-	public static BarcodeColumn unpackColumn(String s) {
+	@Nullable
+	public static Group unpackColumn(DataSchema schema, String s) {
 		if (s == null) {
 			return null;
-		}
+		}				
 		String[] spl = s.split("\\$\\$\\$");
-		if (spl[0].equals("Barcode")) {
-			return Barcode.unpack(s);
+		if (!spl[0].equals("Barcode") && !spl[0].equals("Barcode_v3")) {			
+			return Group.unpack(schema, s);
 		} else {
-			return Group.unpack(s);
+			//Legacy or incorrect format
+			logger.warning("Unexpected column format: " + s);
+			return null;
 		}
 	}
 	

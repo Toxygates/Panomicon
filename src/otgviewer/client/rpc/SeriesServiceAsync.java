@@ -6,15 +6,16 @@ import otgviewer.shared.DataFilter;
 import otgviewer.shared.MatchResult;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;
+import t.common.shared.SampleClass;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface SeriesServiceAsync {
-	public void rankedCompounds(DataFilter filter, RankRule[] rules, AsyncCallback<MatchResult[]> callback);
+	public void rankedCompounds(SampleClass sc, RankRule[] rules, AsyncCallback<MatchResult[]> callback);
 
-	public void getSingleSeries(DataFilter filter, String probe,
+	public void getSingleSeries(SampleClass sc, String probe,
 			String timeDose, String compound, AsyncCallback<Series> callback);
 
-	public void getSeries(DataFilter filter, String[] probes, String timeDose,
+	public void getSeries(SampleClass sc, String[] probes, String timeDose,
 			String[] compounds, AsyncCallback<List<Series>> callback);
 }

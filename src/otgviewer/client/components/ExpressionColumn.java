@@ -1,12 +1,11 @@
 package otgviewer.client.components;
 
 import otgviewer.client.Utils;
-import bioweb.shared.array.ExpressionRow;
+import t.common.shared.sample.ExpressionRow;
 
 import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.Column;
 

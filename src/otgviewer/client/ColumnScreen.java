@@ -2,12 +2,16 @@ package otgviewer.client;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
+import otgviewer.client.components.DataFilterEditor;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
-import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.Group;
+import otgviewer.shared.OTGColumn;
+import t.common.shared.DataSchema;
+import t.common.shared.SampleClass;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -20,35 +24,58 @@ import com.google.gwt.user.client.ui.Widget;
 
 /**
  * This screen allows for column (group) definition as well as compound ranking.
- * @author johan
- *
  */
 public class ColumnScreen extends Screen {
 	public static String key = "columns";
 	
 	private GroupInspector gi;
-	private CompoundSelector cs;	
+	private CompoundSelector cs;
+	private HorizontalPanel filterTools;
 	private TabLayoutPanel tp;
+	private final String rankingLabel;
 	
-	public ColumnScreen(ScreenManager man) {
-		super("Sample group definitions", key, true, false, man,
+	public ColumnScreen(ScreenManager man, String rankingLabel) {
+		super("Sample group definitions", key, false, man,
 				resources.groupDefinitionHTML(), resources.groupDefinitionHelp());
 		
-		cs = new CompoundSelector(this, "Compounds");
+		this.rankingLabel = rankingLabel;
+		
+		String majorParam = man.schema().majorParameter();
+		cs = new CompoundSelector(this, man.schema().title(majorParam));		
 		this.addListener(cs);
 		cs.setStyleName("compoundSelector");
-	}
+		filterTools = mkFilterTools();
+	} 
 	
-	@Override
-	public boolean enabled() {
-		return manager.isConfigured(DatasetScreen.key); 
-	}
+	private HorizontalPanel mkFilterTools() {
+		final Screen s = this;
+		HorizontalPanel r = new HorizontalPanel();
 
+		DataFilterEditor dfe = new DataFilterEditor(schema()) {
+			@Override
+			protected void changeSampleClass(SampleClass sc) {
+				super.changeSampleClass(sc);				
+				s.sampleClassChanged(sc);
+				//TODO I'm not sure that exposing the action queue mechanism 
+				//like this is a good thing to do. Think of a better way.
+				runActions();
+			}
+		};
+		this.addListener(dfe);
+		r.add(dfe);		
+		return r;
+	}
 	
 	@Override
 	protected void addToolbars() {
 		super.addToolbars();
+		addToolbar(filterTools, 45);
 		addLeftbar(cs, 350);
+	}
+	
+	@Override
+	protected boolean shouldShowStatusBar() {
+		return false;
 	}
 
 	public Widget content() {				
@@ -60,7 +87,7 @@ public class ColumnScreen extends Screen {
 		tp.add(gi, "Sample groups");
 		
 		final CompoundRanker cr = new CompoundRanker(this, cs);
-		tp.add(Utils.makeScrolled(cr), "Compound ranking (optional)");
+		tp.add(Utils.makeScrolled(cr), rankingLabel);
 		tp.selectTab(0);		
 
 		return tp;
@@ -83,21 +110,34 @@ public class ColumnScreen extends Screen {
 	}
 	
 	@Override
-	public void loadState(StorageParser p) {
-		super.loadState(p);
+	public void loadState(StorageParser p, DataSchema schema) {
+		super.loadState(p, schema);
 		if (visible) {
 			//If we became visible, we must have been enabled, so can count on a
 			//data filter being present.
 			try {
-				List<Group> ics = loadColumns(p, "inactiveColumns", 
-						new ArrayList<BarcodeColumn>(gi.existingGroupsTable.inverseSelection()));
-				if (ics != null) {
+				List<Group> ics = loadColumns(p, schema(), "inactiveColumns", 
+						new ArrayList<OTGColumn>(gi.existingGroupsTable.inverseSelection()));
+				if (ics != null && ics.size() > 0) {
+					logger.info("Unpacked i. columns: " + ics.get(0) + ": " + ics.get(0).getSamples()[0] + " ... ");
 					gi.inactiveColumnsChanged(ics);
+				} else {
+					logger.info("No i. columns available");
 				}
 
 			} catch (Exception e) {
+				logger.log(Level.WARNING, "Unable to load i. columns", e);
 				Window.alert("Unable to load inactive columns.");
 			}
+		}
+	}
+	
+	@Override
+	public void changeSampleClass(SampleClass sc) {
+		//On this screen, ignore the blank sample class set by
+		//DataListenerWidget
+		if (!sc.getMap().isEmpty()) {
+			super.changeSampleClass(sc);
 		}
 	}
 

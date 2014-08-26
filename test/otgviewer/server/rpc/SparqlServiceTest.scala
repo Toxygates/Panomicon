@@ -1,20 +1,18 @@
 package otgviewer.server.rpc
 
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
-import otgviewer.shared.DataFilter
-import otgviewer.shared.CellType
-import otgviewer.shared.Organ
-import otgviewer.shared.Organism
-import otgviewer.shared.RepeatType
-import otgviewer.shared.AType
 import org.scalatest.BeforeAndAfter
-import otgviewer.server.rpc.SparqlServiceImpl
-import otgviewer.server.Configuration
+import org.scalatest.FunSuite
+import otgviewer.shared.CellType
+import otgviewer.shared.DataFilter
+import t.common.shared.SampleClass
+import t.viewer.server.Configuration
 import org.scalatest.junit.JUnitRunner
+import t.viewer.shared.AType
 
 object SparqlServiceTest {
-  def testFilter = new DataFilter(CellType.Vivo, Organ.Liver, RepeatType.Single, Organism.Rat)
+  def testFilter = new DataFilter("In Vivo", "Liver", "Single", "Rat")
+  def testSampleClass = SampleClass.fromDataFilter(testFilter)
 }
 
 @RunWith(classOf[JUnitRunner])
@@ -23,7 +21,7 @@ class SparqlServiceTest extends FunSuite with BeforeAndAfter {
   var s: SparqlServiceImpl = _
   
   before {    
-    val conf = new Configuration("otg", "/ext/toxygates", 2)    
+    val conf = new Configuration("otg", "/shiba/toxygates", 2)    
     s = new SparqlServiceImpl()
     s.localInit(conf)
   }  
@@ -32,12 +30,12 @@ class SparqlServiceTest extends FunSuite with BeforeAndAfter {
     s.destroy
   }
   
-  val f = SparqlServiceTest.testFilter
+  val sc = SparqlServiceTest.testSampleClass
   
   val probes = Array("1387936_at", "1391544_at")
 //  val geneIds = Array("361510", "362972")
   
-  private def testAssociation(typ: AType) = s.associations(f, Array(typ), probes)
+  private def testAssociation(typ: AType) = s.associations(sc, Array(typ), probes)
     
   test("BP GO terms") {
     testAssociation(AType.GOBP)
@@ -72,7 +70,7 @@ class SparqlServiceTest extends FunSuite with BeforeAndAfter {
   }
   
   test ("Genes for pathway") {
-    val ps = s.probesForPathway(f, "Glutathione metabolism")
+    val ps = s.probesForPathway(sc, "Glutathione metabolism")
     println(ps.size + " probes")
     assert(ps.size === 42)
   }

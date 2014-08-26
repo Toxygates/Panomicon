@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module rename-to='toxygates'>
+<module rename-to='otgcore'>
 	<!-- Inherit the core Web Toolkit stuff.                        -->
 	<inherits name='com.google.gwt.user.User' />
 
@@ -15,10 +15,8 @@
 	<inherits name='com.google.gwt.visualization.Visualization'/>
 	<inherits name='com.google.gwt.http.HTTP'/>
 	<inherits name="com.google.gwt.logging.Logging"/>
-	<inherits name='bioweb.BioWeb' />
-
-	<!-- Specify the app entry point class.                         -->
-	<entry-point class='otgviewer.client.OTGViewer' />
+	<inherits name='t.common.Common' />
+	<inherits name='t.viewer.Viewer' />
 
 	<!-- Specify the paths for translatable code                    -->
 	<source path='client' />

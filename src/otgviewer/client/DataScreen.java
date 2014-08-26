@@ -12,7 +12,7 @@ import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import otgviewer.shared.ItemList;
+import t.viewer.shared.ItemList;
 
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.MenuBar;
@@ -29,15 +29,18 @@ public class DataScreen extends Screen {
 
 	public static final String key = "data";
 	private ExpressionTable et;
-	
-	private DataFilter lastFilter;
+		
 	private String[] lastProbes;
 	private List<Group> lastColumns;
 	
 	public DataScreen(ScreenManager man) {
-		super("View data", key, true, true, man,
+		super("View data", key, true, man,
 				resources.dataDisplayHTML(), resources.dataDisplayHelp());
-		et = new ExpressionTable(this);
+		et = makeExpressionTable();
+	}
+	
+	protected ExpressionTable makeExpressionTable() {
+		return new ExpressionTable(this);
 	}
 	
 	@Override
@@ -108,11 +111,19 @@ public class DataScreen extends Screen {
 		// of the other items on the menu becomes odd.
 		addAnalysisMenuItem(
 				new TickMenuItem("Compare two sample groups", false, false) {
-					public void stateChange(boolean newState) {
-						if (newState) {
+					public void stateChange(boolean newState) {						
+						if (!visible) {
+							//Trigger screen
+							manager.attemptProceed(DataScreen.key);
+							setState(true);							
 							showToolbar(et.analysisTools());
-						} else {
-							hideToolbar(et.analysisTools());
+						} else {			
+							//Just toggle
+							if (newState) {
+								showToolbar(et.analysisTools());
+							} else {
+								hideToolbar(et.analysisTools());
+							}
 						}
 					}
 				}.menuItem());			
@@ -132,15 +143,15 @@ public class DataScreen extends Screen {
 				" lastProbes: " + (lastProbes == null ? "null" : "" + lastProbes.length));
 		
 		// Attempt to avoid reloading the data
-		if (lastFilter == null || !lastFilter.equals(chosenDataFilter)
-				|| lastColumns == null || !chosenColumns.equals(lastColumns)) {
+		if (lastColumns == null || !chosenColumns.equals(lastColumns)) {
+			logger.info("Data reloading needed");
 			et.getExpressions(); 
 		} else if (!Arrays.equals(chosenProbes, lastProbes)) {
+			logger.info("Only refiltering is needed");
 			et.refilterData();
 		}
 
-		lastProbes = chosenProbes;
-		lastFilter = chosenDataFilter;
+		lastProbes = chosenProbes;		
 		lastColumns = chosenColumns;
 	}
 	

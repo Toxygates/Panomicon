@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.EnumSelector;
 import otgviewer.client.components.ListChooser;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
@@ -16,9 +15,11 @@ import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.CellType;
 import otgviewer.shared.DataFilter;
-import otgviewer.shared.ItemList;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.RuleType;
+import t.common.client.components.EnumSelector;
+import t.common.shared.SampleClass;
+import t.viewer.shared.ItemList;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -122,9 +123,11 @@ public class CompoundRanker extends DataListenerWidget {
 				return;
 			}
 			final String selCompound = refCompound.getItemText(selIndex);
+			SampleClass sc = chosenSampleClass.copy();
+			sc.put("compound_name", selCompound);
 			
-			sparqlService.doseLevels(chosenDataFilter, 
-					selCompound, 
+			//TODO
+			sparqlService.parameterValues(sc, "dose_level",
 					new PendingAsyncCallback<String[]>(selector, "Unable to retrieve dose levels.") {
 						
 				@Override
@@ -214,7 +217,7 @@ public class CompoundRanker extends DataListenerWidget {
 				//We override this to pull in the probes, because they
 				//may need to be converted from gene symbols.
 				
-				matrixService.identifiersToProbes(chosenDataFilter, probes, true, 
+				matrixService.identifiersToProbes(probes, true, false,  
 						new PendingAsyncCallback<String[]>(this) {
 					public void handleSuccess(String[] resolved) {
 						setItems(Arrays.asList(resolved));
@@ -225,8 +228,8 @@ public class CompoundRanker extends DataListenerWidget {
 			
 			@Override
 			protected void itemsChanged(List<String> items) {
-				matrixService.identifiersToProbes(chosenDataFilter,
-						items.toArray(new String[0]), true, 
+				matrixService.identifiersToProbes(
+						items.toArray(new String[0]), true, false,
 						new PendingAsyncCallback<String[]>(this) {
 					public void handleSuccess(String[] resolved) {
 						setProbeList(Arrays.asList(resolved));
@@ -333,12 +336,18 @@ public class CompoundRanker extends DataListenerWidget {
 						String[] ss = rih.syntheticCurveText.getText()
 								.split(" ");
 						RankRule r = new RankRule(rt, probe);
-						if (ss.length != 4 && chosenDataFilter.cellType == CellType.Vivo) {
+						
+						/**
+						 * TODO: the list should be validated on the server side, which should
+						 * throw an exception with a message if the format is incorrect. 
+						 */
+						CellType ct = CellType.valueOf(chosenDataFilter.cellType);
+						if (ss.length != 4 && ct == CellType.Vivo) {
 							Window.alert("Please supply 4 space-separated values as the synthetic curve. (Example: -1 -2 -3 -4)");
-						} else if (ss.length != 3 && chosenDataFilter.cellType == CellType.Vitro) {
+						} else if (ss.length != 3 && ct == CellType.Vitro) {
 							Window.alert("Please supply 3 space-separated values as the synthetic curve. (Example: -1 -2 -3)");
 						} else {
-							if (chosenDataFilter.cellType == CellType.Vivo) {
+							if (ct == CellType.Vivo) {
 								data = new double[4];
 							} else {
 								data = new double[3];
@@ -379,9 +388,9 @@ public class CompoundRanker extends DataListenerWidget {
 
 	
 	@Override
-	public void dataFilterChanged(DataFilter filter) {
-		super.dataFilterChanged(filter);
-		oracle.setFilter(filter);	
+	public void sampleClassChanged(SampleClass sc) {
+		super.sampleClassChanged(sc);
+		oracle.setFilter(sc);	
 		for (RuleInputHelper rih: inputHelpers) {
 			rih.refCompound.clear();
 			rih.refDose.clear();

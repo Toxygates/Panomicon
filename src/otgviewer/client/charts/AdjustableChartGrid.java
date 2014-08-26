@@ -3,19 +3,22 @@ package otgviewer.client.charts;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import otgviewer.client.Utils;
 import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.Screen;
-import otgviewer.shared.BUnit;
-import otgviewer.shared.Barcode;
 import otgviewer.shared.Group;
-import otgviewer.shared.OTGUtils;
+import otgviewer.shared.GroupUtils;
+import otgviewer.shared.OTGSample;
 import otgviewer.shared.ValueType;
+import t.common.shared.DataSchema;
+import t.common.shared.Unit;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -37,7 +40,7 @@ public class AdjustableChartGrid extends Composite {
 	private ListBox chartCombo, chartSubtypeCombo;
 	
 	private ChartDataSource source;
-	private List<String> compounds;
+	private List<String> majorVals;
 	private List<Group> groups;
 	private VerticalPanel vp;
 	private VerticalPanel ivp;
@@ -51,11 +54,17 @@ public class AdjustableChartGrid extends Composite {
 	private static String lastSubtype = null;
 	private List<String> chartSubtypes = new ArrayList<String>();
 	
+	private final DataSchema schema;
+	
 	public AdjustableChartGrid(Screen screen, ChartDataSource source, List<Group> groups, ValueType vt) {
 		this.source = source;
 		this.groups = groups;
 		this.screen = screen;
-		this.compounds = Arrays.asList(OTGUtils.compoundsFor(groups));
+		schema = screen.schema();
+		
+		String majorParam = screen.schema().majorParameter();
+		this.majorVals = 
+				new ArrayList<String>(GroupUtils.collect(groups, majorParam));
 		this.vt = vt;
 		
 		vp = Utils.mkVerticalPanel();
@@ -75,8 +84,11 @@ public class AdjustableChartGrid extends Composite {
 		chartCombo = new ListBox();
 		ihp.add(chartCombo);
 		
-		chartCombo.addItem("Expression vs time, fixed dose:");
-		chartCombo.addItem("Expression vs dose, fixed time:");
+		String medTitle = schema.title(schema.mediumParameter());
+		String minTitle = schema.title(schema.minorParameter());
+		
+		chartCombo.addItem("Expression vs " + minTitle + ", fixed " + medTitle + ":");
+		chartCombo.addItem("Expression vs " + medTitle + ", fixed " + minTitle + ":");
 		setType( (lastType == -1 ? 0 : lastType));
 
 		chartSubtypeCombo = new ListBox();
@@ -131,31 +143,22 @@ public class AdjustableChartGrid extends Composite {
 	}
 	
 	private ColorPolicy makeGroupPolicy() {
-		Map<Barcode, String> colors = new HashMap<Barcode, String>();
+		Map<OTGSample, String> colors = new HashMap<OTGSample, String>();
 		for (Group g: groups) {
-			for (Barcode b: g.getSamples()) {
+			for (OTGSample b: g.getSamples()) {
 				colors.put(b, g.getColor());
 			}
 		}
 		return new ColorPolicy.MapColorPolicy(colors);
 	}
 	
-	private static String[] withoutControl(String[] columns) {
-		List<String> r = new ArrayList<String>();
-		for (String c: columns) {
-			if (!c.equals("Control")) {
-				r.add(c);
-			}
-		}
-		return r.toArray(new String[0]);
-	}
-	
-	//vsTime is the vs-time-ness of each individual sub-chart. So the overall grid will be vs. dose 	
-	//(in its columns) if each sub-chart is vs.time.
-	private void gridFor(final boolean vsTime, final String[] columns, final String[] useCompounds, 
+	//vsMinor is the vs-minor-ness of each individual sub-chart. So the overall grid will be vs. dose 	
+	//(in its columns) if each sub-chart is vs.minor.
+	private void gridFor(final boolean vsMinor, final String[] columns, final String[] useCompounds, 
 			final List<ChartGrid> intoList, final SimplePanel intoPanel) {
-		String[] preColumns = (columns == null ? (vsTime ? source.doses() : source.times()) : columns);
-		final String[] useColumns = (vt == ValueType.Folds ? withoutControl(preColumns) : preColumns);		
+		String[] preColumns = (columns == null ? (vsMinor ? source.mediumVals() : source.minorVals()) : columns);
+		//TODO
+		final String[] useColumns = preColumns; //(vt == ValueType.Folds ? withoutControl(preColumns) : preColumns);		
 		
 		if (computedWidth == 0) {
 			int theoretical = useColumns.length * GVizChartGrid.MAX_WIDTH;
@@ -171,14 +174,13 @@ public class AdjustableChartGrid extends Composite {
 				new ChartDataSource.SampleAcceptor() {
 					@Override
 					public void accept(List<ChartSample> samples) {
-						allSamples.addAll(samples);
-							
+						allSamples.addAll(samples);						
 						ChartDataset ct = new ChartDataset(samples, samples, 
-								vsTime ? source.times() : source.doses(), vsTime);
-						
+								vsMinor ? source.minorVals() : source.mediumVals(), vsMinor);
+												
 						ChartGrid cg = new GVizChartGrid(screen, ct, groups,
-								useCompounds == null ? compounds : Arrays.asList(useCompounds), true,
-								useColumns, !vsTime, TOTAL_WIDTH);
+								useCompounds == null ? majorVals : Arrays.asList(useCompounds), true,
+								useColumns, !vsMinor, TOTAL_WIDTH);
 						
 						intoList.add(cg);
 						intoPanel.add(cg);
@@ -221,8 +223,8 @@ public class AdjustableChartGrid extends Composite {
 		} else {
 
 			if (chartSubtypeCombo.getSelectedIndex() == -1) {
-				boolean isDose = chartCombo.getSelectedIndex() == 0;
-				setSubtype(lastSubtype != null ? lastSubtype : findPreferredItem(isDose));				
+				boolean medVsMin = chartCombo.getSelectedIndex() == 0;
+				setSubtype(lastSubtype != null ? lastSubtype : findPreferredItem(medVsMin));				
 			}
 			
 			ivp.clear();								
@@ -234,65 +236,69 @@ public class AdjustableChartGrid extends Composite {
 			final List<ChartGrid> grids = new ArrayList<ChartGrid>();
 			expectedGrids = 0;
 			allSamples.clear();
-			
+						
 			final boolean vsTime = chartCombo.getSelectedIndex() == 0;
 			if (groups != null) {
+				Set<String> majors = new HashSet<String>();
 				for (Group g : groups) {
-					Label l = new Label("Compounds in '" + g.getName() + "'");
-					l.setStyleName("heading");
-					ivp.add(l);
-					SimplePanel sp = makeGridPanel(g.getCompounds());					
-					ivp.add(sp);
-					expectedGrids += 1;
-					gridFor(vsTime, columns, g.getCompounds(), grids, sp);		
-				}
+					majors.addAll(g.getMajors(schema));
+				}		
+				String[] majorsA = majors.toArray(new String[0]);
+				SimplePanel sp = makeGridPanel(majorsA);
+				ivp.add(sp);
+				expectedGrids += 1;
+				gridFor(vsTime, columns, majorsA, grids, sp);						
 			} else {
-				SimplePanel sp = makeGridPanel(compounds.toArray(new String[0]));				
+				//TODO when is this case used? fuse with above?
+				SimplePanel sp = makeGridPanel(majorVals.toArray(new String[0]));				
 				ivp.add(sp);
 				expectedGrids += 1;
 				gridFor(vsTime, columns, null, grids, sp);							
-			}
-			
+			}			
 		}
 	}
 	
 	/**
 	 * Find a dose or time that is present in the user-defined sample groups and that
 	 * can be displayed in these charts.
-	 * @param isDose
+	 * @param isMed
 	 * @return
 	 */
-	private String findPreferredItem(boolean isDose) {
+	private String findPreferredItem(boolean isMed) {
+		final String medParam = schema.mediumParameter();
+		final String minParam = schema.minorParameter();
 		if (lastSubtype != null) {
 			if (lastSubtype.equals("All")) {
 				return lastSubtype;
 			}
 			// Try to reuse the most recent one
 			for (Group g : groups) {
-				if (isDose) {
-					if (BUnit.containsDose(g.getUnits(), lastSubtype)) {
+				if (isMed) {
+					if (Unit.contains(g.getUnits(), medParam, lastSubtype)) {						
 						return lastSubtype;
 					}
 				} else {
-					if (BUnit.containsTime(g.getUnits(), lastSubtype)) {
+					if (Unit.contains(g.getUnits(), minParam, lastSubtype)) {
 						return lastSubtype;
 					}
 				}
 			}
 		}
 		//Find a new item to use
-		for (BUnit u: groups.get(0).getUnits()) {
-			if (isDose) {
-				final String[] useDoses = 
-						(vt == ValueType.Folds ? withoutControl(source.doses()) : source.doses());
-				String dose = u.getDose();
-				if (Arrays.binarySearch(useDoses, dose) != -1) {
-					return dose;
+		for (Unit u: groups.get(0).getUnits()) {
+			logger.info("Unit: " + u);
+			if (isMed) {
+				final String[] useMeds = source.mediumVals();				
+						//TODO
+						//(vt == ValueType.Folds ? withoutControl(source.doses()) : source.doses());				
+				String med = u.get(medParam);				
+				if (Arrays.binarySearch(useMeds, med) != -1) {
+					return med;
 				}
 			} else {
-				String time = u.getTime();
-				if (Arrays.binarySearch(source.times(), time) != -1) {
-					return time;
+				String min = u.get(minParam);
+				if (Arrays.binarySearch(source.minorVals(), min) != -1) {
+					return min;
 				}
 			}
 		}
@@ -305,18 +311,21 @@ public class AdjustableChartGrid extends Composite {
 		String prefItem;
 		if (chartCombo.getSelectedIndex() == 0) {
 			prefItem = findPreferredItem(true);
-			logger.info("Preferred dose: " + prefItem);			
-			for (String dose: source.doses()) {
-				chartSubtypeCombo.addItem(dose);
-				chartSubtypes.add(dose);
+			logger.info("Preferred medium: " + prefItem);			
+			for (String mv: source.mediumVals()) {
+				if (!schema.isControlParameter(mv)) {
+					//TODO for NI values in OTG
+					chartSubtypeCombo.addItem(mv);
+					chartSubtypes.add(mv);
+				}
 				
 			}
 		} else {		
 			prefItem = findPreferredItem(false);
-			logger.info("Preferred time: " + prefItem);			
-			for (String time: source.times()) {
-				chartSubtypeCombo.addItem(time);
-				chartSubtypes.add(time);				
+			logger.info("Preferred minor: " + prefItem);			
+			for (String minv: source.minorVals()) {
+				chartSubtypeCombo.addItem(minv);
+				chartSubtypes.add(minv);				
 			}
 		}
 		

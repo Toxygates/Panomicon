@@ -6,11 +6,23 @@
          xmlns="http://java.sun.com/xml/ns/javaee">
 
 	<context-param>
-		<param-name>owlimRepositoryName</param-name>
+		<param-name>repositoryURL</param-name>
+		<param-value>http://sontaran:8081/owlim-webapp-workbench-5.3.1</param-value>
+	</context-param>
+	<context-param>
+		<param-name>repositoryName</param-name>
 		<param-value>otg</param-value>
 	</context-param>
 	<context-param>
-		<param-name>toxygatesHomeDir</param-name>
+		<param-name>repositoryUser</param-name>
+		<param-value>toxygates</param-value>
+	</context-param>
+	<context-param>
+		<param-name>repositoryPassword</param-name>
+		<param-value>toxygates</param-value>
+	</context-param>
+	<context-param>
+		<param-name>dataDir</param-name>
 		<param-value>/opt/toxygates</param-value>
 	</context-param>
  	<context-param>
@@ -20,10 +32,6 @@
 	<context-param>
 		<param-name>csvUrlBase</param-name>
 		<param-value>http://toxygates.nibio.go.jp:8080/toxygates/csv</param-value>
-	</context-param>
-	<context-param>
-		<param-name>foldsDBVersion</param-name>
-		<param-value>1</param-value>
 	</context-param>
 	<context-param>
 		<param-name>applicationClass</param-name>
@@ -60,6 +68,37 @@
 		<servlet-name>matrixServlet</servlet-name>
     	<url-pattern>/toxygates/matrix</url-pattern>
   	</servlet-mapping>
+  	<servlet>
+		<servlet-name>targetmineServlet</servlet-name>
+		<servlet-class>otgviewer.server.targetmine.TargetmineServiceImpl</servlet-class>
+	</servlet>
+	
+  	  <!-- For AdminGUI -->
+	<context-param>
+		<!-- 64 MB -->
+		<param-name>maxSize</param-name>
+		<param-value>67108864</param-value>
+	</context-param>
+  
+	<servlet>
+		<servlet-name>uploadServlet</servlet-name>
+		<!-- This is the default servlet, it puts files in session -->
+		<servlet-class>gwtupload.server.UploadServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>uploadServlet</servlet-name>
+		<url-pattern>*.gupld</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>maintenanceServlet</servlet-name>
+		<servlet-class>t.admin.server.MaintenanceServiceImpl</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>maintenanceServlet</servlet-name>
+		<url-pattern>/AdminConsole/maintenance</url-pattern>
+	</servlet-mapping>
+	
   
   <!-- Default page to serve -->
   <welcome-file-list>

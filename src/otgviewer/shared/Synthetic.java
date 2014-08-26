@@ -2,9 +2,10 @@ package otgviewer.shared;
 
 import java.io.Serializable;
 
-import bioweb.shared.array.DataColumn;
+import t.common.shared.DataSchema;
+import t.common.shared.sample.DataColumn;
 
-abstract public class Synthetic implements DataColumn<Barcode>, Serializable {
+abstract public class Synthetic implements DataColumn<OTGSample>, Serializable {
 
 	public abstract static class TwoGroupSynthetic extends Synthetic {
 		protected Group g1, g2;
@@ -99,9 +100,9 @@ abstract public class Synthetic implements DataColumn<Barcode>, Serializable {
 	
 	public Synthetic() { }		
 	public Synthetic(String name) { this.name = name; }
-	public Barcode[] getSamples() { return new Barcode[0]; }	
+	public OTGSample[] getSamples() { return new OTGSample[0]; }	
 	public String[] getCompounds() { return new String[0]; }	
-	public String getShortTitle() { return name; }	
+	public String getShortTitle(DataSchema schema) { return name; }	
 	public String getTooltip() { return "Synthetic"; }
 	public boolean isDefaultSortAscending() { return true; }
 	

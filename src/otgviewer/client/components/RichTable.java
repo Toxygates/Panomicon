@@ -3,6 +3,8 @@ package otgviewer.client.components;
 import java.util.ArrayList;
 import java.util.List;
 
+import t.common.shared.DataSchema;
+
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.dom.client.EventTarget;
@@ -30,9 +32,12 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	protected int highlightedRow = -1;
 	private int extraCols = 0;
 	protected int dataColumns = 0;
- 	
-	public RichTable() {
-		hideableColumns = initHideableColumns();
+ 	protected final DataSchema schema;
+	
+	
+	public RichTable(DataSchema schema) {
+		this.schema = schema;
+		hideableColumns = initHideableColumns(schema);
 		grid = new DataGrid<T>() {
 			@Override
 			protected void onBrowserEvent2(Event event) {
@@ -208,7 +213,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		return extraCols;
 	}
 	
-	abstract protected List<HideableColumn> initHideableColumns();
+	abstract protected List<HideableColumn> initHideableColumns(DataSchema schema);
 	
 	public List<HideableColumn> getHideableColumns() {
 		return hideableColumns;

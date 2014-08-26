@@ -2,11 +2,11 @@ package otgviewer.client.rpc;
 
 import java.util.List;
 
-import otgviewer.shared.DataFilter;
 import otgviewer.shared.MatchResult;
 import otgviewer.shared.NoSuchProbeException;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;
+import t.common.shared.SampleClass;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -26,7 +26,7 @@ public interface SeriesService extends RemoteService {
 	 * @return
 	 * @throws NoSuchProbeException
 	 */
-	public MatchResult[] rankedCompounds(DataFilter filter, RankRule[] rules) throws NoSuchProbeException;
+	public MatchResult[] rankedCompounds(SampleClass sc, RankRule[] rules) throws NoSuchProbeException;
 	
 	/**
 	 * Obtain a single time series or dose series.
@@ -36,7 +36,7 @@ public interface SeriesService extends RemoteService {
 	 * @param compound 
 	 * @return
 	 */
-	public Series getSingleSeries(DataFilter filter, String probe, String timeDose, String compound);
+	public Series getSingleSeries(SampleClass sc, String probe, String timeDose, String compound);
 	
 	/**
 	 * Obtain a number of time series or dose series.
@@ -46,6 +46,6 @@ public interface SeriesService extends RemoteService {
 	 * @param compound Can optionally be null (no constraint). If this is null, timeDose must be null.
 	 * @return
 	 */
-	public List<Series> getSeries(DataFilter filter, String[] probes, String timeDose, String[] compounds);
+	public List<Series> getSeries(SampleClass sc, String[] probes, String timeDose, String[] compounds);
 	
 }

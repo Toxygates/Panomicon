@@ -1,23 +1,29 @@
 package otgviewer.server.rpc
 
 import scala.collection.JavaConversions._
-import otg.Sample
+import scala.collection.{Map => CMap, Set => CSet}
+import java.util.{ Map => JMap, HashMap => JHMap, Set => JSet, HashSet => JHSet, List => JList }
+
 import otg.SeriesRanking
 import otg.Species
-import otgviewer.shared.Barcode
 import otgviewer.shared.CellType
 import otgviewer.shared.DataFilter
-import otgviewer.shared.Organism
 import otgviewer.shared.Pathology
 import otgviewer.shared.RankRule
 import otgviewer.shared.Series
-import bioweb.shared.array._
+import t.common.shared.sample._
 import otg.SeriesRanking
 import otg.Context
 import otg.RepeatType
 import otgviewer.shared.RuleType
 import otg.Organ._
 import otg.Species._
+import otg.OTGSeries
+import t.common.shared.SampleClass
+import t.common.shared.Pair
+import otgviewer.shared.OTGSample
+import t.db.{ExprValue => TExprValue}
+
 
 /**
  * Conversions between Scala and Java types.
@@ -26,18 +32,7 @@ import otg.Species._
  * GWT can only serialise Java classes that follow certain constraints.
  */
 object Conversions {
-  import language.implicitConversions
-
-  implicit def asScala(filter: DataFilter): otg.Filter = {
-    val or = if (filter.cellType == CellType.Vitro) {
-      otg.Organ.Vitro
-    } else {
-      otg.Organ.withName(filter.organ.toString())
-    }
-    new otg.Filter(Some(or), 
-        Some(RepeatType.withName(filter.repeatType.toString())), 
-        Some(otg.Species.withName(filter.organism.toString())));
-  }
+  import t.viewer.server.Conversions._
 
   implicit def asJava(path: otg.Pathology): Pathology =
     new Pathology(path.barcode, path.topography.getOrElse(null), 
@@ -49,38 +44,34 @@ object Conversions {
     new Annotation(annot.barcode, new java.util.ArrayList(entries))        
   }
 
-  def asJava(s: Sample): Barcode = 
-    new Barcode(s.sampleId, s.individual, s.dose, s.time, s.compound);
-
-  implicit def speciesFromFilter(filter: DataFilter): Species = {
-    filter.organism match {
-      case Organism.Rat   => otg.Species.Rat
-      case Organism.Human => otg.Species.Human
-      case Organism.Mouse => otg.Species.Mouse
-    }
+  //TODO pass in DataFilter?
+  def asJavaSample(s: t.db.Sample): OTGSample = {
+    val sc = scAsJava(s.sampleClass)
+    new OTGSample(s.sampleId, sc, s.cgroup.getOrElse(null))
   }
 
-  implicit def asScala(filter: DataFilter, series: Series)(implicit context: Context): otg.Series = {
-	val sf = asScala(filter)
-	val p = speciesFromFilter(filter).probeMap.pack(series.probe)
-	new otg.Series(sf.repeatType.get, sf.organ.get, sf.species.get, 
-	    p, series.compound, series.timeDose, Vector())
+  implicit def asScala(sc: SampleClass, series: Series)(implicit context: Context): OTGSeries = {
+	val p = context.unifiedProbes.pack(series.probe) //TODO filtering
+	
+	new OTGSeries(sc.get("sin_rep_type"), 
+	    sc.get("organ_id"), sc.get("organism"), 
+	    p, series.compound, series.timeDose, sc.get("test_type"), Vector())
   }
 
-  implicit def asJava(series: otg.Series)(implicit context: Context): Series = {
-	new Series(series.compound + " " + series.timeDose, series.probeStr, series.timeDose,
-	    series.compound, series.data.map(asJava).toArray)
+  implicit def asJava(series: OTGSeries)(implicit context: Context): Series = {
+	new Series(series.compound + " " + series.dose, series.probeStr, series.dose,
+	    series.compound, series.values.map(asJava).toArray)
   }
   
-  implicit def asJava(ev: otg.ExprValue): ExpressionValue = new ExpressionValue(ev.value, ev.call)
+  implicit def asJava(ev: TExprValue): ExpressionValue = new ExpressionValue(ev.value, ev.call)
   //Loses probe information!
-  implicit def asScala(ev: ExpressionValue): otg.ExprValue = otg.ExprValue(ev.getValue, ev.getCall, "")
+  implicit def asScala(ev: ExpressionValue): TExprValue = TExprValue(ev.getValue, ev.getCall, "")
   
   def nullToOption[T](v: T): Option[T] = {
     if (v == null) {
       None
     } else {
-      Some(v)
+      Some(v) 
     }
   }
 
@@ -90,19 +81,42 @@ object Conversions {
         println("Correlation curve: " + rr.data.toVector)
         SeriesRanking.MultiSynthetic(rr.data.toVector)
       }
-      case r: RuleType.HighVariance.type => SeriesRanking.HighVariance()
-      case r: RuleType.LowVariance.type => SeriesRanking.LowVariance()
-      case r: RuleType.Sum.type => SeriesRanking.Sum()
-      case r: RuleType.NegativeSum.type => SeriesRanking.NegativeSum()
-      case r: RuleType.Unchanged.type => SeriesRanking.Unchanged()
-      case r: RuleType.MonotonicUp.type => SeriesRanking.MonotonicIncreasing()
-      case r: RuleType.MonotonicDown.type => SeriesRanking.MonotonicDecreasing()
-      case r: RuleType.MaximalFold.type => SeriesRanking.MaxFold()
-      case r: RuleType.MinimalFold.type => SeriesRanking.MinFold()
+      case r: RuleType.HighVariance.type => SeriesRanking.HighVariance
+      case r: RuleType.LowVariance.type => SeriesRanking.LowVariance
+      case r: RuleType.Sum.type => SeriesRanking.Sum
+      case r: RuleType.NegativeSum.type => SeriesRanking.NegativeSum
+      case r: RuleType.Unchanged.type => SeriesRanking.Unchanged
+      case r: RuleType.MonotonicUp.type => SeriesRanking.MonotonicIncreasing
+      case r: RuleType.MonotonicDown.type => SeriesRanking.MonotonicDecreasing
+      case r: RuleType.MaximalFold.type => SeriesRanking.MaxFold
+      case r: RuleType.MinimalFold.type => SeriesRanking.MinFold
       case r: RuleType.ReferenceCompound.type => SeriesRanking.ReferenceCompound(rr.compound, rr.dose)
     }
   }
   
-  implicit def asJava[T,U](v: (T, U)) = new bioweb.shared.Pair(v._1, v._2)
+  def asJavaPair[T,U](v: (T, U)) = new t.common.shared.Pair(v._1, v._2)
   
+   //Convert from scala coll types to serialization-safe java coll types.
+  def convertPairs(m: CMap[String, CSet[(String, String)]]): JHMap[String, JHSet[Pair[String, String]]] = {
+    val r = new JHMap[String, JHSet[Pair[String, String]]]    
+    val mm: CMap[String, CSet[Pair[String, String]]] = m.map(k => (k._1 -> k._2.map(asJavaPair(_))))
+    addJMultiMap(r, mm)  
+    r
+  }
+  
+   def convert(m: CMap[String, CSet[String]]): JHMap[String, JHSet[String]] = {
+    val r = new JHMap[String, JHSet[String]]
+    addJMultiMap(r, m)  
+    r
+  }
+  
+  def addJMultiMap[K, V](to: JHMap[K, JHSet[V]], from: CMap[K, CSet[V]]) {
+    for ((k, v) <- from) {
+      if (to.containsKey(k)) {
+        to(k).addAll(v)
+      } else {
+        to.put(k, new JHSet(v))
+      }
+    }
+  }  
 }

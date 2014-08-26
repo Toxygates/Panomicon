@@ -10,10 +10,11 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.dialog.DialogPosition;
-import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import bioweb.shared.array.DataColumn;
+import otgviewer.shared.OTGColumn;
+import t.common.shared.DataSchema;
+import t.common.shared.sample.DataColumn;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -49,12 +50,12 @@ public class SampleDetailScreen extends Screen {
 	
 	private DataFilter lastFilter;
 	private List<Group> lastColumns;
-	private BarcodeColumn lastCustomColumn;
+	private OTGColumn lastCustomColumn;
 	
 	private HorizontalPanel tools;
 	
 	public SampleDetailScreen(ScreenManager man) {
-		super("Sample details", key, true, true, man);						
+		super("Sample details", key, true, man);						
 		this.addListener(atd);
 		mkTools();
 	}
@@ -69,13 +70,14 @@ public class SampleDetailScreen extends Screen {
 	
 	private void updateColumnList() {
 		columnList.clear();
+		DataSchema schema = schema();
 		if (chosenColumns.size() > 0) {
 			for (DataColumn<?> c : chosenColumns) {
-				columnList.addItem(c.getShortTitle());
+				columnList.addItem(c.getShortTitle(schema));
 			}
 		}
 		if (chosenCustomColumn != null) {
-			columnList.addItem(chosenCustomColumn.getShortTitle());
+			columnList.addItem(chosenCustomColumn.getShortTitle(schema));
 			columnList.setSelectedIndex(columnList.getItemCount() - 1);
 		} else {
 			columnList.setSelectedIndex(0);
@@ -101,7 +103,7 @@ public class SampleDetailScreen extends Screen {
 	}
 
 	@Override
-	public void customColumnChanged(BarcodeColumn customColumn) {
+	public void customColumnChanged(OTGColumn customColumn) {
 		super.customColumnChanged(customColumn);		
 		if (visible) {
 			updateColumnList();
@@ -129,8 +131,8 @@ public class SampleDetailScreen extends Screen {
 			@Override
 			public void onClick(ClickEvent event) {
 				Set<String> compounds = new HashSet<String>();
-				for (BarcodeColumn d: chosenColumns) {
-					compounds.addAll(Arrays.asList(((Group) d).getCompounds()));
+				for (OTGColumn d: chosenColumns) {
+					compounds.addAll(((Group) d).getMajors(schema()));
 				}
 				List<String> compounds_ = new ArrayList<String>(compounds);
 				atd.compoundsChanged(compounds_);
@@ -154,18 +156,19 @@ public class SampleDetailScreen extends Screen {
 	}
 	
 	
-	private void setDisplayColumn(BarcodeColumn c) {
+	private void setDisplayColumn(OTGColumn c) {
 		experimentTable.loadFrom(c, false, 0, 23);
 		biologicalTable.loadFrom(c, false, 23, -1);
 	}
 	
-	private void displayWith(String column) {		
-		if (chosenCustomColumn != null && column.equals(chosenCustomColumn.getShortTitle())) {
+	private void displayWith(String column) {
+		DataSchema schema = schema();
+		if (chosenCustomColumn != null && column.equals(chosenCustomColumn.getShortTitle(schema))) {
 			setDisplayColumn(chosenCustomColumn);
 			return;
 		} else {
-			for (BarcodeColumn c : chosenColumns) {
-				if (c.getShortTitle().equals(column)) {
+			for (OTGColumn c : chosenColumns) {
+				if (c.getShortTitle(schema).equals(column)) {
 					setDisplayColumn(c);
 					return;
 				}

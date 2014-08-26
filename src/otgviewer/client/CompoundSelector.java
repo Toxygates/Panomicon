@@ -21,10 +21,11 @@ import otgviewer.client.rpc.SeriesServiceAsync;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.DataFilter;
-import otgviewer.shared.ItemList;
 import otgviewer.shared.MatchResult;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;
+import t.common.shared.SampleClass;
+import t.viewer.shared.ItemList;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -32,6 +33,7 @@ import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.IdentityColumn;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RequiresResize;
@@ -67,24 +69,27 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	
 	private Widget north;
 	private Screen screen;
+	private final String majorParameter;
 
 	public CompoundSelector(final Screen screen, String heading) {
 		this.screen = screen;
 		dp = new DockLayoutPanel(Unit.PX);
-
+		this.majorParameter = screen.schema().majorParameter();
+		
 		initWidget(dp);
 		Label lblCompounds = new Label(heading);
 		lblCompounds.setStyleName("heading");
 		dp.addNorth(lblCompounds, 40);
 		north = lblCompounds;
 		
+		//TODO factor out
 		boolean isAdjuvant = screen.manager().getUIType().equals("adjuvant");
 		
 		final Map<String, List<String>> predefLists = 
 				(isAdjuvant ? TemporaryCompoundLists.predefinedLists() 
 						: new HashMap<String, List<String>>());
 		
-		compoundEditor = new StackedListEditor(this, "compounds", "Compound", 
+		compoundEditor = new StackedListEditor(this, "compounds", heading, 
 				predefLists) {
 			@Override
 			protected void selectionChanged(Set<String> selected) {
@@ -148,20 +153,20 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		}
 	}
 	
-	private DataFilter lastFilter;
+	private SampleClass lastClass;
+	
 	@Override
-	public void dataFilterChanged(DataFilter filter) {
-		super.dataFilterChanged(filter);
-
-		if (lastFilter == null || !filter.equals(lastFilter)) {
+	public void sampleClassChanged(SampleClass sc) {
+		super.sampleClassChanged(sc);				
+		if (lastClass == null || !sc.equals(lastClass)) {
 			removeRankColumns();
 		}
-		lastFilter = filter;
+		lastClass = sc;
 		
 		screen.enqueue(new Screen.QueuedAction("loadCompounds") {			
 			@Override
 			public void run() {
-				loadCompounds();
+				loadMajors();
 				compoundEditor.clearSelection();				
 			}
 		});		
@@ -180,8 +185,10 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		return r;
 	}
 
-	void loadCompounds() {		
-		sparqlService.compounds(chosenDataFilter, new PendingAsyncCallback<String[]>(this, "Unable to retrieve compounds") {
+	void loadMajors() {				
+		sparqlService.parameterValues(chosenSampleClass, majorParameter, 
+				new PendingAsyncCallback<String[]>(this, 
+						"Unable to retrieve values for parameter: " + majorParameter) {
 			
 			@Override
 			public void handleSuccess(String[] result) {
@@ -215,7 +222,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		addRankColumns();
 		
 		if (rules.size() > 0) { //do we have at least 1 rule?						
-			seriesService.rankedCompounds(chosenDataFilter, rules.toArray(new RankRule[0]),
+			seriesService.rankedCompounds(chosenSampleClass, rules.toArray(new RankRule[0]),
 					new PendingAsyncCallback<MatchResult[]>(this) {
 						public void handleSuccess(MatchResult[] res) {
 							ranks.clear();
@@ -251,26 +258,35 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 			if (rankProbes.size() == 0) {
 				Window.alert("These charts can only be displayed if compounds have been ranked.");
 			} else {
-				seriesService.getSeries(chosenDataFilter, rankProbes.toArray(new String[0]), 
-						null, new String[] { value }, new PendingAsyncCallback<List<Series>>(w, "Unable to retrieve data.") {
+				seriesService.getSeries(chosenSampleClass, rankProbes.toArray(new String[0]), 
+						null, new String[] { value }, getSeriesCallback(value));					
+			}
+		}
+		
+		private AsyncCallback<List<Series>> getSeriesCallback(final String value) {
+			 return new PendingAsyncCallback<List<Series>>(w, "Unable to retrieve data.") {
 					public void handleSuccess(final List<Series> ss) {
 						Utils.ensureVisualisationAndThen(new Runnable() {
 							public void run() {
-								ChartGridFactory cgf = new ChartGridFactory(chosenDataFilter, chosenColumns);
-								cgf.makeSeriesCharts(ss, false, scores.get(value).dose(), new ChartGridFactory.ChartAcceptor() {
-									
-									@Override
-									public void acceptCharts(ChartGrid cg) {
-										Utils.displayInPopup("Charts", cg, DialogPosition.Side);								
-									}
-								}, screen);					
+								makeSeriesCharts(value, ss);		
 							}
 						});
 							
 					}
-					
-				});
-			}
+			 };
+		}
+		
+		private void makeSeriesCharts(final String value, final List<Series> ss) {
+			//TODO
+			ChartGridFactory cgf = new ChartGridFactory(chosenSampleClass, 
+					screen.schema(), chosenColumns);
+			cgf.makeSeriesCharts(ss, false, scores.get(value).dose(), new ChartGridFactory.ChartAcceptor() {
+				
+				@Override
+				public void acceptCharts(ChartGrid cg) {
+					Utils.displayInPopup("Charts", cg, DialogPosition.Side);								
+				}
+			}, screen);			
 		}
 	}
 }

@@ -7,24 +7,24 @@ import com.google.gwt.user.client.ui.MenuItem;
 public class TickMenuItem {
 
 	private boolean ticked = false;
-	private MenuItem mi;
-	
+	private MenuItem mi;	
 	private final String title;
+	private final boolean withImage;
 	
-	public TickMenuItem(String title, boolean initState, final boolean withImage) {
+	public TickMenuItem(String title, boolean initState, boolean withImage) {
 		ticked = initState;
+		this.withImage = withImage;
 		this.title = title;
 		 
 		mi = new MenuItem(title, true, new Command() {
 			@Override
-			public void execute() {
-				ticked = !ticked;
-				setHTML(withImage);				
+			public void execute() {				
+				setState(!ticked);
 				stateChange(ticked);
 			}
 			
 		});
-		setHTML(withImage);
+		setState(ticked);
 	}
 	
 	public TickMenuItem(MenuBar mb, String title, boolean initState) {
@@ -36,7 +36,16 @@ public class TickMenuItem {
 		return mi;
 	}
 	
-	private void setHTML(boolean withImage) {
+	protected boolean getState(boolean state) {
+		return ticked;
+	}
+	
+	protected void setState(boolean state) {
+		ticked = state;
+		setHTML(withImage);				
+	}
+	
+	protected void setHTML(boolean withImage) {
 		if (!withImage) {
 			mi.setHTML(title);
 		} else if (ticked) {

@@ -5,7 +5,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.annotation.Nullable;
 
 import otgviewer.client.charts.AdjustableChartGrid;
 import otgviewer.client.charts.ChartGridFactory;
@@ -20,17 +23,19 @@ import otgviewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.FilterEditor;
 import otgviewer.client.rpc.MatrixService;
 import otgviewer.client.rpc.MatrixServiceAsync;
-import otgviewer.shared.AType;
-import otgviewer.shared.Barcode;
 import otgviewer.shared.Group;
+import otgviewer.shared.GroupUtils;
 import otgviewer.shared.ManagedMatrixInfo;
-import otgviewer.shared.OTGUtils;
+import otgviewer.shared.OTGSample;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
-import bioweb.shared.Pair;
-import bioweb.shared.SharedUtils;
-import bioweb.shared.array.DataColumn;
-import bioweb.shared.array.ExpressionRow;
+import t.common.shared.DataSchema;
+import t.common.shared.Pair;
+import t.common.shared.SampleClass;
+import t.common.shared.SharedUtils;
+import t.common.shared.sample.DataColumn;
+import t.common.shared.sample.ExpressionRow;
+import t.viewer.shared.AType;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.SafeHtmlCell;
@@ -88,7 +93,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	//We enable/disable this button when the value type changes
 	private Button foldChangeBtn = new Button("Add fold-change difference");
 	
-	private ListBox valueTypeList = new ListBox();
+	protected ListBox tableList = new ListBox();
 	
 	private final MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
 			.create(MatrixService.class);	
@@ -113,14 +118,16 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
  	private boolean loadedData = false;
  	private ManagedMatrixInfo matrixInfo = null;
  	
- 	private Barcode[] chartBarcodes = null;
+ 	private OTGSample[] chartBarcodes = null;
 
  	private DialogBox filterDialog = null;
  	
  	private final Logger logger = Utils.getLogger("expressionTable");
  	
+ 	protected ValueType chosenValueType;
+ 	
 	public ExpressionTable(Screen _screen) {
-		super();
+		super(_screen);
 		screen = _screen;
 		
 		grid.setStyleName("exprGrid");
@@ -135,8 +142,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		setEnabled(false);
 	}
 	
-	private ValueType getValueType() {
-		String vt = valueTypeList.getItemText(valueTypeList
+	protected ValueType getValueType() {
+		String vt = tableList.getItemText(tableList
 				.getSelectedIndex());
 		return ValueType.unpack(vt);		
 	}
@@ -164,12 +171,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		}		
 	}
 	
-	@Override
-	protected void changeValueType(ValueType type) {
-		super.changeValueType(type);
-		enableFoldChangeUI(true);		
-	}
-	
 	/**
 	 * The main (navigation) tool panel
 	 */
@@ -179,17 +180,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		HorizontalPanel horizontalPanel = Utils.mkHorizontalPanel(true);		
 		horizontalPanel.setStyleName("colored");
 		tools.add(horizontalPanel);
-		
-		valueTypeList.addItem(ValueType.Folds.toString());
-		valueTypeList.addItem(ValueType.Absolute.toString());
-		changeValueType(ValueType.Folds);
-		valueTypeList.setVisibleItemCount(1);
-		horizontalPanel.add(valueTypeList);
-		valueTypeList.addChangeHandler(new ChangeHandler() {			
+	
+		tableList.setVisibleItemCount(1);
+		horizontalPanel.add(tableList);
+		initTableList();
+		tableList.addChangeHandler(new ChangeHandler() {			
 			@Override
 			public void onChange(ChangeEvent event) {
 				removeTests();
-				changeValueType(getValueType());
+				chosenValueType = getValueType();
 				getExpressions();
 			}
 		});
@@ -214,6 +213,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		pager.setStyleName("slightlySpaced");
 		horizontalPanel.add(pager);
 		pager.setDisplay(grid);			
+	}
+	
+	protected void initTableList() {		
+		tableList.addItem(ValueType.Folds.toString());
+		tableList.addItem(ValueType.Absolute.toString());
+		chosenValueType = ValueType.Folds;
 	}
 	
 	public Widget analysisTools() { return analysisTools; }
@@ -278,17 +283,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		} else if (groupsel1.getSelectedIndex() == groupsel2.getSelectedIndex()) {
 			Window.alert("Please select two different groups to perform " + name + ".");
 		} else {
-			final Group g1 = OTGUtils.findGroup(chosenColumns, selectedGroup(groupsel1));
-			final Group g2 = OTGUtils.findGroup(chosenColumns, selectedGroup(groupsel2));
+			final Group g1 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel1));
+			final Group g2 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel2));
 			synth.setGroups(g1, g2);
-			matrixService.addTwoGroupTest(synth, new AsyncCallback<Void>() {
-				public void onSuccess(Void v) {							
-					addSynthColumn(synth, synth.getShortTitle(), synth.getTooltip());					
+			matrixService.addTwoGroupTest(synth, new PendingAsyncCallback<Void>(this, 
+					"Adding test column failed") {
+				public void handleSuccess(Void v) {							
+					addSynthColumn(synth, synth.getShortTitle(schema), synth.getTooltip());					
 					//force reload
 					grid.setVisibleRangeAndClearData(grid.getVisibleRange(), true); 
-				}
-				public void onFailure(Throwable caught) {
-					Window.alert("Unable to compute " + name);
 				}
 			});
 		}
@@ -437,11 +440,16 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		});
 	}
 	
-	protected List<HideableColumn> initHideableColumns() {
+	protected @Nullable String probeLink(String identifier) {
+		return null;
+	}
+	
+	protected List<HideableColumn> initHideableColumns(DataSchema schema) {
 		SafeHtmlCell shc = new SafeHtmlCell();
 		List<HideableColumn> r = new ArrayList<HideableColumn>();
 		
-		r.add(new LinkingColumn<ExpressionRow>(shc, "Gene ID", false) {
+		r.add(new LinkingColumn<ExpressionRow>(shc, "Gene ID", 
+				initVisibility(StandardColumns.GeneID)) {
 			@Override
 			protected String formLink(String value) {
 				return AType.formGeneLink(value);
@@ -452,26 +460,45 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			}						
 		});
 		
-		r.add(new DefHideableColumn<ExpressionRow>("Gene Sym", true) {
+		r.add(new DefHideableColumn<ExpressionRow>("Gene Sym", 
+				initVisibility(StandardColumns.GeneSym)) {
 			public String safeGetValue(ExpressionRow er) {					
 				return SharedUtils.mkString(er.getGeneSyms(), ", ");
 			}
+			
 		});
-		r.add(new DefHideableColumn<ExpressionRow>("Probe title", true) {
+		
+		r.add(new DefHideableColumn<ExpressionRow>("Probe title", 
+				initVisibility(StandardColumns.ProbeTitle)) {
 			public String safeGetValue(ExpressionRow er) {				
 				return er.getTitle();
 			}
 		});
-		r.add(new DefHideableColumn<ExpressionRow>("Probe", true) {
-			public String safeGetValue(ExpressionRow er) {				
-				return er.getProbe();
+		
+		r.add(new LinkingColumn<ExpressionRow>(shc, "Probe", 
+				initVisibility(StandardColumns.Probe)) {
+
+			@Override
+			protected String formLink(String value) {
+				return probeLink(value);
 			}
-		});		
+			@Override
+			protected Collection<Pair<String, String>> getLinkableValues(ExpressionRow er) {
+				List<String> r = new ArrayList<String>();
+				r.add(er.getProbe());
+				return Pair.duplicate(r);
+			}	
+			
+		});			
 		
 		//We want gene sym, probe title etc. to be before the association columns going left to right
-		r.addAll(super.initHideableColumns());
+		r.addAll(super.initHideableColumns(schema));
 		
 		return r;
+	}
+	
+	protected boolean initVisibility(StandardColumns col) {
+		return col != StandardColumns.GeneID;			
 	}
 	
 	public String[] displayedProbes() { return displayedProbes; }
@@ -537,11 +564,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		removeSyntheticColumnsLocal();
 		
 		groupsel1.clear();
-		groupsel2.clear();
+		groupsel2.clear();		
 		for (DataColumn<?> dc: columns) {
 			if (dc instanceof Group) {
-				groupsel1.addItem(dc.getShortTitle());
-				groupsel2.addItem(dc.getShortTitle());
+				groupsel1.addItem(dc.getShortTitle(schema));
+				groupsel2.addItem(dc.getShortTitle(schema));
 			}
 		}
 		
@@ -551,8 +578,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		}
 		
 		chartBarcodes = null;
-		loadedData = false;
-		
+		loadedData = false;		
 		logger.info("Columns changed (" + columns.size() + ")");
 	}
 	
@@ -574,6 +600,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	private AsyncCallback<ManagedMatrixInfo> dataUpdateCallback() {
 		return new AsyncCallback<ManagedMatrixInfo>() {
 			public void onFailure(Throwable caught) {
+				logger.log(Level.WARNING, "Exception in data update callback", caught);
 				getExpressions(); // the user probably let the session
 									// expire
 			}
@@ -602,7 +629,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		logger.info("begin loading data for " + chosenColumns.size() + " columns and " +
 				chosenProbes.length + " probes");
 		// load data
-		matrixService.loadDataset(chosenDataFilter, chosenColumns, chosenProbes,
+		matrixService.loadDataset(chosenColumns, chosenProbes,
 				chosenValueType, synthetics,
 				new AsyncCallback<ManagedMatrixInfo>() {
 					public void onFailure(Throwable caught) {
@@ -639,7 +666,13 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			highlightedRow = SharedUtils.indexOf(displayedProbes, value);
 			grid.redraw();
 			
-			final ChartGridFactory cgf = new ChartGridFactory(chosenDataFilter, chosenColumns);
+			//TODO this will not work for multi-class groups
+			SampleClass sc = chosenColumns.get(0).getSamples()[0].
+					sampleClass().asMacroClass(schema);		
+			logger.info("Create charts for " + sc.toString());
+			
+			//TODO
+			final ChartGridFactory cgf = new ChartGridFactory(sc, schema, chosenColumns);
 			Utils.ensureVisualisationAndThen(new Runnable() {
 				public void run() {
 					cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, value, 
@@ -648,7 +681,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 							Utils.displayInPopup("Charts", cg, true, DialogPosition.Side);							
 						}
 
-						public void acceptBarcodes(Barcode[] bcs) {
+						public void acceptBarcodes(OTGSample[] bcs) {
 							chartBarcodes = bcs;
 						}
 					});			

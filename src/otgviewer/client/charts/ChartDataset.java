@@ -2,11 +2,12 @@ package otgviewer.client.charts;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import otgviewer.client.Utils;
 import otgviewer.client.charts.ChartDataSource.ChartSample;
-import otgviewer.shared.Barcode;
-import bioweb.shared.SharedUtils;
+import otgviewer.shared.OTGSample;
+import t.common.shared.SharedUtils;
 
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
@@ -15,16 +16,19 @@ public class ChartDataset {
 
 	protected List<ChartSample> samples;
 	protected String[] categories;
-	protected boolean categoriesAreTimes;
+	protected boolean categoriesAreMins;
 	
 	protected double min = Double.NaN;
 	protected double max = Double.NaN;
 	
+	protected Logger logger = Utils.getLogger("ChartDataset");
+	
 	ChartDataset(List<ChartSample> samples, List<ChartSample> allSamples, 
-			String[] categories, boolean categoriesAreTimes) {
+			String[] categories, boolean categoriesAreMins) {
 		this.samples = samples;
-		this.categoriesAreTimes = categoriesAreTimes;				
+		this.categoriesAreMins = categoriesAreMins;				
 		this.categories = categories;		
+		logger.info(categories.length + " categories");
 		init();
 	}
 	
@@ -62,7 +66,7 @@ public class ChartDataset {
 	 * @param column
 	 * @return
 	 */
-	Barcode getBarcode(int row, int column) {
+	OTGSample getBarcode(int row, int column) {
 		return null;
 	}
 
@@ -92,9 +96,9 @@ public class ChartDataset {
 		List<ChartSample> fsamples = new ArrayList<ChartSample>();
 		for (ChartSample s: samples) {
 			if (((s.probe.equals(probeOrCompound) && isProbe) ||
-					(s.compound.equals(probeOrCompound) && !isProbe) || probeOrCompound == null) &&
-					((s.time.equals(timeOrDose) && isTime) ||
-							(s.dose.equals(timeOrDose) && !isTime) ||
+					(s.major.equals(probeOrCompound) && !isProbe) || probeOrCompound == null) &&
+					((s.minor.equals(timeOrDose) && isTime) ||
+							(s.medium.equals(timeOrDose) && !isTime) ||
 							timeOrDose == null)) {
 				fsamples.add(s);
 			}
@@ -106,9 +110,9 @@ public class ChartDataset {
 	
 	protected String categoryForSample(ChartSample sample) {
 		for (String c : categories) {
-			if (categoriesAreTimes && sample.time.equals(c)) {
+			if (categoriesAreMins && sample.minor.equals(c)) {
 				return c;
-			} else if (!categoriesAreTimes && sample.dose.equals(c)) {
+			} else if (!categoriesAreMins && sample.medium.equals(c)) {
 				return c;
 			}
 		}
@@ -124,8 +128,11 @@ public class ChartDataset {
 		int[] valCount = new int[categories.length];
 
 		for (ChartSample s : samples) {
-			int cat = SharedUtils.indexOf(categories, categoryForSample(s));
+			String scat = categoryForSample(s);
+			int cat = SharedUtils.indexOf(categories, scat);
 			if (cat != -1) {
+//				logger.info("Add " + s.major + " " + s.medium + " " + s.minor + " " + s.value + " " + s.barcode.getCode());
+//				logger.info("Category: " + scat);
 				if (colCount < valCount[cat] + 1) {
 					dt.addColumn(ColumnType.NUMBER);
 					addStyleColumn(dt);
@@ -147,6 +154,7 @@ public class ChartDataset {
 					
 				dt.setValue(cat, col + 1, style);
 				valCount[cat]++;
+//				logger.info(valCount[cat] + " values in category " + cat);
 			}
 		}
 	}

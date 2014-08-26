@@ -8,10 +8,10 @@ import javax.annotation.Nullable;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.ManagedMatrixInfo;
-import otgviewer.shared.StringList;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
-import bioweb.shared.array.ExpressionRow;
+import t.common.shared.sample.ExpressionRow;
+import t.viewer.shared.StringList;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -28,16 +28,21 @@ public interface MatrixService extends RemoteService {
 	/**
 	 * Convert identifiers such as genes, probe IDs and proteins into a list of probes.
 	 * 
+	 * TODO not clear that this should be in MatrixService
+	 * 
 	 * @param filter
 	 * @param identifiers
-	 * @param precise If true, names must be an exact match, otherwise partial name matching is used.
+	 * @param precise If true, names must be an exact match, otherwise partial 
+	 * 	name matching is used.
+	 * @param titlePatternMatch If true, the query is assumed to be a partial pattern match
+	 * on probe titles.
 	 * @return
 	 */
-	public String[] identifiersToProbes(DataFilter filter, String[] identifiers, boolean precise);
+	public String[] identifiersToProbes(String[] identifiers, boolean precise,
+			boolean titlePatternMatch);
 	
 	/**
-	 * Load data into the user's session. Also perform an initial filtering.
-	 * @param filter
+	 * Load data into the user's session. Also perform an initial filtering. 
 	 * @param barcodes
 	 * @param probes
 	 * @param type
@@ -45,7 +50,7 @@ public interface MatrixService extends RemoteService {
 	 * from the start.
 	 * @return The number of rows that remain after filtering.
 	 */
-	public ManagedMatrixInfo loadDataset(DataFilter filter, List<Group> columns, 
+	public ManagedMatrixInfo loadDataset(List<Group> columns, 
 			String[] probes, ValueType type, List<Synthetic> synthCols);
 	
 	/**
@@ -93,49 +98,30 @@ public interface MatrixService extends RemoteService {
 			boolean ascending);
 	
 	/**
-	 * Get all data immediately. 
-	 * @param filter
-	 * @param barcodes
+	 * Get all data immediately, on the level of individual values (not averaged).
+	 * @param g Samples to request. The order of the columns returned will correspond to 
+	 * the internal order of this group.
 	 * @param probes
 	 * @param type 
-	 * @param sparseRead If true, we optimise for the case of reading a single probe from multiple arrays.
-	 * If false, we optimise for reading full arrays. 
-	 * @param withSymbols If true, gene IDs and gene symbols will also be loaded into the rows (may be slightly slower)
+	 * @param sparseRead If true, we optimise for the case of reading a 
+	 * 	single probe from multiple arrays. If false, we optimise for reading full arrays. 
+	 * @param withSymbols If true, gene IDs and gene symbols will also be loaded 
+	 * 	into the rows (may be slightly slower)
 	 * @return
 	 */
-	public List<ExpressionRow> getFullData(DataFilter filter, List<String> barcodes, String[] probes, 
-			ValueType type, boolean sparseRead, boolean withSymbols);
+	public List<ExpressionRow> getFullData(Group g, String[] probes, 
+			boolean sparseRead, boolean withSymbols, ValueType type);
 	
 	/**
-	 * Prepare a CSV file representing the loaded data for download. Returns a URL that may be used for downloading.
-	 * Requires that loadDataset was first used to load items.
+	 * Prepare a CSV file representing the loaded data for download. Returns a URL 
+	 * that may be used for downloading. Requires that loadDataset was first used to load items.
 	 * @return
 	 */
 	public String prepareCSVDownload();
-	
-	/**
-	 * Get the GeneIDs currently being displayed. If limit is -1, no limit will be applied.
-	 */
-	public String[] getGenes(int limit);
 
-	/**
-	 * Import gene lists from a targetmine user account.
-	 * This should not necessarily be in MatrixService...
-	 * @param user
-	 * @param pass
-	 * @param asProbes if true, the items will be imported as affymetrix probes. If false, as genes.
-	 * @return
-	 */
-	public StringList[] importTargetmineLists(DataFilter filter, String user, 
-			String pass, boolean asProbes);
-
-	public void exportTargetmineLists(DataFilter filter, String user, String pass, 
-			StringList[] lists, boolean replace);
-	
 	/**
 	 * Send a feedback email from a user.
 	 * This should not necessarily be in MatrixService.
 	 */
 	public void sendFeedback(String name, String email, String feedback);
-
 }

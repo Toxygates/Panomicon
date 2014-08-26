@@ -1,15 +1,17 @@
 package otgviewer.client.rpc;
 import javax.annotation.Nullable;
 
-import otgviewer.shared.AType;
-import otgviewer.shared.Association;
-import otgviewer.shared.BUnit;
-import otgviewer.shared.Barcode;
-import otgviewer.shared.BarcodeColumn;
-import otgviewer.shared.DataFilter;
+import otgviewer.shared.OTGColumn;
+import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
-import bioweb.shared.array.Annotation;
-import bioweb.shared.array.HasSamples;
+import t.common.shared.DataSchema;
+import t.common.shared.Pair;
+import t.common.shared.SampleClass;
+import t.common.shared.Unit;
+import t.common.shared.sample.Annotation;
+import t.common.shared.sample.HasSamples;
+import t.viewer.shared.AType;
+import t.viewer.shared.Association;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -22,92 +24,60 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  */
 @RemoteServiceRelativePath("sparql")
 public interface SparqlService extends RemoteService {
+	public String[] parameterValues(SampleClass sc, String parameter);
 	
 	/**
-	 * Obtain compounds for the given filter
-	 * @param filter
+	 * Obtain samples for a given sample class.
+	 * @param sc
 	 * @return
 	 */
-	public String[] compounds(DataFilter filter);	
+	public OTGSample[] samples(SampleClass sc);
 	
 	/**
-	 * TODO consider removing
-	 * 
-	 * Obtain dose levels for a given filter and compound
-	 * @param filter
-	 * @param compound the chosen compound, or null for no constraint
+	 * Obtain samples with a filter on one parameter.
+	 * @param sc
 	 * @return
 	 */
-	public String[] doseLevels(DataFilter filter, @Nullable String compound);
+	public OTGSample[] samples(SampleClass sc, String param, String[] paramValues);
+
+	/**
+	 * Obtain all sample classes in the triple store
+	 * @return
+	 */
+	public SampleClass[] sampleClasses();
 	
 	/**
-	 * TODO consider removing
-	 * 
-	 * Obtain samples for a given filter, compound, dose level, time
-	 * @param filter 
-	 * @param compound the chosen compound, or null for no constraint.
-	 * @param doseLevel the chosen dose level, or null for no constraint.
-	 * @param time the chosen time, or null for no constraint.
-	 * @return
+	 * Obtain units that are populated with the samples that belong to them,
+	 * with a filter on one parameter.
+	 * @param sc
+	 * @param 
+	 * @return Pairs of units, where the first is treated samples and the second
+	 * the corresponding control samples, or null if there are none.
 	 */
-	public Barcode[] barcodes(DataFilter filter, @Nullable String compound,
-			@Nullable String doseLevel, @Nullable String time);
-	
-	/**
-	 * TODO consider removing
-	 * 
-	 * Obtain samples for a given filter, compounds, dose level, time
-	 * @param filter 
-	 * @param compounds the chosen compounds.
-	 * @param doseLevel the chosen dose level, or null for no constraint.
-	 * @param time the chosen time, or null for no constraint.
-	 * @return
-	 */
-	public Barcode[] barcodes(DataFilter filter, String[] compounds, 
-			@Nullable String doseLevel, @Nullable String time);
-	
-	/**
-	 * TODO consider removing
-	 * 
-	 * Obtain times corresponding to a data filter and a compound.
-	 * @param filter 
-	 * @param compound the chosen compound, or null for no constraint.
-	 * @return
-	 */
-	public String[] times(DataFilter filter, @Nullable String compound);		
-	
-	/**
-	 * Obtain units that are populated with the samples that belong to them.
-	 * @param filter
-	 * @param compounds
-	 * @param doseLevel
-	 * @param time
-	 * @return
-	 */
-	public BUnit[] units(DataFilter filter, @Nullable String[] compounds, 
-			@Nullable String doseLevel, @Nullable String time);
+	public Pair<Unit, Unit>[] units(SampleClass sc, DataSchema schema,
+			String param, @Nullable String[] paramValues);
 			
-	
-	/**
-	 * Obtain probes for the given data filter
-	 * @param filter
-	 * @return
-	 */
-	public String[] probes(DataFilter filter);
+//	
+//	/**
+//	 * Obtain probes for the given barcodes
+//	 * @param columns
+//	 * @return
+//	 */
+//	public String[] probes(BarcodeColumn[] columns);
 	
 	/**
 	 * Obtain pathologies for the given sample
 	 * @param barcode
 	 * @return
 	 */
-	public Pathology[] pathologies(Barcode barcode);
+	public Pathology[] pathologies(OTGSample barcode);
 	
 	/**
 	 * Obtain pathologies for a set of samples
 	 * @param column
 	 * @return
 	 */
-	public Pathology[] pathologies(BarcodeColumn column);
+	public Pathology[] pathologies(OTGColumn column);
 	
 	/**
 	 * Annotations are experiment-associated information such as
@@ -116,7 +86,7 @@ public interface SparqlService extends RemoteService {
 	 * @param barcode
 	 * @return
 	 */
-	public Annotation annotations(Barcode barcode);
+	public Annotation annotations(OTGSample barcode);
 	
 	/**
 	 * Obtain annotations for a set of samples
@@ -125,7 +95,7 @@ public interface SparqlService extends RemoteService {
 	 * all annotations will be obtained.
 	 * @return
 	 */
-	public Annotation[] annotations(HasSamples<Barcode> column, boolean importantOnly);
+	public Annotation[] annotations(HasSamples<OTGSample> column, boolean importantOnly);
 	
 
 	/**
@@ -133,14 +103,14 @@ public interface SparqlService extends RemoteService {
 	 * @param pattern
 	 * @return
 	 */
-	public String[] pathways(DataFilter filter, String pattern);
+	public String[] pathways(SampleClass sc, String pattern);
 	
 	/**
 	 * Obtain probes that belong to the named pathway.
 	 * @param pathway
 	 * @return
 	 */
-	public String[] probesForPathway(DataFilter filter, String pathway);
+	public String[] probesForPathway(SampleClass sc, String pathway);
 	
 	/**
 	 * Obtain probes that correspond to proteins targeted by
@@ -151,7 +121,7 @@ public interface SparqlService extends RemoteService {
 	 * @param homologous Whether to use homologous genes (if not, only direct targets are returned)
 	 * @return
 	 */
-	public String[] probesTargetedByCompound(DataFilter filter, String compound, String service, 
+	public String[] probesTargetedByCompound(SampleClass sc, String compound, String service, 
 			boolean homologous);
 	
 	/**
@@ -163,28 +133,26 @@ public interface SparqlService extends RemoteService {
 	
 	/**
 	 * Obtain probes for a given GO term (fully named)
-	 * @param filter
 	 * @param goTerm
 	 * @return
 	 */
-	public String[] probesForGoTerm(DataFilter filter, String goTerm);
+	public String[] probesForGoTerm(String goTerm);
 	
 	/**
 	 * Obtain gene symbols for the given probes.
 	 * The resulting array will contain gene symbol arrays in the same order as
 	 * and corresponding to the probes in the input array.
-	 * @param filter
 	 * @param probes
 	 * @return
 	 */
-	public String[][] geneSyms(DataFilter filter, String[] probes);
+	public String[][] geneSyms(String[] probes);
 	
 	/*
 	 * Obtain gene suggestions from a partial gene symbol
 	 * @param partialName
 	 * @return An array of pairs, where the first item is the precise gene symbol and the second is the full gene name.
 	 */
-	public String[] geneSuggestions(DataFilter filter, String partialName);
+	public String[] geneSuggestions(SampleClass sc, String partialName);
 	
 	/**
 	 * Obtain associations -- the "dynamic columns" on the data screen.
@@ -193,5 +161,5 @@ public interface SparqlService extends RemoteService {
 	 * @param probes
 	 * @return
 	 */
-	public Association[] associations(DataFilter filter, AType[] types, String[] probes);
+	public Association[] associations(SampleClass sc, AType[] types, String[] probes);
 }

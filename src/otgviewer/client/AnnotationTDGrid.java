@@ -4,12 +4,13 @@ import java.util.List;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.shared.BUnit;
-import otgviewer.shared.Barcode;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import bioweb.shared.SharedUtils;
-import bioweb.shared.array.Annotation;
+import otgviewer.shared.OTGSample;
+import t.common.shared.SampleClass;
+import t.common.shared.SharedUtils;
+import t.common.shared.Unit;
+import t.common.shared.sample.Annotation;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -57,17 +58,14 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 	}
 
 	@Override
-	public void dataFilterChanged(DataFilter filter) {
-		super.dataFilterChanged(filter);		
-	}
-
-	@Override
 	public void compoundsChanged(List<String> compounds) {
 		super.compoundsChanged(compounds);
 		
 		if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
-			sparqlService.barcodes(chosenDataFilter, compounds.get(0), null, null, new AsyncCallback<Barcode[]>() {
-				public void onSuccess(Barcode[] bcs) {
+			SampleClass sc = chosenSampleClass.copy();
+			sc.put("compound_name", compounds.get(0));
+			sparqlService.samples(sc, new AsyncCallback<OTGSample[]>() {
+				public void onSuccess(OTGSample[] bcs) {
 					
 					sparqlService.annotations(bcs[0], new AsyncCallback<Annotation>() {
 						public void onSuccess(Annotation a) {
@@ -102,19 +100,23 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 	private void displayAnnotation(final String annotation, final int row, final int col, 
 			final String compound, final String dose, final String time) {		
 		
-		sparqlService.barcodes(chosenDataFilter, compound,
-				dose, time,
-				new PendingAsyncCallback<Barcode[]>(this, "Unable to retrieve barcodes for the group definition.") {
-					public void handleSuccess(Barcode[] barcodes) {
+		SampleClass sc = chosenSampleClass.copy();
+		sc.put("dose_level", dose);
+		sc.put("exposure_time", time);
+		sc.put("compound_name", compound);
+		
+		sparqlService.samples(sc,
+				new PendingAsyncCallback<OTGSample[]>(this, "Unable to retrieve barcodes for the group definition.") {
+					public void handleSuccess(OTGSample[] barcodes) {
 						processAnnotationBarcodes(annotation, row, col, time, barcodes);						
 					}
 				});
 	}
 	
 	private void processAnnotationBarcodes(final String annotation, final int row, final int col,
-			final String time, final Barcode[] barcodes) {
+			final String time, final OTGSample[] barcodes) {
 		final NumberFormat fmt = NumberFormat.getFormat("#0.00");
-		Group g = new Group("temporary", barcodes);
+		Group g = new Group(schema, "temporary", barcodes, null);
 		sparqlService.annotations(g, false, 
 				new PendingAsyncCallback<Annotation[]>(this, "Unable to get annotations.") {
 			public void handleSuccess(Annotation[] as) {								
@@ -172,17 +174,18 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 	}
 	
 	private void displayAnnotation(String name) {
-		annotValues = new double[chosenCompounds.size()][availableTimes.length * 3];
-		annotValuesRemaining = chosenCompounds.size() * availableTimes.length * 3;
+		int numMin = minorValues.size();
+		annotValues = new double[chosenCompounds.size()][numMin * 3];
+		annotValuesRemaining = chosenCompounds.size() * numMin * 3;
 		
 		for (int c = 0; c < chosenCompounds.size(); ++c) {
 			for (int d = 0; d < 3; ++d) {
-				for (int t = 0; t < availableTimes.length; ++t) {
+				for (int t = 0; t < numMin; ++t) {
 					final String compound = chosenCompounds.get(c);
-					final String dose = indexToDose(d);
+					final String dose = mediumValues.get(d);
 
-					final String time = availableTimes[t];
-					displayAnnotation(name, c, d * availableTimes.length + t,
+					final String time = minorValues.get(t);
+					displayAnnotation(name, c, d * numMin + t,
 							compound, dose, time);
 				}
 			}
@@ -190,13 +193,13 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 	}
 	
 	@Override
-	protected Widget guiForUnit(BUnit unit) {
-		int time = SharedUtils.indexOf(availableTimes, unit.getTime());
-		int compound = chosenCompounds.indexOf(unit.getCompound());
-		int dose = doseToIndex(unit.getDose());
-		HTML r = new HTML(unit.getTime());
+	protected Widget guiForUnit(Unit unit) {
+		int time = minorValues.indexOf(unit.get(timeParameter));
+		int compound = chosenCompounds.indexOf(unit.get(majorParameter));
+		int dose = mediumValues.indexOf(unit.get(mediumParameter));
+		HTML r = new HTML(unit.get(timeParameter));
 		r.setStyleName("slightlySpaced");
-		labels[compound][availableTimes.length * dose + time] = r;
+		labels[compound][minorValues.size() * dose + time] = r;
 		return r;
 	}
 
@@ -204,7 +207,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 	protected void drawGridInner(Grid grid) {
 		labels = new HTML[chosenCompounds.size()][];
 		for (int c = 0; c < chosenCompounds.size(); ++c) {
-			labels[c] = new HTML[3 * availableTimes.length];
+			labels[c] = new HTML[3 * minorValues.size()];
 		}
 		super.drawGridInner(grid);
 	}

@@ -12,8 +12,6 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.FixedWidthLayoutPanel;
 import otgviewer.client.components.ListChooser;
 import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.ResizingDockLayoutPanel;
-import otgviewer.client.components.ResizingListBox;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
@@ -21,10 +19,12 @@ import otgviewer.client.rpc.MatrixService;
 import otgviewer.client.rpc.MatrixServiceAsync;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
-import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import otgviewer.shared.ItemList;
-import bioweb.shared.SharedUtils;
+import t.common.client.components.ResizingDockLayoutPanel;
+import t.common.client.components.ResizingListBox;
+import t.common.shared.SampleClass;
+import t.common.shared.SharedUtils;
+import t.viewer.shared.ItemList;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -41,6 +41,7 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.StackLayoutPanel;
 import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -58,9 +59,7 @@ public class ProbeScreen extends Screen {
 	private TextArea customProbeText;
 	private ListBox probesList;
 	private Set<String> listedProbes = new HashSet<String>();
-	private List<ListBox> compoundLists = new ArrayList<ListBox>();
-	final GeneOracle oracle = new GeneOracle();
-	final SuggestBox sb = new SuggestBox(oracle);
+	private List<ListBox> compoundLists = new ArrayList<ListBox>();	
 	private Button proceedSelected;
 	private FixedWidthLayoutPanel fwlp;
 	private DockLayoutPanel plPanel;
@@ -70,11 +69,11 @@ public class ProbeScreen extends Screen {
 	private static final int PL_SOUTH_HEIGHT = 30;
 
 	private static final int STACK_ITEM_HEIGHT = 29;
-	
+	final GeneOracle oracle = new GeneOracle();
 	private final Logger logger = Utils.getLogger();
 
 	public ProbeScreen(ScreenManager man) {
-		super("Probe selection", key, true, true, man, resources
+		super("Probe selection", key, true, man, resources
 				.probeSelectionHTML(), resources.probeSelectionHelp());
 	}
 
@@ -89,12 +88,12 @@ public class ProbeScreen extends Screen {
 						+ "Enter a partial pathway name and press enter to search.",
 				true) {
 			protected void getMatches(String pattern) {
-				sparqlService.pathways(chosenDataFilter, pattern,
+				sparqlService.pathways(chosenSampleClass, pattern,
 						retrieveMatchesCallback());
 			}
 
 			protected void getProbes(String item) {
-				sparqlService.probesForPathway(chosenDataFilter, item,
+				sparqlService.probesForPathway(chosenSampleClass, item,
 						retrieveProbesCallback());
 			}
 
@@ -116,7 +115,7 @@ public class ProbeScreen extends Screen {
 			}
 
 			protected void getProbes(String item) {
-				sparqlService.probesForGoTerm(chosenDataFilter, item,
+				sparqlService.probesForGoTerm(item,
 						retrieveProbesCallback());
 			}
 
@@ -126,6 +125,16 @@ public class ProbeScreen extends Screen {
 				addProbes(probes);
 			}
 		};
+	}
+	
+	private VerticalPanel innerVP(String l) {
+		VerticalPanel vpii = Utils.mkVerticalPanel();
+		vpii.setWidth("100%");		
+		vpii.setStylePrimaryName("colored-margin");		
+		
+		Label label = new Label(l);
+		vpii.add(label);
+		return vpii;
 	}
 
 	private Widget manualSelection() {
@@ -137,18 +146,12 @@ public class ProbeScreen extends Screen {
 		vpi.setWidth("100%");
 		vp.add(vpi);
 
-		VerticalPanel vpii = Utils.mkVerticalPanel();
-		vpii.setWidth("100%");
-		vpii.setStyleName("colored");
+		VerticalPanel vpii = innerVP(
+				"Enter a list of probes, genes or proteins to display only those.");		
 		vpi.add(vpii);
 
-		Label label = new Label(
-				"Enter a list of probes, genes or proteins to display only those.");
-		label.setStyleName("none");
-		vpii.add(label);
-
 		customProbeText = new TextArea();
-		vpi.add(customProbeText);
+		vpii.add(customProbeText);
 		customProbeText.setVisibleLines(10);
 		customProbeText.setWidth("95%");
 
@@ -160,38 +163,64 @@ public class ProbeScreen extends Screen {
 				if (split.length == 0) {
 					Window.alert("Please enter probes, genes or proteins in the text box and try again.");
 				} else {
-					addManualProbes(split);
+					addManualProbes(split, false);
 				}
 			}
 		}));
 
-		vpii = Utils.mkVerticalPanel();
-		vpii.setStyleName("colored2");
-		vpi.add(vpii);
-		vpii.setWidth("100%");
+		if (hasSymbolFinder()) {
+			vpii = innerVP("Begin typing a gene symbol to get suggestions.");
+			vpi.add(vpii);
 
-		Label l = new Label("Begin typing a gene symbol to get suggestions.");
-		vpii.add(l);
-
-		vpii.add(sb);
-		sb.setWidth("95%");
-		vpi.add(new Button("Add gene", new ClickHandler() {
-			public void onClick(ClickEvent ev) {
-				String[] gs = new String[1];
-				if (sb.getText().length() == 0) {
-					Window.alert("Please type a gene symbol and try again.");
+			final SuggestBox sb = new SuggestBox(oracle);
+			vpii.add(sb);
+			sb.setWidth("95%");
+			vpii.add(new Button("Add gene", new ClickHandler() {
+				public void onClick(ClickEvent ev) {
+					String[] gs = new String[1];
+					if (sb.getText().length() == 0) {
+						Window.alert("Please enter a gene symbol and try again.");
+					}
+					gs[0] = sb.getText();
+					addManualProbes(gs, false);
 				}
-				gs[0] = sb.getText();
-				addManualProbes(gs);
-			}
-		}));
+			}));
+		}
+		
+		if (hasPartialMatcher()) {
+			vpii = innerVP("Match by partial probe name:");
+			vpi.add(vpii);
+
+			final TextBox tb = new TextBox();
+			vpii.add(tb);
+			tb.setWidth("95%");
+			vpii.add(new Button("Add", new ClickHandler() {
+				public void onClick(ClickEvent ev) {
+					String[] gs = new String[1];
+					if (tb.getText().length() == 0) {
+						Window.alert("Please enter a pattern and try again.");
+					}
+					gs[0] = tb.getText();
+					addManualProbes(gs, true);
+				}
+			}));
+		}
+		
 		return vp;
 	}
+	
+	protected boolean hasChembl() { return true; }
+	
+	protected boolean hasDrugbank() { return true; }
+	
+	protected boolean hasSymbolFinder() { return true; }
+	
+	protected boolean hasPartialMatcher() { return false; }
 
 	public Widget content() {
 		StackLayoutPanel probeSelStack = new StackLayoutPanel(Unit.PX);
 		probeSelStack.setWidth("350px");
-
+		
 		ProbeSelector psel = pathwaySelector();
 		probeSelStack.add(psel, "KEGG pathway search", STACK_ITEM_HEIGHT);
 		addListener(psel);
@@ -199,15 +228,19 @@ public class ProbeScreen extends Screen {
 		probeSelStack.add(psel, "GO term search", STACK_ITEM_HEIGHT);
 		addListener(psel);
 
-		Widget chembl = makeTargetLookupPanel(
-				"CHEMBL",
-				"This lets you view probes that are known targets of the currently selected compound.");
-		probeSelStack.add(chembl, "CHEMBL targets", STACK_ITEM_HEIGHT);
+		if (hasChembl()) {
+			Widget chembl = makeTargetLookupPanel(
+					"CHEMBL",
+					"This lets you view probes that are known targets of the currently selected compound.");
+			probeSelStack.add(chembl, "CHEMBL targets", STACK_ITEM_HEIGHT);
+		}
 
-		Widget drugBank = makeTargetLookupPanel(
-				"DrugBank",
-				"This lets you view probes that are known targets of the currently selected compound.");
-		probeSelStack.add(drugBank, "DrugBank targets", STACK_ITEM_HEIGHT);
+		if (hasDrugbank()) {
+			Widget drugBank = makeTargetLookupPanel(
+					"DrugBank",
+					"This lets you view probes that are known targets of the currently selected compound.");
+			probeSelStack.add(drugBank, "DrugBank targets", STACK_ITEM_HEIGHT);
+		}
 
 		probeSelStack.add(manualSelection(), "Free selection",
 				STACK_ITEM_HEIGHT);
@@ -236,8 +269,8 @@ public class ProbeScreen extends Screen {
 		listChooser = new ListChooser(new HashMap<String, List<String>>(), "probes") {
 			@Override
 			protected void itemsChanged(List<String> items) {
-				matrixService.identifiersToProbes(ps.chosenDataFilter, items.toArray(new String[0]),
-						true, new PendingAsyncCallback<String[]>(ps) {
+				matrixService.identifiersToProbes(items.toArray(new String[0]),
+						true, false, new PendingAsyncCallback<String[]>(ps) {
 							@Override
 							public void handleSuccess(String[] t) {
 								ps.probesChanged(t);								
@@ -306,11 +339,11 @@ public class ProbeScreen extends Screen {
 		return buttons;
 	}
 
-	private void addManualProbes(String[] probes) {
+	private void addManualProbes(String[] probes, boolean titleMatch) {
 		// change the identifiers (which can be mixed format, for example genes
 		// and proteins etc) into a
 		// homogenous format (probes only)
-		matrixService.identifiersToProbes(chosenDataFilter, probes, true,
+		matrixService.identifiersToProbes(probes, true, titleMatch,
 				new PendingAsyncCallback<String[]>(this,
 						"Unable to obtain manual probes (technical error).") {
 					public void handleSuccess(String[] probes) {
@@ -331,7 +364,7 @@ public class ProbeScreen extends Screen {
 				if (compoundList.getSelectedIndex() != -1) {
 					String compound = compoundList.getItemText(compoundList
 							.getSelectedIndex());
-					sparqlService.probesTargetedByCompound(chosenDataFilter,
+					sparqlService.probesTargetedByCompound(chosenSampleClass,
 							compound, service, homologs,
 							new PendingAsyncCallback<String[]>(w,
 									"Unable to get probes (technical error).") {
@@ -396,7 +429,7 @@ public class ProbeScreen extends Screen {
 		if (probes.length > 0) {
 			// TODO reduce the number of ajax calls done by this screen by
 			// collapsing them
-			sparqlService.geneSyms(chosenDataFilter, probesInOrder,
+			sparqlService.geneSyms(probesInOrder,
 					new AsyncCallback<String[][]>() {
 						public void onSuccess(String[][] syms) {
 							deferredAddProbes(probesInOrder, syms);
@@ -428,15 +461,11 @@ public class ProbeScreen extends Screen {
 	}
 
 	@Override
-	public void dataFilterChanged(DataFilter filter) {
-		oracle.setFilter(filter);
-		if (chosenDataFilter != null
-				&& !filter.organism.equals(chosenDataFilter.organism)) {
-			super.dataFilterChanged(filter);
-			probesChanged(new String[0]);
-		} else {
-			super.dataFilterChanged(filter);
-		}
+	public void sampleClassChanged(SampleClass sc) {
+		oracle.setFilter(sc);
+		super.sampleClassChanged(sc);
+		//TODO think about what to do for the probes here
+		//probesChanged(new String[0]);
 	}
 
 	@Override
@@ -445,7 +474,7 @@ public class ProbeScreen extends Screen {
 		for (ListBox l : compoundLists) {
 			l.clear();
 			for (Group g : columns) {
-				for (String cmp : g.getCompounds()) {
+				for (String cmp : g.getMajors(schema())) {
 					l.addItem(cmp);
 				}
 			}

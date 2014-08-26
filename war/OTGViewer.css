@@ -43,6 +43,13 @@ exprGrid {
 	background: Beige;
 }
 
+.colored-margin {
+	background: Beige;
+	padding: 5px;
+	border: grey solid 1px;
+	margin: 2px;
+}
+
 .darkColored {
 	background: White;
 	margin: 2px;
@@ -111,6 +118,12 @@ exprGrid {
 
 .emphasized {
 	font-weight: bold;
+}
+
+.heavyEmphasized {
+	font-weight: bold;
+	font-size: 1.1em;
+	margin: 2px;	
 }
 
 .statusPanel {

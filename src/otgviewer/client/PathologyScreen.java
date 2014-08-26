@@ -11,13 +11,13 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
-import otgviewer.shared.Barcode;
-import otgviewer.shared.BarcodeColumn;
 import otgviewer.shared.CellType;
-import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
-import otgviewer.shared.OTGUtils;
+import otgviewer.shared.OTGColumn;
+import otgviewer.shared.OTGSample;
+import otgviewer.shared.GroupUtils;
 import otgviewer.shared.Pathology;
+import t.common.shared.SampleClass;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.core.client.GWT;
@@ -46,19 +46,21 @@ public class PathologyScreen extends Screen {
 	private Set<Pathology> pathologies = new HashSet<Pathology>();
 	private static Resources resources = GWT.create(Resources.class); 
 	
-	private DataFilter lastFilter;
+	private SampleClass lastClass;
 	private List<Group> lastColumns;
 	
 	@Override
 	public boolean enabled() {
-		return manager.isConfigured(ColumnScreen.key) && chosenDataFilter.cellType == CellType.Vivo;
+		//TODO check the groups for vivo samples instead
+		//CellType ct = CellType.valueOf(chosenSampleClass.get("test_type"));
+		return manager.isConfigured(ColumnScreen.key); // && ct == CellType.Vivo;
 	}
 
 	private SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT
 			.create(SparqlService.class);
 	
 	public PathologyScreen(ScreenManager man) {
-		super("Pathologies", key, true, true, man);
+		super("Pathologies", key, true, man);
 		mkTools();
 	}
 
@@ -84,7 +86,7 @@ public class PathologyScreen extends Screen {
 		
 		TextColumn<Pathology> col = new TextColumn<Pathology>() {
 			public String getValue(Pathology p) {
-				List<Group> gs = OTGUtils.groupsFor(chosenColumns, p.barcode());
+				List<Group> gs = GroupUtils.groupsFor(chosenColumns, p.barcode());
 				StringBuilder sb = new StringBuilder();
 				for (Group g: gs) {
 					sb.append(g.getName());
@@ -101,8 +103,8 @@ public class PathologyScreen extends Screen {
 		
 		col = new TextColumn<Pathology>() {
 			public String getValue(Pathology p) {
-				Barcode b = OTGUtils.barcodeFor(chosenColumns, p.barcode());
-				return b.getCompound() + "/" + b.getShortTitle(); 				
+				OTGSample b = GroupUtils.barcodeFor(chosenColumns, p.barcode());
+				return b.get("compound_name") + "/" + b.getShortTitle(schema()) + "/" + b.get("individual_id") ; 				
 			}
 		};
 		pathologyTable.addColumn(col, "Sample");
@@ -156,10 +158,10 @@ public class PathologyScreen extends Screen {
 	@Override
 	public void show() {
 		super.show();
-		if (visible && (lastFilter == null || !lastFilter.equals(chosenDataFilter)
+		if (visible && (lastClass == null || !lastClass.equals(chosenSampleClass)
 				|| lastColumns == null || !chosenColumns.equals(lastColumns))) {
 			pathologies.clear();
-			for (BarcodeColumn c : chosenColumns) {
+			for (OTGColumn c : chosenColumns) {
 				owlimService.pathologies(c, new AsyncCallback<Pathology[]>() {
 					public void onFailure(Throwable caught) {
 						Window.alert("Unable to get pathologies.");
@@ -172,7 +174,7 @@ public class PathologyScreen extends Screen {
 					}
 				});
 			}
-			lastFilter = chosenDataFilter;
+			lastClass = chosenSampleClass;
 			lastColumns = chosenColumns;
 		}
 	}
@@ -184,7 +186,7 @@ public class PathologyScreen extends Screen {
 		}
 		
 		public void onClick(String value) {
-			displaySampleDetail(OTGUtils.barcodeFor(chosenColumns, value));
+			displaySampleDetail(GroupUtils.barcodeFor(chosenColumns, value));
 		}
 	}
 	

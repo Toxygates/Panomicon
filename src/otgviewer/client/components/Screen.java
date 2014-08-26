@@ -10,9 +10,9 @@ import java.util.logging.Logger;
 import otgviewer.client.Resources;
 import otgviewer.client.SampleDetailScreen;
 import otgviewer.client.Utils;
-import otgviewer.shared.Barcode;
-import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
+import otgviewer.shared.OTGSample;
+import t.common.shared.DataSchema;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -62,7 +62,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	 */
 	protected boolean visible = false;
 	private Label viewLabel = new Label();
-	private boolean showDataFilter = false, showGroups = false;	
+	private boolean showGroups = false;	
 	
 	/**
 	 * Is this screen currently configured?
@@ -132,7 +132,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	
 	private Set<QueuedAction> actionQueue = new HashSet<QueuedAction>(); 
 	
-	private void runActions() {
+	protected void runActions() {
 		for (QueuedAction qa: actionQueue) {
 			qa.run();
 		}
@@ -145,10 +145,9 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	}
 	
 	public Screen(String title, String key,  
-			boolean showDataFilter, boolean showGroups, 
+			boolean showGroups, 
 			ScreenManager man,
-			TextResource helpHTML, ImageResource helpImage) {
-		this.showDataFilter = showDataFilter;
+			TextResource helpHTML, ImageResource helpImage) {		
 		this.showGroups = showGroups;
 		this.helpHTML = helpHTML;
 		this.helpImage = helpImage;
@@ -168,12 +167,16 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	}
 	
 	public Screen(String title, String key,  
-			boolean showDataFilter, boolean showGroups, ScreenManager man) {
-		this(title, key, showDataFilter, showGroups, man, null, null);
+			boolean showGroups, ScreenManager man) {
+		this(title, key, showGroups, man, null, null);
 	}
 
 	public ScreenManager manager() {
 		return this.manager;
+	}
+	
+	public DataSchema schema() {
+		return this.manager.schema();
 	}
 	
 	/**
@@ -314,8 +317,8 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	}
 
 	@Override
-	public void loadState(StorageParser p) {
-		super.loadState(p);
+	public void loadState(StorageParser p, DataSchema schema) {
+		super.loadState(p, schema);
 		String v = p.getItem("OTG.showGuide");
 		if (v == null || v.equals("yes")) {
 			showGuide = true;
@@ -350,14 +353,14 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 			for (Group g: chosenColumns) {				
 				FlowPanel fp = new FlowPanel(); 
 				fp.setStyleName("statusBorder");
-				String tip = g.getCDTs(-1, ", ");
+				String tip = g.getTriples(schema(), -1, ", ");
 				Label l = Utils.mkEmphLabel(g.getName() + ":");
 				l.setWordWrap(false);
 				l.getElement().getStyle().setMargin(2, Unit.PX);
 				l.setStyleName(g.getStyleName());
 				Utils.floatLeft(fp, l);
 				l.setTitle(tip);
-				l = new Label(g.getCDTs(2, ", "));
+				l = new Label(g.getTriples(schema(), 2, ", "));
 				l.getElement().getStyle().setMargin(2, Unit.PX);
 				l.setStyleName(g.getStyleName());
 				Utils.floatLeft(fp, l);
@@ -378,6 +381,10 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		rootPanel.forceLayout();
 	}
 	
+	protected boolean shouldShowStatusBar() {
+		return true;
+	}
+	
 	/**
 	 * This can be overridden by subclasses to add more toolbars
 	 * or more "leftbars".
@@ -386,10 +393,11 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		addToolbar(guideBar, 40);
 		if (!showGuide) {
 			guideBar.setVisible(false);
-		} 
-		addToolbar(spOuter, 40);
+		}
+		if (shouldShowStatusBar()) {
+			addToolbar(spOuter, 40);
+		}		
 	}
-	
 	
 	protected void addToolbar(Widget toolbar, int size) {
 		toolbars.add(toolbar);
@@ -479,15 +487,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	public String key() {
 		return key;
 	}
-	
-	@Override
-	public void dataFilterChanged(DataFilter filter) {
-		super.dataFilterChanged(filter);
-		if (showDataFilter) {
-			viewLabel.setText(filter.toString());
-		}
-	}
-	
+
 	public StorageParser getParser() {
 		return getParser(this);
 	}
@@ -537,9 +537,10 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	 * TODO: this method should probably be somewhere else.
 	 * @param b
 	 */
-	public void displaySampleDetail(Barcode b) {
+	public void displaySampleDetail(OTGSample b) {
 		StorageParser p = getParser(this);
-		storeCustomColumn(p, b);
+		Group g = new Group(schema(), "custom", new OTGSample[] { b });
+		storeCustomColumn(p, g);
 		configuredProceed(SampleDetailScreen.key);
 	}
 	

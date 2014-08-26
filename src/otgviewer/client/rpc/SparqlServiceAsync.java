@@ -1,50 +1,52 @@
 package otgviewer.client.rpc;
 
-import otgviewer.shared.AType;
-import otgviewer.shared.Association;
-import otgviewer.shared.BUnit;
-import otgviewer.shared.Barcode;
-import otgviewer.shared.BarcodeColumn;
-import otgviewer.shared.DataFilter;
+import otgviewer.shared.OTGColumn;
+import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
-import bioweb.shared.array.Annotation;
-import bioweb.shared.array.HasSamples;
+import t.common.shared.DataSchema;
+import t.common.shared.Pair;
+import t.common.shared.SampleClass;
+import t.common.shared.Unit;
+import t.common.shared.sample.Annotation;
+import t.common.shared.sample.HasSamples;
+import t.viewer.shared.AType;
+import t.viewer.shared.Association;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface SparqlServiceAsync {
 
-	public void compounds(DataFilter filter, AsyncCallback<String[]> callback);
+	public void sampleClasses(AsyncCallback<SampleClass[]> callback);	
+	public void parameterValues(SampleClass sc, String parameter, 
+			AsyncCallback<String[]> callback);
 		
-	public void doseLevels(DataFilter filter, String compound, AsyncCallback<String[]> callback);	
-	public void barcodes(DataFilter filter, String compound, 
-			String doseLevel, String time, AsyncCallback<Barcode[]> callback);
-	public void barcodes(DataFilter filter, String[] compounds, 
-			String doseLevel, String time, AsyncCallback<Barcode[]> callback);
-	public void units(DataFilter filter, String[] compounds, 
-			String doseLevel, String time, AsyncCallback<BUnit[]> callback);
+	public void samples(SampleClass sc, AsyncCallback<OTGSample[]> callback);	
+	public void samples(SampleClass sc, String param, String[] paramValues, 
+			AsyncCallback<OTGSample[]> callback);
+	public void units(SampleClass sc, DataSchema schema,
+			String param, String[] paramValues, 
+			AsyncCallback<Pair<Unit, Unit>[]> callback);
 	
-	public void times(DataFilter filter, String compound, AsyncCallback<String[]> callback);	
-	public void probes(DataFilter filter, AsyncCallback<String[]> callback);
+//	public void probes(BarcodeColumn[] columns, AsyncCallback<String[]> callback);
 	
-	public void pathologies(BarcodeColumn column, AsyncCallback<Pathology[]> callback);
-	public void pathologies(Barcode barcode, AsyncCallback<Pathology[]> callback);
+	public void pathologies(OTGColumn column, AsyncCallback<Pathology[]> callback);
+	public void pathologies(OTGSample barcode, AsyncCallback<Pathology[]> callback);
 	
-	public void annotations(HasSamples<Barcode> column, boolean importantOnly,
+	public void annotations(HasSamples<OTGSample> column, boolean importantOnly,
 			AsyncCallback<Annotation[]> callback);
-	public void annotations(Barcode barcode, AsyncCallback<Annotation> callback);
+	public void annotations(OTGSample barcode, AsyncCallback<Annotation> callback);
 	
-	public void pathways(DataFilter filter, String pattern, AsyncCallback<String[]> callback);
-	public void probesForPathway(DataFilter filter, String pathway, AsyncCallback<String[]> callback);
-	public void probesTargetedByCompound(DataFilter filter, String compound, String service, 
+	public void pathways(SampleClass sc, String pattern, AsyncCallback<String[]> callback);
+	public void probesForPathway(SampleClass sc, String pathway, AsyncCallback<String[]> callback);
+	public void probesTargetedByCompound(SampleClass sc, String compound, String service, 
 			boolean homologous, AsyncCallback<String[]> callback);
 	
-	public void geneSyms(DataFilter filter, String[] probes, AsyncCallback<String[][]> callback);
-	public void geneSuggestions(DataFilter filter, String partialName, AsyncCallback<String[]> callback);
+	public void geneSyms(String[] probes, AsyncCallback<String[][]> callback);
+	public void geneSuggestions(SampleClass sc, String partialName, AsyncCallback<String[]> callback);
 	
 	public void goTerms(String pattern, AsyncCallback<String[]> callback);
-	public void probesForGoTerm(DataFilter filter, String term, AsyncCallback<String[]> callback);
+	public void probesForGoTerm(String term, AsyncCallback<String[]> callback);
 	
-	public void associations(DataFilter filter, AType[] types, String[] probes, 
+	public void associations(SampleClass sc, AType[] types, String[] probes, 
 			AsyncCallback<Association[]> callback);
 }
