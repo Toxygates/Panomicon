@@ -142,7 +142,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     //control samples in that group are assigned as control.
     var r = Vector[Pair[TUnit, TUnit]]()
     for (((b, t, cg), samples) <- ss;
-    		treatedControl = samples.partition(_.sampleClass("dose_level") != "Control")) {
+    		treatedControl = samples.partition(
+    		    _.sampleClass.get("dose_level") != Some("Control"))) {
     	val treatedUnits = treatedControl._1.map(asJavaSample).
     			groupBy(_.sampleClass.asUnit(schema))
     			
@@ -151,12 +152,14 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     	  new TUnit(cus.head.sampleClass().asUnit(schema),    	
     	    cus.toArray)
     	} else {
-    	  null
+    	  new TUnit(sc.asUnit(schema), Array())
     	}
     	
     	r ++= treatedUnits.map(u => new Pair(
     	    new TUnit(u._1, u._2.toArray), cu))
-    	r :+= new Pair(cu, null: TUnit) //add this as a pseudo-treated unit by itself
+    	if (!cu.getSamples().isEmpty) {
+    	  r :+= new Pair(cu, null: TUnit) //add this as a pseudo-treated unit by itself
+    	}
     }    
     r.toArray
   }
