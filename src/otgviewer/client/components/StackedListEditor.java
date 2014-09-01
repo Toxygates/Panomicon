@@ -51,7 +51,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class StackedListEditor extends ResizeComposite implements SetEditor<String> {
 
 	/**
-	 * A selection method is one kind of GUI that is made available for editing the list.
+	 * A selection method is a particular user interface for editing the list.
 	 * It calls back to the StackedListEditor when the selection changes.
 	 */
 	public abstract static class SelectionMethod extends ResizeComposite {
@@ -229,7 +229,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		}
 
 		@Override
-		public void setSelection(Collection<String> items) {			
+		public void setSelection(Collection<String> items) {
 			selTable.setSelection(items);
 			selTable.table().redraw();
 		}
@@ -365,9 +365,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 				} else {
 					s = null;
 				}
-			}
- 			
-		
+			} 		
 		} 
 		return r;
 	}
@@ -387,8 +385,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		}
 		return null;
 	}
-	
-	
+
 	/**
 	 * Validate a single item.
 	 * @param item

@@ -52,7 +52,8 @@ public class MedianCombiner extends ProbeCombiner {
 	 * @param values
 	 * @return
 	 */
-	ExpressionValue combine(ExpressionValue[] values) {		
+	ExpressionValue combine(ExpressionValue[] values) {
+		//NB, Arrays.copyOf is not supported on GWT client
 		ExpressionValue[]nvs = Arrays.copyOf(values, values.length);
 		Arrays.sort(nvs, new Comparator<ExpressionValue>() {
 			@Override
