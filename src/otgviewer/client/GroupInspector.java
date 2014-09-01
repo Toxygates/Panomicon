@@ -233,7 +233,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	
 	private void reflectGroupChanges() {
 		existingGroupsTable.setItems(sortedGroupList(groups.values()), false);
-		chosenColumns = new ArrayList<Group>(existingGroupsTable.selection());
+		chosenColumns = new ArrayList<Group>(existingGroupsTable.getSelection());
 		logger.info(chosenColumns.size() + " columns have been chosen");
 		StorageParser p = getParser(screen);		
 		storeColumns(p);
@@ -328,7 +328,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 		
 		List<Group> all = new ArrayList<Group>();
-		all.addAll(sortedGroupList(existingGroupsTable.selection()));
+		all.addAll(sortedGroupList(existingGroupsTable.getSelection()));
 		all.addAll(igs);
 		existingGroupsTable.setItems(all, false);		
 		existingGroupsTable.unselectAll(igs);

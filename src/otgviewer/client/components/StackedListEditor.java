@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
@@ -50,6 +51,8 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  */
 public class StackedListEditor extends ResizeComposite implements SetEditor<String> {
 
+	private static Logger logger = Utils.getLogger("sle");
+	
 	/**
 	 * A selection method is a particular user interface for editing the list.
 	 * It calls back to the StackedListEditor when the selection changes.
@@ -188,6 +191,8 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		private Button sortButton;
 		private ScrollPanel scrollPanel;
 		
+		private static Logger logger = Utils.getLogger("sle.bc");
+		
 		public BrowseCheck(StackedListEditor editor, String itemTitle) {
 			super(editor);
 			initWidget(dlp);
@@ -195,6 +200,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 			final BrowseCheck bc = this;
 			this.selTable = new StringSelectionTable("", itemTitle) {
 				protected void selectionChanged(Set<String> selected) {
+					bc.logger.info("Send selection " + selected.size());
 					stackedEditor.setSelection(selected, bc);					
 				}
 			};			
@@ -230,6 +236,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 
 		@Override
 		public void setSelection(Collection<String> items) {
+			logger.info("Receive selection " + items.size());
 			selTable.setSelection(items);
 			selTable.table().redraw();
 		}
@@ -436,7 +443,9 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	 * validated.
 	 */
 	protected void setSelection(Collection<String> items, 
-			@Nullable SelectionMethod from) {
+			@Nullable SelectionMethod from) {		
+		logger.info("Receive selection " + items.size() + " from " +
+			(from != null ? from.getClass().toString() : "null"));
 		for (SelectionMethod m: methods) {
 			if (m != from) {
 				m.setSelection(items);
