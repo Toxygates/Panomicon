@@ -323,7 +323,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 	}
 	
 	protected String defaultScreenKey() {
-		return DataScreen.key;
+		return StartScreen.key;
 	}
 	
 	/**
