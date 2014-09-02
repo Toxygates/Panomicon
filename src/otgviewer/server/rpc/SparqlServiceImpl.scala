@@ -132,6 +132,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   //TODO don't pass schema from client
   def units(sc: SampleClass, schema: DataSchema, 
       param: String, paramValues: Array[String]): Array[Pair[TUnit, TUnit]] = {
+    //batch is included because this is the scope of validity for
+    //the control_group parameter.
     val ss = otgSamples.samples(sc, param, paramValues, instanceURI).
     		groupBy(x =>(x.sampleClass("batch"), 
     		    x.sampleClass(schema.timeParameter()), 
