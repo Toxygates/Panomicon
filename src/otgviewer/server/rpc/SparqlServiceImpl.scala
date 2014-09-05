@@ -134,16 +134,17 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       param: String, paramValues: Array[String]): Array[Pair[TUnit, TUnit]] = {
     //batch is included because this is the scope of validity for
     //the control_group parameter.
-    val ss = otgSamples.samples(sc, param, paramValues, instanceURI).
-    		groupBy(x =>(x.sampleClass("batch"), 
+    val ss = otgSamples.samples(sc, param, paramValues, instanceURI).    
+    		groupBy(x =>( 
     		    x.sampleClass(schema.timeParameter()), 
     		    x.sampleClass.get("control_group")))
+    //TODO rethink how to use batch here
     
     //Samples are grouped by batch and "control group".  
     //For each unit of treated samples inside a control group, all
     //control samples in that group are assigned as control.
     var r = Vector[Pair[TUnit, TUnit]]()
-    for (((b, t, cg), samples) <- ss;
+    for (((t, cg), samples) <- ss;
     		treatedControl = samples.partition(
     		    _.sampleClass.get("dose_level") != Some("Control"))) {
     	val treatedUnits = treatedControl._1.map(asJavaSample).
