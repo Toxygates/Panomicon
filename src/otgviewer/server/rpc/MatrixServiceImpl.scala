@@ -39,6 +39,7 @@ import otg.OTGBConfig
 import t.TriplestoreConfig
 import t.viewer.server.ApplicationClass
 import t.viewer.server.Platforms
+import t.platform.OrthologMapping
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
@@ -57,6 +58,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   //TODO update mechanism
   var otgSamples: OTGSamples = _
   var platforms: Platforms = _
+  var orthologs: Iterable[OrthologMapping] = _
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
@@ -78,6 +80,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     affyProbes = new Probes(ts)
     otgSamples = new OTGSamples(baseConfig)
     platforms = Platforms(affyProbes)
+    orthologs = affyProbes.orthologMappings
   }
   
   def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig =
