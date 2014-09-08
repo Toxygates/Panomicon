@@ -35,20 +35,28 @@ public class ChartGridFactory {
 	
 	private static final SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT.create(SparqlService.class);
 	
-	private SampleClass sampleClass;
+	private SampleClass[] sampleClasses;
 	private List<Group> groups;
 	final private DataSchema schema;
 	
-	public ChartGridFactory(SampleClass sc, DataSchema schema, List<Group> groups) {
+	public ChartGridFactory(DataSchema schema, List<Group> groups) {
 		this.groups = groups;
-		this.sampleClass = sc;
+
+		List<SampleClass> scs = new ArrayList<SampleClass>();
+		for (Group g: groups) {
+			SampleClass sc = g.getSamples()[0].
+					sampleClass().asMacroClass(schema);
+			scs.add(sc);
+		}		
+
+		this.sampleClasses = scs.toArray(new SampleClass[0]);
 		this.schema = schema;		
 	}
 	
 	public void makeSeriesCharts(final List<Series> series, final boolean rowsAreCompounds,
 			final int highlightDose, final ChartAcceptor acceptor, final Screen screen) {
 		
-		sparqlService.parameterValues(sampleClass, 
+		sparqlService.parameterValues(sampleClasses, 
 				schema.timeParameter(), new AsyncCallback<String[]>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -98,11 +106,12 @@ public class ChartGridFactory {
 		}
 	}
 	
-	public void makeRowCharts(final Screen screen, final OTGSample[] barcodes, final ValueType vt, final String probe,
+	public void makeRowCharts(final Screen screen, final OTGSample[] barcodes, 
+			final ValueType vt, final String probe,
 			final AChartAcceptor acceptor) {
 		if (barcodes == null) {
 			//TODO
-			sparqlService.samples(sampleClass, schema.majorParameter(), 
+			sparqlService.samples(sampleClasses, schema.majorParameter(), 
 					GroupUtils.collect(groups, schema.majorParameter()).toArray(new String[0]),
 					new AsyncCallback<OTGSample[]>() {
 

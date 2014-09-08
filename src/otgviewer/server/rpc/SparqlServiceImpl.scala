@@ -109,6 +109,10 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     super.destroy()
   }
 
+  def parameterValues(sc: Array[SampleClass], parameter: String): Array[String] = {
+    sc.flatMap(parameterValues(_, parameter)).toSet.toArray
+  }
+  
   def parameterValues(sc: SampleClass, parameter: String): Array[String] = {
     otgSamples.attributeValues(scAsScala(sc), parameter, instanceURI).toArray
   }
@@ -118,10 +122,17 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     otgSamples.samples(scAsScala(sc), "?compound_name", 
         List(), instanceURI).map(asJavaSample(_)).toArray
 
+  def samples(sc: Array[SampleClass]): Array[OTGSample] =
+    sc.flatMap(samples(_)).toSet.toArray
+          
   def samples(sc: SampleClass, param: String, 
       paramValues: Array[String]): Array[OTGSample] =
     otgSamples.samples(sc, param, paramValues, instanceURI).map(asJavaSample(_)).toArray
 
+  def samples(scs: Array[SampleClass], param: String, 
+      paramValues: Array[String]): Array[OTGSample] =
+        scs.flatMap(samples(_, param, paramValues)).toSet.toArray
+    
   def sampleClasses(): Array[SampleClass] = {    
 	otgSamples.sampleClasses(instanceURI).map(x => 
 	  new SampleClass(new java.util.HashMap(asJavaMap(x)))

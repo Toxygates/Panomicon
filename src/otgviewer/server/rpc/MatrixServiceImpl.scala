@@ -40,6 +40,8 @@ import t.TriplestoreConfig
 import t.viewer.server.ApplicationClass
 import t.viewer.server.Platforms
 import t.platform.OrthologMapping
+import t.common.shared.probe.ProbeCombiner
+import t.common.shared.probe.MedianCombiner
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
@@ -144,10 +146,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
       reader.close()
     }
   }
-
-//  private[this] def speciesForGroups(gs: Iterable[Group]) = 
-//    gs.flatMap(_.getUnits()).map(x => asScala(x.getOrganism())).toSet
-//  
+  
   private def platformsForGroups(gs: Iterable[Group]): Iterable[String] = {
     val samples = gs.toList.flatMap(_.getSamples().map(_.getCode))
     otgSamples.platforms(samples)
@@ -157,7 +156,6 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
                   typ: ValueType, syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
     val pfs = platformsForGroups(groups.toList)   
     val allProbes = platforms.filterProbes(List(), pfs).toArray
-    //TODO use not only the first species
     val mm = makeMatrix(groups.toVector, allProbes.toArray, typ)    
     setSessionData(mm)
     selectProbes(probes)
@@ -299,6 +297,14 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
       }
     }    
     Feedback.send(name, email, feedback, state, feedbackReceivers)
+  }
+  
+  /**
+   * Obtain the appropriate probe combiner to use for a set of groups, 
+   * if any.
+   */
+  protected def combiner(groups: Iterable[Group]): Option[ProbeCombiner] = {
+    Some(new MedianCombiner())
   }
   
 }

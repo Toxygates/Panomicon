@@ -16,13 +16,19 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface SparqlServiceAsync {
 
-	public void sampleClasses(AsyncCallback<SampleClass[]> callback);	
+	public void sampleClasses(AsyncCallback<SampleClass[]> callback);
+	
 	public void parameterValues(SampleClass sc, String parameter, 
+			AsyncCallback<String[]> callback);
+	public void parameterValues(SampleClass[] scs, String parameter, 
 			AsyncCallback<String[]> callback);
 		
 	public void samples(SampleClass sc, AsyncCallback<OTGSample[]> callback);	
 	public void samples(SampleClass sc, String param, String[] paramValues, 
 			AsyncCallback<OTGSample[]> callback);
+	public void samples(SampleClass[] scs, String param, String[] paramValues, 
+			AsyncCallback<OTGSample[]> callback);
+	
 	public void units(SampleClass sc, DataSchema schema,
 			String param, String[] paramValues, 
 			AsyncCallback<Pair<Unit, Unit>[]> callback);
