@@ -198,8 +198,9 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
       session.sort(sortColumn, ascending)
     }
     val mm = session.current
+    
     new ArrayList[ExpressionRow](
-      insertAnnotations(mm.asRows.drop(offset).take(size)))
+      insertAnnotations(mm.asRows.drop(offset).take(size)))     
   }
 
   /**
@@ -304,7 +305,12 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
    * if any.
    */
   protected def combiner(groups: Iterable[Group]): Option[ProbeCombiner] = {
-    Some(new MedianCombiner())
+    val os = groups.flatMap(_.collect("organism")).toSet
+    println("Detected species in groups: " + os)
+    if (os.size > 1) {
+      Some(new MedianCombiner())
+    } else {
+      None
+    }
   }
-  
 }
