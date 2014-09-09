@@ -27,7 +27,7 @@ import t.db.ExprValue
  * constructed.
  * 
  */
-abstract class ManagedMatrix[E <: ExprValue](requestColumns: Seq[Group],
+abstract class ManagedMatrix[E <: ExprValue](val requestColumns: Seq[Group],
     val reader: MatrixDBReader[E], initProbes: Array[String], sparseRead: Boolean)
     (implicit val context: OTGContext) {
   

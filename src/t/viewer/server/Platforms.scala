@@ -28,9 +28,9 @@ class Platforms(val data: Map[String, Set[String]]) {
   /**
    * Filter probes for one platform.
    */
-  def filterProbes(probes: Seq[String], platform: String) = {
+  def filterProbes(probes: Seq[String], platform: String): Iterable[String] = {
     if (probes.size == 0) {
-      data(platform)
+      data(platform).toSeq
     } else {
       println(s"Filter ${probes}")
       val r = probes.filter(p => data(platform).contains(p))

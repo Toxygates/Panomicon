@@ -109,6 +109,10 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     super.destroy()
   }
 
+  def parameterValues(sc: Array[SampleClass], parameter: String): Array[String] = {
+    sc.flatMap(x => parameterValues(x, parameter)).toSet.toArray
+  }
+  
   def parameterValues(sc: SampleClass, parameter: String): Array[String] = {
     otgSamples.attributeValues(scAsScala(sc), parameter, instanceURI).toArray
   }
@@ -122,6 +126,10 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       paramValues: Array[String]): Array[OTGSample] =
     otgSamples.samples(sc, param, paramValues, instanceURI).map(asJavaSample(_)).toArray
 
+  def samples(scs: Array[SampleClass], param: String, 
+      paramValues: Array[String]): Array[OTGSample] =
+        scs.flatMap(x => samples(x, param, paramValues)).toSet.toArray
+    
   def sampleClasses(): Array[SampleClass] = {    
 	otgSamples.sampleClasses(instanceURI).map(x => 
 	  new SampleClass(new java.util.HashMap(asJavaMap(x)))
@@ -132,16 +140,19 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   //TODO don't pass schema from client
   def units(sc: SampleClass, schema: DataSchema, 
       param: String, paramValues: Array[String]): Array[Pair[TUnit, TUnit]] = {
-    val ss = otgSamples.samples(sc, param, paramValues, instanceURI).
-    		groupBy(x =>(x.sampleClass("batch"), 
+    //batch is included because this is the scope of validity for
+    //the control_group parameter.
+    val ss = otgSamples.samples(sc, param, paramValues, instanceURI).    
+    		groupBy(x =>( 
     		    x.sampleClass(schema.timeParameter()), 
     		    x.sampleClass.get("control_group")))
+    //TODO rethink how to use batch here
     
     //Samples are grouped by batch and "control group".  
     //For each unit of treated samples inside a control group, all
     //control samples in that group are assigned as control.
     var r = Vector[Pair[TUnit, TUnit]]()
-    for (((b, t, cg), samples) <- ss;
+    for (((t, cg), samples) <- ss;
     		treatedControl = samples.partition(
     		    _.sampleClass.get("dose_level") != Some("Control"))) {
     	val treatedUnits = treatedControl._1.map(asJavaSample).

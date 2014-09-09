@@ -10,12 +10,14 @@
 		<param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1</param-value>
 	</context-param>
 	<context-param>
-		<param-name>webappHomeDir</param-name>
-		<param-value>/opt/apache-tomcat-6.0.36/webapps</param-value>
-	</context-param>
-	<context-param>
 		<param-name>repositoryName</param-name>
 		<param-value>ttest</param-value>
+	</context-param>
+	<context-param>		
+		<param-name>instanceName</param-name>
+		<!-- The concrete parameter value will be filled in by
+		scripts like new_instance.public.sh -->
+		<param-value>##instanceName##</param-value>		
 	</context-param>
 	<context-param>
 		<param-name>repositoryUser</param-name>
@@ -78,26 +80,6 @@
 		<servlet-class>otgviewer.server.targetmine.TargetmineServiceImpl</servlet-class>
 	</servlet>
   	
-  	  <!-- For AdminGUI -->
-	<context-param>
-		<!-- 256 MB -->
-		<param-name>maxSize</param-name>
-		<param-value>268435456</param-value>
-	</context-param>
-	<context-param>
-		<param-name>updateURL</param-name>
-		<param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/update</param-value>
-	</context-param>
-  
-	<servlet>
-		<servlet-name>uploadServlet</servlet-name>
-		<!-- This is the default servlet, it puts files in session -->
-		<servlet-class>gwtupload.server.UploadServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>uploadServlet</servlet-name>
-		<url-pattern>*.gupld</url-pattern>
-	</servlet-mapping>
 
 	<servlet>
 		<servlet-name>maintenanceServlet</servlet-name>
@@ -114,19 +96,5 @@
     <welcome-file>toxygates.html</welcome-file>
   </welcome-file-list>
 
-<security-constraint>
-  <web-resource-collection>
-     <web-resource-name>Toxygates (Development version)</web-resource-name>
-     <url-pattern>/*</url-pattern>
-  </web-resource-collection>
-  <auth-constraint>
-    <role-name>toxygates-test</role-name>
-  </auth-constraint>
-</security-constraint>
-
-<login-config>
-  <auth-method>BASIC</auth-method>
-  <realm-name>Toxygates (Adjuvant test)</realm-name>
-</login-config>
-
-</web-app>
+<!-- The closing </webapp> will be filled in by scripts like 
+new_instance.public.sh -->

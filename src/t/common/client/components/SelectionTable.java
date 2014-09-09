@@ -5,6 +5,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
+
+import otgviewer.client.Utils;
 
 import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.cell.client.FieldUpdater;
@@ -24,6 +27,7 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
 	private Column<T, Boolean> selectColumn;
 	private Set<T> selected = new HashSet<T>();
 	private ListDataProvider<T> provider = new ListDataProvider<T>();
+	private static Logger logger = Utils.getLogger("st");
 	
 	public SelectionTable(final String selectColTitle, boolean fixedLayout) {
 		super();
@@ -44,7 +48,8 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
 				} else {
 					selected.remove(object);
 				}				
-				selectionChanged(selected);				
+				selectionChanged(selected);		
+				table.redraw();
 			}
 		});
 		
@@ -66,12 +71,11 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
 	
 	protected void selectionChanged(Set<T> selected) { }
 	
-//	public ListDataProvider<T> provider() { return this.provider; }
 	public CellTable<T> table() { return this.table; }	
-	public Set<T> selection() { return selected; }
+
 	public Set<T> inverseSelection() {
 		Set<T> r = new HashSet<T>(provider.getList());
-		r.removeAll(selection());
+		r.removeAll(selected);
 		return r;
 	}
 	
@@ -87,6 +91,7 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
 	
 	public void setSelection(Collection<T> selection) {
 		clearSelection();
+		logger.info("Received selection " + selection.size());
 		selected = new HashSet<T>(selection);
 		table.redraw();
 	}
@@ -96,7 +101,9 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
 	}
 	
 	public void setSelected(T t) {
+		logger.info("Select " + t);
 		selected.add(t);
+		table.redraw();
 	}
 	
 	public void addItem(T t) {
@@ -139,6 +146,7 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
 	 * @param clearSelection
 	 */
 	public void setItems(List<T> data, boolean clearSelection) {
+		logger.info("Set items " + data.size() + " clear: " + clearSelection);
 		provider.setList(new ArrayList<T>(data));
 		table.setVisibleRange(0, data.size());		
 		if (clearSelection) {

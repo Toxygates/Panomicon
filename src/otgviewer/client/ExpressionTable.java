@@ -654,7 +654,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		
 	/**
 	 * This cell displays an image that can be clicked to display charts.
-	 * @author johan
 	 */
 	class ToolCell extends ImageClickCell.StringImageClickCell {
 		
@@ -666,13 +665,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			highlightedRow = SharedUtils.indexOf(displayedProbes, value);
 			grid.redraw();
 			
-			//TODO this will not work for multi-class groups
-			SampleClass sc = chosenColumns.get(0).getSamples()[0].
-					sampleClass().asMacroClass(schema);		
-			logger.info("Create charts for " + sc.toString());
-			
-			//TODO
-			final ChartGridFactory cgf = new ChartGridFactory(sc, schema, chosenColumns);
+			final ChartGridFactory cgf = new ChartGridFactory(schema, chosenColumns);
 			Utils.ensureVisualisationAndThen(new Runnable() {
 				public void run() {
 					cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, value, 

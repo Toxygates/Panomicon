@@ -39,6 +39,9 @@ import otg.OTGBConfig
 import t.TriplestoreConfig
 import t.viewer.server.ApplicationClass
 import t.viewer.server.Platforms
+import t.platform.OrthologMapping
+import t.common.shared.probe.ProbeCombiner
+import t.common.shared.probe.MedianCombiner
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
@@ -57,6 +60,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   //TODO update mechanism
   var otgSamples: OTGSamples = _
   var platforms: Platforms = _
+  var orthologs: Iterable[OrthologMapping] = _
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
@@ -78,6 +82,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     affyProbes = new Probes(ts)
     otgSamples = new OTGSamples(baseConfig)
     platforms = Platforms(affyProbes)
+    orthologs = affyProbes.orthologMappings
   }
   
   def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig =
@@ -141,10 +146,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
       reader.close()
     }
   }
-
-//  private[this] def speciesForGroups(gs: Iterable[Group]) = 
-//    gs.flatMap(_.getUnits()).map(x => asScala(x.getOrganism())).toSet
-//  
+  
   private def platformsForGroups(gs: Iterable[Group]): Iterable[String] = {
     val samples = gs.toList.flatMap(_.getSamples().map(_.getCode))
     otgSamples.platforms(samples)
@@ -154,7 +156,6 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
                   typ: ValueType, syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
     val pfs = platformsForGroups(groups.toList)   
     val allProbes = platforms.filterProbes(List(), pfs).toArray
-    //TODO use not only the first species
     val mm = makeMatrix(groups.toVector, allProbes.toArray, typ)    
     setSessionData(mm)
     selectProbes(probes)
@@ -197,8 +198,9 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
       session.sort(sortColumn, ascending)
     }
     val mm = session.current
+    
     new ArrayList[ExpressionRow](
-      insertAnnotations(mm.asRows.drop(offset).take(size)))
+      insertAnnotations(mm.asRows.drop(offset).take(size)))     
   }
 
   /**
@@ -298,4 +300,17 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     Feedback.send(name, email, feedback, state, feedbackReceivers)
   }
   
+  /**
+   * Obtain the appropriate probe combiner to use for a set of groups, 
+   * if any.
+   */
+  protected def combiner(groups: Iterable[Group]): Option[ProbeCombiner] = {
+    val os = groups.flatMap(_.collect("organism")).toSet
+    println("Detected species in groups: " + os)
+    if (os.size > 1) {
+      Some(new MedianCombiner())
+    } else {
+      None
+    }
+  }
 }

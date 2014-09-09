@@ -26,6 +26,8 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface SparqlService extends RemoteService {
 	public String[] parameterValues(SampleClass sc, String parameter);
 	
+	public String[] parameterValues(SampleClass[] scs, String parameter);
+	
 	/**
 	 * Obtain samples for a given sample class.
 	 * @param sc
@@ -39,6 +41,8 @@ public interface SparqlService extends RemoteService {
 	 * @return
 	 */
 	public OTGSample[] samples(SampleClass sc, String param, String[] paramValues);
+
+	public OTGSample[] samples(SampleClass[] scs, String param, String[] paramValues);
 
 	/**
 	 * Obtain all sample classes in the triple store
