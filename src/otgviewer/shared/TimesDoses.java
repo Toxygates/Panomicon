@@ -29,6 +29,11 @@ public class TimesDoses extends DataSchema {
 	}
 
 	@Override
+	public String majorParamSharedControlValue() {
+		return "shared_control";
+	}
+	
+	@Override
 	public String mediumParameter() {
 		return "dose_level";
 	}

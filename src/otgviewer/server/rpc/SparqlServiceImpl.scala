@@ -114,7 +114,9 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   }
   
   def parameterValues(sc: SampleClass, parameter: String): Array[String] = {
-    otgSamples.attributeValues(scAsScala(sc), parameter, instanceURI).toArray
+    //TODO when DataSchema is available here, use it instead of hardcoding shared_control
+    otgSamples.attributeValues(scAsScala(sc), parameter, instanceURI).
+    	filter(_ != "shared_control").toArray
   }
 
   //TODO compound_name is a dummy parameter below
@@ -140,21 +142,27 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   //TODO don't pass schema from client
   def units(sc: SampleClass, schema: DataSchema, 
       param: String, paramValues: Array[String]): Array[Pair[TUnit, TUnit]] = {
-    //batch is included because this is the scope of validity for
-    //the control_group parameter.
-    val ss = otgSamples.samples(sc, param, paramValues, instanceURI).    
+
+    val majorParam = schema.majorParameter()
+    val sharedControl = schema.majorParamSharedControlValue()
+    //Ensure shared control is always included, if possible
+    val useParamValues = if (param == majorParam && sharedControl != null) {
+      sharedControl :: paramValues.toList
+    } else {
+      paramValues.toList
+    }
+    
+    //TODO rethink how to use batch here
+    val ss = otgSamples.samples(sc, param, useParamValues, instanceURI).    
     		groupBy(x =>( 
     		    x.sampleClass(schema.timeParameter()), 
     		    x.sampleClass.get("control_group")))
-    //TODO rethink how to use batch here
     
-    //Samples are grouped by batch and "control group".  
     //For each unit of treated samples inside a control group, all
     //control samples in that group are assigned as control.
     var r = Vector[Pair[TUnit, TUnit]]()
     for (((t, cg), samples) <- ss;
-    		treatedControl = samples.partition(
-    		    _.sampleClass.get("dose_level") != Some("Control"))) {
+    		treatedControl = samples.partition(s => !schema.isSelectionControl(s.sampleClass) )) {
     	val treatedUnits = treatedControl._1.map(asJavaSample).
     			groupBy(_.sampleClass.asUnit(schema))
     			

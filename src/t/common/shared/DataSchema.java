@@ -91,6 +91,15 @@ public abstract class DataSchema implements Serializable {
 		return null;
 	}
 	
+	/**
+	 * The value of the major parameter that corresponds to a shared
+	 * control unit, if any.
+	 */
+	@Nullable
+	public String majorParamSharedControlValue() {
+		return null;
+	}
+	
 	public AType[] associations() { return new AType[] {}; }
 	
 	public String getMinor(HasClass hc) {
