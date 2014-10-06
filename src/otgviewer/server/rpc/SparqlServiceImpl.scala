@@ -53,6 +53,11 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 
   type DataColumn = t.common.shared.sample.DataColumn[OTGSample]
   
+  /*
+   * TODO: most of the state here should be static, shared between clients.
+   * Currently I believe it is created anew for every thread/session.
+   */
+  
   implicit var context: OTGContext = _
   var baseConfig: BaseConfig = _
   var tgConfig: Configuration = _

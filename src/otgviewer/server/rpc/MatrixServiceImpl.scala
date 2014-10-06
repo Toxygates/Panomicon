@@ -45,6 +45,9 @@ import t.common.shared.probe.MedianCombiner
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
+ * 
+ * This is currently the only servlet that (explicitly)
+ * maintains server side sessions.
  */
 class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   import Conversions._
@@ -96,7 +99,8 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   
   @throws(classOf[NoDataLoadedException])
   def getSessionData(): ManagedMatrix[_] = {
-    val r = getThreadLocalRequest().getSession().getAttribute("matrix").asInstanceOf[ManagedMatrix[_]]
+    val r = getThreadLocalRequest().getSession(true).getAttribute("matrix").
+    		asInstanceOf[ManagedMatrix[_]]
     if (r == null) {
       throw new NoDataLoadedException()
     }
@@ -104,7 +108,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   }
   
   def setSessionData(m: ManagedMatrix[_]) =
-    getThreadLocalRequest().getSession().setAttribute("matrix", m)
+    getThreadLocalRequest().getSession(true).setAttribute("matrix", m)
 
   //Should this be in sparqlService?
   //TODO: filter by platforms
