@@ -43,6 +43,42 @@ import t.platform.OrthologMapping
 import t.common.shared.probe.ProbeCombiner
 import t.common.shared.probe.MedianCombiner
 
+object MatrixServiceImpl {
+  
+  /**
+   * Note that in some cases, using the ServletContext rather than
+   * static vars is more robust.
+   */
+  
+  var inited = false
+  
+  //This in particular could be put in a servlet context and shared between
+  //servlets.
+  var platforms: Platforms = _
+  var orthologs: Iterable[OrthologMapping] = _
+  var affyProbes: Probes = _ 
+  //TODO update mechanism
+  var otgSamples: OTGSamples = _
+  
+  def staticInit(bc: BaseConfig) = synchronized {
+    if (!inited) {
+      val ts = bc.triplestore.triplestore
+
+      affyProbes = new Probes(ts)
+      otgSamples = new OTGSamples(bc)
+      platforms = Platforms(affyProbes)
+      orthologs = affyProbes.orthologMappings
+
+      inited = true
+    }
+  }
+  
+  def staticDestroy() = synchronized {
+    affyProbes.close()	
+	otgSamples.close()
+  }
+}
+
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
  * 
@@ -53,18 +89,14 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   import Conversions._
   import scala.collection.JavaConversions._
   import ScalaUtils._
+  import MatrixServiceImpl._
 
   private var baseConfig: BaseConfig = _
   private var tgConfig: Configuration = _
   private var csvDirectory: String = _
   private var csvUrlBase: String = _
   private implicit var context: OTGContext = _
-  var affyProbes: Probes = _ 
-  //TODO update mechanism
-  var otgSamples: OTGSamples = _
-  var platforms: Platforms = _
-  var orthologs: Iterable[OrthologMapping] = _
-  
+
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config) 
@@ -79,27 +111,19 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     //TODO parse baseConfig directly somewhere
     baseConfig = baseConfig(config.tsConfig, config.dataConfig)
     context = config.context(baseConfig)
-    
-    val tsCon = context.triplestoreConfig
-    val ts = tsCon.triplestore
-    affyProbes = new Probes(ts)
-    otgSamples = new OTGSamples(baseConfig)
-    platforms = Platforms(affyProbes)
-    orthologs = affyProbes.orthologMappings
+    staticInit(baseConfig)
   }
   
   def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig =
     OTGBConfig(ts, data)
 
-  override def destroy() {
-	affyProbes.close()	
-	otgSamples.close()
+  override def destroy() {   
     super.destroy()
   }
   
   @throws(classOf[NoDataLoadedException])
   def getSessionData(): ManagedMatrix[_] = {
-    val r = getThreadLocalRequest().getSession(true).getAttribute("matrix").
+    val r = getThreadLocalRequest().getSession().getAttribute("matrix").
     		asInstanceOf[ManagedMatrix[_]]
     if (r == null) {
       throw new NoDataLoadedException()
@@ -108,7 +132,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   }
   
   def setSessionData(m: ManagedMatrix[_]) =
-    getThreadLocalRequest().getSession(true).setAttribute("matrix", m)
+    getThreadLocalRequest().getSession().setAttribute("matrix", m)
 
   //Should this be in sparqlService?
   //TODO: filter by platforms

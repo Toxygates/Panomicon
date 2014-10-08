@@ -41,27 +41,11 @@ import t.viewer.shared.AType
 import t.viewer.shared.Association
 import otgviewer.server.ScalaUtils
 import otg.sparql.Probes
+import otgviewer.shared.TimeoutException
 
-/**
- * This servlet is reponsible for making queries to RDF stores, including our
- * local Owlim-lite store.
- */
-class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
-  import Conversions._
-  import t.viewer.server.Conversions._
-  import ScalaUtils._
-
-  type DataColumn = t.common.shared.sample.DataColumn[OTGSample]
-  
-  /*
-   * TODO: most of the state here should be static, shared between clients.
-   * Currently I believe it is created anew for every thread/session.
-   */
-  
-  implicit var context: OTGContext = _
-  var baseConfig: BaseConfig = _
-  var tgConfig: Configuration = _
-  var affyProbes: Probes = _
+object SparqlServiceImpl {
+  var inited = false
+   var affyProbes: Probes = _
   var uniprot: Uniprot = _
   var otgSamples: OTGSamples = _
   var b2rKegg: B2RKegg = _
@@ -70,11 +54,49 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   var homologene: B2RHomologene = _
   //TODO update mechanism for this
   var platforms: Map[String, Iterable[String]] = _
+
+  def staticInit(bc: BaseConfig) = synchronized {
+    if (!inited) {
+      val tsCon = bc.triplestore
+      val ts = tsCon.triplestore
+      otgSamples = new OTGSamples(bc)
+      affyProbes = new Probes(ts)
+      uniprot = new LocalUniprot(ts)
+      b2rKegg = new B2RKegg(ts)
+      chembl = new ChEMBL()
+      drugBank = new DrugBank()
+      homologene = new B2RHomologene()
+      platforms = affyProbes.platforms
+      inited = true
+    }
+  }
+  
+  def staticDestroy() = synchronized {
+    
+  }
+}
+
+/**
+ * This servlet is reponsible for making queries to RDF stores, including our
+ * local Owlim-lite store.
+ */
+class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
+  import Conversions._
+  import SparqlServiceImpl._
+  import t.viewer.server.Conversions._
+  import ScalaUtils._
+
+  type DataColumn = t.common.shared.sample.DataColumn[OTGSample]
+    
+  implicit var context: OTGContext = _
+  var baseConfig: BaseConfig = _
+  var tgConfig: Configuration = _
+ 
   var instanceURI: Option[String] = None
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
-    super.init(config)
+    super.init(config)    
     localInit(Configuration.fromServletConfig(config))
   }
   
@@ -82,17 +104,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 	this.baseConfig = baseConfig(conf.tsConfig, conf.dataConfig)
     this.context = conf.context(baseConfig)
     this.tgConfig = conf   
-    
-    val tsCon = baseConfig.triplestore
-    val ts = tsCon.triplestore
-    otgSamples = new OTGSamples(baseConfig)
-    affyProbes = new Probes(ts)
-    uniprot = new LocalUniprot(ts) 
-    b2rKegg = new B2RKegg(ts)
-    chembl = new ChEMBL()
-    drugBank = new DrugBank()
-    homologene = new B2RHomologene()
-    platforms = affyProbes.platforms
+    staticInit(baseConfig)
+ 
     if (conf.instanceName == null || conf.instanceName == "") {
       instanceURI = None
     } else {
@@ -102,22 +115,16 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   
   def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig = OTGBConfig(ts, data)
 
-  //TODO is this handled properly?
   override def destroy() {
-    affyProbes.close()
-    otgSamples.close()
-    uniprot.close()
-    b2rKegg.close()
-    chembl.close()
-    drugBank.close()
-    homologene.close()   
     super.destroy()
   }
 
+  @throws[TimeoutException]
   def parameterValues(sc: Array[SampleClass], parameter: String): Array[String] = {
     sc.flatMap(x => parameterValues(x, parameter)).toSet.toArray
   }
   
+  @throws[TimeoutException]
   def parameterValues(sc: SampleClass, parameter: String): Array[String] = {
     //TODO when DataSchema is available here, use it instead of hardcoding shared_control
     otgSamples.attributeValues(scAsScala(sc), parameter, instanceURI).
@@ -125,18 +132,22 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   }
 
   //TODO compound_name is a dummy parameter below
+  @throws[TimeoutException]
   def samples(sc: SampleClass): Array[OTGSample] =
     otgSamples.samples(scAsScala(sc), "?compound_name", 
         List(), instanceURI).map(asJavaSample(_)).toArray
 
+  @throws[TimeoutException]
   def samples(sc: SampleClass, param: String, 
       paramValues: Array[String]): Array[OTGSample] =
     otgSamples.samples(sc, param, paramValues, instanceURI).map(asJavaSample(_)).toArray
 
+  @throws[TimeoutException]
   def samples(scs: Array[SampleClass], param: String, 
       paramValues: Array[String]): Array[OTGSample] =
         scs.flatMap(x => samples(x, param, paramValues)).toSet.toArray
-    
+  
+  @throws[TimeoutException]
   def sampleClasses(): Array[SampleClass] = {    
 	otgSamples.sampleClasses(instanceURI).map(x => 
 	  new SampleClass(new java.util.HashMap(asJavaMap(x)))
@@ -145,6 +156,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       
   import t.common.shared.{Unit => TUnit}
   //TODO don't pass schema from client
+  @throws[TimeoutException]
   def units(sc: SampleClass, schema: DataSchema, 
       param: String, paramValues: Array[String]): Array[Pair[TUnit, TUnit]] = {
 
@@ -190,6 +202,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     
 //  val orderedTimes = TimesDoses.allTimes.toList 
 
+  @throws[TimeoutException]
   def probes(columns: Array[OTGColumn]): Array[String] = {
     val samples = columns.flatMap(_.getSamples)
     val metadata = new TriplestoreMetadata(otgSamples, instanceURI)    
@@ -199,16 +212,20 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     usePlatforms.toVector.flatMap(platforms).toArray
   }
   
+  @throws[TimeoutException]
   def pathologies(barcode: OTGSample): Array[Pathology] =
     otgSamples.pathologies(barcode.getCode).map(asJava(_)).toArray
 
+  @throws[TimeoutException]
   def pathologies(column: OTGColumn): Array[Pathology] =
     column.getSamples.flatMap(x => otgSamples.pathologies(x.getCode)).map(asJava(_))
 
+  @throws[TimeoutException]
   def annotations(barcode: OTGSample): Annotation = 
     asJava( otgSamples.annotations(barcode.getCode, List(), instanceURI) )
     
   //TODO get these from schema, etc.
+  @throws[TimeoutException]
   def annotations(column: HasSamples[OTGSample], importantOnly: Boolean = false): Array[Annotation] = {	  
 	  val keys = if (importantOnly) {
 	    if (tgConfig.applicationClass == ApplicationClass.Adjuvant) {
@@ -222,10 +239,12 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 	  column.getSamples.map(x => otgSamples.annotations(x.getCode, keys, instanceURI)).map(asJava(_))
   }
 
+  @throws[TimeoutException]
   def pathways(sc: SampleClass, pattern: String): Array[String] =
     b2rKegg.forPattern(pattern, sc).toArray
 
   //TODO: return a map instead
+  @throws[TimeoutException]
   def geneSyms(probes: Array[String]): Array[Array[String]] = {
     val ps = probes.map(p => Probe(p))
     val attrib = affyProbes.withAttributes(ps)
@@ -233,6 +252,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       map(_.symbolStrings.toArray).getOrElse(Array()))
   }
 
+  @throws[TimeoutException]
   def probesForPathway(sc: SampleClass, pathway: String): Array[String] = {    
     val geneIds = b2rKegg.geneIds(pathway).map(Gene(_))
     println("Probes for " + geneIds.size + " genes")
@@ -240,7 +260,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     val pmap = context.unifiedProbes //TODO
     probes.map(_.identifier).filter(pmap.isToken).toArray
   }
-
+  
+  @throws[TimeoutException]
   def probesTargetedByCompound(sc: SampleClass, compound: String, service: String,
     homologous: Boolean): Array[String] = {
     val cmp = Compound.make(compound)
@@ -261,9 +282,11 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     pbs.toSet.map((p: Probe) => p.identifier).filter(pmap.isToken).toArray
   }
 
+  @throws[TimeoutException]
   def goTerms(pattern: String): Array[String] =
     affyProbes.goTerms(pattern).map(_.name).toArray
 
+  @throws[TimeoutException]
   def probesForGoTerm(goTerm: String): Array[String] = {
     val pmap = context.unifiedProbes 
     affyProbes.forGoTerm(GOTerm("", goTerm)).map(_.identifier).filter(pmap.isToken).toArray
@@ -271,6 +294,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 
   import scala.collection.{ Map => CMap, Set => CSet }
 
+  @throws[TimeoutException]
   def associations(sc: SampleClass, types: Array[AType],
     _probes: Array[String]): Array[Association] = {
     val probes = affyProbes.withAttributes(_probes.map(Probe(_)))
@@ -347,6 +371,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     m1.map(p => new Association(p._1, convertPairs(p._2))).toArray
   }
 
+  @throws[TimeoutException]
   def geneSuggestions(sc: SampleClass, partialName: String): Array[String] = {    
       affyProbes.probesForPartialSymbol(partialName, sc).map(_.identifier).toArray
   }

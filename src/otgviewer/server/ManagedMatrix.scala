@@ -224,8 +224,8 @@ abstract class ManagedMatrix[E <: ExprValue](val requestColumns: Seq[Group],
     currentInfo.setNumRows(currentMat.rows)
   }
   
-  final protected def selectIdx(data: Seq[E], is: Seq[Int]) = is.map(data(_))
-  final protected def javaMean(data: Iterable[E]) = {
+  final protected def selectIdx[F <: ExprValue](data: Seq[F], is: Seq[Int]) = is.map(data(_))
+  final protected def javaMean[F <: ExprValue](data: Iterable[F]) = {
     val mean = ExprValue.presentMean(data, "")
     var tooltip = data.take(10).map(_.toString).mkString(" ")
     if (data.size > 10) {
