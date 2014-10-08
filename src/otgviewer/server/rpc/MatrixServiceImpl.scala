@@ -16,10 +16,7 @@ import otg.sparql.OTGSamples
 import otg.sparql.Probe
 import otgviewer.client.rpc.MatrixService
 import t.viewer.server.Configuration
-import otgviewer.server.ExtFoldValueMatrix
-import otgviewer.server.FoldValueMatrix
 import otgviewer.server.ManagedMatrix
-import otgviewer.server.NormalizedIntensityMatrix
 import otgviewer.server.TargetMine
 import otgviewer.shared.Group
 import otgviewer.shared.ManagedMatrixInfo
@@ -40,8 +37,10 @@ import t.TriplestoreConfig
 import t.viewer.server.ApplicationClass
 import t.viewer.server.Platforms
 import t.platform.OrthologMapping
-import t.common.shared.probe.ProbeCombiner
-import t.common.shared.probe.MedianCombiner
+import otgviewer.server.ManagedMatrixBuilder
+import otgviewer.server.MatrixMapper
+import t.common.shared.probe.OrthologProbeMapper
+import t.common.shared.probe.MedianValueMapper
 
 object MatrixServiceImpl {
   
@@ -122,16 +121,16 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   }
   
   @throws(classOf[NoDataLoadedException])
-  def getSessionData(): ManagedMatrix[_] = {
+  def getSessionData(): ManagedMatrix = {
     val r = getThreadLocalRequest().getSession().getAttribute("matrix").
-    		asInstanceOf[ManagedMatrix[_]]
+    		asInstanceOf[ManagedMatrix]
     if (r == null) {
       throw new NoDataLoadedException()
     }
     r
   }
   
-  def setSessionData(m: ManagedMatrix[_]) =
+  def setSessionData(m: ManagedMatrix) =
     getThreadLocalRequest().getSession().setAttribute("matrix", m)
 
   //Should this be in sparqlService?
@@ -148,7 +147,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   
 
   private def makeMatrix(requestColumns: Seq[Group], initProbes: Array[String], 
-      typ: ValueType, sparseRead: Boolean = false): ManagedMatrix[_] = {
+      typ: ValueType, sparseRead: Boolean = false): ManagedMatrix = {
     val reader = if (typ == ValueType.Absolute) {
       context.absoluteDBReader
     } else {     
@@ -161,12 +160,12 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
       reader match {
         case ext: KCExtMatrixDB =>
           assert(typ == ValueType.Folds)
-          new ExtFoldValueMatrix(requestColumns, ext, initProbes, sparseRead, enhancedCols)
+          ManagedMatrixBuilder.buildExtFold(requestColumns, ext, initProbes, sparseRead, enhancedCols)          
         case db: KCMatrixDB =>
           if (typ == ValueType.Absolute) {
-            new NormalizedIntensityMatrix(requestColumns, db, initProbes, sparseRead, enhancedCols)
+            ManagedMatrixBuilder.buildNormalized(requestColumns, db, initProbes, sparseRead, enhancedCols)
           } else {
-            new FoldValueMatrix(requestColumns, db, initProbes, sparseRead)
+            ManagedMatrixBuilder.buildFold(requestColumns, db, initProbes, sparseRead)
           }
         case _ => throw new Exception("Unexpected DB reader type")
       }
@@ -185,7 +184,13 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     val pfs = platformsForGroups(groups.toList)   
     val allProbes = platforms.filterProbes(List(), pfs).toArray
     val mm = makeMatrix(groups.toVector, allProbes.toArray, typ)    
-    setSessionData(mm)
+    mapper(groups) match {
+      case Some(m) =>
+        setSessionData(m.convert(mm))
+      case None => 
+        setSessionData(mm)
+    }
+    
     selectProbes(probes)
   }
 
@@ -328,15 +333,13 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     Feedback.send(name, email, feedback, state, feedbackReceivers)
   }
   
-  /**
-   * Obtain the appropriate probe combiner to use for a set of groups, 
-   * if any.
-   */
-  protected def combiner(groups: Iterable[Group]): Option[ProbeCombiner] = {
+  protected def mapper(groups: Iterable[Group]): Option[MatrixMapper] = {
     val os = groups.flatMap(_.collect("organism")).toSet
     println("Detected species in groups: " + os)
     if (os.size > 1) {
-      Some(new MedianCombiner())
+      val pm = new OrthologProbeMapper(orthologs.head)
+      val vm = MedianValueMapper
+      Some(new MatrixMapper(pm, vm))      
     } else {
       None
     }

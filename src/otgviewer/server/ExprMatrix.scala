@@ -36,6 +36,13 @@ case class RowAnnotation(probe: String) //, title: String, geneIds: Array[String
  
 /**
  * Data is row-major
+ * 
+ * TODO: need to optimise/simplify the ExpressionValue/ExprValue/ExpressionRow classes.
+ * Probably, at least 1 of these can be removed.
+ * Scalability for larger matrices is a concern.
+ * 
+ * TODO: reconsider whether annotations are needed. Might be a major efficiency 
+ * problem + redundant.
  */
 class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int, 
     rowMap: Map[String, Int], columnMap: Map[String, Int], 
