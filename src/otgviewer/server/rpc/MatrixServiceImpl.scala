@@ -183,15 +183,17 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
                   typ: ValueType, syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
     val pfs = platformsForGroups(groups.toList)   
     val allProbes = platforms.filterProbes(List(), pfs).toArray
-    val mm = makeMatrix(groups.toVector, allProbes.toArray, typ)    
+    val mm = makeMatrix(groups.toVector, allProbes.toArray, typ)
+    setSessionData(mm)        
+    selectProbes(probes)
     mapper(groups) match {
       case Some(m) =>
-        setSessionData(m.convert(mm))
-      case None => 
-        setSessionData(mm)
+        val mapped = m.convert(mm)
+        setSessionData(mapped)
+        mapped.info
+      case None =>
+        mm.info
     }
-    
-    selectProbes(probes)
   }
 
   @throws(classOf[NoDataLoadedException])
@@ -252,9 +254,15 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
       if (!pm.containsKey(or.getProbe)) {
         println("missing key: " + or.getProbe)
       }
-      val p = pm(or.getProbe)
-      new ExpressionRow(p.identifier, p.name, p.genes.map(_.identifier).toArray,
-        p.symbols.map(_.symbol).toArray, or.getValues)
+      val p = pm.get(or.getProbe)
+      p match {
+        case Some(p) =>
+          new ExpressionRow(p.identifier, p.name, p.genes.map(_.identifier).toArray,
+        		  p.symbols.map(_.symbol).toArray, or.getValues)
+        case None =>
+          //TODO
+          new ExpressionRow(or.getProbe, or.getProbe, Array(), Array(), or.getValues)
+      }      
     })
   }
   

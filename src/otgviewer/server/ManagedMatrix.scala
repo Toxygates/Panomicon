@@ -71,7 +71,6 @@ object ManagedMatrixBuilder {
 
     val annotations = initProbes.map(new RowAnnotation(_)).toVector
     
-    
     val rawGroupedMat = groupedParts.reverse.reduceLeft(_ adjoinRight _).
     	copyWithAnnotations(annotations)
     val rawUngroupedMat = ungroupedParts.reverse.reduceLeft(_ adjoinRight _).
@@ -206,7 +205,9 @@ object ManagedMatrixBuilder {
  * constructed.
  * 
  */
-class ManagedMatrix(val initProbes: Array[String], 
+
+class ManagedMatrix(val initProbes: Array[String],
+    //TODO visibility of these 3 vars
     var currentInfo: ManagedMatrixInfo,
     var rawUngroupedMat: ExprMatrix, var rawGroupedMat: ExprMatrix) {
   
@@ -373,28 +374,3 @@ class ManagedMatrix(val initProbes: Array[String],
   
   def rawData: ExprMatrix = rawUngroupedMat
 }
-
-//class NormalizedIntensityMatrix(requestColumns: Seq[Group],
-//    reader: MatrixDBReader[ExprValue], initProbes: Array[String], sparseRead: Boolean,
-//    enhancedColumns: Boolean)(implicit context: OTGContext) 
-//extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead) {
-//
-//}
-//
-//class FoldValueMatrix(requestColumns: Seq[Group],
-//    reader: MatrixDBReader[ExprValue], initProbes: Array[String], sparseRead: Boolean)
-//    (implicit context: OTGContext) 
-//    extends ManagedMatrix[ExprValue](requestColumns, reader, initProbes, sparseRead) {
-//}
-//
-///**
-// * Columns consisting of fold-values, associated p-values and custom P/A calls.
-// */
-//class ExtFoldValueMatrix(requestColumns: Seq[Group],
-//    reader: MatrixDBReader[PExprValue], initProbes: Array[String], sparseRead: Boolean,
-//    enhancedColumns: Boolean)
-//    (implicit context: OTGContext) 
-//    extends ManagedMatrix[PExprValue](requestColumns, reader, initProbes, sparseRead) {
-// 
-//    
-//}

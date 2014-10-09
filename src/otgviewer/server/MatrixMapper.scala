@@ -15,29 +15,33 @@ import otgviewer.shared.ManagedMatrixInfo
  */
 class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
 	def convert(from: ExprMatrix): ExprMatrix = {
-		val pmapping = Map() ++ from.rowKeys.map(p => p -> pm.toRange(p))
-		val rangeProbes = pmapping.map(_._2).flatten.toSet.toSeq
+		val rangeProbes = pm.range
+		val fromRowSet = from.rowKeys.toSet
 		
-		val nd = rangeProbes.map(r => {
-		  val sps = pm.toDomain(r)
+		val nrows = rangeProbes.map(r => {
+		  val sps = pm.toDomain(r).filter(fromRowSet.contains(_))
+		  
 		  //pull out e.g. all the rows corresponding to probes (domain)
 		  //for gene G1 (range)
 		  val domainRows = sps.map(sp => from.row(sp))
 		  val cols = domainRows.head.size
-		  (0 until cols).map(c => {
+		  val nr = (0 until cols).map(c => {
 		    val xs = domainRows.map(dr => dr(c))
 		    vm.convert(r, xs)
-		  })		   
+		  })		
+		  (nr, RowAnnotation(r))
 		})
 		
 		val cols = (0 until from.columns).map(x => from.columnAt(x))
 		
-		ExprMatrix.withRows(nd, cols, rangeProbes)
+		val annots = nrows.map(_._2)
+		ExprMatrix.withRows(nrows.map(_._1), cols, rangeProbes).copyWithAnnotations(annots)
 	}
 	
 	def convert(from: ManagedMatrix): ManagedMatrix = {
 	  val ungr = convert(from.rawUngroupedMat)
 	  val gr = convert(from.rawGroupedMat)
+	  
 	  new ManagedMatrix(from.initProbes, convert(from.currentInfo), ungr, gr)
 	}
 	

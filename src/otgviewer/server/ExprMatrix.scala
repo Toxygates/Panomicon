@@ -60,16 +60,19 @@ class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int,
   /**
    * This is the bottom level copyWith method - all the other ones ultimately delegate to this one.
    */
-  def copyWith(rowData: Seq[Vector[ExpressionValue]], rowMap: Map[String, Int], columnMap: Map[String, Int], 
+  def copyWith(rowData: Seq[Vector[ExpressionValue]], rowMap: Map[String, Int], 
+      columnMap: Map[String, Int], 
       annotations: SVector[RowAnnotation]): ExprMatrix = 
         new ExprMatrix(rowData, rowData.size, 
             if (rowData.isEmpty) { 0 } else { rowData(0).size }, 
             rowMap, columnMap, annotations)
   
-  def copyWith(rowData: Seq[Seq[ExpressionValue]], rowMap: Map[String, Int], columnMap: Map[String, Int]): ExprMatrix =
+  def copyWith(rowData: Seq[Seq[ExpressionValue]], rowMap: Map[String, Int], 
+      columnMap: Map[String, Int]): ExprMatrix =
     copyWith(rowData.map(_.toVector), rowMap, columnMap, annotations)
   
-  def copyWithAnnotations(annots: SVector[RowAnnotation]): ExprMatrix = copyWith(data, rowMap, columnMap, annots)
+  def copyWithAnnotations(annots: Seq[RowAnnotation]): ExprMatrix = 
+    copyWith(data, rowMap, columnMap, annots.toVector)
   
   lazy val sortedRowMap = rowMap.toSeq.sortWith(_._2 < _._2)
   lazy val sortedColumnMap = columnMap.toSeq.sortWith(_._2 < _._2)
