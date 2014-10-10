@@ -8,7 +8,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import otgviewer.shared.Group;
-import t.common.shared.probe.ProbeCombiner;
 import t.viewer.shared.AType;
 
 /**
@@ -91,6 +90,15 @@ public abstract class DataSchema implements Serializable {
 		return null;
 	}
 	
+	/**
+	 * The value of the major parameter that corresponds to a shared
+	 * control unit, if any.
+	 */
+	@Nullable
+	public String majorParamSharedControlValue() {
+		return null;
+	}
+	
 	public AType[] associations() { return new AType[] {}; }
 	
 	public String getMinor(HasClass hc) {
@@ -104,12 +112,4 @@ public abstract class DataSchema implements Serializable {
 	public String getMajor(HasClass hc) {
 		return hc.sampleClass().get(majorParameter());
 	}
-	
-	@Nullable
-	/**
-	 * Obtain the probe combiner to be applied for a given set of groups.
-	 * @param groups
-	 * @return
-	 */
-	public ProbeCombiner probeCombiner(List<Group> groups) { return null; }
 }

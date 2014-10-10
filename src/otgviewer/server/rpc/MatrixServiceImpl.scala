@@ -16,10 +16,7 @@ import otg.sparql.OTGSamples
 import otg.sparql.Probe
 import otgviewer.client.rpc.MatrixService
 import t.viewer.server.Configuration
-import otgviewer.server.ExtFoldValueMatrix
-import otgviewer.server.FoldValueMatrix
 import otgviewer.server.ManagedMatrix
-import otgviewer.server.NormalizedIntensityMatrix
 import otgviewer.server.TargetMine
 import otgviewer.shared.Group
 import otgviewer.shared.ManagedMatrixInfo
@@ -40,28 +37,65 @@ import t.TriplestoreConfig
 import t.viewer.server.ApplicationClass
 import t.viewer.server.Platforms
 import t.platform.OrthologMapping
-import t.common.shared.probe.ProbeCombiner
-import t.common.shared.probe.MedianCombiner
+import otgviewer.server.ManagedMatrixBuilder
+import otgviewer.server.MatrixMapper
+import t.common.shared.probe.OrthologProbeMapper
+import t.common.shared.probe.MedianValueMapper
+
+object MatrixServiceImpl {
+  
+  /**
+   * Note that in some cases, using the ServletContext rather than
+   * static vars is more robust.
+   */
+  
+  var inited = false
+  
+  //This in particular could be put in a servlet context and shared between
+  //servlets.
+  var platforms: Platforms = _
+  var orthologs: Iterable[OrthologMapping] = _
+  var affyProbes: Probes = _ 
+  //TODO update mechanism
+  var otgSamples: OTGSamples = _
+  
+  def staticInit(bc: BaseConfig) = synchronized {
+    if (!inited) {
+      val ts = bc.triplestore.triplestore
+
+      affyProbes = new Probes(ts)
+      otgSamples = new OTGSamples(bc)
+      platforms = Platforms(affyProbes)
+      orthologs = affyProbes.orthologMappings
+
+      inited = true
+    }
+  }
+  
+  def staticDestroy() = synchronized {
+    affyProbes.close()	
+	otgSamples.close()
+  }
+}
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
+ * 
+ * This is currently the only servlet that (explicitly)
+ * maintains server side sessions.
  */
 class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   import Conversions._
   import scala.collection.JavaConversions._
   import ScalaUtils._
+  import MatrixServiceImpl._
 
   private var baseConfig: BaseConfig = _
   private var tgConfig: Configuration = _
   private var csvDirectory: String = _
   private var csvUrlBase: String = _
   private implicit var context: OTGContext = _
-  var affyProbes: Probes = _ 
-  //TODO update mechanism
-  var otgSamples: OTGSamples = _
-  var platforms: Platforms = _
-  var orthologs: Iterable[OrthologMapping] = _
-  
+
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config) 
@@ -76,34 +110,27 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     //TODO parse baseConfig directly somewhere
     baseConfig = baseConfig(config.tsConfig, config.dataConfig)
     context = config.context(baseConfig)
-    
-    val tsCon = context.triplestoreConfig
-    val ts = tsCon.triplestore
-    affyProbes = new Probes(ts)
-    otgSamples = new OTGSamples(baseConfig)
-    platforms = Platforms(affyProbes)
-    orthologs = affyProbes.orthologMappings
+    staticInit(baseConfig)
   }
   
   def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig =
     OTGBConfig(ts, data)
 
-  override def destroy() {
-	affyProbes.close()	
-	otgSamples.close()
+  override def destroy() {   
     super.destroy()
   }
   
   @throws(classOf[NoDataLoadedException])
-  def getSessionData(): ManagedMatrix[_] = {
-    val r = getThreadLocalRequest().getSession().getAttribute("matrix").asInstanceOf[ManagedMatrix[_]]
+  def getSessionData(): ManagedMatrix = {
+    val r = getThreadLocalRequest().getSession().getAttribute("matrix").
+    		asInstanceOf[ManagedMatrix]
     if (r == null) {
       throw new NoDataLoadedException()
     }
     r
   }
   
-  def setSessionData(m: ManagedMatrix[_]) =
+  def setSessionData(m: ManagedMatrix) =
     getThreadLocalRequest().getSession().setAttribute("matrix", m)
 
   //Should this be in sparqlService?
@@ -120,7 +147,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   
 
   private def makeMatrix(requestColumns: Seq[Group], initProbes: Array[String], 
-      typ: ValueType, sparseRead: Boolean = false): ManagedMatrix[_] = {
+      typ: ValueType, sparseRead: Boolean = false): ManagedMatrix = {
     val reader = if (typ == ValueType.Absolute) {
       context.absoluteDBReader
     } else {     
@@ -133,12 +160,12 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
       reader match {
         case ext: KCExtMatrixDB =>
           assert(typ == ValueType.Folds)
-          new ExtFoldValueMatrix(requestColumns, ext, initProbes, sparseRead, enhancedCols)
+          ManagedMatrixBuilder.buildExtFold(requestColumns, ext, initProbes, sparseRead, enhancedCols)          
         case db: KCMatrixDB =>
           if (typ == ValueType.Absolute) {
-            new NormalizedIntensityMatrix(requestColumns, db, initProbes, sparseRead, enhancedCols)
+            ManagedMatrixBuilder.buildNormalized(requestColumns, db, initProbes, sparseRead, enhancedCols)
           } else {
-            new FoldValueMatrix(requestColumns, db, initProbes, sparseRead)
+            ManagedMatrixBuilder.buildFold(requestColumns, db, initProbes, sparseRead)
           }
         case _ => throw new Exception("Unexpected DB reader type")
       }
@@ -156,9 +183,17 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
                   typ: ValueType, syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
     val pfs = platformsForGroups(groups.toList)   
     val allProbes = platforms.filterProbes(List(), pfs).toArray
-    val mm = makeMatrix(groups.toVector, allProbes.toArray, typ)    
-    setSessionData(mm)
+    val mm = makeMatrix(groups.toVector, allProbes.toArray, typ)
+    setSessionData(mm)        
     selectProbes(probes)
+    mapper(groups) match {
+      case Some(m) =>
+        val mapped = m.convert(mm)
+        setSessionData(mapped)
+        mapped.info
+      case None =>
+        mm.info
+    }
   }
 
   @throws(classOf[NoDataLoadedException])
@@ -219,9 +254,15 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
       if (!pm.containsKey(or.getProbe)) {
         println("missing key: " + or.getProbe)
       }
-      val p = pm(or.getProbe)
-      new ExpressionRow(p.identifier, p.name, p.genes.map(_.identifier).toArray,
-        p.symbols.map(_.symbol).toArray, or.getValues)
+      val p = pm.get(or.getProbe)
+      p match {
+        case Some(p) =>
+          new ExpressionRow(p.identifier, p.name, p.genes.map(_.identifier).toArray,
+        		  p.symbols.map(_.symbol).toArray, or.getValues)
+        case None =>
+          //TODO
+          new ExpressionRow(or.getProbe, or.getProbe, Array(), Array(), or.getValues)
+      }      
     })
   }
   
@@ -300,15 +341,13 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     Feedback.send(name, email, feedback, state, feedbackReceivers)
   }
   
-  /**
-   * Obtain the appropriate probe combiner to use for a set of groups, 
-   * if any.
-   */
-  protected def combiner(groups: Iterable[Group]): Option[ProbeCombiner] = {
+  protected def mapper(groups: Iterable[Group]): Option[MatrixMapper] = {
     val os = groups.flatMap(_.collect("organism")).toSet
     println("Detected species in groups: " + os)
     if (os.size > 1) {
-      Some(new MedianCombiner())
+      val pm = new OrthologProbeMapper(orthologs.head)
+      val vm = MedianValueMapper
+      Some(new MatrixMapper(pm, vm))      
     } else {
       None
     }

@@ -13,7 +13,10 @@ import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.SafeHtmlHeader;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
@@ -85,10 +88,13 @@ public class SampleDetailTable extends Composite {
 					return "";
 				}
 			}
-		};
+		};		
 		
-		table.addColumn(col, title);
-		table.setColumnWidth(col, width);
+		SafeHtml hhtml = SafeHtmlUtils.fromSafeConstant(
+				"<span title=\"" + title + "\">" + title + "</span>");
+		SafeHtmlHeader header = new SafeHtmlHeader(hhtml);
+		table.addColumn(col, header);		
+		table.setColumnWidth(col, width);				
 		return col;
 	}
 

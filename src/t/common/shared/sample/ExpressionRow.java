@@ -7,6 +7,8 @@ import java.util.Arrays;
 /**
  * Expression data for a particular set of columns for a single probe.
  * May also contain associated information such as gene IDs and gene symbols.
+ * 
+ * TODO this class is due for an overhaul.
  */
 public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 	private String probe = "";

@@ -374,8 +374,8 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	}
 	
 	private void loadTimeWarningIfNeeded() {
-		int totalSize = 0;
-		for (Group g : groups.values()) {
+		int totalSize = 0;		
+		for (Group g : existingGroupsTable.getSelection()) {			
 			for (OTGSample b: g.samples()) {
 				if (!schema.isSelectionControl(b.sampleClass())) {				
 					totalSize += 1;
