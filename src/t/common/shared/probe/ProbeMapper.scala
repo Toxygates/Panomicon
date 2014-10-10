@@ -30,4 +30,5 @@ class OrthologProbeMapper(mapping: OrthologMapping) extends ProbeMapper {
   
   def domain = forward.keySet
   val range = reverse.keySet.toSeq
+  println("Range: " + range.size + " " + range.take(50))
 }

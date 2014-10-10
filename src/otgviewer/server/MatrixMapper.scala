@@ -35,14 +35,16 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
 		val cols = (0 until from.columns).map(x => from.columnAt(x))
 		
 		val annots = nrows.map(_._2)
-		ExprMatrix.withRows(nrows.map(_._1), cols, rangeProbes).copyWithAnnotations(annots)
-	}
+		ExprMatrix.withRows(nrows.map(_._1), rangeProbes, cols).copyWithAnnotations(annots)
+	} 
 	
 	def convert(from: ManagedMatrix): ManagedMatrix = {
 	  val ungr = convert(from.rawUngroupedMat)
 	  val gr = convert(from.rawGroupedMat)
+	  val rks = (0 until ungr.rows).map(ungr.rowAt)
 	  
-	  new ManagedMatrix(from.initProbes, convert(from.currentInfo), ungr, gr)
+	  //Note, we re-fix initProbes for the new matrix
+	  new ManagedMatrix(rks.toArray, convert(from.currentInfo), ungr, gr)
 	}
 	
 	/**
