@@ -5,13 +5,12 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.ManagedMatrixInfo;
+import otgviewer.shared.ServerError;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
-import t.viewer.shared.StringList;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -51,7 +50,8 @@ public interface MatrixService extends RemoteService {
 	 * @return The number of rows that remain after filtering.
 	 */
 	public ManagedMatrixInfo loadDataset(List<Group> columns, 
-			String[] probes, ValueType type, List<Synthetic> synthCols);
+			String[] probes, ValueType type, List<Synthetic> synthCols) 
+					throws ServerError;
 	
 	/**
 	 * Filter data that has already been loaded into the session.
@@ -110,7 +110,8 @@ public interface MatrixService extends RemoteService {
 	 * @return
 	 */
 	public List<ExpressionRow> getFullData(Group g, String[] probes, 
-			boolean sparseRead, boolean withSymbols, ValueType type);
+			boolean sparseRead, boolean withSymbols, ValueType type)
+			throws ServerError;
 	
 	/**
 	 * Prepare a CSV file representing the loaded data for download. Returns a URL 

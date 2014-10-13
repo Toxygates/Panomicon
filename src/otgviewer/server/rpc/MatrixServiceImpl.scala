@@ -41,6 +41,8 @@ import otgviewer.server.ManagedMatrixBuilder
 import otgviewer.server.MatrixMapper
 import t.common.shared.probe.OrthologProbeMapper
 import t.common.shared.probe.MedianValueMapper
+import t.db.MatrixDBReader
+import otgviewer.shared.DBUnavailableException
 
 object MatrixServiceImpl {
   
@@ -144,14 +146,18 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
         identifiers, precise).map(_.identifier).toArray
     }
   }
-  
 
   private def makeMatrix(requestColumns: Seq[Group], initProbes: Array[String], 
       typ: ValueType, sparseRead: Boolean = false): ManagedMatrix = {
-    val reader = if (typ == ValueType.Absolute) {
-      context.absoluteDBReader
-    } else {     
-      context.foldsDBReader    
+
+    val reader = try {
+      if (typ == ValueType.Absolute) {
+        context.absoluteDBReader
+      } else {
+        context.foldsDBReader
+      }
+    } catch {
+      case e: Exception => throw new DBUnavailableException()
     }
 
     try {
@@ -170,7 +176,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
         case _ => throw new Exception("Unexpected DB reader type")
       }
     } finally {
-      reader.close()
+      reader.release
     }
   }
   
