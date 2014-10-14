@@ -59,14 +59,14 @@ object ManagedMatrixBuilder {
     val packedProbes = initProbes.map(pmap.pack)
     val info = new ManagedMatrixInfo()
     for (g <- requestColumns) {
-    	val barcodes = samplesForDisplay(g)
-    	val sortedBarcodes = reader.sortSamples(barcodes.map(b => Sample(b.getCode)))
-        val data = reader.valuesForSamplesAndProbes(sortedBarcodes,
+    	val samples = samplesForDisplay(g)
+    	val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.getCode)))
+        val data = reader.valuesForSamplesAndProbes(sortedSamples,
         		packedProbes, sparseRead)
-        groupedParts ::= columnBuilder(info, g, sortedBarcodes, data)
+        groupedParts ::= columnBuilder(info, g, sortedSamples, data)
         
         ungroupedParts ::= ExprMatrix.withRows(data.map(_.map(asJava(_))), 
-            initProbes, sortedBarcodes.map(_.sampleId))
+            initProbes, sortedSamples.map(_.sampleId))
     }
 
     val annotations = initProbes.map(new RowAnnotation(_)).toVector
@@ -209,7 +209,7 @@ object ManagedMatrixBuilder {
 class ManagedMatrix(val initProbes: Array[String],
     //TODO visibility of these 3 vars
     var currentInfo: ManagedMatrixInfo,
-    var rawUngroupedMat: ExprMatrix, var rawGroupedMat: ExprMatrix) {
+    var rawGroupedMat: ExprMatrix, var rawUngroupedMat: ExprMatrix) {
   
   protected var currentMat: ExprMatrix = rawGroupedMat
   
