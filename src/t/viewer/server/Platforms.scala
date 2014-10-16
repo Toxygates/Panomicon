@@ -11,6 +11,11 @@ object Platforms {
 //TODO update mechanism
 class Platforms(val data: Map[String, Set[String]]) {
 
+  println("Platforms: ")
+  for (p <- data) {
+    println(s"\t${p._1}: ${p._2.size}")
+  }
+  
   /**
    * Filter probes for a number of platforms.
    */

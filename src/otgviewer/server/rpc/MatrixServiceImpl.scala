@@ -67,8 +67,8 @@ object MatrixServiceImpl {
 
       affyProbes = new Probes(ts)
       otgSamples = new OTGSamples(bc)
-      platforms = Platforms(affyProbes)
       orthologs = affyProbes.orthologMappings
+      platforms = Platforms(affyProbes)
 
       inited = true
     }
@@ -188,8 +188,8 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   def loadDataset(groups: JList[Group], probes: Array[String],
                   typ: ValueType, syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
     val pfs = platformsForGroups(groups.toList)   
-    val allProbes = platforms.filterProbes(List(), pfs).toArray
-    val mm = makeMatrix(groups.toVector, allProbes.toArray, typ)
+    val allProbes = platforms.filterProbes(List(), pfs).toArray 
+    val mm = makeMatrix(groups.toVector, allProbes, typ)
     setSessionData(mm)        
     selectProbes(probes)
     mapper(groups) match {
