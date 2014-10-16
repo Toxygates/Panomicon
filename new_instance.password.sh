@@ -34,7 +34,7 @@ cat >> $TARGET <<EOF
 
 <login-config>
   <auth-method>BASIC</auth-method>
-  <realm-name>Toxygates (Adjuvant test)</realm-name>
+  <realm-name>$APPNAME</realm-name>
 </login-config>
 
 </web-app>

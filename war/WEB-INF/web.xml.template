@@ -40,6 +40,7 @@
 		<param-value>http://toxygates.nibio.go.jp:8080/toxygates/csv</param-value>
 	</context-param>	
 	<context-param>
+	<!-- to be retired -->
 		<param-name>applicationClass</param-name>
 		<param-value>Adjuvant</param-value>
 	</context-param>
@@ -80,17 +81,7 @@
 		<servlet-class>otgviewer.server.targetmine.TargetmineServiceImpl</servlet-class>
 	</servlet>
   	
-
-	<servlet>
-		<servlet-name>maintenanceServlet</servlet-name>
-		<servlet-class>t.admin.server.MaintenanceServiceImpl</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>maintenanceServlet</servlet-name>
-		<url-pattern>/AdminConsole/maintenance</url-pattern>
-	</servlet-mapping>
 	
-  
   <!-- Default page to serve -->
   <welcome-file-list>
     <welcome-file>toxygates.html</welcome-file>
