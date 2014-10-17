@@ -1,6 +1,6 @@
 #!/bin/bash
 
-THOME=/opt/apache-tomcat-xx/webapps
+THOME=/opt/apache-tomcat-6.0.36/webapps
 
 if [ $# -lt 1 ]
 then
