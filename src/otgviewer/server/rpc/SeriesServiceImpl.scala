@@ -22,9 +22,6 @@ import otgviewer.shared.RankRule
 import otgviewer.shared.Series
 import t.db.SeriesDB
 import t.db.kyotocabinet.KCSeriesDB
-import otg.OTGContext
-import otg.SeriesRanking
-import t.db.SeriesDB
 import otg.OTGSeries
 import scala.annotation.tailrec
 import otgviewer.shared.TimesDoses
@@ -33,6 +30,8 @@ import t.common.shared.SampleClass
 import t.DataConfig
 import otg.OTGBConfig
 import t.TriplestoreConfig
+import otgviewer.shared.DBUnavailableException
+import t.global.KCDBRegistry
 
 class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   import Conversions._
@@ -68,10 +67,20 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   }
   
   private def getDB(): SeriesDB[OTGSeries] = {
-    new KCSeriesDB(baseConfig.data.seriesDb, OTGSeries, false) {
-    	override def read(key: OTGSeries): Iterable[OTGSeries] = {
+    //TODO organise this better
+    try {
+    val file = baseConfig.data.seriesDb
+    val db = KCDBRegistry.get(file, KCSeriesDB.options, false)    
+    db match {
+      case Some(d) => new KCSeriesDB(file, d, OTGSeries) {
+        override def read(key: OTGSeries): Iterable[OTGSeries] = {
     	  OTGSeries.normalize(super.read(key))
     	}
+      }
+      case None => throw new Exception("Unable to get DB")
+    }  
+    } catch {
+      case e: Exception => throw new DBUnavailableException()
     }
   }
   
@@ -117,7 +126,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
       }
       r.toArray
     } finally {
-      db.close()
+      db.release()
     }    
   }
 
@@ -126,7 +135,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     try {
       db.read(asScala(sc, new Series("", probe, timeDose, compound, Array.empty))).head
     } finally {
-      db.close()
+      db.release()
     }
   }
 
@@ -143,7 +152,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
       val jss = ss.map(asJava(_))
       new ArrayList[Series](asJavaCollection(jss))
     } finally {
-      db.close()
+      db.release()
     }
   }
 }
