@@ -71,11 +71,12 @@ object ManagedMatrixBuilder {
 
     val annotations = initProbes.map(new RowAnnotation(_)).toVector
     
-    val rawGroupedMat = groupedParts.reverse.reduceLeft(_ adjoinRight _).
-    	copyWithAnnotations(annotations)
     val rawUngroupedMat = ungroupedParts.reverse.reduceLeft(_ adjoinRight _).
     	copyWithAnnotations(annotations)
-    new ManagedMatrix(initProbes, info, rawGroupedMat, rawUngroupedMat)
+    val rawGroupedMat = groupedParts.reverse.reduceLeft(_ adjoinRight _).
+    	copyWithAnnotations(annotations)
+    
+    new ManagedMatrix(initProbes, info, rawUngroupedMat, rawGroupedMat)
   }
   
   private def columnsForGroupDefault[E <: ExprValue](initProbes: Array[String],
@@ -209,7 +210,7 @@ object ManagedMatrixBuilder {
 class ManagedMatrix(val initProbes: Array[String],
     //TODO visibility of these 3 vars
     var currentInfo: ManagedMatrixInfo,
-    var rawGroupedMat: ExprMatrix, var rawUngroupedMat: ExprMatrix) {
+    var rawUngroupedMat: ExprMatrix, var rawGroupedMat: ExprMatrix) {
   
   protected var currentMat: ExprMatrix = rawGroupedMat
   

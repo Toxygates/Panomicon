@@ -353,7 +353,8 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 			for (Group g: chosenColumns) {				
 				FlowPanel fp = new FlowPanel(); 
 				fp.setStyleName("statusBorder");
-				String tip = g.getTriples(schema(), -1, ", ");
+				String tip = g.getSamples()[0].sampleClass().label(schema()) + ":\n" +
+						g.getTriples(schema(), -1, ", ");
 				Label l = Utils.mkEmphLabel(g.getName() + ":");
 				l.setWordWrap(false);
 				l.getElement().getStyle().setMargin(2, Unit.PX);

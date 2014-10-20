@@ -12,7 +12,7 @@ import t.common.shared.SharedUtils;
  */
 public class ManagedMatrixInfo implements Serializable {
 
-	private int _numDataColumns = 0, _numSynthetics = 0, _numRows = 0;
+	private int numDataColumns = 0, numSynthetics = 0, numRows = 0;
 	private String[] columnNames = new String[0];
 	private String[] columnHints = new String[0];
 	private boolean[] upperBoundFiltering = new boolean[0];
@@ -20,8 +20,8 @@ public class ManagedMatrixInfo implements Serializable {
 	private Double[] columnFilters = new Double[0];
 	
 	public ManagedMatrixInfo() { }
-	
-	public void setNumRows(int val) { _numRows = val; }
+		
+	public void setNumRows(int val) { numRows = val; }
 	
 	/**
 	 * Add information about a single column to this column set.
@@ -34,9 +34,9 @@ public class ManagedMatrixInfo implements Serializable {
 			String hint, boolean isUpperFiltering,
 			Group baseGroup) {
 		if (synthetic) {
-			_numSynthetics++;
+			numSynthetics++;
 		} else {
-			_numDataColumns++;
+			numDataColumns++;
 		}
 		
 		columnNames = SharedUtils.extend(columnNames, name);
@@ -47,8 +47,8 @@ public class ManagedMatrixInfo implements Serializable {
 	}
 	
 	public void removeSynthetics() {
-		_numSynthetics = 0;
-		int n = _numDataColumns;
+		numSynthetics = 0;
+		int n = numDataColumns;
 		columnNames = SharedUtils.take(columnNames, n);
 		columnHints = SharedUtils.take(columnHints, n);
 		upperBoundFiltering = SharedUtils.take(upperBoundFiltering, n);	
@@ -57,14 +57,14 @@ public class ManagedMatrixInfo implements Serializable {
 	}
 	
 	public int numColumns() {
-		return _numDataColumns + _numSynthetics;
+		return numDataColumns + numSynthetics;
 	}
 	
-	public int numDataColumns() { return _numDataColumns; }
+	public int numDataColumns() { return numDataColumns; }
 	
-	public int numSynthetics() { return _numSynthetics; }
+	public int numSynthetics() { return numSynthetics; }
 	
-	public int numRows() { return _numRows; }
+	public int numRows() { return numRows; }
 	
 	/**
 	 * @param column Column index. Must be 0 <= i < numColumns.

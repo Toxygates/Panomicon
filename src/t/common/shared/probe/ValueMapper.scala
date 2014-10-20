@@ -24,11 +24,13 @@ object MedianValueMapper extends ValueMapper {
     val sorted = domainVs.toList.sortWith(_.getValue < _.getValue)
     val mid = domainVs.size / 2
     val nv = if (domainVs.size % 2 == 0) {
-      sorted(mid - 1).getValue + sorted(mid).getValue
+      (sorted(mid - 1).getValue + sorted(mid).getValue) / 2
     } else {
       sorted(mid).getValue
     }
     
+    val tooltip = "med(" + sorted.mkString(", ") + ")"
+
     var call = 0d
     for (v <- domainVs) {
       v.getCall() match {
@@ -39,6 +41,6 @@ object MedianValueMapper extends ValueMapper {
     }
     val nc = Math.round(call/domainVs.size)
     val rc = if (nc == 2) 'P' else (if (nc == 1) 'M' else 'A')
-    new ExpressionValue(nv, rc)    
+    new ExpressionValue(nv, rc, tooltip)    
   }
 }

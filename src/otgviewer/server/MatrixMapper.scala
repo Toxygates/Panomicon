@@ -1,8 +1,8 @@
 package otgviewer.server
 
+import otgviewer.shared.ManagedMatrixInfo
 import t.common.shared.probe.ProbeMapper
 import t.common.shared.probe.ValueMapper
-import otgviewer.shared.ManagedMatrixInfo
 
 /**
  * A matrix mapper converts a whole matrix from one domain into
@@ -18,18 +18,18 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
 		val rangeProbes = pm.range
 		val fromRowSet = from.rowKeys.toSet
 		
-		val nrows = rangeProbes.map(r => {
-		  val sps = pm.toDomain(r).filter(fromRowSet.contains(_))
+		val nrows = rangeProbes.map(rng => {
+		  val domProbes = pm.toDomain(rng).filter(fromRowSet.contains(_))
 		  
 		  //pull out e.g. all the rows corresponding to probes (domain)
 		  //for gene G1 (range)
-		  val domainRows = sps.map(sp => from.row(sp))
+		  val domainRows = domProbes.map(dp => from.row(dp))
 		  val cols = domainRows.head.size
 		  val nr = (0 until cols).map(c => {
 		    val xs = domainRows.map(dr => dr(c))
-		    vm.convert(r, xs)
+		    vm.convert(rng, xs)
 		  })		
-		  (nr, RowAnnotation(r))
+		  (nr, RowAnnotation(rng))
 		})
 		
 		val cols = (0 until from.columns).map(x => from.columnAt(x))
@@ -58,6 +58,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
 	    r.addColumn(false, from.columnName(i), from.columnHint(i), 
 	        from.isUpperFiltering(i), from.columnGroup(i))
 	  }
+	  r.setNumRows(from.numRows())
 	  r
 	}
 }
