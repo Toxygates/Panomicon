@@ -30,7 +30,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  *
  */
 abstract public class AssociationTable<T> extends RichTable<T> {
-	protected final SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT.create(SparqlService.class);
+	protected final SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT.create(SparqlService.class);
 	protected Map<AType, Association> associations = new HashMap<AType, Association>();
 	private boolean waitingForAssociations = true;
 	
@@ -80,7 +80,8 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 				}
 			};
 
-			owlimService.associations(chosenSampleClass, vas,
+			logger.info("Get associations for " + chosenSampleClass.toString());
+			sparqlService.associations(chosenSampleClass, vas,
 					displayedProbes(), 
 					assocCallback);
 		}

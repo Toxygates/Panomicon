@@ -296,6 +296,9 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 
 	public void loadState(StorageParser p, DataSchema schema) {
 		SampleClass sc = new SampleClass();
+		//Note: currently the "real" sample class, as chosen by the user on the
+		//column screen for example, is not stored, and hence not propagated
+		//between screens.
 		sampleClassChanged(sc);
 		
 		try {

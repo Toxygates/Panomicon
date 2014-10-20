@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -548,7 +549,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			}
 		}
 	}
-
+	
+	@Override
+	public void sampleClassChanged(SampleClass sc) {
+		logger.info("Change SC to " + sc);
+	}
+	
 	@Override
 	public void columnsChanged(List<Group> columns) {
 		HashSet<Group> oldColumns = new HashSet<Group>(chosenColumns);
@@ -562,6 +568,17 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		 //invalidate synthetic columns, since they depend on
 		//normal columns
 		removeSyntheticColumnsLocal();
+		
+		//we set chosenSampleClass to the intersection of all the samples
+		//in the groups here. Needed later for e.g. the associations() call.
+		//TODO: this may need to be moved. 
+		//TODO: efficiency of this operation for 100's of samples
+		List<SampleClass> allCs = new LinkedList<SampleClass>();
+		for (Group g: columns) {
+			allCs.addAll(SampleClass.classes(Arrays.asList(g.getSamples())));
+		}
+		changeSampleClass(SampleClass.intersection(allCs));		
+		logger.info("Set SC to: " + chosenSampleClass.toString());
 		
 		groupsel1.clear();
 		groupsel2.clear();		

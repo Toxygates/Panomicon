@@ -364,7 +364,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 			configuredScreens.remove(s.key());
 		}
 	}
-
+	
 	@Override
 	public void deconfigureAll(Screen from) {
 		for (Screen s: workflow) {

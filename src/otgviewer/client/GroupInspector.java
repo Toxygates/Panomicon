@@ -172,7 +172,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 				chosenColumns = new ArrayList<Group>(selected);
 				StorageParser p = getParser(screen);
 				storeColumns(p);
-				updateConfigureStatus();
+				updateConfigureStatus(true);
 			}
 		};
 //		vp.add(existingGroupsTable);
@@ -237,17 +237,19 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		logger.info(chosenColumns.size() + " columns have been chosen");
 		StorageParser p = getParser(screen);		
 		storeColumns(p);
-		txtbxGroup.setText("");
-		updateConfigureStatus();
-		existingGroupsTable.setVisible(groups.values().size() > 0);		
+		txtbxGroup.setText("");		
+		updateConfigureStatus(true);
+		existingGroupsTable.setVisible(groups.values().size() > 0);
+		
 	}
 	
-	private void updateConfigureStatus() {		
+	private void updateConfigureStatus(boolean internalTriggered) {		
 		if (chosenColumns.size() == 0) {
-			screen.setConfigured(false);
-			screen.manager().deconfigureAll(screen);
+			screen.setConfigured(false);			
 		} else if (chosenColumns.size() > 0) {
-			screen.setConfigured(true);
+			screen.setConfigured(true);			
+		}
+		if (internalTriggered) {
 			screen.manager().deconfigureAll(screen);
 		}
 	}
@@ -303,7 +305,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		for (Group g: columns) {			
 			groups.put(g.getName(), g);			
 		}
-		updateConfigureStatus();
+		updateConfigureStatus(false);
 				
 		existingGroupsTable.setItems(sortedGroupList(groups.values()), true);
 		existingGroupsTable.setSelection(chosenColumns);		
