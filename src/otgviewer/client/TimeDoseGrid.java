@@ -53,6 +53,8 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	protected Pair<Unit, Unit>[] availableUnits;
 	protected Logger logger = Utils.getLogger("tdgrid");
 	
+	protected String emptyMessage;
+	
 	/** 
 	 * To be overridden by subclasses
 	 * @param toolPanel
@@ -90,6 +92,8 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		selectionPanel.setSpacing(2);
 		
 		this.hasDoseTimeGUIs = hasDoseTimeGUIs;
+		String mtitle = schema.title(majorParameter);
+		emptyMessage = "Please select at least one " + mtitle;
 		
 		grid.setStyleName("highlySpaced");
 		grid.setWidth("100%");
@@ -119,12 +123,24 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		super.compoundsChanged(compounds);		
 		rootPanel.clear();		
 		if (compounds.isEmpty()) {
-			String mTitle = schema.title(schema.majorParameter());
-			rootPanel.add(Utils.mkEmphLabel("Please select at least one " + mTitle));
+			setEmptyMessage(emptyMessage);			
 		} else {
 			rootPanel.add(mainPanel);
 			redrawGrid();
 			fetchSamples();
+		}
+	}
+	
+	/**
+	 * Change the message that is to be displayed when no major 
+	 * values have been selected.
+	 * @param message
+	 */
+	public void setEmptyMessage(String message) {
+		this.emptyMessage = message;
+		if (chosenCompounds.isEmpty()) {
+			String mTitle = schema.title(schema.majorParameter());
+			rootPanel.add(Utils.mkEmphLabel(emptyMessage));
 		}
 	}
 	

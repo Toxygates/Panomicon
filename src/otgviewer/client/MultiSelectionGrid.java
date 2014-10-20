@@ -68,7 +68,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 		for (SelectionTDGrid g: sections.values()) {
 			r.addAll(g.getSelectedUnits(treatedOnly));
 		}
-		return r;
+		return r; 
 	}
 	
 	void setAll(boolean state) {
