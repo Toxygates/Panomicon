@@ -13,14 +13,23 @@ import java.util.Arrays;
 public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 	private String probe = "";
 	private String title = "";
+	private String[] atomicProbes = new String[0];
 	private String[] geneIds = new String[0];
 	private String[] geneSyms = new String[0];
 	private ExpressionValue[] val = new ExpressionValue[0];	
 	
-	public ExpressionRow() { }		
+	public ExpressionRow() { }
 	
-	public ExpressionRow(String _probe, String _title, String[] _geneId, String[] _geneSym, ExpressionValue[] _val) {
+	public ExpressionRow(String _probe, String _title, 
+			String[] _geneId, String[] _geneSym, ExpressionValue[] _val) {
+		this(_probe, new String[] { _probe }, _title,
+				_geneId, _geneSym, _val);
+	}
+	
+	public ExpressionRow(String _probe, String[] _atomicProbes, String _title, 
+			String[] _geneId, String[] _geneSym, ExpressionValue[] _val) {
 		probe = _probe;
+		atomicProbes = _atomicProbes;
 		val = _val;
 		title = _title;		
 		geneIds = _geneId;
@@ -37,6 +46,10 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 	
 	public String getProbe() {
 		return probe;
+	}
+	
+	public String[] getAtomicProbes() {
+		return atomicProbes;
 	}
 	
 	public ExpressionValue getValue(int i) {		

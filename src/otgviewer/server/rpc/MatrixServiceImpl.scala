@@ -250,25 +250,30 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
    * Unsuitable for large amounts of data.
    */
   private def insertAnnotations(rows: Seq[ExpressionRow]): Seq[ExpressionRow] = {
-    val probes = rows.map(r => Probe(r.getProbe))
+    val atomised = Map() ++ rows.map(r => {
+      val p = r.getProbe
+      if (p.contains("/")) {
+        //TODO avoid hardcoding this separator
+        val atomics = p.split("/")
+        p -> atomics
+      } else {
+        p -> Array(p)
+      }
+    })
 
-    val attribs = affyProbes.withAttributes(probes)
+    val attribs = affyProbes.withAttributes(atomised.flatMap(_._2.map(Probe(_))))
     val pm = Map() ++ attribs.map(a => (a.identifier -> a))
     println(pm.take(5))
     
     rows.map(or => {
-      if (!pm.containsKey(or.getProbe)) {
-        println("missing key: " + or.getProbe)
-      }
-      val p = pm.get(or.getProbe)
-      p match {
-        case Some(p) =>
-          new ExpressionRow(p.identifier, p.name, p.genes.map(_.identifier).toArray,
-        		  p.symbols.map(_.symbol).toArray, or.getValues)
-        case None =>
-          //TODO
-          new ExpressionRow(or.getProbe, or.getProbe, Array(), Array(), or.getValues)
-      }      
+      val atomics = atomised(or.getProbe)
+      
+      val ps = atomics.flatMap(pm.get(_))
+      new ExpressionRow(ps.map(_.identifier).mkString("/"),
+          ps.map(_.name).mkString("/"),
+          ps.flatMap(_.genes.map(_.identifier)),
+          ps.flatMap(_.symbols.map(_.symbol)),
+          or.getValues)            
     })
   }
   
