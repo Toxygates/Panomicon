@@ -269,8 +269,8 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
       val atomics = atomised(or.getProbe)
       
       val ps = atomics.flatMap(pm.get(_))
-      new ExpressionRow(ps.map(_.identifier).mkString("/"),
-          ps.map(_.name).mkString("/"),
+      new ExpressionRow(ps.map(_.identifier).mkString("/ "),
+          ps.map(_.name).mkString("/ "),
           ps.flatMap(_.genes.map(_.identifier)),
           ps.flatMap(_.symbols.map(_.symbol)),
           or.getValues)            

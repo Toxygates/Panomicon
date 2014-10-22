@@ -128,7 +128,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   def parameterValues(sc: SampleClass, parameter: String): Array[String] = {
     //TODO when DataSchema is available here, use it instead of hardcoding shared_control
     otgSamples.attributeValues(scAsScala(sc), parameter, instanceURI).
-    	filter(_ != "shared_control").toArray
+    	filter(x => !x.startsWith("shared_control")).toArray
   }
 
   //TODO compound_name is a dummy parameter below
