@@ -324,19 +324,19 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	private String unitString(Unit u) {
 		if (u == null) {
 			return "(null)";
-		} else if (u.getSamples() == null) {
-			return "(no samples)";
+		} else if (u.getSamples() == null || u.getSamples().length == 0) {
+			return "(no samples)";		
 		} else {
-			return u.getSamples().length + " sampl";
+			return u.getSamples().length + " sampl: " + u.getSamples()[0].getCode();
 		}
 	}
 	
-	@Override
+	@Override 
 	protected void samplesAvailable() {
 		logger.info("Samples available: " + availableUnits.length + " units");
 		for (Pair<Unit, Unit> u: availableUnits) {		
 			controlUnits.put(u.first(), u.second());			
-			logger.info("treated: " + unitString(u.first()) + " control: " + unitString(u.second()));									
+			logger.info("treated: " + unitString(u.first()) + " control: " + unitString(u.second()));												
 		}
 		
 		for (Pair<Unit, Unit> treatedControl: availableUnits) {

@@ -18,6 +18,10 @@
 		<param-value>ttest</param-value>
 	</context-param>
 	<context-param>
+		<param-name>instanceName</param-name>
+		<param-value>toxygates-test</param-value>
+	</context-param>	
+	<context-param>
 		<param-name>repositoryUser</param-name>
 		<param-value>ttest</param-value>
 	</context-param>
