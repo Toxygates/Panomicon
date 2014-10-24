@@ -161,12 +161,14 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
       param: String, paramValues: Array[String]): Array[Pair[TUnit, TUnit]] = {
 
     val majorParam = schema.majorParameter()
-    val sharedControl = schema.majorParamSharedControlValue()
     //Ensure shared control is always included, if possible
-    val useParamValues = if (param == majorParam && sharedControl != null) {
-      sharedControl :: paramValues.toList
+    val useParamValues = if (param == majorParam) {
+      val allMajors = 
+        otgSamples.attributeValues(scAsScala(sc), majorParam, instanceURI)        
+      val shared = allMajors.filter(schema.isMajorParamSharedControl(_))
+      (shared.toSeq ++ paramValues.toSeq)
     } else {
-      paramValues.toList
+      paramValues.toSeq
     }
     
     //TODO rethink how to use batch here

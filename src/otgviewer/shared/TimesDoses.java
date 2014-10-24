@@ -27,10 +27,10 @@ public class TimesDoses extends DataSchema {
 	public String majorParameter() { 
 		return "compound_name";
 	}
-
+	
 	@Override
-	public String majorParamSharedControlValue() {
-		return "shared_control";
+	public boolean isMajorParamSharedControl(String value) {
+		return value.startsWith("shared_control");
 	}
 	
 	@Override
