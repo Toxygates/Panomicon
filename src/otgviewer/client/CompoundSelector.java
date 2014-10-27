@@ -278,7 +278,8 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		
 		private void makeSeriesCharts(final String value, final List<Series> ss) {
 			//TODO
-			ChartGridFactory cgf = new ChartGridFactory(screen.schema(), chosenColumns);
+			ChartGridFactory cgf = new ChartGridFactory(screen.schema(), 
+					new SampleClass[] { w.chosenSampleClass });
 			cgf.makeSeriesCharts(ss, false, scores.get(value).dose(), new ChartGridFactory.ChartAcceptor() {
 				
 				@Override

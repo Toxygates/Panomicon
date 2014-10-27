@@ -57,7 +57,7 @@ object MatrixServiceImpl {
   //servlets.
   var platforms: Platforms = _
   var orthologs: Iterable[OrthologMapping] = _
-  var affyProbes: Probes = _ 
+  var probes: Probes = _ 
   //TODO update mechanism
   var otgSamples: OTGSamples = _
   
@@ -65,17 +65,17 @@ object MatrixServiceImpl {
     if (!inited) {
       val ts = bc.triplestore.triplestore
 
-      affyProbes = new Probes(ts)
+      probes = new Probes(ts)
       otgSamples = new OTGSamples(bc)
-      orthologs = affyProbes.orthologMappings
-      platforms = Platforms(affyProbes)
+      orthologs = probes.orthologMappings
+      platforms = Platforms(probes)
 
       inited = true
     }
   }
   
   def staticDestroy() = synchronized {
-    affyProbes.close()	
+    probes.close()	
 	otgSamples.close()
   }
 }
@@ -140,9 +140,9 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   def identifiersToProbes(identifiers: Array[String], precise: Boolean, 
       titlePatternMatch: Boolean): Array[String] = {
     if (titlePatternMatch) {
-      affyProbes.forTitlePatterns(identifiers).map(_.identifier).toArray
+      probes.forTitlePatterns(identifiers).map(_.identifier).toArray
     } else {
-      affyProbes.identifiersToProbes(context.unifiedProbes,
+      probes.identifiersToProbes(context.unifiedProbes,
         identifiers, precise).map(_.identifier).toArray
     }
   }
@@ -261,7 +261,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
       }
     })
 
-    val attribs = affyProbes.withAttributes(atomised.flatMap(_._2.map(Probe(_))))
+    val attribs = probes.withAttributes(atomised.flatMap(_._2.map(Probe(_))))
     val pm = Map() ++ attribs.map(a => (a.identifier -> a))
     println(pm.take(5))
     
@@ -317,7 +317,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     val colNames = rendered.sortedColumnMap.map(_._1)
     val rowNames = rendered.sortedRowMap.map(_._1)
 
-    val gis = affyProbes.allGeneIds(null).mapMValues(_.identifier)
+    val gis = probes.allGeneIds(null).mapMValues(_.identifier)
     val geneIds = rowNames.map(rn => gis.getOrElse(Probe(rn), Seq.empty)).map(_.mkString(" "))
     CSVHelper.writeCSV(csvDirectory, csvUrlBase, rowNames, colNames,
       geneIds, rendered.data.map(_.map(asScala(_))))
@@ -333,7 +333,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
       rowNames = rowNames.take(limit)
     }
 
-    val gis = affyProbes.allGeneIds()
+    val gis = probes.allGeneIds()
     val geneIds = rowNames.map(rn => gis.getOrElse(Probe(rn), Set.empty))
     geneIds.flatten.map(_.identifier).toArray
   }

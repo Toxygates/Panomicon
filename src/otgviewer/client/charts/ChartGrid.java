@@ -36,7 +36,7 @@ abstract public class ChartGrid extends Composite {
 	protected DataTable[][] tables;
 	final int totalWidth;
 	
-	public ChartGrid(Screen screen, ChartDataset table, List<Group> groups, 
+	public ChartGrid(Screen screen, ChartDataset table, 
 			final List<String> rowFilters, boolean rowsAreMajors, 
 			String[] minsOrMeds, boolean columnsAreMins, int totalWidth) {
 		super();

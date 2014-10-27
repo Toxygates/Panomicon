@@ -178,7 +178,7 @@ public class AdjustableChartGrid extends Composite {
 						ChartDataset ct = new ChartDataset(samples, samples, 
 								vsMinor ? source.minorVals() : source.mediumVals(), vsMinor);
 												
-						ChartGrid cg = new GVizChartGrid(screen, ct, groups,
+						ChartGrid cg = new GVizChartGrid(screen, ct,
 								useCompounds == null ? majorVals : Arrays.asList(useCompounds), true,
 								useColumns, !vsMinor, TOTAL_WIDTH);
 						

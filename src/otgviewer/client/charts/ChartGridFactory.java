@@ -53,9 +53,14 @@ public class ChartGridFactory {
 		this.schema = schema;		
 	}
 	
+	public ChartGridFactory(DataSchema schema, SampleClass[] sampleClasses) {
+		this.sampleClasses = sampleClasses;
+		this.schema = schema;
+		groups = new ArrayList<Group>();
+	}
+	
 	public void makeSeriesCharts(final List<Series> series, final boolean rowsAreCompounds,
-			final int highlightDose, final ChartAcceptor acceptor, final Screen screen) {
-		
+			final int highlightDose, final ChartAcceptor acceptor, final Screen screen) {		
 		sparqlService.parameterValues(sampleClasses, 
 				schema.timeParameter(), new AsyncCallback<String[]>() {
 			@Override
@@ -63,7 +68,7 @@ public class ChartGridFactory {
 				Window.alert("Unable to obtain sample times");
 			}
 			@Override
-			public void onSuccess(String[] result) {
+			public void onSuccess(String[] result) {				
 				finishSeriesCharts(series, result, rowsAreCompounds, highlightDose, acceptor, screen);												
 			}			
 		});			
@@ -71,12 +76,13 @@ public class ChartGridFactory {
 
 	private void finishSeriesCharts(final List<Series> series, final String[] times, 
 			final boolean rowsAreCompounds,			
-			final int highlightMed, final ChartAcceptor acceptor, final Screen screen) {
-		ChartDataSource cds = new ChartDataSource.SeriesSource(
-				schema, series, times);
+			final int highlightMed, final ChartAcceptor acceptor, final Screen screen) {		
 		//TODO get from schema or data
 		try {
 		final String[] medVals = schema.sortedValues(schema.mediumParameter());
+		schema.sort(schema.timeParameter(), times);
+		ChartDataSource cds = new ChartDataSource.SeriesSource(
+				schema, series, times);
 		
 		cds.getSamples(null, null, new TimeDoseColorPolicy(medVals[highlightMed], "SkyBlue"), 
 				new ChartDataSource.SampleAcceptor() {
@@ -84,7 +90,6 @@ public class ChartGridFactory {
 			@Override
 			public void accept(final List<ChartSample> samples) {
 				ChartDataset ct = new ChartDataset(samples, samples, times, true);
-
 				List<String> filters = new ArrayList<String>();
 				for (Series s: series) {			
 					if (rowsAreCompounds && !filters.contains(s.compound())) {
@@ -94,7 +99,7 @@ public class ChartGridFactory {
 					}
 				}
 
-				ChartGrid cg = new GVizChartGrid(screen, ct, groups, filters, rowsAreCompounds, 
+				ChartGrid cg = new GVizChartGrid(screen, ct, filters, rowsAreCompounds, 
 						medVals, false, 400);
 				cg.adjustAndDisplay(cg.getMaxColumnCount(), ct.getMin(), ct.getMax());
 				acceptor.acceptCharts(cg);				
