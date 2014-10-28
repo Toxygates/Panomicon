@@ -148,7 +148,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   }
 
   private def makeMatrix(requestColumns: Seq[Group], initProbes: Array[String], 
-      typ: ValueType, sparseRead: Boolean = false): ManagedMatrix = {
+      typ: ValueType, sparseRead: Boolean = false, fullLoad: Boolean = false): ManagedMatrix = {
 
     val reader = try {
       if (typ == ValueType.Absolute) {
@@ -166,12 +166,15 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
       reader match {
         case ext: KCExtMatrixDB =>
           assert(typ == ValueType.Folds)
-          ManagedMatrixBuilder.buildExtFold(requestColumns, ext, initProbes, sparseRead, enhancedCols)          
+          ManagedMatrixBuilder.buildExtFold(requestColumns, ext, initProbes, 
+              sparseRead, fullLoad, enhancedCols)          
         case db: KCMatrixDB =>
           if (typ == ValueType.Absolute) {
-            ManagedMatrixBuilder.buildNormalized(requestColumns, db, initProbes, sparseRead, enhancedCols)
+            ManagedMatrixBuilder.buildNormalized(requestColumns, db, initProbes, 
+                sparseRead, fullLoad, enhancedCols)
           } else {
-            ManagedMatrixBuilder.buildFold(requestColumns, db, initProbes, sparseRead)
+            ManagedMatrixBuilder.buildFold(requestColumns, db, initProbes, 
+                sparseRead, fullLoad)
           }
         case _ => throw new Exception("Unexpected DB reader type")
       }
@@ -283,7 +286,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     val pfs = platformsForGroups(List(g))    
     
     val realProbes = platforms.filterProbes(probes, pfs).toArray
-    val mm = makeMatrix(List(g), realProbes.toArray, typ, sparseRead)
+    val mm = makeMatrix(List(g), realProbes.toArray, typ, sparseRead, true)
     
     //When we have obtained the data, it might no longer be sorted in the order that the user
     //requested. Thus we use selectNamedColumns here to force the sort order they wanted.

@@ -22,9 +22,11 @@ object ManagedMatrixBuilder {
  * No extra columns. Simple averaged fold values.
  */
   def buildFold(requestColumns: Seq[Group],
-    reader: MatrixDBReader[ExprValue], initProbes: Array[String], sparseRead: Boolean)
+    reader: MatrixDBReader[ExprValue], initProbes: Array[String], sparseRead: Boolean,
+    fullLoad: Boolean)
     (implicit context: OTGContext): ManagedMatrix = {
     loadRawData[ExprValue](requestColumns, reader, initProbes, sparseRead,
+        fullLoad,
         columnsForGroupDefault(initProbes, _, _, _, _))
   }
   
@@ -34,8 +36,10 @@ object ManagedMatrixBuilder {
  */
   def buildNormalized(requestColumns: Seq[Group],
     reader: MatrixDBReader[ExprValue], initProbes: Array[String], sparseRead: Boolean,
+    fullLoad: Boolean,
     enhancedColumns: Boolean)(implicit context: OTGContext): ManagedMatrix = {
     loadRawData[ExprValue](requestColumns, reader, initProbes, sparseRead,
+        fullLoad,
         columnsForGroupNormalized(enhancedColumns, initProbes, _, _, _, _))
   }
    
@@ -44,13 +48,16 @@ object ManagedMatrixBuilder {
  */
   def buildExtFold(requestColumns: Seq[Group],
     reader: MatrixDBReader[PExprValue], initProbes: Array[String], sparseRead: Boolean,
+    fullLoad: Boolean,
     enhancedColumns: Boolean)(implicit context: OTGContext): ManagedMatrix = {
     loadRawData[PExprValue](requestColumns, reader, initProbes, sparseRead,
+        fullLoad,
         columnsForGroupExtFold(enhancedColumns, initProbes, _, _, _, _))
   }
   
   def loadRawData[E <: ExprValue](requestColumns: Seq[Group],
-      reader: MatrixDBReader[E], initProbes: Array[String], sparseRead: Boolean,      
+      reader: MatrixDBReader[E], initProbes: Array[String], sparseRead: Boolean,
+      fullLoad: Boolean,
       columnBuilder: (ManagedMatrixInfo, Group, Seq[Sample], Seq[Seq[E]]) => ExprMatrix)
   (implicit context: OTGContext): ManagedMatrix = {
     val pmap = context.unifiedProbes
@@ -59,7 +66,7 @@ object ManagedMatrixBuilder {
     val packedProbes = initProbes.map(pmap.pack)
     val info = new ManagedMatrixInfo()
     for (g <- requestColumns) {
-    	val samples = samplesForDisplay(g)
+    	val samples = if(fullLoad) g.getSamples.toList else samplesForDisplay(g)
     	val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.getCode)))
         val data = reader.valuesForSamplesAndProbes(sortedSamples,
         		packedProbes, sparseRead)

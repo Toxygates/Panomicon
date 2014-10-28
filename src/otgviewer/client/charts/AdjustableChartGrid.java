@@ -46,7 +46,7 @@ public class AdjustableChartGrid extends Composite {
 	private VerticalPanel ivp;
 	private Screen screen;
 	private int computedWidth;
-	private ValueType vt;
+	private ValueType valueType;
 	
 	private Logger logger = Utils.getLogger("chart");
 	
@@ -65,7 +65,7 @@ public class AdjustableChartGrid extends Composite {
 		String majorParam = screen.schema().majorParameter();
 		this.majorVals = 
 				new ArrayList<String>(GroupUtils.collect(groups, majorParam));
-		this.vt = vt;
+		this.valueType = vt;
 		
 		vp = Utils.mkVerticalPanel();
 		initWidget(vp);
@@ -122,6 +122,8 @@ public class AdjustableChartGrid extends Composite {
 	
 	private List<ChartSample> allSamples = new ArrayList<ChartSample>();
 	
+	final private String SELECTION_ALL = "All";
+	
 	private double findMinValue() {
 		Double min = null;
 		for (ChartSample s: allSamples) {
@@ -156,9 +158,10 @@ public class AdjustableChartGrid extends Composite {
 	//(in its columns) if each sub-chart is vs.minor.
 	private void gridFor(final boolean vsMinor, final String[] columns, final String[] useCompounds, 
 			final List<ChartGrid> intoList, final SimplePanel intoPanel) {
+		
+		String columnParam = vsMinor ? source.medParam : source.minorParam;
 		String[] preColumns = (columns == null ? (vsMinor ? source.mediumVals() : source.minorVals()) : columns);
-		//TODO
-		final String[] useColumns = preColumns; //(vt == ValueType.Folds ? withoutControl(preColumns) : preColumns);		
+		final String[] useColumns = schema.filterValuesForDisplay(valueType, columnParam, preColumns);		
 		
 		if (computedWidth == 0) {
 			int theoretical = useColumns.length * GVizChartGrid.MAX_WIDTH;
@@ -231,7 +234,7 @@ public class AdjustableChartGrid extends Composite {
 			final String subtype = chartSubtypeCombo.getItemText(chartSubtypeCombo
 									.getSelectedIndex());
 			
-			final String[] columns = (subtype.equals("All") ? null : new String[] { subtype } );
+			final String[] columns = (subtype.equals(SELECTION_ALL) ? null : new String[] { subtype } );
 			
 			final List<ChartGrid> grids = new ArrayList<ChartGrid>();
 			expectedGrids = 0;
@@ -268,7 +271,7 @@ public class AdjustableChartGrid extends Composite {
 		final String medParam = schema.mediumParameter();
 		final String minParam = schema.minorParameter();
 		if (lastSubtype != null) {
-			if (lastSubtype.equals("All")) {
+			if (lastSubtype.equals(SELECTION_ALL)) {
 				return lastSubtype;
 			}
 			// Try to reuse the most recent one
@@ -288,9 +291,9 @@ public class AdjustableChartGrid extends Composite {
 		for (Unit u: groups.get(0).getUnits()) {
 			logger.info("Unit: " + u);
 			if (isMed) {
-				final String[] useMeds = source.mediumVals();				
-						//TODO
-						//(vt == ValueType.Folds ? withoutControl(source.doses()) : source.doses());				
+				final String[] useMeds = schema.filterValuesForDisplay(valueType, 
+						source.medParam, source.mediumVals());
+				
 				String med = u.get(medParam);				
 				if (Arrays.binarySearch(useMeds, med) != -1) {
 					return med;
@@ -313,7 +316,7 @@ public class AdjustableChartGrid extends Composite {
 			prefItem = findPreferredItem(true);
 			logger.info("Preferred medium: " + prefItem);			
 			for (String mv: source.mediumVals()) {
-				if (!schema.isControlParameter(mv)) {
+				if (!schema.isControlValue(mv)) {
 					//TODO for NI values in OTG
 					chartSubtypeCombo.addItem(mv);
 					chartSubtypes.add(mv);
@@ -330,8 +333,8 @@ public class AdjustableChartGrid extends Composite {
 		}
 		
 		if (chartSubtypeCombo.getItemCount() > 0) {
-			chartSubtypeCombo.addItem("All");		
-			chartSubtypes.add("All");
+			chartSubtypeCombo.addItem(SELECTION_ALL);		
+			chartSubtypes.add(SELECTION_ALL);
 			setSubtype(prefItem);			
 			redraw(true);
 		}

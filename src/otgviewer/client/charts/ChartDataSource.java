@@ -106,12 +106,12 @@ abstract class ChartDataSource {
 	
 	void getSamples(String[] compounds, String[] dosesOrTimes, ColorPolicy policy, SampleAcceptor acceptor) {
 		if (compounds == null) {
-			applyPolicy(policy, samples);
-			acceptor.accept(samples);			
+			applyPolicy(policy, chartSamples);
+			acceptor.accept(chartSamples);			
 		} else {
 			//We store these in a set since we may be getting the same samples several times
 			Set<ChartSample> r = new HashSet<ChartSample>();
-			for (ChartSample s: samples) {
+			for (ChartSample s: chartSamples) {
 				if (SharedUtils.indexOf(compounds, s.major) != -1) {
 					if (dosesOrTimes == null || SharedUtils.indexOf(dosesOrTimes, s.medium) != -1 || 
 							SharedUtils.indexOf(dosesOrTimes, s.minor) != -1) {
@@ -124,7 +124,7 @@ abstract class ChartDataSource {
 		}		 
 	}
 	
-	protected List<ChartSample> samples = new ArrayList<ChartSample>();
+	protected List<ChartSample> chartSamples = new ArrayList<ChartSample>();
 
 	protected String[] _minorVals;
 	protected String[] _mediumVals;
@@ -145,7 +145,7 @@ abstract class ChartDataSource {
 	protected void init() {
 		try {
 			List<String> minorVals = new ArrayList<String>();
-			for (ChartDataSource.ChartSample s : samples) {
+			for (ChartDataSource.ChartSample s : chartSamples) {
 				if (!minorVals.contains(s.minor)) {
 					minorVals.add(s.minor);
 				}
@@ -155,9 +155,9 @@ abstract class ChartDataSource {
 			schema.sort(schema.minorParameter(), _minorVals);
 
 			List<String> medVals = new ArrayList<String>();
-			for (ChartDataSource.ChartSample s : samples) {
+			for (ChartDataSource.ChartSample s : chartSamples) {
 				//TODO generalise control-check better
-				if (!schema.isControlParameter(s.medium) && !medVals.contains(s.medium)) {
+				if (!schema.isControlValue(s.medium) && !medVals.contains(s.medium)) {
 					medVals.add(s.medium);
 				}
 			}
@@ -177,7 +177,7 @@ abstract class ChartDataSource {
 					ExpressionValue ev = s.values()[i];					
 					ChartSample cs = new ChartSample(times[i], s.timeDose(), s.compound(), 
 							ev.getValue(), null, s.probe(), ev.getCall());
-					samples.add(cs);
+					chartSamples.add(cs);
 				}
 			}
 			init();
@@ -188,21 +188,21 @@ abstract class ChartDataSource {
 	 * An expression row source with a fixed dataset.
 	 */
 	static class ExpressionRowSource extends ChartDataSource {
-		protected OTGSample[] barcodes;
+		protected OTGSample[] samples;
 		
-		ExpressionRowSource(DataSchema schema, OTGSample[] barcodes, List<ExpressionRow> rows) {
+		ExpressionRowSource(DataSchema schema, OTGSample[] samples, List<ExpressionRow> rows) {
 			super(schema);
-			this.barcodes = barcodes;
-			logger.info("ER source: " + barcodes.length + " barcodes");
+			this.samples = samples;
+			logger.info("ER source: " + samples.length + " samples");
 			
-			addSamplesFromBarcodes(barcodes, rows);
+			addSamplesFromBarcodes(samples, rows);
 			init();
 		}
 		
 		@Override
 		protected void init() {			
 			List<String> times = new ArrayList<String>();
-			for (OTGSample b: barcodes) {
+			for (OTGSample b: samples) {
 				if (!times.contains(b.get(minorParam))) {
 					times.add(b.get(minorParam));
 				}
@@ -213,7 +213,7 @@ abstract class ChartDataSource {
 				schema.sort(schema.minorParameter(), _minorVals);
 
 				List<String> doses = new ArrayList<String>();
-				for (OTGSample b : barcodes) {
+				for (OTGSample b : samples) {
 					logger.info("Inspect " + b + " for " + medParam);
 					if (!doses.contains(b.get(medParam))) {
 						doses.add(b.get(medParam));						
@@ -226,16 +226,16 @@ abstract class ChartDataSource {
 			}
 		}
 		
-		protected void addSamplesFromBarcodes(OTGSample[] barcodes, List<ExpressionRow> rows) {
-			logger.info("Add samples from " + barcodes.length + " samples and " + rows.size() + " rows");
-			for (int i = 0; i < barcodes.length; ++i) {
-				OTGSample b = barcodes[i];				
+		protected void addSamplesFromBarcodes(OTGSample[] samples, List<ExpressionRow> rows) {
+			logger.info("Add samples from " + samples.length + " samples and " + rows.size() + " rows");
+			for (int i = 0; i < samples.length; ++i) {
+				OTGSample b = samples[i];				
 //				logger.info("Consider " + b.toString());
 				for (ExpressionRow er : rows) {
 					ExpressionValue ev = er.getValue(i);
 					ChartSample cs = new ChartSample(b, schema,
 							ev.getValue(), er.getProbe(), ev.getCall());
-					samples.add(cs);
+					chartSamples.add(cs);
 				}
 			}		
 		}
@@ -266,22 +266,22 @@ abstract class ChartDataSource {
 				final ColorPolicy policy, final SampleAcceptor acceptor) {
 			logger.info("Dynamic source: load for " + majors.length + " majors");
 			
-			final List<OTGSample> useBarcodes = new ArrayList<OTGSample>();
-			for (OTGSample b: barcodes) {
+			final List<OTGSample> useSamples = new ArrayList<OTGSample>();
+			for (OTGSample b: samples) {
 				if (
 						(majors == null || SharedUtils.indexOf(majors, b.get(majorParam)) != -1) &&
 						(medsOrMins == null || SharedUtils.indexOf(medsOrMins, b.get(minorParam)) != -1 || 					
-						SharedUtils.indexOf(medsOrMins, b.get(medParam)) != -1) &&
-						!schema.isControlParameter(b.get(medParam))
+						SharedUtils.indexOf(medsOrMins, b.get(medParam)) != -1) // &&
+						//!schema.isControlValue(b.get(medParam))
 						//TODO generalise the control-check better
 					) {
-					useBarcodes.add(b);
+					useSamples.add(b);
 				}
 			}
 			
-			samples.clear();
+			chartSamples.clear();
 			Group g = new Group(schema, "temporary", 
-					useBarcodes.toArray(new OTGSample[0]));
+					useSamples.toArray(new OTGSample[0]));
 			matrixService.getFullData(g, 
 					new String[] { probe }, true, false, type,  
 					new PendingAsyncCallback<List<ExpressionRow>>(screen) {
@@ -292,7 +292,7 @@ abstract class ChartDataSource {
 
 				@Override
 				public void handleSuccess(final List<ExpressionRow> rows) {
-					addSamplesFromBarcodes(useBarcodes.toArray(new OTGSample[0]), rows);	
+					addSamplesFromBarcodes(useSamples.toArray(new OTGSample[0]), rows);	
 					getSSamples(majors, medsOrMins, policy, acceptor);
 				}					
 			});

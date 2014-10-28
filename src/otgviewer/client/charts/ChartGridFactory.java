@@ -79,7 +79,8 @@ public class ChartGridFactory {
 			final int highlightMed, final ChartAcceptor acceptor, final Screen screen) {		
 		//TODO get from schema or data
 		try {
-		final String[] medVals = schema.sortedValues(schema.mediumParameter());
+		final String[] medVals = schema.sortedValuesForDisplay(null, 
+				schema.mediumParameter());
 		schema.sort(schema.timeParameter(), times);
 		ChartDataSource cds = new ChartDataSource.SeriesSource(
 				schema, series, times);

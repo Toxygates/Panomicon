@@ -1,5 +1,7 @@
 package otgviewer.shared;
 
+import java.util.ArrayList;
+
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.Unit;
@@ -16,6 +18,21 @@ public class TimesDoses extends DataSchema {
 			return allDoses;
 		} else {
 			throw new Exception("Invalid parameter (not sortable): " + parameter);
+		}
+	}
+	
+	@Override
+	public String[] filterValuesForDisplay(ValueType vt, String parameter, String[] from) {
+		if (parameter.equals("dose_level") && (vt == null || vt == ValueType.Folds)) {
+			ArrayList<String> r = new ArrayList<String>();
+			for (String s : from) {
+				if (!isControlValue(s)) {
+					r.add(s);
+				}
+			}
+			return r.toArray(new String[0]);
+		} else {
+			return super.filterValuesForDisplay(vt, parameter, from);
 		}
 	}
 
@@ -76,7 +93,7 @@ public class TimesDoses extends DataSchema {
 	}
 	
 	@Override
-	public boolean isControlParameter(String value) {
+	public boolean isControlValue(String value) {
 		return (value != null) && ("Control".equals(value));
 	}
 	

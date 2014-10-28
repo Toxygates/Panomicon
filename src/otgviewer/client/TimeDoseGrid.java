@@ -74,7 +74,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			mediumValues = new ArrayList<String>();
 			String[] mvs = schema.sortedValues(schema.mediumParameter());
 			for (String v: mvs) {
-				if (!schema.isControlParameter(v)) {
+				if (!schema.isControlValue(v)) {
 					mediumValues.add(v);
 				}
 			}
