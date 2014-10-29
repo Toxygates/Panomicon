@@ -414,6 +414,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 
 	private void displayGroup(String name) {
 		setHeading("editing " + name);
+		
 		List<String> compounds = new ArrayList<String>(
 				groups.get(name).getMajors(chosenSampleClass));
 		

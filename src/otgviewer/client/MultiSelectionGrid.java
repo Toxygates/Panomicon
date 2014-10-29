@@ -2,7 +2,9 @@ package otgviewer.client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,6 +15,7 @@ import javax.annotation.Nullable;
 import otgviewer.client.SelectionTDGrid.UnitListener;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
+import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.Unit;
 
@@ -40,27 +43,39 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 		this.listener = listener;
 	}
 	
-	private SelectionTDGrid findOrCreateSection(Screen scr, SampleClass sc) {
+	private Unit[] expectedSelection = new Unit[]{}; //waiting for units (grid count)
+	
+	private SelectionTDGrid findOrCreateSection(Screen scr, 
+			SampleClass sc, boolean noCompounds) {
 		SelectionTDGrid g = sections.get(sc);
 		logger.info("Find or create for " + sc.toString());
 		if (g == null) {
 			g = new SelectionTDGrid(scr, this);			
 			g.sampleClassChanged(sc);
 			sections.put(sc, g);
-			g.compoundsChanged(chosenCompounds);			
+			if (!noCompounds) {
+				g.compoundsChanged(chosenCompounds);
+			}
 			Label l = new Label(sc.label(scr.schema()));
 			l.setStylePrimaryName("heavyEmphasized");
 			vp.add(l);
-			vp.add(g); 
+			vp.add(g); 			
 		}
 		return g;
 	}
 
 	@Override
 	public void unitsChanged(DataListenerWidget sender, List<Unit> units) {
+		List<Unit> fullSel = fullSelection(true);
+		List<Unit> fullSelAll = fullSelection(false);
 		if (listener != null) {
-			listener.unitsChanged(this, fullSelection(true));
+			listener.unitsChanged(this, fullSel);
 		} 		
+		logger.info("Size: " + fullSelAll.size() + " expected: " + expectedSelection.length);
+		if (fullSelAll.size() == expectedSelection.length && expectedSelection.length > 0) {
+			clearEmptySections();
+			expectedSelection = new Unit[] {};
+		}			
 	}
 	
 	List<Unit> fullSelection(boolean treatedOnly) {
@@ -76,17 +91,17 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 			g.setAll(false); 
 		}
 		if (state == false) {
-			clearEmptyGrids();
+			clearEmptySections();
 		}
 	}
 
 	@Override
 	public void sampleClassChanged(SampleClass sc) {		
-		SelectionTDGrid g = findOrCreateSection(scr, sc);
+		SelectionTDGrid g = findOrCreateSection(scr, sc, false);
 		if (g != currentGrid) {
 			logger.info("SC change " + sc.toString());
 			currentGrid = g;
-			clearEmptyGrids();
+			clearEmptySections();
 		}
 	}
 
@@ -98,27 +113,39 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 	}	
 	
 	List<String> compoundsFor(SampleClass sc) {
-		SelectionTDGrid g = findOrCreateSection(scr, sc);
+		SelectionTDGrid g = findOrCreateSection(scr, sc, false);
 		return g.chosenCompounds;
 	}
 	
 	void setSelection(Unit[] selection) {
 		logger.info("Set selection: " + selection.length + " units");
+		final DataSchema schema = scr.schema();
+
 		for (SelectionTDGrid g: sections.values()) {
 			g.setAll(false);
 		}
-		Set<String> compounds = Unit.collect(Arrays.asList(selection), 
-				scr.schema().majorParameter());
-		for (Unit u: selection) {						
-			SampleClass sc = u.asMacroClass(scr.schema());
-			SelectionTDGrid g = findOrCreateSection(scr, sc);
-			g.compoundsChanged(new java.util.ArrayList<String>(compounds));
-			g.setSelected(u, true);			
+		expectedSelection = selection;
+		
+		
+		final String majorParam = scr.schema().majorParameter(); 
+		Map<SampleClass, Set<String>> lcompounds = new HashMap<SampleClass, Set<String>>();
+		for (Unit u: selection) {
+			SampleClass sc = u.asMacroClass(schema);
+			if (!lcompounds.containsKey(sc)) {
+				lcompounds.put(sc, new HashSet<String>());
+			}
+			lcompounds.get(sc).add(u.get(majorParam));
 		}
-		clearEmptyGrids();
+		
+		for (SampleClass sc: lcompounds.keySet()) {
+			List<String> compounds = new ArrayList<String>(lcompounds.get(sc));
+			Collections.sort(compounds);
+			SelectionTDGrid g = findOrCreateSection(scr, sc, true);
+			g.compoundsChanged(compounds, selection);
+		}		
 	}
 	
-	private void clearEmptyGrids() {
+	private void clearEmptySections() {
 		int count = vp.getWidgetCount();
 		for (int i = 1; i < count; i += 2) {
 			SelectionTDGrid tg = (SelectionTDGrid) vp.getWidget(i);
@@ -126,7 +153,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 				vp.remove(i);
 				vp.remove(i - 1);
 				sections.remove(tg.chosenSampleClass);
-				clearEmptyGrids();
+				clearEmptySections();
 				// TODO not the best flow logic
 				return;
 			}

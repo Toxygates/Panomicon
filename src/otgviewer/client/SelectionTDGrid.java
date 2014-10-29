@@ -126,6 +126,11 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		oldSelection = getSelectedCombinations();		
 		super.compoundsChanged(compounds);		
 	}
+	
+	public void compoundsChanged(List<String> compounds, Unit[] initSel) {
+		oldSelection = initSel;
+		super.compoundsChanged(compounds);
+	}
 
 	public void setAll(boolean val) {
 		for (UnitUI ui : unitUis.values()) {
