@@ -30,6 +30,9 @@ class Platforms(val data: Map[String, Set[String]]) {
     filterProbes(probes, pfs)    
   }
   
+  def platformForProbe(p: String): Option[String] = 
+    data.find(_._2.contains(p)).map(_._1)
+  
   /**
    * Filter probes for one platform.
    */

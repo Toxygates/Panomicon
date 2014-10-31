@@ -113,7 +113,7 @@ public class ChartGridFactory {
 	}
 	
 	public void makeRowCharts(final Screen screen, final OTGSample[] barcodes, 
-			final ValueType vt, final String probe,
+			final ValueType vt, final String[] probes,
 			final AChartAcceptor acceptor) {
 		if (barcodes == null) {
 			//TODO
@@ -128,19 +128,19 @@ public class ChartGridFactory {
 
 				@Override
 				public void onSuccess(final OTGSample[] barcodes) {
-					finishRowCharts(screen, probe, vt, groups, barcodes, acceptor);
+					finishRowCharts(screen, probes, vt, groups, barcodes, acceptor);
 					acceptor.acceptBarcodes(barcodes);
 				}			
 			});
 		} else {
-			finishRowCharts(screen, probe, vt, groups, barcodes, acceptor);
+			finishRowCharts(screen, probes, vt, groups, barcodes, acceptor);
 		}
 	}
 	
-	private void finishRowCharts(Screen screen, String probe, ValueType vt, List<Group> groups, 
+	private void finishRowCharts(Screen screen, String[] probes, ValueType vt, List<Group> groups, 
 			OTGSample[] barcodes, AChartAcceptor acceptor) {
 		ChartDataSource cds = new ChartDataSource.DynamicExpressionRowSource(schema, 
-				probe, vt, barcodes, screen);
+				probes, vt, barcodes, screen);
 		AdjustableChartGrid acg = new AdjustableChartGrid(screen, cds, groups, vt);
 		acceptor.acceptCharts(acg);
 	}

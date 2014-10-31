@@ -681,11 +681,13 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		public void onClick(final String value) {			
 			highlightedRow = SharedUtils.indexOf(displayedProbes, value);
 			grid.redraw();
+			ExpressionRow dispRow = grid.getVisibleItem(highlightedRow);
+			final String[] probes = dispRow.getAtomicProbes();
 			
 			final ChartGridFactory cgf = new ChartGridFactory(schema, chosenColumns);
 			Utils.ensureVisualisationAndThen(new Runnable() {
 				public void run() {
-					cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, value, 
+					cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, probes, 
 							new AChartAcceptor() {
 						public void acceptCharts(final AdjustableChartGrid cg) {
 							Utils.displayInPopup("Charts", cg, true, DialogPosition.Side);							

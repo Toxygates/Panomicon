@@ -250,14 +250,14 @@ abstract class ChartDataSource {
 		private static final MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
 				.create(MatrixService.class);
 		
-		private String probe;
+		private String[] probes;
 		private ValueType type;
 		private Screen screen;
 		
-		DynamicExpressionRowSource(DataSchema schema, String probe, 
+		DynamicExpressionRowSource(DataSchema schema, String[] probes, 
 				ValueType vt, OTGSample[] barcodes, Screen screen) {
 			super(schema, barcodes, new ArrayList<ExpressionRow>());			
-			this.probe = probe;
+			this.probes = probes;
 			this.type = vt;		
 			this.screen = screen;
 		}
@@ -283,7 +283,7 @@ abstract class ChartDataSource {
 			Group g = new Group(schema, "temporary", 
 					useSamples.toArray(new OTGSample[0]));
 			matrixService.getFullData(g, 
-					new String[] { probe }, true, false, type,  
+					probes, true, false, type,  
 					new PendingAsyncCallback<List<ExpressionRow>>(screen) {
 				@Override
 				public void handleFailure(Throwable caught) {

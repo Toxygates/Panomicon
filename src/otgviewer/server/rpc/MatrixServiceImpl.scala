@@ -188,6 +188,16 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     otgSamples.platforms(samples)
   }
     
+  private def platformsForProbes(ps: Iterable[String]): Iterable[String] = 
+    ps.flatMap(platforms.platformForProbe(_))
+  
+  private def applyMapper(groups: JList[Group], mm: ManagedMatrix): ManagedMatrix = {
+     mapper(groups) match {
+      case Some(m) => m.convert(mm)        
+      case None => mm
+     }        
+  }
+  
   def loadDataset(groups: JList[Group], probes: Array[String],
                   typ: ValueType, syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
     val pfs = platformsForGroups(groups.toList)   
@@ -195,14 +205,9 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     val mm = makeMatrix(groups.toVector, allProbes, typ)
     setSessionData(mm)        
     selectProbes(probes)
-    mapper(groups) match {
-      case Some(m) =>
-        val mapped = m.convert(mm)
-        setSessionData(mapped)
-        mapped.info
-      case None =>
-        mm.info
-    }
+    val mm2 = applyMapper(groups, mm)
+    setSessionData(mm2)
+    mm2.info
   }
 
   @throws(classOf[NoDataLoadedException])
@@ -273,6 +278,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
       
       val ps = atomics.flatMap(pm.get(_))
       new ExpressionRow(ps.map(_.identifier).mkString("/ "),
+          atomics,
           ps.map(_.name).mkString("/ "),
           ps.flatMap(_.genes.map(_.identifier)),
           ps.flatMap(_.symbols.map(_.symbol)),
@@ -288,10 +294,13 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     val realProbes = platforms.filterProbes(probes, pfs).toArray
     val mm = makeMatrix(List(g), realProbes.toArray, typ, sparseRead, true)
     
+    val mapper = mapperForProbes(realProbes)    
+    val mm2 = mapper.map(mx => mx.convert(mm)).getOrElse(mm)
+    
     //When we have obtained the data, it might no longer be sorted in the order that the user
     //requested. Thus we use selectNamedColumns here to force the sort order they wanted.
     
-    val raw = mm.rawData.selectNamedColumns(g.getSamples().map(_.id())).asRows    
+    val raw = mm2.rawData.selectNamedColumns(g.getSamples().map(_.id())).asRows    
     val rows = if (withSymbols) {
       insertAnnotations(raw)
     } else {
@@ -355,15 +364,28 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     Feedback.send(name, email, feedback, state, feedbackReceivers)
   }
   
+  private lazy val standardMapper = {
+      val pm = new OrthologProbeMapper(orthologs.head)
+      val vm = MedianValueMapper
+      new MatrixMapper(pm, vm)   
+  }
+  
   protected def mapper(groups: Iterable[Group]): Option[MatrixMapper] = {
     val os = groups.flatMap(_.collect("organism")).toSet
     println("Detected species in groups: " + os)
     if (os.size > 1) {
-      val pm = new OrthologProbeMapper(orthologs.head)
-      val vm = MedianValueMapper
-      Some(new MatrixMapper(pm, vm))      
+       Some(standardMapper)
     } else {
       None
     }
+  }
+  
+  protected def mapperForProbes(ps: Iterable[String]): Option[MatrixMapper] = {
+    val pfs = platformsForProbes(ps).toSet
+    if (pfs.size > 1) {
+      Some(standardMapper)      
+    } else {
+      None
+    }    
   }
 }
