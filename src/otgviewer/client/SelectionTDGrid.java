@@ -111,7 +111,17 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	}
 	
 	static interface UnitListener {
+		/**
+		 * Indicates that the selection has changed.
+		 * @param sender
+		 * @param units
+		 */
 		void unitsChanged(DataListenerWidget sender, List<Unit> units);
+		
+		/**
+		 * Indicates that the available units have changed.
+		 */
+		void availableUnitsChanged(DataListenerWidget sender, List<Unit> units);
 	}
 	
 	private UnitListener listener;
@@ -249,6 +259,20 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		return r;
 	}
 	
+	public List<Unit> getAvailableUnits(boolean treatedOnly) {
+		List<Unit> r = new ArrayList<Unit>();
+		for (Unit k : unitUis.keySet()) {
+			r.add(k);
+			if (!treatedOnly) {
+				Unit control = controlUnits.get(k);
+				if (control != null) {
+					r.add(control);
+				}
+			}
+		}
+		return r;
+	}
+	
 	@Override
 	protected Widget guiForUnit(final Unit unit) {		
 		UnitUI ui = new UnitUI(unit);	
@@ -378,5 +402,9 @@ public class SelectionTDGrid extends TimeDoseGrid {
 			setSelection(oldSelection);
 			oldSelection = null;
 		}	
+		
+		if (listener != null) {
+			listener.availableUnitsChanged(this, new ArrayList<Unit>(unitUis.keySet()));
+		}
 	}
 }

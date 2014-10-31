@@ -165,4 +165,8 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
 	public T get(int index) {
 		return provider.getList().get(index);
 	}
+	
+	public List<T> getItems() {
+		return provider.getList();
+	}
 }

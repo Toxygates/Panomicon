@@ -71,6 +71,8 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	private Screen screen;
 	private final String majorParameter;
 
+	private final static int MAX_AUTO_SEL = 20;
+	
 	public CompoundSelector(final Screen screen, String heading) {
 		this.screen = screen;
 		dp = new DockLayoutPanel(Unit.PX);
@@ -90,7 +92,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 						: new HashMap<String, List<String>>());
 		
 		compoundEditor = new StackedListEditor(this, "compounds", heading, 
-				predefLists) {
+				MAX_AUTO_SEL, predefLists) {
 			@Override
 			protected void selectionChanged(Set<String> selected) {
 				List<String> r = new ArrayList<String>();

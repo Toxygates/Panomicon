@@ -78,10 +78,25 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 		}			
 	}
 	
+	public void availableUnitsChanged(DataListenerWidget sender, List<Unit> units) {
+		List<Unit> fullAvailability = allAvailable(false);
+		if (listener != null) {
+			listener.availableUnitsChanged(this, fullAvailability);
+		} 		
+	}
+	
 	List<Unit> fullSelection(boolean treatedOnly) {
 		List<Unit> r = new ArrayList<Unit>();
 		for (SelectionTDGrid g: sections.values()) {
 			r.addAll(g.getSelectedUnits(treatedOnly));
+		}
+		return r;
+	}
+	
+	List<Unit> allAvailable(boolean treatedOnly) {
+		List<Unit> r = new ArrayList<Unit>();
+		for (SelectionTDGrid g: sections.values()) {
+			r.addAll(g.getAvailableUnits(treatedOnly));
 		}
 		return r;
 	}

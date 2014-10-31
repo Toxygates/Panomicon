@@ -193,7 +193,8 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		
 		private static Logger logger = Utils.getLogger("sle.bc");
 		
-		public BrowseCheck(StackedListEditor editor, String itemTitle) {
+		public BrowseCheck(StackedListEditor editor, String itemTitle, 
+				final int maxAutoSel) {
 			super(editor);
 			initWidget(dlp);
 			
@@ -219,6 +220,21 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 			hp.add(sortButton);
 			sortButton.setEnabled(false);
 			
+			hp.add(new Button("Select all", new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					List<String> items = selTable.getItems();
+					List<String> sel = items;
+					if (items.size() > maxAutoSel) {
+						Window.alert("Too many items in list. Only the first " + maxAutoSel + " will be selected.");
+						sel = items.subList(0, maxAutoSel);
+					}
+					
+					setSelection(sel);
+					stackedEditor.setSelection(sel, bc);
+				}				
+			}));
+			
 			hp.add(new Button("Unselect all", new ClickHandler() {
 				public void onClick(ClickEvent ce) {
 					List<String> empty = new ArrayList<String>();
@@ -228,7 +244,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 			}));
 			scrollPanel = new ScrollPanel(selTable);
 			dlp.add(scrollPanel);
-		}
+		}	
 		
 		public String getTitle() {
 			return "Browse";
@@ -271,7 +287,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	 * @param predefinedLists Predefined lists that the user may choose from 
 	 */
 	public StackedListEditor(final DataListenerWidget parent, String listType,
-			String itemTitle, 
+			String itemTitle,  int maxAutoSel,
 			Map<String, List<String>> predefinedLists) {
 		dlp = new DockLayoutPanel(Unit.PX);
 		initWidget(dlp);
@@ -304,7 +320,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		slp = new StackLayoutPanel(Unit.PX);
 		dlp.add(slp);
 
-		createSelectionMethods(methods, itemTitle);
+		createSelectionMethods(methods, itemTitle, maxAutoSel);
 		for (SelectionMethod m: methods) {
 			slp.add(m, m.getTitle(), 30);
 		}
@@ -315,9 +331,10 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	 * @param methods list to add methods to.
 	 * @return
 	 */
-	protected void createSelectionMethods(List<SelectionMethod> methods, String itemTitle) {		
+	protected void createSelectionMethods(List<SelectionMethod> methods, 
+			String itemTitle, int maxAutoSel) {		
 		methods.add(new FreeEdit(this));
-		BrowseCheck bc = new BrowseCheck(this, itemTitle);
+		BrowseCheck bc = new BrowseCheck(this, itemTitle, maxAutoSel);
 		methods.add(bc);
 		this.selTable = bc.selTable; 
 	}

@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.GroupMaker;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.StorageParser;
 import otgviewer.shared.Group;
@@ -54,13 +55,15 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private final DataSchema schema;
 	private Label titleLabel;
 	private TextBox txtbxGroup;
-	private Button saveButton;
+	private Button saveButton, autoGroupsButton;
 	SelectionTable<Group> existingGroupsTable;
 	private CompoundSelector compoundSel;
 	private HorizontalPanel toolPanel;
 	private SplitLayoutPanel sp;
 	private VerticalPanel vp;
 	private boolean nameIsAutoGen = false;
+	
+	private List<Unit> availableUnits;
 
 	protected final Logger logger = Utils.getLogger("group");
 	
@@ -106,6 +109,15 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 			}
 		});
 		toolPanel.add(saveButton);
+		
+		autoGroupsButton = new Button("Automatic groups",
+				new ClickHandler() {
+			public void onClick(ClickEvent ce) {
+				makeAutoGroups();
+			}			
+		});
+		toolPanel.add(autoGroupsButton);
+		
 		setEditing(false);
 						
 		existingGroupsTable = new SelectionTable<Group>("Active", false) {
@@ -196,6 +208,16 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 	
+	@Override
+	public void availableUnitsChanged(DataListenerWidget sender, List<Unit> units) {
+		availableUnits = units;
+//		if (availableUnits.size() > 0) {
+//			autoGroupsButton.setEnabled(true);
+//		} else {
+//			autoGroupsButton.setEnabled(false);
+//		}
+	}
+	
 	private void deleteGroup(String name, boolean createNew) {
 		groups.remove(name);									
 		reflectGroupChanges(); //stores columns
@@ -262,7 +284,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 	
-	private String suggestGroupName(List<Unit> units) {
+	public String suggestGroupName(List<Unit> units) {
 		String g = "";
 		if (!units.isEmpty()) {
 			Unit b = units.get(0);
@@ -350,6 +372,14 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		return groups;
 	}
 	
+	private void makeAutoGroups() {
+		List<Group> gs = GroupMaker.autoGroups(this, schema, availableUnits);
+		for (Group g: gs) {
+			addGroup(g);
+		}
+		reflectGroupChanges();
+	}
+	
 	/**
 	 * Get here if save button is clicked
 	 * @param name
@@ -399,11 +429,12 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		Group pendingGroup = groups.get(pendingGroupName);
 		existingGroupsTable.removeItem(pendingGroup); 
 		pendingGroup = new Group(schema, pendingGroupName, units.toArray(new Unit[0]));
-		addGroup(pendingGroupName, pendingGroup);
+		addGroup(pendingGroup);
 		reflectGroupChanges();
 	}
 	
-	private void addGroup(String name, Group group) {
+	private void addGroup(Group group) {
+		String name = group.getName();
 		groups.put(name, group);
 		logger.info("Add group " + name + " with " + group.getSamples().length + " samples " +
 				"and " + group.getUnits().length + " units ");
