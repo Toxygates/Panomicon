@@ -226,6 +226,15 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 	
+	void confirmDeleteAllGroups() {
+		int n = existingGroupsTable.getItems().size();
+		if (Window.confirm("Delete " + n + " groups?")) {
+			groups.clear();
+			reflectGroupChanges();
+			newGroup();			
+		}
+	}
+	
 	/**
 	 * Toggle edit mode
 	 * @param editing

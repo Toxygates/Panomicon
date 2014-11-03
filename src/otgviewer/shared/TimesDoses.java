@@ -47,7 +47,7 @@ public class TimesDoses extends DataSchema {
 	
 	@Override
 	public boolean isMajorParamSharedControl(String value) {
-		return value.startsWith("shared_control");
+		return value.toLowerCase().startsWith("shared_control");
 	}
 	
 	@Override

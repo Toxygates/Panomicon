@@ -96,7 +96,15 @@ public class ColumnScreen extends Screen {
 	@Override
 	public Widget bottomContent() {
 		HorizontalPanel hp = Utils.mkWidePanel();
-		Button b = new Button("Next: Select probes", new ClickHandler() {			
+		
+		Button b = new Button("Delete all groups", new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				gi.confirmDeleteAllGroups();				
+			}			
+		});		
+		
+		Button b2 = new Button("Next: Select probes", new ClickHandler() {			
 			public void onClick(ClickEvent event) {
 				if (gi.chosenColumns().size() == 0) {
 					Window.alert("Please define and activate at least one group.");
@@ -105,7 +113,8 @@ public class ColumnScreen extends Screen {
 				}
 			}
 		});
-		hp.add(b);		
+		
+		hp.add(Utils.mkHorizontalPanel(true, b, b2));
 		return hp;
 	}
 	

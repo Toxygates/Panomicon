@@ -352,28 +352,9 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		statusPanel.clear();
 		statusPanel.add(viewLabel);
 		Utils.floatLeft(viewLabel);
-		if (showGroups) {
+		if (showGroups) {			
 			Collections.sort(chosenColumns);
-			
-			for (Group g: chosenColumns) {				
-				FlowPanel fp = new FlowPanel(); 
-				fp.setStyleName("statusBorder");
-				String tip = g.getSamples()[0].sampleClass().label(schema()) + ":\n" +
-						g.getTriples(schema(), -1, ", ");
-				Label l = Utils.mkEmphLabel(g.getName() + ":");
-				l.setWordWrap(false);
-				l.getElement().getStyle().setMargin(2, Unit.PX);
-				l.setStyleName(g.getStyleName());
-				Utils.floatLeft(fp, l);
-				l.setTitle(tip);
-				l = new Label(g.getTriples(schema(), 2, ", "));
-				l.getElement().getStyle().setMargin(2, Unit.PX);
-				l.setStyleName(g.getStyleName());
-				Utils.floatLeft(fp, l);
-				l.setTitle(tip);
-				l.setWordWrap(false);
-				Utils.floatLeft(statusPanel, fp);				
-			}
+			Utils.floatLeft(statusPanel, new GroupLabels(this, schema(), chosenColumns));					
 		}		
 	}
 	
