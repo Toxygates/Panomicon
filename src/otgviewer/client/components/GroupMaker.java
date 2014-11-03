@@ -8,6 +8,7 @@ import java.util.Map;
 import otgviewer.client.GroupInspector;
 import otgviewer.shared.Group;
 import t.common.shared.DataSchema;
+import t.common.shared.Pair;
 import t.common.shared.Unit;
 
 public class GroupMaker {
@@ -21,10 +22,10 @@ public class GroupMaker {
 	 * @return
 	 */
 	public static List<Group> autoGroups(GroupInspector gi, 
-			DataSchema schema, List<Unit> units) {
+			DataSchema schema, List<Pair<Unit, Unit>> units) {
 		List<Group> r = new ArrayList<Group>();
-		Map<String, List<Unit>> byMedMin = new HashMap<String, List<Unit>>();
-		Map<String, Unit> controls = new HashMap<String, Unit>();
+		Map<String, List<Pair<Unit, Unit>>> byMedMin = 
+				new HashMap<String, List<Pair<Unit, Unit>>>();
 		
 		if (units.size() == 0) {
 			return r;
@@ -37,17 +38,14 @@ public class GroupMaker {
 		int maxLen = 0;
 		String maxKey = "";
 		
-		for (Unit u: units) {
+		for (Pair<Unit, Unit> p: units) {
+			Unit u = p.first();			
 			String medMin = u.get(medParam) + u.get(minParam);
-			if (schema.isControlValue(u.get(medParam))) {
-				String majMin = u.get(majParam) + u.get(minParam);
-				controls.put(majMin, u);
-				continue;
-			}
+			
 			if (!byMedMin.containsKey(medMin)) {
-				byMedMin.put(medMin, new ArrayList<Unit>());				
+				byMedMin.put(medMin, new ArrayList<Pair<Unit, Unit>>());				
 			}
-			byMedMin.get(medMin).add(u);
+			byMedMin.get(medMin).add(p);
 			
 			int len = byMedMin.get(medMin).size();
 			if (len > maxLen) {
@@ -56,11 +54,10 @@ public class GroupMaker {
 			}
 		}
 		
-		for (Unit u: byMedMin.get(maxKey)) {
-			List<Unit> us = new ArrayList<Unit>();
-			us.add(u);
-			String majMin = u.get(majParam) + u.get(minParam);
-			Unit c = controls.get(majMin);
+		for (Pair<Unit, Unit> p: byMedMin.get(maxKey)) {
+			List<Unit> us = new ArrayList<Unit>();			
+			us.add(p.first());			
+			Unit c = p.second();
 			if (c != null) {
 				us.add(c);
 			}

@@ -1,7 +1,6 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,6 +15,7 @@ import otgviewer.client.SelectionTDGrid.UnitListener;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import t.common.shared.DataSchema;
+import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.Unit;
 
@@ -78,8 +78,8 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 		}			
 	}
 	
-	public void availableUnitsChanged(DataListenerWidget sender, List<Unit> units) {
-		List<Unit> fullAvailability = allAvailable(false);
+	public void availableUnitsChanged(DataListenerWidget sender, List<Pair<Unit, Unit>> units) {
+		List<Pair<Unit, Unit>> fullAvailability = allAvailable();
 		if (listener != null) {
 			listener.availableUnitsChanged(this, fullAvailability);
 		} 		
@@ -93,10 +93,10 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 		return r;
 	}
 	
-	List<Unit> allAvailable(boolean treatedOnly) {
-		List<Unit> r = new ArrayList<Unit>();
+	List<Pair<Unit, Unit>> allAvailable() {
+		List<Pair<Unit, Unit>> r = new ArrayList<Pair<Unit, Unit>>();
 		for (SelectionTDGrid g: sections.values()) {
-			r.addAll(g.getAvailableUnits(treatedOnly));
+			r.addAll(g.getAvailableUnits());
 		}
 		return r;
 	}
@@ -149,7 +149,10 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 			if (!lcompounds.containsKey(sc)) {
 				lcompounds.put(sc, new HashSet<String>());
 			}
-			lcompounds.get(sc).add(u.get(majorParam));
+			String majorVal = u.get(majorParam);
+			if (!schema.isMajorParamSharedControl(majorVal)) {
+				lcompounds.get(sc).add(majorVal);
+			}
 		}
 		
 		for (SampleClass sc: lcompounds.keySet()) {

@@ -120,8 +120,9 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		
 		/**
 		 * Indicates that the available units have changed.
+		 * Passed as pairs of treated and control units.
 		 */
-		void availableUnitsChanged(DataListenerWidget sender, List<Unit> units);
+		void availableUnitsChanged(DataListenerWidget sender, List<Pair<Unit, Unit>> units);
 	}
 	
 	private UnitListener listener;
@@ -259,15 +260,13 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		return r;
 	}
 	
-	public List<Unit> getAvailableUnits(boolean treatedOnly) {
-		List<Unit> r = new ArrayList<Unit>();
-		for (Unit k : unitUis.keySet()) {
-			r.add(k);
-			if (!treatedOnly) {
-				Unit control = controlUnits.get(k);
-				if (control != null) {
-					r.add(control);
-				}
+	public List<Pair<Unit, Unit>> getAvailableUnits() {
+		List<Pair<Unit, Unit>> r = new ArrayList<Pair<Unit, Unit>>();
+		for (Unit k : controlUnits.keySet()) {
+			Unit control = controlUnits.get(k);
+			if (control != null) {
+				Pair<Unit, Unit> p = new Pair<Unit, Unit>(k, control);
+				r.add(p);
 			}
 		}
 		return r;
@@ -403,8 +402,8 @@ public class SelectionTDGrid extends TimeDoseGrid {
 			oldSelection = null;
 		}	
 		
-		if (listener != null) {
-			listener.availableUnitsChanged(this, new ArrayList<Unit>(unitUis.keySet()));
+		if (listener != null) {			
+			listener.availableUnitsChanged(this, Arrays.asList(availableUnits));
 		}
 	}
 }

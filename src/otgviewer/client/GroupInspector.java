@@ -1,7 +1,6 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,6 +18,7 @@ import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import t.common.client.components.SelectionTable;
 import t.common.shared.DataSchema;
+import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.Unit;
@@ -63,7 +63,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private VerticalPanel vp;
 	private boolean nameIsAutoGen = false;
 	
-	private List<Unit> availableUnits;
+	private List<Pair<Unit, Unit>> availableUnits;
 
 	protected final Logger logger = Utils.getLogger("group");
 	
@@ -209,7 +209,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	}
 	
 	@Override
-	public void availableUnitsChanged(DataListenerWidget sender, List<Unit> units) {
+	public void availableUnitsChanged(DataListenerWidget sender, List<Pair<Unit, Unit>> units) {
 		availableUnits = units;
 //		if (availableUnits.size() > 0) {
 //			autoGroupsButton.setEnabled(true);
