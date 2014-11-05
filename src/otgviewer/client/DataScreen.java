@@ -17,6 +17,7 @@ import t.viewer.shared.ItemList;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.ResizeLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -51,9 +52,12 @@ public class DataScreen extends Screen {
 	}
 
 	public Widget content() {		
-		addListener(et);
-		setupMenuItems();	
-		return et;		
+		addListener(et);		
+		setupMenuItems();
+		ResizeLayoutPanel rlp = new ResizeLayoutPanel();
+		rlp.setWidth("100%");
+		rlp.add(et);
+		return rlp;		
 	}
 	
 	/**

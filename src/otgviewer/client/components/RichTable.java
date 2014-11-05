@@ -72,8 +72,6 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	}
 	
 	protected void setupColumns() {
-		// TODO: explicitly set the width of each column
-
 		int count = grid.getColumnCount();
 		for (int i = 0; i < count; ++i) {
 			grid.removeColumn(0);
@@ -124,12 +122,16 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		 return SafeHtmlUtils.fromSafeConstant("<span title=\"" + tooltip + "\">" + title + "</span>");
 	}
 	
+	private final static String COL_WIDTH = "10em";
+	
 	protected void addColWithTooltip(Column<T, ?> c, String title, String tooltip) {		
 		grid.addColumn(c, getColumnHeader(grid.getColumnCount(), headerHtml(title, tooltip)));
+		grid.setColumnWidth(c, COL_WIDTH);
 	}
 	
 	protected void insertColWithTooltip(Column<T, ?> c, int at, String title, String tooltip) {
 		grid.insertColumn(at, c, getColumnHeader(at, headerHtml(title, tooltip)));
+		grid.setColumnWidth(c, COL_WIDTH);
 	}
 	
 	protected Header<SafeHtml> getColumnHeader(int column, SafeHtml safeHtml) {

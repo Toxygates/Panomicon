@@ -203,7 +203,8 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     val pfs = platformsForGroups(groups.toList)   
     val allProbes = platforms.filterProbes(List(), pfs).toArray 
     val mm = makeMatrix(groups.toVector, allProbes, typ)
-    setSessionData(mm)        
+    setSessionData(mm)    
+    mm.info.setPlatforms(pfs.toArray)
     selectProbes(probes)
     val mm2 = applyMapper(groups, mm)
     setSessionData(mm2)
@@ -247,42 +248,50 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
       session.sort(sortColumn, ascending)
     }
     val mm = session.current
+    val mergeMode = session.info.getPlatforms.size > 1
     
     new ArrayList[ExpressionRow](
-      insertAnnotations(mm.asRows.drop(offset).take(size)))     
+      insertAnnotations(mm.asRows.drop(offset).take(size), mergeMode))     
   }
 
+  //this is probably quite inefficient
+  private def withCount(xs: Seq[String]): Iterable[(String, Int)] =     
+    xs.distinct.map(x => (x, xs.count(_ == x)))      
+  
   /**
    * Dynamically obtain annotations such as probe titles, gene IDs and gene symbols,
    * appending them to the rows just before sending them back to the client.
    * Unsuitable for large amounts of data.
    */
-  private def insertAnnotations(rows: Seq[ExpressionRow]): Seq[ExpressionRow] = {
-    val atomised = Map() ++ rows.map(r => {
-      val p = r.getProbe
-      if (p.contains("/")) {
-        //TODO avoid hardcoding this separator
-        val atomics = p.split("/")
-        p -> atomics
-      } else {
-        p -> Array(p)
-      }
-    })
+  private def insertAnnotations(rows: Seq[ExpressionRow], mergeMode: Boolean): Seq[ExpressionRow] = {
+    val allAtomics = rows.flatMap(_.getAtomicProbes)
 
-    val attribs = probes.withAttributes(atomised.flatMap(_._2.map(Probe(_))))
+    val attribs = probes.withAttributes(allAtomics.map(Probe(_)))
     val pm = Map() ++ attribs.map(a => (a.identifier -> a))
     println(pm.take(5))
     
     rows.map(or => {
-      val atomics = atomised(or.getProbe)
-      
+      val atomics = or.getAtomicProbes() 
       val ps = atomics.flatMap(pm.get(_))
-      new ExpressionRow(ps.map(_.identifier).mkString("/ "),
+      
+      if (mergeMode) {
+    	val expandedGenes = ps.flatMap(p => p.genes.map(p.platform.take(2) + ":" + _.identifier))
+        val expandedSymbols = ps.flatMap(p => p.symbols.map(p.platform.take(2) + ":" + _.symbol))
+      
+        new ExpressionRow(atomics.mkString("/ "),
           atomics,
-          ps.map(_.name).mkString("/ "),
-          ps.flatMap(_.genes.map(_.identifier)),
-          ps.flatMap(_.symbols.map(_.symbol)),
-          or.getValues)            
+          ps.map(p => p.name).mkString("/ "),
+          withCount(expandedGenes).map(x => s"${x._1} (${x._2} probes)").toArray,
+          withCount(expandedSymbols).map(x => s"${x._1} (${x._2} probes)").toArray,    
+          or.getValues)                	
+      } else {      
+        new ExpressionRow(ps.map(_.identifier).mkString("/ "),
+          atomics,
+          ps.map(p => p.name).mkString("/ "),
+          ps.map(_.genes.map(_.identifier).mkString(", ")),
+          ps.map(_.symbols.map(_.symbol).mkString(", ")),             
+          or.getValues)
+      }
     })
   }
   
@@ -293,6 +302,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     
     val realProbes = platforms.filterProbes(probes, pfs).toArray
     val mm = makeMatrix(List(g), realProbes.toArray, typ, sparseRead, true)
+    mm.info.setPlatforms(pfs.toArray)
     
     val mapper = mapperForProbes(realProbes)    
     val mm2 = mapper.map(mx => mx.convert(mm)).getOrElse(mm)
@@ -302,7 +312,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     
     val raw = mm2.rawData.selectNamedColumns(g.getSamples().map(_.id())).asRows    
     val rows = if (withSymbols) {
-      insertAnnotations(raw)
+      insertAnnotations(raw, pfs.size > 1)
     } else {
       raw
     }
@@ -350,7 +360,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     geneIds.flatten.map(_.identifier).toArray
   }
   
-  protected def feedbackReceivers: String = "johan@monomorphic.org,kenji@nibio.go.jp,y-igarashi@nibio.go.jp"
+  protected def feedbackReceivers: String = "jtnystrom@gmail.com,kenji@nibio.go.jp,y-igarashi@nibio.go.jp"
   
   def sendFeedback(name: String, email: String, feedback: String): Unit = {
     val mm = getSessionData()

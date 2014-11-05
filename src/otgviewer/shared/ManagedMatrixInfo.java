@@ -18,6 +18,7 @@ public class ManagedMatrixInfo implements Serializable {
 	private boolean[] upperBoundFiltering = new boolean[0];
 	private Group[] columnGroups = new Group[0];
 	private Double[] columnFilters = new Double[0];
+	private String[] platforms = new String[0];
 	
 	public ManagedMatrixInfo() { }
 		
@@ -113,5 +114,9 @@ public class ManagedMatrixInfo implements Serializable {
 	public void setColumnFilter(int column, @Nullable Double filter) {
 		columnFilters[column] = filter;
 	}
+	
+	public void setPlatforms(String[] platforms) { this.platforms = platforms; }
+	
+	public String[] getPlatforms() { return platforms; }
 
 }

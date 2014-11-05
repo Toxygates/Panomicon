@@ -76,7 +76,7 @@ object ManagedMatrixBuilder {
             initProbes, sortedSamples.map(_.sampleId))
     }
 
-    val annotations = initProbes.map(new RowAnnotation(_)).toVector
+    val annotations = initProbes.map(x => new RowAnnotation(x, List(x))).toVector
     
     val rawUngroupedMat = ungroupedParts.reverse.reduceLeft(_ adjoinRight _).
     	copyWithAnnotations(annotations)

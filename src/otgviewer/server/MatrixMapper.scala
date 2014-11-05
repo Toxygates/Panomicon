@@ -28,9 +28,9 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
         val cols = domainRows.head.size
         val nr = (0 until cols).map(c => {
           val xs = domainRows.map(dr => dr(c))
-          vm.convert(rng, xs)
+          vm.convert(rng, xs.filter(_.getPresent))
         })
-        Some((nr, RowAnnotation(rng)))
+        Some((nr, RowAnnotation(rng, domProbes)))
       } else {
         None
       }
@@ -62,6 +62,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
       r.addColumn(false, from.columnName(i), from.columnHint(i),
         from.isUpperFiltering(i), from.columnGroup(i))
     }
+    r.setPlatforms(from.getPlatforms())
     r.setNumRows(from.numRows())
     r
   }

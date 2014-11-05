@@ -20,6 +20,10 @@ trait ValueMapper {
 
 object MedianValueMapper extends ValueMapper {
   def convert(rangeProbe: String, domainVs: Iterable[ExpressionValue]): ExpressionValue = {
+    if (domainVs.size == 0) {
+      return new ExpressionValue(0.0, 'A', "(absent)")
+    }
+    
     //TODO call handling here
     val sorted = domainVs.toList.sortWith(_.getValue < _.getValue)
     val mid = domainVs.size / 2

@@ -29,10 +29,10 @@ object ExprMatrix {
         emptyAnnotations(data.size))
   
   
-  def emptyAnnotations(rows: Int) = Vector.fill(rows)(new RowAnnotation(null))
+  def emptyAnnotations(rows: Int) = Vector.fill(rows)(new RowAnnotation(null, List()))
 }
 
-case class RowAnnotation(probe: String) //, title: String, geneIds: Array[String], geneSyms: Array[String])
+case class RowAnnotation(probe: String, atomics: Iterable[String])
  
 /**
  * Data is row-major
@@ -81,7 +81,7 @@ class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int,
   
   lazy val asRows: SVector[ExpressionRow] = toRowVectors.toVector.zip(annotations).map(x => {
     val ann = x._2    
-    new ExpressionRow(ann.probe, null, null, null, x._1.toArray)
+    new ExpressionRow(ann.probe, ann.atomics.toArray, null, null, null, x._1.toArray)
   })
 
   override def selectRows(rows: Seq[Int]): ExprMatrix = 

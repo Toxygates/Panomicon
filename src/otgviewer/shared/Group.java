@@ -88,9 +88,9 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 		Set<String> triples = new HashSet<String>();
 		boolean stopped = false; 
 		for (Unit u : _units) {
-//			if (u.getDose().equals("Control")) {
-//				continue;
-//			}
+			if (schema.isControlValue(u.get(schema.mediumParameter()))) {
+				continue;
+			}
 			if (triples.size() < limit || limit == -1) {
 				triples.add(u.tripleString(schema));
 			} else {
