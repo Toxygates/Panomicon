@@ -160,8 +160,11 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
       case e: Exception => throw new DBUnavailableException()
     }
 
+    val pfs = platformsForGroups(requestColumns)
+    val multiPlat = pfs.size > 1
+    
     try {
-      val enhancedCols = tgConfig.applicationClass == ApplicationClass.Adjuvant
+      val enhancedCols = !multiPlat
 
       reader match {
         case ext: KCExtMatrixDB =>
