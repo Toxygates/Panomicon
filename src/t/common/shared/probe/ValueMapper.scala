@@ -1,6 +1,7 @@
 package t.common.shared.probe
 
 import t.common.shared.sample.ExpressionValue
+import t.db.ExprValue
 
 /**
  * A value mapper combines all values for a given probe in the range
@@ -19,6 +20,8 @@ trait ValueMapper {
 }
 
 object MedianValueMapper extends ValueMapper {
+  def format(x: Double) = ExprValue.nf.format(x)
+  
   def convert(rangeProbe: String, domainVs: Iterable[ExpressionValue]): ExpressionValue = {
     if (domainVs.size == 0) {
       return new ExpressionValue(0.0, 'A', "(absent)")
@@ -33,7 +36,8 @@ object MedianValueMapper extends ValueMapper {
       sorted(mid).getValue
     }
     
-    val tooltip = "med(" + sorted.mkString(", ") + ")"
+    
+    val tooltip = "med(" + sorted.map(x => format(x.getValue)).mkString(", ") + ")"
 
     var call = 0d
     for (v <- domainVs) {

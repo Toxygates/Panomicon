@@ -33,7 +33,6 @@ import t.db.DefaultBio
 import t.sparql.Instances
 import t.sparql.Triplestore
 import t.sparql.TriplestoreMetadata
-import t.viewer.server.ApplicationClass
 import t.viewer.server.Configuration
 import t.viewer.server.Conversions.asSpecies
 import t.viewer.server.Conversions.scAsScala
@@ -230,11 +229,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   @throws[TimeoutException]
   def annotations(column: HasSamples[OTGSample], importantOnly: Boolean = false): Array[Annotation] = {	  
 	  val keys = if (importantOnly) {
-	    if (tgConfig.applicationClass == ApplicationClass.Adjuvant) {
-	    	List("Dose", "Dose unit", "Dose level", "Exposure time", "Administration route")
-	    } else {	      
-	    	List("Dose", "Dose unit", "Dose level", "Exposure time")
-	    }
+	    List("Dose", "Dose unit", "Dose level", "Exposure time", "Administration route")	    
 	  } else {
 	    Nil //fetch everything
 	  }

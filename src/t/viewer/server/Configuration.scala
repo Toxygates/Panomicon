@@ -1,7 +1,5 @@
 package t.viewer.server
 
-import ApplicationClass.ApplicationClass
-import ApplicationClass.Toxygates
 import javax.servlet.ServletConfig
 import otg.OTGContext
 import t.TriplestoreConfig
@@ -24,28 +22,18 @@ object Configuration {
       p("dataDir"),
       p("csvDir"),
       p("csvUrlBase"),      
-      parseAClass(p("applicationClass")),
       p("repositoryURL"),
       p("updateURL"),
       p("repositoryUser"),
       p("repositoryPassword"),
       p("instanceName"),
       p("webappHomeDir"))
-  } 
-  
-  def parseAClass(v: String): ApplicationClass = {
-    if (v == null) {
-      Toxygates
-    } else {
-      ApplicationClass.withName(v)
-    }
-  } 
+  }  
 }
 
 class Configuration(val repositoryName: String, 
     val toxygatesHomeDir: String,
     val csvDirectory: String, val csvUrlBase: String,         
-    @Deprecated val applicationClass: ApplicationClass = Toxygates,
     val repositoryUrl: String = null,
     val updateUrl: String = null,
     val repositoryUser: String = null,

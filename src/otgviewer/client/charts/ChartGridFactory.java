@@ -13,7 +13,7 @@ import otgviewer.shared.Group;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.GroupUtils;
 import otgviewer.shared.Series;
-import otgviewer.shared.TimesDoses;
+import otgviewer.shared.OTGSchema;
 import otgviewer.shared.ValueType;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;

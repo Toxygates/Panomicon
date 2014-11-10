@@ -7,7 +7,7 @@ import otgviewer.client.ProbeScreen;
 import otgviewer.client.SampleDetailScreen;
 import otgviewer.client.StartScreen;
 import otgviewer.client.TApplication;
-import otgviewer.shared.TimesDoses;
+import otgviewer.shared.OTGSchema;
 import t.common.shared.DataSchema;
 
 /**
@@ -30,7 +30,7 @@ public class OTGViewer extends TApplication {
 		addScreenSeq(new SampleDetailScreen(this));
 	}
 	
-	final private TimesDoses schema = new TimesDoses();
+	final private OTGSchema schema = new OTGSchema();
 	
 	@Override
 	public DataSchema schema() {

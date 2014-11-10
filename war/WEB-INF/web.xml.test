@@ -40,11 +40,7 @@
 	<context-param>
 		<param-name>csvUrlBase</param-name>
 		<param-value>http://toxygates.nibio.go.jp:8080/toxygates/csv</param-value>
-	</context-param>	
-	<context-param>
-		<param-name>applicationClass</param-name>
-		<param-value>Adjuvant</param-value>
-	</context-param>
+	</context-param>		
   <!-- Servlets -->
 
 	<servlet>

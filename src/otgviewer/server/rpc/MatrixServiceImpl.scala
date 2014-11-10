@@ -34,7 +34,6 @@ import otgviewer.server.ScalaUtils
 import t.DataConfig
 import otg.OTGBConfig
 import t.TriplestoreConfig
-import t.viewer.server.ApplicationClass
 import t.viewer.server.Platforms
 import t.platform.OrthologMapping
 import otgviewer.server.ManagedMatrixBuilder

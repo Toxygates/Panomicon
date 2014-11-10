@@ -23,8 +23,6 @@ import otgviewer.shared.Series
 import t.db.SeriesDB
 import t.db.kyotocabinet.KCSeriesDB
 import otg.OTGSeries
-import scala.annotation.tailrec
-import otgviewer.shared.TimesDoses
 import t.BaseConfig
 import t.common.shared.SampleClass
 import t.DataConfig
@@ -32,6 +30,7 @@ import otg.OTGBConfig
 import t.TriplestoreConfig
 import otgviewer.shared.DBUnavailableException
 import t.global.KCDBRegistry
+import otgviewer.shared.OTGSchema
 
 class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   import Conversions._
@@ -119,7 +118,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
       })
       
       val r = rr.map(p => new MatchResult(p._1, p._3, 
-        TimesDoses.allDoses.indexOf(p._2) - 1))
+        OTGSchema.allDoses.indexOf(p._2) - 1))
 
       for (s <- r.take(10)) {
         println(s)
