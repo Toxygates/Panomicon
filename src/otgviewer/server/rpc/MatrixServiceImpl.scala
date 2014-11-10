@@ -339,10 +339,14 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     }
     
     val colNames = rendered.sortedColumnMap.map(_._1)
-    val rowNames = rendered.sortedRowMap.map(_._1)
+    val rows = rendered.asRows    
+    //TODO shared logic with e.g. insertAnnotations, extract
+    val rowNames = rows.map(_.getAtomicProbes.mkString("/"))
 
     val gis = probes.allGeneIds(null).mapMValues(_.identifier)
-    val geneIds = rowNames.map(rn => gis.getOrElse(Probe(rn), Seq.empty)).map(_.mkString(" "))
+    val atomics = rows.map(_.getAtomicProbes())
+    val geneIds = atomics.map(row => 
+      row.flatMap(at => gis.getOrElse(Probe(at), Seq.empty))).map(_.distinct.mkString(" "))
     CSVHelper.writeCSV(csvDirectory, csvUrlBase, rowNames, colNames,
       geneIds, rendered.data.map(_.map(asScala(_))))
   }
