@@ -90,7 +90,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		for (HideableColumn c: hideableColumns) {
 			if (c.visible()) {
 				Column<T, ?> cc = (Column<T, ?>) c;
-				addExtraColumn(cc, c.name());												
+				addExtraColumn(cc, c.name(), c.width());												
 			}
 		}		
 	}
@@ -122,16 +122,36 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		 return SafeHtmlUtils.fromSafeConstant("<span title=\"" + tooltip + "\">" + title + "</span>");
 	}
 	
-	private final static String COL_WIDTH = "10em";
+	private final static String COL_WIDTH = "12em";
+	private final static int COL_TITLE_MAX_LEN = 14;
 	
-	protected void addColWithTooltip(Column<T, ?> c, String title, String tooltip) {		
+	protected void addColWithTooltip(Column<T, ?> c, String title, String tooltip) {
+		if (title.length() > COL_TITLE_MAX_LEN) {			
+			if (!tooltip.equals(title)) {
+				tooltip = title + " (" + tooltip + ")";
+			}
+			title = title.substring(0, COL_TITLE_MAX_LEN) + "...";
+		}
+		
 		grid.addColumn(c, getColumnHeader(grid.getColumnCount(), headerHtml(title, tooltip)));
 		grid.setColumnWidth(c, COL_WIDTH);
 	}
 	
-	protected void insertColWithTooltip(Column<T, ?> c, int at, String title, String tooltip) {
+	protected void insertColWithTooltip(Column<T, ?> c, int at, String title, 
+			String tooltip) {
+		insertColWithTooltip(c, at, title, tooltip, COL_WIDTH);
+	}
+	
+	protected void insertColWithTooltip(Column<T, ?> c, int at, String title, 
+			String tooltip, String width) {
+		if (title.length() > COL_TITLE_MAX_LEN) {
+			if (!tooltip.equals(title)) {
+				tooltip = title + " (" + tooltip + ")";
+			}
+			title = title.substring(0, COL_TITLE_MAX_LEN) + "...";
+		}
 		grid.insertColumn(at, c, getColumnHeader(at, headerHtml(title, tooltip)));
-		grid.setColumnWidth(c, COL_WIDTH);
+		grid.setColumnWidth(c, width);
 	}
 	
 	protected Header<SafeHtml> getColumnHeader(int column, SafeHtml safeHtml) {
@@ -196,10 +216,10 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	 * @param col
 	 * @param name
 	 */
-	private void addExtraColumn(Column<T, ?> col, String name) {
+	private void addExtraColumn(Column<T, ?> col, String name, String width) {
 		col.setCellStyleNames("extraColumn");
 		extraCols += 1;
-		insertColWithTooltip(col, extraCols - 1, name, name);		
+		insertColWithTooltip(col, extraCols - 1, name, name, width);		
 	}
 	
 	private void removeExtraColumn(Column<T, ?> col) {
@@ -229,7 +249,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	public void setVisible(HideableColumn hc, boolean newState) {
 		hc.setVisibility(newState);	
 		if (newState) {
-			addExtraColumn(((Column<T, ?>) hc), hc.name());					
+			addExtraColumn(((Column<T, ?>) hc), hc.name(), hc.width());					
 		} else {
 			removeExtraColumn((Column<T, ?>) hc);
 		}				
@@ -241,6 +261,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		
 		// TODO consider not exposing this
 		void setVisibility(boolean v);		
+		String width();
 	}
 	
 	/*
@@ -248,7 +269,8 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	 */
 	protected abstract static class DefHideableColumn<T> extends SafeTextColumn<T> implements HideableColumn {
 		private boolean visible;
-		public DefHideableColumn(String name, boolean initState) {
+		private String width;
+		public DefHideableColumn(String name, boolean initState, String width) {
 			super();
 			visible = initState;
 			_name = name;
@@ -258,6 +280,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		public String name() { return _name; }
 		public boolean visible() { return this.visible; }				
 		public void setVisibility(boolean v) { visible = v; }		
+		public String width() { return width; }
 	}
 	
 	protected class RowHighligher<U> implements RowStyles<U> {		

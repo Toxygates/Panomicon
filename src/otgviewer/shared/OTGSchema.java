@@ -113,4 +113,21 @@ public class OTGSchema extends DataSchema {
 	public AType[] associations() {
 		return associations;
 	}
+	
+	/**
+	 * TODO: this is brittle, given that platform names may
+	 * change externally - think about a better way of doing this
+	 * long term
+	 */
+	public String platformSpecies(String platform) {
+		if (platform.startsWith("HG")) {
+			return "Human";
+		} else if (platform.startsWith("Rat")) {
+			return "Rat";
+		} else if (platform.startsWith("Mouse")) {
+			return "Mouse";
+		} else {
+			return super.platformSpecies(platform);			
+		}
+	}
 }

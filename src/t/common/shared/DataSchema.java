@@ -122,4 +122,8 @@ public abstract class DataSchema implements Serializable {
 	public String getMajor(HasClass hc) {
 		return hc.sampleClass().get(majorParameter());
 	}
+	
+	public String platformSpecies(String platform) { 
+		return platform.substring(0, 3) + "..";		
+	}
 }

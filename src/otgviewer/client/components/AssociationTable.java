@@ -99,16 +99,20 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 		private boolean visible;
 		SafeHtmlCell c;
 		String name;
-		public LinkingColumn(SafeHtmlCell c, String name, boolean initState) {
+		String width;
+		public LinkingColumn(SafeHtmlCell c, String name, 
+				boolean initState, String width) {
 			super(c);
 			visible = initState;
 			this.name = name;
+			this.width = width;
 			this.c = c;
 		}
 				
 		public String name() { return name; }
 		public boolean visible() { return this.visible; }
-		public void setVisibility(boolean v) { visible = v; }		
+		public void setVisibility(boolean v) { visible = v; }
+		public String width() { return width; }
 		
 		protected List<String> makeLinks(Collection<Pair<String, String>> values) {
 			List<String> r = new ArrayList<String>();
@@ -143,7 +147,7 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 		AType assoc;		
 		
 		public AssociationColumn(SafeHtmlCell tc, AType association) {
-			super(tc, association.title(), false);
+			super(tc, association.title(), false, "15em");
 			this.assoc = association;			
 		}
 		

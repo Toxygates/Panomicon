@@ -42,6 +42,8 @@ import t.common.shared.probe.OrthologProbeMapper
 import t.common.shared.probe.MedianValueMapper
 import t.db.MatrixDBReader
 import otgviewer.shared.DBUnavailableException
+import t.common.shared.DataSchema
+import otgviewer.shared.OTGSchema
 
 object MatrixServiceImpl {
   
@@ -97,6 +99,8 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   private var csvUrlBase: String = _
   private implicit var context: OTGContext = _
 
+  private val schema: DataSchema = new OTGSchema()
+  
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
     super.init(config) 
@@ -257,9 +261,19 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   }
 
   //this is probably quite inefficient
-  private def withCount(xs: Seq[String]): Iterable[(String, Int)] =     
+  private def withCount[T](xs: Seq[T]): Iterable[(T, Int)] =     
     xs.distinct.map(x => (x, xs.count(_ == x)))      
   
+  private def prbCount(n: Int) = {
+    if (n == 0) {
+      "No probes"
+    } else if (n == 1) {
+      "1 probe"
+    } else {
+      s"$n probes"
+    }
+  }
+    
   /**
    * Dynamically obtain annotations such as probe titles, gene IDs and gene symbols,
    * appending them to the rows just before sending them back to the client.
@@ -276,22 +290,28 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
       val atomics = or.getAtomicProbes() 
       val ps = atomics.flatMap(pm.get(_))
       
-      if (mergeMode) {
-    	val expandedGenes = ps.flatMap(p => p.genes.map(p.platform.take(2) + ":" + _.identifier))
-        val expandedSymbols = ps.flatMap(p => p.symbols.map(p.platform.take(2) + ":" + _.symbol))
+      if (mergeMode) {               
+    	val expandedGenes = ps.flatMap(p => 
+    	  p.genes.map(g => (schema.platformSpecies(p.platform), g.identifier)))
+        val expandedSymbols = ps.flatMap(p => 
+          p.symbols.map(schema.platformSpecies(p.platform) + ":" + _.symbol))
       
-        new ExpressionRow(atomics.mkString("/ "),
+        val r = new ExpressionRow(atomics.mkString("/ "),
           atomics,
           ps.map(p => p.name).mkString("/ "),
-          withCount(expandedGenes).map(x => s"${x._1} (${x._2} probes)").toArray,
-          withCount(expandedSymbols).map(x => s"${x._1} (${x._2} probes)").toArray,    
-          or.getValues)                	
+          expandedGenes.map(_._2).distinct,
+          withCount(expandedSymbols).map(x => s"${x._1} (${prbCount(x._2)})").toArray,    
+          or.getValues)
+    	
+    	val gils = withCount(expandedGenes).map(x => s"${x._1._1 + ":" + x._1._2} (${prbCount(x._2)})").toArray
+    	r.setGeneIdLabels(gils)
+    	r
       } else {      
         new ExpressionRow(ps.map(_.identifier).mkString("/ "),
           atomics,
           ps.map(p => p.name).mkString("/ "),
-          ps.map(_.genes.map(_.identifier).mkString(", ")),
-          ps.map(_.symbols.map(_.symbol).mkString(", ")),             
+          ps.flatMap(_.genes.map(_.identifier)),
+          ps.flatMap(_.symbols.map(_.symbol)),             
           or.getValues)
       }
     })

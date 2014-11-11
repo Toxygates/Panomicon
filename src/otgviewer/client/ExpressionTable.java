@@ -450,19 +450,25 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		List<HideableColumn> r = new ArrayList<HideableColumn>();
 		
 		r.add(new LinkingColumn<ExpressionRow>(shc, "Gene ID", 
-				initVisibility(StandardColumns.GeneID)) {
+				initVisibility(StandardColumns.GeneID), "12em") {
 			@Override
 			protected String formLink(String value) {
 				return AType.formGeneLink(value);
 			}
 			@Override
 			protected Collection<Pair<String, String>> getLinkableValues(ExpressionRow er) {
-				return Pair.duplicate(Arrays.asList(er.getGeneIds()));
+				String[] geneIds = er.getGeneIds(); //basis for the URL
+				String[] labels = er.getGeneIdLabels();
+				List<Pair<String, String>> r = new ArrayList<Pair<String, String>>();
+				for (int i = 0; i < geneIds.length; i++) {
+					r.add(new Pair<String,String>(labels[i], geneIds[i]));
+				}
+				return r;
 			}						
 		});
 		
 		r.add(new DefHideableColumn<ExpressionRow>("Gene Sym", 
-				initVisibility(StandardColumns.GeneSym)) {
+				initVisibility(StandardColumns.GeneSym), "12em") {
 			public String safeGetValue(ExpressionRow er) {					
 				return SharedUtils.mkString(er.getGeneSyms(), ", ");
 			}
@@ -470,14 +476,14 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		});
 		
 		r.add(new DefHideableColumn<ExpressionRow>("Probe title", 
-				initVisibility(StandardColumns.ProbeTitle)) {
+				initVisibility(StandardColumns.ProbeTitle), "18em") {
 			public String safeGetValue(ExpressionRow er) {				
 				return er.getTitle();
 			}
 		});
 		
-		r.add(new LinkingColumn<ExpressionRow>(shc, "Probe", 
-				initVisibility(StandardColumns.Probe)) {
+		r.add(new LinkingColumn<ExpressionRow>(shc, "Probe",
+				initVisibility(StandardColumns.Probe), "12em") {
 
 			@Override
 			protected String formLink(String value) {
