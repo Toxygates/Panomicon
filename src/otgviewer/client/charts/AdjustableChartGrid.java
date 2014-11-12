@@ -18,6 +18,7 @@ import otgviewer.shared.GroupUtils;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.ValueType;
 import t.common.shared.DataSchema;
+import t.common.shared.SampleClass;
 import t.common.shared.Unit;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -41,6 +42,7 @@ public class AdjustableChartGrid extends Composite {
 	
 	private ChartDataSource source;
 	private List<String> majorVals;
+	private List<String> organisms;
 	private List<Group> groups;
 	private VerticalPanel vp;
 	private VerticalPanel ivp;
@@ -59,8 +61,14 @@ public class AdjustableChartGrid extends Composite {
 	public AdjustableChartGrid(Screen screen, ChartDataSource source, List<Group> groups, ValueType vt) {
 		this.source = source;
 		this.groups = groups;
-		this.screen = screen;
+		this.screen = screen;		
 		schema = screen.schema();
+		
+		Set<String> os = new HashSet<String>();
+		for (Group g : groups) {
+			os.addAll(g.collect("organism"));
+		}
+		organisms = new ArrayList<String>(os);
 		
 		String majorParam = screen.schema().majorParameter();
 		this.majorVals = 
@@ -173,7 +181,7 @@ public class AdjustableChartGrid extends Composite {
 			setWidth(computedWidth + "px");
 		}
 		
-		source.getSamples(useCompounds, useColumns, makeGroupPolicy(),
+		source.getSamples(useCompounds, useColumns, null, makeGroupPolicy(),
 				new ChartDataSource.SampleAcceptor() {
 					@Override
 					public void accept(List<ChartSample> samples) {
@@ -182,7 +190,8 @@ public class AdjustableChartGrid extends Composite {
 								vsMinor ? source.minorVals() : source.mediumVals(), vsMinor);
 												
 						ChartGrid cg = new GVizChartGrid(screen, ct,
-								useCompounds == null ? majorVals : Arrays.asList(useCompounds), true,
+								useCompounds == null ? majorVals : Arrays.asList(useCompounds),
+								organisms, true,
 								useColumns, !vsMinor, TOTAL_WIDTH);
 						
 						intoList.add(cg);

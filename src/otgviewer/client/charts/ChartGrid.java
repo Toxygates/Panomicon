@@ -19,49 +19,67 @@ import com.google.gwt.visualization.client.DataTable;
 
 /**
  * A grid to display time series charts for a number of probes and doses.
- * @author johan
- *
  */
 abstract public class ChartGrid extends Composite {
 	
 	private final SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT.create(SparqlService.class);
 	
 	Grid g;
-	
-	boolean rowsAreMajors, columnsAreMins;
+		
 	List<String> rowFilters;
+	List<String> organisms;
 	String[] minsOrMeds;
 	protected ChartDataset table;
 	protected Screen screen;	
+//	Map<String, DataTable> tables = new HashMap<String, DataTable>(); //TODO
 	protected DataTable[][] tables;
 	final int totalWidth;
 	
+	/**
+	 * 
+	 * @param screen
+	 * @param table
+	 * @param rowFilters major parameter values or gene symbols.
+	 * @param rowsAreMajors are rows major parameter values? If not, they are gene symbols.
+	 * @param minsOrMeds
+	 * @param columnsAreMins
+	 * @param totalWidth
+	 */
 	public ChartGrid(Screen screen, ChartDataset table, 
-			final List<String> rowFilters, boolean rowsAreMajors, 
+			final List<String> rowFilters, final List<String> organisms,
+			boolean rowsAreMajors, 
 			String[] minsOrMeds, boolean columnsAreMins, int totalWidth) {
 		super();
-		this.rowFilters = rowFilters;
-		this.rowsAreMajors = rowsAreMajors;
+		this.rowFilters = rowFilters;		
+		this.organisms = organisms;
 		this.minsOrMeds = minsOrMeds;
-		this.table = table;
-		this.columnsAreMins = columnsAreMins;
+		this.table = table;		
 		this.totalWidth = totalWidth;
 		this.screen = screen;
 		
-		g = new Grid(rowFilters.size() * 2 + 1, minsOrMeds.length);		
+		final int osize = organisms.size();
+		final int rfsize = rowFilters.size();
+		g = new Grid(rfsize * osize * 2 + 1, minsOrMeds.length);		
 		initWidget(g);
 		
-		for (int r = 0; r < rowFilters.size(); ++r) {
-			g.setWidget(r * 2 + 1, 0, Utils.mkEmphLabel(rowFilters.get(r)));
+		for (int r = 0; r < rfsize; ++r) {
+			final int rfStart = r * 2 * osize;
+			for (int o = 0; o < osize; ++o) {
+				g.setWidget(rfStart + o * 2 + 1, 
+						0, 
+						Utils.mkEmphLabel(organisms.get(o) + ":" + rowFilters.get(r)));
+			}
 		}
 		
-		tables = new DataTable[rowFilters.size()][minsOrMeds.length];
+		tables = new DataTable[rfsize * osize][minsOrMeds.length];
 		for (int c = 0; c < minsOrMeds.length; ++c) {
 			g.setWidget(0, c, Utils.mkEmphLabel(minsOrMeds[c]));				
-			for (int r = 0; r < rowFilters.size(); ++r) {
-				tables[r][c] = table.makeTable(minsOrMeds[c], rowFilters.get(r), 
-						columnsAreMins, !rowsAreMajors);
-				
+			for (int r = 0; r < rfsize; ++r) {				
+				for (int o = 0; o < osize; ++o){
+				tables[r * osize + o][c] = table.makeTable(minsOrMeds[c], columnsAreMins,
+						rowFilters.get(r), !rowsAreMajors, 
+						organisms.get(o)); //TODO pass organism
+				}
 			}
 		}
 	
@@ -95,8 +113,8 @@ abstract public class ChartGrid extends Composite {
 	 */
 	public int getMaxColumnCount() {
 		int max = 0;
-		for (int c = 0; c < minsOrMeds.length; ++c) {						
-			for (int r = 0; r < rowFilters.size(); ++r) {
+		for (int r = 0; r < tables.length; ++r) {
+			for (int c = 0; c < tables[0].length; ++c) {						
 				if (tables[r][c].getNumberOfColumns() > max) {
 					max = tables[r][c].getNumberOfColumns();
 				}				
@@ -106,10 +124,13 @@ abstract public class ChartGrid extends Composite {
 	}
 
 	public void adjustAndDisplay(int tableColumnCount, double minVal, double maxVal) {
-		final int width = totalWidth / minsOrMeds.length; //width of each individual chart 		
+		final int width = totalWidth / minsOrMeds.length; //width of each individual chart
+		final int osize = organisms.size();
 		for (int c = 0; c < minsOrMeds.length; ++c) {						
-			for (int r = 0; r < rowFilters.size(); ++r) {							
-				displaySeriesAt(r, c, width, minVal, maxVal, tableColumnCount);
+			for (int r = 0; r < rowFilters.size(); ++r) {	
+				for (int o = 0; o < osize; ++o) {
+					displaySeriesAt(r * osize + o, c, width, minVal, maxVal, tableColumnCount);
+				}
 			}
 		}
 	}

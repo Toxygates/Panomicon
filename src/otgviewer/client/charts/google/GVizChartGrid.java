@@ -28,11 +28,11 @@ public class GVizChartGrid extends ChartGrid {
 	public static final int MAX_WIDTH = 400;
 	
 	public GVizChartGrid(Screen screen, ChartDataset table,  
-			final List<String> rowFilters, 
-			boolean rowsAreCompounds, 
+			final List<String> rowFilters, final List<String> organisms,
+			boolean rowsAreMajors, 
 			String[] timesOrDoses, 			
 			boolean columnsAreTimes, int totalWidth) {
-		super(screen, table, rowFilters, rowsAreCompounds, timesOrDoses,
+		super(screen, table, rowFilters, organisms, rowsAreMajors, timesOrDoses,
 				columnsAreTimes, totalWidth);
 	}
 	

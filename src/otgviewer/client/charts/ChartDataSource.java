@@ -43,6 +43,7 @@ abstract class ChartDataSource {
 		final String minor;
 		final String medium;
 		final String major;
+		final String organism;
 		final double value;
 		final char call;
 		final @Nullable OTGSample barcode; 
@@ -65,6 +66,8 @@ abstract class ChartDataSource {
 			this.barcode = barcode;
 			this.probe = probe;
 			this.call = call;
+			String o = barcode.get("organism");
+			this.organism = o == null ? "Unknown" : o; 
 		}
 		
 		@Override
@@ -76,6 +79,7 @@ abstract class ChartDataSource {
 				r = r * 41 + minor.hashCode();
 				r = r * 41 + medium.hashCode();
 				r = r * 41 + major.hashCode();
+				r = r * 41 + organism.hashCode();
 				r = r * 41 + ((Double) value).hashCode();
 			}
 			return r;
@@ -89,7 +93,8 @@ abstract class ChartDataSource {
 				} else {
 					ChartSample ocs = (ChartSample) other;
 					return (ocs.medium == medium && ocs.minor == minor && 
-							ocs.major == major && ocs.value == value);
+							ocs.major == major && ocs.value == value &&
+							ocs.organism == organism);
 				}
 
 			} else {
@@ -104,7 +109,8 @@ abstract class ChartDataSource {
 		}
 	}
 	
-	void getSamples(String[] compounds, String[] dosesOrTimes, ColorPolicy policy, SampleAcceptor acceptor) {
+	void getSamples(String[] compounds, String[] dosesOrTimes, String[] organisms,
+			ColorPolicy policy, SampleAcceptor acceptor) {
 		if (compounds == null) {
 			applyPolicy(policy, chartSamples);
 			acceptor.accept(chartSamples);			
@@ -112,7 +118,8 @@ abstract class ChartDataSource {
 			//We store these in a set since we may be getting the same samples several times
 			Set<ChartSample> r = new HashSet<ChartSample>();
 			for (ChartSample s: chartSamples) {
-				if (SharedUtils.indexOf(compounds, s.major) != -1) {
+				if (SharedUtils.indexOf(compounds, s.major) != -1 &&
+						organisms == null || SharedUtils.indexOf(organisms, s.organism) != -1) {
 					if (dosesOrTimes == null || SharedUtils.indexOf(dosesOrTimes, s.medium) != -1 || 
 							SharedUtils.indexOf(dosesOrTimes, s.minor) != -1) {
 						r.add(s);			
@@ -262,7 +269,7 @@ abstract class ChartDataSource {
 			this.screen = screen;
 		}
 		
-		void loadData(final String[] majors, final String[] medsOrMins, 
+		void loadData(final String[] majors, final String[] medsOrMins, final String[] organisms,
 				final ColorPolicy policy, final SampleAcceptor acceptor) {
 			logger.info("Dynamic source: load for " + majors.length + " majors");
 			
@@ -293,19 +300,21 @@ abstract class ChartDataSource {
 				@Override
 				public void handleSuccess(final List<ExpressionRow> rows) {
 					addSamplesFromBarcodes(useSamples.toArray(new OTGSample[0]), rows);	
-					getSSamples(majors, medsOrMins, policy, acceptor);
+					getSSamples(majors, medsOrMins, organisms, policy, acceptor);
 				}					
 			});
 			
 		}
 
 		@Override
-		void getSamples(String[] compounds, String[] dosesOrTimes, ColorPolicy policy, SampleAcceptor acceptor) {
-			loadData(compounds, dosesOrTimes, policy, acceptor);			
+		void getSamples(String[] compounds, String[] dosesOrTimes, String[] organisms,
+				ColorPolicy policy, SampleAcceptor acceptor) {
+			loadData(compounds, dosesOrTimes, organisms, policy, acceptor);			
 		}
 		
-		void getSSamples(String[] compounds, String[] dosesOrTimes, ColorPolicy policy, SampleAcceptor acceptor) {
-			super.getSamples(compounds, dosesOrTimes, policy, acceptor);
+		void getSSamples(String[] compounds, String[] dosesOrTimes, String[] organisms,
+				ColorPolicy policy, SampleAcceptor acceptor) {
+			super.getSamples(compounds, dosesOrTimes, organisms, policy, acceptor);
 		}		
 	}	
 }

@@ -1,6 +1,7 @@
 package otgviewer.client.charts;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import otgviewer.client.charts.ChartDataSource.ChartSample;
@@ -10,10 +11,9 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.Group;
-import otgviewer.shared.OTGSample;
 import otgviewer.shared.GroupUtils;
+import otgviewer.shared.OTGSample;
 import otgviewer.shared.Series;
-import otgviewer.shared.OTGSchema;
 import otgviewer.shared.ValueType;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
@@ -85,7 +85,7 @@ public class ChartGridFactory {
 		ChartDataSource cds = new ChartDataSource.SeriesSource(
 				schema, series, times);
 		
-		cds.getSamples(null, null, new TimeDoseColorPolicy(medVals[highlightMed], "SkyBlue"), 
+		cds.getSamples(null, null, null, new TimeDoseColorPolicy(medVals[highlightMed], "SkyBlue"), 
 				new ChartDataSource.SampleAcceptor() {
 
 			@Override
@@ -99,9 +99,14 @@ public class ChartGridFactory {
 						filters.add(s.probe());
 					}
 				}
+				
+				List<String> organisms = 
+						new ArrayList<String>(
+								SampleClass.collect(Arrays.asList(sampleClasses), "organism")
+						);
 
-				ChartGrid cg = new GVizChartGrid(screen, ct, filters, rowsAreCompounds, 
-						medVals, false, 400);
+				ChartGrid cg = new GVizChartGrid(screen, ct, filters, organisms, 
+						rowsAreCompounds, medVals, false, 400);
 				cg.adjustAndDisplay(cg.getMaxColumnCount(), ct.getMin(), ct.getMax());
 				acceptor.acceptCharts(cg);				
 			}
@@ -116,7 +121,6 @@ public class ChartGridFactory {
 			final ValueType vt, final String[] probes,
 			final AChartAcceptor acceptor) {
 		if (barcodes == null) {
-			//TODO
 			sparqlService.samples(sampleClasses, schema.majorParameter(), 
 					GroupUtils.collect(groups, schema.majorParameter()).toArray(new String[0]),
 					new AsyncCallback<OTGSample[]>() {
