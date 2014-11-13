@@ -61,16 +61,7 @@ abstract public class ChartGrid extends Composite {
 		final int rfsize = rowFilters.size();
 		g = new Grid(rfsize * osize * 2 + 1, minsOrMeds.length);		
 		initWidget(g);
-		
-		for (int r = 0; r < rfsize; ++r) {
-			final int rfStart = r * 2 * osize;
-			for (int o = 0; o < osize; ++o) {
-				g.setWidget(rfStart + o * 2 + 1, 
-						0, 
-						Utils.mkEmphLabel(organisms.get(o) + ":" + rowFilters.get(r)));
-			}
-		}
-		
+	
 		tables = new DataTable[rfsize * osize][minsOrMeds.length];
 		for (int c = 0; c < minsOrMeds.length; ++c) {
 			g.setWidget(0, c, Utils.mkEmphLabel(minsOrMeds[c]));				
@@ -127,10 +118,27 @@ abstract public class ChartGrid extends Composite {
 		final int width = totalWidth / minsOrMeds.length; //width of each individual chart
 		final int osize = organisms.size();
 		for (int c = 0; c < minsOrMeds.length; ++c) {						
-			for (int r = 0; r < rowFilters.size(); ++r) {	
+			for (int r = 0; r < rowFilters.size(); ++r) {					
 				for (int o = 0; o < osize; ++o) {
-					displaySeriesAt(r * osize + o, c, width, minVal, maxVal, tableColumnCount);
+					String label = organisms.get(o) + ":" + rowFilters.get(r);
+					displaySeriesAt(r * osize + o, c, width, minVal, maxVal, 
+							tableColumnCount, label);
 				}
+			}
+		}
+				
+		for (int r = 2; r < g.getRowCount(); r += 2) {
+			boolean hasChart = false;
+			for (int c = 0; c < minsOrMeds.length; ++c) {
+				if (g.getWidget(r, c) != null) {
+					hasChart = true;
+				}
+			}
+			if (!hasChart) {
+				//remove empty rows
+				g.removeRow(r - 1);
+				g.removeRow(r);
+				r -= 2; //repeat from same r
 			}
 		}
 	}
@@ -144,9 +152,20 @@ abstract public class ChartGrid extends Composite {
 	 * @param width
 	 * @param columnCount
 	 */
-	private void displaySeriesAt(int row, int column, int width, double minVal, double maxVal, int columnCount) {
-		final DataTable dt = tables[row][column];	
-		g.setWidget(row * 2 + 2, column, chartFor(dt, width, minVal, maxVal, column, columnCount));
+	private void displaySeriesAt(int row, int column, int width, double minVal,
+			double maxVal, int columnCount, String label) {
+		final DataTable dt = tables[row][column];
+
+		if (dt.getNumberOfColumns() == 1) {			
+			return; //no data columns -> no data to show
+		}
+		if (g.getWidget(row * 2 + 1, 0) == null)
+		{
+			//add the label if this is the first chart for the rowFilter
+			g.setWidget(row * 2 + 1, 0, Utils.mkEmphLabel(label));
+		}
+		g.setWidget(row * 2 + 2, column,
+				chartFor(dt, width, minVal, maxVal, column, columnCount));
 	}
 	
 	abstract protected Widget chartFor(final DataTable dt, int width, double minVal, double maxVal, 
