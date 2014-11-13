@@ -124,6 +124,15 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 		return SampleClass.collectInner(Arrays.asList(_samples), parameter);
 	}
 	
+	public static Set<String> collectAll(Iterable<Group> from, String parameter) {
+		Set<String> r = new HashSet<String>();
+		for (Group g: from) {
+			r.addAll(g.collect(parameter));
+		}
+		return r;
+	}
+	
+	
 	// See SampleGroup for the packing method
 	// TODO lift up the unpacking code to have 
 	// the mirror images in the same class, if possible

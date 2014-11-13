@@ -41,6 +41,7 @@ import t.viewer.shared.Association
 import otgviewer.server.ScalaUtils
 import otg.sparql.Probes
 import otgviewer.shared.TimeoutException
+import otgviewer.shared.OTGSchema
 
 object SparqlServiceImpl {
   var inited = false
@@ -92,6 +93,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   var tgConfig: Configuration = _
  
   var instanceURI: Option[String] = None
+  
+  protected val schema: DataSchema = new OTGSchema()
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
@@ -154,9 +157,9 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   }
       
   import t.common.shared.{Unit => TUnit}
-  //TODO don't pass schema from client
+
   @throws[TimeoutException]
-  def units(sc: SampleClass, schema: DataSchema, 
+  def units(sc: SampleClass,  
       param: String, paramValues: Array[String]): Array[Pair[TUnit, TUnit]] = {
 
     val majorParam = schema.majorParameter()
@@ -199,6 +202,11 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     	}
     }    
     r.toArray
+  }
+  
+  def units(scs: Array[SampleClass], param: String, 
+      paramValues: Array[String]): Array[Pair[TUnit, TUnit]] = {
+    scs.flatMap(units(_, param, paramValues))
   }
     
 //  val orderedTimes = TimesDoses.allTimes.toList 

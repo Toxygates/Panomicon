@@ -36,6 +36,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
       }
     })
 
+    println(from.sortedColumnMap)
     val cols = (0 until from.columns).map(x => from.columnAt(x))
 
     val annots = nrows.map(_._2)

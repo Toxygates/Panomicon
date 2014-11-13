@@ -99,7 +99,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   private var csvUrlBase: String = _
   private implicit var context: OTGContext = _
 
-  private val schema: DataSchema = new OTGSchema()
+  protected val schema: DataSchema = new OTGSchema()
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
@@ -317,28 +317,31 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     })
   }
   
-  def getFullData(g: Group, probes: Array[String], sparseRead: Boolean, 
-      withSymbols: Boolean, typ: ValueType): JList[ExpressionRow] = {        
-//    val species = g.getUnits().map(x => asScala(x.getOrganism())).toSet
-    val pfs = platformsForGroups(List(g))    
+  def getFullData(gs: JList[Group], probes: Array[String], sparseRead: Boolean, 
+      withSymbols: Boolean, typ: ValueType): JList[ExpressionRow] = {
+    val sgs = Vector() ++ gs
+    val pfs = platformsForGroups(sgs)    
     
     val realProbes = platforms.filterProbes(probes, pfs).toArray
-    val mm = makeMatrix(List(g), realProbes.toArray, typ, sparseRead, true)
+    val mm = makeMatrix(sgs, realProbes.toArray, typ, sparseRead, true)
     mm.info.setPlatforms(pfs.toArray)
     
     val mapper = mapperForProbes(realProbes)    
     val mm2 = mapper.map(mx => mx.convert(mm)).getOrElse(mm)
+
+    val raw = if (sgs.size == 1) {
+      //break out each individual sample
+      mm2.rawData.selectNamedColumns(sgs(0).getSamples().map(_.id())).asRows
+    } else {
+      mm2.current.selectNamedColumns(sgs.map(_.getName)).asRows
+    }
     
-    //When we have obtained the data, it might no longer be sorted in the order that the user
-    //requested. Thus we use selectNamedColumns here to force the sort order they wanted.
-    
-    val raw = mm2.rawData.selectNamedColumns(g.getSamples().map(_.id())).asRows    
     val rows = if (withSymbols) {
       insertAnnotations(raw, pfs.size > 1)
     } else {
       raw
-    }
-    new ArrayList[ExpressionRow](rows)
+    }    
+    new ArrayList[ExpressionRow](rows)    
   }
 
   @throws(classOf[NoDataLoadedException])

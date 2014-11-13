@@ -70,8 +70,9 @@ object ManagedMatrixBuilder {
     	val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.getCode)))
         val data = reader.valuesForSamplesAndProbes(sortedSamples,
         		packedProbes, sparseRead)
-        groupedParts ::= columnBuilder(info, g, sortedSamples, data)
-        
+        		
+        println(g.getUnits()(0).toString())
+        groupedParts ::= columnBuilder(info, g, sortedSamples, data)        
         ungroupedParts ::= ExprMatrix.withRows(data.map(_.map(asJava(_))), 
             initProbes, sortedSamples.map(_.sampleId))
     }

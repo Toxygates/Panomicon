@@ -33,7 +33,7 @@ public interface MatrixServiceAsync {
 	public void datasetItems(int offset, int size, int sortColumn,
 			boolean ascending, AsyncCallback<List<ExpressionRow>> callback);
 
-	public void getFullData(Group g, String[] probes,
+	public void getFullData(List<Group> g, String[] probes,
 			boolean sparseRead, boolean withSymbols, ValueType typ,
 			AsyncCallback<List<ExpressionRow>> callback);
 

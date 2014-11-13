@@ -99,8 +99,8 @@ public interface MatrixService extends RemoteService {
 	
 	/**
 	 * Get all data immediately, on the level of individual values (not averaged).
-	 * @param g Samples to request. The order of the columns returned will correspond to 
-	 * the internal order of this group.
+	 * @param g Samples to request. If only one group is supplied, then each 
+	 * individual sample will appear as a column.
 	 * @param probes
 	 * @param type 
 	 * @param sparseRead If true, we optimise for the case of reading a 
@@ -109,7 +109,7 @@ public interface MatrixService extends RemoteService {
 	 * 	into the rows (may be slightly slower)
 	 * @return
 	 */
-	public List<ExpressionRow> getFullData(Group g, String[] probes, 
+	public List<ExpressionRow> getFullData(List<Group> gs, String[] probes, 
 			boolean sparseRead, boolean withSymbols, ValueType type)
 			throws ServerError;
 	

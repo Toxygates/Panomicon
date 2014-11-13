@@ -169,7 +169,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		fetchingSamples = true;
 		availableUnits = new Pair[0]; 
 		String[] compounds = chosenCompounds.toArray(new String[0]);
-		sparqlService.units(chosenSampleClass, schema, majorParameter, compounds,
+		sparqlService.units(chosenSampleClass, majorParameter, compounds,
 				new PendingAsyncCallback<Pair<Unit, Unit>[]>(this, "Unable to obtain samples.") {
 
 			@Override

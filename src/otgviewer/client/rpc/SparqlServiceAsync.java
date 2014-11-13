@@ -29,12 +29,14 @@ public interface SparqlServiceAsync {
 	public void samples(SampleClass[] scs, String param, String[] paramValues, 
 			AsyncCallback<OTGSample[]> callback);
 	
-	public void units(SampleClass sc, DataSchema schema,
+	public void units(SampleClass sc,
 			String param, String[] paramValues, 
 			AsyncCallback<Pair<Unit, Unit>[]> callback);
 	
-//	public void probes(BarcodeColumn[] columns, AsyncCallback<String[]> callback);
-	
+	public void units(SampleClass[] sc,
+			String param, String[] paramValues, 
+			AsyncCallback<Pair<Unit, Unit>[]> callback);
+
 	public void pathologies(OTGColumn column, AsyncCallback<Pathology[]> callback);
 	public void pathologies(OTGSample barcode, AsyncCallback<Pathology[]> callback);
 	

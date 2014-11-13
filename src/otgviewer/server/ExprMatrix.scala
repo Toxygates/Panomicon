@@ -53,8 +53,9 @@ class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int,
   import Conversions._
   import ExprMatrix._
 
-  println(rows + " x " + columns)
-   
+  println(rows + " x " + columns)  
+//  println(sortedColumnMap)
+  
   val emptyVal = new ExpressionValue(0, 'A')
   
   /**
@@ -62,10 +63,12 @@ class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int,
    */
   def copyWith(rowData: Seq[Vector[ExpressionValue]], rowMap: Map[String, Int], 
       columnMap: Map[String, Int], 
-      annotations: SVector[RowAnnotation]): ExprMatrix =  
+      annotations: SVector[RowAnnotation]): ExprMatrix =  {
+      
         new ExprMatrix(rowData, rowData.size, 
             if (rowData.isEmpty) { 0 } else { rowData(0).size }, 
             rowMap, columnMap, annotations)
+  }
   
   def copyWith(rowData: Seq[Seq[ExpressionValue]], rowMap: Map[String, Int], 
       columnMap: Map[String, Int]): ExprMatrix = {    

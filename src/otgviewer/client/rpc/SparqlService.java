@@ -70,7 +70,11 @@ public interface SparqlService extends RemoteService {
 	 * @return Pairs of units, where the first is treated samples and the second
 	 *         the corresponding control samples, or null if there are none.
 	 */
-	public Pair<Unit, Unit>[] units(SampleClass sc, DataSchema schema,
+	public Pair<Unit, Unit>[] units(SampleClass sc, 
+			String param, @Nullable String[] paramValues)
+			throws TimeoutException;
+	
+	public Pair<Unit, Unit>[] units(SampleClass[] scs, 
 			String param, @Nullable String[] paramValues)
 			throws TimeoutException;
 

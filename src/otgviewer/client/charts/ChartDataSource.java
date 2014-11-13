@@ -1,6 +1,7 @@
 package otgviewer.client.charts;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -20,6 +21,7 @@ import otgviewer.shared.Series;
 import otgviewer.shared.ValueType;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
+import t.common.shared.Unit;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.ExpressionValue;
 
@@ -50,14 +52,7 @@ abstract class ChartDataSource {
 		final String probe;
 		String color = "grey";
 		
-		ChartSample(OTGSample sample, DataSchema schema,
-				double value, String probe, char call) {
-			this(schema.getMinor(sample), schema.getMedium(sample),
-					schema.getMajor(sample),
-					value, sample, probe, call);					
-		}
-		
-		ChartSample(String minor, String medium, String major, 
+		ChartSample(String minor, String medium, String major, String organism,
 				double value, OTGSample barcode, String probe, char call) {
 			this.minor = minor;
 			this.medium = medium;
@@ -65,9 +60,22 @@ abstract class ChartDataSource {
 			this.value = value;
 			this.barcode = barcode;
 			this.probe = probe;
-			this.call = call;
-			String o = barcode.get("organism");
-			this.organism = o == null ? "Unknown" : o; 
+			this.call = call;			
+			this.organism = organism; 
+		}
+
+		ChartSample(OTGSample sample, DataSchema schema,
+				double value, String probe, char call) {
+			this(schema.getMinor(sample), schema.getMedium(sample),
+					schema.getMajor(sample), sample.get("organism"),
+					value, sample, probe, call);					
+		}
+		
+		ChartSample(Unit u, DataSchema schema, double value, String probe, char call) {
+			this(u.get(schema.minorParameter()), u.get(schema.mediumParameter()),					
+			u.get(schema.majorParameter()), u.get("organism"), value, 
+			u.getSamples()[0], //representative sample only
+					probe, call);			
 		}
 		
 		@Override
@@ -183,6 +191,7 @@ abstract class ChartDataSource {
 				for (int i = 0; i < s.values().length; ++i) {
 					ExpressionValue ev = s.values()[i];					
 					ChartSample cs = new ChartSample(times[i], s.timeDose(), s.compound(), 
+							null,
 							ev.getValue(), null, s.probe(), ev.getCall());
 					chartSamples.add(cs);
 				}
@@ -236,11 +245,9 @@ abstract class ChartDataSource {
 		protected void addSamplesFromBarcodes(OTGSample[] samples, List<ExpressionRow> rows) {
 			logger.info("Add samples from " + samples.length + " samples and " + rows.size() + " rows");
 			for (int i = 0; i < samples.length; ++i) {
-				OTGSample b = samples[i];				
-//				logger.info("Consider " + b.toString());
 				for (ExpressionRow er : rows) {
 					ExpressionValue ev = er.getValue(i);
-					ChartSample cs = new ChartSample(b, schema,
+					ChartSample cs = new ChartSample(samples[i], schema,
 							ev.getValue(), er.getProbe(), ev.getCall());
 					chartSamples.add(cs);
 				}
@@ -254,12 +261,12 @@ abstract class ChartDataSource {
 	 *
 	 */
 	static class DynamicExpressionRowSource extends ExpressionRowSource {
-		private static final MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
+		protected static final MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
 				.create(MatrixService.class);
 		
-		private String[] probes;
-		private ValueType type;
-		private Screen screen;
+		protected String[] probes;
+		protected ValueType type;
+		protected Screen screen;
 		
 		DynamicExpressionRowSource(DataSchema schema, String[] probes, 
 				ValueType vt, OTGSample[] barcodes, Screen screen) {
@@ -289,7 +296,9 @@ abstract class ChartDataSource {
 			chartSamples.clear();
 			Group g = new Group(schema, "temporary", 
 					useSamples.toArray(new OTGSample[0]));
-			matrixService.getFullData(g, 
+			List<Group> gs = new ArrayList<Group>();
+			gs.add(g);
+			matrixService.getFullData(gs, 
 					probes, true, false, type,  
 					new PendingAsyncCallback<List<ExpressionRow>>(screen) {
 				@Override
@@ -317,4 +326,82 @@ abstract class ChartDataSource {
 			super.getSamples(compounds, dosesOrTimes, organisms, policy, acceptor);
 		}		
 	}	
+	
+	/**
+	 * A dynamic source that makes requests based on a list of units.
+	 * @author johan
+	 *
+	 */
+	static class DynamicUnitSource extends DynamicExpressionRowSource {
+		static OTGSample[] samplesFor(Unit[] units) {
+			List<OTGSample> samples = new ArrayList<OTGSample>();
+			for (Unit u: units) {
+				samples.addAll(Arrays.asList(u.getSamples()));
+			}
+			
+			return samples.toArray(new OTGSample[0]);
+		}
+		
+		private Unit[] units;
+		
+		DynamicUnitSource(DataSchema schema, String[] probes, 
+				ValueType vt, Unit[] units, Screen screen) {
+			super(schema, probes, vt, samplesFor(units), screen);
+			this.units = units;
+		}
+		
+		@Override
+		void loadData(final String[] majors, final String[] medsOrMins, final String[] organisms,
+				final ColorPolicy policy, final SampleAcceptor acceptor) {
+			logger.info("Dynamic unit source: load for " + majors.length + " majors");
+			
+			final List<Group> groups = new ArrayList<Group>();
+			final List<Unit> useUnits = new ArrayList<Unit>();
+			int i = 0;
+			for (Unit u: units) {
+				if (
+						(majors == null || SharedUtils.indexOf(majors, u.get(majorParam)) != -1) &&
+						(medsOrMins == null || SharedUtils.indexOf(medsOrMins, u.get(minorParam)) != -1 || 					
+						SharedUtils.indexOf(medsOrMins, u.get(medParam)) != -1) // &&
+//						!schema.isControlValue(u.get(medParam))
+						//TODO generalise the control-check better
+					) {
+					Group g = new Group(schema, "g" + i, u.getSamples());
+					i++;
+					groups.add(g);
+					useUnits.add(u);
+				}				
+			}
+			
+			chartSamples.clear();						
+			matrixService.getFullData(groups, 
+					probes, true, false, type,  
+					new PendingAsyncCallback<List<ExpressionRow>>(screen) {
+				@Override
+				public void handleFailure(Throwable caught) {
+					Window.alert("Unable to obtain chart data.");
+				}
+
+				@Override
+				public void handleSuccess(final List<ExpressionRow> rows) {
+					addSamplesFromUnits(useUnits, rows);	
+					getSSamples(majors, medsOrMins, organisms, policy, acceptor);
+				}					
+			});
+			
+		}
+		
+		protected void addSamplesFromUnits(List<Unit> units, List<ExpressionRow> rows) {
+			logger.info("Add samples from " + units.size() + " units and " + rows.size() + " rows");
+			for (int i = 0; i < units.size(); ++i) {		
+				for (ExpressionRow er : rows) {
+					ExpressionValue ev = er.getValue(i);
+					ChartSample cs = new ChartSample(units.get(i), schema,
+							ev.getValue(), er.getProbe(), ev.getCall());
+					chartSamples.add(cs);
+				}
+			}		
+		}
+	}
+		
 }

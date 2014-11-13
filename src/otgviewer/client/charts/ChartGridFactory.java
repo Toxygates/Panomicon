@@ -2,7 +2,9 @@ package otgviewer.client.charts;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
@@ -16,7 +18,9 @@ import otgviewer.shared.OTGSample;
 import otgviewer.shared.Series;
 import otgviewer.shared.ValueType;
 import t.common.shared.DataSchema;
+import t.common.shared.Pair;
 import t.common.shared.SampleClass;
+import t.common.shared.Unit;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
@@ -120,9 +124,28 @@ public class ChartGridFactory {
 	public void makeRowCharts(final Screen screen, final OTGSample[] barcodes, 
 			final ValueType vt, final String[] probes,
 			final AChartAcceptor acceptor) {
-		if (barcodes == null) {
+		Set<String> organisms = Group.collectAll(groups, "organism");
+		
+		String[] majorVals = 
+				GroupUtils.collect(groups, schema.majorParameter()).toArray(new String[0]); 
+		
+		if (organisms.size() > 1) {
+			sparqlService.units(sampleClasses, schema.majorParameter(),
+			  majorVals, new AsyncCallback<Pair<Unit,Unit>[]>() {
+
+				@Override
+				public void onFailure(Throwable caught) {
+					Window.alert("Unable to obtain chart data.");							
+				}
+
+				@Override
+				public void onSuccess(Pair<Unit, Unit>[] result) {
+					finishRowCharts(screen, probes, vt, groups, result, acceptor);							
+				}						
+			});
+		} else if (barcodes == null) {
 			sparqlService.samples(sampleClasses, schema.majorParameter(), 
-					GroupUtils.collect(groups, schema.majorParameter()).toArray(new String[0]),
+					majorVals,
 					new AsyncCallback<OTGSample[]>() {
 
 				@Override
@@ -133,6 +156,7 @@ public class ChartGridFactory {
 				@Override
 				public void onSuccess(final OTGSample[] barcodes) {
 					finishRowCharts(screen, probes, vt, groups, barcodes, acceptor);
+					//TODO is this needed/well designed?
 					acceptor.acceptBarcodes(barcodes);
 				}			
 			});
@@ -145,6 +169,19 @@ public class ChartGridFactory {
 			OTGSample[] barcodes, AChartAcceptor acceptor) {
 		ChartDataSource cds = new ChartDataSource.DynamicExpressionRowSource(schema, 
 				probes, vt, barcodes, screen);
+		AdjustableChartGrid acg = new AdjustableChartGrid(screen, cds, groups, vt);
+		acceptor.acceptCharts(acg);
+	}
+	
+	private void finishRowCharts(Screen screen, String[] probes, ValueType vt, List<Group> groups, 
+			Pair<Unit, Unit>[] units, AChartAcceptor acceptor) {
+		Set<Unit> treated = new HashSet<Unit>();
+		for (Pair<Unit, Unit> u: units) {
+			treated.add(u.first());			
+		}
+		
+		ChartDataSource cds = new ChartDataSource.DynamicUnitSource(schema, 
+				probes, vt, treated.toArray(new Unit[0]), screen);
 		AdjustableChartGrid acg = new AdjustableChartGrid(screen, cds, groups, vt);
 		acceptor.acceptCharts(acg);
 	}
