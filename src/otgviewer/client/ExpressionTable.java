@@ -657,6 +657,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				new AsyncCallback<ManagedMatrixInfo>() {
 					public void onFailure(Throwable caught) {
 						Window.alert("Unable to load dataset");
+						logger.log(Level.SEVERE, "Unable to load dataset", caught);
 					}
 
 					public void onSuccess(ManagedMatrixInfo result) {

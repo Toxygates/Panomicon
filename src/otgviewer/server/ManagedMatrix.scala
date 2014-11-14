@@ -61,30 +61,48 @@ object ManagedMatrixBuilder {
       columnBuilder: (ManagedMatrixInfo, Group, Seq[Sample], Seq[Seq[E]]) => ExprMatrix)
   (implicit context: OTGContext): ManagedMatrix = {
     val pmap = context.unifiedProbes
-    var groupedParts, ungroupedParts: List[ExprMatrix] = Nil
+    
+    var rawGroupedMat, rawUngroupedMat: ExprMatrix = null
     
     val packedProbes = initProbes.map(pmap.pack)
     val info = new ManagedMatrixInfo()
+    val annotations = initProbes.map(x => new RowAnnotation(x, List(x))).toVector
+    
     for (g <- requestColumns) {
-    	val samples = if(fullLoad) g.getSamples.toList else samplesForDisplay(g)
+        //Remove repeated samples as some other algorithms assume distinct samples
+        //Also for efficiency
+    	val samples = 
+    	  (if(fullLoad) g.getSamples.toList else samplesForDisplay(g)).
+    	  	toVector.distinct
     	val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.getCode)))
         val data = reader.valuesForSamplesAndProbes(sortedSamples,
         		packedProbes, sparseRead)
         		
         println(g.getUnits()(0).toString())
-        groupedParts ::= columnBuilder(info, g, sortedSamples, data)        
-        ungroupedParts ::= ExprMatrix.withRows(data.map(_.map(asJava(_))), 
+        
+        val grouped = columnBuilder(info, g, sortedSamples, data)        
+        val ungrouped = ExprMatrix.withRows(data.map(_.map(asJava(_))), 
             initProbes, sortedSamples.map(_.sampleId))
+            
+        if (rawGroupedMat == null) {
+          rawGroupedMat = grouped
+        } else {
+          rawGroupedMat = rawGroupedMat adjoinRight grouped
+        }
+    	
+    	if (rawUngroupedMat == null) {
+    	  rawUngroupedMat = ungrouped
+    	} else {
+    	  //account for the fact that samples may be shared between requestColumns
+    	  val newCols = ungrouped.columnKeys.toSet -- rawUngroupedMat.columnKeys.toSet
+    	  rawUngroupedMat = rawUngroupedMat adjoinRight 
+    	  	(ungrouped.selectNamedColumns(newCols.toSeq))
+    	}    	
     }
 
-    val annotations = initProbes.map(x => new RowAnnotation(x, List(x))).toVector
-    
-    val rawUngroupedMat = ungroupedParts.reverse.reduceLeft(_ adjoinRight _).
-    	copyWithAnnotations(annotations)
-    val rawGroupedMat = groupedParts.reverse.reduceLeft(_ adjoinRight _).
-    	copyWithAnnotations(annotations)
-    
-    new ManagedMatrix(initProbes, info, rawUngroupedMat, rawGroupedMat)
+    new ManagedMatrix(initProbes, info, 
+        rawUngroupedMat.copyWithAnnotations(annotations), 
+        rawGroupedMat.copyWithAnnotations(annotations))
   }
   
   private def columnsForGroupDefault[E <: ExprValue](initProbes: Array[String],
@@ -218,6 +236,8 @@ object ManagedMatrixBuilder {
 class ManagedMatrix(val initProbes: Array[String],
     //TODO visibility of these 3 vars
     var currentInfo: ManagedMatrixInfo,
+    //ungrouped mat is mainly used for computing T- and U-tests. Sorting of columns
+    //is irrelevant.
     var rawUngroupedMat: ExprMatrix, var rawGroupedMat: ExprMatrix) {
   
   protected var currentMat: ExprMatrix = rawGroupedMat
