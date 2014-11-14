@@ -126,7 +126,7 @@ abstract public class ChartGrid extends Composite {
 				}
 			}
 		}
-				
+			/*	
 		for (int r = 2; r < g.getRowCount(); r += 2) {
 			boolean hasChart = false;
 			for (int c = 0; c < minsOrMeds.length; ++c) {
@@ -140,7 +140,7 @@ abstract public class ChartGrid extends Composite {
 				g.removeRow(r);
 				r -= 2; //repeat from same r
 			}
-		}
+		}*/
 	}
 	
 	/**
