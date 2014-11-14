@@ -362,9 +362,10 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	@Override 
 	protected void samplesAvailable() {
 		logger.info("Samples available: " + availableUnits.length + " units");
+		controlUnits.clear();
 		for (Pair<Unit, Unit> u: availableUnits) {		
 			controlUnits.put(u.first(), u.second());			
-			logger.info("treated: " + unitString(u.first()) + " control: " + unitString(u.second()));												
+//			logger.info("treated: " + unitString(u.first()) + " control: " + unitString(u.second()));												
 		}
 		
 		for (Pair<Unit, Unit> treatedControl: availableUnits) {

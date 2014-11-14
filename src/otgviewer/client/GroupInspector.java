@@ -211,11 +211,6 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	@Override
 	public void availableUnitsChanged(DataListenerWidget sender, List<Pair<Unit, Unit>> units) {
 		availableUnits = units;
-//		if (availableUnits.size() > 0) {
-//			autoGroupsButton.setEnabled(true);
-//		} else {
-//			autoGroupsButton.setEnabled(false);
-//		}
 	}
 	
 	private void deleteGroup(String name, boolean createNew) {
