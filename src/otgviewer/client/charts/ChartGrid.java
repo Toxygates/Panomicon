@@ -57,6 +57,10 @@ abstract public class ChartGrid extends Composite {
 		this.totalWidth = totalWidth;
 		this.screen = screen;
 		
+		if (organisms.size() == 0) {
+			organisms.add(""); //TODO
+		}
+		
 		final int osize = organisms.size();
 		final int rfsize = rowFilters.size();
 		g = new Grid(rfsize * osize * 2 + 1, minsOrMeds.length);		
@@ -67,9 +71,11 @@ abstract public class ChartGrid extends Composite {
 			g.setWidget(0, c, Utils.mkEmphLabel(minsOrMeds[c]));				
 			for (int r = 0; r < rfsize; ++r) {				
 				for (int o = 0; o < osize; ++o){
-				tables[r * osize + o][c] = table.makeTable(minsOrMeds[c], columnsAreMins,
+					
+					String org = organisms.get(0).equals("") ? null : organisms.get(o);
+					tables[r * osize + o][c] = table.makeTable(minsOrMeds[c], columnsAreMins,
 						rowFilters.get(r), !rowsAreMajors, 
-						organisms.get(o)); //TODO pass organism
+						org); //TODO pass organism
 				}
 			}
 		}

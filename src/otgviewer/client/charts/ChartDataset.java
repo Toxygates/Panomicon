@@ -102,10 +102,10 @@ public class ChartDataset {
 		for (ChartSample s: samples) {
 			if (
 				((s.probe.equals(probeOrCompound) && isProbe) ||
-						(s.major.equals(probeOrCompound) && !isProbe) || probeOrCompound == null) &&
+						(probeOrCompound == null || s.major.equals(probeOrCompound) && !isProbe)) &&
 				((s.minor.equals(timeOrDose) && isTime) ||
-						(s.medium.equals(timeOrDose) && !isTime) || timeOrDose == null) &&
-						(s.organism.equals(organism) || organism == null)
+						(timeOrDose == null || s.medium.equals(timeOrDose) && !isTime)) &&
+						(organism == null || s.organism.equals(organism))
 							) {
 				fsamples.add(s);
 			}

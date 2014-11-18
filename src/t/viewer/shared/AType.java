@@ -8,6 +8,7 @@ package t.viewer.shared;
  */
 public enum AType {
 	KEGG("KEGG pathways") {
+		//TODO construct proper link
 		public String formLink(String value) { return value; }		
 	},
 	Chembl("CHEMBL compounds") {
@@ -39,6 +40,13 @@ public enum AType {
 	},
 	Enzymes("Kegg Enzymes") {
 		public String formLink(String value) { return value; }
+	},
+	EnsemblOSA("O.Sativa orth. genes") {
+		public String formLink(String value) { return formEnsemblPlantsLink(value); }
+	},
+	KEGGOSA("O.Sativa orth. pathways") {
+		//TODO construct proper link
+		public String formLink(String value) { return value; }
 	};
 
 	private String _title;
@@ -60,7 +68,7 @@ public enum AType {
 			return "http://www.ncbi.nlm.nih.gov/gene/" + value;
 		} else {
 			return null;
-		}
+		} 
 	}
 	
 	public static String formProteinLink(String value) {
@@ -74,6 +82,14 @@ public enum AType {
 	public static String formGOLink(String value) {
 		if (value != null) {
 			return "http://amigo.geneontology.org/cgi-bin/amigo/term_details?term=" + value.toUpperCase();
+		} else {
+			return null;
+		}
+	}
+	
+	public static String formEnsemblPlantsLink(String value) {
+		if (value != null) {
+			return "http://plants.ensembl.org/Oryza_sativa/Gene/Summary?g=" + value.toUpperCase();
 		} else {
 			return null;
 		}

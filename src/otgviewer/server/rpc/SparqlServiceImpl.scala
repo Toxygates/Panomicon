@@ -366,6 +366,14 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
         val sp = asSpecies(sc)
         queryOrEmpty(b2rKegg,
         (c: B2RKegg) => c.enzymes(probes.flatMap(_.genes), sp))
+      case x: AType.EnsemblOSA.type =>
+         queryOrEmpty(affyProbes, 
+          (a: Probes) => a.osaGenes(probes))
+      case x: AType.KEGGOSA.type =>
+        val osaGenes = affyProbes.osaGenes(probes)         
+        val osaAll = osaGenes.flatMap(_._2)
+        queryOrEmpty(b2rKegg,
+        (c: B2RKegg) => osaGenes combine c.forGenesOSA(osaAll))
     }
 
     def standardMapping(m: BBMap): MMap[String, (String, String)] =
