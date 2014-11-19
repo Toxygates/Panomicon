@@ -45,7 +45,7 @@ import otgviewer.shared.OTGSchema
 
 object SparqlServiceImpl {
   var inited = false
-   var affyProbes: Probes = _
+  var affyProbes: Probes = _
   var uniprot: Uniprot = _
   var otgSamples: OTGSamples = _
   var b2rKegg: B2RKegg = _
@@ -339,6 +339,14 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
         x
       })
     }
+    
+    //OSA genes if needed
+    //TODO move this and other tritigate specific code to subclass
+    val osaGenes = if (types.contains(AType.EnsemblOSA) || types.contains(AType.KEGGOSA)) {
+        affyProbes.osaGenes(probes)
+    } else {
+      emptyMMap[Probe, DefaultBio]()
+    }
 
     import Association._
     def lookupFunction(t: AType): BBMap = t match {
@@ -366,11 +374,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
         val sp = asSpecies(sc)
         queryOrEmpty(b2rKegg,
         (c: B2RKegg) => c.enzymes(probes.flatMap(_.genes), sp))
-      case x: AType.EnsemblOSA.type =>
-         queryOrEmpty(affyProbes, 
-          (a: Probes) => a.osaGenes(probes))
-      case x: AType.KEGGOSA.type =>
-        val osaGenes = affyProbes.osaGenes(probes)         
+      case x: AType.EnsemblOSA.type => osaGenes         
+      case x: AType.KEGGOSA.type =>         
         val osaAll = osaGenes.flatMap(_._2)
         queryOrEmpty(b2rKegg,
         (c: B2RKegg) => osaGenes combine c.forGenesOSA(osaAll))
