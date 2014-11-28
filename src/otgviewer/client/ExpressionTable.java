@@ -468,7 +468,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		});
 		
 		r.add(new DefHideableColumn<ExpressionRow>("Gene Sym", 
-				initVisibility(StandardColumns.GeneSym), "12em") {
+				initVisibility(StandardColumns.GeneSym), "10em") {
 			public String safeGetValue(ExpressionRow er) {					
 				return SharedUtils.mkString(er.getGeneSyms(), ", ");
 			}
@@ -483,7 +483,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		});
 		
 		r.add(new LinkingColumn<ExpressionRow>(shc, "Probe",
-				initVisibility(StandardColumns.Probe), "12em") {
+				initVisibility(StandardColumns.Probe), "8em") {
 
 			@Override
 			protected String formLink(String value) {

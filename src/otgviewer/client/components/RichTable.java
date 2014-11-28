@@ -149,7 +149,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 				tooltip = title + " (" + tooltip + ")";
 			}
 			title = title.substring(0, COL_TITLE_MAX_LEN) + "...";
-		}
+		}		
 		grid.insertColumn(at, c, getColumnHeader(at, headerHtml(title, tooltip)));
 		grid.setColumnWidth(c, width);
 	}
@@ -268,19 +268,21 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	 * The default hideable column
 	 */
 	protected abstract static class DefHideableColumn<T> extends SafeTextColumn<T> implements HideableColumn {
-		private boolean visible;
-		private String width;
+		private boolean _visible;
+		private String _width;
+		private String _name;
+		
 		public DefHideableColumn(String name, boolean initState, String width) {
 			super();
-			visible = initState;
+			_visible = initState;
 			_name = name;
+			_width = width;
 		}
 		
-		private String _name;
 		public String name() { return _name; }
-		public boolean visible() { return this.visible; }				
-		public void setVisibility(boolean v) { visible = v; }		
-		public String width() { return width; }
+		public boolean visible() { return _visible; }				
+		public void setVisibility(boolean v) { _visible = v; }		
+		public String width() { return _width; }
 	}
 	
 	protected class RowHighligher<U> implements RowStyles<U> {		
