@@ -123,7 +123,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	}
 	
 	private final static String COL_WIDTH = "12em";
-	private final static int COL_TITLE_MAX_LEN = 14;
+	private final static int COL_TITLE_MAX_LEN = 12;
 	
 	protected void addColWithTooltip(Column<T, ?> c, String title, String tooltip) {
 		if (title.length() > COL_TITLE_MAX_LEN) {			

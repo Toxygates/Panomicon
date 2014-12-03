@@ -450,7 +450,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		List<HideableColumn> r = new ArrayList<HideableColumn>();
 		
 		r.add(new LinkingColumn<ExpressionRow>(shc, "Gene ID", 
-				initVisibility(StandardColumns.GeneID), "12em") {
+				initVisibility(StandardColumns.GeneID), 
+				initWidth(StandardColumns.GeneID)) {
 			@Override
 			protected String formLink(String value) {
 				return AType.formGeneLink(value);
@@ -468,7 +469,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		});
 		
 		r.add(new DefHideableColumn<ExpressionRow>("Gene Sym", 
-				initVisibility(StandardColumns.GeneSym), "10em") {
+				initVisibility(StandardColumns.GeneSym), 
+				initWidth(StandardColumns.GeneSym)) {
 			public String safeGetValue(ExpressionRow er) {					
 				return SharedUtils.mkString(er.getGeneSyms(), ", ");
 			}
@@ -476,14 +478,16 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		});
 		
 		r.add(new DefHideableColumn<ExpressionRow>("Probe title", 
-				initVisibility(StandardColumns.ProbeTitle), "18em") {
+				initVisibility(StandardColumns.ProbeTitle), 
+				initWidth(StandardColumns.ProbeTitle)) {
 			public String safeGetValue(ExpressionRow er) {				
 				return er.getTitle();
 			}
 		});
 		
 		r.add(new LinkingColumn<ExpressionRow>(shc, "Probe",
-				initVisibility(StandardColumns.Probe), "8em") {
+				initVisibility(StandardColumns.Probe), 
+				initWidth(StandardColumns.Probe)) {
 
 			@Override
 			protected String formLink(String value) {
@@ -506,6 +510,16 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	
 	protected boolean initVisibility(StandardColumns col) {
 		return col != StandardColumns.GeneID;			
+	}
+	
+	protected String initWidth(StandardColumns col) {
+		switch (col) {
+		case Probe: return "8em";
+		case GeneSym: return "10em";
+		case ProbeTitle: return "18em";
+		case GeneID: return "12em";
+		default: return "15em";
+		}		
 	}
 	
 	public String[] displayedProbes() { return displayedProbes; }
