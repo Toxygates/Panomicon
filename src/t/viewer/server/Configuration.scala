@@ -27,7 +27,8 @@ object Configuration {
       p("repositoryUser"),
       p("repositoryPassword"),
       p("instanceName"),
-      p("webappHomeDir"))
+      p("webappHomeDir"),
+      p("matrixDbOptions"))
   }  
 }
 
@@ -39,7 +40,8 @@ class Configuration(val repositoryName: String,
     val repositoryUser: String = null,
     val repositoryPass: String = null,
     val instanceName: String = null,
-    val webappHomeDir: String = null) {
+    val webappHomeDir: String = null,
+    val matrixDbOptions: String = null) {
   
   def this(owlimRepository: String, toxygatesHome:String, foldsDBVersion: Int) = 
     this(owlimRepository, toxygatesHome, System.getProperty("otg.csvDir"), 
@@ -47,7 +49,7 @@ class Configuration(val repositoryName: String,
 
   def tsConfig = TriplestoreConfig(repositoryUrl, updateUrl,
     repositoryUser, repositoryPass, repositoryName)
-  def dataConfig = DataConfig(toxygatesHomeDir)
+  def dataConfig = DataConfig(toxygatesHomeDir, matrixDbOptions)
     
   def context(bc: BaseConfig) = new OTGContext(bc)  
 }

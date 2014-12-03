@@ -69,7 +69,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
     //TODO organise this better
     try {
     val file = baseConfig.data.seriesDb
-    val db = KCDBRegistry.get(file, KCSeriesDB.options, false)    
+    val db = KCDBRegistry.get(file, false)    
     db match {
       case Some(d) => new KCSeriesDB(file, d, OTGSeries) {
         override def read(key: OTGSeries): Iterable[OTGSeries] = {
