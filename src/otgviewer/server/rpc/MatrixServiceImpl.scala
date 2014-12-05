@@ -207,11 +207,11 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   def loadDataset(groups: JList[Group], probes: Array[String],
                   typ: ValueType, syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
     val pfs = platformsForGroups(groups.toList)   
-    val allProbes = platforms.filterProbes(List(), pfs).toArray 
-    val mm = makeMatrix(groups.toVector, allProbes, typ)
+    val fProbes = platforms.filterProbes(probes, pfs).toArray 
+    val mm = makeMatrix(groups.toVector, fProbes, typ)
     setSessionData(mm)    
     mm.info.setPlatforms(pfs.toArray)
-    selectProbes(probes)
+//    selectProbes(probes)
     val mm2 = applyMapper(groups, mm)
     setSessionData(mm2)
     mm2.info
