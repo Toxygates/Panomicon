@@ -16,9 +16,16 @@ INSTANCE=$1
 shift
 ROLE=$1
 
-cp -r $THOME/t_viewer_template $THOME/$APPNAME
+TDIR=$THOME/$APPNAME
+if [ -d $TDIR -o -f $TDIR ]
+then
+	echo "$TDIR already exists. Cannot create."
+	exit 1
+fi
 
-TARGET=$THOME/$APPNAME/WEB-INF/web.xml
+cp -r $THOME/t_viewer_template $TDIR
+
+TARGET=$TDIR/WEB-INF/web.xml
 cat $THOME/t_viewer_template/WEB-INF/web.xml.template | sed "s/##instanceName##/$INSTANCE/" > $TARGET
 
 cat >> $TARGET <<EOF
