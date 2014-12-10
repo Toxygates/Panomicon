@@ -35,7 +35,7 @@
 	</context-param>
 	<context-param>
 		<param-name>matrixDbOptions</param-name>
-		<param-value>#bnum=80000000#pccap=1073741824#apow=1</param-value>
+		<param-value>#bnum=6250000#pccap=1073741824#msiz=4294967296</param-value>
 	</context-param>
  	<context-param>
 		<param-name>csvDir</param-name>
