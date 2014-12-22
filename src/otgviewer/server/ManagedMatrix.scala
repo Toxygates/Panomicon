@@ -243,7 +243,7 @@ class ManagedMatrix(val initProbes: Array[String],
   protected var currentMat: ExprMatrix = rawGroupedMat
   
   protected var _synthetics: Vector[Synthetic] = Vector()  
-  protected var _sortColumn: Int = 0
+  protected var _sortColumn: Int = -1
   protected var _sortAscending: Boolean = false
   
   protected var requestProbes: Array[String] = initProbes
