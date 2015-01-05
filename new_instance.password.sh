@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#The main difference between this script and new_instance.public 
+#is that the cat << EOF part at the end is more complicated.
+
 THOME=/shiba/toxygates/webapp_test
 #THOME=/opt/apache-tomcat-6.0.36/webapps
 
@@ -24,11 +27,13 @@ then
 fi
 
 cp -r $THOME/t_viewer_template $TDIR
+mkdir -p $THOME/shared/$INSTANCE
 
-TARGET=$TDIR/WEB-INF/web.xml
-cat $THOME/t_viewer_template/WEB-INF/web.xml.template | sed "s/##instanceName##/$INSTANCE/" > $TARGET
+SDIR=$THOME/t_viewer_template
+cat $THOME/t_viewer_template/WEB-INF/web.xml.template | sed "s/##instanceName##/$INSTANCE/" > $TDIR/WEB-INF/web.xml
+cat $THOME/t_viewer_template/toxygates.html.template | sed "s/##instanceName##/$INSTANCE/" > $TDIR/toxygates.html
 
-cat >> $TARGET <<EOF
+cat >> $TDIR/WEB-INF/web.xml <<EOF
 
 <security-constraint>
   <web-resource-collection>
@@ -49,5 +54,5 @@ cat >> $TARGET <<EOF
 
 EOF
 
-touch $THOME/$APPNAME
+touch $TDIR
 

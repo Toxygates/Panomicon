@@ -189,7 +189,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	}
 	
 	protected String keyPrefix(Screen s) {
-		// TODO use enum		
+		// TODO use instance name		
 		return s.manager.storagePrefix();		
 	}
 	

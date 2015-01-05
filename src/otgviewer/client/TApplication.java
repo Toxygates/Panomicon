@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import javax.annotation.Nullable;
+
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.dialog.DialogPosition;
@@ -130,22 +132,38 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 		l.info("onModuleLoad() finished");
 	}
 	
+	private @Nullable String getMeta(String key) {
+		NodeList<Element> metas = Document.get().getElementsByTagName("meta");
+	    for (int i=0; i<metas.getLength(); i++) {
+	        MetaElement meta = (MetaElement) metas.getItem(i);
+	        if (key.equals(meta.getName())) {
+	        	return meta.getContent();	            
+	        }
+	    }
+	    return null;
+	}
+	
 	/**
 	 * A <meta> tag in the hosting HTML page identifies the kind of UI we want 
 	 * to show in this application.
 	 * E.g.: <meta name="uitype" content="toxygates"> .
+	 * TODO: retire
 	 * @return The requested UI type
 	 */
+	@Deprecated
 	public String getUIType() {
-		NodeList<Element> metas = Document.get().getElementsByTagName("meta");
-	    for (int i=0; i<metas.getLength(); i++) {
-	        MetaElement meta = (MetaElement) metas.getItem(i);
-	        if ("uitype".equals(meta.getName())) {
-	        	return meta.getContent();	            
-	        }
-	    }
-	    return "toxygates"; // Default UIType
+		String v = getMeta("uitype");
+		return v != null ? v : "toxygates";		
 	}	
+
+	/**
+	 * E.g.: <meta name="instanceName" content="toxygates"> .
+	 * @return
+	 */
+	public String instanceName() {
+		String v = getMeta("instanceName");
+		return v != null ? v : "default";
+	}
 		
 	protected MenuBar setupMenu() {
 		MenuBar menuBar = new MenuBar(false);

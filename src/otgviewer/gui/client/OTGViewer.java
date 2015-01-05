@@ -37,7 +37,9 @@ public class OTGViewer extends TApplication {
 		return schema;
 	}
 	
+	//TODO should use instanceName instead
 	@Override
+	@Deprecated 
 	public String storagePrefix() {
 		String uit = getUIType();
 		if (uit.equals("toxygates")) {

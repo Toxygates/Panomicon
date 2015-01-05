@@ -22,11 +22,13 @@ then
 fi
 
 cp -r $THOME/t_viewer_template $TDIR
+mkdir -p $THOME/shared/$INSTANCE
 
-TARGET=$TDIR/WEB-INF/web.xml
-cat $THOME/t_viewer_template/WEB-INF/web.xml.template | sed "s/##instanceName##/$INSTANCE/" > $TARGET
+SDIR=$THOME/t_viewer_template
+cat $THOME/t_viewer_template/WEB-INF/web.xml.template | sed "s/##instanceName##/$INSTANCE/" > $TDIR/WEB-INF/web.xml
+cat $THOME/t_viewer_template/toxygates.html.template | sed "s/##instanceName##/$INSTANCE/" > $TDIR/toxygates.html
 
-cat >> $TARGET <<EOF
+cat >> $TDIR/WEB-INF/web.xml <<EOF
 </web-app>
 EOF
 

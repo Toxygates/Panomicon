@@ -10,7 +10,7 @@ function makeWar {
     cp news.html.$VERSION news.html
     cp WEB-INF/web.xml.$VERSION WEB-INF/web.xml
     rm toxygates-$VERSION.war
-    jar cf toxygates-$VERSION.war toxygates otggui csv *.html *.pdf *.css images
+    jar cf toxygates-$VERSION.war toxygates otggui csv *.html *.pdf *.css images *.html.template
     jar uf toxygates-$VERSION.war  $(find WEB-INF \( -path WEB-INF/classes/t/admin -o \
       -path WEB-INF/classes/t/global \) -prune -o \( -type f -print \) )
     cd ..
@@ -34,12 +34,11 @@ function makeAdminWar {
 }
 
 WARLIB=war/WEB-INF/lib
-#rm $WARLIB/*
 ivy.sh -retrieve lib/[type]/[artifact]-[revision].[ext] 
 cp lib/*.jar $WARLIB
 cp lib/jar/* $WARLIB
 cp lib/bundle/*.jar $WARLIB
-#This should be in the shared tomcat lib dir
+#This should be in the shared tomcat lib dir (tglobal.jar)
 rm $WARLIB/kyotocabinet*jar
 rm $WARLIB/scala-library.jar
 
