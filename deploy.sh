@@ -2,16 +2,14 @@
 
 function makeWar {
     VERSION=$1
+    OUTPUT=toxygates-$VERSION.war
     cp -r ../OTGTool/bin/friedrich war/WEB-INF/classes
     cp -r ../OTGTool/bin/otg war/WEB-INF/classes
     cp -r ../OTGTool/bin/t war/WEB-INF/classes
     cd war
-    cp toxygates.html.$VERSION toxygates.html
-    cp news.html.$VERSION news.html
-    cp WEB-INF/web.xml.$VERSION WEB-INF/web.xml
-    rm toxygates-$VERSION.war
-    jar cf toxygates-$VERSION.war toxygates otggui csv *.html *.pdf *.css images *.html.template
-    jar uf toxygates-$VERSION.war  $(find WEB-INF \( -path WEB-INF/classes/t/admin -o \
+    rm $OUTPUT
+    jar cf $OUTPUT toxygates otggui csv *.pdf *.css images *.html.template
+    jar uf $OUTPUT $(find WEB-INF \( -path WEB-INF/classes/t/admin -o \
       -path WEB-INF/classes/t/global \) -prune -o \( -type f -print \) )
     cd ..
     rm -r war/WEB-INF/classes/otg
@@ -46,7 +44,7 @@ cp war/toxygates.html war/toxygates.html.bak
 cp war/news.html war/news.html.bak
 cp war/WEB-INF/web.xml war/WEB-INF/web.xml.bak
 
-makeWar test
+makeWar template
 makeAdminWar
 
 cp war/toxygates.html.bak war/toxygates.html
