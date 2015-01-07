@@ -299,6 +299,10 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 
   import scala.collection.{ Map => CMap, Set => CSet }
 
+  //TODO refactor this; instead of gathering all column logic here,
+  //implement each column separately in a way that incorporates
+  //both presentation and lookup code
+  
   @throws[TimeoutException]
   def associations(sc: SampleClass, types: Array[AType],
     _probes: Array[String]): Array[Association] = {
@@ -379,6 +383,10 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
         val osaAll = osaGenes.flatMap(_._2)
         queryOrEmpty(b2rKegg,
         (c: B2RKegg) => osaGenes combine c.forGenesOSA(osaAll))
+      case x: AType.Contigs.type => queryOrEmpty(affyProbes, 
+          (a: Probes) => a.contigs(probes))             
+      case x: AType.SNPs.type =>  queryOrEmpty(affyProbes, 
+          (a: Probes) => a.SNPs(probes))
     }
 
     def standardMapping(m: BBMap): MMap[String, (String, String)] =

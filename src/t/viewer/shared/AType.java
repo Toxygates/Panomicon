@@ -47,7 +47,9 @@ public enum AType {
 	KEGGOSA("O.Sativa orth. pathways") {
 		//TODO construct proper link
 		public String formLink(String value) { return value; }
-	};
+	},
+	Contigs("Contigs"),
+	SNPs("SNPs");
 
 	private String _title;
 
