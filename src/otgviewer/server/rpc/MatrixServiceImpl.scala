@@ -97,7 +97,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   private var tgConfig: Configuration = _
   private var csvDirectory: String = _
   private var csvUrlBase: String = _
-  private implicit var context: OTGContext = _
+  protected implicit var context: OTGContext = _
 
   protected val schema: DataSchema = new OTGSchema()
   
