@@ -9,6 +9,7 @@ import otg.sparql._
 import t.viewer.shared.StringList
 import otgviewer.server.rpc.Conversions
 import otg.sparql.Probes
+import t.platform.Probe
 
 object TargetMine {
   import Conversions._

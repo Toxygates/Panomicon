@@ -13,7 +13,6 @@ import otg.OTGContext
 import otg.sparql.Probes
 import t.sparql._
 import otg.sparql.OTGSamples
-import otg.sparql.Probe
 import otgviewer.client.rpc.MatrixService
 import t.viewer.server.Configuration
 import otgviewer.server.ManagedMatrix
@@ -44,6 +43,8 @@ import t.db.MatrixDBReader
 import otgviewer.shared.DBUnavailableException
 import t.common.shared.DataSchema
 import otgviewer.shared.OTGSchema
+import t.platform.Probe
+import t.db.MatrixContext
 
 object MatrixServiceImpl {
   
@@ -64,9 +65,7 @@ object MatrixServiceImpl {
   
   def staticInit(bc: BaseConfig) = synchronized {
     if (!inited) {
-      val ts = bc.triplestore.triplestore
-
-      probes = new Probes(ts)
+      probes = new Probes(bc.triplestore)
       otgSamples = new OTGSamples(bc)
       orthologs = probes.orthologMappings
       platforms = Platforms(probes)
@@ -98,6 +97,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   private var csvDirectory: String = _
   private var csvUrlBase: String = _
   protected implicit var context: OTGContext = _
+  protected implicit var ocontext: otg.Context = _
 
   protected val schema: DataSchema = new OTGSchema()
   
@@ -114,7 +114,9 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     tgConfig = config
     //TODO parse baseConfig directly somewhere
     baseConfig = baseConfig(config.tsConfig, config.dataConfig)
-    context = config.context(baseConfig)
+    //TODO revise where this gets created
+    ocontext = otg.Context(baseConfig)
+    context = ocontext.matrix
     staticInit(baseConfig)
   }
   

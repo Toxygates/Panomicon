@@ -51,7 +51,7 @@ object Conversions {
   }
 
   implicit def asScala(sc: SampleClass, series: Series)(implicit context: Context): OTGSeries = {
-	val p = context.unifiedProbes.pack(series.probe) //TODO filtering
+	val p = context.matrix.probeMap.pack(series.probe) //TODO filtering
 	
 	new OTGSeries(sc.get("sin_rep_type"), 
 	    sc.get("organ_id"), sc.get("organism"), 
@@ -59,6 +59,7 @@ object Conversions {
   }
 
   implicit def asJava(series: OTGSeries)(implicit context: Context): Series = {
+    implicit val mc = context.matrix
 	new Series(series.compound + " " + series.dose, series.probeStr, series.dose,
 	    series.compound, series.values.map(asJava).toArray)
   }

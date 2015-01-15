@@ -31,6 +31,8 @@ import t.TriplestoreConfig
 import otgviewer.shared.DBUnavailableException
 import t.global.KCDBRegistry
 import otgviewer.shared.OTGSchema
+import otg.OTGContext
+import t.db.MatrixContext
 
 class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   import Conversions._
@@ -38,7 +40,9 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
 
   import java.lang.{ Double => JDouble }
 
-  private implicit var context: OTGContext = _
+  private implicit var context: otg.Context = _ 
+  private implicit var mcontext: OTGContext = _
+  
   var affyProbes: Probes = _
   var baseConfig: BaseConfig = _
   
@@ -52,9 +56,11 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   def localInit(config: Configuration) {
     val homePath = config.toxygatesHomeDir
     baseConfig = baseConfig(config.tsConfig, config.dataConfig)
-    context = config.context(baseConfig)
     
-    affyProbes = new Probes(context.triplestoreConfig.triplestore)
+    //TODO avoid initializing Context in each service 
+    context = otg.Context(baseConfig)
+    mcontext = context.matrix
+    affyProbes = context.probes
   }
   
   def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig = 
@@ -90,7 +96,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
 
     //Convert the input probes (which may actually be genes) into definite probes
     probesRules = probesRules.flatMap(pr => {
-      val resolved = affyProbes.identifiersToProbes(context.unifiedProbes,  
+      val resolved = affyProbes.identifiersToProbes(mcontext.unifiedProbes,  
           Array(pr._1), true, true)
       if (resolved.size == 0) {
         throw new NoSuchProbeException(pr._1)
@@ -139,7 +145,7 @@ class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
   }
 
   def getSeries(sc: SampleClass, probes: Array[String], timeDose: String, compounds: Array[String]): JList[Series] = {
-    val validated = affyProbes.identifiersToProbes(context.unifiedProbes, 
+    val validated = affyProbes.identifiersToProbes(mcontext.unifiedProbes, 
         probes, true, true).map(_.identifier)
     val db = getDB()
     try {

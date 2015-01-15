@@ -27,7 +27,7 @@ class TargetmineServiceImpl extends RemoteServiceServlet with TargetmineService 
 
   // Useful for testing
   def localInit(config: Configuration) {            
-    affyProbes = new Probes(config.tsConfig.triplestore)
+    affyProbes = new Probes(config.tsConfig)
     platforms = Platforms(affyProbes)
   }
   

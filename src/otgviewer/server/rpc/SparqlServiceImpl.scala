@@ -13,11 +13,10 @@ import otg.OTGBConfig
 import otg.OTGContext
 import otg.Species.Human
 import t.sparql.secondary._
-import otg.sparql.Probes
 import otg.sparql._
 import t.sparql._
 import otgviewer.client.rpc.SparqlService
-import otgviewer.server.ScalaUtils.useTriplestore
+import otgviewer.server.ScalaUtils.gracefully
 import otgviewer.shared.OTGColumn
 import otgviewer.shared.OTGSample
 import otgviewer.shared.Pathology
@@ -39,13 +38,15 @@ import t.viewer.server.Conversions.scAsScala
 import t.viewer.shared.AType
 import t.viewer.shared.Association
 import otgviewer.server.ScalaUtils
-import otg.sparql.Probes
 import otgviewer.shared.TimeoutException
 import otgviewer.shared.OTGSchema
+import t.platform.Probe
+import otg.sparql.Probes
 
 object SparqlServiceImpl {
-  var inited = false
-  var affyProbes: Probes = _
+  //TODO consider moving these to an application-wide SparqlContext or similar
+  
+  var inited = false  
   var uniprot: Uniprot = _
   var otgSamples: OTGSamples = _
   var b2rKegg: B2RKegg = _
@@ -54,19 +55,20 @@ object SparqlServiceImpl {
   var homologene: B2RHomologene = _
   //TODO update mechanism for this
   var platforms: Map[String, Iterable[String]] = _
-
-  def staticInit(bc: BaseConfig) = synchronized {
+  
+  def staticInit(c: otg.Context) = synchronized {
+    val bc = c.config
+    val f = c.factory
     if (!inited) {
       val tsCon = bc.triplestore
       val ts = tsCon.triplestore
-      otgSamples = new OTGSamples(bc)
-      affyProbes = new Probes(ts)
+      otgSamples = new OTGSamples(bc)      
       uniprot = new LocalUniprot(ts)
       b2rKegg = new B2RKegg(ts)
       chembl = new ChEMBL()
       drugBank = new DrugBank()
       homologene = new B2RHomologene()
-      platforms = affyProbes.platforms
+      platforms = c.probes.platforms
       inited = true
     }
   }
@@ -79,6 +81,8 @@ object SparqlServiceImpl {
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
  * local Owlim-lite store.
+ * 
+ * TODO: extract superclass
  */
 class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   import Conversions._
@@ -88,13 +92,14 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
 
   type DataColumn = t.common.shared.sample.DataColumn[OTGSample]
     
-  implicit var context: OTGContext = _
-  var baseConfig: BaseConfig = _
-  var tgConfig: Configuration = _
+  implicit var context: otg.Context = _
+  var baseConfig: BaseConfig = _  
  
   var instanceURI: Option[String] = None
   
   protected val schema: DataSchema = new OTGSchema()
+  
+  protected def probeStore: Probes = context.probes
   
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
@@ -103,10 +108,9 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   }
   
   def localInit(conf: Configuration) {
-	this.baseConfig = baseConfig(conf.tsConfig, conf.dataConfig)
-    this.context = conf.context(baseConfig)
-    this.tgConfig = conf   
-    staticInit(baseConfig)
+	  this.baseConfig = baseConfig(conf.tsConfig, conf.dataConfig)
+    this.context = otg.Context(baseConfig)    
+    staticInit(context)
  
     if (conf.instanceName == null || conf.instanceName == "") {
       instanceURI = None
@@ -252,7 +256,7 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   @throws[TimeoutException]
   def geneSyms(probes: Array[String]): Array[Array[String]] = {
     val ps = probes.map(p => Probe(p))
-    val attrib = affyProbes.withAttributes(ps)
+    val attrib = probeStore.withAttributes(ps)
     probes.map(pi => attrib.find(_.identifier == pi).
       map(_.symbolStrings.toArray).getOrElse(Array()))
   }
@@ -261,8 +265,8 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   def probesForPathway(sc: SampleClass, pathway: String): Array[String] = {    
     val geneIds = b2rKegg.geneIds(pathway).map(Gene(_))
     println("Probes for " + geneIds.size + " genes")
-    val probes = affyProbes.forGenes(geneIds).toArray
-    val pmap = context.unifiedProbes //TODO
+    val probes = probeStore.forGenes(geneIds).toArray
+    val pmap = context.matrix.unifiedProbes //TODO
     probes.map(_.identifier).filter(pmap.isToken).toArray
   }
   
@@ -278,23 +282,23 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     }
     val pbs = if (homologous) {
       val oproteins = uniprot.orthologsFor(proteins, sp).values.flatten.toSet
-      affyProbes.forUniprots(oproteins ++ proteins)
+      probeStore.forUniprots(oproteins ++ proteins)
       //      OTGOwlim.probesForEntrezGenes(genes)
     } else {
-      affyProbes.forUniprots(proteins)
+      probeStore.forUniprots(proteins)
     }
-    val pmap = context.unifiedProbes //TODO context.probes(filter)
+    val pmap = context.matrix.unifiedProbes //TODO context.probes(filter)
     pbs.toSet.map((p: Probe) => p.identifier).filter(pmap.isToken).toArray
   }
 
   @throws[TimeoutException]
   def goTerms(pattern: String): Array[String] =
-    affyProbes.goTerms(pattern).map(_.name).toArray
+    probeStore.goTerms(pattern).map(_.name).toArray
 
   @throws[TimeoutException]
   def probesForGoTerm(goTerm: String): Array[String] = {
-    val pmap = context.unifiedProbes 
-    affyProbes.forGoTerm(GOTerm("", goTerm)).map(_.identifier).filter(pmap.isToken).toArray
+    val pmap = context.matrix.unifiedProbes 
+    probeStore.forGoTerm(GOTerm("", goTerm)).map(_.identifier).filter(pmap.isToken).toArray
   }
 
   import scala.collection.{ Map => CMap, Set => CSet }
@@ -305,31 +309,38 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
   
   @throws[TimeoutException]
   def associations(sc: SampleClass, types: Array[AType],
-    _probes: Array[String]): Array[Association] = {
-    val probes = affyProbes.withAttributes(_probes.map(Probe(_)))
+    _probes: Array[String]): Array[Association] =    
+    new AnnotationResolver(sc, types, _probes).resolve
+  
+  import Association._
 
-    def queryOrEmpty[T <: Triplestore](c: T, f: T => BBMap): BBMap = {
-      val emptyVal = CSet(DefaultBio("error", "(Timeout or error)"))
-      useTriplestore(c, f,
-        Map() ++ probes.map(p => (Probe(p.identifier) -> emptyVal)))
-    }
-    val proteins = toBioMap(probes, (_: Probe).proteins)
+  protected class AnnotationResolver(sc: SampleClass, types: Array[AType],
+      _probes: Iterable[String]) {
+    val probes = probeStore.withAttributes(_probes.map(Probe(_)))
+    
+    lazy val proteins = toBioMap(probes, (_: Probe).proteins)
 
-//    val sp = asSpecies(sc)
+    //    val sp = asSpecies(sc)
     //orthologous proteins if needed
-    val oproteins = if ((types.contains(AType.Chembl) || types.contains(AType.Drugbank) || types.contains(AType.OrthProts))
-//      && (sp != Human)
-      && false // Not used currently due to performance issues!
-      ) {
-      // This always maps to Human proteins as they are assumed to contain the most targets
-      val r = proteins combine ((ps: Iterable[Protein]) => uniprot.orthologsFor(ps, Human))
-      r
-    } else {
-      emptyMMap[Probe, Protein]()
-    }
-    println(oproteins.allValues.size + " oproteins")
+    lazy val oproteins = {
 
-    def getTargeting(from: CompoundTargets): MMap[Probe, Compound] = {
+      val r = if ((types.contains(AType.Chembl) ||
+        types.contains(AType.Drugbank) ||
+        types.contains(AType.OrthProts))
+        //      && (sp != Human)
+        && false // Not used currently due to performance issues!
+        ) {
+        // This always maps to Human proteins as they are assumed to contain the most targets
+        val r = proteins combine ((ps: Iterable[Protein]) => uniprot.orthologsFor(ps, Human))
+        r
+      } else {
+        emptyMMap[Probe, Protein]()
+      }
+      println(r.allValues.size + " oproteins")
+      r
+    }
+
+    def getTargeting(sc: SampleClass, from: CompoundTargets): MMap[Probe, Compound] = {
       val expected = otgSamples.compounds(sc, instanceURI).map(Compound.make(_))
 
       //strictly orthologous
@@ -343,63 +354,56 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
         x
       })
     }
-    
-    //OSA genes if needed
-    //TODO move this and other tritigate specific code to subclass
-    val osaGenes = if (types.contains(AType.EnsemblOSA) || types.contains(AType.KEGGOSA)) {
-        affyProbes.osaGenes(probes)
-    } else {
-      emptyMMap[Probe, DefaultBio]()
-    }
 
-    import Association._
-    def lookupFunction(t: AType): BBMap = t match {
-      case x: AType.Chembl.type => queryOrEmpty(chembl, getTargeting(_: ChEMBL))
-      case x: AType.Drugbank.type => queryOrEmpty(drugBank, getTargeting(_: DrugBank))
-      case x: AType.Uniprot.type => proteins
-      case x: AType.OrthProts.type => oproteins
-      case x: AType.GOMF.type => queryOrEmpty(affyProbes, 
-          (a: Probes) => a.mfGoTerms(probes))        
-      case x: AType.GOBP.type => queryOrEmpty(affyProbes, 
-          (a: Probes) => a.bpGoTerms(probes))        
-      case x: AType.GOCC.type => queryOrEmpty(affyProbes, 
-          (a: Probes) => a.ccGoTerms(probes))        
-      case x: AType.GO.type => queryOrEmpty(affyProbes, 
-          (a: Probes) => a.goTerms(probes))
-      case x: AType.Homologene.type => queryOrEmpty(homologene,
-        (c: B2RHomologene) => toBioMap(probes, (_: Probe).genes) combine
-          c.homologousGenes(probes.flatMap(_.genes)))
-      case x: AType.KEGG.type =>
-        val sp = asSpecies(sc)
-        queryOrEmpty(b2rKegg,
-        (c: B2RKegg) => toBioMap(probes, (_: Probe).genes) combine
-          c.forGenes(probes.flatMap(_.genes), sp))
-      case x: AType.Enzymes.type =>
-        val sp = asSpecies(sc)
-        queryOrEmpty(b2rKegg,
-        (c: B2RKegg) => c.enzymes(probes.flatMap(_.genes), sp))
-      case x: AType.EnsemblOSA.type => osaGenes         
-      case x: AType.KEGGOSA.type =>         
-        val osaAll = osaGenes.flatMap(_._2)
-        queryOrEmpty(b2rKegg,
-        (c: B2RKegg) => osaGenes combine c.forGenesOSA(osaAll))
-      case x: AType.Contigs.type => queryOrEmpty(affyProbes, 
-          (a: Probes) => a.contigs(probes))             
-      case x: AType.SNPs.type =>  queryOrEmpty(affyProbes, 
-          (a: Probes) => a.SNPs(probes))
+    def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe]): BBMap =
+      at match {
+        case _: AType.Chembl.type    => getTargeting(sc, chembl)
+        case _: AType.Drugbank.type  => getTargeting(sc, drugBank)
+
+        // The type annotation :BBMap is needed on at least one (!) match pattern
+        // to make the match statement compile. TODO: research this
+        case _: AType.Uniprot.type   => proteins: BBMap
+        case _: AType.OrthProts.type => oproteins
+        case _: AType.GOMF.type      => probeStore.mfGoTerms(probes)
+        case _: AType.GOBP.type      => probeStore.bpGoTerms(probes)
+        case _: AType.GOCC.type      => probeStore.ccGoTerms(probes)
+        case _: AType.GO.type        => probeStore.goTerms(probes)
+        case _: AType.Homologene.type =>
+          toBioMap(probes, (_: Probe).genes) combine
+            homologene.homologousGenes(probes.flatMap(_.genes))
+        case _: AType.KEGG.type =>
+          val sp = asSpecies(sc)
+          toBioMap(probes, (_: Probe).genes) combine
+            b2rKegg.forGenes(probes.flatMap(_.genes), sp)
+        case _: AType.Enzymes.type =>
+          val sp = asSpecies(sc)
+          b2rKegg.enzymes(probes.flatMap(_.genes), sp)
+      }
+
+       
+    val emptyVal = CSet(DefaultBio("error", "(Timeout or error)"))
+    val errorVals = Map() ++ probes.map(p => (Probe(p.identifier) -> emptyVal))
+    
+    def queryOrEmpty[T](f: () => BBMap): BBMap = {      
+      gracefully(f, errorVals)
     }
+    
+    def lookupFunction(t: AType): BBMap =
+      queryOrEmpty(() => associationLookup(t, sc, probes))
 
     def standardMapping(m: BBMap): MMap[String, (String, String)] =
       m.mapKValues(_.identifier).mapMValues(p => (p.name, p.identifier))
 
-    val m1 = types.par.map(x => (x, standardMapping(lookupFunction(x)))).seq
+    def resolve(): Array[Association] = {
 
-    m1.map(p => new Association(p._1, convertPairs(p._2))).toArray
+      val m1 = types.par.map(x => (x, standardMapping(lookupFunction(x)))).seq
+      m1.map(p => new Association(p._1, convertPairs(p._2))).toArray
+    }
   }
 
   @throws[TimeoutException]
   def geneSuggestions(sc: SampleClass, partialName: String): Array[String] = {    
-      affyProbes.probesForPartialSymbol(partialName, sc).map(_.identifier).toArray
+      probeStore.probesForPartialSymbol(partialName, sc).map(_.identifier).toArray
   }
 
 }

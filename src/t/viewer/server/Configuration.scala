@@ -5,6 +5,7 @@ import otg.OTGContext
 import t.TriplestoreConfig
 import t.DataConfig
 import t.BaseConfig
+import t.db.MatrixContext
 
 object Configuration {
   /**
@@ -50,6 +51,4 @@ class Configuration(val repositoryName: String,
   def tsConfig = TriplestoreConfig(repositoryUrl, updateUrl,
     repositoryUser, repositoryPass, repositoryName)
   def dataConfig = DataConfig(toxygatesHomeDir, matrixDbOptions)
-    
-  def context(bc: BaseConfig) = new OTGContext(bc)  
 }

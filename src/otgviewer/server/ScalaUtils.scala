@@ -3,9 +3,9 @@ package otgviewer.server
 import t.sparql.Triplestore
 
 object ScalaUtils {
-  def useTriplestore[C <: Triplestore, T](conn: C, f: C => T, onFailure: T): T = {
+  def gracefully[T](f: () => T, onFailure: T): T = {
     try {
-      f(conn)
+      f()
     } catch {
       case e: Exception =>
         e.printStackTrace()
