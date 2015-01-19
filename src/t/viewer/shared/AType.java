@@ -49,7 +49,8 @@ public enum AType {
 		public String formLink(String value) { return value; }
 	},
 	Contigs("Contigs"),
-	SNPs("SNPs");
+	SNPs("SNPs"),
+	POPSEQ("POPSEQ distances");
 
 	private String _title;
 
