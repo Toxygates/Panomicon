@@ -38,11 +38,45 @@ object GetMatrix {
   def formatVal(x: ExpressionValue): String = 
     "%.3f".format(x.getValue) + "(" + x.getCall + ")"
     
+  def showHelp() {
+    println("Usage: getMatrix (URL) (type) (range) group1 group2 ...")
+    println("Type can be f or a.")
+    println("Group definitions can of the form name=id1,id2,id3 or simply id1.")
+    println("The range can be e.g. 10:60 for rows 10-60, or 'full' for the full matrix.")
+  }
+  
+  sealed trait Range
+  case class Limited(offset: Int, length: Int) extends Range
+  case object Full extends Range
+
 	def main(args: Array[String]) {
 		val url = args(0)        
+    
+    if (args.length < 4) {
+      showHelp()
+      System.exit(1)
+    }
+    
 		val schema = new OTGSchema()
-		val offset = args(1).toInt
-    val limit = args(2).toInt
+    val vtype = args(1) match {
+      case "f" => ValueType.Folds
+      case "a" => ValueType.Absolute
+      case _ => println("Unexpected value type: " + args(1) + ". " +
+          "Valid types are 'f' and 'a' (fold and absolute).")
+          throw new Exception("Illegal argument")
+    }
+    
+    val range = args(2) match {
+      case "full" => Full
+      case _ =>
+        val spl = args(2).split(":")
+        if (spl.size < 2) {
+          showHelp()
+          throw new Exception("Invalid range specification")
+        } else {
+          Some(Limited(spl(0).toInt, spl(1).toInt))
+        }
+    }
     
     val groups = new JList[Group]()
     for (g <- args.drop(3).map(extractGroup)) {
@@ -54,18 +88,24 @@ object GetMatrix {
 		    url, "matrix").asInstanceOf[MatrixService]
 
 		val probes = Array[String]() //empty -> load all
-		val vtype = ValueType.Folds
-    
+		
 		val synthCols = new JList[Synthetic]()
 		println("Load dataset")
 		val colInfo = matServiceAsync.loadDataset(groups, probes, vtype, synthCols)
 		val colNames = (0 until colInfo.numColumns()).map(colInfo.columnName(_))
     
-		val amt = if (limit > 100) 100 else limit
-		println(s"Get items offset $offset limit $limit")
-    //sort by first column, descending
-		val items = matServiceAsync.datasetItems(offset, amt, 0, false)
-    
+    val items = range match {
+      case Full =>
+        //TODO getFullData does not return a colInfo, but it is independent of the
+        //loadDataset call above.
+        matServiceAsync.getFullData(groups, Array(), false, true, vtype)
+      case Limited(offset, limit) =>
+        val amt = if (limit > 100) 100 else limit
+        println(s"Get items offset $offset limit $limit")
+        //sort by first column, descending
+        matServiceAsync.datasetItems(offset, amt, 0, false)    
+    }
+  
     //Column headers
     println("%15s".format("probe") +"\t%20s\t".format("gene symbols") ++ 
         colNames.mkString("\t"))
