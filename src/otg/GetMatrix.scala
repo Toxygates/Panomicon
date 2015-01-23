@@ -17,7 +17,7 @@ object GetMatrix {
   import java.util.{LinkedList => JList}
   import scala.collection.JavaConversions._
   
-  //Warning, sampleClass is null
+  //Warning, controlGroup is null
   def makeSample(code: String) = 
     new OTGSample(code, new SampleClass(), null)
   
