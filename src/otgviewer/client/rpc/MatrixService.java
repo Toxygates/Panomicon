@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import otgviewer.shared.FullMatrix;
 import otgviewer.shared.Group;
 import otgviewer.shared.ManagedMatrixInfo;
 import otgviewer.shared.ServerError;
@@ -42,6 +43,10 @@ public interface MatrixService extends RemoteService {
 	
 	/**
 	 * Load data into the user's session. Also perform an initial filtering. 
+	 * 
+	 * TODO: this call should return a FullMatrix with the first page of rows.
+	 * In effect, merge loadDataset() with the first call to datasetRows().
+	 * 
 	 * @param barcodes
 	 * @param probes
 	 * @param type
@@ -109,7 +114,7 @@ public interface MatrixService extends RemoteService {
 	 * 	into the rows (may be slightly slower)
 	 * @return
 	 */
-	public List<ExpressionRow> getFullData(List<Group> gs, String[] probes, 
+	public FullMatrix getFullData(List<Group> gs, String[] probes, 
 			boolean sparseRead, boolean withSymbols, ValueType type)
 			throws ServerError;
 	

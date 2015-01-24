@@ -15,6 +15,7 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.rpc.MatrixService;
 import otgviewer.client.rpc.MatrixServiceAsync;
+import otgviewer.shared.FullMatrix;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Series;
@@ -300,15 +301,15 @@ abstract class ChartDataSource {
 			gs.add(g);
 			matrixService.getFullData(gs, 
 					probes, true, false, type,  
-					new PendingAsyncCallback<List<ExpressionRow>>(screen) {
+					new PendingAsyncCallback<FullMatrix>(screen) {
 				@Override
 				public void handleFailure(Throwable caught) {
 					Window.alert("Unable to obtain chart data.");
 				}
 
 				@Override
-				public void handleSuccess(final List<ExpressionRow> rows) {
-					addSamplesFromBarcodes(useSamples.toArray(new OTGSample[0]), rows);	
+				public void handleSuccess(final FullMatrix mat) {
+					addSamplesFromBarcodes(useSamples.toArray(new OTGSample[0]), mat.rows());	
 					getSSamples(majors, medsOrMins, organisms, policy, acceptor);
 				}					
 			});
@@ -376,15 +377,15 @@ abstract class ChartDataSource {
 			chartSamples.clear();						
 			matrixService.getFullData(groups, 
 					probes, true, false, type,  
-					new PendingAsyncCallback<List<ExpressionRow>>(screen) {
+					new PendingAsyncCallback<FullMatrix>(screen) {
 				@Override
 				public void handleFailure(Throwable caught) {
 					Window.alert("Unable to obtain chart data.");
 				}
 
 				@Override
-				public void handleSuccess(final List<ExpressionRow> rows) {
-					addSamplesFromUnits(useUnits, rows);	
+				public void handleSuccess(final FullMatrix mat) {
+					addSamplesFromUnits(useUnits, mat.rows());	
 					getSSamples(majors, medsOrMins, organisms, policy, acceptor);
 				}					
 			});

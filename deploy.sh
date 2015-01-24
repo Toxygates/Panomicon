@@ -36,9 +36,12 @@ ivy.sh -retrieve lib/[type]/[artifact]-[revision].[ext]
 cp lib/*.jar $WARLIB
 cp lib/jar/* $WARLIB
 cp lib/bundle/*.jar $WARLIB
-#This should be in the shared tomcat lib dir (tglobal.jar)
+#These should be in the shared tomcat lib dir (tglobal.jar)
 rm $WARLIB/kyotocabinet*jar
 rm $WARLIB/scala-library.jar
+#These should not be deployed in a servlet context
+rm $WARLIB/servlet-api.jar
+rm $WARLIB/javaee-api-5.0.2.jar
 
 cp war/toxygates.html war/toxygates.html.bak
 cp war/news.html war/news.html.bak

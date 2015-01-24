@@ -45,6 +45,7 @@ import t.common.shared.DataSchema
 import otgviewer.shared.OTGSchema
 import t.platform.Probe
 import t.db.MatrixContext
+import otgviewer.shared.FullMatrix
 
 object MatrixServiceImpl {
   
@@ -319,12 +320,12 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     })
   }
   
-  def getFullData(gs: JList[Group], probes: Array[String], sparseRead: Boolean, 
-      withSymbols: Boolean, typ: ValueType): JList[ExpressionRow] = {
+  def getFullData(gs: JList[Group], rprobes: Array[String], sparseRead: Boolean, 
+      withSymbols: Boolean, typ: ValueType): FullMatrix = {
     val sgs = Vector() ++ gs
     val pfs = platformsForGroups(sgs)    
     
-    val realProbes = platforms.filterProbes(probes, pfs).toArray
+    val realProbes = platforms.filterProbes(rprobes, pfs).toArray
     val mm = makeMatrix(sgs, realProbes.toArray, typ, sparseRead, true)
     mm.info.setPlatforms(pfs.toArray)
     
@@ -341,9 +342,17 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     val rows = if (withSymbols) {
       insertAnnotations(raw, pfs.size > 1)
     } else {
-      raw
-    }    
-    new ArrayList[ExpressionRow](rows)    
+      //TODO: this should be a lazy val
+      //TODO: some clients need neither "symbols"/annotations nor geneIds
+      val gis = probes.allGeneIds(null).mapMValues(_.identifier).
+        mapKValues(_.identifier)
+      raw.map(or => {        
+        new ExpressionRow(or.getProbe, or.getAtomicProbes, or.getTitle,
+            or.getAtomicProbes.flatMap(p => gis.getOrElse(p, Seq.empty)),
+            or.getGeneSyms, or.getValues)
+      })      
+    }
+    new FullMatrix(mm2.info, new ArrayList[ExpressionRow](rows))    
   }
 
   @throws(classOf[NoDataLoadedException])

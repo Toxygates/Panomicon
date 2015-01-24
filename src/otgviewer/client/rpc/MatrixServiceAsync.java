@@ -4,13 +4,12 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import otgviewer.shared.DataFilter;
+import otgviewer.shared.FullMatrix;
 import otgviewer.shared.Group;
 import otgviewer.shared.ManagedMatrixInfo;
 import otgviewer.shared.Synthetic;
 import otgviewer.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
-import t.viewer.shared.StringList;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -35,7 +34,7 @@ public interface MatrixServiceAsync {
 
 	public void getFullData(List<Group> g, String[] probes,
 			boolean sparseRead, boolean withSymbols, ValueType typ,
-			AsyncCallback<List<ExpressionRow>> callback);
+			AsyncCallback<FullMatrix> callback);
 
 	public void prepareCSVDownload(AsyncCallback<String> callback);
 

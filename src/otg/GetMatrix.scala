@@ -74,7 +74,7 @@ object GetMatrix {
           showHelp()
           throw new Exception("Invalid range specification")
         } else {
-          Some(Limited(spl(0).toInt, spl(1).toInt))
+          Limited(spl(0).toInt, spl(1).toInt)
         }
     }
     
@@ -91,28 +91,28 @@ object GetMatrix {
 		
 		val synthCols = new JList[Synthetic]()
 		println("Load dataset")
-		val colInfo = matServiceAsync.loadDataset(groups, probes, vtype, synthCols)
-		val colNames = (0 until colInfo.numColumns()).map(colInfo.columnName(_))
-    
-    val items = range match {
+		
+    val (colInfo, items) = range match {
       case Full =>
-        //TODO getFullData does not return a colInfo, but it is independent of the
-        //loadDataset call above.
-        matServiceAsync.getFullData(groups, Array(), false, true, vtype)
+        val r = matServiceAsync.getFullData(groups, Array(), false, false, vtype)
+        (r.managedMatrixInfo(), r.rows())
       case Limited(offset, limit) =>
         val amt = if (limit > 100) 100 else limit
+        val colInfo = matServiceAsync.loadDataset(groups, probes, vtype, synthCols)
         println(s"Get items offset $offset limit $limit")
         //sort by first column, descending
-        matServiceAsync.datasetItems(offset, amt, 0, false)    
+        val rows = matServiceAsync.datasetItems(offset, amt, 0, false)    
+        (colInfo, rows)
     }
+    val colNames = (0 until colInfo.numColumns()).map(colInfo.columnName(_))
   
     //Column headers
-    println("%15s".format("probe") +"\t%20s\t".format("gene symbols") ++ 
+    println("%15s".format("probe") +"\t%20s\t".format("entrez") ++ 
         colNames.mkString("\t"))
         
 		for (i <- items) {      
 		  print("%15s".format(i.getProbe()) + "\t" + 
-          "%20s".format(i.getGeneSyms().mkString(",")) + "\t")      
+          "%20s".format(i.getGeneIds().mkString(",")) + "\t")      
 		  val formatted = (0 until colInfo.numColumns()).map(j => formatVal(i.getValue(j)))
       println(formatted.mkString("\t"))
 		}
