@@ -36,7 +36,8 @@ public interface MatrixServiceAsync {
 			boolean sparseRead, boolean withSymbols, ValueType typ,
 			AsyncCallback<FullMatrix> callback);
 
-	public void prepareCSVDownload(AsyncCallback<String> callback);
+	public void prepareCSVDownload(boolean individualSamples,
+			AsyncCallback<String> callback);
 
 	public void addTwoGroupTest(Synthetic.TwoGroupSynthetic test,
 			AsyncCallback<Void> callback);

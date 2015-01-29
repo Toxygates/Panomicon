@@ -11,30 +11,44 @@ import t.common.shared.SampleClass
 import t.common.shared.sample.ExpressionValue
 import java.net.CookieManager
 import java.net.CookiePolicy
+import sys.process._
+import java.net.URL
+import java.io.File
+import otgviewer.client.rpc.SparqlService
 
 object GetMatrix {
   
   import java.util.{LinkedList => JList}
   import scala.collection.JavaConversions._
   
-  //Warning, controlGroup is null
-  def makeSample(code: String) = 
-    new OTGSample(code, new SampleClass(), null)
-  
   val schema = new OTGSchema()
   
-  def extractGroup(arg: String): Group = {    
+  def extractGroup(arg: String, ss: Map[String, OTGSample]): Group = {    
      val s = arg.split("=")
      if (s.length == 1) {
-       val sample = makeSample(s(0))
+       val sample = ss(s(0))
        new Group(schema, s(0), Array(sample))
      } else {
        val n = s(0)
        val ids = s(1).split(",")
-       new Group(schema, n, ids.map(makeSample))
+       new Group(schema, n, ids.map(ss(_)))
      }    
   }
   
+  def discoverSamples(arg: String): List[String] = {
+     val s = arg.split("=")
+     if (s.length == 1) {
+       List(s(0))       
+     } else {
+       val n = s(0)
+       s(1).split(",").toList       
+     }    
+  }
+  
+  
+  def formatSci(x: ExpressionValue): String =
+    "%.3e".format(x.getValue)
+    
   def formatVal(x: ExpressionValue): String = 
     "%.3f".format(x.getValue) + "(" + x.getCall + ")"
     
@@ -50,6 +64,7 @@ object GetMatrix {
   case object Full extends Range
 
 	def main(args: Array[String]) {
+    
 		val url = args(0)        
     
     if (args.length < 4) {
@@ -78,12 +93,18 @@ object GetMatrix {
         }
     }
     
+    println(s"Create instance for $url")
+    val sServiceAsync = SyncProxy.newProxyInstance(classOf[SparqlService],
+    		url, "sparql").asInstanceOf[SparqlService]
+
+    val samples = args.drop(3).flatMap(discoverSamples)
+    val resolvedSamples = Map() ++ sServiceAsync.samplesById(samples).map(x => x.getCode -> x)
+    
     val groups = new JList[Group]()
-    for (g <- args.drop(3).map(extractGroup)) {
+    for (g <- args.drop(3).map(x => extractGroup(x, resolvedSamples))) {
       groups.add(g)
     }
-    
-		println(s"Create instance for $url")
+
 		val matServiceAsync = SyncProxy.newProxyInstance(classOf[MatrixService],
 		    url, "matrix").asInstanceOf[MatrixService]
 
@@ -92,29 +113,45 @@ object GetMatrix {
 		val synthCols = new JList[Synthetic]()
 		println("Load dataset")
 		
-    val (colInfo, items) = range match {
-      case Full =>
-        val r = matServiceAsync.getFullData(groups, Array(), false, false, vtype)
-        (r.managedMatrixInfo(), r.rows())
+    val colInfo = matServiceAsync.loadDataset(groups, probes, vtype, synthCols)
+    
+    range match {
+      case Full =>        
+        val url = matServiceAsync.prepareCSVDownload(false)
+        val target = url.split("/").last
+        println(s"Downloading $url to $target")
+        new URL(url) #> new File("$target") !!
       case Limited(offset, limit) =>
         val amt = if (limit > 100) 100 else limit
-        val colInfo = matServiceAsync.loadDataset(groups, probes, vtype, synthCols)
-        println(s"Get items offset $offset limit $limit")
-        //sort by first column, descending
-        val rows = matServiceAsync.datasetItems(offset, amt, 0, false)    
-        (colInfo, rows)
-    }
-    val colNames = (0 until colInfo.numColumns()).map(colInfo.columnName(_))
-  
-    //Column headers
-    println("%15s".format("probe") +"\t%20s\t".format("entrez") ++ 
-        colNames.mkString("\t"))
         
-		for (i <- items) {      
-		  print("%15s".format(i.getProbe()) + "\t" + 
-          "%20s".format(i.getGeneIds().mkString(",")) + "\t")      
-		  val formatted = (0 until colInfo.numColumns()).map(j => formatVal(i.getValue(j)))
-      println(formatted.mkString("\t"))
+        println(s"Get items offset $offset limit $limit")
+        
+        val specialPSort = (colInfo.numColumns() > 1 && colInfo.columnName(1).endsWith("(p)"))
+
+        //sort by first column, descending
+        val items = if (specialPSort) {
+          println("Using p-value sort on column " + colInfo.columnName(1))
+          matServiceAsync.datasetItems(offset, amt, 1, true)
+        } else {
+          matServiceAsync.datasetItems(offset, amt, 0, false)
+        }
+        
+        val colNames = (0 until colInfo.numColumns()).map(colInfo.columnName(_))
+  
+        //Column headers
+        println("%15s".format("probe") +"\t%20s\t".format("entrez") ++ 
+        		colNames.mkString("\t"))
+
+        for (i <- items) {      
+        	print("%15s".format(i.getProbe()) + "\t" + 
+        			"%20s".format(i.getGeneIds().mkString(",")) + "\t")      
+        	val formatted = (0 until colInfo.numColumns()).map(j => {
+            //TODO this is fragile
+            val isP = colInfo.columnName(j).endsWith("(p)")            
+            if (isP) formatSci(i.getValue(j)) else formatVal(i.getValue(j))
+          })
+        	println(formatted.mkString("\t"))
+        }
 		}
 	}
 }

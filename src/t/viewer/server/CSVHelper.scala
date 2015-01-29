@@ -41,8 +41,7 @@ object CSVHelper {
           }          
         }
         case None => ""
-
-        case d: Double => "%.3f".format(d)
+        case d: Double => d.toString
         case i: Int    => i.toString
         case _         => "\"" + obj.toString + "\""
       }

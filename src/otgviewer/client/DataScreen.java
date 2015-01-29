@@ -68,13 +68,21 @@ public class DataScreen extends Screen {
 		MenuBar mb = new MenuBar(true);		
 		MenuItem mActions = new MenuItem("File", false, mb);		
 		final DataScreen w = this;
-		MenuItem mntmDownloadCsv = new MenuItem("Download CSV...", false, new Command() {
+		MenuItem mntmDownloadCsv = new MenuItem("Download CSV (grouped samples)...", false, new Command() {
 			public void execute() {
-				et.downloadCSV();
+				et.downloadCSV(false);
 				
 			}
 		});
 		mb.addItem(mntmDownloadCsv);
+		 mntmDownloadCsv = new MenuItem("Download CSV (individual samples)...", false, new Command() {
+				public void execute() {
+					et.downloadCSV(true);
+					
+				}
+			});
+			mb.addItem(mntmDownloadCsv);
+		
 		addMenu(mActions);
 		
 		mb = new MenuBar(true);

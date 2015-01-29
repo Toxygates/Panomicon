@@ -35,6 +35,14 @@ public interface SparqlService extends RemoteService {
 			throws TimeoutException;
 
 	/**
+	 * Obtain samples (fully populated with metadata) from given IDs
+	 * @param ids
+	 * @return
+	 * @throws TimeoutException
+	 */
+	public OTGSample[] samplesById(String[] ids) throws TimeoutException;
+	
+	/**
 	 * Obtain samples for a given sample class.
 	 * 
 	 * @param sc

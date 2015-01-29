@@ -363,17 +363,33 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
   def removeTwoGroupTests(): Unit = 
     getSessionData.removeSynthetics
     
-  @throws(classOf[NoDataLoadedException])
-  def prepareCSVDownload(): String = {
+  @throws(classOf[NoDataLoadedException])  
+  def prepareCSVDownload(individualSamples: Boolean): String = {
     val mm = getSessionData()
-
-    val rendered = mm.current
-    if (rendered != null) {
-      println("I had " + rendered.rows + " rows stored")
+    val mat = if (individualSamples &&
+        mm.rawUngroupedMat != null && mm.current != null) {
+      val info = mm.info
+      val ug = mm.rawUngroupedMat.selectNamedRows(mm.current.rowKeys.toSeq)
+      val gs = (0 until info.numColumns()).map(g => info.columnGroup(g))
+      //Help the user by renaming the columns.
+      //Prefix sample IDs by group IDs.
+      val parts = gs.map(g => {
+        val ids = g.getTreatedSamples.map(_.getCode)
+        val sel = ug.selectNamedColumns(ids)
+        val newNames = Map() ++ sel.columnMap.map(x => (g.getName + ":" + x._1 -> x._2))
+        sel.copyWith(sel.data, sel.rowMap, newNames)
+      })
+      parts.reduce(_ adjoinRight _)      
+    } else {
+      mm.current
     }
     
-    val colNames = rendered.sortedColumnMap.map(_._1)
-    val rows = rendered.asRows    
+    if (mat != null) {
+      println("I had " + mat.rows + " rows stored")
+    }
+    
+    val colNames = mat.sortedColumnMap.map(_._1)
+    val rows = mat.asRows    
     //TODO shared logic with e.g. insertAnnotations, extract
     val rowNames = rows.map(_.getAtomicProbes.mkString("/"))
 
@@ -382,7 +398,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     val geneIds = atomics.map(row => 
       row.flatMap(at => gis.getOrElse(Probe(at), Seq.empty))).map(_.distinct.mkString(" "))
     CSVHelper.writeCSV(csvDirectory, csvUrlBase, rowNames, colNames,
-      geneIds, rendered.data.map(_.map(asScala(_))))
+      geneIds, mat.data.map(_.map(asScala(_))))
   }
 
   @throws(classOf[NoDataLoadedException])

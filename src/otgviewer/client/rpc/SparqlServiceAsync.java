@@ -23,6 +23,7 @@ public interface SparqlServiceAsync {
 	public void parameterValues(SampleClass[] scs, String parameter, 
 			AsyncCallback<String[]> callback);
 		
+	public void samplesById(String[] ids, AsyncCallback<OTGSample[]> callback);
 	public void samples(SampleClass sc, AsyncCallback<OTGSample[]> callback);	
 	public void samples(SampleClass sc, String param, String[] paramValues, 
 			AsyncCallback<OTGSample[]> callback);

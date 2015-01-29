@@ -119,11 +119,13 @@ public interface MatrixService extends RemoteService {
 			throws ServerError;
 	
 	/**
-	 * Prepare a CSV file representing the loaded data for download. Returns a URL 
-	 * that may be used for downloading. Requires that loadDataset was first used to load items.
-	 * @return
+	 * Prepare a CSV file representing the loaded data for download. 
+	 * Requires that loadDataset was first used to load items.
+	 * @param individualSamples if true, each individual sample is included as a 
+	 * separate column (only). If false, groups are used.
+	 * @return A downloadable URL.
 	 */
-	public String prepareCSVDownload();
+	public String prepareCSVDownload(boolean individualSamples);
 
 	/**
 	 * Send a feedback email from a user.

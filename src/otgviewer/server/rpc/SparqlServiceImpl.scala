@@ -136,11 +136,15 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     otgSamples.attributeValues(scAsScala(sc), parameter, instanceURI).
     	filter(x => !x.startsWith("shared_control")).toArray
   }
+  
+  def samplesById(ids: Array[String]): Array[OTGSample] = 
+    otgSamples.samples(new t.sparql.SampleClass(), "id", 
+        ids, instanceURI).map(asJavaSample(_)).toArray 
 
   //TODO compound_name is a dummy parameter below
   @throws[TimeoutException]
   def samples(sc: SampleClass): Array[OTGSample] =
-    otgSamples.samples(scAsScala(sc), "?compound_name", 
+    otgSamples.samples(scAsScala(sc), "compound_name", 
         List(), instanceURI).map(asJavaSample(_)).toArray
 
   @throws[TimeoutException]

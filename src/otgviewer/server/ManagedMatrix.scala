@@ -126,24 +126,23 @@ object ManagedMatrixBuilder {
     //TODO
     val (cus, ncus) = g.getUnits().partition(_.get("dose_level") == "Control")
     
-    if (ncus.size > 1 || (!enhancedColumns)) {
+    if (ncus.size > 1 || (!enhancedColumns) || cus.size == 0) {
       // A simple average column
       columnsForGroupDefault(initProbes, info, g, sortedBarcodes, data)      
     } else if (ncus.size == 1) {
-      // Insert a control column as well as the usual one
-      
+      // Possibly insert a control column as well as the usual one
+
       val treatedIdx = treatedIdxs(g, sortedBarcodes)
       val controlIdx = controlIdxs(g, sortedBarcodes)
-      
+
       val (colName1, colName2) = (g.toString, g.toString + "(cont)")
       val rows = data.map(vs => Vector(
-          javaMean(selectIdx(vs, treatedIdx)),
-          javaMean(selectIdx(vs, controlIdx))
-    	))
-    	
+        javaMean(selectIdx(vs, treatedIdx)),
+        javaMean(selectIdx(vs, controlIdx))))
+
       info.addColumn(false, colName1, "Average of treated samples", false, g)
       info.addColumn(false, colName2, "Average of control samples", false, g)
-      ExprMatrix.withRows(rows, initProbes, List(colName1, colName2))            
+      ExprMatrix.withRows(rows, initProbes, List(colName1, colName2))                       
     } else {
       throw new Exception("No units in group")
     }

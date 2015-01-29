@@ -298,8 +298,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		}
 	}
 
-	public void downloadCSV() {		
-		matrixService.prepareCSVDownload(new PendingAsyncCallback<String>(this, 
+	public void downloadCSV(boolean individualSamples) {		
+		matrixService.prepareCSVDownload(individualSamples,
+				new PendingAsyncCallback<String>(this, 
 				"Unable to prepare the requested data for download.") {
 			
 			public void handleSuccess(String url) {
