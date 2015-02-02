@@ -33,7 +33,6 @@ function makeAdminWar {
 
 WARLIB=war/WEB-INF/lib
 ivy.sh -retrieve lib/[type]/[artifact]-[revision].[ext] 
-cp lib/*.jar $WARLIB
 cp lib/jar/* $WARLIB
 cp lib/bundle/*.jar $WARLIB
 cp mlib/*jar $WARLIB
@@ -42,7 +41,7 @@ cp mlib/*jar $WARLIB
 rm $WARLIB/kyotocabinet*jar
 rm $WARLIB/scala-library.jar
 #These should not be deployed in a servlet context
-rm $WARLIB/servlet-api.jar
+rm $WARLIB/servlet-api*.jar
 rm $WARLIB/javaee-api*jar
 rm $WARLIB/scalatest*jar
 
@@ -53,7 +52,7 @@ cp war/WEB-INF/web.xml war/WEB-INF/web.xml.bak
 makeWar template
 makeAdminWar
 
-cp war/toxygates.html.bak war/toxygates.html
-cp war/news.html.bak war/news.html
-cp war/WEB-INF/web.xml.bak war/WEB-INF/web.xml
+mv war/toxygates.html.bak war/toxygates.html
+mv war/news.html.bak war/news.html
+mv war/WEB-INF/web.xml.bak war/WEB-INF/web.xml
 

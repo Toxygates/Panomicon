@@ -31,7 +31,14 @@ object GetMatrix {
      } else {
        val n = s(0)
        val ids = s(1).split(",")
-       new Group(schema, n, ids.map(ss(_)))
+       val samples = ids.map(ss(_))
+       if (samples.exists(_.get("dose_level") == "Control") &&
+           samples.exists(_.get("dose_level") != "Control")) {
+         println(s"The group $n contains mixed control and non-control samples.")
+         println("Please request them in separate groups.")
+         throw new Exception("Mixed control and non-control samples")
+       }
+       new Group(schema, n, ids.map(ss(_)))       
      }    
   }
   
@@ -120,9 +127,9 @@ object GetMatrix {
         val url = matServiceAsync.prepareCSVDownload(false)
         val target = url.split("/").last
         println(s"Downloading $url to $target")
-        new URL(url) #> new File("$target") !!
+        new URL(url) #> new File(target) !!
       case Limited(offset, limit) =>
-        val amt = if (limit > 100) 100 else limit
+        val amt = if ((limit - offset) > 100) 100 else (limit - offset)
         
         println(s"Get items offset $offset limit $limit")
         

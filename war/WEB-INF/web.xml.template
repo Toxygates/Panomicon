@@ -37,7 +37,7 @@
 	</context-param>
  	<context-param>
 		<param-name>csvDir</param-name>
-		<param-value>/opt/apache-tomcat-6.0.36/webapps/toxygates/csv</param-value>
+		<param-value>/var/lib/tomcat/webapps/toxygates/csv/</param-value>
 	</context-param>
 	<context-param>
 		<param-name>csvUrlBase</param-name>

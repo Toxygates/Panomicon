@@ -124,12 +124,12 @@ object ManagedMatrixBuilder {
       g: Group, sortedBarcodes: Seq[Sample], 
       data: Seq[Seq[ExprValue]]): ExprMatrix = {
     //TODO
-    val (cus, ncus) = g.getUnits().partition(_.get("dose_level") == "Control")
+    val (cus, tus) = g.getUnits().partition(_.get("dose_level") == "Control")
     
-    if (ncus.size > 1 || (!enhancedColumns) || cus.size == 0) {
+    if (tus.size > 1 || (!enhancedColumns) || cus.size == 0 || tus.size == 0) {
       // A simple average column
       columnsForGroupDefault(initProbes, info, g, sortedBarcodes, data)      
-    } else if (ncus.size == 1) {
+    } else if (tus.size == 1) {
       // Possibly insert a control column as well as the usual one
 
       val treatedIdx = treatedIdxs(g, sortedBarcodes)
@@ -153,14 +153,14 @@ object ManagedMatrixBuilder {
       g: Group, sortedBarcodes: Seq[Sample], 
       data: Seq[Seq[PExprValue]]): ExprMatrix = {
       //TODO
-    val (cus, ncus) = g.getUnits().partition(_.get("dose_level") == "Control")
+    val (cus, tus) = g.getUnits().partition(_.get("dose_level") == "Control")
     
-    println(s"#Control units: ${cus.size} #Non-control units: ${ncus.size}")
+    println(s"#Control units: ${cus.size} #Non-control units: ${tus.size}")
     
-    if (ncus.size > 1 || (!enhancedColumns)) {
+    if (tus.size > 1 || (!enhancedColumns) || tus.size == 0) {
       // A simple average column
       columnsForGroupDefault(initProbes, info, g, sortedBarcodes, data)      
-    } else if (ncus.size == 1) {
+    } else if (tus.size == 1) {
       // Insert a p-value column as well as the usual one
       
       val (colName1, colName2) = (g.toString, g.toString + "(p)")
