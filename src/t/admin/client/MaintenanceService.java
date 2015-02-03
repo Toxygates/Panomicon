@@ -1,6 +1,7 @@
 package t.admin.client;
 
 import t.admin.shared.Batch;
+import t.admin.shared.Dataset;
 import t.admin.shared.Instance;
 import t.admin.shared.MaintenanceException;
 import t.admin.shared.OperationResults;
@@ -33,6 +34,8 @@ public interface MaintenanceService extends RemoteService {
 	
 	void addInstance(Instance i) throws MaintenanceException;
 	
+	void addDataset(Dataset d) throws MaintenanceException;
+	
 	/**
 	 * Delete a batch. 
 	 * @param id
@@ -42,6 +45,8 @@ public interface MaintenanceService extends RemoteService {
 	void deletePlatformAsync(String id) throws MaintenanceException;
 	
 	void deleteInstance(String id) throws MaintenanceException;
+	
+	void deleteDataset(String id) throws MaintenanceException;
 
 	/**
 	 * Modify the batch, altering fields such as visibility and comment.

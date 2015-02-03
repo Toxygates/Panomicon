@@ -30,6 +30,8 @@ import t.sparql.Instances
 import t.InstanceManager
 import t.sparql.TRDF
 import scala.sys.process._
+import t.admin.shared.Dataset
+import t.sparql.Datasets
 
 class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceService {
   var baseConfig: BaseConfig = _
@@ -183,6 +185,13 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
       im.addWithTimestamp(id, TRDF.escape(i.getComment)) 
     }    
   }
+  
+  def addDataset(d: Dataset): Unit = {
+    //to be developed
+    val dm = new Datasets(baseConfig.triplestore)
+    
+    
+  }
  
   def deleteBatchAsync(id: String): Unit = {
     grabRunner()
@@ -216,6 +225,13 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
       }
       
       im.delete(id) 
+    }
+  }
+  
+  def deleteDataset(id: String): Unit = {
+    val dm = new Datasets(baseConfig.triplestore)
+    maintenance {
+      //TODO
     }
   }
   

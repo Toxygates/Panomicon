@@ -98,11 +98,17 @@ public class AdminConsole implements EntryPoint {
 		return dp; 
 	}
 	
+	private Widget makeDatasetEditor() {
+		//To be developed
+		return new SimplePanel();
+	}
+	
 	private Widget makeTabPanel() {
 		TabLayoutPanel tlp = new TabLayoutPanel(2, Unit.EM);		
+		tlp.add(makePlatformEditor(), "Platforms");		
 		tlp.add(makeBatchEditor(), "Batches");
-		tlp.add(makePlatformEditor(), "Platforms");
-		tlp.add(makeInstanceEditor(), "Instances");					
+		tlp.add(makeDatasetEditor(), "Datasets");
+		tlp.add(makeInstanceEditor(), "Instances");		
 		return tlp;
 	}
 	
