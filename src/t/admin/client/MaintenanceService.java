@@ -20,6 +20,8 @@ public interface MaintenanceService extends RemoteService {
 	
 	Platform[] getPlatforms();
 	
+	Dataset[] getDatasets();
+	
 	/**
 	 * Try to add a batch, based on files that were previously uploaded.
 	 * The results can be obtained after completion by using getOperationResults.

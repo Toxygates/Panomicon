@@ -17,6 +17,7 @@ public interface MaintenanceServiceAsync {
 	
 	void getPlatforms(AsyncCallback<Platform[]> callback);
 	
+	void getDatasets(AsyncCallback<Dataset[]> callback);
 	
 	void addBatchAsync(String id, String comment, AsyncCallback<Void> callback);
 	

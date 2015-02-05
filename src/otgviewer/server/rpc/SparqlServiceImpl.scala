@@ -84,32 +84,20 @@ object SparqlServiceImpl {
  * 
  * TODO: extract superclass
  */
-class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
+class SparqlServiceImpl extends OTGServiceServlet with SparqlService {
   import Conversions._
   import SparqlServiceImpl._
   import t.viewer.server.Conversions._
   import ScalaUtils._
 
   type DataColumn = t.common.shared.sample.DataColumn[OTGSample]
-    
-  implicit var context: otg.Context = _
-  var baseConfig: BaseConfig = _  
  
   var instanceURI: Option[String] = None
   
-  protected val schema: DataSchema = new OTGSchema()
-  
   protected def probeStore: Probes = context.probes
   
-  @throws(classOf[ServletException])
-  override def init(config: ServletConfig) {
-    super.init(config)    
-    localInit(Configuration.fromServletConfig(config))
-  }
-  
-  def localInit(conf: Configuration) {
-	  this.baseConfig = baseConfig(conf.tsConfig, conf.dataConfig)
-    this.context = otg.Context(baseConfig)    
+  override def localInit(conf: Configuration) {
+	  super.localInit(conf)
     staticInit(context)
  
     if (conf.instanceName == null || conf.instanceName == "") {
@@ -117,12 +105,6 @@ class SparqlServiceImpl extends RemoteServiceServlet with SparqlService {
     } else {
       instanceURI = Some(Instances.defaultPrefix + "/" + conf.instanceName)
     }
-  }
-  
-  def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig = OTGBConfig(ts, data)
-
-  override def destroy() {
-    super.destroy()
   }
 
   @throws[TimeoutException]

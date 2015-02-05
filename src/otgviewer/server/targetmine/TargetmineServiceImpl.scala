@@ -14,20 +14,16 @@ import t.DataConfig
 import t.TriplestoreConfig
 import t.BaseConfig
 import t.viewer.server.Platforms
+import otgviewer.server.rpc.OTGServiceServlet
 
-class TargetmineServiceImpl extends RemoteServiceServlet with TargetmineService {
+class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
   var affyProbes: Probes = _ 
   var platforms: Platforms = _
-  
-    @throws(classOf[ServletException])
-  override def init(config: ServletConfig) {
-    super.init(config) 
-    localInit(Configuration.fromServletConfig(config))    
-  }
 
   // Useful for testing
-  def localInit(config: Configuration) {            
-    affyProbes = new Probes(config.tsConfig)
+  override def localInit(config: Configuration) {
+    super.localInit(config)
+    affyProbes = context.probes
     platforms = Platforms(affyProbes)
   }
   

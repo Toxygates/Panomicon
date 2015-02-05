@@ -87,46 +87,25 @@ object MatrixServiceImpl {
  * This is currently the only servlet that (explicitly)
  * maintains server side sessions.
  */
-class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
+class MatrixServiceImpl extends OTGServiceServlet with MatrixService {
   import Conversions._
   import scala.collection.JavaConversions._
   import ScalaUtils._
   import MatrixServiceImpl._
 
-  private var baseConfig: BaseConfig = _
-  private var tgConfig: Configuration = _
   private var csvDirectory: String = _
   private var csvUrlBase: String = _
-  protected implicit var context: OTGContext = _
-  protected implicit var ocontext: otg.Context = _
-
-  protected val schema: DataSchema = new OTGSchema()
-  
-  @throws(classOf[ServletException])
-  override def init(config: ServletConfig) {
-    super.init(config) 
-    localInit(Configuration.fromServletConfig(config))    
-  }
+  protected implicit var mcontext: OTGContext = _  
 
   // Useful for testing
-  def localInit(config: Configuration) {    
+  override def localInit(config: Configuration) {
+    super.localInit(config)
     csvDirectory = config.csvDirectory
-    csvUrlBase = config.csvUrlBase
-    tgConfig = config
-    //TODO parse baseConfig directly somewhere
-    baseConfig = baseConfig(config.tsConfig, config.dataConfig)
-    //TODO revise where this gets created
-    ocontext = otg.Context(baseConfig)
-    context = ocontext.matrix
+    csvUrlBase = config.csvUrlBase   
+    mcontext = context.matrix
     staticInit(baseConfig)
   }
   
-  def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig =
-    OTGBConfig(ts, data)
-
-  override def destroy() {   
-    super.destroy()
-  }
   
   @throws(classOf[NoDataLoadedException])
   def getSessionData(): ManagedMatrix = {
@@ -148,7 +127,7 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
     if (titlePatternMatch) {
       probes.forTitlePatterns(identifiers).map(_.identifier).toArray
     } else {
-      probes.identifiersToProbes(context.unifiedProbes,
+      probes.identifiersToProbes(mcontext.unifiedProbes,
         identifiers, precise).map(_.identifier).toArray
     }
   }
@@ -158,9 +137,9 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
 
     val reader = try {
       if (typ == ValueType.Absolute) {
-        context.absoluteDBReader
+        mcontext.absoluteDBReader
       } else {
-        context.foldsDBReader
+        mcontext.foldsDBReader
       }
     } catch {
       case e: Exception => throw new DBUnavailableException()

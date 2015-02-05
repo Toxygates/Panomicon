@@ -3,22 +3,19 @@ package t.admin.client;
 import static t.admin.client.Utils.makeButtons;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import t.admin.shared.Batch;
 import t.admin.shared.Instance;
-import t.admin.shared.Platform;
 import t.admin.shared.ManagedItem;
+import t.admin.shared.Platform;
 
 import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;
+import com.google.gwt.cell.client.SelectionCell;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
@@ -220,6 +217,21 @@ public class AdminConsole implements EntryPoint {
 			
 		});		
 		table.addColumn(editColumn);
+		
+		List<String> datasets = new ArrayList<String>();
+		SelectionCell datasetCell = new SelectionCell(datasets);
+		Column<Batch, String> datasetColumn = new Column<Batch, String>(datasetCell) {
+			public String getValue(Batch b) {
+				return "dataset";
+			}
+		};
+		datasetColumn.setFieldUpdater(new FieldUpdater<Batch, String>() {
+			public void update(int index, final Batch object, String value) {
+				editDataset(object, value);				
+			}
+		});
+		table.addColumn(datasetColumn);
+		
 	
 		sc.addDeleteColumn();
 		
@@ -277,7 +289,11 @@ public class AdminConsole implements EntryPoint {
 		db.setText("Change visibility of '" + object.getTitle() + "'");
 //		db.setSize("300px", "300px");
 		db.setWidth("500px");
-		db.show();
+		db.show();	
+	}
+	
+	private void editDataset(final Batch batch, final String dataset) {
+		//TODO
 	}
 	
 	private void deleteBatch(final Batch object) {

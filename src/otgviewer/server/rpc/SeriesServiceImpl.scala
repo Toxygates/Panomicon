@@ -34,37 +34,16 @@ import otgviewer.shared.OTGSchema
 import otg.OTGContext
 import t.db.MatrixContext
 
-class SeriesServiceImpl extends RemoteServiceServlet with SeriesService {
+class SeriesServiceImpl extends OTGServiceServlet with SeriesService {
   import Conversions._
   import scala.collection.JavaConversions._  
 
   import java.lang.{ Double => JDouble }
-
-  private implicit var context: otg.Context = _ 
-  private implicit var mcontext: OTGContext = _
+ 
+  private implicit def mcontext: OTGContext = context.matrix
+  implicit val ctxt = super.context
   
-  var affyProbes: Probes = _
-  var baseConfig: BaseConfig = _
-  
-  @throws(classOf[ServletException])
-  override def init(config: ServletConfig) {
-    super.init(config)
-    localInit(Configuration.fromServletConfig(config))
-  }
-
-  // Useful for testing
-  def localInit(config: Configuration) {
-    val homePath = config.toxygatesHomeDir
-    baseConfig = baseConfig(config.tsConfig, config.dataConfig)
-    
-    //TODO avoid initializing Context in each service 
-    context = otg.Context(baseConfig)
-    mcontext = context.matrix
-    affyProbes = context.probes
-  }
-  
-  def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig = 
-    OTGBConfig(ts, data)
+  def affyProbes: Probes = context.probes
 
   override def destroy() {
     affyProbes.close()      

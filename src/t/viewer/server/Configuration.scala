@@ -6,12 +6,14 @@ import t.TriplestoreConfig
 import t.DataConfig
 import t.BaseConfig
 import t.db.MatrixContext
+import t.Factory
+import t.Context
 
 object Configuration {
   /**
    * Create a new Configuration from the ServletConfig.
    */
-  def fromServletConfig(config: ServletConfig): Configuration = {
+  def fromServletConfig(config: ServletConfig) = {
     val servletContext = config.getServletContext()
     
     def p(x: String) = servletContext.getInitParameter(x)
@@ -30,9 +32,12 @@ object Configuration {
       p("instanceName"),
       p("webappHomeDir"),
       p("matrixDbOptions"))
-  }  
+  }    
 }
 
+/**
+ * A bridge from ServletConfig to Context.
+ */
 class Configuration(val repositoryName: String, 
     val toxygatesHomeDir: String,
     val csvDirectory: String, val csvUrlBase: String,         
@@ -51,4 +56,6 @@ class Configuration(val repositoryName: String,
   def tsConfig = TriplestoreConfig(repositoryUrl, updateUrl,
     repositoryUser, repositoryPass, repositoryName)
   def dataConfig = DataConfig(toxygatesHomeDir, matrixDbOptions)
+  
+  def context(f: Factory): Context = f.context(tsConfig, dataConfig)         
 }
