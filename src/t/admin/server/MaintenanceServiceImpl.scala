@@ -180,12 +180,23 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
       im.addWithTimestamp(id, TRDF.escape(i.getComment)) 
     }    
   }
-  
+
   def addDataset(d: Dataset): Unit = {
-    //to be developed
     val dm = new Datasets(baseConfig.triplestore)
-    
-    
+
+    val id = d.getTitle()
+    if (!TRDF.isValidIdentifier(id)) {
+      throw new MaintenanceException(
+        s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
+    }
+
+    if (dm.list.contains(id)) {
+      throw new MaintenanceException(s"The dataset $id already exists, please choose a different name")
+    }
+
+    maintenance {
+      dm.addWithTimestamp(id, TRDF.escape(d.getComment))
+    }
   }
  
   def deleteBatchAsync(id: String): Unit = {
@@ -225,7 +236,7 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
   def deleteDataset(id: String): Unit = {
     val dm = new Datasets(baseConfig.triplestore)
     maintenance {
-      //TODO
+      dm.delete(id)
     }
   }
   
@@ -263,6 +274,8 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     }
   }
   
+  import java.util.HashSet
+  
   def getBatches: Array[Batch] = {
     val bs = new Batches(baseConfig.triplestore)
     val ns = bs.numSamples
@@ -273,7 +286,7 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
       val samples = ns.getOrElse(b, 0)
       new Batch(b, samples, comments.getOrElse(b, ""),
           dates.getOrElse(b, null), 
-          setAsJavaSet(bs.listAccess(b).toSet),
+          new HashSet(setAsJavaSet(bs.listAccess(b).toSet)),
           datasets.getOrElse(b, ""))
     }).toArray    
   }

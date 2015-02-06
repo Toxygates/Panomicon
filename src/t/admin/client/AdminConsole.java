@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import t.admin.shared.Batch;
+import t.admin.shared.Dataset;
 import t.admin.shared.Instance;
 import t.admin.shared.ManagedItem;
 import t.admin.shared.Platform;
@@ -25,7 +26,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
@@ -43,6 +43,7 @@ public class AdminConsole implements EntryPoint {
 	final ListDataProvider<Batch> batchData = new ListDataProvider<Batch>();		
 	final ListDataProvider<Platform> platformData = new ListDataProvider<Platform>();
 	final ListDataProvider<Instance> instanceData = new ListDataProvider<Instance>();
+	final ListDataProvider<Dataset> datasetData = new ListDataProvider<Dataset>();
 	
 	@Override
 	public void onModuleLoad() {
@@ -50,7 +51,16 @@ public class AdminConsole implements EntryPoint {
 		rootPanel.add(makeTabPanel());
 	}
 	
-	private Widget makeInstanceEditor() {
+	private Widget makeTabPanel() {
+		TabLayoutPanel tlp = new TabLayoutPanel(2, Unit.EM);		
+		tlp.add(makePlatformPanel(), "Platforms");		
+		tlp.add(makeBatchPanel(), "Batches");
+		tlp.add(makeDatasetPanel(), "Datasets");
+		tlp.add(makeInstancePanel(), "Instances");		
+		return tlp;
+	}
+	
+	private Widget makeInstancePanel() {
 		DockLayoutPanel dp = new DockLayoutPanel(Unit.PX);
 		
 		CellTable<Instance> table = makeTable();
@@ -60,7 +70,7 @@ public class AdminConsole implements EntryPoint {
 		cmds.add(new Command("Add new...") {
 			public void run() {
 				final DialogBox db = new DialogBox(false, true);
-				db.setTitle("Add or update instance");
+				db.setTitle("Add instance");
 				db.setWidget(new InstanceEditor() {
 
 					@Override
@@ -95,21 +105,64 @@ public class AdminConsole implements EntryPoint {
 		return dp; 
 	}
 	
-	private Widget makeDatasetEditor() {
-		//To be developed
-		return new SimplePanel();
+	//TODO reduce duplicated code
+	private Widget makeDatasetPanel() {
+		DockLayoutPanel dp = new DockLayoutPanel(Unit.PX);
+
+		CellTable<Dataset> table = makeTable();
+		datasetData.addDataDisplay(table);
+
+		List<Command> cmds = new ArrayList<Command>();
+		cmds.add(new Command("Add new...") {
+			public void run() {
+				final DialogBox db = new DialogBox(false, true);
+				db.setTitle("Add instance");
+				db.setWidget(new DatasetEditor() {
+
+					@Override
+					protected void onFinish() {
+						db.hide();
+						refreshDatasets();
+					}
+
+					@Override
+					protected void onAbort() {
+						db.hide();
+						refreshDatasets();
+					}
+				});
+				db.show();
+			}
+		});
+
+		StandardColumns<Dataset> sc = new StandardColumns<Dataset>(table) {
+			void onDelete(Dataset object) {
+				deleteDataset(object);
+			}
+		};
+
+		sc.addStartColumns();
+		
+		TextColumn<Dataset> textColumn = new TextColumn<Dataset>() {
+			@Override
+			public String getValue(Dataset object) {
+				return "" + object.getDescription();
+			}
+		};
+		
+		table.addColumn(textColumn, "Description");
+		table.setColumnWidth(textColumn, "12.5em");
+		
+		sc.addDeleteColumn();
+
+		dp.addSouth(makeButtons(cmds), 35);
+		dp.add(table);
+
+		refreshDatasets();
+		return dp;
 	}
 	
-	private Widget makeTabPanel() {
-		TabLayoutPanel tlp = new TabLayoutPanel(2, Unit.EM);		
-		tlp.add(makePlatformEditor(), "Platforms");		
-		tlp.add(makeBatchEditor(), "Batches");
-		tlp.add(makeDatasetEditor(), "Datasets");
-		tlp.add(makeInstanceEditor(), "Instances");		
-		return tlp;
-	}
-	
-	private Widget makePlatformEditor() {
+	private Widget makePlatformPanel() {
 		DockLayoutPanel dp = new DockLayoutPanel(Unit.PX);
 		
 		CellTable<Platform> table = makeTable();
@@ -162,7 +215,7 @@ public class AdminConsole implements EntryPoint {
 		return dp;
 	}
 	
-	private Widget makeBatchEditor() {
+	private Widget makeBatchPanel() {
 		DockLayoutPanel dp = new DockLayoutPanel(Unit.PX);
 		
 		final CellTable<Batch> table = makeTable();
@@ -183,6 +236,25 @@ public class AdminConsole implements EntryPoint {
 		table.addColumn(samplesColumn, "Samples");
 		table.setColumnWidth(samplesColumn, "12.5em");
 
+		List<String> datasets = new ArrayList<String>();
+		//TODO handle updates smoothly
+		for (Dataset d: datasetData.getList()) {
+			datasets.add(d.getTitle());
+		}
+		
+		SelectionCell datasetCell = new SelectionCell(datasets);
+		Column<Batch, String> datasetColumn = new Column<Batch, String>(datasetCell) {
+			public String getValue(Batch b) {
+				return "dataset";
+			}
+		};
+		datasetColumn.setFieldUpdater(new FieldUpdater<Batch, String>() {
+			public void update(int index, final Batch object, String value) {
+				editDataset(object, value);				
+			}
+		});
+		table.addColumn(datasetColumn, "Dataset");
+		
 		TextColumn<Batch> visibilityColumn = new TextColumn<Batch>() {
 			@Override
 			public String getValue(Batch object) {
@@ -199,7 +271,7 @@ public class AdminConsole implements EntryPoint {
 				}
 			}
 		};
-
+		
 		table.addColumn(visibilityColumn, "Visibility");								
 		batchData.addDataDisplay(table);		
 		
@@ -218,20 +290,7 @@ public class AdminConsole implements EntryPoint {
 		});		
 		table.addColumn(editColumn);
 		
-		List<String> datasets = new ArrayList<String>();
-		SelectionCell datasetCell = new SelectionCell(datasets);
-		Column<Batch, String> datasetColumn = new Column<Batch, String>(datasetCell) {
-			public String getValue(Batch b) {
-				return "dataset";
-			}
-		};
-		datasetColumn.setFieldUpdater(new FieldUpdater<Batch, String>() {
-			public void update(int index, final Batch object, String value) {
-				editDataset(object, value);				
-			}
-		});
-		table.addColumn(datasetColumn);
-		
+	
 	
 		sc.addDeleteColumn();
 		
@@ -340,9 +399,29 @@ public class AdminConsole implements EntryPoint {
 			public void onSuccess(Void result) {
 				refreshInstances();				
 			}			
-		});
-			
+		});			
 	}
+	
+	//TODO reduce duplicated code
+	private void deleteDataset(final Dataset object) {
+		String title = object.getTitle();
+		if (!Window.confirm("Are you sure you want to delete the dataset " + title + "? Batches will not be deleted.")) {
+			return;
+		}
+		maintenanceService.deleteDataset(object.getTitle(), new AsyncCallback<Void>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Unable to delete dataset: " + caught.getMessage());
+			}
+
+			@Override
+			public void onSuccess(Void result) {
+				refreshDatasets();				
+			}			
+		});			
+	}
+
 
 	private <T extends ManagedItem> CellTable<T> makeTable() {
 		CellTable<T> table = new CellTable<T>();		
@@ -369,6 +448,11 @@ public class AdminConsole implements EntryPoint {
 	
 	private void refreshPlatforms() {
 		maintenanceService.getPlatforms(new ListDataCallback<Platform>(platformData, "platform list"));
+	}
+	
+	//TODO reduce duplicated code
+	private void refreshDatasets() {
+		maintenanceService.getDatasets(new ListDataCallback<Dataset>(datasetData, "platform list"));
 	}
 
 }
