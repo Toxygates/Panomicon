@@ -15,9 +15,9 @@ trait OTGServiceServlet extends TServiceServlet {
   protected var _factory: Factory = _
 
   override abstract def localInit(config: Configuration) {
-    super.localInit(config)
     _factory = makeFactory()
     _context = _factory.context(config.tsConfig, config.dataConfig)
+    super.localInit(config)
   }
   
   protected def makeFactory(): Factory = new Factory

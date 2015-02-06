@@ -10,7 +10,5 @@
 	<inherits name='gwtupload.GWTUpload' />
 	
 	<source path="client" />
-	<source path="shared" />
-	
-	<entry-point class="t.admin.client.AdminConsole"></entry-point>	
+	<source path="shared" />	
 </module>
