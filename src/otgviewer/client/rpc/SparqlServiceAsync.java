@@ -3,7 +3,7 @@ package otgviewer.client.rpc;
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
-import t.common.shared.DataSchema;
+import t.common.shared.Dataset;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.Unit;
@@ -16,6 +16,9 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface SparqlServiceAsync {
 
+	public void datasets(AsyncCallback<Dataset[]> datasets);
+	public void chooseDatasets(Dataset[] enabled, AsyncCallback<Void> callback);
+	
 	public void sampleClasses(AsyncCallback<SampleClass[]> callback);
 	
 	public void parameterValues(SampleClass sc, String parameter, 
@@ -38,6 +41,7 @@ public interface SparqlServiceAsync {
 			String param, String[] paramValues, 
 			AsyncCallback<Pair<Unit, Unit>[]> callback);
 
+	//TODO this is OTG-specific
 	public void pathologies(OTGColumn column, AsyncCallback<Pathology[]> callback);
 	public void pathologies(OTGSample barcode, AsyncCallback<Pathology[]> callback);
 	

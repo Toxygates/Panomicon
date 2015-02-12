@@ -42,6 +42,7 @@ import otgviewer.shared.TimeoutException
 import otgviewer.shared.OTGSchema
 import t.platform.Probe
 import otg.sparql.Probes
+import t.common.shared.Dataset
 
 object SparqlServiceImpl {
   //TODO consider moving these to an application-wide SparqlContext or similar
@@ -105,6 +106,14 @@ class SparqlServiceImpl extends OTGServiceServlet with SparqlService {
     } else {
       instanceURI = Some(Instances.defaultPrefix + "/" + conf.instanceName)
     }
+  }
+  
+  def datasets(): Array[Dataset] = {
+   Array() 
+  }
+  
+  def chooseDatasets(ds: Array[Dataset]): Unit = {
+    
   }
 
   @throws[TimeoutException]

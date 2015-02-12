@@ -6,6 +6,8 @@ import java.util.List;
 
 import t.admin.shared.AccessPolicy;
 import t.admin.shared.Instance;
+import t.common.client.Command;
+import static t.common.client.Utils.makeButtons;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
@@ -15,6 +17,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+
 
 abstract class ManagedItemEditor extends Composite {
 
@@ -41,18 +44,18 @@ abstract class ManagedItemEditor extends Composite {
 		List<Command> cmds = new ArrayList<Command>();
 		Command c = new Command("OK") {
 			@Override
-			void run() { triggerEdit(); }			
+			public void run() { triggerEdit(); }			
 		};
 		cmds.add(c);
 		
 		c = new Command("Cancel") {
 			@Override
-			void run() { onAbort(); }
+			public void run() { onAbort(); }
 			
 		};
 		cmds.add(c);
 		
-		Widget btns = Utils.makeButtons(cmds);
+		Widget btns = makeButtons(cmds);
 		vp.add(btns);
 	}
 	

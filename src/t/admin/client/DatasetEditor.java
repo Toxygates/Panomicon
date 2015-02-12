@@ -2,7 +2,7 @@ package t.admin.client;
 
 import java.util.Date;
 
-import t.admin.shared.Dataset;
+import t.common.shared.Dataset;
 
 import com.google.gwt.user.client.ui.TextBox;
 

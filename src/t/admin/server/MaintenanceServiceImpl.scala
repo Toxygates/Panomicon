@@ -30,9 +30,10 @@ import t.sparql.Instances
 import t.InstanceManager
 import t.sparql.TRDF
 import scala.sys.process._
-import t.admin.shared.Dataset
+import t.common.shared.Dataset
 import t.sparql.Datasets
 import t.common.server.rpc.TServiceServlet
+import t.common.shared.Dataset
 
 abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceService {
   

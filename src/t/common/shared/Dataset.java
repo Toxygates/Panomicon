@@ -1,4 +1,4 @@
-package t.admin.shared;
+package t.common.shared;
 
 import java.util.Date;
 

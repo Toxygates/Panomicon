@@ -6,7 +6,7 @@ import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
 import otgviewer.shared.TimeoutException;
-import t.common.shared.DataSchema;
+import t.common.shared.Dataset;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.Unit;
@@ -28,6 +28,22 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  */
 @RemoteServiceRelativePath("sparql")
 public interface SparqlService extends RemoteService {
+	/**
+	 * Obtain the list of datasets visible in this instance.
+	 * @return
+	 * @throws TimeoutException
+	 */
+	public Dataset[] datasets() throws TimeoutException;
+	
+	/**
+	 * Choose the subset of datasets to work with. This must be a 
+	 * subset of the datasets previously returned by the datasets()
+	 * call.
+	 * @param enabled
+	 * @throws TimeoutException
+	 */
+	public void chooseDatasets(Dataset[] enabled) throws TimeoutException;
+	
 	public String[] parameterValues(SampleClass sc, String parameter)
 			throws TimeoutException;
 

@@ -5,12 +5,14 @@ import java.util.List;
 import java.util.logging.Level;
 
 import otgviewer.client.components.DataFilterEditor;
+import otgviewer.client.components.DatasetSelector;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import t.common.shared.DataSchema;
+import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
 
 import com.google.gwt.dom.client.Style.Unit;
@@ -18,6 +20,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -50,7 +54,17 @@ public class ColumnScreen extends Screen {
 	private HorizontalPanel mkFilterTools() {
 		final Screen s = this;
 		HorizontalPanel r = new HorizontalPanel();
+		r.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 
+		Button b = new Button("Data...");
+		r.add(b);
+		b.addClickHandler(new ClickHandler() {			
+			@Override
+			public void onClick(ClickEvent event) {
+				showDatasetSelector();										
+			}
+		});
+		
 		DataFilterEditor dfe = new DataFilterEditor(schema()) {
 			@Override
 			protected void changeSampleClass(SampleClass sc) {
@@ -64,6 +78,15 @@ public class ColumnScreen extends Screen {
 		this.addListener(dfe);
 		r.add(dfe);		
 		return r;
+	}
+	
+	protected void showDatasetSelector() {
+		final DialogBox db = new DialogBox(false, true);
+		DatasetSelector dsel = new DatasetSelector(new ArrayList<Dataset>());		
+		db.setText("Select datasets");
+		db.setWidget(dsel);
+		db.setWidth("500px");
+		db.show();
 	}
 	
 	@Override

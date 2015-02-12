@@ -2,6 +2,8 @@ package t.admin.shared;
 
 import java.util.Date;
 
+import t.common.shared.ManagedItem;
+
 public class Platform extends ManagedItem {
 
 	private int numProbes;	

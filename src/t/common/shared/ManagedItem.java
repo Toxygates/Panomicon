@@ -1,4 +1,4 @@
-package t.admin.shared;
+package t.common.shared;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -21,4 +21,6 @@ public abstract class ManagedItem implements Serializable, DataRecord {
 	public String getComment() { return comment; }
 	public void setComment(String c) { comment = c; }
 	public Date getDate() { return date; }
+	
+	public String getUserTitle() { return title; }
 }

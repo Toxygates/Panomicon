@@ -1,15 +1,15 @@
 package t.admin.client;
 
-import static t.admin.client.Utils.makeButtons;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import t.admin.shared.Batch;
-import t.admin.shared.Dataset;
 import t.admin.shared.Instance;
-import t.admin.shared.ManagedItem;
 import t.admin.shared.Platform;
+import t.common.client.Command;
+import static t.common.client.Utils.makeButtons;
+import t.common.shared.Dataset;
+import t.common.shared.ManagedItem;
 
 import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;

@@ -10,6 +10,10 @@ import static t.admin.shared.MaintenanceConstants.niPrefix;
 import java.util.ArrayList;
 import java.util.List;
 
+import t.common.client.Command;
+import static t.common.client.Utils.makeButtons;
+import static t.common.client.Utils.makeButton;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
@@ -76,7 +80,7 @@ public class BatchUploader extends UploadDialog {
 		
 		Command c = new Command("Proceed") {
 			@Override 
-			void run() { 
+			public void run() { 
 				if ((!calls.hasFile() || !foldCalls.hasFile()) && 
 						!Window.confirm("One or both of the call data files are missing. " +
 								"Upload batch without calls data (all values present)?")) {
@@ -106,18 +110,18 @@ public class BatchUploader extends UploadDialog {
 			}
 		};
 		
-		proceed = Utils.makeButton(c);
+		proceed = makeButton(c);
 		hp = new HorizontalPanel();
 		hp.setSpacing(4);
 		hp.add(proceed);
 		
 		c = new Command("Cancel") {
 			@Override 
-			void run() {
+			public void run() {
 				onFinish();
 			}
 		};
-		cancel = Utils.makeButton(c);
+		cancel = makeButton(c);
 		hp.add(cancel);		
 		vp.add(hp);	
 		updateStatus();
