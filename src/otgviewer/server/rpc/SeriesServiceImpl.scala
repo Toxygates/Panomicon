@@ -75,7 +75,7 @@ class SeriesServiceImpl extends OTGServiceServlet with SeriesService {
 
     //Convert the input probes (which may actually be genes) into definite probes
     probesRules = probesRules.flatMap(pr => {
-      val resolved = affyProbes.identifiersToProbes(mcontext.unifiedProbes,  
+      val resolved = affyProbes.identifiersToProbes(mcontext.probeMap,  
           Array(pr._1), true, true)
       if (resolved.size == 0) {
         throw new NoSuchProbeException(pr._1)
@@ -124,7 +124,7 @@ class SeriesServiceImpl extends OTGServiceServlet with SeriesService {
   }
 
   def getSeries(sc: SampleClass, probes: Array[String], timeDose: String, compounds: Array[String]): JList[Series] = {
-    val validated = affyProbes.identifiersToProbes(mcontext.unifiedProbes, 
+    val validated = affyProbes.identifiersToProbes(mcontext.probeMap, 
         probes, true, true).map(_.identifier)
     val db = getDB()
     try {

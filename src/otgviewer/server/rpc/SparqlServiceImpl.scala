@@ -122,10 +122,9 @@ class SparqlServiceImpl extends OTGServiceServlet with SparqlService {
   }
   
   @throws[TimeoutException]
-  def parameterValues(sc: SampleClass, parameter: String): Array[String] = {
-    //TODO when DataSchema is available here, use it instead of hardcoding shared_control
+  def parameterValues(sc: SampleClass, parameter: String): Array[String] = {    
     otgSamples.attributeValues(scAsScala(sc), parameter, instanceURI).
-    	filter(x => !x.startsWith("shared_control")).toArray
+    	filter(x => !schema.isMajorParamSharedControl(x)).toArray
   }
   
   def samplesById(ids: Array[String]): Array[OTGSample] = 
@@ -261,7 +260,7 @@ class SparqlServiceImpl extends OTGServiceServlet with SparqlService {
     val geneIds = b2rKegg.geneIds(pathway).map(Gene(_))
     println("Probes for " + geneIds.size + " genes")
     val probes = probeStore.forGenes(geneIds).toArray
-    val pmap = context.matrix.unifiedProbes //TODO
+    val pmap = context.matrix.probeMap //TODO
     probes.map(_.identifier).filter(pmap.isToken).toArray
   }
   
@@ -282,7 +281,7 @@ class SparqlServiceImpl extends OTGServiceServlet with SparqlService {
     } else {
       probeStore.forUniprots(proteins)
     }
-    val pmap = context.matrix.unifiedProbes //TODO context.probes(filter)
+    val pmap = context.matrix.probeMap //TODO context.probes(filter)
     pbs.toSet.map((p: Probe) => p.identifier).filter(pmap.isToken).toArray
   }
 
@@ -292,7 +291,7 @@ class SparqlServiceImpl extends OTGServiceServlet with SparqlService {
 
   @throws[TimeoutException]
   def probesForGoTerm(goTerm: String): Array[String] = {
-    val pmap = context.matrix.unifiedProbes 
+    val pmap = context.matrix.probeMap 
     probeStore.forGoTerm(GOTerm("", goTerm)).map(_.identifier).filter(pmap.isToken).toArray
   }
 

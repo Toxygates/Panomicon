@@ -106,7 +106,6 @@ class MatrixServiceImpl extends OTGServiceServlet with MatrixService {
     staticInit(baseConfig)
   }
   
-  
   @throws(classOf[NoDataLoadedException])
   def getSessionData(): ManagedMatrix = {
     val r = getThreadLocalRequest().getSession().getAttribute("matrix").
@@ -127,7 +126,7 @@ class MatrixServiceImpl extends OTGServiceServlet with MatrixService {
     if (titlePatternMatch) {
       probes.forTitlePatterns(identifiers).map(_.identifier).toArray
     } else {
-      probes.identifiersToProbes(mcontext.unifiedProbes,
+      probes.identifiersToProbes(mcontext.probeMap,
         identifiers, precise).map(_.identifier).toArray
     }
   }

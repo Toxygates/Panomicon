@@ -60,7 +60,7 @@ object ManagedMatrixBuilder {
       fullLoad: Boolean,
       columnBuilder: (ManagedMatrixInfo, Group, Seq[Sample], Seq[Seq[E]]) => ExprMatrix)
   (implicit context: OTGContext): ManagedMatrix = {
-    val pmap = context.unifiedProbes
+    val pmap = context.probeMap
     
     var rawGroupedMat, rawUngroupedMat: ExprMatrix = null
     
