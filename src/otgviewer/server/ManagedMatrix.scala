@@ -27,7 +27,7 @@ object ManagedMatrixBuilder {
     (implicit context: OTGContext): ManagedMatrix = {
     loadRawData[ExprValue](requestColumns, reader, initProbes, sparseRead,
         fullLoad,
-        columnsForGroupDefault(initProbes, _, _, _, _))
+        columnsForGroupDefault(_, _, _, _, _))
   }
   
 /**
@@ -40,7 +40,7 @@ object ManagedMatrixBuilder {
     enhancedColumns: Boolean)(implicit context: OTGContext): ManagedMatrix = {
     loadRawData[ExprValue](requestColumns, reader, initProbes, sparseRead,
         fullLoad,
-        columnsForGroupNormalized(enhancedColumns, initProbes, _, _, _, _))
+        columnsForGroupNormalized(enhancedColumns, _, _, _, _, _))
   }
    
   /**
@@ -52,13 +52,13 @@ object ManagedMatrixBuilder {
     enhancedColumns: Boolean)(implicit context: OTGContext): ManagedMatrix = {
     loadRawData[PExprValue](requestColumns, reader, initProbes, sparseRead,
         fullLoad,
-        columnsForGroupExtFold(enhancedColumns, initProbes, _, _, _, _))
+        columnsForGroupExtFold(enhancedColumns, _, _, _, _, _))
   }
   
   def loadRawData[E <: ExprValue](requestColumns: Seq[Group],
       reader: MatrixDBReader[E], initProbes: Array[String], sparseRead: Boolean,
       fullLoad: Boolean,
-      columnBuilder: (ManagedMatrixInfo, Group, Seq[Sample], Seq[Seq[E]]) => ExprMatrix)
+      columnBuilder: (Array[String], ManagedMatrixInfo, Group, Seq[Sample], Seq[Seq[E]]) => ExprMatrix)
   (implicit context: OTGContext): ManagedMatrix = {
     val pmap = context.probeMap
     
@@ -80,9 +80,15 @@ object ManagedMatrixBuilder {
         		
         println(g.getUnits()(0).toString())
         
-        val grouped = columnBuilder(info, g, sortedSamples, data)        
+        val returnedProbes = data.map(_(0).probe.identifier).toArray
+        
+        //Force standard sort order
+        val grouped = columnBuilder(returnedProbes, info, g, sortedSamples, data).
+          selectNamedRows(initProbes)
+
         val ungrouped = ExprMatrix.withRows(data.map(_.map(asJava(_))), 
-            initProbes, sortedSamples.map(_.sampleId))
+            returnedProbes, sortedSamples.map(_.sampleId)).
+            selectNamedRows(initProbes)
             
         if (rawGroupedMat == null) {
           rawGroupedMat = grouped
