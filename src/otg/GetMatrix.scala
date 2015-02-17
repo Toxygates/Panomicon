@@ -1,7 +1,6 @@
 package otg
 
 import com.gdevelop.gwt.syncrpc.SyncProxy
-import otgviewer.client.rpc.MatrixService
 import otgviewer.shared.Group
 import otgviewer.shared.OTGSchema
 import otgviewer.shared.OTGSample
@@ -9,6 +8,7 @@ import otgviewer.shared.ValueType
 import otgviewer.shared.Synthetic
 import t.common.shared.SampleClass
 import t.common.shared.sample.ExpressionValue
+import t.common.client.rpc.MatrixService
 import java.net.CookieManager
 import java.net.CookiePolicy
 import sys.process._
