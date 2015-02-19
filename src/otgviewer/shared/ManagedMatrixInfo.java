@@ -95,7 +95,7 @@ public class ManagedMatrixInfo implements Serializable {
 	
 	/**
 	 * The group that a given column was generated from, if any.
-	 * @param column Column index. Must be 0 <= i < numColumns.
+	 * @param column Column index. Must be 0 <= i < numDataColumns.
 	 * @return The group that the column was generated from, or null if there is none.
 	 */
 	public @Nullable Group columnGroup(int column) {
