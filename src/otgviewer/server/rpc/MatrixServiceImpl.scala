@@ -370,10 +370,10 @@ class MatrixServiceImpl extends RemoteServiceServlet with MatrixService {
         mm.rawUngroupedMat != null && mm.current != null) {
       val info = mm.info
       val ug = mm.rawUngroupedMat.selectNamedRows(mm.current.rowKeys.toSeq)
-      val gs = (0 until info.numColumns()).map(g => info.columnGroup(g))
+      val gs = (0 until info.numDataColumns()).map(g => info.columnGroup(g))
       //Help the user by renaming the columns.
       //Prefix sample IDs by group IDs.
-      val parts = gs.map(g => {
+      val parts = gs.map(g => { 
         val ids = g.getTreatedSamples.map(_.getCode)
         val sel = ug.selectNamedColumns(ids)
         val newNames = Map() ++ sel.columnMap.map(x => (g.getName + ":" + x._1 -> x._2))

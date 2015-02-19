@@ -70,6 +70,7 @@ object CSVHelper {
       throw new Exception("No data supplied")
     }
     
+    //TODO pass the file prefix in from outside
     val file = "otg" + System.currentTimeMillis + ".csv"
     val fullName = dir + "/" + file
     
