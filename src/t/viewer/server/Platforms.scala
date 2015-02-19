@@ -1,6 +1,6 @@
 package t.viewer.server
 
-import otg.sparql.Probes
+import t.sparql.Probes
 
 object Platforms {
   def apply(probes: Probes): Platforms = {

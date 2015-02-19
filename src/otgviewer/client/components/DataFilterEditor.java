@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import otgviewer.client.Utils;
-import otgviewer.client.rpc.SparqlService;
-import otgviewer.client.rpc.SparqlServiceAsync;
+import t.common.client.rpc.SparqlService;
+import t.common.client.rpc.SparqlServiceAsync;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 

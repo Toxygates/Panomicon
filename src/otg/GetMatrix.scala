@@ -14,7 +14,7 @@ import java.net.CookiePolicy
 import sys.process._
 import java.net.URL
 import java.io.File
-import otgviewer.client.rpc.SparqlService
+import t.common.client.rpc.SparqlService
 
 object GetMatrix {
   

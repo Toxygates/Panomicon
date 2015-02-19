@@ -15,7 +15,6 @@ import otg.Species.Human
 import t.sparql.secondary._
 import otg.sparql._
 import t.sparql._
-import otgviewer.client.rpc.SparqlService
 import otgviewer.server.ScalaUtils.gracefully
 import otgviewer.shared.OTGColumn
 import otgviewer.shared.OTGSample

@@ -1,4 +1,4 @@
-package otgviewer.client.rpc;
+package t.common.client.rpc;
 
 import java.util.List;
 

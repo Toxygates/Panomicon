@@ -52,6 +52,7 @@ class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int,
   
   import Conversions._
   import ExprMatrix._
+  import t.util.SafeMath._
 
   println(rows + " x " + columns)  
 //  println(sortedColumnMap)
@@ -128,7 +129,6 @@ class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int,
 
   def appendDiffTest(sourceData: ExprMatrix, group1: Seq[String], group2: Seq[String],
     colName: String): ExprMatrix = {
-    import otg.SafeMath._
     def diffTest(a1: Seq[Double], a2: Seq[Double]): Double = safeMean(a1) - safeMean(a2)
 
     appendTwoColTest(sourceData, group1, group2, diffTest(_, _), 1, colName)

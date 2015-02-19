@@ -9,8 +9,8 @@ import t.db.MatrixDBReader
 import otgviewer.shared.OTGSample
 import t.db.Sample
 import t.db.PExprValue
-import otg.OTGContext
 import t.db.ExprValue
+import t.db.MatrixContext
 
 /**
  * Routines for loading a ManagedMatrix
@@ -24,7 +24,7 @@ object ManagedMatrixBuilder {
   def buildFold(requestColumns: Seq[Group],
     reader: MatrixDBReader[ExprValue], initProbes: Array[String], sparseRead: Boolean,
     fullLoad: Boolean)
-    (implicit context: OTGContext): ManagedMatrix = {
+    (implicit context: MatrixContext): ManagedMatrix = {
     loadRawData[ExprValue](requestColumns, reader, initProbes, sparseRead,
         fullLoad,
         columnsForGroupDefault(_, _, _, _, _))
@@ -37,7 +37,7 @@ object ManagedMatrixBuilder {
   def buildNormalized(requestColumns: Seq[Group],
     reader: MatrixDBReader[ExprValue], initProbes: Array[String], sparseRead: Boolean,
     fullLoad: Boolean,
-    enhancedColumns: Boolean)(implicit context: OTGContext): ManagedMatrix = {
+    enhancedColumns: Boolean)(implicit context: MatrixContext): ManagedMatrix = {
     loadRawData[ExprValue](requestColumns, reader, initProbes, sparseRead,
         fullLoad,
         columnsForGroupNormalized(enhancedColumns, _, _, _, _, _))
@@ -49,7 +49,7 @@ object ManagedMatrixBuilder {
   def buildExtFold(requestColumns: Seq[Group],
     reader: MatrixDBReader[PExprValue], initProbes: Array[String], sparseRead: Boolean,
     fullLoad: Boolean,
-    enhancedColumns: Boolean)(implicit context: OTGContext): ManagedMatrix = {
+    enhancedColumns: Boolean)(implicit context: MatrixContext): ManagedMatrix = {
     loadRawData[PExprValue](requestColumns, reader, initProbes, sparseRead,
         fullLoad,
         columnsForGroupExtFold(enhancedColumns, _, _, _, _, _))
@@ -59,7 +59,7 @@ object ManagedMatrixBuilder {
       reader: MatrixDBReader[E], initProbes: Array[String], sparseRead: Boolean,
       fullLoad: Boolean,
       columnBuilder: (Array[String], ManagedMatrixInfo, Group, Seq[Sample], Seq[Seq[E]]) => ExprMatrix)
-  (implicit context: OTGContext): ManagedMatrix = {
+  (implicit context: MatrixContext): ManagedMatrix = {
     val pmap = context.probeMap
     
     var rawGroupedMat, rawUngroupedMat: ExprMatrix = null

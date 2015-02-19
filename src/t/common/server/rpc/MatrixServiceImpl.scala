@@ -45,6 +45,7 @@ import t.db.MatrixContext
 import otgviewer.shared.FullMatrix
 import otgviewer.server.rpc.Conversions
 import Conversions.asScala
+import otg.OTGContext
 
 object MatrixServiceImpl {
   
@@ -61,16 +62,13 @@ object MatrixServiceImpl {
   var orthologs: Iterable[OrthologMapping] = _
   
   def staticInit(c: Context) = synchronized {
-    if (!inited) {
-   
+    if (!inited) {   
       val probes = c.probes
       orthologs = probes.orthologMappings
       platforms = Platforms(probes)
-
       inited = true
     }
-  }
-  
+  }  
 }
 
 /**
@@ -89,10 +87,9 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
   private var csvDirectory: String = _
   private var csvUrlBase: String = _
-  //TODO OTGContext should be split into three types and the
-  //supertype should be here
-  protected implicit var mcontext: OTGContext = _  
-
+  protected implicit var mcontext: MatrixContext = _  
+  private def probes = context.probes
+  
   // Useful for testing
   override def localInit(config: Configuration) {
     super.localInit(config)
@@ -318,7 +315,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     } else {
       //TODO: this should be a lazy val
       //TODO: some clients need neither "symbols"/annotations nor geneIds
-      val gis = probes.allGeneIds(null).mapMValues(_.identifier).
+      val gis = probes.allGeneIds.mapMValues(_.identifier).
         mapKValues(_.identifier)
       raw.map(or => {        
         new ExpressionRow(or.getProbe, or.getAtomicProbes, or.getTitle,
@@ -367,7 +364,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     //TODO shared logic with e.g. insertAnnotations, extract
     val rowNames = rows.map(_.getAtomicProbes.mkString("/"))
 
-    val gis = probes.allGeneIds(null).mapMValues(_.identifier)
+    val gis = probes.allGeneIds.mapMValues(_.identifier)
     val atomics = rows.map(_.getAtomicProbes())
     val geneIds = atomics.map(row => 
       row.flatMap(at => gis.getOrElse(Probe(at), Seq.empty))).map(_.distinct.mkString(" "))

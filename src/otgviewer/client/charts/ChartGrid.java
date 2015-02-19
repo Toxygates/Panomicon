@@ -6,9 +6,9 @@ import otgviewer.client.Utils;
 import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.client.rpc.SparqlService;
-import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.Group;
+import t.common.client.rpc.SparqlService;
+import t.common.client.rpc.SparqlServiceAsync;
 import t.common.shared.SharedUtils;
 
 import com.google.gwt.core.client.GWT;
