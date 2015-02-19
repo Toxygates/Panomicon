@@ -28,7 +28,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
   import java.lang.{ Double => JDouble }
  
   private implicit def mcontext: MatrixContext = context.matrix
-  implicit val ctxt = super.context
+  implicit val context: t.Context
 
   protected def getDB(): SeriesDB[S]
   
