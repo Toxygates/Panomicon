@@ -63,7 +63,7 @@ object SparqlServiceImpl {
 /**
  * SPARQL query servlet.
  */
-class SparqlServiceImpl extends TServiceServlet with SparqlService {
+abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   import Conversions._
   import SparqlServiceImpl._

@@ -8,8 +8,8 @@ import otgviewer.shared.OTGSchema
 import otg.OTGBConfig
 
 trait OTGServiceServlet extends TServiceServlet {
-  override protected def context: Context = _context
-  override protected def factory: Factory = _factory
+  override protected val context: Context = _context
+  override protected val factory: Factory = _factory
   
   protected var _context: Context = _ 
   protected var _factory: Factory = _
