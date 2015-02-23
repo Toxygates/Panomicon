@@ -8,12 +8,11 @@ import t.db.SeriesDB
 import t.SeriesRanking
 import otgviewer.shared.{Series => SSeries}
 import t.common.shared.SampleClass
-import otgviewer.server.rpc.Conversions
 
 class SeriesServiceImpl extends t.common.server.rpc.SeriesServiceImpl[OTGSeries] with OTGServiceServlet {
 
-  implicit val mat = context.matrix
-  implicit val ctxt = context
+  implicit def mat = context.matrix
+  implicit def ctxt = context
   
   override protected def ranking(db: SeriesDB[OTGSeries], key: OTGSeries) = 
     new otg.SeriesRanking(db, key)
