@@ -1,6 +1,7 @@
 package t.admin.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import t.admin.shared.Batch;
@@ -39,6 +40,9 @@ public class AdminConsole implements EntryPoint {
 	private RootLayoutPanel rootPanel;
 	protected MaintenanceServiceAsync maintenanceService = (MaintenanceServiceAsync) GWT
 			.create(MaintenanceService.class);
+	
+	private Column<Batch, String> datasetColumn; 
+	private CellTable<Batch> batchTable; 
 	
 	final ListDataProvider<Batch> batchData = new ListDataProvider<Batch>();		
 	final ListDataProvider<Platform> platformData = new ListDataProvider<Platform>();
@@ -81,7 +85,7 @@ public class AdminConsole implements EntryPoint {
 
 					@Override
 					protected void onAbort() {
-						db.hide();
+						db.hide(); 
 						refreshInstances();			
 					}					
 				});
@@ -102,6 +106,7 @@ public class AdminConsole implements EntryPoint {
 		dp.add(table);
 		
 		refreshInstances();
+		refreshDatasets();
 		return dp; 
 	}
 	
@@ -215,11 +220,40 @@ public class AdminConsole implements EntryPoint {
 		return dp;
 	}
 	
+	private void buildDatasetColumn() {
+		if (batchTable == null) {
+			return;
+		}
+			
+		List<String> datasets = new ArrayList<String>();
+		//TODO handle updates smoothly
+		for (Dataset d: datasetData.getList()) {
+			datasets.add(d.getTitle());
+		}
+		
+		SelectionCell datasetCell = new SelectionCell(datasets);
+		if (datasetColumn != null) {
+			batchTable.removeColumn(datasetColumn);
+		}
+		
+		datasetColumn = new Column<Batch, String>(datasetCell) {
+			public String getValue(Batch b) {
+				return b.getDataset();
+			}
+		};
+		datasetColumn.setFieldUpdater(new FieldUpdater<Batch, String>() {
+			public void update(int index, final Batch object, String value) {
+				editDataset(object, value);				
+			}
+		});
+		batchTable.addColumn(datasetColumn, "Dataset");
+	}
+	
 	private Widget makeBatchPanel() {
 		DockLayoutPanel dp = new DockLayoutPanel(Unit.PX);
 		
-		final CellTable<Batch> table = makeTable();
-		StandardColumns<Batch> sc = new StandardColumns<Batch>(table) {
+		batchTable = makeTable();
+		StandardColumns<Batch> sc = new StandardColumns<Batch>(batchTable) {
 			void onDelete(Batch object) {
 				deleteBatch(object);
 			}
@@ -233,27 +267,10 @@ public class AdminConsole implements EntryPoint {
 			}
 		};
 
-		table.addColumn(samplesColumn, "Samples");
-		table.setColumnWidth(samplesColumn, "12.5em");
+		batchTable.addColumn(samplesColumn, "Samples");
+		batchTable.setColumnWidth(samplesColumn, "12.5em");
 
-		List<String> datasets = new ArrayList<String>();
-		//TODO handle updates smoothly
-		for (Dataset d: datasetData.getList()) {
-			datasets.add(d.getTitle());
-		}
-		
-		SelectionCell datasetCell = new SelectionCell(datasets);
-		Column<Batch, String> datasetColumn = new Column<Batch, String>(datasetCell) {
-			public String getValue(Batch b) {
-				return "dataset";
-			}
-		};
-		datasetColumn.setFieldUpdater(new FieldUpdater<Batch, String>() {
-			public void update(int index, final Batch object, String value) {
-				editDataset(object, value);				
-			}
-		});
-		table.addColumn(datasetColumn, "Dataset");
+		buildDatasetColumn();
 		
 		TextColumn<Batch> visibilityColumn = new TextColumn<Batch>() {
 			@Override
@@ -272,8 +289,8 @@ public class AdminConsole implements EntryPoint {
 			}
 		};
 		
-		table.addColumn(visibilityColumn, "Visibility");								
-		batchData.addDataDisplay(table);		
+		batchTable.addColumn(visibilityColumn, "Visibility");								
+		batchData.addDataDisplay(batchTable);		
 		
 		ButtonCell editCell = new ButtonCell();
 		Column<Batch, String> editColumn = new Column<Batch, String>(editCell) {
@@ -284,13 +301,11 @@ public class AdminConsole implements EntryPoint {
 		editColumn.setFieldUpdater(new FieldUpdater<Batch, String>() {
 			@Override
 			public void update(int index, final Batch object, String value) {
-				editVisibility(table, object);				
+				editVisibility(batchTable, object);				
 			}
 			
 		});		
-		table.addColumn(editColumn);
-		
-	
+		batchTable.addColumn(editColumn);
 	
 		sc.addDeleteColumn();
 		
@@ -315,7 +330,7 @@ public class AdminConsole implements EntryPoint {
 		});	
 		
 		dp.addSouth(makeButtons(commands), 35);
-		dp.add(table);
+		dp.add(batchTable);
 		refreshBatches();
 		return dp;
 	}
@@ -352,7 +367,19 @@ public class AdminConsole implements EntryPoint {
 	}
 	
 	private void editDataset(final Batch batch, final String dataset) {
-		//TODO
+		batch.setDataset(dataset);
+		maintenanceService.updateBatch(batch,new AsyncCallback<Void>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Unable to set dataset: " + caught.getMessage());
+			}
+
+			@Override
+			public void onSuccess(Void result) {
+				refreshBatches();						
+			}
+			
+		});
 	}
 	
 	private void deleteBatch(final Batch object) {
@@ -425,14 +452,6 @@ public class AdminConsole implements EntryPoint {
 
 	private <T extends ManagedItem> CellTable<T> makeTable() {
 		CellTable<T> table = new CellTable<T>();		
-//		TextColumn<T> textColumn = new TextColumn<T>() {
-//			@Override
-//			public String getValue(T object) {
-//				return object.getTitle();
-//			}
-//		};				
-//		table.addColumn(textColumn, "ID");
-//		table.setColumnWidth(textColumn, "12.5em");
 		table.setSelectionModel(new NoSelectionModel<T>());
 		table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 		return table;
@@ -443,7 +462,7 @@ public class AdminConsole implements EntryPoint {
 	}
 	
 	private void refreshInstances() {
-		maintenanceService.getInstances(new ListDataCallback<Instance>(instanceData, "instance list"));
+		maintenanceService.getInstances(new ListDataCallback<Instance>(instanceData, "instance list"));		
 	}
 	
 	private void refreshPlatforms() {
@@ -452,7 +471,14 @@ public class AdminConsole implements EntryPoint {
 	
 	//TODO reduce duplicated code
 	private void refreshDatasets() {
-		maintenanceService.getDatasets(new ListDataCallback<Dataset>(datasetData, "platform list"));
+		maintenanceService.getDatasets(new ListDataCallback<Dataset>(datasetData, "platform list") {
+			@Override
+			public void onSuccess(Dataset[] result) {
+				super.onSuccess(result);
+				//TODO better way of updating this?
+				buildDatasetColumn(); 					
+			}
+		});
 	}
 
 }

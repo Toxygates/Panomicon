@@ -1,12 +1,10 @@
 package t.common.server.rpc
 
 import t.common.client.rpc.SparqlService
-
 import scala.Array.canBuildFrom
 import scala.collection.JavaConversions.asJavaMap
 import scala.collection.{Set => CSet}
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import otg.Species.Human
@@ -43,6 +41,7 @@ import otgviewer.server.rpc.Conversions
 import Conversions.asJava
 import Conversions.asJavaSample
 import Conversions.convertPairs
+import t.common.server.SharedDatasets
 
 object SparqlServiceImpl {
   //TODO consider moving these to an application-wide SparqlContext or similar
@@ -92,16 +91,37 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       instanceURI = None
     } else {
       instanceURI = Some(Instances.defaultPrefix + "/" + conf.instanceName)
+    }    
+  }
+  
+  protected class SparqlState(ds: Datasets) {
+    var datasets: Set[String] = ds.list.toSet
+  }
+
+  def getSessionData(): SparqlState = {
+    val r = getThreadLocalRequest().getSession().getAttribute("sparql").
+      asInstanceOf[SparqlState]
+    if (r == null) {
+      val ds = new Datasets(baseConfig.triplestore)
+      val ss = new SparqlState(ds)
+      setSessionData(ss)
+      ss
+    } else {
+      r
     }
   }
   
+  def setSessionData(m: SparqlState) =
+    getThreadLocalRequest().getSession().setAttribute("sparql", m)
+  
   def datasets(): Array[Dataset] = {
-   Array()
-   //TODO
+    val ds = new Datasets(baseConfig.triplestore) with SharedDatasets
+    ds.sharedList.toArray
   }
   
   def chooseDatasets(ds: Array[Dataset]): Unit = {
-    //TODO
+    println("Choose datasets: " + ds.toSet)
+    getSessionData.datasets = ds.map(_.getTitle).toSet
   }
 
   @throws[TimeoutException]
@@ -194,8 +214,6 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       paramValues: Array[String]): Array[Pair[TUnit, TUnit]] = {
     scs.flatMap(units(_, param, paramValues))
   }
-    
-//  val orderedTimes = TimesDoses.allTimes.toList 
 
   @throws[TimeoutException]
   def probes(columns: Array[OTGColumn]): Array[String] = {
@@ -252,13 +270,11 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     prs.map(_.identifier).filter(pmap.isToken).toArray
   }
   
-  
   //TODO move to OTG
   @throws[TimeoutException]
   def probesTargetedByCompound(sc: SampleClass, compound: String, service: String,
     homologous: Boolean): Array[String] = Array()
  
-
     //TODO move to OTG
   @throws[TimeoutException]
   def goTerms(pattern: String): Array[String] =    

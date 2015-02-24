@@ -34,6 +34,7 @@ import t.common.shared.Dataset
 import t.sparql.Datasets
 import t.common.server.rpc.TServiceServlet
 import t.common.shared.Dataset
+import t.common.server.SharedDatasets
 
 abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceService {
   
@@ -197,6 +198,7 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
 
     maintenance {
       dm.addWithTimestamp(id, TRDF.escape(d.getComment))
+      dm.setDescription(id, TRDF.escape(d.getDescription))
     }
   }
  
@@ -313,12 +315,8 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
   }
   
   def getDatasets: Array[Dataset] = {
-    val ds = new Datasets(baseConfig.triplestore)
-    val com = ds.comments
-    val ts = ds.timestamps
-    val descs = ds.descriptions
-    ds.list.map(d => new Dataset(d, descs.getOrElse(d, ""),
-        com.getOrElse(d, ""), ts.getOrElse(d, null))).toArray
+    val ds = new Datasets(baseConfig.triplestore) with SharedDatasets
+    ds.sharedList.toArray    
   }
   
   def updateBatch(b: Batch): Unit = {
@@ -330,6 +328,16 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     }
     for (i <- existingAccess; if !newAccess.contains(i)) {
       bs.disableAccess(b.getTitle(), i)
+    }
+    
+    val oldDs = bs.datasets.getOrElse(b.getTitle, null)
+    val newDs = b.getDataset
+    if (newDs != oldDs) {
+      val ds = new Datasets(baseConfig.triplestore)      
+      if (oldDs != null) {
+        ds.removeMember(b.getTitle, oldDs)
+      }
+      ds.addMember(b.getTitle, newDs)
     }
   }
 

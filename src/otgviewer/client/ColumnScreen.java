@@ -1,20 +1,25 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
 import otgviewer.client.components.DataFilterEditor;
 import otgviewer.client.components.DatasetSelector;
+import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
+import t.common.client.rpc.SparqlService;
+import t.common.client.rpc.SparqlServiceAsync;
 import t.common.shared.DataSchema;
 import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -37,6 +42,11 @@ public class ColumnScreen extends Screen {
 	private HorizontalPanel filterTools;
 	private TabLayoutPanel tp;
 	private final String rankingLabel;
+	private DataFilterEditor dfe;
+	
+	private SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
+			.create(SparqlService.class);
+	private List<Dataset> allDatasets = new ArrayList<Dataset>();
 	
 	public ColumnScreen(ScreenManager man, String rankingLabel) {
 		super("Sample group definitions", key, false, man,
@@ -49,7 +59,17 @@ public class ColumnScreen extends Screen {
 		this.addListener(cs);
 		cs.setStyleName("compoundSelector");
 		filterTools = mkFilterTools();
+		loadDatasets();
 	} 
+	
+	private void loadDatasets() {
+		sparqlService.datasets(new PendingAsyncCallback<Dataset[]>(this, "Unable to obtain datasets") {			
+			@Override
+			public void handleSuccess(Dataset[] result) {
+				allDatasets = Arrays.asList(result);	
+			}			
+		});
+	}
 	
 	private HorizontalPanel mkFilterTools() {
 		final Screen s = this;
@@ -65,7 +85,7 @@ public class ColumnScreen extends Screen {
 			}
 		});
 		
-		DataFilterEditor dfe = new DataFilterEditor(schema()) {
+		dfe = new DataFilterEditor(schema()) {
 			@Override
 			protected void changeSampleClass(SampleClass sc) {
 				super.changeSampleClass(sc);				
@@ -82,7 +102,27 @@ public class ColumnScreen extends Screen {
 	
 	protected void showDatasetSelector() {
 		final DialogBox db = new DialogBox(false, true);
-		DatasetSelector dsel = new DatasetSelector(new ArrayList<Dataset>());		
+		final Screen scr = this;
+		//TODO set init. selection
+		DatasetSelector dsel = new DatasetSelector(allDatasets) {
+			@Override
+			public void onOK() {
+				Dataset[] enabled = getSelection().toArray(new Dataset[0]);
+				sparqlService.chooseDatasets(enabled,
+						new PendingAsyncCallback<Void>(scr, "Unable to choose datasets") {					
+					public void handleSuccess(Void v) {
+						dfe.update();
+					}
+				});
+				db.hide();
+			}
+			
+			@Override
+			public void onCancel() {
+				super.onCancel();
+				db.hide();
+			}
+		};
 		db.setText("Select datasets");
 		db.setWidget(dsel);
 		db.setWidth("500px");

@@ -23,4 +23,9 @@ public abstract class ManagedItem implements Serializable, DataRecord {
 	public Date getDate() { return date; }
 	
 	public String getUserTitle() { return title; }
+	
+	@Override
+	public String toString() {
+		return getClass().toString() + ":" + title;
+	}
 }

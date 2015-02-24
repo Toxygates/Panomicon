@@ -14,5 +14,4 @@ public class Dataset extends ManagedItem {
 	}
 	
 	public String getDescription() { return description; }
-
 }
