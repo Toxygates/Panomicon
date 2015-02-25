@@ -92,6 +92,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     } else {
       instanceURI = Some(Instances.defaultPrefix + "/" + conf.instanceName)
     }    
+    
+    sampleStore.instanceURI = instanceURI
   }
   
   protected class SparqlState(ds: Datasets) {
@@ -121,7 +123,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   
   def chooseDatasets(ds: Array[Dataset]): Unit = {
     println("Choose datasets: " + ds.toSet)
-    getSessionData.datasets = ds.map(_.getTitle).toSet
+    val dsTitles = ds.map(_.getTitle).toSet
+    getSessionData.datasets =  dsTitles
+    sampleStore.datasets = dsTitles.toList
   }
 
   @throws[TimeoutException]
@@ -131,24 +135,24 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   
   @throws[TimeoutException]
   def parameterValues(sc: SampleClass, parameter: String): Array[String] = {    
-    sampleStore.attributeValues(scAsScala(sc), parameter, instanceURI).
+    sampleStore.attributeValues(scAsScala(sc), parameter).
       filter(x => !schema.isMajorParamSharedControl(x)).toArray
   }
   
   def samplesById(ids: Array[String]): Array[OTGSample] = 
     sampleStore.samples(new t.sparql.SampleClass(), "id", 
-        ids, instanceURI).map(asJavaSample(_)).toArray 
+        ids).map(asJavaSample(_)).toArray 
 
   //TODO compound_name is a dummy parameter below
   @throws[TimeoutException]
   def samples(sc: SampleClass): Array[OTGSample] =
     sampleStore.samples(scAsScala(sc), "compound_name", 
-        List(), instanceURI).map(asJavaSample(_)).toArray
+        List()).map(asJavaSample(_)).toArray
 
   @throws[TimeoutException]
   def samples(sc: SampleClass, param: String, 
       paramValues: Array[String]): Array[OTGSample] =
-    sampleStore.samples(sc, param, paramValues, instanceURI).map(asJavaSample(_)).toArray
+    sampleStore.samples(sc, param, paramValues).map(asJavaSample(_)).toArray
 
   @throws[TimeoutException]
   def samples(scs: Array[SampleClass], param: String, 
@@ -157,7 +161,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   
   @throws[TimeoutException]
   def sampleClasses(): Array[SampleClass] = {    
-  sampleStore.sampleClasses(instanceURI).map(x => 
+  sampleStore.sampleClasses.map(x => 
     new SampleClass(new java.util.HashMap(asJavaMap(x)))
     ).toArray
   }
@@ -172,7 +176,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     //Ensure shared control is always included, if possible
     val useParamValues = if (param == majorParam) {
       val allMajors = 
-        sampleStore.attributeValues(scAsScala(sc), majorParam, instanceURI)        
+        sampleStore.attributeValues(scAsScala(sc), majorParam)        
       val shared = allMajors.filter(schema.isMajorParamSharedControl(_))
       (shared.toSeq ++ paramValues.toSeq)
     } else {
@@ -180,7 +184,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     }
     
     //TODO rethink how to use batch here
-    val ss = sampleStore.samples(sc, param, useParamValues, instanceURI).    
+    val ss = sampleStore.samples(sc, param, useParamValues).    
         groupBy(x =>( 
             x.sampleClass(schema.timeParameter()), 
             x.sampleClass.get("control_group")))
@@ -218,7 +222,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   @throws[TimeoutException]
   def probes(columns: Array[OTGColumn]): Array[String] = {
     val samples = columns.flatMap(_.getSamples)
-    val metadata = new TriplestoreMetadata(sampleStore, instanceURI)    
+    val metadata = new TriplestoreMetadata(sampleStore)    
     val usePlatforms = samples.map(s => metadata.parameter(
         t.db.Sample(s.getCode), "platform_id")
         ).toSet
@@ -235,7 +239,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   @throws[TimeoutException]
   def annotations(barcode: OTGSample): Annotation = 
-    asJava( sampleStore.annotations(barcode.getCode, List(), instanceURI) )
+    asJava( sampleStore.annotations(barcode.getCode, List()) )
     
   //TODO get these from schema, etc.
   @throws[TimeoutException]
@@ -245,7 +249,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     } else {
       Nil //fetch everything
     }
-    column.getSamples.map(x => sampleStore.annotations(x.getCode, keys, instanceURI)).map(asJava(_))
+    column.getSamples.map(x => sampleStore.annotations(x.getCode, keys)).map(asJava(_))
   }
 
   @throws[TimeoutException]

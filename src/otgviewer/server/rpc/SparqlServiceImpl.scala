@@ -132,7 +132,7 @@ class SparqlServiceImpl extends t.common.server.rpc.SparqlServiceImpl with OTGSe
     }
     
     def getTargeting(sc: SampleClass, from: CompoundTargets): MMap[Probe, Compound] = {
-      val expected = sampleStore.compounds(sc, instanceURI).map(Compound.make(_))
+      val expected = sampleStore.compounds(sc).map(Compound.make(_))
 
       //strictly orthologous
       val oproteinVs = oproteins.allValues.toSet -- proteins.allValues.toSet

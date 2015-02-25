@@ -14,4 +14,7 @@ public class Dataset extends ManagedItem {
 	}
 	
 	public String getDescription() { return description; }
+	
+	@Override
+	public String getUserTitle() { return description; }
 }
