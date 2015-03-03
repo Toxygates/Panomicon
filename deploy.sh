@@ -2,17 +2,20 @@
 
 function makeWar {
     VERSION=$1
-    OUTPUT=toxygates-$VERSION.war
+    OUTPUT=toxygates-template.war
     cp -r ../OTGTool/bin/friedrich war/WEB-INF/classes
     cp -r ../OTGTool/bin/otg war/WEB-INF/classes
     cp -r ../OTGTool/bin/t war/WEB-INF/classes
     cd war
     rm $OUTPUT
-    jar cf $OUTPUT toxygates otggui csv *.pdf *.css images *.html.template
+    rm WEB-INF/web.xml
+    jar cf $OUTPUT toxygates csv *.pdf *.css images *.html.template
+    #Exclude classes in t/admin and t/global
     jar uf $OUTPUT $(find WEB-INF \( -path WEB-INF/classes/t/admin -o \
       -path WEB-INF/classes/t/global \) -prune -o \( -type f -print \) )
     cd ..
     rm -r war/WEB-INF/classes/otg
+    rm -r war/WEB-INF/classes/t
     rm -r war/WEB-INF/classes/friedrich
 }
 
@@ -23,11 +26,12 @@ function makeAdminWar {
     cd war
     cp WEB-INF/web.xml.admin WEB-INF/web.xml
     rm admin.war
-    jar cf admin.war AdminConsole admin.html *.css images
+    jar cf admin.war OTGAdmin admin.html *.css images
     jar uf admin.war $(find WEB-INF -path WEB-INF/classes/t/global -prune -o \
       \( -type f -print \) )
     cd ..
     rm -r war/WEB-INF/classes/otg
+    rm -r war/WEB-INF/classes/t
     rm -r war/WEB-INF/classes/friedrich
 }
 
@@ -49,7 +53,7 @@ cp war/toxygates.html war/toxygates.html.bak
 cp war/news.html war/news.html.bak
 cp war/WEB-INF/web.xml war/WEB-INF/web.xml.bak
 
-makeWar template
+makeWar
 makeAdminWar
 
 mv war/toxygates.html.bak war/toxygates.html

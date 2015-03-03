@@ -137,19 +137,25 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     showUploadedFiles()
 	grabRunner()
 	val pm = new PlatformManager(context) //TODO configuration parsing
-    cleanMaintenance {      
+
+    cleanMaintenance {
       val tempFiles = new TempFiles()
       setAttribute("tempFiles", tempFiles)
-      
-      TaskRunner.start() 
+
+      TaskRunner.start()
       setLastTask("Add platform")
       if (getFile(platformPrefix) == None) {
         throw new MaintenanceException("The platform file has not been uploaded yet.")
       }
-      
+
+      if (!TRDF.isValidIdentifier(id)) {
+        throw new MaintenanceException(
+          s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
+      }
+
       val metaFile = getAsTempFile(tempFiles, platformPrefix, platformPrefix, "dat").get
-      TaskRunner ++= pm.addPlatform(id, comment, metaFile.getAbsolutePath(), affymetrixFormat)
-    } 
+      TaskRunner ++= pm.addPlatform(id, TRDF.escape(comment), metaFile.getAbsolutePath(), affymetrixFormat)
+    }
   }
 
   def addInstance(i: Instance): Unit = {
