@@ -114,7 +114,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	/**
 	 * Names of the microarray probes currently displayed
 	 */
-	private String[] displayedProbes;
+	private String[] displayedAtomicProbes;
 
  	private boolean loadedData = false;
  	private ManagedMatrixInfo matrixInfo = null;
@@ -523,7 +523,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		}		
 	}
 	
-	public String[] displayedProbes() { return displayedProbes; }
+	/**
+	 * The list of atomic probes currently on screen.
+	 */
+	public String[] displayedAtomicProbes() { return displayedAtomicProbes; }
 	protected String probeForRow(ExpressionRow row) { return row.getProbe(); }
 	protected String[] geneIdsForRow(ExpressionRow row) { return row.getGeneIds(); }
 	
@@ -545,12 +548,16 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			public void onSuccess(List<ExpressionRow> result) {
 				if (result.size() > 0) {
 					updateRowData(range.getStart(), result);
-					displayedProbes = new String[result.size()];					
+					List<String> dispAts = new ArrayList<String>();
 					
-					for (int i = 0; i < displayedProbes.length; ++i) {			
-						displayedProbes[i] = result.get(i).getProbe();
+					for (int i = 0; i < result.size(); ++i) {
+						String[] ats = result.get(i).getAtomicProbes();
+						for(String at: ats) {
+							dispAts.add(at);													
+						}
 					}		
 
+					displayedAtomicProbes = dispAts.toArray(new String[0]);
 					highlightedRow = -1;							
 					getAssociations();
 				} else {
@@ -701,7 +708,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		}
 		
 		public void onClick(final String value) {			
-			highlightedRow = SharedUtils.indexOf(displayedProbes, value);
+			highlightedRow = SharedUtils.indexOf(displayedAtomicProbes, value);
 			grid.redraw();
 			ExpressionRow dispRow = grid.getVisibleItem(highlightedRow);
 			final String[] probes = dispRow.getAtomicProbes();

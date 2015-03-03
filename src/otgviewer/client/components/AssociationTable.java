@@ -82,16 +82,16 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 
 			logger.info("Get associations for " + chosenSampleClass.toString());
 			sparqlService.associations(chosenSampleClass, vas,
-					displayedProbes(), 
+					displayedAtomicProbes(), 
 					assocCallback);
 		}
 	}
 	
 	/**
-	 * Get the affymetrix probes currently being displayed (keys for associations)
+	 * Get the atomic probes currently being displayed (keys for associations)
 	 * @return
 	 */
-	abstract protected String[] displayedProbes();
+	abstract protected String[] displayedAtomicProbes();
 	abstract protected String probeForRow(T row);
 	abstract protected String[] geneIdsForRow(T row);
 	

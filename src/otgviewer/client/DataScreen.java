@@ -60,10 +60,6 @@ public class DataScreen extends Screen {
 		return rlp;		
 	}
 	
-	/**
-	 * Create tick menu items corresponding to the hideable columns.
-	 * @param mb
-	 */
 	private void setupMenuItems() {
 		MenuBar mb = new MenuBar(true);		
 		MenuItem mActions = new MenuItem("File", false, mb);		
@@ -113,12 +109,12 @@ public class DataScreen extends Screen {
 						};
 						// TODO make ListChooser use the DataListener propagate mechanism?
 						lc.setLists(chosenItemLists);
-						lc.setItems(Arrays.asList(et.displayedProbes()));
+						lc.setItems(Arrays.asList(et.displayedAtomicProbes()));
 						lc.saveAction();
 					}
 				}));
 		
-		// TODO: this is a tick menu item without the tick.
+		// TODO: this is effectively a tick menu item without the tick.
 		// It would be nice to display the tick graphic, but then the textual alignment
 		// of the other items on the menu becomes odd.
 		addAnalysisMenuItem(

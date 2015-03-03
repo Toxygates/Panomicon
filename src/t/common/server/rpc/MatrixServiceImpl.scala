@@ -247,6 +247,10 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       s"$n probes"
     }
   }
+  
+  private def repeatStrings[T](xs: Seq[T]): Iterable[String] = 
+    withCount(xs).map(x => s"${x._1} (${prbCount(x._2)})")
+  
     
   /**
    * Dynamically obtain annotations such as probe titles, gene IDs and gene symbols,
@@ -272,9 +276,9 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       
         val r = new ExpressionRow(atomics.mkString("/ "),
           atomics,
-          ps.map(p => p.name).mkString("/ "),
+          repeatStrings(ps.map(p => p.name)).mkString("/ "),
           expandedGenes.map(_._2).distinct,
-          withCount(expandedSymbols).map(x => s"${x._1} (${prbCount(x._2)})").toArray,    
+          repeatStrings(expandedSymbols).toArray,    
           or.getValues)
       
       val gils = withCount(expandedGenes).map(x => s"${x._1._1 + ":" + x._1._2} (${prbCount(x._2)})").toArray
