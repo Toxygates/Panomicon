@@ -117,7 +117,7 @@ object ManagedMatrixBuilder {
     // A simple average column
     val treatedIdx = treatedIdxs(g, sortedBarcodes)
     
-    info.addColumn(false, g.toString, "Average of treated samples", false, g)
+    info.addColumn(false, g.toString, "Average of treated samples", false, g, false)
     ExprMatrix.withRows(data.map(vs =>
       Vector(javaMean(selectIdx(vs, treatedIdx)))),
       initProbes,
@@ -146,8 +146,8 @@ object ManagedMatrixBuilder {
         javaMean(selectIdx(vs, treatedIdx)),
         javaMean(selectIdx(vs, controlIdx))))
 
-      info.addColumn(false, colName1, "Average of treated samples", false, g)
-      info.addColumn(false, colName2, "Average of control samples", false, g)
+      info.addColumn(false, colName1, "Average of treated samples", false, g, false)
+      info.addColumn(false, colName2, "Average of control samples", false, g, false)
       ExprMatrix.withRows(rows, initProbes, List(colName1, colName2))                       
     } else {
       throw new Exception("No units in group")
@@ -179,8 +179,8 @@ object ManagedMatrixBuilder {
         Vector(javaMean(treatedVs), new ExpressionValue(first.p, first.call))
       })
       
-      info.addColumn(false, colName1, "Average of treated samples", false, g)
-      info.addColumn(false, colName2, "p-values of treated against control", true, g)
+      info.addColumn(false, colName1, "Average of treated samples", false, g, false)
+      info.addColumn(false, colName2, "p-values of treated against control", true, g, true)
       
       ExprMatrix.withRows(rows, initProbes, List(colName1, colName2))
     } else {
@@ -371,7 +371,7 @@ class ManagedMatrix(val initProbes: Array[String],
             currentMat.appendDiffTest(rawData, g1s, g2s, md.getShortTitle(null)) //TODO
           case _ => throw new Exception("Unexpected test type!")
         }
-        currentInfo.addColumn(true, test.getShortTitle(null), test.getTooltip(), upper, null) //TODO
+        currentInfo.addColumn(true, test.getShortTitle(null), test.getTooltip(), upper, null, false) //TODO
       case _ => throw new Exception("Unexpected test type")
     }       
   }

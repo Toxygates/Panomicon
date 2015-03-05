@@ -53,7 +53,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
   }
 
   /**
-   * This conversion keeps the columns and column names,
+   * This conversion keeps the columns and column names (etc),
    * but removes synthetics and filtering options.
    * TODO synthetics handling needs to be tested
    */
@@ -61,7 +61,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
     val r = new ManagedMatrixInfo()
     for (i <- 0 until from.numDataColumns()) {
       r.addColumn(false, from.columnName(i), from.columnHint(i),
-        from.isUpperFiltering(i), from.columnGroup(i))
+        from.isUpperFiltering(i), from.columnGroup(i), from.isPValueColumn(i))
     }
     r.setPlatforms(from.getPlatforms())
     r.setNumRows(from.numRows())

@@ -49,6 +49,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
+import com.google.gwt.user.cellview.client.ColumnSortList;
 import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.PageSizePager;
 import com.google.gwt.user.cellview.client.SimplePager;
@@ -57,6 +58,7 @@ import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
@@ -68,6 +70,8 @@ import com.google.gwt.view.client.Range;
 
 /**
  * The main data display table. This class has many different functionalities.
+ * (too many, should be refactored into something like an MVC architecture, almost certainly)
+ * 
  * It requests microarray expression data dynamically, displays it, 
  * as well as displaying additional dynamic data. It also provides functionality for chart popups.
  * It also has an interface for adding and removing t-tests and u-tests, which can be hidden and 
@@ -105,7 +109,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	 */
 	private List<Synthetic> synthetics = new ArrayList<Synthetic>();
 	private List<Column<ExpressionRow, ?>> synthColumns = new ArrayList<Column<ExpressionRow, ?>>();
-	
+	protected boolean displayPColumns = true;
+	protected int sortCol;
+	protected boolean sortAsc;
+		
 	/**
 	 * For selecting sample groups to apply t-test/u-test to
 	 */
@@ -179,7 +186,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		tools = Utils.mkHorizontalPanel();		
 		
 		HorizontalPanel horizontalPanel = Utils.mkHorizontalPanel(true);		
-		horizontalPanel.setStyleName("colored");
+		horizontalPanel.setStylePrimaryName("colored");
+		horizontalPanel.addStyleName("slightlySpaced");
 		tools.add(horizontalPanel);
 	
 		tableList.setVisibleItemCount(1);
@@ -197,7 +205,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		Resources r = GWT.create(Resources.class);
 
 		SimplePager sp = new SimplePager(TextLocation.CENTER, r, true, 500, true);
-		sp.setStyleName("slightlySpaced");
+		sp.setStylePrimaryName("slightlySpaced");
 		horizontalPanel.add(sp);		
 		sp.setDisplay(grid);
 		
@@ -211,8 +219,20 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			}			
 		};
 		
-		pager.setStyleName("slightlySpaced");
+		pager.setStylePrimaryName("slightlySpaced");
 		horizontalPanel.add(pager);
+		
+		final CheckBox pcb = new CheckBox("p-value columns");
+		horizontalPanel.add(pcb);
+		pcb.setValue(true);
+		pcb.addClickHandler(new ClickHandler() {			
+			@Override
+			public void onClick(ClickEvent event) {
+				displayPColumns = pcb.getValue();
+				setupColumns();
+			}
+		});
+		
 		pager.setDisplay(grid);			
 	}
 	
@@ -314,12 +334,14 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		TextCell tc = new TextCell();
 				
 		for (int i = 0; i < matrixInfo.numDataColumns(); ++i) {			
-			Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, dataColumns);
-			valueCol.setDefaultSortAscending(false);
-			addDataColumn(valueCol, matrixInfo.columnName(i), matrixInfo.columnHint(i));
-			Group g = matrixInfo.columnGroup(i);
-			if (g != null) {
-				valueCol.setCellStyleNames(g.getStyleName());
+			if (displayPColumns || ! matrixInfo.isPValueColumn(i)) {
+				Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);
+				valueCol.setDefaultSortAscending(false);
+				addDataColumn(valueCol, matrixInfo.columnName(i), matrixInfo.columnHint(i));
+				Group g = matrixInfo.columnGroup(i);
+				if (g != null) {
+					valueCol.setCellStyleNames(g.getStyleName());
+				}
 			}
 		}		
 
@@ -378,6 +400,17 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		}		
 	}
 	
+	private void computeSortParams() {
+		ColumnSortList csl = grid.getColumnSortList();
+		sortAsc = false;
+		sortCol = 0;
+		if (csl.size() > 0) {	
+			ExpressionColumn ec = (ExpressionColumn) csl.get(0).getColumn();
+			sortCol = ec.matrixColumn();
+			sortAsc = csl.get(0).isAscending();
+		}
+	}
+	
 	@Override
 	protected boolean interceptGridClick(String target, int x, int y) {
 		/**
@@ -396,9 +429,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				 target.indexOf("width: 12") != -1)); // IE8
 		if (isFilterClick) {
 			// Identify the column that was filtered.
-			int col = columnAt(x);			
-			int realCol = col - numExtraColumns();
-			editColumnFilter(realCol);			
+			int col = columnAt(x);	
+			ExpressionColumn ec = (ExpressionColumn) grid.getColumn(col);						
+			editColumnFilter(ec.matrixColumn());			
 		}
 		// If we return true, the click will be passed on to the other widgets
 		return !isFilterClick;
@@ -572,7 +605,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				computeSortParams();
 				if (range.getLength() > 0) {
 					matrixService.datasetItems(range.getStart(), range.getLength(),
-							sortDataColumnIdx(), sortAscending(), rowCallback);
+							sortCol, sortAsc, rowCallback);
 				}
 			}
 		}

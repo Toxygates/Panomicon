@@ -34,7 +34,6 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	protected int dataColumns = 0;
  	protected final DataSchema schema;
 	
-	
 	public RichTable(DataSchema schema) {
 		this.schema = schema;
 		hideableColumns = initHideableColumns(schema);
@@ -184,31 +183,6 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		}		
 		grid.removeColumn(c);
 		dataColumns -= 1;
-	}
-
-	private int sortCol;
-	private boolean sortAsc;
-	public void computeSortParams() {
-		ColumnSortList csl = grid.getColumnSortList();
-		sortAsc = false;
-		sortCol = 0;
-		if (csl.size() > 0) {
-			sortCol = grid.getColumnIndex(
-					(Column<T, ?>) csl.get(0).getColumn())
-					- extraCols;
-			sortAsc = csl.get(0).isAscending();
-		}
-	}
-	
-	/**
-	 * The offset of the data column being sorted (within the data columns only)
-	 */
-	public int sortDataColumnIdx() { 		
-		return sortCol; 
-	}
-		
-	public boolean sortAscending() {		
-		return sortAsc; 
 	}
 	
 	/**

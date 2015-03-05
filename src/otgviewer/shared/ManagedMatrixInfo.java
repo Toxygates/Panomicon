@@ -19,6 +19,7 @@ public class ManagedMatrixInfo implements Serializable {
 	private Group[] columnGroups = new Group[0];
 	private Double[] columnFilters = new Double[0];
 	private String[] platforms = new String[0];
+	private boolean[] isPValueColumn = new boolean[0];
 	
 	public ManagedMatrixInfo() { }
 		
@@ -33,7 +34,7 @@ public class ManagedMatrixInfo implements Serializable {
 	 */
 	public void addColumn(boolean synthetic, String name, 
 			String hint, boolean isUpperFiltering,
-			Group baseGroup) {
+			Group baseGroup, boolean isPValue) {
 		if (synthetic) {
 			numSynthetics++;
 		} else {
@@ -45,6 +46,7 @@ public class ManagedMatrixInfo implements Serializable {
 		upperBoundFiltering = SharedUtils.extend(upperBoundFiltering, isUpperFiltering);	
 		columnGroups = SharedUtils.extend(columnGroups, baseGroup);
 		columnFilters = SharedUtils.extend(columnFilters, null);
+		isPValueColumn = SharedUtils.extend(isPValueColumn, isPValue);
 	}
 	
 	public void removeSynthetics() {
@@ -61,8 +63,17 @@ public class ManagedMatrixInfo implements Serializable {
 		return numDataColumns + numSynthetics;
 	}
 	
+	/**
+	 * Data columns are in the range #0 until numDataColumns - 1
+	 * @return
+	 */
 	public int numDataColumns() { return numDataColumns; }
 	
+	/**
+	 * Synthetic columns are in the range 
+	 * numDataColumns until numColumns.
+	 * @return
+	 */
 	public int numSynthetics() { return numSynthetics; }
 	
 	public int numRows() { return numRows; }
@@ -113,6 +124,15 @@ public class ManagedMatrixInfo implements Serializable {
 	
 	public void setColumnFilter(int column, @Nullable Double filter) {
 		columnFilters[column] = filter;
+	}
+	
+	/**
+	 * Whether a given column is a p-value column.
+	 * @param column column index. Must be 0 <= i < numColumns.
+	 * @return
+	 */
+	public boolean isPValueColumn(int column) {
+		return isPValueColumn[column];
 	}
 	
 	public void setPlatforms(String[] platforms) { this.platforms = platforms; }
