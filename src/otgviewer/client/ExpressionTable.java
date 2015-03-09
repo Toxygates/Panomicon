@@ -561,6 +561,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	 */
 	public String[] displayedAtomicProbes() { return displayedAtomicProbes; }
 	protected String probeForRow(ExpressionRow row) { return row.getProbe(); }
+	protected String[] atomicProbesForRow(ExpressionRow row) { return row.getAtomicProbes(); }
 	protected String[] geneIdsForRow(ExpressionRow row) { return row.getGeneIds(); }
 	
 	/**

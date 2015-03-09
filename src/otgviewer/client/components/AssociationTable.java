@@ -93,6 +93,7 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 	 */
 	abstract protected String[] displayedAtomicProbes();
 	abstract protected String probeForRow(T row);
+	abstract protected String[] atomicProbesForRow(T row);
 	abstract protected String[] geneIdsForRow(T row);
 	
 	public static abstract class LinkingColumn<T> extends Column<T, SafeHtml> implements HideableColumn {
@@ -163,18 +164,18 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 		
 		protected Collection<Pair<String, String>> getLinkableValues(T er) {
 			Association a = associations.get(assoc);
-			if (a.data().containsKey(probeForRow(er))) {
-				return a.data().get(probeForRow(er));				
-			} else {
-				String[] geneids = geneIdsForRow(er);
-				Set<Pair<String, String>> all = new HashSet<Pair<String, String>>();
-				for (String gi : geneids) {
-					if (a.data().containsKey(gi)) {
-						all.addAll(a.data().get(gi));
-					}
-				}
-				return all;				
+			Set<Pair<String, String>> all = new HashSet<Pair<String, String>>();
+			for (String at : atomicProbesForRow(er)) {
+				if (a.data().containsKey(at)) {
+					all.addAll(a.data().get(at));					
+				} 
 			}
+			for (String gi : geneIdsForRow(er)) {
+				if (a.data().containsKey(gi)) {
+					all.addAll(a.data().get(gi));
+				}
+			}
+			return all;
 		}
 		
 		public SafeHtml getValue(T er) {		
