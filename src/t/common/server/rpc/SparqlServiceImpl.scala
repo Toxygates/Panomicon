@@ -320,9 +320,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
         case _: AType.GO.type        => probeStore.goTerms(probes)
        
         case _: AType.KEGG.type =>
-          val sp = asSpecies(sc)
           toBioMap(probes, (_: Probe).genes) combine
-            b2rKegg.forGenes(probes.flatMap(_.genes), sp)
+            b2rKegg.forGenes(probes.flatMap(_.genes))
         case _: AType.Enzymes.type =>
           val sp = asSpecies(sc)
           b2rKegg.enzymes(probes.flatMap(_.genes), sp)
