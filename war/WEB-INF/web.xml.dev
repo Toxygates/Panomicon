@@ -9,6 +9,9 @@
 		 <param-value>http://127.0.0.1:3030/data/sparql</param-value>  
 		<!-- <param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1</param-value> -->
 	</context-param>
+	
+	<!-- The following 3 parameters are necessary for working with Owlim-SE at NIBIO -->
+	<!--
 	<context-param>
 		<param-name>repositoryName</param-name>
 		<param-value>ttest</param-value>
@@ -21,6 +24,7 @@
 		<param-name>repositoryPassword</param-name>
 		<param-value>ttest</param-value>
 	</context-param>	
+	-->
 	
 	<context-param>
 		<param-name>instanceName</param-name>
@@ -32,13 +36,14 @@
 		<param-value>/Users/johan/otg/data_dev</param-value>
 	</context-param>
 	<context-param>
+		<param-name>matrixDbOptions</param-name>
+		<param-value>#bnum=6250000#pccap=1073741824#msiz=4294967296</param-value>
+	</context-param>
+	<context-param>
 		<param-name>csvDir</param-name>
 		<param-value>/shiba/toxygates/data_dev/csv</param-value>
 	</context-param>	
-	<context-param>
-		<param-name>applicationClass</param-name>
-		<param-value>Adjuvant</param-value>
-	</context-param>
+
 
 	<!-- For AdminGUI -->
 	<context-param>
