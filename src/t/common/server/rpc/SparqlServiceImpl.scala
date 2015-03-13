@@ -252,9 +252,10 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     column.getSamples.map(x => sampleStore.annotations(x.getCode, keys)).map(asJava(_))
   }
 
+  //TODO remove sc
   @throws[TimeoutException]
   def pathways(sc: SampleClass, pattern: String): Array[String] =
-    b2rKegg.forPattern(pattern, sc).toArray
+    b2rKegg.forPattern(pattern).toArray
 
   //TODO: return a map instead
   @throws[TimeoutException]
@@ -265,6 +266,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       map(_.symbolStrings.toArray).getOrElse(Array()))
   }
 
+  //TODO more general two-way annotation resolution (don't hardcode a single annotation type
+  //such as pathway)
+  //TODO remove sc
   @throws[TimeoutException]
   def probesForPathway(sc: SampleClass, pathway: String): Array[String] = {    
     val geneIds = b2rKegg.geneIds(pathway).map(Gene(_))
