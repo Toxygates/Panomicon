@@ -3,8 +3,7 @@ package otgviewer.server.rpc
 import scala.collection.JavaConversions._
 import scala.collection.{Map => CMap, Set => CSet}
 import java.util.{ Map => JMap, HashMap => JHMap, Set => JSet, HashSet => JHSet, List => JList }
-
-import otg.SeriesRanking
+import t.SeriesRanking
 import otg.Species
 import otgviewer.shared.CellType
 import otgviewer.shared.DataFilter
@@ -23,6 +22,7 @@ import t.common.shared.SampleClass
 import t.common.shared.Pair
 import otgviewer.shared.OTGSample
 import t.db.{ExprValue => TExprValue}
+import t.db.MatrixContext
 
 
 /**
@@ -50,8 +50,8 @@ object Conversions {
     new OTGSample(s.sampleId, sc, s.cgroup.getOrElse(null))
   }
 
-  implicit def asScala(sc: SampleClass, series: Series)(implicit context: Context): OTGSeries = {
-	val p = context.unifiedProbes.pack(series.probe) //TODO filtering
+  implicit def asScala(sc: SampleClass, series: Series)(implicit context: MatrixContext): OTGSeries = {
+	val p = context.probeMap.pack(series.probe) //TODO filtering
 	
 	new OTGSeries(sc.get("sin_rep_type"), 
 	    sc.get("organ_id"), sc.get("organism"), 
@@ -59,6 +59,7 @@ object Conversions {
   }
 
   implicit def asJava(series: OTGSeries)(implicit context: Context): Series = {
+    implicit val mc = context.matrix
 	new Series(series.compound + " " + series.dose, series.probeStr, series.dose,
 	    series.compound, series.values.map(asJava).toArray)
   }

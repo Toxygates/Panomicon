@@ -111,7 +111,18 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	}
 	
 	static interface UnitListener {
+		/**
+		 * Indicates that the selection has changed.
+		 * @param sender
+		 * @param units
+		 */
 		void unitsChanged(DataListenerWidget sender, List<Unit> units);
+		
+		/**
+		 * Indicates that the available units have changed.
+		 * Passed as pairs of treated and control units.
+		 */
+		void availableUnitsChanged(DataListenerWidget sender, List<Pair<Unit, Unit>> units);
 	}
 	
 	private UnitListener listener;
@@ -125,6 +136,11 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	public void compoundsChanged(List<String> compounds) {
 		oldSelection = getSelectedCombinations();		
 		super.compoundsChanged(compounds);		
+	}
+	
+	public void compoundsChanged(List<String> compounds, Unit[] initSel) {
+		oldSelection = initSel;
+		super.compoundsChanged(compounds);
 	}
 
 	public void setAll(boolean val) {
@@ -244,6 +260,18 @@ public class SelectionTDGrid extends TimeDoseGrid {
 		return r;
 	}
 	
+	public List<Pair<Unit, Unit>> getAvailableUnits() {
+		List<Pair<Unit, Unit>> r = new ArrayList<Pair<Unit, Unit>>();
+		for (Unit k : controlUnits.keySet()) {
+			Unit control = controlUnits.get(k);
+			if (control != null) {
+				Pair<Unit, Unit> p = new Pair<Unit, Unit>(k, control);
+				r.add(p);
+			}
+		}
+		return r;
+	}
+	
 	@Override
 	protected Widget guiForUnit(final Unit unit) {		
 		UnitUI ui = new UnitUI(unit);	
@@ -324,19 +352,20 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	private String unitString(Unit u) {
 		if (u == null) {
 			return "(null)";
-		} else if (u.getSamples() == null) {
-			return "(no samples)";
+		} else if (u.getSamples() == null || u.getSamples().length == 0) {
+			return "(no samples)";		
 		} else {
-			return u.getSamples().length + " sampl";
+			return u.getSamples().length + " sampl: " + u.getSamples()[0].getCode();
 		}
 	}
 	
-	@Override
+	@Override 
 	protected void samplesAvailable() {
 		logger.info("Samples available: " + availableUnits.length + " units");
+		controlUnits.clear();
 		for (Pair<Unit, Unit> u: availableUnits) {		
 			controlUnits.put(u.first(), u.second());			
-			logger.info("treated: " + unitString(u.first()) + " control: " + unitString(u.second()));									
+//			logger.info("treated: " + unitString(u.first()) + " control: " + unitString(u.second()));												
 		}
 		
 		for (Pair<Unit, Unit> treatedControl: availableUnits) {
@@ -373,5 +402,9 @@ public class SelectionTDGrid extends TimeDoseGrid {
 			setSelection(oldSelection);
 			oldSelection = null;
 		}	
+		
+		if (listener != null) {			
+			listener.availableUnitsChanged(this, Arrays.asList(availableUnits));
+		}
 	}
 }

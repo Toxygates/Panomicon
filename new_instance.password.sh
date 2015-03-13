@@ -1,6 +1,10 @@
 #!/bin/bash
 
+#The main difference between this script and new_instance.public 
+#is that the cat << EOF part at the end is more complicated.
+
 THOME=/shiba/toxygates/webapp_test
+#THOME=/opt/apache-tomcat-6.0.36/webapps
 
 if [ $# -lt 3 ]
 then
@@ -15,12 +19,21 @@ INSTANCE=$1
 shift
 ROLE=$1
 
-cp -r $THOME/t_viewer_template $THOME/$APPNAME
+TDIR=$THOME/$APPNAME
+if [ -d $TDIR -o -f $TDIR ]
+then
+	echo "$TDIR already exists. Cannot create."
+	exit 1
+fi
 
-TARGET=$THOME/$APPNAME/WEB-INF/web.xml
-cat $THOME/t_viewer_template/WEB-INF/web.xml | sed "s/##instanceName##/$INSTANCE/" > $TARGET
+cp -r $THOME/t_viewer_template $TDIR
+mkdir -p $THOME/shared/$INSTANCE
 
-cat >> $TARGET <<EOF
+SDIR=$THOME/t_viewer_template
+cat $THOME/t_viewer_template/WEB-INF/web.xml.template | sed "s/##instanceName##/$INSTANCE/" > $TDIR/WEB-INF/web.xml
+cat $THOME/t_viewer_template/toxygates.html.template | sed "s/##instanceName##/$INSTANCE/" > $TDIR/toxygates.html
+
+cat >> $TDIR/WEB-INF/web.xml <<EOF
 
 <security-constraint>
   <web-resource-collection>
@@ -41,5 +54,5 @@ cat >> $TARGET <<EOF
 
 EOF
 
-touch $THOME/$APPNAME
+touch $TDIR
 

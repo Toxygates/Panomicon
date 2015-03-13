@@ -1,6 +1,6 @@
 package t.viewer.server
 
-import otg.sparql.Probes
+import t.sparql.Probes
 
 object Platforms {
   def apply(probes: Probes): Platforms = {
@@ -29,6 +29,9 @@ class Platforms(val data: Map[String, Set[String]]) {
     val pfs = data.keys
     filterProbes(probes, pfs)    
   }
+  
+  def platformForProbe(p: String): Option[String] = 
+    data.find(_._2.contains(p)).map(_._1)
   
   /**
    * Filter probes for one platform.

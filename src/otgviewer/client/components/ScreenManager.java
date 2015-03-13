@@ -45,10 +45,12 @@ public interface ScreenManager extends ProvidesResize {
 	 * TODO: replace with enum
 	 * @return
 	 */
+	@Deprecated
 	String getUIType();
 	
 	DataSchema schema();
 	
 	String storagePrefix();
 	
+	String instanceName();
 }

@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import otgviewer.client.Utils;
-import otgviewer.client.rpc.SparqlService;
-import otgviewer.client.rpc.SparqlServiceAsync;
+import t.common.client.rpc.SparqlService;
+import t.common.client.rpc.SparqlServiceAsync;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 
@@ -101,13 +101,7 @@ public class DataFilterEditor extends DataListenerWidget {
 		initWidget(hp);
 		logger = Utils.getLogger("dfeditor");
 		
-		sparqlService.sampleClasses(new PendingAsyncCallback<SampleClass[]>(this, 
-				"Unable to obtain sample classes from server") {			
-			@Override
-			public void handleSuccess(SampleClass[] result) {
-				setAvailable(result);		
-			}					
-		});
+		update();
 		
 		parameters = schema.macroParameters();
 		selectors = new SCListBox[parameters.length];
@@ -123,6 +117,16 @@ public class DataFilterEditor extends DataListenerWidget {
 			});
 			
 		}			
+	}
+	
+	public void update() {
+		sparqlService.sampleClasses(new PendingAsyncCallback<SampleClass[]>(this, 
+				"Unable to obtain sample classes from server") {			
+			@Override
+			public void handleSuccess(SampleClass[] result) {
+				setAvailable(result);		
+			}					
+		});
 	}
 
 	public void setAvailable(SampleClass[] sampleClasses) {

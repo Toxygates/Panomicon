@@ -1,8 +1,0 @@
-<div style="text-align:left">
-<H4>News for version 20140612</H4>
-Fixed a bug that prevented probes from being selected (for example by pathway) in some cases.
-Changed the popup charts to select time/dose intelligently based on user-defined groups.
-Fixed a bug in TargetMine gene list import.
-Added an information message about the number of genes for the current species that 
-were successfully imported from TargetMine.
-</div>

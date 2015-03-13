@@ -16,14 +16,14 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.StackedListEditor;
 import otgviewer.client.dialog.DialogPosition;
-import otgviewer.client.rpc.SeriesService;
-import otgviewer.client.rpc.SeriesServiceAsync;
-import otgviewer.client.rpc.SparqlService;
-import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.MatchResult;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;
+import t.common.client.rpc.SeriesService;
+import t.common.client.rpc.SeriesServiceAsync;
+import t.common.client.rpc.SparqlService;
+import t.common.client.rpc.SparqlServiceAsync;
 import t.common.shared.SampleClass;
 import t.viewer.shared.ItemList;
 
@@ -71,6 +71,8 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	private Screen screen;
 	private final String majorParameter;
 
+	private final static int MAX_AUTO_SEL = 20;
+	
 	public CompoundSelector(final Screen screen, String heading) {
 		this.screen = screen;
 		dp = new DockLayoutPanel(Unit.PX);
@@ -90,7 +92,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 						: new HashMap<String, List<String>>());
 		
 		compoundEditor = new StackedListEditor(this, "compounds", heading, 
-				predefLists) {
+				MAX_AUTO_SEL, predefLists) {
 			@Override
 			protected void selectionChanged(Set<String> selected) {
 				List<String> r = new ArrayList<String>();
@@ -278,7 +280,8 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		
 		private void makeSeriesCharts(final String value, final List<Series> ss) {
 			//TODO
-			ChartGridFactory cgf = new ChartGridFactory(screen.schema(), chosenColumns);
+			ChartGridFactory cgf = new ChartGridFactory(screen.schema(), 
+					new SampleClass[] { w.chosenSampleClass });
 			cgf.makeSeriesCharts(ss, false, scores.get(value).dose(), new ChartGridFactory.ChartAcceptor() {
 				
 				@Override

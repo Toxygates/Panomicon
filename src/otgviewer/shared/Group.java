@@ -88,9 +88,9 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 		Set<String> triples = new HashSet<String>();
 		boolean stopped = false; 
 		for (Unit u : _units) {
-//			if (u.getDose().equals("Control")) {
-//				continue;
-//			}
+			if (schema.isControlValue(u.get(schema.mediumParameter()))) {
+				continue;
+			}
 			if (triples.size() < limit || limit == -1) {
 				triples.add(u.tripleString(schema));
 			} else {
@@ -123,6 +123,15 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 	public Set<String> collect(String parameter) {
 		return SampleClass.collectInner(Arrays.asList(_samples), parameter);
 	}
+	
+	public static Set<String> collectAll(Iterable<Group> from, String parameter) {
+		Set<String> r = new HashSet<String>();
+		for (Group g: from) {
+			r.addAll(g.collect(parameter));
+		}
+		return r;
+	}
+	
 	
 	// See SampleGroup for the packing method
 	// TODO lift up the unpacking code to have 

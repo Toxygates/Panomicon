@@ -9,14 +9,14 @@ import java.util.Set;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
-import otgviewer.client.rpc.SparqlService;
-import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.CellType;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.GroupUtils;
 import otgviewer.shared.Pathology;
+import t.common.client.rpc.SparqlService;
+import t.common.client.rpc.SparqlServiceAsync;
 import t.common.shared.SampleClass;
 
 import com.google.gwt.cell.client.SafeHtmlCell;

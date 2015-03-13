@@ -15,13 +15,13 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
-import otgviewer.client.rpc.MatrixService;
-import otgviewer.client.rpc.MatrixServiceAsync;
-import otgviewer.client.rpc.SparqlService;
-import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.Group;
 import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
+import t.common.client.rpc.MatrixService;
+import t.common.client.rpc.MatrixServiceAsync;
+import t.common.client.rpc.SparqlService;
+import t.common.client.rpc.SparqlServiceAsync;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.viewer.shared.ItemList;
@@ -136,6 +136,10 @@ public class ProbeScreen extends Screen {
 		vpii.add(label);
 		return vpii;
 	}
+	
+	protected String freeLookupMessage() {
+		return "Enter a list of probes, genes or proteins to display only those.";
+	}
 
 	private Widget manualSelection() {
 		VerticalPanel vp = new VerticalPanel();
@@ -146,8 +150,7 @@ public class ProbeScreen extends Screen {
 		vpi.setWidth("100%");
 		vp.add(vpi);
 
-		VerticalPanel vpii = innerVP(
-				"Enter a list of probes, genes or proteins to display only those.");		
+		VerticalPanel vpii = innerVP(freeLookupMessage());		
 		vpi.add(vpii);
 
 		customProbeText = new TextArea();
@@ -161,7 +164,7 @@ public class ProbeScreen extends Screen {
 				String[] split = text.split("[\n ,\t]");
 
 				if (split.length == 0) {
-					Window.alert("Please enter probes, genes or proteins in the text box and try again.");
+					Window.alert("Please enter identifiers in the text box and try again.");
 				} else {
 					addManualProbes(split, false);
 				}
@@ -191,6 +194,7 @@ public class ProbeScreen extends Screen {
 			vpii = innerVP("Match by partial probe name:");
 			vpi.add(vpii);
 
+			//TODO "filter" function as well as "add"
 			final TextBox tb = new TextBox();
 			vpii.add(tb);
 			tb.setWidth("95%");

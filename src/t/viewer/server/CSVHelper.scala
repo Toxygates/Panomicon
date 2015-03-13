@@ -41,8 +41,7 @@ object CSVHelper {
           }          
         }
         case None => ""
-
-        case d: Double => "%.3f".format(d)
+        case d: Double => d.toString
         case i: Int    => i.toString
         case _         => "\"" + obj.toString + "\""
       }
@@ -71,6 +70,7 @@ object CSVHelper {
       throw new Exception("No data supplied")
     }
     
+    //TODO pass the file prefix in from outside
     val file = "otg" + System.currentTimeMillis + ".csv"
     val fullName = dir + "/" + file
     

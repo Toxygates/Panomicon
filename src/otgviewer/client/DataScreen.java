@@ -17,6 +17,7 @@ import t.viewer.shared.ItemList;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.ResizeLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -51,26 +52,33 @@ public class DataScreen extends Screen {
 	}
 
 	public Widget content() {		
-		addListener(et);
-		setupMenuItems();	
-		return et;		
+		addListener(et);		
+		setupMenuItems();
+		ResizeLayoutPanel rlp = new ResizeLayoutPanel();
+		rlp.setWidth("100%");
+		rlp.add(et);
+		return rlp;		
 	}
 	
-	/**
-	 * Create tick menu items corresponding to the hideable columns.
-	 * @param mb
-	 */
 	private void setupMenuItems() {
 		MenuBar mb = new MenuBar(true);		
 		MenuItem mActions = new MenuItem("File", false, mb);		
 		final DataScreen w = this;
-		MenuItem mntmDownloadCsv = new MenuItem("Download CSV...", false, new Command() {
+		MenuItem mntmDownloadCsv = new MenuItem("Download CSV (grouped samples)...", false, new Command() {
 			public void execute() {
-				et.downloadCSV();
+				et.downloadCSV(false);
 				
 			}
 		});
 		mb.addItem(mntmDownloadCsv);
+		 mntmDownloadCsv = new MenuItem("Download CSV (individual samples)...", false, new Command() {
+				public void execute() {
+					et.downloadCSV(true);
+					
+				}
+			});
+			mb.addItem(mntmDownloadCsv);
+		
 		addMenu(mActions);
 		
 		mb = new MenuBar(true);
@@ -101,12 +109,12 @@ public class DataScreen extends Screen {
 						};
 						// TODO make ListChooser use the DataListener propagate mechanism?
 						lc.setLists(chosenItemLists);
-						lc.setItems(Arrays.asList(et.displayedProbes()));
+						lc.setItems(Arrays.asList(et.displayedAtomicProbes()));
 						lc.saveAction();
 					}
 				}));
 		
-		// TODO: this is a tick menu item without the tick.
+		// TODO: this is effectively a tick menu item without the tick.
 		// It would be nice to display the tick graphic, but then the textual alignment
 		// of the other items on the menu becomes odd.
 		addAnalysisMenuItem(

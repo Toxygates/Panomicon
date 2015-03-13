@@ -17,37 +17,32 @@ public class StartScreen extends Screen {
 	protected static Resources resources = GWT.create(Resources.class);
 	
 	public static String key = "st";	
-	VerticalPanel vp;
 	
 	public StartScreen(ScreenManager man) {
 		super("Start", key, false, man);		
 	}
 
-	final private HTML newsHtml = new HTML();
+	final private HTML welcomeHtml = new HTML();
 
 	public Widget content() {
 		HorizontalPanel hp = Utils.mkWidePanel();
 		hp.setHeight("100%");
-		VerticalPanel vp = Utils.mkTallPanel();
-		HTML banner = new HTML(resources.bannerHTML().getText());
-		banner.setWidth("40em");
-		vp.add(banner);
 
-		vp.add(newsHtml);
-		newsHtml.setWidth("40em");
-		Utils.loadHTML("news.html", new Utils.HTMLCallback() {
+		hp.add(welcomeHtml);
+		welcomeHtml.setWidth("40em");
+		Utils.loadHTML("../shared/" + manager.instanceName() + "/welcome.html", 
+				new Utils.HTMLCallback() {
 			@Override
 			protected void setHTML(String html) {
-				newsHtml.setHTML(html);
+				welcomeHtml.setHTML(html);
 			}
 		});
 
-		hp.add(vp);
 		return Utils.makeScrolled(hp);
 	}
 
 	@Override
 	public String getGuideText() {
-		return "Welcome to Toxygates.";
+		return "Welcome.";
 	}
 }

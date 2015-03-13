@@ -122,6 +122,51 @@ public class SampleClass implements Serializable, Packable {
 		return r;
 	}
 	
+	/**
+	 * Produce a new SampleClass that contains only those keys
+	 * that were shared between the two classes and had the 
+	 * same values.
+	 * @param other
+	 * @return
+	 */
+	public SampleClass intersection(SampleClass other) {
+		Set<String> k1 = other.getMap().keySet();
+		Set<String> k2 = getMap().keySet();
+		Set<String> keys = new HashSet<String>();		
+		keys.addAll(k1);
+		keys.addAll(k2);
+		Map<String, String> r = new HashMap<String, String>();
+		for (String k: keys) {
+			if (k2.contains(k) && k1.contains(k) &&			
+					get(k).equals(other.get(k))) {
+				r.put(k, get(k));
+			}
+		}
+		return new SampleClass(r);		
+	}
+	
+	public static SampleClass intersection(List<? extends SampleClass> from) {
+		if (from.size() == 0) {
+			//This is technically an error, but let's be forgiving.
+			return new SampleClass();			
+		} else if (from.size() == 1) {
+			return from.get(0);
+		} 
+		SampleClass r = from.get(0);
+		for (int i = 1; i < from.size(); i++) {			
+			r = r.intersection(from.get(i));
+		}
+		return r;		
+	}
+	
+	public static List<SampleClass> classes(List<? extends HasClass> from) {
+		List<SampleClass> r = new ArrayList<SampleClass>();
+		for (HasClass hc: from) {
+			r.add(hc.sampleClass());
+		}
+		return r;
+	}
+	
 	public static <T extends SampleClass> List<T> filter(T[] from, 
 			String key, String constraint) {
 		List<T> ff = Arrays.asList(from);

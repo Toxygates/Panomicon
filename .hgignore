@@ -1,4 +1,8 @@
 war/*
 gwt-unitCache/*
 test-classes/*
-lib/*
+lib/bundle/*
+lib/jar/*
+lib/javadoc/*
+lib/source/*
+extract-deploy/*

@@ -5,6 +5,7 @@ import java.io.Serializable;
 import t.common.shared.sample.ExpressionValue;
 
 //TODO implmement HasClass -> simplify code
+//TODO break up into three classes?
 public class Series implements Serializable {
 
 	public Series() {

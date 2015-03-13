@@ -31,19 +31,18 @@
 		<param-name>dataDir</param-name>
 		<param-value>/opt/toxygates-dev</param-value>
 	</context-param>
+	<context-param>
+		<param-name>matrixDbOptions</param-name>
+		<param-value>#bnum=6250000#pccap=1073741824#msiz=4294967296</param-value>
+	</context-param>
  	<context-param>
 		<param-name>csvDir</param-name>
-		<param-value>/opt/apache-tomcat-6.0.36/webapps/toxygates/csv</param-value>
+		<param-value>/var/lib/tomcat/webapps/toxygates/csv/</param-value>
 	</context-param>
 	<context-param>
 		<param-name>csvUrlBase</param-name>
 		<param-value>http://toxygates.nibio.go.jp:8080/toxygates/csv</param-value>
 	</context-param>	
-	<context-param>
-	<!-- to be retired -->
-		<param-name>applicationClass</param-name>
-		<param-value>Adjuvant</param-value>
-	</context-param>
   <!-- Servlets -->
 
 	<servlet>

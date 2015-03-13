@@ -3,8 +3,8 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.List;
 
-import otgviewer.client.rpc.SparqlService;
-import otgviewer.client.rpc.SparqlServiceAsync;
+import t.common.client.rpc.SparqlService;
+import t.common.client.rpc.SparqlServiceAsync;
 import t.common.shared.SampleClass;
 
 import com.google.gwt.core.client.GWT;

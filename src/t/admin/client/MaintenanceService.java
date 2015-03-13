@@ -6,6 +6,7 @@ import t.admin.shared.MaintenanceException;
 import t.admin.shared.OperationResults;
 import t.admin.shared.Platform;
 import t.admin.shared.Progress;
+import t.common.shared.Dataset;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -18,6 +19,8 @@ public interface MaintenanceService extends RemoteService {
 	Instance[] getInstances();
 	
 	Platform[] getPlatforms();
+	
+	Dataset[] getDatasets();
 	
 	/**
 	 * Try to add a batch, based on files that were previously uploaded.
@@ -33,6 +36,8 @@ public interface MaintenanceService extends RemoteService {
 	
 	void addInstance(Instance i) throws MaintenanceException;
 	
+	void addDataset(Dataset d) throws MaintenanceException;
+	
 	/**
 	 * Delete a batch. 
 	 * @param id
@@ -42,6 +47,8 @@ public interface MaintenanceService extends RemoteService {
 	void deletePlatformAsync(String id) throws MaintenanceException;
 	
 	void deleteInstance(String id) throws MaintenanceException;
+	
+	void deleteDataset(String id) throws MaintenanceException;
 
 	/**
 	 * Modify the batch, altering fields such as visibility and comment.

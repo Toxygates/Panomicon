@@ -15,11 +15,19 @@ public class ExpressionColumn extends Column<ExpressionRow, String> {
 
 	private static Utils.Templates TEMPLATES = GWT.create(Utils.Templates.class);
 
-	public ExpressionColumn(TextCell tc, int i) {
+	/**
+	 * @param tc
+	 * @param matColumn column index in the underlying data matrix (e.g. in ManagedMatrixInfo)
+	 */
+	public ExpressionColumn(TextCell tc, int matColumn) {
 		super(tc);
-		this.i = i;	
+		this.i = matColumn;	
 	}
 
+	public int matrixColumn() {
+		return i;
+	}
+	
 	public String getValue(ExpressionRow er) {
 		if (er != null) {			
 			if (!er.getValue(i).getPresent()) {

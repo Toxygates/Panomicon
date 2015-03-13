@@ -2,9 +2,8 @@ package otgviewer.client.components;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import otgviewer.client.Resources;
@@ -130,7 +129,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		abstract public void run();
 	}
 	
-	private Set<QueuedAction> actionQueue = new HashSet<QueuedAction>(); 
+	private List<QueuedAction> actionQueue = new LinkedList<QueuedAction>(); 
 	
 	protected void runActions() {
 		for (QueuedAction qa: actionQueue) {
@@ -139,7 +138,13 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		actionQueue.clear();
 	}
 
-	public void enqueue(QueuedAction qa) {
+	/**
+	 * Add an action to the queue (or replace an action with the same name).
+	 * Actions are executed in order, but the order can change if replacement
+	 * occurs.
+	 * @param qa
+	 */
+	public void enqueue(QueuedAction qa) {		
 		actionQueue.remove(qa); //remove it if it's already there (so we can update it)
 		actionQueue.add(qa);
 	}
@@ -347,27 +352,9 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		statusPanel.clear();
 		statusPanel.add(viewLabel);
 		Utils.floatLeft(viewLabel);
-		if (showGroups) {
+		if (showGroups) {			
 			Collections.sort(chosenColumns);
-			
-			for (Group g: chosenColumns) {				
-				FlowPanel fp = new FlowPanel(); 
-				fp.setStyleName("statusBorder");
-				String tip = g.getTriples(schema(), -1, ", ");
-				Label l = Utils.mkEmphLabel(g.getName() + ":");
-				l.setWordWrap(false);
-				l.getElement().getStyle().setMargin(2, Unit.PX);
-				l.setStyleName(g.getStyleName());
-				Utils.floatLeft(fp, l);
-				l.setTitle(tip);
-				l = new Label(g.getTriples(schema(), 2, ", "));
-				l.getElement().getStyle().setMargin(2, Unit.PX);
-				l.setStyleName(g.getStyleName());
-				Utils.floatLeft(fp, l);
-				l.setTitle(tip);
-				l.setWordWrap(false);
-				Utils.floatLeft(statusPanel, fp);				
-			}
+			Utils.floatLeft(statusPanel, new GroupLabels(this, schema(), chosenColumns));					
 		}		
 	}
 	

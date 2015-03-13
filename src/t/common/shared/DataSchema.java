@@ -3,11 +3,10 @@ package t.common.shared;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 
 import javax.annotation.Nullable;
 
-import otgviewer.shared.Group;
+import otgviewer.shared.ValueType;
 import t.viewer.shared.AType;
 
 /**
@@ -20,6 +19,22 @@ public abstract class DataSchema implements Serializable {
 	 * parameter.
 	 */
 	public abstract String[] sortedValues(String parameter) throws Exception;
+	
+	/**
+	 * Ordered values for a sortable parameter, which should be displayed to
+	 * the user in the context of a given list of sample classes.
+	 */
+	//TODO move ValueType or avoid depending on here
+	public String[] sortedValuesForDisplay(@Nullable ValueType vt, 
+			String parameter) throws Exception {
+		return filterValuesForDisplay(vt, parameter, sortedValues(parameter));		
+	}
+	
+	//TODO move ValueType or avoid depending on here
+	public String[] filterValuesForDisplay(@Nullable ValueType vt, 
+			String parameter, String[] from) {
+		return from;
+	}
 	
 	/**
 	 * Sort values from the given sortable parameter in place.
@@ -82,7 +97,7 @@ public abstract class DataSchema implements Serializable {
 		return false;
 	}
 	
-	public boolean isControlParameter(String value) {
+	public boolean isControlValue(String value) {
 		return false;
 	}
 	
@@ -90,13 +105,8 @@ public abstract class DataSchema implements Serializable {
 		return null;
 	}
 	
-	/**
-	 * The value of the major parameter that corresponds to a shared
-	 * control unit, if any.
-	 */
-	@Nullable
-	public String majorParamSharedControlValue() {
-		return null;
+	public boolean isMajorParamSharedControl(String value) {
+		return false;
 	}
 	
 	public AType[] associations() { return new AType[] {}; }
@@ -111,5 +121,9 @@ public abstract class DataSchema implements Serializable {
 	
 	public String getMajor(HasClass hc) {
 		return hc.sampleClass().get(majorParameter());
+	}
+	
+	public String platformSpecies(String platform) { 
+		return platform.substring(0, 3) + "..";		
 	}
 }

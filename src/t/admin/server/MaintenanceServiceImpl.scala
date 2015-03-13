@@ -30,21 +30,21 @@ import t.sparql.Instances
 import t.InstanceManager
 import t.sparql.TRDF
 import scala.sys.process._
+import t.common.shared.Dataset
+import t.sparql.Datasets
+import t.common.server.rpc.TServiceServlet
+import t.common.shared.Dataset
+import t.common.server.SharedDatasets
 
-class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceService {
-  var baseConfig: BaseConfig = _
-  var conf: Configuration = _
+abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceService {
   
-  @throws(classOf[ServletException])
-  override def init(config: ServletConfig) {
-    super.init(config)
-    
-    conf = Configuration.fromServletConfig(config)
-    baseConfig = baseConfig(conf.tsConfig, conf.dataConfig)
+  private var homeDir: String = _
+  
+  override def localInit(config: Configuration) {
+    super.localInit(config)
+    homeDir = config.webappHomeDir
   }
   
-  def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig = new OTGBConfig(ts, data)
-    
   private def getAttribute[T](name: String) = 
     getThreadLocalRequest().getSession().getAttribute(name).asInstanceOf[T]
   
@@ -96,7 +96,7 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
 	showUploadedFiles()
 	grabRunner()
 	
-	val bm = new BatchManager(baseConfig) //TODO configuration parsing
+	val bm = new BatchManager(context) //TODO configuration parsing
 
     cleanMaintenance {
       TaskRunner.start()
@@ -122,7 +122,7 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
       val foldCallsFile = getAsTempFile(tempFiles, foldCallPrefix, foldCallPrefix, "csv")
       val foldPValueFile = getAsTempFile(tempFiles, foldPPrefix, foldPPrefix, "csv")
 
-      val md = baseConfig.tsvMetadata(metaFile.getAbsolutePath())
+      val md = factory.tsvMetadata(metaFile.getAbsolutePath())
       TaskRunner ++= bm.addBatch(title, comment, md,
         niFile.map(_.getAbsolutePath()),
         callsFile.map(_.getAbsolutePath()),
@@ -136,20 +136,26 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
   def addPlatformAsync(id: String, comment: String, affymetrixFormat: Boolean): Unit = {    
     showUploadedFiles()
 	grabRunner()
-	val pm = new PlatformManager(baseConfig) //TODO configuration parsing
-    cleanMaintenance {      
+	val pm = new PlatformManager(context) //TODO configuration parsing
+
+    cleanMaintenance {
       val tempFiles = new TempFiles()
       setAttribute("tempFiles", tempFiles)
-      
-      TaskRunner.start() 
+
+      TaskRunner.start()
       setLastTask("Add platform")
       if (getFile(platformPrefix) == None) {
         throw new MaintenanceException("The platform file has not been uploaded yet.")
       }
-      
+
+      if (!TRDF.isValidIdentifier(id)) {
+        throw new MaintenanceException(
+          s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
+      }
+
       val metaFile = getAsTempFile(tempFiles, platformPrefix, platformPrefix, "dat").get
-      TaskRunner ++= pm.addPlatform(id, comment, metaFile.getAbsolutePath(), affymetrixFormat)
-    } 
+      TaskRunner ++= pm.addPlatform(id, TRDF.escape(comment), metaFile.getAbsolutePath(), affymetrixFormat)
+    }
   }
 
   def addInstance(i: Instance): Unit = {
@@ -169,12 +175,11 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
       throw new MaintenanceException(s"The instance $id already exists, please choose a different name")
     }
     
-    maintenance {
-      val home = conf.webappHomeDir
+    maintenance {      
       val ap = i.getAccessPolicy()
       val policy = ap.toString().toLowerCase();
   
-      val cmd = s"sh $home/new_instance.${policy}.sh $id $id $param"
+      val cmd = s"sh $homeDir/new_instance.${policy}.sh $id $id $param"
       println(s"Run command: $cmd")
       val p = Process(cmd).!
       if (p != 0) {
@@ -183,10 +188,29 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
       im.addWithTimestamp(id, TRDF.escape(i.getComment)) 
     }    
   }
+
+  def addDataset(d: Dataset): Unit = {
+    val dm = new Datasets(baseConfig.triplestore)
+
+    val id = d.getTitle()
+    if (!TRDF.isValidIdentifier(id)) {
+      throw new MaintenanceException(
+        s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
+    }
+
+    if (dm.list.contains(id)) {
+      throw new MaintenanceException(s"The dataset $id already exists, please choose a different name")
+    }
+
+    maintenance {
+      dm.addWithTimestamp(id, TRDF.escape(d.getComment))
+      dm.setDescription(id, TRDF.escape(d.getDescription))
+    }
+  }
  
   def deleteBatchAsync(id: String): Unit = {
     grabRunner()
-    val bm = new BatchManager(baseConfig) //TODO configuration parsing
+    val bm = new BatchManager(context) //TODO configuration parsing
     cleanMaintenance {
       TaskRunner.start()
       setLastTask("Delete batch")
@@ -196,7 +220,7 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
   
   def deletePlatformAsync(id: String): Unit = {
     grabRunner()
-    val pm = new PlatformManager(baseConfig)
+    val pm = new PlatformManager(context)
     cleanMaintenance {
       TaskRunner.start()
       setLastTask("Delete platform")
@@ -206,9 +230,8 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
   
   def deleteInstance(id: String): Unit = {
     val im = new Instances(baseConfig.triplestore)
-    maintenance {
-      val home = conf.webappHomeDir
-      val cmd = s"sh $home/delete_instance.sh $id $id"
+    maintenance {      
+      val cmd = s"sh $homeDir/delete_instance.sh $id $id"
       println(s"Run command: $cmd")
       val p = Process(cmd).!
       if (p != 0) {
@@ -216,6 +239,13 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
       }
       
       im.delete(id) 
+    }
+  }
+  
+  def deleteDataset(id: String): Unit = {
+    val dm = new Datasets(baseConfig.triplestore)
+    maintenance {
+      dm.delete(id)
     }
   }
   
@@ -253,15 +283,20 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
     }
   }
   
+  import java.util.HashSet
+  
   def getBatches: Array[Batch] = {
     val bs = new Batches(baseConfig.triplestore)
     val ns = bs.numSamples
     val comments = bs.comments
     val dates = bs.timestamps
+    val datasets = bs.datasets
     bs.list.map(b => {
       val samples = ns.getOrElse(b, 0)
       new Batch(b, samples, comments.getOrElse(b, ""),
-          dates.getOrElse(b, null), bs.listAccess(b).toArray)
+          dates.getOrElse(b, null), 
+          new HashSet(setAsJavaSet(bs.listAccess(b).toSet)),
+          datasets.getOrElse(b, ""))
     }).toArray    
   }
   
@@ -285,6 +320,11 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
         ts.getOrElse(i, null))).toArray    
   }
   
+  def getDatasets: Array[Dataset] = {
+    val ds = new Datasets(baseConfig.triplestore) with SharedDatasets
+    ds.sharedList.toArray    
+  }
+  
   def updateBatch(b: Batch): Unit = {
     val bs = new Batches(baseConfig.triplestore)
     val existingAccess = bs.listAccess(b.getTitle())
@@ -294,6 +334,16 @@ class MaintenanceServiceImpl extends RemoteServiceServlet with MaintenanceServic
     }
     for (i <- existingAccess; if !newAccess.contains(i)) {
       bs.disableAccess(b.getTitle(), i)
+    }
+    
+    val oldDs = bs.datasets.getOrElse(b.getTitle, null)
+    val newDs = b.getDataset
+    if (newDs != oldDs) {
+      val ds = new Datasets(baseConfig.triplestore)      
+      if (oldDs != null) {
+        ds.removeMember(b.getTitle, oldDs)
+      }
+      ds.addMember(b.getTitle, newDs)
     }
   }
 

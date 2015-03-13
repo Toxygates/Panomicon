@@ -1,14 +1,13 @@
 package t.admin.client;
 
 import static t.admin.shared.MaintenanceConstants.platformPrefix;
+import t.common.client.Command;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -16,6 +15,8 @@ import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+
+import static t.common.client.Utils.makeButton;
 
 public class PlatformUploader extends UploadDialog {
 	protected MaintenanceServiceAsync maintenanceService = (MaintenanceServiceAsync) GWT
@@ -47,7 +48,7 @@ public class PlatformUploader extends UploadDialog {
 		final PlatformUploader pu = this;
 		Command c = new Command("Proceed") {
 			@Override 
-			void run() { 				
+			public void run() { 				
 				boolean affyFormat = affyRadio.getValue();
 				maintenanceService.addPlatformAsync(nameText.getText(),
 						commentText.getText(),
@@ -67,7 +68,7 @@ public class PlatformUploader extends UploadDialog {
 		commentText.setSize("400px", "100px");
 		vp.add(commentText);
 		
-		proceed = Utils.makeButton(c);
+		proceed = makeButton(c);
 		HorizontalPanel hp = new HorizontalPanel();
 		hp.setSpacing(4);
 		hp.add(proceed);

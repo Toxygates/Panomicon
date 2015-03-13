@@ -29,10 +29,10 @@ object ExprMatrix {
         emptyAnnotations(data.size))
   
   
-  def emptyAnnotations(rows: Int) = Vector.fill(rows)(new RowAnnotation(null))
+  def emptyAnnotations(rows: Int) = Vector.fill(rows)(new RowAnnotation(null, List()))
 }
 
-case class RowAnnotation(probe: String) //, title: String, geneIds: Array[String], geneSyms: Array[String])
+case class RowAnnotation(probe: String, atomics: Iterable[String])
  
 /**
  * Data is row-major
@@ -52,9 +52,11 @@ class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int,
   
   import Conversions._
   import ExprMatrix._
+  import t.util.SafeMath._
 
-  println(rows + " x " + columns)
-   
+  println(rows + " x " + columns)  
+//  println(sortedColumnMap)
+  
   val emptyVal = new ExpressionValue(0, 'A')
   
   /**
@@ -62,10 +64,12 @@ class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int,
    */
   def copyWith(rowData: Seq[Vector[ExpressionValue]], rowMap: Map[String, Int], 
       columnMap: Map[String, Int], 
-      annotations: SVector[RowAnnotation]): ExprMatrix =  
+      annotations: SVector[RowAnnotation]): ExprMatrix =  {
+      
         new ExprMatrix(rowData, rowData.size, 
             if (rowData.isEmpty) { 0 } else { rowData(0).size }, 
             rowMap, columnMap, annotations)
+  }
   
   def copyWith(rowData: Seq[Seq[ExpressionValue]], rowMap: Map[String, Int], 
       columnMap: Map[String, Int]): ExprMatrix = {    
@@ -81,7 +85,7 @@ class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int,
   
   lazy val asRows: SVector[ExpressionRow] = toRowVectors.toVector.zip(annotations).map(x => {
     val ann = x._2    
-    new ExpressionRow(ann.probe, null, null, null, x._1.toArray)
+    new ExpressionRow(ann.probe, ann.atomics.toArray, null, null, null, x._1.toArray)
   })
 
   override def selectRows(rows: Seq[Int]): ExprMatrix = 
@@ -125,7 +129,6 @@ class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int,
 
   def appendDiffTest(sourceData: ExprMatrix, group1: Seq[String], group2: Seq[String],
     colName: String): ExprMatrix = {
-    import otg.SafeMath._
     def diffTest(a1: Seq[Double], a2: Seq[Double]): Double = safeMean(a1) - safeMean(a2)
 
     appendTwoColTest(sourceData, group1, group2, diffTest(_, _), 1, colName)

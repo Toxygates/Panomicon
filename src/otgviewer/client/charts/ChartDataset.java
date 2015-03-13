@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javax.annotation.Nullable;
+
 import otgviewer.client.Utils;
 import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.shared.OTGSample;
@@ -82,9 +84,12 @@ public class ChartDataset {
 	 * (use null for no filtering)
 	 * @param isTime true iff timeOrDose is a time point.
 	 * @param isCompound true iff probeOrCompound is a probe.
+	 * @param organism organism to filter by (or null for no filtering)
 	 * @return
 	 */
-	DataTable makeTable(String timeOrDose, String probeOrCompound, boolean isTime, boolean isProbe) {
+	DataTable makeTable(String timeOrDose, boolean isTime, 
+			@Nullable String probeOrCompound, boolean isProbe,
+			@Nullable String organism) {
 		DataTable t = DataTable.create();
 		t.addColumn(ColumnType.STRING, "Time");
 		
@@ -95,11 +100,13 @@ public class ChartDataset {
 		
 		List<ChartSample> fsamples = new ArrayList<ChartSample>();
 		for (ChartSample s: samples) {
-			if (((s.probe.equals(probeOrCompound) && isProbe) ||
-					(s.major.equals(probeOrCompound) && !isProbe) || probeOrCompound == null) &&
-					((s.minor.equals(timeOrDose) && isTime) ||
-							(s.medium.equals(timeOrDose) && !isTime) ||
-							timeOrDose == null)) {
+			if (
+				((s.probe.equals(probeOrCompound) && isProbe) ||
+						(probeOrCompound == null || s.major.equals(probeOrCompound) && !isProbe)) &&
+				((s.minor.equals(timeOrDose) && isTime) ||
+						(timeOrDose == null || s.medium.equals(timeOrDose) && !isTime)) &&
+						(organism == null || s.organism.equals(organism))
+							) {
 				fsamples.add(s);
 			}
 		}
@@ -131,8 +138,6 @@ public class ChartDataset {
 			String scat = categoryForSample(s);
 			int cat = SharedUtils.indexOf(categories, scat);
 			if (cat != -1) {
-//				logger.info("Add " + s.major + " " + s.medium + " " + s.minor + " " + s.value + " " + s.barcode.getCode());
-//				logger.info("Category: " + scat);
 				if (colCount < valCount[cat] + 1) {
 					dt.addColumn(ColumnType.NUMBER);
 					addStyleColumn(dt);
@@ -146,15 +151,9 @@ public class ChartDataset {
 				}
 				dt.setFormattedValue(cat, col, Utils.formatNumber(s.value) + ":" + s.call);
 				String style = "fill-color:" + s.color + "; stroke-width:1px; ";
-//				if (s.call == 'P') {
-//					style += "stroke-color: black";
-//				} else {
-//					style += "stroke-color: grey";
-//				}
-					
+
 				dt.setValue(cat, col + 1, style);
 				valCount[cat]++;
-//				logger.info(valCount[cat] + " values in category " + cat);
 			}
 		}
 	}

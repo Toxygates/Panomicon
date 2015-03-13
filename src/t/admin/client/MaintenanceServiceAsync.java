@@ -5,6 +5,7 @@ import t.admin.shared.Instance;
 import t.admin.shared.OperationResults;
 import t.admin.shared.Platform;
 import t.admin.shared.Progress;
+import t.common.shared.Dataset;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -16,6 +17,8 @@ public interface MaintenanceServiceAsync {
 	
 	void getPlatforms(AsyncCallback<Platform[]> callback);
 	
+	void getDatasets(AsyncCallback<Dataset[]> callback);
+	
 	void addBatchAsync(String id, String comment, AsyncCallback<Void> callback);
 	
 	void addPlatformAsync(String id, String comment, boolean affymetrixFormat, 
@@ -23,11 +26,17 @@ public interface MaintenanceServiceAsync {
 	
 	void addInstance(Instance i, AsyncCallback<Void> callback);
 
+	void addDataset(Dataset d, AsyncCallback<Void> callback);
+	
+	
 	void deleteBatchAsync(String id, AsyncCallback<Void> callback);
 	
 	void deletePlatformAsync(String id, AsyncCallback<Void> calback);
 	
 	void deleteInstance(String id, AsyncCallback<Void> callback);
+	
+	void deleteDataset(String id, AsyncCallback<Void> callback);
+	
 	
 	void updateBatch(Batch b, AsyncCallback<Void> callback);
 	

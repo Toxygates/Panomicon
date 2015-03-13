@@ -1,7 +1,6 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,6 +10,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.GroupMaker;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.StorageParser;
 import otgviewer.shared.Group;
@@ -18,6 +18,7 @@ import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import t.common.client.components.SelectionTable;
 import t.common.shared.DataSchema;
+import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.Unit;
@@ -54,13 +55,15 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private final DataSchema schema;
 	private Label titleLabel;
 	private TextBox txtbxGroup;
-	private Button saveButton;
+	private Button saveButton, autoGroupsButton;
 	SelectionTable<Group> existingGroupsTable;
 	private CompoundSelector compoundSel;
 	private HorizontalPanel toolPanel;
 	private SplitLayoutPanel sp;
 	private VerticalPanel vp;
 	private boolean nameIsAutoGen = false;
+	
+	private List<Pair<Unit, Unit>> availableUnits;
 
 	protected final Logger logger = Utils.getLogger("group");
 	
@@ -106,6 +109,15 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 			}
 		});
 		toolPanel.add(saveButton);
+		
+		autoGroupsButton = new Button("Automatic groups",
+				new ClickHandler() {
+			public void onClick(ClickEvent ce) {
+				makeAutoGroups();
+			}			
+		});
+		toolPanel.add(autoGroupsButton);
+		
 		setEditing(false);
 						
 		existingGroupsTable = new SelectionTable<Group>("Active", false) {
@@ -172,7 +184,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 				chosenColumns = new ArrayList<Group>(selected);
 				StorageParser p = getParser(screen);
 				storeColumns(p);
-				updateConfigureStatus();
+				updateConfigureStatus(true);
 			}
 		};
 //		vp.add(existingGroupsTable);
@@ -196,11 +208,25 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 	
+	@Override
+	public void availableUnitsChanged(DataListenerWidget sender, List<Pair<Unit, Unit>> units) {
+		availableUnits = units;
+	}
+	
 	private void deleteGroup(String name, boolean createNew) {
 		groups.remove(name);									
 		reflectGroupChanges(); //stores columns
 		if (createNew) {
 			newGroup();
+		}
+	}
+	
+	void confirmDeleteAllGroups() {
+		int n = existingGroupsTable.getItems().size();
+		if (Window.confirm("Delete " + n + " groups?")) {
+			groups.clear();
+			reflectGroupChanges();
+			newGroup();			
 		}
 	}
 	
@@ -237,17 +263,19 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		logger.info(chosenColumns.size() + " columns have been chosen");
 		StorageParser p = getParser(screen);		
 		storeColumns(p);
-		txtbxGroup.setText("");
-		updateConfigureStatus();
-		existingGroupsTable.setVisible(groups.values().size() > 0);		
+		txtbxGroup.setText("");		
+		updateConfigureStatus(true);
+		existingGroupsTable.setVisible(groups.values().size() > 0);
+		
 	}
 	
-	private void updateConfigureStatus() {		
+	private void updateConfigureStatus(boolean internalTriggered) {		
 		if (chosenColumns.size() == 0) {
-			screen.setConfigured(false);
-			screen.manager().deconfigureAll(screen);
+			screen.setConfigured(false);			
 		} else if (chosenColumns.size() > 0) {
-			screen.setConfigured(true);
+			screen.setConfigured(true);			
+		}
+		if (internalTriggered) {
 			screen.manager().deconfigureAll(screen);
 		}
 	}
@@ -260,7 +288,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 	
-	private String suggestGroupName(List<Unit> units) {
+	public String suggestGroupName(List<Unit> units) {
 		String g = "";
 		if (!units.isEmpty()) {
 			Unit b = units.get(0);
@@ -303,7 +331,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		for (Group g: columns) {			
 			groups.put(g.getName(), g);			
 		}
-		updateConfigureStatus();
+		updateConfigureStatus(false);
 				
 		existingGroupsTable.setItems(sortedGroupList(groups.values()), true);
 		existingGroupsTable.setSelection(chosenColumns);		
@@ -346,6 +374,14 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	
 	public Map<String, Group> getGroups() {
 		return groups;
+	}
+	
+	private void makeAutoGroups() {
+		List<Group> gs = GroupMaker.autoGroups(this, schema, availableUnits);
+		for (Group g: gs) {
+			addGroup(g);
+		}
+		reflectGroupChanges();
 	}
 	
 	/**
@@ -397,11 +433,12 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		Group pendingGroup = groups.get(pendingGroupName);
 		existingGroupsTable.removeItem(pendingGroup); 
 		pendingGroup = new Group(schema, pendingGroupName, units.toArray(new Unit[0]));
-		addGroup(pendingGroupName, pendingGroup);
+		addGroup(pendingGroup);
 		reflectGroupChanges();
 	}
 	
-	private void addGroup(String name, Group group) {
+	private void addGroup(Group group) {
+		String name = group.getName();
 		groups.put(name, group);
 		logger.info("Add group " + name + " with " + group.getSamples().length + " samples " +
 				"and " + group.getUnits().length + " units ");
@@ -412,6 +449,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 
 	private void displayGroup(String name) {
 		setHeading("editing " + name);
+		
 		List<String> compounds = new ArrayList<String>(
 				groups.get(name).getMajors(chosenSampleClass));
 		

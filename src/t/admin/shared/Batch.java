@@ -5,27 +5,27 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import t.common.shared.ManagedItem;
+
 public class Batch extends ManagedItem {
 
 	private int numSamples;
 	private Set<String> enabledInstances;
+	private String dataset;
 	
 	public Batch() { }
 	
 	public Batch(String title, int numSamples, String comment,
-			Date date, Set<String> enabledInstances) {
+			Date date, Set<String> enabledInstances,
+			String dataset) {
 		super(title, comment, date);		
 		this.numSamples = numSamples;
-		this.enabledInstances = enabledInstances;		
+		this.enabledInstances = enabledInstances;
+		this.dataset = dataset;
 	}
-	
-	public Batch(String title, int numSamples, 
-			String comment, Date date, String[] enabledInstances) {
-		super(title, comment, date);
-		Set<String> enabled = new HashSet<String>();
-		Collections.addAll(enabled,  enabledInstances);
-		this.numSamples = numSamples;
-		this.enabledInstances = enabled;		
+
+	public String getDataset() {
+		return dataset;
 	}
 
 	public int getNumSamples() { return numSamples; }
@@ -52,6 +52,10 @@ public class Batch extends ManagedItem {
 			en.add(i.getTitle());
 		}
 		setEnabledInstanceTitles(en);
+	}
+	
+	public void setDataset(String dataset) {
+		this.dataset = dataset;
 	}
 
 }

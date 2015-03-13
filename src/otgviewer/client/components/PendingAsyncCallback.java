@@ -30,7 +30,7 @@ public abstract class PendingAsyncCallback<T> implements AsyncCallback<T> {
 	}
 	
 	public void handleFailure(Throwable caught) {
-		Window.alert(onErrorMessage);
+		Window.alert(onErrorMessage + ":" + caught.getMessage());
 	}
 	
 }

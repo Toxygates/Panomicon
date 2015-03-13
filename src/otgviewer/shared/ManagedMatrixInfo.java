@@ -12,16 +12,18 @@ import t.common.shared.SharedUtils;
  */
 public class ManagedMatrixInfo implements Serializable {
 
-	private int _numDataColumns = 0, _numSynthetics = 0, _numRows = 0;
+	private int numDataColumns = 0, numSynthetics = 0, numRows = 0;
 	private String[] columnNames = new String[0];
 	private String[] columnHints = new String[0];
 	private boolean[] upperBoundFiltering = new boolean[0];
 	private Group[] columnGroups = new Group[0];
 	private Double[] columnFilters = new Double[0];
+	private String[] platforms = new String[0];
+	private boolean[] isPValueColumn = new boolean[0];
 	
 	public ManagedMatrixInfo() { }
-	
-	public void setNumRows(int val) { _numRows = val; }
+		
+	public void setNumRows(int val) { numRows = val; }
 	
 	/**
 	 * Add information about a single column to this column set.
@@ -32,11 +34,11 @@ public class ManagedMatrixInfo implements Serializable {
 	 */
 	public void addColumn(boolean synthetic, String name, 
 			String hint, boolean isUpperFiltering,
-			Group baseGroup) {
+			Group baseGroup, boolean isPValue) {
 		if (synthetic) {
-			_numSynthetics++;
+			numSynthetics++;
 		} else {
-			_numDataColumns++;
+			numDataColumns++;
 		}
 		
 		columnNames = SharedUtils.extend(columnNames, name);
@@ -44,11 +46,12 @@ public class ManagedMatrixInfo implements Serializable {
 		upperBoundFiltering = SharedUtils.extend(upperBoundFiltering, isUpperFiltering);	
 		columnGroups = SharedUtils.extend(columnGroups, baseGroup);
 		columnFilters = SharedUtils.extend(columnFilters, null);
+		isPValueColumn = SharedUtils.extend(isPValueColumn, isPValue);
 	}
 	
 	public void removeSynthetics() {
-		_numSynthetics = 0;
-		int n = _numDataColumns;
+		numSynthetics = 0;
+		int n = numDataColumns;
 		columnNames = SharedUtils.take(columnNames, n);
 		columnHints = SharedUtils.take(columnHints, n);
 		upperBoundFiltering = SharedUtils.take(upperBoundFiltering, n);	
@@ -57,14 +60,23 @@ public class ManagedMatrixInfo implements Serializable {
 	}
 	
 	public int numColumns() {
-		return _numDataColumns + _numSynthetics;
+		return numDataColumns + numSynthetics;
 	}
 	
-	public int numDataColumns() { return _numDataColumns; }
+	/**
+	 * Data columns are in the range #0 until numDataColumns - 1
+	 * @return
+	 */
+	public int numDataColumns() { return numDataColumns; }
 	
-	public int numSynthetics() { return _numSynthetics; }
+	/**
+	 * Synthetic columns are in the range 
+	 * numDataColumns until numColumns.
+	 * @return
+	 */
+	public int numSynthetics() { return numSynthetics; }
 	
-	public int numRows() { return _numRows; }
+	public int numRows() { return numRows; }
 	
 	/**
 	 * @param column Column index. Must be 0 <= i < numColumns.
@@ -94,7 +106,7 @@ public class ManagedMatrixInfo implements Serializable {
 	
 	/**
 	 * The group that a given column was generated from, if any.
-	 * @param column Column index. Must be 0 <= i < numColumns.
+	 * @param column Column index. Must be 0 <= i < numDataColumns.
 	 * @return The group that the column was generated from, or null if there is none.
 	 */
 	public @Nullable Group columnGroup(int column) {
@@ -113,5 +125,18 @@ public class ManagedMatrixInfo implements Serializable {
 	public void setColumnFilter(int column, @Nullable Double filter) {
 		columnFilters[column] = filter;
 	}
+	
+	/**
+	 * Whether a given column is a p-value column.
+	 * @param column column index. Must be 0 <= i < numColumns.
+	 * @return
+	 */
+	public boolean isPValueColumn(int column) {
+		return isPValueColumn[column];
+	}
+	
+	public void setPlatforms(String[] platforms) { this.platforms = platforms; }
+	
+	public String[] getPlatforms() { return platforms; }
 
 }

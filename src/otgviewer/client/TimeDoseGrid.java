@@ -8,9 +8,9 @@ import java.util.logging.Logger;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.client.rpc.SparqlService;
-import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.OTGSample;
+import t.common.client.rpc.SparqlService;
+import t.common.client.rpc.SparqlServiceAsync;
 import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
@@ -76,7 +76,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			mediumValues = new ArrayList<String>();
 			String[] mvs = schema.sortedValues(schema.mediumParameter());
 			for (String v: mvs) {
-				if (!schema.isControlParameter(v)) {
+				if (!schema.isControlValue(v)) {
 					mediumValues.add(v);
 				}
 			}
@@ -185,7 +185,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		fetchingSamples = true;
 		availableUnits = new Pair[0]; 
 		String[] compounds = chosenCompounds.toArray(new String[0]);
-		sparqlService.units(chosenSampleClass, schema, majorParameter, compounds,
+		sparqlService.units(chosenSampleClass, majorParameter, compounds,
 				new PendingAsyncCallback<Pair<Unit, Unit>[]>(this, "Unable to obtain samples.") {
 
 			@Override

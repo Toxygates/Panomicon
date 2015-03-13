@@ -9,8 +9,8 @@ import t.db.MatrixDBReader
 import otgviewer.shared.OTGSample
 import t.db.Sample
 import t.db.PExprValue
-import otg.OTGContext
 import t.db.ExprValue
+import t.db.MatrixContext
 
 /**
  * Routines for loading a ManagedMatrix
@@ -22,10 +22,12 @@ object ManagedMatrixBuilder {
  * No extra columns. Simple averaged fold values.
  */
   def buildFold(requestColumns: Seq[Group],
-    reader: MatrixDBReader[ExprValue], initProbes: Array[String], sparseRead: Boolean)
-    (implicit context: OTGContext): ManagedMatrix = {
+    reader: MatrixDBReader[ExprValue], initProbes: Array[String], sparseRead: Boolean,
+    fullLoad: Boolean)
+    (implicit context: MatrixContext): ManagedMatrix = {
     loadRawData[ExprValue](requestColumns, reader, initProbes, sparseRead,
-        columnsForGroupDefault(initProbes, _, _, _, _))
+        fullLoad,
+        columnsForGroupDefault(_, _, _, _, _))
   }
   
 /**
@@ -34,9 +36,11 @@ object ManagedMatrixBuilder {
  */
   def buildNormalized(requestColumns: Seq[Group],
     reader: MatrixDBReader[ExprValue], initProbes: Array[String], sparseRead: Boolean,
-    enhancedColumns: Boolean)(implicit context: OTGContext): ManagedMatrix = {
+    fullLoad: Boolean,
+    enhancedColumns: Boolean)(implicit context: MatrixContext): ManagedMatrix = {
     loadRawData[ExprValue](requestColumns, reader, initProbes, sparseRead,
-        columnsForGroupNormalized(enhancedColumns, initProbes, _, _, _, _))
+        fullLoad,
+        columnsForGroupNormalized(enhancedColumns, _, _, _, _, _))
   }
    
   /**
@@ -44,38 +48,67 @@ object ManagedMatrixBuilder {
  */
   def buildExtFold(requestColumns: Seq[Group],
     reader: MatrixDBReader[PExprValue], initProbes: Array[String], sparseRead: Boolean,
-    enhancedColumns: Boolean)(implicit context: OTGContext): ManagedMatrix = {
+    fullLoad: Boolean,
+    enhancedColumns: Boolean)(implicit context: MatrixContext): ManagedMatrix = {
     loadRawData[PExprValue](requestColumns, reader, initProbes, sparseRead,
-        columnsForGroupExtFold(enhancedColumns, initProbes, _, _, _, _))
+        fullLoad,
+        columnsForGroupExtFold(enhancedColumns, _, _, _, _, _))
   }
   
   def loadRawData[E <: ExprValue](requestColumns: Seq[Group],
-      reader: MatrixDBReader[E], initProbes: Array[String], sparseRead: Boolean,      
-      columnBuilder: (ManagedMatrixInfo, Group, Seq[Sample], Seq[Seq[E]]) => ExprMatrix)
-  (implicit context: OTGContext): ManagedMatrix = {
-    val pmap = context.unifiedProbes
-    var groupedParts, ungroupedParts: List[ExprMatrix] = Nil
+      reader: MatrixDBReader[E], initProbes: Array[String], sparseRead: Boolean,
+      fullLoad: Boolean,
+      columnBuilder: (Array[String], ManagedMatrixInfo, Group, Seq[Sample], Seq[Seq[E]]) => ExprMatrix)
+  (implicit context: MatrixContext): ManagedMatrix = {
+    val pmap = context.probeMap
+    
+    var rawGroupedMat, rawUngroupedMat: ExprMatrix = null
     
     val packedProbes = initProbes.map(pmap.pack)
     val info = new ManagedMatrixInfo()
+    val annotations = initProbes.map(x => new RowAnnotation(x, List(x))).toVector
+    
     for (g <- requestColumns) {
-    	val samples = samplesForDisplay(g)
+        //Remove repeated samples as some other algorithms assume distinct samples
+        //Also for efficiency
+    	val samples = 
+    	  (if(fullLoad) g.getSamples.toList else samplesForDisplay(g)).
+    	  	toVector.distinct
     	val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.getCode)))
         val data = reader.valuesForSamplesAndProbes(sortedSamples,
         		packedProbes, sparseRead)
-        groupedParts ::= columnBuilder(info, g, sortedSamples, data)
+        		
+        println(g.getUnits()(0).toString())
         
-        ungroupedParts ::= ExprMatrix.withRows(data.map(_.map(asJava(_))), 
-            initProbes, sortedSamples.map(_.sampleId))
+        val returnedProbes = data.map(_(0).probe.identifier).toArray
+        
+        //Force standard sort order
+        val grouped = columnBuilder(returnedProbes, info, g, sortedSamples, data).
+          selectNamedRows(initProbes)
+
+        val ungrouped = ExprMatrix.withRows(data.map(_.map(asJava(_))), 
+            returnedProbes, sortedSamples.map(_.sampleId)).
+            selectNamedRows(initProbes)
+            
+        if (rawGroupedMat == null) {
+          rawGroupedMat = grouped
+        } else {
+          rawGroupedMat = rawGroupedMat adjoinRight grouped
+        }
+    	
+    	if (rawUngroupedMat == null) {
+    	  rawUngroupedMat = ungrouped
+    	} else {
+    	  //account for the fact that samples may be shared between requestColumns
+    	  val newCols = ungrouped.columnKeys.toSet -- rawUngroupedMat.columnKeys.toSet
+    	  rawUngroupedMat = rawUngroupedMat adjoinRight 
+    	  	(ungrouped.selectNamedColumns(newCols.toSeq))
+    	}    	
     }
 
-    val annotations = initProbes.map(new RowAnnotation(_)).toVector
-    
-    val rawGroupedMat = groupedParts.reverse.reduceLeft(_ adjoinRight _).
-    	copyWithAnnotations(annotations)
-    val rawUngroupedMat = ungroupedParts.reverse.reduceLeft(_ adjoinRight _).
-    	copyWithAnnotations(annotations)
-    new ManagedMatrix(initProbes, info, rawGroupedMat, rawUngroupedMat)
+    new ManagedMatrix(initProbes, info, 
+        rawUngroupedMat.copyWithAnnotations(annotations), 
+        rawGroupedMat.copyWithAnnotations(annotations))
   }
   
   private def columnsForGroupDefault[E <: ExprValue](initProbes: Array[String],
@@ -84,7 +117,7 @@ object ManagedMatrixBuilder {
     // A simple average column
     val treatedIdx = treatedIdxs(g, sortedBarcodes)
     
-    info.addColumn(false, g.toString, "Average of treated samples", false, g)
+    info.addColumn(false, g.toString, "Average of treated samples", false, g, false)
     ExprMatrix.withRows(data.map(vs =>
       Vector(javaMean(selectIdx(vs, treatedIdx)))),
       initProbes,
@@ -97,26 +130,25 @@ object ManagedMatrixBuilder {
       g: Group, sortedBarcodes: Seq[Sample], 
       data: Seq[Seq[ExprValue]]): ExprMatrix = {
     //TODO
-    val (cus, ncus) = g.getUnits().partition(_.get("dose_level") == "Control")
+    val (cus, tus) = g.getUnits().partition(_.get("dose_level") == "Control")
     
-    if (ncus.size > 1 || (!enhancedColumns)) {
+    if (tus.size > 1 || (!enhancedColumns) || cus.size == 0 || tus.size == 0) {
       // A simple average column
       columnsForGroupDefault(initProbes, info, g, sortedBarcodes, data)      
-    } else if (ncus.size == 1) {
-      // Insert a control column as well as the usual one
-      
+    } else if (tus.size == 1) {
+      // Possibly insert a control column as well as the usual one
+
       val treatedIdx = treatedIdxs(g, sortedBarcodes)
       val controlIdx = controlIdxs(g, sortedBarcodes)
-      
+
       val (colName1, colName2) = (g.toString, g.toString + "(cont)")
       val rows = data.map(vs => Vector(
-          javaMean(selectIdx(vs, treatedIdx)),
-          javaMean(selectIdx(vs, controlIdx))
-    	))
-    	
-      info.addColumn(false, colName1, "Average of treated samples", false, g)
-      info.addColumn(false, colName2, "Average of control samples", false, g)
-      ExprMatrix.withRows(rows, initProbes, List(colName1, colName2))            
+        javaMean(selectIdx(vs, treatedIdx)),
+        javaMean(selectIdx(vs, controlIdx))))
+
+      info.addColumn(false, colName1, "Average of treated samples", false, g, false)
+      info.addColumn(false, colName2, "Average of control samples", false, g, false)
+      ExprMatrix.withRows(rows, initProbes, List(colName1, colName2))                       
     } else {
       throw new Exception("No units in group")
     }
@@ -127,14 +159,14 @@ object ManagedMatrixBuilder {
       g: Group, sortedBarcodes: Seq[Sample], 
       data: Seq[Seq[PExprValue]]): ExprMatrix = {
       //TODO
-    val (cus, ncus) = g.getUnits().partition(_.get("dose_level") == "Control")
+    val (cus, tus) = g.getUnits().partition(_.get("dose_level") == "Control")
     
-    println(s"#Control units: ${cus.size} #Non-control units: ${ncus.size}")
+    println(s"#Control units: ${cus.size} #Non-control units: ${tus.size}")
     
-    if (ncus.size > 1 || (!enhancedColumns)) {
+    if (tus.size > 1 || (!enhancedColumns) || tus.size == 0) {
       // A simple average column
       columnsForGroupDefault(initProbes, info, g, sortedBarcodes, data)      
-    } else if (ncus.size == 1) {
+    } else if (tus.size == 1) {
       // Insert a p-value column as well as the usual one
       
       val (colName1, colName2) = (g.toString, g.toString + "(p)")
@@ -147,8 +179,8 @@ object ManagedMatrixBuilder {
         Vector(javaMean(treatedVs), new ExpressionValue(first.p, first.call))
       })
       
-      info.addColumn(false, colName1, "Average of treated samples", false, g)
-      info.addColumn(false, colName2, "p-values of treated against control", true, g)
+      info.addColumn(false, colName1, "Average of treated samples", false, g, false)
+      info.addColumn(false, colName2, "p-values of treated against control", true, g, true)
       
       ExprMatrix.withRows(rows, initProbes, List(colName1, colName2))
     } else {
@@ -209,12 +241,14 @@ object ManagedMatrixBuilder {
 class ManagedMatrix(val initProbes: Array[String],
     //TODO visibility of these 3 vars
     var currentInfo: ManagedMatrixInfo,
-    var rawGroupedMat: ExprMatrix, var rawUngroupedMat: ExprMatrix) {
+    //ungrouped mat is mainly used for computing T- and U-tests. Sorting of columns
+    //is irrelevant.
+    var rawUngroupedMat: ExprMatrix, var rawGroupedMat: ExprMatrix) {
   
   protected var currentMat: ExprMatrix = rawGroupedMat
   
   protected var _synthetics: Vector[Synthetic] = Vector()  
-  protected var _sortColumn: Int = 0
+  protected var _sortColumn: Int = -1
   protected var _sortAscending: Boolean = false
   
   protected var requestProbes: Array[String] = initProbes
@@ -337,7 +371,7 @@ class ManagedMatrix(val initProbes: Array[String],
             currentMat.appendDiffTest(rawData, g1s, g2s, md.getShortTitle(null)) //TODO
           case _ => throw new Exception("Unexpected test type!")
         }
-        currentInfo.addColumn(true, test.getShortTitle(null), test.getTooltip(), upper, null) //TODO
+        currentInfo.addColumn(true, test.getShortTitle(null), test.getTooltip(), upper, null, false) //TODO
       case _ => throw new Exception("Unexpected test type")
     }       
   }

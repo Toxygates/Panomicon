@@ -1,24 +1,23 @@
 package t.admin.client;
 
-import static t.admin.client.Utils.makeButtons;
-
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import t.admin.shared.Batch;
 import t.admin.shared.Instance;
 import t.admin.shared.Platform;
-import t.admin.shared.ManagedItem;
+import t.common.client.Command;
+import static t.common.client.Utils.makeButtons;
+import t.common.shared.Dataset;
+import t.common.shared.ManagedItem;
 
 import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;
+import com.google.gwt.cell.client.SelectionCell;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
@@ -28,7 +27,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
@@ -43,9 +41,13 @@ public class AdminConsole implements EntryPoint {
 	protected MaintenanceServiceAsync maintenanceService = (MaintenanceServiceAsync) GWT
 			.create(MaintenanceService.class);
 	
+	private Column<Batch, String> datasetColumn; 
+	private CellTable<Batch> batchTable; 
+	
 	final ListDataProvider<Batch> batchData = new ListDataProvider<Batch>();		
 	final ListDataProvider<Platform> platformData = new ListDataProvider<Platform>();
 	final ListDataProvider<Instance> instanceData = new ListDataProvider<Instance>();
+	final ListDataProvider<Dataset> datasetData = new ListDataProvider<Dataset>();
 	
 	@Override
 	public void onModuleLoad() {
@@ -53,7 +55,16 @@ public class AdminConsole implements EntryPoint {
 		rootPanel.add(makeTabPanel());
 	}
 	
-	private Widget makeInstanceEditor() {
+	private Widget makeTabPanel() {
+		TabLayoutPanel tlp = new TabLayoutPanel(2, Unit.EM);		
+		tlp.add(makePlatformPanel(), "Platforms");		
+		tlp.add(makeBatchPanel(), "Batches");
+		tlp.add(makeDatasetPanel(), "Datasets");
+		tlp.add(makeInstancePanel(), "Instances");		
+		return tlp;
+	}
+	
+	private Widget makeInstancePanel() {
 		DockLayoutPanel dp = new DockLayoutPanel(Unit.PX);
 		
 		CellTable<Instance> table = makeTable();
@@ -63,7 +74,7 @@ public class AdminConsole implements EntryPoint {
 		cmds.add(new Command("Add new...") {
 			public void run() {
 				final DialogBox db = new DialogBox(false, true);
-				db.setTitle("Add or update instance");
+				db.setTitle("Add instance");
 				db.setWidget(new InstanceEditor() {
 
 					@Override
@@ -74,7 +85,7 @@ public class AdminConsole implements EntryPoint {
 
 					@Override
 					protected void onAbort() {
-						db.hide();
+						db.hide(); 
 						refreshInstances();			
 					}					
 				});
@@ -95,18 +106,68 @@ public class AdminConsole implements EntryPoint {
 		dp.add(table);
 		
 		refreshInstances();
+		refreshDatasets();
 		return dp; 
 	}
 	
-	private Widget makeTabPanel() {
-		TabLayoutPanel tlp = new TabLayoutPanel(2, Unit.EM);		
-		tlp.add(makeBatchEditor(), "Batches");
-		tlp.add(makePlatformEditor(), "Platforms");
-		tlp.add(makeInstanceEditor(), "Instances");					
-		return tlp;
+	//TODO reduce duplicated code
+	private Widget makeDatasetPanel() {
+		DockLayoutPanel dp = new DockLayoutPanel(Unit.PX);
+
+		CellTable<Dataset> table = makeTable();
+		datasetData.addDataDisplay(table);
+
+		List<Command> cmds = new ArrayList<Command>();
+		cmds.add(new Command("Add new...") {
+			public void run() {
+				final DialogBox db = new DialogBox(false, true);
+				db.setTitle("Add instance");
+				db.setWidget(new DatasetEditor() {
+
+					@Override
+					protected void onFinish() {
+						db.hide();
+						refreshDatasets();
+					}
+
+					@Override
+					protected void onAbort() {
+						db.hide();
+						refreshDatasets();
+					}
+				});
+				db.show();
+			}
+		});
+
+		StandardColumns<Dataset> sc = new StandardColumns<Dataset>(table) {
+			void onDelete(Dataset object) {
+				deleteDataset(object);
+			}
+		};
+
+		sc.addStartColumns();
+		
+		TextColumn<Dataset> textColumn = new TextColumn<Dataset>() {
+			@Override
+			public String getValue(Dataset object) {
+				return "" + object.getDescription();
+			}
+		};
+		
+		table.addColumn(textColumn, "Description");
+		table.setColumnWidth(textColumn, "12.5em");
+		
+		sc.addDeleteColumn();
+
+		dp.addSouth(makeButtons(cmds), 35);
+		dp.add(table);
+
+		refreshDatasets();
+		return dp;
 	}
 	
-	private Widget makePlatformEditor() {
+	private Widget makePlatformPanel() {
 		DockLayoutPanel dp = new DockLayoutPanel(Unit.PX);
 		
 		CellTable<Platform> table = makeTable();
@@ -159,11 +220,40 @@ public class AdminConsole implements EntryPoint {
 		return dp;
 	}
 	
-	private Widget makeBatchEditor() {
+	private void buildDatasetColumn() {
+		if (batchTable == null) {
+			return;
+		}
+			
+		List<String> datasets = new ArrayList<String>();
+		//TODO handle updates smoothly
+		for (Dataset d: datasetData.getList()) {
+			datasets.add(d.getTitle());
+		}
+		
+		SelectionCell datasetCell = new SelectionCell(datasets);
+		if (datasetColumn != null) {
+			batchTable.removeColumn(datasetColumn);
+		}
+		
+		datasetColumn = new Column<Batch, String>(datasetCell) {
+			public String getValue(Batch b) {
+				return b.getDataset();
+			}
+		};
+		datasetColumn.setFieldUpdater(new FieldUpdater<Batch, String>() {
+			public void update(int index, final Batch object, String value) {
+				editDataset(object, value);				
+			}
+		});
+		batchTable.addColumn(datasetColumn, "Dataset");
+	}
+	
+	private Widget makeBatchPanel() {
 		DockLayoutPanel dp = new DockLayoutPanel(Unit.PX);
 		
-		final CellTable<Batch> table = makeTable();
-		StandardColumns<Batch> sc = new StandardColumns<Batch>(table) {
+		batchTable = makeTable();
+		StandardColumns<Batch> sc = new StandardColumns<Batch>(batchTable) {
 			void onDelete(Batch object) {
 				deleteBatch(object);
 			}
@@ -177,9 +267,11 @@ public class AdminConsole implements EntryPoint {
 			}
 		};
 
-		table.addColumn(samplesColumn, "Samples");
-		table.setColumnWidth(samplesColumn, "12.5em");
+		batchTable.addColumn(samplesColumn, "Samples");
+		batchTable.setColumnWidth(samplesColumn, "12.5em");
 
+		buildDatasetColumn();
+		
 		TextColumn<Batch> visibilityColumn = new TextColumn<Batch>() {
 			@Override
 			public String getValue(Batch object) {
@@ -196,9 +288,9 @@ public class AdminConsole implements EntryPoint {
 				}
 			}
 		};
-
-		table.addColumn(visibilityColumn, "Visibility");								
-		batchData.addDataDisplay(table);		
+		
+		batchTable.addColumn(visibilityColumn, "Visibility");								
+		batchData.addDataDisplay(batchTable);		
 		
 		ButtonCell editCell = new ButtonCell();
 		Column<Batch, String> editColumn = new Column<Batch, String>(editCell) {
@@ -209,11 +301,11 @@ public class AdminConsole implements EntryPoint {
 		editColumn.setFieldUpdater(new FieldUpdater<Batch, String>() {
 			@Override
 			public void update(int index, final Batch object, String value) {
-				editVisibility(table, object);				
+				editVisibility(batchTable, object);				
 			}
 			
 		});		
-		table.addColumn(editColumn);
+		batchTable.addColumn(editColumn);
 	
 		sc.addDeleteColumn();
 		
@@ -238,7 +330,7 @@ public class AdminConsole implements EntryPoint {
 		});	
 		
 		dp.addSouth(makeButtons(commands), 35);
-		dp.add(table);
+		dp.add(batchTable);
 		refreshBatches();
 		return dp;
 	}
@@ -271,7 +363,23 @@ public class AdminConsole implements EntryPoint {
 		db.setText("Change visibility of '" + object.getTitle() + "'");
 //		db.setSize("300px", "300px");
 		db.setWidth("500px");
-		db.show();
+		db.show();	
+	}
+	
+	private void editDataset(final Batch batch, final String dataset) {
+		batch.setDataset(dataset);
+		maintenanceService.updateBatch(batch,new AsyncCallback<Void>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Unable to set dataset: " + caught.getMessage());
+			}
+
+			@Override
+			public void onSuccess(Void result) {
+				refreshBatches();						
+			}
+			
+		});
 	}
 	
 	private void deleteBatch(final Batch object) {
@@ -318,20 +426,32 @@ public class AdminConsole implements EntryPoint {
 			public void onSuccess(Void result) {
 				refreshInstances();				
 			}			
-		});
-			
+		});			
 	}
+	
+	//TODO reduce duplicated code
+	private void deleteDataset(final Dataset object) {
+		String title = object.getTitle();
+		if (!Window.confirm("Are you sure you want to delete the dataset " + title + "? Batches will not be deleted.")) {
+			return;
+		}
+		maintenanceService.deleteDataset(object.getTitle(), new AsyncCallback<Void>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Unable to delete dataset: " + caught.getMessage());
+			}
+
+			@Override
+			public void onSuccess(Void result) {
+				refreshDatasets();				
+			}			
+		});			
+	}
+
 
 	private <T extends ManagedItem> CellTable<T> makeTable() {
 		CellTable<T> table = new CellTable<T>();		
-//		TextColumn<T> textColumn = new TextColumn<T>() {
-//			@Override
-//			public String getValue(T object) {
-//				return object.getTitle();
-//			}
-//		};				
-//		table.addColumn(textColumn, "ID");
-//		table.setColumnWidth(textColumn, "12.5em");
 		table.setSelectionModel(new NoSelectionModel<T>());
 		table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 		return table;
@@ -342,11 +462,23 @@ public class AdminConsole implements EntryPoint {
 	}
 	
 	private void refreshInstances() {
-		maintenanceService.getInstances(new ListDataCallback<Instance>(instanceData, "instance list"));
+		maintenanceService.getInstances(new ListDataCallback<Instance>(instanceData, "instance list"));		
 	}
 	
 	private void refreshPlatforms() {
 		maintenanceService.getPlatforms(new ListDataCallback<Platform>(platformData, "platform list"));
+	}
+	
+	//TODO reduce duplicated code
+	private void refreshDatasets() {
+		maintenanceService.getDatasets(new ListDataCallback<Dataset>(datasetData, "platform list") {
+			@Override
+			public void onSuccess(Dataset[] result) {
+				super.onSuccess(result);
+				//TODO better way of updating this?
+				buildDatasetColumn(); 					
+			}
+		});
 	}
 
 }
