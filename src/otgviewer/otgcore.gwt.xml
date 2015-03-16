@@ -15,7 +15,6 @@
 	<inherits name='com.google.gwt.visualization.Visualization'/>
 	<inherits name='com.google.gwt.http.HTTP'/>
 	<inherits name="com.google.gwt.logging.Logging"/>
-	<inherits name='t.common.Common' />
 	<inherits name='t.viewer.Viewer' />
 
 	<!-- Specify the paths for translatable code                    -->
