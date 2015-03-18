@@ -135,24 +135,24 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   
   @throws[TimeoutException]
   def parameterValues(sc: SampleClass, parameter: String): Array[String] = {    
-    sampleStore.attributeValues(scAsScala(sc), parameter).
+    sampleStore.attributeValues(scAsScala(sc).filterAll, parameter).
       filter(x => !schema.isMajorParamSharedControl(x)).toArray
   }
   
   def samplesById(ids: Array[String]): Array[OTGSample] = 
-    sampleStore.samples(new t.sparql.SampleClass(), "id", 
+    sampleStore.samples(Filter("", ""), "id", 
         ids).map(asJavaSample(_)).toArray 
 
   //TODO compound_name is a dummy parameter below
   @throws[TimeoutException]
   def samples(sc: SampleClass): Array[OTGSample] =
-    sampleStore.samples(scAsScala(sc), "compound_name", 
+    sampleStore.samples(scAsScala(sc).filterAll, "compound_name", 
         List()).map(asJavaSample(_)).toArray
 
   @throws[TimeoutException]
   def samples(sc: SampleClass, param: String, 
       paramValues: Array[String]): Array[OTGSample] =
-    sampleStore.samples(sc, param, paramValues).map(asJavaSample(_)).toArray
+    sampleStore.samples(sc.filterAll, param, paramValues).map(asJavaSample(_)).toArray
 
   @throws[TimeoutException]
   def samples(scs: Array[SampleClass], param: String, 
@@ -176,7 +176,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     //Ensure shared control is always included, if possible
     val useParamValues = if (param == majorParam) {
       val allMajors = 
-        sampleStore.attributeValues(scAsScala(sc), majorParam)        
+        sampleStore.attributeValues(scAsScala(sc).filterAll, majorParam)        
       val shared = allMajors.filter(schema.isMajorParamSharedControl(_))
       (shared.toSeq ++ paramValues.toSeq)
     } else {
@@ -184,7 +184,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     }
     
     //TODO rethink how to use batch here
-    val ss = sampleStore.samples(sc, param, useParamValues).    
+    val ss = sampleStore.samples(sc.filterAll, param, useParamValues).    
         groupBy(x =>( 
             x.sampleClass(schema.timeParameter()), 
             x.sampleClass.get("control_group")))
