@@ -12,7 +12,7 @@ import java.util.Arrays;
  */
 public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 	private String probe = "";
-	private String title = "";
+	private String[] atomicProbeTitles = new String[0];
 	private String[] atomicProbes = new String[0];
 	private String[] geneIds = new String[0];
 	private String[] geneIdLabels = new String[0];
@@ -21,18 +21,35 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 	
 	public ExpressionRow() { }
 	
+	/**
+	 * Single probe constructor
+	 * @param _probe
+	 * @param _title
+	 * @param _geneId
+	 * @param _geneSym
+	 * @param _val
+	 */
 	public ExpressionRow(String _probe, String _title, 
 			String[] _geneId, String[] _geneSym, ExpressionValue[] _val) {
-		this(_probe, new String[] { _probe }, _title,
+		this(_probe, new String[] { _probe }, new String[] { _title },
 				_geneId, _geneSym, _val);
 	}
 	
-	public ExpressionRow(String _probe, String[] _atomicProbes, String _title, 
+	/**
+	 * Merged probe constructor
+	 * @param _probe
+	 * @param _atomicProbes
+	 * @param _title
+	 * @param _geneId
+	 * @param _geneSym
+	 * @param _val
+	 */
+	public ExpressionRow(String _probe, String[] _atomicProbes, String[] _titles, 
 			String[] _geneId, String[] _geneSym, ExpressionValue[] _val) {
 		probe = _probe;
 		atomicProbes = _atomicProbes;
 		val = _val;
-		title = _title;		
+		atomicProbeTitles = _titles;		
 		geneIds = _geneId;
 		geneIdLabels = _geneId;
 		geneSyms = _geneSym;		
@@ -78,8 +95,8 @@ public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 		return val.length;
 	}
 	
-	public String getTitle() {
-		return title;
+	public String[] getAtomicProbeTitles() {
+		return atomicProbeTitles;
 	}	
 	
 	/**

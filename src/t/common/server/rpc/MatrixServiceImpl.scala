@@ -274,9 +274,9 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
         val expandedSymbols = ps.flatMap(p => 
           p.symbols.map(schema.platformSpecies(p.platform) + ":" + _.symbol))
       
-        val r = new ExpressionRow(atomics.mkString("/ "),
+        val r = new ExpressionRow(atomics.mkString("/"),
           atomics,
-          repeatStrings(ps.map(p => p.name)).mkString("/ "),
+          repeatStrings(ps.map(p => p.name)).toArray,
           expandedGenes.map(_._2).distinct,
           repeatStrings(expandedSymbols).toArray,    
           or.getValues)
@@ -284,12 +284,14 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       val gils = withCount(expandedGenes).map(x => s"${x._1._1 + ":" + x._1._2} (${prbCount(x._2)})").toArray
       r.setGeneIdLabels(gils)
       r
-      } else {      
-        new ExpressionRow(ps.map(_.identifier).mkString("/ "),
-          atomics,
-          ps.map(p => p.name).mkString("/ "),
-          ps.flatMap(_.genes.map(_.identifier)),
-          ps.flatMap(_.symbols.map(_.symbol)),             
+      } else {           
+        assert(ps.size == 1)
+        val p = atomics(0)
+        val pr = pm.get(p)
+        new ExpressionRow(p,
+          pr.map(_.name).getOrElse(""),
+          pr.toArray.flatMap(_.genes.map(_.identifier)),
+          pr.toArray.flatMap(_.symbols.map(_.symbol)),             
           or.getValues)
       }
     })
@@ -322,7 +324,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       val gis = probes.allGeneIds.mapMValues(_.identifier).
         mapKValues(_.identifier)
       raw.map(or => {        
-        new ExpressionRow(or.getProbe, or.getAtomicProbes, or.getTitle,
+        new ExpressionRow(or.getProbe, or.getAtomicProbes, or.getAtomicProbeTitles,
             or.getAtomicProbes.flatMap(p => gis.getOrElse(p, Seq.empty)),
             or.getGeneSyms, or.getValues)
       })      
