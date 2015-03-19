@@ -479,6 +479,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		return null;
 	}
 	
+	private String mkAssociationList(String[] values) {
+		return SharedUtils.mkString("<div class=\"associationValue\">", values, 
+				"</div> ");
+	}
+	
 	protected List<HideableColumn> initHideableColumns(DataSchema schema) {
 		SafeHtmlCell shc = new SafeHtmlCell();
 		List<HideableColumn> r = new ArrayList<HideableColumn>();
@@ -502,23 +507,23 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			}						
 		});
 		
-		r.add(new DefHideableColumn<ExpressionRow>("Gene Sym", 
+		r.add(new HTMLHideableColumn<ExpressionRow>(shc, "Gene Sym", 
 				initVisibility(StandardColumns.GeneSym), 
 				initWidth(StandardColumns.GeneSym)) {
-			public String safeGetValue(ExpressionRow er) {					
-				return SharedUtils.mkString(er.getGeneSyms(), ", ");
+			protected String getHtml(ExpressionRow er) {	
+				return mkAssociationList(er.getGeneSyms());				
 			}
 			
 		});
 		
-		r.add(new DefHideableColumn<ExpressionRow>("Probe title", 
+		r.add(new HTMLHideableColumn<ExpressionRow>(shc, "Probe title", 
 				initVisibility(StandardColumns.ProbeTitle), 
 				initWidth(StandardColumns.ProbeTitle)) {
-			public String safeGetValue(ExpressionRow er) {				
-				return er.getTitle();
+			protected String getHtml(ExpressionRow er) {				
+				return "<div class=\"associationValue\">" + er.getTitle() + "</div>";
 			}
 		});
-		
+
 		r.add(new LinkingColumn<ExpressionRow>(shc, "Probe",
 				initVisibility(StandardColumns.Probe), 
 				initWidth(StandardColumns.Probe)) {
@@ -534,7 +539,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				return Pair.duplicate(r);
 			}	
 			
-		});			
+		});	
 		
 		//We want gene sym, probe title etc. to be before the association columns going left to right
 		r.addAll(super.initHideableColumns(schema));

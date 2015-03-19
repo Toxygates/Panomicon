@@ -96,46 +96,31 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 	abstract protected String[] atomicProbesForRow(T row);
 	abstract protected String[] geneIdsForRow(T row);
 	
-	public static abstract class LinkingColumn<T> extends Column<T, SafeHtml> implements HideableColumn {
-		private boolean visible;
-		SafeHtmlCell c;
-		String name;
-		String width;
+	public static abstract class LinkingColumn<T> extends HTMLHideableColumn<T> {		
 		public LinkingColumn(SafeHtmlCell c, String name, 
 				boolean initState, String width) {
-			super(c);
-			visible = initState;
-			this.name = name;
-			this.width = width;
-			this.c = c;
+			super(c, name, initState, width);			
 		}
-				
-		public String name() { return name; }
-		public boolean visible() { return this.visible; }
-		public void setVisibility(boolean v) { visible = v; }
-		public String width() { return width; }
 		
 		protected List<String> makeLinks(Collection<Pair<String, String>> values) {
 			List<String> r = new ArrayList<String>();
 			for (Pair<String, String> v: values) {
 				String l = formLink(v.second());
 				if (l != null) {
-					r.add("<a target=\"_TGassoc\" href=\"" + l + "\">" + v.first() + "</a>");
+					r.add("<div class=\"associationValue\"><a target=\"_TGassoc\" href=\"" +
+							l + "\">" + v.first() + "</a></div>");
 				} else {
-					r.add(v.first()); //no link
+					r.add("<div class=\"associationValue\">" + v.first() + "</div>"); //no link
 				}				
 			}
 			return r;
 		}
 		
-		public SafeHtml getValue(T er) {
-			SafeHtmlBuilder build = new SafeHtmlBuilder();
-			String c = SharedUtils.mkString(makeLinks(getLinkableValues(er))
-							, ", ");
-			build.appendHtmlConstant(c);
-			return build.toSafeHtml();
+		@Override
+		protected String getHtml(T er) {
+			return SharedUtils.mkString(makeLinks(getLinkableValues(er)), "");
 		}
-		
+				
 		protected Collection<Pair<String, String>> getLinkableValues(T er) {
 			return new ArrayList<Pair<String, String>>();
 		}
@@ -178,19 +163,14 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 			return all;
 		}
 		
-		public SafeHtml getValue(T er) {		
-			SafeHtmlBuilder build = new SafeHtmlBuilder();
+		@Override
+		protected String getHtml(T er) {					
 			if (waitingForAssociations) {
-				build.appendEscaped("(Waiting for data...)");
-				return build.toSafeHtml();
-			} else {
-				if (associations.containsKey(assoc)) {
-					return super.getValue(er);					
-				} else {
-					build.appendEscaped("(Data unavailable)");
-				}
-			}
-			return build.toSafeHtml();
+				return("(Waiting for data...)");				
+			} else if (associations.containsKey(assoc)) {
+					return super.getHtml(er);									
+			}		
+			return("(Data unavailable)");
 		}		
 	}
 }

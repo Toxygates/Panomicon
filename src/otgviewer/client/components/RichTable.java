@@ -6,9 +6,11 @@ import java.util.List;
 import t.common.shared.DataSchema;
 
 import com.google.gwt.cell.client.Cell;
+import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
@@ -237,21 +239,35 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		void setVisibility(boolean v);		
 		String width();
 	}
-	
-	/*
-	 * The default hideable column
+
+	/**
+	 * A hideable column that displays SafeHtml
+	 * TODO: remove DefHideableColumn or reduce code duplication
+	 * @author johan
+	 *
+	 * @param <T>
 	 */
-	protected abstract static class DefHideableColumn<T> extends SafeTextColumn<T> implements HideableColumn {
-		private boolean _visible;
-		private String _width;
-		private String _name;
+	protected abstract static class HTMLHideableColumn<T> extends Column<T, SafeHtml> implements HideableColumn {
+		protected boolean _visible;
+		protected String _width;
+		protected String _name;
+		protected SafeHtmlCell _c;
 		
-		public DefHideableColumn(String name, boolean initState, String width) {
-			super();
+		public HTMLHideableColumn(SafeHtmlCell c, String name, boolean initState, String width) {
+			super(c);
+			this._c = c;
 			_visible = initState;
 			_name = name;
 			_width = width;
 		}
+		
+		public SafeHtml getValue(T er) {			
+			SafeHtmlBuilder build = new SafeHtmlBuilder();			
+			build.appendHtmlConstant(getHtml(er));
+			return build.toSafeHtml();
+		}
+		
+		protected abstract String getHtml(T er);
 		
 		public String name() { return _name; }
 		public boolean visible() { return _visible; }				
