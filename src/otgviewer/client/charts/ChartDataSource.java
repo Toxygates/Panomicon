@@ -184,7 +184,6 @@ abstract class ChartDataSource {
 		}
 	}
 	
-	//TODO upgrade to schema
 	static class SeriesSource extends ChartDataSource {
 		SeriesSource(DataSchema schema, List<Series> series, String[] times) {
 			super(schema);
@@ -192,7 +191,7 @@ abstract class ChartDataSource {
 				for (int i = 0; i < s.values().length; ++i) {
 					ExpressionValue ev = s.values()[i];					
 					ChartSample cs = new ChartSample(times[i], s.timeDose(), s.compound(), 
-							null,
+							s.organism(),
 							ev.getValue(), null, s.probe(), ev.getCall());
 					chartSamples.add(cs);
 				}

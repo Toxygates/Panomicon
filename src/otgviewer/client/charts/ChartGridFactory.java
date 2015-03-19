@@ -5,7 +5,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import otgviewer.client.Utils;
 import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
 import otgviewer.client.charts.google.GVizChartGrid;
@@ -36,6 +39,8 @@ public class ChartGridFactory {
 		void acceptCharts(AdjustableChartGrid cg);
 		void acceptBarcodes(OTGSample[] barcodes);
 	}
+	
+	private final Logger logger = Utils.getLogger("cgf");
 	
 	private static final SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT.create(SparqlService.class);
 	
@@ -69,6 +74,7 @@ public class ChartGridFactory {
 				schema.timeParameter(), new AsyncCallback<String[]>() {
 			@Override
 			public void onFailure(Throwable caught) {
+				logger.log(Level.WARNING, "Unable to obtain sample times.", caught);
 				Window.alert("Unable to obtain sample times");
 			}
 			@Override
@@ -118,6 +124,7 @@ public class ChartGridFactory {
 		});
 		} catch (Exception e) {
 			Window.alert("Unable to display charts: " + e.getMessage());
+			logger.log(Level.WARNING, "Unable to display charts.", e);
 		}
 	}
 	
@@ -135,7 +142,8 @@ public class ChartGridFactory {
 
 				@Override
 				public void onFailure(Throwable caught) {
-					Window.alert("Unable to obtain chart data.");							
+					Window.alert("Unable to obtain chart data.");	
+					logger.log(Level.WARNING, "Unable to obtain chart data.", caught);
 				}
 
 				@Override
@@ -151,6 +159,7 @@ public class ChartGridFactory {
 				@Override
 				public void onFailure(Throwable caught) {
 					Window.alert("Unable to obtain chart data.");
+					logger.log(Level.WARNING, "Unable to obtain chart data.", caught);
 				}
 
 				@Override

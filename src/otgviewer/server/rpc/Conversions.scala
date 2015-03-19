@@ -61,7 +61,7 @@ object Conversions {
   implicit def asJava(series: OTGSeries)(implicit context: Context): Series = {
     implicit val mc = context.matrix
 	new Series(series.compound + " " + series.dose, series.probeStr, series.dose,
-	    series.compound, series.values.map(asJava).toArray)
+	    series.compound, series.organism, series.values.map(asJava).toArray)
   }
   
   implicit def asJava(ev: TExprValue): ExpressionValue = new ExpressionValue(ev.value, ev.call)

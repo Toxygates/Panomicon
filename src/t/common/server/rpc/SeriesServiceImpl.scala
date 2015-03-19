@@ -57,7 +57,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       //TODO: probe is actually irrelevant here but the API is not well designed
       //Same for timeDose = High
       val key = fromShared(sc,
-        new SSeries("", probesRules.head._1, "High", null, Array.empty))
+        new SSeries("", probesRules.head._1, "High", null, null, Array.empty))
 
       val ranked = ranking(db, key).rankCompoundsCombined(probesRules)
 
@@ -90,7 +90,9 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       compound: String): SSeries = {
     val db = getDB()
     try {
-      val key = fromShared(sc, new SSeries("", probe, timeDose, compound, Array.empty))
+      //TODO reconsider whether organism should be in Series
+      val key = fromShared(sc, new SSeries("", probe, timeDose, compound, 
+          sc.get("organism"), Array.empty))
       asShared(db.read(key).head)
     } finally {
       db.release()
@@ -105,7 +107,8 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     try {
       val ss = validated.flatMap(p =>
         compounds.flatMap(c =>
-          db.read(fromShared(sc, new SSeries("", p, timeDose, c, Array.empty)))))
+          db.read(fromShared(sc, new SSeries("", p, timeDose, c, 
+              sc.get("organism"), Array.empty)))))
       println(s"Read ${ss.size} series")
       println(ss.take(5).mkString("\n"))
       val jss = ss.map(asShared)
