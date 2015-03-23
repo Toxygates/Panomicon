@@ -16,7 +16,8 @@ import t.common.shared.Pair;
 public class Association implements Serializable {
 
 	private AType _type;
-	private Map<String, ? extends Set<Pair<String, String>>> _data = new HashMap<String, HashSet<Pair<String, String>>>();
+	private Map<String, ? extends Set<? extends Pair<String, String>>> _data = 
+			new HashMap<String, HashSet<? extends Pair<String, String>>>();
 	
 	public Association() { }
 	
@@ -26,7 +27,7 @@ public class Association implements Serializable {
 	 * @param data Association data keyed on probe id:s.
 	 * The first value in the value pair is the title, the second value is the formal identifier
 	 */
-	public Association(AType type, Map<String, ? extends Set<Pair<String, String>>> data) {
+	public Association(AType type, Map<String, ? extends Set<? extends Pair<String, String>>> data) {
 		_type = type;
 		_data = data;
 	}
@@ -39,7 +40,7 @@ public class Association implements Serializable {
 		return _type.name();
 	}
 	
-	public Map<String, ? extends Set<Pair<String, String>>> data() {
+	public Map<String, ? extends Set<? extends Pair<String, String>>> data() {
 		return _data;
 	}
 }

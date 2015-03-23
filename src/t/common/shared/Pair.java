@@ -14,10 +14,10 @@ public class Pair<T, U> implements Serializable {
 		this._u = u;
 	}
 	
-	private T _t;
+	protected T _t;
 	public T first() { return _t; }
 	
-	private U _u;
+	protected U _u;
 	public U second() { return _u; }
 	
 	@Override

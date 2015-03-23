@@ -319,13 +319,15 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     val rows = if (withSymbols) {
       insertAnnotations(raw, pfs.size > 1)
     } else {
-      //TODO: this should be a lazy val
+      val ps = raw.flatMap(or => or.getAtomicProbes.map(Probe(_)))
+      val ats = probes.withAttributes(ps)
+      val giMap = Map() ++ ats.map(x => 
+        (x.identifier -> x.genes.map(_.identifier).toArray))
+
       //TODO: some clients need neither "symbols"/annotations nor geneIds
-      val gis = probes.allGeneIds.mapMValues(_.identifier).
-        mapKValues(_.identifier)
       raw.map(or => {        
         new ExpressionRow(or.getProbe, or.getAtomicProbes, or.getAtomicProbeTitles,
-            or.getAtomicProbes.flatMap(p => gis.getOrElse(p, Seq.empty)),
+            or.getAtomicProbes.flatMap(p => giMap(p)),
             or.getGeneSyms, or.getValues)
       })      
     }
@@ -370,6 +372,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     //TODO shared logic with e.g. insertAnnotations, extract
     val rowNames = rows.map(_.getAtomicProbes.mkString("/"))
 
+    //May be slow!
     val gis = probes.allGeneIds.mapMValues(_.identifier)
     val atomics = rows.map(_.getAtomicProbes())
     val geneIds = atomics.map(row => 

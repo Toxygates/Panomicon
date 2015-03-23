@@ -23,6 +23,7 @@ import t.common.shared.Pair
 import otgviewer.shared.OTGSample
 import t.db.{ExprValue => TExprValue}
 import t.db.MatrixContext
+import t.common.shared.FirstKeyedPair
 
 
 /**
@@ -82,25 +83,27 @@ object Conversions {
         println("Correlation curve: " + rr.data.toVector)
         SeriesRanking.MultiSynthetic(rr.data.toVector)
       }
-      case r: RuleType.HighVariance.type => SeriesRanking.HighVariance
-      case r: RuleType.LowVariance.type => SeriesRanking.LowVariance
-      case r: RuleType.Sum.type => SeriesRanking.Sum
-      case r: RuleType.NegativeSum.type => SeriesRanking.NegativeSum
-      case r: RuleType.Unchanged.type => SeriesRanking.Unchanged
-      case r: RuleType.MonotonicUp.type => SeriesRanking.MonotonicIncreasing
-      case r: RuleType.MonotonicDown.type => SeriesRanking.MonotonicDecreasing
-      case r: RuleType.MaximalFold.type => SeriesRanking.MaxFold
-      case r: RuleType.MinimalFold.type => SeriesRanking.MinFold
-      case r: RuleType.ReferenceCompound.type => SeriesRanking.ReferenceCompound(rr.compound, rr.dose)
+      case _: RuleType.HighVariance.type => SeriesRanking.HighVariance
+      case _: RuleType.LowVariance.type => SeriesRanking.LowVariance
+      case _: RuleType.Sum.type => SeriesRanking.Sum
+      case _: RuleType.NegativeSum.type => SeriesRanking.NegativeSum
+      case _: RuleType.Unchanged.type => SeriesRanking.Unchanged
+      case _: RuleType.MonotonicUp.type => SeriesRanking.MonotonicIncreasing
+      case _: RuleType.MonotonicDown.type => SeriesRanking.MonotonicDecreasing
+      case _: RuleType.MaximalFold.type => SeriesRanking.MaxFold
+      case _: RuleType.MinimalFold.type => SeriesRanking.MinFold
+      case _: RuleType.ReferenceCompound.type => SeriesRanking.ReferenceCompound(rr.compound, rr.dose)
     }
   }
   
-  def asJavaPair[T,U](v: (T, U)) = new t.common.shared.Pair(v._1, v._2)
+//  def asJavaPair[T,U](v: (T, U)) = new t.common.shared.Pair(v._1, v._2)
+  //NB this causes the pairs to be considered equal based on the first item (title) only.
+  def asJavaPair[T,U](v: (T, U)) = new t.common.shared.FirstKeyedPair(v._1, v._2)
   
    //Convert from scala coll types to serialization-safe java coll types.
-  def convertPairs(m: CMap[String, CSet[(String, String)]]): JHMap[String, JHSet[Pair[String, String]]] = {
-    val r = new JHMap[String, JHSet[Pair[String, String]]]    
-    val mm: CMap[String, CSet[Pair[String, String]]] = m.map(k => (k._1 -> k._2.map(asJavaPair(_))))
+  def convertPairs(m: CMap[String, CSet[(String, String)]]): JHMap[String, JHSet[FirstKeyedPair[String, String]]] = {
+    val r = new JHMap[String, JHSet[FirstKeyedPair[String, String]]]    
+    val mm: CMap[String, CSet[FirstKeyedPair[String, String]]] = m.map(k => (k._1 -> k._2.map(asJavaPair(_))))
     addJMultiMap(r, mm)  
     r
   }
