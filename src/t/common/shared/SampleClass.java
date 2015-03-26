@@ -17,6 +17,7 @@ import otgviewer.shared.DataFilter;
  * 
  * Standard keys for OTG: time, dose, organism, organ_id, test_type, sin_rep_type
  * Optional keys: compound_name, exposure_time, dose_level
+ * DataSchema should be used to identify keys, rather than hardcoding strings.
  */
 public class SampleClass implements Serializable, Packable {
 
@@ -46,6 +47,12 @@ public class SampleClass implements Serializable, Packable {
 			data.put(k, get(k));			
 		}
 		return new SampleClass(data);
+	}
+	
+	public SampleClass copyWith(String key, String value) {
+		SampleClass sc = copy();
+		sc.put(key, value);
+		return sc;
 	}
 	
 	public void mergeDeferred(SampleClass from) {

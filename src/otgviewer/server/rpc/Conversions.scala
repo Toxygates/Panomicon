@@ -61,21 +61,21 @@ object Conversions {
 
   implicit def asJava(series: OTGSeries)(implicit context: Context): Series = {
     implicit val mc = context.matrix
-	new Series(series.compound + " " + series.dose, series.probeStr, series.dose,
-	    series.compound, series.organism, series.values.map(asJava).toArray)
+    val name = series.compound + " " + series.dose
+    val sc = new t.common.shared.SampleClass
+    sc.put("dose_level", series.dose)
+    sc.put("compound_name", series.compound)
+    sc.put("organism", series.organism)
+    new Series(name, series.probeStr, "exposure_time", sc, 
+         series.values.map(asJava).toArray)
   }
   
   implicit def asJava(ev: TExprValue): ExpressionValue = new ExpressionValue(ev.value, ev.call)
   //Loses probe information!
   implicit def asScala(ev: ExpressionValue): TExprValue = TExprValue(ev.getValue, ev.getCall, "")
-  
-  def nullToOption[T](v: T): Option[T] = {
-    if (v == null) {
-      None
-    } else {
-      Some(v) 
-    }
-  }
+//  
+//  def nullToOption[T](v: T): Option[T] = 
+//    if (v == null) None else Some(v) 
 
   implicit def asScala(rr: RankRule): SeriesRanking.RankType = {    
     rr.`type`() match {      
