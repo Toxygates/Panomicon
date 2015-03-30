@@ -51,12 +51,13 @@ object Conversions {
     new OTGSample(s.sampleId, sc, s.cgroup.getOrElse(null))
   }
 
-  implicit def asScala(sc: SampleClass, series: Series)(implicit context: MatrixContext): OTGSeries = {
+  implicit def asScala(series: Series)(implicit context: MatrixContext): OTGSeries = {
 	val p = context.probeMap.pack(series.probe) //TODO filtering
-	
+	val sc = series.sampleClass
+  
 	new OTGSeries(sc.get("sin_rep_type"), 
 	    sc.get("organ_id"), sc.get("organism"), 
-	    p, series.compound, series.timeDose, sc.get("test_type"), Vector())
+	    p, sc.get("compound_name"), sc.get("dose_level"), sc.get("test_type"), Vector())
   }
 
   implicit def asJava(series: OTGSeries)(implicit context: Context): Series = {

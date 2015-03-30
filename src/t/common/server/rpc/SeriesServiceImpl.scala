@@ -34,8 +34,8 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
   
   protected def ranking(db: SeriesDB[S], key: S): SeriesRanking[S] = new SeriesRanking(db, key) 
   
-  protected def asShared(s: S): SSeries
-  protected def fromShared(sc: SampleClass, s: SSeries): S
+  implicit protected def asShared(s: S): SSeries
+  implicit protected def fromShared(s: SSeries): S
   
   def rankedCompounds(sc: SampleClass, rules: Array[RankRule]): Array[MatchResult] = {
     val nnr = rules.takeWhile(_ != null)
@@ -53,12 +53,8 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     })
 
     val db = getDB()
-    try {
-      //TODO: probe is actually irrelevant here but the API is not well designed
-      //Same for timeDose = High
-      
-      val key = fromShared(sc,
-        new SSeries("", probesRules.head._1, "dose_level", sc, Array.empty))
+    try {      
+      val key: S = new SSeries("", probesRules.head._1, "dose_level", sc, Array.empty)
 
       val ranked = ranking(db, key).rankCompoundsCombined(probesRules)
 
@@ -91,8 +87,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       compound: String): SSeries = {
     val db = getDB()
     try {
-      //TODO is it necessary to take the detour through fromShared?
-      val key = fromShared(sc, new SSeries("", probe, "dose_level", sc, Array.empty))           
+      val key: S = new SSeries("", probe, "dose_level", sc, Array.empty)           
       asShared(db.read(key).head)
     } finally {
       db.release()
@@ -107,7 +102,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     try {
       val ss = validated.flatMap(p =>
         compounds.flatMap(c =>
-          db.read(fromShared(sc, new SSeries("", p, "dose_level", 
+          db.read(fromShared(new SSeries("", p, "dose_level", 
               sc.copyWith("compound_name", c), Array.empty)))))              
       println(s"Read ${ss.size} series")
       println(ss.take(5).mkString("\n"))

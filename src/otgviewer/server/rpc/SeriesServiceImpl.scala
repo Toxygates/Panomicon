@@ -9,7 +9,8 @@ import t.SeriesRanking
 import otgviewer.shared.{Series => SSeries}
 import t.common.shared.SampleClass
 
-class SeriesServiceImpl extends t.common.server.rpc.SeriesServiceImpl[OTGSeries] with OTGServiceServlet {
+class SeriesServiceImpl extends 
+t.common.server.rpc.SeriesServiceImpl[OTGSeries] with OTGServiceServlet {
 
   implicit def mat = context.matrix
   implicit def ctxt = context
@@ -20,8 +21,8 @@ class SeriesServiceImpl extends t.common.server.rpc.SeriesServiceImpl[OTGSeries]
   override protected def asShared(s: OTGSeries): SSeries = 
     Conversions.asJava(s)
     
-  override protected def fromShared(sc: SampleClass, s: SSeries): OTGSeries =
-    Conversions.asScala(sc, s)
+  override protected def fromShared(s: SSeries): OTGSeries =
+    Conversions.asScala(s)
   
   override protected def getDB(): SeriesDB[OTGSeries] = {
     //TODO organise this better
