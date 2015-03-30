@@ -15,8 +15,8 @@ import otgviewer.client.Utils;
 import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
-import otgviewer.shared.ValueType;
 import t.common.shared.DataSchema;
+import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.DataColumn;
 import t.viewer.shared.ItemList;
@@ -39,6 +39,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		
 	@Deprecated
 	public DataFilter chosenDataFilter;
+	protected Dataset[] chosenDatasets;
 	public SampleClass chosenSampleClass; //TODO public
 	protected String[] chosenProbes = new String[0];
 	public List<String> chosenCompounds = new ArrayList<String>();
@@ -60,7 +61,12 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		listeners.add(l);
 	}
 	
-	//incoming signals	
+	//incoming signals
+	public void datasetsChanged(Dataset[] ds) {
+		chosenDatasets = ds;
+		changeDatasets(ds);
+	}
+	
 	public void sampleClassChanged(SampleClass sc) {
 		chosenSampleClass = sc;		
 		chosenDataFilter = sc.asDataFilter();
@@ -103,6 +109,13 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 
 	//outgoing signals	
 
+	protected void changeDatasets(Dataset[] ds) {
+		chosenDatasets = ds;
+		for (DataViewListener l: listeners) {
+			l.datasetsChanged(ds);
+		}
+	}
+	
 	protected void changeSampleClass(SampleClass sc) {
 		chosenSampleClass = sc;		
 		chosenDataFilter = sc.asDataFilter();
@@ -169,7 +182,8 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		}
 	}
 	
-	public void propagateTo(DataViewListener other) {		
+	public void propagateTo(DataViewListener other) {
+		other.datasetsChanged(chosenDatasets);
 		other.sampleClassChanged(chosenSampleClass);
 		other.probesChanged(chosenProbes);
 		other.compoundsChanged(chosenCompounds);

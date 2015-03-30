@@ -7,6 +7,7 @@ import otgviewer.shared.NoSuchProbeException;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;
 import otgviewer.shared.ServerError;
+import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -30,7 +31,7 @@ public interface SeriesService extends RemoteService {
 	 * @return
 	 * @throws NoSuchProbeException
 	 */
-	public MatchResult[] rankedCompounds(SampleClass sc, RankRule[] rules)
+	public MatchResult[] rankedCompounds(Dataset[] ds, SampleClass sc, RankRule[] rules)
 			throws ServerError;
 
 	/**

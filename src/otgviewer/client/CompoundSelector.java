@@ -224,7 +224,8 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		addRankColumns();
 		
 		if (rules.size() > 0) { //do we have at least 1 rule?						
-			seriesService.rankedCompounds(chosenSampleClass, rules.toArray(new RankRule[0]),
+			seriesService.rankedCompounds(chosenDatasets, chosenSampleClass, 
+					rules.toArray(new RankRule[0]),
 					new PendingAsyncCallback<MatchResult[]>(this) {
 						public void handleSuccess(MatchResult[] res) {
 							ranks.clear();

@@ -124,7 +124,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   def chooseDatasets(ds: Array[Dataset]): Unit = {
     println("Choose datasets: " + ds.toSet)
     val dsTitles = ds.map(_.getTitle).toSet
-    getSessionData.datasets =  dsTitles
+    getSessionData.datasets = dsTitles
     sampleStore.datasets = dsTitles.toList
   }
 

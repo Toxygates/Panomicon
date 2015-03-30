@@ -2,10 +2,8 @@ package t.common.server.rpc
 
 import java.util.ArrayList
 import java.util.{List => JList}
-
 import scala.Array.canBuildFrom
 import scala.collection.JavaConversions.asJavaCollection
-
 import otgviewer.server.rpc.Conversions
 import otgviewer.server.rpc.Conversions.asJava
 import otgviewer.server.rpc.Conversions.asScala
@@ -21,6 +19,8 @@ import t.db.SeriesDB
 import t.db.Series
 import t.sparql.Probes
 import t.SeriesRanking
+import t.viewer.server.Conversions._
+import t.common.shared.Dataset
 
 abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with SeriesService {
   import scala.collection.JavaConversions._  
@@ -36,8 +36,16 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
   
   implicit protected def asShared(s: S): SSeries
   implicit protected def fromShared(s: SSeries): S
+
+  private def allowedMajors(ds: Array[Dataset], sc: SampleClass): Set[String] = {
+    val dsTitles = ds.map(_.getTitle).toSet.toList
+    context.samples.datasets = dsTitles
+    context.samples.attributeValues(scAsScala(sc).filterAll,
+      schema.majorParameter()).toSet
+  }
   
-  def rankedCompounds(sc: SampleClass, rules: Array[RankRule]): Array[MatchResult] = {
+  def rankedCompounds(ds: Array[Dataset], sc: SampleClass, 
+      rules: Array[RankRule]): Array[MatchResult] = {
     val nnr = rules.takeWhile(_ != null)
     var srs = nnr.map(asScala(_))
     var probesRules = nnr.map(_.probe).zip(srs)
@@ -68,11 +76,14 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
           v1 > v2
         }
       })
-      
+    
+      val allowedMajorVals = allowedMajors(ds, sc)
       val mediumVals = schema.sortedValues(schema.mediumParameter())
       
-      val r = rr.map(p => new MatchResult(p._1, p._3, 
-        mediumVals.indexOf(p._2) - 1))
+      val r = rr.map(p => {
+        val (compound, score, dose) = (p._1, p._3, mediumVals.indexOf(p._2) - 1)        
+        new MatchResult(compound, score, dose) 
+      }).filter(x => allowedMajorVals.contains(x.compound))
 
       for (s <- r.take(10)) {
         println(s)

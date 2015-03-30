@@ -27,7 +27,8 @@ class SeriesServiceTest extends FunSuite with BeforeAndAfter {
     val sc = SparqlServiceTest.testSampleClass
     val r = new RankRule(RuleType.MaximalFold, "1370365_at") //GSS gene
     
-    val res = s.rankedCompounds(sc, Array(r)).toSeq
+    //TODO needs a valid dataset for the first argument
+    val res = s.rankedCompounds(Array(), sc, Array(r)).toSeq
     println(res take 10)
   }
   
