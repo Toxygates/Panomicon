@@ -283,12 +283,12 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   def probesTargetedByCompound(sc: SampleClass, compound: String, service: String,
     homologous: Boolean): Array[String] = Array()
  
-    //TODO move to OTG
+  //TODO move to OTG
   @throws[TimeoutException]
   def goTerms(pattern: String): Array[String] =    
     probeStore.goTerms(pattern).map(_.name).toArray
 
-      //TODO move to OTG
+  //TODO move to OTG
   @throws[TimeoutException]
   def probesForGoTerm(goTerm: String): Array[String] = {
     val pmap = context.matrix.probeMap 
