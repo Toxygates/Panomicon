@@ -1,5 +1,6 @@
 package t.common.client.rpc;
 
+import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
@@ -59,6 +60,8 @@ public interface SparqlServiceAsync {
 	
 	public void goTerms(String pattern, AsyncCallback<String[]> callback);
 	public void probesForGoTerm(String term, AsyncCallback<String[]> callback);
+
+	public void predefinedGroups(AsyncCallback<Group[]> callback);
 	
 	public void associations(SampleClass sc, AType[] types, String[] probes, 
 			AsyncCallback<Association[]> callback);

@@ -42,6 +42,7 @@ import otgviewer.shared.OTGSchema
 import t.platform.Probe
 import otg.sparql.Probes
 import t.common.shared.Dataset
+import otgviewer.shared.Group
 
 
 /**
@@ -72,6 +73,14 @@ class SparqlServiceImpl extends t.common.server.rpc.SparqlServiceImpl with OTGSe
   override def probesForGoTerm(goTerm: String): Array[String] = {
     val pmap = context.matrix.probeMap 
     probeStore.forGoTerm(GOTerm("", goTerm)).map(_.identifier).filter(pmap.isToken).toArray
+  }
+  
+  //TODO move to OTG
+  @throws[TimeoutException]
+  def predefinedGroups: Array[Group] = {
+    val r = sampleStore.sampleGroups.map(x => 
+      new Group(schema, x._1, x._2.map(x => asJavaSample(x)).toArray))
+    r.toArray
   }
 
   //TODO move to OTG

@@ -71,6 +71,16 @@ public class ColumnScreen extends Screen {
 		});
 	}
 	
+	//TODO avoid making so many requests at startup
+	private void loadPredefinedGroups() {
+		sparqlService.predefinedGroups(new PendingAsyncCallback<Group[]>(this, "Unable to obtain groups") {			
+			@Override
+			public void handleSuccess(Group[] result) {
+				gi.addStaticGroups(result);							
+			}			
+		});
+	}
+	
 	private HorizontalPanel mkFilterTools() {
 		final Screen s = this;
 		HorizontalPanel r = new HorizontalPanel();
@@ -153,7 +163,8 @@ public class ColumnScreen extends Screen {
 		final CompoundRanker cr = new CompoundRanker(this, cs);
 		tp.add(Utils.makeScrolled(cr), rankingLabel);
 		tp.selectTab(0);		
-
+		
+		loadPredefinedGroups();
 		return tp;
 	}
 

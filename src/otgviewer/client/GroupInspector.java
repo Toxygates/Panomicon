@@ -193,7 +193,14 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		existingGroupsTable.setSize("100%", "100px");
 		sp.addSouth(Utils.makeScrolled(existingGroupsTable), 200);
 		
-		sp.add(Utils.makeScrolled(vp));
+		sp.add(Utils.makeScrolled(vp));		
+	}
+	
+	void addStaticGroups(Group[] staticGroups) {
+		//TODO protect predef groups from editing/deleting
+		for (Group g: staticGroups) {
+			addGroup(g, false);
+		}
 	}
 	
 	/**
@@ -379,7 +386,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private void makeAutoGroups() {
 		List<Group> gs = GroupMaker.autoGroups(this, schema, availableUnits);
 		for (Group g: gs) {
-			addGroup(g);
+			addGroup(g, true);
 		}
 		reflectGroupChanges();
 	}
@@ -433,18 +440,20 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		Group pendingGroup = groups.get(pendingGroupName);
 		existingGroupsTable.removeItem(pendingGroup); 
 		pendingGroup = new Group(schema, pendingGroupName, units.toArray(new Unit[0]));
-		addGroup(pendingGroup);
+		addGroup(pendingGroup, true);
 		reflectGroupChanges();
 	}
 	
-	private void addGroup(Group group) {
+	private void addGroup(Group group, boolean active) {
 		String name = group.getName();
 		groups.put(name, group);
 		logger.info("Add group " + name + " with " + group.getSamples().length + " samples " +
 				"and " + group.getUnits().length + " units ");
 		
-		existingGroupsTable.addItem(group);
-		existingGroupsTable.setSelected(group);
+		existingGroupsTable.addItem(group);		
+		if (active) {
+			existingGroupsTable.setSelected(group);
+		}
 	}
 
 	private void displayGroup(String name) {

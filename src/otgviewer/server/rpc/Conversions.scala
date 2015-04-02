@@ -45,7 +45,6 @@ object Conversions {
     new Annotation(annot.barcode, new java.util.ArrayList(entries))        
   }
 
-  //TODO pass in DataFilter?
   def asJavaSample(s: t.db.Sample): OTGSample = {
     val sc = scAsJava(s.sampleClass)
     new OTGSample(s.sampleId, sc, s.cgroup.getOrElse(null))

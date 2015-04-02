@@ -2,6 +2,7 @@ package t.common.client.rpc;
 
 import javax.annotation.Nullable;
 
+import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
@@ -102,14 +103,6 @@ public interface SparqlService extends RemoteService {
 			String param, @Nullable String[] paramValues)
 			throws TimeoutException;
 
-	//
-	// /**
-	// * Obtain probes for the given barcodes
-	// * @param columns
-	// * @return
-	// */
-	// public String[] probes(BarcodeColumn[] columns);
-
 	/**
 	 * Obtain pathologies for the given sample
 	 * 
@@ -196,6 +189,8 @@ public interface SparqlService extends RemoteService {
 	 */
 	public String[] probesForGoTerm(String goTerm) throws TimeoutException;
 
+	public Group[] predefinedGroups() throws TimeoutException;
+	
 	/**
 	 * Obtain gene symbols for the given probes. The resulting array will
 	 * contain gene symbol arrays in the same order as and corresponding to the
