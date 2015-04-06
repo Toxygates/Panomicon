@@ -3,6 +3,9 @@ package t.common.server
 import t.sparql.Datasets
 import t.common.shared.Dataset
 
+/**
+ * This trait provides conversion into t.common.sharedDataset
+ */
 trait SharedDatasets {
   this: Datasets =>
 

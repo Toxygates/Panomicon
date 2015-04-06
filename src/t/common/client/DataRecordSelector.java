@@ -68,6 +68,14 @@ public class DataRecordSelector<T extends DataRecord> extends Composite {
 		st.setItems(new ArrayList<T>(data));
 	}
 	
+	public void setSelection(Collection<T> items) {
+		st.setSelection(items);
+	}
+	
+	public void selectAll() {
+		st.selectAll(st.getItems());
+	}
+	
 	public void onOK() {
 		
 	}

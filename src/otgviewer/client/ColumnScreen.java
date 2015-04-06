@@ -2,6 +2,7 @@ package otgviewer.client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -47,6 +48,8 @@ public class ColumnScreen extends Screen {
 	private SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
 			.create(SparqlService.class);
 	private List<Dataset> allDatasets = new ArrayList<Dataset>();
+	private Collection<Dataset> selectedDatasets = new ArrayList<Dataset>();
+	
 	
 	public ColumnScreen(ScreenManager man, String rankingLabel) {
 		super("Sample group definitions", key, false, man,
@@ -67,6 +70,7 @@ public class ColumnScreen extends Screen {
 			@Override
 			public void handleSuccess(Dataset[] result) {
 				allDatasets = Arrays.asList(result);	
+				selectedDatasets = allDatasets;
 			}			
 		});
 	}
@@ -114,17 +118,18 @@ public class ColumnScreen extends Screen {
 		final DialogBox db = new DialogBox(false, true);
 		final Screen scr = this;
 		//TODO set init. selection
-		DatasetSelector dsel = new DatasetSelector(allDatasets) {
+		DatasetSelector dsel = new DatasetSelector(allDatasets, selectedDatasets) {
 			@Override
 			public void onOK() {
-				Dataset[] enabled = getSelection().toArray(new Dataset[0]);
+				selectedDatasets = getSelection();
+				Dataset[] enabled = selectedDatasets.toArray(new Dataset[0]);
 				datasetsChanged(enabled);
 				sparqlService.chooseDatasets(enabled,
 						new PendingAsyncCallback<Void>(scr, "Unable to choose datasets") {					
 					public void handleSuccess(Void v) {
 						dfe.update();
 					}
-				});
+				});				
 				db.hide();
 			}
 			

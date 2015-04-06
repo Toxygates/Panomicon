@@ -97,7 +97,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   }
   
   protected class SparqlState(ds: Datasets) {
-    var datasets: Set[String] = ds.list.toSet
+    var datasets: Iterable[String] = ds.list
   }
 
   def getSessionData(): SparqlState = {
@@ -117,15 +117,18 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     getThreadLocalRequest().getSession().setAttribute("sparql", m)
   
   def datasets(): Array[Dataset] = {
-    val ds = new Datasets(baseConfig.triplestore) with SharedDatasets
-    ds.sharedList.toArray
+    val ds = new Datasets(baseConfig.triplestore) with SharedDatasets    
+    val r = ds.sharedList.toArray
+    //Initialise the selected datasets by selecting all.
+    chooseDatasets(r)
+    r
   }
   
   def chooseDatasets(ds: Array[Dataset]): Unit = {
-    println("Choose datasets: " + ds.toSet)
-    val dsTitles = ds.map(_.getTitle).toSet
+    val dsTitles = ds.toList.map(_.getTitle)
+    println("Choose datasets: " + dsTitles)
     getSessionData.datasets = dsTitles
-    sampleStore.datasets = dsTitles.toList
+    sampleStore.datasets = dsTitles
   }
 
   @throws[TimeoutException]
@@ -145,9 +148,10 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   //TODO compound_name is a dummy parameter below
   @throws[TimeoutException]
-  def samples(sc: SampleClass): Array[OTGSample] =
-    sampleStore.samples(scAsScala(sc).filterAll, "compound_name", 
-        List()).map(asJavaSample(_)).toArray
+  def samples(sc: SampleClass): Array[OTGSample] = {
+    val ss = sampleStore.sampleQuery.constrain(scAsScala(sc).filterAll)() 
+    ss.map(asJavaSample).toArray
+  }
 
   @throws[TimeoutException]
   def samples(sc: SampleClass, param: String, 
