@@ -38,7 +38,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
   implicit protected def fromShared(s: SSeries): S
 
   private def allowedMajors(ds: Array[Dataset], sc: SampleClass): Set[String] = {
-    val dsTitles = ds.map(_.getTitle).toSet.toList
+    val dsTitles = ds.map(_.getTitle).distinct.toList
     context.samples.datasets = dsTitles
     context.samples.attributeValues(scAsScala(sc).filterAll,
       schema.majorParameter()).toSet

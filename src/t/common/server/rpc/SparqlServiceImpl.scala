@@ -130,7 +130,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   @throws[TimeoutException]
   def parameterValues(sc: Array[SampleClass], parameter: String): Array[String] = {
-    sc.flatMap(x => parameterValues(x, parameter)).toSet.toArray
+    sc.flatMap(x => parameterValues(x, parameter)).distinct.toArray
   }
   
   @throws[TimeoutException]
@@ -157,7 +157,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   @throws[TimeoutException]
   def samples(scs: Array[SampleClass], param: String, 
       paramValues: Array[String]): Array[OTGSample] =
-        scs.flatMap(x => samples(x, param, paramValues)).toSet.toArray
+        scs.flatMap(x => samples(x, param, paramValues)).distinct.toArray
   
   @throws[TimeoutException]
   def sampleClasses(): Array[SampleClass] = {    
