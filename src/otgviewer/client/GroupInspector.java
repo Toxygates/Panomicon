@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,6 +26,7 @@ import t.common.shared.Unit;
 
 import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;
+import com.google.gwt.cell.client.TextButtonCell;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -62,6 +64,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private SplitLayoutPanel sp;
 	private VerticalPanel vp;
 	private boolean nameIsAutoGen = false;
+	private Set<String> staticGroupNames = new HashSet<String>();
 	
 	private List<Pair<Unit, Unit>> availableUnits;
 
@@ -146,10 +149,12 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 				};
 				table.addColumn(textColumn, "#Control samples");
 				
-				ButtonCell editCell = new ButtonCell();
+				//We use TextButtonCell instead of ButtonCell since it has setEnabled
+				final TextButtonCell editCell = new TextButtonCell();
 				
 				Column<Group, String> editColumn = new Column<Group, String>(editCell) {
-					public String getValue(Group g) {
+					public String getValue(Group g) {						
+						editCell.setEnabled(!isStatic(g));						
 						return "Edit";
 					}					
 				};
@@ -161,9 +166,10 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 				});
 				table.addColumn(editColumn, "");
 				
-				ButtonCell deleteCell = new ButtonCell();
+				final TextButtonCell deleteCell = new TextButtonCell();
 				Column<Group, String> deleteColumn = new Column<Group, String>(deleteCell) {
-					public String getValue(Group g) {
+					public String getValue(Group g) {						
+						deleteCell.setEnabled(!isStatic(g));						
 						return "Delete";
 					}
 				};
@@ -197,9 +203,23 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	}
 	
 	void addStaticGroups(Group[] staticGroups) {
-		//TODO protect predef groups from editing/deleting
 		for (Group g: staticGroups) {
 			addGroup(g, false);
+			staticGroupNames.add(g.getName());
+		}
+		reflectGroupChanges();
+	}
+
+	private boolean isStatic(Group g) {
+		return staticGroupNames.contains(g.getName());
+	}
+	
+	private void clearNonStaticGroups() {
+		Set<String> keys = groups.keySet();
+		for (String k: keys) {
+			if (!isStatic(groups.get(k))) {
+				groups.remove(k);
+			}
 		}
 	}
 	
@@ -230,8 +250,9 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	
 	void confirmDeleteAllGroups() {
 		int n = existingGroupsTable.getItems().size();
-		if (Window.confirm("Delete " + n + " groups?")) {
-			groups.clear();
+		int fn = n - staticGroupNames.size();
+		if (Window.confirm("Delete " + fn + " groups?")) {
+			clearNonStaticGroups();			
 			reflectGroupChanges();
 			newGroup();			
 		}
@@ -329,11 +350,12 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 			super.sampleClassChanged(sc);
 		}
 	}
+
 	
 	@Override 
 	public void columnsChanged(List<Group> columns) {
 		super.columnsChanged(columns);
-		groups.clear();
+		clearNonStaticGroups();		
 			
 		for (Group g: columns) {			
 			groups.put(g.getName(), g);			
