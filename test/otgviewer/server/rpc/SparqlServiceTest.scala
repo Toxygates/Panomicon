@@ -3,16 +3,19 @@ package otgviewer.server.rpc
 import org.junit.runner.RunWith
 import org.scalatest.BeforeAndAfter
 import org.scalatest.FunSuite
-import otgviewer.shared.CellType
-import otgviewer.shared.DataFilter
 import t.common.shared.SampleClass
 import t.viewer.server.Configuration
 import org.scalatest.junit.JUnitRunner
 import t.viewer.shared.AType
+import scala.collection.JavaConversions._
 
-object SparqlServiceTest {
-  def testFilter = new DataFilter("In Vivo", "Liver", "Single", "Rat")
-  def testSampleClass = SampleClass.fromDataFilter(testFilter)
+object SparqlServiceTest {  
+  val testClass = Map("sin_rep_type" -> "Single",
+      "organism" -> "Rat",
+      "organ_id" -> "Liver",
+      "test_type" -> "in vivo")
+      
+  def testSampleClass = new SampleClass(mapAsJavaMap(testClass))
 }
 
 @RunWith(classOf[JUnitRunner])

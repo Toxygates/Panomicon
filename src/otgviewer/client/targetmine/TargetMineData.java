@@ -137,7 +137,7 @@ public class TargetMineData {
 		} else {
 			msg += hadGenesForSpecies + " list(s) ";
 		}
-		msg += " contained genes for " + parent.chosenDataFilter.organism + ".";
+		msg += " contained genes for " + parent.chosenSampleClass.get("organism") + ".";
 		
 		if (nonImported > 0) {
 			msg = msg + "\n" + nonImported + " lists with identical names were not imported.";

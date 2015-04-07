@@ -16,7 +16,6 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.StackedListEditor;
 import otgviewer.client.dialog.DialogPosition;
-import otgviewer.shared.DataFilter;
 import otgviewer.shared.MatchResult;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;

@@ -12,7 +12,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import otgviewer.client.Utils;
-import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import t.common.shared.DataSchema;
@@ -37,9 +36,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 
 	private List<DataViewListener> listeners = new ArrayList<DataViewListener>();
 		
-	@Deprecated
-	public DataFilter chosenDataFilter;
-	protected Dataset[] chosenDatasets;
+	protected Dataset[] chosenDatasets = new Dataset[0];
 	public SampleClass chosenSampleClass; //TODO public
 	protected String[] chosenProbes = new String[0];
 	public List<String> chosenCompounds = new ArrayList<String>();
@@ -69,7 +66,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	
 	public void sampleClassChanged(SampleClass sc) {
 		chosenSampleClass = sc;		
-		chosenDataFilter = sc.asDataFilter();
 		changeSampleClass(sc);
 	}
 
@@ -117,8 +113,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	}
 	
 	protected void changeSampleClass(SampleClass sc) {
-		chosenSampleClass = sc;		
-		chosenDataFilter = sc.asDataFilter();
+		chosenSampleClass = sc;				
 		for (DataViewListener l : listeners) {
 			l.sampleClassChanged(sc);
 		}		
@@ -227,7 +222,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	 * Store this widget's state into local storage.
 	 */
 	public void storeState(StorageParser p) {
-//		storeDataFilter(p);
 		storeColumns(p);
 		storeProbes(p);
 	}
@@ -262,7 +256,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 			String key,
 			Collection<? extends OTGColumn> expectedColumns) throws Exception {
 		//TODO unpack old format columns
-		String v = p.getItem(key); // + "." + packDataFilter(chosenDataFilter));
+		String v = p.getItem(key); 
 		List<Group> r = new ArrayList<Group>();
 		if (v != null && !v.equals(packColumns(expectedColumns))) {
 			String[] spl = v.split("###");

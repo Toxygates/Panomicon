@@ -5,8 +5,6 @@ import scala.collection.{Map => CMap, Set => CSet}
 import java.util.{ Map => JMap, HashMap => JHMap, Set => JSet, HashSet => JHSet, List => JList }
 import t.SeriesRanking
 import otg.Species
-import otgviewer.shared.CellType
-import otgviewer.shared.DataFilter
 import otgviewer.shared.Pathology
 import otgviewer.shared.RankRule
 import otgviewer.shared.Series

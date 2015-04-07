@@ -10,8 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import otgviewer.shared.DataFilter;
-
 /**
  * A sample class identifies a group of samples.
  * 
@@ -188,37 +186,6 @@ public class SampleClass implements Serializable, Packable {
 				r.add(sc);
 			}
 		}	
-		return r;
-	}
-	
-	// TODO this is temporary - DataFilter is to be removed
-	@Deprecated
-	public DataFilter asDataFilter() {
-		String o = get("organ_id");
-		String s = get("organism");
-		String r = get("sin_rep_type");
-		String tt = get("test_type");		
-		String c = (tt != null && 
-					tt.equals("in vivo")) ? "In Vivo" : "In Vitro";
-		return new DataFilter(c, o, r, s);
-	}
-	
-	@Deprecated
-	public static SampleClass fromDataFilter(DataFilter df) {
-		if (df == null) {
-			return null;
-		}
-		
-		SampleClass r = new SampleClass();
-		r.put("organ_id", df.organ);
-		r.put("organism", df.organism);
-		//TODO resolve the handling of this
-		if (df.cellType.equals("Vivo")) {
-			r.put("test_type", "in vivo");
-		} else {
-			r.put("test_type", "in vitro");
-		}			
-		r.put("sin_rep_type", df.repeatType);
 		return r;
 	}
 	

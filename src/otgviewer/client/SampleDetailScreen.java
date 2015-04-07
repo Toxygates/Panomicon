@@ -1,7 +1,6 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -10,10 +9,10 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.dialog.DialogPosition;
-import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import t.common.shared.DataSchema;
+import t.common.shared.SampleClass;
 import t.common.shared.sample.DataColumn;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -48,7 +47,7 @@ public class SampleDetailScreen extends Screen {
 
 	AnnotationTDGrid atd = new AnnotationTDGrid(this);
 	
-	private DataFilter lastFilter;
+	private SampleClass lastClass;	
 	private List<Group> lastColumns;
 	private OTGColumn lastCustomColumn;
 	
@@ -88,7 +87,7 @@ public class SampleDetailScreen extends Screen {
 	public void show() {
 		super.show();
 		if (visible
-				&& (lastFilter == null || !lastFilter.equals(chosenDataFilter)
+				&& (lastClass == null || !lastClass.equals(chosenSampleClass)
 						|| lastColumns == null
 						|| !chosenColumns.equals(lastColumns) || chosenCustomColumn != null)
 						|| chosenCustomColumn != null && (lastCustomColumn == null || !lastCustomColumn
@@ -96,7 +95,7 @@ public class SampleDetailScreen extends Screen {
 			updateColumnList();			
 			displayWith(columnList.getItemText(columnList.getSelectedIndex()));
 			
-			lastFilter = chosenDataFilter;
+			lastClass = chosenSampleClass;			
 			lastColumns = chosenColumns;						
 			lastCustomColumn = chosenCustomColumn;
 		}

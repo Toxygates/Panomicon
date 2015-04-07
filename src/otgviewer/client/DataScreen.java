@@ -10,7 +10,6 @@ import otgviewer.client.components.RichTable.HideableColumn;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.TickMenuItem;
-import otgviewer.shared.DataFilter;
 import otgviewer.shared.Group;
 import t.viewer.shared.ItemList;
 
