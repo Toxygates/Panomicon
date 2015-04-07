@@ -85,6 +85,7 @@ public class OTGSchema extends DataSchema {
 	
 	private String[] macroParams = new String[] { "organism", 
 			"test_type", "organ_id", "sin_rep_type" };
+	
 	public String[] macroParameters() { return macroParams; }
 
 	@Override
@@ -119,7 +120,7 @@ public class OTGSchema extends DataSchema {
 	 * change externally - think about a better way of doing this
 	 * long term
 	 */
-	public String platformSpecies(String platform) {
+	public String platformOrganism(String platform) {
 		if (platform.startsWith("HG")) {
 			return "Human";
 		} else if (platform.startsWith("Rat")) {
@@ -128,6 +129,19 @@ public class OTGSchema extends DataSchema {
 			return "Mouse";
 		} else {
 			return super.platformSpecies(platform);			
+		}
+	}
+	
+	//TODO as above.
+	public String organismPlatform(String organism) {
+		if (organism.equals("Human")) {
+			return "HG-U133_Plus_2";
+		} else if (organism.equals("Rat")) {
+			return "Rat230_2";			
+		} else if (organism.equals("Mouse")) {
+			return "Mouse430_2";
+		} else {
+			return null;
 		}
 	}
 	
