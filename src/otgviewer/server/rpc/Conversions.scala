@@ -64,6 +64,9 @@ object Conversions {
     sc.put("dose_level", series.dose)
     sc.put("compound_name", series.compound)
     sc.put("organism", series.organism)
+    sc.put("test_type", series.testType)
+    sc.put("organ_id", series.organ)
+    sc.put("sin_rep_type", series.repeat)
     new Series(name, series.probeStr, "exposure_time", sc, 
          series.values.map(asJava).toArray)
   }

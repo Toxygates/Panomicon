@@ -123,4 +123,5 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       db.release()
     }
   }
+
 }

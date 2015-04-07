@@ -65,5 +65,12 @@ public interface SeriesService extends RemoteService {
 	 */
 	public List<Series> getSeries(SampleClass sc, String[] probes,
 			String timeDose, String[] compounds) throws ServerError;
+	
+	/**
+	 * Obtain the standard time points for a given group of series
+	 * (identified by a representative member)
+	 * @return
+	 */
+	public String[] expectedTimes(Series s) throws ServerError;
 
 }

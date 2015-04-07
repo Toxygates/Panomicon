@@ -18,6 +18,8 @@ import otgviewer.shared.GroupUtils;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Series;
 import otgviewer.shared.ValueType;
+import t.common.client.rpc.SeriesService;
+import t.common.client.rpc.SeriesServiceAsync;
 import t.common.client.rpc.SparqlService;
 import t.common.client.rpc.SparqlServiceAsync;
 import t.common.shared.DataSchema;
@@ -42,7 +44,11 @@ public class ChartGridFactory {
 	
 	private final Logger logger = Utils.getLogger("cgf");
 	
-	private static final SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT.create(SparqlService.class);
+	private static final SparqlServiceAsync sparqlService = 
+			(SparqlServiceAsync) GWT.create(SparqlService.class);
+	private static final SeriesServiceAsync seriesService = 
+			(SeriesServiceAsync) GWT.create(SeriesService.class);
+	
 	
 	private SampleClass[] sampleClasses;
 	private List<Group> groups;
@@ -69,9 +75,8 @@ public class ChartGridFactory {
 	}
 	
 	public void makeSeriesCharts(final List<Series> series, final boolean rowsAreCompounds,
-			final int highlightDose, final ChartAcceptor acceptor, final Screen screen) {		
-		sparqlService.parameterValues(sampleClasses, 
-				schema.timeParameter(), new AsyncCallback<String[]>() {
+			final int highlightDose, final ChartAcceptor acceptor, final Screen screen) {
+		seriesService.expectedTimes(series.get(0), new AsyncCallback<String[]>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				logger.log(Level.WARNING, "Unable to obtain sample times.", caught);

@@ -41,4 +41,10 @@ t.common.server.rpc.SeriesServiceImpl[OTGSeries] with OTGServiceServlet {
       case e: Exception => throw new DBUnavailableException()
     }
   }
+   
+  def expectedTimes(s: SSeries): Array[String] = {
+    val key = fromShared(s)
+    println("Key: " + key)
+    context.matrix.seriesBuilder.expectedTimes(key).toArray
+  }
 }
