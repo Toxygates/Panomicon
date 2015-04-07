@@ -126,4 +126,7 @@ public abstract class DataSchema implements Serializable {
 	public String platformSpecies(String platform) { 
 		return platform.substring(0, 3) + "..";		
 	}
+	
+	public abstract int numDataPointsInSeries(SampleClass sc);
+	
 }

@@ -219,7 +219,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		dp.setWidgetSize(north, 40);	
 	}
 
-	void performRanking(List<String> rankProbes, List<RankRule> rules) {
+	public void performRanking(List<String> rankProbes, List<RankRule> rules) {
 		this.rankProbes = rankProbes;
 		addRankColumns();
 		

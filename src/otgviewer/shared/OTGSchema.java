@@ -130,4 +130,15 @@ public class OTGSchema extends DataSchema {
 			return super.platformSpecies(platform);			
 		}
 	}
+	
+	/**
+	 * TODO this is brittle
+	 */
+	public int numDataPointsInSeries(SampleClass sc) {
+		if (sc.get("test_type") != null &&
+				sc.get("test_type").equals("in vitro")) {
+			return 3;
+		} 
+		return 4;
+	}
 }

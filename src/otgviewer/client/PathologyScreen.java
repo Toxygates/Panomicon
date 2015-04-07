@@ -9,7 +9,6 @@ import java.util.Set;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
-import otgviewer.shared.CellType;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;

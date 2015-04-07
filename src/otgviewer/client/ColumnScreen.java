@@ -12,6 +12,8 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
+import otgviewer.client.components.ranking.CompoundRanker;
+import otgviewer.client.components.ranking.SimpleCompoundRanker;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import t.common.client.rpc.SparqlService;
@@ -165,7 +167,7 @@ public class ColumnScreen extends Screen {
 		cs.addListener(gi);
 		tp.add(gi, "Sample groups");
 		
-		final CompoundRanker cr = new CompoundRanker(this, cs);
+		final CompoundRanker cr = new SimpleCompoundRanker(this, cs);
 		tp.add(Utils.makeScrolled(cr), rankingLabel);
 		tp.selectTab(0);		
 		
