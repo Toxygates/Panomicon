@@ -69,31 +69,38 @@ public class DataFilterEditor extends DataListenerWidget {
 
 	void changeFrom(int sel) {
 		List<SampleClass> selected = sampleClasses;
+		//Get the selected values on the left of, and including, this one
 		for (int i = 0; i <= sel; ++i) {
 			String sval = selectors[i].getSelected();
 			if (sval != null) {
 				selected = SampleClass.filter(selected, parameters[i], sval);
+				logger.info("Filtered to " + selected.size());
 			}
 		}
+		//Constrain the selectors to the right of this one
 		for (int i = sel+1; i < selectors.length; ++i) {
 			selectors[i].setItemsFrom(selected, parameters[i]);
 		}
-		
-		SampleClass r = new SampleClass();
-		boolean allSet = true;
-		for (int i = 0; i < selectors.length; ++i) {
-			String x = selectors[i].getSelected();
-			if (x == null) {
-				allSet = false;
-			} else {
-				r.put(parameters[i], x);
+	
+		if (sel < selectors.length - 1) {
+			changeFrom(sel + 1);
+		} else if (sel == selectors.length - 1) {
+			SampleClass r = new SampleClass();
+			boolean allSet = true;
+			for (int i = 0; i < selectors.length; ++i) {
+				String x = selectors[i].getSelected();
+				if (x == null) {
+					allSet = false;
+				} else {
+					r.put(parameters[i], x);
+				}
 			}
+			
+			if (allSet) {
+				logger.info("Propagate change to " + r.toString());			
+				changeSampleClass(r);
+			}		
 		}
-		
-		if (allSet) {
-			logger.info("Propagate change to " + r.toString());			
-			changeSampleClass(r);
-		}		
 	}
 	
 	public DataFilterEditor(DataSchema schema) {
@@ -134,11 +141,9 @@ public class DataFilterEditor extends DataListenerWidget {
 		if (sampleClasses.length > 0) {
 			logger.info(sampleClasses[0].toString() + " ...");
 		}
-		this.sampleClasses = Arrays.asList(sampleClasses);	
-		for (int i = 0; i < selectors.length; ++i) {
-			selectors[i].setItemsFrom(this.sampleClasses, parameters[i]);
-		}				
-		changeFrom(0);
+		this.sampleClasses = Arrays.asList(sampleClasses);			
+		selectors[0].setItemsFrom(this.sampleClasses, parameters[0]);						
+		changeFrom(0); //Propagate the constraint
 	}
 	
 	@Override
