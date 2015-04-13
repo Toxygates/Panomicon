@@ -17,7 +17,7 @@ public class ResizingListBox extends ListBox implements RequiresResize {
 		super();		
 		this.offset = offset;
 		this.setVisibleItemCount(MIN_ITEMS);
-		this.setStyleName("resizingListBox");
+		this.setStylePrimaryName("resizingListBox");
 	}
 	
 	@Override

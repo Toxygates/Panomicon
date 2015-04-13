@@ -250,7 +250,7 @@ public class ProbeScreen extends Screen {
 				STACK_ITEM_HEIGHT);
 
 		Label l = new Label("Selected probes");
-		l.setStyleName("heading");
+		l.setStylePrimaryName("heading");
 
 		probesList = new ResizingListBox(74);
 		probesList.setWidth("100%");
@@ -288,7 +288,7 @@ public class ProbeScreen extends Screen {
 				ps.storeItemLists(ps.getParser(ps));
 			}
 		};
-		listChooser.setStyleName("colored");
+		listChooser.setStylePrimaryName("colored");
 		plPanel.addNorth(listChooser, PL_NORTH_HEIGHT);
 		
 		plPanel.add(probesList);
@@ -393,7 +393,7 @@ public class ProbeScreen extends Screen {
 		vp.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
 
 		VerticalPanel vpi = Utils.mkVerticalPanel(true);
-		vpi.setStyleName("colored");
+		vpi.setStylePrimaryName("colored");
 		Label l = new Label(label);
 		vpi.add(l);
 

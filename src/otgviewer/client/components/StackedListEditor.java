@@ -311,7 +311,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 				sle.listsChanged(itemLists);
 			}
 		};		
-		listChooser.setStyleName("colored");
+		listChooser.setStylePrimaryName("colored");
 		parent.addListener(listChooser);
 		northVp.add(listChooser);
 		

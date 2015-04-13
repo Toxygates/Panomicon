@@ -105,7 +105,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
 				screen.storeItemLists(getParser(screen));
 			}
 		};
-		listChooser.setStyleName("colored");
+		listChooser.setStylePrimaryName("colored");
 		selector.addListener(listChooser);
 		
 		csVerticalPanel

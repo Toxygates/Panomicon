@@ -62,7 +62,7 @@ public class ColumnScreen extends Screen {
 		String majorParam = man.schema().majorParameter();
 		cs = new CompoundSelector(this, man.schema().title(majorParam));		
 		this.addListener(cs);
-		cs.setStyleName("compoundSelector");
+		cs.setStylePrimaryName("compoundSelector");
 		filterTools = mkFilterTools();
 		loadDatasets();
 	} 

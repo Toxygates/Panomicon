@@ -27,7 +27,7 @@ public class FullRuleInputHelper extends RuleInputHelper {
 		syntheticCurveText.setWidth("5em");
 		syntheticCurveText.setEnabled(false);
 		
-		refCompound.setStyleName("colored");
+		refCompound.setStylePrimaryName("colored");
 		refCompound.setEnabled(false);
 		for (String c : ranker.availableCompounds) {
 			refCompound.addItem(c);
@@ -40,7 +40,7 @@ public class FullRuleInputHelper extends RuleInputHelper {
 			}
 		});
 				
-		refDose.setStyleName("colored");
+		refDose.setStylePrimaryName("colored");
 		refDose.setEnabled(false);
 	}
 

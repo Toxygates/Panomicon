@@ -142,7 +142,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		super(_screen);
 		screen = _screen;
 		
-		grid.setStyleName("exprGrid");
+		grid.setStylePrimaryName("exprGrid");
 		grid.setPageSize(PAGE_SIZE);
 		
 		grid.setSelectionModel(new NoSelectionModel<ExpressionRow>());		
@@ -269,7 +269,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	 */
 	private void makeAnalysisTools() {
 		analysisTools = Utils.mkHorizontalPanel(true);
-		analysisTools.setStyleName("colored2");
+		analysisTools.setStylePrimaryName("colored2");
 		
 		analysisTools.add(groupsel1);
 		groupsel1.setVisibleItemCount(1);

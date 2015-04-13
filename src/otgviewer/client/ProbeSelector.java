@@ -54,10 +54,10 @@ abstract public class ProbeSelector extends DataListenerWidget implements Requir
 		VerticalPanel topVp = new VerticalPanel();
 		topVp.setWidth(CHILD_WIDTH);
 		topVp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		topVp.setStyleName("slightlySpaced");
+		topVp.setStylePrimaryName("slightlySpaced");
 		
 		Label searchLabel = new Label(label);		
-		searchLabel.setStyleName("slightlySpaced");
+		searchLabel.setStylePrimaryName("slightlySpaced");
 		searchLabel.setWidth("95%");
 		topVp.add(searchLabel);		
 		
@@ -98,7 +98,7 @@ abstract public class ProbeSelector extends DataListenerWidget implements Requir
 			});
 			addButton.setEnabled(false);
 			HorizontalPanel hp = Utils.wideCentered(addButton);
-			hp.setStyleName("slightlySpaced");
+			hp.setStylePrimaryName("slightlySpaced");
 			hp.setWidth(CHILD_WIDTH);
 			lp.addSouth(hp, 35);			
 		}

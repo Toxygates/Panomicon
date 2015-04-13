@@ -274,12 +274,12 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 						History.newItem(s.key());						
 					}
 				});
-				l.setStyleName("clickHeading");		
+				l.setStylePrimaryName("clickHeading");		
 			} else {
 				if (s == current) {
-					l.setStyleName("headingCurrent");
+					l.setStylePrimaryName("headingCurrent");
 				} else {
-					l.setStyleName("headingBlack");
+					l.setStylePrimaryName("headingBlack");
 				}
 			}
 			navPanel.add(l);

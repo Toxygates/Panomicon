@@ -79,7 +79,7 @@ public class Utils {
 	
 	public static HorizontalPanel mkHorizontalPanel(boolean spaced, Widget... widgets) {
 		HorizontalPanel hp = new HorizontalPanel();		
-//		hp.setStyleName("slightlySpaced");
+//		hp.setStylePrimaryName("slightlySpaced");
 		hp.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		if (spaced) {
@@ -103,7 +103,7 @@ public class Utils {
 	
 	public static VerticalPanel mkVerticalPanel(boolean spaced, Widget... widgets) {
 		VerticalPanel vp = new VerticalPanel();
-//		vp.setStyleName("slightlySpaced");
+//		vp.setStylePrimaryName("slightlySpaced");
 		vp.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		if (spaced) {
@@ -118,7 +118,7 @@ public class Utils {
 
 	public static Label mkEmphLabel(String s) {
 		Label r = new Label(s);
-		r.setStyleName("emphasized");
+		r.setStylePrimaryName("emphasized");
 		return r;
 	}
 	
@@ -260,7 +260,7 @@ public class Utils {
 	public static Widget mkHelpButton(final TextResource helpText, 
 			final ImageResource helpImage) {
 		PushButton i = new PushButton(new Image(resources.help()));
-		i.setStyleName("slightlySpaced");
+		i.setStylePrimaryName("slightlySpaced");
 		i.addClickHandler(new ClickHandler() {
 
 			@Override

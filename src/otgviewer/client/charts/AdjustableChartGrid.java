@@ -82,7 +82,7 @@ public class AdjustableChartGrid extends Composite {
 		HorizontalPanel hp = Utils.mkHorizontalPanel();		
 		vp.add(hp);
 		
-		hp.setStyleName("colored");
+		hp.setStylePrimaryName("colored");
 		hp.setWidth("100%");
 		
 		HorizontalPanel ihp = Utils.mkHorizontalPanel();

@@ -232,17 +232,17 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		r.setHeight("30px");
 		r.add(content);		
 		r.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);		
-		r.setStyleName(styleName);
+		r.setStylePrimaryName(styleName);
 		return r;
 	}
 	
 	public void initGUI() {
 		statusPanel = new FlowPanel(); 
-		statusPanel.setStyleName("statusPanel");		
+		statusPanel.setStylePrimaryName("statusPanel");		
 		Utils.floatLeft(statusPanel);
 
 		spOuter = mkStandardToolbar(statusPanel, "statusPanel");		
-		statusPanel.setStyleName("statusPanel");		
+		statusPanel.setStylePrimaryName("statusPanel");		
 		guideBar = mkStandardToolbar(mkGuideTools(), "guideBar");		 
 		
 		addToolbars(); //must be called before rootPanel.add()		
@@ -267,7 +267,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		PushButton i;
 		if (helpAvailable()) {
 			i = new PushButton(new Image(resources.help()));
-			i.setStyleName("slightlySpaced");
+			i.setStylePrimaryName("slightlySpaced");
 			i.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
@@ -278,7 +278,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		}
 		
 		i = new PushButton(new Image(resources.close()));
-		i.setStyleName("slightlySpaced");
+		i.setStylePrimaryName("slightlySpaced");
 		final Screen sc = this;
 		i.addClickHandler(new ClickHandler() {
 			@Override

@@ -80,7 +80,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		vp = Utils.mkTallPanel();
 
 		titleLabel = new Label("Sample group definition");
-		titleLabel.setStyleName("heading");
+		titleLabel.setStylePrimaryName("heading");
 		vp.add(titleLabel);
 		
 		msg = new MultiSelectionGrid(scr, this);
@@ -93,7 +93,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		vp.add(toolPanel);
 		
 		Label lblSaveGroupAs = new Label("Save group as");
-		lblSaveGroupAs.setStyleName("slightlySpaced");
+		lblSaveGroupAs.setStylePrimaryName("slightlySpaced");
 		toolPanel.add(lblSaveGroupAs);
 		
 		txtbxGroup = new TextBox();

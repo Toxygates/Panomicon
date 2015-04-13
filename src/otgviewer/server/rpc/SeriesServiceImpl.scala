@@ -42,6 +42,7 @@ t.common.server.rpc.SeriesServiceImpl[OTGSeries] with OTGServiceServlet {
     }
   }
    
+  //TODO lift up this method
   def expectedTimes(s: SSeries): Array[String] = {
     val key = fromShared(s)
     println("Key: " + key)

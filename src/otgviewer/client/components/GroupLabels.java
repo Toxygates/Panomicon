@@ -34,18 +34,18 @@ public class GroupLabels extends Composite {
 		fpo.clear();
 		for (Group g: groups) {			
 			FlowPanel fp = new FlowPanel();
-			fp.setStyleName("statusBorder");
+			fp.setStylePrimaryName("statusBorder");
 			String tip = g.getSamples()[0].sampleClass().label(schema) + ":\n" +
 					g.getTriples(schema, -1, ", ");
 			Label l = Utils.mkEmphLabel(g.getName() + ":");
 			l.setWordWrap(false);
 			l.getElement().getStyle().setMargin(2, Unit.PX);
-			l.setStyleName(g.getStyleName());
+			l.setStylePrimaryName(g.getStyleName());
 			Utils.floatLeft(fp, l);
 			l.setTitle(tip);
 			l = new Label(g.getTriples(schema, 2, ", "));
 			l.getElement().getStyle().setMargin(2, Unit.PX);
-			l.setStyleName(g.getStyleName());
+			l.setStylePrimaryName(g.getStyleName());
 			Utils.floatLeft(fp, l);
 			l.setTitle(tip);
 			l.setWordWrap(false);

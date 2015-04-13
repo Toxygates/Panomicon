@@ -79,7 +79,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		
 		initWidget(dp);
 		Label lblCompounds = new Label(heading);
-		lblCompounds.setStyleName("heading");
+		lblCompounds.setStylePrimaryName("heading");
 		dp.addNorth(lblCompounds, 40);
 		north = lblCompounds;
 		
