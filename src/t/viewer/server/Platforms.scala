@@ -4,7 +4,8 @@ import t.sparql.Probes
 
 object Platforms {
   def apply(probes: Probes): Platforms = {
-    new Platforms(probes.platforms.map(x => x._1 -> x._2.toSet)) 
+    val pps = Probes.platformsAndProbes(probes)
+    new Platforms(pps.map(x => x._1 -> x._2.toSet)) 
   }
 }
 
