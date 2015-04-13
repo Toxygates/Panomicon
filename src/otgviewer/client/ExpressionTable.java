@@ -420,7 +420,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		/**
 		 * To prevent unwanted interactions between the sorting system and the
 		 * filtering system, we have to intercept click events at this high level
-		 * and choose whether to pass them (non-filter clicks) on or not 
+		 * and choose whether to pass them on (non-filter clicks) or not 
 		 * (filter clicks).
 		 */
 		
