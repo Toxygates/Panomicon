@@ -2,8 +2,6 @@ package t.admin.client;
 
 import java.util.Date;
 
-import t.admin.shared.Batch;
-import t.admin.shared.Platform;
 import t.common.shared.DataRecord;
 
 import com.google.gwt.cell.client.ButtonCell;

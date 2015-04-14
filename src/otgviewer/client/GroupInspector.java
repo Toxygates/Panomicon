@@ -24,7 +24,6 @@ import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.Unit;
 
-import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.TextButtonCell;
 import com.google.gwt.event.dom.client.ClickEvent;

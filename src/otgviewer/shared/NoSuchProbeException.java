@@ -1,7 +1,5 @@
 package otgviewer.shared;
 
-import java.io.Serializable;
-
 public class NoSuchProbeException extends ServerError {
 
 	public NoSuchProbeException() {}

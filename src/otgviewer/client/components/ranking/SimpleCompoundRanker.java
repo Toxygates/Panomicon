@@ -1,7 +1,5 @@
 package otgviewer.client.components.ranking;
 
-import java.util.List;
-
 import otgviewer.client.CompoundSelector;
 import otgviewer.client.Utils;
 import otgviewer.client.components.Screen;

@@ -7,7 +7,6 @@ import otgviewer.client.components.Screen;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGSample;
 import t.common.shared.SampleClass;
-import t.common.shared.SharedUtils;
 import t.common.shared.Unit;
 import t.common.shared.sample.Annotation;
 

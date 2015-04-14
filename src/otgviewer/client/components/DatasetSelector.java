@@ -2,8 +2,6 @@ package otgviewer.client.components;
 
 import java.util.Collection;
 
-import com.google.gwt.view.client.SetSelectionModel;
-
 import t.common.client.DataRecordSelector;
 import t.common.shared.Dataset;
 

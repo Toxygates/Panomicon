@@ -18,14 +18,12 @@ import otgviewer.shared.GroupUtils;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.ValueType;
 import t.common.shared.DataSchema;
-import t.common.shared.SampleClass;
 import t.common.shared.Unit;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;

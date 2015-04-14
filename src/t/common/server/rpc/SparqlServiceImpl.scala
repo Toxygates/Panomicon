@@ -43,12 +43,27 @@ import Conversions.asJavaSample
 import Conversions.convertPairs
 import t.common.server.SharedDatasets
 
+object SparqlServiceImpl {  
+  var inited = false  
+ 
+  //TODO update mechanism for this
+  var platforms: Map[String, Iterable[String]] = _
+  
+  def staticInit(c: t.Context) = synchronized {    
+    if (!inited) {    
+      platforms = c.probes.platformsAndProbes
+      inited = true
+    }
+  }
+}
+
 /**
  * SPARQL query servlet.
  */
 abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   import Conversions._
+  import SparqlServiceImpl._
   import t.viewer.server.Conversions._
   import ScalaUtils._
 
@@ -64,6 +79,10 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   override def localInit(conf: Configuration) {
     super.localInit(conf)
+    //TODO if staticInit does not read platformsAndProbes, some sparql queries
+    //fail on startup in Toxygates (probably due to a race condition).
+    //Figure out why.
+    staticInit(context)
 
     val ts = baseConfig.triplestore.triplestore
     uniprot = new LocalUniprot(ts)
@@ -212,8 +231,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val usePlatforms = samples.map(s => metadata.parameter(
         t.db.Sample(s.getCode), "platform_id")
         ).toSet
-    usePlatforms.toVector.flatMap(pl => 
-      context.probes.platformsAndProbes(pl)).toArray
+    usePlatforms.toVector.flatMap(platforms).toArray
   }
   
   //TODO move to OTG
