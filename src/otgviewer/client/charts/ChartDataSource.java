@@ -2,6 +2,7 @@ package otgviewer.client.charts;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,6 +22,8 @@ import otgviewer.shared.ValueType;
 import t.common.client.rpc.MatrixService;
 import t.common.client.rpc.MatrixServiceAsync;
 import t.common.shared.DataSchema;
+import t.common.shared.HasClass;
+import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.Unit;
 import t.common.shared.sample.ExpressionRow;
@@ -41,43 +44,57 @@ abstract class ChartDataSource {
 	
 	private static Logger logger = Utils.getLogger("chartdata");
 	
-	//TODO consider deprecating/simplifying this class
-	static class ChartSample {
-		final String minor;
-		final String medium;
-		final String major;
-		final String organism;
+	//TODO consider deprecating/simplifying/replacing this class
+	
+	static class ChartSample implements HasClass {
+		final SampleClass sc;
+		final DataSchema schema;
+		
 		final double value;
 		final char call;
 		final @Nullable OTGSample barcode; 
 		final String probe;
 		String color = "grey";
 		
-		ChartSample(String minor, String medium, String major, String organism,
-				double value, OTGSample barcode, String probe, char call) {
-			this.minor = minor;
-			this.medium = medium;
-			this.major = major;
+		private final static List<String> chartKeys = new ArrayList<String>();
+		static {
+			//TODO use DataSchema to add these
+			Collections.addAll(chartKeys, "exposure_time", "dose_level", 
+					"compound_name", "organism");
+		}
+		
+		ChartSample(SampleClass sc, DataSchema schema,
+				double value, OTGSample barcode, String probe, char call) {						
+			this.sc = sc.copyOnly(chartKeys);
+			this.schema = schema;
 			this.value = value;
 			this.barcode = barcode;
 			this.probe = probe;
-			this.call = call;			
-			this.organism = organism; 
+			this.call = call;						 
 		}
 
 		ChartSample(OTGSample sample, DataSchema schema,
 				double value, String probe, char call) {
-			this(schema.getMinor(sample), schema.getMedium(sample),
-					schema.getMajor(sample), sample.get("organism"),
-					value, sample, probe, call);					
+			this(sample.sampleClass(), schema, value, sample, probe, call);					
 		}
 		
 		ChartSample(Unit u, DataSchema schema, double value, String probe, char call) {
-			this(u.get(schema.minorParameter()), u.get(schema.mediumParameter()),					
-			u.get(schema.majorParameter()), u.get("organism"), value, 
-			u.getSamples()[0], //representative sample only
+			this(u, schema, value, u.getSamples()[0], //representative sample only
 					probe, call);			
 		}
+		
+		public DataSchema schema() { return schema; }
+		
+		public SampleClass sampleClass() { return sc; }
+		
+		@Deprecated
+		public String major() { return schema.getMajor(this); }
+		
+		@Deprecated
+		public String medium() { return schema.getMedium(this); }
+		
+		@Deprecated
+		public String minor() { return schema.getMinor(this); }
 		
 		@Override
 		public int hashCode() {
@@ -85,10 +102,7 @@ abstract class ChartDataSource {
 			if (barcode != null) {
 				r = barcode.hashCode();
 			} else {
-				r = r * 41 + minor.hashCode();
-				r = r * 41 + medium.hashCode();
-				r = r * 41 + major.hashCode();
-				r = r * 41 + organism.hashCode();
+				r = r * 41 + sc.hashCode();				
 				r = r * 41 + ((Double) value).hashCode();
 			}
 			return r;
@@ -101,11 +115,9 @@ abstract class ChartDataSource {
 					return (barcode == ((ChartSample) other).barcode);
 				} else {
 					ChartSample ocs = (ChartSample) other;
-					return (ocs.medium == medium && ocs.minor == minor && 
-							ocs.major == major && ocs.value == value &&
-							ocs.organism == organism);
+					return sc.equals(((ChartSample) other).sampleClass()) &&
+							ocs.value == value && ocs.call == call;
 				}
-
 			} else {
 				return false;
 			}
@@ -127,13 +139,13 @@ abstract class ChartDataSource {
 			//We store these in a set since we may be getting the same samples several times
 			Set<ChartSample> r = new HashSet<ChartSample>();
 			for (ChartSample s: chartSamples) {
-				if (SharedUtils.indexOf(compounds, s.major) != -1 &&
-						organisms == null || SharedUtils.indexOf(organisms, s.organism) != -1) {
-					if (dosesOrTimes == null || SharedUtils.indexOf(dosesOrTimes, s.medium) != -1 || 
-							SharedUtils.indexOf(dosesOrTimes, s.minor) != -1) {
+				if (SharedUtils.indexOf(compounds, schema.getMajor(s)) != -1 &&
+						(organisms == null || 
+							SharedUtils.indexOf(organisms, s.sampleClass().get("organism")) != 1) &&
+					(dosesOrTimes == null || SharedUtils.indexOf(dosesOrTimes, schema.getMedium(s)) != -1 || 
+							SharedUtils.indexOf(dosesOrTimes, schema.getMinor(s)) != -1)) {
 						r.add(s);			
-						s.color = policy.colorFor(s);
-					}
+						s.color = policy.colorFor(s);					
 				}
 			}
 			acceptor.accept(new ArrayList<ChartSample>(r));			
@@ -152,7 +164,7 @@ abstract class ChartDataSource {
 	final protected String minorParam, medParam, majorParam;
 	
 	ChartDataSource(DataSchema schema) {
-		this.schema = schema;
+		this.schema = schema;		
 		minorParam = schema.minorParameter();
 		medParam = schema.mediumParameter();
 		majorParam = schema.majorParameter();
@@ -160,21 +172,20 @@ abstract class ChartDataSource {
 	
 	protected void init() {
 		try {
-			List<String> minorVals = new ArrayList<String>();
-			for (ChartDataSource.ChartSample s : chartSamples) {
-				if (!minorVals.contains(s.minor)) {
-					minorVals.add(s.minor);
-				}
-			}
+			Set<String> minorVals = SampleClass.collectInner(chartSamples, 
+					schema.minorParameter());
+			
 			_minorVals = minorVals.toArray(new String[0]);
 			// TODO avoid magic constants
 			schema.sort(schema.minorParameter(), _minorVals);
 
+			
 			List<String> medVals = new ArrayList<String>();
 			for (ChartDataSource.ChartSample s : chartSamples) {
 				//TODO generalise control-check better
-				if (!schema.isControlValue(s.medium) && !medVals.contains(s.medium)) {
-					medVals.add(s.medium);
+				if (!schema.isControlValue(schema.getMedium(s)) && 
+						!medVals.contains(schema.getMedium(s))) {
+					medVals.add(schema.getMedium(s));
 				}
 			}
 			_mediumVals = medVals.toArray(new String[0]);
@@ -190,8 +201,7 @@ abstract class ChartDataSource {
 			for (Series s: series) {				
 				for (int i = 0; i < s.values().length; ++i) {
 					ExpressionValue ev = s.values()[i];					
-					ChartSample cs = new ChartSample(times[i], s.timeDose(), s.compound(), 
-							s.organism(),
+					ChartSample cs = new ChartSample(s.sampleClass(), schema,
 							ev.getValue(), null, s.probe(), ev.getCall());
 					chartSamples.add(cs);
 				}
@@ -216,25 +226,16 @@ abstract class ChartDataSource {
 		}
 		
 		@Override
-		protected void init() {			
-			List<String> times = new ArrayList<String>();
-			for (OTGSample b: samples) {
-				if (!times.contains(b.get(minorParam))) {
-					times.add(b.get(minorParam));
-				}
-			}
+		protected void init() {
+			final List<OTGSample> sampleList = Arrays.asList(samples);
+			Set<String> times = SampleClass.collectInner(sampleList, minorParam);
+			
 			try {
 				//TODO code duplication with above
 				_minorVals = times.toArray(new String[0]);
 				schema.sort(schema.minorParameter(), _minorVals);
-
-				List<String> doses = new ArrayList<String>();
-				for (OTGSample b : samples) {
-					logger.info("Inspect " + b + " for " + medParam);
-					if (!doses.contains(b.get(medParam))) {
-						doses.add(b.get(medParam));						
-					}
-				}
+				Set<String> doses = SampleClass.collectInner(sampleList, medParam);
+				
 				_mediumVals = doses.toArray(new String[0]);				
 				schema.sort(schema.mediumParameter(), _mediumVals);
 			} catch (Exception e) {

@@ -102,11 +102,10 @@ public class ChartDataset {
 		for (ChartSample s: samples) {
 			if (
 				((s.probe.equals(probeOrCompound) && isProbe) ||
-						(probeOrCompound == null || s.major.equals(probeOrCompound) && !isProbe)) &&
-				((s.minor.equals(timeOrDose) && isTime) ||
-						(timeOrDose == null || s.medium.equals(timeOrDose) && !isTime)) &&
-						(organism == null || s.organism.equals(organism))
-							) {
+						(probeOrCompound == null || s.major().equals(probeOrCompound) && !isProbe)) &&
+				((s.minor().equals(timeOrDose) && isTime) ||
+						(timeOrDose == null || s.medium().equals(timeOrDose) && !isTime)) &&
+						(organism == null || s.sampleClass().get("organism").equals(organism))) {
 				fsamples.add(s);
 			}
 		}
@@ -117,9 +116,9 @@ public class ChartDataset {
 	
 	protected String categoryForSample(ChartSample sample) {
 		for (String c : categories) {
-			if (categoriesAreMins && sample.minor.equals(c)) {
+			if (categoriesAreMins && sample.minor().equals(c)) {
 				return c;
-			} else if (!categoriesAreMins && sample.medium.equals(c)) {
+			} else if (!categoriesAreMins && sample.medium().equals(c)) {
 				return c;
 			}
 		}

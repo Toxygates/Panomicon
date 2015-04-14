@@ -94,6 +94,7 @@ public class ChartGridFactory {
 			final int highlightMed, final ChartAcceptor acceptor, final Screen screen) {		
 		//TODO get from schema or data
 		try {
+		final String majorParam = schema.majorParameter();
 		final String[] medVals = schema.sortedValuesForDisplay(null, 
 				schema.mediumParameter());
 		schema.sort(schema.timeParameter(), times);
@@ -108,8 +109,8 @@ public class ChartGridFactory {
 				ChartDataset ct = new ChartDataset(samples, samples, times, true);
 				List<String> filters = new ArrayList<String>();
 				for (Series s: series) {			
-					if (rowsAreCompounds && !filters.contains(s.compound())) {
-						filters.add(s.compound());
+					if (rowsAreCompounds && !filters.contains(s.get(majorParam))) {
+						filters.add(s.get(majorParam));
 					} else if (!filters.contains(s.probe())){
 						filters.add(s.probe());
 					}

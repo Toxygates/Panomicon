@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 
 import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.shared.OTGSample;
+import t.common.shared.DataSchema;
 
 /**
  * A ColorPolicy is a way of coloring samples in a chart.
@@ -29,7 +30,9 @@ class ColorPolicy {
 		
 		@Override
 		String colorFor(ChartSample sample) {
-			if (sample.minor.equals(timeDose) || sample.medium.equals(timeDose)) {
+			DataSchema schema = sample.schema();
+			if (schema.getMinor(sample).equals(timeDose) || 
+					schema.getMedium(sample).equals(timeDose)) {
 				return color;
 			}
 			return super.colorFor(sample);
