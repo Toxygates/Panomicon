@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import otgviewer.client.Parameters;
 import otgviewer.client.Resources;
 import otgviewer.client.SampleDetailScreen;
 import otgviewer.client.Utils;
@@ -177,7 +178,11 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 	}
 
 	public ScreenManager manager() {
-		return this.manager;
+		return manager;
+	}
+	
+	public Parameters parameters() {
+		return manager.parameters();
 	}
 	
 	public DataSchema schema() {

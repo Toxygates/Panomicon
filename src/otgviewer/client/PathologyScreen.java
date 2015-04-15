@@ -66,7 +66,8 @@ public class PathologyScreen extends Screen {
 	private HorizontalPanel tools = Utils.mkWidePanel();
 	private void mkTools() {				
 		HTML h = new HTML();
-		h.setHTML("<a href=\"http://toxico.nibio.go.jp/open-tggates/doc/pathology_parameter.pdf\" target=_new>" +
+		h.setHTML("<a href=\"" +
+				parameters().pathologyTermsURL() + "\" target=_new>" +
 				"Pathology terms reference</a>");
 		tools.add(h);
 	}

@@ -91,6 +91,11 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 	
 	protected final Logger logger = Utils.getLogger("application");
 	
+	//TODO
+	protected final Parameters parameters = new Parameters(instanceName());
+	
+	public Parameters parameters() { return parameters; }
+	
 	/**
 	 * This is the entry point method.
 	 */
@@ -160,7 +165,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 	 * E.g.: <meta name="instanceName" content="toxygates"> .
 	 * @return
 	 */
-	public String instanceName() {
+	private String instanceName() {
 		String v = getMeta("instanceName");
 		return v != null ? v : "default";
 	}
@@ -191,7 +196,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 		targetmineMenu.addItem(new MenuItem("Go to TargetMine", new Command() {
 			public void execute() {
 				Utils.urlInNewWindow("Go to TargetMine in a new window?", 
-						"Go", "http://targetmine.nibio.go.jp");
+						"Go", parameters.targetmineURL());
 			}
 		}));
 		analysisMenuBar.addItem(mi);		

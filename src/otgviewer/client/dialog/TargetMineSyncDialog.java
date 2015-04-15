@@ -21,10 +21,12 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
 	CheckBox replaceCheck = new CheckBox("Replace lists with identical names");
 	InputGrid ig;
 	String action;
+	String url;
 	
-	public TargetMineSyncDialog(DataListenerWidget parent, String action) {
+	public TargetMineSyncDialog(DataListenerWidget parent, String url, String action) {
 		super(parent);
 		this.action = action;
+		this.url = url;
 	}
 	
 	protected Widget content() {
@@ -33,7 +35,7 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
 
 		Label l = new Label("You must have a TargetMine account in order to use " +
 				"this function. If you do not have one, you may create one " +
-				"at http://targetmine.nibio.go.jp.");
+				"at " + url + ".");
 		l.setWordWrap(true);
 		vp.add(l);
 		

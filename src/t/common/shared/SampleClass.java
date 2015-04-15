@@ -19,6 +19,10 @@ import java.util.Set;
  */
 public class SampleClass implements Serializable, Packable {
 
+	/*
+	 * TODO: carry reference to schema?
+	 */
+	
 	public SampleClass() { }
 	
 	private Map<String, String> data = new HashMap<String, String>();

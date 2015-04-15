@@ -69,4 +69,8 @@ public class Series implements HasClass, Serializable {
 	//TODO users should access the sample class instead
 	@Deprecated
 	public String organism() { return _sc.get("organism"); }
+	
+	public String get(String key) {
+		return _sc.get(key);
+	}
 }

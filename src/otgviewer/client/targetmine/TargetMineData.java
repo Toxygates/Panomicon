@@ -29,16 +29,18 @@ public class TargetMineData {
 	final Screen parent;
 	final TargetmineServiceAsync tmService = (TargetmineServiceAsync) GWT
 			.create(TargetmineService.class);
-
+	final String url;
+	
 	private Logger logger = Utils.getLogger("targetmine");
 	
 	public TargetMineData(Screen parent) {
 		this.parent = parent;
+		url = parent.parameters().targetmineURL();
 	}
 
 	DialogBox dialog;
-	public void importLists(final boolean asProbes) {
-		InteractionDialog ui = new TargetMineSyncDialog(parent, "Import") {
+	public void importLists(final boolean asProbes) {		
+		InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Import") {
 			@Override 
 			protected void userProceed(String user, String pass, boolean replace) {
 				doImport(user, pass, asProbes, replace);
@@ -64,7 +66,7 @@ public class TargetMineData {
 	}
 
 	public void exportLists() {
-		InteractionDialog ui = new TargetMineSyncDialog(parent, "Export") {
+		InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Export") {
 			@Override 
 			protected void userProceed(String user, String pass, boolean replace) {
 				doExport(user, pass, pickProbeLists(parent.chosenItemLists), replace);
