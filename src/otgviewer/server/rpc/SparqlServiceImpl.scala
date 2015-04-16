@@ -80,7 +80,7 @@ class SparqlServiceImpl extends t.common.server.rpc.SparqlServiceImpl with OTGSe
   //TODO move to OTG
   @throws[TimeoutException]
   private def predefinedGroups: Array[Group] = {
-    val r = sampleStore.sampleGroups.map(x => 
+    val r = sampleStore.sampleGroups.filter(!_._2.isEmpty).map(x => 
       new Group(schema, x._1, x._2.map(x => asJavaSample(x)).toArray))
     r.toArray
   }
