@@ -20,7 +20,7 @@ public class AppInfo implements Serializable {
 	
 	private Group[] predefGroups = new Group[0];
 	private Dataset[] datasets = new Dataset[0];
-	private List<StringList> predefGeneLists = new ArrayList<StringList>();
+	private List<StringList> predefProbeLists = new ArrayList<StringList>();
 	
 	public AppInfo() {}
 	
@@ -32,11 +32,13 @@ public class AppInfo implements Serializable {
 		//NB does not set datasets
 	}
 
-	public AppInfo(String instanceName_, Dataset[] datasets) {
+	public AppInfo(String instanceName_, Dataset[] datasets,
+			List<StringList> probeLists) {
 		this(instanceName_, 
 				"http://toxico.nibiohn.go.jp/open-tggates/doc/pathology_parameter.pdf", 
 				"http://targetmine.nibiohn.go.jp");
 		this.datasets = datasets;
+		predefProbeLists = probeLists;
 	}
 	
 	
@@ -58,5 +60,5 @@ public class AppInfo implements Serializable {
 	
 	public Dataset[] datasets() { return datasets; }
 	
-	public Collection<StringList> predefinedGeneLists() { return predefGeneLists; }	
+	public Collection<StringList> predefinedProbeLists() { return predefProbeLists; }	
 }

@@ -97,7 +97,7 @@ public class DataScreen extends Screen {
 						// Create an invisible listChooser that we exploit only for
 						// the sake of saving a new list.
 						ListChooser lc = new ListChooser(
-								appInfo().predefinedGeneLists(),
+								appInfo().predefinedProbeLists(),
 								 "probes") {
 							@Override
 							protected void listsChanged(List<ItemList> lists) {

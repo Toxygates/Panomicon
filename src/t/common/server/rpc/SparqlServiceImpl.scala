@@ -2,7 +2,7 @@ package t.common.server.rpc
 
 import t.common.client.rpc.SparqlService
 import scala.Array.canBuildFrom
-import scala.collection.JavaConversions.asJavaMap
+import scala.collection.JavaConversions._
 import scala.collection.{Set => CSet}
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
 import javax.servlet.ServletConfig
@@ -43,6 +43,7 @@ import Conversions.asJavaSample
 import Conversions.convertPairs
 import t.common.server.SharedDatasets
 import t.common.shared.AppInfo
+import t.viewer.shared.StringList
 
 object SparqlServiceImpl {  
   var inited = false  
@@ -97,7 +98,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     }    
     sampleStore.instanceURI = instanceURI
     
-    _appInfo = new AppInfo(conf.instanceName, datasets()) 
+    _appInfo = new AppInfo(conf.instanceName, datasets(), predefProbeLists()) 
   }
   
   protected class SparqlState(ds: Datasets) {
@@ -125,6 +126,12 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
      //Initialise the selected datasets by selecting all.
     chooseDatasets(_appInfo.datasets)
    _appInfo 
+  }
+  
+  private def predefProbeLists() = {
+    val ls = probeStore.geneLists.mapMValues(p => p.identifier)
+    val sls = ls.map(x => new StringList("probes", x._1, x._2.toArray))    
+    seqAsJavaList(sls.toSeq)
   }
   
   private def datasets(): Array[Dataset] = {
@@ -174,7 +181,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   @throws[TimeoutException]
   def sampleClasses(): Array[SampleClass] = {    
   sampleStore.sampleClasses.map(x => 
-    new SampleClass(new java.util.HashMap(asJavaMap(x)))
+    new SampleClass(new java.util.HashMap(mapAsJavaMap(x)))
     ).toArray
   }
       
