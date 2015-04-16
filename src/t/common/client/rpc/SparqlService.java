@@ -2,7 +2,6 @@ package t.common.client.rpc;
 
 import javax.annotation.Nullable;
 
-import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;

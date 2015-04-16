@@ -2,7 +2,6 @@ package otgviewer.client.components.ranking;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import otgviewer.client.CompoundSelector;

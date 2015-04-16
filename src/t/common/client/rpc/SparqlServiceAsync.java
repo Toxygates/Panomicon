@@ -1,6 +1,5 @@
 package t.common.client.rpc;
 
-import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
