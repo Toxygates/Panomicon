@@ -2,6 +2,7 @@ package otgviewer.client.components;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,20 +34,24 @@ import com.google.gwt.user.client.ui.ListBox;
 public class ListChooser extends DataListenerWidget {
 	
 	private HashMap<String, List<String>> lists = new HashMap<String, List<String>>();
-	private Map<String, List<String>> predefinedLists;
+	private Map<String, List<String>> predefinedLists =
+			new HashMap<String, List<String>>();
 	private List<String> currentItems;
 	private DialogBox inputDialog;
 	final private ListBox listBox;
 	final private String listType;
 	private List<ItemList> otherTypeLists = new ArrayList<ItemList>();
 	
-	public ListChooser(Map<String, List<String>> predefinedLists, String listType) {
+	public ListChooser(Collection<StringList> predefinedLists, String listType) {
 		HorizontalPanel hp = Utils.mkWidePanel();
 		initWidget(hp);
 		this.listType = listType;
 		
-		lists.putAll(predefinedLists);
-		this.predefinedLists = predefinedLists;
+		for (StringList sl: predefinedLists) {
+			List<String> is = Arrays.asList(sl.items());
+			lists.put(sl.name(), is);
+			this.predefinedLists.put(sl.name(), is);
+		}
 		
 		listBox = new ListBox();
 		listBox.setVisibleItemCount(1);

@@ -2,6 +2,7 @@ package otgviewer.client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +26,7 @@ import t.common.client.rpc.SparqlService;
 import t.common.client.rpc.SparqlServiceAsync;
 import t.common.shared.SampleClass;
 import t.viewer.shared.ItemList;
+import t.viewer.shared.StringList;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -86,9 +88,9 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		//TODO factor out
 		boolean isAdjuvant = screen.manager().getUIType().equals("adjuvant");
 		
-		final Map<String, List<String>> predefLists = 
+		final Collection<StringList> predefLists = 
 				(isAdjuvant ? TemporaryCompoundLists.predefinedLists() 
-						: new HashMap<String, List<String>>());
+						: new ArrayList<StringList>());
 		
 		compoundEditor = new StackedListEditor(this, "compounds", heading, 
 				MAX_AUTO_SEL, predefLists) {

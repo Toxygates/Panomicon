@@ -1,18 +1,19 @@
 package otgviewer.client;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import t.viewer.shared.StringList;
 
 public class TemporaryCompoundLists {
 
-	/**
-	 * Temporary hardcoded lists for testing. Will eventually be stored as RDF.
+	/*
+	 * TODO Temporary hardcoded lists for testing. Will eventually be stored as RDF.
 	 * @return
 	 */
-	static Map<String, List<String>> predefinedLists() {
-		Map<String, List<String>> r = new HashMap<String, List<String>>();
+	static List<StringList> predefinedLists() {
+		List<StringList> r = new ArrayList<StringList>();
 		String[] negElBilib = new String[] { 
 				"chloramphenicol",
 				"aspirin",
@@ -37,7 +38,10 @@ public class TemporaryCompoundLists {
 				"allyl_alcohol",
 				"perhexiline"		
 		};
-		r.put("Negative elevation bilirubin", Arrays.asList(negElBilib));
+		r.add(new StringList("compounds", "Negative elevation bilirubin", 
+				negElBilib)
+		);
+				
 		String[] glutDepl = new String[] {
 				"aspirin",
 				"acetaminophen",
@@ -52,7 +56,10 @@ public class TemporaryCompoundLists {
 				"methapyrilene",
 				"bromobenzene"
 		};
-		r.put("Glutathione depletion", Arrays.asList(glutDepl));
+		r.add(new StringList("compounds", "Glutathione depletion",
+				glutDepl)
+		);
+				
 		String[] peroxiProl = new String[] {
 				"aspirin",
 				"indomethacin",
@@ -81,7 +88,9 @@ public class TemporaryCompoundLists {
 				"hexachlorobenzene",
 				"bromobenzene"
 		};
-		r.put("Peroxisome prolifeator", Arrays.asList(peroxiProl));
+		r.add(new StringList("compounds", "Peroxisome proliferator",
+				peroxiProl)
+		);
 		
 		return r;
 	}	

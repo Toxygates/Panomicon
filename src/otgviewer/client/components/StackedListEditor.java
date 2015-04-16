@@ -19,6 +19,7 @@ import t.common.client.components.SetEditor;
 import t.common.client.components.StringSelectionTable;
 import t.common.shared.SharedUtils;
 import t.viewer.shared.ItemList;
+import t.viewer.shared.StringList;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -272,7 +273,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	protected Set<String> selectedItems = new HashSet<String>();
 	protected Set<String> availableItems = new HashSet<String>();
 	protected Map<String, String> caseCorrectItems = new HashMap<String, String>();
-	protected Map<String, List<String>> predefinedLists;
+	protected Collection<StringList> predefinedLists;
 	
 	protected StringSelectionTable selTable = null;
 	protected DockLayoutPanel dlp;
@@ -288,7 +289,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 	 */
 	public StackedListEditor(final DataListenerWidget parent, String listType,
 			String itemTitle,  int maxAutoSel,
-			Map<String, List<String>> predefinedLists) {
+			Collection<StringList> predefinedLists) {
 		dlp = new DockLayoutPanel(Unit.PX);
 		initWidget(dlp);
 		

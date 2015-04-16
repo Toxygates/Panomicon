@@ -1,8 +1,12 @@
 package t.common.shared;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import otgviewer.shared.Group;
+import t.viewer.shared.StringList;
 
 /**
  * Container for various client side application parameters.
@@ -16,6 +20,7 @@ public class AppInfo implements Serializable {
 	
 	private Group[] predefGroups = new Group[0];
 	private Dataset[] datasets = new Dataset[0];
+	private List<StringList> predefGeneLists = new ArrayList<StringList>();
 	
 	public AppInfo() {}
 	
@@ -52,5 +57,6 @@ public class AppInfo implements Serializable {
 	public void setPredefinedGroups(Group[] gs) { predefGroups = gs; }
 	
 	public Dataset[] datasets() { return datasets; }
-
+	
+	public Collection<StringList> predefinedGeneLists() { return predefGeneLists; }	
 }

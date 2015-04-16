@@ -270,7 +270,7 @@ public class ProbeScreen extends Screen {
 		plPanel.addSouth(plSouth, PL_SOUTH_HEIGHT);
 		
 		final ProbeScreen ps = this;
-		listChooser = new ListChooser(new HashMap<String, List<String>>(), "probes") {
+		listChooser = new ListChooser(appInfo().predefinedGeneLists(), "probes") {
 			@Override
 			protected void itemsChanged(List<String> items) {
 				matrixService.identifiersToProbes(items.toArray(new String[0]),

@@ -72,7 +72,8 @@ abstract public class CompoundRanker extends DataListenerWidget {
 		schema = screen.schema();
 		
 		selector.addListener(this);
-		listChooser = new ListChooser(new HashMap<String, List<String>>(), "probes") {
+		listChooser = new ListChooser(screen.appInfo().predefinedGeneLists(),
+				"probes") {
 			@Override 
 			protected void preSaveAction() {
 				String[] probes = getProbeList().toArray(new String[0]);
