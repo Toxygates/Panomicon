@@ -48,6 +48,8 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	protected final Logger logger = Utils.getLogger("dlwidget");
 	private StorageParser parser;
 	
+	public Logger getLogger() { return logger; }
+	
 	public List<Group> chosenColumns() { return this.chosenColumns; }
 	
 	public DataListenerWidget() {
@@ -230,7 +232,10 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 			Collection<? extends OTGColumn> columns) {
 		if (!columns.isEmpty()) {
 			OTGColumn first = columns.iterator().next();
-			logger.info("Storing columns for " + key + " : " + first + " : " + first.getSamples()[0] + " ...");
+			String representative = (first.getSamples().length > 0) ? 
+					first.getSamples()[0].toString() : "(no samples)";
+			
+			logger.info("Storing columns for " + key + " : " + first + " : " + representative + " ...");
 			p.setItem(key, packColumns(columns));
 		} else {
 			logger.info("Clearing stored columns for: " + key);			
@@ -352,10 +357,10 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		numPendingRequests += 1;
 		if (numPendingRequests == 1) {
 			if (waitDialog == null) {
-				waitDialog = new DialogBox(false, true);
-				waitDialog.setWidget(Utils.mkEmphLabel("Please wait..."));
+				waitDialog = Utils.waitDialog();				
+			} else {
+				waitDialog.setPopupPositionAndShow(Utils.displayInCenter(waitDialog));
 			}
-			waitDialog.setPopupPositionAndShow(Utils.displayInCenter(waitDialog));
 		}
 	}
 	

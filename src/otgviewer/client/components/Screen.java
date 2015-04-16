@@ -6,12 +6,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import otgviewer.client.Parameters;
 import otgviewer.client.Resources;
 import otgviewer.client.SampleDetailScreen;
 import otgviewer.client.Utils;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGSample;
+import t.common.shared.AppInfo;
 import t.common.shared.DataSchema;
 
 import com.google.gwt.core.client.GWT;
@@ -181,8 +181,8 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		return manager;
 	}
 	
-	public Parameters parameters() {
-		return manager.parameters();
+	public AppInfo appInfo() {
+		return manager.appInfo();
 	}
 	
 	public DataSchema schema() {

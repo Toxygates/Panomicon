@@ -4,6 +4,7 @@ import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
+import t.common.shared.AppInfo;
 import t.common.shared.Dataset;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
@@ -16,10 +17,11 @@ import t.viewer.shared.Association;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface SparqlServiceAsync {
-
-	public void datasets(AsyncCallback<Dataset[]> datasets);
+	public void appInfo(AsyncCallback<AppInfo> callback);
+	
 	public void chooseDatasets(Dataset[] enabled, AsyncCallback<Void> callback);
 	
+	@Deprecated
 	public void sampleClasses(AsyncCallback<SampleClass[]> callback);
 	
 	public void parameterValues(SampleClass sc, String parameter, 
@@ -60,9 +62,8 @@ public interface SparqlServiceAsync {
 	
 	public void goTerms(String pattern, AsyncCallback<String[]> callback);
 	public void probesForGoTerm(String term, AsyncCallback<String[]> callback);
-
-	public void predefinedGroups(AsyncCallback<Group[]> callback);
 	
 	public void associations(SampleClass sc, AType[] types, String[] probes, 
 			AsyncCallback<Association[]> callback);
+
 }

@@ -47,6 +47,8 @@ public interface MatrixService extends RemoteService {
 	 * TODO: this call should return a FullMatrix with the first page of rows.
 	 * In effect, merge loadDataset() with the first call to datasetRows().
 	 * 
+	 * TODO rename. This method has nothing to do with the "dataset" concept.
+	 * 
 	 * @param barcodes
 	 * @param probes
 	 * @param type

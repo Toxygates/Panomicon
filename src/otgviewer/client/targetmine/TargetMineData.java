@@ -35,7 +35,7 @@ public class TargetMineData {
 	
 	public TargetMineData(Screen parent) {
 		this.parent = parent;
-		url = parent.parameters().targetmineURL();
+		url = parent.appInfo().targetmineURL();
 	}
 
 	DialogBox dialog;

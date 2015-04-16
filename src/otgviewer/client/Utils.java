@@ -347,4 +347,11 @@ public class Utils {
 	public static Logger getLogger(String suffix) {
 		return Logger.getLogger("jp.level-five.tframework." + suffix);
 	}
+	
+	public static DialogBox waitDialog() {
+		DialogBox waitDialog = new DialogBox(false, true);
+		waitDialog.setWidget(Utils.mkEmphLabel("Please wait..."));		
+		waitDialog.setPopupPositionAndShow(Utils.displayInCenter(waitDialog));		
+		return waitDialog;
+	}
 }

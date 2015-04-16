@@ -42,6 +42,7 @@ import Conversions.asJava
 import Conversions.asJavaSample
 import Conversions.convertPairs
 import t.common.server.SharedDatasets
+import t.common.shared.AppInfo
 
 object SparqlServiceImpl {  
   var inited = false  
@@ -74,9 +75,10 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   private def probeStore: Probes = context.probes
   private def sampleStore: Samples = context.samples
   
-  var uniprot: Uniprot = _  
-  var b2rKegg: B2RKegg = _
-
+  protected var uniprot: Uniprot = _  
+  protected var b2rKegg: B2RKegg = _
+  protected var _appInfo: AppInfo = _
+  
   override def localInit(conf: Configuration) {
     super.localInit(conf)
     //TODO if staticInit does not read platformsAndProbes, some sparql queries
@@ -93,15 +95,16 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     } else {
       instanceURI = Some(Instances.defaultPrefix + "/" + conf.instanceName)
     }    
-    
     sampleStore.instanceURI = instanceURI
+    
+    _appInfo = new AppInfo(conf.instanceName, datasets()) 
   }
   
   protected class SparqlState(ds: Datasets) {
     var datasets: Iterable[String] = ds.list
   }
 
-  def getSessionData(): SparqlState = {
+  protected def getSessionData(): SparqlState = {
     val r = getThreadLocalRequest().getSession().getAttribute("sparql").
       asInstanceOf[SparqlState]
     if (r == null) {
@@ -114,15 +117,19 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     }
   }
   
-  def setSessionData(m: SparqlState) =
+  protected def setSessionData(m: SparqlState) =
     getThreadLocalRequest().getSession().setAttribute("sparql", m)
   
-  def datasets(): Array[Dataset] = {
+  def appInfo: AppInfo = {
+    getSessionData() //initialise this if needed    
+     //Initialise the selected datasets by selecting all.
+    chooseDatasets(_appInfo.datasets)
+   _appInfo 
+  }
+  
+  private def datasets(): Array[Dataset] = {
     val ds = new Datasets(baseConfig.triplestore) with SharedDatasets    
-    val r = ds.sharedList.toArray
-    //Initialise the selected datasets by selecting all.
-    chooseDatasets(r)
-    r
+    ds.sharedList.toArray       
   }
   
   def chooseDatasets(ds: Array[Dataset]): Unit = {

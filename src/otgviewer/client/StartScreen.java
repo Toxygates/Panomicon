@@ -29,7 +29,7 @@ public class StartScreen extends Screen {
 
 		hp.add(welcomeHtml);
 		welcomeHtml.setWidth("40em");
-		Utils.loadHTML(manager.parameters().welcomeHtmlURL(), 
+		Utils.loadHTML(manager.appInfo().welcomeHtmlURL(), 
 				new Utils.HTMLCallback() {
 			@Override
 			protected void setHTML(String html) {

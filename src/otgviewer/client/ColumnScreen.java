@@ -49,9 +49,7 @@ public class ColumnScreen extends Screen {
 	
 	private SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
 			.create(SparqlService.class);
-	private List<Dataset> allDatasets = new ArrayList<Dataset>();
 	private Collection<Dataset> selectedDatasets = new ArrayList<Dataset>();
-	
 	
 	public ColumnScreen(ScreenManager man, String rankingLabel) {
 		super("Sample group definitions", key, false, man,
@@ -64,28 +62,9 @@ public class ColumnScreen extends Screen {
 		this.addListener(cs);
 		cs.setStylePrimaryName("compoundSelector");
 		filterTools = mkFilterTools();
-		loadDatasets();
+		
+		selectedDatasets = Arrays.asList(appInfo().datasets());		
 	} 
-	
-	private void loadDatasets() {
-		sparqlService.datasets(new PendingAsyncCallback<Dataset[]>(this, "Unable to obtain datasets") {			
-			@Override
-			public void handleSuccess(Dataset[] result) {
-				allDatasets = Arrays.asList(result);	
-				selectedDatasets = allDatasets;
-			}			
-		});
-	}
-	
-	//TODO avoid making so many requests at startup
-	private void loadPredefinedGroups() {
-		sparqlService.predefinedGroups(new PendingAsyncCallback<Group[]>(this, "Unable to obtain groups") {			
-			@Override
-			public void handleSuccess(Group[] result) {
-				gi.addStaticGroups(result);							
-			}			
-		});
-	}
 	
 	private HorizontalPanel mkFilterTools() {
 		final Screen s = this;
@@ -120,7 +99,8 @@ public class ColumnScreen extends Screen {
 		final DialogBox db = new DialogBox(false, true);
 		final Screen scr = this;
 		//TODO set init. selection
-		DatasetSelector dsel = new DatasetSelector(allDatasets, selectedDatasets) {
+		DatasetSelector dsel = new DatasetSelector(Arrays.asList(appInfo().datasets()), 
+				selectedDatasets) {
 			@Override
 			public void onOK() {
 				selectedDatasets = getSelection();
@@ -171,7 +151,7 @@ public class ColumnScreen extends Screen {
 		tp.add(Utils.makeScrolled(cr), rankingLabel);
 		tp.selectTab(0);		
 		
-		loadPredefinedGroups();
+		gi.addStaticGroups(appInfo().predefinedSampleGroups());		
 		return tp;
 	}
 

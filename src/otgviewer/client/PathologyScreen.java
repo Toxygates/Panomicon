@@ -67,7 +67,7 @@ public class PathologyScreen extends Screen {
 	private void mkTools() {				
 		HTML h = new HTML();
 		h.setHTML("<a href=\"" +
-				parameters().pathologyTermsURL() + "\" target=_new>" +
+				appInfo().pathologyTermsURL() + "\" target=_new>" +
 				"Pathology terms reference</a>");
 		tools.add(h);
 	}

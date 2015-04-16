@@ -1,5 +1,7 @@
 package otgviewer.client.components;
 
+import java.util.logging.Level;
+
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -31,6 +33,7 @@ public abstract class PendingAsyncCallback<T> implements AsyncCallback<T> {
 	
 	public void handleFailure(Throwable caught) {
 		Window.alert(onErrorMessage + ":" + caught.getMessage());
+		widget.getLogger().log(Level.SEVERE, onErrorMessage, caught);
 	}
 	
 }

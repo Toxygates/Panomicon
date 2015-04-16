@@ -63,6 +63,8 @@ class SparqlServiceImpl extends t.common.server.rpc.SparqlServiceImpl with OTGSe
     chembl = new ChEMBL()
     drugBank = new DrugBank()
     homologene = new B2RHomologene()
+    
+    _appInfo.setPredefinedGroups(predefinedGroups)
   }
   
   @throws[TimeoutException]
@@ -77,7 +79,7 @@ class SparqlServiceImpl extends t.common.server.rpc.SparqlServiceImpl with OTGSe
   
   //TODO move to OTG
   @throws[TimeoutException]
-  def predefinedGroups: Array[Group] = {
+  private def predefinedGroups: Array[Group] = {
     val r = sampleStore.sampleGroups.map(x => 
       new Group(schema, x._1, x._2.map(x => asJavaSample(x)).toArray))
     r.toArray

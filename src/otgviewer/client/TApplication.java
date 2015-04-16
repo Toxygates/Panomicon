@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
@@ -16,6 +17,9 @@ import otgviewer.client.components.ScreenManager;
 import otgviewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.FeedbackForm;
 import otgviewer.client.targetmine.TargetMineData;
+import t.common.client.rpc.SparqlService;
+import t.common.client.rpc.SparqlServiceAsync;
+import t.common.shared.AppInfo;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -36,6 +40,8 @@ import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -53,6 +59,9 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
  */
 abstract public class TApplication implements ScreenManager, EntryPoint {
 	private static Resources resources = GWT.create(Resources.class);
+
+	private SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
+			.create(SparqlService.class);
 	
 	private RootLayoutPanel rootPanel;
 	private DockLayoutPanel mainDockPanel;
@@ -91,10 +100,9 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 	
 	protected final Logger logger = Utils.getLogger("application");
 	
-	//TODO
-	protected final Parameters parameters = new Parameters(instanceName());
+	protected AppInfo appInfo = null; 
 	
-	public Parameters parameters() { return parameters; }
+	public AppInfo appInfo() { return appInfo; }
 	
 	/**
 	 * This is the entry point method.
@@ -127,14 +135,35 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 		
 		navPanel = Utils.mkHorizontalPanel();
 		mainDockPanel.addNorth(navPanel, 35);
+	
+		final Logger l = Utils.getLogger();
+		final DialogBox wait = Utils.waitDialog();
 		
-		initScreens(); //Need access to the nav. panel
+		sparqlService.appInfo(new AsyncCallback<AppInfo>() {			
+			@Override
+			public void onSuccess(AppInfo result) {
+				l.info("Got appInfo");
+				appInfo = result;
+				wait.hide();
+				prepareScreens();
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				wait.hide();
+				Window.alert("Failed to obtain application information.");
+				l.log(Level.WARNING, "Failed to obtain appInfo", caught);
+			}
+		});
 				
+		l.info("onModuleLoad() finished");
+	}
+	
+	private void prepareScreens() {
+		initScreens(); //Need access to the nav. panel
+		
 		setScreenForToken(History.getToken());						
 		deconfigureAll(pickScreen(History.getToken()));
-		
-		Logger l = Utils.getLogger();
-		l.info("onModuleLoad() finished");
 	}
 	
 	private @Nullable String getMeta(String key) {
@@ -196,7 +225,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 		targetmineMenu.addItem(new MenuItem("Go to TargetMine", new Command() {
 			public void execute() {
 				Utils.urlInNewWindow("Go to TargetMine in a new window?", 
-						"Go", parameters.targetmineURL());
+						"Go", appInfo.targetmineURL());
 			}
 		}));
 		analysisMenuBar.addItem(mi);		
@@ -236,7 +265,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 		
 		hm.addItem(new MenuItem("Download user guide...", new Command() {
 			public void execute() {
-				Window.open("toxygatesManual.pdf", "_blank", "");			
+				Window.open(appInfo.userGuideURL(), "_blank", "");			
 			}
 		}));
 		

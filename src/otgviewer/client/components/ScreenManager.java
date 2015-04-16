@@ -1,6 +1,6 @@
 package otgviewer.client.components;
 
-import otgviewer.client.Parameters;
+import t.common.shared.AppInfo;
 import t.common.shared.DataSchema;
 
 import com.google.gwt.user.client.ui.ProvidesResize;
@@ -53,5 +53,5 @@ public interface ScreenManager extends ProvidesResize {
 	
 	String storagePrefix();
 	
-	Parameters parameters();
+	AppInfo appInfo();
 }

@@ -7,6 +7,7 @@ import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
 import otgviewer.shared.TimeoutException;
+import t.common.shared.AppInfo;
 import t.common.shared.Dataset;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
@@ -24,17 +25,22 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  * remote. All methods in this service use their arguments to constrain the
  * result that is being returned.
  * 
+ * TODO this API is too big, try to make it smaller
+ * 
  * @author johan
  * 
  */
 @RemoteServiceRelativePath("sparql")
 public interface SparqlService extends RemoteService {
+	
 	/**
-	 * Obtain the list of datasets visible in this instance.
+	 * Obtain general application info.
+	 * TODO migrate one-time mandatory data retrival to this object 
+	 * to make the API smaller and reduce the number of calls 
 	 * @return
 	 * @throws TimeoutException
 	 */
-	public Dataset[] datasets() throws TimeoutException;
+	public AppInfo appInfo() throws TimeoutException;
 	
 	/**
 	 * Choose the subset of datasets to work with. This must be a 
@@ -81,9 +87,9 @@ public interface SparqlService extends RemoteService {
 
 	/**
 	 * Obtain all sample classes in the triple store
-	 * 
 	 * @return
 	 */
+	@Deprecated
 	public SampleClass[] sampleClasses() throws TimeoutException;
 
 	/**
@@ -188,8 +194,6 @@ public interface SparqlService extends RemoteService {
 	 * @return
 	 */
 	public String[] probesForGoTerm(String goTerm) throws TimeoutException;
-
-	public Group[] predefinedGroups() throws TimeoutException;
 	
 	/**
 	 * Obtain gene symbols for the given probes. The resulting array will
