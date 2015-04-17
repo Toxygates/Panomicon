@@ -98,7 +98,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     }    
     sampleStore.instanceURI = instanceURI
     
-    _appInfo = new AppInfo(conf.instanceName, datasets(), predefProbeLists()) 
+    _appInfo = new AppInfo(conf.instanceName, datasets(), 
+        predefProbeLists()) 
   }
   
   protected class SparqlState(ds: Datasets) {
@@ -129,7 +130,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   }
   
   private def predefProbeLists() = {
-    val ls = probeStore.geneLists.mapMValues(p => p.identifier)
+    val ls = probeStore.geneLists(instanceURI).mapMValues(p => p.identifier)
     val sls = ls.map(x => new StringList("probes", x._1, x._2.toArray))    
     new java.util.LinkedList(seqAsJavaList(sls.toSeq))
   }
@@ -365,7 +366,6 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       m.mapKValues(_.identifier).mapMValues(p => (p.name, p.identifier))
 
     def resolve(): Array[Association] = {
-
       val m1 = types.par.map(x => (x, standardMapping(lookupFunction(x)))).seq
       m1.map(p => new Association(p._1, convertPairs(p._2))).toArray
     }
