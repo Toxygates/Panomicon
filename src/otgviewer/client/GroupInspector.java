@@ -206,7 +206,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 			addGroup(g, false);
 			staticGroupNames.add(g.getName());
 		}
-		reflectGroupChanges();
+		reflectGroupChanges(false);
 	}
 
 	private boolean isStatic(Group g) {
@@ -241,7 +241,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	
 	private void deleteGroup(String name, boolean createNew) {
 		groups.remove(name);									
-		reflectGroupChanges(); //stores columns
+		reflectGroupChanges(true); //stores columns
 		if (createNew) {
 			newGroup();
 		}
@@ -252,7 +252,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		int fn = n - staticGroupNames.size();
 		if (Window.confirm("Delete " + fn + " groups?")) {
 			clearNonStaticGroups();			
-			reflectGroupChanges();
+			reflectGroupChanges(true);
 			newGroup();			
 		}
 	}
@@ -284,12 +284,14 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		return r;
 	}
 	
-	private void reflectGroupChanges() {
+	private void reflectGroupChanges(boolean store) {
 		existingGroupsTable.setItems(sortedGroupList(groups.values()), false);
 		chosenColumns = new ArrayList<Group>(existingGroupsTable.getSelection());
 		logger.info(chosenColumns.size() + " columns have been chosen");
 		StorageParser p = getParser(screen);		
-		storeColumns(p);
+		if (store) {
+			storeColumns(p);
+		}
 		txtbxGroup.setText("");		
 		updateConfigureStatus(true);
 		existingGroupsTable.setVisible(groups.values().size() > 0);
@@ -409,7 +411,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		for (Group g: gs) {
 			addGroup(g, true);
 		}
-		reflectGroupChanges();
+		reflectGroupChanges(true);
 	}
 	
 	/**
@@ -462,7 +464,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		existingGroupsTable.removeItem(pendingGroup); 
 		pendingGroup = new Group(schema, pendingGroupName, units.toArray(new Unit[0]));
 		addGroup(pendingGroup, true);
-		reflectGroupChanges();
+		reflectGroupChanges(true);
 	}
 	
 	private void addGroup(Group group, boolean active) {

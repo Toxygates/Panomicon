@@ -184,8 +184,6 @@ public class ColumnScreen extends Screen {
 	public void loadState(StorageParser p, DataSchema schema) {
 		super.loadState(p, schema);
 		if (visible) {
-			//If we became visible, we must have been enabled, so can count on a
-			//data filter being present.
 			try {
 				List<Group> ics = loadColumns(p, schema(), "inactiveColumns", 
 						new ArrayList<OTGColumn>(gi.existingGroupsTable.inverseSelection()));

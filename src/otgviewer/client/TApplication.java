@@ -166,6 +166,10 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 		deconfigureAll(pickScreen(History.getToken()));
 	}
 	
+	public String storagePrefix() {
+		return instanceName();
+	}
+	
 	private @Nullable String getMeta(String key) {
 		NodeList<Element> metas = Document.get().getElementsByTagName("meta");
 	    for (int i=0; i<metas.getLength(); i++) {
