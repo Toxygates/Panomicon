@@ -130,7 +130,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   }
   
   private def predefProbeLists() = {
-    val ls = probeStore.geneLists(instanceURI).mapMValues(p => p.identifier)
+    val ls = probeStore.probeLists(instanceURI).mapMValues(p => p.identifier)
     val sls = ls.map(x => new StringList("probes", x._1, x._2.toArray))    
     new java.util.LinkedList(seqAsJavaList(sls.toSeq))
   }
@@ -280,10 +280,13 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   //TODO: return a map instead
   @throws[TimeoutException]
   def geneSyms(_probes: Array[String]): Array[Array[String]] = {
-    val ps = _probes.map(p => Probe(p))
+    //Don't look up more than 500 probes
+    val (lookup, nonLookup) = _probes.splitAt(500)   
+    val ps = lookup.map(p => Probe(p))
     val attrib = probeStore.withAttributes(ps)
-    _probes.map(pi => attrib.find(_.identifier == pi).
+    val r = lookup.map(pi => attrib.find(_.identifier == pi).
       map(_.symbolStrings.toArray).getOrElse(Array()))
+    r ++ nonLookup.map(x => Array[String]())
   }
 
   //TODO more general two-way annotation resolution (don't hardcode a single annotation type
