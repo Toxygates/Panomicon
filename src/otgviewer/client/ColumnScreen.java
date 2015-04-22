@@ -142,6 +142,8 @@ public class ColumnScreen extends Screen {
 		gi = new GroupInspector(cs, this);
 		this.addListener(gi);
 		cs.addListener(gi);
+		gi.datasetsChanged(chosenDatasets);
+		
 		tp.add(gi, "Sample groups");
 		
 		final CompoundRanker cr = new SimpleCompoundRanker(this, cs);

@@ -314,8 +314,8 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 			screen.setConfigured(false);			
 		} else if (chosenColumns.size() > 0) {
 			screen.setConfigured(true);
-			enableDatasetsIfNeeded(chosenColumns);
 		}
+		enableDatasetsIfNeeded(chosenColumns);
 		if (internalTriggered) {
 			screen.manager().deconfigureAll(screen);
 		}
