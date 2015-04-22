@@ -221,7 +221,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	}
 	
 	private void clearNonStaticGroups() {
-		Set<String> keys = groups.keySet();
+		Set<String> keys = new HashSet<String>(groups.keySet());
 		for (String k: keys) {
 			if (!isStatic(groups.get(k))) {
 				groups.remove(k);
