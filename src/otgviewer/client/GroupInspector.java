@@ -12,13 +12,17 @@ import java.util.logging.Logger;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.GroupMaker;
+import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.StorageParser;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import t.common.client.components.SelectionTable;
+import t.common.client.rpc.SparqlService;
+import t.common.client.rpc.SparqlServiceAsync;
 import t.common.shared.DataSchema;
+import t.common.shared.Dataset;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
@@ -26,6 +30,7 @@ import t.common.shared.Unit;
 
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.TextButtonCell;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -68,6 +73,8 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private List<Pair<Unit, Unit>> availableUnits;
 
 	protected final Logger logger = Utils.getLogger("group");
+	private SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
+			.create(SparqlService.class);
 	
 	public GroupInspector(CompoundSelector cs, Screen scr) {
 		compoundSel = cs;
@@ -185,11 +192,11 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 				
 			}
 			
-			protected void selectionChanged(Set<Group> selected) {
+			protected void selectionChanged(Set<Group> selected) {				
 				chosenColumns = new ArrayList<Group>(selected);
 				StorageParser p = getParser(screen);
-				storeColumns(p);
-				updateConfigureStatus(true);
+				storeColumns(p);				
+				updateConfigureStatus(true);				
 			}
 		};
 //		vp.add(existingGroupsTable);
@@ -284,6 +291,10 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		return r;
 	}
 	
+	/**
+	 * To be called when groups are added or deleted.
+	 * @param store if the new group list should be stored or not
+	 */
 	private void reflectGroupChanges(boolean store) {
 		existingGroupsTable.setItems(sortedGroupList(groups.values()), false);
 		chosenColumns = new ArrayList<Group>(existingGroupsTable.getSelection());
@@ -302,7 +313,8 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		if (chosenColumns.size() == 0) {
 			screen.setConfigured(false);			
 		} else if (chosenColumns.size() > 0) {
-			screen.setConfigured(true);			
+			screen.setConfigured(true);
+			enableDatasetsIfNeeded(chosenColumns);
 		}
 		if (internalTriggered) {
 			screen.manager().deconfigureAll(screen);
@@ -351,8 +363,67 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 			super.sampleClassChanged(sc);
 		}
 	}
-
 	
+	@Override
+	public void datasetsChanged(Dataset[] ds) {
+		super.datasetsChanged(ds);
+		disableGroupsIfNeeded(ds);
+	}
+	
+	protected void disableGroupsIfNeeded(Dataset[] ds) {
+		Set<String> availDs = new HashSet<String>();
+		for (Dataset d: ds) {
+			availDs.add(d.getTitle());
+		}
+		int disableCount = 0;
+		
+		logger.info("Available DS: " + SharedUtils.mkString(availDs, ", "));
+		for (Group g: existingGroupsTable.getSelection()) {
+			Set<String> reqDs = g.collect("dataset");
+			logger.info("Group " + g.getShortTitle() + 
+					" needs " + SharedUtils.mkString(reqDs, ", "));			
+			if (!availDs.containsAll(reqDs)) {
+				existingGroupsTable.unselect(g);
+				disableCount += 1;
+			}
+		}
+		if (disableCount > 0) {
+			Window.alert(disableCount + " group(s) were deactivated " +
+					"because of your dataset choice.");
+		}
+	}
+	
+	protected void enableDatasetsIfNeeded(Collection<Group> gs) {
+		Set<String> neededDatasets = Group.collectAll(gs, "dataset");
+		logger.info("Needed datasets: " + SharedUtils.mkString(neededDatasets, ", "));
+		
+		Dataset[] allDatasets = screen.appInfo().datasets();
+		Set<String> enabled = new HashSet<String>();		
+		for (Dataset d: chosenDatasets) {
+			enabled.add(d.getTitle());
+		}
+		logger.info("Enabled: " + SharedUtils.mkString(enabled, ", "));
+		if (!enabled.containsAll(neededDatasets)) {
+			HashSet<String> missing = 
+					new HashSet<String>(neededDatasets);
+			missing.removeAll(enabled);
+			
+			List<Dataset> newEnabled = new ArrayList<Dataset>();
+			for (Dataset d: allDatasets) {
+				if (enabled.contains(d.getTitle()) ||
+						neededDatasets.contains(d.getTitle())) {
+					newEnabled.add(d);
+				}
+			}
+			Dataset[] enAr = newEnabled.toArray(new Dataset[0]);
+			screen.datasetsChanged(enAr);
+			sparqlService.chooseDatasets(enAr,
+					new PendingAsyncCallback<Void>(screen));
+			Window.alert(missing.size() + " dataset(s) were activated " +
+					"because of your group choice.");
+		}
+	}
+
 	@Override 
 	public void columnsChanged(List<Group> columns) {
 		super.columnsChanged(columns);
@@ -475,7 +546,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		
 		existingGroupsTable.addItem(group);		
 		if (active) {
-			existingGroupsTable.setSelected(group);
+			existingGroupsTable.select(group);
 		}
 	}
 

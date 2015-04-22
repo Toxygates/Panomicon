@@ -193,6 +193,16 @@ public class SampleClass implements Serializable, Packable {
 		return r;
 	}
 	
+	public <T extends HasClass> List<T> filter(List<T> from) {
+		List<T> r = new ArrayList<T>();
+		for (T t: from) {
+			if (permits(t)) {
+				r.add(t);
+			}
+		}
+		return r;
+	}
+	
 	@Override
 	public boolean equals(Object other) {
 		if (other instanceof SampleClass) {

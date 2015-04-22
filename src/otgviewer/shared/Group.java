@@ -110,14 +110,12 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 		return getMajors((SampleClass) null);
 	}
 	
+	//TODO is this method necessary?
 	public Set<String> getMajors(@Nullable SampleClass sc) {
-		Set<String> majorVals = new HashSet<String>();		
-		for (OTGSample b : _samples) {
-			if (sc == null || sc.permits(b)) {
-				majorVals.add(b.get(schema.majorParameter()));
-			}
-		}
-		return majorVals;		
+		List<OTGSample> sList = Arrays.asList(_samples);
+		List<OTGSample> filtered = (sc != null) ?
+				sc.filter(sList) : sList; 
+		return SampleClass.collectInner(filtered, schema.majorParameter());				
 	}
 	
 	public Set<String> collect(String parameter) {

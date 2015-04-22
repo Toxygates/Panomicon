@@ -144,7 +144,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val dsTitles = ds.toList.map(_.getTitle)
     println("Choose datasets: " + dsTitles)
     getSessionData.datasets = dsTitles
-    sampleStore.datasets = dsTitles
+    sampleStore.datasetURIs = dsTitles.map(Datasets.packURI(_))
   }
 
   @throws[TimeoutException]

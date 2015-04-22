@@ -40,12 +40,12 @@ public class StorageParser {
 	
 	void setItem(String key, String value) {
 		storage.setItem(prefix + "." + key, value);
-		logger.info("SET " + prefix + "." + key + " -> " + value);
+//		logger.info("SET " + prefix + "." + key + " -> " + value);
 	}
 	
 	String getItem(String key) {
 		String v = storage.getItem(prefix + "." + key);
-		logger.info("GET " + prefix + "." + key + " -> " + v);
+//		logger.info("GET " + prefix + "." + key + " -> " + v);
 		return v;
 		
 	}

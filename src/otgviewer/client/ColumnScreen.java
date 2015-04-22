@@ -49,7 +49,6 @@ public class ColumnScreen extends Screen {
 	
 	private SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
 			.create(SparqlService.class);
-	private Collection<Dataset> selectedDatasets = new ArrayList<Dataset>();
 	
 	public ColumnScreen(ScreenManager man, String rankingLabel) {
 		super("Sample group definitions", key, false, man,
@@ -63,7 +62,7 @@ public class ColumnScreen extends Screen {
 		cs.setStylePrimaryName("compoundSelector");
 		filterTools = mkFilterTools();
 		
-		selectedDatasets = Arrays.asList(appInfo().datasets());		
+		chosenDatasets = appInfo().datasets();		
 	} 
 	
 	private HorizontalPanel mkFilterTools() {
@@ -100,19 +99,17 @@ public class ColumnScreen extends Screen {
 		final Screen scr = this;
 		//TODO set init. selection
 		DatasetSelector dsel = new DatasetSelector(Arrays.asList(appInfo().datasets()), 
-				selectedDatasets) {
+				Arrays.asList(chosenDatasets)) {
 			@Override
-			public void onOK() {
-				selectedDatasets = getSelection();
-				Dataset[] enabled = selectedDatasets.toArray(new Dataset[0]);
-				datasetsChanged(enabled);
-				sparqlService.chooseDatasets(enabled,
+			public void onOK() {							
+				datasetsChanged(getSelection().toArray(new Dataset[0]));
+				sparqlService.chooseDatasets(chosenDatasets,
 						new PendingAsyncCallback<Void>(scr, "Unable to choose datasets") {					
 					public void handleSuccess(Void v) {
 						dfe.update();
 					}
 				});				
-				db.hide();
+				db.hide();				
 			}
 			
 			@Override

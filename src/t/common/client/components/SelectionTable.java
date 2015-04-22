@@ -100,9 +100,14 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
 		return new HashSet<T>(selected);
 	}
 	
-	public void setSelected(T t) {
+	public void select(T t) {
 		logger.info("Select " + t);
 		selected.add(t);
+		table.redraw();
+	}
+	
+	public void unselect(T t) {
+		selected.remove(t);
 		table.redraw();
 	}
 	

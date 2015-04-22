@@ -5,7 +5,7 @@ import java.util.logging.Level;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public abstract class PendingAsyncCallback<T> implements AsyncCallback<T> {
+public class PendingAsyncCallback<T> implements AsyncCallback<T> {
 
 	private DataListenerWidget widget;
 	private String onErrorMessage;
@@ -24,7 +24,9 @@ public abstract class PendingAsyncCallback<T> implements AsyncCallback<T> {
 		widget.removePendingRequest();
 	}
 	
-	abstract public void handleSuccess(T t);
+	public void handleSuccess(T t) { 
+		//Quiet success 		
+	}
 	
 	public void onFailure(Throwable caught) {
 		handleFailure(caught);
