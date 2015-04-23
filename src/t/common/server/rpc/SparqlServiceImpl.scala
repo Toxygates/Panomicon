@@ -96,14 +96,15 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     } else {
       instanceURI = Some(Instances.defaultPrefix + "/" + conf.instanceName)
     }    
-    sampleStore.instanceURI = instanceURI
+    
+    this.instanceURI = instanceURI
     
     _appInfo = new AppInfo(conf.instanceName, datasets(), 
         predefProbeLists()) 
   }
   
   protected class SparqlState(ds: Datasets) {
-    var datasets: Iterable[String] = ds.list
+    var sampleFilter: SampleFilter = SampleFilter(instanceURI = instanceURI)
   }
 
   protected def getSessionData(): SparqlState = {
@@ -118,6 +119,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       r
     }
   }
+  
+  protected implicit def sf: SampleFilter = getSessionData.sampleFilter
   
   protected def setSessionData(m: SparqlState) =
     getThreadLocalRequest().getSession().setAttribute("sparql", m)
@@ -143,8 +146,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   def chooseDatasets(ds: Array[Dataset]): Unit = {
     val dsTitles = ds.toList.map(_.getTitle)
     println("Choose datasets: " + dsTitles)
-    getSessionData.datasets = dsTitles
-    sampleStore.datasetURIs = dsTitles.map(Datasets.packURI(_))
+    getSessionData.sampleFilter = getSessionData.sampleFilter.copy(datasetURIs = 
+      dsTitles.map(Datasets.packURI(_)))
   }
 
   @throws[TimeoutException]

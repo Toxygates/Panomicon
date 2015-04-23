@@ -22,6 +22,7 @@ import t.SeriesRanking
 import t.viewer.server.Conversions._
 import t.common.shared.Dataset
 import t.sparql.Datasets
+import t.sparql.SampleFilter
 
 abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with SeriesService {
   import scala.collection.JavaConversions._  
@@ -40,7 +41,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
 
   private def allowedMajors(ds: Array[Dataset], sc: SampleClass): Set[String] = {
     val dsTitles = ds.map(_.getTitle).distinct.toList
-    context.samples.datasetURIs = dsTitles.map(Datasets.packURI(_))
+    implicit val sf = SampleFilter(datasetURIs = dsTitles.map(Datasets.packURI(_)))
     context.samples.attributeValues(scAsScala(sc).filterAll,
       schema.majorParameter()).toSet
   }
