@@ -242,14 +242,15 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     scs.flatMap(units(_, param, paramValues))
   }
 
+  //TODO this is not used currently
   @throws[TimeoutException]
   def probes(columns: Array[OTGColumn]): Array[String] = {
     val samples = columns.flatMap(_.getSamples)
     val metadata = new TriplestoreMetadata(sampleStore)    
     val usePlatforms = samples.map(s => metadata.parameter(
         t.db.Sample(s.getCode), "platform_id")
-        ).toSet
-    usePlatforms.toVector.flatMap(platforms).toArray
+        ).distinct
+    usePlatforms.toVector.flatMap(x => platforms(x)).toArray
   }
   
   //TODO move to OTG
