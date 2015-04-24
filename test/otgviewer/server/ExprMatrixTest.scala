@@ -230,7 +230,9 @@ class ExprMatrixTest extends FunSuite {
     val empty = m.copyWithColumns(Seq())
     assert(empty.rows === 0)
     assert(empty.columns === 0)
-    // TODO should this be asserted? Doesn't pass currently.
+    
+    // TODO it's not clear how the column allocation should behave
+    //when we remove rows and columns. Currently it is kept.
 //    assert(empty.rowKeys.isEmpty)
 //    assert(empty.columnKeys.isEmpty)
   }
