@@ -6,7 +6,6 @@ import t.common.shared.sample.ExpressionValue
 import scala.reflect.ClassTag
 import org.apache.commons.math3.stat.inference.TTest
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest
-import scala.collection.immutable.{Vector => SVector}
 import otgviewer.server.rpc.Conversions
 
 object ExprMatrix {
@@ -46,7 +45,7 @@ case class RowAnnotation(probe: String, atomics: Iterable[String])
  */
 class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int, 
     rowMap: Map[String, Int], columnMap: Map[String, Int], 
-    val annotations: SVector[RowAnnotation]) 
+    val annotations: Vector[RowAnnotation]) 
     extends
     AllocatedDataMatrix[ExprMatrix, ExpressionValue, String, String](data, rows, columns, rowMap, columnMap) {
   
@@ -64,7 +63,7 @@ class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int,
    */
   def copyWith(rowData: Seq[Vector[ExpressionValue]], rowMap: Map[String, Int], 
       columnMap: Map[String, Int], 
-      annotations: SVector[RowAnnotation]): ExprMatrix =  {
+      annotations: Vector[RowAnnotation]): ExprMatrix =  {
       
         new ExprMatrix(rowData, rowData.size, 
             if (rowData.isEmpty) { 0 } else { rowData(0).size }, 
@@ -83,7 +82,7 @@ class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int,
   lazy val sortedRowMap = rowMap.toSeq.sortWith(_._2 < _._2)
   lazy val sortedColumnMap = columnMap.toSeq.sortWith(_._2 < _._2)
   
-  lazy val asRows: SVector[ExpressionRow] = toRowVectors.toVector.zip(annotations).map(x => {
+  lazy val asRows: Vector[ExpressionRow] = toRowVectors.toVector.zip(annotations).map(x => {
     val ann = x._2    
     new ExpressionRow(ann.probe, ann.atomics.toArray, null, null, null, x._1.toArray)
   })
