@@ -615,7 +615,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				range = display.getVisibleRange();						
 				computeSortParams();
 				if (range.getLength() > 0) {
-					matrixService.datasetItems(range.getStart(), range.getLength(),
+					matrixService.matrixRows(range.getStart(), range.getLength(),
 							sortCol, sortAsc, rowCallback);
 				}
 			}
@@ -718,7 +718,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		logger.info("begin loading data for " + chosenColumns.size() + " columns and " +
 				chosenProbes.length + " probes");
 		// load data
-		matrixService.loadDataset(chosenColumns, chosenProbes,
+		matrixService.loadMatrix(chosenColumns, chosenProbes,
 				chosenValueType, synthetics,
 				new AsyncCallback<ManagedMatrixInfo>() {
 					public void onFailure(Throwable caught) {

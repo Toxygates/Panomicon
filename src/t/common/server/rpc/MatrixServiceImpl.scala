@@ -178,7 +178,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
      }        
   }
   
-  def loadDataset(groups: JList[Group], probes: Array[String],
+  def loadMatrix(groups: JList[Group], probes: Array[String],
                   typ: ValueType, syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
     val pfs = platformsForGroups(groups.toList)   
     val fProbes = platforms.filterProbes(probes, pfs).toArray 
@@ -219,7 +219,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   }
 
   @throws(classOf[NoDataLoadedException])
-  def datasetItems(offset: Int, size: Int, sortColumn: Int,
+  def matrixRows(offset: Int, size: Int, sortColumn: Int,
     ascending: Boolean): JList[ExpressionRow] = {
 
     println("SortCol: " + sortColumn + " asc: " + ascending)

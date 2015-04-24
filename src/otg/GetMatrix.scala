@@ -120,7 +120,7 @@ object GetMatrix {
 		val synthCols = new JList[Synthetic]()
 		println("Load dataset")
 		
-    val colInfo = matServiceAsync.loadDataset(groups, probes, vtype, synthCols)
+    val colInfo = matServiceAsync.loadMatrix(groups, probes, vtype, synthCols)
     
     range match {
       case Full =>        
@@ -138,9 +138,9 @@ object GetMatrix {
         //sort by first column, descending
         val items = if (specialPSort) {
           println("Using p-value sort on column " + colInfo.columnName(1))
-          matServiceAsync.datasetItems(offset, amt, 1, true)
+          matServiceAsync.matrixRows(offset, amt, 1, true)
         } else {
-          matServiceAsync.datasetItems(offset, amt, 0, false)
+          matServiceAsync.matrixRows(offset, amt, 0, false)
         }
         
         val colNames = (0 until colInfo.numColumns()).map(colInfo.columnName(_))

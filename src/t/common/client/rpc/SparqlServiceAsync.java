@@ -3,6 +3,7 @@ package t.common.client.rpc;
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
+import otgviewer.shared.TimeoutException;
 import t.common.shared.AppInfo;
 import t.common.shared.Dataset;
 import t.common.shared.Pair;
@@ -16,6 +17,7 @@ import t.viewer.shared.Association;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface SparqlServiceAsync {
+	
 	public void appInfo(AsyncCallback<AppInfo> callback);
 	
 	public void chooseDatasets(Dataset[] enabled, AsyncCallback<Void> callback);
@@ -64,5 +66,4 @@ public interface SparqlServiceAsync {
 	
 	public void associations(SampleClass sc, AType[] types, String[] probes, 
 			AsyncCallback<Association[]> callback);
-
 }

@@ -45,9 +45,7 @@ public interface MatrixService extends RemoteService {
 	 * Load data into the user's session. Also perform an initial filtering. 
 	 * 
 	 * TODO: this call should return a FullMatrix with the first page of rows.
-	 * In effect, merge loadDataset() with the first call to datasetRows().
-	 * 
-	 * TODO rename. This method has nothing to do with the "dataset" concept.
+	 * In effect, merge loadMatrix() with the first call to matrixRows().
 	 * 
 	 * @param barcodes
 	 * @param probes
@@ -56,7 +54,7 @@ public interface MatrixService extends RemoteService {
 	 * from the start.
 	 * @return The number of rows that remain after filtering.
 	 */
-	public ManagedMatrixInfo loadDataset(List<Group> columns, 
+	public ManagedMatrixInfo loadMatrix(List<Group> columns, 
 			String[] probes, ValueType type, List<Synthetic> synthCols) 
 					throws ServerError;
 	
@@ -93,15 +91,15 @@ public interface MatrixService extends RemoteService {
 	public void removeTwoGroupTests();
 	
 	/**
-	 * Get one page. Requires that loadDataset was first used to load items.
+	 * Get one page. Requires that loadMatrix was first used to load items.
 	 * @param offset
 	 * @param size
-	 * @param sortColumn data column to sort by (0 for the first microarray, etc).
+	 * @param sortColumn data column to sort by (starting at 0)
 	 * If this parameter is -1, the previously applied sorting is used.
 	 * @param ascending Whether to use ascending sort. Applies if sortColumn is not -1.
 	 * @return
 	 */
-	public List<ExpressionRow> datasetItems(int offset, int size, int sortColumn, 
+	public List<ExpressionRow> matrixRows(int offset, int size, int sortColumn, 
 			boolean ascending);
 	
 	/**
