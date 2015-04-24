@@ -140,7 +140,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   
   private def datasets(): Array[Dataset] = {
     val ds = new Datasets(baseConfig.triplestore) with SharedDatasets    
-    ds.sharedList.toArray       
+    ds.sharedList.toArray
   }
   
   def chooseDatasets(ds: Array[Dataset]): Unit = {

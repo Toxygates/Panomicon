@@ -236,14 +236,17 @@ object ManagedMatrixBuilder {
  * The info object should be used to query what columns have actually been 
  * constructed.
  * 
+ * @param rawUngroupedMat ungrouped matrix. 
+ * Mainly used for computing T- and U-tests. Sorting is irrelevant.
+ *
+ * @param rawGroupedMat unfiltered matrix. 
+ *  The final view is obtained by filtering this (if requested).
  */
 
 class ManagedMatrix(val initProbes: Array[String],
     //TODO visibility of these 3 vars
-    var currentInfo: ManagedMatrixInfo,
-    //ungrouped mat is mainly used for computing T- and U-tests. Sorting of columns
-    //is irrelevant.
-    var rawUngroupedMat: ExprMatrix, var rawGroupedMat: ExprMatrix) {
+    var currentInfo: ManagedMatrixInfo, var rawUngroupedMat: ExprMatrix,    
+    var rawGroupedMat: ExprMatrix) {
   
   protected var currentMat: ExprMatrix = rawGroupedMat
   
@@ -340,9 +343,9 @@ class ManagedMatrix(val initProbes: Array[String],
   
   def removeSynthetics(): Unit = {
     _synthetics = Vector()
-    val nonTestColumns = 0 until currentInfo.numDataColumns()
-    currentMat = currentMat.selectColumns(nonTestColumns)
-    rawGroupedMat = rawGroupedMat.selectColumns(nonTestColumns)
+    val dataColumns = 0 until currentInfo.numDataColumns()
+    currentMat = currentMat.selectColumns(dataColumns)
+    rawGroupedMat = rawGroupedMat.selectColumns(dataColumns)
     currentInfo.removeSynthetics()
   }
   
