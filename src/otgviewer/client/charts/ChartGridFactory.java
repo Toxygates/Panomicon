@@ -25,6 +25,7 @@ import t.common.client.rpc.SparqlServiceAsync;
 import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
+import t.common.shared.SharedUtils;
 import t.common.shared.Unit;
 
 import com.google.gwt.core.client.GWT;
@@ -42,7 +43,7 @@ public class ChartGridFactory {
 		void acceptBarcodes(OTGSample[] barcodes);
 	}
 	
-	private final Logger logger = Utils.getLogger("cgf");
+	private final Logger logger = SharedUtils.getLogger("cgf");
 	
 	private static final SparqlServiceAsync sparqlService = 
 			(SparqlServiceAsync) GWT.create(SparqlService.class);

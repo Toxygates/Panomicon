@@ -13,6 +13,7 @@ import otgviewer.shared.Group;
 import otgviewer.shared.OTGSample;
 import t.common.shared.AppInfo;
 import t.common.shared.DataSchema;
+import t.common.shared.SharedUtils;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -168,7 +169,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		viewLabel.setWordWrap(false);
 		viewLabel.getElement().getStyle().setMargin(2, Unit.PX);
 		this.key = key;
-		this.logger = Utils.getLogger(key);
+		this.logger = SharedUtils.getLogger(key);
 		setTitle(title);		
 	}
 	

@@ -14,6 +14,7 @@ import t.common.client.rpc.SparqlServiceAsync;
 import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
+import t.common.shared.SharedUtils;
 import t.common.shared.Unit;
 
 import com.google.gwt.core.client.GWT;
@@ -51,7 +52,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	
 	//First pair member: treated samples, second: control samples or null
 	protected Pair<Unit, Unit>[] availableUnits;
-	protected Logger logger = Utils.getLogger("tdgrid");
+	protected Logger logger = SharedUtils.getLogger("tdgrid");
 	
 	protected String emptyMessage;
 	

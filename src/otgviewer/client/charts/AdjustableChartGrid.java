@@ -18,6 +18,7 @@ import otgviewer.shared.GroupUtils;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.ValueType;
 import t.common.shared.DataSchema;
+import t.common.shared.SharedUtils;
 import t.common.shared.Unit;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -48,7 +49,7 @@ public class AdjustableChartGrid extends Composite {
 	private int computedWidth;
 	private ValueType valueType;
 	
-	private Logger logger = Utils.getLogger("chart");
+	private Logger logger = SharedUtils.getLogger("chart");
 	
 	private static int lastType = -1;
 	private static String lastSubtype = null;

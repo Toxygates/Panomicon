@@ -17,6 +17,7 @@ import otgviewer.client.components.Screen;
 import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
+import t.common.shared.SharedUtils;
 import t.common.shared.Unit;
 
 import com.google.gwt.user.client.ui.Label;
@@ -34,7 +35,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 	private UnitListener listener;
 	private VerticalPanel vp;
 	private final Screen scr;
-	protected final Logger logger = Utils.getLogger("group");
+	protected final Logger logger = SharedUtils.getLogger("group");
 	
 	public MultiSelectionGrid(Screen scr, @Nullable SelectionTDGrid.UnitListener listener) {		
 		vp = new VerticalPanel();

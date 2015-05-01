@@ -20,6 +20,7 @@ import otgviewer.client.targetmine.TargetMineData;
 import t.common.client.rpc.SparqlService;
 import t.common.client.rpc.SparqlServiceAsync;
 import t.common.shared.AppInfo;
+import t.common.shared.SharedUtils;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -98,7 +99,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 	 */
 	protected Screen currentScreen;
 	
-	protected final Logger logger = Utils.getLogger("application");
+	protected final Logger logger = SharedUtils.getLogger("application");
 	
 	protected AppInfo appInfo = null; 
 	
@@ -136,7 +137,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 		navPanel = Utils.mkHorizontalPanel();
 		mainDockPanel.addNorth(navPanel, 35);
 	
-		final Logger l = Utils.getLogger();
+		final Logger l = SharedUtils.getLogger();
 		final DialogBox wait = Utils.waitDialog();
 		
 		sparqlService.appInfo(new AsyncCallback<AppInfo>() {			

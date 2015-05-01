@@ -340,14 +340,6 @@ public class Utils {
 		SafeHtml endToolTip();
 	}
 	
-	public static Logger getLogger() {
-		return getLogger("default");		
-	}
-	
-	public static Logger getLogger(String suffix) {
-		return Logger.getLogger("jp.level-five.tframework." + suffix);
-	}
-	
 	public static DialogBox waitDialog() {
 		DialogBox waitDialog = new DialogBox(false, true);
 		waitDialog.setWidget(Utils.mkEmphLabel("Please wait..."));		

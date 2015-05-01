@@ -134,7 +134,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
  	private DialogBox filterDialog = null;
  	
- 	private final Logger logger = Utils.getLogger("expressionTable");
+ 	private final Logger logger = SharedUtils.getLogger("expressionTable");
  	
  	protected ValueType chosenValueType;
  	

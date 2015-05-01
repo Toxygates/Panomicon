@@ -17,6 +17,7 @@ import otgviewer.shared.OTGColumn;
 import t.common.shared.DataSchema;
 import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
+import t.common.shared.SharedUtils;
 import t.common.shared.sample.DataColumn;
 import t.viewer.shared.ItemList;
 
@@ -45,7 +46,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	protected OTGColumn chosenCustomColumn;
 	public List<ItemList> chosenItemLists = new ArrayList<ItemList>(); //TODO
 	
-	protected final Logger logger = Utils.getLogger("dlwidget");
+	protected final Logger logger = SharedUtils.getLogger("dlwidget");
 	private StorageParser parser;
 	
 	public Logger getLogger() { return logger; }

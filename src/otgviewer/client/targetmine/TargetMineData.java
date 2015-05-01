@@ -14,6 +14,7 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.InteractionDialog;
 import otgviewer.client.dialog.TargetMineSyncDialog;
+import t.common.shared.SharedUtils;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 
@@ -31,7 +32,7 @@ public class TargetMineData {
 			.create(TargetmineService.class);
 	final String url;
 	
-	private Logger logger = Utils.getLogger("targetmine");
+	private Logger logger = SharedUtils.getLogger("targetmine");
 	
 	public TargetMineData(Screen parent) {
 		this.parent = parent;

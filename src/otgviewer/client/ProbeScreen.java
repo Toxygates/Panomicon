@@ -69,7 +69,7 @@ public class ProbeScreen extends Screen {
 
 	private static final int STACK_ITEM_HEIGHT = 29;
 	final GeneOracle oracle = new GeneOracle();
-	private final Logger logger = Utils.getLogger();
+	private final Logger logger = SharedUtils.getLogger();
 
 	public ProbeScreen(ScreenManager man) {
 		super("Probe selection", key, true, man, resources

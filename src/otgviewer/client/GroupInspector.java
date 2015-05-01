@@ -72,7 +72,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	
 	private List<Pair<Unit, Unit>> availableUnits;
 
-	protected final Logger logger = Utils.getLogger("group");
+	protected final Logger logger = SharedUtils.getLogger("group");
 	private SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
 			.create(SparqlService.class);
 	

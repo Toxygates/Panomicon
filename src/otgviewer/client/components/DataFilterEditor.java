@@ -10,6 +10,7 @@ import t.common.client.rpc.SparqlService;
 import t.common.client.rpc.SparqlServiceAsync;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
+import t.common.shared.SharedUtils;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -106,7 +107,7 @@ public class DataFilterEditor extends DataListenerWidget {
 	public DataFilterEditor(DataSchema schema) {
 		HorizontalPanel hp = new HorizontalPanel();
 		initWidget(hp);
-		logger = Utils.getLogger("dfeditor");
+		logger = SharedUtils.getLogger("dfeditor");
 		
 		update();
 		

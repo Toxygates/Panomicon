@@ -52,7 +52,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  */
 public class StackedListEditor extends ResizeComposite implements SetEditor<String> {
 
-	private static Logger logger = Utils.getLogger("sle");
+	private static Logger logger = SharedUtils.getLogger("sle");
 	
 	/**
 	 * A selection method is a particular user interface for editing the list.
@@ -192,7 +192,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 		private Button sortButton;
 		private ScrollPanel scrollPanel;
 		
-		private static Logger logger = Utils.getLogger("sle.bc");
+		private static Logger logger = SharedUtils.getLogger("sle.bc");
 		
 		public BrowseCheck(StackedListEditor editor, String itemTitle, 
 				final int maxAutoSel) {

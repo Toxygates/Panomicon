@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import otgviewer.client.Utils;
+import t.common.shared.SharedUtils;
 
 import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.cell.client.FieldUpdater;
@@ -27,7 +28,7 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
 	private Column<T, Boolean> selectColumn;
 	private Set<T> selected = new HashSet<T>();
 	private ListDataProvider<T> provider = new ListDataProvider<T>();
-	private static Logger logger = Utils.getLogger("st");
+	private static Logger logger = SharedUtils.getLogger("st");
 	
 	public SelectionTable(final String selectColTitle, boolean fixedLayout) {
 		super();

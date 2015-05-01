@@ -91,16 +91,17 @@ public class SampleClass implements Serializable, Packable {
 	 * @param hc
 	 * @return
 	 */
-	public boolean permits(HasClass hc) {
-		return subsumes(hc.sampleClass());
+	public boolean compatible(HasClass hc) {
+		return compatible(hc.sampleClass());
 	}
 	
 	/**
-	 * Is this SampleClass more specific than the other one?
+	 * Is this SampleClass compatible with the other one?
+	 * True iff shared keys have the same values.
 	 * @param other
 	 * @return
 	 */
-	public boolean subsumes(SampleClass other) {
+	public boolean compatible(SampleClass other) {
 		for (String k: data.keySet()) {
 			if (other.get(k) != null && !other.get(k).equals(get(k))) {
 				return false;
@@ -196,7 +197,7 @@ public class SampleClass implements Serializable, Packable {
 	public <T extends HasClass> List<T> filter(List<T> from) {
 		List<T> r = new ArrayList<T>();
 		for (T t: from) {
-			if (permits(t)) {
+			if (compatible(t)) {
 				r.add(t);
 			}
 		}

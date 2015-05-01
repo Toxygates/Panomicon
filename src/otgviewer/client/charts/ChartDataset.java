@@ -23,7 +23,7 @@ public class ChartDataset {
 	protected double min = Double.NaN;
 	protected double max = Double.NaN;
 	
-	protected Logger logger = Utils.getLogger("ChartDataset");
+	protected Logger logger = SharedUtils.getLogger("ChartDataset");
 	
 	ChartDataset(List<ChartSample> samples, List<ChartSample> allSamples, 
 			String[] categories, boolean categoriesAreMins) {

@@ -42,7 +42,7 @@ abstract class ChartDataSource {
 		void accept(List<ChartSample> samples);
 	}
 	
-	private static Logger logger = Utils.getLogger("chartdata");
+	private static Logger logger = SharedUtils.getLogger("chartdata");
 	
 	//TODO consider deprecating/simplifying/replacing this class
 	

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 
 import otgviewer.shared.Group;
 
@@ -174,5 +175,13 @@ public class SharedUtils {
 		} else {
 			return o1.equals(o2);
 		}
+	}
+	
+	public static Logger getLogger() {
+		return getLogger("default");		
+	}
+	
+	public static Logger getLogger(String suffix) {
+		return Logger.getLogger("jp.level-five.tframework." + suffix);
 	}
 }
