@@ -19,14 +19,14 @@ import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import t.common.client.components.SelectionTable;
-import t.common.client.rpc.SparqlService;
-import t.common.client.rpc.SparqlServiceAsync;
-import t.common.shared.DataSchema;
 import t.common.shared.Dataset;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
-import t.common.shared.Unit;
+import t.viewer.client.rpc.SparqlService;
+import t.viewer.client.rpc.SparqlServiceAsync;
+import t.viewer.shared.DataSchema;
+import t.viewer.shared.Unit;
 
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.TextButtonCell;

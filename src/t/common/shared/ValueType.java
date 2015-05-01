@@ -1,4 +1,4 @@
-package otgviewer.shared;
+package t.common.shared;
 
 import java.io.Serializable;
 

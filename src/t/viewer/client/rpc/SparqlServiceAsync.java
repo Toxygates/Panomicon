@@ -1,18 +1,18 @@
-package t.common.client.rpc;
+package t.viewer.client.rpc;
 
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
 import otgviewer.shared.TimeoutException;
-import t.common.shared.AppInfo;
+import t.common.shared.AType;
 import t.common.shared.Dataset;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
-import t.common.shared.Unit;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
-import t.viewer.shared.AType;
+import t.viewer.shared.AppInfo;
 import t.viewer.shared.Association;
+import t.viewer.shared.Unit;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 

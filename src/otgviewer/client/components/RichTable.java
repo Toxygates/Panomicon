@@ -3,7 +3,7 @@ package otgviewer.client.components;
 import java.util.ArrayList;
 import java.util.List;
 
-import t.common.shared.DataSchema;
+import t.viewer.shared.DataSchema;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.SafeHtmlCell;

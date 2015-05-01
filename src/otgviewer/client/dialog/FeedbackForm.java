@@ -4,8 +4,8 @@ import otgviewer.client.Utils;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.InputGrid;
 import otgviewer.client.components.PendingAsyncCallback;
-import t.common.client.rpc.MatrixService;
-import t.common.client.rpc.MatrixServiceAsync;
+import t.viewer.client.rpc.MatrixService;
+import t.viewer.client.rpc.MatrixServiceAsync;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;

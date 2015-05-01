@@ -1,49 +1,44 @@
 package t.common.server.rpc
 
-import t.common.client.rpc.SparqlService
 import scala.Array.canBuildFrom
 import scala.collection.JavaConversions._
 import scala.collection.{Set => CSet}
-import com.google.gwt.user.server.rpc.RemoteServiceServlet
-import javax.servlet.ServletConfig
-import javax.servlet.ServletException
+
 import otg.Species.Human
-import t.sparql.secondary._
-import t.sparql._
+import otgviewer.server.ScalaUtils
 import otgviewer.server.ScalaUtils.gracefully
+import otgviewer.server.rpc.Conversions
+import otgviewer.server.rpc.Conversions.asJava
+import otgviewer.server.rpc.Conversions.asJavaSample
+import otgviewer.server.rpc.Conversions.convertPairs
 import otgviewer.shared.OTGColumn
 import otgviewer.shared.OTGSample
 import otgviewer.shared.Pathology
+import otgviewer.shared.TimeoutException
 import t.BaseConfig
-import t.DataConfig
 import t.TriplestoreConfig
-import t.common.shared.DataSchema
+import t.common.server.SharedDatasets
+import t.common.shared.AType
+import t.common.shared.Dataset
+import t.common.shared.Pair
 import t.common.shared.SampleClass
 import t.common.shared.sample.Annotation
 import t.common.shared.sample.HasSamples
-import t.common.shared.Pair
 import t.db.DefaultBio
+import t.platform.Probe
+import t.sparql._
 import t.sparql.Instances
-import t.sparql.Triplestore
+import t.sparql.Probes
 import t.sparql.TriplestoreMetadata
+import t.sparql.secondary._
+import t.viewer.client.rpc.SparqlService
 import t.viewer.server.Configuration
 import t.viewer.server.Conversions.asSpecies
 import t.viewer.server.Conversions.scAsScala
-import t.viewer.shared.AType
+import t.viewer.shared.AppInfo
 import t.viewer.shared.Association
-import otgviewer.server.ScalaUtils
-import otgviewer.shared.TimeoutException
-import otgviewer.shared.OTGSchema
-import t.platform.Probe
-import t.sparql.Probes
-import t.common.shared.Dataset
-import otgviewer.server.rpc.Conversions
-import Conversions.asJava
-import Conversions.asJavaSample
-import Conversions.convertPairs
-import t.common.server.SharedDatasets
-import t.common.shared.AppInfo
 import t.viewer.shared.StringList
+import t.viewer.shared.Unit
 
 object SparqlServiceImpl {  
   var inited = false  
@@ -143,7 +138,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     ds.sharedList.toArray
   }
   
-  def chooseDatasets(ds: Array[Dataset]): Unit = {
+  def chooseDatasets(ds: Array[Dataset]): scala.Unit = {
     val dsTitles = ds.toList.map(_.getTitle)
     println("Choose datasets: " + dsTitles)
     getSessionData.sampleFilter = getSessionData.sampleFilter.copy(datasetURIs = 
@@ -188,12 +183,10 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     new SampleClass(new java.util.HashMap(mapAsJavaMap(x)))
     ).toArray
   }
-      
-  import t.common.shared.{Unit => TUnit}
 
   @throws[TimeoutException]
   def units(sc: SampleClass,  
-      param: String, paramValues: Array[String]): Array[Pair[TUnit, TUnit]] = {
+      param: String, paramValues: Array[String]): Array[Pair[Unit, Unit]] = {
 
     val majorParam = schema.majorParameter()
     //Ensure shared control is always included, if possible
@@ -214,7 +207,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     
     //For each unit of treated samples inside a control group, all
     //control samples in that group are assigned as control.
-    var r = Vector[Pair[TUnit, TUnit]]()
+    var r = Vector[Pair[Unit, Unit]]()
     for (((t, cg), samples) <- ss;
         treatedControl = samples.partition(s => !schema.isSelectionControl(s.sampleClass) )) {
       val treatedUnits = treatedControl._1.map(asJavaSample).
@@ -222,23 +215,23 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
           
       val cus = treatedControl._2.map(asJavaSample)
       val cu = if (!cus.isEmpty) {
-        new TUnit(cus.head.sampleClass().asUnit(schema),      
+        new Unit(cus.head.sampleClass().asUnit(schema),      
           cus.toArray)
       } else {
-        new TUnit(sc.asUnit(schema), Array())
+        new Unit(sc.asUnit(schema), Array())
       }
       
       r ++= treatedUnits.map(u => new Pair(
-          new TUnit(u._1, u._2.toArray), cu))
+          new Unit(u._1, u._2.toArray), cu))
       if (!cu.getSamples().isEmpty) {
-        r :+= new Pair(cu, null: TUnit) //add this as a pseudo-treated unit by itself
+        r :+= new Pair(cu, null: Unit) //add this as a pseudo-treated unit by itself
       }
     }    
     r.toArray
   }
   
   def units(scs: Array[SampleClass], param: String, 
-      paramValues: Array[String]): Array[Pair[TUnit, TUnit]] = {
+      paramValues: Array[String]): Array[Pair[Unit, Unit]] = {
     scs.flatMap(units(_, param, paramValues))
   }
 

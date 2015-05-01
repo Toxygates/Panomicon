@@ -1,4 +1,4 @@
-package t.common.shared;
+package t.viewer.shared;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.List;
 
 import otgviewer.shared.Group;
-import t.viewer.shared.StringList;
+import t.common.shared.Dataset;
 
 /**
  * Container for various client side application parameters.

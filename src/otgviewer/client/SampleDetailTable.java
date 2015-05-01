@@ -7,10 +7,10 @@ import java.util.List;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.shared.OTGSample;
-import t.common.client.rpc.SparqlService;
-import t.common.client.rpc.SparqlServiceAsync;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
+import t.viewer.client.rpc.SparqlService;
+import t.viewer.client.rpc.SparqlServiceAsync;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.safehtml.shared.SafeHtml;

@@ -198,7 +198,7 @@ object ManagedMatrixBuilder {
     new ExpressionValue(mean.value, mean.call, tooltip)
   }
 
-  protected def selectIdxs(g: Group,  predicate: (t.common.shared.Unit) => Boolean, 
+  protected def selectIdxs(g: Group,  predicate: (t.viewer.shared.Unit) => Boolean, 
       barcodes: Seq[Sample]): Seq[Int] = {
     val units = g.getUnits().filter(predicate)
     val ids = units.flatMap(_.getSamples.map(_.getCode)).toSet

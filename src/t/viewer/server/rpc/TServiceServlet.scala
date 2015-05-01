@@ -8,7 +8,7 @@ import t.BaseConfig
 import t.Context
 import t.Factory
 import t.viewer.server.Configuration
-import t.common.shared.DataSchema
+import t.viewer.shared.DataSchema
 
 abstract class TServiceServlet extends RemoteServiceServlet {
   protected def context: Context

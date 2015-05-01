@@ -16,10 +16,10 @@ import otgviewer.client.components.Screen;
 import otgviewer.shared.Group;
 import otgviewer.shared.GroupUtils;
 import otgviewer.shared.OTGSample;
-import otgviewer.shared.ValueType;
-import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
-import t.common.shared.Unit;
+import t.common.shared.ValueType;
+import t.viewer.shared.DataSchema;
+import t.viewer.shared.Unit;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;

@@ -9,13 +9,13 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.OTGSample;
-import t.common.client.rpc.SparqlService;
-import t.common.client.rpc.SparqlServiceAsync;
-import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
-import t.common.shared.Unit;
+import t.viewer.client.rpc.SparqlService;
+import t.viewer.client.rpc.SparqlServiceAsync;
+import t.viewer.shared.DataSchema;
+import t.viewer.shared.Unit;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Grid;

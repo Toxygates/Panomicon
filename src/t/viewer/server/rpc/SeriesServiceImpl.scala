@@ -12,7 +12,7 @@ import otgviewer.shared.NoSuchProbeException
 import otgviewer.shared.RankRule
 import otgviewer.shared.{Series => SSeries}
 import t.BaseConfig
-import t.common.client.rpc.SeriesService
+import t.viewer.client.rpc.SeriesService
 import t.common.shared.SampleClass
 import t.db.MatrixContext
 import t.db.SeriesDB

@@ -10,7 +10,7 @@ import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import t.Context
 import t.sparql._
-import t.common.client.rpc.MatrixService
+import t.viewer.client.rpc.MatrixService
 import t.viewer.server.Configuration
 import otgviewer.server.ManagedMatrix
 import otgviewer.server.TargetMine
@@ -18,7 +18,6 @@ import otgviewer.shared.Group
 import otgviewer.shared.ManagedMatrixInfo
 import otgviewer.shared.NoDataLoadedException
 import otgviewer.shared.Synthetic
-import otgviewer.shared.ValueType
 import t.BaseConfig
 import t.common.shared.sample.ExpressionRow
 import t.db.kyotocabinet.KCExtMatrixDB
@@ -38,7 +37,6 @@ import t.common.shared.probe.OrthologProbeMapper
 import t.common.shared.probe.MedianValueMapper
 import t.db.MatrixDBReader
 import otgviewer.shared.DBUnavailableException
-import t.common.shared.DataSchema
 import otgviewer.shared.OTGSchema
 import t.platform.Probe
 import t.db.MatrixContext
@@ -46,6 +44,8 @@ import otgviewer.shared.FullMatrix
 import otgviewer.server.rpc.Conversions
 import Conversions.asScala
 import otg.OTGContext
+import t.common.shared.ValueType
+import t.viewer.shared.DataSchema
 
 object MatrixServiceImpl {
   

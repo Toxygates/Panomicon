@@ -16,11 +16,11 @@ import otgviewer.client.components.ranking.CompoundRanker;
 import otgviewer.client.components.ranking.SimpleCompoundRanker;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
-import t.common.client.rpc.SparqlService;
-import t.common.client.rpc.SparqlServiceAsync;
-import t.common.shared.DataSchema;
 import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
+import t.viewer.client.rpc.SparqlService;
+import t.viewer.client.rpc.SparqlServiceAsync;
+import t.viewer.shared.DataSchema;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;

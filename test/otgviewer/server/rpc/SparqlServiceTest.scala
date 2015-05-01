@@ -1,13 +1,15 @@
 package otgviewer.server.rpc
 
+import scala.collection.JavaConversions._
+
 import org.junit.runner.RunWith
 import org.scalatest.BeforeAndAfter
 import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
+
 import t.common.shared.SampleClass
 import t.viewer.server.Configuration
-import org.scalatest.junit.JUnitRunner
-import t.viewer.shared.AType
-import scala.collection.JavaConversions._
+import t.common.shared.AType
 
 object SparqlServiceTest {  
   val testClass = Map("sin_rep_type" -> "Single",

@@ -22,7 +22,6 @@ import otgviewer.shared.Pathology
 import t.BaseConfig
 import t.DataConfig
 import t.TriplestoreConfig
-import t.common.shared.DataSchema
 import t.common.shared.SampleClass
 import t.common.shared.sample.Annotation
 import t.common.shared.sample.HasSamples
@@ -34,7 +33,6 @@ import t.sparql.TriplestoreMetadata
 import t.viewer.server.Configuration
 import t.viewer.server.Conversions.asSpecies
 import t.viewer.server.Conversions.scAsScala
-import t.viewer.shared.AType
 import t.viewer.shared.Association
 import otgviewer.server.ScalaUtils
 import otgviewer.shared.TimeoutException
@@ -43,6 +41,7 @@ import t.platform.Probe
 import otg.sparql.Probes
 import t.common.shared.Dataset
 import otgviewer.shared.Group
+import t.common.shared.AType
 
 
 /**
@@ -124,7 +123,7 @@ class SparqlServiceImpl extends t.common.server.rpc.SparqlServiceImpl with OTGSe
     new AnnotationResolver(sc, types, _probes).resolve
 
   protected class AnnotationResolver(sc: SampleClass, types: Array[AType],
-                                     _probes: Iterable[String]) extends super.AnnotationResolver(sc, types, _probes) {
+     _probes: Iterable[String]) extends super.AnnotationResolver(sc, types, _probes) {
 
       //    val sp = asSpecies(sc)
     //orthologous proteins if needed

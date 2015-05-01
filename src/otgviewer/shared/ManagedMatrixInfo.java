@@ -24,6 +24,25 @@ public class ManagedMatrixInfo implements Serializable {
 	public ManagedMatrixInfo() { }
 		
 	public void setNumRows(int val) { numRows = val; }
+	 
+	//GWT doesn't have Arrays.copyOf
+	//TODO best location for these two methods?
+	private static Group[] extend(Group[] data, Group add) {
+		Group[] r = new Group[data.length + 1];
+		for (int i = 0; i < data.length; ++i) {
+			r[i] = data[i];
+		}
+		r[data.length] = add;
+		return r;
+	}
+	
+	private static Group[] take(Group[] data, int n) {
+		Group[] r = new Group[n];
+		for (int i = 0; i < n; ++i) {
+			r[i] = data[i];
+		}
+		return r;
+	}
 	
 	/**
 	 * Add information about a single column to this column set.
@@ -44,7 +63,7 @@ public class ManagedMatrixInfo implements Serializable {
 		columnNames = SharedUtils.extend(columnNames, name);
 		columnHints = SharedUtils.extend(columnHints, hint);
 		upperBoundFiltering = SharedUtils.extend(upperBoundFiltering, isUpperFiltering);	
-		columnGroups = SharedUtils.extend(columnGroups, baseGroup);
+		columnGroups = extend(columnGroups, baseGroup);
 		columnFilters = SharedUtils.extend(columnFilters, null);
 		isPValueColumn = SharedUtils.extend(isPValueColumn, isPValue);
 	}
@@ -55,7 +74,7 @@ public class ManagedMatrixInfo implements Serializable {
 		columnNames = SharedUtils.take(columnNames, n);
 		columnHints = SharedUtils.take(columnHints, n);
 		upperBoundFiltering = SharedUtils.take(upperBoundFiltering, n);	
-		columnGroups = SharedUtils.take(columnGroups, n);
+		columnGroups = take(columnGroups, n);
 		columnFilters = SharedUtils.take(columnFilters, n);
 	}
 	

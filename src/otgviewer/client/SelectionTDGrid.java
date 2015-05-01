@@ -15,7 +15,7 @@ import otgviewer.shared.Group;
 import otgviewer.shared.OTGSample;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
-import t.common.shared.Unit;
+import t.viewer.shared.Unit;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

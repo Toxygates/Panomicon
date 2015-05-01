@@ -8,7 +8,7 @@ import otgviewer.client.SampleDetailScreen;
 import otgviewer.client.StartScreen;
 import otgviewer.client.TApplication;
 import otgviewer.shared.OTGSchema;
-import t.common.shared.DataSchema;
+import t.viewer.shared.DataSchema;
 
 /**
  * The main entry point for Toxygates.

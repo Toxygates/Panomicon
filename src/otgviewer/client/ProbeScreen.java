@@ -17,12 +17,12 @@ import otgviewer.client.components.StorageParser;
 import otgviewer.shared.Group;
 import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
-import t.common.client.rpc.MatrixService;
-import t.common.client.rpc.MatrixServiceAsync;
-import t.common.client.rpc.SparqlService;
-import t.common.client.rpc.SparqlServiceAsync;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
+import t.viewer.client.rpc.MatrixService;
+import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.client.rpc.SparqlService;
+import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.ItemList;
 
 import com.google.gwt.core.client.GWT;

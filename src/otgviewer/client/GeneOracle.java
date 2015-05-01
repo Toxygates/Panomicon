@@ -3,9 +3,9 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.List;
 
-import t.common.client.rpc.SparqlService;
-import t.common.client.rpc.SparqlServiceAsync;
 import t.common.shared.SampleClass;
+import t.viewer.client.rpc.SparqlService;
+import t.viewer.client.rpc.SparqlServiceAsync;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;

@@ -13,12 +13,12 @@ import otgviewer.client.components.ListChooser;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.RankRule;
-import t.common.client.rpc.MatrixService;
-import t.common.client.rpc.MatrixServiceAsync;
-import t.common.client.rpc.SparqlService;
-import t.common.client.rpc.SparqlServiceAsync;
-import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
+import t.viewer.client.rpc.MatrixService;
+import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.client.rpc.SparqlService;
+import t.viewer.client.rpc.SparqlServiceAsync;
+import t.viewer.shared.DataSchema;
 import t.viewer.shared.ItemList;
 
 import com.google.gwt.core.client.GWT;

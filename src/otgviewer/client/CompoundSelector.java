@@ -20,11 +20,11 @@ import otgviewer.client.dialog.DialogPosition;
 import otgviewer.shared.MatchResult;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;
-import t.common.client.rpc.SeriesService;
-import t.common.client.rpc.SeriesServiceAsync;
-import t.common.client.rpc.SparqlService;
-import t.common.client.rpc.SparqlServiceAsync;
 import t.common.shared.SampleClass;
+import t.viewer.client.rpc.SeriesService;
+import t.viewer.client.rpc.SeriesServiceAsync;
+import t.viewer.client.rpc.SparqlService;
+import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 

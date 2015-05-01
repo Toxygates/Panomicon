@@ -11,9 +11,9 @@ import otgviewer.client.SampleDetailScreen;
 import otgviewer.client.Utils;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGSample;
-import t.common.shared.AppInfo;
-import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
+import t.viewer.shared.AppInfo;
+import t.viewer.shared.DataSchema;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;

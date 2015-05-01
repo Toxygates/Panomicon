@@ -6,7 +6,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
-import otgviewer.shared.Group;
+import t.common.shared.sample.Sample;
+import t.common.shared.sample.SampleGroup;
 
 public class SharedUtils {
 	public static <T> int indexOf(T[] haystack, T needle) {
@@ -123,16 +124,6 @@ public class SharedUtils {
 		return r;
 	}
 	
-	public static Group[] extend(Group[] data, Group add) {
-		Group[] r = new Group[data.length + 1];
-		for (int i = 0; i < data.length; ++i) {
-			r[i] = data[i];
-		}
-		r[data.length] = add;
-		return r;
-	}
-	
-	
 	public static String[] take(String[] data, int n) {
 		String[] r = new String[n];
 		for (int i = 0; i < n; ++i) {
@@ -151,14 +142,6 @@ public class SharedUtils {
 	
 	public static Double[] take(Double[] data, int n) {
 		Double[] r = new Double[n];
-		for (int i = 0; i < n; ++i) {
-			r[i] = data[i];
-		}
-		return r;
-	}
-	
-	public static Group[] take(Group[] data, int n) {
-		Group[] r = new Group[n];
 		for (int i = 0; i < n; ++i) {
 			r[i] = data[i];
 		}

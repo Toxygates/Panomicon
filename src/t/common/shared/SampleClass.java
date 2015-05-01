@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import t.viewer.shared.DataSchema;
+
 /**
  * A sample class identifies a group of samples.
  * 

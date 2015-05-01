@@ -1,4 +1,4 @@
-package t.viewer.shared;
+package t.common.shared;
 
 /**
  * All known association types. In order to add a new type, it is necessary to define it here,

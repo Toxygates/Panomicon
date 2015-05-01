@@ -17,10 +17,10 @@ import otgviewer.client.components.ScreenManager;
 import otgviewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.FeedbackForm;
 import otgviewer.client.targetmine.TargetMineData;
-import t.common.client.rpc.SparqlService;
-import t.common.client.rpc.SparqlServiceAsync;
-import t.common.shared.AppInfo;
 import t.common.shared.SharedUtils;
+import t.viewer.client.rpc.SparqlService;
+import t.viewer.client.rpc.SparqlServiceAsync;
+import t.viewer.shared.AppInfo;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;

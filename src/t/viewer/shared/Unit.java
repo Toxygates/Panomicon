@@ -1,4 +1,4 @@
-package t.common.shared;
+package t.viewer.shared;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,11 +7,13 @@ import java.util.List;
 import java.util.Map;
 
 import otgviewer.shared.OTGSample;
+import t.common.shared.SampleClass;
 
 /**
  * A sample class with associated samples.
+ * 
+ * TODO: generify, split up OTG/non-OTG versions
  * @author johan
- *
  */
 public class Unit extends SampleClass {
 

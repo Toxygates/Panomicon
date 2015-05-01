@@ -1,4 +1,4 @@
-package t.common.client.rpc;
+package t.viewer.client.rpc;
 
 import java.util.List;
 

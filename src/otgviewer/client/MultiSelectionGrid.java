@@ -14,11 +14,11 @@ import javax.annotation.Nullable;
 import otgviewer.client.SelectionTDGrid.UnitListener;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
-import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
-import t.common.shared.Unit;
+import t.viewer.shared.DataSchema;
+import t.viewer.shared.Unit;
 
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;

@@ -1,4 +1,4 @@
-package t.common.client.rpc;
+package t.viewer.client.rpc;
 
 
 import java.util.List;
@@ -10,7 +10,7 @@ import otgviewer.shared.Group;
 import otgviewer.shared.ManagedMatrixInfo;
 import otgviewer.shared.ServerError;
 import otgviewer.shared.Synthetic;
-import otgviewer.shared.ValueType;
+import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 
 import com.google.gwt.user.client.rpc.RemoteService;

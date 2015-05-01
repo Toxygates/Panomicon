@@ -1,4 +1,4 @@
-package t.common.shared;
+package t.viewer.shared;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -6,11 +6,16 @@ import java.util.Comparator;
 
 import javax.annotation.Nullable;
 
-import otgviewer.shared.ValueType;
-import t.viewer.shared.AType;
+import t.common.shared.AType;
+import t.common.shared.HasClass;
+import t.common.shared.SampleClass;
+import t.common.shared.SharedUtils;
+import t.common.shared.ValueType;
 
 /**
  * Information about the data schema in a particular T application.
+ * 
+ * TODO: move to t.common when the dependency on Unit has been resolved
  */
 public abstract class DataSchema implements Serializable {	
 	

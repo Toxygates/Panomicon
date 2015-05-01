@@ -1,7 +1,7 @@
 package otg
 
 import com.gdevelop.gwt.syncrpc.SyncProxy
-import t.common.client.rpc.SparqlService
+import t.viewer.client.rpc.SparqlService
 import t.common.shared.SampleClass
 import scala.collection.JavaConversions._
 import otgviewer.shared.OTGSchema

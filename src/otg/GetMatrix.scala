@@ -1,20 +1,17 @@
 package otg
 
+import java.io.File
+import java.net.URL
+import scala.sys.process._
 import com.gdevelop.gwt.syncrpc.SyncProxy
 import otgviewer.shared.Group
-import otgviewer.shared.OTGSchema
 import otgviewer.shared.OTGSample
-import otgviewer.shared.ValueType
+import otgviewer.shared.OTGSchema
 import otgviewer.shared.Synthetic
-import t.common.shared.SampleClass
 import t.common.shared.sample.ExpressionValue
-import t.common.client.rpc.MatrixService
-import java.net.CookieManager
-import java.net.CookiePolicy
-import sys.process._
-import java.net.URL
-import java.io.File
-import t.common.client.rpc.SparqlService
+import t.viewer.client.rpc.MatrixService
+import t.viewer.client.rpc.SparqlService
+import t.common.shared.ValueType
 
 object GetMatrix {
   

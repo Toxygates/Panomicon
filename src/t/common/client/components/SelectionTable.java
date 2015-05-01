@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import otgviewer.client.Utils;
 import t.common.shared.SharedUtils;
 
 import com.google.gwt.cell.client.CheckboxCell;
@@ -22,6 +21,7 @@ import com.google.gwt.view.client.NoSelectionModel;
 /**
  * A cell table that displays data and includes a column with checkboxes. By using the checkboxes,
  * the user can select some set of rows.
+ * 
  */
 abstract public class SelectionTable<T> extends Composite implements SetEditor<T> {
 	private CellTable<T> table;
