@@ -63,45 +63,6 @@ public class SharedUtils {
 		}
 	}
 	
-	/*
-	 * The mapper methods are not currently used. Consider retiring.
-	 */	
-	public static interface Mapper<T, U> {
-		public T map(U u);
-	}
-	
-	public static interface FlatMapper<T, U> {
-		public Collection<T> map(U u);
-	}
-	
-	public static <T, U> List<T> map(Collection<U> us, Mapper<T, U> mapper) {
-		List<T> r = new ArrayList<T>();
-		for (U u: us) {
-			r.add(mapper.map(u));
-		}
-		return r;
-	}
-	
-	public static <T, U> List<T> flatMap(Collection<U> us, FlatMapper<T, U> mapper) {
-		List<T> r = new ArrayList<T>();
-		for (U u: us) {
-			r.addAll(mapper.map(u));
-		}
-		return r;
-	}
-	
-	public static boolean safeCmp(Object o1, Object o2) {
-		if (o1 == null && o2 == null) {
-			return true;
-		} else if (o1 == null) {
-			return false;
-		} else if (o2 == null) {
-			return false;
-		} else {
-			return o1.equals(o2);
-		}
-	}
-	
 	public static Logger getLogger() {
 		return getLogger("default");		
 	}
