@@ -65,9 +65,7 @@ public class SharedUtils {
 	
 	/*
 	 * The mapper methods are not currently used. Consider retiring.
-	 */
-	
-	
+	 */	
 	public static interface Mapper<T, U> {
 		public T map(U u);
 	}
@@ -88,62 +86,6 @@ public class SharedUtils {
 		List<T> r = new ArrayList<T>();
 		for (U u: us) {
 			r.addAll(mapper.map(u));
-		}
-		return r;
-	}
-	
-	/*
-	 * We need this method and the similar ones below since
-	 * GWT doesn't support Arrays.copyOf.
-	 * What to do??
-	 */	
-	public static String[] extend(String[] data, String add) {
-		String[] r = new String[data.length + 1];
-		for (int i = 0; i < data.length; ++i) {
-			r[i] = data[i];
-		}
-		r[data.length] = add;
-		return r;
-	}
-	
-	public static boolean[] extend(boolean[] data, boolean add) {
-		boolean[] r = new boolean[data.length + 1];
-		for (int i = 0; i < data.length; ++i) {
-			r[i] = data[i];
-		}
-		r[data.length] = add;
-		return r;
-	}
-	
-	public static Double[] extend(Double[] data, Double add) {
-		Double[] r = new Double[data.length + 1];
-		for (int i = 0; i < data.length; ++i) {
-			r[i] = data[i];
-		}
-		r[data.length] = add;
-		return r;
-	}
-	
-	public static String[] take(String[] data, int n) {
-		String[] r = new String[n];
-		for (int i = 0; i < n; ++i) {
-			r[i] = data[i];
-		}
-		return r;
-	}
-	
-	public static boolean[] take(boolean[] data, int n) {
-		boolean[] r = new boolean[n];
-		for (int i = 0; i < n; ++i) {
-			r[i] = data[i];
-		}
-		return r;
-	}
-	
-	public static Double[] take(Double[] data, int n) {
-		Double[] r = new Double[n];
-		for (int i = 0; i < n; ++i) {
-			r[i] = data[i];
 		}
 		return r;
 	}

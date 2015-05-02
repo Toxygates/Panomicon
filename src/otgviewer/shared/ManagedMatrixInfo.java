@@ -1,10 +1,11 @@
 package otgviewer.shared;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.annotation.Nullable;
-
-import t.common.shared.SharedUtils;
 
 /**
  * Information about a ManagedMatrix that the server maintains on behalf of the client. 
@@ -13,36 +14,18 @@ import t.common.shared.SharedUtils;
 public class ManagedMatrixInfo implements Serializable {
 
 	private int numDataColumns = 0, numSynthetics = 0, numRows = 0;
-	private String[] columnNames = new String[0];
-	private String[] columnHints = new String[0];
-	private boolean[] upperBoundFiltering = new boolean[0];
-	private Group[] columnGroups = new Group[0];
-	private Double[] columnFilters = new Double[0];
-	private String[] platforms = new String[0];
-	private boolean[] isPValueColumn = new boolean[0];
+	private List<String> columnNames = new ArrayList<String>();
+	private List<String> columnHints = new ArrayList<String>();
+	private List<Boolean> upperBoundFiltering = new ArrayList<Boolean>();
+	private List<Group> columnGroups = new ArrayList<Group>();
+	private List<Double> columnFilters = new ArrayList<Double>();
+	private List<String> platforms = new ArrayList<String>();
+	private List<Boolean> isPValueColumn = new ArrayList<Boolean>();
 	
 	public ManagedMatrixInfo() { }
 		
 	public void setNumRows(int val) { numRows = val; }
 	 
-	//GWT doesn't have Arrays.copyOf
-	//TODO best location for these two methods?
-	private static Group[] extend(Group[] data, Group add) {
-		Group[] r = new Group[data.length + 1];
-		for (int i = 0; i < data.length; ++i) {
-			r[i] = data[i];
-		}
-		r[data.length] = add;
-		return r;
-	}
-	
-	private static Group[] take(Group[] data, int n) {
-		Group[] r = new Group[n];
-		for (int i = 0; i < n; ++i) {
-			r[i] = data[i];
-		}
-		return r;
-	}
 	
 	/**
 	 * Add information about a single column to this column set.
@@ -60,22 +43,22 @@ public class ManagedMatrixInfo implements Serializable {
 			numDataColumns++;
 		}
 		
-		columnNames = SharedUtils.extend(columnNames, name);
-		columnHints = SharedUtils.extend(columnHints, hint);
-		upperBoundFiltering = SharedUtils.extend(upperBoundFiltering, isUpperFiltering);	
-		columnGroups = extend(columnGroups, baseGroup);
-		columnFilters = SharedUtils.extend(columnFilters, null);
-		isPValueColumn = SharedUtils.extend(isPValueColumn, isPValue);
+		columnNames.add(name);
+		columnHints.add(hint);
+		upperBoundFiltering.add(isUpperFiltering);	
+		columnGroups.add(baseGroup);
+		columnFilters.add(null);
+		isPValueColumn.add(isPValue);		
 	}
 	
 	public void removeSynthetics() {
 		numSynthetics = 0;
 		int n = numDataColumns;
-		columnNames = SharedUtils.take(columnNames, n);
-		columnHints = SharedUtils.take(columnHints, n);
-		upperBoundFiltering = SharedUtils.take(upperBoundFiltering, n);	
-		columnGroups = take(columnGroups, n);
-		columnFilters = SharedUtils.take(columnFilters, n);
+		columnNames = columnNames.subList(0, n); 
+		columnHints = columnHints.subList(0, n);
+		upperBoundFiltering = upperBoundFiltering.subList(0, n);	
+		columnGroups = columnGroups.subList(0, n);
+		columnFilters = columnFilters.subList(0, n);
 	}
 	
 	public int numColumns() {
@@ -102,7 +85,7 @@ public class ManagedMatrixInfo implements Serializable {
 	 * @return
 	 */
 	public boolean isUpperFiltering(int column) {
-		return upperBoundFiltering[column];		
+		return upperBoundFiltering.get(column);		
 	}
 	
 	/**
@@ -110,7 +93,7 @@ public class ManagedMatrixInfo implements Serializable {
 	 * @return The name of the column.
 	 */
 	public String columnName(int column) {
-		return columnNames[column];
+		return columnNames.get(column);
 	}
 	
 	/**
@@ -120,7 +103,7 @@ public class ManagedMatrixInfo implements Serializable {
 	 * @return
 	 */
 	public String columnHint(int column) {
-		return columnHints[column];
+		return columnHints.get(column);
 	}
 	
 	/**
@@ -129,7 +112,7 @@ public class ManagedMatrixInfo implements Serializable {
 	 * @return The group that the column was generated from, or null if there is none.
 	 */
 	public @Nullable Group columnGroup(int column) {
-		return columnGroups[column];
+		return columnGroups.get(column);
 	}
 	
 	/**
@@ -138,11 +121,11 @@ public class ManagedMatrixInfo implements Serializable {
 	 * @return The filter, or null if none was set.
 	 */
 	public @Nullable Double columnFilter(int column) {
-		return columnFilters[column];
+		return columnFilters.get(column);
 	}
 	
 	public void setColumnFilter(int column, @Nullable Double filter) {
-		columnFilters[column] = filter;
+		columnFilters.set(column, filter);
 	}
 	
 	/**
@@ -151,11 +134,13 @@ public class ManagedMatrixInfo implements Serializable {
 	 * @return
 	 */
 	public boolean isPValueColumn(int column) {
-		return isPValueColumn[column];
+		return isPValueColumn.get(column);
 	}
 	
-	public void setPlatforms(String[] platforms) { this.platforms = platforms; }
+	public void setPlatforms(String[] platforms) { 
+		this.platforms = Arrays.asList(platforms); 
+	}
 	
-	public String[] getPlatforms() { return platforms; }
+	public String[] getPlatforms() { return platforms.toArray(new String[0]); }
 
 }
