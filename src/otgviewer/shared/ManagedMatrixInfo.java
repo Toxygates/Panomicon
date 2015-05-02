@@ -25,7 +25,6 @@ public class ManagedMatrixInfo implements Serializable {
 	public ManagedMatrixInfo() { }
 		
 	public void setNumRows(int val) { numRows = val; }
-	 
 	
 	/**
 	 * Add information about a single column to this column set.

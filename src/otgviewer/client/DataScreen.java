@@ -4,11 +4,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import otgviewer.client.components.ListChooser;
-import otgviewer.client.components.RichTable.HideableColumn;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.Group;
+import t.viewer.client.table.RichTable.HideableColumn;
 import t.viewer.shared.ItemList;
 
 import com.google.gwt.user.client.Command;

@@ -36,6 +36,7 @@ import t.common.shared.sample.DataColumn;
 import t.common.shared.sample.ExpressionRow;
 import t.viewer.client.rpc.MatrixService;
 import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.client.table.ColumnInfo;
 import t.viewer.shared.DataSchema;
 
 import com.google.gwt.cell.client.Cell;
@@ -340,8 +341,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		for (int i = 0; i < matrixInfo.numDataColumns(); ++i) {			
 			if (displayPColumns || ! matrixInfo.isPValueColumn(i)) {
 				Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);
-				valueCol.setDefaultSortAscending(false);
-				addDataColumn(valueCol, matrixInfo.columnName(i), matrixInfo.columnHint(i));
+				ColumnInfo ci = new ColumnInfo(matrixInfo.columnName(i), 
+						matrixInfo.columnHint(i), true, false, true);
+				ci.setCellStyleNames("dataColumn");				
+				addDataColumn(valueCol, ci);
 				Group g = matrixInfo.columnGroup(i);
 				if (g != null) {
 					valueCol.setCellStyleNames(g.getStyleName());
@@ -380,9 +383,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		synthetics.add(s);
 		Column<ExpressionRow, String> synCol = new ExpressionColumn(tc, dataColumns);
 		synthColumns.add(synCol);
-		synCol.setDefaultSortAscending(s.isDefaultSortAscending());
-		addDataColumn(synCol, title, tooltip);		
-		synCol.setCellStyleNames("extraColumn");				
+		ColumnInfo info = new ColumnInfo(title, tooltip, true, false, true);
+		info.setCellStyleNames("extraColumn");
+		info.setDefaultSortAsc(s.isDefaultSortAscending());				
+		addDataColumn(synCol, info);				
 	}
 	
 	private void removeSyntheticColumnsLocal() {
@@ -395,12 +399,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	}
 	
 	@Override
-	protected Header<SafeHtml> getColumnHeader(int column, SafeHtml safeHtml) {
-		if (column >= numExtraColumns()) {
-			// filterable column
-			return new FilteringHeader(safeHtml);
+	protected Header<SafeHtml> getColumnHeader(ColumnInfo info) {
+		if (info.filterable()) {
+			return new FilteringHeader(info.headerHtml());
 		} else {
-			return super.getColumnHeader(column, safeHtml);
+			return super.getColumnHeader(info);
 		}		
 	}
 	
