@@ -11,9 +11,9 @@ public class ColumnInfo {
 
 	static final String DEFAULT_COL_WIDTH = "12em";
 	
-	//width? styleName?
 	private String title, tooltip, width;
 	private @Nullable String cellStyleNames;
+	//TODO hideable may not be needed here
 	private boolean sortable, hideable, defaultSortAsc, filterable;
 	
 	public ColumnInfo(String title, String tooltip, boolean sortable,

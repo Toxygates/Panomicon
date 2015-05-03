@@ -1,7 +1,9 @@
 package t.viewer.client.table;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import otgviewer.client.components.DataListenerWidget;
 import t.viewer.shared.DataSchema;
@@ -26,18 +28,22 @@ import com.google.gwt.user.client.Event;
 /**
  * A data grid with functionality for hiding columns and displaying 
  * clickable icons in the leftmost columns.
- * It also has the concepts of data columns and extra columns.
+ * It also manages a list of named column sections. 
+ * Columns in a given section are adjacent to each other.
  */
 abstract public class RichTable<T> extends DataListenerWidget {
 	protected DataGrid<T> grid;
 	protected List<HideableColumn> hideableColumns = new ArrayList<HideableColumn>();
 	protected int highlightedRow = -1;
 	
-	private int extraCols = 0;
-	protected int dataColumns = 0;
  	protected final DataSchema schema; 	
  	protected List<ColumnInfo> columnInfos = new ArrayList<ColumnInfo>();
-	
+ 	
+ 	//Track the order of sections
+	private List<String> columnSections = new ArrayList<String>();
+	//Track the number of columns in each section
+	private Map<String, Integer> sectionColumnCount = new HashMap<String, Integer>();
+ 	
 	public RichTable(DataSchema schema) {
 		this.schema = schema;
 		hideableColumns = initHideableColumns(schema);
@@ -81,16 +87,20 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		}
 		grid.getColumnSortList().clear();
 		columnInfos = new ArrayList<ColumnInfo>();
+		columnSections = new ArrayList<String>();
+		sectionColumnCount = new HashMap<String, Integer>();
 		
-		dataColumns = 0;
-		extraCols = 0;
+		ensureSection("default");
+		ensureSection("extra");
+		ensureSection("data");
+		
 		Column<T, String> tcl = toolColumn(toolCell());
 		
 		grid.addColumn(tcl, "");
+		increaseSectionCount("default");
 		//This object will never be used - mainly to keep indexes consistent
 		columnInfos.add(new ColumnInfo("", "", false, false, false));
-		
-		extraCols += 1;
+				
 		tcl.setCellStyleNames("clickCell");
 		grid.setColumnWidth(tcl, "40px");		
 		
@@ -98,7 +108,8 @@ abstract public class RichTable<T> extends DataListenerWidget {
 			if (c.visible()) {
 				Column<T, ?> cc = (Column<T, ?>) c;
 				ColumnInfo info = new ColumnInfo(c, false);
-				addExtraColumn(cc, info);												
+				info.setCellStyleNames("extraColumn");
+				addColumn(cc, "extra", info);												
 			}
 		}		
 	}
@@ -128,6 +139,11 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	
 	private final static int COL_TITLE_MAX_LEN = 12;
 
+	/**
+	 * Configure a column
+	 * @param c
+	 * @param info
+	 */
 	private void setup(Column<T, ?> c, ColumnInfo info) {
 		grid.setColumnWidth(c, info.width());
 		if (info.cellStyleNames() != null) {
@@ -141,16 +157,45 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		}
 	}
 	
-	protected void addColumn(Column<T, ?> c, ColumnInfo info) {				
-		grid.addColumn(c, getColumnHeader(info));
-		setup(c, info);
-		columnInfos.add(info);
+	private void ensureSection(String section) {
+		if (!columnSections.contains(section)) {
+			columnSections.add(section);
+			sectionColumnCount.put(section, 0);
+		}
 	}
 	
-	protected void insertColumn(Column<T, ?> c, int at, ColumnInfo info) {				
-		grid.insertColumn(at, c, getColumnHeader(info));
-		setup(c, info);
-		columnInfos.set(at, info);
+	private void increaseSectionCount(String section) {
+		int old = sectionColumnCount.get(section);
+		sectionColumnCount.put(section, old + 1);
+	}
+	
+	private int nextColumnIndex(String section) {
+		ensureSection(section);
+		int c = 0;
+		for (String s: columnSections) {
+			c += sectionColumnCount.get(s);
+			if (s.equals(section)) {
+				return c;
+			}
+		}
+		//Should not get here but...
+		return c;
+	}
+	
+	private void decreaseSectionCount(int at) {
+		int c = 0;
+		for (String s: columnSections) {
+			c += sectionColumnCount.get(s);
+			if (c >= at && c > 0) {
+				int old = sectionColumnCount.get(s);
+				sectionColumnCount.put(s, old - 1);
+				return;
+			}			
+		}
+	}
+	
+	protected int sectionCount(String section) {
+		return sectionColumnCount.get(section);
 	}
 	
 	protected Header<SafeHtml> getColumnHeader(ColumnInfo info) {		
@@ -158,49 +203,32 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		return new SafeHtmlHeader(i.headerHtml());
 	}
 	
-	public void addDataColumn(Column<T, ?> col, ColumnInfo info) {
-		addColumn(col, info);	
-		dataColumns += 1;
+	protected void addColumn(Column<T, ?> col, String section, ColumnInfo info) {		
+		int at = nextColumnIndex(section);
+		increaseSectionCount(section);
+		grid.insertColumn(at, col, getColumnHeader(info));
+		setup(col, info);
+		columnInfos.set(at, info);
 	}
 	
-	/**
-	 * Remove a column without altering the sort order, if possible
-	 * 
-	 * TODO: separate the notion of a sortable column from the notion of a
-	 * data column, more cleanly
-	 * @param c
-	 */
-	public void removeDataColumn(Column<T, ?> c) {
-		ColumnSortList csl = grid.getColumnSortList();
-		
-		for (int i = 0; i < csl.size(); ++i) {
-			ColumnSortInfo csi = grid.getColumnSortList().get(i);
-			if (csi.getColumn() == c) {
-				csl.remove(csi);
-				break;
-			}
-		}		
-		columnInfos.remove(grid.getColumnIndex(c));
-		grid.removeColumn(c);
-		dataColumns -= 1;
-	}
-	
-	/**
-	 * An "extra" column is a column that is not a data column.
-	 * @param col
-	 * @param name
-	 */
-	private void addExtraColumn(Column<T, ?> col, ColumnInfo info) {		
-		info.setCellStyleNames("extraColumn");		
-		extraCols += 1;
-		insertColumn(col, extraCols - 1, info);		
-	}
-	
-	private void removeExtraColumn(Column<T, ?> col) {
+	protected void removeColumn(Column<T, ?> col) {
 		int idx = grid.getColumnIndex(col);
+		decreaseSectionCount(idx);
+		ColumnInfo info = columnInfos.get(idx);
+		
+		if (info.sortable()) {
+			//Try to keep the original sort order
+			ColumnSortList csl = grid.getColumnSortList();			
+			for (int i = 0; i < csl.size(); ++i) {
+				ColumnSortInfo csi = grid.getColumnSortList().get(i);
+				if (csi.getColumn() == col) {
+					csl.remove(csi);
+					break;
+				}
+			}		
+		}
 		columnInfos.remove(idx);
-		grid.removeColumn(col);
-		extraCols -= 1;
+		grid.removeColumn(col);		
 	}
 	
 	abstract protected List<HideableColumn> initHideableColumns(DataSchema schema);
@@ -218,9 +246,10 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		hc.setVisibility(newState);	
 		if (newState) {
 			ColumnInfo info = new ColumnInfo(hc, false);
-			addExtraColumn(((Column<T, ?>) hc), info);					
+			info.setCellStyleNames("extraColumn");
+			addColumn(((Column<T, ?>) hc), "extra", info);			
 		} else {
-			removeExtraColumn((Column<T, ?>) hc);
+			removeColumn((Column<T, ?>) hc);
 		}				
 	}
 	
