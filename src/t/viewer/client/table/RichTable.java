@@ -157,7 +157,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		}
 	}
 	
-	private void ensureSection(String section) {
+	protected void ensureSection(String section) {
 		if (!columnSections.contains(section)) {
 			columnSections.add(section);
 			sectionColumnCount.put(section, 0);
@@ -207,8 +207,8 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		int at = nextColumnIndex(section);
 		increaseSectionCount(section);
 		grid.insertColumn(at, col, getColumnHeader(info));
-		setup(col, info);
-		columnInfos.set(at, info);
+		setup(col, info);		
+		columnInfos.add(at, info);
 	}
 	
 	protected void removeColumn(Column<T, ?> col) {

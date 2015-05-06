@@ -336,6 +336,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
 	protected void setupColumns() {
 		super.setupColumns();
+		ensureSection("synthetic");
+		
 		TextCell tc = new TextCell();
 				
 		for (int i = 0; i < matrixInfo.numDataColumns(); ++i) {			
@@ -344,7 +346,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				ColumnInfo ci = new ColumnInfo(matrixInfo.columnName(i), 
 						matrixInfo.columnHint(i), true, false, true);
 				ci.setCellStyleNames("dataColumn");				
-				addDataColumn(valueCol, ci);
+				addColumn(valueCol, "data", ci);
 				Group g = matrixInfo.columnGroup(i);
 				if (g != null) {
 					valueCol.setCellStyleNames(g.getStyleName());
@@ -381,18 +383,19 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	private void addSynthColumn(Synthetic s, String title, String tooltip) {
 		TextCell tc = new TextCell();
 		synthetics.add(s);
-		Column<ExpressionRow, String> synCol = new ExpressionColumn(tc, dataColumns);
+		int dcs = sectionCount("data") + sectionCount("synthetic");
+		Column<ExpressionRow, String> synCol = new ExpressionColumn(tc, dcs);
 		synthColumns.add(synCol);
 		ColumnInfo info = new ColumnInfo(title, tooltip, true, false, true);
 		info.setCellStyleNames("extraColumn");
 		info.setDefaultSortAsc(s.isDefaultSortAscending());				
-		addDataColumn(synCol, info);				
+		addColumn(synCol, "synthetic", info);				
 	}
 	
 	private void removeSyntheticColumnsLocal() {
 		for (int i = 0; i < synthColumns.size(); ++i) {						
 			Column<ExpressionRow, ?> c = synthColumns.get(i);
-			removeDataColumn(c);
+			removeColumn(c);
 		}
 		synthColumns.clear();
 		synthetics.clear();		
