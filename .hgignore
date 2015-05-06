@@ -1,8 +1,7 @@
 war/*
 gwt-unitCache/*
 test-classes/*
-lib/bundle/*
-lib/jar/*
-lib/javadoc/*
-lib/source/*
+lib/*
 extract-deploy/*
+OTGTool/lib/*
+OTGTool/bin/*
