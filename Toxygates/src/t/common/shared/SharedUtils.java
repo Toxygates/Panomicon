@@ -6,9 +6,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleGroup;
-
 public class SharedUtils {
 	public static <T> int indexOf(T[] haystack, T needle) {
 		for (int i = 0; i < haystack.length; ++i) {

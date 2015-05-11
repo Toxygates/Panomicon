@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
-import otgviewer.client.Utils;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;

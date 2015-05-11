@@ -3,7 +3,6 @@ package t.viewer.client.rpc;
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
-import otgviewer.shared.TimeoutException;
 import t.common.shared.AType;
 import t.common.shared.Dataset;
 import t.common.shared.Pair;

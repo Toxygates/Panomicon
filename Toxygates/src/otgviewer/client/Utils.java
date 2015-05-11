@@ -1,7 +1,5 @@
 package otgviewer.client;
 
-import java.util.logging.Logger;
-
 import otgviewer.client.charts.google.GVizCharts;
 import otgviewer.client.dialog.DialogPosition;
 

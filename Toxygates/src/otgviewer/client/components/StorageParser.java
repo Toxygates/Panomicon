@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.Utils;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import t.common.shared.DataSchema;

@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import otgviewer.client.Utils;
 import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
 import otgviewer.client.charts.google.GVizChartGrid;

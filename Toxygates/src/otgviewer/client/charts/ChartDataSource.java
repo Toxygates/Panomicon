@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.Utils;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.FullMatrix;

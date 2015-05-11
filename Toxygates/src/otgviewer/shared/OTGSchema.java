@@ -6,7 +6,6 @@ import t.common.shared.AType;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.ValueType;
-import t.viewer.shared.Unit;
 
 public class OTGSchema extends DataSchema {	
 	public static String[] allTimes = new String[] { "2 hr", "3 hr", "6 hr", "8 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day" };
