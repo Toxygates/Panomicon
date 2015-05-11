@@ -12,18 +12,21 @@ object ExprMatrix {
   val ttest = new TTest()
   val utest = new MannWhitneyUTest()
 
+  def safeCountColumns(rows: Seq[Seq[Any]]) = 
+    if (rows.size > 0) { rows(0).size } else 0
+  
   def withRows(data: Seq[Seq[ExpressionValue]], metadata: ExprMatrix = null) = {
     if (metadata != null) {
       metadata.copyWith(data)
     } else {
       val rows = data.size
-      val columns = data(0).size
+      val columns = safeCountColumns(data)
       new ExprMatrix(data.map(_.toVector), rows, columns, Map(), Map(), emptyAnnotations(rows))
     }       
   }
   
   def withRows(data: Seq[Seq[ExpressionValue]], rowNames: Seq[String], colNames: Seq[String]) = 
-    new ExprMatrix(data.map(_.toVector), data.size, data(0).size, 
+    new ExprMatrix(data.map(_.toVector), data.size, safeCountColumns(data), 
         Map() ++ rowNames.zipWithIndex, Map() ++ colNames.zipWithIndex, 
         emptyAnnotations(data.size))
   
@@ -66,7 +69,7 @@ class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int,
       annotations: Vector[RowAnnotation]): ExprMatrix =  {
       
         new ExprMatrix(rowData, rowData.size, 
-            if (rowData.isEmpty) { 0 } else { rowData(0).size }, 
+            safeCountColumns(rowData),           
             rowMap, columnMap, annotations)
   }
   

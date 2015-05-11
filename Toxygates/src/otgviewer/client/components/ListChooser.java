@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import otgviewer.client.Utils;
 import otgviewer.client.dialog.DialogPosition;
@@ -33,9 +34,11 @@ import com.google.gwt.user.client.ui.ListBox;
  */
 public class ListChooser extends DataListenerWidget {
 	
-	private HashMap<String, List<String>> lists = new HashMap<String, List<String>>();
+	//ordered map
+	private Map<String, List<String>> lists = new TreeMap<String, List<String>>();
+	
 	private Map<String, List<String>> predefinedLists =
-			new HashMap<String, List<String>>();
+			new TreeMap<String, List<String>>(); //ordered map
 	private List<String> currentItems;
 	private DialogBox inputDialog;
 	final private ListBox listBox;
@@ -206,8 +209,7 @@ public class ListChooser extends DataListenerWidget {
 	 */
 	public void setLists(List<ItemList> itemLists) {
 		lists.clear();
-		otherTypeLists.clear();
-		lists.putAll(predefinedLists);
+		otherTypeLists.clear();		
 		for (ItemList il : itemLists) {
 			if (il.type().equals(listType) && (il instanceof StringList)) {
 				StringList sl = (StringList) il;
@@ -216,6 +218,7 @@ public class ListChooser extends DataListenerWidget {
 				otherTypeLists.add(il);
 			}			
 		}
+		lists.putAll(predefinedLists);
 		refreshSelector();
 	}
 

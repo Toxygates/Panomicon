@@ -129,8 +129,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   
   private def predefProbeLists() = {
     val ls = probeStore.probeLists(instanceURI).mapMValues(p => p.identifier)
-    val sls = ls.map(x => new StringList("probes", x._1, x._2.toArray))    
-    new java.util.LinkedList(seqAsJavaList(sls.toSeq))
+    val sls = ls.map(x => new StringList("probes", x._1, x._2.toArray)).toList     
+    new java.util.LinkedList(seqAsJavaList(sls.sortBy(_.name)))
   }
   
   private def datasets(): Array[Dataset] = {

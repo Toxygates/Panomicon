@@ -741,8 +741,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 							
 							logger.info("Data successfully loaded");
 						} else {
-							Window.alert("No data was available. If you have not used " +
-									"Toxygates for a while, try reloading the page.");
+							if (chosenProbes != null && chosenProbes.length > 0) {
+								Window.alert("No data was available. You may wish to choose different probes or samples.");
+							} else {
+								Window.alert("No data was available. You may wish to try reloading the page.");
+							}
 						}
 					}
 				});
