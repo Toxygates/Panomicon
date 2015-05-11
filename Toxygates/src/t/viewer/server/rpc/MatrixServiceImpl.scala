@@ -45,7 +45,7 @@ import otgviewer.server.rpc.Conversions
 import Conversions.asScala
 import otg.OTGContext
 import t.common.shared.ValueType
-import t.viewer.shared.DataSchema
+import t.common.shared.DataSchema
 
 object MatrixServiceImpl {
   

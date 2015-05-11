@@ -17,6 +17,7 @@ import otgviewer.client.components.Screen;
 import otgviewer.shared.FullMatrix;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGSample;
+import otgviewer.shared.OTGSchema;
 import otgviewer.shared.Series;
 import t.common.shared.DataSchema;
 import t.common.shared.HasClass;
@@ -57,7 +58,7 @@ abstract class ChartDataSource {
 		String color = "grey";
 		
 		private final static List<String> chartKeys = new ArrayList<String>();
-		static {
+		static {						
 			//TODO use DataSchema to add these
 			Collections.addAll(chartKeys, "exposure_time", "dose_level", 
 					"compound_name", "organism");
@@ -198,10 +199,13 @@ abstract class ChartDataSource {
 	static class SeriesSource extends ChartDataSource {
 		SeriesSource(DataSchema schema, List<Series> series, String[] times) {
 			super(schema);
-			for (Series s: series) {				
+			for (Series s: series) {
 				for (int i = 0; i < s.values().length; ++i) {
-					ExpressionValue ev = s.values()[i];					
-					ChartSample cs = new ChartSample(s.sampleClass(), schema,
+					ExpressionValue ev = s.values()[i];			
+					String time = times[i];
+					SampleClass sc = s.sampleClass().
+							copyWith(schema.timeParameter(), time);
+					ChartSample cs = new ChartSample(sc, schema,
 							ev.getValue(), null, s.probe(), ev.getCall());
 					chartSamples.add(cs);
 				}
