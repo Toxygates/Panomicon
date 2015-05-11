@@ -121,8 +121,12 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
     //NB Gene(s, symbol=s) is a hack because the first argument is expected to be an entrez id.
     //However we have to put something non-null there to allow the gene objects to have proper
     //hash codes and equality -- think about this.
-    val geneSyms = forGeneSyms(rs.unresolved.map(s => Gene(s, symbol = s)), precise).allValues
-    rs.resolve(geneSyms.map(_.identifier))
+    if (rs.unresolved.size > 0) {
+      val geneSyms = forGeneSyms(
+          rs.unresolved.map(s => Gene(s, symbol = s)), precise
+      ).allValues
+      rs.resolve(geneSyms.map(_.identifier))
+    }
   }
     
   override protected def slowProbeResolution(rs: GradualProbeResolver, precise: Boolean): Unit = {
