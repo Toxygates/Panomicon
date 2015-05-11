@@ -11,9 +11,9 @@ import otgviewer.client.components.StorageParser;
 import otgviewer.client.dialog.DialogPosition;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
+import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.DataColumn;
-import t.viewer.shared.DataSchema;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;

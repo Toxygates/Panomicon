@@ -2,8 +2,8 @@ package otgviewer.shared;
 
 import java.io.Serializable;
 
+import t.common.shared.DataSchema;
 import t.common.shared.sample.DataColumn;
-import t.viewer.shared.DataSchema;
 
 abstract public class Synthetic implements DataColumn<OTGSample>, Serializable {
 

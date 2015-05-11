@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import otgviewer.shared.OTGSample;
+import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 
 /**

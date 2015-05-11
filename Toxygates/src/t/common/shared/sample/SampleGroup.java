@@ -3,8 +3,8 @@ package t.common.shared.sample;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
-import t.viewer.shared.DataSchema;
 
 /**
  * A way of grouping microarray samples.

@@ -8,10 +8,10 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.SampleGroup;
-import t.viewer.shared.DataSchema;
 import t.viewer.shared.Unit;
 
 /**

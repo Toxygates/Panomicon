@@ -18,6 +18,7 @@ import otgviewer.shared.FullMatrix;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Series;
+import t.common.shared.DataSchema;
 import t.common.shared.HasClass;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
@@ -26,7 +27,6 @@ import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.ExpressionValue;
 import t.viewer.client.rpc.MatrixService;
 import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.shared.DataSchema;
 import t.viewer.shared.Unit;
 
 import com.google.gwt.core.client.GWT;

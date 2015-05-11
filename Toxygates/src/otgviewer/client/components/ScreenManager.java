@@ -1,7 +1,7 @@
 package otgviewer.client.components;
 
+import t.common.shared.DataSchema;
 import t.viewer.shared.AppInfo;
-import t.viewer.shared.DataSchema;
 
 import com.google.gwt.user.client.ui.ProvidesResize;
 

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import otgviewer.client.components.DataListenerWidget;
-import t.viewer.shared.DataSchema;
+import t.common.shared.DataSchema;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.SafeHtmlCell;

@@ -5,9 +5,9 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.Sample;
-import t.viewer.shared.DataSchema;
 
 public class OTGSample extends Sample {
 

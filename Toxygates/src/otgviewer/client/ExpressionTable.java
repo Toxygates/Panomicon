@@ -28,6 +28,7 @@ import otgviewer.shared.ManagedMatrixInfo;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Synthetic;
 import t.common.shared.AType;
+import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
@@ -37,7 +38,6 @@ import t.common.shared.sample.ExpressionRow;
 import t.viewer.client.rpc.MatrixService;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.table.ColumnInfo;
-import t.viewer.shared.DataSchema;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.SafeHtmlCell;

@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import otgviewer.client.Utils;
+import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.viewer.client.rpc.SparqlService;
 import t.viewer.client.rpc.SparqlServiceAsync;
-import t.viewer.shared.DataSchema;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;

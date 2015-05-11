@@ -9,7 +9,6 @@
 <module rename-to="t.common.Common">
 	<inherits name="com.google.gwt.user.User" />
 	<!-- TODO remove dependency when code has been reorganised -->
-	<inherits name="otgviewer.otgcore" />
 	<source path="client"/>
 	<source path='shared' />
 </module>

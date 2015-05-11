@@ -9,13 +9,13 @@ import java.util.Map;
 import java.util.Set;
 
 import t.common.shared.AType;
+import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.SharedUtils;
 import t.viewer.client.rpc.SparqlService;
 import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.client.table.RichTable;
 import t.viewer.shared.Association;
-import t.viewer.shared.DataSchema;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.core.client.GWT;

@@ -7,8 +7,8 @@ import java.util.Map;
 
 import otgviewer.client.GroupInspector;
 import otgviewer.shared.Group;
+import t.common.shared.DataSchema;
 import t.common.shared.Pair;
-import t.viewer.shared.DataSchema;
 import t.viewer.shared.Unit;
 
 public class GroupMaker {

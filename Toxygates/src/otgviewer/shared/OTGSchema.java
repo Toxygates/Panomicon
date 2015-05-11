@@ -3,9 +3,9 @@ package otgviewer.shared;
 import java.util.ArrayList;
 
 import t.common.shared.AType;
+import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.ValueType;
-import t.viewer.shared.DataSchema;
 import t.viewer.shared.Unit;
 
 public class OTGSchema extends DataSchema {	
@@ -99,12 +99,12 @@ public class OTGSchema extends DataSchema {
 		return (value != null) && ("Control".equals(value));
 	}
 	
-	@Override
-	public Unit selectionControlUnitFor(Unit u) {
-		Unit u2 = new Unit(u, new OTGSample[] {});
-		u2.put("dose_level", "Control");
-		return u2;
-	}
+//	@Override
+//	public Unit selectionControlUnitFor(Unit u) {
+//		Unit u2 = new Unit(u, new OTGSample[] {});
+//		u2.put("dose_level", "Control");
+//		return u2;
+//	}
 	
 	private static AType[] associations = new AType[] {
 		AType.Chembl, AType.Drugbank, AType.Enzymes,

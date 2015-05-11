@@ -2,10 +2,10 @@ package otgviewer.shared;
 
 import java.util.Set;
 
+import t.common.shared.DataSchema;
 import t.common.shared.Packable;
 import t.common.shared.sample.DataColumn;
 import t.common.shared.sample.HasSamples;
-import t.viewer.shared.DataSchema;
 
 public interface OTGColumn extends Packable, DataColumn<OTGSample>, HasSamples<OTGSample> {
 	/**

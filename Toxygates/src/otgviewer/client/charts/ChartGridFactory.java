@@ -17,6 +17,7 @@ import otgviewer.shared.Group;
 import otgviewer.shared.GroupUtils;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Series;
+import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
@@ -25,7 +26,6 @@ import t.viewer.client.rpc.SeriesService;
 import t.viewer.client.rpc.SeriesServiceAsync;
 import t.viewer.client.rpc.SparqlService;
 import t.viewer.client.rpc.SparqlServiceAsync;
-import t.viewer.shared.DataSchema;
 import t.viewer.shared.Unit;
 
 import com.google.gwt.core.client.GWT;

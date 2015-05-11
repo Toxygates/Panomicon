@@ -4,7 +4,7 @@ import java.util.List;
 
 import otgviewer.client.Utils;
 import otgviewer.shared.Group;
-import t.viewer.shared.DataSchema;
+import t.common.shared.DataSchema;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;

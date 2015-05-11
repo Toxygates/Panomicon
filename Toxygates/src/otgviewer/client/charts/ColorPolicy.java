@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 
 import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.shared.OTGSample;
-import t.viewer.shared.DataSchema;
+import t.common.shared.DataSchema;
 
 /**
  * A ColorPolicy is a way of coloring samples in a chart.
