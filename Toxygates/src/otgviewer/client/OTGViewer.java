@@ -1,12 +1,5 @@
-package otgviewer.gui.client;
+package otgviewer.client;
 
-import otgviewer.client.ColumnScreen;
-import otgviewer.client.DataScreen;
-import otgviewer.client.PathologyScreen;
-import otgviewer.client.ProbeScreen;
-import otgviewer.client.SampleDetailScreen;
-import otgviewer.client.StartScreen;
-import otgviewer.client.TApplication;
 import otgviewer.shared.OTGSchema;
 import t.common.shared.DataSchema;
 
