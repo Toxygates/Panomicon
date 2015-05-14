@@ -248,10 +248,6 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   
   //TODO move to OTG
   @throws[TimeoutException]
-  def pathologies(barcode: OTGSample): Array[Pathology] = Array()
-    
-  //TODO move to OTG
-  @throws[TimeoutException]
   def pathologies(column: OTGColumn): Array[Pathology] = Array()
 
   @throws[TimeoutException]

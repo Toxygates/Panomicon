@@ -109,14 +109,6 @@ public interface SparqlService extends RemoteService {
 			throws TimeoutException;
 
 	/**
-	 * Obtain pathologies for the given sample
-	 * 
-	 * @param barcode
-	 * @return
-	 */
-	public Pathology[] pathologies(OTGSample barcode) throws TimeoutException;
-
-	/**
 	 * Obtain pathologies for a set of samples
 	 * 
 	 * @param column
