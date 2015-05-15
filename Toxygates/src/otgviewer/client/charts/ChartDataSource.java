@@ -86,15 +86,6 @@ abstract class ChartDataSource {
 		
 		public SampleClass sampleClass() { return sc; }
 		
-		@Deprecated
-		public String major() { return schema.getMajor(this); }
-		
-		@Deprecated
-		public String medium() { return schema.getMedium(this); }
-		
-		@Deprecated
-		public String minor() { return schema.getMinor(this); }
-		
 		@Override
 		public int hashCode() {
 			int r = 0;			

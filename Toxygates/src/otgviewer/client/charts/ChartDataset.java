@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import otgviewer.client.Utils;
 import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.shared.OTGSample;
+import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
@@ -99,12 +100,14 @@ public class ChartDataset {
 		}		
 		
 		List<ChartSample> fsamples = new ArrayList<ChartSample>();
+		DataSchema schema = samples.get(0).schema();
 		for (ChartSample s: samples) {
 			if (
 				((s.probe.equals(probeOrCompound) && isProbe) ||
-						(probeOrCompound == null || s.major().equals(probeOrCompound) && !isProbe)) &&
-				((s.minor().equals(timeOrDose) && isTime) ||
-						(timeOrDose == null || s.medium().equals(timeOrDose) && !isTime)) &&
+						(probeOrCompound == null || 
+						schema.getMajor(s).equals(probeOrCompound) && !isProbe)) &&
+				((schema.getMinor(s).equals(timeOrDose) && isTime) ||
+						(timeOrDose == null || schema.getMedium(s).equals(timeOrDose) && !isTime)) &&
 						(organism == null || s.sampleClass().get("organism").equals(organism))) {
 				fsamples.add(s);
 			}
@@ -115,10 +118,11 @@ public class ChartDataset {
 	}
 	
 	protected String categoryForSample(ChartSample sample) {
+		DataSchema schema = sample.schema();
 		for (String c : categories) {
-			if (categoriesAreMins && sample.minor().equals(c)) {
+			if (categoriesAreMins && schema.getMinor(sample).equals(c)) {
 				return c;
-			} else if (!categoriesAreMins && sample.medium().equals(c)) {
+			} else if (!categoriesAreMins && schema.getMedium(sample).equals(c)) {
 				return c;
 			}
 		}
