@@ -39,12 +39,10 @@ function makeAdminWar {
 }
 
 WARLIB=war/WEB-INF/lib
-cd Toxygates
 ivy.sh -retrieve lib/[type]/[artifact]-[revision].[ext] 
-cd ..
-cp Toxygates/lib/jar/* $WARLIB
-cp Toxygates/lib/bundle/*.jar $WARLIB
-cp Toxygates/mlib/*jar $WARLIB
+cp lib/jar/* $WARLIB
+cp lib/bundle/*.jar $WARLIB
+cp mlib/*jar $WARLIB
 
 #These should be in the shared tomcat lib dir (tglobal.jar)
 rm $WARLIB/kyotocabinet*jar
