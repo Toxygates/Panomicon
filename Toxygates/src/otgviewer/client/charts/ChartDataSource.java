@@ -16,7 +16,6 @@ import otgviewer.client.components.Screen;
 import otgviewer.shared.FullMatrix;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGSample;
-import otgviewer.shared.OTGSchema;
 import otgviewer.shared.Series;
 import t.common.shared.DataSchema;
 import t.common.shared.HasClass;

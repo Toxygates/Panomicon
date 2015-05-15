@@ -45,7 +45,6 @@ public class PlatformUploader extends UploadDialog {
 		tRadio = makeRadio("type", "T platform TSV");
 		vp.add(tRadio);
 		
-		final PlatformUploader pu = this;
 		Command c = new Command("Proceed") {
 			@Override 
 			public void run() { 				

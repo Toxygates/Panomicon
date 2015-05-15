@@ -140,7 +140,6 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	public void setEmptyMessage(String message) {
 		this.emptyMessage = message;
 		if (chosenCompounds.isEmpty()) {
-			String mTitle = schema.title(schema.majorParameter());
 			rootPanel.add(Utils.mkEmphLabel(emptyMessage));
 		}
 	}

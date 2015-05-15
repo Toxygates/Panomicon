@@ -32,8 +32,7 @@ public class GroupMaker {
 		}
 		
 		final String medParam = schema.mediumParameter(), 
-				minParam = schema.minorParameter(),
-				majParam = schema.majorParameter();
+				minParam = schema.minorParameter();
 		
 		int maxLen = 0;
 		String maxKey = "";
