@@ -4,6 +4,8 @@ import scala.Array.canBuildFrom
 import scala.collection.JavaConversions._
 import scala.collection.{Set => CSet}
 
+import java.util.{List => JList}
+
 import otg.Species.Human
 import otgviewer.server.ScalaUtils
 import otgviewer.server.ScalaUtils.gracefully
@@ -375,6 +377,15 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   def geneSuggestions(sc: SampleClass, partialName: String): Array[String] = {
       val plat = nullToNone(schema.organismPlatform(sc.get("organism")))
       probeStore.probesForPartialSymbol(plat, partialName).map(_.identifier).toArray
+  }
+
+  @throws[TimeoutException]
+  def filterProbesByGroup(probes: Array[String], samples: JList[OTGSample]): Array[String] = {
+    val platforms: Set[String] = samples.map(x => x.get("platform_id")).toSet 
+    val lookup = probeStore.platformsAndProbes
+    val acceptProbes = platforms.flatMap(p => lookup(p))
+    
+    probes.filter(x => acceptProbes.contains(x)) 
   }
 
 }

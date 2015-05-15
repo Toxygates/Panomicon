@@ -15,6 +15,7 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.shared.Group;
+import otgviewer.shared.OTGSample;
 import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
 import t.common.shared.SampleClass;
@@ -254,21 +255,45 @@ public class ProbeScreen extends Screen {
 		probesList = new ResizingListBox(74);
 		probesList.setWidth("100%");
 
-		Button b = new Button("Clear selected probes", new ClickHandler() {
+	    HorizontalPanel buttons = Utils.mkHorizontalPanel(false);
+        Button b = new Button("Clear selected probes", new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				probesChanged(new String[0]);
 			}
 		});
+        
+        final ProbeScreen ps = this;
+
+	    Button b2 = new Button("Filter by groups", new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+              String[] probes = listedProbes.toArray(new String[0]);
+              List<OTGSample> allSamples = new ArrayList<OTGSample>();
+              for (Group g : chosenColumns) {
+                List<OTGSample> ss = Arrays.asList(g.getSamples());
+                allSamples.addAll(ss);
+              }
+              
+              sparqlService.filterProbesByGroup(probes, allSamples, new PendingAsyncCallback<String[]>(ps) {
+                @Override
+                public void handleSuccess(String[] t) {
+                    ps.probesChanged(t);                                
+                }                           
+              });
+            }
+	    });
+	    
+	    buttons.add(b);
+	    buttons.add(b2);
 
 		plPanel = new ResizingDockLayoutPanel();
 		plNorth = Utils.wideCentered(l);
-		plSouth = Utils.wideCentered(b);
+		plSouth = Utils.wideCentered(buttons);
 
 		plPanel.addNorth(plNorth, PL_NORTH_HEIGHT);
 		plPanel.addSouth(plSouth, PL_SOUTH_HEIGHT);
 		
-		final ProbeScreen ps = this;
 		listChooser = new ListChooser(appInfo().predefinedProbeLists(), "probes") {
 			@Override
 			protected void itemsChanged(List<String> items) {
