@@ -4,9 +4,9 @@ import t.sparql.Triplestore
 import t.sparql._
 
 trait CompoundTargets {
-  def targetsFor(compound: Compound, species: Species = null): Iterable[Protein]
+  def targetsFor(compound: Compound, species: Option[Species] = None): Iterable[Protein]
   def targetingFor(ps: Iterable[Protein],  
-      expected: Iterable[Compound], species: Species = null): MMap[Protein, Compound]
+      expected: Iterable[Compound], species: Option[Species] = None): MMap[Protein, Compound]
 }
 
 class ChEMBL extends Triplestore with CompoundTargets {
@@ -21,11 +21,11 @@ class ChEMBL extends Triplestore with CompoundTargets {
   	PREFIX up: <http://purl.uniprot.org/uniprot/>
 """
 
-  def targetsFor(compound: Compound, species: Species = null): Set[Protein] = {    
+  def targetsFor(compound: Compound, species: Option[Species] = None): Set[Protein] = {    
      val r = simpleQuery(prefixes +
       "SELECT ?uniprot WHERE { " +
       "?mol rdfs:label \"" + compound.name.toUpperCase() + "\". " + 
-      (if (species != null) { " ?target cco:organismName \"" + species.longName + "\" . " } else { "" }) +  
+      species.map(s => " ?target cco:organismName \"" + s.longName + "\" . ").getOrElse("") + 
       """?activity a cco:Activity ;
       	cco:standardType ?t ;
       	cco:hasMolecule ?mol ;       
@@ -41,11 +41,11 @@ class ChEMBL extends Triplestore with CompoundTargets {
   
   private def capitalise(compound: String) = compound(0).toUpper + compound.drop(1).toLowerCase()
 
-  def targetingFor(ps: Iterable[Protein], expected: Iterable[Compound], species: Species = null): MMap[Protein, Compound] = {
+  def targetingFor(ps: Iterable[Protein], expected: Iterable[Compound], species: Option[Species] = None): MMap[Protein, Compound] = {
          val r = mapQuery(prefixes +
       "SELECT ?mol ?compound ?uniprot WHERE { " +
       "?mol rdfs:label ?compound . " +
-      (if (species != null) { " ?target cco:organismName \"" + species.longName + "\" . " } else { "" }) +  
+      species.map(s => " ?target cco:organismName \"" + s.longName + "\" . ").getOrElse("") +  
       """?activity a cco:Activity ;
       	cco:standardType ?t ;
       	cco:hasMolecule ?mol ;       
