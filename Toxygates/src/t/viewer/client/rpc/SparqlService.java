@@ -1,5 +1,7 @@
 package t.viewer.client.rpc;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 import otgviewer.shared.OTGColumn;
@@ -218,4 +220,6 @@ public interface SparqlService extends RemoteService {
 	 */
 	public Association[] associations(SampleClass sc, AType[] types,
 			String[] probes) throws TimeoutException;
+
+    String[] filterProbesByGroup(String[] probes, List<OTGSample> samples);
 }
