@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
 import otgviewer.client.charts.google.GVizChartGrid;
+import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Group;
 import otgviewer.shared.GroupUtils;
@@ -19,6 +20,7 @@ import otgviewer.shared.Series;
 import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
+import t.common.shared.SampleMultiFilter;
 import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
 import t.viewer.client.rpc.SeriesService;
@@ -76,14 +78,11 @@ public class ChartGridFactory {
 	
 	public void makeSeriesCharts(final List<Series> series, final boolean rowsAreCompounds,
 			final int highlightDose, final ChartAcceptor acceptor, final Screen screen) {
-		seriesService.expectedTimes(series.get(0), new AsyncCallback<String[]>() {
+		seriesService.expectedTimes(series.get(0), 
+				new PendingAsyncCallback<String[]>(screen, "Unable to obtain sample times.") {
+
 			@Override
-			public void onFailure(Throwable caught) {
-				logger.log(Level.WARNING, "Unable to obtain sample times.", caught);
-				Window.alert("Unable to obtain sample times");
-			}
-			@Override
-			public void onSuccess(String[] result) {				
+			public void handleSuccess(String[] result) {				
 				finishSeriesCharts(series, result, rowsAreCompounds, highlightDose, acceptor, screen);												
 			}			
 		});			
@@ -101,7 +100,7 @@ public class ChartGridFactory {
 		ChartDataSource cds = new ChartDataSource.SeriesSource(
 				schema, series, times);
 		
-		cds.getSamples(null, null, null, new TimeDoseColorPolicy(medVals[highlightMed], "SkyBlue"), 
+		cds.getSamples(new SampleMultiFilter(), new TimeDoseColorPolicy(medVals[highlightMed], "SkyBlue"), 
 				new ChartDataSource.SampleAcceptor() {
 
 			@Override

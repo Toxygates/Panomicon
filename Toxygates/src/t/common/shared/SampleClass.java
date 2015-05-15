@@ -57,6 +57,10 @@ public class SampleClass implements Serializable, Packable {
 		return sc;
 	}
 	
+	public boolean contains(String key) {
+		return data.containsKey(key);
+	}
+	
 	public void mergeDeferred(SampleClass from) {
 		for (String k: from.getMap().keySet()) {
 			if (!data.containsKey(k)) {
@@ -84,6 +88,10 @@ public class SampleClass implements Serializable, Packable {
 		return copyOnly(keys);		
 	}
  	
+	/**
+	 * Returns a copy of this sample class' constraint map.
+	 * @return
+	 */
 	public Map<String, String> getMap() { return new HashMap<String,String> (data); }
 	
 	/**

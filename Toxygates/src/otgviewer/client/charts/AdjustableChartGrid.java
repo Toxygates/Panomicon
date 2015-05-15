@@ -17,6 +17,7 @@ import otgviewer.shared.Group;
 import otgviewer.shared.GroupUtils;
 import otgviewer.shared.OTGSample;
 import t.common.shared.DataSchema;
+import t.common.shared.SampleMultiFilter;
 import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
 import t.viewer.shared.Unit;
@@ -170,6 +171,10 @@ public class AdjustableChartGrid extends Composite {
 		String[] preColumns = (columns == null ? (vsMinor ? source.mediumVals() : source.minorVals()) : columns);
 		final String[] useColumns = schema.filterValuesForDisplay(valueType, columnParam, preColumns);		
 		
+		SampleMultiFilter smf = new SampleMultiFilter();
+		smf.addPermitted(schema.majorParameter(), useCompounds);
+		smf.addPermitted(columnParam, useColumns);
+		
 		if (computedWidth == 0) {
 			int theoretical = useColumns.length * GVizChartGrid.MAX_WIDTH;
 			if (theoretical > TOTAL_WIDTH) {
@@ -180,7 +185,7 @@ public class AdjustableChartGrid extends Composite {
 			setWidth(computedWidth + "px");
 		}
 		
-		source.getSamples(useCompounds, useColumns, null, makeGroupPolicy(),
+		source.getSamples(smf, makeGroupPolicy(),
 				new ChartDataSource.SampleAcceptor() {
 					@Override
 					public void accept(List<ChartSample> samples) {

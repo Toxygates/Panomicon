@@ -20,6 +20,7 @@ import otgviewer.shared.Series;
 import t.common.shared.DataSchema;
 import t.common.shared.HasClass;
 import t.common.shared.SampleClass;
+import t.common.shared.SampleMultiFilter;
 import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
@@ -120,22 +121,22 @@ abstract class ChartDataSource {
 		}
 	}
 	
-	void getSamples(String[] compounds, String[] dosesOrTimes, String[] organisms,
-			ColorPolicy policy, SampleAcceptor acceptor) {
-		if (compounds == null) {
+	/**
+	 * Obtain samples, making an asynchronous call if necessary, and pass them on to the
+	 * sample acceptor when they are available.
+	 */
+	void getSamples(SampleMultiFilter smf, ColorPolicy policy, SampleAcceptor acceptor) {
+		if (!smf.contains(schema.majorParameter())) {
+			//TODO why is this needed?
 			applyPolicy(policy, chartSamples);
 			acceptor.accept(chartSamples);			
 		} else {
 			//We store these in a set since we may be getting the same samples several times
 			Set<ChartSample> r = new HashSet<ChartSample>();
 			for (ChartSample s: chartSamples) {
-				if (SharedUtils.indexOf(compounds, schema.getMajor(s)) != -1 &&
-						(organisms == null || 
-							SharedUtils.indexOf(organisms, s.sampleClass().get("organism")) != 1) &&
-					(dosesOrTimes == null || SharedUtils.indexOf(dosesOrTimes, schema.getMedium(s)) != -1 || 
-							SharedUtils.indexOf(dosesOrTimes, schema.getMinor(s)) != -1)) {
-						r.add(s);			
-						s.color = policy.colorFor(s);					
+				if (smf.accepts(s)) {				
+					r.add(s);			
+					s.color = policy.colorFor(s);					
 				}
 			}
 			acceptor.accept(new ArrayList<ChartSample>(r));			
@@ -270,19 +271,12 @@ abstract class ChartDataSource {
 			this.screen = screen;
 		}
 		
-		void loadData(final String[] majors, final String[] medsOrMins, final String[] organisms,
-				final ColorPolicy policy, final SampleAcceptor acceptor) {
-			logger.info("Dynamic source: load for " + majors.length + " majors");
+		void loadData(final SampleMultiFilter smf, final ColorPolicy policy, final SampleAcceptor acceptor) {
+			logger.info("Dynamic source: load for " + smf);
 			
 			final List<OTGSample> useSamples = new ArrayList<OTGSample>();
 			for (OTGSample b: samples) {
-				if (
-						(majors == null || SharedUtils.indexOf(majors, b.get(majorParam)) != -1) &&
-						(medsOrMins == null || SharedUtils.indexOf(medsOrMins, b.get(minorParam)) != -1 || 					
-						SharedUtils.indexOf(medsOrMins, b.get(medParam)) != -1) // &&
-						//!schema.isControlValue(b.get(medParam))
-						//TODO generalise the control-check better
-					) {
+				if (smf.accepts(b)) {				
 					useSamples.add(b);
 				}
 			}
@@ -303,21 +297,19 @@ abstract class ChartDataSource {
 				@Override
 				public void handleSuccess(final FullMatrix mat) {
 					addSamplesFromBarcodes(useSamples.toArray(new OTGSample[0]), mat.rows());	
-					getSSamples(majors, medsOrMins, organisms, policy, acceptor);
+					getSSamples(smf, policy, acceptor);
 				}					
 			});
 			
 		}
 
 		@Override
-		void getSamples(String[] compounds, String[] dosesOrTimes, String[] organisms,
-				ColorPolicy policy, SampleAcceptor acceptor) {
-			loadData(compounds, dosesOrTimes, organisms, policy, acceptor);			
+		void getSamples(SampleMultiFilter smf, ColorPolicy policy, SampleAcceptor acceptor) {
+			loadData(smf, policy, acceptor);			
 		}
 		
-		void getSSamples(String[] compounds, String[] dosesOrTimes, String[] organisms,
-				ColorPolicy policy, SampleAcceptor acceptor) {
-			super.getSamples(compounds, dosesOrTimes, organisms, policy, acceptor);
+		void getSSamples(SampleMultiFilter smf, ColorPolicy policy, SampleAcceptor acceptor) {
+			super.getSamples(smf, policy, acceptor);
 		}		
 	}	
 	
@@ -345,21 +337,14 @@ abstract class ChartDataSource {
 		}
 		
 		@Override
-		void loadData(final String[] majors, final String[] medsOrMins, final String[] organisms,
-				final ColorPolicy policy, final SampleAcceptor acceptor) {
-			logger.info("Dynamic unit source: load for " + majors.length + " majors");
+		void loadData(final SampleMultiFilter smf, final ColorPolicy policy, final SampleAcceptor acceptor) {
+			logger.info("Dynamic unit source: load for " + smf);
 			
 			final List<Group> groups = new ArrayList<Group>();
 			final List<Unit> useUnits = new ArrayList<Unit>();
 			int i = 0;
 			for (Unit u: units) {
-				if (
-						(majors == null || SharedUtils.indexOf(majors, u.get(majorParam)) != -1) &&
-						(medsOrMins == null || SharedUtils.indexOf(medsOrMins, u.get(minorParam)) != -1 || 					
-						SharedUtils.indexOf(medsOrMins, u.get(medParam)) != -1) // &&
-//						!schema.isControlValue(u.get(medParam))
-						//TODO generalise the control-check better
-					) {
+				if (smf.accepts(u)) {				
 					Group g = new Group(schema, "g" + i, u.getSamples());
 					i++;
 					groups.add(g);
@@ -379,7 +364,7 @@ abstract class ChartDataSource {
 				@Override
 				public void handleSuccess(final FullMatrix mat) {
 					addSamplesFromUnits(useUnits, mat.rows());	
-					getSSamples(majors, medsOrMins, organisms, policy, acceptor);
+					getSSamples(smf, policy, acceptor);
 				}					
 			});
 			
