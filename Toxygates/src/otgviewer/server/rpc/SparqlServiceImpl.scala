@@ -109,10 +109,6 @@ class SparqlServiceImpl extends t.common.server.rpc.SparqlServiceImpl with OTGSe
     val pmap = context.matrix.probeMap //TODO context.probes(filter)
     pbs.toSet.map((p: Probe) => p.identifier).filter(pmap.isToken).toArray
   }
-  
-    @throws[TimeoutException]
-  override def pathologies(barcode: OTGSample): Array[Pathology] =
-    sampleStore.pathologies(barcode.getCode).map(asJava(_)).toArray
 
   @throws[TimeoutException]
   override def pathologies(column: OTGColumn): Array[Pathology] =

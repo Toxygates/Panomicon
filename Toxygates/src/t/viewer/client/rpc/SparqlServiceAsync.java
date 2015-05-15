@@ -48,7 +48,6 @@ public interface SparqlServiceAsync {
 
 	//TODO this is OTG-specific
 	public void pathologies(OTGColumn column, AsyncCallback<Pathology[]> callback);
-	public void pathologies(OTGSample barcode, AsyncCallback<Pathology[]> callback);
 	
 	public void annotations(HasSamples<OTGSample> column, boolean importantOnly,
 			AsyncCallback<Annotation[]> callback);
