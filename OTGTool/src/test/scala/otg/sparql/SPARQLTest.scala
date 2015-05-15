@@ -57,7 +57,7 @@ class SPARQLTest extends FunSuite with ShouldMatchers with BeforeAndAfter {
 
   import t.sparql.secondary.Compound
   test("ChEMBL") {
-    val t1 = chembl.targetsFor(Compound.make("acetaminophen"), Rat)
+    val t1 = chembl.targetsFor(Compound.make("acetaminophen"), Some(Rat))
     println(t1)
     t1.size should equal(10)
     val t2 = chembl.targetingFor(List("Q99685", "P07541").map(Protein(_)),
