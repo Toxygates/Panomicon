@@ -10,6 +10,7 @@ import otgviewer.client.Utils;
 import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.shared.OTGSample;
 import t.common.shared.DataSchema;
+import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
@@ -74,23 +75,15 @@ public class ChartDataset {
 	}
 
 	/**
-	 * Make a table corresponding to the given time or dose.
+	 * Make a table corresponding to the given filter
+	 * and (optionally) probe.
 	 * If a time is given, the table will be grouped by dose.
 	 * If a dose is given, the table will be grouped by time.
 	 * 
 	 * TODO factor out into charts.google
-	 * 
-	 * @param timeOrDose
-	 * @param probeOrCompound Filter samples by probe or compound 
-	 * (use null for no filtering)
-	 * @param isTime true iff timeOrDose is a time point.
-	 * @param isCompound true iff probeOrCompound is a probe.
-	 * @param organism organism to filter by (or null for no filtering)
 	 * @return
 	 */
-	DataTable makeTable(String timeOrDose, boolean isTime, 
-			@Nullable String probeOrCompound, boolean isProbe,
-			@Nullable String organism) {
+	DataTable makeTable(SampleClass filter, @Nullable String probe) {
 		DataTable t = DataTable.create();
 		t.addColumn(ColumnType.STRING, "Time");
 		
@@ -100,15 +93,9 @@ public class ChartDataset {
 		}		
 		
 		List<ChartSample> fsamples = new ArrayList<ChartSample>();
-		DataSchema schema = samples.get(0).schema();
 		for (ChartSample s: samples) {
-			if (
-				((s.probe.equals(probeOrCompound) && isProbe) ||
-						(probeOrCompound == null || 
-						schema.getMajor(s).equals(probeOrCompound) && !isProbe)) &&
-				((schema.getMinor(s).equals(timeOrDose) && isTime) ||
-						(timeOrDose == null || schema.getMedium(s).equals(timeOrDose) && !isTime)) &&
-						(organism == null || s.sampleClass().get("organism").equals(organism))) {
+			if ( (probe == null || s.probe.equals(probe)) && 
+				filter.strictCompatible(s) ) {
 				fsamples.add(s);
 			}
 		}

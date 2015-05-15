@@ -6,6 +6,8 @@ import otgviewer.client.Utils;
 import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
+import t.common.shared.DataSchema;
+import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.viewer.client.rpc.SparqlService;
 import t.viewer.client.rpc.SparqlServiceAsync;
@@ -65,16 +67,27 @@ abstract public class ChartGrid extends Composite {
 		g = new Grid(rfsize * osize * 2 + 1, minsOrMeds.length);		
 		initWidget(g);
 	
+		DataSchema schema = screen.schema();
+		
+		
 		tables = new DataTable[rfsize * osize][minsOrMeds.length];
 		for (int c = 0; c < minsOrMeds.length; ++c) {
 			g.setWidget(0, c, Utils.mkEmphLabel(minsOrMeds[c]));				
 			for (int r = 0; r < rfsize; ++r) {				
-				for (int o = 0; o < osize; ++o){
-					
+				for (int o = 0; o < osize; ++o){					
 					String org = organisms.get(0).equals("") ? null : organisms.get(o);
-					tables[r * osize + o][c] = table.makeTable(minsOrMeds[c], columnsAreMins,
-						rowFilters.get(r), !rowsAreMajors, 
-						org); //TODO pass organism
+					SampleClass sc = new SampleClass();
+					String probe = null;
+					if (rowsAreMajors) {						
+						sc.put(schema.majorParameter(), rowFilters.get(r));
+					} else {
+						probe = rowFilters.get(r);
+					}
+					sc.put("organism", org);
+					String colKey = columnsAreMins ? schema.minorParameter() : 
+						schema.mediumParameter();
+					sc.put(colKey, minsOrMeds[c]);					
+					tables[r * osize + o][c] = table.makeTable(sc, probe);
 				}
 			}
 		}

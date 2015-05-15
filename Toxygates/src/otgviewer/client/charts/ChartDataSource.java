@@ -115,6 +115,50 @@ abstract class ChartDataSource {
 		}
 	}
 	
+	protected List<ChartSample> chartSamples = new ArrayList<ChartSample>();
+
+	protected String[] _minorVals;
+	protected String[] _mediumVals;
+	
+	String[] minorVals() { return _minorVals; }
+	String[] mediumVals() { return _mediumVals; }
+	
+	protected DataSchema schema;
+	final protected String minorParam, medParam, majorParam, timeParam;
+	
+	ChartDataSource(DataSchema schema) {
+		this.schema = schema;		
+		minorParam = schema.minorParameter();
+		medParam = schema.mediumParameter();
+		majorParam = schema.majorParameter();
+		timeParam = schema.timeParameter();
+	}
+	
+	protected void init() {
+		try {
+			Set<String> minorVals = SampleClass.collectInner(chartSamples, 
+					minorParam);
+			
+			_minorVals = minorVals.toArray(new String[0]);
+			// TODO avoid magic constants
+			schema.sort(minorParam, _minorVals);
+
+			
+			List<String> medVals = new ArrayList<String>();
+			for (ChartDataSource.ChartSample s : chartSamples) {
+				//TODO generalise control-check better
+				if (!schema.isControlValue(schema.getMedium(s)) && 
+						!medVals.contains(schema.getMedium(s))) {
+					medVals.add(schema.getMedium(s));
+				}
+			}
+			_mediumVals = medVals.toArray(new String[0]);
+			schema.sort(medParam, _mediumVals);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Unable to sort chart data", e);
+		}
+	}
+
 	private void applyPolicy(ColorPolicy policy, List<ChartSample> samples) {
 		for (ChartSample s: samples) {
 			s.color = policy.colorFor(s);
@@ -126,7 +170,7 @@ abstract class ChartDataSource {
 	 * sample acceptor when they are available.
 	 */
 	void getSamples(SampleMultiFilter smf, ColorPolicy policy, SampleAcceptor acceptor) {
-		if (!smf.contains(schema.majorParameter())) {
+		if (!smf.contains(majorParam)) {
 			//TODO why is this needed?
 			applyPolicy(policy, chartSamples);
 			acceptor.accept(chartSamples);			
@@ -143,49 +187,6 @@ abstract class ChartDataSource {
 		}		 
 	}
 	
-	protected List<ChartSample> chartSamples = new ArrayList<ChartSample>();
-
-	protected String[] _minorVals;
-	protected String[] _mediumVals;
-	
-	String[] minorVals() { return _minorVals; }
-	String[] mediumVals() { return _mediumVals; }
-	
-	protected DataSchema schema;
-	final protected String minorParam, medParam, majorParam;
-	
-	ChartDataSource(DataSchema schema) {
-		this.schema = schema;		
-		minorParam = schema.minorParameter();
-		medParam = schema.mediumParameter();
-		majorParam = schema.majorParameter();
-	}
-	
-	protected void init() {
-		try {
-			Set<String> minorVals = SampleClass.collectInner(chartSamples, 
-					schema.minorParameter());
-			
-			_minorVals = minorVals.toArray(new String[0]);
-			// TODO avoid magic constants
-			schema.sort(schema.minorParameter(), _minorVals);
-
-			
-			List<String> medVals = new ArrayList<String>();
-			for (ChartDataSource.ChartSample s : chartSamples) {
-				//TODO generalise control-check better
-				if (!schema.isControlValue(schema.getMedium(s)) && 
-						!medVals.contains(schema.getMedium(s))) {
-					medVals.add(schema.getMedium(s));
-				}
-			}
-			_mediumVals = medVals.toArray(new String[0]);
-			schema.sort(schema.mediumParameter(), _mediumVals);
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Unable to sort chart data", e);
-		}
-	}
-	
 	static class SeriesSource extends ChartDataSource {
 		SeriesSource(DataSchema schema, List<Series> series, String[] times) {
 			super(schema);
@@ -194,7 +195,7 @@ abstract class ChartDataSource {
 					ExpressionValue ev = s.values()[i];			
 					String time = times[i];
 					SampleClass sc = s.sampleClass().
-							copyWith(schema.timeParameter(), time);
+							copyWith(timeParam, time);
 					ChartSample cs = new ChartSample(sc, schema,
 							ev.getValue(), null, s.probe(), ev.getCall());
 					chartSamples.add(cs);
@@ -227,11 +228,11 @@ abstract class ChartDataSource {
 			try {
 				//TODO code duplication with above
 				_minorVals = times.toArray(new String[0]);
-				schema.sort(schema.minorParameter(), _minorVals);
+				schema.sort(minorParam, _minorVals);
 				Set<String> doses = SampleClass.collectInner(sampleList, medParam);
 				
 				_mediumVals = doses.toArray(new String[0]);				
-				schema.sort(schema.mediumParameter(), _mediumVals);
+				schema.sort(medParam, _mediumVals);
 			} catch (Exception e) {
 				logger.log(Level.WARNING, "Unable to sort chart data", e);
 			}

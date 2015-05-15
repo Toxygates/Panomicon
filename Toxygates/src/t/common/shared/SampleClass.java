@@ -105,17 +105,36 @@ public class SampleClass implements Serializable, Packable {
 	
 	/**
 	 * Is this SampleClass compatible with the other one?
-	 * True iff shared keys have the same values.
+	 * True iff shared keys have the same values. Commutative.
 	 * @param other
 	 * @return
 	 */
 	public boolean compatible(SampleClass other) {
 		for (String k: data.keySet()) {
-			if (other.get(k) != null && !other.get(k).equals(get(k))) {
+			if (other.contains(k) && !other.get(k).equals(get(k))) {
 				return false;
 			}
 		}
 		return true;		
+	}
+	
+	public boolean strictCompatible(HasClass hc) {
+		return strictCompatible(hc.sampleClass());
+	}
+	
+	/**
+	 * Returns true iff the tested sample class contains all the keys
+	 * of this one and they have the same values. Non-commutative.
+	 * @param other
+	 * @return
+	 */
+	public boolean strictCompatible(SampleClass other) {
+		for (String k: data.keySet()) {
+			if (!other.contains(k) || !other.get(k).equals(get(k))) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	public static Set<String> collectInner(List<? extends HasClass> from, String key) {
