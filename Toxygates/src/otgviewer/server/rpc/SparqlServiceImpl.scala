@@ -95,7 +95,7 @@ class SparqlServiceImpl extends t.common.server.rpc.SparqlServiceImpl with OTGSe
     val cmp = Compound.make(compound)
     val sp = asSpecies(sc)
     val proteins = service match {
-      case "CHEMBL" => chembl.targetsFor(cmp, if (homologous) { null } else { sp })
+      case "CHEMBL" => chembl.targetsFor(cmp, if (homologous) { None } else { Some(sp) })
       case "DrugBank" => drugBank.targetsFor(cmp)
       case _ => throw new Exception("Unexpected probe target service request: " + service)
     }

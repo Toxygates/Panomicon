@@ -46,6 +46,9 @@ import Conversions.asScala
 import otg.OTGContext
 import t.common.shared.ValueType
 import t.common.shared.DataSchema
+import otgviewer.server.FoldBuilder
+import otgviewer.server.NormalizedBuilder
+import otgviewer.server.ExtFoldBuilder
 
 object MatrixServiceImpl {
   
@@ -143,21 +146,19 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     try {
       val enhancedCols = !multiPlat
 
-      reader match {
+      val b = reader match {
         case ext: KCExtMatrixDB =>
           assert(typ == ValueType.Folds)
-          ManagedMatrixBuilder.buildExtFold(requestColumns, ext, initProbes, 
-              sparseRead, fullLoad, enhancedCols)          
+          new ExtFoldBuilder(enhancedCols, ext, initProbes)                    
         case db: KCMatrixDB =>
           if (typ == ValueType.Absolute) {
-            ManagedMatrixBuilder.buildNormalized(requestColumns, db, initProbes, 
-                sparseRead, fullLoad, enhancedCols)
+            new NormalizedBuilder(enhancedCols, db, initProbes)            
           } else {
-            ManagedMatrixBuilder.buildFold(requestColumns, db, initProbes, 
-                sparseRead, fullLoad)
+            new FoldBuilder(db, initProbes)       
           }
-        case _ => throw new Exception("Unexpected DB reader type")
+        case _ => throw new Exception("Unexpected DB reader type")        
       }
+      b.build(requestColumns, sparseRead, fullLoad)
     } finally {
       reader.release
     }

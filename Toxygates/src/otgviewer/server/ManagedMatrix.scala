@@ -16,178 +16,94 @@ import t.db.MatrixContext
  * Routines for loading a ManagedMatrix
  * and constructing groups.
  */
-object ManagedMatrixBuilder {
-    
-/**
- * No extra columns. Simple averaged fold values.
- */
-  def buildFold(requestColumns: Seq[Group],
-    reader: MatrixDBReader[ExprValue], initProbes: Array[String], sparseRead: Boolean,
+abstract class ManagedMatrixBuilder[E <: ExprValue]
+  (reader: MatrixDBReader[E], val probes: Array[String]) {
+
+  /**
+   * Info corresponding to the matrix being built. Gradually updated.
+   */
+  protected val info = new ManagedMatrixInfo()
+      
+  def build(requestColumns: Seq[Group], sparseRead: Boolean,
     fullLoad: Boolean)
     (implicit context: MatrixContext): ManagedMatrix = {
-    loadRawData[ExprValue](requestColumns, reader, initProbes, sparseRead,
-        fullLoad,
-        columnsForGroupDefault(_, _, _, _, _))
+    loadRawData(requestColumns, reader, sparseRead,
+        fullLoad)
   }
   
-/**
- * Columns consisting of normalized intensity / "absolute value" expression data
- * for both treated and control samples. 
- */
-  def buildNormalized(requestColumns: Seq[Group],
-    reader: MatrixDBReader[ExprValue], initProbes: Array[String], sparseRead: Boolean,
-    fullLoad: Boolean,
-    enhancedColumns: Boolean)(implicit context: MatrixContext): ManagedMatrix = {
-    loadRawData[ExprValue](requestColumns, reader, initProbes, sparseRead,
-        fullLoad,
-        columnsForGroupNormalized(enhancedColumns, _, _, _, _, _))
-  }
-   
   /**
- * Columns consisting of fold-values, associated p-values and custom P/A calls.
- */
-  def buildExtFold(requestColumns: Seq[Group],
-    reader: MatrixDBReader[PExprValue], initProbes: Array[String], sparseRead: Boolean,
-    fullLoad: Boolean,
-    enhancedColumns: Boolean)(implicit context: MatrixContext): ManagedMatrix = {
-    loadRawData[PExprValue](requestColumns, reader, initProbes, sparseRead,
-        fullLoad,
-        columnsForGroupExtFold(enhancedColumns, _, _, _, _, _))
+   * Construct the columns representing a particular group (g), from the given 
+   * raw data. Update info to reflect the changes.
+   */
+  protected def columnsFor(g: Group, sortedBarcodes: Seq[Sample], 
+    data: Seq[Seq[E]]): ExprMatrix
+  
+   protected def defaultColumns[E <: ExprValue](g: Group, sortedBarcodes: Seq[Sample], 
+    data: Seq[Seq[ExprValue]]): ExprMatrix = {
+    // A simple average column
+    val tus = treatedAndControl(g)._1
+    val treatedIdx = unitIdxs(tus, sortedBarcodes)
+    
+    info.addColumn(false, g.toString, "Average of treated samples", false, g, false)
+    ExprMatrix.withRows(data.map(vs =>
+      Vector(javaMean(selectIdx(vs, treatedIdx)))),
+      probes,
+      List(g.toString))
   }
   
-  def loadRawData[E <: ExprValue](requestColumns: Seq[Group],
-      reader: MatrixDBReader[E], initProbes: Array[String], sparseRead: Boolean,
-      fullLoad: Boolean,
-      columnBuilder: (Array[String], ManagedMatrixInfo, Group, Seq[Sample], Seq[Seq[E]]) => ExprMatrix)
+  def loadRawData(requestColumns: Seq[Group],
+      reader: MatrixDBReader[E], sparseRead: Boolean,
+      fullLoad: Boolean)
   (implicit context: MatrixContext): ManagedMatrix = {
     val pmap = context.probeMap
     
     var rawGroupedMat, rawUngroupedMat: ExprMatrix = null
     
-    val packedProbes = initProbes.map(pmap.pack)
-    val info = new ManagedMatrixInfo()
-    val annotations = initProbes.map(x => new RowAnnotation(x, List(x))).toVector
+    val packedProbes = probes.map(pmap.pack)
+
+    val annotations = probes.map(x => new RowAnnotation(x, List(x))).toVector
     
     for (g <- requestColumns) {
         //Remove repeated samples as some other algorithms assume distinct samples
         //Also for efficiency
-    	val samples = 
-    	  (if(fullLoad) g.getSamples.toList else samplesForDisplay(g)).
-    	  	toVector.distinct
-    	val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.getCode)))
+      val samples = 
+        (if(fullLoad) g.getSamples.toList else samplesForDisplay(g)).
+          toVector.distinct
+      val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.getCode)))
         val data = reader.valuesForSamplesAndProbes(sortedSamples,
-        		packedProbes, sparseRead)
-        		
+            packedProbes, sparseRead)
+            
         println(g.getUnits()(0).toString())
         
-        val returnedProbes = data.map(_(0).probe.identifier).toArray
+        val rowLookup = Map() ++ data.map(r => r(0).probe.identifier -> r)
+        val standardOrder = probes.map(p => rowLookup(p))
         
-        //Force standard sort order
-        val grouped = columnBuilder(returnedProbes, info, g, sortedSamples, data).
-          selectNamedRows(initProbes)
+        val grouped = columnsFor(g, sortedSamples, standardOrder)
 
-        val ungrouped = ExprMatrix.withRows(data.map(_.map(asJava(_))), 
-            returnedProbes, sortedSamples.map(_.sampleId)).
-            selectNamedRows(initProbes)
+        val ungrouped = ExprMatrix.withRows(standardOrder.map(_.map(asJava(_))), 
+            probes, sortedSamples.map(_.sampleId))
             
         if (rawGroupedMat == null) {
           rawGroupedMat = grouped
         } else {
           rawGroupedMat = rawGroupedMat adjoinRight grouped
         }
-    	
-    	if (rawUngroupedMat == null) {
-    	  rawUngroupedMat = ungrouped
-    	} else {
-    	  //account for the fact that samples may be shared between requestColumns
-    	  val newCols = ungrouped.columnKeys.toSet -- rawUngroupedMat.columnKeys.toSet
-    	  rawUngroupedMat = rawUngroupedMat adjoinRight 
-    	  	(ungrouped.selectNamedColumns(newCols.toSeq))
-    	}    	
+      
+      if (rawUngroupedMat == null) {
+        rawUngroupedMat = ungrouped
+      } else {
+        //account for the fact that samples may be shared between requestColumns
+        val newCols = ungrouped.columnKeys.toSet -- rawUngroupedMat.columnKeys.toSet
+        rawUngroupedMat = rawUngroupedMat adjoinRight 
+          (ungrouped.selectNamedColumns(newCols.toSeq))
+      }     
     }
 
-    new ManagedMatrix(initProbes, info, 
+    new ManagedMatrix(probes, info, 
         rawUngroupedMat.copyWithAnnotations(annotations), 
         rawGroupedMat.copyWithAnnotations(annotations))
   }
   
-  private def columnsForGroupDefault[E <: ExprValue](initProbes: Array[String],
-      info: ManagedMatrixInfo, g: Group, sortedBarcodes: Seq[Sample],
-    data: Seq[Seq[E]]): ExprMatrix = {
-    // A simple average column
-    val treatedIdx = treatedIdxs(g, sortedBarcodes)
-    
-    info.addColumn(false, g.toString, "Average of treated samples", false, g, false)
-    ExprMatrix.withRows(data.map(vs =>
-      Vector(javaMean(selectIdx(vs, treatedIdx)))),
-      initProbes,
-      List(g.toString))
-  }
-  
-  private def columnsForGroupNormalized(enhancedColumns: Boolean,
-      initProbes: Array[String],
-      info: ManagedMatrixInfo, 
-      g: Group, sortedBarcodes: Seq[Sample], 
-      data: Seq[Seq[ExprValue]]): ExprMatrix = {
-    //TODO
-    val (cus, tus) = g.getUnits().partition(_.get("dose_level") == "Control")
-    
-    if (tus.size > 1 || (!enhancedColumns) || cus.size == 0 || tus.size == 0) {
-      // A simple average column
-      columnsForGroupDefault(initProbes, info, g, sortedBarcodes, data)      
-    } else if (tus.size == 1) {
-      // Possibly insert a control column as well as the usual one
-
-      val treatedIdx = treatedIdxs(g, sortedBarcodes)
-      val controlIdx = controlIdxs(g, sortedBarcodes)
-
-      val (colName1, colName2) = (g.toString, g.toString + "(cont)")
-      val rows = data.map(vs => Vector(
-        javaMean(selectIdx(vs, treatedIdx)),
-        javaMean(selectIdx(vs, controlIdx))))
-
-      info.addColumn(false, colName1, "Average of treated samples", false, g, false)
-      info.addColumn(false, colName2, "Average of control samples", false, g, false)
-      ExprMatrix.withRows(rows, initProbes, List(colName1, colName2))                       
-    } else {
-      throw new Exception("No units in group")
-    }
-  }
-  
-  private def columnsForGroupExtFold(enhancedColumns: Boolean, initProbes: Array[String],
-      info: ManagedMatrixInfo,
-      g: Group, sortedBarcodes: Seq[Sample], 
-      data: Seq[Seq[PExprValue]]): ExprMatrix = {
-      //TODO
-    val (cus, tus) = g.getUnits().partition(_.get("dose_level") == "Control")
-    
-    println(s"#Control units: ${cus.size} #Non-control units: ${tus.size}")
-    
-    if (tus.size > 1 || (!enhancedColumns) || tus.size == 0) {
-      // A simple average column
-      columnsForGroupDefault(initProbes, info, g, sortedBarcodes, data)      
-    } else if (tus.size == 1) {
-      // Insert a p-value column as well as the usual one
-      
-      val (colName1, colName2) = (g.toString, g.toString + "(p)")
-      val treatedIdx = treatedIdxs(g, sortedBarcodes)
-      
-      // TODO: work out call properly
-      val rows = data.map(vs => {
-        val treatedVs = selectIdx(vs, treatedIdx)
-        val first = treatedVs.head
-        Vector(javaMean(treatedVs), new ExpressionValue(first.p, first.call))
-      })
-      
-      info.addColumn(false, colName1, "Average of treated samples", false, g, false)
-      info.addColumn(false, colName2, "p-values of treated against control", true, g, true)
-      
-      ExprMatrix.withRows(rows, initProbes, List(colName1, colName2))
-    } else {
-      throw new Exception("No units in group")
-    }
-  }
-   
   final protected def selectIdx[E <: ExprValue](data: Seq[E], is: Seq[Int]) = is.map(data(_))
   final protected def javaMean[E <: ExprValue](data: Iterable[E]) = {
     val mean = ExprValue.presentMean(data, "")
@@ -197,35 +113,122 @@ object ManagedMatrixBuilder {
     }
     new ExpressionValue(mean.value, mean.call, tooltip)
   }
-
-  protected def selectIdxs(g: Group,  predicate: (t.viewer.shared.Unit) => Boolean, 
-      barcodes: Seq[Sample]): Seq[Int] = {
-    val units = g.getUnits().filter(predicate)
-    val ids = units.flatMap(_.getSamples.map(_.getCode)).toSet
-    val inSet = barcodes.map(s => ids.contains(s.sampleId))
+  
+  protected def unitIdxs(us: Iterable[t.viewer.shared.Unit], samples: Seq[Sample]): Seq[Int] = {
+    val ids = us.flatMap(u => u.getSamples.map(_.getCode)).toSet
+    val inSet = samples.map(s => ids.contains(s.sampleId))
     inSet.zipWithIndex.filter(_._1).map(_._2)
   }
-  
-  //TODO
-  protected def controlIdxs(g: Group, barcodes: Seq[Sample]): Seq[Int] = 
-    selectIdxs(g, _.get("dose_level") == "Control", barcodes)    
-
-  protected def treatedIdxs(g: Group, barcodes: Seq[Sample]): Seq[Int] = 
-    selectIdxs(g, _.get("dose_level") != "Control", barcodes)    
 
   protected def samplesForDisplay(g: Group): Iterable[OTGSample] = {
     //TODO
-    val (cus, ncus) = g.getUnits().partition(_.get("dose_level") == "Control")
-    if (ncus.size > 1) {
+    val (tus, cus) = treatedAndControl(g)
+    if (tus.size > 1) {
       //treated samples only
-      ncus.flatMap(_.getSamples())
+      tus.flatMap(_.getSamples())
     } else {
       //all samples
       g.getSamples()
     }
   } 
+  
+  //TODO use schema
+  protected def treatedAndControl(g: Group) = 
+    g.getUnits().partition(_.get("dose_level") == "Control")
+}
+  
+/**
+ * No extra columns. Simple averaged fold values.
+ */
+class FoldBuilder(reader: MatrixDBReader[ExprValue], probes: Array[String]) 
+  extends ManagedMatrixBuilder[ExprValue](reader, probes) {
+  protected def columnsFor(g: Group, sortedBarcodes: Seq[Sample], 
+    data: Seq[Seq[ExprValue]]): ExprMatrix = 
+    defaultColumns(g, sortedBarcodes, data)   
 }
 
+trait TreatedControlBuilder[E <: ExprValue] {
+  this: ManagedMatrixBuilder[E] =>
+  def enhancedColumns: Boolean
+    
+    protected def buildRow(raw: Seq[E], 
+      treatedIdx: Seq[Int], controlIdx: Seq[Int]): Vector[ExpressionValue]
+  
+    protected def addColumnInfo(g: Group): Unit
+    def colNames(g: Group): Seq[String]
+  
+    protected def columnsFor(g: Group, sortedBarcodes: Seq[Sample], 
+      data: Seq[Seq[E]]): ExprMatrix = {
+    //TODO
+    val (tus, cus) = treatedAndControl(g)    
+    println(s"#Control units: ${cus.size} #Non-control units: ${tus.size}")
+    
+    if (tus.size > 1 || (!enhancedColumns) || cus.size == 0 || tus.size == 0) {
+      // A simple average column
+      defaultColumns(g, sortedBarcodes, data)      
+    } else if (tus.size == 1) {
+      // Possibly insert a control column as well as the usual one
+
+      val ti = unitIdxs(tus, sortedBarcodes)
+      val ci = unitIdxs(cus, sortedBarcodes)
+
+      val rows = data.map(vs => buildRow(vs, ti, ci))       
+      addColumnInfo(g)
+    
+      ExprMatrix.withRows(rows, probes, colNames(g))                       
+    } else {
+      throw new Exception("No units in group")
+    }
+  }
+}
+
+/**
+ * Columns consisting of normalized intensity / "absolute value" expression data
+ * for both treated and control samples. 
+ */
+class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[ExprValue], 
+    probes: Array[String]) extends ManagedMatrixBuilder[ExprValue](reader, probes) 
+    with TreatedControlBuilder[ExprValue] {
+  
+  protected def buildRow(raw: Seq[ExprValue], 
+      treatedIdx: Seq[Int], controlIdx: Seq[Int]): Vector[ExpressionValue] = 
+    Vector(
+      javaMean(selectIdx(raw, treatedIdx)),
+      javaMean(selectIdx(raw, controlIdx))
+    )
+
+  protected def addColumnInfo(g: Group) {
+    info.addColumn(false, colNames(g)(1), "Average of treated samples", false, g, false)
+    info.addColumn(false, colNames(g)(2), "Average of control samples", false, g, false)
+  }
+  
+  def colNames(g: Group): Seq[String] = 
+    List(g.toString, g.toString + "(cont)")
+    
+}
+
+/**
+ * Columns consisting of fold-values, associated p-values and custom P/A calls.
+ */
+class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprValue], 
+    probes: Array[String]) extends ManagedMatrixBuilder[PExprValue](reader, probes) 
+    with TreatedControlBuilder[PExprValue] {
+
+  protected def buildRow(raw: Seq[PExprValue], 
+      treatedIdx: Seq[Int], controlIdx: Seq[Int]): Vector[ExpressionValue] = {
+    val treatedVs = selectIdx(raw, treatedIdx)
+    val first = treatedVs.head
+    Vector(javaMean(treatedVs), new ExpressionValue(first.p, first.call))
+  }  
+  
+  protected def addColumnInfo(g: Group) {
+    info.addColumn(false, colNames(g)(0), "Average of treated samples", false, g, false)
+    info.addColumn(false, colNames(g)(1), "p-values of treated against control", true, g, true)      
+  }
+  
+  def colNames(g: Group) =
+    List(g.toString, g.toString + "(p)")   
+}
 
 /**
  * A server-side ExprMatrix and support logic for

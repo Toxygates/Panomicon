@@ -1,6 +1,29 @@
 package otgviewer.server
 
 import t.common.shared.sample.ExpressionValue
+import scala.collection.generic.CanBuildFrom
+import scala.collection.mutable.Builder
+
+object EVABuilder extends CanBuildFrom[Seq[ExpressionValue], ExpressionValue, EVArray] {
+  def apply() = new EVABuilder 
+  
+  def apply(s: Seq[ExpressionValue]): EVABuilder = {
+    new EVABuilder(s.toList)
+  }
+}
+
+class EVABuilder(private var vals: Seq[ExpressionValue] = Seq()) extends Builder[ExpressionValue, EVArray] {
+  def clear {
+    vals = Seq()
+  }
+  
+  def += (x: ExpressionValue): this.type = {
+    vals :+= x
+    this
+  }
+  
+  def result = EVArray(vals)  
+}
 
 object EVArray {
   def apply(evs: Seq[ExpressionValue]): EVArray = {
