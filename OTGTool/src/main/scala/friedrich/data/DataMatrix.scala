@@ -6,6 +6,8 @@
 
 package friedrich.data
 
+import scala.collection.generic.CanBuildFrom
+
 /**
  * A matrix of 2D data, made up of vectors. T is the element type.
  * V is the underlying vector type.
@@ -18,15 +20,18 @@ trait DataMatrix[T, V <: Seq[T]] {
   
   def apply(row: Int, col: Int): T
   
+  implicit def builder: CanBuildFrom[Seq[T], T, V]
+  def fromSeq(s: Seq[T]): V = builder.apply(s).result()
+  
   /**
    * Obtain the data as row vectors.
    */
-  def toRowVectors: Seq[V] = (0 until rows).map(row(_)).toSeq
+  def toRowVectors: Seq[V] = (0 until rows).map(row(_))
 
   /**
    * Obtain the data as column vectors.
    */
-  def toColVectors: Seq[V] = (0 until columns).map(column(_)).toSeq
+  def toColVectors: Seq[V] = (0 until columns).map(column(_))
 
   /** 
    *  Extract a single row as a vector
