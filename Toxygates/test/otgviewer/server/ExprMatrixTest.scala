@@ -31,7 +31,7 @@ class ExprMatrixTest extends FunSuite {
       List(2, 1, 1, 19, 18, 20),
       List(4, 4, 4, 2, 1, 2),
       List(5, 2, 3, 2, 4, 3)).map(_.map(new ExpressionValue(_)))
-    new ExprMatrix(data.map(_.toVector), data.size, data(0).size,
+    new ExprMatrix(data.map(x => EVArray(x)), data.size, data(0).size,
     		Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4),
     		Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4, "f" -> 5),
     		(1 to 5).map(x => new RowAnnotation("p" + x, List("p" + x))).toVector)    
@@ -44,7 +44,7 @@ class ExprMatrixTest extends FunSuite {
     assert(em.column("a") === em.column(0))
     assert(em.row("a") === em.row(0))
     
-    def tv(x: Seq[Int]) = x.map(new ExpressionValue(_))
+    def tv(x: Seq[Int]) = EVArray(x.map(new ExpressionValue(_)))
     
     assert(em.column(0) === tv(Seq(3,1,2,4,5)))
     assert(em.column(1) === tv(Seq(3,2,1,4,2)))
@@ -97,7 +97,8 @@ class ExprMatrixTest extends FunSuite {
   
   test("sorting") {
     val em = testMatrix
-    val em2 = em.sortRows((v1, v2) => v1(0).getValue < v2(0).getValue)
+    val em2 = em.sortRows(
+        (v1, v2) => v1(0).getValue < v2(0).getValue)
     println(em2)
     println(em2.rowMap)
     assert(em2.rowMap("b") === 0)
@@ -198,7 +199,7 @@ class ExprMatrixTest extends FunSuite {
         List(2),
         List(3),
         List(4),
-        List(5)).map(_.map(new ExpressionValue(_))))
+        List(5)).map(r => EVArray(r.map(new ExpressionValue(_)))))
     val r = em.adjoinRight(small)
     assert(r.columns === 7)
     assert(r.rows === 5)
@@ -206,13 +207,16 @@ class ExprMatrixTest extends FunSuite {
   
   test("joint modify") {
     val em = testMatrix
-    val small = ExprMatrix.withRows(List(List(1),
+    val rows = List(List(1),
         List(2),
         List(3),
         List(4),
-        List(5)).map(_.map(new ExpressionValue(_))))
+        List(5)).map(r => EVArray(r.map(new ExpressionValue(_))))
         
-    val (s1, s2) = em.modifyJointly(small, _.sortRows((v1, v2) => v1(0).getValue < v2(0).getValue))
+    val small = ExprMatrix.withRows(rows)
+        
+    val (s1, s2) = em.modifyJointly(small, 
+        _.sortRows((v1, v2) => v1(0).getValue < v2(0).getValue))
     println(em.rowMap)
     println(s1.rowMap)
     assert(s2.rowMap === s1.rowMap)

@@ -15,18 +15,18 @@ object ExprMatrix {
   def safeCountColumns(rows: Seq[Seq[Any]]) = 
     if (rows.size > 0) { rows(0).size } else 0
   
-  def withRows(data: Seq[Seq[ExpressionValue]], metadata: ExprMatrix = null) = {
+  def withRows(data: Seq[EVArray], metadata: ExprMatrix = null) = {
     if (metadata != null) {
       metadata.copyWith(data)
     } else {
       val rows = data.size
       val columns = safeCountColumns(data)
-      new ExprMatrix(data.map(_.toVector), rows, columns, Map(), Map(), emptyAnnotations(rows))
+      new ExprMatrix(data, rows, columns, Map(), Map(), emptyAnnotations(rows))
     }       
   }
   
-  def withRows(data: Seq[Seq[ExpressionValue]], rowNames: Seq[String], colNames: Seq[String]) = 
-    new ExprMatrix(data.map(_.toVector), data.size, safeCountColumns(data), 
+  def withRows(data: Seq[EVArray], rowNames: Seq[String], colNames: Seq[String]) = 
+    new ExprMatrix(data, data.size, safeCountColumns(data), 
         Map() ++ rowNames.zipWithIndex, Map() ++ colNames.zipWithIndex, 
         emptyAnnotations(data.size))
   
@@ -46,16 +46,18 @@ case class RowAnnotation(probe: String, atomics: Iterable[String])
  * TODO: reconsider whether annotations are needed. Might be a major efficiency 
  * problem + redundant.
  */
-class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int, 
+class ExprMatrix(data: Seq[EVArray], rows: Int, columns: Int, 
     rowMap: Map[String, Int], columnMap: Map[String, Int], 
     val annotations: Vector[RowAnnotation]) 
     extends
-    AllocatedDataMatrix[ExprMatrix, ExpressionValue, String, String](data, rows, columns, rowMap, columnMap) {
+    AllocatedDataMatrix[ExprMatrix, ExpressionValue, EVArray, String, String](data, rows, columns, rowMap, columnMap) {
   
   import Conversions._
   import ExprMatrix._
   import t.util.SafeMath._
 
+  implicit val builder = otgviewer.server.EVABuilder
+  
   println(rows + " x " + columns)  
 //  println(sortedColumnMap)
   
@@ -64,7 +66,7 @@ class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int,
   /**
    * This is the bottom level copyWith method - all the other ones ultimately delegate to this one.
    */
-  def copyWith(rowData: Seq[Vector[ExpressionValue]], rowMap: Map[String, Int], 
+  def copyWith(rowData: Seq[EVArray], rowMap: Map[String, Int], 
       columnMap: Map[String, Int], 
       annotations: Vector[RowAnnotation]): ExprMatrix =  {
       
@@ -73,9 +75,9 @@ class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int,
             rowMap, columnMap, annotations)
   }
   
-  def copyWith(rowData: Seq[Seq[ExpressionValue]], rowMap: Map[String, Int], 
+  def copyWith(rowData: Seq[EVArray], rowMap: Map[String, Int], 
       columnMap: Map[String, Int]): ExprMatrix = {    
-    copyWith(rowData.map(_.toVector), rowMap, columnMap, annotations)
+    copyWith(rowData, rowMap, columnMap, annotations)
   }
   
   def copyWithAnnotations(annots: Seq[RowAnnotation]): ExprMatrix = {
@@ -114,7 +116,7 @@ class ExprMatrix(data: Seq[Vector[ExpressionValue]], rows: Int, columns: Int,
         new ExpressionValue(Double.NaN, 'A')
       }
     })
-    appendColumn(pvals, colName)
+    appendColumn(EVArray(pvals), colName)
   }
 
   private def equals0(x: Double) = java.lang.Double.compare(x, 0d) == 0

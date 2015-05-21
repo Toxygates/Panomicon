@@ -8,21 +8,28 @@ object EVABuilder extends CanBuildFrom[Seq[ExpressionValue], ExpressionValue, EV
   def apply() = new EVABuilder 
   
   def apply(s: Seq[ExpressionValue]): EVABuilder = {
-    new EVABuilder(s.toList)
+    new EVABuilder(s.map(_.getValue), s.map(_.getCall), s.map(_.getTooltip))
   }
 }
 
-class EVABuilder(private var vals: Seq[ExpressionValue] = Seq()) extends Builder[ExpressionValue, EVArray] {
+class EVABuilder(private var values: Seq[Double] = Seq(),
+    private var calls: Seq[Char] = Seq(),
+    private var tooltips: Seq[String] = Seq()) extends Builder[ExpressionValue, EVArray] {
+  
   def clear {
-    vals = Seq()
+    values = Seq()
+    calls = Seq()
+    tooltips = Seq()
   }
   
   def += (x: ExpressionValue): this.type = {
-    vals :+= x
+    values :+ x.getValue
+    calls :+ x.getCall
+    tooltips :+ x.getTooltip
     this
   }
   
-  def result = EVArray(vals)  
+  def result = new EVArray(values.toArray, calls.toArray, tooltips.toArray)  
 }
 
 object EVArray {
@@ -41,12 +48,6 @@ class EVArray(values: Array[Double],
   
   def apply(i: Int): ExpressionValue = 
     new ExpressionValue(values(i), calls(i), tooltips(i))
-  
-  override def take(n: Int): EVArray = 
-    new EVArray(values.take(n), calls.take(n), tooltips.take(n))
-  
-  override def drop(n: Int): EVArray = 
-    new EVArray(values.drop(n), calls.drop(n), tooltips.drop(n))
   
   def length: Int = values.length
   

@@ -46,7 +46,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue]
     
     info.addColumn(false, g.toString, "Average of treated samples", false, g, false)
     ExprMatrix.withRows(data.map(vs =>
-      Vector(javaMean(selectIdx(vs, treatedIdx)))),
+      EVArray(Seq(javaMean(selectIdx(vs, treatedIdx))))),
       probes,
       List(g.toString))
   }
@@ -80,7 +80,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue]
         
         val grouped = columnsFor(g, sortedSamples, standardOrder)
 
-        val ungrouped = ExprMatrix.withRows(standardOrder.map(_.map(asJava(_))), 
+        val ungrouped = ExprMatrix.withRows(standardOrder.map(r => EVArray(r.map(asJava(_)))), 
             probes, sortedSamples.map(_.sampleId))
             
         if (rawGroupedMat == null) {
@@ -152,7 +152,7 @@ trait TreatedControlBuilder[E <: ExprValue] {
   def enhancedColumns: Boolean
     
     protected def buildRow(raw: Seq[E], 
-      treatedIdx: Seq[Int], controlIdx: Seq[Int]): Vector[ExpressionValue]
+      treatedIdx: Seq[Int], controlIdx: Seq[Int]): EVArray
   
     protected def addColumnInfo(g: Group): Unit
     def colNames(g: Group): Seq[String]
@@ -191,10 +191,10 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[Exp
     with TreatedControlBuilder[ExprValue] {
   
   protected def buildRow(raw: Seq[ExprValue], 
-      treatedIdx: Seq[Int], controlIdx: Seq[Int]): Vector[ExpressionValue] = 
-    Vector(
+      treatedIdx: Seq[Int], controlIdx: Seq[Int]): EVArray = 
+    EVArray(Seq(
       javaMean(selectIdx(raw, treatedIdx)),
-      javaMean(selectIdx(raw, controlIdx))
+      javaMean(selectIdx(raw, controlIdx)))
     )
 
   protected def addColumnInfo(g: Group) {
@@ -215,10 +215,10 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
     with TreatedControlBuilder[PExprValue] {
 
   protected def buildRow(raw: Seq[PExprValue], 
-      treatedIdx: Seq[Int], controlIdx: Seq[Int]): Vector[ExpressionValue] = {
+      treatedIdx: Seq[Int], controlIdx: Seq[Int]): EVArray = {
     val treatedVs = selectIdx(raw, treatedIdx)
     val first = treatedVs.head
-    Vector(javaMean(treatedVs), new ExpressionValue(first.p, first.call))
+    EVArray(Seq(javaMean(treatedVs), new ExpressionValue(first.p, first.call)))
   }  
   
   protected def addColumnInfo(g: Group) {
@@ -315,8 +315,8 @@ class ManagedMatrix(val initProbes: Array[String],
   }
   
   def sort(col: Int, ascending: Boolean): Unit = {
-      def sortData(v1: Seq[ExpressionValue],
-                 v2: Seq[ExpressionValue]): Boolean = {
+      def sortData(v1: EVArray,
+                 v2: EVArray): Boolean = {
       val ev1 = v1(col)
       val ev2 = v2(col)
       if (ev1.call == 'A' && ev2.call != 'A') {

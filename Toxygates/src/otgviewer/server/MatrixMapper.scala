@@ -26,10 +26,12 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
       val domainRows = domProbes.map(dp => from.row(dp))
       if (!domainRows.isEmpty) {
         val cols = domainRows.head.size
-        val nr = (0 until cols).map(c => {
-          val xs = domainRows.map(dr => dr(c))
-          vm.convert(rng, xs.filter(_.getPresent))
-        })
+        val nr = EVArray(
+            (0 until cols).map(c => {
+              val xs = domainRows.map(dr => dr(c))
+              vm.convert(rng, xs.filter(_.getPresent))
+          })
+        )
         Some((nr, RowAnnotation(rng, domProbes)))
       } else {
         None
