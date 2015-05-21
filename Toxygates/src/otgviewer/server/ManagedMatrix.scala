@@ -134,7 +134,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue]
   
   //TODO use schema
   protected def treatedAndControl(g: Group) = 
-    g.getUnits().partition(_.get("dose_level") == "Control")
+    g.getUnits().partition(_.get("dose_level") != "Control")
 }
   
 /**
