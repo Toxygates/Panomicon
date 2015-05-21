@@ -205,6 +205,18 @@ class ExprMatrixTest extends FunSuite {
     assert(r.rows === 5)
   }
   
+  test("appendColumn") {
+    implicit def builder = EVABuilder
+    
+    val em = testMatrix    
+    val evals = EVArray((1 to 5).map(new ExpressionValue(_)))
+    
+    val r = em.appendColumn(evals)
+    
+    assert(r.columns === 7)
+    assert(r.rows === 5)
+  }
+  
   test("joint modify") {
     val em = testMatrix
     val rows = List(List(1),

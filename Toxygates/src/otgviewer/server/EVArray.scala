@@ -3,41 +3,48 @@ package otgviewer.server
 import t.common.shared.sample.ExpressionValue
 import scala.collection.generic.CanBuildFrom
 import scala.collection.mutable.Builder
+import scala.collection.mutable.ArrayBuilder
 
 object EVABuilder extends CanBuildFrom[Seq[ExpressionValue], ExpressionValue, EVArray] {
   def apply() = new EVABuilder 
   
-  def apply(s: Seq[ExpressionValue]): EVABuilder = {
-    new EVABuilder(s.map(_.getValue), s.map(_.getCall), s.map(_.getTooltip))
-  }
+  def apply(s: Seq[ExpressionValue]): EVABuilder = 
+    new EVABuilder      
 }
 
-class EVABuilder(private var values: Seq[Double] = Seq(),
-    private var calls: Seq[Char] = Seq(),
-    private var tooltips: Seq[String] = Seq()) extends Builder[ExpressionValue, EVArray] {
+class EVABuilder(_values: Seq[Double] = Seq(),
+    _calls: Seq[Char] = Seq(),
+    _tooltips: Seq[String] = Seq()) extends Builder[ExpressionValue, EVArray] {
   
-  def clear {
-    values = Seq()
-    calls = Seq()
-    tooltips = Seq()
+  private var values = new ArrayBuilder.ofDouble ++= _values
+  private var calls = new ArrayBuilder.ofChar ++= _calls
+  private var tooltips = new ArrayBuilder.ofRef[String] ++= _tooltips
+  
+  def clear(): Unit = {
+    values.clear()
+    calls.clear()
+    tooltips.clear()
   }
   
   def += (x: ExpressionValue): this.type = {
-    values :+ x.getValue
-    calls :+ x.getCall
-    tooltips :+ x.getTooltip
+    values += x.getValue
+    calls += x.getCall
+    tooltips += x.getTooltip
     this
   }
   
-  def result = new EVArray(values.toArray, calls.toArray, tooltips.toArray)  
+  override def sizeHint(h: Int): Unit = {
+    values.sizeHint(h)
+    calls.sizeHint(h)
+    tooltips.sizeHint(h)
+  }
+  
+  def result = new EVArray(values.result, calls.result, tooltips.result)  
 }
 
 object EVArray {
-  def apply(evs: Seq[ExpressionValue]): EVArray = {
-    val eva = evs.toArray
-    new EVArray(eva.map(_.getValue), eva.map(_.getCall),
-        eva.map(_.getTooltip))        
-  }
+  def apply(evs: Seq[ExpressionValue]): EVArray = 
+    (new EVABuilder ++= evs).result      
 }
 
 //TODO For scalability, think about avoiding the tooltips 

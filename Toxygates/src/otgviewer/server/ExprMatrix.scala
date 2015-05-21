@@ -1,12 +1,13 @@
 package otgviewer.server
 
+import scala.reflect.ClassTag
+
+import org.apache.commons.math3.stat.inference.MannWhitneyUTest
+import org.apache.commons.math3.stat.inference.TTest
+
 import friedrich.data.immutable._
 import t.common.shared.sample.ExpressionRow
 import t.common.shared.sample.ExpressionValue
-import scala.reflect.ClassTag
-import org.apache.commons.math3.stat.inference.TTest
-import org.apache.commons.math3.stat.inference.MannWhitneyUTest
-import otgviewer.server.rpc.Conversions
 
 object ExprMatrix {
   val ttest = new TTest()
@@ -48,15 +49,14 @@ case class RowAnnotation(probe: String, atomics: Iterable[String])
  */
 class ExprMatrix(data: Seq[EVArray], rows: Int, columns: Int, 
     rowMap: Map[String, Int], columnMap: Map[String, Int], 
-    val annotations: Vector[RowAnnotation]) 
+    val annotations: Seq[RowAnnotation]) 
     extends
     AllocatedDataMatrix[ExprMatrix, ExpressionValue, EVArray, String, String](data, rows, columns, rowMap, columnMap) {
-  
-  import Conversions._
+    
   import ExprMatrix._
   import t.util.SafeMath._
 
-  implicit val builder = otgviewer.server.EVABuilder
+  implicit def builder() = EVABuilder
   
   println(rows + " x " + columns)  
 //  println(sortedColumnMap)
@@ -68,7 +68,7 @@ class ExprMatrix(data: Seq[EVArray], rows: Int, columns: Int,
    */
   def copyWith(rowData: Seq[EVArray], rowMap: Map[String, Int], 
       columnMap: Map[String, Int], 
-      annotations: Vector[RowAnnotation]): ExprMatrix =  {
+      annotations: Seq[RowAnnotation]): ExprMatrix =  {
       
         new ExprMatrix(rowData, rowData.size, 
             safeCountColumns(rowData),           
@@ -81,19 +81,19 @@ class ExprMatrix(data: Seq[EVArray], rows: Int, columns: Int,
   }
   
   def copyWithAnnotations(annots: Seq[RowAnnotation]): ExprMatrix = {
-    copyWith(data, rowMap, columnMap, annots.toVector)
+    copyWith(data, rowMap, columnMap, annots)
   }
   
   lazy val sortedRowMap = rowMap.toSeq.sortWith(_._2 < _._2)
   lazy val sortedColumnMap = columnMap.toSeq.sortWith(_._2 < _._2)
   
-  lazy val asRows: Vector[ExpressionRow] = toRowVectors.toVector.zip(annotations).map(x => {
+  lazy val asRows: Seq[ExpressionRow] = toRowVectors.zip(annotations).map(x => {
     val ann = x._2    
     new ExpressionRow(ann.probe, ann.atomics.toArray, null, null, null, x._1.toArray)
   })
 
   override def selectRows(rows: Seq[Int]): ExprMatrix = 
-    super.selectRows(rows).copyWithAnnotations(rows.map(annotations(_)).toVector)
+    super.selectRows(rows).copyWithAnnotations(rows.map(annotations(_)))
 
   /**
    * Append a two column test, which is based on the data in "sourceData".
