@@ -1,6 +1,6 @@
 package otgviewer.server.rpc
 
-import t.common.server.rpc.TServiceServlet
+import t.viewer.server.rpc.TServiceServlet
 import otg.Factory
 import otg.Context
 import t.viewer.server.Configuration

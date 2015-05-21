@@ -1,4 +1,4 @@
-package t.common.server.rpc
+package t.viewer.server.rpc
 
 import scala.Array.canBuildFrom
 import scala.collection.JavaConversions._
