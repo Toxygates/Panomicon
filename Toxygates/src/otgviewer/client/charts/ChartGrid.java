@@ -83,7 +83,9 @@ abstract public class ChartGrid extends Composite {
 					} else {
 						probe = rowFilters.get(r);
 					}
-					sc.put("organism", org);
+					if (org != null) {
+						sc.put("organism", org);
+					}
 					String colKey = columnsAreMins ? schema.minorParameter() : 
 						schema.mediumParameter();
 					sc.put(colKey, minsOrMeds[c]);					

@@ -56,16 +56,10 @@ abstract class ChartDataSource {
 		final String probe;
 		String color = "grey";
 		
-		private final static List<String> chartKeys = new ArrayList<String>();
-		static {						
-			//TODO use DataSchema to add these
-			Collections.addAll(chartKeys, "exposure_time", "dose_level", 
-					"compound_name", "organism");
-		}
-		
 		ChartSample(SampleClass sc, DataSchema schema,
-				double value, OTGSample barcode, String probe, char call) {						
-			this.sc = sc.copyOnly(chartKeys);
+				double value, OTGSample barcode, String probe, char call) {
+			
+			this.sc = sc.copyOnly(Arrays.asList(schema.chartParameters()));
 			this.schema = schema;
 			this.value = value;
 			this.barcode = barcode;
