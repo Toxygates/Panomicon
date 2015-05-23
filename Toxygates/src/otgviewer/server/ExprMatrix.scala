@@ -32,10 +32,19 @@ object ExprMatrix {
         emptyAnnotations(data.size))
   
   
-  def emptyAnnotations(rows: Int) = Vector.fill(rows)(new RowAnnotation(null, List()))
+  val emptyAnnotation = new SimpleAnnotation(null)
+  def emptyAnnotations(rows: Int) = Vector.fill(rows)(emptyAnnotation)
 }
 
-case class RowAnnotation(probe: String, atomics: Iterable[String])
+sealed trait RowAnnotation {
+  def probe: String
+  def atomics: Iterable[String]
+}
+
+case class FullAnnotation(probe: String, atomics: Iterable[String]) extends RowAnnotation
+case class SimpleAnnotation(probe: String) extends RowAnnotation {
+  def atomics = List(probe)
+}
  
 /**
  * Data is row-major

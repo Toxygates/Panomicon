@@ -61,7 +61,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue]
     
     val packedProbes = probes.map(pmap.pack)
 
-    val annotations = probes.map(x => new RowAnnotation(x, List(x))).toVector
+    val annotations = probes.map(x => new SimpleAnnotation(x)).toVector
     
     for (g <- requestColumns) {
         //Remove repeated samples as some other algorithms assume distinct samples
