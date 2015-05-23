@@ -32,7 +32,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
               vm.convert(rng, xs.filter(_.getPresent))
           })
         )
-        Some((nr, RowAnnotation(rng, domProbes)))
+        Some((nr, FullAnnotation(rng, domProbes)))
       } else {
         None
       }
