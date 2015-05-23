@@ -8,7 +8,7 @@ import java.io.Serializable;
 public class ExpressionValue implements Serializable {
 	private double _value = 0;
 	private char _call = 'A';
-	private String _tooltip = "";
+	private String _tooltip = null;
 
 	public ExpressionValue() { }
 
@@ -21,7 +21,7 @@ public class ExpressionValue implements Serializable {
 	}
 	
 	public ExpressionValue(double value, char call) {
-		this(value, call, "");
+		this(value, call, null);
 	}
 	
 	/**
@@ -42,7 +42,9 @@ public class ExpressionValue implements Serializable {
 	
 	public char getCall() { return _call; }
 	
-	public String getTooltip() { return _tooltip; }
+	public String getTooltip() { 
+		return (_tooltip == null) ? "" : _tooltip; 
+	}
 	
 	@Override
 	public String toString() {
