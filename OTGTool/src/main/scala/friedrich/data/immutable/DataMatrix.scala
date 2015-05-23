@@ -63,11 +63,11 @@ extends AbstractMatrix[Self, T, V] {
   def updated(row: Int, col: Int, value: T) = copyWith(data.updated(row, data(row).updated(col, value)))
 
   def row(x: Int): V = data(x)
-  def column(x: Int): V = builder.apply(data.map(_(x))).result
+  def column(x: Int): V = fromSeq(data.map(_(x)))
   
   def appendColumn(col: Seq[T]): Self = copyWith(data.zip(col).map(x => x._1 :+ x._2))
 
-  def adjoinRight(other: Self): Self = {    
+  def adjoinRight(other: Self): Self = { 
     val nrows = (0 until rows).map(i => data(i) ++ other.row(i))
     copyWith(nrows)   
   }

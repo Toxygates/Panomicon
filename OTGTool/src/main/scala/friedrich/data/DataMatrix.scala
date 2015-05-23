@@ -21,25 +21,25 @@ trait DataMatrix[T, V <: Seq[T]] {
   def apply(row: Int, col: Int): T
   
   implicit def builder: CanBuildFrom[Seq[T], T, V]
-  def fromSeq(s: Seq[T]): V = builder.apply(s).result()
+  def fromSeq(s: Seq[T]): V = (builder() ++= s).result
   
   /**
-   * Obtain the data as row vectors.
+   * A vector of rows.
    */
-  def toRowVectors: Seq[V] = (0 until rows).map(row(_))
+  def toRowVectors: Seq[V] = (0 until rows).toVector.map(row(_))
 
   /**
-   * Obtain the data as column vectors.
+   * A vector of columns.
    */
-  def toColVectors: Seq[V] = (0 until columns).map(column(_))
+  def toColVectors: Seq[V] = (0 until columns).toVector.map(column(_))
 
   /** 
-   *  Extract a single row as a vector
+   *  Extract a single row
    */
   def row(row: Int): V
   
   /**
-   * Extract a single column as a vector
+   * Extract a single column
    */
   def column(col: Int): V
 
