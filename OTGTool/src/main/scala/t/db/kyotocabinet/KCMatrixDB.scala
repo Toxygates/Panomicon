@@ -286,7 +286,7 @@ class KCMatrixDB (file: String, db: DB)(implicit context: MatrixContext)
     
   protected def extractValue(data: Array[Byte], probe: String) = {
     val b = ByteBuffer.wrap(data)
-    BasicExprValue(b.getDouble, b.getChar, Probe(probe))
+    BasicExprValue(b.getDouble, b.getChar, probe)
   }
   
   /**
@@ -302,7 +302,7 @@ class KCMatrixDB (file: String, db: DB)(implicit context: MatrixContext)
     r.array
   }
 
-  def emptyValue(probe: String) = BasicExprValue(0.0, 'A', Probe(probe))  
+  def emptyValue(probe: String) = BasicExprValue(0.0, 'A', probe)  
 }
 
 class KCExtMatrixDB(file: String, db: DB)(implicit context: MatrixContext)
@@ -316,7 +316,7 @@ class KCExtMatrixDB(file: String, db: DB)(implicit context: MatrixContext)
     val call = b.getChar
     val p = b.getDouble
 
-    PExprValue(x, p, call, Probe(probe))
+    PExprValue(x, p, call, probe)
   }
   
   /**

@@ -81,7 +81,7 @@ KyotoCabinetDB(file, db) with SeriesDB[S] {
       val p = b.getInt
       val v = b.getDouble
       val c = b.getChar
-      SeriesPoint(p, BasicExprValue(v, c, Probe(pmap.unpack(into.probe))))
+      SeriesPoint(p, BasicExprValue(v, c, pmap.unpack(into.probe)))
     })
     builder.rebuild(into, vs)    
   }

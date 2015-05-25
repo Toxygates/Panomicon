@@ -132,7 +132,7 @@ trait MatrixDBReader[+E <: ExprValue] {
       //not sparse read, go sample-wise
       val cols = xs.par.map(bc => {
         //probe to expression
-        val dat = Map() ++ (valuesInSample(bc, ps).map(x => (x.probe.identifier -> x))).
+        val dat = Map() ++ (valuesInSample(bc, ps).map(x => (x.probe -> x))).
         		filter(!presentOnly || _._2.present)
         val col = ps.map(p =>
           dat.getOrElse(probeMap.unpack(p), emptyValue(probeMap, p)))

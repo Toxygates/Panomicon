@@ -94,7 +94,7 @@ trait SeriesBuilder[S <: Series[S]] {
 
   def presentMean(ds: Iterable[Iterable[ExprValue]]): Iterable[ExprValue] = {
     var byProbe = Map[String, List[ExprValue]]()
-    for (xs <- ds; y <- xs; p = y.probe.identifier) {
+    for (xs <- ds; y <- xs; p = y.probe) {
       if (byProbe.contains(p)) {
         byProbe += (p -> (y :: byProbe(p)))
       } else {

@@ -46,7 +46,7 @@ class KCTest extends OTGTestSuite {
     
     val ps = List("1371970_at", "1371034_at", "1372727_at")
     val packedProbes = ps.map(pmap.pack(_))
-    val r1f = r1.map(_.filter(x => ps.contains(x.probe.identifier))).toSeq
+    val r1f = r1.map(_.filter(x => ps.contains(x.probe))).toSeq
     val pps = ps.zip(ps.map(pmap.pack(_)))
     val r2s = pps.map(x => db.valuesForProbe(x._2, ss))
     for (i <- 0 until ss.size) {
