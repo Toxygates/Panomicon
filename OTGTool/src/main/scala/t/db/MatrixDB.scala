@@ -41,7 +41,7 @@ trait MatrixDBReader[+E <: ExprValue] {
    * each array.
    * Probes must be sorted.
    */
-  def valuesInSample(x: Sample, probes: Iterable[Int]): Iterable[(Int, E)]
+  def valuesInSample(x: Sample, probes: Iterable[Int]): Iterable[E]
 
 //  def presentValuesInSample(x: Sample): Iterable[(Int, E)] =
 //    valuesInSample(x).filter(_._2.present)
@@ -119,7 +119,7 @@ trait MatrixDBReader[+E <: ExprValue] {
   def valuesForSamplesAndProbes(xs: Seq[Sample], probes: Seq[Int],
     sparseRead: Boolean = false, presentOnly: Boolean = false): Vector[Seq[E]] = {
 
-    val ps = probes.sorted
+    val ps = probes.filter(probeMap.keys.contains(_)).sorted
     
     if (sparseRead) {
       val rows = probes.par.map(p => {
@@ -132,10 +132,10 @@ trait MatrixDBReader[+E <: ExprValue] {
       //not sparse read, go sample-wise
       val cols = xs.par.map(bc => {
         //probe to expression
-        val dat = Map() ++ (valuesInSample(bc, ps).map(x => (x._1 -> x._2))).
+        val dat = Map() ++ (valuesInSample(bc, ps).map(x => (x.probe.identifier -> x))).
         		filter(!presentOnly || _._2.present)
         val col = ps.map(p =>
-          dat.getOrElse(p, emptyValue(probeMap, p)))
+          dat.getOrElse(probeMap.unpack(p), emptyValue(probeMap, p)))
         col
       })
       Vector.tabulate(probes.size, xs.size)((p, s) => cols(s)(p))

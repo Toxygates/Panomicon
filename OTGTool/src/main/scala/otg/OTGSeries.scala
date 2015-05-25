@@ -106,9 +106,11 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
         (v, expr, paramMap("exposure_time"))
       })
       
+      //TODO this is too hard to read
       val timeGroup = data.groupBy(_._3) 
       val pm = timeGroup.map(x => (x._1, presentMean(x._2.map(_._2))))
-      val points = pm.map(x => x._2.map(y => (y._1, SeriesPoint(timeMap(x._1), y._2)))).
+      val points = pm.map(x => x._2.map(y => (mc.probeMap.pack(y.probe.identifier), 
+          SeriesPoint(timeMap(x._1), y)))).
       	flatten.groupBy(_._1)
       r.synchronized {
     	  r ++= points.map(x => s.copy(probe=x._1, points=x._2.toSeq.map(_._2)))

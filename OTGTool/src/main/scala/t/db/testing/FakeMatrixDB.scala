@@ -23,8 +23,8 @@ abstract class AbsFakeMatrixDB[E <: ExprValue](implicit val probeMap: ProbeMap) 
     null
   }
   
-  def valuesInSample(x: Sample, probes: Iterable[Int]): Iterable[(Int, E)] =
-    records.filter(_._1 == x).map(x => (x._2, x._3))
+  def valuesInSample(x: Sample, probes: Iterable[Int]): Iterable[E] =
+    records.filter(_._1 == x).map(x => x._3)
   
   def write(s: Sample, probe: Int, e: E) {
     records :+= (s, probe, e)

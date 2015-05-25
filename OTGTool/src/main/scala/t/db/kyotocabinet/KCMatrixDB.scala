@@ -144,7 +144,7 @@ abstract class AbstractKCMatrixDB[E <: ExprValue]
   //Magic cutoff point at 10000 (may need to be tuned)
   private val BULK_METHOD_CUTOFF = 10000
   
-  def valuesInSample(x: Sample, keys: Iterable[Int]): Iterable[(Int, E)] = {
+  def valuesInSample(x: Sample, keys: Iterable[Int]): Iterable[E] = {
 	  if (keys.size > BULK_METHOD_CUTOFF) {	   
 	    valuesInSampleTraversal(x, keys)
 	  } else {
@@ -154,10 +154,10 @@ abstract class AbstractKCMatrixDB[E <: ExprValue]
   
   /**
    * Method 1. Employs a single cursor to traverse the entire sample.
-   * Keys must be sorted.
+   * Keys must be sorted and validated.
    */
   private def valuesInSampleTraversal(x: Sample, 
-      keys: Iterable[Int]): Iterable[(Int, E)] = {  
+      keys: Iterable[Int]): Iterable[E] = {  
     assert (!keys.isEmpty)
     println(x.identifier + " (" + keys.size + ") (cur)")
     val first = keys.head
@@ -165,7 +165,7 @@ abstract class AbstractKCMatrixDB[E <: ExprValue]
     
     val cur = db.cursor()
     try {
-      var r: Vector[(Int, E)] = Vector()
+      var r: Vector[E] = Vector()
       var proceed = cur.jump(formKey(x, first))
       val dbCode = x.dbCode      
       while (proceed) {
@@ -175,7 +175,7 @@ abstract class AbstractKCMatrixDB[E <: ExprValue]
           if (extr._1 == dbCode && validKeys.contains(extr._2)) {
             //TODO optimise out this unpack
             val probeStr = pmap.unpack(extr._2)
-            r :+= (extr._2, extractValue(kv(1), probeStr))
+            r :+= extractValue(kv(1), probeStr)
           } else {
             proceed = false
           }
@@ -193,8 +193,8 @@ abstract class AbstractKCMatrixDB[E <: ExprValue]
    * Method 2. Employs the get_bulk function to get values.
    * Keys need not be sorted.
    */
-  private def valuesInSampleBulk(x: Sample, keys: Iterable[Int]): Iterable[(Int, E)] = {       
-    var r: Vector[(Int, E)] = Vector() 
+  private def valuesInSampleBulk(x: Sample, keys: Iterable[Int]): Iterable[E] = {       
+    var r: Vector[E] = Vector() 
     
     println(x.identifier + " (" + keys.size + ") (bulk)")
     
@@ -215,7 +215,7 @@ abstract class AbstractKCMatrixDB[E <: ExprValue]
         val probeStr = pmap.tryUnpack(extr._2)
         probeStr match {
           case Some(ps) =>
-            r :+= (extr._2, extractValue(v, ps))
+            r :+= extractValue(v, ps)
           case None =>
             Console.err.println("Unable to unpack probe " + extr._2)
         }
