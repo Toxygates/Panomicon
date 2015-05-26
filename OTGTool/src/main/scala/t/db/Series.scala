@@ -61,14 +61,14 @@ trait SeriesBuilder[S <: Series[S]] {
    * Using values from the given MatrixDB, construct all possible series for the
    * samples indicated in the metadata.
    */
-  def makeNew[E <: ExprValue](from: MatrixDBReader[E], md: Metadata, samples: Iterable[Sample])
+  def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata, samples: Iterable[Sample])
   	(implicit mc: MatrixContext): Iterable[S]
   
   /**
    * Using values from the given MatrixDB, construct all possible series for the
    * samples indicated in the metadata.
    */
-  def makeNew[E <: ExprValue](from: MatrixDBReader[E], md: Metadata)
+  def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata)
   	(implicit mc: MatrixContext): Iterable[S]
 		  = makeNew(from, md, md.samples)
 

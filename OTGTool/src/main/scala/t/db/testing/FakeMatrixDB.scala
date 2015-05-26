@@ -8,7 +8,7 @@ import t.db.BasicExprValue
 import t.db.ProbeMap
 import t.db.Sample
 
-abstract class AbsFakeMatrixDB[E <: ExprValue](implicit val probeMap: ProbeMap) extends MatrixDB[E, E] {
+abstract class AbsFakeMatrixDB[E >: Null <: ExprValue](implicit val probeMap: ProbeMap) extends MatrixDB[E, E] {
   var closed = false
   var released = false
   var records: Vector[(Sample, Int, E)] = Vector()

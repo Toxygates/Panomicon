@@ -47,7 +47,7 @@ object KCMatrixDB {
  * indexed by sample ID and probe.
  *
  */
-abstract class AbstractKCMatrixDB[E <: ExprValue]
+abstract class AbstractKCMatrixDB[E >: Null <: ExprValue]
   (file: String, db: DB)(implicit val context: MatrixContext)
   extends KyotoCabinetDB(file, db) with MatrixDB[E, E] {
 
@@ -141,52 +141,8 @@ abstract class AbstractKCMatrixDB[E <: ExprValue]
   //TODO consider removing/encapsulating
   def sortSamples(ss: Iterable[Sample]): Seq[Sample] = ss.toList.sortWith(_.dbCode < _.dbCode)
   
-  //Magic cutoff point at 10000 (may need to be tuned)
-  private val BULK_METHOD_CUTOFF = 10000
-  
-  def valuesInSample(x: Sample, keys: Iterable[Int]): Iterable[E] = {
-	  if (keys.size > BULK_METHOD_CUTOFF) {	   
-	    valuesInSampleTraversal(x, keys)
-	  } else {
-	    valuesInSampleBulk(x, keys)
-	  }
-  }
-  
-  /**
-   * Method 1. Employs a single cursor to traverse the entire sample.
-   * Keys must be sorted and validated.
-   */
-  private def valuesInSampleTraversal(x: Sample, 
-      keys: Iterable[Int]): Iterable[E] = {  
-    assert (!keys.isEmpty)
-    println(x.identifier + " (" + keys.size + ") (cur)")
-    val first = keys.head
-    val validKeys = keys.toSet.intersect(pmap.keys)
-    
-    val cur = db.cursor()
-    try {
-      var r: Vector[E] = Vector()
-      var proceed = cur.jump(formKey(x, first))
-      val dbCode = x.dbCode      
-      while (proceed) {
-        val kv = cur.get(true)
-        if (kv != null) {
-          val extr = extractKey(kv(0))
-          if (extr._1 == dbCode && validKeys.contains(extr._2)) {
-            //TODO optimise out this unpack
-            val probeStr = pmap.unpack(extr._2)
-            r :+= extractValue(kv(1), probeStr)
-          } else {
-            proceed = false
-          }
-        } else {
-          proceed = false
-        } 
-      }
-      r
-    } finally {
-      cur.disable()
-    }
+  def valuesInSample(x: Sample, keys: Iterable[Int]): Iterable[E] = {	
+	    valuesInSampleBulk(x, keys)	
   }
   
    /**
@@ -199,7 +155,7 @@ abstract class AbstractKCMatrixDB[E <: ExprValue]
     println(x.identifier + " (" + keys.size + ") (bulk)")
     
     val reqKeys = if (!keys.isEmpty) {
-      keys.map(formKey(x, _)).toArray
+      keys.toArray.map(formKey(x, _))
     } else {
       //Not very good for sparse matrices - consider retiring
       pmap.keys.toArray.map(p => formKey(x, p))

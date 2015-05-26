@@ -16,7 +16,7 @@ import t.db.MatrixContext
  * Routines for loading a ManagedMatrix
  * and constructing groups.
  */
-abstract class ManagedMatrixBuilder[E <: ExprValue]
+abstract class ManagedMatrixBuilder[E >: Null <: ExprValue]
   (reader: MatrixDBReader[E], val probes: Array[String]) {
 
   /**
@@ -75,7 +75,7 @@ abstract class ManagedMatrixBuilder[E <: ExprValue]
             
         println(g.getUnits()(0).toString())
         
-        val rowLookup = Map() ++ data.map(r => r(0).probe.identifier -> r)
+        val rowLookup = Map() ++ data.map(r => r(0).probe -> r)
         val standardOrder = probes.map(p => rowLookup(p))
         
         val grouped = columnsFor(g, sortedSamples, standardOrder)
@@ -147,7 +147,7 @@ class FoldBuilder(reader: MatrixDBReader[ExprValue], probes: Array[String])
     defaultColumns(g, sortedBarcodes, data)   
 }
 
-trait TreatedControlBuilder[E <: ExprValue] {
+trait TreatedControlBuilder[E >: Null <: ExprValue] {
   this: ManagedMatrixBuilder[E] =>
   def enhancedColumns: Boolean
     

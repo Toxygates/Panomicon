@@ -80,7 +80,7 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
   }
   
 
-  def makeNew[E <: ExprValue](from: MatrixDBReader[E], md: Metadata, samples: Iterable[Sample])
+  def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata, samples: Iterable[Sample])
   (implicit mc: MatrixContext): Iterable[OTGSeries] = {
     
     def series(x: Sample) = {
