@@ -7,7 +7,6 @@ import t.db.SeriesDB
 import otg.db.file.TSVMetadata
 import t.db.kyotocabinet.KCMatrixDB
 import otg.sparql.OTGSamples
-import otg.RepeatType._
 import otg.Species._
 import t.db.MatrixDBReader
 import t.db.kyotocabinet.KCSeriesDB

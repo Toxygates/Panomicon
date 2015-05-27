@@ -1,13 +1,9 @@
 package otg
 
 import org.junit.runner.RunWith 
-import otg.RepeatType.Repeat
-import otg.RepeatType.RepeatType
-import otg.RepeatType.Single
 import t.db.SeriesDB
 import t.db.kyotocabinet.KCSeriesDB
 import org.scalatest.junit.JUnitRunner
-import otg.Organ._
 import otg.Species._
 import t.testing.TestConfig
 
@@ -18,6 +14,8 @@ class SeriesTest extends OTGTestSuite {
   val config = TestConfig.config
   //TODO change
   implicit val context = new OTGContext(config)
+  
+  //TODO update tests
   
 //  before {
 //    // TODO change the way this is configured
