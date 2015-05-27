@@ -1,7 +1,6 @@
 package otgviewer.client.charts;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -87,6 +86,8 @@ abstract class ChartDataSource {
 		
 		public SampleClass sampleClass() { return sc; }
 		
+		//TODO do we need hashCode and equals for this class?
+		//See getSamples below where we use a Set<ChartSample>
 		@Override
 		public int hashCode() {
 			int r = 0;			
@@ -124,31 +125,25 @@ abstract class ChartDataSource {
 	String[] mediumVals() { return _mediumVals; }
 	
 	protected DataSchema schema;
-	final protected String minorParam, medParam, majorParam, timeParam;
+	protected boolean controlMedVals = false;
 	
 	ChartDataSource(DataSchema schema) {
-		this.schema = schema;		
-		minorParam = schema.minorParameter();
-		medParam = schema.mediumParameter();
-		majorParam = schema.majorParameter();
-		timeParam = schema.timeParameter();
+		this.schema = schema;				
 	}
 	
-	protected void init() {
+	protected void initParams(boolean controlMedVals) {
 		try {
+			String minorParam = schema.minorParameter();
+			String medParam = schema.mediumParameter();
 			Set<String> minorVals = SampleClass.collectInner(chartSamples, 
-					minorParam);
-			
+					minorParam);			
 			_minorVals = minorVals.toArray(new String[0]);
-			// TODO avoid magic constants
 			schema.sort(minorParam, _minorVals);
-
 			
-			List<String> medVals = new ArrayList<String>();
+			Set<String> medVals = new HashSet<String>();
 			for (ChartDataSource.ChartSample s : chartSamples) {
 				//TODO generalise control-check better
-				if (!schema.isControlValue(schema.getMedium(s)) && 
-						!medVals.contains(schema.getMedium(s))) {
+				if (controlMedVals || !schema.isControlValue(schema.getMedium(s))) {
 					medVals.add(schema.getMedium(s));
 				}
 			}
@@ -170,7 +165,7 @@ abstract class ChartDataSource {
 	 * sample acceptor when they are available.
 	 */
 	void getSamples(SampleMultiFilter smf, ColorPolicy policy, SampleAcceptor acceptor) {
-		if (!smf.contains(majorParam)) {
+		if (!smf.contains(schema.majorParameter())) {
 			//TODO why is this needed?
 			applyPolicy(policy, chartSamples);
 			acceptor.accept(chartSamples);			
@@ -195,13 +190,13 @@ abstract class ChartDataSource {
 					ExpressionValue ev = s.values()[i];			
 					String time = times[i];
 					SampleClass sc = s.sampleClass().
-							copyWith(timeParam, time);
+							copyWith(schema.timeParameter(), time);
 					ChartSample cs = new ChartSample(sc, schema,
 							ev.getValue(), null, s.probe(), ev.getCall());
 					chartSamples.add(cs);
 				}
 			}
-			init();
+			initParams(false);
 		}		
 	}
 	
@@ -217,25 +212,7 @@ abstract class ChartDataSource {
 			logger.info("ER source: " + samples.length + " samples");
 			
 			addSamplesFromBarcodes(samples, rows);
-			init();
-		}
-		
-		@Override
-		protected void init() {
-			final List<OTGSample> sampleList = Arrays.asList(samples);
-			Set<String> times = SampleClass.collectInner(sampleList, minorParam);
-			
-			try {
-				//TODO code duplication with above
-				_minorVals = times.toArray(new String[0]);
-				schema.sort(minorParam, _minorVals);
-				Set<String> doses = SampleClass.collectInner(sampleList, medParam);
-				
-				_mediumVals = doses.toArray(new String[0]);				
-				schema.sort(medParam, _mediumVals);
-			} catch (Exception e) {
-				logger.log(Level.WARNING, "Unable to sort chart data", e);
-			}
+			initParams(true);
 		}
 		
 		protected void addSamplesFromBarcodes(OTGSample[] samples, List<ExpressionRow> rows) {
@@ -289,11 +266,7 @@ abstract class ChartDataSource {
 			gs.add(g);
 			matrixService.getFullData(gs, 
 					probes, true, false, type,  
-					new PendingAsyncCallback<FullMatrix>(screen) {
-				@Override
-				public void handleFailure(Throwable caught) {
-					Window.alert("Unable to obtain chart data.");
-				}
+					new PendingAsyncCallback<FullMatrix>(screen, "Unable to obtain chart data.") {
 
 				@Override
 				public void handleSuccess(final FullMatrix mat) {
@@ -319,21 +292,12 @@ abstract class ChartDataSource {
 	 * @author johan
 	 *
 	 */
-	static class DynamicUnitSource extends DynamicExpressionRowSource {
-		static OTGSample[] samplesFor(Unit[] units) {
-			List<OTGSample> samples = new ArrayList<OTGSample>();
-			for (Unit u: units) {
-				samples.addAll(Arrays.asList(u.getSamples()));
-			}
-			
-			return samples.toArray(new OTGSample[0]);
-		}
-		
+	static class DynamicUnitSource extends DynamicExpressionRowSource {				
 		private Unit[] units;
 		
 		DynamicUnitSource(DataSchema schema, String[] probes, 
 				ValueType vt, Unit[] units, Screen screen) {
-			super(schema, probes, vt, samplesFor(units), screen);
+			super(schema, probes, vt, Unit.collectBarcodes(units), screen);
 			this.units = units;
 		}
 		
@@ -356,19 +320,14 @@ abstract class ChartDataSource {
 			chartSamples.clear();						
 			matrixService.getFullData(groups, 
 					probes, true, false, type,  
-					new PendingAsyncCallback<FullMatrix>(screen) {
-				@Override
-				public void handleFailure(Throwable caught) {
-					Window.alert("Unable to obtain chart data.");
-				}
+					new PendingAsyncCallback<FullMatrix>(screen, "Unable to obtain chart data") {				
 
 				@Override
 				public void handleSuccess(final FullMatrix mat) {
 					addSamplesFromUnits(useUnits, mat.rows());	
 					getSSamples(smf, policy, acceptor);
 				}					
-			});
-			
+			});			
 		}
 		
 		protected void addSamplesFromUnits(List<Unit> units, List<ExpressionRow> rows) {

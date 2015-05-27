@@ -167,7 +167,7 @@ public class AdjustableChartGrid extends Composite {
 	private void gridFor(final boolean vsMinor, final String[] columns, final String[] useCompounds, 
 			final List<ChartGrid> intoList, final SimplePanel intoPanel) {
 		
-		String columnParam = vsMinor ? source.medParam : source.minorParam;
+		String columnParam = vsMinor ? schema.mediumParameter() : schema.minorParameter();
 		String[] preColumns = (columns == null ? (vsMinor ? source.mediumVals() : source.minorVals()) : columns);
 		final String[] useColumns = schema.filterValuesForDisplay(valueType, columnParam, preColumns);		
 		
@@ -305,7 +305,7 @@ public class AdjustableChartGrid extends Composite {
 			logger.info("Unit: " + u);
 			if (isMed) {
 				final String[] useMeds = schema.filterValuesForDisplay(valueType, 
-						source.medParam, source.mediumVals());
+						schema.mediumParameter(), source.mediumVals());
 				
 				String med = u.get(medParam);				
 				if (Arrays.binarySearch(useMeds, med) != -1) {
