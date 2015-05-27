@@ -57,7 +57,7 @@ abstract public class ItemList implements Packable, Serializable {
 		String[] items = spl[2].split("\\^\\^\\^");
 	
 		// TODO would be good to avoid having this kind of central registry
-		// of list types here.
+		// of list types here. Use enum?
 		if (type.equals("probes")) {
 			return new StringList(type, name, items);
 		} else if (type.equals("compounds")) {
