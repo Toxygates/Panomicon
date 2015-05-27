@@ -345,12 +345,13 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   
   def probeLists(instanceURI: Option[String]): MMap[String, Probe] = {
     val q = tPrefixes + 
-    "SELECT DISTINCT ?list ?probeLabel WHERE { " +
+    "SELECT DISTINCT ?list ?probeLabel WHERE { GRAPH ?g1 { " +
     instanceURI.map(u => 
       s"?g a ${ProbeLists.itemClass}; ${Instances.memberRelation} <$u>. "
       ).getOrElse("") +
-    s"?g ${ProbeLists.memberRelation} ?probeLabel; rdfs:label ?list. " +
-    "?probe a t:probe; rdfs:label ?probeLabel. " + //filter out invalid probeLabels
+    s"?g ${ProbeLists.memberRelation} ?probeLabel; rdfs:label ?list. } " +
+    //TODO: think about this. Handling of RDF1.0/1.1 strings (untyped/typed)
+    // "?probe a t:probe; rdfs:label ?probeLabel. " + //filter out invalid probeLabels 
     "}"
     
     val mq = ts.mapQuery(q)
