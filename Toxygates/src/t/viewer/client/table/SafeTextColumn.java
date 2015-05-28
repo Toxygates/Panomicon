@@ -1,4 +1,4 @@
-package otgviewer.client.components;
+package t.viewer.client.table;
 
 import com.google.gwt.user.cellview.client.TextColumn;
 

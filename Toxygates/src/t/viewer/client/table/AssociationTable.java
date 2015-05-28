@@ -1,4 +1,4 @@
-package otgviewer.client.components;
+package t.viewer.client.table;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,12 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import otgviewer.client.components.Screen;
 import t.common.shared.AType;
 import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.SharedUtils;
 import t.viewer.client.rpc.SparqlServiceAsync;
-import t.viewer.client.table.RichTable;
 import t.viewer.shared.Association;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
@@ -126,12 +126,13 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 		
 	}
 	
-	public class AssociationColumn extends LinkingColumn<T> implements HideableColumn {
+	public class AssociationColumn extends LinkingColumn<T> {
 		AType assoc;		
 		
 		public AssociationColumn(SafeHtmlCell tc, AType association) {
 			super(tc, association.title(), false, "15em");
-			this.assoc = association;			
+			this.assoc = association;
+			this._columnInfo = new ColumnInfo(_name, _width, association.canSort());
 		}
 		
 		@Override

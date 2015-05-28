@@ -1,4 +1,4 @@
-package otgviewer.client;
+package t.viewer.client.table;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,12 +11,12 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import otgviewer.client.StandardColumns;
+import otgviewer.client.Utils;
 import otgviewer.client.charts.AdjustableChartGrid;
 import otgviewer.client.charts.ChartGridFactory;
 import otgviewer.client.charts.ChartGridFactory.AChartAcceptor;
-import otgviewer.client.components.AssociationTable;
 import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.ExpressionColumn;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
@@ -36,7 +36,6 @@ import t.common.shared.ValueType;
 import t.common.shared.sample.DataColumn;
 import t.common.shared.sample.ExpressionRow;
 import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.client.table.ColumnInfo;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.SafeHtmlCell;
@@ -414,10 +413,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		ColumnSortList csl = grid.getColumnSortList();
 		sortAsc = false;
 		sortCol = 0;
-		if (csl.size() > 0) {	
-			ExpressionColumn ec = (ExpressionColumn) csl.get(0).getColumn();
-			sortCol = ec.matrixColumn();
-			sortAsc = csl.get(0).isAscending();
+		if (csl.size() > 0) {
+			Column<?, ?> col = csl.get(0).getColumn();
+			if (col instanceof ExpressionColumn) {
+				ExpressionColumn ec = (ExpressionColumn) csl.get(0).getColumn();
+				sortCol = ec.matrixColumn();
+				sortAsc = csl.get(0).isAscending();
+			} else {
+				Window.alert("Sorting for this column is not implemented yet.");				
+			}
 		}
 	}
 	
@@ -680,7 +684,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	/**
 	 * Filter data that has already been loaded
 	 */
-	void refilterData() {
+	public void refilterData() {
 		if (!loadedData) {
 			logger.info("Request to refilter but data was not loaded");
 			return;
