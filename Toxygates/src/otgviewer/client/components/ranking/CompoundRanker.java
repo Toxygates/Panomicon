@@ -15,13 +15,10 @@ import otgviewer.client.components.Screen;
 import otgviewer.shared.RankRule;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
-import t.viewer.client.rpc.MatrixService;
 import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.client.rpc.SparqlService;
 import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.ItemList;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
@@ -38,19 +35,16 @@ import com.google.gwt.user.client.ui.Widget;
  * on the server side.
  */
 abstract public class CompoundRanker extends DataListenerWidget {
-	protected static Resources resources = GWT.create(Resources.class);
+	protected final Resources resources; 
 	final CompoundSelector selector;
 	protected final Screen screen;
 	protected ListChooser listChooser;
 	
-	final GeneOracle oracle = new GeneOracle();
+	final GeneOracle oracle;
 	List<String> availableCompounds = chosenCompounds;
 	
-	protected SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
-			.create(SparqlService.class);
-	protected MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
-			.create(MatrixService.class);
-	
+	protected final SparqlServiceAsync sparqlService;
+	protected final MatrixServiceAsync matrixService;
 	
 	protected VerticalPanel csVerticalPanel = new VerticalPanel();
 	protected List<String> rankProbes = new ArrayList<String>();
@@ -68,7 +62,11 @@ abstract public class CompoundRanker extends DataListenerWidget {
 	public CompoundRanker(Screen _screen, CompoundSelector selector) {
 		this.selector = selector;
 		screen = _screen;
+		oracle = new GeneOracle(screen);
 		schema = screen.schema();
+		resources = screen.resources();
+		sparqlService = _screen.sparqlService();
+		matrixService = _screen.matrixService();
 		
 		selector.addListener(this);
 		listChooser = new ListChooser(screen.appInfo().predefinedProbeLists(),

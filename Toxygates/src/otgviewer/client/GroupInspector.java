@@ -24,13 +24,11 @@ import t.common.shared.Dataset;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
-import t.viewer.client.rpc.SparqlService;
 import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.Unit;
 
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.TextButtonCell;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -73,13 +71,13 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private List<Pair<Unit, Unit>> availableUnits;
 
 	protected final Logger logger = SharedUtils.getLogger("group");
-	private SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
-			.create(SparqlService.class);
+	private final SparqlServiceAsync sparqlService;
 	
 	public GroupInspector(CompoundSelector cs, Screen scr) {
 		compoundSel = cs;
 		this.screen = scr;
-		this.schema = scr.schema();
+		schema = scr.schema();
+		sparqlService = scr.sparqlService();
 		sp = new SplitLayoutPanel();
 		initWidget(sp);
 

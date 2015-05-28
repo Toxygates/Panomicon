@@ -2,7 +2,6 @@ package otgviewer.client.charts;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -25,11 +24,9 @@ import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.ExpressionValue;
-import t.viewer.client.rpc.MatrixService;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.Unit;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 
 /**
@@ -251,8 +248,7 @@ abstract class ChartDataSource {
 	 *
 	 */
 	static class DynamicExpressionRowSource extends ExpressionRowSource {
-		protected static final MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
-				.create(MatrixService.class);
+		protected final MatrixServiceAsync matrixService;
 		
 		protected String[] probes;
 		protected ValueType type;
@@ -264,6 +260,7 @@ abstract class ChartDataSource {
 			this.probes = probes;
 			this.type = vt;		
 			this.screen = screen;
+			matrixService = screen.matrixService();
 		}
 		
 		void loadData(final SampleMultiFilter smf, final ColorPolicy policy, final SampleAcceptor acceptor) {

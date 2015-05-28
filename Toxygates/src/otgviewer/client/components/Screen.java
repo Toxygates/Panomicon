@@ -13,6 +13,9 @@ import otgviewer.shared.Group;
 import otgviewer.shared.OTGSample;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
+import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.client.rpc.SeriesServiceAsync;
+import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.AppInfo;
 
 import com.google.gwt.core.client.GWT;
@@ -186,8 +189,24 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 		return manager.appInfo();
 	}
 	
+	public SparqlServiceAsync sparqlService() {
+		return manager.sparqlService();
+	}
+	
+	public MatrixServiceAsync matrixService() {
+		return manager.matrixService();
+	}
+	
+	public SeriesServiceAsync seriesService() {
+		return manager.seriesService();
+	}
+	
 	public DataSchema schema() {
-		return this.manager.schema();
+		return manager.schema();
+	}
+	
+	public Resources resources() {
+		return resources;
 	}
 	
 	/**

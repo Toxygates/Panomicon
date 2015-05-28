@@ -10,16 +10,14 @@ import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.Group;
+import otgviewer.shared.GroupUtils;
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
-import otgviewer.shared.GroupUtils;
 import otgviewer.shared.Pathology;
 import t.common.shared.SampleClass;
-import t.viewer.client.rpc.SparqlService;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.CellTable;
@@ -43,7 +41,7 @@ public class PathologyScreen extends Screen {
 	private CellTable<Pathology> pathologyTable = new CellTable<Pathology>();
 	private ScrollPanel sp = new ScrollPanel();
 	private Set<Pathology> pathologies = new HashSet<Pathology>();
-	private static Resources resources = GWT.create(Resources.class); 
+	private final Resources resources; 
 	
 	private SampleClass lastClass;
 	private List<Group> lastColumns;
@@ -55,11 +53,12 @@ public class PathologyScreen extends Screen {
 		return manager.isConfigured(ColumnScreen.key); // && ct == CellType.Vivo;
 	}
 
-	private SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT
-			.create(SparqlService.class);
+	private final SparqlServiceAsync sparqlService;
 	
 	public PathologyScreen(ScreenManager man) {
 		super("Pathologies", key, true, man);
+		resources = man.resources();
+		sparqlService = man.sparqlService();
 		mkTools();
 	}
 
@@ -162,7 +161,7 @@ public class PathologyScreen extends Screen {
 				|| lastColumns == null || !chosenColumns.equals(lastColumns))) {
 			pathologies.clear();
 			for (OTGColumn c : chosenColumns) {
-				owlimService.pathologies(c, new AsyncCallback<Pathology[]>() {
+				sparqlService.pathologies(c, new AsyncCallback<Pathology[]>() {
 					public void onFailure(Throwable caught) {
 						Window.alert("Unable to get pathologies.");
 					}

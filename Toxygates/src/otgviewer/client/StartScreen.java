@@ -1,10 +1,8 @@
 package otgviewer.client;
 
-import otgviewer.client.Utils;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -13,7 +11,6 @@ import com.google.gwt.user.client.ui.Widget;
  * This is the first screen, where a dataset can be selected.
  */
 public class StartScreen extends Screen {
-	protected static Resources resources = GWT.create(Resources.class);
 	
 	public static String key = "st";	
 	

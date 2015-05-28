@@ -12,13 +12,11 @@ import t.common.shared.AType;
 import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.SharedUtils;
-import t.viewer.client.rpc.SparqlService;
 import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.client.table.RichTable;
 import t.viewer.shared.Association;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -28,12 +26,13 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  *
  */
 abstract public class AssociationTable<T> extends RichTable<T> {
-	protected final SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT.create(SparqlService.class);
+	protected final SparqlServiceAsync sparqlService;
 	protected Map<AType, Association> associations = new HashMap<AType, Association>();
 	private boolean waitingForAssociations = true;
 	
 	public AssociationTable(Screen screen) {
 		super(screen.schema());
+		sparqlService = screen.sparqlService();
 	}
 	
 	protected List<HideableColumn> initHideableColumns(DataSchema schema) {

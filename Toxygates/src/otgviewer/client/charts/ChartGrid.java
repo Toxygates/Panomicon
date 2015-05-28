@@ -9,10 +9,8 @@ import otgviewer.client.components.Screen;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
-import t.viewer.client.rpc.SparqlService;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.Widget;
@@ -23,7 +21,7 @@ import com.google.gwt.visualization.client.DataTable;
  */
 abstract public class ChartGrid extends Composite {
 	
-	private final SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT.create(SparqlService.class);
+	protected final SparqlServiceAsync sparqlService;
 	
 	Grid g;
 		
@@ -57,6 +55,7 @@ abstract public class ChartGrid extends Composite {
 		this.table = table;		
 		this.totalWidth = totalWidth;
 		this.screen = screen;
+		sparqlService = screen.sparqlService();
 		
 		if (organisms.size() == 0) {
 			organisms.add(""); //TODO
@@ -95,7 +94,7 @@ abstract public class ChartGrid extends Composite {
 		}
 	
 		if (!rowsAreMajors) {
-			owlimService.geneSyms(rowFilters.toArray(new String[0]),
+			sparqlService.geneSyms(rowFilters.toArray(new String[0]),
 				new PendingAsyncCallback<String[][]>(screen) {
 					public void handleSuccess(String[][] results) {
 						for (int i = 0; i < results.length; ++i) {
