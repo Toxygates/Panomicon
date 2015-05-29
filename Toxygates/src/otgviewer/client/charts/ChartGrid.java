@@ -34,12 +34,11 @@ import t.viewer.client.rpc.SparqlServiceAsync;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.visualization.client.DataTable;
 
 /**
- * A grid to display time series charts for a number of probes and doses.
+ * A grid to display time (or dose) series charts for a number of probes and doses (or times).
  */
-abstract public class ChartGrid extends Composite {
+abstract public class ChartGrid<D extends Data> extends Composite {
 	
 	protected final SparqlServiceAsync sparqlService;
 	
@@ -48,31 +47,34 @@ abstract public class ChartGrid extends Composite {
 	List<String> rowFilters;
 	List<String> organisms;
 	String[] minsOrMeds;
-	protected ChartDataset table;
+	protected Dataset<D> dataset;
+	protected Factory<?, ?> factory;
 	protected Screen screen;	
 //	Map<String, DataTable> tables = new HashMap<String, DataTable>(); //TODO
-	protected DataTable[][] tables;
+	protected D[][] tables;
 	final int totalWidth;
 	
 	/**
 	 * 
 	 * @param screen
-	 * @param table
+	 * @param dataset
 	 * @param rowFilters major parameter values or gene symbols.
 	 * @param rowsAreMajors are rows major parameter values? If not, they are gene symbols.
 	 * @param minsOrMeds
 	 * @param columnsAreMins
 	 * @param totalWidth
 	 */
-	public ChartGrid(Screen screen, ChartDataset table, 
+	public ChartGrid(Factory<D, ?> factory,
+			Screen screen, Dataset<D> dataset, 
 			final List<String> rowFilters, final List<String> organisms,
 			boolean rowsAreMajors, 
 			String[] minsOrMeds, boolean columnsAreMins, int totalWidth) {
 		super();
+		this.factory = factory;
 		this.rowFilters = rowFilters;		
 		this.organisms = organisms;
 		this.minsOrMeds = minsOrMeds;
-		this.table = table;		
+		this.dataset = dataset;		
 		this.totalWidth = totalWidth;
 		this.screen = screen;
 		sparqlService = screen.sparqlService();
@@ -89,7 +91,7 @@ abstract public class ChartGrid extends Composite {
 		DataSchema schema = screen.schema();
 		
 		
-		tables = new DataTable[rfsize * osize][minsOrMeds.length];
+		tables = factory.dataArray(rfsize * osize, minsOrMeds.length);
 		for (int c = 0; c < minsOrMeds.length; ++c) {
 			g.setWidget(0, c, Utils.mkEmphLabel(minsOrMeds[c]));				
 			for (int r = 0; r < rfsize; ++r) {				
@@ -108,7 +110,7 @@ abstract public class ChartGrid extends Composite {
 					String colKey = columnsAreMins ? schema.minorParameter() : 
 						schema.mediumParameter();
 					sc.put(colKey, minsOrMeds[c]);					
-					tables[r * osize + o][c] = table.makeTable(sc, probe);
+					tables[r * osize + o][c] = dataset.makeData(sc, probe);
 				}
 			}
 		}
@@ -145,8 +147,8 @@ abstract public class ChartGrid extends Composite {
 		int max = 0;
 		for (int r = 0; r < tables.length; ++r) {
 			for (int c = 0; c < tables[0].length; ++c) {						
-				if (tables[r][c].getNumberOfColumns() > max) {
-					max = tables[r][c].getNumberOfColumns();
+				if (tables[r][c].numberOfColumns() > max) {
+					max = tables[r][c].numberOfColumns();
 				}				
 			}
 		}
@@ -193,9 +195,9 @@ abstract public class ChartGrid extends Composite {
 	 */
 	private void displaySeriesAt(int row, int column, int width, double minVal,
 			double maxVal, int columnCount, String label) {
-		final DataTable dt = tables[row][column];
+		final D dt = tables[row][column];
 
-		if (dt.getNumberOfColumns() == 1) {			
+		if (dt.numberOfColumns() == 1) {			
 			return; //no data columns -> no data to show
 		}
 		if (g.getWidget(row * 2 + 1, 0) == null)
@@ -207,6 +209,6 @@ abstract public class ChartGrid extends Composite {
 				chartFor(dt, width, minVal, maxVal, column, columnCount));
 	}
 	
-	abstract protected Widget chartFor(final DataTable dt, int width, double minVal, double maxVal, 
+	abstract protected Widget chartFor(final D dt, int width, double minVal, double maxVal, 
 			int column, int columnCount); 
 }

@@ -28,9 +28,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
-import otgviewer.client.charts.google.GVizChartGrid;
+import otgviewer.client.charts.google.GDTDataset;
+import otgviewer.client.charts.google.GVizFactory;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Group;
@@ -50,14 +50,14 @@ import t.viewer.shared.Unit;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public class ChartGridFactory {
+public class Charts {
 	
 	public static interface ChartAcceptor {
-		void acceptCharts(ChartGrid cg);
+		void acceptCharts(ChartGrid<?> cg);
 	}
 	
 	public static interface AChartAcceptor {
-		void acceptCharts(AdjustableChartGrid cg);
+		void acceptCharts(AdjustableGrid<?,?> cg);
 		void acceptBarcodes(OTGSample[] barcodes);
 	}
 	
@@ -70,14 +70,16 @@ public class ChartGridFactory {
 	private SampleClass[] sampleClasses;
 	private List<Group> groups;
 	final private DataSchema schema;
+	//TODO where to instantiate this?
+	private GVizFactory factory = new GVizFactory();
 	
-	private ChartGridFactory(Screen screen) {
+	private Charts(Screen screen) {
 		this.schema = screen.schema();
 		this.sparqlService = screen.sparqlService();
 		this.seriesService = screen.seriesService();
 	}
 	
-	public ChartGridFactory(Screen screen, List<Group> groups) {
+	public Charts(Screen screen, List<Group> groups) {
 		this(screen);
 		this.groups = groups;
 		
@@ -92,7 +94,7 @@ public class ChartGridFactory {
 		
 	}
 	
-	public ChartGridFactory(Screen screen, SampleClass[] sampleClasses) {
+	public Charts(Screen screen, SampleClass[] sampleClasses) {
 		this(screen);
 		this.sampleClasses = sampleClasses;		
 		groups = new ArrayList<Group>();
@@ -119,15 +121,15 @@ public class ChartGridFactory {
 		final String[] medVals = schema.sortedValuesForDisplay(null, 
 				schema.mediumParameter());
 		schema.sort(schema.timeParameter(), times);
-		ChartDataSource cds = new ChartDataSource.SeriesSource(
+		DataSource cds = new DataSource.SeriesSource(
 				schema, series, times);
 		
 		cds.getSamples(new SampleMultiFilter(), new TimeDoseColorPolicy(medVals[highlightMed], "SkyBlue"), 
-				new ChartDataSource.SampleAcceptor() {
+				new DataSource.SampleAcceptor() {
 
 			@Override
 			public void accept(final List<ChartSample> samples) {
-				ChartDataset ct = new ChartDataset(samples, samples, times, true);
+				GDTDataset ds = factory.dataset(samples, samples, times, true);
 				List<String> filters = new ArrayList<String>();
 				for (Series s: series) {			
 					if (rowsAreCompounds && !filters.contains(s.get(majorParam))) {
@@ -142,9 +144,9 @@ public class ChartGridFactory {
 								SampleClass.collect(Arrays.asList(sampleClasses), "organism")
 						);
 
-				ChartGrid cg = new GVizChartGrid(screen, ct, filters, organisms, 
+				ChartGrid<?> cg = factory.grid(screen, ds, filters, organisms, 
 						rowsAreCompounds, medVals, false, 400);
-				cg.adjustAndDisplay(cg.getMaxColumnCount(), ct.getMin(), ct.getMax());
+				cg.adjustAndDisplay(cg.getMaxColumnCount(), ds.getMin(), ds.getMax());
 				acceptor.acceptCharts(cg);				
 			}
 
@@ -203,9 +205,10 @@ public class ChartGridFactory {
 	
 	private void finishRowCharts(Screen screen, String[] probes, ValueType vt, List<Group> groups, 
 			OTGSample[] barcodes, AChartAcceptor acceptor) {
-		ChartDataSource cds = new ChartDataSource.DynamicExpressionRowSource(schema, 
+		DataSource cds = new DataSource.DynamicExpressionRowSource(schema, 
 				probes, vt, barcodes, screen);
-		AdjustableChartGrid acg = new AdjustableChartGrid(screen, cds, groups, vt);
+		AdjustableGrid<?,?> acg = 
+				factory.adjustableGrid(screen, cds, groups, vt);				
 		acceptor.acceptCharts(acg);
 	}
 	
@@ -216,9 +219,10 @@ public class ChartGridFactory {
 			treated.add(u.first());			
 		}
 		
-		ChartDataSource cds = new ChartDataSource.DynamicUnitSource(schema, 
+		DataSource cds = new DataSource.DynamicUnitSource(schema, 
 				probes, vt, treated.toArray(new Unit[0]), screen);
-		AdjustableChartGrid acg = new AdjustableChartGrid(screen, cds, groups, vt);
+		AdjustableGrid<?, ?> acg =
+				factory.adjustableGrid(screen, cds, groups, vt);
 		acceptor.acceptCharts(acg);
 	}
 }

@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import otgviewer.client.charts.ChartGrid;
-import otgviewer.client.charts.ChartGridFactory;
+import otgviewer.client.charts.Charts;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
@@ -300,13 +300,13 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		}
 		
 		private void makeSeriesCharts(final String value, final List<Series> ss) {
-			//TODO
-			ChartGridFactory cgf = new ChartGridFactory(screen, 
+			Charts cgf = new Charts(screen, 
 					new SampleClass[] { w.chosenSampleClass });
-			cgf.makeSeriesCharts(ss, false, scores.get(value).dose(), new ChartGridFactory.ChartAcceptor() {
+			cgf.makeSeriesCharts(ss, false, scores.get(value).dose(),
+					new Charts.ChartAcceptor() {
 				
 				@Override
-				public void acceptCharts(ChartGrid cg) {
+				public void acceptCharts(ChartGrid<?> cg) {
 					Utils.displayInPopup("Charts", cg, DialogPosition.Side);								
 				}
 			}, screen);			

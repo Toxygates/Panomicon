@@ -33,9 +33,9 @@ import javax.annotation.Nullable;
 
 import otgviewer.client.StandardColumns;
 import otgviewer.client.Utils;
-import otgviewer.client.charts.AdjustableChartGrid;
-import otgviewer.client.charts.ChartGridFactory;
-import otgviewer.client.charts.ChartGridFactory.AChartAcceptor;
+import otgviewer.client.charts.AdjustableGrid;
+import otgviewer.client.charts.Charts;
+import otgviewer.client.charts.Charts.AChartAcceptor;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
@@ -790,12 +790,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			ExpressionRow dispRow = grid.getVisibleItem(highlightedRow);
 			final String[] probes = dispRow.getAtomicProbes();
 			
-			final ChartGridFactory cgf = new ChartGridFactory(screen, chosenColumns);
+			final Charts cgf = new Charts(screen, chosenColumns);
 			Utils.ensureVisualisationAndThen(new Runnable() {
 				public void run() {
 					cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, probes, 
 							new AChartAcceptor() {
-						public void acceptCharts(final AdjustableChartGrid cg) {
+						public void acceptCharts(final AdjustableGrid<?, ?> cg) {
 							Utils.displayInPopup("Charts", cg, true, DialogPosition.Side);							
 						}
 

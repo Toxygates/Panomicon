@@ -22,7 +22,7 @@ package otgviewer.client.charts.google;
 
 import java.util.List;
 
-import otgviewer.client.charts.ChartDataset;
+import otgviewer.client.charts.Factory;
 import otgviewer.client.charts.ChartGrid;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.OTGSample;
@@ -42,16 +42,17 @@ import com.google.gwt.visualization.client.visualizations.corechart.Options;
 /**
  * A ChartGrid that uses the Google Visualization API.
  */
-public class GVizChartGrid extends ChartGrid {
+public class GVizChartGrid extends ChartGrid<GDTData> {
 	
 	public static final int MAX_WIDTH = 400;
 	
-	public GVizChartGrid(Screen screen, ChartDataset table,  
+	public GVizChartGrid(Factory<GDTData, GDTDataset> factory, 
+			Screen screen, GDTDataset table,  
 			final List<String> rowFilters, final List<String> organisms,
 			boolean rowsAreMajors, 
 			String[] timesOrDoses, 			
 			boolean columnsAreTimes, int totalWidth) {
-		super(screen, table, rowFilters, organisms, rowsAreMajors, timesOrDoses,
+		super(factory, screen, table, rowFilters, organisms, rowsAreMajors, timesOrDoses,
 				columnsAreTimes, totalWidth);
 	}
 	
@@ -65,8 +66,9 @@ public class GVizChartGrid extends ChartGrid {
 	 * @param columnCount
 	 */
 	@Override
-	protected Widget chartFor(final DataTable dt, int width, double minVal, double maxVal, 
+	protected Widget chartFor(final GDTData gdt, int width, double minVal, double maxVal, 
 			int column, int columnCount) {		
+		final DataTable dt = gdt.data();
 		AxisOptions ao = AxisOptions.create();
 		
 		while (dt.getNumberOfColumns() < columnCount) {
@@ -76,8 +78,8 @@ public class GVizChartGrid extends ChartGrid {
 			}
 		}
 
-		ao.setMinValue(minVal != Double.NaN ? minVal : table.getMin());
-		ao.setMaxValue(maxVal != Double.NaN ? maxVal : table.getMax());		
+		ao.setMinValue(minVal != Double.NaN ? minVal : dataset.getMin());
+		ao.setMaxValue(maxVal != Double.NaN ? maxVal : dataset.getMax());		
 		
 		Options o = GVizCharts.createChartOptions();
 		final int useWidth = width <= MAX_WIDTH ? width : MAX_WIDTH;

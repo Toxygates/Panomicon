@@ -30,8 +30,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import otgviewer.client.Utils;
-import otgviewer.client.charts.ChartDataSource.ChartSample;
-import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Group;
 import otgviewer.shared.GroupUtils;
@@ -55,18 +53,19 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * to display (for example, vs. time or vs. dose, and what particular times or
  * doses to focus on).
  */
-public class AdjustableChartGrid extends Composite {
+public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Composite {
 	public static final int TOTAL_WIDTH = 780;
 	
 	private ListBox chartCombo, chartSubtypeCombo;
 	
-	private ChartDataSource source;
+	private DataSource source;
 	private List<String> majorVals;
 	private List<String> organisms;
 	private List<Group> groups;
 	private VerticalPanel vp;
 	private VerticalPanel ivp;
 	private Screen screen;
+	private Factory<D, DS> factory;
 	private int computedWidth;
 	private ValueType valueType;
 	
@@ -78,10 +77,13 @@ public class AdjustableChartGrid extends Composite {
 	
 	private final DataSchema schema;
 	
-	public AdjustableChartGrid(Screen screen, ChartDataSource source, List<Group> groups, ValueType vt) {
+	public AdjustableGrid(Factory<D, DS> factory, 
+			Screen screen, 
+			DataSource source, List<Group> groups, ValueType vt) {
 		this.source = source;
 		this.groups = groups;
-		this.screen = screen;		
+		this.screen = screen;	
+		this.factory = factory;
 		schema = screen.schema();
 		
 		Set<String> os = new HashSet<String>();
@@ -187,7 +189,7 @@ public class AdjustableChartGrid extends Composite {
 	//vsMinor is the vs-minor-ness of each individual sub-chart. So the overall grid will be vs. dose 	
 	//(in its columns) if each sub-chart is vs.minor.
 	private void gridFor(final boolean vsMinor, final String[] columns, final String[] useCompounds, 
-			final List<ChartGrid> intoList, final SimplePanel intoPanel) {
+			final List<ChartGrid<D>> intoList, final SimplePanel intoPanel) {
 		
 		String columnParam = vsMinor ? schema.mediumParameter() : schema.minorParameter();
 		String[] preColumns = (columns == null ? (vsMinor ? source.mediumVals() : source.minorVals()) : columns);
@@ -198,7 +200,7 @@ public class AdjustableChartGrid extends Composite {
 		smf.addPermitted(columnParam, useColumns);
 		
 		if (computedWidth == 0) {
-			int theoretical = useColumns.length * GVizChartGrid.MAX_WIDTH;
+			int theoretical = useColumns.length * factory.gridMaxWidth();
 			if (theoretical > TOTAL_WIDTH) {
 				computedWidth = TOTAL_WIDTH;
 			} else {
@@ -208,14 +210,14 @@ public class AdjustableChartGrid extends Composite {
 		}
 		
 		source.getSamples(smf, makeGroupPolicy(),
-				new ChartDataSource.SampleAcceptor() {
+				new DataSource.SampleAcceptor() {
 					@Override
 					public void accept(List<ChartSample> samples) {
 						allSamples.addAll(samples);						
-						ChartDataset ct = new ChartDataset(samples, samples, 
+						DS ct = factory.dataset(samples, samples, 
 								vsMinor ? source.minorVals() : source.mediumVals(), vsMinor);
 												
-						ChartGrid cg = new GVizChartGrid(screen, ct,
+						ChartGrid<D> cg = factory.grid(screen, ct,
 								useCompounds == null ? majorVals : Arrays.asList(useCompounds),
 								organisms, true,
 								useColumns, !vsMinor, TOTAL_WIDTH);
@@ -231,12 +233,12 @@ public class AdjustableChartGrid extends Composite {
 							// got all the grids
 							// harmonise the column count across all grids
 							int maxCols = 0;
-							for (ChartGrid gr : intoList) {
+							for (ChartGrid<D> gr : intoList) {
 								if (gr.getMaxColumnCount() > maxCols) {
 									maxCols = gr.getMaxColumnCount();
 								}
 							}
-							for (ChartGrid gr : intoList) {
+							for (ChartGrid<D> gr : intoList) {
 								gr.adjustAndDisplay(maxCols, minVal, maxVal);
 							}
 						}
@@ -271,7 +273,7 @@ public class AdjustableChartGrid extends Composite {
 			
 			final String[] columns = (subtype.equals(SELECTION_ALL) ? null : new String[] { subtype } );
 			
-			final List<ChartGrid> grids = new ArrayList<ChartGrid>();
+			final List<ChartGrid<D>> grids = new ArrayList<ChartGrid<D>>();
 			expectedGrids = 0;
 			allSamples.clear();
 						

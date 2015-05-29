@@ -22,8 +22,6 @@ package t.viewer.client.table;
 
 import javax.annotation.Nullable;
 
-import t.viewer.client.table.RichTable.HideableColumn;
-
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 

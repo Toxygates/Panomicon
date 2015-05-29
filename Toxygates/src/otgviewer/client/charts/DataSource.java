@@ -21,14 +21,11 @@
 package otgviewer.client.charts;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.annotation.Nullable;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
@@ -37,7 +34,6 @@ import otgviewer.shared.Group;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Series;
 import t.common.shared.DataSchema;
-import t.common.shared.HasClass;
 import t.common.shared.SampleClass;
 import t.common.shared.SampleMultiFilter;
 import t.common.shared.SharedUtils;
@@ -54,80 +50,13 @@ import com.google.gwt.core.client.GWT;
  * This class brings series and row data into a unified interface for the purposes of
  * chart drawing.
  */
-abstract class ChartDataSource {
+abstract public class DataSource {
 	
 	interface SampleAcceptor {
 		void accept(List<ChartSample> samples);
 	}
 	
 	private static Logger logger = SharedUtils.getLogger("chartdata");
-	
-	//TODO consider deprecating/simplifying/replacing this class
-	
-	static class ChartSample implements HasClass {
-		final SampleClass sc;
-		final DataSchema schema;
-		
-		final double value;
-		final char call;
-		final @Nullable OTGSample barcode; 
-		final String probe;
-		String color = "grey";
-		
-		ChartSample(SampleClass sc, DataSchema schema,
-				double value, OTGSample barcode, String probe, char call) {
-			
-			this.sc = sc.copyOnly(Arrays.asList(schema.chartParameters()));
-			this.schema = schema;
-			this.value = value;
-			this.barcode = barcode;
-			this.probe = probe;
-			this.call = call;						 
-		}
-
-		ChartSample(OTGSample sample, DataSchema schema,
-				double value, String probe, char call) {
-			this(sample.sampleClass(), schema, value, sample, probe, call);					
-		}
-		
-		ChartSample(Unit u, DataSchema schema, double value, String probe, char call) {
-			this(u, schema, value, u.getSamples()[0], //representative sample only
-					probe, call);			
-		}
-		
-		public DataSchema schema() { return schema; }
-		
-		public SampleClass sampleClass() { return sc; }
-		
-		//TODO do we need hashCode and equals for this class?
-		//See getSamples below where we use a Set<ChartSample>
-		@Override
-		public int hashCode() {
-			int r = 0;			
-			if (barcode != null) {
-				r = barcode.hashCode();
-			} else {
-				r = r * 41 + sc.hashCode();				
-				r = r * 41 + ((Double) value).hashCode();
-			}
-			return r;
-		}
-		
-		@Override
-		public boolean equals(Object other) {
-			if (other instanceof ChartSample) {
-				if (barcode != null) {
-					return (barcode == ((ChartSample) other).barcode);
-				} else {
-					ChartSample ocs = (ChartSample) other;
-					return sc.equals(((ChartSample) other).sampleClass()) &&
-							ocs.value == value && ocs.call == call;
-				}
-			} else {
-				return false;
-			}
-		}
-	}
 	
 	protected List<ChartSample> chartSamples = new ArrayList<ChartSample>();
 
@@ -140,7 +69,7 @@ abstract class ChartDataSource {
 	protected DataSchema schema;
 	protected boolean controlMedVals = false;
 	
-	ChartDataSource(DataSchema schema) {
+	DataSource(DataSchema schema) {
 		this.schema = schema;				
 	}
 	
@@ -154,7 +83,7 @@ abstract class ChartDataSource {
 			schema.sort(minorParam, _minorVals);
 			
 			Set<String> medVals = new HashSet<String>();
-			for (ChartDataSource.ChartSample s : chartSamples) {
+			for (ChartSample s : chartSamples) {
 				//TODO generalise control-check better
 				if (controlMedVals || !schema.isControlValue(schema.getMedium(s))) {
 					medVals.add(schema.getMedium(s));
@@ -195,7 +124,7 @@ abstract class ChartDataSource {
 		}		 
 	}
 	
-	static class SeriesSource extends ChartDataSource {
+	static class SeriesSource extends DataSource {
 		SeriesSource(DataSchema schema, List<Series> series, String[] times) {
 			super(schema);
 			for (Series s: series) {
@@ -216,7 +145,7 @@ abstract class ChartDataSource {
 	/**
 	 * An expression row source with a fixed dataset.
 	 */
-	static class ExpressionRowSource extends ChartDataSource {
+	static class ExpressionRowSource extends DataSource {
 		protected OTGSample[] samples;
 		
 		ExpressionRowSource(DataSchema schema, OTGSample[] samples, List<ExpressionRow> rows) {

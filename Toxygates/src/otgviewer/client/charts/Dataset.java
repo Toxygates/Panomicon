@@ -20,23 +20,17 @@
 
 package otgviewer.client.charts;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.Utils;
-import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.shared.OTGSample;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 
-import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
-import com.google.gwt.visualization.client.DataTable;
-
-public class ChartDataset {
+abstract public class Dataset<D extends Data> {
 
 	protected List<ChartSample> samples;
 	protected String[] categories;
@@ -47,7 +41,7 @@ public class ChartDataset {
 	
 	protected Logger logger = SharedUtils.getLogger("ChartDataset");
 	
-	ChartDataset(List<ChartSample> samples, List<ChartSample> allSamples, 
+	protected Dataset(List<ChartSample> samples, List<ChartSample> allSamples, 
 			String[] categories, boolean categoriesAreMins) {
 		this.samples = samples;
 		this.categoriesAreMins = categoriesAreMins;				
@@ -100,29 +94,8 @@ public class ChartDataset {
 	 * If a time is given, the table will be grouped by dose.
 	 * If a dose is given, the table will be grouped by time.
 	 * 
-	 * TODO factor out into charts.google
-	 * @return
 	 */
-	DataTable makeTable(SampleClass filter, @Nullable String probe) {
-		DataTable t = DataTable.create();
-		t.addColumn(ColumnType.STRING, "Time");
-		
-		for (int i = 0; i < categories.length; ++i) {
-			t.addRow();
-			t.setValue(i, 0, categories[i]);
-		}		
-		
-		List<ChartSample> fsamples = new ArrayList<ChartSample>();
-		for (ChartSample s: samples) {
-			if ( (probe == null || s.probe.equals(probe)) && 
-				filter.strictCompatible(s) ) {
-				fsamples.add(s);
-			}
-		}
-		
-		makeColumns(t, fsamples);		
-		return t;				
-	}
+	abstract public D makeData(SampleClass filter, @Nullable String probe);
 	
 	protected String categoryForSample(ChartSample sample) {
 		DataSchema schema = sample.schema();
@@ -135,36 +108,6 @@ public class ChartDataset {
 		}
 		return null;
 	}
-
-	protected native void addStyleColumn(DataTable dt) /*-{
-		dt.addColumn({type:'string', role:'style'});
-	}-*/;
-
-	protected void makeColumns(DataTable dt, List<ChartSample> samples) {
-		int colCount = 0;
-		int[] valCount = new int[categories.length];
-
-		for (ChartSample s : samples) {
-			String scat = categoryForSample(s);
-			int cat = SharedUtils.indexOf(categories, scat);
-			if (cat != -1) {
-				if (colCount < valCount[cat] + 1) {
-					dt.addColumn(ColumnType.NUMBER);
-					addStyleColumn(dt);
-					colCount++;
-				}
-				
-				final int col = valCount[cat] * 2 + 1;
-				dt.setValue(cat, col, s.value);
-				if (s.barcode != null) {
-					dt.setProperty(cat, col, "barcode", s.barcode.pack());
-				}
-				dt.setFormattedValue(cat, col, Utils.formatNumber(s.value) + ":" + s.call);
-				String style = "fill-color:" + s.color + "; stroke-width:1px; ";
-
-				dt.setValue(cat, col + 1, style);
-				valCount[cat]++;
-			}
-		}
-	}
+	abstract protected void makeColumns(D dt, List<ChartSample> samples);
+	
 }

@@ -23,7 +23,6 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.charts.ChartDataSource.ChartSample;
 import otgviewer.shared.OTGSample;
 import t.common.shared.DataSchema;
 
