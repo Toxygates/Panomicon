@@ -96,6 +96,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     
     this.instanceURI = instanceURI
     
+    //TODO: set ProbeClusterings in appInfo
     _appInfo = new AppInfo(conf.instanceName, datasets(), 
         predefProbeLists()) 
   }
