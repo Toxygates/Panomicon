@@ -1,7 +1,7 @@
 #!/bin/bash 
  
 INSTANCE=toxygates-pubdata
-URL=http://toxygates.nibio.go.jp:8080/$INSTANCE/toxygates/ 
+URL=http://toxygates.nibiohn.go.jp:8080/$INSTANCE/toxygates/ 
  
 #Example: getMatrix.sh f 0:10 003017646005 003017646004 
 # Obtains two columns, one sample in each. 

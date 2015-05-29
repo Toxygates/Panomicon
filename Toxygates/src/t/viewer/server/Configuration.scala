@@ -51,7 +51,8 @@ object Configuration {
       p("repositoryPassword"),
       p("instanceName"),
       p("webappHomeDir"),
-      p("matrixDbOptions"))
+      p("matrixDbOptions"),
+      p("feedbackReceivers"))
   }    
 }
 
@@ -67,7 +68,8 @@ class Configuration(val repositoryName: String,
     val repositoryPass: String = null,
     val instanceName: String = null,
     val webappHomeDir: String = null,
-    val matrixDbOptions: String = null) {
+    val matrixDbOptions: String = null,
+    val feedbackReceivers: String = null) {
   
   def this(owlimRepository: String, toxygatesHome:String, foldsDBVersion: Int) = 
     this(owlimRepository, toxygatesHome, System.getProperty("otg.csvDir"), 

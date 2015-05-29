@@ -47,7 +47,8 @@ object Feedback {
     try {
       val s = Session.getInstance(p)
       val m = new MimeMessage(s)
-      m.setFrom(new InternetAddress("root@nibio.go.jp"))
+      //TODO where to configure this?
+      m.setFrom(new InternetAddress("root@nibiohn.go.jp"))
 
       m.setRecipients(Message.RecipientType.TO,
         InternetAddress.parse(receiverList))

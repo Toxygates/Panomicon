@@ -33,10 +33,10 @@ import t.platform.Probe
 
 object TargetMine {
   import Conversions._
-  def getListService(user: String, pass: String): ListService = {
+  def getListService(serviceUri: String, user: String, pass: String): ListService = {
        println("Connect to TargetMine")
     // TODO this is insecure - ideally, auth tokens should be used.
-    val sf = new ServiceFactory("http://targetmine.nibio.go.jp/targetmine/service", user, pass)
+    val sf = new ServiceFactory(serviceUri, user, pass)
     sf.setApplicationName("targetmine")
     sf.getListService()
   }
