@@ -1,3 +1,9 @@
+/**
+ * Copyright (C) Gabriel Keeble-Gagnere and Johan Nystrom-Persson 2010-2012.
+ * Part of the Friedrich bioinformatics framework.
+ * Dual GPL/MIT license. Please see the files README and LICENSE for details.
+ */
+
 package friedrich.data.immutable
 import friedrich.data._
 

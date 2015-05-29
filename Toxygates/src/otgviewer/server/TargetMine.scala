@@ -1,3 +1,23 @@
+/*
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * (NIBIOHN), Japan.
+ *
+ * This file is part of Toxygates.
+ *
+ * Toxygates is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Toxygates is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package otgviewer.server
 
 import scala.collection.JavaConversions._
@@ -13,10 +33,10 @@ import t.platform.Probe
 
 object TargetMine {
   import Conversions._
-  def getListService(user: String, pass: String): ListService = {
+  def getListService(serviceUri: String, user: String, pass: String): ListService = {
        println("Connect to TargetMine")
     // TODO this is insecure - ideally, auth tokens should be used.
-    val sf = new ServiceFactory("http://targetmine.nibio.go.jp/targetmine/service", user, pass)
+    val sf = new ServiceFactory(serviceUri, user, pass)
     sf.setApplicationName("targetmine")
     sf.getListService()
   }

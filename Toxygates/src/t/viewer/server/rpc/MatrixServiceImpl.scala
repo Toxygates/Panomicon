@@ -1,3 +1,23 @@
+/*
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * (NIBIOHN), Japan.
+ *
+ * This file is part of Toxygates.
+ *
+ * Toxygates is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Toxygates is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package t.viewer.server.rpc
 
 import java.util.ArrayList
@@ -88,16 +108,13 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   import ScalaUtils._
   import MatrixServiceImpl._
 
-  private var csvDirectory: String = _
-  private var csvUrlBase: String = _
   protected implicit var mcontext: MatrixContext = _  
   private def probes = context.probes
+  private var config: Configuration = _
   
   // Useful for testing
   override def localInit(config: Configuration) {
-    super.localInit(config)
-    csvDirectory = config.csvDirectory
-    csvUrlBase = config.csvUrlBase   
+    super.localInit(config)       
     mcontext = context.matrix
     staticInit(context)
   }
@@ -378,7 +395,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     val atomics = rows.map(_.getAtomicProbes())
     val geneIds = atomics.map(row => 
       row.flatMap(at => gis.getOrElse(Probe(at), Seq.empty))).map(_.distinct.mkString(" "))
-    CSVHelper.writeCSV(csvDirectory, csvUrlBase, rowNames, colNames,
+    CSVHelper.writeCSV(config.csvDirectory, config.csvUrlBase, rowNames, colNames,
       geneIds, mat.data.map(_.map(asScala(_))))
   }
 
@@ -397,8 +414,6 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     geneIds.flatten.map(_.identifier).toArray
   }
   
-  protected def feedbackReceivers: String = "jtnystrom@gmail.com,kenji@nibio.go.jp,y-igarashi@nibio.go.jp"
-  
   def sendFeedback(name: String, email: String, feedback: String): Unit = {
     val mm = getSessionData()
     var state = "(No user state available)"
@@ -408,7 +423,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
         state += "\nColumns: " + mm.current.columnKeys.mkString(", ")
       }
     }    
-    Feedback.send(name, email, feedback, state, feedbackReceivers)
+    Feedback.send(name, email, feedback, state, config.feedbackReceivers)
   }
   
   private lazy val standardMapper = {

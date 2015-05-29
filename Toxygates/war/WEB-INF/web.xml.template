@@ -41,10 +41,14 @@
 	</context-param>
 	<context-param>
 		<param-name>csvUrlBase</param-name>
-		<param-value>http://toxygates.nibio.go.jp:8080/toxygates/csv</param-value>
+		<param-value>http://toxygates.nibiohn.go.jp:8080/toxygates/csv</param-value>
 	</context-param>	
+	<context-param>
+		<param-name>feedbackReceivers</param-name>
+		<param-value>jtnystrom@gmail.com,kenji@nibiohn.go.jp,y-igarashi@nibiohn.go.jp</param-value>
+	</context-param>
+	
   <!-- Servlets -->
-
 	<servlet>
 		<servlet-name>sparqlServlet</servlet-name>
 		<servlet-class>otgviewer.server.rpc.SparqlServiceImpl</servlet-class>

@@ -8,7 +8,7 @@ package friedrich.data
 /**
  * General statistics functions.
  */
-trait Statistics {
+object Statistics {
 
   import scala.language.implicitConversions
 
@@ -63,7 +63,4 @@ trait Statistics {
     val terms = d1.zip(d2).map(p => { (p._1 - m1) / std1 * (p._2 - m2) / std2 })
     1.0 / (n - 1.0) * terms.sum
   }
-
 }
-
-object Statistics extends Statistics
