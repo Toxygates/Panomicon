@@ -3,9 +3,11 @@ package otgviewer.client;
 import java.util.Arrays;
 import java.util.List;
 
+import otgviewer.client.components.ClusteringSelector;
 import otgviewer.client.components.ListChooser;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
+import otgviewer.client.components.StorageParser;
 import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.Group;
 import t.viewer.client.table.RichTable.HideableColumn;
@@ -27,7 +29,8 @@ public class DataScreen extends Screen {
 
 	public static final String key = "data";
 	private ExpressionTable et;
-		
+	private ClusteringSelector cs;
+
 	private String[] lastProbes;
 	private List<Group> lastColumns;
 	
@@ -35,7 +38,17 @@ public class DataScreen extends Screen {
 		super("View data", key, true, man,
 				resources.dataDisplayHTML(), resources.dataDisplayHelp());
 		et = makeExpressionTable();
-	}
+        cs = makeClusteringSelector();
+    }
+    
+    private ClusteringSelector makeClusteringSelector() {
+      return new ClusteringSelector(this) {
+		@Override
+		public void itemsChanged(List<String> items) {
+			updateProbes(items);
+		}
+      };
+    }
 	
 	protected ExpressionTable makeExpressionTable() {
 		return new ExpressionTable(this);
@@ -45,13 +58,16 @@ public class DataScreen extends Screen {
 	protected void addToolbars() {
 		super.addToolbars();
 		addToolbar(et.tools(), 43);
-		addToolbar(et.analysisTools(), 43);	
+		addToolbar(cs.selector(), 43);
+		addToolbar(et.analysisTools(), 43);
 	}
 
-	public Widget content() {		
+	public Widget content() {	
 		addListener(et);		
 		setupMenuItems();
+
 		ResizeLayoutPanel rlp = new ResizeLayoutPanel();
+		
 		rlp.setWidth("100%");
 		rlp.add(et);
 		return rlp;		
@@ -156,8 +172,8 @@ public class DataScreen extends Screen {
 			logger.info("Only refiltering is needed");
 			et.refilterData();
 		}
-
-		lastProbes = chosenProbes;		
+		
+		lastProbes = chosenProbes;
 		lastColumns = chosenColumns;
 	}
 	
@@ -170,6 +186,18 @@ public class DataScreen extends Screen {
 	public void probesChanged(String[] probes) {
 		super.probesChanged(probes);
 		logger.info("received " + probes.length + " probes");
+	}
+	
+	private void updateProbes(List<String> items) {
+		lastProbes = null;
+		lastColumns = null;
+		
+		changeProbes(items.toArray(new String[0]));
+		
+		StorageParser p = getParser(this);
+		storeProbes(p);
+
+		show();
 	}
 	
 }
