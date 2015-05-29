@@ -11,9 +11,7 @@ import otgviewer.shared.Series
 import t.common.shared.sample._
 import otg.SeriesRanking
 import otg.Context
-import otg.RepeatType
 import otgviewer.shared.RuleType
-import otg.Organ._
 import otg.Species._
 import otg.OTGSeries
 import t.common.shared.SampleClass

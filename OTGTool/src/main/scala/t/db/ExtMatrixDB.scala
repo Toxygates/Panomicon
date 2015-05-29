@@ -7,7 +7,7 @@ import t.platform.Probe
  * custom PA-calls for each sample group.
  */
 trait ExtMatrixDBReader extends MatrixDBReader[PExprValue] {
-  def emptyValue(probe: String) = PExprValue(0.0, Double.NaN, 'A', Probe(probe))  
+  def emptyValue(probe: String) = PExprValue(0.0, Double.NaN, 'A', probe)  
 }
 
 trait ExtMatrixDBWriter extends MatrixDBWriter[PExprValue]

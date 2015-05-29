@@ -23,13 +23,10 @@ import t.common.shared.SampleClass;
 import t.common.shared.SampleMultiFilter;
 import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
-import t.viewer.client.rpc.SeriesService;
 import t.viewer.client.rpc.SeriesServiceAsync;
-import t.viewer.client.rpc.SparqlService;
 import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.Unit;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -46,19 +43,24 @@ public class ChartGridFactory {
 	
 	private final Logger logger = SharedUtils.getLogger("cgf");
 	
-	private static final SparqlServiceAsync sparqlService = 
-			(SparqlServiceAsync) GWT.create(SparqlService.class);
-	private static final SeriesServiceAsync seriesService = 
-			(SeriesServiceAsync) GWT.create(SeriesService.class);
+	protected final SparqlServiceAsync sparqlService;  			
+	protected final SeriesServiceAsync seriesService; 
 	
 	
 	private SampleClass[] sampleClasses;
 	private List<Group> groups;
 	final private DataSchema schema;
 	
-	public ChartGridFactory(DataSchema schema, List<Group> groups) {
+	private ChartGridFactory(Screen screen) {
+		this.schema = screen.schema();
+		this.sparqlService = screen.sparqlService();
+		this.seriesService = screen.seriesService();
+	}
+	
+	public ChartGridFactory(Screen screen, List<Group> groups) {
+		this(screen);
 		this.groups = groups;
-
+		
 		List<SampleClass> scs = new ArrayList<SampleClass>();
 		for (Group g: groups) {
 			SampleClass sc = g.getSamples()[0].
@@ -67,12 +69,12 @@ public class ChartGridFactory {
 		}		
 
 		this.sampleClasses = scs.toArray(new SampleClass[0]);
-		this.schema = schema;		
+		
 	}
 	
-	public ChartGridFactory(DataSchema schema, SampleClass[] sampleClasses) {
-		this.sampleClasses = sampleClasses;
-		this.schema = schema;
+	public ChartGridFactory(Screen screen, SampleClass[] sampleClasses) {
+		this(screen);
+		this.sampleClasses = sampleClasses;		
 		groups = new ArrayList<Group>();
 	}
 	

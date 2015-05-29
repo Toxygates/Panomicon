@@ -13,11 +13,9 @@ import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
-import t.viewer.client.rpc.SparqlService;
 import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.Unit;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -39,10 +37,9 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	
 	protected final boolean hasDoseTimeGUIs;
 	
-	protected SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
-			.create(SparqlService.class);
+	protected final SparqlServiceAsync sparqlService;
 
-	private Screen screen;
+	protected Screen screen;
 	protected final String majorParameter, 
 		mediumParameter, minorParameter, timeParameter;
 	protected final DataSchema schema;
@@ -65,6 +62,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	public TimeDoseGrid(Screen screen, boolean hasDoseTimeGUIs) {
 		rootPanel = Utils.mkVerticalPanel();
 		this.screen = screen;
+		this.sparqlService = screen.sparqlService();
 		initWidget(rootPanel);
 		rootPanel.setWidth("730px");
 		mainPanel = new VerticalPanel();

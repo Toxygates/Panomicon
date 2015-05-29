@@ -10,7 +10,7 @@ class DrugBank extends Triplestore with CompoundTargets {
     PREFIX drugbank:<http://bio2rdf.org/drugbank_vocabulary:>
 """
 
-  def targetsFor(c: Compound, species: Option[Species] = None): Vector[Protein] = {
+  def targetsFor(c: Compound): Vector[Protein] = {
     simpleQuery(prefixes + " SELECT DISTINCT ?r WHERE {" +
       """?s rdfs:label ?l ;  
 		  		a drugbank:Drug ;
@@ -23,8 +23,7 @@ class DrugBank extends Triplestore with CompoundTargets {
 		  		" }").map(Protein.unpackB2R(_))
   }
   
-  def targetingFor(ps: Iterable[Protein], expected: Iterable[Compound], 
-      species: Option[Species] = None):
+  def targetingFor(ps: Iterable[Protein], expected: Iterable[Compound]):
     MMap[Protein, Compound] = {
     val cmps = expected.toSet
     val r = multiQuery(prefixes + " SELECT DISTINCT ?r ?sa " + 

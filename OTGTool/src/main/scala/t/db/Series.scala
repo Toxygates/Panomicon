@@ -61,14 +61,14 @@ trait SeriesBuilder[S <: Series[S]] {
    * Using values from the given MatrixDB, construct all possible series for the
    * samples indicated in the metadata.
    */
-  def makeNew[E <: ExprValue](from: MatrixDBReader[E], md: Metadata, samples: Iterable[Sample])
+  def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata, samples: Iterable[Sample])
   	(implicit mc: MatrixContext): Iterable[S]
   
   /**
    * Using values from the given MatrixDB, construct all possible series for the
    * samples indicated in the metadata.
    */
-  def makeNew[E <: ExprValue](from: MatrixDBReader[E], md: Metadata)
+  def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata)
   	(implicit mc: MatrixContext): Iterable[S]
 		  = makeNew(from, md, md.samples)
 
@@ -92,15 +92,15 @@ trait SeriesBuilder[S <: Series[S]] {
     (p & mask).toLong
   }
 
-  def presentMean(ds: Iterable[Iterable[(Int, ExprValue)]]): Iterable[(Int, ExprValue)] = {
-    var byProbe = Map[Int, List[ExprValue]]()
-    for (xs <- ds; y <- xs; p = y._1) {
+  def presentMean(ds: Iterable[Iterable[ExprValue]]): Iterable[ExprValue] = {
+    var byProbe = Map[String, List[ExprValue]]()
+    for (xs <- ds; y <- xs; p = y.probe) {
       if (byProbe.contains(p)) {
-        byProbe += (p -> (y._2 :: byProbe(p)))
+        byProbe += (p -> (y :: byProbe(p)))
       } else {
-        byProbe += (p -> List(y._2))
+        byProbe += (p -> List(y))
       }
     }
-    byProbe.map(x => (x._1, ExprValue.presentMean(x._2, "N/A")))
+    byProbe.map(x => ExprValue.presentMean(x._2, x._1))
   } 
 }

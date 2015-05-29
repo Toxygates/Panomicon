@@ -3,11 +3,10 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import otgviewer.client.components.Screen;
 import t.common.shared.SampleClass;
-import t.viewer.client.rpc.SparqlService;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.SuggestOracle;
@@ -42,8 +41,11 @@ public class GeneOracle extends SuggestOracle {
 		
 	}
 	
-	private SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
-			.create(SparqlService.class);
+	public GeneOracle(Screen screen) {
+		sparqlService = screen.sparqlService();
+	}
+	
+	private final SparqlServiceAsync sparqlService;
 	
 	@Override
 	public void requestSuggestions(final Request request, final Callback callback) {

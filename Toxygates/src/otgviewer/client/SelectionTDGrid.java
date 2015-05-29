@@ -280,7 +280,7 @@ public class SelectionTDGrid extends TimeDoseGrid {
 	}
 	
 	private void displaySampleTable(Unit unit) {
-		SampleDetailTable st = new SampleDetailTable(this, "Experiment detail");
+		SampleDetailTable st = new SampleDetailTable(screen, "Experiment detail");
 		Unit finalUnit = getFinalUnit(unit);
 		if (finalUnit.getSamples() != null && finalUnit.getSamples().length > 0) {
 			Unit controlUnit = controlUnits.get(finalUnit);			

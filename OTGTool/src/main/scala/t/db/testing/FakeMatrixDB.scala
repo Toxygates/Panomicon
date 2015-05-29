@@ -8,7 +8,7 @@ import t.db.BasicExprValue
 import t.db.ProbeMap
 import t.db.Sample
 
-abstract class AbsFakeMatrixDB[E <: ExprValue](implicit val probeMap: ProbeMap) extends MatrixDB[E, E] {
+abstract class AbsFakeMatrixDB[E >: Null <: ExprValue](implicit val probeMap: ProbeMap) extends MatrixDB[E, E] {
   var closed = false
   var released = false
   var records: Vector[(Sample, Int, E)] = Vector()
@@ -23,8 +23,8 @@ abstract class AbsFakeMatrixDB[E <: ExprValue](implicit val probeMap: ProbeMap) 
     null
   }
   
-  def valuesInSample(x: Sample, probes: Iterable[Int]): Iterable[(Int, E)] =
-    records.filter(_._1 == x).map(x => (x._2, x._3))
+  def valuesInSample(x: Sample, probes: Iterable[Int]): Iterable[E] =
+    records.filter(_._1 == x).map(x => x._3)
   
   def write(s: Sample, probe: Int, e: E) {
     records :+= (s, probe, e)

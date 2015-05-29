@@ -48,7 +48,7 @@ import t.common.shared.AType
  * This servlet is reponsible for making queries to RDF stores, including our
  * local Owlim-lite store.
  */
-class SparqlServiceImpl extends t.common.server.rpc.SparqlServiceImpl with OTGServiceServlet {
+class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGServiceServlet {
   
   private def probeStore: otg.sparql.Probes = context.probes
   private def sampleStore: otg.sparql.OTGSamples = context.samples
@@ -95,7 +95,7 @@ class SparqlServiceImpl extends t.common.server.rpc.SparqlServiceImpl with OTGSe
     val cmp = Compound.make(compound)
     val sp = asSpecies(sc)
     val proteins = service match {
-      case "CHEMBL" => chembl.targetsFor(cmp, if (homologous) { None } else { Some(sp) })
+      case "CHEMBL" => chembl.targetsFor(cmp)
       case "DrugBank" => drugBank.targetsFor(cmp)
       case _ => throw new Exception("Unexpected probe target service request: " + service)
     }

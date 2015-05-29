@@ -3,8 +3,8 @@ package t.common.shared;
 /**
  * All known association types. In order to add a new type, it is necessary to define it here,
  * and then add the corresponding lookup code in SparqlServiceImpl.
- * @author johan
- *
+ * 
+ * TODO split into common, otg and triti annotations
  */
 public enum AType {
 	KEGG("KEGG pathways") {
@@ -50,7 +50,9 @@ public enum AType {
 	},
 	Contigs("Contigs"),
 	SNPs("SNPs"),
-	POPSEQ("POPSEQ distances");
+	POPSEQ("POPSEQ distances") {
+		public boolean canSort() { return true; }
+	};
 
 	private String _title;
 
@@ -64,6 +66,14 @@ public enum AType {
 	
 	public String formLink(String value) {
 		return null;
+	}
+	
+	public boolean canSort() {
+		return false;
+	}
+	
+	public boolean canFilter() {
+		return false;
 	}
 	
 	public static String formGeneLink(String value) {

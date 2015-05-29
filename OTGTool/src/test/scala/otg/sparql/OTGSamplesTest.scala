@@ -6,10 +6,6 @@ import org.scalatest.BeforeAndAfter
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import otg.OTGContext
-import otg.Organ.Kidney
-import otg.Organ.Liver
-import otg.RepeatType.Repeat
-import otg.RepeatType.Single
 import otg.Species.Rat
 import t.testing.TestConfig
 import org.scalatest.junit.JUnitRunner

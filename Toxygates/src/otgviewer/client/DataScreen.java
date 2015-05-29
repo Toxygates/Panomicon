@@ -10,6 +10,7 @@ import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.Group;
+import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.RichTable.HideableColumn;
 import t.viewer.shared.ItemList;
 
@@ -96,7 +97,7 @@ public class DataScreen extends Screen {
 		
 		mb = new MenuBar(true);
 		for (final HideableColumn c: et.getHideableColumns()) {
-			new TickMenuItem(mb, c.name(), c.visible()) {
+			new TickMenuItem(mb, c.columnInfo().title(), c.visible()) {
 				@Override
 				public void stateChange(boolean newState) {
 					et.setVisible(c, newState);

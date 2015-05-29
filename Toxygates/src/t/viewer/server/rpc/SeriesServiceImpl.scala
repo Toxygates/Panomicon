@@ -1,4 +1,4 @@
-package t.common.server.rpc
+package t.viewer.server.rpc
 
 import java.util.ArrayList
 import java.util.{List => JList}

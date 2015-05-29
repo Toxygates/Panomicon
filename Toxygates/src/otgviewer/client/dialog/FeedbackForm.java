@@ -4,10 +4,9 @@ import otgviewer.client.Utils;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.InputGrid;
 import otgviewer.client.components.PendingAsyncCallback;
-import t.viewer.client.rpc.MatrixService;
+import otgviewer.client.components.Screen;
 import t.viewer.client.rpc.MatrixServiceAsync;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
@@ -22,11 +21,11 @@ public class FeedbackForm extends InteractionDialog {
 
 	TextArea commentArea;
 	InputGrid ig;
-	private final MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
-			.create(MatrixService.class);	
+	private final MatrixServiceAsync matrixService;
 	
-	public FeedbackForm(final DataListenerWidget parent) {
+	public FeedbackForm(final DataListenerWidget parent, Screen screen) {
 		super(parent);
+		matrixService = screen.matrixService();
 	}
 	
 	protected Widget content() {

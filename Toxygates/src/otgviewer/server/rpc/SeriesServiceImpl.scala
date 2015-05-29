@@ -10,7 +10,7 @@ import otgviewer.shared.{Series => SSeries}
 import t.common.shared.SampleClass
 
 class SeriesServiceImpl extends 
-t.common.server.rpc.SeriesServiceImpl[OTGSeries] with OTGServiceServlet {
+t.viewer.server.rpc.SeriesServiceImpl[OTGSeries] with OTGServiceServlet {
 
   implicit def mat = context.matrix
   implicit def ctxt = context

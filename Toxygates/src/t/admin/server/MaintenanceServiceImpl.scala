@@ -32,7 +32,7 @@ import t.sparql.TRDF
 import scala.sys.process._
 import t.common.shared.Dataset
 import t.sparql.Datasets
-import t.common.server.rpc.TServiceServlet
+import t.viewer.server.rpc.TServiceServlet
 import t.common.shared.Dataset
 import t.common.server.SharedDatasets
 

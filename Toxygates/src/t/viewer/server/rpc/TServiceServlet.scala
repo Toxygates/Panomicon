@@ -1,4 +1,4 @@
-package t.common.server.rpc
+package t.viewer.server.rpc
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
 

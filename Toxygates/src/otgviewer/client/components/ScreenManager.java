@@ -1,6 +1,10 @@
 package otgviewer.client.components;
 
+import otgviewer.client.Resources;
 import t.common.shared.DataSchema;
+import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.client.rpc.SeriesServiceAsync;
+import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.AppInfo;
 
 import com.google.gwt.user.client.ui.ProvidesResize;
@@ -51,7 +55,13 @@ public interface ScreenManager extends ProvidesResize {
 	
 	DataSchema schema();
 	
+	Resources resources();
+	
 	String storagePrefix();
 	
 	AppInfo appInfo();
+	
+	SparqlServiceAsync sparqlService();
+	MatrixServiceAsync matrixService();
+	SeriesServiceAsync seriesService();
 }
