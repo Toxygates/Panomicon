@@ -21,14 +21,11 @@ import otgviewer.shared.MatchResult;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;
 import t.common.shared.SampleClass;
-import t.viewer.client.rpc.SeriesService;
 import t.viewer.client.rpc.SeriesServiceAsync;
-import t.viewer.client.rpc.SparqlService;
 import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.ItemList;
 import t.viewer.shared.StringList;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.IdentityColumn;
@@ -54,11 +51,9 @@ import com.google.gwt.view.client.NoSelectionModel;
  */
 public class CompoundSelector extends DataListenerWidget implements RequiresResize {
 
-	private SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
-			.create(SparqlService.class);
-	private SeriesServiceAsync seriesService = (SeriesServiceAsync) GWT
-			.create(SeriesService.class);
-	private static Resources resources = GWT.create(Resources.class);
+	private final SparqlServiceAsync sparqlService;
+	private final SeriesServiceAsync seriesService;
+	private final Resources resources;
 	
 	private StackedListEditor compoundEditor;
 	private DockLayoutPanel dp;
@@ -76,6 +71,10 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	
 	public CompoundSelector(final Screen screen, String heading) {
 		this.screen = screen;
+		this.sparqlService = screen.sparqlService();
+		this.seriesService = screen.seriesService();
+		this.resources = screen.resources();
+		
 		dp = new DockLayoutPanel(Unit.PX);
 		this.majorParameter = screen.schema().majorParameter();
 		
@@ -282,7 +281,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		
 		private void makeSeriesCharts(final String value, final List<Series> ss) {
 			//TODO
-			ChartGridFactory cgf = new ChartGridFactory(screen.schema(), 
+			ChartGridFactory cgf = new ChartGridFactory(screen, 
 					new SampleClass[] { w.chosenSampleClass });
 			cgf.makeSeriesCharts(ss, false, scores.get(value).dose(), new ChartGridFactory.ChartAcceptor() {
 				

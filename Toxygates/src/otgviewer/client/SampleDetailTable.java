@@ -6,18 +6,17 @@ import java.util.List;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
 import otgviewer.shared.OTGSample;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
-import t.viewer.client.rpc.SparqlService;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.SafeHtmlHeader;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
+import com.google.gwt.user.cellview.client.SafeHtmlHeader;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
@@ -30,14 +29,14 @@ public class SampleDetailTable extends Composite {
 	private CellTable<String[]> table;
 	private OTGSample[] barcodes;
 	private HasSamples<OTGSample> displayColumn;
-	private SparqlServiceAsync owlimService = (SparqlServiceAsync) GWT
-			.create(SparqlService.class);
+	private SparqlServiceAsync sparqlService;
 	private final String title;
 	private final DataListenerWidget waitListener;
 	
-	public SampleDetailTable(DataListenerWidget waitListener, String title) {
+	public SampleDetailTable(Screen screen, String title) {
 		this.title = title;
-		this.waitListener = waitListener;
+		this.waitListener = screen;
+		sparqlService = screen.sparqlService();
 		table = new CellTable<String[]>();
 		initWidget(table);
 		table.setWidth("100%", true); //use fixed layout so we can control column width explicitly
@@ -63,7 +62,7 @@ public class SampleDetailTable extends Composite {
 		}
 		table.setWidth((15 + 9 * barcodes.length) + "em", true);
 		
-		owlimService.annotations(displayColumn, importantOnly,
+		sparqlService.annotations(displayColumn, importantOnly,
 				new PendingAsyncCallback<Annotation[]>(waitListener) {
 					public void handleFailure(Throwable caught) {
 						Window.alert("Unable to get array annotations.");

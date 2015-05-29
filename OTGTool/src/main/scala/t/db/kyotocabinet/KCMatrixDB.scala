@@ -47,7 +47,7 @@ object KCMatrixDB {
  * indexed by sample ID and probe.
  *
  */
-abstract class AbstractKCMatrixDB[E <: ExprValue]
+abstract class AbstractKCMatrixDB[E >: Null <: ExprValue]
   (file: String, db: DB)(implicit val context: MatrixContext)
   extends KyotoCabinetDB(file, db) with MatrixDB[E, E] {
 
@@ -141,65 +141,21 @@ abstract class AbstractKCMatrixDB[E <: ExprValue]
   //TODO consider removing/encapsulating
   def sortSamples(ss: Iterable[Sample]): Seq[Sample] = ss.toList.sortWith(_.dbCode < _.dbCode)
   
-  //Magic cutoff point at 10000 (may need to be tuned)
-  private val BULK_METHOD_CUTOFF = 10000
-  
-  def valuesInSample(x: Sample, keys: Iterable[Int]): Iterable[(Int, E)] = {
-	  if (keys.size > BULK_METHOD_CUTOFF) {	   
-	    valuesInSampleTraversal(x, keys)
-	  } else {
-	    valuesInSampleBulk(x, keys)
-	  }
-  }
-  
-  /**
-   * Method 1. Employs a single cursor to traverse the entire sample.
-   * Keys must be sorted.
-   */
-  private def valuesInSampleTraversal(x: Sample, 
-      keys: Iterable[Int]): Iterable[(Int, E)] = {  
-    assert (!keys.isEmpty)
-    println(x.identifier + " (" + keys.size + ") (cur)")
-    val first = keys.head
-    val validKeys = keys.toSet.intersect(pmap.keys)
-    
-    val cur = db.cursor()
-    try {
-      var r: Vector[(Int, E)] = Vector()
-      var proceed = cur.jump(formKey(x, first))
-      val dbCode = x.dbCode      
-      while (proceed) {
-        val kv = cur.get(true)
-        if (kv != null) {
-          val extr = extractKey(kv(0))
-          if (extr._1 == dbCode && validKeys.contains(extr._2)) {
-            //TODO optimise out this unpack
-            val probeStr = pmap.unpack(extr._2)
-            r :+= (extr._2, extractValue(kv(1), probeStr))
-          } else {
-            proceed = false
-          }
-        } else {
-          proceed = false
-        } 
-      }
-      r
-    } finally {
-      cur.disable()
-    }
+  def valuesInSample(x: Sample, keys: Iterable[Int]): Iterable[E] = {	
+	    valuesInSampleBulk(x, keys)	
   }
   
    /**
    * Method 2. Employs the get_bulk function to get values.
    * Keys need not be sorted.
    */
-  private def valuesInSampleBulk(x: Sample, keys: Iterable[Int]): Iterable[(Int, E)] = {       
-    var r: Vector[(Int, E)] = Vector() 
+  private def valuesInSampleBulk(x: Sample, keys: Iterable[Int]): Iterable[E] = {       
+    var r: Vector[E] = Vector() 
     
     println(x.identifier + " (" + keys.size + ") (bulk)")
     
     val reqKeys = if (!keys.isEmpty) {
-      keys.map(formKey(x, _)).toArray
+      keys.toArray.map(formKey(x, _))
     } else {
       //Not very good for sparse matrices - consider retiring
       pmap.keys.toArray.map(p => formKey(x, p))
@@ -215,7 +171,7 @@ abstract class AbstractKCMatrixDB[E <: ExprValue]
         val probeStr = pmap.tryUnpack(extr._2)
         probeStr match {
           case Some(ps) =>
-            r :+= (extr._2, extractValue(v, ps))
+            r :+= extractValue(v, ps)
           case None =>
             Console.err.println("Unable to unpack probe " + extr._2)
         }
@@ -286,7 +242,7 @@ class KCMatrixDB (file: String, db: DB)(implicit context: MatrixContext)
     
   protected def extractValue(data: Array[Byte], probe: String) = {
     val b = ByteBuffer.wrap(data)
-    BasicExprValue(b.getDouble, b.getChar, Probe(probe))
+    BasicExprValue(b.getDouble, b.getChar, probe)
   }
   
   /**
@@ -302,7 +258,7 @@ class KCMatrixDB (file: String, db: DB)(implicit context: MatrixContext)
     r.array
   }
 
-  def emptyValue(probe: String) = BasicExprValue(0.0, 'A', Probe(probe))  
+  def emptyValue(probe: String) = BasicExprValue(0.0, 'A', probe)  
 }
 
 class KCExtMatrixDB(file: String, db: DB)(implicit context: MatrixContext)
@@ -316,7 +272,7 @@ class KCExtMatrixDB(file: String, db: DB)(implicit context: MatrixContext)
     val call = b.getChar
     val p = b.getDouble
 
-    PExprValue(x, p, call, Probe(probe))
+    PExprValue(x, p, call, probe)
   }
   
   /**

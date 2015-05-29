@@ -41,9 +41,9 @@ public class ColumnInfo {
 				null, false, filterable);
 	}
 	
-	public ColumnInfo(HideableColumn hc, boolean sortable) {
-		this(hc.name(), hc.name(), sortable, true, false);
-		this.width = hc.width();
+	public ColumnInfo(String name, String width, boolean sortable) {
+		this(name, name, sortable, true, false);
+		this.width = width;
 	}
 
 	public SafeHtml headerHtml() {

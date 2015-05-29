@@ -20,13 +20,10 @@ import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
-import t.viewer.client.rpc.MatrixService;
 import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.client.rpc.SparqlService;
 import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.ItemList;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -51,10 +48,8 @@ import com.google.gwt.user.client.ui.Widget;
 public class ProbeScreen extends Screen {
 
 	public static final String key = "probes";
-	private SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
-			.create(SparqlService.class);
-	private MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
-			.create(MatrixService.class);
+	private final SparqlServiceAsync sparqlService;			
+	private final MatrixServiceAsync matrixService;
 
 	private TextArea customProbeText;
 	private ListBox probesList;
@@ -69,12 +64,15 @@ public class ProbeScreen extends Screen {
 	private static final int PL_SOUTH_HEIGHT = 30;
 
 	private static final int STACK_ITEM_HEIGHT = 29;
-	final GeneOracle oracle = new GeneOracle();
+	private final GeneOracle oracle;
 	private final Logger logger = SharedUtils.getLogger();
 
 	public ProbeScreen(ScreenManager man) {
 		super("Probe selection", key, true, man, resources
 				.probeSelectionHTML(), resources.probeSelectionHelp());
+		oracle = new GeneOracle(this);
+		sparqlService = man.sparqlService();
+		matrixService = man.matrixService();
 	}
 
 	@Override

@@ -65,6 +65,8 @@ public class AdjustableChartGrid extends Composite {
 		schema = screen.schema();
 		
 		Set<String> os = new HashSet<String>();
+		
+		//TODO use schema somehow to handle organism propagation
 		for (Group g : groups) {
 			os.addAll(g.collect("organism"));
 		}

@@ -18,6 +18,10 @@ import otgviewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.FeedbackForm;
 import otgviewer.client.targetmine.TargetMineData;
 import t.common.shared.SharedUtils;
+import t.viewer.client.rpc.MatrixService;
+import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.client.rpc.SeriesService;
+import t.viewer.client.rpc.SeriesServiceAsync;
 import t.viewer.client.rpc.SparqlService;
 import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.AppInfo;
@@ -61,8 +65,12 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 abstract public class TApplication implements ScreenManager, EntryPoint {
 	private static Resources resources = GWT.create(Resources.class);
 
-	private SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
+	private static SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
 			.create(SparqlService.class);
+	private static MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
+			.create(MatrixService.class);
+	private static SeriesServiceAsync seriesService = (SeriesServiceAsync) GWT
+			.create(SeriesService.class);
 	
 	private RootLayoutPanel rootPanel;
 	private DockLayoutPanel mainDockPanel;
@@ -103,7 +111,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 	
 	protected AppInfo appInfo = null; 
 	
-	public AppInfo appInfo() { return appInfo; }
+	public AppInfo appInfo() { return appInfo; }	
 	
 	/**
 	 * This is the entry point method.
@@ -255,7 +263,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 		
 		mi = new MenuItem("Leave feedback...", new Command() {
 			public void execute() {
-				FeedbackForm feedbackDialog = new FeedbackForm(currentScreen);
+				FeedbackForm feedbackDialog = new FeedbackForm(currentScreen,
+						currentScreen);
 				feedbackDialog.display("Leave feedback", DialogPosition.Center);
 			}
 		});		
@@ -461,5 +470,13 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 		}
 		rootPanel.onResize();
 	}
+
+	public Resources resources() { return resources; }
+	
+	public SparqlServiceAsync sparqlService() { return sparqlService; }
+	
+	public SeriesServiceAsync seriesService() { return seriesService; }
+	
+	public MatrixServiceAsync matrixService() { return matrixService; }
 	
 }

@@ -20,7 +20,7 @@ trait MatrixContext {
  * The database will be opened when returned by its constructor.
  * The database must be closed after use.
  */
-trait MatrixDBReader[+E <: ExprValue] {
+trait MatrixDBReader[+E >: Null <: ExprValue] {
 
   implicit def probeMap: ProbeMap
   
@@ -41,7 +41,7 @@ trait MatrixDBReader[+E <: ExprValue] {
    * each array.
    * Probes must be sorted.
    */
-  def valuesInSample(x: Sample, probes: Iterable[Int]): Iterable[(Int, E)]
+  def valuesInSample(x: Sample, probes: Iterable[Int]): Iterable[E]
 
 //  def presentValuesInSample(x: Sample): Iterable[(Int, E)] =
 //    valuesInSample(x).filter(_._2.present)
@@ -119,27 +119,40 @@ trait MatrixDBReader[+E <: ExprValue] {
   def valuesForSamplesAndProbes(xs: Seq[Sample], probes: Seq[Int],
     sparseRead: Boolean = false, presentOnly: Boolean = false): Vector[Seq[E]] = {
 
-    val ps = probes.sorted
+    val ps = probes.filter(probeMap.keys.contains(_)).sorted
     
-    if (sparseRead) {
-      val rows = probes.par.map(p => {
+    val rows = (if (sparseRead) {
+      probes.par.map(p => {
         val dat = Map() ++ valuesForProbe(p, xs).filter(!presentOnly || _._2.present)
         val row = Vector() ++ xs.map(bc => dat.getOrElse(bc, emptyValue(probeMap, p)))
         row
-      })
-      Vector.tabulate(probes.size, xs.size)((p, s) => rows(p)(s))
+      }).seq
+      
     } else {
+      import scala.collection.mutable.{Seq => MSeq}
+      var rows = Map[String, MSeq[E]]()
+      for (p <- ps) {
+        rows += probeMap.unpack(p) -> MSeq.fill[E](xs.size)(null)
+      }
+      
       //not sparse read, go sample-wise
-      val cols = xs.par.map(bc => {
+      (xs zipWithIndex).par.foreach(bc => {
         //probe to expression
-        val dat = Map() ++ (valuesInSample(bc, ps).map(x => (x._1 -> x._2))).
-        		filter(!presentOnly || _._2.present)
-        val col = ps.map(p =>
-          dat.getOrElse(p, emptyValue(probeMap, p)))
-        col
+        var vs = valuesInSample(bc._1, ps).filter(!presentOnly || _.present)
+        rows.synchronized {
+          for (v <- vs) {
+            rows(v.probe)(bc._2) = v
+          }
+          for (p <- rows.keys) {
+            if (rows(p)(bc._2) == null) {
+              rows(p)(bc._2) = emptyValue(p)
+            }
+          }
+        }        
       })
-      Vector.tabulate(probes.size, xs.size)((p, s) => cols(s)(p))
-    }
+      probes.map(p => rows(probeMap.unpack(p)))
+    })
+    rows.toVector
   }
   
   
@@ -165,4 +178,4 @@ trait MatrixDBWriter[E <: ExprValue] {
   def release(): Unit 
 }
 	
-trait MatrixDB[+ER <: ExprValue, EW <: ExprValue] extends MatrixDBReader[ER] with MatrixDBWriter[EW]
+trait MatrixDB[+ER >: Null <: ExprValue, EW <: ExprValue] extends MatrixDBReader[ER] with MatrixDBWriter[EW]

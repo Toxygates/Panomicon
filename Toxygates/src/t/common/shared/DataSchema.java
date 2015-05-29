@@ -13,6 +13,14 @@ import javax.annotation.Nullable;
  */
 public abstract class DataSchema implements Serializable {	
 	
+	String[] defaultChartParameters = new String[3];
+	
+	public DataSchema() {
+		defaultChartParameters[0] = majorParameter();
+		defaultChartParameters[1] = mediumParameter();
+		defaultChartParameters[2] = minorParameter();
+	}
+	
 	/**
 	 * All the possible values, in their natural order, for a sortable
 	 * parameter.
@@ -84,6 +92,10 @@ public abstract class DataSchema implements Serializable {
 	public abstract String timeGroupParameter();
 	
 	public abstract String[] macroParameters();
+	
+	public String[] chartParameters() {
+		return defaultChartParameters;
+	}
 	
 	/**
 	 * Human-readable title

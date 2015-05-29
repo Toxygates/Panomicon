@@ -7,6 +7,8 @@
 <module>
 	<inherits name="com.google.gwt.user.User" />
 	<inherits name="t.common.Common" />
+	<inherits name="com.google.gwt.logging.Logging"/>
+		
 	<source path="client"/>
 	<source path="shared"/>	
 </module>

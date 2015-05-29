@@ -18,10 +18,8 @@ import otgviewer.shared.OTGColumn;
 import t.common.shared.DataSchema;
 import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
-import t.viewer.client.rpc.SparqlService;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -46,14 +44,14 @@ public class ColumnScreen extends Screen {
 	private final String rankingLabel;
 	private DataFilterEditor dfe;
 	
-	private SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
-			.create(SparqlService.class);
+	private final SparqlServiceAsync sparqlService;
 	
 	public ColumnScreen(ScreenManager man, String rankingLabel) {
 		super("Sample group definitions", key, false, man,
 				resources.groupDefinitionHTML(), resources.groupDefinitionHelp());
 		
 		this.rankingLabel = rankingLabel;
+		sparqlService = man.sparqlService();
 		
 		String majorParam = man.schema().majorParameter();
 		cs = new CompoundSelector(this, man.schema().title(majorParam));		
@@ -78,7 +76,7 @@ public class ColumnScreen extends Screen {
 			}
 		});
 		
-		dfe = new DataFilterEditor(schema()) {
+		dfe = new DataFilterEditor(this) {
 			@Override
 			protected void changeSampleClass(SampleClass sc) {
 				super.changeSampleClass(sc);				

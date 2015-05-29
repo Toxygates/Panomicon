@@ -1,4 +1,4 @@
-package otgviewer.client.components;
+package t.viewer.client.table;
 
 import otgviewer.client.Utils;
 import t.common.shared.sample.ExpressionRow;

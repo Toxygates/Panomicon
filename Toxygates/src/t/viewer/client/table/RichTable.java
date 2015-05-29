@@ -107,7 +107,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		for (HideableColumn c: hideableColumns) {
 			if (c.visible()) {
 				Column<T, ?> cc = (Column<T, ?>) c;
-				ColumnInfo info = new ColumnInfo(c, false);
+				ColumnInfo info = c.columnInfo();
 				info.setCellStyleNames("extraColumn");
 				addColumn(cc, "extra", info);												
 			}
@@ -245,7 +245,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	public void setVisible(HideableColumn hc, boolean newState) {
 		hc.setVisibility(newState);	
 		if (newState) {
-			ColumnInfo info = new ColumnInfo(hc, false);
+			ColumnInfo info = hc.columnInfo();
 			info.setCellStyleNames("extraColumn");
 			addColumn(((Column<T, ?>) hc), "extra", info);			
 		} else {
@@ -253,27 +253,24 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		}				
 	}
 	
-	public interface HideableColumn {
-		String name();
+	public interface HideableColumn {		
 		boolean visible();
 		
 		// TODO consider not exposing this
 		void setVisibility(boolean v);		
-		String width();
+		
+		ColumnInfo columnInfo();
 	}
 
 	/**
 	 * A hideable column that displays SafeHtml
-	 * TODO: remove DefHideableColumn or reduce code duplication
-	 * @author johan
-	 *
-	 * @param <T>
 	 */
 	protected abstract static class HTMLHideableColumn<T> extends Column<T, SafeHtml> implements HideableColumn {
 		protected boolean _visible;
 		protected String _width;
 		protected String _name;
 		protected SafeHtmlCell _c;
+		protected ColumnInfo _columnInfo;
 		
 		public HTMLHideableColumn(SafeHtmlCell c, String name, boolean initState, String width) {
 			super(c);
@@ -281,6 +278,11 @@ abstract public class RichTable<T> extends DataListenerWidget {
 			_visible = initState;
 			_name = name;
 			_width = width;
+			_columnInfo = new ColumnInfo(name, width, false);
+		}
+		
+		public ColumnInfo columnInfo() {
+			return _columnInfo;
 		}
 		
 		public SafeHtml getValue(T er) {			
@@ -291,10 +293,8 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		
 		protected abstract String getHtml(T er);
 		
-		public String name() { return _name; }
 		public boolean visible() { return _visible; }				
 		public void setVisibility(boolean v) { _visible = v; }		
-		public String width() { return _width; }
 	}
 	
 	protected class RowHighligher<U> implements RowStyles<U> {		

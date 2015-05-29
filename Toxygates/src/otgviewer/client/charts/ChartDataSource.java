@@ -1,7 +1,7 @@
 package otgviewer.client.charts;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,7 +29,6 @@ import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.Unit;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.Window;
 
 /**
  * This class brings series and row data into a unified interface for the purposes of
@@ -55,16 +54,10 @@ abstract class ChartDataSource {
 		final String probe;
 		String color = "grey";
 		
-		private final static List<String> chartKeys = new ArrayList<String>();
-		static {						
-			//TODO use DataSchema to add these
-			Collections.addAll(chartKeys, "exposure_time", "dose_level", 
-					"compound_name", "organism");
-		}
-		
 		ChartSample(SampleClass sc, DataSchema schema,
-				double value, OTGSample barcode, String probe, char call) {						
-			this.sc = sc.copyOnly(chartKeys);
+				double value, OTGSample barcode, String probe, char call) {
+			
+			this.sc = sc.copyOnly(Arrays.asList(schema.chartParameters()));
 			this.schema = schema;
 			this.value = value;
 			this.barcode = barcode;
@@ -230,8 +223,6 @@ abstract class ChartDataSource {
 	
 	/**
 	 * An expression row source that dynamically loads data.
-	 * @author johan
-	 *
 	 */
 	static class DynamicExpressionRowSource extends ExpressionRowSource {
 		protected static final MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
@@ -289,8 +280,6 @@ abstract class ChartDataSource {
 	
 	/**
 	 * A dynamic source that makes requests based on a list of units.
-	 * @author johan
-	 *
 	 */
 	static class DynamicUnitSource extends DynamicExpressionRowSource {				
 		private Unit[] units;

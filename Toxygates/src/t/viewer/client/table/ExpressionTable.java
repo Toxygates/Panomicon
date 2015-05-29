@@ -1,4 +1,4 @@
-package otgviewer.client;
+package t.viewer.client.table;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,12 +11,12 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import otgviewer.client.StandardColumns;
+import otgviewer.client.Utils;
 import otgviewer.client.charts.AdjustableChartGrid;
 import otgviewer.client.charts.ChartGridFactory;
 import otgviewer.client.charts.ChartGridFactory.AChartAcceptor;
-import otgviewer.client.components.AssociationTable;
 import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.ExpressionColumn;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
@@ -35,9 +35,7 @@ import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
 import t.common.shared.sample.DataColumn;
 import t.common.shared.sample.ExpressionRow;
-import t.viewer.client.rpc.MatrixService;
 import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.client.table.ColumnInfo;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.SafeHtmlCell;
@@ -49,8 +47,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.cellview.client.ColumnSortList;
+import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.PageSizePager;
 import com.google.gwt.user.cellview.client.SimplePager;
@@ -101,9 +99,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	
 	protected ListBox tableList = new ListBox();
 	
-	private final MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
-			.create(MatrixService.class);	
-	private static otgviewer.client.Resources resources = GWT.create(otgviewer.client.Resources.class);
+	private final MatrixServiceAsync matrixService;
+	private final otgviewer.client.Resources resources;
 	
 	/**
 	 * "Synthetic" columns are tests columns such as t-test and u-test.
@@ -141,6 +138,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
  	
 	public ExpressionTable(Screen _screen) {
 		super(_screen);
+		this.matrixService = _screen.matrixService();
+		this.resources = _screen.resources();
 		screen = _screen;
 		
 		grid.setStylePrimaryName("exprGrid");
@@ -414,10 +413,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		ColumnSortList csl = grid.getColumnSortList();
 		sortAsc = false;
 		sortCol = 0;
-		if (csl.size() > 0) {	
-			ExpressionColumn ec = (ExpressionColumn) csl.get(0).getColumn();
-			sortCol = ec.matrixColumn();
-			sortAsc = csl.get(0).isAscending();
+		if (csl.size() > 0) {
+			Column<?, ?> col = csl.get(0).getColumn();
+			if (col instanceof ExpressionColumn) {
+				ExpressionColumn ec = (ExpressionColumn) csl.get(0).getColumn();
+				sortCol = ec.matrixColumn();
+				sortAsc = csl.get(0).isAscending();
+			} else {
+				Window.alert("Sorting for this column is not implemented yet.");				
+			}
 		}
 	}
 	
@@ -680,7 +684,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	/**
 	 * Filter data that has already been loaded
 	 */
-	void refilterData() {
+	public void refilterData() {
 		if (!loadedData) {
 			logger.info("Request to refilter but data was not loaded");
 			return;
@@ -766,7 +770,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 			ExpressionRow dispRow = grid.getVisibleItem(highlightedRow);
 			final String[] probes = dispRow.getAtomicProbes();
 			
-			final ChartGridFactory cgf = new ChartGridFactory(schema, chosenColumns);
+			final ChartGridFactory cgf = new ChartGridFactory(screen, chosenColumns);
 			Utils.ensureVisualisationAndThen(new Runnable() {
 				public void run() {
 					cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, probes, 

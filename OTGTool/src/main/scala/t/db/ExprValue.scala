@@ -16,7 +16,7 @@ object ExprValue {
     }
   }
   
-  def apply(v: Double, call: Char = 'P', probe: String = "") = BasicExprValue(v, call, Probe(probe))
+  def apply(v: Double, call: Char = 'P', probe: String = "") = BasicExprValue(v, call, probe)
   
   val nf = NumberFormat.getNumberInstance()
 }
@@ -24,7 +24,7 @@ object ExprValue {
 trait ExprValue {
   def value: Double
   def call: Char
-  def probe: Probe
+  def probe: String
   
   // Currently we interpret both P and M as present
   def present: Boolean = (call != 'A')
@@ -37,7 +37,7 @@ trait ExprValue {
  * An expression value for one probe in a microarray sample, with an associated
  * call. Call can be P, A or M (present, absent, marginal).
  */
-case class BasicExprValue(value: Double, call: Char = 'P', probe: Probe = null) extends ExprValue 
+case class BasicExprValue(value: Double, call: Char = 'P', probe: String = null) extends ExprValue 
 
 /**
  * An expression value that also has an associated p-value.
@@ -45,5 +45,5 @@ case class BasicExprValue(value: Double, call: Char = 'P', probe: Probe = null) 
  * sample group that the sample belongs to (all samples with identical
  * experimental conditions).
  */
-case class PExprValue(value: Double, p: Double, call: Char = 'P', probe: Probe = null) extends ExprValue
+case class PExprValue(value: Double, p: Double, call: Char = 'P', probe: String = null) extends ExprValue
 

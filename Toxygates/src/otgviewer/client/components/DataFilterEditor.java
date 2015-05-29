@@ -5,13 +5,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
-import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
-import t.viewer.client.rpc.SparqlService;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -20,7 +17,7 @@ import com.google.gwt.user.client.ui.ListBox;
 public class DataFilterEditor extends DataListenerWidget {
 	List<SampleClass> sampleClasses;	
 	final SCListBox[] selectors;	
-	private final SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT.create(SparqlService.class);
+	private final SparqlServiceAsync sparqlService;
 	private final String[] parameters;
 	protected final Logger logger;
 	
@@ -103,14 +100,15 @@ public class DataFilterEditor extends DataListenerWidget {
 		}
 	}
 	
-	public DataFilterEditor(DataSchema schema) {
+	public DataFilterEditor(Screen screen) {
 		HorizontalPanel hp = new HorizontalPanel();
 		initWidget(hp);
 		logger = SharedUtils.getLogger("dfeditor");
+		sparqlService = screen.sparqlService();
 		
 		update();
 		
-		parameters = schema.macroParameters();
+		parameters = screen.schema().macroParameters();
 		selectors = new SCListBox[parameters.length];
 		for (int i = 0; i < parameters.length; ++i) {
 			selectors[i] = new SCListBox(i);
