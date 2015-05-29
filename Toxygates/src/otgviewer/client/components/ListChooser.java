@@ -65,6 +65,10 @@ public class ListChooser extends DataListenerWidget {
 	private List<ItemList> otherTypeLists = new ArrayList<ItemList>();
 	
 	public ListChooser(Collection<StringList> predefinedLists, String listType) {
+	  this(predefinedLists, listType, true);
+	}
+	
+	public ListChooser(Collection<StringList> predefinedLists, String listType, boolean hasButtons) {
 		HorizontalPanel hp = Utils.mkWidePanel();
 		initWidget(hp);
 		this.listType = listType;
@@ -95,6 +99,10 @@ public class ListChooser extends DataListenerWidget {
 			}
 		});
 		hp.add(listBox);
+		
+		if (!hasButtons) {
+		  return;
+		}
 		
 		Button b = new Button("Save");
 		b.addClickHandler(new ClickHandler() {			

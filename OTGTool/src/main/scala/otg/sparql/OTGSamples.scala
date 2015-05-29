@@ -115,7 +115,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
     
     val withIndex = annotations.zipWithIndex
     val triples = withIndex.map(x => " OPTIONAL { ?x t:" + x._1._2 + " ?k" + x._2 + ". } ")
-    val query = "SELECT * WHERE { GRAPH ?batchGraph { ?x rdfs:label \"" + sample + "\" . " + 
+    val query = "SELECT * WHERE { GRAPH ?batchGraph { ?x rdfs:label \"" + sample + "\"^^xsd:string " + 
     		triples.mkString + " } } "  
     val r = ts.mapQuery(prefixes + query)
     if (r.isEmpty) {
