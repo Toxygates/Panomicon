@@ -18,30 +18,30 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t
+package t.viewer.shared.table;
 
-import t.sparql.Samples
-import t.sparql.Probes
-import t.db.MatrixContext
+import java.io.Serializable;
 
-/**
- * Top level configuration object for a T framework
- * application
- */
-class Context(val config: BaseConfig, 
-    val factory: Factory, 
-    val probes: Probes, 
-    val samples: Samples,
-    val matrix: MatrixContext) { 
-   
-    //TODO best location for this?
-  
-  /**
-   * Obtain an ordering of the probes, identified by a string key.
-   */
-    def auxSortMap(key: String): Map[String, Double] = {      
-      val allProbes = matrix.probeMap.tokens
-      println("Aux map for " + allProbes.size + " probes key " + key)
-      probes.auxSortMap(allProbes, key)
-    }
+import t.common.shared.AType;
+
+public interface SortKey extends Serializable {
+	static class MatrixColumn implements SortKey {
+		public int matrixIndex;
+		
+		public MatrixColumn() {}
+		
+		public MatrixColumn(int idx) {
+			this.matrixIndex = idx;
+		}
+	}
+	
+	static class Association implements SortKey {
+		public AType atype;
+		
+		public Association() {}
+		
+		public Association(AType assoc) {
+			this.atype = assoc;
+		}
+	}	
 }

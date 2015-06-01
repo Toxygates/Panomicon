@@ -32,6 +32,7 @@ import otgviewer.shared.ServerError;
 import otgviewer.shared.Synthetic;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
+import t.viewer.shared.table.SortKey;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -119,7 +120,7 @@ public interface MatrixService extends RemoteService {
 	 * @param ascending Whether to use ascending sort. Applies if sortColumn is not -1.
 	 * @return
 	 */
-	public List<ExpressionRow> matrixRows(int offset, int size, int sortColumn, 
+	public List<ExpressionRow> matrixRows(int offset, int size, SortKey sortKey, 
 			boolean ascending);
 	
 	/**

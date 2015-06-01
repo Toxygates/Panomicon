@@ -49,11 +49,11 @@ import com.google.gwt.user.client.ui.Widget;
 public class DataScreen extends Screen {
 
 	public static final String key = "data";
-	private ExpressionTable et;
-	private ClusteringSelector cs;
+	protected ExpressionTable et;
+	protected ClusteringSelector cs;
 
-	private String[] lastProbes;
-	private List<Group> lastColumns;
+	protected String[] lastProbes;
+	protected List<Group> lastColumns;
 	
 	public DataScreen(ScreenManager man) {
 		super("View data", key, true, man,
@@ -75,12 +75,18 @@ public class DataScreen extends Screen {
 		return new ExpressionTable(this);
 	}
 	
-	@Override
+	@Override 
 	protected void addToolbars() {
 		super.addToolbars();
 		addToolbar(et.tools(), 43);
-		addToolbar(cs.selector(), 43);
+		if (addSelector()) {
+			addToolbar(cs.selector(), 43);
+		}
 		addToolbar(et.analysisTools(), 43);
+	}
+	
+	protected boolean addSelector() {
+		return true;
 	}
 
 	public Widget content() {	

@@ -171,16 +171,20 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
       f
     }
   }
+
+  protected def simpleMapQueryNoEmptyCheck(probes: Iterable[Probe],
+    query: String): MMap[Probe, DefaultBio] = {
+    val r = ts.mapQuery(query).map(x => Probe.unpack(x("probe")) ->
+      DefaultBio(x("result"), x("result")))
+    makeMultiMap(r)
+  }
   
   protected def simpleMapQuery(probes: Iterable[Probe], 
       query: String): MMap[Probe, DefaultBio] = {
     if (probes.isEmpty) {
       return emptyMMap()
     }
-    
-    val r = ts.mapQuery(query).map(x => Probe.unpack(x("probe")) -> 
-      DefaultBio(x("result"), x("result")))
-    makeMultiMap(r)
+    simpleMapQueryNoEmptyCheck(probes, query)  
   }
   
   protected class GradualProbeResolver(idents: Iterable[String]) {
@@ -378,5 +382,13 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 //    val byGroup = makeMultiMap(mq.map(x => x("l") -> Gene(x("entrez"))))    
 //    val probes = forGenes(byGroup.values.flatten.toList.distinct)
     makeMultiMap(mq.map(x => x("list") -> Probe(x("probeLabel"))))        
+  }
+  
+  /**
+   * Look up the auxiliary sort map for a given association, identified by
+   * a string. TODO: is this the best place for this?
+   */
+  def auxSortMap(probes: Iterable[String], key: String): Map[String, Double] = {
+    Map() ++ probes.map(x => x -> 0.0) //default map does nothing
   }
 }

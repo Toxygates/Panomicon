@@ -56,6 +56,7 @@ import t.common.shared.ValueType;
 import t.common.shared.sample.DataColumn;
 import t.common.shared.sample.ExpressionRow;
 import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.shared.table.SortKey;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.SafeHtmlCell;
@@ -128,7 +129,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	private List<Synthetic> synthetics = new ArrayList<Synthetic>();
 	private List<Column<ExpressionRow, ?>> synthColumns = new ArrayList<Column<ExpressionRow, ?>>();
 	protected boolean displayPColumns = true;
-	protected int sortCol;
+	protected SortKey sortKey;
 	protected boolean sortAsc;
 		
 	/**
@@ -432,12 +433,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	private void computeSortParams() {
 		ColumnSortList csl = grid.getColumnSortList();
 		sortAsc = false;
-		sortCol = 0;
+		sortKey = new SortKey.MatrixColumn(0);
 		if (csl.size() > 0) {
 			Column<?, ?> col = csl.get(0).getColumn();
-			if (col instanceof ExpressionColumn) {
-				ExpressionColumn ec = (ExpressionColumn) csl.get(0).getColumn();
-				sortCol = ec.matrixColumn();
+			if (col instanceof MatrixSortable) {
+				MatrixSortable ec = (MatrixSortable) csl.get(0).getColumn();
+				sortKey = ec.sortKey();				
 				sortAsc = csl.get(0).isAscending();
 			} else {
 				Window.alert("Sorting for this column is not implemented yet.");				
@@ -646,7 +647,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				computeSortParams();
 				if (range.getLength() > 0) {
 					matrixService.matrixRows(range.getStart(), range.getLength(),
-							sortCol, sortAsc, rowCallback);
+							sortKey, sortAsc, rowCallback);
 				}
 			}
 		}

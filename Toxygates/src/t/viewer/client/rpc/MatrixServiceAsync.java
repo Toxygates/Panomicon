@@ -30,6 +30,7 @@ import otgviewer.shared.ManagedMatrixInfo;
 import otgviewer.shared.Synthetic;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
+import t.viewer.shared.table.SortKey;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -39,7 +40,7 @@ public interface MatrixServiceAsync {
 			String[] probes, ValueType type, List<Synthetic> synthCols, 
 			AsyncCallback<ManagedMatrixInfo> callback);
 
-	public void matrixRows(int offset, int size, int sortColumn,
+	public void matrixRows(int offset, int size, SortKey sortKey,
 			boolean ascending, AsyncCallback<List<ExpressionRow>> callback);
 	
 	public void identifiersToProbes(String[] identifiers,

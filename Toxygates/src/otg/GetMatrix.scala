@@ -32,6 +32,7 @@ import t.common.shared.sample.ExpressionValue
 import t.viewer.client.rpc.MatrixService
 import t.viewer.client.rpc.SparqlService
 import t.common.shared.ValueType
+import t.viewer.shared.table.SortKey
 
 object GetMatrix {
   
@@ -155,9 +156,9 @@ object GetMatrix {
         //sort by first column, descending
         val items = if (specialPSort) {
           println("Using p-value sort on column " + colInfo.columnName(1))
-          matServiceAsync.matrixRows(offset, amt, 1, true)
+          matServiceAsync.matrixRows(offset, amt, new SortKey.MatrixColumn(1), true)
         } else {
-          matServiceAsync.matrixRows(offset, amt, 0, false)
+          matServiceAsync.matrixRows(offset, amt, new SortKey.MatrixColumn(0), false)
         }
         
         val colNames = (0 until colInfo.numColumns()).map(colInfo.columnName(_))

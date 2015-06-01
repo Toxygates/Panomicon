@@ -20,6 +20,8 @@
 
 package t.common.shared;
 
+import javax.annotation.Nullable;
+
 /**
  * All known association types. In order to add a new type, it is necessary to define it here,
  * and then add the corresponding lookup code in SparqlServiceImpl.
@@ -72,6 +74,7 @@ public enum AType {
 	SNPs("SNPs"),
 	POPSEQ("POPSEQ distances") {
 		public boolean canSort() { return true; }
+		public String auxSortTableKey() { return "popseq"; }
 	};
 
 	private String _title;
@@ -94,6 +97,10 @@ public enum AType {
 	
 	public boolean canFilter() {
 		return false;
+	}
+	
+	public @Nullable String auxSortTableKey() {
+		return null;
 	}
 	
 	public static String formGeneLink(String value) {

@@ -35,6 +35,7 @@ import t.common.shared.Pair;
 import t.common.shared.SharedUtils;
 import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.Association;
+import t.viewer.shared.table.SortKey;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.user.client.Window;
@@ -59,6 +60,7 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 		SafeHtmlCell shc = new SafeHtmlCell();
 		List<HideableColumn> r = new ArrayList<HideableColumn>();
 		for (AType at: schema.associations()) {
+			//TODO fill in matrixColumn for sortable associations
 			AssociationColumn ac = new AssociationColumn(shc, at);			
 			r.add(ac);
 		}
@@ -146,13 +148,24 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 		
 	}
 	
-	public class AssociationColumn extends LinkingColumn<T> {
-		AType assoc;		
+	public class AssociationColumn extends LinkingColumn<T> implements MatrixSortable {
+		private AType assoc;				
 		
+		/**
+		 * @param tc
+		 * @param association
+		 * @param matrixIndex Underlying data index for a corresponding
+		 * hidden sorting column. Only meaningful if this association is 
+		 * sortable.
+		 */
 		public AssociationColumn(SafeHtmlCell tc, AType association) {
 			super(tc, association.title(), false, "15em");
-			this.assoc = association;
+			this.assoc = association;			
 			this._columnInfo = new ColumnInfo(_name, _width, association.canSort());
+		}
+		
+		public SortKey sortKey() {
+			return new SortKey.Association(assoc);
 		}
 		
 		@Override

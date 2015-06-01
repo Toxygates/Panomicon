@@ -69,6 +69,11 @@ import t.common.shared.DataSchema
 import otgviewer.server.FoldBuilder
 import otgviewer.server.NormalizedBuilder
 import otgviewer.server.ExtFoldBuilder
+import t.viewer.shared.table.SortKey
+import otgviewer.server.ExprMatrix
+import t.common.shared.AType
+import otgviewer.server.EVArray
+import t.common.shared.sample.ExpressionValue
 
 object MatrixServiceImpl {
   
@@ -116,20 +121,27 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   override def localInit(config: Configuration) {
     super.localInit(config)       
     mcontext = context.matrix
-    staticInit(context)
+    staticInit(context)    
   }
   
-  @throws(classOf[NoDataLoadedException])
-  def getSessionData(): ManagedMatrix = {
-    val r = getThreadLocalRequest().getSession().getAttribute("matrix").
-        asInstanceOf[ManagedMatrix]
+  protected class MatrixState {
+    var matrix: ManagedMatrix = _    
+  }
+  
+  def getSessionData(): MatrixState = {    
+    val session = getThreadLocalRequest.getSession
+    val r = session.getAttribute("matrix").
+        asInstanceOf[MatrixState]
     if (r == null) {
-      throw new NoDataLoadedException()
-    }
-    r
+      val r = new MatrixState()
+      session.setAttribute("matrix", r)
+      return r
+    } else {
+      r
+    }    
   }
   
-  def setSessionData(m: ManagedMatrix) =
+  def setSessionData(m: MatrixState) =
     getThreadLocalRequest().getSession().setAttribute("matrix", m)
 
   //Should this be in sparqlService?
@@ -200,12 +212,11 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
                   typ: ValueType, syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
     val pfs = platformsForGroups(groups.toList)   
     val fProbes = platforms.filterProbes(probes, pfs).toArray 
-    val mm = makeMatrix(groups.toVector, fProbes, typ)
-    setSessionData(mm)    
+    val mm = makeMatrix(groups.toVector, fProbes, typ)       
     mm.info.setPlatforms(pfs.toArray)
 //    selectProbes(probes)
     val mm2 = applyMapper(groups, mm)
-    setSessionData(mm2)
+    getSessionData.matrix = mm2    
     mm2.info
   }
 
@@ -214,7 +225,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     if (probes != null) {
       println("Refilter probes: " + probes.length)      
     }
-    val mm = getSessionData
+    val mm = getSessionData.matrix
     
 //    mm.filterData(Some(absValFilter)) 
     if (probes != null && probes.length > 0) {
@@ -230,21 +241,51 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   
   @throws(classOf[NoDataLoadedException])
   def setColumnThreshold(column: Int, threshold: java.lang.Double): ManagedMatrixInfo = {
-    val mm = getSessionData 
+    val mm = getSessionData.matrix 
     println(s"Filter column $column at $threshold")
     mm.setFilterThreshold(column, threshold)
     mm.info
   }
+  
+  private def assocSortTable(ass: AType): ExprMatrix = {
+    val key = ass.auxSortTableKey
+    if (key != null) {
+      val sm = context.auxSortMap(key)
+      val m = getSessionData.matrix.current
+      val rows = (0 until m.rows).map(m.rowAt)
+      println("Rows: " + rows.take(10))
+      println("aux: " + sm.take(10))
+      val evs = rows.map(r => 
+        sm.get(r) match {
+          case Some(v) => new ExpressionValue(v)
+          case None => new ExpressionValue(Double.NaN, 'A')
+        })
+      val evas = evs.map(v => EVArray(Seq(v)))      
+      ExprMatrix.withRows(evas)
+    } else {
+      throw new Exception(s"No sort key for $ass")
+    }        
+  }
 
   @throws(classOf[NoDataLoadedException])
-  def matrixRows(offset: Int, size: Int, sortColumn: Int,
+  def matrixRows(offset: Int, size: Int, sortKey: SortKey,
     ascending: Boolean): JList[ExpressionRow] = {
 
-    println("SortCol: " + sortColumn + " asc: " + ascending)
-    val session = getSessionData()
-    if (sortColumn != session.sortColumn || ascending != session.sortAscending) {
-      session.sort(sortColumn, ascending)
+    val session = getSessionData.matrix
+            
+    sortKey match {
+      case mc: SortKey.MatrixColumn =>        
+        if (mc.matrixIndex != session.sortColumn || 
+            ascending != session.sortAscending) {
+          session.sort(mc.matrixIndex, ascending)
+          println("SortCol: " + mc.matrixIndex + " asc: " + ascending)
+        }
+      case as: SortKey.Association =>         
+        val st = assocSortTable(as.atype)
+        session.sortWithAuxTable(st, ascending)
+        println("Sort with aux table for " + as)
     }
+    
     val mm = session.current
     val mergeMode = session.info.getPlatforms.size > 1
     
@@ -354,15 +395,15 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
   @throws(classOf[NoDataLoadedException])
   def addTwoGroupTest(test: Synthetic.TwoGroupSynthetic): Unit = 
-    getSessionData.addSynthetic(test)
+    getSessionData.matrix.addSynthetic(test)
   
   @throws(classOf[NoDataLoadedException])
   def removeTwoGroupTests(): Unit = 
-    getSessionData.removeSynthetics
+    getSessionData.matrix.removeSynthetics
     
   @throws(classOf[NoDataLoadedException])  
   def prepareCSVDownload(individualSamples: Boolean): String = {
-    val mm = getSessionData()
+    val mm = getSessionData.matrix
     val mat = if (individualSamples &&
         mm.rawUngroupedMat != null && mm.current != null) {
       val info = mm.info
@@ -401,7 +442,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
   @throws(classOf[NoDataLoadedException])
   def getGenes(limit: Int): Array[String] = {
-    val mm = getSessionData()
+    val mm = getSessionData().matrix
 
     var rowNames = mm.current.sortedRowMap.map(_._1)
     println(rowNames.take(10))
@@ -415,7 +456,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   }
   
   def sendFeedback(name: String, email: String, feedback: String): Unit = {
-    val mm = getSessionData()
+    val mm = getSessionData.matrix
     var state = "(No user state available)"
     if (mm != null) {
       if (mm.current != null) {        

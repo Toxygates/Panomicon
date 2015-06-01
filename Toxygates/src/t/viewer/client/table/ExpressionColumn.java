@@ -22,6 +22,8 @@ package t.viewer.client.table;
 
 import otgviewer.client.Utils;
 import t.common.shared.sample.ExpressionRow;
+import t.viewer.shared.table.SortKey;
+import t.viewer.shared.table.SortKey.MatrixColumn;
 
 import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.cell.client.TextCell;
@@ -30,9 +32,10 @@ import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.Column;
 
 
-public class ExpressionColumn extends Column<ExpressionRow, String> {
+public class ExpressionColumn extends Column<ExpressionRow, String> 
+	implements MatrixSortable {	
 	final int i;
-
+	
 	private static Utils.Templates TEMPLATES = GWT.create(Utils.Templates.class);
 
 	/**
@@ -40,13 +43,12 @@ public class ExpressionColumn extends Column<ExpressionRow, String> {
 	 * @param matColumn column index in the underlying data matrix (e.g. in ManagedMatrixInfo)
 	 */
 	public ExpressionColumn(TextCell tc, int matColumn) {
-		super(tc);
-		this.i = matColumn;	
+		super(tc);		
+		this.i = matColumn;
 	}
 
-	public int matrixColumn() {
-		return i;
-	}
+	public int matrixColumn() { return i; }
+	public SortKey sortKey() { return new SortKey.MatrixColumn(i); }
 	
 	public String getValue(ExpressionRow er) {
 		if (er != null) {			

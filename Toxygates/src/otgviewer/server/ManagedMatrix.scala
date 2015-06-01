@@ -283,11 +283,13 @@ class ManagedMatrix(val initProbes: Array[String],
     
   /**
    * What is the current sort column?
+   * Undefined if the last sort operation was done by an aux table.
    */
   def sortColumn: Int = _sortColumn
   
   /**
    * Is the current sort type ascending?
+   * Undefined if the last sort operation was done by an aux table.
    */
   def sortAscending: Boolean = _sortAscending
   
@@ -334,9 +336,8 @@ class ManagedMatrix(val initProbes: Array[String],
     sort(_sortColumn, _sortAscending)
   }
   
-  def sort(col: Int, ascending: Boolean): Unit = {
-      def sortData(v1: EVArray,
-                 v2: EVArray): Boolean = {
+  private def sortData(col: Int, ascending: Boolean)
+     (v1: EVArray, v2: EVArray): Boolean = {
       val ev1 = v1(col)
       val ev2 = v2(col)
       if (ev1.call == 'A' && ev2.call != 'A') {
@@ -353,10 +354,22 @@ class ManagedMatrix(val initProbes: Array[String],
         }
       }
     }
-      
+    
+  def sort(col: Int, ascending: Boolean): Unit = {    
     _sortColumn = col
     _sortAscending = ascending
-    currentMat = currentMat.sortRows(sortData)
+    currentMat = currentMat.sortRows(sortData(col, ascending))
+  }
+  
+  /**
+   * Adjoin a temporary table consisting of the same rows and one column.
+   * Sort everything by that column, then discard the temporary table.
+   */
+  def sortWithAuxTable(adj: ExprMatrix, ascending: Boolean): Unit = {
+    _sortColumn = -1    
+    val col = currentMat.columns    
+    currentMat = 
+      currentMat.modifyJointly(adj, _.sortRows(sortData(col, ascending)))._1
   }
   
   def addSynthetic(s: Synthetic): Unit = {
