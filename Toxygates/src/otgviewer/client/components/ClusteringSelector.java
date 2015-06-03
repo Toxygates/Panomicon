@@ -1,12 +1,12 @@
 package otgviewer.client.components;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.logging.Logger;
 
-import t.common.shared.SampleClass;
-import t.common.shared.SharedUtils;
-import t.common.shared.clustering.Clusterings;
+import t.common.shared.clustering.ProbeClustering;
+import t.viewer.shared.StringList;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -15,10 +15,9 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
 
-public class ClusteringSelector extends DataListenerWidget {
+public abstract class ClusteringSelector extends DataListenerWidget {
 
-	protected Logger logger;
-	private Screen screen;
+	private List<ProbeClustering> probeClusterings;
 
 	private ClListBox algorithm;
 	private ClListBox param;
@@ -27,8 +26,6 @@ public class ClusteringSelector extends DataListenerWidget {
 
 	private HorizontalPanel selector;
 
-	private Clusterings cl = new Clusterings();
-
 	class ClListBox extends ListBox {
 		ClListBox() {
 		}
@@ -36,6 +33,16 @@ public class ClusteringSelector extends DataListenerWidget {
 		void setItems(List<String> items) {
 			String oldSel = getSelected();
 			clear();
+
+			Collections.sort(items, new Comparator<String>() {
+				@Override
+				public int compare(String o1, String o2) {
+					if (o1.length() == o2.length()) {
+						return o1.compareTo(o2);
+					}
+					return (o1.length() < o2.length() ? -1 : 1);
+				}
+			});
 			for (String i : items) {
 				addItem(i);
 			}
@@ -56,10 +63,6 @@ public class ClusteringSelector extends DataListenerWidget {
 			}
 		}
 
-		void setItemsFrom(List<SampleClass> scs, String key) {
-			setItems(new ArrayList<String>(SampleClass.collect(scs, key)));
-		}
-
 		String getSelected() {
 			int i = getSelectedIndex();
 			if (i != -1) {
@@ -70,20 +73,14 @@ public class ClusteringSelector extends DataListenerWidget {
 		}
 	}
 
-	public ClusteringSelector(Screen screen) {
-		this.screen = screen;
-		logger = SharedUtils.getLogger("clusteringSelector");
-
-		// algorithms = new ArrayList<Algorithm>();
-		// algorithms.add(new Algorithm("Hierarchical"));
-
+	public ClusteringSelector() {
 		makeSelector();
-
-		update();
 	}
 
-	public void update() {
-		// TODO implement update function using SparqlService or AppInfo
+	public void setAvailable(List<ProbeClustering> probeClusterings) {
+		this.probeClusterings = probeClusterings;
+
+		initialize();
 	}
 
 	public Widget selector() {
@@ -99,10 +96,9 @@ public class ClusteringSelector extends DataListenerWidget {
 		algorithm.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
-//				changeAlgorithm(algorithm.getSelected());
+				algorithmChanged(algorithm.getSelected());
 			}
 		});
-		algorithm.setItems(cl.getNames());
 		grid.setText(0, 0, "Algorithm");
 		grid.setWidget(1, 0, algorithm);
 
@@ -110,7 +106,7 @@ public class ClusteringSelector extends DataListenerWidget {
 		param.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
-//				changeParam(param.getSelected());
+				paramChanged(param.getSelected());
 			}
 		});
 		grid.setText(0, 1, "K");
@@ -120,17 +116,16 @@ public class ClusteringSelector extends DataListenerWidget {
 		clustering.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
-//				changeClustering(clustering.getSelected());
+				clusteringChanged(clustering.getSelected());
 			}
 		});
 		grid.setText(0, 2, "Clustering");
 		grid.setWidget(1, 2, clustering);
-//
-//		// screen.appInfo().predefinedProbeLists()
-		cluster = new ListChooser(screen.appInfo().predefinedProbeLists(), "probes", false) {
+
+		cluster = new ListChooser(new ArrayList<StringList>(), "probes", false) {
 			@Override
 			protected void itemsChanged(List<String> items) {
-				ClusteringSelector.this.itemsChanged(items);
+				ClusteringSelector.this.clusterChanged(items);
 			}
 		};
 		addListener(cluster);
@@ -141,23 +136,84 @@ public class ClusteringSelector extends DataListenerWidget {
 		selector.add(grid);
 	}
 
-//	private void changeAlgorithm(String algorithm) {
-//		param.setItems(Arrays.asList(cl.lookup(algorithm).));
-//	}
-//
-//	private void changeParam(String param) {
-//		clustering.setItems(Arrays.asList(cl.lookup(algorithm.getSelected()).getAllClusterings(param)));
-//	}
-//
-//	private void changeClustering(String param,String clustering) {
-//		cluster.setItems(Arrays.asList(cl.lookup(algorithm.getSelected()).getAllClusters(param, clustering)));
-//	}
+	void initialize() {
+		algorithm.setItems(new ArrayList<String>(ProbeClustering
+				.collectAlgorithm(probeClusterings)));
 
-	void changeFrom(int sel) {
+		String a = algorithm.getSelected();
+		if (a != null) {
+			changeParamsFrom(new ArrayList<ProbeClustering>(
+					ProbeClustering.filterByAlgorithm(probeClusterings, a)));
+		}
 	}
 
-	// Override this
-	public void itemsChanged(List<String> items) {
+	void changeParamsFrom(List<ProbeClustering> pc) {
+		param.setItems(new ArrayList<String>(ProbeClustering.collectParam1(pc)));
+
+		String p = param.getSelected();
+		if (p != null) {
+			changeClusteringFrom(new ArrayList<ProbeClustering>(
+					ProbeClustering.filterByParam1(pc, p)));
+		}
 	}
 
+	void changeClusteringFrom(List<ProbeClustering> pc) {
+		clustering.setItems(new ArrayList<String>(ProbeClustering
+				.collectName(pc)));
+
+		String c = clustering.getSelected();
+		if (c != null) {
+			changeClusterFrom(new ArrayList<ProbeClustering>(
+					ProbeClustering.filterByName(pc, c)));
+		}
+	}
+
+	void changeClusterFrom(List<ProbeClustering> pc) {
+		if (pc.size() != 1) {
+			throw new IllegalArgumentException(
+					"Only one item is expected, but given list contains "
+							+ pc.size() + " items");
+		}
+
+		cluster.setLists(pc.get(0).getClusters());
+	}
+
+	void algorithmChanged(String algorithm) {
+		if (algorithm == null) {
+			return;
+		}
+		changeParamsFrom(new ArrayList<ProbeClustering>(
+				ProbeClustering.filterByAlgorithm(probeClusterings, algorithm)));
+	}
+
+	void paramChanged(String param) {
+		if (param == null) {
+			return;
+		}
+
+		List<ProbeClustering> filtered = new ArrayList<ProbeClustering>(
+				ProbeClustering.filterByAlgorithm(probeClusterings,
+						algorithm.getSelected()));
+
+		changeClusteringFrom(new ArrayList<ProbeClustering>(
+				ProbeClustering.filterByParam1(filtered, param)));
+	}
+
+	void clusteringChanged(String clustering) {
+		if (clustering == null) {
+			return;
+		}
+
+		List<ProbeClustering> filtered = new ArrayList<ProbeClustering>(
+				ProbeClustering.filterByAlgorithm(probeClusterings,
+						algorithm.getSelected()));
+		filtered = new ArrayList<ProbeClustering>(
+				ProbeClustering.filterByParam1(filtered, param.getSelected()));
+
+		changeClusterFrom(new ArrayList<ProbeClustering>(
+				ProbeClustering.filterByName(filtered, clustering)));
+	}
+
+	// Expected to be overridden by caller
+	public abstract void clusterChanged(List<String> items);
 }

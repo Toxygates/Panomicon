@@ -20,9 +20,7 @@
 
 package t.common.shared.clustering;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Clusterings {
@@ -38,18 +36,4 @@ public class Clusterings {
 	public static Algorithm lookup(String name) {
 		return algos.get(name);
 	}
-
-	public List<String> getNames() {
-		return new ArrayList<String>(algos.keySet());
-	}
-
-	public String[] getAllClustering(String algorithmName, String param1) {
-		return lookup(algorithmName).getAllClusterings(param1);
-	}
-
-	public String[] getAllClusters(String algorithmName, String param1,
-			String clustering) {
-		return lookup(algorithmName).getAllClusters(param1, clustering);
-	}
-
 }

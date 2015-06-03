@@ -33,22 +33,8 @@ public enum Algorithm {
 		public String[] getAllClusterings(String param1) {
 			List<String> list = new ArrayList<String>();
 
-			String[] classes = { "LN", "LV", "SP" };
-
-			for (String c : classes) {
+			for (String c : new String[]{ "LN", "LV", "SP" }) {
 				list.add(c + "_K" + param1);
-			}
-
-			return list.toArray(new String[0]);
-		}
-		@Override
-		public String[] getAllClusters(String param1, String clustering) {
-			List<String> list = new ArrayList<String>();
-
-			int k = Integer.parseInt(param1);
-
-			for (int i = 1; i <= k;++i) {
-				list.add(clustering + "_" + i);
 			}
 
 			return list.toArray(new String[0]);
@@ -84,17 +70,12 @@ public enum Algorithm {
 
 	// Override this
 	public String[] getParam1Items() {
-		return null;
+		throw new RuntimeException("Algorithm#getParam1Items is not implemented");
 	}
 
 	// Override this
 	public String[] getAllClusterings(String param1) {
-		return null;
-	}
-
-	// Override this
-	public String[] getAllClusters(String param1, String clustering) {
-		return null;
+		throw new RuntimeException("Algorithm#getAllClusterings is not implemented");
 	}
 
 }
