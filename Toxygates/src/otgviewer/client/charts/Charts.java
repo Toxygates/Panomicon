@@ -199,6 +199,7 @@ public class Charts {
 				}			
 			});
 		} else {
+			//We already have the necessary samples, can finish immediately
 			finishRowCharts(screen, probes, vt, groups, barcodes, acceptor);
 		}
 	}

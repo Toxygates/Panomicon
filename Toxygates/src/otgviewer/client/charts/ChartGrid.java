@@ -71,7 +71,10 @@ abstract public class ChartGrid<D extends Data> extends Composite {
 			String[] minsOrMeds, boolean columnsAreMins, int totalWidth) {
 		super();
 		this.factory = factory;
+		
+		//TODO use something like SampleClass or MultiFilter instead if possible
 		this.rowFilters = rowFilters;		
+		//TODO defer organism handling to schema, if it's needed
 		this.organisms = organisms;
 		this.minsOrMeds = minsOrMeds;
 		this.dataset = dataset;		

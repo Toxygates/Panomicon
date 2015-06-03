@@ -21,6 +21,7 @@
 package otgviewer.client.charts;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,21 +35,20 @@ import otgviewer.shared.Group;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Series;
 import t.common.shared.DataSchema;
+import t.common.shared.HasClass;
 import t.common.shared.SampleClass;
 import t.common.shared.SampleMultiFilter;
 import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.ExpressionValue;
-import t.viewer.client.rpc.MatrixService;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.Unit;
-
-import com.google.gwt.core.client.GWT;
 
 /**
  * This class brings series and row data into a unified interface for the purposes of
  * chart drawing.
+ * TODO: simplify
  */
 abstract public class DataSource {
 	
@@ -73,20 +73,21 @@ abstract public class DataSource {
 		this.schema = schema;				
 	}
 	
-	protected void initParams(boolean controlMedVals) {
+	protected void initParams(List<? extends HasClass> from, 
+			boolean controlMedVals) {
 		try {
 			String minorParam = schema.minorParameter();
 			String medParam = schema.mediumParameter();
-			Set<String> minorVals = SampleClass.collectInner(chartSamples, 
+			Set<String> minorVals = SampleClass.collectInner(from, 
 					minorParam);			
 			_minorVals = minorVals.toArray(new String[0]);
 			schema.sort(minorParam, _minorVals);
 			
 			Set<String> medVals = new HashSet<String>();
-			for (ChartSample s : chartSamples) {
+			for (HasClass f : from) {
 				//TODO generalise control-check better
-				if (controlMedVals || !schema.isControlValue(schema.getMedium(s))) {
-					medVals.add(schema.getMedium(s));
+				if (controlMedVals || !schema.isControlValue(schema.getMedium(f))) {
+					medVals.add(schema.getMedium(f));
 				}
 			}
 			_mediumVals = medVals.toArray(new String[0]);
@@ -138,7 +139,7 @@ abstract public class DataSource {
 					chartSamples.add(cs);
 				}
 			}
-			initParams(false);
+			initParams(chartSamples, false);
 		}		
 	}
 	
@@ -148,17 +149,17 @@ abstract public class DataSource {
 	static class ExpressionRowSource extends DataSource {
 		protected OTGSample[] samples;
 		
-		ExpressionRowSource(DataSchema schema, OTGSample[] samples, List<ExpressionRow> rows) {
+		ExpressionRowSource(DataSchema schema, OTGSample[] samples, 
+				List<ExpressionRow> rows) {
 			super(schema);
-			this.samples = samples;
-			logger.info("ER source: " + samples.length + " samples");
-			
+			this.samples = samples;			
 			addSamplesFromBarcodes(samples, rows);
-			initParams(true);
+			initParams(Arrays.asList(samples), true);
 		}
 		
 		protected void addSamplesFromBarcodes(OTGSample[] samples, List<ExpressionRow> rows) {
-			logger.info("Add samples from " + samples.length + " samples and " + rows.size() + " rows");
+			logger.info("Add samples from " + samples.length + " samples and " + 
+					rows.size() + " rows");
 			for (int i = 0; i < samples.length; ++i) {
 				for (ExpressionRow er : rows) {
 					ExpressionValue ev = er.getValue(i);
@@ -174,8 +175,7 @@ abstract public class DataSource {
 	 * An expression row source that dynamically loads data.
 	 */
 	static class DynamicExpressionRowSource extends ExpressionRowSource {
-		protected static final MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
-				.create(MatrixService.class);
+		protected final MatrixServiceAsync matrixService;				
 		
 		protected String[] probes;
 		protected ValueType type;
@@ -187,9 +187,11 @@ abstract public class DataSource {
 			this.probes = probes;
 			this.type = vt;		
 			this.screen = screen;
+			this.matrixService = screen.matrixService();
 		}
 		
-		void loadData(final SampleMultiFilter smf, final ColorPolicy policy, final SampleAcceptor acceptor) {
+		void loadData(final SampleMultiFilter smf, final ColorPolicy policy,
+				final SampleAcceptor acceptor) {
 			logger.info("Dynamic source: load for " + smf);
 			
 			final List<OTGSample> useSamples = new ArrayList<OTGSample>();
@@ -210,19 +212,21 @@ abstract public class DataSource {
 
 				@Override
 				public void handleSuccess(final FullMatrix mat) {
-					addSamplesFromBarcodes(useSamples.toArray(new OTGSample[0]), mat.rows());	
-					getSSamples(smf, policy, acceptor);
+					addSamplesFromBarcodes(useSamples.toArray(new OTGSample[0]), mat.rows());					
+					getLoadedSamples(smf, policy, acceptor);
 				}					
 			});
 			
 		}
 
+		//TODO think about the way these methods interact with superclass
+		//- bad design
 		@Override
 		void getSamples(SampleMultiFilter smf, ColorPolicy policy, SampleAcceptor acceptor) {
 			loadData(smf, policy, acceptor);			
 		}
 		
-		void getSSamples(SampleMultiFilter smf, ColorPolicy policy, SampleAcceptor acceptor) {
+		protected void getLoadedSamples(SampleMultiFilter smf, ColorPolicy policy, SampleAcceptor acceptor) {
 			super.getSamples(smf, policy, acceptor);
 		}		
 	}	
@@ -262,8 +266,8 @@ abstract public class DataSource {
 
 				@Override
 				public void handleSuccess(final FullMatrix mat) {
-					addSamplesFromUnits(useUnits, mat.rows());	
-					getSSamples(smf, policy, acceptor);
+					addSamplesFromUnits(useUnits, mat.rows());					
+					getLoadedSamples(smf, policy, acceptor);
 				}					
 			});			
 		}

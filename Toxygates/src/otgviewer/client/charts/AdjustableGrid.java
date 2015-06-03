@@ -186,17 +186,20 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
 		return new ColorPolicy.MapColorPolicy(colors);
 	}
 	
-	//vsMinor is the vs-minor-ness of each individual sub-chart. So the overall grid will be vs. dose 	
-	//(in its columns) if each sub-chart is vs.minor.
-	private void gridFor(final boolean vsMinor, final String[] columns, final String[] useCompounds, 
+	//vsMinor is the vs-minor-ness of each individual sub-chart. So the overall grid will 
+	// be vs. dose in its columns) if each sub-chart is vs.minor.
+	private void gridFor(final boolean vsMinor, final String[] columns, 
+			final String[] useMajors, 
 			final List<ChartGrid<D>> intoList, final SimplePanel intoPanel) {
 		
 		String columnParam = vsMinor ? schema.mediumParameter() : schema.minorParameter();
-		String[] preColumns = (columns == null ? (vsMinor ? source.mediumVals() : source.minorVals()) : columns);
-		final String[] useColumns = schema.filterValuesForDisplay(valueType, columnParam, preColumns);		
+		String[] preColumns = (columns == null ? (vsMinor ? source.mediumVals() : 
+			source.minorVals()) : columns);
+		final String[] useColumns = schema.filterValuesForDisplay(valueType, 
+				columnParam, preColumns);		
 		
 		SampleMultiFilter smf = new SampleMultiFilter();
-		smf.addPermitted(schema.majorParameter(), useCompounds);
+		smf.addPermitted(schema.majorParameter(), useMajors);
 		smf.addPermitted(columnParam, useColumns);
 		
 		if (computedWidth == 0) {
@@ -211,38 +214,38 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
 		
 		source.getSamples(smf, makeGroupPolicy(),
 				new DataSource.SampleAcceptor() {
-					@Override
-					public void accept(List<ChartSample> samples) {
-						allSamples.addAll(samples);						
-						DS ct = factory.dataset(samples, samples, 
-								vsMinor ? source.minorVals() : source.mediumVals(), vsMinor);
-												
-						ChartGrid<D> cg = factory.grid(screen, ct,
-								useCompounds == null ? majorVals : Arrays.asList(useCompounds),
+			@Override
+			public void accept(List<ChartSample> samples) {
+				allSamples.addAll(samples);						
+				DS ct = factory.dataset(samples, samples, 
+						vsMinor ? source.minorVals() : source.mediumVals(), vsMinor);
+
+				ChartGrid<D> cg = factory.grid(screen, ct,
+						useMajors == null ? majorVals : Arrays.asList(useMajors),
 								organisms, true,
 								useColumns, !vsMinor, TOTAL_WIDTH);
-						
-						intoList.add(cg);
-						intoPanel.add(cg);
-						intoPanel.setHeight("");
 
-						expectedGrids -= 1;
-						if (expectedGrids == 0) {
-							double minVal = findMinValue();
-							double maxVal = findMaxValue();							
-							// got all the grids
-							// harmonise the column count across all grids
-							int maxCols = 0;
-							for (ChartGrid<D> gr : intoList) {
-								if (gr.getMaxColumnCount() > maxCols) {
-									maxCols = gr.getMaxColumnCount();
-								}
-							}
-							for (ChartGrid<D> gr : intoList) {
-								gr.adjustAndDisplay(maxCols, minVal, maxVal);
-							}
+				intoList.add(cg);
+				intoPanel.add(cg);
+				intoPanel.setHeight("");
+
+				expectedGrids -= 1;
+				if (expectedGrids == 0) {
+					double minVal = findMinValue();
+					double maxVal = findMaxValue();							
+					// got all the grids
+					// harmonise the column count across all grids
+					int maxCols = 0;
+					for (ChartGrid<D> gr : intoList) {
+						if (gr.getMaxColumnCount() > maxCols) {
+							maxCols = gr.getMaxColumnCount();
 						}
 					}
+					for (ChartGrid<D> gr : intoList) {
+						gr.adjustAndDisplay(maxCols, minVal, maxVal);
+					}
+				}
+			}
 		});
 
 	}
@@ -291,7 +294,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
 			} else {
 				//TODO when is this case used? fuse with above?
 				SimplePanel sp = makeGridPanel(majorVals.toArray(new String[0]));				
-				ivp.add(sp);
+				ivp.add(sp);				
 				expectedGrids += 1;
 				gridFor(vsTime, columns, null, grids, sp);							
 			}			
@@ -351,7 +354,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
 		String prefItem;
 		if (chartCombo.getSelectedIndex() == 0) {
 			prefItem = findPreferredItem(true);
-			logger.info("Preferred medium: " + prefItem);			
+			logger.info("Preferred medium: " + prefItem);
 			for (String mv: source.mediumVals()) {
 				if (!schema.isControlValue(mv)) {
 					//TODO for NI values in OTG
@@ -362,7 +365,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
 			}
 		} else {		
 			prefItem = findPreferredItem(false);
-			logger.info("Preferred minor: " + prefItem);			
+			logger.info("Preferred minor: " + prefItem);
 			for (String minv: source.minorVals()) {
 				chartSubtypeCombo.addItem(minv);
 				chartSubtypes.add(minv);				

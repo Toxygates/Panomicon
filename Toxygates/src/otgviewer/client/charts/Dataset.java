@@ -30,6 +30,12 @@ import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 
+/**
+ * A Dataset can construct Data objects based on SampleClass filters.
+ * Each Data object can support one chart.
+ *
+ * @param <D>
+ */
 abstract public class Dataset<D extends Data> {
 
 	protected List<ChartSample> samples;
@@ -78,13 +84,13 @@ abstract public class Dataset<D extends Data> {
 	}
 	
 	/**
-	 * Get the barcode corresponding to a particular row and column.
+	 * Get the sample corresponding to a particular row and column.
 	 * May be null.
 	 * @param row
 	 * @param column
 	 * @return
 	 */
-	OTGSample getBarcode(int row, int column) {
+	OTGSample getSample(int row, int column) {
 		return null;
 	}
 
@@ -93,7 +99,7 @@ abstract public class Dataset<D extends Data> {
 	 * and (optionally) probe.
 	 * If a time is given, the table will be grouped by dose.
 	 * If a dose is given, the table will be grouped by time.
-	 * 
+	 * @param filter Sample filter
 	 */
 	abstract public D makeData(SampleClass filter, @Nullable String probe);
 	
@@ -108,6 +114,7 @@ abstract public class Dataset<D extends Data> {
 		}
 		return null;
 	}
+	
 	abstract protected void makeColumns(D dt, List<ChartSample> samples);
 	
 }

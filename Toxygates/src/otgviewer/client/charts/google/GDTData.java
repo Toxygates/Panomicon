@@ -34,7 +34,6 @@ public class GDTData extends Data {
 
 	@Override
 	public int numberOfColumns() {
-		// TODO Auto-generated method stub
 		return data.getNumberOfColumns();
 	}
 	
