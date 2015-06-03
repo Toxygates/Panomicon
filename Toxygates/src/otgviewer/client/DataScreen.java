@@ -30,6 +30,7 @@ import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.Group;
+import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.RichTable.HideableColumn;
 import t.viewer.shared.ItemList;
@@ -59,22 +60,23 @@ public class DataScreen extends Screen {
 		super("View data", key, true, man,
 				resources.dataDisplayHTML(), resources.dataDisplayHelp());
 		et = makeExpressionTable();
-        cs = makeClusteringSelector();
-    }
-    
-    private ClusteringSelector makeClusteringSelector() {
-      return new ClusteringSelector(this) {
-		@Override
-		public void itemsChanged(List<String> items) {
-			updateProbes(items);
-		}
-      };
-    }
-	
+		cs = makeClusteringSelector();
+		cs.setAvailable(ProbeClustering.createFrom(appInfo().predefinedProbeLists()));
+	}
+
+	private ClusteringSelector makeClusteringSelector() {
+		return new ClusteringSelector() {
+			@Override
+			public void clusterChanged(List<String> items) {
+				updateProbes(items);
+			}
+		};
+	}
+
 	protected ExpressionTable makeExpressionTable() {
 		return new ExpressionTable(this);
 	}
-	
+
 	@Override 
 	protected void addToolbars() {
 		super.addToolbars();
@@ -122,7 +124,7 @@ public class DataScreen extends Screen {
 		addMenu(mActions);
 		
 		mb = new MenuBar(true);
-		for (final HideableColumn c: et.getHideableColumns()) {
+		for (final HideableColumn c : et.getHideableColumns()) {
 			new TickMenuItem(mb, c.columnInfo().title(), c.visible()) {
 				@Override
 				public void stateChange(boolean newState) {
