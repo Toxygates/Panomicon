@@ -23,6 +23,8 @@ package otgviewer.client.components;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -181,7 +183,19 @@ public class ListChooser extends DataListenerWidget {
 	private void refreshSelector() {
 		listBox.clear();
 		listBox.addItem("Click to see available lists");
-		for (String s: lists.keySet()) {
+		
+		List<String> sorted = new ArrayList<String>(lists.keySet());
+		Collections.sort(sorted, new Comparator<String>() {
+			@Override
+			public int compare(String o1, String o2) {
+				if (o1.length() == o2.length()) {
+					return o1.compareTo(o2);
+				}
+				return (o1.length() < o2.length() ? -1 : 1);
+			}
+		});
+
+		for (String s: sorted) {
 			listBox.addItem(s);
 		}
 	}
@@ -236,7 +250,8 @@ public class ListChooser extends DataListenerWidget {
 	 */
 	public void setLists(List<ItemList> itemLists) {
 		lists.clear();
-		otherTypeLists.clear();		
+		otherTypeLists.clear();
+		
 		for (ItemList il : itemLists) {
 			if (il.type().equals(listType) && (il instanceof StringList)) {
 				StringList sl = (StringList) il;
