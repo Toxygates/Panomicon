@@ -289,7 +289,6 @@ class ManagedMatrix(val initProbes: Array[String],
   
   /**
    * Is the current sort type ascending?
-   * Undefined if the last sort operation was done by an aux table.
    */
   def sortAscending: Boolean = _sortAscending
   
@@ -366,7 +365,8 @@ class ManagedMatrix(val initProbes: Array[String],
    * Sort everything by that column, then discard the temporary table.
    */
   def sortWithAuxTable(adj: ExprMatrix, ascending: Boolean): Unit = {
-    _sortColumn = -1    
+    _sortColumn = -1
+    _sortAscending = ascending
     val col = currentMat.columns    
     currentMat = 
       currentMat.modifyJointly(adj, _.sortRows(sortData(col, ascending)))._1

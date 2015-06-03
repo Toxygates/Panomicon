@@ -125,7 +125,8 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   }
   
   protected class MatrixState {
-    var matrix: ManagedMatrix = _    
+    var matrix: ManagedMatrix = _
+    var sortAssoc: AType = _
   }
   
   def getSessionData(): MatrixState = {    
@@ -280,10 +281,16 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
           session.sort(mc.matrixIndex, ascending)
           println("SortCol: " + mc.matrixIndex + " asc: " + ascending)
         }
-      case as: SortKey.Association =>         
-        val st = assocSortTable(as.atype)
-        session.sortWithAuxTable(st, ascending)
-        println("Sort with aux table for " + as)
+      case as: SortKey.Association =>    
+        val old = getSessionData.sortAssoc
+        val nw = as.atype
+        if (old == null || nw != old
+            || ascending != session.sortAscending) {
+            getSessionData.sortAssoc = nw
+            val st = assocSortTable(as.atype)
+            session.sortWithAuxTable(st, ascending)
+            println("Sort with aux table for " + as)
+        }
     }
     
     val mm = session.current
