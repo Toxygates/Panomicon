@@ -33,9 +33,9 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.InteractionDialog;
 import otgviewer.client.dialog.TargetMineSyncDialog;
+import t.common.shared.ItemList;
 import t.common.shared.SharedUtils;
-import t.viewer.shared.ItemList;
-import t.viewer.shared.StringList;
+import t.common.shared.StringList;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;

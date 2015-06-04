@@ -20,7 +20,7 @@
 
 package otgviewer.client.targetmine;
 
-import t.viewer.shared.StringList;
+import t.common.shared.StringList;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 

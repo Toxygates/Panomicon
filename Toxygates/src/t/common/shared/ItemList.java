@@ -18,14 +18,12 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.shared;
+package t.common.shared;
 
 import static otgviewer.client.components.StorageParser.packList;
 
 import java.io.Serializable;
 import java.util.Collection;
-
-import t.common.shared.Packable;
 
 /**
  * A typed, named list of items.

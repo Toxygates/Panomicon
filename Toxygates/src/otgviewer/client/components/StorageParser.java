@@ -31,9 +31,9 @@ import javax.annotation.Nullable;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import t.common.shared.DataSchema;
+import t.common.shared.ItemList;
 import t.common.shared.Packable;
 import t.common.shared.SharedUtils;
-import t.viewer.shared.ItemList;
 
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;

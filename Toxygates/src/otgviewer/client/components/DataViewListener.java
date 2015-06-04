@@ -25,8 +25,8 @@ import java.util.List;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import t.common.shared.Dataset;
+import t.common.shared.ItemList;
 import t.common.shared.SampleClass;
-import t.viewer.shared.ItemList;
 
 public interface DataViewListener {
 	public void datasetsChanged(Dataset[] ds);
