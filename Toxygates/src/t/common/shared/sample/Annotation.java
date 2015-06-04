@@ -26,8 +26,8 @@ import java.util.List;
 /**
  * A set of annotations (such as chemical data and morphological data)
  * corresponding to a microarray sample.
- * @author johan
  */
+@SuppressWarnings("serial")
 public class Annotation implements Serializable {
 	public Annotation(String id, List<Entry> annotations) {
 		_id = id;
@@ -44,8 +44,6 @@ public class Annotation implements Serializable {
 	/**
 	 * An entry has a string value and/or a numerical value. The user needs to track
 	 * which value has been set in some external way.
-	 * @author johan
-	 *
 	 */
 	public static class Entry implements Serializable {
 		public String description;

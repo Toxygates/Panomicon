@@ -30,11 +30,10 @@ import t.common.shared.sample.ExpressionValue;
  * An expression value series that fixes all parameters except one, which
  * varies on the x-axis.
  */
+@SuppressWarnings("serial")
 public class Series implements HasClass, Serializable {
 
-	public Series() {
-		
-	}
+	public Series() { }
 	
 	/**
 	 * Construct a new series.

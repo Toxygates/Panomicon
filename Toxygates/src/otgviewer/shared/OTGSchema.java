@@ -27,6 +27,7 @@ import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.ValueType;
 
+@SuppressWarnings("serial")
 public class OTGSchema extends DataSchema {	
 	public static String[] allTimes = new String[] { "2 hr", "3 hr", "6 hr", "8 hr", "9 hr", "24 hr", "4 day", "8 day", "15 day", "29 day" };
 	public static String[] allDoses = new String[] { "Control", "Low", "Middle", "High" };

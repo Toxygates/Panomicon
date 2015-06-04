@@ -26,6 +26,7 @@ import java.util.Set;
 
 import t.common.shared.ManagedItem;
 
+@SuppressWarnings("serial")
 public class Batch extends ManagedItem {
 
 	private int numSamples;

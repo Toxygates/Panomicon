@@ -29,6 +29,7 @@ import java.util.Collection;
  * Current supported types are "probes" and "compounds".
  * However, lists of type probes may actually be gene identifiers (entrez).
  */
+@SuppressWarnings("serial")
 abstract public class ItemList implements Packable, Serializable {
 
 	protected String type;

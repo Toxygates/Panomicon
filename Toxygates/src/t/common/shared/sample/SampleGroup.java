@@ -33,6 +33,7 @@ import t.common.shared.SharedUtils;
  *
  * @param <S>
  */
+@SuppressWarnings("serial")
 public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializable, Comparable<SampleGroup<?>> {
 
 	/**

@@ -22,6 +22,7 @@ package t.common.shared;
 
 import java.util.Date;
 
+@SuppressWarnings("serial")
 public class Dataset extends ManagedItem {
 
 	public Dataset() { }

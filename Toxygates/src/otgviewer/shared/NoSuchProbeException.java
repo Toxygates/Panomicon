@@ -20,6 +20,7 @@
 
 package otgviewer.shared;
 
+@SuppressWarnings("serial")
 public class NoSuchProbeException extends ServerError {
 
 	public NoSuchProbeException() {}

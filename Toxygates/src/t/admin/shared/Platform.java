@@ -24,6 +24,7 @@ import java.util.Date;
 
 import t.common.shared.ManagedItem;
 
+@SuppressWarnings("serial")
 public class Platform extends ManagedItem {
 
 	private int numProbes;	

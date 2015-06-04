@@ -37,6 +37,7 @@ import java.util.Set;
  * Optional keys: compound_name, exposure_time, dose_level
  * DataSchema should be used to identify keys, rather than hardcoding strings.
  */
+@SuppressWarnings("serial")
 public class SampleClass implements Serializable, Packable {
 
 	/*

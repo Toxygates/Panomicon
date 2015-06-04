@@ -23,6 +23,7 @@ package t.common.shared;
 import java.util.Arrays;
 import java.util.Collection;
 
+@SuppressWarnings("serial")
 public class StringList extends ItemList {
 
 	private String[] items;

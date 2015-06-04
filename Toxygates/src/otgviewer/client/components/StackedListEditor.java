@@ -222,7 +222,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 			final BrowseCheck bc = this;
 			this.selTable = new StringSelectionTable("", itemTitle) {
 				protected void selectionChanged(Set<String> selected) {
-					bc.logger.info("Send selection " + selected.size());
+					BrowseCheck.logger.info("Send selection " + selected.size());
 					stackedEditor.setSelection(selected, bc);					
 				}
 			};			
