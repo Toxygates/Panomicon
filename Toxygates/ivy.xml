@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="2.0" 
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation=
+                   "http://ant.apache.org/ivy/schemas/ivy.xsd">
+  <info organisation="level-five" module="t" />
+        
+  <dependencies>
+
+  <dependency org="org.apache.commons" name="commons-math3" rev="latest.integration"/>
+  
+  <dependency org="org.openrdf.sesame" name="sesame-repository-manager" rev="latest.integration"/>
+  <dependency org="org.openrdf.sesame" name="sesame-repository-sparql" rev="latest.integration"/>
+  <dependency org="com.fallabs" name="kyotocabinet-java" rev="latest.integration"/>
+  
+  <!-- for GWT upload -->
+  <!-- This fails to resolve some of its dependencies as of 15/1/27.
+  In addition, pulls in all of GWT -->
+  <!-- r 1.0.3 is compatible with GWT 2.7 -->
+  <!-- <dependency org="com.googlecode.gwtupload" name="gwtupload" rev="1.0.3"/> -->  
+  <dependency org="commons-fileupload" name="commons-fileupload" rev="latest.integration"/>
+  <dependency org="commons-io" name="commons-io" rev="latest.integration"/>   
+  
+  <dependency org="javax.mail" name="mail" rev="latest.integration"/>
+  
+  <!-- Ideally get this to work eventually.
+  
+  https://github.com/alexkalderimis/intermine-ws-client.java/blob/master/pom.xml  
+  <dependency org="org.intermine.webservice.client" name="intermine-webservice-client" rev="1.0-SNAPSHOT"/>
+  -->
+  
+  <!-- for intermine -->
+  <!--
+  <dependency org="stax" name="stax-api" rev="1.0.1"/>
+  <dependency org="stax" name="stax" rev="1.2.0"/>
+  -->  
+  
+  <dependency org="org.json" name="json" rev="latest.integration"/>
+  <dependency org="commons-lang" name="commons-lang" rev="latest.integration"/>
+  <dependency org="org.apache.httpcomponents" name="fluent-hc" rev="latest.integration"/>
+  
+  <!-- This pulls in all of the scala libraries and could be included in a dev
+  configuration but not in production -->
+  <!-- <dependency org="org.scalatest" name="scalatest_2.10" rev="2.2.3"/> -->
+  
+  </dependencies>
+</ivy-module>

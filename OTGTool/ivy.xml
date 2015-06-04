@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="2.0" 
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation=
+                   "http://ant.apache.org/ivy/schemas/ivy.xsd">
+  <info organisation="level-five"
+        module="t"
+        />
+        
+  <dependencies>
+  <dependency org="org.apache.commons" name="commons-math3" rev="latest.integration"/>
+  <dependency org="org.apache.httpcomponents" name="httpclient" rev="latest.integration"/>  
+    
+  <dependency org="org.openrdf.sesame" name="sesame-repository-manager" rev="latest.integration"/>
+  <dependency org="org.openrdf.sesame" name="sesame-repository-sparql" rev="latest.integration"/>
+  <dependency org="com.fallabs" name="kyotocabinet-java" rev="latest.integration"/>
+  
+  <!-- <dependency org="org.scalatest" name="scalatest_2.10" rev="2.2.3"/> -->
+  
+  </dependencies>
+</ivy-module>

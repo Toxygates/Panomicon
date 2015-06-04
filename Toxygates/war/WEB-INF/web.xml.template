@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+              http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         version="2.5"
+         xmlns="http://java.sun.com/xml/ns/javaee">
+
+	<context-param>
+		<param-name>repositoryURL</param-name>
+		<param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1</param-value>
+	</context-param>
+	<context-param>
+		<param-name>repositoryName</param-name>
+		<param-value>ttest</param-value>
+	</context-param>
+	<context-param>		
+		<param-name>instanceName</param-name>
+		<!-- The concrete parameter value will be filled in by
+		scripts like new_instance.public.sh -->
+		<param-value>##instanceName##</param-value>		
+	</context-param>
+	<context-param>
+		<param-name>repositoryUser</param-name>
+		<param-value>ttest</param-value>
+	</context-param>
+	<context-param>
+		<param-name>repositoryPassword</param-name>
+		<param-value>ttest</param-value>
+	</context-param>	
+	<context-param>
+		<param-name>dataDir</param-name>
+		<param-value>/opt/toxygates-dev</param-value>
+	</context-param>
+	<context-param>
+		<param-name>matrixDbOptions</param-name>
+		<param-value>#bnum=6250000#pccap=1073741824#msiz=4294967296</param-value>
+	</context-param>
+ 	<context-param>
+		<param-name>csvDir</param-name>
+		<param-value>/var/lib/tomcat/webapps/toxygates/csv/</param-value>
+	</context-param>
+	<context-param>
+		<param-name>csvUrlBase</param-name>
+		<param-value>http://toxygates.nibiohn.go.jp:8080/toxygates/csv</param-value>
+	</context-param>	
+	<context-param>
+		<param-name>feedbackReceivers</param-name>
+		<param-value>jtnystrom@gmail.com,kenji@nibiohn.go.jp,y-igarashi@nibiohn.go.jp</param-value>
+	</context-param>
+	
+  <!-- Servlets -->
+	<servlet>
+		<servlet-name>sparqlServlet</servlet-name>
+		<servlet-class>otgviewer.server.rpc.SparqlServiceImpl</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>seriesServlet</servlet-name>
+		<servlet-class>otgviewer.server.rpc.SeriesServiceImpl</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>matrixServlet</servlet-name>
+		<servlet-class>otgviewer.server.rpc.MatrixServiceImpl</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>sparqlServlet</servlet-name>
+		<url-pattern>/toxygates/sparql</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>seriesServlet</servlet-name>
+		<url-pattern>/toxygates/series</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>matrixServlet</servlet-name>
+    	<url-pattern>/toxygates/matrix</url-pattern>
+  	</servlet-mapping>
+  	
+  	<servlet>
+		<servlet-name>targetmineServlet</servlet-name>
+		<servlet-class>otgviewer.server.targetmine.TargetmineServiceImpl</servlet-class>
+	</servlet>
+  	
+	
+  <!-- Default page to serve -->
+  <welcome-file-list>
+    <welcome-file>toxygates.html</welcome-file>
+  </welcome-file-list>
+
+<!-- The closing </webapp> will be filled in by scripts like 
+new_instance.public.sh -->

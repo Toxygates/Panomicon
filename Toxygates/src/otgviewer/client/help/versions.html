@@ -1,0 +1,52 @@
+<h3>Toxygates version history</h3>
+
+<H4>20140612</H4>
+Fixed a bug that prevented probes from being selected (for example by pathway) in some cases.
+Changed the popup charts to select time/dose intelligently based on user-defined groups.
+Fixed a bug in TargetMine gene list import.
+Added an information message about the number of genes for the current species that 
+were successfully imported from TargetMine.
+
+<H4>20140410</H4>
+This version has the following major improvements:
+<ul>
+<li><b>A feedback system is available.</b> We urge you to send us comments or questions. Please see the help menu above.</li>
+<li>The menu structure has been reorganised.</li>
+<li>Gene and compound lists can be named and saved.</li>
+<li>Compound lists can be used to control compound ranking.</li>
+<li>TargetMine export/import of gene lists has been strengthened. 
+This feature now synchronises with a TargetMine user account.</li>
+<li>The global value filter has been replaced by individual filtering for columns.</li>
+<li>Control samples can now to be charted (in the case of normalized intensity values).</li>
+<li>The auto-generated names for sample groups are now more helpful.</li>
+<li>A layout issue on the probe selection screen that caused the UI to not resize properly 
+when the window was resized was fixed.</li>
+<li>An information popup that describes the samples for a given checkbox was added to the group definition screen.</li>
+<li>Present/absent samples are indicated in tooltips and in charts.</li>
+<li>Data loading is faster.</li>
+</ul>
+
+<H4>20131205</H4>
+Added a new compound selection method that allows for typing or pasting compound names,
+as well as autocompleted compound search. Changed gene autocompletion to be based on
+gene symbols rather than names.
+Added checkboxes to select all samples from a particular dose and time 
+combination simultaneously.
+
+<h4>20131114</h4>
+Improved performance of ChEMBL target lookups.
+Changed the default sort order for data columns to descending.
+
+<h4>20131104</h4>
+Switched to the official ChEMBL SPARQL endpoint that is now provided by EBI.
+Addressed some minor bugs that could make the application unresponsive.
+
+<h4>20131020</h4>
+Addressed some problems in compound ranking.
+
+<h4>20131013</h4>
+Ensured that only time/dose combinations that are available
+as actual samples can be selected. Adjusted the positions of popup windows.
+
+<h4>20130917 (approximately)</h4>
+First official release.
