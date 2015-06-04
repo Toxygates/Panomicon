@@ -106,12 +106,8 @@ public class StorageParser {
 	}
 	
 	public static String packList(Collection<String> items, String separator) {
-		StringBuilder sb = new StringBuilder();
-		for (String x: items) {
-			sb.append(x);
-			sb.append(separator);
-		}
-		return sb.toString();
+		//TODO best location of this? handle viewer/common separation cleanly.
+		return SharedUtils.packList(items, separator);
 	}
 	
 	public static String packItemLists(Collection<ItemList> lists, String separator) {

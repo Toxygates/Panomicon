@@ -20,8 +20,6 @@
 
 package t.common.shared;
 
-import static otgviewer.client.components.StorageParser.packList;
-
 import java.io.Serializable;
 import java.util.Collection;
 
@@ -52,7 +50,7 @@ abstract public class ItemList implements Packable, Serializable {
 		sb.append(":::");
 		sb.append(name);
 		sb.append(":::");
-		sb.append(packList(packedItems(), "^^^"));
+		sb.append(SharedUtils.packList(packedItems(), "^^^"));
 		return sb.toString();
 	}
 	

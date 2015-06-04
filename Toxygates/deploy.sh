@@ -17,9 +17,6 @@ function makeWar {
     jar uf $OUTPUT $(find WEB-INF \( -path WEB-INF/classes/t/admin -o \
       -path WEB-INF/classes/t/global \) -prune -o \( -type f -print \) )
     cd ..
-    rm -r $TGCP/otg
-    rm -r $TGCP/t
-    rm -r $TGCP/friedrich
 }
 
 function makeAdminWar {
@@ -33,13 +30,10 @@ function makeAdminWar {
     jar uf admin.war $(find WEB-INF -path WEB-INF/classes/t/global -prune -o \
       \( -type f -print \) )
     cd ..
-    rm -r $TGCP/otg
-    rm -r $TGCP/t
-    rm -r $TGCP/friedrich
 }
 
 WARLIB=war/WEB-INF/lib
-ivy.sh -retrieve lib/[type]/[artifact]-[revision].[ext] 
+#ivy.sh -retrieve lib/[type]/[artifact]-[revision].[ext] 
 cp lib/jar/* $WARLIB
 cp lib/bundle/*.jar $WARLIB
 cp mlib/*jar $WARLIB
