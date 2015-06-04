@@ -175,4 +175,9 @@ public class OTGSchema extends DataSchema {
 		} 
 		return 4;
 	}
+	
+	@Override
+	public String[] chartParameters() {
+		return new String[] { minorParameter(), mediumParameter(), majorParameter(), "organism" };
+	}
 }
