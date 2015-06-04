@@ -18,14 +18,10 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.shared;
-
-import static otgviewer.client.components.StorageParser.packList;
+package t.common.shared;
 
 import java.io.Serializable;
 import java.util.Collection;
-
-import t.common.shared.Packable;
 
 /**
  * A typed, named list of items.
@@ -54,7 +50,7 @@ abstract public class ItemList implements Packable, Serializable {
 		sb.append(":::");
 		sb.append(name);
 		sb.append(":::");
-		sb.append(packList(packedItems(), "^^^"));
+		sb.append(SharedUtils.packList(packedItems(), "^^^"));
 		return sb.toString();
 	}
 	

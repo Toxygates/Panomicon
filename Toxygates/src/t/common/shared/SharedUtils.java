@@ -87,4 +87,14 @@ public class SharedUtils {
 	public static Logger getLogger(String suffix) {
 		return Logger.getLogger("jp.level-five.tframework." + suffix);
 	}
+	
+	//TODO best location for this?
+	public static String packList(Collection<String> items, String separator) {
+		StringBuilder sb = new StringBuilder();
+		for (String x: items) {
+			sb.append(x);
+			sb.append(separator);
+		}
+		return sb.toString();
+	}
 }

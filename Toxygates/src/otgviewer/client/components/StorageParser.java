@@ -31,9 +31,9 @@ import javax.annotation.Nullable;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import t.common.shared.DataSchema;
+import t.common.shared.ItemList;
 import t.common.shared.Packable;
 import t.common.shared.SharedUtils;
-import t.viewer.shared.ItemList;
 
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
@@ -106,12 +106,8 @@ public class StorageParser {
 	}
 	
 	public static String packList(Collection<String> items, String separator) {
-		StringBuilder sb = new StringBuilder();
-		for (String x: items) {
-			sb.append(x);
-			sb.append(separator);
-		}
-		return sb.toString();
+		//TODO best location of this? handle viewer/common separation cleanly.
+		return SharedUtils.packList(items, separator);
 	}
 	
 	public static String packItemLists(Collection<ItemList> lists, String separator) {

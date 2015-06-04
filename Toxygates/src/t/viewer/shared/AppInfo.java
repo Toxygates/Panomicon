@@ -27,6 +27,7 @@ import java.util.List;
 
 import otgviewer.shared.Group;
 import t.common.shared.Dataset;
+import t.common.shared.StringList;
 import t.common.shared.clustering.Algorithm;
 import t.common.shared.clustering.ProbeClustering;
 

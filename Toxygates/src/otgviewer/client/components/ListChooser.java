@@ -32,8 +32,8 @@ import java.util.TreeMap;
 import otgviewer.client.Utils;
 import otgviewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.InputDialog;
-import t.viewer.shared.ItemList;
-import t.viewer.shared.StringList;
+import t.common.shared.ItemList;
+import t.common.shared.StringList;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;

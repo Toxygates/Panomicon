@@ -30,10 +30,10 @@ import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.Group;
+import t.common.shared.ItemList;
 import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.RichTable.HideableColumn;
-import t.viewer.shared.ItemList;
 
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;

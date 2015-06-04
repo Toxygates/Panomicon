@@ -34,10 +34,10 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.RankRule;
 import t.common.shared.DataSchema;
+import t.common.shared.ItemList;
 import t.common.shared.SampleClass;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.rpc.SparqlServiceAsync;
-import t.viewer.shared.ItemList;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

@@ -23,7 +23,7 @@ package otgviewer.server.targetmine
 import scala.collection.JavaConversions._
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
 import otgviewer.server.TargetMine
-import t.viewer.shared.StringList
+import t.common.shared.StringList
 import otgviewer.client.targetmine.TargetmineService
 import otg.sparql.Probes
 import javax.servlet.ServletConfig
@@ -59,7 +59,7 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
   
   // TODO: pass in a preferred species, get status info back
   def importTargetmineLists(user: String, pass: String,
-    asProbes: Boolean): Array[t.viewer.shared.StringList] = {
+    asProbes: Boolean): Array[t.common.shared.StringList] = {
     val ls = TargetMine.getListService(serviceUri, user, pass)    
     val tmLists = ls.getAccessibleLists()
     tmLists.filter(_.getType == "Gene").map(

@@ -40,11 +40,11 @@ import otgviewer.client.dialog.DialogPosition;
 import otgviewer.shared.MatchResult;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;
+import t.common.shared.ItemList;
 import t.common.shared.SampleClass;
+import t.common.shared.StringList;
 import t.viewer.client.rpc.SeriesServiceAsync;
 import t.viewer.client.rpc.SparqlServiceAsync;
-import t.viewer.shared.ItemList;
-import t.viewer.shared.StringList;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.cellview.client.CellTable;
