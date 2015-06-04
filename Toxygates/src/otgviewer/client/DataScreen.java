@@ -36,6 +36,8 @@ import t.viewer.client.table.RichTable.HideableColumn;
 import t.viewer.shared.ItemList;
 
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.ResizeLayoutPanel;
@@ -80,10 +82,13 @@ public class DataScreen extends Screen {
 	@Override 
 	protected void addToolbars() {
 		super.addToolbars();
-		addToolbar(et.tools(), 43);
+		HorizontalPanel mainTools = new HorizontalPanel();
+		mainTools.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		mainTools.add(et.tools());
 		if (addSelector()) {
-			addToolbar(cs.selector(), 43);
+			mainTools.add(cs.selector());			
 		}
+		addToolbar(mainTools, 43);
 		addToolbar(et.analysisTools(), 43);
 	}
 	
