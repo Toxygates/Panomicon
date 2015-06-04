@@ -26,7 +26,7 @@ import org.intermine.webservice.client.services.ListService
 import t.sparql.secondary._
 import t.sparql._
 import otg.sparql._
-import t.viewer.shared.StringList
+import t.common.shared.StringList
 import otgviewer.server.rpc.Conversions
 import otg.sparql.Probes
 import t.platform.Probe

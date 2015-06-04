@@ -23,7 +23,7 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.List;
 
-import t.viewer.shared.StringList;
+import t.common.shared.StringList;
 
 public class TemporaryCompoundLists {
 

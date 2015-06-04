@@ -18,25 +18,45 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.shared
+package t.common.shared;
 
-import org.junit.runner.RunWith
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import java.util.Arrays;
+import java.util.Collection;
 
-@RunWith(classOf[JUnitRunner])
-class StringListTest extends FunSuite {
-  
-  val items = List("a", "b", "c")
-  
-  test("basic") {
-    val l = new StringList("probes", "test.name", items.toArray)
-    assert(l.size() === items.size)
-    assert(l.items() === items.toArray)
-    val p = l.pack()
-    val up = ItemList.unpack(p)
-    assert(up.packedItems().toArray === items.toArray)
-    assert(up.name() === l.name())
-    assert(up.`type` === l.`type`)
-  }
+public class StringList extends ItemList {
+
+	private String[] items;
+	private String comment;
+	
+	/**
+	 * This constructor is here for GWT serialization
+	 */
+	protected StringList() { }
+	
+	public StringList(String type, String name, String[] items) {
+		super(type, name);
+		this.items = items;
+	}
+	
+	public Collection<String> packedItems() {
+		return Arrays.asList(items);
+	}
+	
+	public String[] items() { return items; }
+	
+	public int size() {
+		if (items == null) {
+			return 0;
+		} else {
+			return items.length;
+		}
+	}
+	
+	public String getComment() {
+		return comment;
+	}
+	
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
 }

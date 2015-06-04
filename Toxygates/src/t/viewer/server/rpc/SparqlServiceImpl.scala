@@ -59,7 +59,7 @@ import t.viewer.server.Conversions.asSpecies
 import t.viewer.server.Conversions.scAsScala
 import t.viewer.shared.AppInfo
 import t.viewer.shared.Association
-import t.viewer.shared.StringList
+import t.common.shared.StringList
 import t.viewer.shared.Unit
 
 object SparqlServiceImpl {  

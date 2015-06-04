@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import t.common.shared.StringList;
 import t.common.shared.clustering.ProbeClustering;
-import t.viewer.shared.StringList;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
