@@ -241,5 +241,12 @@ public interface SparqlService extends RemoteService {
 	public Association[] associations(SampleClass sc, AType[] types,
 			String[] probes) throws TimeoutException;
 
-    String[] filterProbesByGroup(String[] probes, List<OTGSample> samples);
+	/**
+	 * Filter probes by given samples
+	 * 
+	 * @param probes
+	 * @param samples
+	 * @return
+	 */
+	String[] filterProbesByGroup(String[] probes, List<OTGSample> samples);
 }
