@@ -99,7 +99,7 @@ public class ProbeScreen extends Screen {
 	public boolean enabled() {
 		return manager.isConfigured(ColumnScreen.key);
 	}
-
+	
 	private ProbeSelector pathwaySelector() {
 		return new ProbeSelector(
 				"This lets you view probes that correspond to a given KEGG pathway. "
@@ -111,7 +111,7 @@ public class ProbeScreen extends Screen {
 			}
 
 			protected void getProbes(String item) {
-				sparqlService.probesForPathway(chosenSampleClass, item,
+				sparqlService.probesForPathway(chosenSampleClass, item, getAllSamples(),
 						retrieveProbesCallback());
 			}
 
@@ -133,7 +133,7 @@ public class ProbeScreen extends Screen {
 			}
 
 			protected void getProbes(String item) {
-				sparqlService.probesForGoTerm(item,
+				sparqlService.probesForGoTerm(item, getAllSamples(),
 						retrieveProbesCallback());
 			}
 
@@ -287,13 +287,7 @@ public class ProbeScreen extends Screen {
             @Override
             public void onClick(ClickEvent event) {
               String[] probes = listedProbes.toArray(new String[0]);
-              List<OTGSample> allSamples = new ArrayList<OTGSample>();
-              for (Group g : chosenColumns) {
-                List<OTGSample> ss = Arrays.asList(g.getSamples());
-                allSamples.addAll(ss);
-              }
-              
-              sparqlService.filterProbesByGroup(probes, allSamples, new PendingAsyncCallback<String[]>(ps) {
+              sparqlService.filterProbesByGroup(probes, getAllSamples(), new PendingAsyncCallback<String[]>(ps) {
                 @Override
                 public void handleSuccess(String[] t) {
                     ps.probesChanged(t);                                
@@ -316,7 +310,7 @@ public class ProbeScreen extends Screen {
 			@Override
 			protected void itemsChanged(List<String> items) {
 				matrixService.identifiersToProbes(items.toArray(new String[0]),
-						true, false, new PendingAsyncCallback<String[]>(ps) {
+						true, false, getAllSamples(), new PendingAsyncCallback<String[]>(ps) {
 							@Override
 							public void handleSuccess(String[] t) {
 								ps.probesChanged(t);								
@@ -389,7 +383,7 @@ public class ProbeScreen extends Screen {
 		// change the identifiers (which can be mixed format, for example genes
 		// and proteins etc) into a
 		// homogenous format (probes only)
-		matrixService.identifiersToProbes(probes, true, titleMatch,
+		matrixService.identifiersToProbes(probes, true, titleMatch, getAllSamples(),
 				new PendingAsyncCallback<String[]>(this,
 						"Unable to obtain manual probes (technical error).") {
 					public void handleSuccess(String[] probes) {

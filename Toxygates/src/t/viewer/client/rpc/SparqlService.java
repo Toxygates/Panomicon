@@ -174,7 +174,19 @@ public interface SparqlService extends RemoteService {
 	 * @param pathway
 	 * @return
 	 */
+	@Deprecated
 	public String[] probesForPathway(SampleClass sc, String pathway)
+			throws TimeoutException;
+
+	/**
+	 * Obtain filtered probes that belong to the named pathway.
+	 * 
+	 * @param pathway
+	 * @param samples
+	 *            If null, all probes will be obtained.
+	 * @return
+	 */
+	public String[] probesForPathway(SampleClass sc, String pathway, List<OTGSample> samples)
 			throws TimeoutException;
 
 	/**
@@ -207,6 +219,14 @@ public interface SparqlService extends RemoteService {
 	 * @return
 	 */
 	public String[] probesForGoTerm(String goTerm) throws TimeoutException;
+	
+	/**
+	 * Obtain filtered probes for a given GO term (fully named)
+	 * 
+	 * @param goTerm
+	 * @return
+	 */
+	public String[] probesForGoTerm(String goTerm, List<OTGSample> samples) throws TimeoutException;
 	
 	/**
 	 * Obtain gene symbols for the given probes. The resulting array will
