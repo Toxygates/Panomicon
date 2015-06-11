@@ -347,7 +347,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   @throws[TimeoutException]
   def probesForGoTerm(goTerm: String, samples: JList[OTGSample]): Array[String] = {
     val pmap = context.matrix.probeMap 
-    val result = probeStore.forGoTerm(GOTerm("", goTerm)).map(_.identifier).filter(pmap.isToken).toArray
+    val got = GOTerm("", goTerm)
+
+    val result = probeStore.forGoTerm(got).map(_.identifier).filter(pmap.isToken).toArray
     
     Option(samples) match {
       case Some(_) => filterProbesByGroup(result, samples)
@@ -421,7 +423,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val platforms: Set[String] = samples.map(x => x.get("platform_id")).toSet
     val lookup = probeStore.platformsAndProbes
     val acceptProbes = platforms.flatMap(p => lookup(p))
-    
+
     probes.filter(x => acceptProbes.contains(x))
   }
 

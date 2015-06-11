@@ -65,7 +65,6 @@ import t.viewer.server.Platforms
 import t.viewer.shared.table.SortKey
 import otgviewer.server.ScalaUtils
 import otgviewer.shared.OTGSample
-import otgviewer.shared.OTGSample
 
 object MatrixServiceImpl {
   
@@ -145,12 +144,13 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   
   def identifiersToProbes(identifiers: Array[String], precise: Boolean, 
       titlePatternMatch: Boolean, samples: JList[OTGSample]): Array[String] = {
-    val result = if (titlePatternMatch) {
-      probes.forTitlePatterns(identifiers).map(_.identifier).toArray
+    val ps = if (titlePatternMatch) {
+      probes.forTitlePatterns(identifiers)
     } else {
       probes.identifiersToProbes(mcontext.probeMap,
-        identifiers, precise).map(_.identifier).toArray
-    }
+        identifiers, precise)
+    }    
+    val result = ps.map(_.identifier).toArray
     
     Option(samples) match {
       case Some(_) => filterProbesByGroup(result, samples)
@@ -159,12 +159,12 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   }
   
   // TODO Same codes in SparqlService
-  def filterProbesByGroup(probes: Array[String], samples: JList[OTGSample]): Array[String] = {
+  def filterProbesByGroup(ps: Array[String], samples: JList[OTGSample]): Array[String] = {
     val platforms: Set[String] = samples.map(x => x.get("platform_id")).toSet
-    val lookup = this.probes.platformsAndProbes
+    val lookup = probes.platformsAndProbes
     val acceptProbes = platforms.flatMap(p => lookup(p))
     
-    probes.filter(x => acceptProbes.contains(x))
+    ps.filter(x => acceptProbes.contains(x))
   }
 
   private def makeMatrix(requestColumns: Seq[Group], initProbes: Array[String], 
