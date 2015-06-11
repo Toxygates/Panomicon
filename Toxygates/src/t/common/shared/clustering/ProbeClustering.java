@@ -56,8 +56,6 @@ public class ProbeClustering {
 			if (!m.containsKey(title)) {
 				m.put(title, new ProbeClustering(Algorithm.HIERARCHICAL,
 						getParam(title), title, new LinkedList<ItemList>()));
-				System.out.println("create: " + Algorithm.HIERARCHICAL + ", "
-						+ getParam(title) + ", " + title);
 			}
 
 			ProbeClustering p = m.get(title);
