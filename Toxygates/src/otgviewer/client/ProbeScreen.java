@@ -281,23 +281,8 @@ public class ProbeScreen extends Screen {
 			}
 		});
         
-        final ProbeScreen ps = this;
-
-	    Button b2 = new Button("Filter by groups", new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              String[] probes = listedProbes.toArray(new String[0]);
-              sparqlService.filterProbesByGroup(probes, getAllSamples(), new PendingAsyncCallback<String[]>(ps) {
-                @Override
-                public void handleSuccess(String[] t) {
-                    ps.probesChanged(t);                                
-                }                           
-              });
-            }
-	    });
-	    
+        final ProbeScreen ps = this;	    
 	    buttons.add(b);
-	    buttons.add(b2);
 
 		plPanel = new ResizingDockLayoutPanel();
 		plNorth = Utils.wideCentered(l);
@@ -325,6 +310,9 @@ public class ProbeScreen extends Screen {
 			}
 		};
 		listChooser.setStylePrimaryName("colored");
+		//To ensure that ListChooser has chosenColumns
+		addListener(listChooser);
+		
 		plPanel.addNorth(listChooser, PL_NORTH_HEIGHT);
 		
 		plPanel.add(probesList);
