@@ -20,10 +20,7 @@
 
 package otgviewer.shared;
 
+@SuppressWarnings("serial")
 public class TimeoutException extends ServerError {
-
-	public TimeoutException() {
-		super();
-	}
 
 }

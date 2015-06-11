@@ -34,8 +34,8 @@ import t.common.shared.SampleClass;
  * A sample class with associated samples.
  * 
  * TODO: generify, split up OTG/non-OTG versions
- * @author johan
  */
+@SuppressWarnings("serial")
 public class Unit extends SampleClass {
 
 	private OTGSample[] samples;

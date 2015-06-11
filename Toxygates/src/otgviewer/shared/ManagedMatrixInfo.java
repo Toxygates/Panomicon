@@ -31,6 +31,7 @@ import javax.annotation.Nullable;
  * Information about a ManagedMatrix that the server maintains on behalf of the client. 
  * The main purpose is to track information about columns in a matrix.
  */
+@SuppressWarnings("serial")
 public class ManagedMatrixInfo implements Serializable {
 
 	private int numDataColumns = 0, numSynthetics = 0, numRows = 0;

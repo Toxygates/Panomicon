@@ -27,7 +27,7 @@ import java.util.List;
 
 import otgviewer.shared.Group;
 import t.common.shared.Dataset;
-import t.common.shared.clustering.Algorithm;
+import t.common.shared.StringList;
 import t.common.shared.clustering.ProbeClustering;
 
 /**
@@ -36,6 +36,7 @@ import t.common.shared.clustering.ProbeClustering;
  * TODO some of this is OTG-specific
  * @author johan
  */
+@SuppressWarnings("serial")
 public class AppInfo implements Serializable {
 
 	private String instanceName, pathologyTermsURL, targetmineURL;

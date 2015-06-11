@@ -39,6 +39,7 @@ import t.viewer.shared.Unit;
  * @author johan
  *
  */
+@SuppressWarnings("serial")
 public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 	
 	protected Unit[] _units;

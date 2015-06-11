@@ -20,6 +20,7 @@
 
 package otgviewer.shared;
 
+@SuppressWarnings("serial")
 public class NoDataLoadedException extends ServerError {
 	public NoDataLoadedException() {}
 }

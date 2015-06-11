@@ -20,6 +20,7 @@
 
 package t.admin.shared;
 
+@SuppressWarnings("serial")
 public class MaintenanceException extends Exception {
 
 	public MaintenanceException() {

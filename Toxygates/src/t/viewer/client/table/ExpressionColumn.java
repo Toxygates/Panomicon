@@ -23,7 +23,6 @@ package t.viewer.client.table;
 import otgviewer.client.Utils;
 import t.common.shared.sample.ExpressionRow;
 import t.viewer.shared.table.SortKey;
-import t.viewer.shared.table.SortKey.MatrixColumn;
 
 import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.cell.client.TextCell;

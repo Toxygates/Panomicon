@@ -24,6 +24,7 @@ import java.util.Date;
 
 import t.common.shared.ManagedItem;
 
+@SuppressWarnings("serial")
 public class Instance extends ManagedItem {
 	
 	private AccessPolicy policy;

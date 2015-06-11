@@ -37,9 +37,9 @@ import javax.annotation.Nullable;
 import otgviewer.client.Utils;
 import t.common.client.components.SetEditor;
 import t.common.client.components.StringSelectionTable;
+import t.common.shared.ItemList;
 import t.common.shared.SharedUtils;
-import t.viewer.shared.ItemList;
-import t.viewer.shared.StringList;
+import t.common.shared.StringList;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -222,7 +222,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 			final BrowseCheck bc = this;
 			this.selTable = new StringSelectionTable("", itemTitle) {
 				protected void selectionChanged(Set<String> selected) {
-					bc.logger.info("Send selection " + selected.size());
+					BrowseCheck.logger.info("Send selection " + selected.size());
 					stackedEditor.setSelection(selected, bc);					
 				}
 			};			

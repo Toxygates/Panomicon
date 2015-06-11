@@ -25,6 +25,7 @@ import java.io.Serializable;
 import t.common.shared.DataSchema;
 import t.common.shared.sample.DataColumn;
 
+@SuppressWarnings("serial")
 abstract public class Synthetic implements DataColumn<OTGSample>, Serializable {
 
 	public abstract static class TwoGroupSynthetic extends Synthetic {

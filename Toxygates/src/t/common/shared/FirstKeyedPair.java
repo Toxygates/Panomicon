@@ -27,6 +27,7 @@ package t.common.shared;
  * @param <T>
  * @param <U>
  */
+@SuppressWarnings("serial")
 public class FirstKeyedPair<T, U> extends Pair<T, U> {
 
 	//GWT serialization constructor

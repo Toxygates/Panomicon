@@ -31,6 +31,7 @@ import javax.annotation.Nullable;
  * 
  * TODO: move to t.common when the dependency on Unit has been resolved
  */
+@SuppressWarnings("serial")
 public abstract class DataSchema implements Serializable {	
 	
 	String[] defaultChartParameters = new String[3];

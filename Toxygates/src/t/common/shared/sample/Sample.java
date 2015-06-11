@@ -29,11 +29,10 @@ import t.common.shared.SampleClass;
 
 /**
  * A microarray sample with a unique identifier that can be represented as a string.
- * @author johan
- * 
+
  * TODO make non-abstract
- *
  */
+@SuppressWarnings("serial")
 abstract public class Sample implements Packable, Serializable, HasClass {
 
 	protected SampleClass sampleClass;

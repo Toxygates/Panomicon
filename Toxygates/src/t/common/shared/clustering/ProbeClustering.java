@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import t.viewer.shared.ItemList;
-import t.viewer.shared.StringList;
+import t.common.shared.ItemList;
+import t.common.shared.StringList;
 
 public class ProbeClustering {
 	private Algorithm algorithm; // example: Hierarchical

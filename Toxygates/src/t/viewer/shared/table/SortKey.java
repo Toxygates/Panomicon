@@ -25,6 +25,7 @@ import java.io.Serializable;
 import t.common.shared.AType;
 
 public interface SortKey extends Serializable {
+	@SuppressWarnings("serial")
 	static class MatrixColumn implements SortKey {
 		public int matrixIndex;
 		
@@ -35,6 +36,7 @@ public interface SortKey extends Serializable {
 		}
 	}
 	
+	@SuppressWarnings("serial")
 	static class Association implements SortKey {
 		public AType atype;
 		

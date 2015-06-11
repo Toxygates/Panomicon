@@ -12,14 +12,12 @@ function makeWar {
     cd war
     rm $OUTPUT
     rm WEB-INF/web.xml
+    [ ! -d csv ] && mkdir csv
     jar cf $OUTPUT toxygates csv *.pdf *.css images *.html.template
     #Exclude classes in t/admin and t/global
     jar uf $OUTPUT $(find WEB-INF \( -path WEB-INF/classes/t/admin -o \
       -path WEB-INF/classes/t/global \) -prune -o \( -type f -print \) )
     cd ..
-    rm -r $TGCP/otg
-    rm -r $TGCP/t
-    rm -r $TGCP/friedrich
 }
 
 function makeAdminWar {
@@ -33,13 +31,10 @@ function makeAdminWar {
     jar uf admin.war $(find WEB-INF -path WEB-INF/classes/t/global -prune -o \
       \( -type f -print \) )
     cd ..
-    rm -r $TGCP/otg
-    rm -r $TGCP/t
-    rm -r $TGCP/friedrich
 }
 
 WARLIB=war/WEB-INF/lib
-ivy.sh -retrieve lib/[type]/[artifact]-[revision].[ext] 
+#ivy.sh -retrieve lib/[type]/[artifact]-[revision].[ext] 
 cp lib/jar/* $WARLIB
 cp lib/bundle/*.jar $WARLIB
 cp mlib/*jar $WARLIB

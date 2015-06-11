@@ -22,6 +22,7 @@ package t.admin.shared;
 
 import java.io.Serializable;
 
+@SuppressWarnings("serial")
 public class Progress implements Serializable {
 
 	public Progress() { }

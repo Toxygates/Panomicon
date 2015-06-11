@@ -20,6 +20,7 @@
 
 package otgviewer.client.components.ranking;
 
+@SuppressWarnings("serial")
 public class RankRuleException extends Exception {
 
 	public RankRuleException(String message) {
