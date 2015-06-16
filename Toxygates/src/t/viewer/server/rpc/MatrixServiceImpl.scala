@@ -109,7 +109,8 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   
   // Useful for testing
   override def localInit(config: Configuration) {
-    super.localInit(config)       
+    super.localInit(config)
+    this.config = config 
     mcontext = context.matrix
     staticInit(context)    
   }
