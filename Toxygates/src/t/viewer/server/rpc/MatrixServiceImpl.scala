@@ -64,6 +64,8 @@ import t.viewer.server.Feedback
 import t.viewer.server.Platforms
 import t.viewer.shared.table.SortKey
 import otgviewer.server.ScalaUtils
+import t.common.shared.PerfTimer
+import java.util.logging.Logger
 
 object MatrixServiceImpl {
   
@@ -106,6 +108,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   protected implicit var mcontext: MatrixContext = _  
   private def probes = context.probes
   private var config: Configuration = _
+  private val logger = Logger.getLogger("MatrixService")
   
   // Useful for testing
   override def localInit(config: Configuration) {
@@ -202,13 +205,26 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   
   def loadMatrix(groups: JList[Group], probes: Array[String],
                   typ: ValueType, syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
-    val pfs = platformsForGroups(groups.toList)   
+    val pt = new PerfTimer(Logger.getLogger("matrixService.loadMatrix"))
+    
+    val pfs = platformsForGroups(groups.toList)
+    pt.mark("PlatformsForGroups")
+    
     val fProbes = platforms.filterProbes(probes, pfs).toArray 
-    val mm = makeMatrix(groups.toVector, fProbes, typ)       
+    pt.mark("FilterProbes")
+    
+    val mm = makeMatrix(groups.toVector, fProbes, typ)
+    pt.mark("MakeMatrix")
+    
     mm.info.setPlatforms(pfs.toArray)
 //    selectProbes(probes)
     val mm2 = applyMapper(groups, mm)
-    getSessionData.matrix = mm2    
+    pt.mark("ApplyMapper")
+    
+    getSessionData.matrix = mm2
+    
+    pt.finish()
+    
     mm2.info
   }
 
@@ -262,7 +278,8 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   @throws(classOf[NoDataLoadedException])
   def matrixRows(offset: Int, size: Int, sortKey: SortKey,
     ascending: Boolean): JList[ExpressionRow] = {
-
+    val pt = new PerfTimer(Logger.getLogger("matrixService.matrixRows"))
+    
     val session = getSessionData.matrix
             
     sortKey match {
@@ -283,12 +300,16 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
             println("Sort with aux table for " + as)
         }
     }
+    pt.mark("Sort")
     
     val mm = session.current
     val mergeMode = session.info.getPlatforms.size > 1
     
-    new ArrayList[ExpressionRow](
-      insertAnnotations(mm.asRows.drop(offset).take(size), mergeMode))     
+    val r = new ArrayList[ExpressionRow](
+      insertAnnotations(mm.asRows.drop(offset).take(size), mergeMode))
+    pt.mark("insertAnnotations")
+    pt.finish()
+    r
   }
 
   //this is probably quite inefficient
