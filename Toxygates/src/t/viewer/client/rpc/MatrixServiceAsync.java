@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
 import otgviewer.shared.FullMatrix;
 import otgviewer.shared.Group;
 import otgviewer.shared.ManagedMatrixInfo;
+import otgviewer.shared.OTGSample;
 import otgviewer.shared.Synthetic;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
@@ -43,9 +44,14 @@ public interface MatrixServiceAsync {
 	public void matrixRows(int offset, int size, SortKey sortKey,
 			boolean ascending, AsyncCallback<List<ExpressionRow>> callback);
 	
+	@Deprecated
 	public void identifiersToProbes(String[] identifiers,
 			boolean precise, boolean titlePatternMatch,
 			AsyncCallback<String[]> callback);
+
+	public void identifiersToProbes(String[] identifiers,
+			boolean precise, boolean titlePatternMatch,
+			List<OTGSample> samples, AsyncCallback<String[]> callback);
 
 	public void selectProbes(String[] probes,
 			AsyncCallback<ManagedMatrixInfo> callback);

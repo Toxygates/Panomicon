@@ -310,11 +310,21 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   //TODO remove sc
   @throws[TimeoutException]
   def probesForPathway(sc: SampleClass, pathway: String): Array[String] = {    
+    probesForPathway(sc, pathway, null)
+  }
+  
+  @throws[TimeoutException]
+  def probesForPathway(sc: SampleClass, pathway: String, samples: JList[OTGSample]): Array[String] = {
     val geneIds = b2rKegg.geneIds(pathway).map(Gene(_))
     println("Probes for " + geneIds.size + " genes")
     val prs = probeStore.forGenes(geneIds).toArray
     val pmap = context.matrix.probeMap //TODO
-    prs.map(_.identifier).filter(pmap.isToken).toArray
+    val result = prs.map(_.identifier).filter(pmap.isToken).toArray
+
+    Option(samples) match {
+      case Some(_) => filterProbesByGroup(result, samples)
+      case None => result
+    }
   }
   
   //TODO move to OTG
@@ -330,8 +340,21 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   //TODO move to OTG
   @throws[TimeoutException]
   def probesForGoTerm(goTerm: String): Array[String] = {
+    probesForGoTerm(goTerm, null)
+  }
+
+  //TODO move to OTG
+  @throws[TimeoutException]
+  def probesForGoTerm(goTerm: String, samples: JList[OTGSample]): Array[String] = {
     val pmap = context.matrix.probeMap 
-    probeStore.forGoTerm(GOTerm("", goTerm)).map(_.identifier).filter(pmap.isToken).toArray
+    val got = GOTerm("", goTerm)
+
+    val result = probeStore.forGoTerm(got).map(_.identifier).filter(pmap.isToken).toArray
+    
+    Option(samples) match {
+      case Some(_) => filterProbesByGroup(result, samples)
+      case None => result
+    }
   }
 
   import scala.collection.{ Map => CMap, Set => CSet }
@@ -396,13 +419,12 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       probeStore.probesForPartialSymbol(plat, partialName).map(_.identifier).toArray
   }
 
-  @throws[TimeoutException]
   def filterProbesByGroup(probes: Array[String], samples: JList[OTGSample]): Array[String] = {
-    val platforms: Set[String] = samples.map(x => x.get("platform_id")).toSet 
+    val platforms: Set[String] = samples.map(x => x.get("platform_id")).toSet
     val lookup = probeStore.platformsAndProbes
     val acceptProbes = platforms.flatMap(p => lookup(p))
-    
-    probes.filter(x => acceptProbes.contains(x)) 
+
+    probes.filter(x => acceptProbes.contains(x))
   }
 
 }

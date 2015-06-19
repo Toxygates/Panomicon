@@ -28,6 +28,7 @@ import javax.annotation.Nullable;
 import otgviewer.shared.FullMatrix;
 import otgviewer.shared.Group;
 import otgviewer.shared.ManagedMatrixInfo;
+import otgviewer.shared.OTGSample;
 import otgviewer.shared.ServerError;
 import otgviewer.shared.Synthetic;
 import t.common.shared.ValueType;
@@ -59,8 +60,26 @@ public interface MatrixService extends RemoteService {
 	 * on probe titles.
 	 * @return
 	 */
+	@Deprecated
 	public String[] identifiersToProbes(String[] identifiers, boolean precise,
 			boolean titlePatternMatch);
+	
+	/**
+	 * Convert identifiers such as genes, probe IDs and proteins into a list of probes.
+	 * 
+	 * TODO not clear that this should be in MatrixService
+	 * 
+	 * @param filter
+	 * @param identifiers
+	 * @param precise If true, names must be an exact match, otherwise partial 
+	 * 	name matching is used.
+	 * @param titlePatternMatch If true, the query is assumed to be a partial pattern match
+	 * on probe titles.
+	 * @param samples If null, all probes will be obtained.
+	 * @return
+	 */
+	public String[] identifiersToProbes(String[] identifiers, boolean precise,
+			boolean titlePatternMatch, List<OTGSample> samples);
 	
 	/**
 	 * Load data into the user's session. Also perform an initial filtering. 

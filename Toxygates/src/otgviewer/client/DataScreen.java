@@ -25,6 +25,7 @@ import java.util.List;
 
 import otgviewer.client.components.ClusteringSelector;
 import otgviewer.client.components.ListChooser;
+import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
@@ -32,10 +33,12 @@ import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.Group;
 import t.common.shared.ItemList;
 import t.common.shared.clustering.ProbeClustering;
+import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.RichTable.HideableColumn;
 
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.MenuBar;
@@ -58,19 +61,33 @@ public class DataScreen extends Screen {
 	protected String[] lastProbes;
 	protected List<Group> lastColumns;
 	
+	private final MatrixServiceAsync matrixService;
+	
 	public DataScreen(ScreenManager man) {
 		super("View data", key, true, man,
 				resources.dataDisplayHTML(), resources.dataDisplayHelp());
 		et = makeExpressionTable();
 		cs = makeClusteringSelector();
 		cs.setAvailable(ProbeClustering.createFrom(appInfo().predefinedProbeLists()));
+		//To ensure that ClusteringSelector has chosenColumns
+		addListener(cs);
+		matrixService = man.matrixService();
 	}
 
 	private ClusteringSelector makeClusteringSelector() {
 		return new ClusteringSelector() {
 			@Override
 			public void clusterChanged(List<String> items) {
-				updateProbes(items);
+				matrixService.identifiersToProbes(items.toArray(new String[0]), true, false, getAllSamples(), 
+						new PendingAsyncCallback<String[]>(this, "Unable to obtain manual probes (technical error).") {
+							@Override
+							public void handleSuccess(String[] t) {
+								if (t.length == 0) {
+									Window.alert("No probes were found.\nDisplay all probes.");
+								}
+								DataScreen.this.updateProbes(t);
+							}
+						});
 			}
 		};
 	}
@@ -222,11 +239,11 @@ public class DataScreen extends Screen {
 		logger.info("received " + probes.length + " probes");
 	}
 	
-	private void updateProbes(List<String> items) {
+	private void updateProbes(String[] items) {
 		lastProbes = null;
 		lastColumns = null;
 		
-		changeProbes(items.toArray(new String[0]));
+		changeProbes(items);
 		
 		StorageParser p = getParser(this);
 		storeProbes(p);

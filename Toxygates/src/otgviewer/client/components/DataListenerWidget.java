@@ -26,6 +26,7 @@ import static otgviewer.client.components.StorageParser.packProbes;
 import static otgviewer.client.components.StorageParser.unpackColumn;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
@@ -34,6 +35,7 @@ import java.util.logging.Logger;
 import otgviewer.client.Utils;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
+import otgviewer.shared.OTGSample;
 import t.common.shared.DataSchema;
 import t.common.shared.Dataset;
 import t.common.shared.ItemList;
@@ -173,6 +175,12 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	
 	protected void changeCompound(String compound) {
 		chosenCompound = compound;
+		System.out.println("\n-----");
+		System.out.println(chosenCompound + "\n-----");
+		for (String s:chosenCompounds)
+			System.out.println(s);
+		System.out.println("-----\n");
+
 		for (DataViewListener l : listeners) {
 			l.compoundChanged(compound);
 		}
@@ -390,5 +398,14 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 		if (numPendingRequests == 0) {
 			waitDialog.hide();
 		}
+	}
+	
+	protected List<OTGSample> getAllSamples() {
+		List<OTGSample> list = new ArrayList<OTGSample>();
+		for (Group g : chosenColumns) {
+			List<OTGSample> ss = Arrays.asList(g.getSamples());
+			list.addAll(ss);
+		}
+		return list;
 	}
 }	
