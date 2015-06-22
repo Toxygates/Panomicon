@@ -83,8 +83,9 @@ object CSVHelper {
    * The generated url will be returned.
    */
   def writeCSV(dir: String, urlbase: String, 
-      probes: Seq[String], titles: Seq[String], 
-      geneIds: Seq[String], expr: Seq[Seq[ExprValue]]): String = {
+      textCols: Seq[(String, Seq[String])],
+      rowTitles: Seq[String], colTitles: Seq[String], 
+      expr: Seq[Seq[ExprValue]]): String = {
 
     if (expr.size == 0) {
       throw new Exception("No data supplied")
@@ -95,23 +96,23 @@ object CSVHelper {
     val fullName = dir + "/" + file
     
     new CSVFile {
-    	def columns = titles.size + 2
+    	def columns = textCols.size + colTitles.size + 1
     	def rows = expr.size + 1
       def apply(x: Int, y: Int) = if (y == 0) {
-        if (x > 1) {
-          titles(x - 2)
-        } else if (x == 1) {
-          "Gene"
+        if (x == 0) {
+          ""
+        } else if (x < textCols.size + 1) {        
+          textCols(x - 1)._1
         } else {
-          "Probe"
-        }
-      } else {  //y < 0
-        if (x == 0) { 
-          probes(y - 1)
-        } else if (x == 1) {
-          geneIds(y - 1)
+          colTitles(x - textCols.size - 1)
+        } 
+      } else {  //y > 0      
+        if (x == 0) {
+          rowTitles(y - 1)
+        } else if (x < textCols.size + 1) {
+        	textCols(x - 1)._2(y - 1)
         } else {
-          expr(y - 1)(x - 2).value
+          expr(y - 1)(x - textCols.size - 1).value        
         }
       }
     }.write(fullName)

@@ -275,12 +275,11 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     mm.info
   }
   
-  private def assocSortTable(ass: AType): ExprMatrix = {
+  protected def assocSortTable(ass: AType, forMat: ExprMatrix): ExprMatrix = {
     val key = ass.auxSortTableKey
     if (key != null) {
       val sm = context.auxSortMap(key)
-      val m = getSessionData.matrix.current
-      val rows = (0 until m.rows).map(m.rowAt)
+      val rows = (0 until forMat.rows).map(forMat.rowAt)
       println("Rows: " + rows.take(10))
       println("aux: " + sm.take(10))
       val evs = rows.map(r => 
@@ -289,7 +288,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
           case None => new ExpressionValue(Double.NaN, 'A')
         })
       val evas = evs.map(v => EVArray(Seq(v)))      
-      ExprMatrix.withRows(evas)
+      ExprMatrix.withRows(evas, rows, List("POPSEQ"))
     } else {
       throw new Exception(s"No sort key for $ass")
     }        
@@ -315,7 +314,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
         if (old == null || nw != old
             || ascending != session.sortAscending) {
             getSessionData.sortAssoc = nw
-            val st = assocSortTable(as.atype)
+            val st = assocSortTable(as.atype, getSessionData.matrix.current)
             session.sortWithAuxTable(st, ascending)
             println("Sort with aux table for " + as)
         }
@@ -395,6 +394,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     })
   }
   
+  //TODO simplify 
   def getFullData(gs: JList[Group], rprobes: Array[String], sparseRead: Boolean, 
       withSymbols: Boolean, typ: ValueType): FullMatrix = {
     val sgs = Vector() ++ gs
@@ -443,7 +443,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   @throws(classOf[NoDataLoadedException])  
   def prepareCSVDownload(individualSamples: Boolean): String = {
     val mm = getSessionData.matrix
-    val mat = if (individualSamples &&
+    var mat = if (individualSamples &&
         mm.rawUngroupedMat != null && mm.current != null) {
       val info = mm.info
       val ug = mm.rawUngroupedMat.selectNamedRows(mm.current.rowKeys.toSeq)
@@ -461,10 +461,6 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       mm.current
     }
     
-    if (mat != null) {
-      println("I had " + mat.rows + " rows stored")
-    }
-    
     val colNames = mat.sortedColumnMap.map(_._1)
     val rows = mat.asRows    
     //TODO shared logic with e.g. insertAnnotations, extract
@@ -475,9 +471,15 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     val atomics = rows.map(_.getAtomicProbes())
     val geneIds = atomics.map(row => 
       row.flatMap(at => gis.getOrElse(Probe(at), Seq.empty))).map(_.distinct.mkString(" "))
-    CSVHelper.writeCSV(config.csvDirectory, config.csvUrlBase, rowNames, colNames,
-      geneIds, mat.data.map(_.map(asScala(_))))
+      
+    val aux = List((("Gene"), geneIds))
+    CSVHelper.writeCSV(config.csvDirectory, config.csvUrlBase,
+        aux ++ csvAuxColumns(mat),
+        rowNames, colNames,
+      mat.data.map(_.map(asScala(_))))
   }
+  
+  protected def csvAuxColumns(mat: ExprMatrix): Seq[(String, Seq[String])] = Seq()
 
   @throws(classOf[NoDataLoadedException])
   def getGenes(limit: Int): Array[String] = {
