@@ -26,6 +26,9 @@ trait RowColAllocation[T, V <: Seq[T], Row, Column] extends
   def rowKeys: Iterable[Row] = rowMap.keys
   def columnKeys: Iterable[Column] = columnMap.keys
 
+  def orderedRowKeys: Seq[Row] = (0 until rows).map(rowAt(_))
+  def orderedColKeys: Seq[Column] = (0 until columns).map(columnAt(_))
+  
   def obtainRow(row: Row): Int = rowMap(row)
   def obtainColumn(col: Column): Int = columnMap(col)
   
