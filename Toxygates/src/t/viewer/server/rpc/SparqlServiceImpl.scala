@@ -415,7 +415,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   @throws[TimeoutException]
   def geneSuggestions(sc: SampleClass, partialName: String): Array[String] = {
-      val plat = nullToNone(schema.organismPlatform(sc.get("organism")))
+      val plat = Option(schema.organismPlatform(sc.get("organism")))
       probeStore.probesForPartialSymbol(plat, partialName).map(_.identifier).toArray
   }
 

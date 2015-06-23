@@ -126,15 +126,15 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   
   def getSessionData(): MatrixState = {    
     val session = getThreadLocalRequest.getSession
-    val r = session.getAttribute("matrix").
-        asInstanceOf[MatrixState]
-    if (r == null) {
-      val r = new MatrixState()
+    val r = Option(session.getAttribute("matrix").
+        asInstanceOf[MatrixState])
+    r match {
+      case Some(ms) => ms
+      case None =>
+        val r = new MatrixState()
       session.setAttribute("matrix", r)
-      return r
-    } else {
       r
-    }    
+    }        
   }
   
   def setSessionData(m: MatrixState) =
@@ -499,11 +499,9 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   def sendFeedback(name: String, email: String, feedback: String): Unit = {
     val mm = getSessionData.matrix
     var state = "(No user state available)"
-    if (mm != null) {
-      if (mm.current != null) {        
-        state = "Matrix: " + mm.current.rowKeys.size + " x " + mm.current.columnKeys.size
-        state += "\nColumns: " + mm.current.columnKeys.mkString(", ")
-      }
+    if (mm != null && mm.current != null) {
+      state = "Matrix: " + mm.current.rowKeys.size + " x " + mm.current.columnKeys.size
+      state += "\nColumns: " + mm.current.columnKeys.mkString(", ")
     }    
     Feedback.send(name, email, feedback, state, config.feedbackReceivers)
   }
