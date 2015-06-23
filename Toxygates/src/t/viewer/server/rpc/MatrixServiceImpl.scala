@@ -275,20 +275,19 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     mm.info
   }
   
-  protected def assocSortTable(ass: AType, forMat: ExprMatrix): ExprMatrix = {
+  protected def assocSortTable(ass: AType, rowKeys: Seq[String]): ExprMatrix = {
     val key = ass.auxSortTableKey
     if (key != null) {
-      val sm = context.auxSortMap(key)
-      val rows = (0 until forMat.rows).map(forMat.rowAt)
-      println("Rows: " + rows.take(10))
+      val sm = context.auxSortMap(key)      
+      println("Rows: " + rowKeys.take(10))
       println("aux: " + sm.take(10))
-      val evs = rows.map(r => 
+      val evs = rowKeys.map(r => 
         sm.get(r) match {
           case Some(v) => new ExpressionValue(v)
           case None => new ExpressionValue(Double.NaN, 'A')
         })
       val evas = evs.map(v => EVArray(Seq(v)))      
-      ExprMatrix.withRows(evas, rows, List("POPSEQ"))
+      ExprMatrix.withRows(evas, rowKeys, List("POPSEQ"))
     } else {
       throw new Exception(s"No sort key for $ass")
     }        
@@ -303,7 +302,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
             
     sortKey match {
       case mc: SortKey.MatrixColumn =>        
-        if (mc.matrixIndex != session.sortColumn || 
+        if (Some(mc.matrixIndex) != session.sortColumn || 
             ascending != session.sortAscending) {
           session.sort(mc.matrixIndex, ascending)
           println("SortCol: " + mc.matrixIndex + " asc: " + ascending)
@@ -314,7 +313,8 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
         if (old == null || nw != old
             || ascending != session.sortAscending) {
             getSessionData.sortAssoc = nw
-            val st = assocSortTable(as.atype, getSessionData.matrix.current)
+            val st = assocSortTable(as.atype, 
+                getSessionData.matrix.probesForAuxTable)
             session.sortWithAuxTable(st, ascending)
             println("Sort with aux table for " + as)
         }
