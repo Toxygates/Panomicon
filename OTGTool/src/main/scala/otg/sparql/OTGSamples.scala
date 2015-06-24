@@ -83,13 +83,13 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
     val r = ts.mapQuery(prefixes + 
         "SELECT DISTINCT ?spontaneous ?grade ?topography ?finding ?image WHERE {" + 
         constraints + 
-      """ ?x local:pathology ?p .
+      """ ?x t:pathology ?p .
       ?p local:find_id ?f . 
       ?p local:topo_id ?t . 
       ?p local:grade_id ?g . 
       ?p local:spontaneous_flag ?spontaneous . 
       ?f local:label ?finding . 
-      OPTIONAL { ?x local:pathology_digital_image ?image . } 
+      OPTIONAL { ?x t:pathology_digital_image ?image . } 
       OPTIONAL { ?t local:label ?topography . }         
       ?g local:label ?grade. } """)
       
