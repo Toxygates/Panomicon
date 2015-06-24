@@ -28,6 +28,7 @@ import otgviewer.client.components.ListChooser;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
+import otgviewer.client.components.SearchTool;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.Group;
@@ -55,6 +56,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class DataScreen extends Screen {
 
 	public static final String key = "data";
+	protected SearchTool st;
 	protected ExpressionTable et;
 	protected ClusteringSelector cs;
 
@@ -66,6 +68,7 @@ public class DataScreen extends Screen {
 	public DataScreen(ScreenManager man) {
 		super("View data", key, true, man,
 				resources.dataDisplayHTML(), resources.dataDisplayHelp());
+		st = makeSearchTool();
 		et = makeExpressionTable();
 		cs = makeClusteringSelector();
 		cs.setAvailable(ProbeClustering.createFrom(appInfo().predefinedProbeLists()));
@@ -92,6 +95,15 @@ public class DataScreen extends Screen {
 		};
 	}
 
+	protected SearchTool makeSearchTool() {
+		return new SearchTool(this) {
+			@Override
+			public void keywordChanged(String keyword) {
+				// TODO Auto-generated method stub
+			}
+		};
+	}
+
 	protected ExpressionTable makeExpressionTable() {
 		return new ExpressionTable(this);
 	}
@@ -101,6 +113,7 @@ public class DataScreen extends Screen {
 		super.addToolbars();
 		HorizontalPanel mainTools = new HorizontalPanel();
 		mainTools.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		mainTools.add(st.tools());
 		mainTools.add(et.tools());
 		if (addSelector()) {
 			mainTools.add(cs.selector());			
