@@ -198,3 +198,24 @@ exprGrid {
 .Group6 {
 	color: #C75880;
 }
+
+.gwt-SuggestBox-watermark {
+	font-style: italic;
+	color: DarkGray;
+}
+
+div.suggest-keyword {
+	text-align: left;
+	float: left;
+}
+
+div.suggest-reference {
+	text-align: right;
+	color: DarkGray;
+	font-style: italic;
+	font-size: 0.8em;
+}
+
+div.suggest-item {
+/* 	padding: 0.1em; */
+}

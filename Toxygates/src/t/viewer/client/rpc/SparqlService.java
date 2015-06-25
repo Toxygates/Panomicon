@@ -268,5 +268,15 @@ public interface SparqlService extends RemoteService {
 	 * @param samples
 	 * @return
 	 */
-	String[] filterProbesByGroup(String[] probes, List<OTGSample> samples);
+	public String[] filterProbesByGroup(String[] probes, List<OTGSample> samples);
+
+	/**
+	 * Obtain suggestions from a partial gene symbol
+	 * 
+	 * @param partialName
+	 * 
+	 * @return An array of pairs, where the first item is the precise gene
+	 * symbol and the second is the full gene name.
+	 */
+	public Pair<String, String>[] keywordSuggestions(String partialName);
 }
