@@ -53,7 +53,7 @@ import com.google.gwt.user.client.Event;
  */
 abstract public class RichTable<T> extends DataListenerWidget {
 	protected DataGrid<T> grid;
-	protected List<HideableColumn> hideableColumns = new ArrayList<HideableColumn>();
+	protected List<HideableColumn<T, ?>> hideableColumns = new ArrayList<HideableColumn<T, ?>>();
 	protected int highlightedRow = -1;
 	
  	protected final DataSchema schema; 	
@@ -124,12 +124,11 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		tcl.setCellStyleNames("clickCell");
 		grid.setColumnWidth(tcl, "40px");		
 		
-		for (HideableColumn c: hideableColumns) {
-			if (c.visible()) {
-				Column<T, ?> cc = (Column<T, ?>) c;
+		for (HideableColumn<T, ?> c: hideableColumns) {			
+			if (c.visible()) {				
 				ColumnInfo info = c.columnInfo();
 				info.setCellStyleNames("extraColumn");
-				addColumn(cc, "extra", info);												
+				addColumn(c, "extra", info);												
 			}
 		}		
 	}
@@ -251,9 +250,9 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		grid.removeColumn(col);		
 	}
 	
-	abstract protected List<HideableColumn> initHideableColumns(DataSchema schema);
+	abstract protected List<HideableColumn<T, ?>> initHideableColumns(DataSchema schema);
 	
-	public List<HideableColumn> getHideableColumns() {
+	public List<HideableColumn<T, ?>> getHideableColumns() {
 		return hideableColumns;
 	}
 	
@@ -262,47 +261,51 @@ abstract public class RichTable<T> extends DataListenerWidget {
 	 * rather than the hc.setVisibility method.
 	 * @param hc
 	 */
-	public void setVisible(HideableColumn hc, boolean newState) {
+	public void setVisible(HideableColumn<T, ?> hc, boolean newState) {
 		hc.setVisibility(newState);	
 		if (newState) {
 			ColumnInfo info = hc.columnInfo();
 			info.setCellStyleNames("extraColumn");
-			addColumn(((Column<T, ?>) hc), "extra", info);			
+			addColumn(hc, "extra", info);			
 		} else {
-			removeColumn((Column<T, ?>) hc);
+			removeColumn(hc);
 		}				
 	}
+
+	public abstract static class HideableColumn<T, C> extends Column<T, C> {
+		public HideableColumn(Cell<C> cell, boolean initState) {
+			super(cell);		
+			_visible = initState;
+		}
+		
+		protected boolean _visible;
+		protected ColumnInfo _columnInfo;
 	
-	public interface HideableColumn {		
-		boolean visible();
+		public ColumnInfo columnInfo() {
+			return _columnInfo;
+		}
+
+		public boolean visible() { return _visible; }
 		
 		// TODO consider not exposing this
-		void setVisibility(boolean v);		
-		
-		ColumnInfo columnInfo();
+		public void setVisibility(boolean v) { _visible = v; }				
 	}
-
+	
 	/**
 	 * A hideable column that displays SafeHtml
 	 */
-	protected abstract static class HTMLHideableColumn<T> extends Column<T, SafeHtml> implements HideableColumn {
-		protected boolean _visible;
+	protected abstract static class HTMLHideableColumn<T> extends HideableColumn<T, SafeHtml> {
+
 		protected String _width;
 		protected String _name;
 		protected SafeHtmlCell _c;
-		protected ColumnInfo _columnInfo;
-		
+
 		public HTMLHideableColumn(SafeHtmlCell c, String name, boolean initState, String width) {
-			super(c);
-			this._c = c;
-			_visible = initState;
+			super(c, initState);
+			this._c = c;			
 			_name = name;
 			_width = width;
 			_columnInfo = new ColumnInfo(name, width, false);
-		}
-		
-		public ColumnInfo columnInfo() {
-			return _columnInfo;
 		}
 		
 		public SafeHtml getValue(T er) {			
@@ -313,8 +316,6 @@ abstract public class RichTable<T> extends DataListenerWidget {
 		
 		protected abstract String getHtml(T er);
 		
-		public boolean visible() { return _visible; }				
-		public void setVisibility(boolean v) { _visible = v; }		
 	}
 	
 	protected class RowHighligher<U> implements RowStyles<U> {		

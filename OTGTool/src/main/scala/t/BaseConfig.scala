@@ -20,6 +20,7 @@
 
 package t
 
+import scala.language.existentials
 import t.sparql.Triplestore
 import org.openrdf.repository.RepositoryConnection
 import t.db.Series

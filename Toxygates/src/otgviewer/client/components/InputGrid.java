@@ -32,7 +32,6 @@ public class InputGrid extends Composite {
 	private TextBox[] inputs;
 	
 	public InputGrid(String... titles) {
-		int i = 0;
 		inputs = new TextBox[titles.length];		
 		
 		Panel p = new SimplePanel();
@@ -40,12 +39,11 @@ public class InputGrid extends Composite {
 		Grid g = new Grid(titles.length, 2);
 		p.add(g);
 		
-		for (String t : titles) {
+		for (int i = 0; i < titles.length; ++i) { 			
 			inputs[i] = initTextBox(i);
 			inputs[i].setWidth("20em");
 			g.setWidget(i, 0, new Label(titles[i]));
 			g.setWidget(i, 1, inputs[i]);						
-			i += 1;
 		}
 	}
 	

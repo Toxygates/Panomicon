@@ -523,9 +523,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				"</div> ");
 	}
 	
-	protected List<HideableColumn> initHideableColumns(DataSchema schema) {
+	protected List<HideableColumn<ExpressionRow, ?>> initHideableColumns(DataSchema schema) {
 		SafeHtmlCell shc = new SafeHtmlCell();
-		List<HideableColumn> r = new ArrayList<HideableColumn>();
+		List<HideableColumn<ExpressionRow, ?>> r = new ArrayList<HideableColumn<ExpressionRow, ?>>();
 		
 		r.add(new LinkingColumn<ExpressionRow>(shc, "Gene ID", 
 				initVisibility(StandardColumns.GeneID), 

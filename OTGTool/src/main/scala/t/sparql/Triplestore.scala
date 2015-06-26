@@ -70,7 +70,6 @@ object Triplestore {
       throw new Exception("Unable to select repository " + config.repository)
     }
     val c = rep.getConnection
-    c.setAutoCommit(true)
     c
   }    
 
@@ -119,7 +118,7 @@ abstract class Triplestore extends Closeable {
   private def evaluate(query: String, timeoutMillis: Int = 10000) = {
     println(query)
     val pq = con.prepareTupleQuery(QueryLanguage.SPARQL, query)
-    pq.setMaxQueryTime(timeoutMillis / 1000)
+    pq.setMaxExecutionTime(timeoutMillis / 1000)
     val f = future { pq.evaluate() }
     Some(Await.result(f, Duration(timeoutMillis, "millis")))    
   }

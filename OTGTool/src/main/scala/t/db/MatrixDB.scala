@@ -19,6 +19,7 @@
  */
 
 package t.db
+import scala.language.postfixOps
 
 trait MatrixContext {
   def probeMap: ProbeMap

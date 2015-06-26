@@ -20,19 +20,16 @@
 
 package otg.sparql
 
-import scala.Option.option2Iterable
 import org.junit.runner.RunWith
-import org.scalatest.BeforeAndAfter
-import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
 import otg.OTGContext
 import otg.Species.Rat
 import t.testing.TestConfig
 import org.scalatest.junit.JUnitRunner
 import t.sparql._
+import otg.OTGTestSuite
 
 @RunWith(classOf[JUnitRunner])
-class OTGSamplesTest extends FunSuite with BeforeAndAfter with ShouldMatchers {   
+class OTGSamplesTest extends OTGTestSuite {   
 
   val config = TestConfig.config
   implicit val context = new OTGContext(config)

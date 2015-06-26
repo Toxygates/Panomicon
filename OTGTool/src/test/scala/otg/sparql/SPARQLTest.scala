@@ -20,22 +20,19 @@
 
 package otg.sparql
 
+import otg.OTGTestSuite
 import scala.collection.JavaConversions._
 import org.junit.runner.RunWith
-import org.scalatest.BeforeAndAfter
-import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
-import otg.OTGContext
 import org.scalatest.junit.JUnitRunner
 import otg.Species._
-import t.sparql.Triplestore
-import t.testing.TestConfig
-import t.sparql._
-import t.sparql.secondary._
 import t.platform.Probe
+import t.sparql._
+import t.sparql.Triplestore
+import t.sparql.secondary._
+import t.testing.TestConfig
 
 @RunWith(classOf[JUnitRunner])
-class SPARQLTest extends FunSuite with ShouldMatchers with BeforeAndAfter {
+class SPARQLTest extends OTGTestSuite {
   
   val config = TestConfig.config
   

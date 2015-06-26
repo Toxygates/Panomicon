@@ -23,6 +23,7 @@ package t.viewer.server
 import scala.collection.JavaConversions._
 
 import t.common.shared.SampleClass
+import scala.language.implicitConversions
 
 object Conversions {
 	implicit def scAsScala(sc: SampleClass): t.sparql.SampleClass = 
