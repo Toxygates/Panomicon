@@ -50,7 +50,7 @@ abstract class Manager[C <: Context] {
       requireEnv(env, "T_DATA_MATDBCONFIG", "Please specify matrix db flags"))
       
   def getBaseConfig(): BaseConfig = {
-    val env = asScalaMap(System.getenv())
+    val env = mapAsScalaMap(System.getenv())
     val ts = getTSConfig(env)
     val d = getDataConfig(env)    
     makeBaseConfig(ts, d)
@@ -66,7 +66,7 @@ abstract class Manager[C <: Context] {
     
     if (args.length < 1) {
       showHelp()
-      exit(1)
+      sys.exit(1)
     }
     
     try {
@@ -74,7 +74,7 @@ abstract class Manager[C <: Context] {
     } catch {
       case e: Exception => e.printStackTrace
     }
-    exit(0) // Get rid of lingering threads
+    sys.exit(0) // Get rid of lingering threads
   }
   
   protected def showHelp() {

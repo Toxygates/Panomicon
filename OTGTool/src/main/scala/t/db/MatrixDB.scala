@@ -19,8 +19,7 @@
  */
 
 package t.db
-
-import otg.Species._
+import scala.language.postfixOps
 
 trait MatrixContext {
   def probeMap: ProbeMap
@@ -173,12 +172,7 @@ trait MatrixDBReader[+E >: Null <: ExprValue] {
       probes.map(p => rows(probeMap.unpack(p)))
     })
     rows.toVector
-  }
-  
-  
-  def presentValuesForSamplesAndProbes(s: Species, xs: Seq[Sample], probes: Seq[Int],
-      sparseRead: Boolean = false) =
-   valuesForSamplesAndProbes(xs, probes, sparseRead, true)
+  }  
 }
 
 trait MatrixDBWriter[E <: ExprValue] {

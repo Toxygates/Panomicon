@@ -30,6 +30,7 @@ import java.util.Arrays;
  * 
  * TODO this class is due for an overhaul.
  */
+@SuppressWarnings("serial")
 public class ExpressionRow implements Comparable<ExpressionRow>, Serializable {
 	private String probe = "";
 	private String[] atomicProbeTitles = new String[0];

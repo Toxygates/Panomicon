@@ -71,7 +71,7 @@ object TargetMine {
         val probes = l.items.map(Probe(_)).toSeq
         //TODO we have the option of doing a fuzzy (e.g. symbol-based) export here
         val genes = ap.withAttributes(probes).flatMap(_.genes.map(_.identifier))
-        ci.setContent(asJavaList(genes.toList))
+        ci.setContent(seqAsJavaList(genes.toList))
         var newList = ls.createList(ci)
         newList = ls.rename(newList, l.name)
       } 

@@ -28,6 +28,7 @@ import javax.mail.Message
 import javax.mail.Address
 import javax.mail.Transport
 import scala.Array.canBuildFrom
+import scala.language.implicitConversions
 
 object Feedback {
   

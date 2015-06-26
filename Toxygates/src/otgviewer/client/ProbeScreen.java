@@ -35,7 +35,6 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.shared.Group;
-import otgviewer.shared.OTGSample;
 import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
 import t.common.shared.ItemList;
@@ -99,7 +98,7 @@ public class ProbeScreen extends Screen {
 	public boolean enabled() {
 		return manager.isConfigured(ColumnScreen.key);
 	}
-
+	
 	private ProbeSelector pathwaySelector() {
 		return new ProbeSelector(
 				"This lets you view probes that correspond to a given KEGG pathway. "
@@ -111,7 +110,7 @@ public class ProbeScreen extends Screen {
 			}
 
 			protected void getProbes(String item) {
-				sparqlService.probesForPathway(chosenSampleClass, item,
+				sparqlService.probesForPathway(chosenSampleClass, item, getAllSamples(),
 						retrieveProbesCallback());
 			}
 
@@ -133,7 +132,7 @@ public class ProbeScreen extends Screen {
 			}
 
 			protected void getProbes(String item) {
-				sparqlService.probesForGoTerm(item,
+				sparqlService.probesForGoTerm(item, getAllSamples(),
 						retrieveProbesCallback());
 			}
 
@@ -281,29 +280,8 @@ public class ProbeScreen extends Screen {
 			}
 		});
         
-        final ProbeScreen ps = this;
-
-	    Button b2 = new Button("Filter by groups", new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              String[] probes = listedProbes.toArray(new String[0]);
-              List<OTGSample> allSamples = new ArrayList<OTGSample>();
-              for (Group g : chosenColumns) {
-                List<OTGSample> ss = Arrays.asList(g.getSamples());
-                allSamples.addAll(ss);
-              }
-              
-              sparqlService.filterProbesByGroup(probes, allSamples, new PendingAsyncCallback<String[]>(ps) {
-                @Override
-                public void handleSuccess(String[] t) {
-                    ps.probesChanged(t);                                
-                }                           
-              });
-            }
-	    });
-	    
+        final ProbeScreen ps = this;	    
 	    buttons.add(b);
-	    buttons.add(b2);
 
 		plPanel = new ResizingDockLayoutPanel();
 		plNorth = Utils.wideCentered(l);
@@ -316,7 +294,7 @@ public class ProbeScreen extends Screen {
 			@Override
 			protected void itemsChanged(List<String> items) {
 				matrixService.identifiersToProbes(items.toArray(new String[0]),
-						true, false, new PendingAsyncCallback<String[]>(ps) {
+						true, false, getAllSamples(), new PendingAsyncCallback<String[]>(ps) {
 							@Override
 							public void handleSuccess(String[] t) {
 								ps.probesChanged(t);								
@@ -331,6 +309,9 @@ public class ProbeScreen extends Screen {
 			}
 		};
 		listChooser.setStylePrimaryName("colored");
+		//To ensure that ListChooser has chosenColumns
+		addListener(listChooser);
+		
 		plPanel.addNorth(listChooser, PL_NORTH_HEIGHT);
 		
 		plPanel.add(probesList);
@@ -389,7 +370,7 @@ public class ProbeScreen extends Screen {
 		// change the identifiers (which can be mixed format, for example genes
 		// and proteins etc) into a
 		// homogenous format (probes only)
-		matrixService.identifiersToProbes(probes, true, titleMatch,
+		matrixService.identifiersToProbes(probes, true, titleMatch, getAllSamples(),
 				new PendingAsyncCallback<String[]>(this,
 						"Unable to obtain manual probes (technical error).") {
 					public void handleSuccess(String[] probes) {

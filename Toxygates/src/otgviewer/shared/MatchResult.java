@@ -27,6 +27,7 @@ import java.io.Serializable;
  * @author johan
  *
  */
+@SuppressWarnings("serial")
 public class MatchResult implements Serializable {
 
 	public MatchResult() { }		

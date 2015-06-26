@@ -23,6 +23,7 @@ package otgviewer.shared;
 import java.io.Serializable;
 import java.util.Arrays;
 
+@SuppressWarnings("serial")
 public class Pathology implements Serializable {
 	private String barcode;
 	private String topography;

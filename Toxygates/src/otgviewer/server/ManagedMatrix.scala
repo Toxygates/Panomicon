@@ -274,8 +274,9 @@ class ManagedMatrix(val initProbes: Array[String],
   protected var currentMat: ExprMatrix = rawGroupedMat
   
   protected var _synthetics: Vector[Synthetic] = Vector()  
-  protected var _sortColumn: Int = -1
+  protected var _sortColumn: Option[Int] = None
   protected var _sortAscending: Boolean = false
+  protected var _sortAuxTable: Option[ExprMatrix] = None
   
   protected var requestProbes: Array[String] = initProbes
   
@@ -285,7 +286,7 @@ class ManagedMatrix(val initProbes: Array[String],
    * What is the current sort column?
    * Undefined if the last sort operation was done by an aux table.
    */
-  def sortColumn: Int = _sortColumn
+  def sortColumn: Option[Int] = _sortColumn
   
   /**
    * Is the current sort type ascending?
@@ -310,6 +311,8 @@ class ManagedMatrix(val initProbes: Array[String],
     filterAndSort()
   }
   
+  def probesForAuxTable: Seq[String] = rawGroupedMat.orderedRowKeys
+  
   protected def filterAndSort(): Unit = {
     def f(r: Seq[ExpressionValue]): Boolean = {
       for (col <- 0 until currentInfo.numColumns();
@@ -332,7 +335,13 @@ class ManagedMatrix(val initProbes: Array[String],
     currentMat = currentMat.filterRows(f)
     
     currentInfo.setNumRows(currentMat.rows)
-    sort(_sortColumn, _sortAscending)
+    (_sortColumn, _sortAuxTable) match {
+      case (Some(sc), _) => sort(sc, _sortAscending)
+      case (_, Some(sat)) => 
+        sortWithAuxTable(sat, _sortAscending)
+      case (None, None) =>
+        throw new Exception("Insufficient sort parameters")
+    }    
   }
   
   private def sortData(col: Int, ascending: Boolean)
@@ -355,7 +364,7 @@ class ManagedMatrix(val initProbes: Array[String],
     }
     
   def sort(col: Int, ascending: Boolean): Unit = {    
-    _sortColumn = col
+    _sortColumn = Some(col)
     _sortAscending = ascending
     currentMat = currentMat.sortRows(sortData(col, ascending))
   }
@@ -365,11 +374,13 @@ class ManagedMatrix(val initProbes: Array[String],
    * Sort everything by that column, then discard the temporary table.
    */
   def sortWithAuxTable(adj: ExprMatrix, ascending: Boolean): Unit = {
-    _sortColumn = -1
+    _sortColumn = None
     _sortAscending = ascending
-    val col = currentMat.columns    
+    _sortAuxTable = Some(adj)
+    val col = currentMat.columns
+    val sortMat = adj.selectNamedRows(currentMat.orderedRowKeys)
     currentMat = 
-      currentMat.modifyJointly(adj, _.sortRows(sortData(col, ascending)))._1
+      currentMat.modifyJointly(sortMat, _.sortRows(sortData(col, ascending)))._1
   }
   
   def addSynthetic(s: Synthetic): Unit = {

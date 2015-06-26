@@ -25,6 +25,7 @@ import java.util.List;
 
 import t.common.shared.sample.ExpressionRow;
 
+@SuppressWarnings("serial")
 public class FullMatrix implements Serializable {
 
 	public FullMatrix() {}

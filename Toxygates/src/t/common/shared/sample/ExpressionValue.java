@@ -25,6 +25,7 @@ import java.io.Serializable;
 /**
  * A single entry in an ExprMatrix or ExpressionRow.
  */
+@SuppressWarnings("serial")
 public class ExpressionValue implements Serializable {
 	private double _value = 0;
 	private char _call = 'A';

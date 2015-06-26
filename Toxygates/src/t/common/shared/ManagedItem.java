@@ -23,6 +23,7 @@ package t.common.shared;
 import java.io.Serializable;
 import java.util.Date;
 
+@SuppressWarnings("serial")
 public abstract class ManagedItem implements Serializable, DataRecord {
 
 	protected String title, comment;

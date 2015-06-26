@@ -56,9 +56,9 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 		sparqlService = screen.sparqlService();
 	}
 	
-	protected List<HideableColumn> initHideableColumns(DataSchema schema) {
+	protected List<HideableColumn<T, ?>> initHideableColumns(DataSchema schema) {
 		SafeHtmlCell shc = new SafeHtmlCell();
-		List<HideableColumn> r = new ArrayList<HideableColumn>();
+		List<HideableColumn<T, ?>> r = new ArrayList<HideableColumn<T, ?>>();
 		for (AType at: schema.associations()) {
 			//TODO fill in matrixColumn for sortable associations
 			AssociationColumn ac = new AssociationColumn(shc, at);			
@@ -69,11 +69,10 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 	
 	private AType[] visibleAssociations() {
 		List<AType> r = new ArrayList<AType>();
-		for (HideableColumn ac: hideableColumns) {
-			if (ac instanceof AssociationTable.AssociationColumn) {
-				AssociationColumn aac = (AssociationColumn) ac;
-				if (aac.visible()) {
-					r.add(aac.assoc);
+		for (HideableColumn<T, ?> ac: hideableColumns) {
+			if (ac instanceof AssociationTable<?>.AssociationColumn) {				
+				if (ac.visible()) {
+					r.add(((AssociationTable<?>.AssociationColumn)ac).assoc);
 				}
 			}
 		}

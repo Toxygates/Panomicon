@@ -21,10 +21,7 @@
 package otg.sparql
 
 import org.junit.runner.RunWith
-import org.scalatest.BeforeAndAfter
-import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.matchers.ShouldMatchers
 
 import otg._
 import otg.Species._
@@ -34,7 +31,7 @@ import t.testing.TestConfig
 import t.platform.Probe
 
 @RunWith(classOf[JUnitRunner])
-class AffyProbesTest extends FunSuite with BeforeAndAfter with ShouldMatchers {	
+class AffyProbesTest extends OTGTestSuite {	
 	
 	val config = TestConfig.config
 	val affyProbes = new Probes(config.triplestore)

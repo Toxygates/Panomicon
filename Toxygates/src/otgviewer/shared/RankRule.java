@@ -24,9 +24,9 @@ import java.io.Serializable;
 
 /**
  * Ranking rules for compounds. Also see RuleType.
- * @author johan
- *
  */
+
+@SuppressWarnings("serial")
 public class RankRule implements Serializable {
 	
 	public RankRule() { }

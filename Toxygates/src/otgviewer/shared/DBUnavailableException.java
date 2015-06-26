@@ -20,6 +20,7 @@
 
 package otgviewer.shared;
 
+@SuppressWarnings("serial")
 public class DBUnavailableException extends ServerError {
 
 	public DBUnavailableException() { 

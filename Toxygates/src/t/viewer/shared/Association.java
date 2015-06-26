@@ -34,6 +34,7 @@ import t.common.shared.Pair;
  * "dynamic columns" in the GUI.
  * The mapped-to objects have names and formal identifiers.
  */
+@SuppressWarnings("serial")
 public class Association implements Serializable {
 
 	private AType _type;

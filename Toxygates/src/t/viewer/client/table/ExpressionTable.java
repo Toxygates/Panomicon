@@ -131,6 +131,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	protected boolean displayPColumns = true;
 	protected SortKey sortKey;
 	protected boolean sortAsc;
+	
+	private boolean pValueOption;
 		
 	/**
 	 * For selecting sample groups to apply t-test/u-test to
@@ -157,7 +159,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
  	
  	protected ValueType chosenValueType;
  	
-	public ExpressionTable(Screen _screen) {
+	public ExpressionTable(Screen _screen, boolean pValueOption) {
 		super(_screen);
 		this.matrixService = _screen.matrixService();
 		this.resources = _screen.resources();
@@ -247,16 +249,18 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		pager.setStylePrimaryName("slightlySpaced");
 		horizontalPanel.add(pager);
 		
-		final CheckBox pcb = new CheckBox("p-value columns");
-		horizontalPanel.add(pcb);
-		pcb.setValue(true);
-		pcb.addClickHandler(new ClickHandler() {			
-			@Override
-			public void onClick(ClickEvent event) {
-				displayPColumns = pcb.getValue();
-				setupColumns();
-			}
-		});
+		if (pValueOption) {
+			final CheckBox pcb = new CheckBox("p-value columns");
+			horizontalPanel.add(pcb);
+			pcb.setValue(true);
+			pcb.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					displayPColumns = pcb.getValue();
+					setupColumns();
+				}
+			});
+		}
 		
 		pager.setDisplay(grid);			
 	}
@@ -519,9 +523,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				"</div> ");
 	}
 	
-	protected List<HideableColumn> initHideableColumns(DataSchema schema) {
+	protected List<HideableColumn<ExpressionRow, ?>> initHideableColumns(DataSchema schema) {
 		SafeHtmlCell shc = new SafeHtmlCell();
-		List<HideableColumn> r = new ArrayList<HideableColumn>();
+		List<HideableColumn<ExpressionRow, ?>> r = new ArrayList<HideableColumn<ExpressionRow, ?>>();
 		
 		r.add(new LinkingColumn<ExpressionRow>(shc, "Gene ID", 
 				initVisibility(StandardColumns.GeneID), 

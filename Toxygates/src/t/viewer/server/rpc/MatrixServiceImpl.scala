@@ -64,6 +64,9 @@ import t.viewer.server.Feedback
 import t.viewer.server.Platforms
 import t.viewer.shared.table.SortKey
 import otgviewer.server.ScalaUtils
+import t.common.shared.PerfTimer
+import java.util.logging.Logger
+import otgviewer.shared.OTGSample
 
 object MatrixServiceImpl {
   
@@ -106,10 +109,12 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   protected implicit var mcontext: MatrixContext = _  
   private def probes = context.probes
   private var config: Configuration = _
+  private val logger = Logger.getLogger("MatrixService")
   
   // Useful for testing
   override def localInit(config: Configuration) {
-    super.localInit(config)       
+    super.localInit(config)
+    this.config = config 
     mcontext = context.matrix
     staticInit(context)    
   }
@@ -121,30 +126,49 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   
   def getSessionData(): MatrixState = {    
     val session = getThreadLocalRequest.getSession
-    val r = session.getAttribute("matrix").
-        asInstanceOf[MatrixState]
-    if (r == null) {
-      val r = new MatrixState()
+    val r = Option(session.getAttribute("matrix").
+        asInstanceOf[MatrixState])
+    r match {
+      case Some(ms) => ms
+      case None =>
+        val r = new MatrixState()
       session.setAttribute("matrix", r)
-      return r
-    } else {
       r
-    }    
+    }        
   }
   
   def setSessionData(m: MatrixState) =
     getThreadLocalRequest().getSession().setAttribute("matrix", m)
 
   //Should this be in sparqlService?
-  //TODO: filter by platforms
   def identifiersToProbes(identifiers: Array[String], precise: Boolean, 
       titlePatternMatch: Boolean): Array[String] = {
-    if (titlePatternMatch) {
-      probes.forTitlePatterns(identifiers).map(_.identifier).toArray
+    identifiersToProbes(identifiers, precise, titlePatternMatch, null)
+  }
+  
+  def identifiersToProbes(identifiers: Array[String], precise: Boolean, 
+      titlePatternMatch: Boolean, samples: JList[OTGSample]): Array[String] = {
+    val ps = if (titlePatternMatch) {
+      probes.forTitlePatterns(identifiers)
     } else {
       probes.identifiersToProbes(mcontext.probeMap,
-        identifiers, precise).map(_.identifier).toArray
+        identifiers, precise)
+    }    
+    val result = ps.map(_.identifier).toArray
+    
+    Option(samples) match {
+      case Some(_) => filterProbesByGroup(result, samples)
+      case None => result
     }
+  }
+  
+  // TODO Same codes in SparqlService
+  def filterProbesByGroup(ps: Array[String], samples: JList[OTGSample]): Array[String] = {
+    val platforms: Set[String] = samples.map(x => x.get("platform_id")).toSet
+    val lookup = probes.platformsAndProbes
+    val acceptProbes = platforms.flatMap(p => lookup(p))
+    
+    ps.filter(x => acceptProbes.contains(x))
   }
 
   private def makeMatrix(requestColumns: Seq[Group], initProbes: Array[String], 
@@ -201,13 +225,26 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   
   def loadMatrix(groups: JList[Group], probes: Array[String],
                   typ: ValueType, syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
-    val pfs = platformsForGroups(groups.toList)   
+    val pt = new PerfTimer(Logger.getLogger("matrixService.loadMatrix"))
+    
+    val pfs = platformsForGroups(groups.toList)
+    pt.mark("PlatformsForGroups")
+    
     val fProbes = platforms.filterProbes(probes, pfs).toArray 
-    val mm = makeMatrix(groups.toVector, fProbes, typ)       
+    pt.mark("FilterProbes")
+    
+    val mm = makeMatrix(groups.toVector, fProbes, typ)
+    pt.mark("MakeMatrix")
+    
     mm.info.setPlatforms(pfs.toArray)
 //    selectProbes(probes)
     val mm2 = applyMapper(groups, mm)
-    getSessionData.matrix = mm2    
+    pt.mark("ApplyMapper")
+    
+    getSessionData.matrix = mm2
+    
+    pt.finish()
+    
     mm2.info
   }
 
@@ -238,21 +275,19 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     mm.info
   }
   
-  private def assocSortTable(ass: AType): ExprMatrix = {
+  protected def assocSortTable(ass: AType, rowKeys: Seq[String]): ExprMatrix = {
     val key = ass.auxSortTableKey
     if (key != null) {
-      val sm = context.auxSortMap(key)
-      val m = getSessionData.matrix.current
-      val rows = (0 until m.rows).map(m.rowAt)
-      println("Rows: " + rows.take(10))
+      val sm = context.auxSortMap(key)      
+      println("Rows: " + rowKeys.take(10))
       println("aux: " + sm.take(10))
-      val evs = rows.map(r => 
+      val evs = rowKeys.map(r => 
         sm.get(r) match {
           case Some(v) => new ExpressionValue(v)
           case None => new ExpressionValue(Double.NaN, 'A')
         })
       val evas = evs.map(v => EVArray(Seq(v)))      
-      ExprMatrix.withRows(evas)
+      ExprMatrix.withRows(evas, rowKeys, List("POPSEQ"))
     } else {
       throw new Exception(s"No sort key for $ass")
     }        
@@ -261,12 +296,13 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   @throws(classOf[NoDataLoadedException])
   def matrixRows(offset: Int, size: Int, sortKey: SortKey,
     ascending: Boolean): JList[ExpressionRow] = {
-
+    val pt = new PerfTimer(Logger.getLogger("matrixService.matrixRows"))
+    
     val session = getSessionData.matrix
             
     sortKey match {
       case mc: SortKey.MatrixColumn =>        
-        if (mc.matrixIndex != session.sortColumn || 
+        if (Some(mc.matrixIndex) != session.sortColumn || 
             ascending != session.sortAscending) {
           session.sort(mc.matrixIndex, ascending)
           println("SortCol: " + mc.matrixIndex + " asc: " + ascending)
@@ -277,17 +313,22 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
         if (old == null || nw != old
             || ascending != session.sortAscending) {
             getSessionData.sortAssoc = nw
-            val st = assocSortTable(as.atype)
+            val st = assocSortTable(as.atype, 
+                getSessionData.matrix.probesForAuxTable)
             session.sortWithAuxTable(st, ascending)
             println("Sort with aux table for " + as)
         }
     }
+    pt.mark("Sort")
     
     val mm = session.current
     val mergeMode = session.info.getPlatforms.size > 1
     
-    new ArrayList[ExpressionRow](
-      insertAnnotations(mm.asRows.drop(offset).take(size), mergeMode))     
+    val r = new ArrayList[ExpressionRow](
+      insertAnnotations(mm.asRows.drop(offset).take(size), mergeMode))
+    pt.mark("insertAnnotations")
+    pt.finish()
+    r
   }
 
   //this is probably quite inefficient
@@ -353,6 +394,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     })
   }
   
+  //TODO simplify 
   def getFullData(gs: JList[Group], rprobes: Array[String], sparseRead: Boolean, 
       withSymbols: Boolean, typ: ValueType): FullMatrix = {
     val sgs = Vector() ++ gs
@@ -401,7 +443,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   @throws(classOf[NoDataLoadedException])  
   def prepareCSVDownload(individualSamples: Boolean): String = {
     val mm = getSessionData.matrix
-    val mat = if (individualSamples &&
+    var mat = if (individualSamples &&
         mm.rawUngroupedMat != null && mm.current != null) {
       val info = mm.info
       val ug = mm.rawUngroupedMat.selectNamedRows(mm.current.rowKeys.toSeq)
@@ -419,10 +461,6 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       mm.current
     }
     
-    if (mat != null) {
-      println("I had " + mat.rows + " rows stored")
-    }
-    
     val colNames = mat.sortedColumnMap.map(_._1)
     val rows = mat.asRows    
     //TODO shared logic with e.g. insertAnnotations, extract
@@ -433,9 +471,15 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     val atomics = rows.map(_.getAtomicProbes())
     val geneIds = atomics.map(row => 
       row.flatMap(at => gis.getOrElse(Probe(at), Seq.empty))).map(_.distinct.mkString(" "))
-    CSVHelper.writeCSV(config.csvDirectory, config.csvUrlBase, rowNames, colNames,
-      geneIds, mat.data.map(_.map(asScala(_))))
+      
+    val aux = List((("Gene"), geneIds))
+    CSVHelper.writeCSV(config.csvDirectory, config.csvUrlBase,
+        aux ++ csvAuxColumns(mat),
+        rowNames, colNames,
+      mat.data.map(_.map(asScala(_))))
   }
+  
+  protected def csvAuxColumns(mat: ExprMatrix): Seq[(String, Seq[String])] = Seq()
 
   @throws(classOf[NoDataLoadedException])
   def getGenes(limit: Int): Array[String] = {
@@ -455,11 +499,9 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   def sendFeedback(name: String, email: String, feedback: String): Unit = {
     val mm = getSessionData.matrix
     var state = "(No user state available)"
-    if (mm != null) {
-      if (mm.current != null) {        
-        state = "Matrix: " + mm.current.rowKeys.size + " x " + mm.current.columnKeys.size
-        state += "\nColumns: " + mm.current.columnKeys.mkString(", ")
-      }
+    if (mm != null && mm.current != null) {
+      state = "Matrix: " + mm.current.rowKeys.size + " x " + mm.current.columnKeys.size
+      state += "\nColumns: " + mm.current.columnKeys.mkString(", ")
     }    
     Feedback.send(name, email, feedback, state, config.feedbackReceivers)
   }
