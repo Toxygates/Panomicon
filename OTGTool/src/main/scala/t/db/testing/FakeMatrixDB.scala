@@ -28,10 +28,11 @@ import t.db.BasicExprValue
 import t.db.ProbeMap
 import t.db.Sample
 
-abstract class AbsFakeMatrixDB[E >: Null <: ExprValue](implicit val probeMap: ProbeMap) extends MatrixDB[E, E] {
+abstract class AbsFakeMatrixDB[E >: Null <: ExprValue]
+(var records: Seq[(Sample, Int, E)] = Vector())
+(implicit val probeMap: ProbeMap) extends MatrixDB[E, E] {
   var closed = false
   var released = false
-  var records: Vector[(Sample, Int, E)] = Vector()
   
   def emptyValue(probe: String): E 
  
@@ -61,7 +62,9 @@ abstract class AbsFakeMatrixDB[E >: Null <: ExprValue](implicit val probeMap: Pr
   }
 }
 
-class FakeBasicMatrixDB(implicit probes: ProbeMap) extends AbsFakeMatrixDB[BasicExprValue] {
+class FakeBasicMatrixDB(initRecords: Seq[(Sample, Int, BasicExprValue)] = Seq())
+  (implicit probes: ProbeMap) extends AbsFakeMatrixDB[BasicExprValue](initRecords) {
+  
   def emptyValue(probe: String) = ExprValue(Double.NaN, 'A', probe)
   
   def deleteSample(x: Sample): Unit = {}
