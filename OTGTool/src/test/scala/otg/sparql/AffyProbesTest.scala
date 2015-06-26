@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -31,15 +31,15 @@ import t.testing.TestConfig
 import t.platform.Probe
 
 @RunWith(classOf[JUnitRunner])
-class AffyProbesTest extends OTGTestSuite {	
-	
-	val config = TestConfig.config
-	val affyProbes = new Probes(config.triplestore)
-	
-	after {
-	  affyProbes.close
-	}
-    
+class AffyProbesTest extends OTGTestSuite {
+
+  val config = TestConfig.config
+  val affyProbes = new Probes(config.triplestore)
+
+  after {
+    affyProbes.close
+  }
+
   test("probe geneSyms") {
     val pr1 = Probe("1367453_at")
     val pr2 = Probe("1367456_at")
@@ -80,8 +80,8 @@ class AffyProbesTest extends OTGTestSuite {
   test("probe title") {
     val pr = Probe("1007_s_at")
     val title = affyProbes.withAttributes(Set(pr))
-    title.head.name should (equal("discoidin domain receptor tyrosine kinase 1") 
-        or equal("microRNA 4640"))
+    title.head.name should (equal("discoidin domain receptor tyrosine kinase 1")
+      or equal("microRNA 4640"))
   }
 
   test("mixed identifiers") {
@@ -94,7 +94,7 @@ class AffyProbesTest extends OTGTestSuite {
     val res2 = affyProbes.identifiersToProbes(context.probeMap, idents, true, false)
     assert(res2.size === 5)
   }
-  
+
   test("GO terms") {
     val gots = affyProbes.goTerms("catabolic")
     gots.size should equal(1000)

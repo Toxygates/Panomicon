@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,23 +20,22 @@
 
 package otg
 
-
 /**
  * A representation of a pathology, as well as a way of filtering by pathologies.
  */
-case class Pathology(finding: Option[String], topography: Option[String], grade: Option[String], 
-    spontaneous: Boolean, barcode: String = null, digitalViewerLink: String = null) {
-  
+case class Pathology(finding: Option[String], topography: Option[String], grade: Option[String],
+  spontaneous: Boolean, barcode: String = null, digitalViewerLink: String = null) {
+
   // The methods below generate SPARQL constraints corresponding to the parameters
   // in this filter. However, we are not currently filtering by pathology anywhere.
-  def constrainAll: String = findingFilter + topographyFilter + gradeFilter   
-  
-  def findingFilter = finding.map( "?p local:find_id ?f . ?f local:label \"" + _ + "\". " ).
-  	getOrElse("")
-  	
-  def topographyFilter = topography.map( "?p local:topo_id ?f . ?f local:label \"" + _ + "\". " ).
-  	getOrElse("")
-  	
-  def gradeFilter = grade.map( "?p local:grade_id ?f . ?f local:label \"" + _ + "\". ").
-  	getOrElse("")
+  def constrainAll: String = findingFilter + topographyFilter + gradeFilter
+
+  def findingFilter = finding.map("?p local:find_id ?f . ?f local:label \"" + _ + "\". ").
+    getOrElse("")
+
+  def topographyFilter = topography.map("?p local:topo_id ?f . ?f local:label \"" + _ + "\". ").
+    getOrElse("")
+
+  def gradeFilter = grade.map("?p local:grade_id ?f . ?f local:label \"" + _ + "\". ").
+    getOrElse("")
 }

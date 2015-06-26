@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -27,10 +27,10 @@ import t.platform.Probe
  * custom PA-calls for each sample group.
  */
 trait ExtMatrixDBReader extends MatrixDBReader[PExprValue] {
-  def emptyValue(probe: String) = PExprValue(0.0, Double.NaN, 'A', probe)  
+  def emptyValue(probe: String) = PExprValue(0.0, Double.NaN, 'A', probe)
 }
 
 trait ExtMatrixDBWriter extends MatrixDBWriter[PExprValue]
 
-trait ExtMatrixDB extends MatrixDB[PExprValue, PExprValue] 
-with ExtMatrixDBReader with ExtMatrixDBWriter 
+trait ExtMatrixDB extends MatrixDB[PExprValue, PExprValue]
+  with ExtMatrixDBReader with ExtMatrixDBWriter

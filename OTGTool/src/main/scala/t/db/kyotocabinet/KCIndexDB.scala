@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -29,13 +29,13 @@ import kyotocabinet.DB
 import t.global.KCDBRegistry
 
 object KCIndexDB {
-  val c20g = 20l * 1204 * 1204 * 1024
   val c1g = 1l * 1204 * 1204 * 1024
-  
+  val c20g = 20l * c1g
+
   //100k buckets (approx 10% of size, assuming 1 million entries), 1 GB page cache
   //default alignment (8 bytes)
   val options = s"#msiz=$c1g#bnum=100000#pccap=$c1g"
-  
+
   /**
    * Test program, takes DB file and input key file to store
    */
@@ -43,89 +43,91 @@ object KCIndexDB {
     val db = apply(args(0), true)
     val lines = Source.fromFile(args(1)).getLines.toVector
     for (l <- lines) {
-      val k = db.put(l)      
+      val k = db.put(l)
       val k2 = db.put("enum", l)
       println(s"$l -> $k, $k2")
     }
-    
-    val idxs = (0 to 10).map(x => (Math.random() * lines.size).toInt)  
+
+    val idxs = (0 to 10).map(x => (Math.random() * lines.size).toInt)
     val em = db.enumMap("enum")
-    
-    for (i <- idxs; l = lines(i);
-    		l1 = db.get(lines(i)); l2 = em(lines(i))) {
+
+    for (
+      i <- idxs; l = lines(i);
+      l1 = db.get(lines(i)); l2 = em(lines(i))
+    ) {
       println(s"Lookup $l -> $l1, $l2")
     }
-    
+
     for (l <- lines) {
       db.remove(l)
     }
     db.release
   }
-  
+
   def readOnce(file: String): Map[String, Int] = {
     var db: KCIndexDB = null
     try {
-      db = apply(file, false)    
+      db = apply(file, false)
       db.fullMap
     } catch {
-      case e: Exception => 
+      case e: Exception =>
         //TODO permanent solution for non-existent files
         println("Exception while trying to open " + file)
         e.printStackTrace()
-        Map()   
+        Map()
     } finally {
       if (db != null) {
-    	 db.release
+        db.release
       }
     }
   }
-  
-   def apply(file: String, writeMode: Boolean): KCIndexDB = {  
-    val db = KCDBRegistry.get(file, writeMode)    
+
+  def apply(file: String, writeMode: Boolean): KCIndexDB = {
+    val db = KCDBRegistry.get(file, writeMode)
     db match {
-      case Some(d) => new KCIndexDB(file, d)              
-      case None => throw new Exception("Unable to get DB")
+      case Some(d) => new KCIndexDB(file, d)
+      case None    => throw new Exception("Unable to get DB")
     }
   }
 }
 
-class KCIndexDB(file: String, db: DB) 
+class KCIndexDB(file: String, db: DB)
   extends KyotoCabinetDB(file, db) with IndexDBWriter {
-  
+
   val nextKey = "##next"
-  
+
   val utf8 = Charset.forName("UTF-8")
   protected def formKey(x: String): Array[Byte] = x.getBytes(utf8)
   protected def formKey(enum: String, x: String): Array[Byte] = formKey("##" + enum + "##" + x)
-  
-  protected def extractKey(data: Array[Byte]): String = new String(data, utf8)
-  //TODO 
 
-  protected def formValue(value: Int): Array[Byte] =  {
+  protected def extractKey(data: Array[Byte]): String = new String(data, utf8)
+  //TODO
+
+  protected def formValue(value: Int): Array[Byte] = {
     val r = ByteBuffer.allocate(4)
     r.putInt(value)
     r.array()
   }
-  
+
   protected def extractValue(data: Array[Byte]): Int = {
     val r = ByteBuffer.wrap(data)
-    r.getInt()    
+    r.getInt()
   }
 
   private def readNextId(k: Array[Byte]): Int = {
     get(k) match {
       case Some(d) => extractValue(d)
-      case None => 
+      case None =>
         db.set(k, formValue(0))
         0
     }
   }
-  
-  protected var nextId: Int = 
-    readNextId(formKey(nextKey))    
-  
-  protected def nextId(enum: String): Int = {    
-    val r = readNextId(formKey("##" + enum + "#next"))    
+
+  protected var nextId: Int =
+    readNextId(formKey(nextKey))
+
+  protected def nextId(enum: String): Int = {
+    val r = readNextId(formKey("##" + enum + "#next"))
     r
   }
 
@@ -136,7 +138,7 @@ class KCIndexDB(file: String, db: DB)
     if (nextId == Int.MaxValue) {
       Console.err.println(tooLargeMsg)
       throw new Exception(tooLargeMsg)
-    }    
+    }
   }
 
   protected def incrementNext(enum: String): Unit = synchronized {
@@ -157,20 +159,20 @@ class KCIndexDB(file: String, db: DB)
     var r = Map[String, Int]()
     cur.jump() //go to first record
     try {
-      var s = cur.get(true)      
+      var s = cur.get(true)
       while (s != null) {
         val k = extractKey(s(0))
         if (!k.startsWith("##")) {
-        	r += (k -> extractValue(s(1)))
+          r += (k -> extractValue(s(1)))
         }
         s = cur.get(true)
       }
     } finally {
       cur.disable
     }
-    r    
+    r
   }
-  
+
   def enumMap(enum: String): Map[String, Int] = {
     val cur = db.cursor()
     var r = Map[String, Int]()
@@ -181,11 +183,11 @@ class KCIndexDB(file: String, db: DB)
       var s = cur.get(true)
       var extK = pattern
       while (s != null && extK.startsWith(pattern)) {
-         extK = extractKey(s(0))         
-         if (extK.startsWith(pattern)) {
-           r += (extK.substring(pattern.length()) -> extractValue(s(1)))
-         } 
-         s = cur.get(true)
+        extK = extractKey(s(0))
+        if (extK.startsWith(pattern)) {
+          r += (extK.substring(pattern.length()) -> extractValue(s(1)))
+        }
+        s = cur.get(true)
       }
     } finally {
       cur.disable
@@ -193,11 +195,11 @@ class KCIndexDB(file: String, db: DB)
     r
   }
 
-  def get(key: String): Option[Int] = 
+  def get(key: String): Option[Int] =
     get(formKey(key)).map(extractValue)
-  
-  def get(enum: String, key: String): Option[Int] = 
-	get(formKey(enum, key)).map(extractValue)
+
+  def get(enum: String, key: String): Option[Int] =
+    get(formKey(enum, key)).map(extractValue)
 
   private def put(key: Array[Byte], value: Array[Byte]) {
     if (db.check(key) != -1) {
@@ -206,9 +208,9 @@ class KCIndexDB(file: String, db: DB)
 
     if (!db.set(key, value)) {
       throw new Exception(s"Unable to store mapping $key -> $value in IndexDB")
-    } 
+    }
   }
-	
+
   def put(key: String): Int = synchronized {
     if (key.startsWith("##")) {
       throw new Exception("Forbidden value " + key + " (must not start with ##)")
@@ -219,28 +221,28 @@ class KCIndexDB(file: String, db: DB)
     incrementNext()
     value
   }
-  
+
   def put(enum: String, key: String): Int = synchronized {
     if (key.startsWith("##")) {
       throw new Exception("Forbidden value " + key + " (must not start with ##)")
-    }    
+    }
     val value = nextId(enum)
     val (k, v) = (formKey(enum, key), formValue(value))
     put(k, v)
     incrementNext(enum)
     value
   }
-  
-  def remove(key: String): Unit = {    
+
+  def remove(key: String): Unit = {
     if (!db.remove(formKey(key))) {
-    	throw new Exception(s"Failed to remove key $key (does it exist?)")      
-    }    
+      throw new Exception(s"Failed to remove key $key (does it exist?)")
+    }
   }
-  
+
   override def remove(keys: Iterable[String]): Unit = {
     val formed = keys.map(formKey).toArray
     if (db.remove_bulk(formed, true) == -1) {
       throw new Exception("Bulk removal from KCIndexDB failed")
-    }    
+    }
   }
 }

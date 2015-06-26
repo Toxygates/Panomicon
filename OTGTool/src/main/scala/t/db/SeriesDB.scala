@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -31,13 +31,13 @@ trait SeriesDB[S <: Series[S]] {
    * The series must be fully specified.
    */
   def addPoints(s: S): Unit
-  
+
   /**
    * Remove the given points. If the series becomes empty, it will be deleted.
    * The series must be fully specified.
    */
   def removePoints(s: S): Unit
-  
+
   /**
    * Obtain the series that match the constraints specified in the key.
    * The key can be partially specified. A SeriesBuilder will be used to find
@@ -46,8 +46,8 @@ trait SeriesDB[S <: Series[S]] {
   def read(key: S): Iterable[S]
 
   /**
-   * Release the database 
+   * Release the database
    */
   def release(): Unit
-  
+
 }

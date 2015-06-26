@@ -15,12 +15,12 @@ trait CmdLineOptions {
   protected def stringOption(args: Seq[String], ident: String): Option[String] = {
     val i = args.indexOf(ident)
     if (i != -1 && i < args.size - 1) {
-      Some(args(i+1))
+      Some(args(i + 1))
     } else {
       None
     }
   }
-  
+
   /**
    * Look for a list of options at the end of the command line.
    */
@@ -32,7 +32,7 @@ trait CmdLineOptions {
       None
     }
   }
-  
+
   /**
    * Look for an option in the form of a integer.
    * E.g.  to look for -k 31, use
@@ -41,11 +41,11 @@ trait CmdLineOptions {
   protected def intOption(args: Seq[String], ident: String): Option[Int] = {
     stringOption(args, ident).map(_.toInt)
   }
-  
+
   protected def longOption(args: Seq[String], ident: String): Option[Long] = {
     stringOption(args, ident).map(_.toLong)
   }
-  
+
   /**
    * Look for an option in the form of a double.
    * E.g.  to look for -threshold 3.2, use
@@ -54,26 +54,26 @@ trait CmdLineOptions {
   protected def doubleOption(args: Seq[String], ident: String): Option[Double] = {
     stringOption(args, ident).map(_.toDouble)
   }
-  
+
   /**
    * Look for a boolean option.
    * If ident is "-verbose", then true will be returned if the
    * flag is present, false otherwise.
    */
   protected def booleanOption(args: Seq[String], ident: String): Boolean = {
-     args.indexOf(ident) != -1        
+    args.indexOf(ident) != -1
   }
-  
+
   /**
    * If this method wraps a call to resolveInt or resolveString (the varieties
    * that return an option), an error will result when a necessary option is missing.
    */
   protected def require[T](parameter: Option[T], message: String): T = parameter match {
-    case None => {      
-      Console.err.println(message)          
+    case None => {
+      Console.err.println(message)
       throw new Exception("Incorrect or missing option")
     }
     case Some(x) => x
   }
-   
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -27,13 +27,12 @@ import t.sparql.QueryUtils
 package object sparql extends t.sparql.QueryUtils {
   import Triplestore._
 
-  val commonPrefixes = tPrefixes + """       
-    PREFIX local:<http://127.0.0.1:3333/>      
+  val commonPrefixes = tPrefixes + """
+    PREFIX local:<http://127.0.0.1:3333/>
     PREFIX luc: <http://www.ontotext.com/owlim/lucene#>
-    PREFIX bio2rdf:<http://bio2rdf.org/ns/bio2rdf#>    
+    PREFIX bio2rdf:<http://bio2rdf.org/ns/bio2rdf#>
 """
-  
+
   def infixStringMatch(q: String) = " luc:myIndex \"*" + q + "*\". "
   def prefixStringMatch(q: String) = " luc:myIndex \"" + q + "*\". "
-  
 }

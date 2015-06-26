@@ -21,5 +21,5 @@
 package t
 
 trait Closeable {
-	def close(): Unit
+  def close(): Unit
 }
