@@ -63,14 +63,17 @@ public class ColumnScreen extends Screen {
 	private TabLayoutPanel tp;
 	private final String rankingLabel;
 	private DataFilterEditor dfe;
+	private boolean hasCompoundRanking;
 	
 	private final SparqlServiceAsync sparqlService;
 	
-	public ColumnScreen(ScreenManager man, String rankingLabel) {
+	public ColumnScreen(ScreenManager man, String rankingLabel,
+			boolean hasCompoundRanking) {
 		super("Sample group definitions", key, false, man,
 				resources.groupDefinitionHTML(), resources.groupDefinitionHelp());
 		
 		this.rankingLabel = rankingLabel;
+		this.hasCompoundRanking = hasCompoundRanking;
 		sparqlService = man.sparqlService();
 		
 		String majorParam = man.schema().majorParameter();
@@ -162,9 +165,11 @@ public class ColumnScreen extends Screen {
 		gi.datasetsChanged(chosenDatasets);
 		
 		tp.add(gi, "Sample groups");
-		
-		final CompoundRanker cr = new SimpleCompoundRanker(this, cs);
-		tp.add(Utils.makeScrolled(cr), rankingLabel);
+
+		if (hasCompoundRanking) {
+			CompoundRanker cr = new SimpleCompoundRanker(this, cs);
+			tp.add(Utils.makeScrolled(cr), rankingLabel);
+		}
 		tp.selectTab(0);		
 		
 		gi.addStaticGroups(appInfo().predefinedSampleGroups());		

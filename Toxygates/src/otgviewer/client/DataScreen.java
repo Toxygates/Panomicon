@@ -93,7 +93,7 @@ public class DataScreen extends Screen {
 	}
 
 	protected ExpressionTable makeExpressionTable() {
-		return new ExpressionTable(this);
+		return new ExpressionTable(this, true);
 	}
 
 	@Override 

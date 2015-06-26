@@ -36,7 +36,8 @@ public class OTGViewer extends TApplication {
 	@Override
 	protected void initScreens() {		
 		addScreenSeq(new StartScreen(this));		
-		addScreenSeq(new ColumnScreen(this, "Compound ranking (optional)"));		
+		addScreenSeq(new ColumnScreen(this, "Compound ranking (optional)", 
+				true));		
 		addScreenSeq(new ProbeScreen(this));		
 		addScreenSeq(new DataScreen(this));		
 		addScreenSeq(new PathologyScreen(this));
@@ -49,16 +50,4 @@ public class OTGViewer extends TApplication {
 	public DataSchema schema() {
 		return schema;
 	}
-	
-//	//TODO should use instanceName instead
-//	@Override
-//	@Deprecated 
-//	public String storagePrefix() {
-//		String uit = getUIType();
-//		if (uit.equals("toxygates")) {
-//			return "OTG";
-//		} else {
-//			return "Toxy_" + uit;
-//		}
-//	}
 }
