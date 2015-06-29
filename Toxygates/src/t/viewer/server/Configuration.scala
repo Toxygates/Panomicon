@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -35,16 +35,16 @@ object Configuration {
    */
   def fromServletConfig(config: ServletConfig) = {
     val servletContext = config.getServletContext()
-    
+
     def p(x: String) = servletContext.getInitParameter(x)
-    
+
     /**
      * These parameters are read from <context-param> tags in WEB-INF/web.xml.
      */
     new Configuration(p("repositoryName"),
       p("dataDir"),
       p("csvDir"),
-      p("csvUrlBase"),      
+      p("csvUrlBase"),
       p("repositoryURL"),
       p("updateURL"),
       p("repositoryUser"),
@@ -52,16 +52,17 @@ object Configuration {
       p("instanceName"),
       p("webappHomeDir"),
       p("matrixDbOptions"),
-      p("feedbackReceivers"))
-  }    
+      p("feedbackReceivers"),
+      p("feedbackFromAddress"))
+  }
 }
 
 /**
  * A bridge from ServletConfig to Context.
  */
-class Configuration(val repositoryName: String, 
+class Configuration(val repositoryName: String,
     val toxygatesHomeDir: String,
-    val csvDirectory: String, val csvUrlBase: String,         
+    val csvDirectory: String, val csvUrlBase: String,
     val repositoryUrl: String = null,
     val updateUrl: String = null,
     val repositoryUser: String = null,
@@ -69,15 +70,16 @@ class Configuration(val repositoryName: String,
     val instanceName: String = null,
     val webappHomeDir: String = null,
     val matrixDbOptions: String = null,
-    val feedbackReceivers: String = null) {
-  
-  def this(owlimRepository: String, toxygatesHome:String, foldsDBVersion: Int) = 
-    this(owlimRepository, toxygatesHome, System.getProperty("otg.csvDir"), 
+    val feedbackReceivers: String = null,
+    val feedbackFromAddress: String = null) {
+
+  def this(owlimRepository: String, toxygatesHome:String, foldsDBVersion: Int) =
+    this(owlimRepository, toxygatesHome, System.getProperty("otg.csvDir"),
         System.getProperty("otg.csvUrlBase"))
 
   def tsConfig = TriplestoreConfig(repositoryUrl, updateUrl,
     repositoryUser, repositoryPass, repositoryName)
   def dataConfig = DataConfig(toxygatesHomeDir, matrixDbOptions)
-  
-  def context(f: Factory): Context = f.context(tsConfig, dataConfig)         
+
+  def context(f: Factory): Context = f.context(tsConfig, dataConfig)
 }

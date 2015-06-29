@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,6 +20,7 @@
 
 package otgviewer.server.rpc
 
-class MatrixServiceImpl extends t.viewer.server.rpc.MatrixServiceImpl with OTGServiceServlet {
- 
+class MatrixServiceImpl extends t.viewer.server.rpc.MatrixServiceImpl
+  with OTGServiceServlet {
+
 }

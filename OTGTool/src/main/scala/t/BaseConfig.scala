@@ -40,6 +40,8 @@ trait BaseConfig {
   def seriesBuilder: SeriesBuilder[S] forSome { type S <: Series[S] }
 
   def sampleParameters: ParameterSet
+
+  def appName: String
 }
 
 case class TriplestoreConfig(url: String, updateUrl: String,

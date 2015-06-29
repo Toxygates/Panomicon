@@ -54,4 +54,6 @@ case class OTGBConfig(triplestore: TriplestoreConfig, data: DataConfig) extends 
   def seriesBuilder = OTGSeries
 
   def sampleParameters = otg.db.SampleParameter
+
+  def appName = "Toxygates"
 }
