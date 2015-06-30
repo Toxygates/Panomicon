@@ -25,15 +25,15 @@ import org.openrdf.repository.RepositoryConnection
 import t.sparql._
 import t.db.DefaultBio
 import t.db.GenBioObject
-import t.db.BioObject
 import t.db.Store
+import t.db.StoredBioObject
 
 /**
  * The identifier is a URI
  */
 case class Pathway(val identifier: String,
   override val name: String,
-  val genes: Iterable[Gene] = Set()) extends BioObject[Pathway] {
+  val genes: Iterable[Gene] = Set()) extends StoredBioObject[Pathway] {
 
   override def hashCode = name.hashCode
 

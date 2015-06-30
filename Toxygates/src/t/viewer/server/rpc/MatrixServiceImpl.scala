@@ -466,7 +466,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     val rowNames = rows.map(_.getAtomicProbes.mkString("/"))
 
     //May be slow!
-    val gis = probes.allGeneIds.mapMValues(_.identifier)
+    val gis = probes.allGeneIds.mapInnerValues(_.identifier)
     val atomics = rows.map(_.getAtomicProbes())
     val geneIds = atomics.map(row =>
       row.flatMap(at => gis.getOrElse(Probe(at), Seq.empty))).map(_.distinct.mkString(" "))

@@ -151,7 +151,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   }
 
   private def predefProbeLists() = {
-    val ls = probeStore.probeLists(instanceURI).mapMValues(p => p.identifier)
+    val ls = probeStore.probeLists(instanceURI).mapInnerValues(p => p.identifier)
     val sls = ls.map(x => new StringList("probes", x._1, x._2.toArray)).toList
     new java.util.LinkedList(seqAsJavaList(sls.sortBy(_.name)))
   }
@@ -403,7 +403,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       queryOrEmpty(() => associationLookup(t, sc, aprobes))
 
     def standardMapping(m: BBMap): MMap[String, (String, String)] =
-      m.mapKValues(_.identifier).mapMValues(p => (p.name, p.identifier))
+      m.mapKeys(_.identifier).mapInnerValues(p => (p.name, p.identifier))
 
     def resolve(): Array[Association] = {
       val m1 = types.par.map(x => (x, standardMapping(lookupFunction(x)))).seq
