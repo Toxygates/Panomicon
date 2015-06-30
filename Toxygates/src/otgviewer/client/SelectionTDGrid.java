@@ -30,11 +30,12 @@ import javax.annotation.Nullable;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
-import otgviewer.client.dialog.DialogPosition;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGSample;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
+import t.viewer.client.Utils;
+import t.viewer.client.dialog.DialogPosition;
 import t.viewer.shared.Unit;
 
 import com.google.gwt.event.dom.client.ClickEvent;

@@ -33,6 +33,7 @@ import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
+import t.viewer.client.Utils;
 import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.Unit;
 

@@ -40,6 +40,7 @@ import t.common.client.components.ResizingListBox;
 import t.common.shared.ItemList;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
+import t.viewer.client.Utils;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.rpc.SparqlServiceAsync;
 

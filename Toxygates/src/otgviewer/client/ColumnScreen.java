@@ -38,6 +38,7 @@ import otgviewer.shared.OTGColumn;
 import t.common.shared.DataSchema;
 import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
+import t.viewer.client.Utils;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
 import com.google.gwt.dom.client.Style.Unit;

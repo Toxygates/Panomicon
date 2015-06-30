@@ -35,6 +35,7 @@ import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
 import t.common.shared.GroupUtils;
 import t.common.shared.SampleClass;
+import t.viewer.client.Utils;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
 import com.google.gwt.cell.client.SafeHtmlCell;

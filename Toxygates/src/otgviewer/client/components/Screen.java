@@ -28,11 +28,11 @@ import java.util.logging.Logger;
 
 import otgviewer.client.Resources;
 import otgviewer.client.SampleDetailScreen;
-import otgviewer.client.Utils;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGSample;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
+import t.viewer.client.Utils;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.rpc.SeriesServiceAsync;
 import t.viewer.client.rpc.SparqlServiceAsync;

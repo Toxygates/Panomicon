@@ -30,12 +30,12 @@ import java.util.logging.Logger;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.InteractionDialog;
 import otgviewer.client.dialog.TargetMineSyncDialog;
 import t.common.shared.ItemList;
 import t.common.shared.SharedUtils;
 import t.common.shared.StringList;
+import t.viewer.client.dialog.DialogPosition;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;

@@ -22,9 +22,9 @@ package otgviewer.client.components;
 
 import java.util.List;
 
-import otgviewer.client.Utils;
 import otgviewer.shared.Group;
 import t.common.shared.DataSchema;
+import t.viewer.client.Utils;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;

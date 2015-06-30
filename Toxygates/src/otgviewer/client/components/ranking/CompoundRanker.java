@@ -26,8 +26,8 @@ import java.util.List;
 
 import otgviewer.client.CompoundSelector;
 import otgviewer.client.GeneOracle;
+import otgviewer.client.OTGClientUtils;
 import otgviewer.client.Resources;
-import otgviewer.client.Utils;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ListChooser;
 import otgviewer.client.components.PendingAsyncCallback;
@@ -36,6 +36,7 @@ import otgviewer.shared.RankRule;
 import t.common.shared.DataSchema;
 import t.common.shared.ItemList;
 import t.common.shared.SampleClass;
+import t.viewer.client.Utils;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
@@ -148,7 +149,8 @@ abstract public class CompoundRanker extends DataListenerWidget {
 		}));
 		
 		
-		Widget i = Utils.mkHelpButton(resources.compoundRankingHTML(), resources.compoundRankingHelp());
+		Widget i = OTGClientUtils.
+		    mkHelpButton(resources.compoundRankingHTML(), resources.compoundRankingHelp());
 		hp.add(i);
 	}
 

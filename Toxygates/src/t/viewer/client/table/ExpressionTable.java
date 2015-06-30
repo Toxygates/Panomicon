@@ -32,7 +32,6 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 import otgviewer.client.StandardColumns;
-import otgviewer.client.Utils;
 import otgviewer.client.charts.AdjustableGrid;
 import otgviewer.client.charts.Charts;
 import otgviewer.client.charts.Charts.AChartAcceptor;
@@ -40,7 +39,6 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.FilterEditor;
 import otgviewer.shared.Group;
 import otgviewer.shared.ManagedMatrixInfo;
@@ -55,6 +53,8 @@ import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
 import t.common.shared.sample.DataColumn;
 import t.common.shared.sample.ExpressionRow;
+import t.viewer.client.Utils;
+import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.table.SortKey;
 

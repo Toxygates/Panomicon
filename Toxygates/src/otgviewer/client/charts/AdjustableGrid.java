@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import otgviewer.client.Utils;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Group;
 import t.common.shared.DataSchema;
@@ -37,6 +36,7 @@ import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.SampleGroup;
+import t.viewer.client.Utils;
 import t.viewer.shared.Unit;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
