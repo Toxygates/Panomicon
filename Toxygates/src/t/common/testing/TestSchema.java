@@ -3,6 +3,7 @@ package t.common.testing;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 
+@SuppressWarnings("serial")
 public class TestSchema extends DataSchema {
 
   public TestSchema() {

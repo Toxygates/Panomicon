@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -63,47 +63,46 @@ import t.common.shared.Dataset
 import otgviewer.shared.Group
 import t.common.shared.AType
 
-
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
  * local Owlim-lite store.
  */
 class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGServiceServlet {
-  
+
   private def probeStore: otg.sparql.Probes = context.probes
   private def sampleStore: otg.sparql.OTGSamples = context.samples
 
   var chembl: ChEMBL = _
   var drugBank: DrugBank = _
   var homologene: B2RHomologene = _
-  
+
   override def localInit(c: Configuration) {
     super.localInit(c)
     chembl = new ChEMBL()
     drugBank = new DrugBank()
     homologene = new B2RHomologene()
-    
+
     _appInfo.setPredefinedGroups(predefinedGroups)
   }
-  
+
   @throws[TimeoutException]
   override def goTerms(pattern: String): Array[String] =
     probeStore.goTerms(pattern).map(_.name).toArray
 
   @throws[TimeoutException]
   override def probesForGoTerm(goTerm: String): Array[String] = {
-    val pmap = context.matrix.probeMap 
+    val pmap = context.matrix.probeMap
     probeStore.forGoTerm(GOTerm("", goTerm)).map(_.identifier).filter(pmap.isToken).toArray
   }
-  
+
   //TODO move to OTG
   @throws[TimeoutException]
   private def predefinedGroups: Array[Group] = {
     //we call this from localInit and sessionInfo.sampleFilter
     //will not be available yet
-    
+
     implicit val sf = SampleFilter(instanceURI = instanceURI)
-    val r = sampleStore.sampleGroups.filter(!_._2.isEmpty).map(x => 
+    val r = sampleStore.sampleGroups.filter(!_._2.isEmpty).map(x =>
       new Group(schema, x._1, x._2.map(x => asJavaSample(x)).toArray))
     r.toArray
   }
@@ -132,10 +131,10 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
 
   @throws[TimeoutException]
   override def pathologies(column: OTGColumn): Array[Pathology] =
-    column.getSamples.flatMap(x => sampleStore.pathologies(x.getCode)).map(asJava(_))
-  
+    column.getSamples.flatMap(x => sampleStore.pathologies(x.id)).map(asJava(_))
+
   override def associations(sc: SampleClass, types: Array[AType],
-    _probes: Array[String]): Array[Association] =    
+    _probes: Array[String]): Array[Association] =
     new AnnotationResolver(sc, types, _probes).resolve
 
   protected class AnnotationResolver(sc: SampleClass, types: Array[AType],
@@ -160,7 +159,7 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
       println(r.allValues.size + " oproteins")
       r
     }
-    
+
     def getTargeting(sc: SampleClass, from: CompoundTargets): MMap[Probe, Compound] = {
       val expected = sampleStore.compounds(scAsScala(sc).filterAll).map(Compound.make(_))
 
@@ -175,7 +174,7 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
         x
       })
     }
-       
+
     override def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe]): BBMap = {
       at match {
         case _: AType.GOMF.type      => probeStore.mfGoTerms(probes)

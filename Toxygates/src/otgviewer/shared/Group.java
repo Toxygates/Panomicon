@@ -42,6 +42,7 @@ import t.viewer.shared.Unit;
 @SuppressWarnings("serial")
 public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 	
+  //TODO lift units up
 	protected Unit[] _units;
 	
 	public Group() {}
@@ -138,19 +139,6 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 				sc.filter(sList) : sList; 
 		return SampleClass.collectInner(filtered, schema.majorParameter());				
 	}
-	
-	public Set<String> collect(String parameter) {
-		return SampleClass.collectInner(Arrays.asList(_samples), parameter);
-	}
-	
-	public static Set<String> collectAll(Iterable<Group> from, String parameter) {
-		Set<String> r = new HashSet<String>();
-		for (Group g: from) {
-			r.addAll(g.collect(parameter));
-		}
-		return r;
-	}
-	
 	
 	// See SampleGroup for the packing method
 	// TODO lift up the unpacking code to have 

@@ -92,7 +92,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue]
       val samples =
         (if(fullLoad) g.getSamples.toList else samplesForDisplay(g)).
           toVector.distinct
-      val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.getCode)))
+      val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.id)))
         val data = reader.valuesForSamplesAndProbes(sortedSamples,
             packedProbes, sparseRead)
 
@@ -138,7 +138,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue]
   }
 
   protected def unitIdxs(us: Iterable[t.viewer.shared.Unit], samples: Seq[Sample]): Seq[Int] = {
-    val ids = us.flatMap(u => u.getSamples.map(_.getCode)).toSet
+    val ids = us.flatMap(u => u.getSamples.map(_.id)).toSet
     val inSet = samples.map(s => ids.contains(s.sampleId))
     inSet.zipWithIndex.filter(_._1).map(_._2)
   }
@@ -406,8 +406,8 @@ class ManagedMatrix(val initProbes: Seq[String],
     s match {
       case test: Synthetic.TwoGroupSynthetic =>
         //TODO
-        val g1s = test.getGroup1.getSamples.filter(_.get("dose_level") != "Control").map(_.getCode)
-        val g2s = test.getGroup2.getSamples.filter(_.get("dose_level") != "Control").map(_.getCode)
+        val g1s = test.getGroup1.getSamples.filter(_.get("dose_level") != "Control").map(_.id)
+        val g2s = test.getGroup2.getSamples.filter(_.get("dose_level") != "Control").map(_.id)
         var upper = true
 
         val currentRows = (0 until currentMat.rows).map(i => currentMat.rowAt(i))

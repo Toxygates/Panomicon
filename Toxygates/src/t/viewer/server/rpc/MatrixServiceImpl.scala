@@ -209,7 +209,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   }
 
   private def platformsForGroups(gs: Iterable[Group]): Iterable[String] = {
-    val samples = gs.toList.flatMap(_.getSamples().map(_.getCode))
+    val samples = gs.toList.flatMap(_.getSamples().map(_.id))
     context.samples.platforms(samples)
   }
 
@@ -450,7 +450,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       //Help the user by renaming the columns.
       //Prefix sample IDs by group IDs.
       val parts = gs.map(g => {
-        val ids = g.getTreatedSamples.map(_.getCode)
+        val ids = g.getTreatedSamples.map(_.id)
         val sel = ug.selectNamedColumns(ids)
         val newNames = Map() ++ sel.columnMap.map(x => (g.getName + ":" + x._1 -> x._2))
         sel.copyWith(sel.data, sel.rowMap, newNames)
