@@ -92,6 +92,16 @@ class B2RKegg(val con: RepositoryConnection) extends Triplestore with Store[Path
         "filter regex(?title, '.*" + pattern + ".*', 'i') " +
         "} } limit 100").toVector                
   }
+  
+  def forPattern(pattern: String, maxSize: Int): Vector[String] = {
+     simpleQuery(prefixes +
+      """SELECT DISTINCT ?title where { graph ?gr {        
+        ?pw rdf:type kv:Pathway;
+        dc:title ?title .  """ +
+        "filter regex(?title, '.*" + pattern + ".*', 'i') " +
+        "} } order by ?title limit " + maxSize).toVector                
+  }
+
 
   /**
    * Obtain all enzymes associated with each of a set of genes.

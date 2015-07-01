@@ -427,8 +427,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     probes.filter(x => acceptProbes.contains(x))
   }
   
-  def keywordSuggestions(partialName: String): Array[Pair[String, String]] = {
-    b2rKegg.forPattern(partialName).map(new Pair(_, "KEGG Pathway")).toArray
+  def keywordSuggestions(partialName: String, maxSize: Int): Array[Pair[String, String]] = {
+    b2rKegg.forPattern(partialName, maxSize).map(new Pair(_, "KEGG Pathway")).toArray
   }
 
 }

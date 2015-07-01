@@ -186,7 +186,7 @@ public interface SparqlService extends RemoteService {
 	 *            If null, all probes will be obtained.
 	 * @return
 	 */
-	public String[] probesForPathway(SampleClass sc, String pathway, List<OTGSample> samples)
+	public String[] probesForPathway(SampleClass sc, String pathway, @Nullable List<OTGSample> samples)
 			throws TimeoutException;
 
 	/**
@@ -226,7 +226,7 @@ public interface SparqlService extends RemoteService {
 	 * @param goTerm
 	 * @return
 	 */
-	public String[] probesForGoTerm(String goTerm, List<OTGSample> samples) throws TimeoutException;
+	public String[] probesForGoTerm(String goTerm, @Nullable List<OTGSample> samples) throws TimeoutException;
 	
 	/**
 	 * Obtain gene symbols for the given probes. The resulting array will
@@ -278,5 +278,5 @@ public interface SparqlService extends RemoteService {
 	 * @return An array of pairs, where the first item is the precise gene
 	 * symbol and the second is the full gene name.
 	 */
-	public Pair<String, String>[] keywordSuggestions(String partialName);
+	public Pair<String, String>[] keywordSuggestions(String partialName, int maxSize);
 }
