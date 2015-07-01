@@ -21,6 +21,7 @@
 package otgviewer.server
 
 import scala.reflect.ClassTag
+import scala.language.postfixOps
 
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest
 import org.apache.commons.math3.stat.inference.TTest

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -21,11 +21,9 @@
 package t.platform
 
 case class OrthologMapping(name: String, mappings: Iterable[Iterable[String]]) {
-
-  lazy val forProbe: Map[String, Seq[String]] = 
+  lazy val forProbe: Map[String, Seq[String]] =
     Map() ++ mappings.flatMap(m => {
       val s = m.toSeq
-      s.map(x => (x-> s))
+      s.map(x => (x -> s))
     })
-  
 }

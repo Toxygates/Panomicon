@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -28,20 +28,20 @@ import t.db.MatrixContext
  * Top level configuration object for a T framework
  * application
  */
-class Context(val config: BaseConfig, 
-    val factory: Factory, 
-    val probes: Probes, 
-    val samples: Samples,
-    val matrix: MatrixContext) { 
-   
-    //TODO best location for this?
-  
+class Context(val config: BaseConfig,
+  val factory: Factory,
+  val probes: Probes,
+  val samples: Samples,
+  val matrix: MatrixContext) {
+
+  //TODO best location for this?
+
   /**
    * Obtain an ordering of the probes, identified by a string key.
    */
-    def auxSortMap(key: String): Map[String, Double] = {      
-      val allProbes = matrix.probeMap.tokens
-      println("Aux map for " + allProbes.size + " probes key " + key)
-      probes.auxSortMap(allProbes, key)
-    }
+  def auxSortMap(key: String): Map[String, Double] = {
+    val allProbes = matrix.probeMap.tokens
+    println("Aux map for " + allProbes.size + " probes key " + key)
+    probes.auxSortMap(allProbes, key)
+  }
 }

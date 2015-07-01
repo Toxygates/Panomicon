@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -25,11 +25,11 @@ import t.db.ProbeIndex
 import t.db.ProbeMap
 import t.db.SampleIndex
 
-class Maps(data: DataConfig) {    
-  
-  lazy val unifiedProbes: ProbeMap =     
+class Maps(data: DataConfig) {
+
+  lazy val unifiedProbes: ProbeMap =
     new ProbeIndex(KCIndexDB.readOnce(data.probeIndex))
-  
-  lazy val sampleMap =     
-    new SampleIndex(KCIndexDB.readOnce(data.sampleIndex))  
+
+  lazy val sampleMap =
+    new SampleIndex(KCIndexDB.readOnce(data.sampleIndex))
 }

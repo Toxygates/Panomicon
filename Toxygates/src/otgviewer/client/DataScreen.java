@@ -30,9 +30,9 @@ import otgviewer.client.components.SearchTool;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.Group;
-import otgviewer.shared.OTGSample;
 import t.common.shared.ItemList;
 import t.common.shared.clustering.ProbeClustering;
+import t.common.shared.sample.ExpressionRow;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.client.table.ExpressionTable;
@@ -107,8 +107,8 @@ public class DataScreen extends Screen {
         if (keyword.isEmpty()) {
           return;
         }
-        sparqlService.probesForPathway(chosenSampleClass, keyword, getAllSamples(),
-            new PendingAsyncCallback<String[]>(this) {
+        sparqlService.probesForPathway(chosenSampleClass, keyword,
+            getAllSamples(), new PendingAsyncCallback<String[]>(this) {
               @Override
               public void handleSuccess(String[] t) {
                 if (t.length == 0) {
@@ -122,7 +122,7 @@ public class DataScreen extends Screen {
   }
 
   protected ExpressionTable makeExpressionTable() {
-    return new ExpressionTable(this);
+    return new ExpressionTable(this, true);
   }
 
   @Override
@@ -179,7 +179,7 @@ public class DataScreen extends Screen {
     addMenu(mActions);
 
     mb = new MenuBar(true);
-    for (final HideableColumn c : et.getHideableColumns()) {
+    for (final HideableColumn<ExpressionRow, ?> c : et.getHideableColumns()) {
       new TickMenuItem(mb, c.columnInfo().title(), c.visible()) {
         @Override
         public void stateChange(boolean newState) {
@@ -194,8 +194,7 @@ public class DataScreen extends Screen {
     addAnalysisMenuItem(new MenuItem("Save visible genes as list...",
         new Command() {
           public void execute() {
-            // Create an invisible listChooser that we exploit only
-            // for
+            // Create an invisible listChooser that we exploit only for
             // the sake of saving a new list.
             ListChooser lc =
                 new ListChooser(appInfo().predefinedProbeLists(), "probes") {
@@ -205,8 +204,7 @@ public class DataScreen extends Screen {
                     w.storeItemLists(w.getParser());
                   }
                 };
-            // TODO make ListChooser use the DataListener propagate
-            // mechanism?
+            // TODO make ListChooser use the DataListener propagate mechanism?
             lc.setLists(chosenItemLists);
             lc.setItems(Arrays.asList(et.displayedAtomicProbes()));
             lc.saveAction();
@@ -214,8 +212,7 @@ public class DataScreen extends Screen {
         }));
 
     // TODO: this is effectively a tick menu item without the tick.
-    // It would be nice to display the tick graphic, but then the textual
-    // alignment
+    // It would be nice to display the tick graphic, but then the textual alignment
     // of the other items on the menu becomes odd.
     addAnalysisMenuItem(new TickMenuItem("Compare two sample groups", false,
         false) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -28,17 +28,16 @@ import t.db.ExprValue
 import t.db.MatrixContext
 
 class SeriesRanking[S <: Series[S]](val db: SeriesDB[S], val key: S)(implicit context: MatrixContext) {
-   protected def getScores(mt: SeriesRanking.RankType): Iterable[(S, Double)] = {    
-    mt.matchOneProbe(this, key.probe)     
+  protected def getScores(mt: SeriesRanking.RankType): Iterable[(S, Double)] = {
+    mt.matchOneProbe(this, key.probe)
   }
-   
+
   /**
    * This method is currently the only entry point used by the web application.
    * Returns (compound, dose, score)
    */
-  def rankCompoundsCombined(probesRules: Seq[(String, SeriesRanking.RankType)]): 
-    Iterable[(String, String, Double)] = List()
-    //TODO implement the general case
+  def rankCompoundsCombined(probesRules: Seq[(String, SeriesRanking.RankType)]): Iterable[(String, String, Double)] = List()
+  //TODO implement the general case
 }
 
 /**
@@ -48,11 +47,11 @@ class SeriesRanking[S <: Series[S]](val db: SeriesDB[S], val key: S)(implicit co
 object SeriesRanking {
   import Statistics._
   import SafeMath._
- 
+
   // The different rank types (scoring methods).
   // Note that each rank type must produce a POSITIVE number to function correctly.
-  
-trait RankType {
+
+  trait RankType {
     /**
      * Perform ranking for one probe.
      * Note that the probe in the pattern 'key' may or may not correspond to the probe being ranked.
@@ -62,14 +61,14 @@ trait RankType {
       val key = c.key.asSingleProbeKey
       val data = c.db.read(key)
       println(s"Read for key: $key result size ${data.size}")
-      
-      scoreAllSeries(data.toSeq) 
+
+      scoreAllSeries(data.toSeq)
     }
 
-    def scoreAllSeries[S <: Series[S]](series: Seq[S]): Iterable[(S, Double)] = {      
-      series.map(s => (s, scoreSeries(s)) )
+    def scoreAllSeries[S <: Series[S]](series: Seq[S]): Iterable[(S, Double)] = {
+      series.map(s => (s, scoreSeries(s)))
     }
-    
+
     def scoreSeries[S <: Series[S]](s: S): Double
   }
 
@@ -80,7 +79,7 @@ trait RankType {
 
   object Sum extends RankType {
     // TODO: numbers like 50 are ad hoc to guarantee a positive result
-    def scoreSeries[S <: Series[S]] (s: S): Double =
+    def scoreSeries[S <: Series[S]](s: S): Double =
       (50 + safeMean(s.presentValues)) / 50
   }
 
@@ -90,7 +89,7 @@ trait RankType {
   }
 
   object Unchanged extends RankType {
-    def scoreSeries[S <: Series[S]] (s: S): Double =
+    def scoreSeries[S <: Series[S]](s: S): Double =
       (1000 - safeSum(s.presentValues.map(x => x * x))) / 1000
   }
 
@@ -98,7 +97,7 @@ trait RankType {
    * This match type maximises standard deviation.
    */
   object HighVariance extends RankType {
-    def scoreSeries[S <: Series[S]] (s: S): Double =
+    def scoreSeries[S <: Series[S]](s: S): Double =
       (10 + safeSigma(s.presentValues)) / 10
   }
 
@@ -106,12 +105,12 @@ trait RankType {
    * This match type minimises standard deviation.
    */
   object LowVariance extends RankType {
-    def scoreSeries[S <: Series[S]] (s: S): Double =
+    def scoreSeries[S <: Series[S]](s: S): Double =
       (10 - safeSigma(s.presentValues)) / 10
   }
 
   object MonotonicIncreasing extends RankType {
-    def scoreSeries[S <: Series[S]] (s: S): Double = {
+    def scoreSeries[S <: Series[S]](s: S): Double = {
       var score = 5
       if (s.values(0).value < 0 || s.values(0).call == 'A') { //optional: remove this constraint
         score -= 1
@@ -129,7 +128,7 @@ trait RankType {
   }
 
   object MonotonicDecreasing extends RankType {
-    def scoreSeries[S <: Series[S]] (s: S): Double = {
+    def scoreSeries[S <: Series[S]](s: S): Double = {
       var score = 5
       if (s.values(0).value > 0 || s.values(0).call == 'A') { //optional: remove this constraint
         score -= 1
@@ -177,7 +176,7 @@ trait RankType {
     } else {
       //We don't expect this but let's handle it nicely.
       println("Warning: attempt to do safePCorrelation for vectors of different length.")
-      println(s"s1: $s1 \n s2: $s2")      
+      println(s"s1: $s1 \n s2: $s2")
       Double.NaN
     }
   }
@@ -192,7 +191,7 @@ trait RankType {
     // pick the matching points to perform ranking
     if (d1.size != d2.size) {
       println("WARNING: unable to prepare for compound ranking: series size mismatch: " +
-          s"$s1 and $s2")        
+        s"$s1 and $s2")
       (Seq.empty, Seq.empty)
     } else {
       d1.zip(d2).filter(x => x._1.present && x._2.present).unzip

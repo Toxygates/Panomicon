@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -26,13 +26,13 @@ package t
 trait Tool {
 
   def factory: Factory
-  
+
   def main(args: Array[String]) {
     runCommand(args(0), args.drop(1))
   }
-  
+
   def runCommand(cmd: String, args: Seq[String]): Unit = {
-    
+
   }
-  
+
 }

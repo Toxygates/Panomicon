@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -27,13 +27,13 @@ import t.db.kyotocabinet.KCIndexDB
 //TODO: this is arguably a KyotoCabinet specific concept.
 class TMaps(config: BaseConfig) {
   def data = config.data
-  
-  lazy val unifiedProbes: ProbeMap =     
+
+  lazy val unifiedProbes: ProbeMap =
     new ProbeIndex(KCIndexDB.readOnce(data.probeIndex))
-  
-  lazy val sampleMap =     
+
+  lazy val sampleMap =
     new SampleIndex(KCIndexDB.readOnce(data.sampleIndex))
-  
+
   lazy val enumMaps = {
     val db = KCIndexDB(data.enumIndex, false)
     try {
@@ -51,5 +51,5 @@ class TRefresher(config: BaseConfig) extends Refreshable[TMaps] {
     new java.io.File(config.data.exprDb).lastModified()
   }
 
-  def reload: TMaps = new TMaps(config)   
+  def reload: TMaps = new TMaps(config)
 }

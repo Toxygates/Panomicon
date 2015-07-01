@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -26,12 +26,12 @@ package t
  */
 abstract class Refreshable[T] {
 
-  var lastTimestamp: Long = 0  
-  def currentTimestamp: Long  
+  var lastTimestamp: Long = 0
+  def currentTimestamp: Long
   var latestVal: Option[T] = None
-  
+
   private def shouldRefresh: Boolean = currentTimestamp > lastTimestamp
-  
+
   def latest: T = {
     if (shouldRefresh || latestVal == None) {
       println(this + ": change detected, reloading data")
@@ -40,6 +40,6 @@ abstract class Refreshable[T] {
     }
     latestVal.get
   }
-  
+
   def reload(): T
 }

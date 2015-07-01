@@ -21,8 +21,10 @@
 package otg
 
 import java.io.File
+
 import java.net.URL
 import scala.sys.process._
+import scala.language.postfixOps
 import com.gdevelop.gwt.syncrpc.SyncProxy
 import otgviewer.shared.Group
 import otgviewer.shared.OTGSample

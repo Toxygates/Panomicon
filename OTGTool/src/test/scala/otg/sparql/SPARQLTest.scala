@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,25 +20,22 @@
 
 package otg.sparql
 
+import otg.OTGTestSuite
 import scala.collection.JavaConversions._
 import org.junit.runner.RunWith
-import org.scalatest.BeforeAndAfter
-import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
-import otg.OTGContext
 import org.scalatest.junit.JUnitRunner
 import otg.Species._
-import t.sparql.Triplestore
-import t.testing.TestConfig
-import t.sparql._
-import t.sparql.secondary._
 import t.platform.Probe
+import t.sparql._
+import t.sparql.Triplestore
+import t.sparql.secondary._
+import t.testing.TestConfig
 
 @RunWith(classOf[JUnitRunner])
-class SPARQLTest extends FunSuite with ShouldMatchers with BeforeAndAfter {
-  
+class SPARQLTest extends OTGTestSuite {
+
   val config = TestConfig.config
-  
+
   val affyProbes = new Probes(config.triplestore)
   val homologene = new B2RHomologene
   val iproclass = new B2RIProClass
@@ -109,15 +106,15 @@ class SPARQLTest extends FunSuite with ShouldMatchers with BeforeAndAfter {
     println(ops)
     ops.allValues.size should equal(2)
   }
-  
-  test("B2RKegg") {    
-//    val pws = kegg.forGenes(List(Gene("24379", Rat)), Rat)
-//    println(pws)
-//    pws.allValues.size should equal(5)
-    
-//    val gs = kegg.withAttributes(pws.allValues, Rat).flatMap(_.genes)
-//    println(gs.size + " genes")
-//    gs.size should equal(115)        
-  }   
-  
+
+  test("B2RKegg") {
+    //    val pws = kegg.forGenes(List(Gene("24379", Rat)), Rat)
+    //    println(pws)
+    //    pws.allValues.size should equal(5)
+
+    //    val gs = kegg.withAttributes(pws.allValues, Rat).flatMap(_.genes)
+    //    println(gs.size + " genes")
+    //    gs.size should equal(115)
+  }
+
 }
