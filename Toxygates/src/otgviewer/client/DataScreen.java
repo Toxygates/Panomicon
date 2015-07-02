@@ -130,8 +130,8 @@ public class DataScreen extends Screen {
     super.addToolbars();
     HorizontalPanel mainTools = new HorizontalPanel();
     mainTools.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-    mainTools.add(st.tools());
     mainTools.add(et.tools());
+    mainTools.add(st.tools());
     if (addSelector()) {
       mainTools.add(cs.selector());
     }
