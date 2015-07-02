@@ -69,7 +69,8 @@ public class ColumnScreen extends Screen {
 	private final SparqlServiceAsync sparqlService;
 	
 	public ColumnScreen(ScreenManager man, String rankingLabel,
-			boolean hasCompoundRanking) {
+			boolean hasCompoundRanking, boolean withListSelector,
+			boolean withFreeEdit) {
 		super("Sample group definitions", key, false, man,
 				resources.groupDefinitionHTML(), resources.groupDefinitionHelp());
 		
@@ -78,7 +79,8 @@ public class ColumnScreen extends Screen {
 		sparqlService = man.sparqlService();
 		
 		String majorParam = man.schema().majorParameter();
-		cs = new CompoundSelector(this, man.schema().title(majorParam));		
+		cs = new CompoundSelector(this, man.schema().title(majorParam), 
+		    withListSelector, withFreeEdit);		
 		this.addListener(cs);
 		cs.setStylePrimaryName("compoundSelector");
 		filterTools = mkFilterTools();

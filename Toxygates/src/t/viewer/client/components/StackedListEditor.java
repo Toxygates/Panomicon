@@ -278,14 +278,16 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 
   protected VerticalPanel northVp;
 
-  protected ListChooser listChooser;
+  protected @Nullable ListChooser listChooser;
 
   /**
    * @param itemTitle Header for the item type being selected (in certain cases)
    * @param predefinedLists Predefined lists that the user may choose from
    */
-  public StackedListEditor(final DataListenerWidget parent, String listType, String itemTitle,
-      int maxAutoSel, Collection<StringList> predefinedLists) {
+  public StackedListEditor(final DataListenerWidget parent, 
+      String listType, String itemTitle,
+      int maxAutoSel, Collection<StringList> predefinedLists,
+      boolean withListSelector, boolean withFreeEdit) {
     dlp = new DockLayoutPanel(Unit.PX);
     initWidget(dlp);
 
@@ -296,30 +298,34 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 
     final StackedListEditor sle = this;
 
-    listChooser = new ListChooser(predefinedLists, listType) {
-      @Override
-      protected void itemsChanged(List<String> items) {
-        setSelection(validateItems(items));
+    if (withListSelector) {
+      listChooser = new ListChooser(predefinedLists, listType) {
+        @Override
+        protected void itemsChanged(List<String> items) {
+          setSelection(validateItems(items));
+        }
+
+        @Override
+        protected void listsChanged(List<ItemList> itemLists) {
+          parent.chosenItemLists = itemLists;
+          sle.listsChanged(itemLists);
+        }
+      };
+      listChooser.setStylePrimaryName("colored");
+      parent.addListener(listChooser);
+      northVp.add(listChooser);
+      dlp.addNorth(northVp, 30);
+    }
+
+    createSelectionMethods(methods, itemTitle, maxAutoSel, withFreeEdit);
+    if (methods.size() == 1) {
+      dlp.add(methods.get(0));
+    } else {
+      slp = new StackLayoutPanel(Unit.PX);
+      dlp.add(slp);
+      for (SelectionMethod<String> m : methods) {
+        slp.add(m, m.getTitle(), 30);
       }
-
-      @Override
-      protected void listsChanged(List<ItemList> itemLists) {
-        parent.chosenItemLists = itemLists;
-        sle.listsChanged(itemLists);
-      }
-    };
-    listChooser.setStylePrimaryName("colored");
-    parent.addListener(listChooser);
-    northVp.add(listChooser);
-
-    dlp.addNorth(northVp, 30);
-
-    slp = new StackLayoutPanel(Unit.PX);
-    dlp.add(slp);
-
-    createSelectionMethods(methods, itemTitle, maxAutoSel);
-    for (SelectionMethod<String> m : methods) {
-      slp.add(m, m.getTitle(), 30);
     }
   }
 
@@ -329,9 +335,11 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
    * @param methods list to add methods to.
    * @return
    */
-  protected void createSelectionMethods(List<SelectionMethod<String>> methods, String itemTitle,
-      int maxAutoSel) {
-    methods.add(new FreeEdit(this));
+  protected void createSelectionMethods(List<SelectionMethod<String>> methods, 
+      String itemTitle, int maxAutoSel, boolean withFreeEdit) {
+    if (withFreeEdit) {
+      methods.add(new FreeEdit(this));
+    }
     BrowseCheck bc = new BrowseCheck(this, itemTitle, maxAutoSel);
     methods.add(bc);
     this.selTable = bc.selTable;
@@ -456,7 +464,9 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
   }
 
   public void setLists(List<ItemList> lists) {
-    listChooser.setLists(lists);
+    if (listChooser != null) {
+      listChooser.setLists(lists);
+    }
   }
 
   /**
@@ -475,7 +485,9 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
       }
     }
     selectedItems = new HashSet<String>(items);
-    listChooser.setItems(new ArrayList<String>(items));
+    if (listChooser != null) {
+      listChooser.setItems(new ArrayList<String>(items));
+    }
     selectionChanged(selectedItems);
   }
 
@@ -505,6 +517,9 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
    * Display the picker method, if one exists.
    */
   public void displayPicker() {
+    if (methods.size() == 1 || slp == null) {
+      return;
+    }
     for (SelectionMethod<String> m : methods) {
       if (m instanceof BrowseCheck) {
         slp.showWidget(m);

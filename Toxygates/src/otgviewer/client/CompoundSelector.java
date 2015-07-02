@@ -90,7 +90,8 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 
 	private final static int MAX_AUTO_SEL = 20;
 	
-	public CompoundSelector(final Screen screen, String heading) {
+	public CompoundSelector(final Screen screen, String heading, 
+	    boolean withListSelector, boolean withFreeEdit) {
 		this.screen = screen;
 		this.sparqlService = screen.sparqlService();
 		this.seriesService = screen.seriesService();
@@ -113,7 +114,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 						: new ArrayList<StringList>());
 		
 		compoundEditor = new StackedListEditor(this, "compounds", heading, 
-				MAX_AUTO_SEL, predefLists) {
+				MAX_AUTO_SEL, predefLists, withListSelector, withFreeEdit) {
 			@Override
 			protected void selectionChanged(Set<String> selected) {
 				List<String> r = new ArrayList<String>();
