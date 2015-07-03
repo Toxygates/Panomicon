@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client;
+package otgviewer.client.components.groupdef;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import otgviewer.client.CompoundSelector;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.GroupMaker;
 import otgviewer.client.components.PendingAsyncCallback;
@@ -81,7 +82,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private Label titleLabel;
 	private TextBox txtbxGroup;
 	private Button saveButton, autoGroupsButton;
-	SelectionTable<Group> existingGroupsTable;
+	private SelectionTable<Group> existingGroupsTable;
 	private CompoundSelector compoundSel;
 	private HorizontalPanel toolPanel;
 	private SplitLayoutPanel sp;
@@ -227,7 +228,11 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		sp.add(Utils.makeScrolled(vp));		
 	}
 	
-	void addStaticGroups(Group[] staticGroups) {
+	public SelectionTable<Group> existingGroupsTable() { 
+	  return existingGroupsTable;
+	}
+	   
+	public void addStaticGroups(Group[] staticGroups) {
 		for (Group g: staticGroups) {
 			addGroup(g, false);
 			staticGroupNames.add(g.getName());
@@ -273,7 +278,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 	
-	void confirmDeleteAllGroups() {
+	public void confirmDeleteAllGroups() {
 		int n = existingGroupsTable.getItems().size();
 		int fn = n - staticGroupNames.size();
 		if (Window.confirm("Delete " + fn + " groups?")) {
@@ -469,7 +474,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 	
-	protected void inactiveColumnsChanged(List<Group> columns) {
+	public void inactiveColumnsChanged(List<Group> columns) {
 		Collection<Group> igs = sortedGroupList(columns);
 		for (Group g : igs) {
 			groups.put(g.getName(), g);

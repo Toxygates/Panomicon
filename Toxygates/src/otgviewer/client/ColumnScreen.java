@@ -31,6 +31,7 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
+import otgviewer.client.components.groupdef.GroupInspector;
 import otgviewer.client.components.ranking.CompoundRanker;
 import otgviewer.client.components.ranking.SimpleCompoundRanker;
 import otgviewer.shared.Group;
@@ -69,8 +70,7 @@ public class ColumnScreen extends Screen {
 	private final SparqlServiceAsync sparqlService;
 	
 	public ColumnScreen(ScreenManager man, String rankingLabel,
-			boolean hasCompoundRanking, boolean withListSelector,
-			boolean withFreeEdit) {
+			boolean hasCompoundRanking) {
 		super("Sample group definitions", key, false, man,
 				resources.groupDefinitionHTML(), resources.groupDefinitionHelp());
 		
@@ -79,8 +79,7 @@ public class ColumnScreen extends Screen {
 		sparqlService = man.sparqlService();
 		
 		String majorParam = man.schema().majorParameter();
-		cs = new CompoundSelector(this, man.schema().title(majorParam), 
-		    withListSelector, withFreeEdit);		
+		cs = man.factory().compoundSelector(this, man.schema().title(majorParam));
 		this.addListener(cs);
 		cs.setStylePrimaryName("compoundSelector");
 		filterTools = mkFilterTools();
@@ -210,7 +209,7 @@ public class ColumnScreen extends Screen {
 		if (visible) {
 			try {
 				List<Group> ics = loadColumns(p, schema(), "inactiveColumns", 
-						new ArrayList<OTGColumn>(gi.existingGroupsTable.inverseSelection()));
+						new ArrayList<OTGColumn>(gi.existingGroupsTable().inverseSelection()));
 				if (ics != null && ics.size() > 0) {
 					logger.info("Unpacked i. columns: " + ics.get(0) + ": " + ics.get(0).getSamples()[0] + " ... ");
 					gi.inactiveColumnsChanged(ics);

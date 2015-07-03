@@ -64,7 +64,7 @@ public class SampleDetailTable extends Composite {
 		table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 	}
 	
-	void loadFrom(HasSamples<OTGSample> c, boolean importantOnly, 
+	public void loadFrom(HasSamples<OTGSample> c, boolean importantOnly, 
 			final int rangeStart, final int rangeEnd) {
 		if (Arrays.equals(barcodes, c.getSamples())) {
 			return;
