@@ -169,7 +169,7 @@ public class ColumnScreen extends Screen {
 		tp.add(gi, "Sample groups");
 
 		if (hasCompoundRanking) {
-			CompoundRanker cr = new SimpleCompoundRanker(this, cs);
+			CompoundRanker cr = factory().compoundRanker(this, cs);
 			tp.add(Utils.makeScrolled(cr), rankingLabel);
 		}
 		tp.selectTab(0);		

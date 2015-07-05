@@ -6,6 +6,8 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.groupdef.SelectionTDGrid;
 import otgviewer.client.components.groupdef.TreatedControlSelTDGrid;
 import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
+import otgviewer.client.components.ranking.CompoundRanker;
+import otgviewer.client.components.ranking.SimpleCompoundRanker;
 
 public class OTGFactory implements UIFactory {
 
@@ -19,4 +21,8 @@ public class OTGFactory implements UIFactory {
     return new CompoundSelector(screen, heading, true, true);
   }
 
+  @Override
+  public CompoundRanker compoundRanker(Screen _screen, CompoundSelector selector) {
+    return new SimpleCompoundRanker(_screen, selector);
+  }
 }
