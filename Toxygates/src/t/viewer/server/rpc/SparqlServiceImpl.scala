@@ -275,15 +275,15 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   @throws[TimeoutException]
   def annotations(barcode: OTGSample): Annotation =
-    asJava( sampleStore.annotations(barcode.id, List()) )
+    asJava( sampleStore.annotations(barcode.id) )
 
   //TODO get these from schema, etc.
   @throws[TimeoutException]
   def annotations(column: HasSamples[OTGSample], importantOnly: Boolean = false): Array[Annotation] = {
     val keys = if (importantOnly) {
-      List("Dose", "Dose unit", "Dose level", "Exposure time", "Administration route")
+      baseConfig.sampleParameters.previewDisplay
     } else {
-      Nil //fetch everything
+      List()
     }
     column.getSamples.map(x => sampleStore.annotations(x.id, keys)).map(asJava(_))
   }

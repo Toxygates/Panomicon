@@ -33,7 +33,6 @@ import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.components.groupdef.GroupInspector;
 import otgviewer.client.components.ranking.CompoundRanker;
-import otgviewer.client.components.ranking.SimpleCompoundRanker;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import t.common.shared.DataSchema;
