@@ -146,9 +146,10 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
     return SampleClass.collectInner(Arrays.asList(_samples), parameter);
   }
 
-  public static Set<String> collectAll(Iterable<Group> from, String parameter) {
+  public static <S extends Sample, G extends SampleGroup<S>> 
+  Set<String> collectAll(Iterable<G> from, String parameter) {
     Set<String> r = new HashSet<String>();
-    for (Group g : from) {
+    for (G g : from) {
       r.addAll(g.collect(parameter));
     }
     return r;
