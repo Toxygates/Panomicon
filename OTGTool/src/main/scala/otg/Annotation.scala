@@ -20,9 +20,9 @@
 
 package otg
 
-import scala.collection.immutable.SortedMap
 import scala.collection.immutable.ListMap
 
+@deprecated("Being replaced with SampleParameter and ParameterSet", "July 15")
 object Annotation {
   /**
    * Map human-readable descriptions to the keys we expect to find in the RDF data.
@@ -110,6 +110,7 @@ object Annotation {
   def isNumerical(key: String) = numericalKeys.keySet.contains(key)
 }
 
+@deprecated("being replaced with SampleParameter", "July 15")
 case class Annotation(data: Seq[(String, String)], barcode: String = null) {
   def postReadAdjustment: Annotation = {
     Annotation(data.map(x => x._1 match {

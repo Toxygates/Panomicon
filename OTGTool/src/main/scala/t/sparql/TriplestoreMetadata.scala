@@ -41,8 +41,9 @@ class TriplestoreMetadata(os: Samples)(implicit sf: SampleFilter) extends Metada
   def samples: Iterable[Sample] = os.samples
 
   def parameters(s: Sample): Iterable[(SampleParameter, String)] = {
-    val annotations = os.annotationQuery(s.identifier, Nil)
-    annotations.filter(_._3 != None).map(x => (t.db.SampleParameter(x._2, x._1), x._3.get))
+    os.parameterQuery(s.identifier).collect( {
+      case (sp, Some(s)) => (sp, s)
+    })
   }
 
   def parameterValues(identifier: String): Set[String] =
