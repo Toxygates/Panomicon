@@ -73,7 +73,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * of samples.
  * The main dose/time grid is implemented in the SelectionTDGrid. The rest is in this class. 
  */
-public class GroupInspector extends DataListenerWidget implements RequiresResize, SelectionTDGrid.UnitListener { 
+abstract public class GroupInspector extends DataListenerWidget implements RequiresResize, SelectionTDGrid.UnitListener { 
 
 	private MultiSelectionGrid msg;
 	private Map<String, Group> groups = new HashMap<String, Group>();		
@@ -158,22 +158,8 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 					}
 				};
 				table.addColumn(textColumn, "Group");
-				
-				textColumn = new TextColumn<Group>() {
-					@Override
-					public String getValue(Group object) {
-						return "" + object.getTreatedSamples().length;
-					}
-				};
-				table.addColumn(textColumn, "#Treated samples");
-				
-				textColumn = new TextColumn<Group>() {
-					@Override
-					public String getValue(Group object) {
-						return "" + object.getControlSamples().length;
-					}
-				};
-				table.addColumn(textColumn, "#Control samples");
+			
+				makeGroupColumns(table);
 				
 				//We use TextButtonCell instead of ButtonCell since it has setEnabled
 				final TextButtonCell editCell = new TextButtonCell();
@@ -227,6 +213,8 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		
 		sp.add(Utils.makeScrolled(vp));		
 	}
+	
+	abstract protected void makeGroupColumns(CellTable<Group> table);
 	
 	public SelectionTable<Group> existingGroupsTable() { 
 	  return existingGroupsTable;

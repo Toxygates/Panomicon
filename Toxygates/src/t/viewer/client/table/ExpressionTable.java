@@ -353,8 +353,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				"Unable to prepare the requested data for download.") {
 			
 			public void handleSuccess(String url) {
-				Utils.urlInNewWindow("Your download is ready.", "Download", url);					
-			}
+				Utils.displayURL("Your download is ready.", "Download", url);					
+			}			
 		});
 	}
 

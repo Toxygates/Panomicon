@@ -3,6 +3,7 @@ package otgviewer.client;
 import javax.annotation.Nullable;
 
 import otgviewer.client.components.Screen;
+import otgviewer.client.components.groupdef.GroupInspector;
 import otgviewer.client.components.groupdef.SelectionTDGrid;
 import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
 import otgviewer.client.components.ranking.CompoundRanker;
@@ -14,4 +15,6 @@ public interface UIFactory {
   public CompoundSelector compoundSelector(Screen screen, String heading);
   
   public CompoundRanker compoundRanker(Screen _screen, CompoundSelector selector);
+  
+  public GroupInspector groupInspector(CompoundSelector cs, Screen scr);
 }

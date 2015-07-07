@@ -150,35 +150,30 @@ public class Utils {
   }
 
   /**
-   * Open an URL in a new window or tab.
+   * Open an URL 
    * 
    * @param message
    * @param buttonText
    * @param url
    */
-  public static void urlInNewWindow(String message, String buttonText, final String url) {
+  public static void displayURL(String message, String linkText, final String url) {
     final DialogBox db = new DialogBox(false, true);
 
     db.setHTML(message);
-    HorizontalPanel hp = new HorizontalPanel();
-
-    hp.add(new Button(buttonText, new ClickHandler() {
-      public void onClick(ClickEvent ev) {
-        // Note that some browsers (e.g. Safari 3.1) are extremely careful in their
-        // handling of this call. If it is not directly inside a button's ClickHandler
-        // it will be ignored.
-        Window.open(url, "_blank", "");
-        db.hide();
-      }
-    }));
-
-    hp.add(new Button("Cancel", new ClickHandler() {
+    VerticalPanel vp = new VerticalPanel();
+    vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+    vp.setWidth("100%");
+    HTML h = new HTML();
+    h.setHTML("<a target=_blank href=\"" + url + "\">" + url + "</a>");
+    vp.add(h);
+    
+    vp.add(new Button("Close", new ClickHandler() {
       public void onClick(ClickEvent ev) {
         db.hide();
       }
     }));
 
-    db.add(hp);
+    db.add(vp);
     db.setPopupPositionAndShow(displayInCenter(db));
   }
 

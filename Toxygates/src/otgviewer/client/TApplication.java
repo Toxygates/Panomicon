@@ -258,7 +258,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 		
 		targetmineMenu.addItem(new MenuItem("Go to TargetMine", new Command() {
 			public void execute() {
-				Utils.urlInNewWindow("Go to TargetMine in a new window?", 
+				Utils.displayURL("Go to TargetMine in a new window?", 
 						"Go", appInfo.targetmineURL());
 			}
 		}));

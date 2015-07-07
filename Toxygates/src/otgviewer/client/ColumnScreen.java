@@ -160,7 +160,7 @@ public class ColumnScreen extends Screen {
 	public Widget content() {				
 		tp = new TabLayoutPanel(30, Unit.PX);
 		
-		gi = new GroupInspector(cs, this);
+		gi = factory().groupInspector(cs, this);
 		this.addListener(gi);
 		cs.addListener(gi);
 		gi.datasetsChanged(chosenDatasets);
