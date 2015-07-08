@@ -41,6 +41,8 @@ public class GroupLabels extends Composite {
 	private FlowPanel fpo;
 	private Screen screen;
 	
+	final static int LABEL_MAX_LEN = 40;
+	
 	public GroupLabels(Screen screen, DataSchema schema, List<Group> groups) {
 		fpo = new FlowPanel();
 		this.groups = groups;
@@ -63,7 +65,11 @@ public class GroupLabels extends Composite {
 			l.setStylePrimaryName(g.getStyleName());
 			Utils.floatLeft(fp, l);
 			l.setTitle(tip);
-			l = new Label(g.getTriples(schema, 2, ", "));
+			String labelString = g.getTriples(schema, 2, ", ");
+			if (labelString.length() > LABEL_MAX_LEN) {
+			  labelString = labelString.substring(0, LABEL_MAX_LEN - 3) + "...";
+			}
+			l = new Label(labelString);
 			l.getElement().getStyle().setMargin(2, Unit.PX);
 			l.setStylePrimaryName(g.getStyleName());
 			Utils.floatLeft(fp, l);

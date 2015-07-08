@@ -41,4 +41,8 @@ class Factory extends t.Factory {
     val bc = new OTGBConfig(ts, data)
     otg.Context(bc)
   }
+
+  def dataConfig(dir: String, matrixDbOptions: String): DataConfig = {
+    new DataConfig(dir, matrixDbOptions)
+  }
 }

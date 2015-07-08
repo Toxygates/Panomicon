@@ -73,13 +73,14 @@ class Configuration(val repositoryName: String,
     val feedbackReceivers: String = null,
     val feedbackFromAddress: String = null) {
 
-  def this(owlimRepository: String, toxygatesHome:String, foldsDBVersion: Int) =
+  def this(owlimRepository: String, toxygatesHome: String, foldsDBVersion: Int) =
     this(owlimRepository, toxygatesHome, System.getProperty("otg.csvDir"),
-        System.getProperty("otg.csvUrlBase"))
+      System.getProperty("otg.csvUrlBase"))
 
   def tsConfig = TriplestoreConfig(repositoryUrl, updateUrl,
     repositoryUser, repositoryPass, repositoryName)
-  def dataConfig = DataConfig(toxygatesHomeDir, matrixDbOptions)
 
-  def context(f: Factory): Context = f.context(tsConfig, dataConfig)
+  def dataConfig(f: Factory) = f.dataConfig(toxygatesHomeDir, matrixDbOptions)
+
+  def context(f: Factory): Context = f.context(tsConfig, dataConfig(f))
 }

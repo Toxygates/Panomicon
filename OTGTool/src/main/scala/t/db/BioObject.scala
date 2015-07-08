@@ -20,18 +20,6 @@
 
 package t.db
 
-/**
- * A BioObject is some biological entity that can be uniquely identified
- * by a string. It can also have a name, which by default is the same
- * as the identifier.
- * This trait needs to be implemented by Java classes, so it should
- * have no implementations.
- */
-trait BioObject {
-  def identifier: String
-  def name: String
-}
-
 /*
  * Convenience implementations, but this can't be extended by Java classes
  */

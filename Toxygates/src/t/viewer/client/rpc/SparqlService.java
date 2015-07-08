@@ -72,6 +72,9 @@ public interface SparqlService extends RemoteService {
 	 */
 	public void chooseDatasets(Dataset[] enabled) throws TimeoutException;
 	
+	public String[] parameterValues(Dataset[] ds, SampleClass sc, String parameter)
+        throws TimeoutException;
+	
 	public String[] parameterValues(SampleClass sc, String parameter)
 			throws TimeoutException;
 

@@ -169,6 +169,16 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   }
 
   @throws[TimeoutException]
+  def parameterValues(ds: Array[Dataset], sc: SampleClass,
+      parameter: String): Array[String] = {
+    val oldFilter = getSessionData.sampleFilter
+    chooseDatasets(ds)
+    val r = parameterValues(sc, parameter)
+    getSessionData.sampleFilter = oldFilter
+    r
+  }
+
+  @throws[TimeoutException]
   def parameterValues(sc: Array[SampleClass], parameter: String): Array[String] = {
     sc.flatMap(x => parameterValues(x, parameter)).distinct.toArray
   }

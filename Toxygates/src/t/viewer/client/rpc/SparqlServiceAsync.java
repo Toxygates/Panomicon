@@ -46,6 +46,8 @@ public interface SparqlServiceAsync {
 	@Deprecated
 	public void sampleClasses(AsyncCallback<SampleClass[]> callback);
 	
+	public void parameterValues(Dataset[] ds, SampleClass sc, String parameter, 
+        AsyncCallback<String[]> callback);
 	public void parameterValues(SampleClass sc, String parameter, 
 			AsyncCallback<String[]> callback);
 	public void parameterValues(SampleClass[] scs, String parameter, 
