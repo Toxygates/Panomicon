@@ -172,16 +172,6 @@ public interface SparqlService extends RemoteService {
 			throws TimeoutException;
 
 	/**
-	 * Obtain probes that belong to the named pathway.
-	 * 
-	 * @param pathway
-	 * @return
-	 */
-	@Deprecated
-	public String[] probesForPathway(SampleClass sc, String pathway)
-			throws TimeoutException;
-
-	/**
 	 * Obtain filtered probes that belong to the named pathway.
 	 * 
 	 * @param pathway

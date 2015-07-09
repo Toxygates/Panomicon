@@ -76,8 +76,7 @@ public interface SparqlServiceAsync {
 	public void annotations(OTGSample barcode, AsyncCallback<Annotation> callback);
 	
 	public void pathways(SampleClass sc, String pattern, AsyncCallback<String[]> callback);
-	@Deprecated
-	public void probesForPathway(SampleClass sc, String pathway, AsyncCallback<String[]> callback);
+	
 	public void probesForPathway(SampleClass sc, String pathway, List<OTGSample> samples,
 		AsyncCallback<String[]> callback);
 	public void probesTargetedByCompound(SampleClass sc, String compound, String service, 
