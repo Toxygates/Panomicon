@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import otgviewer.client.Utils;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
@@ -42,6 +41,7 @@ import t.common.shared.ItemList;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.DataColumn;
+import t.viewer.client.Utils;
 
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;

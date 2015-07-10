@@ -34,10 +34,11 @@ import javax.annotation.Nullable;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
-import otgviewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.FeedbackForm;
 import otgviewer.client.targetmine.TargetMineData;
 import t.common.shared.SharedUtils;
+import t.viewer.client.Utils;
+import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.MatrixService;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.rpc.SeriesService;
@@ -257,7 +258,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 		
 		targetmineMenu.addItem(new MenuItem("Go to TargetMine", new Command() {
 			public void execute() {
-				Utils.urlInNewWindow("Go to TargetMine in a new window?", 
+				Utils.displayURL("Go to TargetMine in a new window?", 
 						"Go", appInfo.targetmineURL());
 			}
 		}));

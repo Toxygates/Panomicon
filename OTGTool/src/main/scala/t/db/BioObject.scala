@@ -20,14 +20,11 @@
 
 package t.db
 
-/**
- * A BioObject is some biological entity that can be uniquely identified
- * by a string. It can also have a name, which by default is the same
- * as the identifier.
+/*
+ * Convenience implementations, but this can't be extended by Java classes
  */
-trait GenBioObject {
-  def identifier: String
-  def name: String = identifier
+trait GenBioObject extends BioObject {
+  override def name: String = identifier
   override def hashCode = identifier.hashCode
 }
 
@@ -36,7 +33,7 @@ trait GenBioObject {
  */
 case class DefaultBio(identifier: String, override val name: String = "") extends GenBioObject
 
-trait BioObject[T <: BioObject[T]] extends GenBioObject {
+trait StoredBioObject[T <: StoredBioObject[T]] extends GenBioObject {
   this: T =>
   def getAttributes(implicit store: Store[T]) = store.withAttributes(List(this)).head
 }
@@ -44,7 +41,7 @@ trait BioObject[T <: BioObject[T]] extends GenBioObject {
 /**
  * A Store is a way of looking up additional information about some type of BioObject.
  */
-trait Store[T <: BioObject[T]] {
+trait Store[T <: StoredBioObject[T]] {
 
   /**
    * For the given BioObjects of type T, assuming that only the identifier is available,

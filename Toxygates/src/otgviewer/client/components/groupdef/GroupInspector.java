@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client;
+package otgviewer.client.components.groupdef;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import otgviewer.client.CompoundSelector;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.GroupMaker;
 import otgviewer.client.components.PendingAsyncCallback;
@@ -44,6 +45,7 @@ import t.common.shared.Dataset;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
+import t.viewer.client.Utils;
 import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.Unit;
 
@@ -71,7 +73,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * of samples.
  * The main dose/time grid is implemented in the SelectionTDGrid. The rest is in this class. 
  */
-public class GroupInspector extends DataListenerWidget implements RequiresResize, SelectionTDGrid.UnitListener { 
+abstract public class GroupInspector extends DataListenerWidget implements RequiresResize, SelectionTDGrid.UnitListener { 
 
 	private MultiSelectionGrid msg;
 	private Map<String, Group> groups = new HashMap<String, Group>();		
@@ -80,7 +82,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 	private Label titleLabel;
 	private TextBox txtbxGroup;
 	private Button saveButton, autoGroupsButton;
-	SelectionTable<Group> existingGroupsTable;
+	private SelectionTable<Group> existingGroupsTable;
 	private CompoundSelector compoundSel;
 	private HorizontalPanel toolPanel;
 	private SplitLayoutPanel sp;
@@ -156,22 +158,8 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 					}
 				};
 				table.addColumn(textColumn, "Group");
-				
-				textColumn = new TextColumn<Group>() {
-					@Override
-					public String getValue(Group object) {
-						return "" + object.getTreatedSamples().length;
-					}
-				};
-				table.addColumn(textColumn, "#Treated samples");
-				
-				textColumn = new TextColumn<Group>() {
-					@Override
-					public String getValue(Group object) {
-						return "" + object.getControlSamples().length;
-					}
-				};
-				table.addColumn(textColumn, "#Control samples");
+			
+				makeGroupColumns(table);
 				
 				//We use TextButtonCell instead of ButtonCell since it has setEnabled
 				final TextButtonCell editCell = new TextButtonCell();
@@ -226,7 +214,13 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		sp.add(Utils.makeScrolled(vp));		
 	}
 	
-	void addStaticGroups(Group[] staticGroups) {
+	abstract protected void makeGroupColumns(CellTable<Group> table);
+	
+	public SelectionTable<Group> existingGroupsTable() { 
+	  return existingGroupsTable;
+	}
+	   
+	public void addStaticGroups(Group[] staticGroups) {
 		for (Group g: staticGroups) {
 			addGroup(g, false);
 			staticGroupNames.add(g.getName());
@@ -272,7 +266,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 	
-	void confirmDeleteAllGroups() {
+	public void confirmDeleteAllGroups() {
 		int n = existingGroupsTable.getItems().size();
 		int fn = n - staticGroupNames.size();
 		if (Window.confirm("Delete " + fn + " groups?")) {
@@ -468,7 +462,7 @@ public class GroupInspector extends DataListenerWidget implements RequiresResize
 		}
 	}
 	
-	protected void inactiveColumnsChanged(List<Group> columns) {
+	public void inactiveColumnsChanged(List<Group> columns) {
 		Collection<Group> igs = sortedGroupList(columns);
 		for (Group g : igs) {
 			groups.put(g.getName(), g);

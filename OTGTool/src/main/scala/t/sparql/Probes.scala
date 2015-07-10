@@ -172,8 +172,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     }
   }
 
-  protected def simpleMapQueryNoEmptyCheck(probes: Iterable[Probe],
-    query: String): MMap[Probe, DefaultBio] = {
+  protected def simpleMapQueryNoEmptyCheck(query: String): MMap[Probe, DefaultBio] = {
     val r = ts.mapQuery(query).map(x => Probe.unpack(x("probe")) ->
       DefaultBio(x("result"), x("result")))
     makeMultiMap(r)
@@ -184,7 +183,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     if (probes.isEmpty) {
       return emptyMMap()
     }
-    simpleMapQueryNoEmptyCheck(probes, query)
+    simpleMapQueryNoEmptyCheck(query)
   }
 
   protected class GradualProbeResolver(idents: Iterable[String]) {

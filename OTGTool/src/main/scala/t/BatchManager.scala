@@ -188,6 +188,7 @@ class BatchManager(context: Context) {
   import TRDF._
 
   def config = context.config
+  def samples = context.samples
 
   def matrixContext(): MatrixContext = {
     new MatrixContext {
@@ -266,8 +267,6 @@ class BatchManager(context: Context) {
       if (batches.list.contains(title)) {
         throw new Exception(s"The batch $title is already defined")
       }
-
-      val samples = new OTGSamples(c)
 
       //TODO check for reinsertion of sample IDs
       val ps = new Platforms(config.triplestore)
@@ -476,22 +475,21 @@ class BatchManager(context: Context) {
 
       val bs = new Batches(config.triplestore)
       val ss = bs.samples(batch).map(Sample(_))
-      val otgSamples = new OTGSamples(config)
       val batchURI = Batches.defaultPrefix + "/" + batch
 
       val sf = SampleFilter(batchURI = Some(batchURI))
-      val tsmd = new TriplestoreMetadata(otgSamples)(sf)
+      val tsmd = new TriplestoreMetadata(samples)(sf)
 
       //Note, strictly speaking we don't need the source data here.
       //This dependency could be removed by having the builder make points
       //with all zeroes.
       val source = KCMatrixDB(config.data.foldDb, false)
       val target = KCSeriesDB[S](config.data.seriesDb, true, builder)
-      val samples = tsmd.samples
-      val total = samples.size
+      val filtSamples = tsmd.samples
+      val total = filtSamples.size
       var pcomp = 0d
       try {
-        var it = samples.grouped(100)
+        var it = filtSamples.grouped(100)
         while (it.hasNext && shouldContinue(pcomp)) {
           val sg = it.next
           val xs = builder.makeNew(source, tsmd, sg)

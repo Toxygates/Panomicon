@@ -32,7 +32,6 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 import otgviewer.client.StandardColumns;
-import otgviewer.client.Utils;
 import otgviewer.client.charts.AdjustableGrid;
 import otgviewer.client.charts.Charts;
 import otgviewer.client.charts.Charts.AChartAcceptor;
@@ -40,21 +39,22 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.FilterEditor;
 import otgviewer.shared.Group;
-import otgviewer.shared.GroupUtils;
 import otgviewer.shared.ManagedMatrixInfo;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Synthetic;
 import t.common.shared.AType;
 import t.common.shared.DataSchema;
+import t.common.shared.GroupUtils;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
 import t.common.shared.sample.DataColumn;
 import t.common.shared.sample.ExpressionRow;
+import t.viewer.client.Utils;
+import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.table.SortKey;
 
@@ -353,8 +353,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				"Unable to prepare the requested data for download.") {
 			
 			public void handleSuccess(String url) {
-				Utils.urlInNewWindow("Your download is ready.", "Download", url);					
-			}
+				Utils.displayURL("Your download is ready.", "Download", url);					
+			}			
 		});
 	}
 

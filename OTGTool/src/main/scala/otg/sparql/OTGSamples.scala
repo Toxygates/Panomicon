@@ -42,6 +42,7 @@ import t.sparql.SampleGroups
 import t.sparql.Instances
 import t.sparql.Datasets
 import t.sparql.SampleFilter
+import t.db.SampleParameter
 
 class OTGSamples(bc: BaseConfig) extends Samples(bc) {
 
@@ -101,37 +102,4 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
     val r = pathologyQuery("?x rdfs:label \"" + barcode + "\". ")
     r.map(_.copy(barcode = barcode))
   }
-
-  // Returns: (human readable, identifier, value)
-  override def annotationQuery(sample: String,
-    querySet: List[String] = Nil): Iterable[(String, String, Option[String])] = {
-    val annotations = if (querySet == Nil) {
-      Annotation.keys.toList
-    } else {
-      Annotation.keys.filter(a => querySet.contains(a._1)).toList
-    }
-
-    val withIndex = annotations.zipWithIndex
-    val triples = withIndex.map(x => " OPTIONAL { ?x t:" + x._1._2 + " ?k" + x._2 + ". } ")
-    val query = "SELECT * WHERE { GRAPH ?batchGraph { ?x rdfs:label \"" + sample +
-    "\"^^xsd:string " +
-      triples.mkString + " } } "
-    val r = ts.mapQuery(prefixes + query)
-    if (r.isEmpty) {
-      List()
-    } else {
-      val h = r.head
-      withIndex.map(x => (x._1._1, x._1._2, h.get("k" + x._2)))
-    }
-  }
-
-  /**
-   * Produces human-readable values
-   */
-  override def annotations(sample: String, querySet: List[String] = Nil): Annotation = {
-    val m = annotationQuery(sample, querySet).map(x =>
-      (x._1, x._3.getOrElse("N/A"))).toSeq
-    Annotation(m, sample).postReadAdjustment
-  }
-
 }

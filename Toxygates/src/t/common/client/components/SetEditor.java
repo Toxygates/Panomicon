@@ -24,6 +24,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
+import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
+
 /**
  * A SetEditor tracks a selection and makes available a method for modifying it.
  * 
@@ -40,7 +44,15 @@ public interface SetEditor<T> {
 	 */
 	public void setItems(List<T> items, boolean clearSelection);
 	
-	public abstract void setSelection(Collection<T> items);
+	public void setSelection(Collection<T> items);
 	
-	public Set<T> getSelection();	
+	public void setSelection(Collection<T> items, @Nullable SetEditor<T> fromSelector);
+	
+	public Set<T> getSelection();
+	
+	public List<T> availableItems();
+
+	public Set<T> validateItems(List<T> items);
+	
+	public List<Suggestion> getSuggestions(String request);
 }

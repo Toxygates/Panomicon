@@ -164,7 +164,7 @@ abstract class AbstractKCMatrixDB[E >: Null <: ExprValue](file: String, db: DB)
   }
 
   /**
-   * Method 2. Employs the get_bulk function to get values.
+   * Employs the get_bulk function to get values.
    * Keys need not be sorted.
    */
   private def valuesInSampleBulk(x: Sample, keys: Iterable[Int]): Iterable[E] = {

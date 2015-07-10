@@ -180,6 +180,18 @@ public class SampleClass implements Serializable, Packable {
 		return r;
 	}
 	
+	public static <HC extends HasClass> Map<String, List<HC>> groupBy(List<HC> from, String key) {
+	  Map<String, List<HC>> r = new HashMap<String, List<HC>>();
+	  for (HC h: from) {
+	    String k = h.sampleClass().get(key);
+	    if (! r.containsKey(k)) {
+	      r.put(k, new ArrayList<HC>());
+	    }
+	    r.get(k).add(h);
+	  }
+	  return r;
+	}
+	
 	/**
 	 * Produce a new SampleClass that contains only those keys
 	 * that were shared between the two classes and had the 

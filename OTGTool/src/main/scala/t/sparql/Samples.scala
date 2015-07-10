@@ -26,6 +26,7 @@ import otg.Annotation
 import t.sparql.secondary.GOTerm
 import t.sparql.{ Filter => TFilter }
 import t.BaseConfig
+import t.db.SampleParameter
 
 object Samples extends RDFClass {
   val defaultPrefix = s"$tRoot/sample"
@@ -128,17 +129,37 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
 
   def sampleClasses(implicit sf: SampleFilter): Seq[Map[String, String]]
 
-  // Returns: (human readable, identifier, value)
-  def annotationQuery(sample: String,
-    querySet: List[String] = Nil): Iterable[(String, String, Option[String])] = {
-    List() //TODO think about this. Could be OTG only, or redundant concept
-  }
+  def parameterQuery(sample: String,
+    querySet: Iterable[SampleParameter] = Set()): Iterable[(SampleParameter, Option[String])] = {
+    val allParams = bc.sampleParameters.all
+    val queryParams = if (querySet.isEmpty) {
+      allParams
+    } else {
+      allParams.filter(querySet.toSet.contains(_))
+    }
 
+    val withIndex = queryParams.zipWithIndex
+    val triples = withIndex.map(x => " OPTIONAL { ?x t:" + x._1.identifier + " ?k" + x._2 + ". } ")
+    val query = "SELECT * WHERE { GRAPH ?batchGraph { " +
+      "{ { ?x rdfs:label \"" + sample + "\" } UNION" +
+      "{ ?x rdfs:label \"" + sample + "\"^^xsd:string } }" +
+      triples.mkString + " } } "
+    val r = ts.mapQuery(tPrefixes + query)
+    if (r.isEmpty) {
+      List()
+    } else {
+      val h = r.head
+      withIndex.map(x => (x._1, h.get("k" + x._2)))
+    }
+  }
   /**
    * Produces human-readable values
    */
-  def annotations(sample: String, querySet: List[String] = Nil): Annotation = {
-    null //TODO think about this. Could be OTG only, or redundant concept
+  @deprecated("being replaced with parameterQuery", "July 15")
+  def annotations(sample: String, querySet: Iterable[SampleParameter] = Set()): Annotation = {
+    val m = parameterQuery(sample, querySet).map(x =>
+      (x._1.humanReadable, x._2.getOrElse("N/A"))).toSeq
+    Annotation(m, sample).postReadAdjustment
   }
 
   def sampleAttributeQuery(attribute: String)(implicit sf: SampleFilter): Query[Seq[String]] = {
