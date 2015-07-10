@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -36,7 +36,7 @@ case class Protein(identifier: String) extends BioObject[Protein] {
 
 object Gene {
   def apply(identifier: Int): Gene = apply(identifier.toString)
-  
+
   def unpackId(geneid: String) = {
     val entrez = geneid.split("geneid:")(1)
     Gene(identifier = entrez, name = entrez)
@@ -52,19 +52,19 @@ object Gene {
 /**
  * Identifier is ENTREZ id
  */
-case class Gene(identifier: String, 
-                override val name: String = "", 
-                symbol: String = "",
-                keggShortCode: String = "") extends BioObject[Gene] {
+case class Gene(identifier: String,
+  override val name: String = "",
+  symbol: String = "",
+  keggShortCode: String = "") extends BioObject[Gene] {
 
   //e.g. short code: MMU, entrez: 58810 ->
-  //<http://bio2rdf.org/kegg:MMU_58810> 
+  //<http://bio2rdf.org/kegg:MMU_58810>
   def packKegg = s"http://bio2rdf.org/kegg:${keggShortCode}_$identifier"
 
   override def equals(other: Any): Boolean = other match {
     case Gene(id, _, _, _) => id == identifier
     case _                 => false
-  }  
+  }
 }
 
 object Compound {
@@ -91,5 +91,5 @@ case class GOTerm(identifier: String, override val name: String) extends BioObje
   override def equals(other: Any): Boolean = other match {
     case GOTerm(id, _) => id == identifier
     case _             => false
-  }  
+  }
 }

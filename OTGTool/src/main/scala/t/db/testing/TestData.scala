@@ -11,11 +11,13 @@ object TestData {
     val pmap = Map() ++ probes.map(x => ("probe_" + x -> x))
     new MemoryLookupMap(pmap) with ProbeMap
   }
-  
+
   lazy val samples = (1 to 100).map(s => Sample(s"x$s"))
-  
-  lazy val exprRecords = for (p <- probeMap.keys.toSeq; s <- samples;
-    v = Math.random() * 100) yield (s, p, BasicExprValue(v, 'P'))
-  
+
+  lazy val exprRecords = for (
+    p <- probeMap.keys.toSeq; s <- samples;
+    v = Math.random() * 100
+  ) yield (s, p, BasicExprValue(v, 'P'))
+
   lazy val matrix = new FakeBasicMatrixDB(exprRecords)
 }

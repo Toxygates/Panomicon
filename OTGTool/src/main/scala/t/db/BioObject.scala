@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -45,17 +45,16 @@ trait BioObject[T <: BioObject[T]] extends GenBioObject {
  * A Store is a way of looking up additional information about some type of BioObject.
  */
 trait Store[T <: BioObject[T]] {
-  
+
   /**
    * For the given BioObjects of type T, assuming that only the identifier is available,
-   * look up all available information and return new copies with all information filled in. 
+   * look up all available information and return new copies with all information filled in.
    */
   def withAttributes(objs: Iterable[T]): Iterable[T] = objs
-  
+
   /**
    * Look up all available information for a single bioObject (where only the identifier
-   * needs to be available) 
+   * needs to be available)
    */
   def withAttributes(obj: T): T = withAttributes(List(obj)).head
 }
-

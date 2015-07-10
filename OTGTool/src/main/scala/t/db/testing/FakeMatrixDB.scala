@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -28,44 +28,41 @@ import t.db.BasicExprValue
 import t.db.ProbeMap
 import t.db.Sample
 
-abstract class AbsFakeMatrixDB[E >: Null <: ExprValue]
-(var records: Seq[(Sample, Int, E)] = Vector())
-(implicit val probeMap: ProbeMap) extends MatrixDB[E, E] {
+abstract class AbsFakeMatrixDB[E >: Null <: ExprValue](var records: Seq[(Sample, Int, E)] = Vector())(implicit val probeMap: ProbeMap) extends MatrixDB[E, E] {
   var closed = false
   var released = false
-  
-  def emptyValue(probe: String): E 
- 
+
+  def emptyValue(probe: String): E
+
   def sortSamples(xs: Iterable[Sample]): Seq[Sample] = xs.toSeq
-  
+
   def allSamples: Iterable[Sample] = records.map(_._1).toSet
-    
+
   def valuesForProbe(probe: Int, xs: Seq[Sample]): Iterable[(Sample, E)] = {
     null
   }
-  
+
   def valuesInSample(x: Sample, probes: Iterable[Int]): Iterable[E] =
     records.filter(_._1 == x).map(x => x._3)
-  
+
   def write(s: Sample, probe: Int, e: E) {
     records :+= (s, probe, e)
   }
-  
+
   def close() {
     closed = true
     println("Fake DB closed")
   }
-  
+
   def release() {
     released = true
     println("Fake DB released")
   }
 }
 
-class FakeBasicMatrixDB(initRecords: Seq[(Sample, Int, BasicExprValue)] = Seq())
-  (implicit probes: ProbeMap) extends AbsFakeMatrixDB[BasicExprValue](initRecords) {
-  
+class FakeBasicMatrixDB(initRecords: Seq[(Sample, Int, BasicExprValue)] = Seq())(implicit probes: ProbeMap) extends AbsFakeMatrixDB[BasicExprValue](initRecords) {
+
   def emptyValue(probe: String) = ExprValue(Double.NaN, 'A', probe)
-  
+
   def deleteSample(x: Sample): Unit = {}
 }

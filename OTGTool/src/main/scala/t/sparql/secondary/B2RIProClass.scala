@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -21,31 +21,30 @@
 package t.sparql.secondary
 import t.sparql._
 
-class B2RIProClass extends Triplestore {  
-  
+class B2RIProClass extends Triplestore {
+
   val con = Triplestore.connectSPARQLRepository("http://iproclass.bio2rdf.org/sparql")
-  
+
   val prefixes = """
     PREFIX ipc:<http://bio2rdf.org/iproclass_vocabulary:>
 """
-    
-//    import scala.collection.{ Map => CMap, Set => CSet }
+
+  //    import scala.collection.{ Map => CMap, Set => CSet }
   def geneIdsFor(uniprots: Iterable[Protein]): MMap[Protein, Gene] = {
     val r = multiQuery(prefixes + "SELECT DISTINCT ?up ?gi WHERE { " +
-        "?up ipc:x-geneid ?gi. " +
-        multiFilter("?up", uniprots.map(p => bracket(p.packB2R))) +
-            " } ").map(x => (Protein.unpackB2R(x(0)) -> Gene(unpackGeneid(x(1)))))
-    makeMultiMap(r)            
-  }  
-  
-  
+      "?up ipc:x-geneid ?gi. " +
+      multiFilter("?up", uniprots.map(p => bracket(p.packB2R))) +
+      " } ").map(x => (Protein.unpackB2R(x(0)) -> Gene(unpackGeneid(x(1)))))
+    makeMultiMap(r)
+  }
+
   def main(args: Array[String]) {
     try {
-	  val r = geneIdsFor(List(Protein("Q197F8")))
-	  println(r)
-	  println(r.size)
+      val r = geneIdsFor(List(Protein("Q197F8")))
+      println(r)
+      println(r.size)
     } finally {
-	  close()
+      close()
     }
   }
 }

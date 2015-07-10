@@ -9,8 +9,9 @@
 
   <dependency org="org.apache.commons" name="commons-math3" rev="latest.integration"/>
   
-  <dependency org="org.openrdf.sesame" name="sesame-repository-manager" rev="latest.integration"/>
-  <dependency org="org.openrdf.sesame" name="sesame-repository-sparql" rev="latest.integration"/>
+  <!-- rev latest.integration -->
+  <dependency org="org.openrdf.sesame" name="sesame-repository-manager" rev="2.7.16"/>
+  <dependency org="org.openrdf.sesame" name="sesame-repository-sparql" rev="2.7.16"/>
   <dependency org="com.fallabs" name="kyotocabinet-java" rev="latest.integration"/>
   
   <!-- for GWT upload -->

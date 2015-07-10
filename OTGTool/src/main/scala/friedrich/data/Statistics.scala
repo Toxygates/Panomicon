@@ -15,13 +15,13 @@ object Statistics {
   /**
    * Compute the arithmetic mean.
    */
-  def mean(data: Iterable[Double]): Double = 
+  def mean(data: Iterable[Double]): Double =
     if (data.size == 0) { 0 } else { data.sum / data.size }
 
   /**
    * Compute the geometric mean.
    */
-  def geomean(data: Iterable[Double]): Double = 
+  def geomean(data: Iterable[Double]): Double =
     if (data.size == 0) { 1 } else { Math.pow(data.product, 1.0 / data.size) }
 
   /**

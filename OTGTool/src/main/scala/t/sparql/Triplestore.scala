@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -36,27 +36,27 @@ import org.openrdf.rio.RDFFormat
 import org.openrdf.model.Resource
 import org.openrdf.model.impl.URIImpl
 
-object Triplestore {  
+object Triplestore {
   val executor = Executors.newCachedThreadPool()
   val executionContext = ExecutionContext.fromExecutor(executor)
-  
+
   val tPrefixes: String = """
     PREFIX purl:<http://purl.org/dc/elements/1.1/>
     PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX owl:<http://www.w3.org/2002/07/owl#>
-    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     PREFIX t:<http://level-five.jp/t/>"""
 
   /*
    * TODO: Currently we use connectRemoteRepository for Owlim-SE connections, and
-   * SPARQLRepository for all other connections, but there should be no 
-   * need to have two connection methods. 
-   * Aim to use only SPARQLRepository in the future. 
+   * SPARQLRepository for all other connections, but there should be no
+   * need to have two connection methods.
+   * Aim to use only SPARQLRepository in the future.
    */
-    
-  def connectRemoteRepository(config: TriplestoreConfig): RepositoryConnection = {        
-    println("Initialize remote repository connection for " + config.url)    
+
+  def connectRemoteRepository(config: TriplestoreConfig): RepositoryConnection = {
+    println("Initialize remote repository connection for " + config.url)
     val repMan = RemoteRepositoryManager.getInstance(config.url, config.user, config.pass)
     repMan.initialize()
 
@@ -71,10 +71,10 @@ object Triplestore {
     }
     val c = rep.getConnection
     c
-  }    
+  }
 
   def connectSPARQLRepository(queryUrl: String, updateUrl: String = null,
-      user: String = null, pass: String = null): RepositoryConnection = {
+    user: String = null, pass: String = null): RepositoryConnection = {
     println("Initialize SPARQL connection for " + queryUrl)
     val rep = if (updateUrl != null && updateUrl != "") {
       new SPARQLRepository(queryUrl, updateUrl)
@@ -84,7 +84,7 @@ object Triplestore {
     if (user != null && pass != null) {
       rep.setUsernameAndPassword(user, pass)
     }
-    
+
     rep.initialize()
     if (rep == null) {
       throw new Exception("Unable to access repository ")
@@ -95,20 +95,20 @@ object Triplestore {
   }
 }
 
-abstract class Triplestore extends Closeable {  
-  
-  def con: RepositoryConnection 
-    
-  def close() {       
-    con.close()           
+abstract class Triplestore extends Closeable {
+
+  def con: RepositoryConnection
+
+  def close() {
+    con.close()
   }
-  
-  // Necessary for futures 
+
+  // Necessary for futures
   private[this] implicit val executionContext = Triplestore.executionContext
 
   /**
    * Perform a SPARQL query.
-   * 
+   *
    * TODO: might be better to return a future rather than wait for the future
    * to complete here, so that queries become composable
    * (although at the moment, almost all RPC calls we do
@@ -118,11 +118,14 @@ abstract class Triplestore extends Closeable {
   private def evaluate(query: String, timeoutMillis: Int = 10000) = {
     println(query)
     val pq = con.prepareTupleQuery(QueryLanguage.SPARQL, query)
-    pq.setMaxExecutionTime(timeoutMillis / 1000)
+    // for sesame 2.7
+    pq.setMaxQueryTime(timeoutMillis / 1000)
+    // for sesame 2.8
+//    pq.setMaxExecutionTime(timeoutMillis / 1000)
     val f = future { pq.evaluate() }
-    Some(Await.result(f, Duration(timeoutMillis, "millis")))    
+    Some(Await.result(f, Duration(timeoutMillis, "millis")))
   }
-  
+
   /**
    * Perform a SPARQL update.
    */
@@ -139,17 +142,17 @@ abstract class Triplestore extends Closeable {
         throw e
     }
   }
-  
+
   /**
    * Insert a TRIG file.
    */
   def addTTL(file: java.io.File, context: String): Unit = {
     println(s"Insert file $file into $context")
-    con.add(file, null, RDFFormat.TURTLE, new URIImpl(context))    
+    con.add(file, null, RDFFormat.TURTLE, new URIImpl(context))
   }
-  
+
   def simpleQueryNonQuiet(query: String): Vector[String] = simpleQuery(query, true)
-  
+
   /**
    * Query for some number of records, each containing a single field.
    */
@@ -167,7 +170,7 @@ abstract class Triplestore extends Closeable {
       rs.close
     })
     if (!quiet) {
-    	println(if (r.size > 10) { "[" + r.size + "] " + r.take(5) + " ... " } else { r })
+      println(if (r.size > 10) { "[" + r.size + "] " + r.take(5) + " ... " } else { r })
     }
     r
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -28,7 +28,7 @@ import t.sparql.Instances
  */
 object InstanceManager extends ManagerTool {
   def apply(args: Seq[String])(implicit context: Context): Unit = {
-    
+
     val instances = new Instances(context.config.triplestore)
 
     args(0) match {
@@ -58,7 +58,7 @@ object InstanceManager extends ManagerTool {
 
       //TODO: access management
       case "help" => showHelp()
-    }    
+    }
   }
 
   def showHelp() {

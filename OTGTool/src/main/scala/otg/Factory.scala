@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -29,16 +29,16 @@ import otg.db.file.TSVMetadata
 import t.DataConfig
 
 class Factory extends t.Factory {
-  override def samples(config: BaseConfig): OTGSamples = 
+  override def samples(config: BaseConfig): OTGSamples =
     new OTGSamples(config)
-  
+
   override def probes(config: TriplestoreConfig): Probes =
     new Probes(config)
-  
+
   override def tsvMetadata(file: String) = new TSVMetadata(file)
-  
+
   override def context(ts: TriplestoreConfig, data: DataConfig) = {
     val bc = new OTGBConfig(ts, data)
     otg.Context(bc)
-  }    
+  }
 }

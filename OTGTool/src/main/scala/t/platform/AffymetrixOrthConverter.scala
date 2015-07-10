@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -37,20 +37,20 @@ object AffymetrixOrthConverter {
     val output = args(0).replace(".csv", "_t.tsv")
 
     val data =
-      Source.fromFile(input).getLines.toVector.drop(1).map(processLine)    
-      
+      Source.fromFile(input).getLines.toVector.drop(1).map(processLine)
+
     val bySourceAndTitle = data.groupBy(x => (x(0), x(4)))
     val recs = bySourceAndTitle.map {
       case (k, v) => AffyOrthologRecord(k._2, v.map(_(2)).toSet + k._1)
     }
-    
+
     val ps = new java.io.PrintStream(new java.io.FileOutputStream(output))
     Console.withOut(ps) {
       for (r <- recs) {
         println(s"\042${r.title}\042\t${r.probes.map(_.toLowerCase).mkString(",")}")
       }
-    }   
+    }
   }
-  
+
   def processLine(l: String): Seq[String] = l.split(",").map(ll => ll.replace("\"", ""))
 }

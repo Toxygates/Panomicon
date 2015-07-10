@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -26,7 +26,7 @@ import scala.concurrent._
  * TODO consider replacing with Futures
  */
 abstract class Tasklet(val name: String) {
-	import scala.concurrent.ExecutionContext.Implicits.global
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   def run(): Unit
 
@@ -38,7 +38,7 @@ abstract class Tasklet(val name: String) {
     val r = _percentComplete.toInt
     if (r > 100) 100 else r
   }
-  
+
   /**
    * Tasks can use this inside a work loop to cancel gracefully
    */
@@ -46,10 +46,10 @@ abstract class Tasklet(val name: String) {
     _percentComplete = pc
     !TaskRunner.shouldStop
   }
-  
+
   def log(message: String) = TaskRunner.log(message)
-  
-  def logResult(message: String) = TaskRunner.logResult(name + ": " +message)
+
+  def logResult(message: String) = TaskRunner.logResult(name + ": " + message)
 }
 
 /**
@@ -86,24 +86,24 @@ object TaskRunner {
   private var _logMessages: Vector[String] = Vector()
   @volatile private var _resultMessages: Vector[String] = Vector()
   @volatile private var _errorCause: Option[Throwable] = None
-  @volatile private var _waitingForTask: Boolean = false 
-  
+  @volatile private var _waitingForTask: Boolean = false
+
   def queueSize(): Int = synchronized {
     tasks.size
   }
-  
+
   /**
    * The task that is currently running or most recently completed.
-   */  
+   */
   def currentTask: Option[Tasklet] = _currentTask
-  
+
   /**
    * Whether a task is currently busy. Even if this is false, the queue
    * is not necessarily empty.
    */
   def waitingForTask: Boolean = _waitingForTask
   def shouldStop = _shouldStop
-  
+
   /**
    * Obtain log messages in time order
    * (and remove them from the log)
@@ -113,13 +113,13 @@ object TaskRunner {
     _logMessages = Vector()
     r
   }
-  
+
   def resultMessages: Iterable[String] = _resultMessages
-  
+
   def +=(task: Tasklet) = synchronized {
     tasks :+= task
     if (_currentTask == None) {
-    	_currentTask = Some(task)
+      _currentTask = Some(task)
     }
   }
 
@@ -133,13 +133,13 @@ object TaskRunner {
     _logMessages :+= msg
     println(msg)
   }
-  
+
   def logResult(msg: String) = synchronized {
-    _resultMessages :+= msg    
+    _resultMessages :+= msg
   }
-  
+
   def errorCause: Option[Throwable] = _errorCause
-  
+
   def start(): Unit = {
     _resultMessages = Vector()
     _shouldStop = false
@@ -167,32 +167,32 @@ object TaskRunner {
             case t: Throwable =>
               log("Error while running task " + next.name + ": " + t.getMessage())
               t.printStackTrace() //TODO pass exception to log
-              log("Deleting remaining tasks")              
+              log("Deleting remaining tasks")
               _errorCause = Some(t)
               _waitingForTask = false
-              shutdown()              
+              shutdown()
           }
         }
         Thread.sleep(1000)
-      }      
+      }
       println("TaskRunner stopping")
       for (r <- resultMessages) {
         println(r)
-      }      
+      }
     }
   }
-  
-  def shutdown(): Unit = synchronized {  
-    _shouldStop = true    
+
+  def shutdown(): Unit = synchronized {
+    _shouldStop = true
     tasks = Vector()
     //Note that an outstanding task could still be running.
     //Clients should check waitingForTask to verify the state.
   }
-  
+
   def runAndStop(tasklet: Tasklet) {
     runAndStop(List(tasklet))
   }
-  
+
   def runAndStop(tasklets: Iterable[Tasklet]) {
     TaskRunner ++= tasklets
     try {

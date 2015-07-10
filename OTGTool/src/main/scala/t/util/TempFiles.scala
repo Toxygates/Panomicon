@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -23,7 +23,7 @@ package t.util
 import java.io.File
 
 /**
- * A way of managing a set of temporary files that can be 
+ * A way of managing a set of temporary files that can be
  * released collectively
  */
 class TempFiles {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -37,7 +37,7 @@ case class Sample(sampleId: String, sampleClass: SampleClass, cgroup: Option[Str
   override def equals(other: Any): Boolean = {
     other match {
       case s: Sample => sampleId == s.sampleId
-      case _ => false
+      case _         => false
     }
   }
 
@@ -48,18 +48,18 @@ object Sample {
   def identifierFor(code: Int)(implicit context: MatrixContext): String = {
     context.sampleMap.tryUnpack(code) match {
       case Some(i) => i
-      case None => 
+      case None =>
         val r = s"unknown_sample[$code]"
         println(r)
         r
     }
   }
-  
+
   def apply(code: Int)(implicit context: MatrixContext): Sample = {
     new Sample(identifierFor(code), SampleClass(), None)
   }
-  
+
   def apply(id: String) = new Sample(id, SampleClass(), None)
-  
+
   def apply(id: String, map: Map[String, String]) = new Sample(id, SampleClass(map), None)
 }
