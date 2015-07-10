@@ -50,7 +50,7 @@ case class TriplestoreConfig(url: String, updateUrl: String,
       Triplestore.connectRemoteRepository(this)
     } else {
       println("SPARQLRepository connect to " + this.url + " and " + this.updateUrl)
-      Triplestore.connectSPARQLRepository(this.url, this.updateUrl)
+      Triplestore.connectSPARQLRepository(this.url, this.updateUrl, user, pass)
     }
   }
 }
