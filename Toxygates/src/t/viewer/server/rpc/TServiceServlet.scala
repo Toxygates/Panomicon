@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -33,20 +33,20 @@ import t.common.shared.DataSchema
 abstract class TServiceServlet extends RemoteServiceServlet {
   protected def context: Context
   protected def factory: Factory
-  
+
   @throws(classOf[ServletException])
   override def init(config: ServletConfig) {
-    super.init(config)        
-    localInit(Configuration.fromServletConfig(config))    
+    super.init(config)
+    localInit(Configuration.fromServletConfig(config))
   }
-  
+
   //This method should initialise Factory and Context.
-  //Public for test purposes 
+  //Public for test purposes
   def localInit(config: Configuration): Unit = {}
-  
+
   protected def makeFactory(): Factory
-  
-  protected def baseConfig = context.config  
-  
+
+  protected def baseConfig = context.config
+
   protected def schema: DataSchema
 }

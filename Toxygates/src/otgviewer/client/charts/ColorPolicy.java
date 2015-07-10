@@ -23,8 +23,8 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import otgviewer.shared.OTGSample;
 import t.common.shared.DataSchema;
+import t.common.shared.sample.Sample;
 
 /**
  * A ColorPolicy is a way of coloring samples in a chart.
@@ -59,9 +59,9 @@ class ColorPolicy {
 	}
 	
 	static class MapColorPolicy extends ColorPolicy {
-		Map<OTGSample, String> colors;
+		Map<Sample, String> colors;
 		
-		MapColorPolicy(Map<OTGSample, String> colors) {
+		MapColorPolicy(Map<Sample, String> colors) {
 			this.colors = colors;
 		}
 		

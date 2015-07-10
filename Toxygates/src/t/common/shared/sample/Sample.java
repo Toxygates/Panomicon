@@ -75,4 +75,9 @@ abstract public class Sample implements Packable, Serializable, HasClass {
 	abstract public String pack();
 	
 	@Nullable String controlGroup() { return controlGroup; }
+
+    public String get(String parameter) {
+        return sampleClass.get(parameter);
+    }
+    
 }

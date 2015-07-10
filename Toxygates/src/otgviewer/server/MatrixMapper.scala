@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -71,7 +71,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
     val rks = (0 until ungr.rows).map(ungr.rowAt)
 
     //Note, we re-fix initProbes for the new matrix
-    new ManagedMatrix(rks.toArray, convert(from.currentInfo), ungr, gr)
+    new ManagedMatrix(rks, convert(from.currentInfo), ungr, gr)
   }
 
   /**

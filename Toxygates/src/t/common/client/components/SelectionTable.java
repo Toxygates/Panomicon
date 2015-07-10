@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import javax.annotation.Nullable;
+
 import t.common.shared.SharedUtils;
 
 import com.google.gwt.cell.client.CheckboxCell;
@@ -35,6 +37,7 @@ import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.NoSelectionModel;
 
@@ -140,6 +143,23 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
 		provider.getList().remove(t);
 		selected.remove(t);
 	}
+	
+	public List<T> availableItems() {
+	  return provider.getList();
+	}
+
+    public Set<T> validateItems(List<T> items) {
+      return new HashSet<T>(items);
+    }
+    
+    public List<Suggestion> getSuggestions(String request) {
+      return new ArrayList<Suggestion>();
+    }
+    
+    public void setSelection(Collection<T> items, @Nullable SetEditor<T> fromSelector) {
+      setSelection(items);
+    }
+    
 		
 	/**
 	 * Get an item that was selected by highlighting a row (not by ticking a check box)

@@ -22,7 +22,7 @@ package otgviewer.client.dialog;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.Utils;
+import t.viewer.client.Utils;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

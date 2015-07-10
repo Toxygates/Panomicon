@@ -24,6 +24,7 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ListSelectionHandler;
 import otgviewer.client.components.PendingAsyncCallback;
 import t.common.client.components.ResizingListBox;
+import t.viewer.client.Utils;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;

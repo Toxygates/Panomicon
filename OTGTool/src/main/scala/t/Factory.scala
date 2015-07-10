@@ -33,4 +33,6 @@ abstract class Factory {
   def tsvMetadata(file: String): TSVMetadata
 
   def context(ts: TriplestoreConfig, data: DataConfig): Context
+
+  def dataConfig(dir: String, matrixDbOptions: String): DataConfig
 }

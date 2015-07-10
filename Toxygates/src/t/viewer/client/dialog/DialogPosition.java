@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.dialog;
+package t.viewer.client.dialog;
 
 import com.google.gwt.user.client.Window;
 

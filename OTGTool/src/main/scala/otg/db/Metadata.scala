@@ -43,7 +43,7 @@ trait Metadata extends t.db.Metadata {
 
 }
 
-object SampleParameter extends ParameterSet {
+object OTGParameterSet extends ParameterSet {
   val all =
     Annotation.keys.map(x => t.db.SampleParameter(x._2, x._1)) ++
       List(t.db.SampleParameter("sample_id", "Sample ID"),
@@ -54,5 +54,8 @@ object SampleParameter extends ParameterSet {
   val required = highLevel ++ List("sample_id",
     "compound_name", "dose_level", "exposure_time",
     "platform_id", "control_group").map(byId)
+
+  override val previewDisplay = List("dose", "dose_unit", "dose_level",
+    "exposure_time", "adm_route_type").map(byId)
 
 }
