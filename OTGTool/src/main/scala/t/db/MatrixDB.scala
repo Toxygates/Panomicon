@@ -129,6 +129,7 @@ trait MatrixDBReader[+E >: Null <: ExprValue] {
    * Samples should be sorted prior to calling this method (using sortSamples above).
    * The result is always a probe-major, sample-minor matrix.
    * The ordering of rows in the result is not guaranteed.
+   * The ordering of columns is guaranteed.
    * @param sparseRead if set, we use an algorithm that is optimised
    *  for the case of reading only a few values from each sample.
    *  @param presentOnly if set, samples whose call is 'A' are replaced with the

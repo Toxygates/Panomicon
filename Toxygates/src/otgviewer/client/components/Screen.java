@@ -400,7 +400,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
     Utils.floatLeft(viewLabel);
     if (showGroups) {
       Collections.sort(chosenColumns);
-      Utils.floatLeft(statusPanel, new GroupLabels(this, schema(), chosenColumns));
+      Utils.floatLeft(statusPanel, factory().groupLabels(this, schema(), chosenColumns));
     }
   }
 

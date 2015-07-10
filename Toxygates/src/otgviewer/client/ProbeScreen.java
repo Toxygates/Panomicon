@@ -239,6 +239,8 @@ public class ProbeScreen extends Screen {
 	
 	protected boolean hasPartialMatcher() { return false; }
 
+	protected boolean hasGotermFinder() { return true; }
+	
 	public Widget content() {
 		StackLayoutPanel probeSelStack = new StackLayoutPanel(Unit.PX);
 		probeSelStack.setWidth("350px");
@@ -246,9 +248,12 @@ public class ProbeScreen extends Screen {
 		ProbeSelector psel = pathwaySelector();
 		probeSelStack.add(psel, "KEGG pathway search", STACK_ITEM_HEIGHT);
 		addListener(psel);
-		psel = goTermSelector();
-		probeSelStack.add(psel, "GO term search", STACK_ITEM_HEIGHT);
-		addListener(psel);
+		
+		if (hasGotermFinder()) {
+		  psel = goTermSelector();
+		  probeSelStack.add(psel, "GO term search", STACK_ITEM_HEIGHT);
+		  addListener(psel);
+		}
 
 		if (hasChembl()) {
 			Widget chembl = makeTargetLookupPanel(
