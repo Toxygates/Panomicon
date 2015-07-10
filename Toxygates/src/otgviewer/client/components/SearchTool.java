@@ -3,7 +3,7 @@ package otgviewer.client.components;
 import java.util.ArrayList;
 import java.util.List;
 
-import otgviewer.client.Utils;
+import t.viewer.client.Utils;
 import t.common.shared.Pair;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
