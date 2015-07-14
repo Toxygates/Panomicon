@@ -21,17 +21,14 @@ package otgviewer.client;
 import java.util.Arrays;
 import java.util.List;
 
-import otgviewer.client.components.ClusteringSelector;
 import otgviewer.client.components.ListChooser;
-import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.ProbeSetSelector;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
-import otgviewer.client.components.SearchTool;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.Group;
 import t.common.shared.ItemList;
-import t.common.shared.clustering.ProbeClustering;
 import t.common.shared.sample.ExpressionRow;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.rpc.SparqlServiceAsync;
@@ -39,7 +36,6 @@ import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.RichTable.HideableColumn;
 
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.MenuBar;
@@ -56,9 +52,8 @@ import com.google.gwt.user.client.ui.Widget;
 public class DataScreen extends Screen {
 
   public static final String key = "data";
-  protected SearchTool st;
+  protected ProbeSetSelector ps;
   protected ExpressionTable et;
-  protected ClusteringSelector cs;
 
   protected String[] lastProbes;
   protected List<Group> lastColumns;
@@ -69,54 +64,23 @@ public class DataScreen extends Screen {
   public DataScreen(ScreenManager man) {
     super("View data", key, true, man, resources.dataDisplayHTML(), resources
         .dataDisplayHelp());
-    st = makeSearchTool();
+    ps = makeProbeSetSelector();
     et = makeExpressionTable();
-    cs = makeClusteringSelector();
-    cs.setAvailable(ProbeClustering
-        .createFrom(appInfo().predefinedProbeLists()));
-    // To ensure that ClusteringSelector has chosenColumns
-    addListener(cs);
-    addListener(st);
     matrixService = man.matrixService();
     sparqlService = man.sparqlService();
   }
 
-  private ClusteringSelector makeClusteringSelector() {
-    return new ClusteringSelector() {
+  protected ProbeSetSelector makeProbeSetSelector() {
+    return new ProbeSetSelector() {
       @Override
-      public void clusterChanged(List<String> items) {
-        matrixService.identifiersToProbes(items.toArray(new String[0]), true,
-            false, getAllSamples(), new PendingAsyncCallback<String[]>(this,
-                "Unable to obtain manual probes (technical error).") {
-              @Override
-              public void handleSuccess(String[] t) {
-                if (t.length == 0) {
-                  Window.alert("No probes were found.\nDisplay all probes.");
-                }
-                DataScreen.this.updateProbes(t);
-              }
-            });
+      public void saveActionPerformed() {
+        // TODO Auto-generated method stub
+        
       }
-    };
-  }
-
-  protected SearchTool makeSearchTool() {
-    return new SearchTool(this) {
       @Override
-      public void keywordChanged(String keyword) {
-        if (keyword.isEmpty()) {
-          return;
-        }
-        sparqlService.probesForPathway(chosenSampleClass, keyword,
-            getAllSamples(), new PendingAsyncCallback<String[]>(this) {
-              @Override
-              public void handleSuccess(String[] t) {
-                if (t.length == 0) {
-                  Window.alert("No probes were found.\nDisplay all probes.");
-                }
-                DataScreen.this.updateProbes(t);
-              }
-            });
+      public void probeSetChanged() {
+        // TODO Auto-generated method stub
+        
       }
     };
   }
@@ -131,20 +95,16 @@ public class DataScreen extends Screen {
     HorizontalPanel mainTools = new HorizontalPanel();
     mainTools.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
     mainTools.add(et.tools());
-    mainTools.add(st.tools());
-    if (addSelector()) {
-      mainTools.add(cs.selector());
-    }
+    mainTools.add(ps.selector());
     addToolbar(mainTools, 43);
     addToolbar(et.analysisTools(), 43);
   }
 
-  protected boolean addSelector() {
-    return true;
-  }
-
   public Widget content() {
     addListener(et);
+    // To ensure that ProbeSetSelector has chosenColumns
+    addListener(ps);
+
     setupMenuItems();
 
     ResizeLayoutPanel rlp = new ResizeLayoutPanel();
