@@ -29,11 +29,13 @@ import com.google.gwt.user.client.ui.Widget;
 
 public abstract class ProbeSetSelector extends DataListenerWidget {
 
+  private final Screen screen;
+  
   private HorizontalPanel selector;
-
   private ListBox listProbeset;
 
-  public ProbeSetSelector() {
+  public ProbeSetSelector(Screen screen) {
+    this.screen = screen;
     makeSelector();
   }
 
@@ -44,13 +46,11 @@ public abstract class ProbeSetSelector extends DataListenerWidget {
     // addListener(selector);
 
     listProbeset = new ListBox();
-    listProbeset.setVisibleItemCount(10);
 
     Button btnNew = new Button("New", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        // TODO Auto-generated method stub
-
+        new ProbeSetEditor(screen).newSet();
       }
     });
 

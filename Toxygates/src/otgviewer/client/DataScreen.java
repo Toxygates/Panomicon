@@ -71,7 +71,7 @@ public class DataScreen extends Screen {
   }
 
   protected ProbeSetSelector makeProbeSetSelector() {
-    return new ProbeSetSelector() {
+    return new ProbeSetSelector(this) {
       @Override
       public void saveActionPerformed() {
         // TODO Auto-generated method stub
@@ -197,8 +197,9 @@ public class DataScreen extends Screen {
 
   @Override
   public boolean enabled() {
-    return manager.isConfigured(ProbeScreen.key)
-        && manager.isConfigured(ColumnScreen.key);
+//    return manager.isConfigured(ProbeScreen.key)
+//        && manager.isConfigured(ColumnScreen.key);
+    return manager.isConfigured(ColumnScreen.key);
   }
 
   public void show() {

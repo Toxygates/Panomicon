@@ -402,7 +402,9 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 	
 	protected List<OTGSample> getAllSamples() {
 		List<OTGSample> list = new ArrayList<OTGSample>();
+		System.out.println(chosenColumns.size());
 		for (Group g : chosenColumns) {
+          System.out.println(g.pack());
 			List<OTGSample> ss = Arrays.asList(g.getSamples());
 			list.addAll(ss);
 		}

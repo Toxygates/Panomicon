@@ -193,7 +193,7 @@ public class ColumnScreen extends Screen {
 				if (gi.chosenColumns().size() == 0) {
 					Window.alert("Please define and activate at least one group.");
 				} else {
-					configuredProceed(ProbeScreen.key);					
+					configuredProceed(DataScreen.key);					
 				}
 			}
 		});

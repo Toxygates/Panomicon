@@ -95,5 +95,5 @@ public interface SparqlServiceAsync {
 	public void associations(SampleClass sc, AType[] types, String[] probes, 
 			AsyncCallback<Association[]> callback);
 
-	public void keywordSuggestions(String partialName, int maxSize, AsyncCallback<Pair<String, String>[]> asyncCallback);
+	public void keywordSuggestions(String partialName, int maxSize, AsyncCallback<Pair<String, AType>[]> asyncCallback);
 }

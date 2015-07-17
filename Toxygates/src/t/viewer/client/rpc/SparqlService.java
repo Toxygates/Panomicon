@@ -271,5 +271,5 @@ public interface SparqlService extends RemoteService {
 	 * @return An array of pairs, where the first item is the precise gene
 	 * symbol and the second is the full gene name.
 	 */
-	public Pair<String, String>[] keywordSuggestions(String partialName, int maxSize);
+	public Pair<String, AType>[] keywordSuggestions(String partialName, int maxSize);
 }
