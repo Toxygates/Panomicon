@@ -31,13 +31,14 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
+import otgviewer.client.components.groupdef.GroupInspector;
 import otgviewer.client.components.ranking.CompoundRanker;
-import otgviewer.client.components.ranking.SimpleCompoundRanker;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import t.common.shared.DataSchema;
 import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
+import t.viewer.client.Utils;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
 import com.google.gwt.dom.client.Style.Unit;
@@ -63,18 +64,21 @@ public class ColumnScreen extends Screen {
 	private TabLayoutPanel tp;
 	private final String rankingLabel;
 	private DataFilterEditor dfe;
+	private boolean hasCompoundRanking;
 	
 	private final SparqlServiceAsync sparqlService;
 	
-	public ColumnScreen(ScreenManager man, String rankingLabel) {
+	public ColumnScreen(ScreenManager man, String rankingLabel,
+			boolean hasCompoundRanking) {
 		super("Sample group definitions", key, false, man,
 				resources.groupDefinitionHTML(), resources.groupDefinitionHelp());
 		
 		this.rankingLabel = rankingLabel;
+		this.hasCompoundRanking = hasCompoundRanking;
 		sparqlService = man.sparqlService();
 		
 		String majorParam = man.schema().majorParameter();
-		cs = new CompoundSelector(this, man.schema().title(majorParam));		
+		cs = man.factory().compoundSelector(this, man.schema().title(majorParam));
 		this.addListener(cs);
 		cs.setStylePrimaryName("compoundSelector");
 		filterTools = mkFilterTools();
@@ -156,15 +160,17 @@ public class ColumnScreen extends Screen {
 	public Widget content() {				
 		tp = new TabLayoutPanel(30, Unit.PX);
 		
-		gi = new GroupInspector(cs, this);
+		gi = factory().groupInspector(cs, this);
 		this.addListener(gi);
 		cs.addListener(gi);
 		gi.datasetsChanged(chosenDatasets);
 		
 		tp.add(gi, "Sample groups");
-		
-		final CompoundRanker cr = new SimpleCompoundRanker(this, cs);
-		tp.add(Utils.makeScrolled(cr), rankingLabel);
+
+		if (hasCompoundRanking) {
+			CompoundRanker cr = factory().compoundRanker(this, cs);
+			tp.add(Utils.makeScrolled(cr), rankingLabel);
+		}
 		tp.selectTab(0);		
 		
 		gi.addStaticGroups(appInfo().predefinedSampleGroups());		
@@ -187,7 +193,7 @@ public class ColumnScreen extends Screen {
 				if (gi.chosenColumns().size() == 0) {
 					Window.alert("Please define and activate at least one group.");
 				} else {
-					configuredProceed(ProbeScreen.key);					
+					configuredProceed(DataScreen.key);					
 				}
 			}
 		});
@@ -202,7 +208,7 @@ public class ColumnScreen extends Screen {
 		if (visible) {
 			try {
 				List<Group> ics = loadColumns(p, schema(), "inactiveColumns", 
-						new ArrayList<OTGColumn>(gi.existingGroupsTable.inverseSelection()));
+						new ArrayList<OTGColumn>(gi.existingGroupsTable().inverseSelection()));
 				if (ics != null && ics.size() > 0) {
 					logger.info("Unpacked i. columns: " + ics.get(0) + ": " + ics.get(0).getSamples()[0] + " ... ");
 					gi.inactiveColumnsChanged(ics);

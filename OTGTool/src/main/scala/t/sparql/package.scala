@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -18,14 +18,13 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t 
+package t
 import t.db.BioObject
-import t.db.GenBioObject
 
 import scala.collection.DefaultMap
 
 package object sparql {
-  
+
   import scala.collection.mutable.{ HashMap, MultiMap, Map, Set }
   import scala.collection.{ Set => CSet, Map => CMap }
   import scala.language.implicitConversions
@@ -33,7 +32,7 @@ package object sparql {
   type SMMap = CMap[String, CSet[String]]
   type SMPMap = CMap[String, CSet[(String, String)]]
   type MMap[K, T] = CMap[K, CSet[T]]
-  type BBMap = MMap[_ <: GenBioObject, _ <: GenBioObject]
+  type BBMap = MMap[_ <: BioObject, _ <: BioObject]
 
   def emptySMMap() = emptyMMap[String, String]()
   def emptySMPMap() = emptyMMap[String, (String, String)]()
@@ -56,8 +55,8 @@ package object sparql {
     override def iterator = data.iterator
     override def foreach[V](f: ((T, CSet[U])) => V): Unit = data.foreach(f)
     override def size = data.size
-    def mapMValues[V](f: U => V) = new RichMMap(map(x => (x._1 -> x._2.map(f))))
-    def mapKValues[V](f: T => V) = new RichMMap(map(x => (f(x._1) -> x._2)))
+    def mapInnerValues[V](f: U => V) = new RichMMap(map(x => (x._1 -> x._2.map(f))))
+    def mapKeys[V](f: T => V) = new RichMMap(map(x => (f(x._1) -> x._2)))
     def allValues = flatMap(_._2)
 
     def union(m2: MMap[T, U]): RichMMap[T, U] = {
@@ -70,12 +69,12 @@ package object sparql {
     def combine[V](lookup: (Iterable[U]) => MMap[U, V]): MMap[T, V] =
       combine(lookup(flatMap(_._2)))
 
-    def reverse: MMap[U, T] = { 
+    def reverse: MMap[U, T] = {
       val entries = data.toVector.flatMap(entry => entry._2.map(x => (x, entry._1)))
       makeMultiMap(entries)
     }
   }
-  
+
   def bracket(url: String) = "<" + url + ">"
-  def unbracket(url: String) = url.replace("<", "").replace(">", "")  
+  def unbracket(url: String) = url.replace("<", "").replace(">", "")
 }

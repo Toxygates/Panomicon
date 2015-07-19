@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -28,37 +28,37 @@ trait ParameterSet {
   def all: Iterable[SampleParameter]
   def required: Iterable[SampleParameter]
   def highLevel: Iterable[SampleParameter]
+  def previewDisplay: Iterable[SampleParameter] = required
   lazy val byId = Map() ++ all.map(x => x.identifier -> x)
-  lazy val byIdLowercase = byId.map(x => x._1.toLowerCase() -> x._2)   
+  lazy val byIdLowercase = byId.map(x => x._1.toLowerCase() -> x._2)
 }
 
 trait Metadata {
- def samples: Iterable[Sample]
-    
+  def samples: Iterable[Sample]
+
   def parameters(s: Sample): Iterable[(SampleParameter, String)]
-  
+
   def parameterMap(s: Sample): Map[String, String] =
     Map() ++ parameters(s).map(x => x._1.identifier -> x._2)
   /**
    * Obtain all available values for a given parameter.
    */
   def parameterValues(identifier: String): Set[String]
-  
-  def parameter(s: Sample, identifier: String): String = 
+
+  def parameter(s: Sample, identifier: String): String =
     parameterMap(s)(identifier)
-    
+
   /**
    * Does this metadata set have information about the given sample?
    */
   def contains(s: Sample): Boolean = !parameters(s).isEmpty
-  
+
   def platform(s: Sample): String = parameter(s, "platform_id")
-  
-  def isControl(s: Sample): Boolean = false 
-   
+
+  def isControl(s: Sample): Boolean = false
+
   /**
    * Retrieve the set of control samples corresponding to a given sample.
    */
   def controlSamples(s: Sample): Iterable[Sample] = List()
 }
-

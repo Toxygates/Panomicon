@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,7 +20,7 @@
 
 package t.sparql.secondary
 import otg.Species._
-import t.db.BioObject
+import t.db.StoredBioObject
 
 object Protein {
   def unpackB2R(prot: String) = Protein(prot.split("bio2rdf.org/uniprot:")(1))
@@ -29,14 +29,14 @@ object Protein {
 /**
  * Identifier is Uniprot accession
  */
-case class Protein(identifier: String) extends BioObject[Protein] {
+case class Protein(identifier: String) extends StoredBioObject[Protein] {
   def packB2R = "http://bio2rdf.org/uniprot:" + identifier
   def packUniprot = "http://purl.uniprot.org/uniprot/" + identifier
 }
 
 object Gene {
   def apply(identifier: Int): Gene = apply(identifier.toString)
-  
+
   def unpackId(geneid: String) = {
     val entrez = geneid.split("geneid:")(1)
     Gene(identifier = entrez, name = entrez)
@@ -52,19 +52,19 @@ object Gene {
 /**
  * Identifier is ENTREZ id
  */
-case class Gene(identifier: String, 
-                override val name: String = "", 
-                symbol: String = "",
-                keggShortCode: String = "") extends BioObject[Gene] {
+case class Gene(identifier: String,
+  override val name: String = "",
+  symbol: String = "",
+  keggShortCode: String = "") extends StoredBioObject[Gene] {
 
   //e.g. short code: MMU, entrez: 58810 ->
-  //<http://bio2rdf.org/kegg:MMU_58810> 
+  //<http://bio2rdf.org/kegg:MMU_58810>
   def packKegg = s"http://bio2rdf.org/kegg:${keggShortCode}_$identifier"
 
   override def equals(other: Any): Boolean = other match {
     case Gene(id, _, _, _) => id == identifier
     case _                 => false
-  }  
+  }
 }
 
 object Compound {
@@ -77,7 +77,7 @@ object Compound {
 }
 
 //NB name must be capitalised
-case class Compound(override val name: String, identifier: String = "") extends BioObject[Compound] {
+case class Compound(override val name: String, identifier: String = "") extends StoredBioObject[Compound] {
   override def hashCode = name.hashCode
 
   override def equals(other: Any): Boolean = other match {
@@ -87,9 +87,9 @@ case class Compound(override val name: String, identifier: String = "") extends 
 }
 
 //TODO consider moving out of secondary
-case class GOTerm(identifier: String, override val name: String) extends BioObject[GOTerm] {
+case class GOTerm(identifier: String, override val name: String) extends StoredBioObject[GOTerm] {
   override def equals(other: Any): Boolean = other match {
     case GOTerm(id, _) => id == identifier
     case _             => false
-  }  
+  }
 }

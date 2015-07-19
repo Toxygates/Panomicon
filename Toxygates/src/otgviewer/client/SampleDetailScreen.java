@@ -28,12 +28,13 @@ import java.util.Set;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
-import otgviewer.client.dialog.DialogPosition;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.DataColumn;
+import t.viewer.client.Utils;
+import t.viewer.client.dialog.DialogPosition;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;

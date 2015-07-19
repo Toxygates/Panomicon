@@ -24,6 +24,8 @@ import java.util.ArrayList
 import java.util.{List => JList}
 import scala.Array.canBuildFrom
 import scala.collection.JavaConversions.asJavaCollection
+import scala.collection.JavaConversions._  
+import scala.language.implicitConversions
 import otgviewer.server.rpc.Conversions
 import otgviewer.server.rpc.Conversions.asJava
 import otgviewer.server.rpc.Conversions.asScala
@@ -45,8 +47,6 @@ import t.sparql.Datasets
 import t.sparql.SampleFilter
 
 abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with SeriesService {
-  import scala.collection.JavaConversions._  
-
   import java.lang.{ Double => JDouble }
  
   private implicit def mcontext: MatrixContext = context.matrix

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -22,12 +22,12 @@ package t.sparql.secondary
 
 import t.sparql._
 
-class B2RHomologene extends Triplestore {    
+class B2RHomologene extends Triplestore {
   val con = Triplestore.connectSPARQLRepository("http://homologene.bio2rdf.org/sparql")
 
   val prefixes = """
     PREFIX hg:<http://bio2rdf.org/homologene_vocabulary:>
-    PREFIX gi:<http://bio2rdf.org/geneid:> 
+    PREFIX gi:<http://bio2rdf.org/geneid:>
 """
 
   /**
@@ -52,7 +52,7 @@ class B2RHomologene extends Triplestore {
       multiFilter("?g", genes.map("gi:" + _.identifier)) + " . }").map(x => (Gene.unpackId(x(0)), Gene.unpackId(x(1))))
     makeMultiMap(r)
   }
- 
+
   val iproClass = new B2RIProClass()
 
   def homologousGenesFor(uniprots: Iterable[Protein]): MMap[Protein, Gene] = {
@@ -62,7 +62,7 @@ class B2RHomologene extends Triplestore {
     val homologs = if (!allGIs.isEmpty) { homologousGenes(allGIs) } else { emptyMMap[Gene, Gene]() }
     geneIds.map(x => (x._1 -> x._2.flatMap(homologs.getOrElse(_, Set()))))
   }
-  
+
   override def close {
     super.close
     iproClass.close

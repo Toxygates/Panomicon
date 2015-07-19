@@ -32,7 +32,6 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 import otgviewer.client.StandardColumns;
-import otgviewer.client.Utils;
 import otgviewer.client.charts.AdjustableGrid;
 import otgviewer.client.charts.Charts;
 import otgviewer.client.charts.Charts.AChartAcceptor;
@@ -40,21 +39,22 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.FilterEditor;
 import otgviewer.shared.Group;
-import otgviewer.shared.GroupUtils;
 import otgviewer.shared.ManagedMatrixInfo;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Synthetic;
 import t.common.shared.AType;
 import t.common.shared.DataSchema;
+import t.common.shared.GroupUtils;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
 import t.common.shared.sample.DataColumn;
 import t.common.shared.sample.ExpressionRow;
+import t.viewer.client.Utils;
+import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.table.SortKey;
 
@@ -131,6 +131,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 	protected boolean displayPColumns = true;
 	protected SortKey sortKey;
 	protected boolean sortAsc;
+	
+	private boolean pValueOption;
 		
 	/**
 	 * For selecting sample groups to apply t-test/u-test to
@@ -157,7 +159,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
  	
  	protected ValueType chosenValueType;
  	
-	public ExpressionTable(Screen _screen) {
+	public ExpressionTable(Screen _screen, boolean pValueOption) {
 		super(_screen);
 		this.matrixService = _screen.matrixService();
 		this.resources = _screen.resources();
@@ -247,16 +249,18 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 		pager.setStylePrimaryName("slightlySpaced");
 		horizontalPanel.add(pager);
 		
-		final CheckBox pcb = new CheckBox("p-value columns");
-		horizontalPanel.add(pcb);
-		pcb.setValue(true);
-		pcb.addClickHandler(new ClickHandler() {			
-			@Override
-			public void onClick(ClickEvent event) {
-				displayPColumns = pcb.getValue();
-				setupColumns();
-			}
-		});
+		if (pValueOption) {
+			final CheckBox pcb = new CheckBox("p-value columns");
+			horizontalPanel.add(pcb);
+			pcb.setValue(true);
+			pcb.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					displayPColumns = pcb.getValue();
+					setupColumns();
+				}
+			});
+		}
 		
 		pager.setDisplay(grid);			
 	}
@@ -349,8 +353,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				"Unable to prepare the requested data for download.") {
 			
 			public void handleSuccess(String url) {
-				Utils.urlInNewWindow("Your download is ready.", "Download", url);					
-			}
+				Utils.displayURL("Your download is ready.", "Download", url);					
+			}			
 		});
 	}
 
@@ -519,9 +523,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 				"</div> ");
 	}
 	
-	protected List<HideableColumn> initHideableColumns(DataSchema schema) {
+	protected List<HideableColumn<ExpressionRow, ?>> initHideableColumns(DataSchema schema) {
 		SafeHtmlCell shc = new SafeHtmlCell();
-		List<HideableColumn> r = new ArrayList<HideableColumn>();
+		List<HideableColumn<ExpressionRow, ?>> r = new ArrayList<HideableColumn<ExpressionRow, ?>>();
 		
 		r.add(new LinkingColumn<ExpressionRow>(shc, "Gene ID", 
 				initVisibility(StandardColumns.GeneID), 

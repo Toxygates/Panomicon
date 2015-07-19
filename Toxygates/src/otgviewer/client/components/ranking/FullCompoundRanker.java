@@ -21,9 +21,9 @@
 package otgviewer.client.components.ranking;
 
 import otgviewer.client.CompoundSelector;
-import otgviewer.client.Utils;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.RankRule;
+import t.viewer.client.Utils;
 
 public class FullCompoundRanker extends CompoundRanker {
 

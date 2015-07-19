@@ -47,6 +47,10 @@
 		<param-name>feedbackReceivers</param-name>
 		<param-value>jtnystrom@gmail.com,kenji@nibiohn.go.jp,y-igarashi@nibiohn.go.jp</param-value>
 	</context-param>
+	<context-param>
+		<param-name>feedbackFromAddress</param-name>
+		<param-value>root@nibiohn.go.jp</param-value>
+	</context-param>
 	
   <!-- Servlets -->
 	<servlet>

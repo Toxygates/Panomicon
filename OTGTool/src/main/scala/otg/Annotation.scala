@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,14 +20,14 @@
 
 package otg
 
-import scala.collection.immutable.SortedMap
 import scala.collection.immutable.ListMap
 
+@deprecated("Being replaced with SampleParameter and ParameterSet", "July 15")
 object Annotation {
   /**
    * Map human-readable descriptions to the keys we expect to find in the RDF data.
    * The RDF predicates are of the form <http://127.0.0.1:3333/(key)>.
-   * 
+   *
    * TODO this should be unified with the SampleParameter API.
    */
 
@@ -56,13 +56,12 @@ object Annotation {
     "Dose level" -> "dose_level",
     "Medium type" -> "medium_type",
     "Product information" -> "product_information",
-    "CRO type" -> "cro_type"
-    )
+    "CRO type" -> "cro_type")
 
-    /**
-     * These are the annotations that it makes sense to consider in a 
-     * statistical, numerical way.
-     */
+  /**
+   * These are the annotations that it makes sense to consider in a
+   * statistical, numerical way.
+   */
   val numericalKeys = ListMap("Terminal body weight (g)" -> "terminal_bw",
     "Liver weight (g)" -> "liver_wt",
     "Kidney weight total (g)" -> "kidney_total_wt",
@@ -107,32 +106,33 @@ object Annotation {
     "DNA (%)" -> "DNA")
 
   val keys = nonNumericalKeys ++ numericalKeys
-  
+
   def isNumerical(key: String) = numericalKeys.keySet.contains(key)
 }
 
+@deprecated("being replaced with SampleParameter", "July 15")
 case class Annotation(data: Seq[(String, String)], barcode: String = null) {
   def postReadAdjustment: Annotation = {
     Annotation(data.map(x => x._1 match {
       //expect e.g. http://127.0.0.1:3333/000080-77-3
-      case "CAS number" => {        
+      case "CAS number" => {
         val s = x._2.split("3333/")
         val v = if (s.size > 1) {
           s(1)
         } else {
           "N/A"
         }
-        (x._1, v)        
+        (x._1, v)
       }
       //expect e.g. http://bio2rdf.org/dr:D00268
-      case "KEGG drug" | "KEGG compound" => {        
+      case "KEGG drug" | "KEGG compound" => {
         val s = x._2.split(":")
         val v = if (s.size > 2) {
           s(2)
         } else {
           "N/A"
         }
-        (x._1, v)        
+        (x._1, v)
       }
       case _ => x
     }), barcode)

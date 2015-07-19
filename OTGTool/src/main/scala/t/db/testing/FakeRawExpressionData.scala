@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -27,4 +27,4 @@ import t.db.RawExpressionData
  * In-memory raw data for testing.
  */
 class FakeRawExpressionData(val data: Map[Sample, Map[String, (Double, Char, Double)]])
-	extends RawExpressionData
+  extends RawExpressionData

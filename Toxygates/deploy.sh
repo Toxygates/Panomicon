@@ -35,6 +35,7 @@ function makeAdminWar {
 
 WARLIB=war/WEB-INF/lib
 #ivy.sh -retrieve lib/[type]/[artifact]-[revision].[ext] 
+rm $WARLIB/*jar
 cp lib/jar/* $WARLIB
 cp lib/bundle/*.jar $WARLIB
 cp mlib/*jar $WARLIB

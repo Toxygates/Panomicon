@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -27,10 +27,12 @@ import t.db.ParameterSet
 //then store them and the resulting context, baseconfig
 abstract class Factory {
   def samples(config: BaseConfig): Samples
-  
+
   def probes(config: TriplestoreConfig): Probes
- 
-  def tsvMetadata(file: String): TSVMetadata 
-  
-  def context(ts: TriplestoreConfig, data: DataConfig): Context  
+
+  def tsvMetadata(file: String): TSVMetadata
+
+  def context(ts: TriplestoreConfig, data: DataConfig): Context
+
+  def dataConfig(dir: String, matrixDbOptions: String): DataConfig
 }

@@ -20,8 +20,8 @@
 
 package t.viewer.client.table;
 
-import otgviewer.client.Utils;
 import t.common.shared.sample.ExpressionRow;
+import t.viewer.client.Utils;
 import t.viewer.shared.table.SortKey;
 
 import com.google.gwt.cell.client.Cell.Context;

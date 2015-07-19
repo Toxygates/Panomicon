@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,14 +20,11 @@
 
 package t.db
 
-/**
- * A BioObject is some biological entity that can be uniquely identified
- * by a string. It can also have a name, which by default is the same
- * as the identifier.
+/*
+ * Convenience implementations, but this can't be extended by Java classes
  */
-trait GenBioObject {
-  def identifier: String
-  def name: String = identifier
+trait GenBioObject extends BioObject {
+  override def name: String = identifier
   override def hashCode = identifier.hashCode
 }
 
@@ -36,7 +33,7 @@ trait GenBioObject {
  */
 case class DefaultBio(identifier: String, override val name: String = "") extends GenBioObject
 
-trait BioObject[T <: BioObject[T]] extends GenBioObject {
+trait StoredBioObject[T <: StoredBioObject[T]] extends GenBioObject {
   this: T =>
   def getAttributes(implicit store: Store[T]) = store.withAttributes(List(this)).head
 }
@@ -44,18 +41,17 @@ trait BioObject[T <: BioObject[T]] extends GenBioObject {
 /**
  * A Store is a way of looking up additional information about some type of BioObject.
  */
-trait Store[T <: BioObject[T]] {
-  
+trait Store[T <: StoredBioObject[T]] {
+
   /**
    * For the given BioObjects of type T, assuming that only the identifier is available,
-   * look up all available information and return new copies with all information filled in. 
+   * look up all available information and return new copies with all information filled in.
    */
   def withAttributes(objs: Iterable[T]): Iterable[T] = objs
-  
+
   /**
    * Look up all available information for a single bioObject (where only the identifier
-   * needs to be available) 
+   * needs to be available)
    */
   def withAttributes(obj: T): T = withAttributes(List(obj)).head
 }
-

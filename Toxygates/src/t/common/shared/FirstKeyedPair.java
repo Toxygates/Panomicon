@@ -40,7 +40,7 @@ public class FirstKeyedPair<T, U> extends Pair<T, U> {
 	@Override 
 	public boolean equals(Object other) {
 		if (other instanceof FirstKeyedPair) {
-			return _t.equals(((FirstKeyedPair<T, U>) other).first());
+			return _t.equals(((FirstKeyedPair<?, ?>) other).first());
 		} else {
 			return false;
 		}

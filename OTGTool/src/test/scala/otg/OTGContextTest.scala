@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -32,22 +32,21 @@ class OTGContextTest extends OTGTestSuite {
 
   val config = TestConfig.config
   val context = new OTGContext(config)
-  
+
   test("probe map") {
     val m1 = context.probeMap
-    
+
     println(m1.tokens.size)
-    
-    
+
     assert(m1.tokens.size === m1.keys.size)
-    
-    val probes1 = List(0, 1500, 2382, 30000)    
+
+    val probes1 = List(0, 1500, 2382, 30000)
 
     println(m1.keys)
-    
+
     for (p <- probes1) {
       val str = m1.unpack(p)
       assert(m1.pack(str) === p)
-    }    
-  }  
+    }
+  }
 }

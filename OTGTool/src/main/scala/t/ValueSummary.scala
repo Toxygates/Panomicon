@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -49,8 +49,8 @@ abstract class ValueSummary(valueName: String) {
   }
 }
 
-class SimpleValueSummary(valueName: String, val originalValues: Set[String]) 
-	extends ValueSummary(valueName)
+class SimpleValueSummary(valueName: String, val originalValues: Set[String])
+  extends ValueSummary(valueName)
 
 case class AttribValueSummary(samples: Samples, attribName: String)
   extends ValueSummary(attribName) {

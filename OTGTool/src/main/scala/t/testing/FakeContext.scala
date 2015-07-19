@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -30,22 +30,22 @@ import t.db.PExprValue
 import t.db.ExprValue
 import t.db.SeriesBuilder
 
-class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap, 
-    val enumMaps: Map[String, Map[String, Int]] = Map()) extends MatrixContext {
+class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap,
+  val enumMaps: Map[String, Map[String, Int]] = Map()) extends MatrixContext {
 
   def species = List(Rat)
 
   def probes(s: Species): ProbeMap = probeMap
   def unifiedProbes = probeMap
-  
+
   /**
    * Metadata for samples. Not always available.
    * Only intended for use during maintenance operations.
    */
   def metadata: Option[Metadata] = None
-  
+
   def samples = null //TODO
-    
+
   def absoluteDBReader: MatrixDBReader[ExprValue] = null //TODO
   def foldsDBReader: MatrixDBReader[PExprValue] = null //TODO
   def seriesBuilder: SeriesBuilder[_] = null //TODO

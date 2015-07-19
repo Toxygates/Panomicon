@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -56,48 +56,48 @@ import t.sparql.SampleFilter
  */
 object BatchManager extends ManagerTool {
   def apply(args: Seq[String])(implicit context: Context): Unit = {
-  
-  def config = context.config
-  def factory = context.factory
-    
-	val batches = new Batches(config.triplestore)
-	if (args.size < 1) {
-	  showHelp()	  
-	}
-	
+
+    def config = context.config
+    def factory = context.factory
+
+    val batches = new Batches(config.triplestore)
+    if (args.size < 1) {
+      showHelp()
+    }
+
     args(0) match {
       case "add" =>
-        val title = require(stringOption(args, "-title"), 
-            "Please specify a title with -title")
-        val metaFile = require(stringOption(args, "-metadata"), 
-            "Please specify a metadata file with -metadata")
+        val title = require(stringOption(args, "-title"),
+          "Please specify a title with -title")
+        val metaFile = require(stringOption(args, "-metadata"),
+          "Please specify a metadata file with -metadata")
         val niFile = stringOption(args, "-ni")
         val foldFile = require(stringOption(args, "-fold"),
-            "Please specify a folds file with -fold")
+          "Please specify a folds file with -fold")
         val callFile = stringOption(args, "-calls")
         val foldCallFile = stringOption(args, "-foldCalls")
-        val foldPFile = stringOption(args, "-foldP")            
+        val foldPFile = stringOption(args, "-foldP")
         val append = booleanOption(args, "-append")
         val comment = stringOption(args, "-comment").getOrElse("")
-        
-        if (batches.list.contains(title) && !append) {          
+
+        if (batches.list.contains(title) && !append) {
           val msg = s"Batch $title already exists"
           throw new Exception(msg)
         }
-        
+
         val bm = new BatchManager(context)
         val md = factory.tsvMetadata(metaFile)
-        withTaskRunner(bm.addBatch(title, comment, 
-            md, niFile, callFile, 
-            foldFile, foldCallFile, foldPFile, 
-            append, config.seriesBuilder))            
+        withTaskRunner(bm.addBatch(title, comment,
+          md, niFile, callFile,
+          foldFile, foldCallFile, foldPFile,
+          append, config.seriesBuilder))
       case "delete" =>
-        val title = require(stringOption(args, "-title"), 
-            "Please specify a title with -title")
+        val title = require(stringOption(args, "-title"),
+          "Please specify a title with -title")
         // TODO move verification into the batches API
         verifyExists(batches, title)
         val bm = new BatchManager(context)
-        withTaskRunner(bm.deleteBatch(title, config.seriesBuilder))        
+        withTaskRunner(bm.deleteBatch(title, config.seriesBuilder))
       case "list" =>
         println("Batch list")
         for (b <- batches.list) {
@@ -119,14 +119,14 @@ object BatchManager extends ManagerTool {
         verifyExists(batches, args(1))
         batches.disableAccess(args(1), args(2))
       case "checkOrder" =>
-        expectArgs(args, 4)        
+        expectArgs(args, 4)
         val len = Integer.parseInt(args(3))
-        val bm = new BatchManager(context)        
+        val bm = new BatchManager(context)
         val db = KCMatrixDB.apply(config.data.exprDb, false)(bm.matrixContext)
         try {
           db.dumpKeys(args(1), args(2), len)
         } finally {
-          db.release 
+          db.release
         }
       case "loadTest" =>
         expectArgs(args, 3)
@@ -145,11 +145,11 @@ object BatchManager extends ManagerTool {
             db.release
           }
         }
-      case "sampleCheck" =>        
-       sampleCheck(config.data.exprDb, 
-           args.size > 1 && args(1) == "delete")
-       sampleCheck(config.data.foldDb,
-           args.size > 1 && args(1) == "delete")
+      case "sampleCheck" =>
+        sampleCheck(config.data.exprDb,
+          args.size > 1 && args(1) == "delete")
+        sampleCheck(config.data.foldDb,
+          args.size > 1 && args(1) == "delete")
       case _ => showHelp()
     }
   }
@@ -164,7 +164,7 @@ object BatchManager extends ManagerTool {
       val unknowns = ss.map(_._1).toSet -- xs.keys
 
       println("Unknown set: " + unknowns)
-      if (delete && !unknowns.isEmpty) { 
+      if (delete && !unknowns.isEmpty) {
         db.allSamples(true, unknowns)
       }
     } finally {
@@ -180,53 +180,54 @@ object BatchManager extends ManagerTool {
   }
 
   def showHelp() {
-	  throw new Exception("Please specify a command (add/delete/list/list-access/enable/disable)")
+    throw new Exception("Please specify a command (add/delete/list/list-access/enable/disable)")
   }
 }
 
 class BatchManager(context: Context) {
   import TRDF._
-  
+
   def config = context.config
-  
+  def samples = context.samples
+
   def matrixContext(): MatrixContext = {
     new MatrixContext {
       def foldsDBReader = null
       def absoluteDBReader = null
       def seriesBuilder = null
-      
-      lazy val probeMap: ProbeMap =         
-        new ProbeIndex(KCIndexDB.readOnce(config.data.probeIndex))      
-      lazy val sampleMap: SampleMap = 
+
+      lazy val probeMap: ProbeMap =
+        new ProbeIndex(KCIndexDB.readOnce(config.data.probeIndex))
+      lazy val sampleMap: SampleMap =
         new SampleIndex(KCIndexDB.readOnce(config.data.sampleIndex))
-      
+
       lazy val enumMaps: Map[String, Map[String, Int]] = {
         val db = KCIndexDB(config.data.enumIndex, false)
         try {
-          db.enumMaps(config.seriesBuilder.enums) 
+          db.enumMaps(config.seriesBuilder.enums)
         } finally {
           db.release()
         }
       }
     }
   }
-  
-  val requiredParameters = config.sampleParameters.required.map(_.identifier)  
+
+  val requiredParameters = config.sampleParameters.required.map(_.identifier)
   val hlParameters = config.sampleParameters.highLevel.map(_.identifier)
-  
-  def addBatch[S <: Series[S]](title: String, comment: String, metadata: Metadata, 
-      niFile: Option[String], callFile: Option[String], foldFile: String,
-      foldCallFile: Option[String], foldPValueFile: Option[String],
-      append: Boolean, sbuilder: SeriesBuilder[S]): Iterable[Tasklet] = {
+
+  def addBatch[S <: Series[S]](title: String, comment: String, metadata: Metadata,
+    niFile: Option[String], callFile: Option[String], foldFile: String,
+    foldCallFile: Option[String], foldPValueFile: Option[String],
+    append: Boolean, sbuilder: SeriesBuilder[S]): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
-    val ts = config.triplestore.triplestore    
- 
+    val ts = config.triplestore.triplestore
+
     r :+= consistencyCheck(title, metadata, config)
-    
+
     if (!append) {
-    	r :+= addBatchRecord(title, comment, config.triplestore)
+      r :+= addBatchRecord(title, comment, config.triplestore)
     }
-    r :+= addSampleIDs(metadata) 
+    r :+= addSampleIDs(metadata)
     r :+= addRDF(title, metadata, sbuilder, new SimpleTriplestore(ts))
 
     // Note that we rely on these maps not being read until they are needed
@@ -234,42 +235,39 @@ class BatchManager(context: Context) {
     // TODO: more robust updating of maps
     implicit val mc = matrixContext()
     r :+= addEnums(metadata, sbuilder)
-    
+
     if (niFile != None) {
-    	r :+= addExprData(niFile.get, callFile)
+      r :+= addExprData(niFile.get, callFile)
     }
-    r :+= addFoldsData(foldFile, foldCallFile, foldPValueFile)    
+    r :+= addFoldsData(foldFile, foldCallFile, foldPValueFile)
     r :+= addSeriesData(metadata, sbuilder)
     r
   }
-    
-  def deleteBatch[S <: Series[S]](title: String, 
-      sbuilder: SeriesBuilder[S]): Iterable[Tasklet] = {
+
+  def deleteBatch[S <: Series[S]](title: String,
+    sbuilder: SeriesBuilder[S]): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
-    implicit val mc = matrixContext()    
-    
+    implicit val mc = matrixContext()
+
     //Enums can not yet be deleted.
-    
+
     r :+= deleteSeriesData(title, sbuilder)
     r :+= deleteFoldData(title)
-    r :+= deleteExprData(title)    
-    r :+= deleteSampleIDs(title)    
+    r :+= deleteExprData(title)
+    r :+= deleteSampleIDs(title)
     r :+= deleteRDF(title) //Also removes the "batch record"
     r
   }
 
-  def consistencyCheck(title: String, md: Metadata, c: BaseConfig)
-  = new Tasklet("Consistency check") {
-    def run() {    	
+  def consistencyCheck(title: String, md: Metadata, c: BaseConfig) = new Tasklet("Consistency check") {
+    def run() {
       checkValidIdentifier(title, "batch ID")
-        
+
       val batches = new Batches(c.triplestore)
       if (batches.list.contains(title)) {
         throw new Exception(s"The batch $title is already defined")
       }
-      
-      val samples = new OTGSamples(c)
-      
+
       //TODO check for reinsertion of sample IDs
       val ps = new Platforms(config.triplestore)
       val platforms = ps.list.toSet
@@ -278,35 +276,35 @@ class BatchManager(context: Context) {
         if (!platforms.contains(p)) {
           throw new Exception(s"The sample ${s.identifier} contained an undefined platform_id ($p)")
         }
-        if (existingSamples.contains(s.identifier)) {          
+        if (existingSamples.contains(s.identifier)) {
           throw new Exception(s"The sample ${s.identifier} has already been defined in an existing batch")
         }
-        checkValidIdentifier(s.identifier, "sample ID")        
+        checkValidIdentifier(s.identifier, "sample ID")
       }
     }
   }
-  
-  def addBatchRecord(title: String, comment: String, ts: TriplestoreConfig) = 
+
+  def addBatchRecord(title: String, comment: String, ts: TriplestoreConfig) =
     new Tasklet("Add batch record") {
       def run() {
         val bs = new Batches(ts)
-        bs.addWithTimestamp(title, TRDF.escape(comment))        
+        bs.addWithTimestamp(title, TRDF.escape(comment))
       }
     }
-  
+
   def addSampleIDs(metadata: Metadata) = new Tasklet("Insert sample IDs") {
     def run() {
-      var newSamples, existingSamples: Int = 0      
+      var newSamples, existingSamples: Int = 0
       val dbfile = config.data.sampleIndex
       val db = KCIndexDB(dbfile, true)
       log(s"Opened $dbfile for writing")
       for (s <- metadata.samples; id = s.identifier) {
-    	  db.get(id) match {
-    	    case Some(id) => existingSamples += 1
-    	    case None => 
-    	      db.put(id)
-    	      newSamples += 1
-    	  }    	  
+        db.get(id) match {
+          case Some(id) => existingSamples += 1
+          case None =>
+            db.put(id)
+            newSamples += 1
+        }
       }
       logResult(s"$newSamples new samples added, $existingSamples samples already existed")
       db.release()
@@ -324,16 +322,16 @@ class BatchManager(context: Context) {
       db.release()
     }
   }
-  
+
   def addRDF(title: String, metadata: Metadata, sb: SeriesBuilder[_], ts: Triplestore): Tasklet = {
-    
+
     new Tasklet("Insert sample RDF data") {
       def run() {
         val tempFiles = new TempFiles()
-        val samples = new OTGSamples(config)             
+        val samples = new OTGSamples(config)
         val summaries = sb.enums.map(e => AttribValueSummary(samples, e))
-        
-        try {          
+
+        try {
           //TODO check existence of samples
 
           val total = metadata.samples.size
@@ -348,9 +346,9 @@ class BatchManager(context: Context) {
             val context = Batches.context(title)
             ts.addTTL(ttl, context)
             percentComplete += 1000.0 * 100.0 / total
-            //TODO cancellation check            
+            //TODO cancellation check
           }
-          
+
           for (s <- summaries) {
             logResult(s.summary(true))
           }
@@ -361,30 +359,27 @@ class BatchManager(context: Context) {
       }
     }
   }
-  
+
   def deleteRDF(title: String) = new Tasklet("Delete RDF data") {
     def run() {
       val bs = new Batches(config.triplestore)
       bs.delete(title)
     }
   }
-  
-  def addExprData(niFile: String, callFile: Option[String])
-  (implicit mc: MatrixContext) = {
+
+  def addExprData(niFile: String, callFile: Option[String])(implicit mc: MatrixContext) = {
     val ic = OTGInsert.insertionContext(false, config.data.exprDb)
     val data = new CSVRawExpressionData(List(niFile), callFile.map(List(_)), None)
-    ic.insert(data)    
-  } 
-  
-  def addFoldsData(foldFile: String, callFile: Option[String], 
-      pValueFile: Option[String])
-  (implicit mc: MatrixContext) = { 
-     val ic = OTGInsert.insertionContext(true, config.data.foldDb)
-    val data = new CSVRawExpressionData(List(foldFile), callFile.map(List(_)), 
-        pValueFile.map(List(_)))
-    ic.insertFolds(data)    
+    ic.insert(data)
   }
-  
+
+  def addFoldsData(foldFile: String, callFile: Option[String],
+    pValueFile: Option[String])(implicit mc: MatrixContext) = {
+    val ic = OTGInsert.insertionContext(true, config.data.foldDb)
+    val data = new CSVRawExpressionData(List(foldFile), callFile.map(List(_)),
+      pValueFile.map(List(_)))
+    ic.insertFolds(data)
+  }
 
   private def deleteFromDB(db: MatrixDBWriter[_], samples: Iterable[Sample]) {
     for (s <- samples) {
@@ -397,8 +392,8 @@ class BatchManager(context: Context) {
       }
     }
   }
-  
-  def deleteFoldData(title: String)(implicit mc: MatrixContext) = 
+
+  def deleteFoldData(title: String)(implicit mc: MatrixContext) =
     new Tasklet("Delete fold data") {
       def run() {
         val bs = new Batches(config.triplestore)
@@ -409,10 +404,10 @@ class BatchManager(context: Context) {
         } finally {
           db.release()
         }
+      }
     }
-  }
-  
-  def deleteExprData(title: String)(implicit mc: MatrixContext) = 
+
+  def deleteExprData(title: String)(implicit mc: MatrixContext) =
     new Tasklet("Delete normalized intensity data") {
       def run() {
         val bs = new Batches(config.triplestore)
@@ -424,45 +419,46 @@ class BatchManager(context: Context) {
           db.release()
         }
       }
-  }
-  
+    }
+
   def addEnums(md: Metadata, sb: SeriesBuilder[_])(implicit mc: MatrixContext) =
     new Tasklet("Add enum values") {
       //TODO these cannot be deleted currently
       def run() {
         val db = KCIndexDB(config.data.enumIndex, true)
         try {
-          for (s <- md.samples; paramMap = md.parameterMap(s);
-        		  e <- sb.enums) {
-            db.findOrCreate(e, paramMap(e))  
+          for (
+            s <- md.samples; paramMap = md.parameterMap(s);
+            e <- sb.enums
+          ) {
+            db.findOrCreate(e, paramMap(e))
           }
-          
+
           //Insert standard values to ensure they are always present
           for ((k, v) <- sb.standardEnumValues) {
             db.findOrCreate(k, v)
           }
-          
+
         } finally {
           db.release()
+        }
       }
     }
-  }
-  
-  def addSeriesData[S <: Series[S], E <: ExprValue](md: Metadata, 
-      builder: SeriesBuilder[S])(implicit mc: MatrixContext)
-  	= new Tasklet("Insert series data") {
+
+  def addSeriesData[S <: Series[S], E <: ExprValue](md: Metadata,
+    builder: SeriesBuilder[S])(implicit mc: MatrixContext) = new Tasklet("Insert series data") {
     def run() {
       val source = KCMatrixDB(config.data.foldDb, false)
-      val target = KCSeriesDB[S](config.data.seriesDb, true, builder)      
+      val target = KCSeriesDB[S](config.data.seriesDb, true, builder)
       var inserted = 0
       try {
         val xs = builder.makeNew(source, md)
-        val total = xs.size        
+        val total = xs.size
         var pcomp = 0d
         val it = xs.iterator
         while (it.hasNext && shouldContinue(pcomp)) {
           val x = it.next
-          target.addPoints(x)          
+          target.addPoints(x)
           pcomp += 100.0 / total
           inserted += 1
         }
@@ -473,43 +469,40 @@ class BatchManager(context: Context) {
       }
     }
   }
-    
-  def deleteSeriesData[S <: Series[S]](batch: String, builder: SeriesBuilder[S])
-    (implicit mc: MatrixContext)
-  	= new Tasklet("Delete series data") {
+
+  def deleteSeriesData[S <: Series[S]](batch: String, builder: SeriesBuilder[S])(implicit mc: MatrixContext) = new Tasklet("Delete series data") {
     def run() {
-      
+
       val bs = new Batches(config.triplestore)
       val ss = bs.samples(batch).map(Sample(_))
-      val otgSamples = new OTGSamples(config)
       val batchURI = Batches.defaultPrefix + "/" + batch
-      
-      val sf = SampleFilter(batchURI = Some(batchURI))      
-      val tsmd = new TriplestoreMetadata(otgSamples)(sf)
-      
+
+      val sf = SampleFilter(batchURI = Some(batchURI))
+      val tsmd = new TriplestoreMetadata(samples)(sf)
+
       //Note, strictly speaking we don't need the source data here.
       //This dependency could be removed by having the builder make points
       //with all zeroes.
       val source = KCMatrixDB(config.data.foldDb, false)
       val target = KCSeriesDB[S](config.data.seriesDb, true, builder)
-      val samples = tsmd.samples
-      val total = samples.size
+      val filtSamples = tsmd.samples
+      val total = filtSamples.size
       var pcomp = 0d
       try {
-        var it = samples.grouped(100)
-        while(it.hasNext && shouldContinue(pcomp)) {
+        var it = filtSamples.grouped(100)
+        while (it.hasNext && shouldContinue(pcomp)) {
           val sg = it.next
           val xs = builder.makeNew(source, tsmd, sg)
           for (x <- xs) {
-            target.removePoints(x)                       
+            target.removePoints(x)
           }
           pcomp += 100.0 / total
         }
       } finally {
         source.release
         target.release
-      }      
-    }      
+      }
+    }
   }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,39 +20,39 @@
 
 package t.platform
 
-import t.db.BioObject
 import t.sparql.secondary.Gene
 import t.sparql.secondary.Protein
 import t.sparql.Probes
+import t.db.StoredBioObject
 
 object Probe {
   import Probes._
-  private val split = defaultPrefix + "/" 
+  private val split = defaultPrefix + "/"
   def unpack(uri: String) = Probe(uri.split(split)(1))
 }
 
 //TODO reconsider which members should be standard for a T application in general
 //Most of these are used by Toxygates, but not by Tritigate
 case class Probe(val identifier: String, override val name: String = "",
-    val titles: Iterable[String] = Set(),
-    val proteins: Iterable[Protein] = Set(), 
-    val genes: Iterable[Gene] = Set(),
-    val symbols: Iterable[Gene] = Set(),
-    val platform: String = "") extends BioObject[Probe] {
-  
+  val titles: Iterable[String] = Set(),
+  val proteins: Iterable[Protein] = Set(),
+  val genes: Iterable[Gene] = Set(),
+  val symbols: Iterable[Gene] = Set(),
+  val platform: String = "") extends StoredBioObject[Probe] {
+
   def symbolStrings = symbols.map(_.symbol)
-  
+
   //GenBioObject overrides hashCode
   override def equals(other: Any): Boolean = other match {
-      case Probe(id, _, _, _, _, _, _) => id == identifier
-      case _ => false    
+    case Probe(id, _, _, _, _, _, _) => id == identifier
+    case _                           => false
   }
-  
+
   def pack = Probes.defaultPrefix + "/" + identifier
 }
 
 //TODO consider retiring SimpleProbe
-case class SimpleProbe(id: String, platformId: String = "") 
+case class SimpleProbe(id: String, platformId: String = "")
 
 case class OrthologGroup(title: String, probes: Iterable[SimpleProbe]) {
   def id = title // TODO reconsider

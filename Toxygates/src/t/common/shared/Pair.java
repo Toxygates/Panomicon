@@ -52,7 +52,7 @@ public class Pair<T, U> implements Serializable {
 	
 	public boolean equals(Object other) {
 		if (other instanceof Pair<?, ?>) {
-			Pair<T, U> o = (Pair<T, U>) other;
+			Pair<?, ?> o = (Pair<?, ?>) other;
 			return (o.first().equals(_t) && o.second().equals(_u));
 		}
 		return false;

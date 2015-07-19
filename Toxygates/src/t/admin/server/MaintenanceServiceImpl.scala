@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -57,25 +57,25 @@ import t.common.shared.Dataset
 import t.common.server.SharedDatasets
 
 abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceService {
-  
+
   private var homeDir: String = _
-  
+
   override def localInit(config: Configuration) {
     super.localInit(config)
     homeDir = config.webappHomeDir
   }
-  
-  private def getAttribute[T](name: String) = 
+
+  private def getAttribute[T](name: String) =
     getThreadLocalRequest().getSession().getAttribute(name).asInstanceOf[T]
-  
-  private def setAttribute(name: String, x: AnyRef) = 
-  	getThreadLocalRequest().getSession().setAttribute(name, x)
-  
-  private def setLastTask(task: String) = setAttribute("lastTask", task)  
+
+  private def setAttribute(name: String, x: AnyRef) =
+
+  getThreadLocalRequest().getSession().setAttribute(name, x)
+  private def setLastTask(task: String) = setAttribute("lastTask", task)
   private def lastTask: String = getAttribute("lastTask")
-  private def setLastResults(results: OperationResults) = setAttribute("lastResults", results)    
-  private def lastResults: OperationResults = getAttribute("lastResults")    
-  
+  private def setLastResults(results: OperationResults) = setAttribute("lastResults", results)
+  private def lastResults: OperationResults = getAttribute("lastResults")
+
   private def afterTaskCleanup() {
     val tc: TempFiles = getAttribute("tempFiles")
     if (tc != null) {
@@ -84,17 +84,17 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     UploadServlet.removeSessionFileItems(getThreadLocalRequest())
     TaskRunner.shutdown()
   }
-  
+
   private def beforeTaskCleanup() {
     UploadServlet.removeSessionFileItems(getThreadLocalRequest())
   }
-  
+
   private def grabRunner() {
     if (TaskRunner.queueSize > 0 || TaskRunner.waitingForTask) {
 	  throw new Exception("Another task is already in progress.")
 	}
   }
-  
+
   private def maintenance[T](task: => T): T = try {
     task
   } catch {
@@ -102,7 +102,7 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
       e.printStackTrace()
       throw new MaintenanceException(e)
   }
-  
+
   private def cleanMaintenance[T](task: => T): T = try {
     task
   } catch {
@@ -111,11 +111,11 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
       afterTaskCleanup()
       throw new MaintenanceException(e)
   }
-  
+
   def addBatchAsync(title: String, comment: String): Unit = {
 	showUploadedFiles()
 	grabRunner()
-	
+
 	val bm = new BatchManager(context) //TODO configuration parsing
 
     cleanMaintenance {
@@ -149,11 +149,11 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
         foldFile.getAbsolutePath(),
         foldCallsFile.map(_.getAbsolutePath()),
         foldPValueFile.map(_.getAbsolutePath()),
-        false, baseConfig.seriesBuilder)        
+        false, baseConfig.seriesBuilder)
     }
   }
 
-  def addPlatformAsync(id: String, comment: String, affymetrixFormat: Boolean): Unit = {    
+  def addPlatformAsync(id: String, comment: String, affymetrixFormat: Boolean): Unit = {
     showUploadedFiles()
 	grabRunner()
 	val pm = new PlatformManager(context) //TODO configuration parsing
@@ -180,8 +180,8 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
 
   def addInstance(i: Instance): Unit = {
     val im = new Instances(baseConfig.triplestore)
-    
-    val id = i.getTitle()    
+
+    val id = i.getTitle()
     if (!TRDF.isValidIdentifier(id)) {
       throw new MaintenanceException(
           s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
@@ -194,19 +194,19 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     if (im.list.contains(id)) {
       throw new MaintenanceException(s"The instance $id already exists, please choose a different name")
     }
-    
-    maintenance {      
+
+    maintenance {
       val ap = i.getAccessPolicy()
       val policy = ap.toString().toLowerCase();
-  
+
       val cmd = s"sh $homeDir/new_instance.${policy}.sh $id $id $param"
       println(s"Run command: $cmd")
       val p = Process(cmd).!
       if (p != 0) {
         throw new MaintenanceException(s"Creating webapp instance failed: return code $p")
       }
-      im.addWithTimestamp(id, TRDF.escape(i.getComment)) 
-    }    
+      im.addWithTimestamp(id, TRDF.escape(i.getComment))
+    }
   }
 
   def addDataset(d: Dataset): Unit = {
@@ -227,7 +227,7 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
       dm.setDescription(id, TRDF.escape(d.getDescription))
     }
   }
- 
+
   def deleteBatchAsync(id: String): Unit = {
     grabRunner()
     val bm = new BatchManager(context) //TODO configuration parsing
@@ -235,9 +235,9 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
       TaskRunner.start()
       setLastTask("Delete batch")
       TaskRunner ++= bm.deleteBatch(id, baseConfig.seriesBuilder)
-    } 
+    }
   }
-  
+
   def deletePlatformAsync(id: String): Unit = {
     grabRunner()
     val pm = new PlatformManager(context)
@@ -245,30 +245,30 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
       TaskRunner.start()
       setLastTask("Delete platform")
       TaskRunner ++= pm.deletePlatform(id)
-    } 
+    }
   }
-  
+
   def deleteInstance(id: String): Unit = {
     val im = new Instances(baseConfig.triplestore)
-    maintenance {      
+    maintenance {
       val cmd = s"sh $homeDir/delete_instance.sh $id $id"
       println(s"Run command: $cmd")
       val p = Process(cmd).!
       if (p != 0) {
         throw new MaintenanceException(s"Deleting webapp instance failed: return code $p")
       }
-      
-      im.delete(id) 
+
+      im.delete(id)
     }
   }
-  
+
   def deleteDataset(id: String): Unit = {
     val dm = new Datasets(baseConfig.triplestore)
     maintenance {
       dm.delete(id)
     }
   }
-  
+
   def getOperationResults(): OperationResults = {
     lastResults
   }
@@ -296,15 +296,15 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
         TaskRunner.currentTask match {
           case Some(t) => new Progress(t.name, t.percentComplete, false)
           case None => new Progress("??", 0, false)
-        }        
-      }          
-      p.setMessages(messages)      
+        }
+      }
+      p.setMessages(messages)
       p
     }
   }
-  
+
   import java.util.HashSet
-  
+
   def getBatches: Array[Batch] = {
     val bs = new Batches(baseConfig.triplestore)
     val ns = bs.numSamples
@@ -314,12 +314,12 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     bs.list.map(b => {
       val samples = ns.getOrElse(b, 0)
       new Batch(b, samples, comments.getOrElse(b, ""),
-          dates.getOrElse(b, null), 
+          dates.getOrElse(b, null),
           new HashSet(setAsJavaSet(bs.listAccess(b).toSet)),
           datasets.getOrElse(b, ""))
-    }).toArray    
+    }).toArray
   }
-  
+
   def getPlatforms: Array[Platform] = {
     val prs = new Probes(baseConfig.triplestore)
     val np = prs.numProbes()
@@ -331,20 +331,20 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
           dates.getOrElse(p, null))
     }).toArray
   }
-  
+
   def getInstances: Array[Instance] = {
     val is = new Instances(baseConfig.triplestore)
     val com = is.comments
     val ts = is.timestamps
     is.list.map(i => new Instance(i, com.getOrElse(i, ""),
-        ts.getOrElse(i, null))).toArray    
+        ts.getOrElse(i, null))).toArray
   }
-  
+
   def getDatasets: Array[Dataset] = {
     val ds = new Datasets(baseConfig.triplestore) with SharedDatasets
-    ds.sharedList.toArray    
+    ds.sharedList.toArray
   }
-  
+
   def updateBatch(b: Batch): Unit = {
     val bs = new Batches(baseConfig.triplestore)
     val existingAccess = bs.listAccess(b.getTitle())
@@ -355,11 +355,11 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     for (i <- existingAccess; if !newAccess.contains(i)) {
       bs.disableAccess(b.getTitle(), i)
     }
-    
+
     val oldDs = bs.datasets.getOrElse(b.getTitle, null)
     val newDs = b.getDataset
     if (newDs != oldDs) {
-      val ds = new Datasets(baseConfig.triplestore)      
+      val ds = new Datasets(baseConfig.triplestore)
       if (oldDs != null) {
         ds.removeMember(b.getTitle, oldDs)
       }
@@ -372,35 +372,35 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
    * @param tag the tag to look for.
    * @return
    */
-  private def getFile(tag: String): Option[FileItem] = {       
-    val items = UploadServlet.getSessionFileItems(getThreadLocalRequest());    
+  private def getFile(tag: String): Option[FileItem] = {
+    val items = UploadServlet.getSessionFileItems(getThreadLocalRequest());
     if (items == null) {
       throw new MaintenanceException("No files have been uploaded yet.")
     }
-    
-    for (fi <- items) {      
+
+    for (fi <- items) {
       if (fi.getFieldName().startsWith(tag)) {
         return Some(fi)
       }
     }
-    return None        
+    return None
   }
-  
+
   /**
    * Get an uploaded file as a temporary file.
    * Should be deleted after use.
    */
-  private def getAsTempFile(tempFiles: TempFiles, tag: String, prefix: String, 
+  private def getAsTempFile(tempFiles: TempFiles, tag: String, prefix: String,
       suffix: String): Option[java.io.File] = {
     getFile(tag) match {
       case None => None
-      case Some(fi) =>        
-        val f = tempFiles.makeNew(prefix, suffix)        
+      case Some(fi) =>
+        val f = tempFiles.makeNew(prefix, suffix)
         fi.write(f)
         Some(f)
     }
   }
-  
+
   private def showUploadedFiles(): Unit = {
     val items = UploadServlet.getSessionFileItems(getThreadLocalRequest())
     if (items != null) {
@@ -408,6 +408,6 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
         System.out.println("File " + fi.getName() + " size "
           + fi.getSize() + " field: " + fi.getFieldName())
       }
-    }    
+    }
   }
 }

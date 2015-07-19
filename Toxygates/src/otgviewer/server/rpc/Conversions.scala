@@ -21,6 +21,7 @@
 package otgviewer.server.rpc
 
 import scala.collection.JavaConversions._
+import scala.language.implicitConversions
 import scala.collection.{Map => CMap, Set => CSet}
 import java.util.{ Map => JMap, HashMap => JHMap, Set => JSet, HashSet => JHSet, List => JList }
 import t.SeriesRanking
@@ -40,6 +41,7 @@ import otgviewer.shared.OTGSample
 import t.db.{ExprValue => TExprValue}
 import t.db.MatrixContext
 import t.common.shared.FirstKeyedPair
+
 
 
 /**

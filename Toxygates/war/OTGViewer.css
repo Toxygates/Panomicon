@@ -3,28 +3,12 @@
 	font-size: 36pt;
 }
 
-/** Most GWT widgets already have a style name defined */
-/**
-.gwt-DialogBox {
-	width: 400px;
-}
-*/
-
 .resizingListBox {
 	font-size: 13px;
 }
 
 .dialogVPanel {
 	margin: 5px;
-}
-
-.serverResponseLabelError {
-	color: red;
-}
-
-/** Set ids using widget.getElement().setId("idOfElement") */
-#closeButton {
-	margin: 15px 6px 6px;
 }
 
 exprGrid {
@@ -197,4 +181,28 @@ exprGrid {
 }
 .Group6 {
 	color: #C75880;
+}
+
+.watermark {
+	font-style: italic;
+	color: DarkGray;
+}
+
+.suggest-keyword {
+	text-align: left;
+}
+
+.suggest-reference {
+	text-align: right;
+	color: DarkGray;
+	font-style: italic;
+	font-size: 0.75em;
+}
+
+.table-cell {
+	display: table-cell;
+}
+
+.width-fix {
+	padding-right: 10px;
 }

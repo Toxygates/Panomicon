@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -28,11 +28,11 @@ import t.db.MatrixContext
 import t.util.SafeMath
 
 class SeriesRanking(override val db: SeriesDB[OTGSeries], override val key: OTGSeries)
-  (implicit context: OTGContext) extends t.SeriesRanking[OTGSeries](db, key) {
+(implicit context: OTGContext) extends t.SeriesRanking[OTGSeries](db, key) {
   import Statistics._
   import SafeMath._
   import t.SeriesRanking._
-  
+
   def packProbe(p: String): Int = context.probeMap.pack(p)
   def withProbe(newProbe: Int) = new SeriesRanking(db, key.copy(probe = newProbe))
   def withProbe(newProbe: String) = new SeriesRanking(db, key.copy(probe = packProbe(newProbe)))
@@ -44,21 +44,20 @@ class SeriesRanking(override val db: SeriesDB[OTGSeries], override val key: OTGS
       }
       case _ => {}
     }
-    super.getScores(mt)     
+    super.getScores(mt)
   }
-      
+
   /**
    * This method is currently the only entry point used by the web application.
    * Returns (compound, dose, score)
    */
-  override def rankCompoundsCombined(probesRules: Seq[(String, RankType)]): 
-	  Iterable[(String, String, Double)] = {
+  override def rankCompoundsCombined(probesRules: Seq[(String, RankType)]): Iterable[(String, String, Double)] = {
 
     // Get scores for each rule
     val allScores = probesRules.map(pr => withProbe(pr._1).getScores(pr._2))
     val doses = allScores.flatMap(_.map(_._1.dose)).distinct
     val compounds = allScores.flatMap(_.map(_._1.compound)).distinct
-    val dcs = for (d <- doses; c <- compounds) yield (d,c)
+    val dcs = for (d <- doses; c <- compounds) yield (d, c)
     val products = dcs.map(dc => {
       //TODO efficiency of this
       val allCorresponding = allScores.map(_.find(x =>
@@ -73,4 +72,4 @@ class SeriesRanking(override val db: SeriesDB[OTGSeries], override val key: OTGS
       sort.head
     })
   }
-} 
+}

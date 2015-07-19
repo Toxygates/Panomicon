@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -28,9 +28,10 @@ import javax.mail.Message
 import javax.mail.Address
 import javax.mail.Transport
 import scala.Array.canBuildFrom
+import scala.language.implicitConversions
 
 object Feedback {
-  
+
   implicit def asAddressAr(xs: Array[InternetAddress]): Array[Address] = {
     xs.map(_.asInstanceOf[Address]).toArray
   }
@@ -40,7 +41,8 @@ object Feedback {
    *  by e-mail.
    */
   def send(user: String, email: String, message: String, userState: String,
-      receiverList: String): Unit = {
+      receiverList: String, fromAddress: String,
+      appName: String): Unit = {
     val p = new Properties()
     p.setProperty("mail.smtp.host", "localhost")
 
@@ -48,12 +50,12 @@ object Feedback {
       val s = Session.getInstance(p)
       val m = new MimeMessage(s)
       //TODO where to configure this?
-      m.setFrom(new InternetAddress("root@nibiohn.go.jp"))
+      m.setFrom(new InternetAddress(fromAddress))
 
       m.setRecipients(Message.RecipientType.TO,
         InternetAddress.parse(receiverList))
 
-      m.setSubject(s"[System message] Toxygates user feedback from $user")
+      m.setSubject(s"[System message] $appName user feedback from $user")
       m.setText(s"Feedback from: $user <$email>\n\nMessage: $message\n\nUser state: $userState")
       Transport.send(m)
     } catch {

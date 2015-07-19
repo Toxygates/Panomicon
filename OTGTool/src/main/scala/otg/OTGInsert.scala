@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -34,32 +34,30 @@ import t.db.Sample
 import t.db.kyotocabinet.KCMatrixDB
 
 /**
- * TODO A lot of code here should be ported over to the T section
+ * TODO A lot of code here should be ported over to t._
  */
 object OTGInsert {
 
   class InsertionContext[E <: ExprValue](val db: () => MatrixDBWriter[E],
-      val builder: ExprValueBuilder[E], val inserter: MicroarrayInsertion[E]) {
-    
-    def insert(raw: RawExpressionData): Tasklet = 
-       inserter.insertFrom("Insert normalized intensity", raw, builder)
-    
-    def insertFolds(raw: RawExpressionData): Tasklet = 
-       inserter.insertFrom("Insert folds", raw, builder)
+    val builder: ExprValueBuilder[E], val inserter: MicroarrayInsertion[E]) {
+
+    def insert(raw: RawExpressionData): Tasklet =
+      inserter.insertFrom("Insert normalized intensity", raw, builder)
+
+    def insertFolds(raw: RawExpressionData): Tasklet =
+      inserter.insertFrom("Insert folds", raw, builder)
   }
 
   //TODO this method and the next one are messy, clean up
-  def matrixDB(fold: Boolean, dbfile: String)
-  (implicit mc: MatrixContext): MatrixDBWriter[_] = 
-    KCMatrixDB(dbfile, true, fold)      
-  
-  def insertionContext(fold: Boolean, dbfile: String)
-  (implicit mc: MatrixContext): InsertionContext[_] = {	
-    if (fold) {      
-      val db = () => KCMatrixDB.applyExt(dbfile, true) 
+  def matrixDB(fold: Boolean, dbfile: String)(implicit mc: MatrixContext): MatrixDBWriter[_] =
+    KCMatrixDB(dbfile, true, fold)
+
+  def insertionContext(fold: Boolean, dbfile: String)(implicit mc: MatrixContext): InsertionContext[_] = {
+    if (fold) {
+      val db = () => KCMatrixDB.applyExt(dbfile, true)
       new InsertionContext(
         db, new SimplePValueBuilder(), new MicroarrayInsertion(db))
-    } else {      
+    } else {
       val db = () => KCMatrixDB(dbfile, true)
       new InsertionContext(
         db, new AbsoluteValueBuilder(), new MicroarrayInsertion(db))
@@ -79,9 +77,11 @@ trait ExprValueBuilder[E <: ExprValue] {
  * Build straightforward ExprValues with no p-values.
  */
 class AbsoluteValueBuilder extends ExprValueBuilder[BasicExprValue] {
-  def values(data: RawExpressionData) = {     
-    for (x <- data.data.keys;
-      (probe, (v, c, p)) <- data.data(x)) yield (x, probe, BasicExprValue(v, c))      
+  def values(data: RawExpressionData) = {
+    for (
+      x <- data.data.keys;
+      (probe, (v, c, p)) <- data.data(x)
+    ) yield (x, probe, BasicExprValue(v, c))
   }
 }
 
@@ -90,18 +90,19 @@ class AbsoluteValueBuilder extends ExprValueBuilder[BasicExprValue] {
  */
 class SimplePValueBuilder extends ExprValueBuilder[PExprValue] {
   def values(data: RawExpressionData) = {
-     for (x <- data.data.keys;
-      (probe, (v, c, p)) <- data.data(x)) yield (x, probe, PExprValue(v, p, c))      
+    for (
+      x <- data.data.keys;
+      (probe, (v, c, p)) <- data.data(x)
+    ) yield (x, probe, PExprValue(v, p, c))
   }
 }
 
-class MicroarrayInsertion[E <: ExprValue](dbGetter: () => MatrixDBWriter[E])
-	(implicit context: MatrixContext) {
-  
-  def insertFrom(name: String,  
-      raw: RawExpressionData, builder: ExprValueBuilder[E]) =
+class MicroarrayInsertion[E <: ExprValue](dbGetter: () => MatrixDBWriter[E])(implicit context: MatrixContext) {
+
+  def insertFrom(name: String,
+    raw: RawExpressionData, builder: ExprValueBuilder[E]) =
     new Tasklet(name) {
-      def run() {        
+      def run() {
         val db = dbGetter()
         try {
           val vals = builder.values(raw)
@@ -132,6 +133,6 @@ class MicroarrayInsertion[E <: ExprValue](dbGetter: () => MatrixDBWriter[E])
         } finally {
           db.release()
         }
-      }    
-  }
+      }
+    }
 }

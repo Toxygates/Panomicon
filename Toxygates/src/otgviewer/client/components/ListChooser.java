@@ -29,11 +29,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import otgviewer.client.Utils;
-import otgviewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.InputDialog;
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
+import t.viewer.client.Utils;
+import t.viewer.client.dialog.DialogPosition;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;

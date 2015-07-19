@@ -72,6 +72,9 @@ public interface SparqlService extends RemoteService {
 	 */
 	public void chooseDatasets(Dataset[] enabled) throws TimeoutException;
 	
+	public String[] parameterValues(Dataset[] ds, SampleClass sc, String parameter)
+        throws TimeoutException;
+	
 	public String[] parameterValues(SampleClass sc, String parameter)
 			throws TimeoutException;
 
@@ -169,12 +172,14 @@ public interface SparqlService extends RemoteService {
 			throws TimeoutException;
 
 	/**
-	 * Obtain probes that belong to the named pathway.
+	 * Obtain filtered probes that belong to the named pathway.
 	 * 
 	 * @param pathway
+	 * @param samples
+	 *            If null, all probes will be obtained.
 	 * @return
 	 */
-	public String[] probesForPathway(SampleClass sc, String pathway)
+	public String[] probesForPathway(SampleClass sc, String pathway, @Nullable List<OTGSample> samples)
 			throws TimeoutException;
 
 	/**
@@ -209,6 +214,14 @@ public interface SparqlService extends RemoteService {
 	public String[] probesForGoTerm(String goTerm) throws TimeoutException;
 	
 	/**
+	 * Obtain filtered probes for a given GO term (fully named)
+	 * 
+	 * @param goTerm
+	 * @return
+	 */
+	public String[] probesForGoTerm(String goTerm, @Nullable List<OTGSample> samples) throws TimeoutException;
+	
+	/**
 	 * Obtain gene symbols for the given probes. The resulting array will
 	 * contain gene symbol arrays in the same order as and corresponding to the
 	 * probes in the input array.
@@ -241,5 +254,22 @@ public interface SparqlService extends RemoteService {
 	public Association[] associations(SampleClass sc, AType[] types,
 			String[] probes) throws TimeoutException;
 
-    String[] filterProbesByGroup(String[] probes, List<OTGSample> samples);
+	/**
+	 * Filter probes by given samples
+	 * 
+	 * @param probes
+	 * @param samples
+	 * @return
+	 */
+	public String[] filterProbesByGroup(String[] probes, List<OTGSample> samples);
+
+	/**
+	 * Obtain suggestions from a partial gene symbol
+	 * 
+	 * @param partialName
+	 * 
+	 * @return An array of pairs, where the first item is the precise gene
+	 * symbol and the second is the full gene name.
+	 */
+	public Pair<String, AType>[] keywordSuggestions(String partialName, int maxSize);
 }
