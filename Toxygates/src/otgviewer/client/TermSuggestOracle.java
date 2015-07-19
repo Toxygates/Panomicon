@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import otgviewer.client.components.ExactMatchHandler;
+import otgviewer.client.components.HasExactMatchHandler;
 import otgviewer.client.components.Screen;
 import t.common.shared.AType;
 import t.common.shared.Pair;
@@ -14,14 +16,23 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.SuggestOracle;
 
-public abstract class TermSuggestOracle extends SuggestOracle {
+public class TermSuggestOracle extends SuggestOracle implements
+    HasExactMatchHandler<Term> {
 
   private final SparqlServiceAsync sparqlService;
 
   private String lastRequest = "";
 
+  private List<ExactMatchHandler<Term>> handlers =
+      new ArrayList<ExactMatchHandler<Term>>();
+
   public TermSuggestOracle(Screen screen) {
     sparqlService = screen.sparqlService();
+  }
+
+  @Override
+  public void addExactMatchHandler(ExactMatchHandler<Term> handler) {
+    handlers.add(handler);
   }
 
   @Override
@@ -79,7 +90,11 @@ public abstract class TermSuggestOracle extends SuggestOracle {
     }
   }
 
-  abstract public void onExactMatchFound(List<Term> exactMatches);
+  private void onExactMatchFound(List<Term> exactMatches) {
+    for (ExactMatchHandler<Term> h : handlers) {
+      h.onExactMatchFound(exactMatches);
+    }
+  }
 
   @Override
   public boolean isDisplayStringHTML() {
@@ -90,25 +105,24 @@ public abstract class TermSuggestOracle extends SuggestOracle {
     private Term term;
     private String display;
 
-    public TermSuggestion(Term term, String query) {
-      this(term.getTermString(), term.getAssociation(), query);
+    public TermSuggestion(String term, AType association, String query) {
+      this(new Term(term, association), query);
     }
 
-    public TermSuggestion(String term, AType association, String query) {
-      this.term = new Term(term, association);
+    public TermSuggestion(Term term, String query) {
+      this.term = term;
 
-      String plain = term;
+      String plain = term.getTermString();
       int begin = plain.toLowerCase().indexOf(query.toLowerCase());
       if (begin >= 0) {
         int end = begin + query.length();
         String match = plain.substring(begin, end);
-        this.display = plain.replaceFirst(match, "<b>" + match + "</b>");
+        display = plain.replaceFirst(match, "<b>" + match + "</b>");
       } else {
-        this.display = plain;
+        display = plain;
       }
 
-      this.display =
-          getFullDisplayString(this.display, this.term.getAssociation().title());
+      display = getFullDisplayString(display, term.getAssociation().title());
     }
 
     private String getFullDisplayString(String display, String reference) {

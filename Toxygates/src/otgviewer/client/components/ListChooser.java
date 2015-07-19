@@ -89,11 +89,10 @@ public class ListChooser extends DataListenerWidget {
 		listBox.addChangeHandler(new ChangeHandler() {				
 			@Override
 			public void onChange(ChangeEvent event) {
-				int idx = listBox.getSelectedIndex();
-				if (idx == -1) {
-					return;
+				String sel = getItemText();
+				if (sel == null) {
+				  return;
 				}
-				String sel = listBox.getItemText(idx);
 				if (lists.containsKey(sel)) {
 					currentItems = lists.get(sel);
 					itemsChanged(currentItems);
@@ -124,6 +123,14 @@ public class ListChooser extends DataListenerWidget {
 		});
 		hp.add(b);
 	}
+
+    public String getItemText() {
+      int idx = listBox.getSelectedIndex();
+      if (idx == -1) {
+          return null;
+      }
+      return listBox.getItemText(idx);
+    }
 	
 	protected void preSaveAction() {
 		saveAction();

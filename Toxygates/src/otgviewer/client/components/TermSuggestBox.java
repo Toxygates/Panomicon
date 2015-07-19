@@ -10,7 +10,7 @@ import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
-import com.google.gwt.event.dom.client.HasKeyPressHandlers;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -19,13 +19,13 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.MultiWordSuggestOracle;
 import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.SuggestOracle;
-import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
 public class TermSuggestBox extends SuggestBox implements FocusHandler,
-    BlurHandler, SelectionHandler<SuggestOracle.Suggestion>, KeyPressHandler {
+    BlurHandler, SelectionHandler<TermSuggestion>,
+    ExactMatchHandler<Term>, KeyPressHandler {
 
   private String WATERMARK;
 
@@ -35,6 +35,8 @@ public class TermSuggestBox extends SuggestBox implements FocusHandler,
 
   private Term selected;
   private List<Term> exactMatches = new ArrayList<Term>();
+
+  private boolean isDefaultSuggestionDisplay = false;
 
   public TermSuggestBox() {
     this(new MultiWordSuggestOracle());
@@ -46,6 +48,8 @@ public class TermSuggestBox extends SuggestBox implements FocusHandler,
 
   public TermSuggestBox(SuggestOracle oracle, ValueBoxBase<String> box) {
     this(oracle, box, new DefaultSuggestionDisplay());
+
+    this.isDefaultSuggestionDisplay = true;
   }
 
   public TermSuggestBox(SuggestOracle oracle, ValueBoxBase<String> box,
@@ -57,9 +61,12 @@ public class TermSuggestBox extends SuggestBox implements FocusHandler,
   protected void initWidget(Widget widget) {
     this.box = getValueBox();
 
-    addSelectionHandler(this);
+    box.addKeyPressHandler(this);
     box.addFocusHandler(this);
     box.addBlurHandler(this);
+
+    addHandler(this, SelectionEvent.getType());
+    setAutoSelectEnabled(false);
 
     super.initWidget(box);
   }
@@ -73,14 +80,36 @@ public class TermSuggestBox extends SuggestBox implements FocusHandler,
   }
 
   @Override
-  public void onSelection(SelectionEvent<Suggestion> event) {
+  public void onSelection(SelectionEvent<TermSuggestion> event) {
     TermSuggestion sug = (TermSuggestion) event.getSelectedItem();
     selected = sug.getTerm();
     previousValue = selected.getTermString();
   }
 
   @Override
+  public void onExactMatchFound(List<Term> exactMatches) {
+    this.exactMatches = exactMatches;
+    if (exactMatches.size() == 1) {
+      selected = exactMatches.get(0);
+    }
+  }
+
+  @Override
   public void onKeyPress(KeyPressEvent event) {
+    switch (event.getNativeEvent().getKeyCode()) {
+      case KeyCodes.KEY_ESCAPE:
+        if (isSuggestionListShowing()) {
+          ((DefaultSuggestionDisplay) getSuggestionDisplay()).hideSuggestions();
+        } else {
+          setFocus(false);
+        }
+        break;
+      default:
+        updateSelected();
+    }
+  }
+
+  private void updateSelected() {
     String value = getText();
     if (!value.equalsIgnoreCase(previousValue)) {
       selected = null;
@@ -88,10 +117,10 @@ public class TermSuggestBox extends SuggestBox implements FocusHandler,
     previousValue = value;
   }
 
-  // @Override
-  // public HandlerRegistration addKeyPressHandler(KeyPressHandler handler) {
-  // return addDomHandler(handler, KeyPressEvent.getType());
-  // }
+  @Override
+  public HandlerRegistration addKeyPressHandler(KeyPressHandler handler) {
+    return addDomHandler(handler, KeyPressEvent.getType());
+  }
 
   @Override
   public void onBlur(BlurEvent event) {
@@ -132,6 +161,16 @@ public class TermSuggestBox extends SuggestBox implements FocusHandler,
     if (t.equals(WATERMARK)) {
       box.setText("");
     }
+  }
+
+  @Override
+  public boolean isSuggestionListShowing() {
+    if (!isDefaultSuggestionDisplay) {
+      return false;
+    }
+
+    return ((DefaultSuggestionDisplay) getSuggestionDisplay())
+        .isSuggestionListShowing();
   }
 
 }

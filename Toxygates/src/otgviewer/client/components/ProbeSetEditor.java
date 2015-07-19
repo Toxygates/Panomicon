@@ -28,8 +28,8 @@ import otgviewer.client.GeneOracle;
 import otgviewer.client.ProbeSelector;
 import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
+import t.common.shared.ItemList;
 import t.common.shared.SharedUtils;
-import t.common.shared.StringList;
 import t.common.shared.Term;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.MatrixServiceAsync;
@@ -58,6 +58,8 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class ProbeSetEditor extends DataListenerWidget {
 
+  private static final String NEW_TITLE_PREFIX = "NewProbeSet";
+
   private DialogBox dialog;
 
   private final Screen screen;
@@ -67,8 +69,8 @@ public class ProbeSetEditor extends DataListenerWidget {
 
   private final GeneOracle oracle;
 
-  private ListChooser listChooser;
   private Set<String> listedProbes = new HashSet<String>();
+
   private ListBox probesList;
   private TextArea customProbeText;
   private List<ListBox> compoundLists = new ArrayList<ListBox>();
@@ -76,7 +78,7 @@ public class ProbeSetEditor extends DataListenerWidget {
   private Widget plNorth, plSouth;
   private FixedWidthLayoutPanel fwlp;
 
-  private TextBox probeSetNameText;
+  private TextBox probeSetTitle;
 
   private static final int STACK_WIDTH = 350;
   private static final int STACK_ITEM_HEIGHT = 29;
@@ -95,7 +97,9 @@ public class ProbeSetEditor extends DataListenerWidget {
 
     initWindow();
     // loadState(screen);
-    screen.propagateTo(this);
+
+    System.out.println("Parent: " + screen.chosenProbes.length);
+    System.out.println("Child: " + this.chosenProbes.length);
   }
 
   protected boolean hasChembl() {
@@ -123,12 +127,18 @@ public class ProbeSetEditor extends DataListenerWidget {
     addListener(psel);
 
     if (hasChembl()) {
-      Widget chembl = makeTargetLookupPanel("CHEMBL", "This lets you view probes that are known targets of the currently selected compound.");
+      Widget chembl =
+          makeTargetLookupPanel(
+              "CHEMBL",
+              "This lets you view probes that are known targets of the currently selected compound.");
       probeSelStack.add(chembl, "CHEMBL targets", STACK_ITEM_HEIGHT);
     }
 
     if (hasDrugbank()) {
-      Widget drugBank = makeTargetLookupPanel("DrugBank", "This lets you view probes that are known targets of the currently selected compound.");
+      Widget drugBank =
+          makeTargetLookupPanel(
+              "DrugBank",
+              "This lets you view probes that are known targets of the currently selected compound.");
       probeSelStack.add(drugBank, "DrugBank targets", STACK_ITEM_HEIGHT);
     }
 
@@ -158,30 +168,6 @@ public class ProbeSetEditor extends DataListenerWidget {
 
     plPanel.addNorth(plNorth, PL_NORTH_HEIGHT);
     plPanel.addSouth(plSouth, PL_SOUTH_HEIGHT);
-
-    listChooser = new ListChooser(new ArrayList<StringList>(), "probes");
-    // @Override
-    // protected void itemsChanged(List<String> items) {
-    // matrixService.identifiersToProbes(items.toArray(new String[0]), true,
-    // false, getAllSamples(), new PendingAsyncCallback<String[]>(ps) {
-    // @Override
-    // public void handleSuccess(String[] t) {
-    // ps.probesChanged(t);
-    // }
-    // });
-    // }
-    //
-    // @Override
-    // protected void listsChanged(List<ItemList> lists) {
-    // ps.chosenItemLists = lists;
-    // ps.storeItemLists(ps.getParser(ps));
-    // }
-    // };
-    // listChooser.setStylePrimaryName("colored");
-    // To ensure that ListChooser has chosenColumns
-    // addListener(listChooser);
-
-    // plPanel.addNorth(listChooser, PL_NORTH_HEIGHT);
 
     plPanel.add(probesList);
 
@@ -225,13 +211,13 @@ public class ProbeSetEditor extends DataListenerWidget {
     l.setStylePrimaryName("heading");
     l.addStyleName("table-cell");
 
-    probeSetNameText = new TextBox();
-    probeSetNameText.setWidth("100%");
+    probeSetTitle = new TextBox();
+    probeSetTitle.setWidth("100%");
 
     FlowPanel p = new FlowPanel();
     p.setWidth("100%");
     p.addStyleName("table-cell width-fix");
-    p.add(probeSetNameText);
+    p.add(probeSetTitle);
 
     FlowPanel topContent = new FlowPanel();
     topContent.add(l);
@@ -253,12 +239,17 @@ public class ProbeSetEditor extends DataListenerWidget {
   }
 
   private ProbeSelector probeSelector() {
-    return new ProbeSelector(screen, "This lets you view probes that correspond to a given KEGG pathway or GO term. " + "Enter a partial pathway name and press enter to search.",
-        true) {
+    return new ProbeSelector(
+        screen,
+        "This lets you view probes that correspond to a given KEGG pathway or GO term. "
+            + "Enter a partial pathway name and press enter to search.", true) {
 
       @Override
       protected void getProbes(Term term) {
-        sparqlService.probesForPathway(chosenSampleClass, term.getTermString(), getAllSamples(), retrieveProbesCallback());
+        sparqlService.probesForPathway(chosenSampleClass, term.getTermString(),
+            getAllSamples(), retrieveProbesCallback());
+        // TODO for GO
+        // sparqlService.goTerms(pattern, retrieveMatchesCallback());
       }
 
       @Override
@@ -266,34 +257,8 @@ public class ProbeSetEditor extends DataListenerWidget {
         super.probesChanged(probes);
         addProbes(probes);
       }
-      // @Override
-      // protected void getMatches(String pattern) {
-      // sparqlService.pathways(chosenSampleClass, pattern,
-      // retrieveMatchesCallback());
-      // }
     };
   }
-
-  // private ProbeSelector goTermSelector() {
-  // return new ProbeSelector(
-  // "This lets you view probes that correspond to a given GO term. "
-  // + "Enter a partial term name and press enter to search.", true) {
-  // protected void getMatches(String pattern) {
-  // sparqlService.goTerms(pattern, retrieveMatchesCallback());
-  // }
-  //
-  // protected void getProbes(String item) {
-  // sparqlService.probesForGoTerm(item, getAllSamples(),
-  // retrieveProbesCallback());
-  // }
-  //
-  // @Override
-  // public void probesChanged(String[] probes) {
-  // // super.probesChanged(probes);
-  // addProbes(probes);
-  // }
-  // };
-  // }
 
   private VerticalPanel innerVP(String l) {
     VerticalPanel vpii = Utils.mkVerticalPanel();
@@ -332,7 +297,8 @@ public class ProbeSetEditor extends DataListenerWidget {
         String[] split = text.split("[\n ,\t]");
 
         if (split.length == 0) {
-          Window.alert("Please enter identifiers in the text box and try again.");
+          Window
+              .alert("Please enter identifiers in the text box and try again.");
         } else {
           addManualProbes(split, false);
         }
@@ -418,7 +384,8 @@ public class ProbeSetEditor extends DataListenerWidget {
     // change the identifiers (which can be mixed format, for example genes
     // and proteins etc) into a
     // homogenous format (probes only)
-    matrixService.identifiersToProbes(probes, true, titleMatch, screen.getAllSamples(), new PendingAsyncCallback<String[]>(screen,
+    matrixService.identifiersToProbes(probes, true, titleMatch, screen
+        .getAllSamples(), new PendingAsyncCallback<String[]>(screen,
         "Unable to obtain manual probes (technical error).") {
       public void handleSuccess(String[] probes) {
         if (probes.length == 0) {
@@ -440,35 +407,33 @@ public class ProbeSetEditor extends DataListenerWidget {
     probesList.clear();
     for (int i = 0; i < probes.length; ++i) {
       if (syms[i].length > 0) {
-        probesList.addItem(SharedUtils.mkString(syms[i], "/") + " (" + probes[i] + ")");
+        probesList.addItem(SharedUtils.mkString(syms[i], "/") + " ("
+            + probes[i] + ")");
       } else {
         probesList.addItem(probes[i]);
       }
     }
   }
 
-  private void updateProceedButton() {
-    // proceedSelected.setEnabled(listedProbes.size() > 0);
-    // proceedSelected.setText("Proceed with " + listedProbes.size()
-    // + " selected probes >>");
-  }
-
-  private ClickHandler makeTargetLookupCH(final ListBox compoundList, final String service, final boolean homologs) {
+  private ClickHandler makeTargetLookupCH(final ListBox compoundList,
+      final String service, final boolean homologs) {
     final DataListenerWidget w = screen;
     return new ClickHandler() {
       public void onClick(ClickEvent ev) {
         if (compoundList.getSelectedIndex() != -1) {
-          String compound = compoundList.getItemText(compoundList.getSelectedIndex());
-          sparqlService.probesTargetedByCompound(screen.chosenSampleClass, compound, service, homologs, new PendingAsyncCallback<String[]>(w,
-              "Unable to get probes (technical error).") {
-            public void handleSuccess(String[] probes) {
-              if (probes.length == 0) {
-                Window.alert("No matching probes were found.");
-              } else {
-                addProbes(probes);
-              }
-            }
-          });
+          String compound =
+              compoundList.getItemText(compoundList.getSelectedIndex());
+          sparqlService.probesTargetedByCompound(screen.chosenSampleClass,
+              compound, service, homologs, new PendingAsyncCallback<String[]>(
+                  w, "Unable to get probes (technical error).") {
+                public void handleSuccess(String[] probes) {
+                  if (probes.length == 0) {
+                    Window.alert("No matching probes were found.");
+                  } else {
+                    addProbes(probes);
+                  }
+                }
+              });
         } else {
           Window.alert("Please select a compound first.");
         }
@@ -490,10 +455,14 @@ public class ProbeSetEditor extends DataListenerWidget {
     compoundLists.add(compoundList);
     vpi.add(compoundList);
 
-    Button button = new Button("Add direct targets >>", makeTargetLookupCH(compoundList, service, false));
+    Button button =
+        new Button("Add direct targets >>", makeTargetLookupCH(compoundList,
+            service, false));
     vpi.add(button);
 
-    button = new Button("Add inferred targets >>", makeTargetLookupCH(compoundList, service, true));
+    button =
+        new Button("Add inferred targets >>", makeTargetLookupCH(compoundList,
+            service, true));
     vpi.add(button);
 
     vp.add(vpi);
@@ -504,6 +473,8 @@ public class ProbeSetEditor extends DataListenerWidget {
    * The incoming probes signal will set the probes well as call the outgoing signal.
    */
   public void probesChanged(String[] probes) {
+    System.out.println("probesChanged: " + probes.length);
+
     probesList.clear();
     for (String p : probes) {
       // TODO look up syms here?
@@ -511,12 +482,50 @@ public class ProbeSetEditor extends DataListenerWidget {
     }
     listedProbes.clear();
     listedProbes.addAll(Arrays.asList(probes));
-    // updateProceedButton();
-    // super.probesChanged(probes); // calls changeProbes
+
+    super.probesChanged(probes); // calls changeProbes
   }
 
-  public void newSet() {
+  public void createNew() {
+    probeSetTitle.setText(getAvailableName());
+
+    // Create temporal DataListenerWidget to avoid loading probes chosen in parent screen
+    DataListenerWidget dlw = new DataListenerWidget();
+    screen.propagateTo(dlw);
+    dlw.probesChanged(new String[0]);
+    dlw.propagateTo(this);
+
     dialog.show();
+  }
+
+  public void edit(String name) {
+    probeSetTitle.setText(name);
+    screen.propagateTo(this);
+    dialog.show();
+  }
+
+  private String getAvailableName() {
+    String newTitle = NEW_TITLE_PREFIX;
+
+    int i = 1;
+    while (isExist(newTitle)) {
+      newTitle = NEW_TITLE_PREFIX + " " + (++i);
+    }
+
+    return newTitle;
+  }
+
+  private boolean isExist(String name) {
+    for (ItemList li : chosenItemLists) {
+      if (!li.type().equals("probes")) {
+        continue;
+      }
+      if (li.name().equals(name)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
 }

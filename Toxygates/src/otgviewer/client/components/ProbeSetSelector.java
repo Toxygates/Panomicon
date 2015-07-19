@@ -18,6 +18,11 @@
 
 package otgviewer.client.components;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import t.common.shared.ItemList;
+import t.common.shared.StringList;
 import t.viewer.client.Utils;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -30,9 +35,10 @@ import com.google.gwt.user.client.ui.Widget;
 public abstract class ProbeSetSelector extends DataListenerWidget {
 
   private final Screen screen;
-  
+
   private HorizontalPanel selector;
   private ListBox listProbeset;
+  private ListChooser listChooser;
 
   public ProbeSetSelector(Screen screen) {
     this.screen = screen;
@@ -46,23 +52,45 @@ public abstract class ProbeSetSelector extends DataListenerWidget {
     // addListener(selector);
 
     listProbeset = new ListBox();
+    listChooser =
+        new ListChooser(new ArrayList<StringList>(), "probes", false) {
+          @Override
+          protected void itemsChanged(List<String> items) {
+            screen.matrixService().identifiersToProbes(
+                items.toArray(new String[0]), true, false, getAllSamples(),
+                new PendingAsyncCallback<String[]>(screen) {
+                  @Override
+                  public void handleSuccess(String[] t) {
+                    screen.probesChanged(t);
+                  }
+                });
+          }
+
+          @Override
+          protected void listsChanged(List<ItemList> lists) {
+            screen.chosenItemLists = lists;
+            screen.storeItemLists(screen.getParser(screen));
+          }
+        };
+
+    screen.addListener(listChooser);
 
     Button btnNew = new Button("New", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        new ProbeSetEditor(screen).newSet();
+        new ProbeSetEditor(screen).createNew();
       }
     });
 
     Button btnEdit = new Button("Edit", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        // TODO Auto-generated method stub
-
+        new ProbeSetEditor(screen).edit(listChooser.getItemText());;
       }
     });
-    
+
     selector.add(listProbeset);
+    selector.add(listChooser);
     selector.add(btnNew);
     selector.add(btnEdit);
   }
@@ -72,6 +100,13 @@ public abstract class ProbeSetSelector extends DataListenerWidget {
   }
 
   public abstract void probeSetChanged();
+
   public abstract void saveActionPerformed();
-  
+
+  @Override
+  public void itemListsChanged(List<ItemList> lists) {
+    super.itemListsChanged(lists);
+    listChooser.setLists(lists);
+  }
+
 }

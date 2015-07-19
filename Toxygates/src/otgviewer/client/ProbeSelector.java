@@ -18,6 +18,7 @@
 
 package otgviewer.client;
 
+import java.util.Arrays;
 import java.util.List;
 
 import otgviewer.client.components.DataListenerWidget;
@@ -34,6 +35,8 @@ import t.viewer.client.rpc.SparqlServiceAsync;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -45,7 +48,6 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
@@ -68,13 +70,9 @@ abstract public class ProbeSelector extends DataListenerWidget implements
 
   private DockLayoutPanel lp;
   private TermSuggestBox searchBox;
-  private TermSuggestOracle oracle;
-  private TextBox tb = new TextBox();
 
   private ListBox itemList;
   private Button addButton;
-
-  private ListSelectionHandler<String> itemHandler;
 
   private final SparqlServiceAsync sparqlService;
 
@@ -84,15 +82,6 @@ abstract public class ProbeSelector extends DataListenerWidget implements
     this.sparqlService = screen.sparqlService();
     this.withButton = wb;
     this.lp = new DockLayoutPanel(Unit.PX);
-    this.oracle = new TermSuggestOracle(screen) {
-      @Override
-      public void onExactMatchFound(List<Term> exactMatches) {
-        // TermSuggestBox.this.exactMatches = exactMatches;
-        // if (exactMatches.size() == 1) {
-        // selected = exactMatches.get(0);
-        // }
-      }
-    };
     initWidget(lp);
 
     VerticalPanel topVp = new VerticalPanel();
@@ -105,7 +94,7 @@ abstract public class ProbeSelector extends DataListenerWidget implements
     searchLabel.setWidth("95%");
     topVp.add(searchLabel);
 
-    searchBox = new TermSuggestBox(oracle, tb);
+    searchBox = new TermSuggestBox(new TermSuggestOracle(screen));
     searchBox.setWatermark("KEGG Pathway, GO term...");
     searchBox.setWidth("100%");
 
@@ -122,6 +111,11 @@ abstract public class ProbeSelector extends DataListenerWidget implements
     btnLoad.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
+        itemList.clear();
+        loadedProbes = new String[0];
+        if (withButton) {
+          addButton.setEnabled(false);
+        }
         Term selected = searchBox.getSelected();
         if (selected != null) {
           getProbes(selected);
@@ -141,12 +135,6 @@ abstract public class ProbeSelector extends DataListenerWidget implements
 
     itemList = new ResizingListBox(135);
     itemList.setWidth(CHILD_WIDTH);
-
-    // itemHandler =
-    // new ListSelectionHandler<String>("pathways", itemList, false) {
-    // @Override
-    // protected void getUpdates(String lastSelected) {}
-    // };
 
     if (withButton) {
       addButton = new Button("Add probes >>");
@@ -223,6 +211,7 @@ abstract public class ProbeSelector extends DataListenerWidget implements
 
   protected void probesLoaded(final String[] probes) {
     if (probes.length > 0) {
+      Arrays.sort(probes);
       // TODO reduce the number of ajax calls done by this screen by
       // collapsing them
       sparqlService.geneSyms(probes, new AsyncCallback<String[][]>() {
@@ -237,6 +226,12 @@ abstract public class ProbeSelector extends DataListenerWidget implements
     }
   }
 
+  /**
+   * Display probes with gene symbols. Probes must be unique.
+   * 
+   * @param probes
+   * @param syms
+   */
   private void deferredAddProbes(String[] probes, String[][] syms) {
     itemList.clear();
     for (int i = 0; i < probes.length; ++i) {
@@ -251,7 +246,7 @@ abstract public class ProbeSelector extends DataListenerWidget implements
 
   void clear() {
     searchBox.setText("");
-    itemHandler.clear();
+    itemList.clear();
     loadedProbes = new String[0];
   }
 }
