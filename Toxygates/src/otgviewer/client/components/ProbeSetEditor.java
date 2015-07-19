@@ -28,7 +28,6 @@ import otgviewer.client.GeneOracle;
 import otgviewer.client.ProbeSelector;
 import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
-import t.common.shared.AType;
 import t.common.shared.SharedUtils;
 import t.common.shared.StringList;
 import t.common.shared.Term;
@@ -52,8 +51,6 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.StackLayoutPanel;
 import com.google.gwt.user.client.ui.SuggestBox;
-import com.google.gwt.user.client.ui.SuggestOracle.Callback;
-import com.google.gwt.user.client.ui.SuggestOracle.Request;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -97,7 +94,8 @@ public class ProbeSetEditor extends DataListenerWidget {
     matrixService = screen.manager.matrixService();
 
     initWindow();
-    loadState(screen);
+    // loadState(screen);
+    screen.propagateTo(this);
   }
 
   protected boolean hasChembl() {
@@ -125,18 +123,12 @@ public class ProbeSetEditor extends DataListenerWidget {
     addListener(psel);
 
     if (hasChembl()) {
-      Widget chembl =
-          makeTargetLookupPanel(
-              "CHEMBL",
-              "This lets you view probes that are known targets of the currently selected compound.");
+      Widget chembl = makeTargetLookupPanel("CHEMBL", "This lets you view probes that are known targets of the currently selected compound.");
       probeSelStack.add(chembl, "CHEMBL targets", STACK_ITEM_HEIGHT);
     }
 
     if (hasDrugbank()) {
-      Widget drugBank =
-          makeTargetLookupPanel(
-              "DrugBank",
-              "This lets you view probes that are known targets of the currently selected compound.");
+      Widget drugBank = makeTargetLookupPanel("DrugBank", "This lets you view probes that are known targets of the currently selected compound.");
       probeSelStack.add(drugBank, "DrugBank targets", STACK_ITEM_HEIGHT);
     }
 
@@ -245,42 +237,40 @@ public class ProbeSetEditor extends DataListenerWidget {
     topContent.add(l);
     topContent.add(p);
 
-//    VerticalPanel content =
-//        Utils.mkVerticalPanel(true, topContent, fwlp, bottomContainer);
+    // VerticalPanel content =
+    // Utils.mkVerticalPanel(true, topContent, fwlp, bottomContainer);
     VerticalPanel content = new VerticalPanel();
     content.add(topContent);
     content.add(fwlp);
     content.add(bottomContainer);
-//    content.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
+    // content.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 
     dialog.setText("Probe set editor");
     dialog.setWidget(content);
     dialog.setGlassEnabled(true);
-    // setModal(true);
+    dialog.setModal(true);
     dialog.center();
   }
 
   private ProbeSelector probeSelector() {
-    return new ProbeSelector(screen,
-        "This lets you view probes that correspond to a given KEGG pathway or GO term. "
-            + "Enter a partial pathway name and press enter to search.", true) {
+    return new ProbeSelector(screen, "This lets you view probes that correspond to a given KEGG pathway or GO term. " + "Enter a partial pathway name and press enter to search.",
+        true) {
 
       @Override
       protected void getProbes(Term term) {
-        sparqlService.probesForPathway(chosenSampleClass, term.getTermString(),
-            getAllSamples(), retrieveProbesCallback());
+        sparqlService.probesForPathway(chosenSampleClass, term.getTermString(), getAllSamples(), retrieveProbesCallback());
       }
-      
+
       @Override
       public void probesChanged(String[] probes) {
         super.probesChanged(probes);
         addProbes(probes);
       }
-//      @Override
-//      protected void getMatches(String pattern) {
-//        sparqlService.pathways(chosenSampleClass, pattern,
-//            retrieveMatchesCallback());
-//      }
+      // @Override
+      // protected void getMatches(String pattern) {
+      // sparqlService.pathways(chosenSampleClass, pattern,
+      // retrieveMatchesCallback());
+      // }
     };
   }
 
@@ -342,8 +332,7 @@ public class ProbeSetEditor extends DataListenerWidget {
         String[] split = text.split("[\n ,\t]");
 
         if (split.length == 0) {
-          Window
-              .alert("Please enter identifiers in the text box and try again.");
+          Window.alert("Please enter identifiers in the text box and try again.");
         } else {
           addManualProbes(split, false);
         }
@@ -429,8 +418,7 @@ public class ProbeSetEditor extends DataListenerWidget {
     // change the identifiers (which can be mixed format, for example genes
     // and proteins etc) into a
     // homogenous format (probes only)
-    matrixService.identifiersToProbes(probes, true, titleMatch, screen
-        .getAllSamples(), new PendingAsyncCallback<String[]>(screen,
+    matrixService.identifiersToProbes(probes, true, titleMatch, screen.getAllSamples(), new PendingAsyncCallback<String[]>(screen,
         "Unable to obtain manual probes (technical error).") {
       public void handleSuccess(String[] probes) {
         if (probes.length == 0) {
@@ -452,8 +440,7 @@ public class ProbeSetEditor extends DataListenerWidget {
     probesList.clear();
     for (int i = 0; i < probes.length; ++i) {
       if (syms[i].length > 0) {
-        probesList.addItem(SharedUtils.mkString(syms[i], "/") + " ("
-            + probes[i] + ")");
+        probesList.addItem(SharedUtils.mkString(syms[i], "/") + " (" + probes[i] + ")");
       } else {
         probesList.addItem(probes[i]);
       }
@@ -466,25 +453,22 @@ public class ProbeSetEditor extends DataListenerWidget {
     // + " selected probes >>");
   }
 
-  private ClickHandler makeTargetLookupCH(final ListBox compoundList,
-      final String service, final boolean homologs) {
+  private ClickHandler makeTargetLookupCH(final ListBox compoundList, final String service, final boolean homologs) {
     final DataListenerWidget w = screen;
     return new ClickHandler() {
       public void onClick(ClickEvent ev) {
         if (compoundList.getSelectedIndex() != -1) {
-          String compound =
-              compoundList.getItemText(compoundList.getSelectedIndex());
-          sparqlService.probesTargetedByCompound(screen.chosenSampleClass,
-              compound, service, homologs, new PendingAsyncCallback<String[]>(
-                  w, "Unable to get probes (technical error).") {
-                public void handleSuccess(String[] probes) {
-                  if (probes.length == 0) {
-                    Window.alert("No matching probes were found.");
-                  } else {
-                    addProbes(probes);
-                  }
-                }
-              });
+          String compound = compoundList.getItemText(compoundList.getSelectedIndex());
+          sparqlService.probesTargetedByCompound(screen.chosenSampleClass, compound, service, homologs, new PendingAsyncCallback<String[]>(w,
+              "Unable to get probes (technical error).") {
+            public void handleSuccess(String[] probes) {
+              if (probes.length == 0) {
+                Window.alert("No matching probes were found.");
+              } else {
+                addProbes(probes);
+              }
+            }
+          });
         } else {
           Window.alert("Please select a compound first.");
         }
@@ -506,14 +490,10 @@ public class ProbeSetEditor extends DataListenerWidget {
     compoundLists.add(compoundList);
     vpi.add(compoundList);
 
-    Button button =
-        new Button("Add direct targets >>", makeTargetLookupCH(compoundList,
-            service, false));
+    Button button = new Button("Add direct targets >>", makeTargetLookupCH(compoundList, service, false));
     vpi.add(button);
 
-    button =
-        new Button("Add inferred targets >>", makeTargetLookupCH(compoundList,
-            service, true));
+    button = new Button("Add inferred targets >>", makeTargetLookupCH(compoundList, service, true));
     vpi.add(button);
 
     vp.add(vpi);

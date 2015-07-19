@@ -18,6 +18,8 @@
 
 package otgviewer.client;
 
+import java.util.List;
+
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ListSelectionHandler;
 import otgviewer.client.components.PendingAsyncCallback;
@@ -42,6 +44,8 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
@@ -57,26 +61,38 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  */
 abstract public class ProbeSelector extends DataListenerWidget implements
     RequiresResize {
-  
+
   private String[] loadedProbes;
-  
+
   private boolean withButton;
 
   private DockLayoutPanel lp;
   private TermSuggestBox searchBox;
+  private TermSuggestOracle oracle;
+  private TextBox tb = new TextBox();
+
   private ListBox itemList;
   private Button addButton;
 
   private ListSelectionHandler<String> itemHandler;
-  
+
   private final SparqlServiceAsync sparqlService;
-  
+
   private final static String CHILD_WIDTH = "100%";
 
   public ProbeSelector(Screen screen, String label, boolean wb) {
     this.sparqlService = screen.sparqlService();
     this.withButton = wb;
     this.lp = new DockLayoutPanel(Unit.PX);
+    this.oracle = new TermSuggestOracle(screen) {
+      @Override
+      public void onExactMatchFound(List<Term> exactMatches) {
+        // TermSuggestBox.this.exactMatches = exactMatches;
+        // if (exactMatches.size() == 1) {
+        // selected = exactMatches.get(0);
+        // }
+      }
+    };
     initWidget(lp);
 
     VerticalPanel topVp = new VerticalPanel();
@@ -89,7 +105,8 @@ abstract public class ProbeSelector extends DataListenerWidget implements
     searchLabel.setWidth("95%");
     topVp.add(searchLabel);
 
-    searchBox = new TermSuggestBox(screen, "KEGG Pathway, GO term...");
+    searchBox = new TermSuggestBox(oracle, tb);
+    searchBox.setWatermark("KEGG Pathway, GO term...");
     searchBox.setWidth("100%");
 
     FlowPanel fp = new FlowPanel();
@@ -109,7 +126,7 @@ abstract public class ProbeSelector extends DataListenerWidget implements
         if (selected != null) {
           getProbes(selected);
         } else {
-          searchBox.showSuggestion();
+          searchBox.showSuggestionList();
         }
       }
     });
@@ -147,7 +164,7 @@ abstract public class ProbeSelector extends DataListenerWidget implements
 
     lp.add(itemList);
   }
-  
+
   /**
    * This method should obtain the probes that correspond to the exactly named high level object.
    * (Will be invoked after the user selects one)
@@ -155,7 +172,6 @@ abstract public class ProbeSelector extends DataListenerWidget implements
    * @param item
    */
   abstract protected void getProbes(Term term);
-
 
   @Override
   public void onResize() {
@@ -189,12 +205,11 @@ abstract public class ProbeSelector extends DataListenerWidget implements
     return new PendingAsyncCallback<String[]>(this) {
       public void handleFailure(Throwable caught) {
         Window.alert("Unable to get probes.");
-//        itemHandler.clear();
+        // itemHandler.clear();
         addButton.setEnabled(false);
       }
 
       public void handleSuccess(String[] probes) {
-        System.out.println(probes.length);
         if (!withButton) {
           probesChanged(probes);
         } else if (probes.length > 0) {
@@ -221,13 +236,13 @@ abstract public class ProbeSelector extends DataListenerWidget implements
       });
     }
   }
-  
+
   private void deferredAddProbes(String[] probes, String[][] syms) {
     itemList.clear();
     for (int i = 0; i < probes.length; ++i) {
       if (syms[i].length > 0) {
-        itemList.addItem(SharedUtils.mkString(syms[i], "/") + " ("
-            + probes[i] + ")");
+        itemList.addItem(SharedUtils.mkString(syms[i], "/") + " (" + probes[i]
+            + ")");
       } else {
         itemList.addItem(probes[i]);
       }

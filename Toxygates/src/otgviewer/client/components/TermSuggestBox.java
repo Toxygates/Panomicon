@@ -3,7 +3,6 @@ package otgviewer.client.components;
 import java.util.ArrayList;
 import java.util.List;
 
-import otgviewer.client.TermSuggestOracle;
 import otgviewer.client.TermSuggestOracle.TermSuggestion;
 import t.common.shared.Term;
 
@@ -17,7 +16,7 @@ import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.MultiWordSuggestOracle;
 import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
@@ -25,49 +24,44 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
-public class TermSuggestBox extends Composite implements FocusHandler,
-    BlurHandler, SelectionHandler<SuggestOracle.Suggestion>, KeyPressHandler,
-    HasKeyPressHandlers {
+public class TermSuggestBox extends SuggestBox implements FocusHandler,
+    BlurHandler, SelectionHandler<SuggestOracle.Suggestion>, KeyPressHandler {
 
-  private final Screen screen;
-  private final String WATERMARK;
+  private String WATERMARK;
 
-  private SuggestBox field;
   private String previousValue;
+
+  private ValueBoxBase<String> box;
 
   private Term selected;
   private List<Term> exactMatches = new ArrayList<Term>();
 
-  public TermSuggestBox(Screen screen, String watermark) {
-    this.screen = screen;
-    this.WATERMARK = watermark;
+  public TermSuggestBox() {
+    this(new MultiWordSuggestOracle());
+  }
 
-    initWidget(field);
+  public TermSuggestBox(SuggestOracle oracle) {
+    this(oracle, new TextBox());
+  }
+
+  public TermSuggestBox(SuggestOracle oracle, ValueBoxBase<String> box) {
+    this(oracle, box, new DefaultSuggestionDisplay());
+  }
+
+  public TermSuggestBox(SuggestOracle oracle, ValueBoxBase<String> box,
+      SuggestionDisplay suggestDisplay) {
+    super(oracle, box, suggestDisplay);
   }
 
   @Override
   protected void initWidget(Widget widget) {
-    TermSuggestOracle oracle = oracle();
-    ValueBoxBase<String> tb = new TextBox();
+    this.box = getValueBox();
 
-    field = new SuggestBox(oracle, tb);
-    field.addSelectionHandler(this);
-    field.addKeyPressHandler(this);
+    addSelectionHandler(this);
+    box.addFocusHandler(this);
+    box.addBlurHandler(this);
 
-    tb.addFocusHandler(this);
-    tb.addBlurHandler(this);
-
-    enableWatermark(tb);
-
-    super.initWidget(field);
-  }
-
-  public String getText() {
-    return field.getText();
-  }
-
-  public void setText(String text) {
-    field.setText(text);
+    super.initWidget(box);
   }
 
   public Term getSelected() {
@@ -78,71 +72,65 @@ public class TermSuggestBox extends Composite implements FocusHandler,
     return exactMatches;
   }
 
-  public void showSuggestion() {
-    field.showSuggestionList();
-  }
-
   @Override
   public void onSelection(SelectionEvent<Suggestion> event) {
     TermSuggestion sug = (TermSuggestion) event.getSelectedItem();
     selected = sug.getTerm();
     previousValue = selected.getTermString();
-    System.out.println("Selected: " + selected.getTermString());
   }
 
   @Override
   public void onKeyPress(KeyPressEvent event) {
-    String value = field.getText();
+    String value = getText();
     if (!value.equalsIgnoreCase(previousValue)) {
       selected = null;
-      System.out.println("Selected: reset to null");
     }
     previousValue = value;
   }
 
-  private TermSuggestOracle oracle() {
-    return new TermSuggestOracle(screen) {
-      @Override
-      public void onExactMatchFound(List<Term> exactMatches) {
-        TermSuggestBox.this.exactMatches = exactMatches;
-        System.out.println("ExactMatchesFound: " + exactMatches.size());
-        if (exactMatches.size() == 1) {
-          selected = exactMatches.get(0);
-          System.out.println("ExactMatchesSelected: "
-              + selected.getTermString());
-        }
-      }
-    };
-  }
-
-  @Override
-  public HandlerRegistration addKeyPressHandler(KeyPressHandler handler) {
-    return addDomHandler(handler, KeyPressEvent.getType());
-  }
+  // @Override
+  // public HandlerRegistration addKeyPressHandler(KeyPressHandler handler) {
+  // return addDomHandler(handler, KeyPressEvent.getType());
+  // }
 
   @Override
   public void onBlur(BlurEvent event) {
-    enableWatermark(field.getValueBox());
+    enableWatermark();
   }
 
   @Override
   public void onFocus(FocusEvent event) {
-    disableWatermark(field.getValueBox());
+    disableWatermark();
   }
 
-  private void enableWatermark(ValueBoxBase<String> textbox) {
-    String t = textbox.getText();
+  public void setWatermark(String text) {
+    this.WATERMARK = text;
+
+    box.setFocus(false);
+    enableWatermark();
+  }
+
+  private void enableWatermark() {
+    if (WATERMARK == null) {
+      return;
+    }
+
+    String t = box.getText();
     if (t.length() == 0 || t.equalsIgnoreCase(WATERMARK)) {
-      textbox.setText(WATERMARK);
-      textbox.addStyleName("watermark");
+      box.setText(WATERMARK);
+      box.addStyleName("watermark");
     }
   }
 
-  private void disableWatermark(ValueBoxBase<String> textbox) {
-    String t = textbox.getText();
-    textbox.removeStyleName("watermark");
+  private void disableWatermark() {
+    if (WATERMARK == null) {
+      return;
+    }
+
+    String t = box.getText();
+    box.removeStyleName("watermark");
     if (t.equals(WATERMARK)) {
-      textbox.setText("");
+      box.setText("");
     }
   }
 
