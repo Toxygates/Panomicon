@@ -56,11 +56,11 @@ import com.google.gwt.user.client.ui.ListBox;
 public class ListChooser extends DataListenerWidget {
 	
 	//ordered map
-	private Map<String, List<String>> lists = new TreeMap<String, List<String>>();
+	protected Map<String, List<String>> lists = new TreeMap<String, List<String>>();
 	
 	private Map<String, List<String>> predefinedLists =
 			new TreeMap<String, List<String>>(); //ordered map
-	private List<String> currentItems;
+	protected List<String> currentItems;
 	private DialogBox inputDialog;
 	final private ListBox listBox;
 	final private String listType;
@@ -187,7 +187,7 @@ public class ListChooser extends DataListenerWidget {
 		}				
 	}
 	
-	private void refreshSelector() {
+	protected void refreshSelector() {
 		listBox.clear();
 		listBox.addItem("Click to see available lists");
 		
