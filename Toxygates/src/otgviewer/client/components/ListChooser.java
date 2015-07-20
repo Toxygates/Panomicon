@@ -55,6 +55,8 @@ import com.google.gwt.user.client.ui.ListBox;
  */
 public class ListChooser extends DataListenerWidget {
 
+  private static final String DEFAULT_ITEM = "Click to see available lists";
+
   //ordered map
   protected Map<String, List<String>> lists = new TreeMap<String, List<String>>();
 
@@ -89,9 +91,12 @@ public class ListChooser extends DataListenerWidget {
     listBox.addChangeHandler(new ChangeHandler() {				
       @Override
       public void onChange(ChangeEvent event) {
-        String sel = getItemText();
+        String sel = getSelectedText();
         if (sel == null) {
           return;
+        }
+        if (sel.equals(DEFAULT_ITEM)) {
+          onDefaultItemSelected();
         }
         if (lists.containsKey(sel)) {
           currentItems = lists.get(sel);
@@ -124,7 +129,7 @@ public class ListChooser extends DataListenerWidget {
     hp.add(b);
   }
 
-  public String getItemText() {
+  public String getSelectedText() {
     int idx = listBox.getSelectedIndex();
     if (idx == -1) {
       return null;
@@ -188,8 +193,10 @@ public class ListChooser extends DataListenerWidget {
   }
 
   protected void refreshSelector() {
+    String selected = getSelectedText();
+
     listBox.clear();
-    listBox.addItem("Click to see available lists");
+    listBox.addItem(DEFAULT_ITEM);
 
     List<String> sorted = new ArrayList<String>(lists.keySet());
     Collections.sort(sorted, new Comparator<String>() {
@@ -202,9 +209,16 @@ public class ListChooser extends DataListenerWidget {
       }
     });
 
+    int idx = 0, i = 1;
     for (String s: sorted) {
       listBox.addItem(s);
+      if (s.equals(selected)) {
+        idx = i;
+      }
+      ++i;
     }
+
+    listBox.setSelectedIndex(idx);
   }
 
   protected boolean isPredefinedListName(String name) {
@@ -269,6 +283,19 @@ public class ListChooser extends DataListenerWidget {
     }
     lists.putAll(predefinedLists);
     refreshSelector();
+  }
+
+  public void setSelected(String title) {
+    for (int i = 0; i < listBox.getItemCount(); ++i) {
+      if (listBox.getItemText(i).equals(title)) {
+        listBox.setSelectedIndex(i);
+        break;
+      }
+    }
+  }
+  
+  protected void onDefaultItemSelected() {
+    
   }
 
 }

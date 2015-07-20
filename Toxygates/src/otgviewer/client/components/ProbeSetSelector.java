@@ -29,7 +29,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
 
 public abstract class ProbeSetSelector extends DataListenerWidget {
@@ -37,8 +36,10 @@ public abstract class ProbeSetSelector extends DataListenerWidget {
   private final Screen screen;
 
   private HorizontalPanel selector;
-  private ListBox listProbeset;
   private ListChooser listChooser;
+
+  private Button btnNew;
+  private Button btnEdit;
 
   public ProbeSetSelector(Screen screen) {
     this.screen = screen;
@@ -51,45 +52,56 @@ public abstract class ProbeSetSelector extends DataListenerWidget {
     selector.addStyleName("slightlySpaced");
     // addListener(selector);
 
-    listProbeset = new ListBox();
     listChooser =
         new ListChooser(new ArrayList<StringList>(), "probes", false) {
           @Override
           protected void itemsChanged(List<String> items) {
-            screen.matrixService().identifiersToProbes(
-                items.toArray(new String[0]), true, false, getAllSamples(),
-                new PendingAsyncCallback<String[]>(screen) {
-                  @Override
-                  public void handleSuccess(String[] t) {
-                    screen.probesChanged(t);
-                  }
-                });
+            btnEdit.setEnabled(true);
+            ProbeSetSelector.this.itemsChanged(items);
           }
 
           @Override
           protected void listsChanged(List<ItemList> lists) {
-            screen.chosenItemLists = lists;
-            screen.storeItemLists(screen.getParser(screen));
+            ProbeSetSelector.this.listsChanged(lists);
           }
-        };
 
+          @Override
+          protected void onDefaultItemSelected() {
+            super.onDefaultItemSelected();
+            btnEdit.setEnabled(false);
+            ProbeSetSelector.this.itemsChanged(new ArrayList<String>());
+          }
+
+        };
     screen.addListener(listChooser);
 
-    Button btnNew = new Button("New", new ClickHandler() {
+    final EditorCallback callback = new EditorCallback() {
+      @Override
+      public void onSaved(String title, List<String> items) {
+        itemsChanged(items);
+        listChooser.setSelected(title);
+      }
+
+      @Override
+      public void onCanceled() {}
+
+    };
+
+    btnNew = new Button("New", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        new ProbeSetEditor(screen).createNew();
+        new ProbeSetEditor(screen, callback).createNew();
       }
     });
 
-    Button btnEdit = new Button("Edit", new ClickHandler() {
+    btnEdit = new Button("Edit", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        new ProbeSetEditor(screen).edit(listChooser.getItemText());;
+        new ProbeSetEditor(screen, callback).edit(listChooser.getSelectedText());
       }
     });
+    btnEdit.setEnabled(false);
 
-    selector.add(listProbeset);
     selector.add(listChooser);
     selector.add(btnNew);
     selector.add(btnEdit);
@@ -99,9 +111,9 @@ public abstract class ProbeSetSelector extends DataListenerWidget {
     return selector;
   }
 
-  public abstract void probeSetChanged();
+  protected abstract void itemsChanged(List<String> items);
 
-  public abstract void saveActionPerformed();
+  protected abstract void listsChanged(List<ItemList> lists);
 
   @Override
   public void itemListsChanged(List<ItemList> lists) {

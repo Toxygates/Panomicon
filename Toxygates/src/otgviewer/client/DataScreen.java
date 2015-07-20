@@ -30,8 +30,6 @@ import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.Group;
 import t.common.shared.ItemList;
 import t.common.shared.sample.ExpressionRow;
-import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.RichTable.HideableColumn;
 
@@ -58,29 +56,28 @@ public class DataScreen extends Screen {
   protected String[] lastProbes;
   protected List<Group> lastColumns;
 
-  private final MatrixServiceAsync matrixService;
-  private final SparqlServiceAsync sparqlService;
+//  private final MatrixServiceAsync matrixService;
+//  private final SparqlServiceAsync sparqlService;
 
   public DataScreen(ScreenManager man) {
     super("View data", key, true, man, resources.dataDisplayHTML(), resources
         .dataDisplayHelp());
     ps = makeProbeSetSelector();
     et = makeExpressionTable();
-    matrixService = man.matrixService();
-    sparqlService = man.sparqlService();
+//    matrixService = man.matrixService();
+//    sparqlService = man.sparqlService();
   }
 
   protected ProbeSetSelector makeProbeSetSelector() {
     return new ProbeSetSelector(this) {
       @Override
-      public void saveActionPerformed() {
-        // TODO Auto-generated method stub
-        
+      protected void itemsChanged(List<String> items) {
+        updateProbes(items.toArray(new String[0]));
       }
       @Override
-      public void probeSetChanged() {
-        // TODO Auto-generated method stub
-        
+      protected void listsChanged(List<ItemList> lists) {
+        chosenItemLists = lists;
+        storeItemLists(getParser(DataScreen.this));
       }
     };
   }

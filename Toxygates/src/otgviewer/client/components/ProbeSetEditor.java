@@ -30,6 +30,7 @@ import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
 import t.common.shared.ItemList;
 import t.common.shared.SharedUtils;
+import t.common.shared.StringList;
 import t.common.shared.Term;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.MatrixServiceAsync;
@@ -60,15 +61,20 @@ public class ProbeSetEditor extends DataListenerWidget {
 
   private static final String NEW_TITLE_PREFIX = "NewProbeSet";
 
+  public static final int SAVE_FAILURE = -1;
+  public static final int SAVE_SUCCESS = 0;
+
   private DialogBox dialog;
 
   private final Screen screen;
+  private final EditorCallback callback;
 
   private final SparqlServiceAsync sparqlService;
   private final MatrixServiceAsync matrixService;
 
   private final GeneOracle oracle;
 
+  private Set<String> originalProbes;
   private Set<String> listedProbes = new HashSet<String>();
 
   private ListBox probesList;
@@ -76,9 +82,9 @@ public class ProbeSetEditor extends DataListenerWidget {
   private List<ListBox> compoundLists = new ArrayList<ListBox>();
   private DockLayoutPanel plPanel;
   private Widget plNorth, plSouth;
-  private FixedWidthLayoutPanel fwlp;
 
-  private TextBox probeSetTitle;
+  private String originalTitle;
+  private TextBox titleText;
 
   private static final int STACK_WIDTH = 350;
   private static final int STACK_ITEM_HEIGHT = 29;
@@ -86,9 +92,14 @@ public class ProbeSetEditor extends DataListenerWidget {
   private static final int PL_SOUTH_HEIGHT = 40;
 
   public ProbeSetEditor(Screen screen) {
+    this(screen, null);
+  }
+  
+  public ProbeSetEditor(Screen screen, EditorCallback callback) {
     super();
 
     this.screen = screen;
+    this.callback = callback;
 
     dialog = new DialogBox();
     oracle = new GeneOracle(screen);
@@ -96,10 +107,6 @@ public class ProbeSetEditor extends DataListenerWidget {
     matrixService = screen.manager.matrixService();
 
     initWindow();
-    // loadState(screen);
-
-    System.out.println("Parent: " + screen.chosenProbes.length);
-    System.out.println("Child: " + this.chosenProbes.length);
   }
 
   protected boolean hasChembl() {
@@ -148,19 +155,37 @@ public class ProbeSetEditor extends DataListenerWidget {
     l.setStylePrimaryName("heading");
 
     probesList = new ResizingListBox(74);
+    probesList.setMultipleSelect(true);
     probesList.setWidth("100%");
 
     HorizontalPanel buttons = Utils.mkHorizontalPanel(true);
-    Button b = new Button("Clear selected probes", new ClickHandler() {
+    Button removeSelected = new Button("Remove selected probes", new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        for (int i = 0; i < probesList.getItemCount(); ++i) {
+          if (probesList.isItemSelected(i)) {
+            String sel = probesList.getItemText(i);
+            int from = sel.lastIndexOf('(');
+            int to = sel.lastIndexOf(')');
+            if (from != -1 && to != -1) {
+              sel = sel.substring(from + 1, to);
+            }
+            listedProbes.remove(sel);
+          }
+        }
+        
+        probesChanged(listedProbes.toArray(new String[0]));
+      }
+    });
+    Button removeAll = new Button("Remove all probes", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         probesChanged(new String[0]);
       }
     });
 
-    // final ProbeScreen ps = (ProbeScreen)screen;
-    buttons.add(b);
-    // buttons.getElement().getStyle().setMargin(100, Unit.PX);
+    buttons.add(removeSelected);
+    buttons.add(removeAll);
 
     plPanel = new ResizingDockLayoutPanel();
     plNorth = Utils.wideCentered(l);
@@ -176,18 +201,23 @@ public class ProbeSetEditor extends DataListenerWidget {
     dp.add(plPanel);
 
     FixedWidthLayoutPanel fwlp = new FixedWidthLayoutPanel(dp, 700, 0);
-    // fwlp.setSize("100%", "100%");
     fwlp.setPixelSize(700, 500);
 
     HorizontalPanel bottomContent = new HorizontalPanel();
-    // bottomContent.setStylePrimaryName("slightlySpaced");
     bottomContent.setSpacing(4);
 
     Button btnCancel = new Button("Cancel");
     btnCancel.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
+        if (!listedProbes.equals(originalProbes)) {
+          // TODO check whether list is saved or not
+        }
+        
         ProbeSetEditor.this.dialog.hide();
+        if (callback != null) {
+          callback.onCanceled();
+        }
       }
     });
     Button btnSave = new Button("Save");
@@ -195,8 +225,15 @@ public class ProbeSetEditor extends DataListenerWidget {
       @Override
       public void onClick(ClickEvent event) {
         // TODO
-        ProbeSetEditor.this.dialog.hide();
+        int ret = saveAction();
+        if (ret == SAVE_SUCCESS) {
+          ProbeSetEditor.this.dialog.hide();
+          if (callback != null) {
+            callback.onSaved(titleText.getText(), new ArrayList<String>(listedProbes));
+          }
+        }
       }
+
     });
     bottomContent.add(btnCancel);
     bottomContent.add(btnSave);
@@ -211,31 +248,74 @@ public class ProbeSetEditor extends DataListenerWidget {
     l.setStylePrimaryName("heading");
     l.addStyleName("table-cell");
 
-    probeSetTitle = new TextBox();
-    probeSetTitle.setWidth("100%");
+    titleText = new TextBox();
+    titleText.setWidth("100%");
 
     FlowPanel p = new FlowPanel();
     p.setWidth("100%");
     p.addStyleName("table-cell width-fix");
-    p.add(probeSetTitle);
+    p.add(titleText);
 
     FlowPanel topContent = new FlowPanel();
     topContent.add(l);
     topContent.add(p);
 
-    // VerticalPanel content =
-    // Utils.mkVerticalPanel(true, topContent, fwlp, bottomContainer);
     VerticalPanel content = new VerticalPanel();
     content.add(topContent);
     content.add(fwlp);
     content.add(bottomContainer);
-    // content.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 
     dialog.setText("Probe set editor");
     dialog.setWidget(content);
     dialog.setGlassEnabled(true);
     dialog.setModal(true);
     dialog.center();
+  }
+
+  private int saveAction() {
+    // Create an invisible listChooser that we exploit only for
+    // the sake of saving a new list.
+    final ListChooser lc =
+        new ListChooser(new ArrayList<StringList>(), "probes") {
+          @Override
+          protected void listsChanged(List<ItemList> lists) {
+            screen.itemListsChanged(lists);
+            screen.storeItemLists(screen.getParser());
+          }
+
+          @Override
+          public void saveAction() {
+            lists.put(titleText.getText(), currentItems);
+            refreshSelector();
+            listsChanged(getLists());
+          }
+        };
+
+    String title = titleText.getText().trim();
+
+    if (title.equals("")) {
+      Window.alert("You must enter a non-empty name.");
+      return SAVE_FAILURE;
+    }
+    if (lc.isPredefinedListName(title)) {
+      Window.alert("This title is reserved for the system and cannot be used.");
+      return SAVE_FAILURE;
+    }
+    if (!StorageParser.isAcceptableString(title, "Unacceptable list name.")) {
+      return SAVE_FAILURE;
+    }
+    if (!title.equals(originalTitle) && isExist(title)) {
+      // TODO Show confirm message box whether overwrite or not
+      Window.alert("This title already exists.");
+      return SAVE_FAILURE;
+    }
+
+    // TODO make ListChooser use the DataListener propagate mechanism?
+    lc.setLists(chosenItemLists);
+    lc.setItems(new ArrayList<String>(listedProbes));
+    lc.saveAction();
+
+    return SAVE_SUCCESS;
   }
 
   private ProbeSelector probeSelector() {
@@ -248,7 +328,7 @@ public class ProbeSetEditor extends DataListenerWidget {
       protected void getProbes(Term term) {
         sparqlService.probesForPathway(chosenSampleClass, term.getTermString(),
             getAllSamples(), retrieveProbesCallback());
-        // TODO for GO
+        // TODO for GO Term
         // sparqlService.goTerms(pattern, retrieveMatchesCallback());
       }
 
@@ -357,12 +437,8 @@ public class ProbeSetEditor extends DataListenerWidget {
     for (String p : probes) {
       listedProbes.add(p);
     }
-    // listChooser.setItems(new ArrayList<String>(listedProbes));
 
     final String[] probesInOrder = listedProbes.toArray(new String[0]);
-    // chosenProbes = probesInOrder;
-    // StorageParser p = screen.getParser(screen);
-    // screen.storeProbes(p);
 
     if (probes.length > 0) {
       // TODO reduce the number of ajax calls done by this screen by
@@ -473,8 +549,6 @@ public class ProbeSetEditor extends DataListenerWidget {
    * The incoming probes signal will set the probes well as call the outgoing signal.
    */
   public void probesChanged(String[] probes) {
-    System.out.println("probesChanged: " + probes.length);
-
     probesList.clear();
     for (String p : probes) {
       // TODO look up syms here?
@@ -487,25 +561,33 @@ public class ProbeSetEditor extends DataListenerWidget {
   }
 
   public void createNew() {
-    probeSetTitle.setText(getAvailableName());
-
     // Create temporal DataListenerWidget to avoid loading probes chosen in parent screen
     DataListenerWidget dlw = new DataListenerWidget();
     screen.propagateTo(dlw);
     dlw.probesChanged(new String[0]);
     dlw.propagateTo(this);
 
+    originalProbes = null;
+    originalTitle = getAvailableName();
+    titleText.setText(originalTitle);
     dialog.show();
   }
 
   public void edit(String name) {
-    probeSetTitle.setText(name);
     screen.propagateTo(this);
+
+    originalProbes = new HashSet<String>(listedProbes);
+    originalTitle = name;
+    titleText.setText(originalTitle);
     dialog.show();
   }
 
   private String getAvailableName() {
     String newTitle = NEW_TITLE_PREFIX;
+    System.out.println("Exist names");
+    for (ItemList li : chosenItemLists) {
+      System.out.println(li.name());
+    }
 
     int i = 1;
     while (isExist(newTitle)) {
@@ -528,4 +610,11 @@ public class ProbeSetEditor extends DataListenerWidget {
     return false;
   }
 
+}
+
+interface EditorCallback {
+  
+  public abstract void onSaved(String title, List<String> items);
+  public abstract void onCanceled();
+  
 }
