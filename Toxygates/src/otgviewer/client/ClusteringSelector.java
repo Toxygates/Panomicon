@@ -1,10 +1,12 @@
-package otgviewer.client.components;
+package otgviewer.client;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.ListChooser;
 import t.common.shared.StringList;
 import t.common.shared.clustering.ProbeClustering;
 
