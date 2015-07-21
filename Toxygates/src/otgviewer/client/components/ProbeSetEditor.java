@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import otgviewer.client.ClusteringSelector;
 import otgviewer.client.GeneOracle;
 import otgviewer.client.ProbeSelector;
 import t.common.client.components.ResizingDockLayoutPanel;
@@ -32,6 +33,7 @@ import t.common.shared.ItemList;
 import t.common.shared.SharedUtils;
 import t.common.shared.StringList;
 import t.common.shared.Term;
+import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.rpc.SparqlServiceAsync;
@@ -50,6 +52,7 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.StackLayoutPanel;
 import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.TextArea;
@@ -86,6 +89,9 @@ public class ProbeSetEditor extends DataListenerWidget {
   private String originalTitle;
   private TextBox titleText;
 
+  private RadioButton chembl;
+  private RadioButton drugbank;
+
   private static final int STACK_WIDTH = 350;
   private static final int STACK_ITEM_HEIGHT = 29;
   private static final int PL_NORTH_HEIGHT = 30;
@@ -94,7 +100,7 @@ public class ProbeSetEditor extends DataListenerWidget {
   public ProbeSetEditor(Screen screen) {
     this(screen, null);
   }
-  
+
   public ProbeSetEditor(Screen screen, EditorCallback callback) {
     super();
 
@@ -117,6 +123,10 @@ public class ProbeSetEditor extends DataListenerWidget {
     return true;
   }
 
+  protected boolean hasClustering() {
+    return true;
+  }
+
   protected boolean hasSymbolFinder() {
     return true;
   }
@@ -133,20 +143,17 @@ public class ProbeSetEditor extends DataListenerWidget {
     probeSelStack.add(psel, "Keyword search", STACK_ITEM_HEIGHT);
     addListener(psel);
 
-    if (hasChembl()) {
-      Widget chembl =
-          makeTargetLookupPanel(
-              "CHEMBL",
-              "This lets you view probes that are known targets of the currently selected compound.");
-      probeSelStack.add(chembl, "CHEMBL targets", STACK_ITEM_HEIGHT);
+    if (hasChembl() || hasDrugbank()) {
+      Widget targets =
+          makeTargetLookupPanel("This lets you view probes that are known targets of the currently selected compound.");
+      probeSelStack.add(targets, "Targets", STACK_ITEM_HEIGHT);
     }
 
-    if (hasDrugbank()) {
-      Widget drugBank =
-          makeTargetLookupPanel(
-              "DrugBank",
-              "This lets you view probes that are known targets of the currently selected compound.");
-      probeSelStack.add(drugBank, "DrugBank targets", STACK_ITEM_HEIGHT);
+    if (hasClustering()) {
+      ClusteringSelector clustering = clusteringSelector();
+      clustering.setAvailable(ProbeClustering.createFrom((screen.appInfo()
+          .predefinedProbeLists())));
+      probeSelStack.add(clustering, "Clustering", STACK_ITEM_HEIGHT);
     }
 
     probeSelStack.add(manualSelection(), "Free selection", STACK_ITEM_HEIGHT);
@@ -159,24 +166,25 @@ public class ProbeSetEditor extends DataListenerWidget {
     probesList.setWidth("100%");
 
     HorizontalPanel buttons = Utils.mkHorizontalPanel(true);
-    Button removeSelected = new Button("Remove selected probes", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        for (int i = 0; i < probesList.getItemCount(); ++i) {
-          if (probesList.isItemSelected(i)) {
-            String sel = probesList.getItemText(i);
-            int from = sel.lastIndexOf('(');
-            int to = sel.lastIndexOf(')');
-            if (from != -1 && to != -1) {
-              sel = sel.substring(from + 1, to);
+    Button removeSelected =
+        new Button("Remove selected probes", new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            for (int i = 0; i < probesList.getItemCount(); ++i) {
+              if (probesList.isItemSelected(i)) {
+                String sel = probesList.getItemText(i);
+                int from = sel.lastIndexOf('(');
+                int to = sel.lastIndexOf(')');
+                if (from != -1 && to != -1) {
+                  sel = sel.substring(from + 1, to);
+                }
+                listedProbes.remove(sel);
+              }
             }
-            listedProbes.remove(sel);
+
+            probesChanged(listedProbes.toArray(new String[0]));
           }
-        }
-        
-        probesChanged(listedProbes.toArray(new String[0]));
-      }
-    });
+        });
     Button removeAll = new Button("Remove all probes", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -213,7 +221,7 @@ public class ProbeSetEditor extends DataListenerWidget {
         if (!listedProbes.equals(originalProbes)) {
           // TODO check whether list is saved or not
         }
-        
+
         ProbeSetEditor.this.dialog.hide();
         if (callback != null) {
           callback.onCanceled();
@@ -229,7 +237,8 @@ public class ProbeSetEditor extends DataListenerWidget {
         if (ret == SAVE_SUCCESS) {
           ProbeSetEditor.this.dialog.hide();
           if (callback != null) {
-            callback.onSaved(titleText.getText(), new ArrayList<String>(listedProbes));
+            callback.onSaved(titleText.getText(), new ArrayList<String>(
+                listedProbes));
           }
         }
       }
@@ -336,6 +345,15 @@ public class ProbeSetEditor extends DataListenerWidget {
       public void probesChanged(String[] probes) {
         super.probesChanged(probes);
         addProbes(probes);
+      }
+    };
+  }
+
+  private ClusteringSelector clusteringSelector() {
+    return new ClusteringSelector() {
+      @Override
+      public void clusterChanged(List<String> items) {
+        addProbes(items.toArray(new String[0]));
       }
     };
   }
@@ -517,7 +535,7 @@ public class ProbeSetEditor extends DataListenerWidget {
     };
   }
 
-  private Widget makeTargetLookupPanel(final String service, String label) {
+  private Widget makeTargetLookupPanel(String label) {
     VerticalPanel vp = new VerticalPanel();
     vp.setSize("100%", "100%");
     vp.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
@@ -527,22 +545,68 @@ public class ProbeSetEditor extends DataListenerWidget {
     Label l = new Label(label);
     vpi.add(l);
 
+    HorizontalPanel hp = Utils.mkHorizontalPanel(true);
+    // TODO use Enum to reduce if-sentence
+    if (hasChembl()) {
+      chembl = new RadioButton("Target", "CHEMBL");
+      hp.add(chembl);
+    }
+    if (hasDrugbank()) {
+      drugbank = new RadioButton("Target", "DrugBank");
+      hp.add(drugbank);
+    }
+    selectDefaultTargets();
+    vpi.add(hp);
+
     final ListBox compoundList = new ListBox();
     compoundLists.add(compoundList);
     vpi.add(compoundList);
 
-    Button button =
-        new Button("Add direct targets >>", makeTargetLookupCH(compoundList,
-            service, false));
+    Button button = new Button("Add direct targets >>");
+    button.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        System.out.println(selectedTarget() + " selected");
+        makeTargetLookupCH(compoundList, selectedTarget(), false);
+      }
+    });
     vpi.add(button);
 
-    button =
-        new Button("Add inferred targets >>", makeTargetLookupCH(compoundList,
-            service, true));
+    button = new Button("Add inferred targets >>");
+    button.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        System.out.println(selectedTarget() + " selected");
+        makeTargetLookupCH(compoundList, selectedTarget(), true);
+      }
+    });
+
     vpi.add(button);
 
     vp.add(vpi);
     return vp;
+  }
+
+  private void selectDefaultTargets() {
+    if (chembl != null) {
+      chembl.setValue(true);
+      return;
+    }
+    if (drugbank != null) {
+      drugbank.setValue(true);
+      return;
+    }
+  }
+
+  private String selectedTarget() {
+    if (chembl != null && chembl.getValue()) {
+      return "CHEMBL";
+    }
+    if (drugbank != null && drugbank.getValue()) {
+      return "DrugBank";
+    }
+
+    return null;
   }
 
   /**
@@ -612,9 +676,11 @@ public class ProbeSetEditor extends DataListenerWidget {
 
 }
 
+
 interface EditorCallback {
-  
+
   public abstract void onSaved(String title, List<String> items);
+
   public abstract void onCanceled();
-  
+
 }

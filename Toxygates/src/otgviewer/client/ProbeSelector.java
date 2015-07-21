@@ -19,10 +19,8 @@
 package otgviewer.client;
 
 import java.util.Arrays;
-import java.util.List;
 
 import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.ListSelectionHandler;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.TermSuggestBox;
@@ -35,8 +33,6 @@ import t.viewer.client.rpc.SparqlServiceAsync;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -47,7 +43,6 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
@@ -68,7 +63,7 @@ abstract public class ProbeSelector extends DataListenerWidget implements
 
   private boolean withButton;
 
-  private DockLayoutPanel lp;
+  private DockLayoutPanel dp;
   private TermSuggestBox searchBox;
 
   private ListBox itemList;
@@ -81,8 +76,8 @@ abstract public class ProbeSelector extends DataListenerWidget implements
   public ProbeSelector(Screen screen, String label, boolean wb) {
     this.sparqlService = screen.sparqlService();
     this.withButton = wb;
-    this.lp = new DockLayoutPanel(Unit.PX);
-    initWidget(lp);
+    this.dp = new DockLayoutPanel(Unit.PX);
+    initWidget(dp);
 
     VerticalPanel topVp = new VerticalPanel();
     topVp.setWidth(CHILD_WIDTH);
@@ -131,7 +126,7 @@ abstract public class ProbeSelector extends DataListenerWidget implements
 
     topVp.add(fp);
 
-    lp.addNorth(topVp, 90);
+    dp.addNorth(topVp, 90);
 
     itemList = new ResizingListBox(135);
     itemList.setWidth(CHILD_WIDTH);
@@ -147,10 +142,10 @@ abstract public class ProbeSelector extends DataListenerWidget implements
       HorizontalPanel hp = Utils.wideCentered(addButton);
       hp.setStylePrimaryName("slightlySpaced");
       hp.setWidth(CHILD_WIDTH);
-      lp.addSouth(hp, 35);
+      dp.addSouth(hp, 35);
     }
 
-    lp.add(itemList);
+    dp.add(itemList);
   }
 
   /**
@@ -163,7 +158,7 @@ abstract public class ProbeSelector extends DataListenerWidget implements
 
   @Override
   public void onResize() {
-    lp.onResize();
+    dp.onResize();
   }
 
   /**

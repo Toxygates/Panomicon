@@ -21,21 +21,35 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ListChooser;
 import t.common.shared.StringList;
 import t.common.shared.clustering.ProbeClustering;
+import t.viewer.client.Utils;
 
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-public abstract class ClusteringSelector extends DataListenerWidget {
+public abstract class ClusteringSelector extends DataListenerWidget implements
+    RequiresResize {
+
+  private DockLayoutPanel dp;
 
   private List<ProbeClustering> probeClusterings;
 
@@ -44,7 +58,9 @@ public abstract class ClusteringSelector extends DataListenerWidget {
   private ClListBox clustering;
   private ListChooser cluster;
 
-  private HorizontalPanel selector;
+  private Button addButton;
+
+  private Set<String> loadedProbes = new HashSet<String>();
 
   class ClListBox extends ListBox {
     ClListBox() {}
@@ -93,23 +109,23 @@ public abstract class ClusteringSelector extends DataListenerWidget {
   }
 
   public ClusteringSelector() {
-    makeSelector();
+    this.dp = new DockLayoutPanel(Unit.PX);
+    
+    initWidget(dp);
   }
 
   public void setAvailable(List<ProbeClustering> probeClusterings) {
     this.probeClusterings = probeClusterings;
-
-    initialize();
+    
+    initializeList();
   }
 
-  public Widget selector() {
-    return selector;
-  }
+  @Override
+  protected void initWidget(Widget widget) {
+    super.initWidget(widget);
 
-  private void makeSelector() {
-    Grid grid = new Grid(2, 4);
-    grid.setStylePrimaryName("colored");
-    grid.addStyleName("slightlySpaced");
+    Grid selector = new Grid(4, 2);
+    selector.addStyleName("slightlySpaced");
 
     algorithm = new ClListBox();
     algorithm.addChangeHandler(new ChangeHandler() {
@@ -118,8 +134,8 @@ public abstract class ClusteringSelector extends DataListenerWidget {
         algorithmChanged(algorithm.getSelected());
       }
     });
-    grid.setText(0, 0, "Algorithm");
-    grid.setWidget(1, 0, algorithm);
+    selector.setText(0, 0, "Algorithm");
+    selector.setWidget(0, 1, algorithm);
 
     param = new ClListBox();
     param.addChangeHandler(new ChangeHandler() {
@@ -128,8 +144,8 @@ public abstract class ClusteringSelector extends DataListenerWidget {
         paramChanged(param.getSelected());
       }
     });
-    grid.setText(0, 1, "K");
-    grid.setWidget(1, 1, param);
+    selector.setText(1, 0, "K");
+    selector.setWidget(1, 1, param);
 
     clustering = new ClListBox();
     clustering.addChangeHandler(new ChangeHandler() {
@@ -138,24 +154,56 @@ public abstract class ClusteringSelector extends DataListenerWidget {
         clusteringChanged(clustering.getSelected());
       }
     });
-    grid.setText(0, 2, "Clustering");
-    grid.setWidget(1, 2, clustering);
+    selector.setText(2, 0, "Clustering");
+    selector.setWidget(2, 1, clustering);
 
     cluster = new ListChooser(new ArrayList<StringList>(), "probes", false) {
       @Override
       protected void itemsChanged(List<String> items) {
-        ClusteringSelector.this.clusterChanged(items);
+        loadedProbes.clear();
+        loadedProbes.addAll(items);
+        updateAddButton();
+      }
+
+      @Override
+      protected void onDefaultItemSelected() {
+        super.onDefaultItemSelected();
+        loadedProbes.clear();
+        updateAddButton();
       }
     };
     addListener(cluster);
-    grid.setText(0, 3, "Cluster");
-    grid.setWidget(1, 3, cluster);
+    selector.setText(3, 0, "Cluster");
+    selector.setWidget(3, 1, cluster);
 
-    selector = new HorizontalPanel();
-    selector.add(grid);
+    addButton = new Button("Add probes >>");
+    addButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent e) {
+        clusterChanged(new ArrayList<String>(loadedProbes));
+      }
+    });
+    addButton.setEnabled(false);
+    
+    VerticalPanel vp = Utils.mkVerticalPanel(true);
+    vp.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
+    vp.add(selector);
+    vp.add(addButton);
+    
+    HorizontalPanel hp = Utils.wideCentered(vp);
+    hp.setStylePrimaryName("colored");
+    
+    dp.add(Utils.wideCentered(hp));
   }
 
-  void initialize() {
+  private void updateAddButton() {
+    if (loadedProbes.size() > 0) {
+      addButton.setEnabled(true);
+    } else {
+      addButton.setEnabled(false);
+    }
+  }
+
+  private void initializeList() {
     algorithm.setItems(new ArrayList<String>(ProbeClustering
         .collectAlgorithm(probeClusterings)));
 
@@ -231,6 +279,11 @@ public abstract class ClusteringSelector extends DataListenerWidget {
 
     changeClusterFrom(new ArrayList<ProbeClustering>(
         ProbeClustering.filterByName(filtered, clustering)));
+  }
+
+  @Override
+  public void onResize() {
+    dp.onResize();
   }
 
   // Expected to be overridden by caller
