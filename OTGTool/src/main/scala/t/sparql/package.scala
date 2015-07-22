@@ -20,7 +20,6 @@
 
 package t
 import t.db.BioObject
-import t.db.GenBioObject
 
 import scala.collection.DefaultMap
 
@@ -33,7 +32,7 @@ package object sparql {
   type SMMap = CMap[String, CSet[String]]
   type SMPMap = CMap[String, CSet[(String, String)]]
   type MMap[K, T] = CMap[K, CSet[T]]
-  type BBMap = MMap[_ <: GenBioObject, _ <: GenBioObject]
+  type BBMap = MMap[_ <: BioObject, _ <: BioObject]
 
   def emptySMMap() = emptyMMap[String, String]()
   def emptySMPMap() = emptyMMap[String, (String, String)]()
@@ -56,8 +55,8 @@ package object sparql {
     override def iterator = data.iterator
     override def foreach[V](f: ((T, CSet[U])) => V): Unit = data.foreach(f)
     override def size = data.size
-    def mapMValues[V](f: U => V) = new RichMMap(map(x => (x._1 -> x._2.map(f))))
-    def mapKValues[V](f: T => V) = new RichMMap(map(x => (f(x._1) -> x._2)))
+    def mapInnerValues[V](f: U => V) = new RichMMap(map(x => (x._1 -> x._2.map(f))))
+    def mapKeys[V](f: T => V) = new RichMMap(map(x => (f(x._1) -> x._2)))
     def allValues = flatMap(_._2)
 
     def union(m2: MMap[T, U]): RichMMap[T, U] = {

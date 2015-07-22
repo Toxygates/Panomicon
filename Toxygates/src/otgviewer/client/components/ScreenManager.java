@@ -21,6 +21,7 @@
 package otgviewer.client.components;
 
 import otgviewer.client.Resources;
+import otgviewer.client.UIFactory;
 import t.common.shared.DataSchema;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.rpc.SeriesServiceAsync;
@@ -84,4 +85,6 @@ public interface ScreenManager extends ProvidesResize {
 	SparqlServiceAsync sparqlService();
 	MatrixServiceAsync matrixService();
 	SeriesServiceAsync seriesService();
+	
+	UIFactory factory();
 }

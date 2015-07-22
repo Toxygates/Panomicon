@@ -30,11 +30,12 @@ import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.Group;
-import otgviewer.shared.GroupUtils;
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
+import t.common.shared.GroupUtils;
 import t.common.shared.SampleClass;
+import t.viewer.client.Utils;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
@@ -122,7 +123,7 @@ public class PathologyScreen extends Screen {
 		
 		col = new TextColumn<Pathology>() {
 			public String getValue(Pathology p) {
-				OTGSample b = GroupUtils.barcodeFor(chosenColumns, p.barcode());
+				OTGSample b = GroupUtils.sampleFor(chosenColumns, p.barcode());
 				return b.get("compound_name") + "/" + b.getShortTitle(schema()) + "/" + b.get("individual_id") ; 				
 			}
 		};
@@ -205,7 +206,7 @@ public class PathologyScreen extends Screen {
 		}
 		
 		public void onClick(String value) {
-			displaySampleDetail(GroupUtils.barcodeFor(chosenColumns, value));
+			displaySampleDetail(GroupUtils.sampleFor(chosenColumns, value));
 		}
 	}
 	

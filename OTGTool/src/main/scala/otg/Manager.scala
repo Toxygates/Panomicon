@@ -53,5 +53,7 @@ abstract class Manager extends t.Manager[Context] with CmdLineOptions {
 case class OTGBConfig(triplestore: TriplestoreConfig, data: DataConfig) extends BaseConfig {
   def seriesBuilder = OTGSeries
 
-  def sampleParameters = otg.db.SampleParameter
+  def sampleParameters = otg.db.OTGParameterSet
+
+  def appName = "Toxygates"
 }

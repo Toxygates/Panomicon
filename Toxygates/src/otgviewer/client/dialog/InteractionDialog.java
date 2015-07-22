@@ -20,8 +20,9 @@
 
 package otgviewer.client.dialog;
 
-import otgviewer.client.Utils;
 import otgviewer.client.components.DataListenerWidget;
+import t.viewer.client.Utils;
+import t.viewer.client.dialog.DialogPosition;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

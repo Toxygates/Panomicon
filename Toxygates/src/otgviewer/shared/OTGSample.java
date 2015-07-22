@@ -46,21 +46,7 @@ public class OTGSample extends Sample {
 	public String getShortTitle(DataSchema schema) {
 		return get(schema.mediumParameter()) + "/" + get(schema.minorParameter());
 	}
-	
-	/**
-	 * Obtain a short string that identifies the compound/dose/time combination
-	 * for this sample.
-	 * @return
-	 */
 
-	public String getCode() {
-		return id();
-	}
-	
-	public String get(String parameter) {
-		return sampleClass.get(parameter);
-	}
-	
 	public String toString() {
 		return sampleClass.toString();
 	}

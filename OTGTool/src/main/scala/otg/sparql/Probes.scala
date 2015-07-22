@@ -29,7 +29,6 @@ import t.sparql.QueryUtils
 import org.openrdf.repository.RepositoryConnection
 import t.sparql.Triplestore
 import t.db.ProbeMap
-import t.db.BioObject
 import t.db.DefaultBio
 import t.db.Store
 import t.sparql._

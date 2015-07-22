@@ -46,6 +46,8 @@ public interface SparqlServiceAsync {
 	@Deprecated
 	public void sampleClasses(AsyncCallback<SampleClass[]> callback);
 	
+	public void parameterValues(Dataset[] ds, SampleClass sc, String parameter, 
+        AsyncCallback<String[]> callback);
 	public void parameterValues(SampleClass sc, String parameter, 
 			AsyncCallback<String[]> callback);
 	public void parameterValues(SampleClass[] scs, String parameter, 
@@ -74,8 +76,7 @@ public interface SparqlServiceAsync {
 	public void annotations(OTGSample barcode, AsyncCallback<Annotation> callback);
 	
 	public void pathways(SampleClass sc, String pattern, AsyncCallback<String[]> callback);
-	@Deprecated
-	public void probesForPathway(SampleClass sc, String pathway, AsyncCallback<String[]> callback);
+	
 	public void probesForPathway(SampleClass sc, String pathway, List<OTGSample> samples,
 		AsyncCallback<String[]> callback);
 	public void probesTargetedByCompound(SampleClass sc, String compound, String service, 
@@ -94,5 +95,5 @@ public interface SparqlServiceAsync {
 	public void associations(SampleClass sc, AType[] types, String[] probes, 
 			AsyncCallback<Association[]> callback);
 
-	public void keywordSuggestions(String partialName, int maxSize, AsyncCallback<Pair<String, String>[]> asyncCallback);
+	public void keywordSuggestions(String partialName, int maxSize, AsyncCallback<Pair<String, AType>[]> asyncCallback);
 }

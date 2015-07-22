@@ -40,6 +40,8 @@ trait BaseConfig {
   def seriesBuilder: SeriesBuilder[S] forSome { type S <: Series[S] }
 
   def sampleParameters: ParameterSet
+
+  def appName: String
 }
 
 case class TriplestoreConfig(url: String, updateUrl: String,
@@ -55,7 +57,7 @@ case class TriplestoreConfig(url: String, updateUrl: String,
   }
 }
 
-case class DataConfig(dir: String, matrixDbOptions: String) {
+class DataConfig(val dir: String, val matrixDbOptions: String) {
   def exprDb: String = s"$dir/expr.kct" + matrixDbOptions
   def foldDb: String = s"$dir/fold.kct" + matrixDbOptions
   def seriesDb: String = s"$dir/series.kct" + KCSeriesDB.options

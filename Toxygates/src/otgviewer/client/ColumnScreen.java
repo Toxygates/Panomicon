@@ -31,13 +31,14 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
+import otgviewer.client.components.groupdef.GroupInspector;
 import otgviewer.client.components.ranking.CompoundRanker;
-import otgviewer.client.components.ranking.SimpleCompoundRanker;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import t.common.shared.DataSchema;
 import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
+import t.viewer.client.Utils;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
 import com.google.gwt.dom.client.Style.Unit;
@@ -77,7 +78,7 @@ public class ColumnScreen extends Screen {
 		sparqlService = man.sparqlService();
 		
 		String majorParam = man.schema().majorParameter();
-		cs = new CompoundSelector(this, man.schema().title(majorParam));		
+		cs = man.factory().compoundSelector(this, man.schema().title(majorParam));
 		this.addListener(cs);
 		cs.setStylePrimaryName("compoundSelector");
 		filterTools = mkFilterTools();
@@ -159,7 +160,7 @@ public class ColumnScreen extends Screen {
 	public Widget content() {				
 		tp = new TabLayoutPanel(30, Unit.PX);
 		
-		gi = new GroupInspector(cs, this);
+		gi = factory().groupInspector(cs, this);
 		this.addListener(gi);
 		cs.addListener(gi);
 		gi.datasetsChanged(chosenDatasets);
@@ -167,7 +168,7 @@ public class ColumnScreen extends Screen {
 		tp.add(gi, "Sample groups");
 
 		if (hasCompoundRanking) {
-			CompoundRanker cr = new SimpleCompoundRanker(this, cs);
+			CompoundRanker cr = factory().compoundRanker(this, cs);
 			tp.add(Utils.makeScrolled(cr), rankingLabel);
 		}
 		tp.selectTab(0);		
@@ -192,7 +193,7 @@ public class ColumnScreen extends Screen {
 				if (gi.chosenColumns().size() == 0) {
 					Window.alert("Please define and activate at least one group.");
 				} else {
-					configuredProceed(ProbeScreen.key);					
+					configuredProceed(DataScreen.key);					
 				}
 			}
 		});
@@ -207,7 +208,7 @@ public class ColumnScreen extends Screen {
 		if (visible) {
 			try {
 				List<Group> ics = loadColumns(p, schema(), "inactiveColumns", 
-						new ArrayList<OTGColumn>(gi.existingGroupsTable.inverseSelection()));
+						new ArrayList<OTGColumn>(gi.existingGroupsTable().inverseSelection()));
 				if (ics != null && ics.size() > 0) {
 					logger.info("Unpacked i. columns: " + ics.get(0) + ": " + ics.get(0).getSamples()[0] + " ... ");
 					gi.inactiveColumnsChanged(ics);

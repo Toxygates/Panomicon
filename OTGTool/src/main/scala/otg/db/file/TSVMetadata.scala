@@ -23,14 +23,14 @@ package otg.db.file
 import friedrich.util.formats.TSVFile
 import otg.db.Metadata
 import scala.Array.canBuildFrom
-import otg.db.SampleParameter
 import t.db.Sample
+import otg.db.OTGParameterSet
 
 /**
  * Represents a metadata file of the type used in Open TG-Gates.
  * A file with tab-separated values.
  */
-class TSVMetadata(file: String) extends t.db.file.TSVMetadata(file, SampleParameter) with otg.db.Metadata {
+class TSVMetadata(file: String) extends t.db.file.TSVMetadata(file, OTGParameterSet) with otg.db.Metadata {
 
   /**
    * Find the files that are control samples in the collection that a given barcode

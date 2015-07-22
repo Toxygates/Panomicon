@@ -72,6 +72,9 @@ public interface SparqlService extends RemoteService {
 	 */
 	public void chooseDatasets(Dataset[] enabled) throws TimeoutException;
 	
+	public String[] parameterValues(Dataset[] ds, SampleClass sc, String parameter)
+        throws TimeoutException;
+	
 	public String[] parameterValues(SampleClass sc, String parameter)
 			throws TimeoutException;
 
@@ -166,16 +169,6 @@ public interface SparqlService extends RemoteService {
 	 * @return
 	 */
 	public String[] pathways(SampleClass sc, String pattern)
-			throws TimeoutException;
-
-	/**
-	 * Obtain probes that belong to the named pathway.
-	 * 
-	 * @param pathway
-	 * @return
-	 */
-	@Deprecated
-	public String[] probesForPathway(SampleClass sc, String pathway)
 			throws TimeoutException;
 
 	/**
@@ -278,5 +271,5 @@ public interface SparqlService extends RemoteService {
 	 * @return An array of pairs, where the first item is the precise gene
 	 * symbol and the second is the full gene name.
 	 */
-	public Pair<String, String>[] keywordSuggestions(String partialName, int maxSize);
+	public Pair<String, AType>[] keywordSuggestions(String partialName, int maxSize);
 }

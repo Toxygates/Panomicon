@@ -22,9 +22,9 @@ package otgviewer.client.components;
 
 import java.util.List;
 
-import otgviewer.client.Utils;
 import otgviewer.shared.Group;
 import t.common.shared.DataSchema;
+import t.viewer.client.Utils;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -33,13 +33,16 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.UIObject;
 
 public class GroupLabels extends Composite {
 
-	private List<Group> groups;
-	private DataSchema schema;
+	protected List<Group> groups;
+	protected DataSchema schema;
 	private FlowPanel fpo;
-	private Screen screen;
+	protected Screen screen;
+	
+	final static int LABEL_MAX_LEN = 40;
 	
 	public GroupLabels(Screen screen, DataSchema schema, List<Group> groups) {
 		fpo = new FlowPanel();
@@ -50,6 +53,10 @@ public class GroupLabels extends Composite {
 		showSmall();
 	}
 	
+	protected String groupDetailString(Group g) {
+	  return ":" + g.getTriples(schema, 2, ", ");
+	}
+	
 	private void show(List<Group> groups) {
 		fpo.clear();
 		for (Group g: groups) {			
@@ -57,15 +64,17 @@ public class GroupLabels extends Composite {
 			fp.setStylePrimaryName("statusBorder");
 			String tip = g.getSamples()[0].sampleClass().label(schema) + ":\n" +
 					g.getTriples(schema, -1, ", ");
-			Label l = Utils.mkEmphLabel(g.getName() + ":");
-			l.setWordWrap(false);
+			Label l = Utils.mkEmphLabel(g.getName());
+			l.setWordWrap(false);			
 			l.getElement().getStyle().setMargin(2, Unit.PX);
 			l.setStylePrimaryName(g.getStyleName());
+			l.addStyleName("grouplabel");
 			Utils.floatLeft(fp, l);
-			l.setTitle(tip);
-			l = new Label(g.getTriples(schema, 2, ", "));
+			l.setTitle(tip);			
+			l = new Label(groupDetailString(g));
 			l.getElement().getStyle().setMargin(2, Unit.PX);
 			l.setStylePrimaryName(g.getStyleName());
+			UIObject.setStyleName(l.getElement(), "grouplabel", true);
 			Utils.floatLeft(fp, l);
 			l.setTitle(tip);
 			l.setWordWrap(false);

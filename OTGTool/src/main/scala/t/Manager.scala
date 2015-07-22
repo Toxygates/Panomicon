@@ -43,7 +43,7 @@ abstract class Manager[C <: Context] {
       requireEnv(env, "T_TS_REPO", "Please specify triplestore repository"))
 
   def getDataConfig(env: CMap[String, String]): DataConfig =
-    DataConfig(
+    new DataConfig(
       requireEnv(env, "T_DATA_DIR", "Please specify data directory"),
       requireEnv(env, "T_DATA_MATDBCONFIG", "Please specify matrix db flags"))
 

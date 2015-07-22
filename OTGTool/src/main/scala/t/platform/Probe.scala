@@ -20,10 +20,10 @@
 
 package t.platform
 
-import t.db.BioObject
 import t.sparql.secondary.Gene
 import t.sparql.secondary.Protein
 import t.sparql.Probes
+import t.db.StoredBioObject
 
 object Probe {
   import Probes._
@@ -38,7 +38,7 @@ case class Probe(val identifier: String, override val name: String = "",
   val proteins: Iterable[Protein] = Set(),
   val genes: Iterable[Gene] = Set(),
   val symbols: Iterable[Gene] = Set(),
-  val platform: String = "") extends BioObject[Probe] {
+  val platform: String = "") extends StoredBioObject[Probe] {
 
   def symbolStrings = symbols.map(_.symbol)
 

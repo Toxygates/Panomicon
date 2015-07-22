@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -30,20 +30,20 @@ import otg.OTGBConfig
 trait OTGServiceServlet extends TServiceServlet {
   override protected def context: Context = _context
   override protected def factory: Factory = _factory
-  
-  protected var _context: Context = _ 
+
+  protected var _context: Context = _
   protected var _factory: Factory = _
 
   override abstract def localInit(config: Configuration) {
     _factory = makeFactory()
-    _context = _factory.context(config.tsConfig, config.dataConfig)
+    _context = _factory.context(config.tsConfig, config.dataConfig(_factory))
     super.localInit(config)
   }
-  
+
   protected def makeFactory(): Factory = new Factory
-  
+
   override protected def baseConfig: OTGBConfig = context.config
-  
+
   protected val schema: OTGSchema = new OTGSchema()
 
 }
