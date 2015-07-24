@@ -7,4 +7,10 @@ URL=http://toxygates.nibiohn.go.jp:8080/$INSTANCE/toxygates/
 #Example: sampleSearch.sh organism=Rat
 #Note that all parameter values are case sensitive. Rat is not the same as 'rat'.
 
-java -classpath lib/scala-library.jar:lib/gwt-user.jar:lib/SyncProxy-0.5.jar:lib/httpclient-4.4-beta1.jar:lib/httpcore-4.4-beta1.jar:classes otg.SampleSearch $URL "$@" 
+CP=classes
+for j in lib/*.jar
+do
+        CP=$CP:$j
+done
+
+java -classpath $CP otg.SampleSearch $URL "$@"
