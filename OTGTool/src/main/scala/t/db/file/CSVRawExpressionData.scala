@@ -81,34 +81,28 @@ class CSVRawExpressionData(exprFiles: Iterable[String], callFiles: Option[Iterab
     readValuesFromTable(file, _.toDouble)
   }
 
+  import scala.collection.mutable.{Map => MuMap}  //more efficient to build
   lazy val data: CMap[Sample, CMap[String, (Double, Char, Double)]] = {
     val expr = Map() ++ exprFiles.map(readExprValues(_)).flatten
 
     val call = callFiles.map(fs => Map() ++ fs.map(readCalls(_)).flatten)
     val pval = pValueFiles.map(fs => Map() ++ fs.map(readPValues(_)).flatten)
 
-    var r = scala.collection.mutable.Map[Sample, CMap[String, (Double, Char, Double)]]()
+    var r = MuMap[Sample, CMap[String, (Double, Char, Double)]]()
 
     for ((s, pv) <- expr) {
-      call match {
-        case Some(c) =>
-          if (!c.contains(s)) {
-            throw new Exception(s"No calls available for sample $s")
-          }
-        case _ =>
+      for (calls <- call; if !calls.contains(s)) {
+        throw new Exception(s"No calls available for sample $s")
       }
-      pval match {
-        case Some(p) =>
-          if (!p.contains(s)) {
-            throw new Exception(s"No p-values available for sample $s")
-          }
-        case _ =>
+
+      for (pvals <- pval; if !pvals.contains(s)) {
+        throw new Exception(s"No p-values available for sample $s")
       }
 
       val cm = call.map(_(s))
       val pm = pval.map(_(s))
 
-      var out = scala.collection.mutable.Map[String, (Double, Char, Double)]()
+      var out = MuMap[String, (Double, Char, Double)]()
       for ((p, v) <- pv) {
         if (cm != None && !cm.get.contains(p)) {
           throw new Exception(s"No call available for probe $p in sample $s")
