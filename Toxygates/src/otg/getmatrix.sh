@@ -11,5 +11,11 @@ URL=http://toxygates.nibiohn.go.jp:8080/$INSTANCE/toxygates/
 #Example: getMatrix.sh a full test=003017646005,003017646004 
 #To get all absolute value rows in a single averaged column named "test" 
 
-java -classpath lib/scala-library.jar:lib/gwt-user.jar:lib/SyncProxy-0.5.jar:lib/httpclient-4.4-beta1.jar:lib/httpcore-4.4-beta1.jar:classes otg.GetMatrix $URL "$@" 
- 
+CP=classes
+for j in lib/*.jar
+do
+        CP=$CP:$j
+done
+
+java -classpath $CP otg.GetMatrix $URL "$@"
+
