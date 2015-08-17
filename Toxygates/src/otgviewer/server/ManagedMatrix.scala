@@ -209,8 +209,8 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[Exp
       javaMean(selectIdx(raw, controlIdx))))
 
   protected def addColumnInfo(g: Group) {
-    info.addColumn(false, colNames(g)(1), "Average of treated samples", false, g, false)
-    info.addColumn(false, colNames(g)(2), "Average of control samples", false, g, false)
+    info.addColumn(false, colNames(g)(0), "Average of treated samples", false, g, false)
+    info.addColumn(false, colNames(g)(1), "Average of control samples", false, g, false)
   }
 
   def colNames(g: Group): Seq[String] =
