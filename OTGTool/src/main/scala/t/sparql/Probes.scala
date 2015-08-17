@@ -318,21 +318,27 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     List() // TODO
   }
 
+  def goTerms(pattern: String, maxSize: Int): Iterable[GOTerm] = {
+    List() // TODO
+  }
+
   def forGoTerm(term: GOTerm): Iterable[Probe] = {
     val query = tPrefixes +
-      "SELECT DISTINCT ?probe WHERE { GRAPH ?g { " +
-      "?probe a t:probe " +
-      "{" +
-      "?got go:synonym ?gosyn. FILTER(?gosyn = \"" + term.name + "\") ." +
-      "} UNION {" +
-      "?got go:name ?gonam. FILTER(?gonam = \"" + term.name + "\"). " +
-      """} {
-    ?probe t:gomf ?got .
-    } UNION {
-    ?probe t:gocc ?got .
-    } UNION {
-    ?probe t:gobp ?got .
-    } } } """
+    s"""
+    PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>
+
+    SELECT DISTINCT ?probe WHERE { GRAPH ?g {
+        { ?got go:synonym ?gosyn . FILTER (?gosyn IN ("${term.name}") ) . }
+        UNION { ?got go:name ?gonam . FILTER (?gonam IN ("${term.name}") ) . }
+      }
+      GRAPH ?g2 { ?probe a t:probe .
+        { ?probe t:gomf ?got2 . }
+        UNION { ?probe t:gocc ?got2 . }
+        UNION { ?probe t:gobp ?got2 . }
+      }
+      GRAPH ?g3 { ?got owl:sameAs ?got2 } 
+    }
+    """
     ts.simpleQuery(query).map(Probe.unpack)
   }
 

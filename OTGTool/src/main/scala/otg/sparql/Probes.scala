@@ -43,7 +43,9 @@ import t.sparql.secondary.B2RKegg
 class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Store[Probe] {
   import Probes._
 
-  val prefixes = commonPrefixes
+  val prefixes = commonPrefixes + """
+    PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>
+"""
 
   def proteins(pr: Probe): Iterable[Protein] = withAttributes(List(pr)).flatMap(_.proteins)
   def genes(pr: Probe): Iterable[Gene] = withAttributes(List(pr)).flatMap(_.genes)
@@ -159,18 +161,22 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
    * Note that we use go:synonym as well as go:name here for a maximally generous match.
    */
   override def goTerms(pattern: String): Iterable[GOTerm] = {
-	  val query = prefixes +
-	  "SELECT DISTINCT ?got ?gotn WHERE { GRAPH ?g { " +
-	  "{ ?got go:synonym ?gotn . " +
-	    "?gotn " + infixStringMatch(pattern) +
-	  //"FILTER regex(?gotn, \".*" + pattern + ".*\", \"i\")" +
-	  "} UNION " +
-	  "{ ?got go:name ?gotn . " +
-	    "?gotn " + infixStringMatch(pattern) +
-	  //"FILTER regex(?gotn, \".*" + pattern + ".*\", \"i\")" +
-	  "} FILTER STRSTARTS(STR(?got), \"http://bio2rdf.org\") " +
-	  "} } limit 1000 "
-	  ts.mapQuery(query).map(x => GOTerm(x("got"), x("gotn")))
+	  goTerms(pattern, 1000)
+  }
+  
+  override def goTerms(pattern: String, maxSize: Int): Iterable[GOTerm] = {
+    val query = prefixes +
+    "SELECT DISTINCT ?got ?gotn WHERE { GRAPH ?g { " +
+    "{ ?got go:synonym ?gotn . " +
+//    "?gotn " + infixStringMatch(pattern) +
+    "FILTER regex(?gotn, \".*" + pattern + ".*\", \"i\")" +
+    "} UNION " +
+    "{ ?got go:name ?gotn . " +
+//    "?gotn " + infixStringMatch(pattern) +
+    "FILTER regex(?gotn, \".*" + pattern + ".*\", \"i\")" +
+    "} " + // FILTER STRSTARTS(STR(?got), \"http://bio2rdf.org\") " +
+    "} } limit " + maxSize
+    ts.mapQuery(query).map(x => GOTerm(x("got"), x("gotn")))
   }
 
 }
