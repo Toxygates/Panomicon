@@ -29,6 +29,7 @@ import otgviewer.client.GeneOracle;
 import otgviewer.client.ProbeSelector;
 import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
+import t.common.shared.AType;
 import t.common.shared.ItemList;
 import t.common.shared.SharedUtils;
 import t.common.shared.StringList;
@@ -60,9 +61,9 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-public class ProbeSetEditor extends DataListenerWidget {
+public class GeneSetEditor extends DataListenerWidget {
 
-  private static final String NEW_TITLE_PREFIX = "NewProbeSet";
+  private static final String NEW_TITLE_PREFIX = "NewGeneSet";
 
   public static final int SAVE_FAILURE = -1;
   public static final int SAVE_SUCCESS = 0;
@@ -97,11 +98,11 @@ public class ProbeSetEditor extends DataListenerWidget {
   private static final int PL_NORTH_HEIGHT = 30;
   private static final int PL_SOUTH_HEIGHT = 40;
 
-  public ProbeSetEditor(Screen screen) {
+  public GeneSetEditor(Screen screen) {
     this(screen, null);
   }
 
-  public ProbeSetEditor(Screen screen, EditorCallback callback) {
+  public GeneSetEditor(Screen screen, EditorCallback callback) {
     super();
 
     this.screen = screen;
@@ -222,7 +223,7 @@ public class ProbeSetEditor extends DataListenerWidget {
           // TODO check whether list is saved or not
         }
 
-        ProbeSetEditor.this.dialog.hide();
+        GeneSetEditor.this.dialog.hide();
         if (callback != null) {
           callback.onCanceled();
         }
@@ -235,7 +236,7 @@ public class ProbeSetEditor extends DataListenerWidget {
         // TODO
         int ret = saveAction();
         if (ret == SAVE_SUCCESS) {
-          ProbeSetEditor.this.dialog.hide();
+          GeneSetEditor.this.dialog.hide();
           if (callback != null) {
             callback.onSaved(titleText.getText(), new ArrayList<String>(
                 listedProbes));
@@ -274,7 +275,7 @@ public class ProbeSetEditor extends DataListenerWidget {
     content.add(fwlp);
     content.add(bottomContainer);
 
-    dialog.setText("Probe set editor");
+    dialog.setText("Gene set editor");
     dialog.setWidget(content);
     dialog.setGlassEnabled(true);
     dialog.setModal(true);
@@ -335,10 +336,18 @@ public class ProbeSetEditor extends DataListenerWidget {
 
       @Override
       protected void getProbes(Term term) {
-        sparqlService.probesForPathway(chosenSampleClass, term.getTermString(),
-            getAllSamples(), retrieveProbesCallback());
-        // TODO for GO Term
-        // sparqlService.goTerms(pattern, retrieveMatchesCallback());
+        switch (term.getAssociation()) {
+          case KEGG:
+            sparqlService
+                .probesForPathway(chosenSampleClass, term.getTermString(),
+                    getAllSamples(), retrieveProbesCallback());
+            break;
+          case GO:
+            sparqlService.probesForGoTerm(term.getTermString(),
+                getAllSamples(), retrieveProbesCallback());
+            break;
+          default:
+        }
       }
 
       @Override

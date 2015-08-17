@@ -174,7 +174,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     setEnabled(false);
   }
 
-  protected ValueType getValueType() {
+  public ValueType getValueType() {
     String vt = tableList.getItemText(tableList.getSelectedIndex());
     return ValueType.unpack(vt);
   }

@@ -21,8 +21,8 @@ package otgviewer.client;
 import java.util.Arrays;
 import java.util.List;
 
+import otgviewer.client.components.GeneSetSelector;
 import otgviewer.client.components.ListChooser;
-import otgviewer.client.components.ProbeSetSelector;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
@@ -30,6 +30,7 @@ import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.Group;
 import t.common.shared.ItemList;
 import t.common.shared.sample.ExpressionRow;
+import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.RichTable.HideableColumn;
 
@@ -50,13 +51,13 @@ import com.google.gwt.user.client.ui.Widget;
 public class DataScreen extends Screen {
 
   public static final String key = "data";
-  protected ProbeSetSelector ps;
+  protected GeneSetSelector ps;
   protected ExpressionTable et;
 
   protected String[] lastProbes;
   protected List<Group> lastColumns;
 
-//  private final MatrixServiceAsync matrixService;
+  private final MatrixServiceAsync matrixService;
 //  private final SparqlServiceAsync sparqlService;
 
   public DataScreen(ScreenManager man) {
@@ -64,12 +65,12 @@ public class DataScreen extends Screen {
         .dataDisplayHelp());
     ps = makeProbeSetSelector();
     et = makeExpressionTable();
-//    matrixService = man.matrixService();
+    matrixService = man.matrixService();
 //    sparqlService = man.sparqlService();
   }
 
-  protected ProbeSetSelector makeProbeSetSelector() {
-    return new ProbeSetSelector(this) {
+  protected GeneSetSelector makeProbeSetSelector() {
+    return new GeneSetSelector(this) {
       @Override
       protected void itemsChanged(List<String> items) {
         updateProbes(items.toArray(new String[0]));
@@ -189,7 +190,7 @@ public class DataScreen extends Screen {
         }
       }
     }.menuItem());
-
+    
   }
 
   @Override

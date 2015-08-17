@@ -29,9 +29,10 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
-public abstract class ProbeSetSelector extends DataListenerWidget {
+public abstract class GeneSetSelector extends DataListenerWidget {
 
   private final Screen screen;
 
@@ -41,7 +42,7 @@ public abstract class ProbeSetSelector extends DataListenerWidget {
   private Button btnNew;
   private Button btnEdit;
 
-  public ProbeSetSelector(Screen screen) {
+  public GeneSetSelector(Screen screen) {
     this.screen = screen;
     makeSelector();
   }
@@ -53,23 +54,23 @@ public abstract class ProbeSetSelector extends DataListenerWidget {
     // addListener(selector);
 
     listChooser =
-        new ListChooser(new ArrayList<StringList>(), "probes", false) {
+        new ListChooser(new ArrayList<StringList>(), "probes", false, "All probes") {
           @Override
           protected void itemsChanged(List<String> items) {
             btnEdit.setEnabled(true);
-            ProbeSetSelector.this.itemsChanged(items);
+            GeneSetSelector.this.itemsChanged(items);
           }
 
           @Override
           protected void listsChanged(List<ItemList> lists) {
-            ProbeSetSelector.this.listsChanged(lists);
+            GeneSetSelector.this.listsChanged(lists);
           }
 
           @Override
           protected void onDefaultItemSelected() {
             super.onDefaultItemSelected();
             btnEdit.setEnabled(false);
-            ProbeSetSelector.this.itemsChanged(new ArrayList<String>());
+            GeneSetSelector.this.itemsChanged(new ArrayList<String>());
           }
 
         };
@@ -90,18 +91,19 @@ public abstract class ProbeSetSelector extends DataListenerWidget {
     btnNew = new Button("New", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        new ProbeSetEditor(screen, callback).createNew();
+        new GeneSetEditor(screen, callback).createNew();
       }
     });
 
     btnEdit = new Button("Edit", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        new ProbeSetEditor(screen, callback).edit(listChooser.getSelectedText());
+        new GeneSetEditor(screen, callback).edit(listChooser.getSelectedText());
       }
     });
     btnEdit.setEnabled(false);
 
+    selector.add(new Label("GeneSet:"));
     selector.add(listChooser);
     selector.add(btnNew);
     selector.add(btnEdit);
