@@ -188,7 +188,7 @@ public class ColumnScreen extends Screen {
 			}			
 		});		
 		
-		Button b2 = new Button("Next: Select probes", new ClickHandler() {			
+		Button b2 = new Button("Next: View data", new ClickHandler() {			
 			public void onClick(ClickEvent event) {
 				if (gi.chosenColumns().size() == 0) {
 					Window.alert("Please define and activate at least one group.");
