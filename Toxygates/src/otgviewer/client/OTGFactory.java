@@ -2,19 +2,19 @@ package otgviewer.client;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import otgviewer.client.components.GroupLabels;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.groupdef.GroupInspector;
 import otgviewer.client.components.groupdef.SelectionTDGrid;
+import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
 import otgviewer.client.components.groupdef.TreatedControlGroupInspector;
 import otgviewer.client.components.groupdef.TreatedControlSelTDGrid;
-import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
 import otgviewer.client.components.ranking.CompoundRanker;
 import otgviewer.client.components.ranking.SimpleCompoundRanker;
 import otgviewer.shared.Group;
 import t.common.shared.DataSchema;
+
+import com.sun.istack.internal.Nullable;
 
 public class OTGFactory implements UIFactory {
 

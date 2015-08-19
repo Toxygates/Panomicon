@@ -73,5 +73,8 @@ public interface MatrixServiceAsync {
 
 	public void sendFeedback(String name, String email, String feedback, 
 			AsyncCallback<Void> callback);
+
+  public void prepareHeatmap(List<Group> chosenColumns, String[] chosenProbes,
+      ValueType valueType, AsyncCallback<String> prepareHeatmapCallback);
 	
 }

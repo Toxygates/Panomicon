@@ -29,6 +29,7 @@ import java.util.logging.Logger;
 
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Group;
+import otgviewer.shared.OTGSample;
 import t.common.shared.DataSchema;
 import t.common.shared.GroupUtils;
 import t.common.shared.SampleMultiFilter;
@@ -86,7 +87,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
     Set<String> os = new HashSet<String>();
 
     // TODO use schema somehow to handle organism propagation
-    for (SampleGroup<?> g : groups) {
+    for (Group g : groups) {
       os.addAll(g.collect("organism"));
     }
     organisms = new ArrayList<String>(os);
@@ -173,10 +174,10 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
   }
 
   private ColorPolicy makeGroupPolicy() {
-    Map<Sample, String> colors = new HashMap<Sample, String>();
-    for (SampleGroup<?> g : groups) {
-      for (Sample s : g.getSamples()) {
-        colors.put(s, g.getColor());
+    Map<OTGSample, String> colors = new HashMap<OTGSample, String>();
+    for (Group g : groups) {
+      for (OTGSample b : g.getSamples()) {
+        colors.put(b, g.getColor());
       }
     }
     return new ColorPolicy.MapColorPolicy(colors);
@@ -184,8 +185,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
 
   // vsMinor is the vs-minor-ness of each individual sub-chart. So the overall grid will
   // be vs. dose in its columns) if each sub-chart is vs.minor.
-  private void gridFor(final boolean vsMinor, final String[] columns, 
-      final String[] useMajors,
+  private void gridFor(final boolean vsMinor, final String[] columns, final String[] useMajors,
       final List<ChartGrid<D>> intoList, final SimplePanel intoPanel) {
 
     String columnParam = vsMinor ? schema.mediumParameter() : schema.minorParameter();
@@ -212,8 +212,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
       public void accept(List<ChartSample> samples) {
         allSamples.addAll(samples);
         DS ct =
-            factory.dataset(samples, samples, vsMinor ? source.minorVals() : 
-              source.mediumVals(),
+            factory.dataset(samples, samples, vsMinor ? source.minorVals() : source.mediumVals(),
                 vsMinor);
 
         ChartGrid<D> cg =

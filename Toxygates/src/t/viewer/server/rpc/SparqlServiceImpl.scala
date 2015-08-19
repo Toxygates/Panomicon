@@ -185,7 +185,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   @throws[TimeoutException]
   def parameterValues(sc: SampleClass, parameter: String): Array[String] = {
-    sampleStore.attributeValues(scAsScala(sc).filterAll, parameter).
+    sampleStore.attributeValues(scAsScala(sc).filterAllExcludeControl, parameter).
       filter(x => !schema.isMajorParamSharedControl(x)).toArray
   }
 
@@ -436,7 +436,10 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   }
   
   def keywordSuggestions(partialName: String, maxSize: Int): Array[Pair[String, AType]] = {
-    b2rKegg.forPattern(partialName, maxSize).map(new Pair(_, AType.KEGG)).toArray
+    {
+      b2rKegg.forPattern(partialName, maxSize).map(new Pair(_, AType.KEGG)) ++ 
+      probeStore.goTerms(partialName, maxSize).map(x => new Pair(x.name, AType.GO))
+    }.toArray
   }
 
 }

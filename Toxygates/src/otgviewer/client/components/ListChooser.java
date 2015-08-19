@@ -55,7 +55,7 @@ import com.google.gwt.user.client.ui.ListBox;
  */
 public class ListChooser extends DataListenerWidget {
 
-  private static final String DEFAULT_ITEM = "Click to see available lists";
+  private final String DEFAULT_ITEM;
 
   //ordered map
   protected Map<String, List<String>> lists = new TreeMap<String, List<String>>();
@@ -71,11 +71,20 @@ public class ListChooser extends DataListenerWidget {
   public ListChooser(Collection<StringList> predefinedLists, String listType) {
     this(predefinedLists, listType, true);
   }
+  
+  public ListChooser(Collection<StringList> predefinedLists, String listType, String defaultItem) {
+    this(predefinedLists, listType, true, defaultItem);
+  }
 
   public ListChooser(Collection<StringList> predefinedLists, String listType, boolean hasButtons) {
+    this(predefinedLists, listType, true, "Click to see available lists");
+  }
+  
+  public ListChooser(Collection<StringList> predefinedLists, String listType, boolean hasButtons, String defaultItem) {
     HorizontalPanel hp = Utils.mkWidePanel();
     initWidget(hp);
     this.listType = listType;
+    this.DEFAULT_ITEM = defaultItem;
 
     for (StringList sl: predefinedLists) {
       List<String> is = Arrays.asList(sl.items());

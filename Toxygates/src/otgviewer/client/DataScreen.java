@@ -21,8 +21,8 @@ package otgviewer.client;
 import java.util.Arrays;
 import java.util.List;
 
+import otgviewer.client.components.GeneSetSelector;
 import otgviewer.client.components.ListChooser;
-import otgviewer.client.components.ProbeSetSelector;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
@@ -50,7 +50,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class DataScreen extends Screen {
 
   public static final String key = "data";
-  protected ProbeSetSelector ps;
+  protected GeneSetSelector ps;
   protected ExpressionTable et;
 
   protected String[] lastProbes;
@@ -68,8 +68,8 @@ public class DataScreen extends Screen {
 //    sparqlService = man.sparqlService();
   }
 
-  protected ProbeSetSelector makeProbeSetSelector() {
-    return new ProbeSetSelector(this) {
+  protected GeneSetSelector makeProbeSetSelector() {
+    return new GeneSetSelector(this) {
       @Override
       protected void itemsChanged(List<String> items) {
         updateProbes(items.toArray(new String[0]));
@@ -189,9 +189,17 @@ public class DataScreen extends Screen {
         }
       }
     }.menuItem());
+    
+    addAnalysisMenuItem(new MenuItem("Show heat map",
+        new Command() {
+          public void execute() {
+            new HeatmapDialog(DataScreen.this, et.getValueType());
+          }
+        }));
+
 
   }
-
+  
   @Override
   public boolean enabled() {
 //    return manager.isConfigured(ProbeScreen.key)

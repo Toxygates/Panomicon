@@ -11,8 +11,9 @@ URL=http://toxygates.nibiohn.go.jp:8080/$INSTANCE/toxygates/
 #Example: getMatrix.sh a full test=003017646005,003017646004 
 #To get all absolute value rows in a single averaged column named "test" 
 
-CP=classes
-for j in lib/*.jar
+SCRIPT_PATH=${0%/*}
+CP=${SCRIPT_PATH}/classes
+for j in ${SCRIPT_PATH}/lib/*.jar
 do
         CP=$CP:$j
 done

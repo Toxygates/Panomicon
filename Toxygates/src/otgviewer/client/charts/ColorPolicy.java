@@ -59,9 +59,9 @@ class ColorPolicy {
 	}
 	
 	static class MapColorPolicy extends ColorPolicy {
-		Map<Sample, String> colors;
+		Map<? extends Sample, String> colors;
 		
-		MapColorPolicy(Map<Sample, String> colors) {
+		MapColorPolicy(Map<? extends Sample, String> colors) {
 			this.colors = colors;
 		}
 		
