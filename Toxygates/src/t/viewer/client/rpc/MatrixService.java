@@ -172,4 +172,7 @@ public interface MatrixService extends RemoteService {
 	 * This should not necessarily be in MatrixService.
 	 */
 	public void sendFeedback(String name, String email, String feedback);
+
+  String prepareHeatmap(List<Group> chosenColumns, String[] chosenProbes,
+      ValueType valueType);
 }
