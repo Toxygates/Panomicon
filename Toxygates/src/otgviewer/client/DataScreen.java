@@ -30,7 +30,6 @@ import otgviewer.client.components.TickMenuItem;
 import otgviewer.shared.Group;
 import t.common.shared.ItemList;
 import t.common.shared.sample.ExpressionRow;
-import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.RichTable.HideableColumn;
 
@@ -57,7 +56,7 @@ public class DataScreen extends Screen {
   protected String[] lastProbes;
   protected List<Group> lastColumns;
 
-  private final MatrixServiceAsync matrixService;
+//  private final MatrixServiceAsync matrixService;
 //  private final SparqlServiceAsync sparqlService;
 
   public DataScreen(ScreenManager man) {
@@ -65,7 +64,7 @@ public class DataScreen extends Screen {
         .dataDisplayHelp());
     ps = makeProbeSetSelector();
     et = makeExpressionTable();
-    matrixService = man.matrixService();
+//    matrixService = man.matrixService();
 //    sparqlService = man.sparqlService();
   }
 
@@ -191,8 +190,16 @@ public class DataScreen extends Screen {
       }
     }.menuItem());
     
-  }
+    addAnalysisMenuItem(new MenuItem("Show heat map",
+        new Command() {
+          public void execute() {
+            new HeatmapDialog(DataScreen.this, et.getValueType());
+          }
+        }));
 
+
+  }
+  
   @Override
   public boolean enabled() {
 //    return manager.isConfigured(ProbeScreen.key)
