@@ -47,6 +47,7 @@ rm $WARLIB/scala-library.jar
 rm $WARLIB/servlet-api*.jar
 rm $WARLIB/javaee-api*jar
 rm $WARLIB/scalatest*jar
+rm $WARLIB/gwt-user.jar
 
 cp war/WEB-INF/web.xml war/WEB-INF/web.xml.bak
 

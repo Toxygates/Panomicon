@@ -166,7 +166,11 @@ public class PathologyScreen extends Screen {
 		Column<Pathology, SafeHtml> lcol = new Column<Pathology, SafeHtml>(new SafeHtmlCell()) {
 			public SafeHtml getValue(Pathology p) {
 				SafeHtmlBuilder b = new SafeHtmlBuilder();
-				b.appendHtmlConstant("<a target=_new href=\"" + p.viewerLink() +"\">Viewer</a>");
+				if (p.viewerLink() != null) {				  
+				  b.appendHtmlConstant("<a target=_new href=\"" + p.viewerLink() +"\">Viewer</a>");
+				} else {
+				  b.appendHtmlConstant("No image");
+				}
 				return b.toSafeHtml();				
 			}
 		};
