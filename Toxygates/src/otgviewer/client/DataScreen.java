@@ -227,22 +227,26 @@ public class DataScreen extends Screen {
   public void probesChanged(String[] probes) {
     super.probesChanged(probes);
     logger.info("received " + probes.length + " probes");
-
+    
     StorageParser p = getParser(this);
     storeProbes(p);
-
-    lastProbes = null;
-    lastColumns = null;
-
-    updateProbes();
   }
 
   @Override
   public void geneSetChanged(String geneSet) {
     super.geneSetChanged(geneSet);
     
+    if (geneSet == null) {
+      return;
+    }
+    
     StorageParser p = getParser(this);
     storeGeneSet(p);
+    
+    lastProbes = null;
+    lastColumns = null;
+
+    updateProbes();
   }
 
 }

@@ -58,8 +58,8 @@ public class GeneSetSelector extends DataListenerWidget {
         super.itemsChanged(items);
 
         logger.info("Items: " + items.toArray(new String[0]));
-        screen.geneSetChanged(getSelectedText());
         screen.probesChanged(items.toArray(new String[0]));
+        screen.geneSetChanged(getSelectedText());
       }
     };
     addListener(geneSets);
@@ -90,7 +90,8 @@ public class GeneSetSelector extends DataListenerWidget {
       @Override
       protected void onSaved(String title, List<String> items) {
         super.onSaved(title, items);
-        // updateSelector(title, items);
+        screen.probesChanged(items.toArray(new String[0]));
+        screen.geneSetChanged(title);
       }
     };
   }
