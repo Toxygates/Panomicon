@@ -67,6 +67,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   protected List<Group> chosenColumns = new ArrayList<Group>();
   protected OTGColumn chosenCustomColumn;
   public List<ItemList> chosenItemLists = new ArrayList<ItemList>(); // TODO
+  public String chosenGeneSet;
 
   protected final Logger logger = SharedUtils.getLogger("dlwidget");
   private StorageParser parser;
@@ -130,6 +131,11 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   public void itemListsChanged(List<ItemList> lists) {
     this.chosenItemLists = lists;
     changeItemLists(lists);
+  }
+
+  public void geneSetChanged(String geneSet) {
+    this.chosenGeneSet = geneSet;
+    changeGeneSet(geneSet);
   }
 
   // outgoing signals
@@ -209,6 +215,13 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     }
   }
 
+  protected void changeGeneSet(String geneSet) {
+    chosenGeneSet = geneSet;
+    for (DataViewListener l : listeners) {
+      l.geneSetChanged(geneSet);
+    }
+  }
+
   public void propagateTo(DataViewListener other) {
     other.datasetsChanged(chosenDatasets);
     other.sampleClassChanged(chosenSampleClass);
@@ -218,6 +231,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     other.columnsChanged(chosenColumns);
     other.customColumnChanged(chosenCustomColumn);
     other.itemListsChanged(chosenItemLists);
+    other.geneSetChanged(chosenGeneSet);
   }
 
   protected Storage tryGetStorage() {
@@ -257,6 +271,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   public void storeState(StorageParser p) {
     storeColumns(p);
     storeProbes(p);
+    storeGeneSet(p);
   }
 
   protected void storeColumns(StorageParser p, String key,
@@ -313,6 +328,10 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 
   public void storeItemLists(StorageParser p) {
     p.setItem("lists", packItemLists(chosenItemLists, "###"));
+  }
+
+  public void storeGeneSet(StorageParser p) {
+    p.setItem("geneset", chosenGeneSet);
   }
 
   public List<ItemList> loadItemLists(StorageParser p) {
@@ -380,6 +399,11 @@ public class DataListenerWidget extends Composite implements DataViewListener {
       chosenItemLists = lists;
       itemListsChanged(lists);
     }
+    
+    String geneSet = p.getItem("geneset");
+    chosenGeneSet = geneSet;
+    logger.info("Loaded gene set: " + geneSet);
+    geneSetChanged(geneSet);
   }
 
   private int numPendingRequests = 0;
