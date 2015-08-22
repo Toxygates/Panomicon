@@ -29,7 +29,6 @@ import otgviewer.client.GeneOracle;
 import otgviewer.client.ProbeSelector;
 import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
-import t.common.shared.AType;
 import t.common.shared.ItemList;
 import t.common.shared.SharedUtils;
 import t.common.shared.StringList;
@@ -71,7 +70,6 @@ public class GeneSetEditor extends DataListenerWidget {
   private DialogBox dialog;
 
   private final Screen screen;
-  private final EditorCallback callback;
 
   private final SparqlServiceAsync sparqlService;
   private final MatrixServiceAsync matrixService;
@@ -99,14 +97,9 @@ public class GeneSetEditor extends DataListenerWidget {
   private static final int PL_SOUTH_HEIGHT = 40;
 
   public GeneSetEditor(Screen screen) {
-    this(screen, null);
-  }
-
-  public GeneSetEditor(Screen screen, EditorCallback callback) {
     super();
 
     this.screen = screen;
-    this.callback = callback;
 
     dialog = new DialogBox();
     oracle = new GeneOracle(screen);
@@ -220,27 +213,23 @@ public class GeneSetEditor extends DataListenerWidget {
       @Override
       public void onClick(ClickEvent event) {
         if (!listedProbes.equals(originalProbes)) {
-          // TODO check whether list is saved or not
+          // TODO Need to confirm if lists are not saved?
         }
 
         GeneSetEditor.this.dialog.hide();
-        if (callback != null) {
-          callback.onCanceled();
-        }
+        onCanceled();
       }
     });
     Button btnSave = new Button("Save");
     btnSave.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        // TODO
-        int ret = saveAction();
-        if (ret == SAVE_SUCCESS) {
+        String title = titleText.getText().trim();
+        int ret = saveAs(title);
+        
+        if (ret == ListChooser.SAVE_SUCCESS) {
           GeneSetEditor.this.dialog.hide();
-          if (callback != null) {
-            callback.onSaved(titleText.getText(), new ArrayList<String>(
-                listedProbes));
-          }
+          onSaved(title, new ArrayList<String>(listedProbes));
         }
       }
 
@@ -282,7 +271,11 @@ public class GeneSetEditor extends DataListenerWidget {
     dialog.center();
   }
 
-  private int saveAction() {
+  protected void onSaved(String title, List<String> items) {}
+
+  protected void onCanceled() {}
+
+  private int saveAs(String name) {
     // Create an invisible listChooser that we exploit only for
     // the sake of saving a new list.
     final ListChooser lc =
@@ -292,40 +285,20 @@ public class GeneSetEditor extends DataListenerWidget {
             screen.itemListsChanged(lists);
             screen.storeItemLists(screen.getParser());
           }
-
-          @Override
-          public void saveAction() {
-            lists.put(titleText.getText(), currentItems);
-            refreshSelector();
-            listsChanged(getLists());
-          }
         };
 
-    String title = titleText.getText().trim();
-
-    if (title.equals("")) {
-      Window.alert("You must enter a non-empty name.");
-      return SAVE_FAILURE;
-    }
-    if (lc.isPredefinedListName(title)) {
-      Window.alert("This title is reserved for the system and cannot be used.");
-      return SAVE_FAILURE;
-    }
-    if (!StorageParser.isAcceptableString(title, "Unacceptable list name.")) {
-      return SAVE_FAILURE;
-    }
-    if (!title.equals(originalTitle) && isExist(title)) {
-      // TODO Show confirm message box whether overwrite or not
-      Window.alert("This title already exists.");
-      return SAVE_FAILURE;
-    }
-
-    // TODO make ListChooser use the DataListener propagate mechanism?
+    // set current stored item lists
     lc.setLists(chosenItemLists);
-    lc.setItems(new ArrayList<String>(listedProbes));
-    lc.saveAction();
 
-    return SAVE_SUCCESS;
+    if (!name.equals(originalTitle) && lc.containsEntry("probes", name)) {
+      // TODO Show confirm message box whether to overwrite or not?
+      Window.alert("The title \"" + name + "\" is already taken.\n"
+          + "Please choose a different name.");
+
+      return ListChooser.SAVE_FAILURE;
+    }
+
+    return lc.saveAs(name, new ArrayList<String>(listedProbes));
   }
 
   private ProbeSelector probeSelector() {
@@ -682,14 +655,5 @@ public class GeneSetEditor extends DataListenerWidget {
 
     return false;
   }
-
-}
-
-
-interface EditorCallback {
-
-  public abstract void onSaved(String title, List<String> items);
-
-  public abstract void onCanceled();
 
 }
