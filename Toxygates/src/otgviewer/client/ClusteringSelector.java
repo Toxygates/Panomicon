@@ -164,13 +164,6 @@ public abstract class ClusteringSelector extends DataListenerWidget implements
         loadedProbes.addAll(items);
         updateAddButton();
       }
-
-      @Override
-      protected void onDefaultItemSelected() {
-        super.onDefaultItemSelected();
-        loadedProbes.clear();
-        updateAddButton();
-      }
     };
     addListener(cluster);
     selector.setText(3, 0, "Cluster");

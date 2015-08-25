@@ -13,7 +13,7 @@ function makeWar {
     rm $OUTPUT
     rm WEB-INF/web.xml
     [ ! -d csv ] && mkdir csv
-    jar cf $OUTPUT toxygates csv *.pdf *.css images *.html.template R
+    jar cf $OUTPUT toxygates csv *.pdf *.css images *.html.template
     #Exclude classes in t/admin and t/global
     jar uf $OUTPUT $(find WEB-INF \( -path WEB-INF/classes/t/admin -o \
       -path WEB-INF/classes/t/global \) -prune -o \( -type f -print \) )
@@ -47,6 +47,7 @@ rm $WARLIB/scala-library.jar
 rm $WARLIB/servlet-api*.jar
 rm $WARLIB/javaee-api*jar
 rm $WARLIB/scalatest*jar
+rm $WARLIB/gwt-user.jar
 
 cp war/WEB-INF/web.xml war/WEB-INF/web.xml.bak
 

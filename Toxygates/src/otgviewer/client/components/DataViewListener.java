@@ -47,4 +47,6 @@ public interface DataViewListener {
 	
 	public void itemListsChanged(List<ItemList> lists);
 	
+    public void geneSetChanged(String geneSet);
+    
 }

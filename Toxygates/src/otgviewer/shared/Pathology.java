@@ -23,6 +23,8 @@ package otgviewer.shared;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import javax.annotation.Nullable;
+
 @SuppressWarnings("serial")
 public class Pathology implements Serializable {
 	private String barcode;
@@ -34,8 +36,8 @@ public class Pathology implements Serializable {
 	
 	public Pathology() { }
 		
-	public Pathology(String _barcode, String _topography, String _finding, 
-			boolean _spontaneous, String _grade, String _viewerLink) {
+	public Pathology(@Nullable String _barcode, String _topography, String _finding, 
+			boolean _spontaneous, String _grade, @Nullable String _viewerLink) {
 		barcode = _barcode;
 		topography = _topography;
 		finding = _finding;
@@ -44,11 +46,7 @@ public class Pathology implements Serializable {
 		viewerLink = _viewerLink;
 	}
 	
-	/**
-	 * Note that currently, this can sometimes be null
-	 * @return
-	 */
-	public String barcode() {
+	public @Nullable String barcode() {
 		return barcode;
 	}
 	public String topography() {
@@ -63,6 +61,8 @@ public class Pathology implements Serializable {
 	public String grade() {
 		return grade;
 	}
+	
+	@Nullable
 	public String viewerLink() {
 		return viewerLink;
 	}

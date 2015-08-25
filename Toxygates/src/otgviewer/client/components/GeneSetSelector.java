@@ -18,11 +18,9 @@
 
 package otgviewer.client.components;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import t.common.shared.ItemList;
-import t.common.shared.StringList;
 import t.viewer.client.Utils;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -32,12 +30,14 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
-public abstract class GeneSetSelector extends DataListenerWidget {
+public class GeneSetSelector extends DataListenerWidget {
+
+  private static final String ALL_PROBES = "All probes";
 
   private final Screen screen;
 
   private HorizontalPanel selector;
-  private ListChooser listChooser;
+  private ListChooser geneSets;
 
   private Button btnNew;
   private Button btnEdit;
@@ -51,76 +51,69 @@ public abstract class GeneSetSelector extends DataListenerWidget {
     selector = Utils.mkHorizontalPanel(true);
     selector.setStylePrimaryName("colored");
     selector.addStyleName("slightlySpaced");
-    // addListener(selector);
 
-    listChooser =
-        new ListChooser(new ArrayList<StringList>(), "probes", false, "All probes") {
-          @Override
-          protected void itemsChanged(List<String> items) {
-            btnEdit.setEnabled(true);
-            GeneSetSelector.this.itemsChanged(items);
-          }
-
-          @Override
-          protected void listsChanged(List<ItemList> lists) {
-            GeneSetSelector.this.listsChanged(lists);
-          }
-
-          @Override
-          protected void onDefaultItemSelected() {
-            super.onDefaultItemSelected();
-            btnEdit.setEnabled(false);
-            GeneSetSelector.this.itemsChanged(new ArrayList<String>());
-          }
-
-        };
-    screen.addListener(listChooser);
-
-    final EditorCallback callback = new EditorCallback() {
+    geneSets = new ListChooser("probes", false, ALL_PROBES) {
       @Override
-      public void onSaved(String title, List<String> items) {
-        itemsChanged(items);
-        listChooser.setSelected(title);
+      protected void itemsChanged(List<String> items) {
+        super.itemsChanged(items);
+
+        logger.info("Items: " + items.toArray(new String[0]));
+        screen.probesChanged(items.toArray(new String[0]));
+        screen.geneSetChanged(getSelectedText());
       }
-
-      @Override
-      public void onCanceled() {}
-
     };
+    addListener(geneSets);
 
     btnNew = new Button("New", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        new GeneSetEditor(screen, callback).createNew();
+        geneSetEditor().createNew();
       }
     });
 
     btnEdit = new Button("Edit", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        new GeneSetEditor(screen, callback).edit(listChooser.getSelectedText());
+        geneSetEditor().edit(geneSets.getSelectedText());
       }
     });
     btnEdit.setEnabled(false);
 
     selector.add(new Label("GeneSet:"));
-    selector.add(listChooser);
+    selector.add(geneSets);
     selector.add(btnNew);
     selector.add(btnEdit);
+  }
+
+  private GeneSetEditor geneSetEditor() {
+    return new GeneSetEditor(screen) {
+      @Override
+      protected void onSaved(String title, List<String> items) {
+        super.onSaved(title, items);
+        screen.probesChanged(items.toArray(new String[0]));
+        screen.geneSetChanged(title);
+      }
+    };
   }
 
   public Widget selector() {
     return selector;
   }
 
-  protected abstract void itemsChanged(List<String> items);
-
-  protected abstract void listsChanged(List<ItemList> lists);
-
   @Override
   public void itemListsChanged(List<ItemList> lists) {
     super.itemListsChanged(lists);
-    listChooser.setLists(lists);
+    geneSets.setLists(lists);
   }
 
+  @Override
+  public void geneSetChanged(String geneSet) {
+    super.geneSetChanged(geneSet);
+    int selected = geneSets.trySelect(geneSet);
+    btnEdit.setEnabled(selected > 0);
+  }
+
+  public boolean isDefaultItemSelected() {
+    return (geneSets.getSelectedIndex() == 0);
+  }
 }

@@ -228,7 +228,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 	 * E.g.: <meta name="instanceName" content="toxygates"> .
 	 * @return
 	 */
-	private String instanceName() {
+	protected String instanceName() {
 		String v = getMeta("instanceName");
 		return v != null ? v : "default";
 	}

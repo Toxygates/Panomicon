@@ -34,6 +34,7 @@ import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.RichTable.HideableColumn;
 
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.MenuBar;
@@ -50,36 +51,32 @@ import com.google.gwt.user.client.ui.Widget;
 public class DataScreen extends Screen {
 
   public static final String key = "data";
-  protected GeneSetSelector ps;
+  protected GeneSetSelector gs;
   protected ExpressionTable et;
 
   protected String[] lastProbes;
   protected List<Group> lastColumns;
 
-//  private final MatrixServiceAsync matrixService;
-//  private final SparqlServiceAsync sparqlService;
+  private MenuItem heatMapMenu;
+
+  // private final MatrixServiceAsync matrixService;
+  // private final SparqlServiceAsync sparqlService;
 
   public DataScreen(ScreenManager man) {
     super("View data", key, true, man, resources.dataDisplayHTML(), resources
         .dataDisplayHelp());
-    ps = makeProbeSetSelector();
+    gs = makeGeneSetSelector();
     et = makeExpressionTable();
-//    matrixService = man.matrixService();
-//    sparqlService = man.sparqlService();
+    addListener(et);
+    // To ensure that GeneSetSelector has chosenColumns
+    addListener(gs);
+
+    // matrixService = man.matrixService();
+    // sparqlService = man.sparqlService();
   }
 
-  protected GeneSetSelector makeProbeSetSelector() {
-    return new GeneSetSelector(this) {
-      @Override
-      protected void itemsChanged(List<String> items) {
-        updateProbes(items.toArray(new String[0]));
-      }
-      @Override
-      protected void listsChanged(List<ItemList> lists) {
-        chosenItemLists = lists;
-        storeItemLists(getParser(DataScreen.this));
-      }
-    };
+  protected GeneSetSelector makeGeneSetSelector() {
+    return new GeneSetSelector(this);
   }
 
   protected ExpressionTable makeExpressionTable() {
@@ -92,16 +89,12 @@ public class DataScreen extends Screen {
     HorizontalPanel mainTools = new HorizontalPanel();
     mainTools.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
     mainTools.add(et.tools());
-    mainTools.add(ps.selector());
+    mainTools.add(gs.selector());
     addToolbar(mainTools, 43);
     addToolbar(et.analysisTools(), 43);
   }
 
   public Widget content() {
-    addListener(et);
-    // To ensure that ProbeSetSelector has chosenColumns
-    addListener(ps);
-
     setupMenuItems();
 
     ResizeLayoutPanel rlp = new ResizeLayoutPanel();
@@ -189,28 +182,36 @@ public class DataScreen extends Screen {
         }
       }
     }.menuItem());
-    
-    addAnalysisMenuItem(new MenuItem("Show heat map",
-        new Command() {
-          public void execute() {
-            new HeatmapDialog(DataScreen.this, et.getValueType());
-          }
-        }));
 
-
+    heatMapMenu = new MenuItem("Show heat map", new Command() {
+      public void execute() {
+        if (chosenProbes.length < 2) {
+          Window.alert("Please choose at least 2 probes.");
+        } else if (chosenProbes.length > 1000) {
+          Window.alert("Please choose at most 1,000 probes.");
+        } else if (chosenColumns.size() < 2) {
+          Window.alert("Please choose at least 2 samples.");
+        } else if (chosenColumns.size() > 1000) {
+          Window.alert("Please choose at most 1,000 samples.");
+        } else {
+          new HeatmapDialog(DataScreen.this, et.getValueType());
+        }
+      }
+    });
+    heatMapMenu.setEnabled(false);
+    addAnalysisMenuItem(heatMapMenu);
   }
-  
+
+
+
   @Override
   public boolean enabled() {
-//    return manager.isConfigured(ProbeScreen.key)
-//        && manager.isConfigured(ColumnScreen.key);
+    // return manager.isConfigured(ProbeScreen.key)
+    // && manager.isConfigured(ColumnScreen.key);
     return manager.isConfigured(ColumnScreen.key);
   }
 
-  public void show() {
-    super.show();
-    // state has finished loading
-
+  private void updateProbes() {
     logger.info("chosenProbes: " + chosenProbes.length + " lastProbes: "
         + (lastProbes == null ? "null" : "" + lastProbes.length));
 
@@ -227,27 +228,41 @@ public class DataScreen extends Screen {
     lastColumns = chosenColumns;
   }
 
+  public void show() {
+    super.show();
+    updateProbes();
+  }
+
   @Override
   public String getGuideText() {
-    return "Here you can inspect expression values for the sample groups you have defined. Click on column headers to sort data.";
+    return "Here you can inspect expression values for the sample groups you have defined. "
+        + "Click on column headers to sort data.";
   }
 
   @Override
   public void probesChanged(String[] probes) {
     super.probesChanged(probes);
     logger.info("received " + probes.length + " probes");
-  }
-
-  private void updateProbes(String[] items) {
-    lastProbes = null;
-    lastColumns = null;
-
-    changeProbes(items);
 
     StorageParser p = getParser(this);
     storeProbes(p);
+  }
 
-    show();
+  @Override
+  public void geneSetChanged(String geneSet) {
+    super.geneSetChanged(geneSet);
+
+    heatMapMenu.setEnabled(!gs.isDefaultItemSelected());
+
+    StorageParser p = getParser(this);
+    storeGeneSet(p);
+
+    lastProbes = null;
+    lastColumns = null;
+
+    if (chosenGeneSet != null) {
+      updateProbes();
+    }
   }
 
 }

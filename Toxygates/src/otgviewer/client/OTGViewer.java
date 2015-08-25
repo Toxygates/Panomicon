@@ -21,14 +21,6 @@ package otgviewer.client;
 import otgviewer.shared.OTGSchema;
 import t.common.shared.DataSchema;
 
-/**
- * The main entry point for Toxygates. The main task of this class is to manage the history
- * mechanism and ensure that the correct screen is being displayed at any given time, as well as
- * provide a facility for inter-screen communication.
- * 
- * @author johan
- *
- */
 public class OTGViewer extends TApplication {
 
   @Override
@@ -48,10 +40,21 @@ public class OTGViewer extends TApplication {
     return schema;
   }
 
-  final private UIFactory factory = new OTGFactory();
+  final private UIFactory factory = initFactory();
 
+  private UIFactory initFactory() {
+    //TODO hardcoding these instance names here may be controversial
+    // - think of a better way of handling this
+    if (instanceName().equals("toxygates") ||
+        instanceName().equals("tg-update")) {
+      return new ClassicOTGFactory();
+    } else {
+      return new OTGFactory();
+    }
+  }
+  
   @Override
-  public UIFactory factory() {
+  public UIFactory factory() {    
     return factory;
   }
 }
