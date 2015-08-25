@@ -206,3 +206,7 @@ exprGrid {
 .width-fix {
 	padding-right: 10px;
 }
+
+.gwt-MenuItem-disabled {
+	color: DarkGray;
+}

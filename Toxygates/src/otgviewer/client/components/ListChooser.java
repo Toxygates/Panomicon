@@ -177,12 +177,16 @@ public class ListChooser extends DataListenerWidget {
     }
     return listBox.getItemText(idx);
   }
+  
+  public int getSelectedIndex() {
+    return listBox.getSelectedIndex();
+  }
 
   protected void preSaveAction() {
     saveAction();
   }
 
-  private boolean checkName(String name) {
+  protected boolean checkName(String name) {
     if (name == null) {
       return false;
     }
@@ -347,13 +351,12 @@ public class ListChooser extends DataListenerWidget {
   /**
    * Try to select an item that matches given title in list box.
    * 
-   * @param  title
-   * @return index of the item, or <tt>-1</tt> if there was no item
-   *         matching given title.
+   * @param title
+   * @return index of the item, or <tt>-1</tt> if there was no item matching given title.
    */
   public int trySelect(String title) {
     int ret = -1;
-    
+
     for (int i = 0; i < listBox.getItemCount(); ++i) {
       if (listBox.getItemText(i).equals(title)) {
         listBox.setSelectedIndex(i);
@@ -361,11 +364,11 @@ public class ListChooser extends DataListenerWidget {
         break;
       }
     }
-    
+
     if (ret == -1) {
       listBox.setSelectedIndex(0);
     }
-    
+
     return ret;
   }
 
