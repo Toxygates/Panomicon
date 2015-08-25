@@ -67,7 +67,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   protected List<Group> chosenColumns = new ArrayList<Group>();
   protected OTGColumn chosenCustomColumn;
   public List<ItemList> chosenItemLists = new ArrayList<ItemList>(); // TODO
-  public String chosenGeneSet;
+  public String chosenGeneSet = new String();
 
   protected final Logger logger = SharedUtils.getLogger("dlwidget");
   private StorageParser parser;
@@ -331,6 +331,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   }
 
   public void storeGeneSet(StorageParser p) {
+    logger.info("save gene set : " + chosenGeneSet);
     p.setItem("geneset", chosenGeneSet);
   }
 
@@ -401,9 +402,10 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     }
     
     String geneSet = p.getItem("geneset");
-    chosenGeneSet = geneSet;
-    logger.info("Loaded gene set: " + geneSet);
-    geneSetChanged(geneSet);
+    if (geneSet != null) {
+      chosenGeneSet = geneSet;
+      geneSetChanged(geneSet);
+    }
   }
 
   private int numPendingRequests = 0;
