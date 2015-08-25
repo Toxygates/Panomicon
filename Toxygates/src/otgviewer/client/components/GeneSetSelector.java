@@ -112,4 +112,8 @@ public class GeneSetSelector extends DataListenerWidget {
     int selected = geneSets.trySelect(geneSet);
     btnEdit.setEnabled(selected > 0);
   }
+
+  public boolean isDefaultItemSelected() {
+    return (geneSets.getSelectedIndex() == 0);
+  }
 }
