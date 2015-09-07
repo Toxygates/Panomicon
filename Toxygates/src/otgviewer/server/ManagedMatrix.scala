@@ -31,6 +31,7 @@ import t.db.Sample
 import t.db.PExprValue
 import t.db.ExprValue
 import t.db.MatrixContext
+import t.db.BasicExprValue
 
 /**
  * Routines for loading a ManagedMatrix
@@ -89,7 +90,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
           toVector.distinct
       val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.id)))
       val data = reader.valuesForSamplesAndProbes(sortedSamples,
-        packedProbes, sparseRead)
+        packedProbes, sparseRead, false, true)
 
       println(g.getUnits()(0).toString())
 
@@ -117,13 +118,20 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
   }
 
   final protected def selectIdx[E <: ExprValue](data: Seq[E], is: Seq[Int]) = is.map(data(_))
-  final protected def javaMean[E <: ExprValue](data: Iterable[E]) = {
-    val mean = ExprValue.presentMean(data, "")
+  final protected def javaMean[E <: ExprValue](data: Iterable[E], presentOnly: Boolean = true) = {
+    val mean = presentOnly match {
+      case true => ExprValue.presentMean(data, "")
+      case _    => ExprValue.allMean(data, "")
+    }
     var tooltip = data.take(10).map(_.toString).mkString(" ")
     if (data.size > 10) {
       tooltip += ", ..."
     }
     new ExpressionValue(mean.value, mean.call, tooltip)
+  }
+  
+  final protected def log2(value: ExpressionValue) = {
+    new ExpressionValue(Math.log(value.getValue) / Math.log(2), value.getCall, value.getTooltip)
   }
 
   protected def unitIdxs(us: Iterable[t.viewer.shared.Unit], samples: Seq[Sample]): Seq[Int] = {
@@ -229,7 +237,7 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
     treatedIdx: Seq[Int], controlIdx: Seq[Int]): EVArray = {
     val treatedVs = selectIdx(raw, treatedIdx)
     val first = treatedVs.head
-    EVArray(Seq(javaMean(treatedVs), new ExpressionValue(first.p, first.call)))
+    EVArray(Seq(log2(javaMean(treatedVs, false)), new ExpressionValue(first.p, first.call)))
   }
 
   protected def addColumnInfo(g: Group) {
