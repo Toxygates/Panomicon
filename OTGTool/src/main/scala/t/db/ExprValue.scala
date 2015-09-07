@@ -36,6 +36,20 @@ object ExprValue {
     }
   }
 
+  def allMean(vs: Iterable[ExprValue], probe: String): ExprValue = {
+    val value = vs.size > 0 match {
+      case true => vs.map(_.value).sum / vs.size
+      case _    => 0
+    }
+    val nps = vs.filter(_.call != 'A')
+    
+    val call = nps.size > vs.size / 2 match {
+      case true => 'P'
+      case _    => 'A'
+    }
+    apply(value, call, probe)
+  }
+
   def apply(v: Double, call: Char = 'P', probe: String = "") = BasicExprValue(v, call, probe)
 
   val nf = NumberFormat.getNumberInstance()
