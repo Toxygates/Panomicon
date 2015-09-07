@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import otgviewer.client.components.GeneSetEditor;
 import otgviewer.client.components.GroupLabels;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.groupdef.GroupInspector;
@@ -24,4 +25,6 @@ public interface UIFactory {
   public GroupInspector groupInspector(CompoundSelector cs, Screen scr);
   
   public GroupLabels groupLabels(Screen screen, DataSchema schema, List<Group> groups);
+  
+  public GeneSetEditor geneSetEditor(Screen screen);
 }
