@@ -158,7 +158,10 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   private def datasets(): Array[Dataset] = {
     val ds = new Datasets(baseConfig.triplestore) with SharedDatasets
-    ds.sharedList.toArray
+    (instanceURI match {
+      case Some(u) => ds.sharedListForInstance(u)
+      case None => ds.sharedList
+    }).toArray
   }
 
   def chooseDatasets(ds: Array[Dataset]): scala.Unit = {
@@ -434,10 +437,10 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     probes.filter(x => acceptProbes.contains(x))
   }
-  
+
   def keywordSuggestions(partialName: String, maxSize: Int): Array[Pair[String, AType]] = {
     {
-      b2rKegg.forPattern(partialName, maxSize).map(new Pair(_, AType.KEGG)) ++ 
+      b2rKegg.forPattern(partialName, maxSize).map(new Pair(_, AType.KEGG)) ++
       probeStore.goTerms(partialName, maxSize).map(x => new Pair(x.name, AType.GO))
     }.toArray
   }
