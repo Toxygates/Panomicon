@@ -107,7 +107,7 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
     r.toArray
   }
 
-  //TODO move to OTG
+  //TODO consider removing the sc argument (and the need for sp in orthologs)
   @throws[TimeoutException]
   override def probesTargetedByCompound(sc: SampleClass, compound: String, service: String,
     homologous: Boolean): Array[String] = {

@@ -31,6 +31,7 @@ import otgviewer.shared.Group;
 import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
 import t.common.shared.ItemList;
+import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.StringList;
 import t.common.shared.Term;
@@ -495,29 +496,28 @@ public class GeneSetEditor extends DataListenerWidget {
     }
   }
 
-  private ClickHandler makeTargetLookupCH(final String service, final boolean homologs) {
+  private void doTargetLookup(final String service, final boolean homologs) {
     final DataListenerWidget w = screen;
-    return new ClickHandler() {
-      public void onClick(ClickEvent ev) {
-        if (compoundList.getSelectedIndex() != -1) {
-          String compound =
-              compoundList.getItemText(compoundList.getSelectedIndex());
-          sparqlService.probesTargetedByCompound(screen.chosenSampleClass,
-              compound, service, homologs, new PendingAsyncCallback<String[]>(
-                  w, "Unable to get probes (technical error).") {
-                public void handleSuccess(String[] probes) {
-                  if (probes.length == 0) {
-                    Window.alert("No matching probes were found.");
-                  } else {
-                    addProbes(probes);
-                  }
-                }
-              });
-        } else {
-          Window.alert("Please select a compound first.");
-        }
-      }
-    };
+    if (compoundList.getSelectedIndex() != -1) {
+      String compound = compoundList.getItemText(compoundList.getSelectedIndex());
+      
+      //Used for organism - TODO fix this for multi-organism cases
+      SampleClass sc = screen.chosenColumns.get(0).samples()[0].sampleClass();
+      logger.info("Target lookup for: " + sc.toString());
+      
+      sparqlService.probesTargetedByCompound(sc, compound, service, homologs,
+          new PendingAsyncCallback<String[]>(w, "Unable to get probes (technical error).") {
+            public void handleSuccess(String[] probes) {
+              if (probes.length == 0) {
+                Window.alert("No matching probes were found.");
+              } else {
+                addProbes(probes);
+              }
+            }
+          });
+    } else {
+      Window.alert("Please select a compound first.");
+    }
   }
 
   private Widget makeTargetLookupPanel(String label) {
@@ -550,7 +550,7 @@ public class GeneSetEditor extends DataListenerWidget {
       @Override
       public void onClick(ClickEvent event) {
         System.out.println(selectedTarget() + " selected");
-        makeTargetLookupCH(selectedTarget(), false);
+        doTargetLookup(selectedTarget(), false);
       }
     });
     vpi.add(button);
@@ -560,7 +560,7 @@ public class GeneSetEditor extends DataListenerWidget {
       @Override
       public void onClick(ClickEvent event) {
         System.out.println(selectedTarget() + " selected");
-        makeTargetLookupCH(selectedTarget(), true);
+        doTargetLookup(selectedTarget(), true);
       }
     });
 
