@@ -336,7 +336,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
         UNION { ?probe t:gocc ?got2 . }
         UNION { ?probe t:gobp ?got2 . }
       }
-      GRAPH ?g3 { ?got owl:sameAs ?got2 } 
+      GRAPH ?g3 { ?got owl:sameAs ?got2 }
     }
     """
     ts.simpleQuery(query).map(Probe.unpack)
@@ -354,16 +354,21 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
    */
   protected def goTerms(constraint: String, probes: Iterable[Probe]): MMap[Probe, GOTerm] = {
     val query = tPrefixes +
-      "SELECT DISTINCT ?got ?gotname ?probe WHERE { GRAPH ?g { " +
-      "?probe a t:probe . " +
+      """ PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>
+      SELECT DISTINCT ?got ?gotname ?probe WHERE { GRAPH ?g {
+      ?probe a t:probe . """ +
       constraint +
       multiFilter("?probe", probes.map(p => bracket(p.pack))) +
-      """ FILTER STRSTARTS(STR(?got), "http://bio2rdf.org")
-    } GRAPH ?g2 {
-      ?got2 owl:sameAs ?got.
-    } GRAPH ?g3 {
-      ?got2 rdfs:label ?gotname.
-    } } """
+      """
+    }
+    { GRAPH ?g2 {
+        ?got2 owl:sameAs ?got.
+      } GRAPH ?g3 {
+        ?got2 go:name ?gotname.
+      }
+    } UNION {
+      ?got go:name ?gotname }
+    } """
 
     val r = ts.mapQuery(query).map(x => Probe.unpack(x("probe")) -> GOTerm(unpackGoterm(x("got")), x("gotname")))
     makeMultiMap(r)
