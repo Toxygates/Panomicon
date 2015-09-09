@@ -237,7 +237,8 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
     treatedIdx: Seq[Int], controlIdx: Seq[Int]): EVArray = {
     val treatedVs = selectIdx(raw, treatedIdx)
     val first = treatedVs.head
-    EVArray(Seq(log2(javaMean(treatedVs, false)), new ExpressionValue(first.p, first.call)))
+    val fold = log2(javaMean(treatedVs, false))
+    EVArray(Seq(fold, new ExpressionValue(first.p, fold.call)))
   }
 
   protected def addColumnInfo(g: Group) {
