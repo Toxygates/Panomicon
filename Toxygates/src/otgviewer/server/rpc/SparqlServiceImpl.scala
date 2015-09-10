@@ -160,7 +160,8 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
       r
     }
 
-    def getTargeting(sc: SampleClass, from: CompoundTargets): MMap[Probe, Compound] = {
+    def getTargeting(sc: SampleClass, from: CompoundTargets)
+      (implicit sf: SampleFilter): MMap[Probe, Compound] = {
       val expected = sampleStore.compounds(scAsScala(sc).filterAll).map(Compound.make(_))
 
       //strictly orthologous
@@ -175,7 +176,8 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
       })
     }
 
-    override def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe]): BBMap = {
+    override def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe])
+      (implicit sf: SampleFilter): BBMap = {
       at match {
         case _: AType.GOMF.type      => probeStore.mfGoTerms(probes)
         case _: AType.GOBP.type      => probeStore.bpGoTerms(probes)
