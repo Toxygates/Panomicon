@@ -75,7 +75,7 @@ class ChEMBL extends Triplestore with CompoundTargets {
       	?target cco:hasTargetComponent ?targetcmpt .
       	?targetcmpt cco:targetCmptXref ?uniprot .
       	?uniprot a cco:UniprotRef .
-      	FILTER (?t IN("Inhibition", "Ki", "IC50"))))""" +
+      	FILTER (?t IN("Inhibition", "Ki", "IC50"))""" +
       multiFilter("?uniprot", ps.map(p => "up:" + p.identifier).toSet) +
       multiFilter("?compound", expected.map(e => "\"" + e.name.toUpperCase + "\"")) +
       multiFilter("?orgName", Species.supportedSpecies.map("\"" + _.longName + "\"")) +

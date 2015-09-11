@@ -389,7 +389,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     lazy val proteins = toBioMap(aprobes, (_: Probe).proteins)
 
-    def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe]): BBMap =
+    def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe])
+      (implicit sf: SampleFilter): BBMap =
       at match {
 
         // The type annotation :BBMap is needed on at least one (!) match pattern
@@ -412,14 +413,15 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       gracefully(f, errorVals)
     }
 
-    def lookupFunction(t: AType): BBMap =
+    private def lookupFunction(t: AType)(implicit sf: SampleFilter): BBMap =
       queryOrEmpty(() => associationLookup(t, sc, aprobes))
 
     def standardMapping(m: BBMap): MMap[String, (String, String)] =
       m.mapKeys(_.identifier).mapInnerValues(p => (p.name, p.identifier))
 
     def resolve(): Array[Association] = {
-      val m1 = types.par.map(x => (x, standardMapping(lookupFunction(x)))).seq
+      implicit val filt = sf
+      val m1 = types.par.map(x => (x, standardMapping(lookupFunction(x)(filt)))).seq
       m1.map(p => new Association(p._1, convertPairs(p._2))).toArray
     }
   }

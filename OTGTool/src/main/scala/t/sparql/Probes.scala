@@ -322,21 +322,23 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     List() // TODO
   }
 
+  //TODO this query is inelegant and probably will not work on Fuseki.
+  //A better solution is to have the URI of the GOTerm as a starting point to find the
+  //probes.
   def forGoTerm(term: GOTerm): Iterable[Probe] = {
     val query = tPrefixes +
     s"""
     PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>
 
-    SELECT DISTINCT ?probe WHERE { GRAPH ?g {
-        { ?got go:synonym ?gosyn . FILTER (?gosyn IN ("${term.name}") ) . }
-        UNION { ?got go:name ?gonam . FILTER (?gonam IN ("${term.name}") ) . }
-      }
-      GRAPH ?g2 { ?probe a t:probe .
-        { ?probe t:gomf ?got2 . }
-        UNION { ?probe t:gocc ?got2 . }
-        UNION { ?probe t:gobp ?got2 . }
-      }
-      GRAPH ?g3 { ?got owl:sameAs ?got2 } 
+    SELECT DISTINCT ?probe WHERE {
+        { ?got go:synonym "${term.name}" . }
+        UNION { ?got go:name "${term.name}" . }
+
+         ?probe a t:probe .
+        { ?probe t:gomf ?got . }
+        UNION { ?probe t:gocc ?got . }
+        UNION { ?probe t:gobp ?got . }
+
     }
     """
     ts.simpleQuery(query).map(Probe.unpack)
@@ -354,16 +356,21 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
    */
   protected def goTerms(constraint: String, probes: Iterable[Probe]): MMap[Probe, GOTerm] = {
     val query = tPrefixes +
-      "SELECT DISTINCT ?got ?gotname ?probe WHERE { GRAPH ?g { " +
-      "?probe a t:probe . " +
+      """ PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>
+      SELECT DISTINCT ?got ?gotname ?probe WHERE { GRAPH ?g {
+      ?probe a t:probe . """ +
       constraint +
       multiFilter("?probe", probes.map(p => bracket(p.pack))) +
-      """ FILTER STRSTARTS(STR(?got), "http://bio2rdf.org")
-    } GRAPH ?g2 {
-      ?got2 owl:sameAs ?got.
-    } GRAPH ?g3 {
-      ?got2 rdfs:label ?gotname.
-    } } """
+      """
+    }
+    { GRAPH ?g2 {
+        ?got2 owl:sameAs ?got.
+      } GRAPH ?g3 {
+        ?got2 go:name ?gotname.
+      }
+    } UNION {
+      ?got go:name ?gotname }
+    } """
 
     val r = ts.mapQuery(query).map(x => Probe.unpack(x("probe")) -> GOTerm(unpackGoterm(x("got")), x("gotname")))
     makeMultiMap(r)

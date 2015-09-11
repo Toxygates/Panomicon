@@ -60,7 +60,7 @@ public class AppInfo implements Serializable {
 			List<StringList> probeLists) {
 		this(instanceName_, 
 				"http://toxico.nibiohn.go.jp/open-tggates/doc/pathology_parameter.pdf", 
-				"http://targetmine.nibiohn.go.jp");
+				"http://targetmine.mizuguchilab.go.jp");
 		this.datasets = datasets;
 		predefProbeLists = probeLists;
 	}

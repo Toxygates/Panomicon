@@ -122,8 +122,7 @@ abstract class Triplestore extends Closeable {
     pq.setMaxQueryTime(timeoutMillis / 1000)
     // for sesame 2.8
 //    pq.setMaxExecutionTime(timeoutMillis / 1000)
-    val f = future { pq.evaluate() }
-    Some(Await.result(f, Duration(timeoutMillis, "millis")))
+    Some(pq.evaluate())
   }
 
   /**
