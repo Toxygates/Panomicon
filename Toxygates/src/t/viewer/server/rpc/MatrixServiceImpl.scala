@@ -232,13 +232,15 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
     val fProbes = platforms.filterProbes(probes, pfs).toArray
     pt.mark("FilterProbes")
+    
+    val ensureOrder = (xs :JList[Group]) => xs.sortBy(s => s.getName)
 
-    val mm = makeMatrix(groups.toVector, fProbes, typ)
+    val mm = makeMatrix(ensureOrder(groups).toVector, fProbes, typ)
     pt.mark("MakeMatrix")
 
     mm.info.setPlatforms(pfs.toArray)
     //    selectProbes(probes)
-    val mm2 = applyMapper(groups, mm)
+    val mm2 = applyMapper(ensureOrder(groups), mm)
     pt.mark("ApplyMapper")
 
     getSessionData.matrix = mm2

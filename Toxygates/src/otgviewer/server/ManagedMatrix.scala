@@ -82,7 +82,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
 
     val annotations = probes.map(x => new SimpleAnnotation(x)).toVector
 
-    val parts = requestColumns.par.map(g => {
+    val parts = requestColumns.map(g => {
       //Remove repeated samples as some other algorithms assume distinct samples
       //Also for efficiency
       val samples =
