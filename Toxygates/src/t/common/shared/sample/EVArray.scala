@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.server
+package t.viewer.server
 
 import t.common.shared.sample.ExpressionValue
 import scala.collection.generic.CanBuildFrom

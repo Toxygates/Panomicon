@@ -25,8 +25,8 @@ import java.util.{ List => JList }
 import scala.collection.JavaConversions.asScalaBuffer
 import scala.collection.JavaConversions.mapAsJavaMap
 import scala.collection.JavaConversions.seqAsJavaList
-import otgviewer.server.EVArray
-import otgviewer.server.ExprMatrix
+import t.viewer.server.EVArray
+import t.common.shared.sample.ExprMatrix
 import otgviewer.server.ExtFoldBuilder
 import otgviewer.server.FoldBuilder
 import otgviewer.server.ManagedMatrix
@@ -63,7 +63,7 @@ import t.viewer.server.Configuration
 import t.viewer.server.Feedback
 import t.viewer.server.Platforms
 import t.viewer.shared.table.SortKey
-import otgviewer.server.ScalaUtils
+import t.common.server.ScalaUtils
 import t.common.shared.PerfTimer
 import java.util.logging.Logger
 import otgviewer.shared.OTGSample
@@ -94,9 +94,6 @@ object MatrixServiceImpl {
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
- *
- * This is currently the only servlet that (explicitly)
- * maintains server side sessions.
  *
  * TODO move dependencies from otgviewer to t.common
  */
@@ -232,7 +229,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
     val fProbes = platforms.filterProbes(probes, pfs).toArray
     pt.mark("FilterProbes")
-    
+
     val ensureOrder = (xs :JList[Group]) => xs.sortBy(s => s.getName)
 
     val mm = makeMatrix(ensureOrder(groups).toVector, fProbes, typ)

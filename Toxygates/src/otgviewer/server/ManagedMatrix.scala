@@ -32,6 +32,9 @@ import t.db.PExprValue
 import t.db.ExprValue
 import t.db.MatrixContext
 import t.db.BasicExprValue
+import t.common.shared.sample.SimpleAnnotation
+import t.common.shared.sample.ExprMatrix
+import t.viewer.server.EVArray
 
 /**
  * Routines for loading a ManagedMatrix
@@ -97,6 +100,8 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
       val rowLookup = Map() ++ data.map(r => r(0).probe -> r)
       val standardOrder = probes.map(p => rowLookup(p))
 
+      //Note, columnsFor causes mutable state in the MatrixInfo being built
+      //to change
       val grouped = columnsFor(g, sortedSamples, standardOrder)
 
       val ungrouped = ExprMatrix.withRows(standardOrder.map(r => EVArray(r.map(asJava(_)))),
@@ -104,7 +109,9 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
       (grouped, ungrouped)
     })
 
-    val (rawGroupedMat, rawUngroupedMat) = parts.reduce((p1, p2) => {
+    //Non-commutative operation, so needs reduceLeft instead of plain reduce
+    //(collection is parallel)
+    val (rawGroupedMat, rawUngroupedMat) = parts.reduceLeft((p1, p2) => {
       val grouped = p1._1 adjoinRight p2._1
       val newCols = p2._2.columnKeys.toSet -- p1._2.columnKeys
       //account for the fact that samples may be shared between requestColumns
@@ -129,7 +136,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     }
     new ExpressionValue(mean.value, mean.call, tooltip)
   }
-  
+
   final protected def log2(value: ExpressionValue) = {
     new ExpressionValue(Math.log(value.getValue) / Math.log(2), value.getCall, value.getTooltip)
   }

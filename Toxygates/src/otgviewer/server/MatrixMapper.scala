@@ -23,6 +23,9 @@ package otgviewer.server
 import otgviewer.shared.ManagedMatrixInfo
 import t.common.shared.probe.ProbeMapper
 import t.common.shared.probe.ValueMapper
+import t.common.shared.sample.FullAnnotation
+import t.common.shared.sample.ExprMatrix
+import t.viewer.server.EVArray
 
 /**
  * A matrix mapper converts a whole matrix from one domain into

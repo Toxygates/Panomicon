@@ -27,8 +27,8 @@ import scala.collection.{Set => CSet}
 import java.util.{List => JList}
 
 import otg.Species.Human
-import otgviewer.server.ScalaUtils
-import otgviewer.server.ScalaUtils.gracefully
+import t.common.server.ScalaUtils
+import t.common.server.ScalaUtils.gracefully
 import otgviewer.server.rpc.Conversions
 import otgviewer.server.rpc.Conversions.asJava
 import otgviewer.server.rpc.Conversions.asJavaSample

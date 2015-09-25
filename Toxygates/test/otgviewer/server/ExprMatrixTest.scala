@@ -26,6 +26,10 @@ import org.scalatest.junit.JUnitRunner
 import t.db.ExprValue
 import t.common.shared.sample.ExpressionValue
 import friedrich.data.immutable._
+import t.common.shared.sample.SimpleAnnotation
+import t.common.shared.sample.ExprMatrix
+import t.viewer.server.EVArray
+import t.viewer.server.EVABuilder
 
 @RunWith(classOf[JUnitRunner])
 class ExprMatrixTest extends FunSuite {

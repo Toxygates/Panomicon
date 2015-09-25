@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -18,9 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.server
-
-import t.sparql.Triplestore
+package t.common.server
 
 object ScalaUtils {
   def gracefully[T](f: () => T, onFailure: T): T = {
@@ -32,7 +30,7 @@ object ScalaUtils {
         onFailure
     }
   }
- 
+
   def tryOrFailWith[T](f: () => T, onFailure: T, finalizer: () => Unit): T = {
     try {
       f()

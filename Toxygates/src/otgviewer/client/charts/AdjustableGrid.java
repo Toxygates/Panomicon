@@ -35,8 +35,6 @@ import t.common.shared.GroupUtils;
 import t.common.shared.SampleMultiFilter;
 import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleGroup;
 import t.viewer.client.Utils;
 import t.viewer.shared.Unit;
 
