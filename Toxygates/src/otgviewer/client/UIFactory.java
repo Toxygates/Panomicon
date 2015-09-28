@@ -27,4 +27,6 @@ public interface UIFactory {
   public GroupLabels groupLabels(Screen screen, DataSchema schema, List<Group> groups);
   
   public GeneSetEditor geneSetEditor(Screen screen);
+  
+  public boolean hasHeatMapMenu();
 }

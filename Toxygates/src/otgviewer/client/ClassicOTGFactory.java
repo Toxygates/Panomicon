@@ -24,4 +24,9 @@ public class ClassicOTGFactory extends OTGFactory {
       }
     };
   }
+
+  @Override
+  public boolean hasHeatMapMenu() {
+    return false;
+  }
 }

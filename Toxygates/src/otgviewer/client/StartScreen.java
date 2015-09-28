@@ -46,7 +46,7 @@ public class StartScreen extends Screen {
 		hp.setHeight("100%");
 
 		hp.add(welcomeHtml);
-		welcomeHtml.setWidth("40em");
+		welcomeHtml.setWidth("40em");		
 		Utils.loadHTML(manager.appInfo().welcomeHtmlURL(), 
 				new Utils.HTMLCallback() {
 			@Override

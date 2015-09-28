@@ -51,4 +51,9 @@ public class OTGFactory implements UIFactory {
   public GeneSetEditor geneSetEditor(Screen screen) {
     return new GeneSetEditor(screen);
   }  
+  
+  @Override
+  public boolean hasHeatMapMenu() {
+    return true;
+  }
 }
