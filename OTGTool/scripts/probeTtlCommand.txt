@@ -1,0 +1,7 @@
+#These are the commands used to generate TTL data from Affymetrix probe annotation downloads.
+
+tail +23 Rat230_2.csv | sed s/\",\"/\    /g | sed s/\"$// | sed s/^\"//  > Rat230_2.na33.annot.tsv
+
+scala-2.10 TurtleGen.scala Rat230_2.20110609/Rat230_2.na32.annot.tsv http://127.0.0.1:3333/affy/ "<http://127.0.0.1:3333/affy/probe>" "" 1 none genechip species none none none none none none none unigene none none title symbol none none none entrez swissprot none none none none none none none none none none bp cc mf > Rat230_2.20110609/Rat230_2.na32.annot.ttl
+
+cat Rat230_2.20110609/Rat230_2.na32.annot.ttl | sed -E "s/(.*)(bp|cc|mf)> \"([0-9]*).*([;\.])/\1\2> <http:\/\/bio2rdf.org\/go:\3> \4/"  >tmpt

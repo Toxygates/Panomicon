@@ -1,3 +1,7 @@
-war/*
-gwt-unitCache/*
-test-classes/*
+Toxygates/war/*
+Toxygates/gwt-unitCache/*
+Toxygates/lib/*
+Toxygates/extract-deploy/*
+OTGTool/lib/*
+OTGTool/bin/*
+Toxygates/extract-v2*
