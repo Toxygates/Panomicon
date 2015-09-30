@@ -291,10 +291,13 @@ class KCExtMatrixDB(file: String, db: DB)(implicit context: MatrixContext)
 
   protected def extractValue(data: Array[Byte], probe: String, inverseTransform: Boolean = false) = {
     val b = ByteBuffer.wrap(data)
-    val x = (inverseTransform, b.getDouble) match { 
-      case (true, v) => Math.pow(2, v)
-      case (false, v) => v
+    
+    val x = if (inverseTransform) {
+      Math.pow(2, b.getDouble)
+    } else {
+      b.getDouble
     }
+    
     val call = b.getChar
     val p = b.getDouble
 
