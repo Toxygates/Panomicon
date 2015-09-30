@@ -98,5 +98,5 @@
     <welcome-file>toxygates.html</welcome-file>
   </welcome-file-list>
 
-<!-- The closing </webapp> will be filled in by scripts like 
+<!-- The closing </web-app> will be filled in by scripts like 
 new_instance.public.sh -->

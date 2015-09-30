@@ -36,7 +36,7 @@ public class StartScreen extends Screen {
 	public static String key = "st";	
 	
 	public StartScreen(ScreenManager man) {
-		super("Start", key, false, man);		
+		super("Start", key, false, man, resources.startHTML(), null);		
 	}
 
 	final private HTML welcomeHtml = new HTML();

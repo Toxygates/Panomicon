@@ -347,7 +347,6 @@ class ManagedMatrix(val initProbes: Seq[String],
         thresh = currentInfo.columnFilter(col);
         if (thresh != null)
       ) {
-        println(s"Filter $col")
         val av = Math.abs(r(col).value)
 
         //Note, comparisons with NaN are always false
@@ -358,16 +357,12 @@ class ManagedMatrix(val initProbes: Seq[String],
         )
         if (!pass || !r(col).getPresent) {
           return false
-        } else {
-          println(s"Pass: $av $thresh")
         }
       }
       true
     }
 
-    println("Initial " + currentMat.rows)
     currentMat = currentMat.selectNamedRows(requestProbes).filterRows(f)
-    println("Now " + currentMat.rows)
 
     currentInfo.setNumRows(currentMat.rows)
     (_sortColumn, _sortAuxTable) match {
