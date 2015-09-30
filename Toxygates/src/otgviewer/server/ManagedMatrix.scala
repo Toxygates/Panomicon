@@ -130,15 +130,27 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
       case true => ExprValue.presentMean(data, "")
       case _    => ExprValue.allMean(data, "")
     }
-    var tooltip = data.take(10).map(_.toString).mkString(" ")
-    if (data.size > 10) {
-      tooltip += ", ..."
-    }
-    new ExpressionValue(mean.value, mean.call, tooltip)
+
+    new ExpressionValue(mean.value, mean.call, makeTooltip(data))
   }
 
+  protected def makeTooltip[E <: ExprValue](data: Iterable[E]): String = {
+    val r = data.take(10).map(_.toString).mkString(" ")
+    if (data.size > 10) {
+      r + ", ..."
+    } else {
+      r
+    }
+  }
+
+  private val l2 = Math.log(2)
+
   final protected def log2(value: ExpressionValue) = {
-    new ExpressionValue(Math.log(value.getValue) / Math.log(2), value.getCall, value.getTooltip)
+    new ExpressionValue(Math.log(value.getValue) / l2, value.getCall, value.getTooltip)
+  }
+
+  final protected def log2[E <: ExprValue](value: E): ExprValue = {
+    ExprValue.apply(Math.log(value.value)/l2, value.call, value.probe)
   }
 
   protected def unitIdxs(us: Iterable[t.viewer.shared.Unit], samples: Seq[Sample]): Seq[Int] = {
@@ -240,6 +252,11 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
   probes: Seq[String]) extends ManagedMatrixBuilder[PExprValue](reader, probes)
     with TreatedControlBuilder[PExprValue] {
 
+  //TODO this log2 hack (if we keep it) also applies to the FoldBuilder above.
+  //However, FoldBuilder is not currently being used. We should re-evaluate whether it
+  //is needed. (Actually, I'd like to unify the two different ExtFold/Fold formats and only
+  //use simple Fold. - Johan
+
   protected def buildRow(raw: Seq[PExprValue],
     treatedIdx: Seq[Int], controlIdx: Seq[Int]): EVArray = {
     val treatedVs = selectIdx(raw, treatedIdx)
@@ -247,6 +264,9 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
     val fold = log2(javaMean(treatedVs, false))
     EVArray(Seq(fold, new ExpressionValue(first.p, fold.call)))
   }
+
+  override protected def makeTooltip[E <: ExprValue](data: Iterable[E]): String =
+    super.makeTooltip(data.map(log2))
 
   protected def addColumnInfo(g: Group) {
     info.addColumn(false, colNames(g)(0), "Average of treated samples", false, g, false)
@@ -327,21 +347,27 @@ class ManagedMatrix(val initProbes: Seq[String],
         thresh = currentInfo.columnFilter(col);
         if (thresh != null)
       ) {
-        val isUpper = currentInfo.isUpperFiltering(col)
-        val pass: Boolean = (if (isUpper) {
-          Math.abs(r(col).value) <= thresh
-        } else {
-          Math.abs(r(col).value) >= thresh
-        })
-        if (!(pass && !java.lang.Double.isNaN(r(col).value))) {
+        println(s"Filter $col")
+        val av = Math.abs(r(col).value)
+
+        //Note, comparisons with NaN are always false
+        val pass = (if (currentInfo.isUpperFiltering(col))
+          av <= thresh
+        else
+          av >= thresh
+        )
+        if (!pass || !r(col).getPresent) {
           return false
+        } else {
+          println(s"Pass: $av $thresh")
         }
       }
       true
     }
 
-    currentMat = currentMat.selectNamedRows(requestProbes)
-    currentMat = currentMat.filterRows(f)
+    println("Initial " + currentMat.rows)
+    currentMat = currentMat.selectNamedRows(requestProbes).filterRows(f)
+    println("Now " + currentMat.rows)
 
     currentInfo.setNumRows(currentMat.rows)
     (_sortColumn, _sortAuxTable) match {

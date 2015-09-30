@@ -33,6 +33,8 @@ import t.viewer.client.rpc.SparqlServiceAsync;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -43,6 +45,8 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.SuggestOracle;
+import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
@@ -119,6 +123,16 @@ abstract public class ProbeSelector extends DataListenerWidget implements
         }
       }
     });
+    searchBox.addSelectionHandler(new SelectionHandler<SuggestOracle.Suggestion>() {      
+      @Override
+      public void onSelection(SelectionEvent<Suggestion> event) {
+        Term selected = searchBox.getSelected();
+        if (selected != null) {
+          getProbes(selected);
+        }        
+      }
+    });
+    
     wrap = new FlowPanel();
     wrap.addStyleName("table-cell");
     wrap.add(btnLoad);
