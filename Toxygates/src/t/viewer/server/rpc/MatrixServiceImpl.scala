@@ -21,10 +21,8 @@
 package t.viewer.server.rpc
 
 import java.util.ArrayList
+
 import java.util.{ List => JList }
-import scala.collection.JavaConversions.asScalaBuffer
-import scala.collection.JavaConversions.mapAsJavaMap
-import scala.collection.JavaConversions.seqAsJavaList
 import t.viewer.server.EVArray
 import t.common.shared.sample.ExprMatrix
 import otgviewer.server.ExtFoldBuilder
@@ -67,6 +65,7 @@ import t.common.server.ScalaUtils
 import t.common.shared.PerfTimer
 import java.util.logging.Logger
 import otgviewer.shared.OTGSample
+import otgviewer.server.MatrixController
 
 object MatrixServiceImpl {
 
@@ -107,6 +106,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   private def probes = context.probes
   private var config: Configuration = _
   private val logger = Logger.getLogger("MatrixService")
+  private var controller: MatrixController = _
 
   // Useful for testing
   override def localInit(config: Configuration) {
@@ -114,6 +114,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     this.config = config
     mcontext = context.matrix
     staticInit(context)
+    controller = new MatrixController(context, platforms, orthologs)
   }
 
   protected class MatrixState {
@@ -159,7 +160,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     }
   }
 
-  // TODO Same codes in SparqlService
+  // TODO Shared logic with SparqlService
   def filterProbesByGroup(ps: Array[String], samples: JList[OTGSample]): Array[String] = {
     val platforms: Set[String] = samples.map(x => x.get("platform_id")).toSet
     val lookup = probes.platformsAndProbes
@@ -168,83 +169,11 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     ps.filter(x => acceptProbes.contains(x))
   }
 
-  private def makeMatrix(requestColumns: Seq[Group], initProbes: Array[String],
-    typ: ValueType, sparseRead: Boolean = false, fullLoad: Boolean = false): ManagedMatrix = {
-
-    val reader = try {
-      if (typ == ValueType.Absolute) {
-        mcontext.absoluteDBReader
-      } else {
-        mcontext.foldsDBReader
-      }
-    } catch {
-      case e: Exception => throw new DBUnavailableException()
-    }
-
-    val pfs = platformsForGroups(requestColumns)
-    val multiPlat = pfs.size > 1
-
-    try {
-      val enhancedCols = !multiPlat
-
-      val b = reader match {
-        case ext: KCExtMatrixDB =>
-          assert(typ == ValueType.Folds)
-          new ExtFoldBuilder(enhancedCols, ext, initProbes)
-        case db: KCMatrixDB =>
-          if (typ == ValueType.Absolute) {
-            new NormalizedBuilder(enhancedCols, db, initProbes)
-          } else {
-            new FoldBuilder(db, initProbes)
-          }
-        case _ => throw new Exception("Unexpected DB reader type")
-      }
-      b.build(requestColumns, sparseRead, fullLoad)
-    } finally {
-      reader.release
-    }
-  }
-
-  private def platformsForGroups(gs: Iterable[Group]): Iterable[String] = {
-    val samples = gs.toList.flatMap(_.getSamples().map(_.id))
-    context.samples.platforms(samples)
-  }
-
-  private def platformsForProbes(ps: Iterable[String]): Iterable[String] =
-    ps.flatMap(platforms.platformForProbe(_))
-
-  private def applyMapper(groups: JList[Group], mm: ManagedMatrix): ManagedMatrix = {
-    mapper(groups) match {
-      case Some(m) => m.convert(mm)
-      case None    => mm
-    }
-  }
-
   def loadMatrix(groups: JList[Group], probes: Array[String],
     typ: ValueType, syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
-    val pt = new PerfTimer(Logger.getLogger("matrixService.loadMatrix"))
-
-    val pfs = platformsForGroups(groups.toList)
-    pt.mark("PlatformsForGroups")
-
-    val fProbes = platforms.filterProbes(probes, pfs).toArray
-    pt.mark("FilterProbes")
-
-    val ensureOrder = (xs :JList[Group]) => xs.sortBy(s => s.getName)
-
-    val mm = makeMatrix(ensureOrder(groups).toVector, fProbes, typ)
-    pt.mark("MakeMatrix")
-
-    mm.info.setPlatforms(pfs.toArray)
-    //    selectProbes(probes)
-    val mm2 = applyMapper(ensureOrder(groups), mm)
-    pt.mark("ApplyMapper")
-
-    getSessionData.matrix = mm2
-
-    pt.finish()
-
-    mm2.info
+    val m = controller.loadMatrix(groups, probes, typ, syntheticColumns, false)
+    getSessionData.matrix = m
+    m.info
   }
 
   @throws(classOf[NoDataLoadedException])
@@ -259,7 +188,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       mm.selectProbes(probes)
     } else {
       val groups = (0 until mm.info.numDataColumns()).map(i => mm.info.columnGroup(i))
-      val ps = platformsForGroups(groups)
+      val ps = controller.platformsForGroups(groups)
       val allProbes = platforms.filterProbes(List(), ps).toArray
       mm.selectProbes(allProbes)
     }
@@ -392,24 +321,17 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     })
   }
 
-  //TODO simplify
   def getFullData(gs: JList[Group], rprobes: Array[String], sparseRead: Boolean,
     withSymbols: Boolean, typ: ValueType): FullMatrix = {
     val sgs = Vector() ++ gs
-    val pfs = platformsForGroups(sgs)
-
-    val realProbes = platforms.filterProbes(rprobes, pfs).toArray
-    val mm = makeMatrix(sgs, realProbes.toArray, typ, sparseRead, true)
-    mm.info.setPlatforms(pfs.toArray)
-
-    val mapper = mapperForProbes(realProbes)
-    val mm2 = mapper.map(mx => mx.convert(mm)).getOrElse(mm)
+    val pfs = controller.platformsForGroups(sgs)
+    val mm = controller.loadMatrix(gs, rprobes, typ, Seq(), sparseRead, true)
 
     val raw = if (sgs.size == 1) {
-      //break out each individual sample
-      mm2.rawData.selectNamedColumns(sgs(0).getSamples().map(_.id())).asRows
+      //break out each individual sample if it's only one group
+      mm.rawData.selectNamedColumns(sgs(0).getSamples().map(_.id())).asRows
     } else {
-      mm2.current.selectNamedColumns(sgs.map(_.getName)).asRows
+      mm.current.selectNamedColumns(sgs.map(_.getName)).asRows
     }
 
     val rows = if (withSymbols) {
@@ -427,7 +349,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
           or.getGeneSyms, or.getValues)
       })
     }
-    new FullMatrix(mm2.info, new ArrayList[ExpressionRow](rows))
+    new FullMatrix(mm.info, new ArrayList[ExpressionRow](rows))
   }
 
   @throws(classOf[NoDataLoadedException])
@@ -445,7 +367,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       mm.rawUngroupedMat != null && mm.current != null) {
       val info = mm.info
       val ug = mm.rawUngroupedMat.selectNamedRows(mm.current.rowKeys.toSeq)
-      val gs = (0 until info.numDataColumns()).map(g => info.columnGroup(g))
+      val gs = (0 until info.numDataColumns()).map(info.columnGroup(_))
       //Help the user by renaming the columns.
       //Prefix sample IDs by group IDs.
       val parts = gs.map(g => {
@@ -503,30 +425,5 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     }
     Feedback.send(name, email, feedback, state, config.feedbackReceivers,
       config.feedbackFromAddress, context.config.appName)
-  }
-
-  private lazy val standardMapper = {
-    val pm = new OrthologProbeMapper(orthologs.head)
-    val vm = MedianValueMapper
-    new MatrixMapper(pm, vm)
-  }
-
-  protected def mapper(groups: Iterable[Group]): Option[MatrixMapper] = {
-    val os = groups.flatMap(_.collect("organism")).toSet
-    println("Detected species in groups: " + os)
-    if (os.size > 1) {
-      Some(standardMapper)
-    } else {
-      None
-    }
-  }
-
-  protected def mapperForProbes(ps: Iterable[String]): Option[MatrixMapper] = {
-    val pfs = platformsForProbes(ps).toSet
-    if (pfs.size > 1) {
-      Some(standardMapper)
-    } else {
-      None
-    }
   }
 }
