@@ -24,8 +24,6 @@ import org.apache.commons.math3.stat.inference.MannWhitneyUTest
 import org.apache.commons.math3.stat.inference.TTest
 import friedrich.data.immutable._
 import t.util.SafeMath.safeMean
-import ExprMatrix.ttest
-import ExprMatrix.utest
 import t.viewer.server.EVABuilder
 import t.viewer.server.EVArray
 
