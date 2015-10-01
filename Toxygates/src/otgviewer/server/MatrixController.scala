@@ -36,7 +36,7 @@ class MatrixController(context: Context, platforms: Platforms,
     ps.flatMap(platforms.platformForProbe(_)).toList.distinct
 
   def makeMatrix(requestColumns: Seq[Group], initProbes: Array[String],
-    typ: ValueType, sparseRead: Boolean = false, fullLoad: Boolean = false): ManagedMatrix = {
+    typ: ValueType, sparseRead: Boolean, fullLoad: Boolean): ManagedMatrix = {
 
     val reader = try {
       if (typ == ValueType.Absolute) {
@@ -95,21 +95,23 @@ class MatrixController(context: Context, platforms: Platforms,
     }
   }
 
-  def loadMatrix(groups: Seq[Group], probes: Array[String],
+  def loadMatrix(groups: Seq[Group], probes: Seq[String],
     typ: ValueType, syntheticColumns: Seq[Synthetic],
-    mapperFromProbes: Boolean, sparseRead: Boolean = false,
-    fullLoad: Boolean = false): ManagedMatrix = {
+    mapperFromProbes: Boolean, sparseRead: Boolean,
+    fullLoad: Boolean): ManagedMatrix = {
      val pt = new PerfTimer(Logger.getLogger("matrixController.loadMatrix"))
 
     val pfs = platformsForGroups(groups.toList)
     pt.mark("PlatformsForGroups")
 
-    val fProbes = platforms.filterProbes(probes.toSeq, pfs).toArray
+    val fProbes = platforms.filterProbes(probes, pfs).toArray
     pt.mark("FilterProbes")
 
     val mm = makeMatrix(groups.toVector.sortBy(s => s.getName),
         fProbes, typ, sparseRead, fullLoad)
     pt.mark("MakeMatrix")
+
+    println(mm.rawData.columnKeys.mkString(" "))
 
     mm.info.setPlatforms(pfs.toArray)
 

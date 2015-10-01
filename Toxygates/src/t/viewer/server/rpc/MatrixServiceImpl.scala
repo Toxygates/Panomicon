@@ -171,7 +171,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
   def loadMatrix(groups: JList[Group], probes: Array[String],
     typ: ValueType, syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
-    val m = controller.loadMatrix(groups, probes, typ, syntheticColumns, false)
+    val m = controller.loadMatrix(groups, probes, typ, syntheticColumns, false, false, false)
     getSessionData.matrix = m
     m.info
   }
@@ -325,7 +325,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     withSymbols: Boolean, typ: ValueType): FullMatrix = {
     val sgs = Vector() ++ gs
     val pfs = controller.platformsForGroups(sgs)
-    val mm = controller.loadMatrix(gs, rprobes, typ, Seq(), sparseRead, true)
+    val mm = controller.loadMatrix(sgs, rprobes, typ, Seq(), true, sparseRead, true)
 
     val raw = if (sgs.size == 1) {
       //break out each individual sample if it's only one group
