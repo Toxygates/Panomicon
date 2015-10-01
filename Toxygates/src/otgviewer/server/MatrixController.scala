@@ -99,7 +99,7 @@ class MatrixController(context: Context, platforms: Platforms,
     typ: ValueType, syntheticColumns: Seq[Synthetic],
     mapperFromProbes: Boolean, sparseRead: Boolean,
     fullLoad: Boolean): ManagedMatrix = {
-     val pt = new PerfTimer(Logger.getLogger("matrixController.loadMatrix"))
+    val pt = new PerfTimer(Logger.getLogger("matrixController.loadMatrix"))
 
     val pfs = platformsForGroups(groups.toList)
     pt.mark("PlatformsForGroups")
@@ -108,7 +108,7 @@ class MatrixController(context: Context, platforms: Platforms,
     pt.mark("FilterProbes")
 
     val mm = makeMatrix(groups.toVector.sortBy(s => s.getName),
-        fProbes, typ, sparseRead, fullLoad)
+      fProbes, typ, sparseRead, fullLoad)
     pt.mark("MakeMatrix")
 
     println(mm.rawData.columnKeys.mkString(" "))
@@ -129,6 +129,19 @@ class MatrixController(context: Context, platforms: Platforms,
     pt.mark("ApplyMapper")
     pt.finish
     mm2
+  }
+
+  def selectProbes(mm: ManagedMatrix, probes: Seq[String]): ManagedMatrixInfo = {
+    if (!probes.isEmpty) {
+      println("Refilter probes: " + probes.length)
+      mm.selectProbes(probes)
+    } else {
+      val groups = (0 until mm.info.numDataColumns()).map(i => mm.info.columnGroup(i))
+      val ps = platformsForGroups(groups)
+      val allProbes = platforms.filterProbes(List(), ps).toArray
+      mm.selectProbes(allProbes)
+    }
+    mm.info
   }
 
 }

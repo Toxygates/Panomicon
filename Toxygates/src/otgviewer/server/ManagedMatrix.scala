@@ -150,7 +150,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
   }
 
   final protected def log2[E <: ExprValue](value: E): ExprValue = {
-    ExprValue.apply(Math.log(value.value)/l2, value.call, value.probe)
+    ExprValue.apply(Math.log(value.value) / l2, value.call, value.probe)
   }
 
   protected def unitIdxs(us: Iterable[t.viewer.shared.Unit], samples: Seq[Sample]): Seq[Int] = {
@@ -332,7 +332,7 @@ class ManagedMatrix(val initProbes: Seq[String],
   /**
    * Select only the rows corresponding to the given probes.
    */
-  def selectProbes(probes: Array[String]): Unit = {
+  def selectProbes(probes: Seq[String]): Unit = {
     requestProbes = probes
     resetSortAndFilter()
     filterAndSort()
@@ -353,8 +353,7 @@ class ManagedMatrix(val initProbes: Seq[String],
         val pass = (if (currentInfo.isUpperFiltering(col))
           av <= thresh
         else
-          av >= thresh
-        )
+          av >= thresh)
         if (!pass || !r(col).getPresent) {
           return false
         }

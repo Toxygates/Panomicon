@@ -21,7 +21,6 @@
 package t.viewer.server.rpc
 
 import java.util.ArrayList
-
 import java.util.{ List => JList }
 import t.viewer.server.EVArray
 import t.common.shared.sample.ExprMatrix
@@ -66,6 +65,7 @@ import t.common.shared.PerfTimer
 import java.util.logging.Logger
 import otgviewer.shared.OTGSample
 import otgviewer.server.MatrixController
+import javax.annotation.Nullable
 
 object MatrixServiceImpl {
 
@@ -177,22 +177,9 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   }
 
   @throws(classOf[NoDataLoadedException])
-  def selectProbes(probes: Array[String]): ManagedMatrixInfo = {
-    if (probes != null) {
-      println("Refilter probes: " + probes.length)
-    }
-    val mm = getSessionData.matrix
-
-    //    mm.filterData(Some(absValFilter))
-    if (probes != null && probes.length > 0) {
-      mm.selectProbes(probes)
-    } else {
-      val groups = (0 until mm.info.numDataColumns()).map(i => mm.info.columnGroup(i))
-      val ps = controller.platformsForGroups(groups)
-      val allProbes = platforms.filterProbes(List(), ps).toArray
-      mm.selectProbes(allProbes)
-    }
-    mm.info
+  def selectProbes(@Nullable probes: Array[String]): ManagedMatrixInfo = {
+    val prs = Option(probes).getOrElse(Array()).toSeq
+    controller.selectProbes(getSessionData.matrix, prs)
   }
 
   @throws(classOf[NoDataLoadedException])
