@@ -136,10 +136,9 @@ object GetMatrix {
 
 		val probes = Array[String]() //empty -> load all
 
-		val synthCols = new JList[Synthetic]()
 		println("Load dataset")
 
-    val colInfo = matServiceAsync.loadMatrix(groups, probes, vtype, synthCols)
+    val colInfo = matServiceAsync.loadMatrix(groups, probes, vtype)
 
     range match {
       case Full =>

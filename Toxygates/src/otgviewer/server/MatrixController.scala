@@ -1,9 +1,27 @@
+/*
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * (NIBIOHN), Japan.
+ *
+ * This file is part of Toxygates.
+ *
+ * Toxygates is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Toxygates is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package otgviewer.server
 
 import java.util.logging.Logger
-
 import scala.collection.JavaConversions._
-
 import otgviewer.shared.DBUnavailableException
 import otgviewer.shared.Group
 import otgviewer.shared.ManagedMatrixInfo
@@ -18,25 +36,41 @@ import t.db.kyotocabinet.KCExtMatrixDB
 import t.db.kyotocabinet.KCMatrixDB
 import t.platform.OrthologMapping
 import t.viewer.server.Platforms
+import t.common.shared.AType
+import t.viewer.shared.table.SortKey
+import t.common.shared.sample.ExprMatrix
+import t.viewer.server.EVArray
+import t.common.shared.sample.ExpressionValue
 
 /**
- * @author johan
+ * A managed matrix session and associated state.
+ * The matrix is loaded automatically when a MatrixController
+ * instance is created.
  */
-class MatrixController(context: Context, platforms: Platforms,
-    orthologs: Iterable[OrthologMapping]) {
+class MatrixController(context: Context,
+    orthologs: Iterable[OrthologMapping],
+    val groups: Seq[Group], val initProbes: Seq[String],
+    typ: ValueType, useStandardMapper: Boolean, sparseRead: Boolean,
+    fullLoad: Boolean) {
 
+  private def probes = context.probes
+  private def platforms = Platforms(probes)
   private implicit val mcontext = context.matrix
+  private var sortAssoc: AType = _
 
-  def platformsForGroups(gs: Iterable[Group]): Iterable[String] = {
-    val samples = gs.toList.flatMap(_.getSamples().map(_.id))
+  lazy val groupPlatforms: Iterable[String] = {
+    val samples = groups.toList.flatMap(_.getSamples().map(_.id))
     context.samples.platforms(samples)
   }
 
-  def platformsForProbes(ps: Iterable[String]): Iterable[String] =
+  lazy val filteredProbes =
+    platforms.filterProbes(initProbes, groupPlatforms)
+
+  protected def platformsForProbes(ps: Iterable[String]): Iterable[String] =
     ps.flatMap(platforms.platformForProbe(_)).toList.distinct
 
-  def makeMatrix(requestColumns: Seq[Group], initProbes: Array[String],
-    typ: ValueType, sparseRead: Boolean, fullLoad: Boolean): ManagedMatrix = {
+  protected def makeMatrix(probes: Seq[String],
+      typ: ValueType, sparseRead: Boolean, fullLoad: Boolean): ManagedMatrix = {
 
     val reader = try {
       if (typ == ValueType.Absolute) {
@@ -48,8 +82,7 @@ class MatrixController(context: Context, platforms: Platforms,
       case e: Exception => throw new DBUnavailableException()
     }
 
-    val pfs = platformsForGroups(requestColumns)
-    val multiPlat = pfs.size > 1
+    val multiPlat = groupPlatforms.size > 1
 
     try {
       val enhancedCols = !multiPlat
@@ -57,32 +90,36 @@ class MatrixController(context: Context, platforms: Platforms,
       val b = reader match {
         case ext: KCExtMatrixDB =>
           assert(typ == ValueType.Folds)
-          new ExtFoldBuilder(enhancedCols, ext, initProbes)
+          new ExtFoldBuilder(enhancedCols, ext, probes)
         case db: KCMatrixDB =>
           if (typ == ValueType.Absolute) {
-            new NormalizedBuilder(enhancedCols, db, initProbes)
+            new NormalizedBuilder(enhancedCols, db, probes)
           } else {
-            new FoldBuilder(db, initProbes)
+            new FoldBuilder(db, probes)
           }
         case _ => throw new Exception("Unexpected DB reader type")
       }
-      b.build(requestColumns, sparseRead, fullLoad)
+      b.build(groups, sparseRead, fullLoad)
     } finally {
       reader.release
     }
   }
 
   protected lazy val standardMapper = {
-    val pm = new OrthologProbeMapper(orthologs.head)
-    val vm = MedianValueMapper
-    new MatrixMapper(pm, vm)
+    if (orthologs.isEmpty) {
+      None
+    } else {
+      val pm = new OrthologProbeMapper(orthologs.head)
+      val vm = MedianValueMapper
+      Some(new MatrixMapper(pm, vm))
+    }
   }
 
   protected def groupMapper(groups: Iterable[Group]): Option[MatrixMapper] = {
     val os = groups.flatMap(_.collect("organism")).toSet
     println("Detected species in groups: " + os)
     if (os.size > 1) {
-      Some(standardMapper)
+      standardMapper
     } else {
       None
     }
@@ -95,29 +132,16 @@ class MatrixController(context: Context, platforms: Platforms,
     }
   }
 
-  def loadMatrix(groups: Seq[Group], probes: Seq[String],
-    typ: ValueType, syntheticColumns: Seq[Synthetic],
-    mapperFromProbes: Boolean, sparseRead: Boolean,
-    fullLoad: Boolean): ManagedMatrix = {
+  var managedMatrix: ManagedMatrix = {
     val pt = new PerfTimer(Logger.getLogger("matrixController.loadMatrix"))
 
-    val pfs = platformsForGroups(groups.toList)
-    pt.mark("PlatformsForGroups")
-
-    val fProbes = platforms.filterProbes(probes, pfs).toArray
-    pt.mark("FilterProbes")
-
-    val mm = makeMatrix(groups.toVector.sortBy(s => s.getName),
-      fProbes, typ, sparseRead, fullLoad)
+    val mm = makeMatrix(filteredProbes, typ, sparseRead, fullLoad)
     pt.mark("MakeMatrix")
+    mm.info.setPlatforms(groupPlatforms.toArray)
 
-    println(mm.rawData.columnKeys.mkString(" "))
-
-    mm.info.setPlatforms(pfs.toArray)
-
-    val mapper = if (mapperFromProbes) {
-      if (pfs.size > 1) {
-        Some(standardMapper)
+    val mapper = if (useStandardMapper) {
+      if (groupPlatforms.size > 1) {
+        standardMapper
       } else {
         None
       }
@@ -131,17 +155,64 @@ class MatrixController(context: Context, platforms: Platforms,
     mm2
   }
 
-  def selectProbes(mm: ManagedMatrix, probes: Seq[String]): ManagedMatrixInfo = {
+  /**
+   * Select probes and update the current managed matrix
+   */
+  def selectProbes(probes: Seq[String]): ManagedMatrix = {
     if (!probes.isEmpty) {
       println("Refilter probes: " + probes.length)
-      mm.selectProbes(probes)
+      managedMatrix.selectProbes(probes)
     } else {
-      val groups = (0 until mm.info.numDataColumns()).map(i => mm.info.columnGroup(i))
-      val ps = platformsForGroups(groups)
-      val allProbes = platforms.filterProbes(List(), ps).toArray
-      mm.selectProbes(allProbes)
+      val info = managedMatrix.info
+      val groups = (0 until info.numDataColumns()).map(i => info.columnGroup(i))
+      val allProbes = platforms.filterProbes(List(), groupPlatforms).toArray
+      managedMatrix.selectProbes(allProbes)
     }
-    mm.info
+    managedMatrix
+  }
+
+  /**
+   * Sort rows
+   */
+  def applySorting(sortKey: SortKey, ascending: Boolean): ManagedMatrix = {
+    sortKey match {
+      case mc: SortKey.MatrixColumn =>
+        if (Some(mc.matrixIndex) != managedMatrix.sortColumn ||
+          ascending != managedMatrix.sortAscending) {
+          managedMatrix.sort(mc.matrixIndex, ascending)
+          println("SortCol: " + mc.matrixIndex + " asc: " + ascending)
+        }
+      case as: SortKey.Association =>
+        val old = sortAssoc
+        val nw = as.atype
+        if (old == null || nw != old
+          || ascending != managedMatrix.sortAscending) {
+          sortAssoc = nw
+          val st = assocSortTable(as.atype,
+            managedMatrix.probesForAuxTable)
+          managedMatrix.sortWithAuxTable(st, ascending)
+          println("Sort with aux table for " + as)
+        }
+    }
+    managedMatrix
+  }
+
+  protected def assocSortTable(ass: AType, rowKeys: Seq[String]): ExprMatrix = {
+    val key = ass.auxSortTableKey
+    if (key != null) {
+      val sm = context.auxSortMap(key)
+      println("Rows: " + rowKeys.take(10))
+      println("aux: " + sm.take(10))
+      val evs = rowKeys.map(r =>
+        sm.get(r) match {
+          case Some(v) => new ExpressionValue(v)
+          case None    => new ExpressionValue(Double.NaN, 'A')
+        })
+      val evas = evs.map(v => EVArray(Seq(v)))
+      ExprMatrix.withRows(evas, rowKeys, List("POPSEQ"))
+    } else {
+      throw new Exception(s"No sort key for $ass")
+    }
   }
 
 }

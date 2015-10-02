@@ -38,8 +38,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public interface MatrixServiceAsync {
 	
 	public void loadMatrix(List<Group> columns,
-			String[] probes, ValueType type, List<Synthetic> synthCols, 
-			AsyncCallback<ManagedMatrixInfo> callback);
+			String[] probes, ValueType type, AsyncCallback<ManagedMatrixInfo> callback);
 
 	public void matrixRows(int offset, int size, SortKey sortKey,
 			boolean ascending, AsyncCallback<List<ExpressionRow>> callback);

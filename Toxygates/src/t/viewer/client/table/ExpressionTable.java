@@ -772,7 +772,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     logger.info("begin loading data for " + chosenColumns.size() + " columns and "
         + chosenProbes.length + " probes");
     // load data
-    matrixService.loadMatrix(chosenColumns, chosenProbes, chosenValueType, synthetics,
+    matrixService.loadMatrix(chosenColumns, chosenProbes, chosenValueType,
         new AsyncCallback<ManagedMatrixInfo>() {
           public void onFailure(Throwable caught) {
             Window.alert("Unable to load dataset");
