@@ -27,7 +27,7 @@ import friedrich.util.CmdLineOptions
 /**
  * Management tool for T framework applications.
  */
-abstract class Manager[C <: Context] {
+abstract class Manager[C <: Context, B <: BaseConfig] {
 
   def requireEnv(env: scala.collection.Map[String, String], key: String, errMsg: String) =
     env.getOrElse(key, throw new Exception(s"Missing environment variable $key: $errMsg"))
@@ -47,17 +47,17 @@ abstract class Manager[C <: Context] {
       requireEnv(env, "T_DATA_DIR", "Please specify data directory"),
       requireEnv(env, "T_DATA_MATDBCONFIG", "Please specify matrix db flags"))
 
-  def getBaseConfig(): BaseConfig = {
+  def getBaseConfig(): B = {
     val env = mapAsScalaMap(System.getenv())
     val ts = getTSConfig(env)
     val d = getDataConfig(env)
     makeBaseConfig(ts, d)
   }
 
-  def makeBaseConfig(ts: TriplestoreConfig, d: DataConfig): BaseConfig
+  def makeBaseConfig(ts: TriplestoreConfig, d: DataConfig): B
 
   def factory: Factory
-  def initContext(bc: BaseConfig): C
+  def initContext(bc: B): C
 
   def main(args: Array[String]) {
     implicit val c = initContext(getBaseConfig)

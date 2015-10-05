@@ -268,7 +268,6 @@ class BatchManager(context: Context) {
         throw new Exception(s"The batch $title is already defined")
       }
 
-      //TODO check for reinsertion of sample IDs
       val ps = new Platforms(config.triplestore)
       val platforms = ps.list.toSet
       val existingSamples = samples.list.toSet
