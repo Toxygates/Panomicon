@@ -152,7 +152,6 @@ object TaskRunner {
           if (!tasks.isEmpty) {
             println(tasks.size + " tasks in queue")
             next = tasks.head
-            _currentTask = Some(next)
             tasks = tasks.tail
           }
         }
@@ -160,8 +159,8 @@ object TaskRunner {
           log("Start task \"" + next.name + "\"")
           try {
             _waitingForTask = true
+            _currentTask = Some(next)
             next.run() // could take a long time to complete
-            _waitingForTask = false
             log("Finish task \"" + next.name + "\"")
           } catch {
             case t: Throwable =>
@@ -169,9 +168,11 @@ object TaskRunner {
               t.printStackTrace() //TODO pass exception to log
               log("Deleting remaining tasks")
               _errorCause = Some(t)
-              _waitingForTask = false
               shutdown()
           }
+        } else {
+          _currentTask = None
+          _waitingForTask = false
         }
         Thread.sleep(1000)
       }

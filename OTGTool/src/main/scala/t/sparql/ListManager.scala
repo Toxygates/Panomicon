@@ -39,7 +39,7 @@ abstract class ListManager(config: TriplestoreConfig) extends Closeable {
   //URI prefix
   def defaultPrefix: String
 
-  lazy val ts = new SimpleTriplestore(config.triplestore)
+  lazy val ts = config.get
 
   def close() {
     ts.close()

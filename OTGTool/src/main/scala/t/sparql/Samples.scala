@@ -30,7 +30,7 @@ import t.db.SampleParameter
 
 object Samples extends RDFClass {
   val defaultPrefix = s"$tRoot/sample"
-  val itemClass = "t:Sample"
+  val itemClass = "t:sample"
 }
 
 case class SampleFilter(instanceURI: Option[String] = None,

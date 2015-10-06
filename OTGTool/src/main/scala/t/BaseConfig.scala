@@ -55,6 +55,8 @@ case class TriplestoreConfig(url: String, updateUrl: String,
       Triplestore.connectSPARQLRepository(this.url, this.updateUrl, user, pass)
     }
   }
+
+  def get = new t.sparql.SimpleTriplestore(triplestore, updateUrl == null)
 }
 
 class DataConfig(val dir: String, val matrixDbOptions: String) {

@@ -220,7 +220,7 @@ class BatchManager(context: Context) {
     foldCallFile: Option[String], foldPValueFile: Option[String],
     append: Boolean, sbuilder: SeriesBuilder[S]): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
-    val ts = config.triplestore.triplestore
+    val ts = config.triplestore.get
 
     r :+= consistencyCheck(title, metadata, config)
 
@@ -228,7 +228,7 @@ class BatchManager(context: Context) {
       r :+= addBatchRecord(title, comment, config.triplestore)
     }
     r :+= addSampleIDs(metadata)
-    r :+= addRDF(title, metadata, sbuilder, new SimpleTriplestore(ts))
+    r :+= addRDF(title, metadata, sbuilder, ts)
 
     // Note that we rely on these maps not being read until they are needed
     // (after addSampleIDs has run!)
@@ -265,8 +265,10 @@ class BatchManager(context: Context) {
 
       val batches = new Batches(c.triplestore)
       if (batches.list.contains(title)) {
-        throw new Exception(s"The batch $title is already defined")
+        log(s"The batch $title is already defined, assuming update/append")
       }
+
+      val bsamples = batches.samples(title).toSet
 
       val ps = new Platforms(config.triplestore)
       val platforms = ps.list.toSet
@@ -275,8 +277,10 @@ class BatchManager(context: Context) {
         if (!platforms.contains(p)) {
           throw new Exception(s"The sample ${s.identifier} contained an undefined platform_id ($p)")
         }
-        if (existingSamples.contains(s.identifier)) {
-          throw new Exception(s"The sample ${s.identifier} has already been defined in an existing batch")
+        if (bsamples.contains(s.identifier)) {
+          log(s"Replacing sample ${s.identifier}")
+        } else if (existingSamples.contains(s.identifier)) {
+          throw new Exception(s"The sample ${s.identifier} has already been defined in a different batch")
         }
         checkValidIdentifier(s.identifier, "sample ID")
       }
