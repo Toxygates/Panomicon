@@ -153,7 +153,7 @@ abstract class Triplestore extends Closeable {
    */
   def addTTL(file: java.io.File, context: String): Unit = {
     if (isReadonly) {
-      println("Triplestore is read-only, ignoring data insertion of $file into $context")
+      println(s"Triplestore is read-only, ignoring data insertion of $file into $context")
     } else {
       println(s"Insert file $file into $context")
       con.add(file, null, RDFFormat.TURTLE, new URIImpl(context))
