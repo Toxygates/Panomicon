@@ -36,6 +36,24 @@ import t.common.shared.sample.SimpleAnnotation
 import t.common.shared.sample.ExprMatrix
 import t.viewer.server.EVArray
 
+object ManagedMatrixBuilder {
+  def samplesForDisplay(g: Group): Iterable[OTGSample] = {
+    //TODO
+    val (tus, cus) = treatedAndControl(g)
+    if (tus.size > 1) {
+      //treated samples only
+      tus.flatMap(_.getSamples())
+    } else {
+      //all samples
+      g.getSamples()
+    }
+  }
+
+  //TODO use schema
+  def treatedAndControl(g: Group) =
+    g.getUnits().partition(_.get("dose_level") != "Control")
+}
+
 /**
  * Routines for loading a ManagedMatrix
  * and constructing groups.
@@ -44,6 +62,7 @@ import t.viewer.server.EVArray
  * otgviewer.shared ones
  */
 abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBReader[E], val probes: Seq[String]) {
+  import ManagedMatrixBuilder._
 
   /**
    * Info corresponding to the matrix being built. Gradually updated.
@@ -160,22 +179,6 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     val inSet = samples.map(s => ids.contains(s.sampleId))
     inSet.zipWithIndex.filter(_._1).map(_._2)
   }
-
-  protected def samplesForDisplay(g: Group): Iterable[OTGSample] = {
-    //TODO
-    val (tus, cus) = treatedAndControl(g)
-    if (tus.size > 1) {
-      //treated samples only
-      tus.flatMap(_.getSamples())
-    } else {
-      //all samples
-      g.getSamples()
-    }
-  }
-
-  //TODO use schema
-  protected def treatedAndControl(g: Group) =
-    g.getUnits().partition(_.get("dose_level") != "Control")
 }
 
 /**
@@ -192,6 +195,8 @@ class FoldBuilder(reader: MatrixDBReader[ExprValue], probes: Seq[String])
 
 trait TreatedControlBuilder[E >: Null <: ExprValue] {
   this: ManagedMatrixBuilder[E] =>
+
+  import ManagedMatrixBuilder._
   def enhancedColumns: Boolean
 
   protected def buildRow(raw: Seq[E],

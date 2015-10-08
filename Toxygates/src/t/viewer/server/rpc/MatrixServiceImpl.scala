@@ -443,19 +443,33 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     val mm = getSessionData.matrix
     var mat = if (individualSamples &&
       mm.rawUngroupedMat != null && mm.current != null) {
+      //Individual samples
       val info = mm.info
       val ug = mm.rawUngroupedMat.selectNamedRows(mm.current.rowKeys.toSeq)
-      val gs = (0 until info.numDataColumns()).map(g => info.columnGroup(g))
-      //Help the user by renaming the columns.
-      //Prefix sample IDs by group IDs.
-      val parts = gs.map(g => {
-        val ids = g.getTreatedSamples.map(_.id)
-        val sel = ug.selectNamedColumns(ids)
-        val newNames = Map() ++ sel.columnMap.map(x => (g.getName + ":" + x._1 -> x._2))
-        sel.copyWith(sel.data, sel.rowMap, newNames)
+      val parts = (0 until info.numDataColumns).map(g => {
+        val cg = info.columnGroup(g)
+
+        if (!info.isPValueColumn(g)) {
+          //Sample data.
+          //Help the user by renaming the columns.
+          //Prefix sample IDs by group IDs.
+
+          //Here we get both treated and control samples from cg, but
+          //except for single unit columns in the normalized intensity case,
+          // only treated will be present in ug.
+          val ids = cg.getSamples.map(_.id).filter(ug.columnKeys.contains)
+          val sel = ug.selectNamedColumns(ids)
+          val newNames = Map() ++ sel.columnMap.map(x => (cg.getName + ":" + x._1 -> x._2))
+          sel.copyWith(sel.data, sel.rowMap, newNames)
+        } else {
+          //p-value column, present as it is
+          mm.current.selectNamedColumns(List(info.columnName(g)))
+        }
       })
+
       parts.reduce(_ adjoinRight _)
     } else {
+      //Grouped
       mm.current
     }
 
