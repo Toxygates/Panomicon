@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import otgviewer.shared.Group;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;

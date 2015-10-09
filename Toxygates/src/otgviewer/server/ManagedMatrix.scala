@@ -35,24 +35,7 @@ import t.db.BasicExprValue
 import t.common.shared.sample.SimpleAnnotation
 import t.common.shared.sample.ExprMatrix
 import t.viewer.server.EVArray
-
-object ManagedMatrixBuilder {
-  def samplesForDisplay(g: Group): Iterable[OTGSample] = {
-    //TODO
-    val (tus, cus) = treatedAndControl(g)
-    if (tus.size > 1) {
-      //treated samples only
-      tus.flatMap(_.getSamples())
-    } else {
-      //all samples
-      g.getSamples()
-    }
-  }
-
-  //TODO use schema
-  def treatedAndControl(g: Group) =
-    g.getUnits().partition(_.get("dose_level") != "Control")
-}
+import t.viewer.shared.{Unit => TUnit}
 
 /**
  * Routines for loading a ManagedMatrix
@@ -62,7 +45,6 @@ object ManagedMatrixBuilder {
  * otgviewer.shared ones
  */
 abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBReader[E], val probes: Seq[String]) {
-  import ManagedMatrixBuilder._
 
   /**
    * Info corresponding to the matrix being built. Gradually updated.
@@ -87,8 +69,10 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     // A simple average column
     val tus = treatedAndControl(g)._1
     val treatedIdx = unitIdxs(tus, sortedBarcodes)
+    val samples = TUnit.collectBarcodes(tus)
 
-    info.addColumn(false, g.toString, "Average of treated samples", false, g, false)
+    info.addColumn(false, g.toString, g.toString + ": average of treated samples", false, g,
+        false, samples)
     ExprMatrix.withRows(data.map(vs =>
       EVArray(Seq(javaMean(selectIdx(vs, treatedIdx))))),
       probes,
@@ -110,7 +94,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
       //Remove repeated samples as some other algorithms assume distinct samples
       //Also for efficiency
       val samples =
-        (if (fullLoad) g.getSamples.toList else samplesForDisplay(g)).
+        (if (fullLoad) g.getSamples.toList else samplesToLoad(g)).
           toVector.distinct
       val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.id)))
       val data = reader.valuesForSamplesAndProbes(sortedSamples,
@@ -179,6 +163,15 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     val inSet = samples.map(s => ids.contains(s.sampleId))
     inSet.zipWithIndex.filter(_._1).map(_._2)
   }
+
+  protected def samplesToLoad(g: Group): Iterable[OTGSample] = {
+    val (tus, cus) = treatedAndControl(g)
+    tus.flatMap(_.getSamples())
+  }
+
+  //TODO use schema
+  protected def treatedAndControl(g: Group) =
+    g.getUnits().partition(_.get("dose_level") != "Control")
 }
 
 /**
@@ -195,8 +188,6 @@ class FoldBuilder(reader: MatrixDBReader[ExprValue], probes: Seq[String])
 
 trait TreatedControlBuilder[E >: Null <: ExprValue] {
   this: ManagedMatrixBuilder[E] =>
-
-  import ManagedMatrixBuilder._
   def enhancedColumns: Boolean
 
   protected def buildRow(raw: Seq[E],
@@ -245,13 +236,27 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[Exp
       javaMean(selectIdx(raw, controlIdx))))
 
   protected def addColumnInfo(g: Group) {
-    info.addColumn(false, colNames(g)(0), "Average of treated samples", false, g, false)
-    info.addColumn(false, colNames(g)(1), "Average of control samples", false, g, false)
+    val (tus, cus) = treatedAndControl(g)
+    info.addColumn(false, colNames(g)(0),
+        colNames(g)(0) + ": average of treated samples", false, g, false,
+        TUnit.collectBarcodes(tus))
+    info.addColumn(false, colNames(g)(1),
+        colNames(g)(1) + ": average of control samples", false, g, false,
+        TUnit.collectBarcodes(cus))
   }
 
   def colNames(g: Group): Seq[String] =
     List(g.toString, g.toString + "(cont)")
 
+  override protected def samplesToLoad(g: Group): Iterable[OTGSample] = {
+    val (tus, cus) = treatedAndControl(g)
+    if (tus.size > 1) {
+      super.samplesToLoad(g)
+    } else {
+      //all samples
+      g.getSamples()
+    }
+  }
 }
 
 /**
@@ -278,8 +283,13 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
     super.makeTooltip(data.map(log2))
 
   protected def addColumnInfo(g: Group) {
-    info.addColumn(false, colNames(g)(0), "Average of treated samples", false, g, false)
-    info.addColumn(false, colNames(g)(1), "p-values of treated against control", true, g, true)
+    val tus = treatedAndControl(g)._1
+    val samples = TUnit.collectBarcodes(tus)
+    info.addColumn(false, colNames(g)(0),
+        colNames(g)(0) + ": average of treated samples", false, g, false, samples)
+    info.addColumn(false, colNames(g)(1),
+        colNames(g)(1) + ": p-values of treated against control", true, g, true,
+        Array[OTGSample]())
   }
 
   def colNames(g: Group) =
@@ -461,7 +471,8 @@ class ManagedMatrix(val initProbes: Seq[String],
             currentMat.appendDiffTest(rawData, g1s, g2s, md.getShortTitle(null)) //TODO
           case _ => throw new Exception("Unexpected test type!")
         }
-        currentInfo.addColumn(true, test.getShortTitle(null), test.getTooltip(), upper, null, false) //TODO
+        currentInfo.addColumn(true, test.getShortTitle(null), test.getTooltip(), upper, null, false,
+            Array[OTGSample]()) //TODO
       case _ => throw new Exception("Unexpected test type")
     }
   }

@@ -447,8 +447,6 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       val info = mm.info
       val ug = mm.rawUngroupedMat.selectNamedRows(mm.current.rowKeys.toSeq)
       val parts = (0 until info.numDataColumns).map(g => {
-        val cg = info.columnGroup(g)
-
         if (!info.isPValueColumn(g)) {
           //Sample data.
           //Help the user by renaming the columns.
@@ -457,9 +455,9 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
           //Here we get both treated and control samples from cg, but
           //except for single unit columns in the normalized intensity case,
           // only treated will be present in ug.
-          val ids = cg.getSamples.map(_.id).filter(ug.columnKeys.contains)
+          val ids = info.samples(g).map(_.id)
           val sel = ug.selectNamedColumns(ids)
-          val newNames = Map() ++ sel.columnMap.map(x => (cg.getName + ":" + x._1 -> x._2))
+          val newNames = Map() ++ sel.columnMap.map(x => (info.columnName(g) + ":" + x._1 -> x._2))
           sel.copyWith(sel.data, sel.rowMap, newNames)
         } else {
           //p-value column, present as it is
