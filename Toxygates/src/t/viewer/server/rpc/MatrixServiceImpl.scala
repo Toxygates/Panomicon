@@ -297,26 +297,39 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   def removeTwoGroupTests(): Unit =
     getSessionData.matrix.removeSynthetics
 
-  @throws(classOf[NoDataLoadedException])
-  def prepareCSVDownload(individualSamples: Boolean): String = {
-    val mm = getSessionData.matrix
-    var mat = if (individualSamples &&
-      mm.rawUngroupedMat != null && mm.current != null) {
-      val info = mm.info
-      val ug = mm.rawUngroupedMat.selectNamedRows(mm.current.rowKeys.toSeq)
-      val gs = (0 until info.numDataColumns()).map(info.columnGroup(_))
-      //Help the user by renaming the columns.
-      //Prefix sample IDs by group IDs.
-      val parts = gs.map(g => {
-        val ids = g.getTreatedSamples.map(_.id)
-        val sel = ug.selectNamedColumns(ids)
-        val newNames = Map() ++ sel.columnMap.map(x => (g.getName + ":" + x._1 -> x._2))
-        sel.copyWith(sel.data, sel.rowMap, newNames)
-      })
-      parts.reduce(_ adjoinRight _)
-    } else {
-      mm.current
-    }
+    @throws(classOf[NoDataLoadedException])
+    def prepareCSVDownload(individualSamples: Boolean): String = {
+      val mm = getSessionData.matrix
+      var mat = if (individualSamples &&
+        mm.rawUngroupedMat != null && mm.current != null) {
+        //Individual samples
+        val info = mm.info
+        val ug = mm.rawUngroupedMat.selectNamedRows(mm.current.rowKeys.toSeq)
+        val parts = (0 until info.numDataColumns).map(g => {
+          if (!info.isPValueColumn(g)) {
+            //Sample data.
+            //Help the user by renaming the columns.
+            //Prefix sample IDs by group IDs.
+
+            //Here we get both treated and control samples from cg, but
+            //except for single unit columns in the normalized intensity case,
+            // only treated will be present in ug.
+            val ids = info.samples(g).map(_.id)
+            val sel = ug.selectNamedColumns(ids)
+            val newNames = Map() ++ sel.columnMap.map(x => (info.columnName(g) + ":" + x._1 -> x._2))
+            sel.copyWith(sel.data, sel.rowMap, newNames)
+          } else {
+            //p-value column, present as it is
+            mm.current.selectNamedColumns(List(info.columnName(g)))
+          }
+        })
+
+        parts.reduce(_ adjoinRight _)
+      } else {
+        //Grouped
+        mm.current
+      }
+
 
     val colNames = mat.sortedColumnMap.map(_._1)
     val rows = mat.asRows
