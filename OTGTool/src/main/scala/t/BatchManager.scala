@@ -69,28 +69,47 @@ object BatchManager extends ManagerTool {
       case "add" =>
         val title = require(stringOption(args, "-title"),
           "Please specify a title with -title")
-        val metaFile = require(stringOption(args, "-metadata"),
-          "Please specify a metadata file with -metadata")
-        val niFile = stringOption(args, "-ni")
-        val foldFile = require(stringOption(args, "-fold"),
-          "Please specify a folds file with -fold")
-        val callFile = stringOption(args, "-calls")
-        val foldCallFile = stringOption(args, "-foldCalls")
-        val foldPFile = stringOption(args, "-foldP")
         val append = booleanOption(args, "-append")
         val comment = stringOption(args, "-comment").getOrElse("")
 
         if (batches.list.contains(title) && !append) {
-          val msg = s"Batch $title already exists"
+          val msg = s"Batch $title already exists. Did you mean to use -append?"
           throw new Exception(msg)
         }
 
         val bm = new BatchManager(context)
-        val md = factory.tsvMetadata(metaFile)
-        withTaskRunner(bm.addBatch(title, comment,
-          md, niFile, callFile,
-          foldFile, foldCallFile, foldPFile,
-          append, config.seriesBuilder))
+
+        val metaList = stringListOption(args, "-multiMetadata")
+        metaList match {
+          case Some(ml) =>
+            for (mf <- ml.par) {
+              val md = factory.tsvMetadata(mf)
+              val niFile = Some(mf.replace(".meta.tsv", ".med.csv"))
+              val foldFile = mf.replace(".meta.tsv", "med_fold.csv")
+              val callFile = Some(mf.replace(".meta.tsv", "call.csv"))
+              val foldCallFile = Some(mf.replace(".meta.tsv", "call_fold.csv"))
+              val foldPFile = Some(mf.replace(".meta.tsv", "med_fold_p.csv"))
+              withTaskRunner(bm.addBatch(title, comment,
+                md, niFile, callFile,
+                foldFile, foldCallFile, foldPFile,
+                append, config.seriesBuilder))
+            }
+          case None =>
+            val metaFile = require(stringOption(args, "-metadata"),
+              "Please specify a metadata file with -metadata")
+            val niFile = stringOption(args, "-ni")
+            val foldFile = require(stringOption(args, "-fold"),
+              "Please specify a folds file with -fold")
+            val callFile = stringOption(args, "-calls")
+            val foldCallFile = stringOption(args, "-foldCalls")
+            val foldPFile = stringOption(args, "-foldP")
+            val md = factory.tsvMetadata(metaFile)
+            withTaskRunner(bm.addBatch(title, comment,
+              md, niFile, callFile,
+              foldFile, foldCallFile, foldPFile,
+              append, config.seriesBuilder))
+        }
+
       case "delete" =>
         val title = require(stringOption(args, "-title"),
           "Please specify a title with -title")
