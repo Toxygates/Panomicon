@@ -788,16 +788,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
               logger.info("Data successfully loaded");
             } else {
-              if (chosenProbes != null && chosenProbes.length > 0) {
-                Window
-                    .alert("No data was available. You may wish to choose different probes or samples.");
-              } else {
-                Window.alert("No data was available. You may wish to try reloading the page.");
-              }
+              Window
+                  .alert("No data was available.\nThe view will switch to default selection.");
+              onGettingExpressionFailed();
             }
           }
         });
   }
+  
+  protected void onGettingExpressionFailed() {}
 
   /**
    * This cell displays an image that can be clicked to display charts.
