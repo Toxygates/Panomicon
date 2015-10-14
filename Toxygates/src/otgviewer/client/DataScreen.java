@@ -218,7 +218,7 @@ public class DataScreen extends Screen {
     return manager.isConfigured(ColumnScreen.key);
   }
 
-  private void updateProbes() {
+  protected void updateProbes() {
     logger.info("chosenProbes: " + chosenProbes.length + " lastProbes: "
         + (lastProbes == null ? "null" : "" + lastProbes.length));
 
