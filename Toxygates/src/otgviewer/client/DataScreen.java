@@ -59,9 +59,9 @@ public class DataScreen extends Screen {
   protected String[] lastProbes;
   protected List<Group> lastColumns;
 
-  //TODO: factor out heat map management logic + state
-  //together with UIFactory.hasHeatMapMenu
-  @Nullable  
+  // TODO: factor out heat map management logic + state
+  // together with UIFactory.hasHeatMapMenu
+  @Nullable
   private MenuItem heatMapMenu;
 
   // private final MatrixServiceAsync matrixService;
@@ -81,11 +81,26 @@ public class DataScreen extends Screen {
   }
 
   protected GeneSetSelector makeGeneSetSelector() {
-    return new GeneSetSelector(this);
+    return new GeneSetSelector(this) {
+      @Override
+      public void itemsChanged(List<String> items) {
+        updateProbes();
+      }
+    };
   }
 
   protected ExpressionTable makeExpressionTable() {
-    return new ExpressionTable(this, true);
+    return new ExpressionTable(this, true) {
+      @Override
+      protected void onGettingExpressionFailed() {
+        super.onGettingExpressionFailed();
+
+        DataScreen.this.probesChanged(new String[0]);
+        DataScreen.this.geneSetChanged(new String());
+
+        updateProbes();
+      }
+    };
   }
 
   @Override
@@ -209,8 +224,6 @@ public class DataScreen extends Screen {
     }
   }
 
-
-
   @Override
   public boolean enabled() {
     // return manager.isConfigured(ProbeScreen.key)
@@ -259,19 +272,15 @@ public class DataScreen extends Screen {
   public void geneSetChanged(String geneSet) {
     super.geneSetChanged(geneSet);
 
+    StorageParser p = getParser(this);
+    storeGeneSet(p);
+
     if (heatMapMenu != null) {
       heatMapMenu.setEnabled(!gs.isDefaultItemSelected());
     }
 
-    StorageParser p = getParser(this);
-    storeGeneSet(p);
-
     lastProbes = null;
     lastColumns = null;
-
-    if (chosenGeneSet != null) {
-      updateProbes();
-    }
   }
 
 }

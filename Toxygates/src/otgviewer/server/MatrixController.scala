@@ -134,8 +134,14 @@ class MatrixController(context: Context,
 
   var managedMatrix: ManagedMatrix = {
     val pt = new PerfTimer(Logger.getLogger("matrixController.loadMatrix"))
-
-    val mm = makeMatrix(filteredProbes, typ, sparseRead, fullLoad)
+    
+    val mm = if (filteredProbes.size > 0) {
+      makeMatrix(filteredProbes, typ, sparseRead, fullLoad)
+    } else {
+      val emptyMatrix = new ExprMatrix(List(), 0, 0,Map(), Map(), List())
+      new ManagedMatrix(List(), new ManagedMatrixInfo(), emptyMatrix, emptyMatrix)
+    }
+    
     pt.mark("MakeMatrix")
     mm.info.setPlatforms(groupPlatforms.toArray)
 
