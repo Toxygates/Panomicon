@@ -3,30 +3,29 @@ var InCHlibEx;
 (function ($) {
 
   InCHlibEx = function (settings) {
-    console.log("InCHlibEx::anonymous function");
-    InCHlib.call(this, settings);
-
     var self = this;
+    InCHlib.call(self, settings);
 
     self.colors = self.extendColors(self.colors);
     self.objects_ref = self.extendObjectsRef(self.objects_ref);
+
     self.cluster_colors = [
-      "#001f3f",
-      "#0074D9",
-      "#7FDBFF",
-      "#39CCCC",
-      "#3D9970",
-      "#2ECC40",
-      "#01FF70",
-      "#FFDC00",
-      "#FF851B",
-      "#FF4136",
-      "#85144b",
-      "#F012BE",
-      "#B10DC9",
-      "#111111",
-      "#AAAAAA",
-      "#DDDDDD",
+      "#001f3f", // NAVY
+      "#0074D9", // BLUE
+      "#7FDBFF", // AQUA
+      "#39CCCC", // TEAL
+      "#3D9970", // OLIVE
+      "#2ECC40", // GREEN
+      "#01FF70", // LIME
+      "#FFDC00", // YELLOW
+      "#FF851B", // ORANGE
+      "#FF4136", // RED
+      "#85144b", // MAROON
+      "#F012BE", // FUCHSIA
+      "#B10DC9", // PURPLE
+      "#111111", // BLACK
+      "#AAAAAA", // GRAY
+      "#DDDDDD"  // SILVER
     ];
   };
 
@@ -75,28 +74,48 @@ var InCHlibEx;
       strokeWidth: 2,
       dash: [6, 2]
     });
-
     return objects_ref;
   };
 
-  InCHlibEx.prototype.draw = function () {
-    InCHlib.prototype.draw.call(this);
-
+  InCHlibEx.prototype.read_data_from_file = function (json) {
     var self = this;
 
-    self.selection_y = [];
-    self.current_object_ids = [];
-    self.mouse_down = null;
-    self.mouse_down_from = null;
-    self.mouse_down_to = null;
-    self.selection = null;
+    var d = new $.Deferred;
+    self.loading = d.promise();
+
+    $.ajax({
+      url: json,
+      type: 'GET',
+      dataType: 'json',
+      timeout: 30000,
+      async: true // Synchronous XMLHttpRequest is deprecated
+    }).done(function (json_file) {
+      self.read_data(json_file);
+      d.resolve();
+    }).fail(function () {
+      d.reject();
+    });
+  }
+
+  InCHlibEx.prototype.draw = function () {
+    var self = this;
+
+    self.loading.done(function () {
+      InCHlib.prototype.draw.call(self);
+      self.selection_y = []; // TODO use highlighted_rows_y instead
+
+      self.mouse_down = null;
+      self.mouse_down_from = null;
+      self.mouse_down_to = null;
+      self.selection = null; // TODO use highlighted_rows_y instead
+    }).fail(function () {
+      alert("Timeout while loading data.")
+    });
   }
 
   InCHlibEx.prototype._draw_color_scale = function () {
-    console.log("InCHlibEx::_draw_color_scale");
     var self = this;
-
-    InCHlib.prototype._draw_color_scale.call(this);
+    InCHlib.prototype._draw_color_scale.call(self);
 
     var color_scale_up = new Kinetic.Text({
       x: 100,
@@ -129,9 +148,9 @@ var InCHlibEx;
   };
 
   InCHlibEx.prototype._draw_heatmap = function () {
-    InCHlib.prototype._draw_heatmap.call(this);
-
     var self = this;
+    InCHlib.prototype._draw_heatmap.call(self);
+
     if (!self.settings.heatmap) {
       return;
     }
@@ -154,9 +173,8 @@ var InCHlibEx;
   };
 
   InCHlibEx.prototype._draw_dendrogram_layers = function () {
-    InCHlib.prototype._draw_dendrogram_layers.call(this);
-
     var self = this;
+    InCHlib.prototype._draw_dendrogram_layers.call(self);
 
     // Disable super class's handler
     self.cluster_layer.off("click");
@@ -171,9 +189,8 @@ var InCHlibEx;
   };
 
   InCHlibEx.prototype._draw_stage_layer = function () {
-    InCHlib.prototype._draw_stage_layer.call(this);
-
     var self = this;
+    InCHlib.prototype._draw_stage_layer.call(self);
 
     // Disable super class's handler
     self.stage_layer.off("click");
@@ -188,18 +205,18 @@ var InCHlibEx;
   };
 
   InCHlibEx.prototype._dendrogram_layers_click = function (layer, evt) {
-    InCHlib.prototype._dendrogram_layers_click.call(this, layer, evt);
-
     var self = this;
+    InCHlib.prototype._dendrogram_layers_click.call(self, layer, evt);
+
     self.unhighlight_selection();
     self.unhighlight_cutoff_selection();
     self.change_selection_mode("dendrogram");
   };
 
   InCHlibEx.prototype._column_dendrogram_layers_click = function (layer, evt) {
-    InCHlib.prototype._column_dendrogram_layers_click.call(this, layer, evt);
-
     var self = this;
+    InCHlib.prototype._column_dendrogram_layers_click.call(self, layer, evt);
+
     self.unhighlight_selection();
     self.unhighlight_cutoff_selection();
     self.change_selection_mode(null);
@@ -207,6 +224,7 @@ var InCHlibEx;
 
   InCHlibEx.prototype._dendrogram_layers_mousedown = function (layer, evt) {
     var self = this;
+
     var node_id = evt.target.attrs.path_id;
     clearTimeout(self.timer);
     self.timer = setTimeout(function () {
@@ -219,6 +237,7 @@ var InCHlibEx;
 
   InCHlibEx.prototype._column_dendrogram_layers_mousedown = function (layer, evt) {
     var self = this;
+
     var node_id = evt.target.attrs.path_id;
     clearTimeout(self.timer);
     self.timer = setTimeout(function () {
@@ -230,36 +249,36 @@ var InCHlibEx;
   };
 
   InCHlibEx.prototype._zoom_cluster = function (node_id) {
-    InCHlib.prototype._zoom_cluster.call(this, node_id);
-
     var self = this;
+    InCHlib.prototype._zoom_cluster.call(self, node_id);
+
     self.unhighlight_selection();
     self.unhighlight_cutoff_selection();
     self.change_selection_mode(null);
   }
 
   InCHlibEx.prototype._unzoom_cluster = function () {
-    InCHlib.prototype._unzoom_cluster.call(this);
-
     var self = this;
+    InCHlib.prototype._unzoom_cluster.call(self);
+
     self.unhighlight_selection();
     self.unhighlight_cutoff_selection();
     self.change_selection_mode(null);
   }
 
   InCHlibEx.prototype._zoom_column_cluster = function (node_id) {
-    InCHlib.prototype._zoom_column_cluster.call(this, node_id);
-
     var self = this;
+    InCHlib.prototype._zoom_column_cluster.call(self, node_id);
+
     self.unhighlight_selection();
     self.unhighlight_cutoff_selection();
     self.change_selection_mode(null);
   }
 
   InCHlibEx.prototype._unzoom_column_cluster = function () {
-    InCHlib.prototype._unzoom_column_cluster.call(this);
-
     var self = this;
+    InCHlib.prototype._unzoom_column_cluster.call(self);
+
     self.unhighlight_selection();
     self.unhighlight_cutoff_selection();
     self.change_selection_mode(null);
@@ -268,6 +287,7 @@ var InCHlibEx;
   // To draw cells whose value is null
   InCHlibEx.prototype._draw_heatmap_row = function (node_id, x1, y1) {
     var self = this;
+
     var node = self.data.nodes[node_id];
     var row = new Kinetic.Group({id: node_id});
     var x2, y2, color, line, value, text, text_value, col_index;
@@ -426,9 +446,8 @@ var InCHlibEx;
   }; // _draw_heatmap_row
 
   InCHlibEx.prototype._draw_row_ids = function () {
-    InCHlib.prototype._draw_row_ids.call(this);
-
     var self = this;
+    InCHlib.prototype._draw_row_ids.call(self);
 
     if (self.pixels_for_leaf < 6 || self.row_id_size < 5) {
       return;
@@ -450,9 +469,8 @@ var InCHlibEx;
   };
 
   InCHlibEx.prototype._bind_row_events = function (row) {
-    InCHlib.prototype._bind_row_events.call(this, row);
-
     var self = this;
+    InCHlib.prototype._bind_row_events.call(self, row);
 
     row.on("mousedown", function (evt) {
       console.log("mousedown")
@@ -522,6 +540,7 @@ var InCHlibEx;
 
   InCHlibEx.prototype._draw_selection_layer = function (selection) {
     var self = this;
+
     self.row_selection_group = new Kinetic.Group();
     var visible = self._get_visible_count();
     var count = selection.length;
@@ -569,6 +588,7 @@ var InCHlibEx;
 
   InCHlibEx.prototype.unhighlight_selection = function () {
     var self = this;
+
     if (self.selection) {
       self.unhighlight_rows();
       self.row_selection_group.destroy();
@@ -586,6 +606,7 @@ var InCHlibEx;
 
   InCHlibEx.prototype._dendrogram_layers_mouseover = function (layer, evt) {
     var self = this;
+
     if (evt.target.attrs.id) {
       self.path_overlay = evt.target.attrs.path.clone({"strokeWidth": 4});
       self.dendrogram_hover_layer.add(self.path_overlay);
@@ -595,6 +616,7 @@ var InCHlibEx;
 
   InCHlibEx.prototype._draw_column_cluster = function (node_id) {
     var self = this;
+
     self.columns_start_index = self.current_column_ids[0];
     self.on_features["data"] = self.current_column_ids;
     var distance = self.distance;
@@ -626,18 +648,19 @@ var InCHlibEx;
 
   InCHlibEx.prototype._draw_row_dendrogram = function (node_id) {
     var self = this;
+
     self.cutoff_tool_layer = new Kinetic.Layer();
     self.stage.add(self.cutoff_tool_layer);
 
-    InCHlib.prototype._draw_row_dendrogram.call(this, node_id);
+    InCHlib.prototype._draw_row_dendrogram.call(self, node_id);
 
     self.cutoff_tool_layer.draw();
   };
 
   InCHlibEx.prototype._draw_distance_scale = function (distance) {
-    InCHlib.prototype._draw_distance_scale.call(this, distance);
-
     var self = this;
+    InCHlib.prototype._draw_distance_scale.call(self, distance);
+
     if (!self.settings.navigation_toggle.distance_scale) {
       return;
     }
@@ -690,8 +713,8 @@ var InCHlibEx;
 
   InCHlibEx.prototype._cutoff_assist_rect_mouseenter = function (evt, x, y, value) {
     var self = this;
-    self.cutoff_tool_assist_overlay.destroyChildren();
 
+    self.cutoff_tool_assist_overlay.destroyChildren();
     self.cutoff_distance_tooltip = self.objects_ref.tooltip_label.clone({x: x, y: y, id: "cotoff_tooltip_label"});
     self.cutoff_distance_tooltip.add(self.objects_ref.tooltip_tag.clone({pointerDirection: 'down'}));
     self.cutoff_distance_tooltip.add(self.objects_ref.tooltip_text.clone({text: value, id: "cutoff_tooltip_tag"}));
@@ -722,6 +745,7 @@ var InCHlibEx;
 
   InCHlibEx.prototype._cutoff_assist_rect_mouseleave = function (evt) {
     var self = this;
+
     self.cutoff_distance_tooltip = null;
     self.cutoff_tool_assist_overlay.destroyChildren();
 
@@ -746,7 +770,6 @@ var InCHlibEx;
       }
       tmp[key] = nodes[key];
     }
-    ;
 
     for (key in tmp) {
       if (tmp[key]["left_child"] || tmp[key]["right_child"]) {
@@ -773,7 +796,7 @@ var InCHlibEx;
         ret.push(hash[key]);
       }
       return ret;
-    }
+    };
 
     self._draw_cutoff_group_layer(toArray(custer_groups));
   };
@@ -840,13 +863,14 @@ var InCHlibEx;
     self.cutoff_group_layer.add(self.cutoff_group);
 
     self.cutoff_group_layer.moveToTop();
-  }
+  };
 
   InCHlibEx.prototype.change_selection_mode = function (selection_mode) {
     var self = this;
+
     self.selection_mode = selection_mode;
     self.selection_mode_changed();
-  }
+  };
 
   InCHlibEx.prototype.selection_mode_changed = function () {
     // TODO override in GWT
