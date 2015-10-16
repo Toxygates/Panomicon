@@ -91,7 +91,8 @@ object BatchManager extends ManagerTool {
               val md = factory.tsvMetadata(mf)
               val dataFile = mf.replace(".meta.tsv", ".data.csv")
               //TODO should be optional
-              val callFile = Some(mf.replace(".meta.tsv", ".call.csv"))
+              val f = new java.io.File(mf.replace(".meta.tsv", ".call.csv"))
+              val callFile = if (f.exists()) Some(f.getPath) else None
               println(s"Insert $dataFile")
               addTasklets(bm.addBatch(title, comment,
                 md, dataFile, callFile,
