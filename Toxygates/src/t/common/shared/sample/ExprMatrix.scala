@@ -26,6 +26,7 @@ import friedrich.data.immutable._
 import t.util.SafeMath.safeMean
 import t.viewer.server.EVABuilder
 import t.viewer.server.EVArray
+import scala.language.postfixOps
 
 object ExprMatrix {
   val ttest = new TTest()
