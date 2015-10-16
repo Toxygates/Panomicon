@@ -90,7 +90,7 @@ object BatchManager extends ManagerTool {
             for (mf <- ml) {
               val md = factory.tsvMetadata(mf)
               val dataFile = mf.replace(".meta.tsv", ".data.csv")
-              //TODO should be optional
+
               val f = new java.io.File(mf.replace(".meta.tsv", ".call.csv"))
               val callFile = if (f.exists()) Some(f.getPath) else None
               println(s"Insert $dataFile")
