@@ -4,12 +4,9 @@
 BATCH=$1
 shift
 
-#e.g. acetaminophen....meta.tsv.gz and others
+#e.g. acetaminophen....meta.tsv and others
+#For each meta.tsv, a data.tsv file is also expected, and a call.csv file may 
+#optionally be present
+BASE=${MF%meta.tsv}
+/home/nibioadmin/toxygates/OTGTool/tmanager.sh batch add -append -title $BATCH -multiMetadata $*
 
-for MF in $*
-do
-	BASE=${MF%meta.tsv.gz}
-	gzip -d ${BASE}*
-	/home/nibioadmin/toxygates/OTGTool/tmanager.sh batch add -append -title $BATCH -metadata ${MF%.gz} -ni ${BASE}med.csv -fold ${BASE}med_fold.csv -calls ${BASE}call.csv -foldCalls ${BASE}call_fold.csv -foldP ${BASE}med_fold_p.csv
-	gzip $BASE*
-done

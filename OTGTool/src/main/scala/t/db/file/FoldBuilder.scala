@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -33,107 +33,115 @@ import otg.Factory
 import scala.Vector
 
 /**
- * Fold data file builder for microarray data (having P/A calls)
+ * log-2 fold values constructed from the input data
+ * The sample space of the output may be smaller (control samples have no folds)
  */
-class FoldBuilder(factory: Factory) extends CmdLineOptions {
+abstract class FoldValueBuilder[E <: ExprValue](md: Metadata, input: RawExpressionData)
+  extends RawExpressionData {
 
-  /**
-   * log-2 fold values
-   */
-  abstract class FoldValueBuilder[E <: ExprValue](md: Metadata) extends ExprValueBuilder[E] {
+  lazy val values: Iterable[(Sample, String, E)] = {
+    println("Compute control values")
+    val treatedSamples = input.data.keys.filter(x => !md.isControl(x))
+    val groups = treatedSamples.groupBy(md.controlSamples(_))
+    var r = Vector[(Sample, String, E)]()
 
-    def values(data: RawExpressionData) = {
-      println("Compute control values")
-      val treatedSamples = data.data.keys.filter(x => !md.isControl(x))
-      val groups = treatedSamples.groupBy(md.controlSamples(_))
-      var r = Vector[(Sample, String, E)]()
-
-      for ((cxs, xs) <- groups) {
-        println("Control barcodes: " + cxs)
-        println("Non-control: " + (xs.toSet -- cxs))
-        r ++= makeFolds(cxs, xs.toSet -- cxs, data)
-      }
-      r
+    for ((cxs, xs) <- groups) {
+      println("Control barcodes: " + cxs)
+      println("Non-control: " + (xs.toSet -- cxs))
+      r ++= makeFolds(cxs, xs.toSet -- cxs)
     }
-
-    /**
-     * Construct fold values for a sample group.
-     */
-    protected def makeFolds(controlSamples: Iterable[Sample], treatedSamples: Iterable[Sample],
-      data: RawExpressionData): Iterable[(Sample, String, E)]
-
-    /**
-     * Compute a control sample (as a mean).
-     * @param expr: expression values for each barcode. (probe -> value)
-     * @param calls: calls for each barcode (probe -> call)
-     * @param cbs: control barcodes.
-     */
-    protected def controlMeanSample(data: RawExpressionData, cbs: Iterable[Sample]) = {
-      var controlValues = Map[String, Double]()
-      for (probe <- data.probes) {
-        val eval = cbs.map(data.expr(_, probe)).sum / cbs.size
-        val acalls = cbs.map(data.call(_, probe)).toList.distinct
-        //      val call = acalls.reduce(safeCall)
-        controlValues += (probe -> eval)
-      }
-      controlValues
-    }
-
-    protected def foldPACall(log2fold: Double, controlCalls: Iterable[Char],
-      treatedCalls: Iterable[Char]): Char = {
-
-      //Treat M as A
-      val controlPresent = controlCalls.count(_ == 'P') > controlCalls.size / 2
-      val treatedPresent = treatedCalls.count(_ == 'P') > treatedCalls.size / 2
-      if (log2fold > 0 && treatedPresent && !controlPresent) {
-        'P'
-      } else if (log2fold < 0 && !treatedPresent && controlPresent) {
-        'P'
-      } else if (treatedPresent && controlPresent) {
-        'P'
-      } else {
-        'A'
-      }
-    }
+    r
   }
 
   /**
-   * log-2 fold values with P-values.
-   * This could be stored in a separate table, but for simplicity, we are grouping it with
-   * expression data for now.
+   * Construct fold values for a sample group.
    */
-  class PFoldValueBuilder(md: otg.db.Metadata) extends FoldValueBuilder[PExprValue](md) {
-    val tt = new TTest
+  protected def makeFolds(controlSamples: Iterable[Sample],
+      treatedSamples: Iterable[Sample]): Iterable[(Sample, String, E)]
 
-    //TODO: factor out some code shared with the superclass
+  /**
+   * Compute a control sample (as a mean).
+   * @param expr: expression values for each barcode. (probe -> value)
+   * @param calls: calls for each barcode (probe -> call)
+   * @param cbs: control barcodes.
+   */
+  protected def controlMeanSample(cbs: Iterable[Sample]): Map[String, Double] = {
+    var controlValues = Map[String, Double]()
+    for (probe <- input.probes) {
+      val eval = cbs.map(input.expr(_, probe)).sum / cbs.size
+      val acalls = cbs.map(input.call(_, probe)).toList.distinct
+      //      val call = acalls.reduce(safeCall)
+      controlValues += (probe -> eval)
+    }
+    controlValues
+  }
 
-    protected def makeFolds(controlSamples: Iterable[Sample],
-      treatedSamples: Iterable[Sample], data: RawExpressionData) = {
+  protected def foldPACall(log2fold: Double, controlCalls: Iterable[Char],
+    treatedCalls: Iterable[Char]): Char = {
 
-      val controlMean = controlMeanSample(data, controlSamples)
-      var r = Vector[(Sample, String, PExprValue)]()
-      val l2 = Math.log(2)
-      var pVals = Map[String, Double]()
-
-      for (probe <- data.probes) {
-        val cs = controlSamples.map(data.expr(_, probe))
-        val ts = treatedSamples.map(data.expr(_, probe))
-        pVals += (probe -> tt.tTest(cs.toArray, ts.toArray))
-      }
-
-      for (x <- treatedSamples) {
-        println(x)
-        r ++= data.probes.map(p => {
-          val control = controlMean(p)
-          val foldVal = Math.log(data.expr(x, p) / control) / l2
-          val pacall = foldPACall(foldVal, controlSamples.map(data.call(_, p)),
-            treatedSamples.map(data.call(_, p)))
-          (x, p, PExprValue(foldVal, pVals(p), pacall))
-        })
-      }
-      r
+    //Treat M as A
+    val controlPresent = controlCalls.count(_ == 'P') > controlCalls.size / 2
+    val treatedPresent = treatedCalls.count(_ == 'P') > treatedCalls.size / 2
+    if (log2fold > 0 && treatedPresent && !controlPresent) {
+      'P'
+    } else if (log2fold < 0 && !treatedPresent && controlPresent) {
+      'P'
+    } else if (treatedPresent && controlPresent) {
+      'P'
+    } else {
+      'A'
     }
   }
+}
+
+/**
+ * log-2 fold values with P-values.
+ * This could be stored in a separate table, but for simplicity, we are grouping it with
+ * expression data for now.
+ */
+class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
+  extends FoldValueBuilder[PExprValue](md, input) {
+  val tt = new TTest
+
+  //TODO: factor out some code shared with the superclass
+
+  override protected def makeFolds(controlSamples: Iterable[Sample],
+    treatedSamples: Iterable[Sample]): Iterable[(Sample, String, PExprValue)] = {
+
+    val controlMean = controlMeanSample(controlSamples)
+    var r = Vector[(Sample, String, PExprValue)]()
+    val l2 = Math.log(2)
+    var pVals = Map[String, Double]()
+
+    for (probe <- input.probes) {
+      val cs = controlSamples.map(input.expr(_, probe))
+      val ts = treatedSamples.map(input.expr(_, probe))
+      pVals += (probe -> tt.tTest(cs.toArray, ts.toArray))
+    }
+
+    for (x <- treatedSamples) {
+      println(x)
+      r ++= input.probes.map(p => {
+        val control = controlMean(p)
+        val foldVal = Math.log(input.expr(x, p) / control) / l2
+        val pacall = foldPACall(foldVal, controlSamples.map(input.call(_, p)),
+          treatedSamples.map(input.call(_, p)))
+        (x, p, PExprValue(foldVal, pVals(p), pacall))
+      })
+    }
+    r
+  }
+
+  import scala.collection.{Map => CMap}
+
+  lazy val data: CMap[Sample, CMap[String, (Double, Char, Double)]] = {
+    val bySample = values.groupBy(_._1)
+    val byProbe = bySample.mapValues(x => x.groupBy(_._2))
+    byProbe.mapValues(v => v.mapValues(_.map(p => (p._3.value, p._3.call, p._3.p)).head))
+  }
+}
+
+object FoldBuilder extends CmdLineOptions {
 
   def main(args: Array[String]) {
     val input = require(stringOption(args, "-input"),
@@ -144,9 +152,11 @@ class FoldBuilder(factory: Factory) extends CmdLineOptions {
     val mdfile = require(stringOption(args, "-metadata"),
       "Please specify metadata file with -metadata")
 
+    val factory = new otg.Factory //TODO
+
     val md = factory.tsvMetadata(input)
-    val builder = new PFoldValueBuilder(md)
-    val data = new CSVRawExpressionData(List(input), Some(List(calls)), None)
+    val data = new CSVRawExpressionData(List(input), Some(List(calls)))
+    val builder = new PFoldValueBuilder(md, data)
 
     val output = input.replace(".csv", "_fold.csv")
     val callout = calls.replace(".csv", "_fold.csv")
@@ -159,12 +169,12 @@ class FoldBuilder(factory: Factory) extends CmdLineOptions {
     val writers = List(writer, callwriter, pwriter)
 
     try {
-      val vals = builder.values(data)
-      val samples = vals.map(_._1).distinct
+      val vals = builder.values
+      val samples = vals.map(_._1).toSeq.distinct
       for (w <- writers) { headers(w, samples) }
 
       val values = vals.groupBy(_._2)
-      for ((p, vs) <- values; sorted = vs.sortBy(s => samples.indexOf(s._1))) {
+      for ((p, vs) <- values; sorted = vs.toSeq.sortBy(s => samples.indexOf(s._1))) {
         for (w <- writers) { w.write("\"" + p + "\",") }
 
         writer.write(sorted.map(_._3.value).mkString(","))

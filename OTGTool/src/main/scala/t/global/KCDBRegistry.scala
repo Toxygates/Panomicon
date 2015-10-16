@@ -24,6 +24,30 @@ import kyotocabinet.DB
 import scala.collection.mutable.Map
 
 /**
+ * A registry that simply opens writers and keeps them all open.
+ * Efficient for maintenance mode. Not intended for normal operation.
+ */
+object SimpleRegistry {
+  val writers = Map[String, DB] ()
+
+  def findOrCreate(file: String): DB = synchronized {
+    if (writers.contains(file)) {
+      writers(file)
+    } else {
+      val db = KCDBRegistry.openWrite(file)
+      writers.put(file, db)
+      db
+    }
+  }
+
+  def closeAll(): Unit = synchronized {
+    for ((k, v) <- writers) {
+      v.close()
+    }
+  }
+}
+
+/**
  * The KCDBRegistry handles concurrent database requests.
  * The goal is to keep a DB object open as long as possible in a given
  * process, to maximise the benefits of the cache, yet honour incoming
@@ -39,6 +63,19 @@ object KCDBRegistry {
   private var inWriting = Set[String]()
   private var readers = Map[String, DB]()
   private val myWriters = new ThreadLocal[Map[String, DB]]()
+
+  //Special mode for maintenance.
+  private var maintenance: Boolean = false
+  def setMaintenance(maintenance: Boolean) {
+    this.maintenance = maintenance
+  }
+
+  def isMaintenance: Boolean = maintenance
+
+  //To be used at the end if noClose mode is activated.
+  def closeAll() {
+    SimpleRegistry.closeAll()
+  }
 
   def get(file: String, writeMode: Boolean) = {
     if (writeMode) {
@@ -83,6 +120,10 @@ object KCDBRegistry {
    */
   def getReader(file: String): Option[DB] = synchronized {
     println(s"Read request for $file")
+    if (maintenance) {
+      return Some(SimpleRegistry.findOrCreate(file))
+    }
+
     if (getMyWriter(file) != None) {
       //this thread is writing
       incrReadCount(file)
@@ -117,6 +158,10 @@ object KCDBRegistry {
    */
   def getWriter(file: String): Option[DB] = {
     println(s"Write request for $file")
+    if (maintenance) {
+      return Some(SimpleRegistry.findOrCreate(file))
+    }
+
     synchronized {
       if (getMyWriter(file) != None) {
         return getMyWriter(file)
@@ -163,6 +208,10 @@ object KCDBRegistry {
    * Release a previously obtained reader or writer.
    */
   def release(file: String): Unit = synchronized {
+    if (maintenance) {
+      return
+    }
+
     if (readCount.getOrElse(file, 0) > 0) {
       readCount += (file -> (readCount(file) - 1))
       //note we could close the DB here but we keep it open
@@ -173,6 +222,7 @@ object KCDBRegistry {
       getMyWriter(file).get.close()
       inWriting -= file
       setMyWriter(file, null)
+
     } else {
       throw new Exception(s"Incorrect release request - $file was not open")
     }
@@ -181,7 +231,7 @@ object KCDBRegistry {
   /**
    * Open the database for reading.
    */
-  private[this] def openRead(file: String): DB = {
+  private[global] def openRead(file: String): DB = {
     println(s"Attempting to open $file for reading")
     val db = new DB()
     if (!db.open(file, DB.OREADER | DB.OCREATE)) {
@@ -193,7 +243,7 @@ object KCDBRegistry {
   /**
    * Open the database for writing.
    */
-  private[this] def openWrite(file: String): DB = {
+  private[global] def openWrite(file: String): DB = {
     println(s"Attempting to open $file for writing")
     val db = new DB()
     if (!db.open(file, DB.OWRITER | DB.OCREATE)) {

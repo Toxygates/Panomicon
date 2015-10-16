@@ -24,8 +24,6 @@ import scala.collection.{ Map => CMap }
 
 /**
  * RawExpressionData is sample data that has not yet been inserted into the database.
- *
- * TODO: Move to t.db
  */
 trait RawExpressionData {
 
@@ -36,7 +34,6 @@ trait RawExpressionData {
 
   def call(x: Sample, probe: String) = data(x)(probe)._2
   def expr(x: Sample, probe: String) = data(x)(probe)._1
-
   def p(x: Sample, probe: String) = data(x)(probe)._3
 
   // This assumes that all samples contain the same probe set.

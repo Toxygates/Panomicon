@@ -21,18 +21,15 @@
 package t.admin.client;
 
 import static t.admin.shared.MaintenanceConstants.callPrefix;
-import static t.admin.shared.MaintenanceConstants.foldCallPrefix;
-import static t.admin.shared.MaintenanceConstants.foldPPrefix;
-import static t.admin.shared.MaintenanceConstants.foldPrefix;
 import static t.admin.shared.MaintenanceConstants.metaPrefix;
-import static t.admin.shared.MaintenanceConstants.niPrefix;
-
+import static t.admin.shared.MaintenanceConstants.dataPrefix;
 import t.common.client.Command;
 import static t.common.client.Utils.makeButton;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextArea;
@@ -43,7 +40,7 @@ public class BatchUploader extends UploadDialog {
 	protected MaintenanceServiceAsync maintenanceService = (MaintenanceServiceAsync) GWT
 			.create(MaintenanceService.class);
 	
-	private UploadWrapper metadata, normalized, fold, calls, foldCalls, foldP; 
+	private UploadWrapper metadata, data, calls; 
 	
 	private Button proceed, cancel;	
 	private TextArea comments;
@@ -58,35 +55,22 @@ public class BatchUploader extends UploadDialog {
 		metadata = new UploadWrapper(this, "Metadata file (TSV)", 
 				metaPrefix, "tsv");	
 		uploaders.add(metadata);
-		normalized = new UploadWrapper(this, "Normalized intensity data file (CSV)", 
-				niPrefix, "csv");
-		uploaders.add(normalized);
-		calls = new UploadWrapper(this, "Calls file (CSV) (optional)", 
+		data = new UploadWrapper(this, "Normalized data file (CSV)", 
+				dataPrefix, "csv");
+		uploaders.add(data);
+		calls = new UploadWrapper(this, "Affymetrix calls file (CSV) (optional)", 
 				callPrefix, "csv");
 		uploaders.add(calls);
-		fold = new UploadWrapper(this, "Fold change data file (CSV)", 
-				foldPrefix, "csv");
-		uploaders.add(fold);
-		foldCalls = new UploadWrapper(this, "Fold change calls file (CSV) (optional)",
-				foldCallPrefix, "csv");
-		uploaders.add(foldCalls);
-		foldP = new UploadWrapper(this, "Fold change p-values (CSV) (optional)",
-				foldPPrefix, "csv");
-		uploaders.add(foldP);
-
+		
 		HorizontalPanel hp = new HorizontalPanel();
 		hp.add(metadata);
-		hp.add(normalized);
+		hp.add(data);
 		vp.add(hp);
 		
 		hp = new HorizontalPanel();
-		hp.add(fold);
-		hp.add(foldP);
-		vp.add(hp);
-		
-		hp = new HorizontalPanel();
-		hp.add(calls);
-		hp.add(foldCalls);
+		hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
+		hp.setWidth("100%");
+		hp.add(calls);		
 		vp.add(hp);
 		
 		vp.add(new Label("Comments"));
@@ -97,13 +81,9 @@ public class BatchUploader extends UploadDialog {
 		Command c = new Command("Proceed") {
 			@Override 
 			public void run() { 
-				if ((!calls.hasFile() || !foldCalls.hasFile()) && 
-						!Window.confirm("One or both of the call data files are missing. " +
+				if (!calls.hasFile() && 
+						!Window.confirm("The Affymetrix calls file is missing. " +
 								"Upload batch without calls data (all values present)?")) {
-					return;
-				}
-				
-				if (!foldP.hasFile() && !Window.confirm("Upload batch without fold p-values?")) {
 					return;
 				}
 				
@@ -144,7 +124,7 @@ public class BatchUploader extends UploadDialog {
 	}
 	
 	public void updateStatus() {
-		if (metadata.hasFile() && normalized.hasFile() && fold.hasFile()) {
+		if (metadata.hasFile() && data.hasFile()) {
 			proceed.setEnabled(true);
 		} else {
 			proceed.setEnabled(false);

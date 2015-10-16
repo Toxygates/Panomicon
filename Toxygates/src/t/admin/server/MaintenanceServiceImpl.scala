@@ -128,27 +128,18 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
       if (getFile(metaPrefix) == None) {
         throw new MaintenanceException("The metadata file has not been uploaded yet.")
       }
-      if (getFile(niPrefix) == None) {
+      if (getFile(dataPrefix) == None) {
         throw new MaintenanceException("The normalized intensity file has not been uploaded yet.")
-      }
-      if (getFile(foldPrefix) == None) {
-        throw new MaintenanceException("The fold expression file has not been uploaded yet.")
       }
 
       val metaFile = getAsTempFile(tempFiles, metaPrefix, metaPrefix, "tsv").get
-      val niFile = getAsTempFile(tempFiles, niPrefix, niPrefix, "csv")
-      val foldFile = getAsTempFile(tempFiles, foldPrefix, foldPrefix, "csv").get
-      val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv")
-      val foldCallsFile = getAsTempFile(tempFiles, foldCallPrefix, foldCallPrefix, "csv")
-      val foldPValueFile = getAsTempFile(tempFiles, foldPPrefix, foldPPrefix, "csv")
+      val dataFile = getAsTempFile(tempFiles, dataPrefix, dataPrefix, "csv")
+          val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv")
 
       val md = factory.tsvMetadata(metaFile.getAbsolutePath())
       TaskRunner ++= bm.addBatch(title, comment, md,
-        niFile.map(_.getAbsolutePath()),
+        dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
-        foldFile.getAbsolutePath(),
-        foldCallsFile.map(_.getAbsolutePath()),
-        foldPValueFile.map(_.getAbsolutePath()),
         false, baseConfig.seriesBuilder)
     }
   }

@@ -21,6 +21,7 @@
 package t
 
 import scala.collection.JavaConversions._
+import scala.concurrent._
 
 import friedrich.util.CmdLineOptions
 
@@ -106,15 +107,12 @@ trait ManagerTool extends CmdLineOptions {
     }
   }
 
-  /**
-   * Start the TaskRunner, run a series of tasklets while printing
-   * log messages, then stop it again.
-   */
-  def withTaskRunner(tasklets: Iterable[Tasklet]) {
-    TaskRunner ++= tasklets
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  def startTaskRunner() {
     TaskRunner.start()
-    try {
-      while (TaskRunner.currentTask != None) {
+    Future {
+       while (TaskRunner.currentTask != None) {
         for (m <- TaskRunner.logMessages) {
           println(m)
         }
@@ -124,13 +122,25 @@ trait ManagerTool extends CmdLineOptions {
         }
         Thread.sleep(2000)
       }
-      TaskRunner.errorCause match {
-        case None    => //all good
-        case Some(e) => throw e
-      }
-    } finally {
-      TaskRunner.shutdown()
     }
+  }
+
+  def stopTaskRunner() {
+    TaskRunner.shutdown()
+    TaskRunner.errorCause match {
+      case None    => //all good
+      case Some(e) => throw e
+    }
+  }
+
+  def waitForTasklets() {
+    while (TaskRunner.currentTask != None) {
+      Thread.sleep(1000)
+    }
+  }
+
+  def addTasklets(tasklets: Iterable[Tasklet]) {
+    TaskRunner ++= tasklets
   }
 
   def showHelp(): Unit
