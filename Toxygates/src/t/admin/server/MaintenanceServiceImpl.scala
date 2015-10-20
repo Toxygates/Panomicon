@@ -55,6 +55,7 @@ import t.sparql.Datasets
 import t.viewer.server.rpc.TServiceServlet
 import t.common.shared.Dataset
 import t.common.server.SharedDatasets
+import t.common.shared.ManagedItem
 
 abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceService {
 
@@ -112,11 +113,11 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
       throw new MaintenanceException(e)
   }
 
-  def addBatchAsync(title: String, comment: String): Unit = {
-	showUploadedFiles()
-	grabRunner()
+  def addBatchAsync(b: Batch): Unit = {
+	  showUploadedFiles()
+	  grabRunner()
 
-	val bm = new BatchManager(context) //TODO configuration parsing
+	  val bm = new BatchManager(context) //TODO configuration parsing
 
     cleanMaintenance {
       TaskRunner.start()
@@ -137,14 +138,14 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
           val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv")
 
       val md = factory.tsvMetadata(metaFile.getAbsolutePath())
-      TaskRunner ++= bm.addBatch(title, comment, md,
+      TaskRunner ++= bm.addBatch(b.getTitle, b.getComment, md,
         dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
         false, baseConfig.seriesBuilder)
     }
   }
 
-  def addPlatformAsync(id: String, comment: String, affymetrixFormat: Boolean): Unit = {
+  def addPlatformAsync(p: Platform, affymetrixFormat: Boolean): Unit = {
     showUploadedFiles()
 	grabRunner()
 	val pm = new PlatformManager(context) //TODO configuration parsing
@@ -159,6 +160,9 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
         throw new MaintenanceException("The platform file has not been uploaded yet.")
       }
 
+      val id = p.getTitle
+      val comment = p.getComment
+
       if (!TRDF.isValidIdentifier(id)) {
         throw new MaintenanceException(
           s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
@@ -169,7 +173,15 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     }
   }
 
-  def addInstance(i: Instance): Unit = {
+  def add(i: ManagedItem): Unit = {
+    i match {
+      case d: Dataset => addDataset(d)
+      case i: Instance => addInstance(i)
+      case _ => throw new MaintenanceException(s"Illegal API usage, cannot add $i")
+    }
+  }
+
+  private def addInstance(i: Instance): Unit = {
     val im = new Instances(baseConfig.triplestore)
 
     val id = i.getTitle()
@@ -200,7 +212,7 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     }
   }
 
-  def addDataset(d: Dataset): Unit = {
+  private def addDataset(d: Dataset): Unit = {
     val dm = new Datasets(baseConfig.triplestore)
 
     val id = d.getTitle()
@@ -336,7 +348,14 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     ds.sharedList.toArray
   }
 
-  def updateBatch(b: Batch): Unit = {
+  def update(i: ManagedItem): Unit = {
+    i match {
+      case b: Batch => updateBatch(b)
+      case _ => //TODO
+    }
+  }
+
+  private def updateBatch(b: Batch): Unit = {
     val bs = new Batches(baseConfig.triplestore)
     val existingAccess = bs.listAccess(b.getTitle())
     val newAccess = b.getEnabledInstances()

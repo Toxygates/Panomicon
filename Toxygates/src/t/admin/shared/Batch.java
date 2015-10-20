@@ -43,6 +43,11 @@ public class Batch extends ManagedItem {
 		this.enabledInstances = enabledInstances;
 		this.dataset = dataset;
 	}
+	
+	public Batch(String title, String comment) {
+	  this(title, 0, comment, new Date(), new HashSet<String>(),
+	      "");
+	}
 
 	public String getDataset() {
 		return dataset;
