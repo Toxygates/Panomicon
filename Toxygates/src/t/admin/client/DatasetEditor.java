@@ -20,6 +20,8 @@ package t.admin.client;
 
 import java.util.Date;
 
+import javax.annotation.Nullable;
+
 import t.common.shared.Dataset;
 
 import com.google.gwt.user.client.Window;
@@ -31,23 +33,29 @@ public class DatasetEditor extends ManagedItemEditor {
   private final TextBox descText;
   protected TextArea publicComments;
 
-  public DatasetEditor(boolean addNew) {
-    super(addNew);
+  public DatasetEditor(@Nullable Dataset d, boolean addNew) {
+    super(d, addNew);
 
     descText = addLabelledTextBox("Description");
     publicComments = addTextArea("Public comments");
 
+    if (d != null) {
+      descText.setValue(d.getDescription());
+      publicComments.setValue(d.getPublicComment());
+    }
     addCommands();
   }
 
   @Override
   protected void triggerEdit() {
     Dataset d =
-        new Dataset(idText.getValue(), descText.getValue(), commentArea.getValue(), new Date());
+        new Dataset(idText.getValue(), descText.getValue(), 
+            commentArea.getValue(), new Date(), 
+            publicComments.getValue());
     if (addNew) {
       maintenanceService.add(d, editCallback());
-    } else {
-      Window.alert("Implement me");
+    } else {      
+      maintenanceService.update(d, editCallback());
     }
   }
 }

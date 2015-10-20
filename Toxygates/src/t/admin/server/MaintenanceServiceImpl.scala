@@ -251,7 +251,15 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     }
   }
 
-  def deleteInstance(id: String): Unit = {
+  def delete(i: ManagedItem): Unit = {
+    i match {
+      case i: Instance => deleteInstance(i.getTitle)
+      case d: Dataset => deleteDataset(d.getTitle)
+      case _ => throw new MaintenanceException("Illegal API usage")
+    }
+  }
+
+  private def deleteInstance(id: String): Unit = {
     val im = new Instances(baseConfig.triplestore)
     maintenance {
       val cmd = s"sh $homeDir/delete_instance.sh $id $id"
@@ -265,7 +273,7 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     }
   }
 
-  def deleteDataset(id: String): Unit = {
+  private def deleteDataset(id: String): Unit = {
     val dm = new Datasets(baseConfig.triplestore)
     maintenance {
       dm.delete(id)
@@ -328,10 +336,11 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     val np = prs.numProbes()
     val ps = new Platforms(baseConfig.triplestore)
     val comments = ps.comments
+    val pubComments = ps.publicComments
     val dates = ps.timestamps
     ps.list.map(p => {
       new Platform(p, np.getOrElse(p, 0), comments.getOrElse(p, ""),
-          dates.getOrElse(p, null))
+          dates.getOrElse(p, null), pubComments.getOrElse(p, ""))
     }).toArray
   }
 
@@ -351,7 +360,9 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
   def update(i: ManagedItem): Unit = {
     i match {
       case b: Batch => updateBatch(b)
-      case _ => //TODO
+      case i: Instance => updateInstance(i)
+      case p: Platform => updatePlatform(p)
+      case d: Dataset => updateDataset(d)
     }
   }
 
@@ -375,6 +386,24 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
       }
       ds.addMember(b.getTitle, newDs)
     }
+    bs.setComment(b.getTitle, TRDF.escape(b.getComment))
+  }
+
+  private def updatePlatform(p: Platform): Unit = {
+    val pfs = new Platforms(baseConfig.triplestore)
+    pfs.setComment(p.getTitle, p.getComment)
+    pfs.setPublicComment(p.getTitle, p.getPublicComment)
+  }
+
+  private def updateDataset(d: Dataset): Unit = {
+    val ds = new Datasets(baseConfig.triplestore)
+    ds.setComment(d.getTitle, TRDF.escape(d.getComment))
+    ds.setPublicComment(d.getTitle, TRDF.escape(d.getPublicComment))
+  }
+
+  private def updateInstance(i: Instance): Unit = {
+    val is = new Instances(baseConfig.triplestore)
+    is.setComment(i.getTitle, TRDF.escape(i.getComment))
   }
 
   /**

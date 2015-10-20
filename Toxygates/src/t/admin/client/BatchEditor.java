@@ -36,14 +36,15 @@ public class BatchEditor extends ManagedItemEditor {
 
   protected VisibilityEditor visibility;
   protected ListBox datasetBox;
-
+  protected BatchUploader uploader;
+  
   public BatchEditor(@Nullable Batch b, boolean addNew, Collection<Dataset> datasets,
       Collection<Instance> instances) {
-    super(addNew);
+    super(b, addNew);
 
     if (addNew) {
-      BatchUploader bu = new BatchUploader();
-      vp.add(bu);
+      uploader = new BatchUploader();
+      vp.add(uploader);
     }
 
     vp.add(new Label("In dataset:"));
@@ -57,7 +58,6 @@ public class BatchEditor extends ManagedItemEditor {
     vp.add(datasetBox);
 
     vp.add(new Label("Visible in instances:"));
-    // TODO set initial values
     visibility = new VisibilityEditor(b, instances);
     vp.add(visibility);
     visibility.setWidth("200px");
@@ -76,8 +76,16 @@ public class BatchEditor extends ManagedItemEditor {
         new Batch(idText.getValue(), 0, commentArea.getValue(), new Date(), instances,
             datasetBox.getSelectedValue());
 
-    if (addNew) {
-      // TODO
+    if (addNew && uploader.canProceed()) {
+      maintenanceService.addBatchAsync(b, new TaskCallback(
+          "Upload batch") {
+
+        @Override
+        void onCompletion() {          
+          onFinish();
+          onFinishOrAbort();
+        }
+      });
     } else {
       maintenanceService.update(b, editCallback());
     }

@@ -49,9 +49,7 @@ public interface MaintenanceServiceAsync {
 
   void deletePlatformAsync(String id, AsyncCallback<Void> calback);
 
-  void deleteInstance(String id, AsyncCallback<Void> callback);
-
-  void deleteDataset(String id, AsyncCallback<Void> callback);
+  void delete(ManagedItem i, AsyncCallback<Void> callback);
 
 
   void update(ManagedItem i, AsyncCallback<Void> callback);

@@ -20,11 +20,12 @@ package t.admin.client;
 
 import java.util.Date;
 
+import javax.annotation.Nullable;
+
 import t.admin.shared.AccessPolicy;
 import t.admin.shared.Instance;
 import t.common.client.components.EnumSelector;
 
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 
@@ -33,12 +34,13 @@ public class InstanceEditor extends ManagedItemEditor {
   private final TextBox roleText;
   private final EnumSelector<AccessPolicy> policySelector;
 
-  public InstanceEditor(boolean addNew) {
-    super(addNew);
+  public InstanceEditor(@Nullable Instance i, boolean addNew) {
+    super(i, addNew);
 
     Label l = new Label("Access policy");
     vp.add(l);
 
+    //TODO set values for these fields and keep them in sync
     policySelector = new EnumSelector<AccessPolicy>() {
       @Override
       protected AccessPolicy[] values() {
@@ -58,13 +60,13 @@ public class InstanceEditor extends ManagedItemEditor {
 
   @Override
   protected void triggerEdit() {
+    Instance i = new Instance(idText.getValue(), commentArea.getValue(), new Date());
     if (addNew) {
-      Instance i = new Instance(idText.getValue(), commentArea.getValue(), new Date());
       AccessPolicy ap = policySelector.value();
       i.setAccessPolicy(ap, roleText.getText());
       maintenanceService.add(i, editCallback());
     } else {
-      Window.alert("Implement me");
+      maintenanceService.update(i, editCallback());
     }
   }
 }

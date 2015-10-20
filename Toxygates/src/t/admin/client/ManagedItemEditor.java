@@ -23,7 +23,10 @@ import static t.common.client.Utils.makeButtons;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import t.common.client.Command;
+import t.common.shared.ManagedItem;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
@@ -51,17 +54,20 @@ abstract class ManagedItemEditor extends Composite {
   protected final TextBox idText;
   protected final TextArea commentArea;
 
-  public ManagedItemEditor(boolean addNew) {
+  public ManagedItemEditor(@Nullable ManagedItem i, boolean addNew) {
     vp = new VerticalPanel();
     this.addNew = addNew;
     initWidget(vp);
 
-    // Add standard GUI
     idText = addLabelledTextBox("ID");
     idText.setEnabled(addNew);
     
-    //TODO init text
-    commentArea = addTextArea("Private comments");    
+    commentArea = addTextArea("Private comments");
+    if (i != null) {
+      idText.setValue(i.getTitle());
+      commentArea.setValue(i.getComment());
+    }    
+      
   }
 
   protected TextArea addTextArea(String label) {

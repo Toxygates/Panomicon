@@ -66,10 +66,12 @@ public interface MaintenanceService extends RemoteService {
 
   void deletePlatformAsync(String id) throws MaintenanceException;
 
-  // TODO use a simple delete-method for synchronous deletion of ManagedItem
-  void deleteInstance(String id) throws MaintenanceException;
-
-  void deleteDataset(String id) throws MaintenanceException;
+  /**
+   * Synchronously delete an item (except for platform and batch)
+   * @param i
+   * @throws MaintenanceException
+   */
+  void delete(ManagedItem i) throws MaintenanceException;
 
   /**
    * Modify the item, altering fields such as visibility and comment.

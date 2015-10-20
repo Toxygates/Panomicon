@@ -72,7 +72,7 @@ public class AdminConsole implements EntryPoint {
   private Widget makeInstancePanel() {
     AdminPanel<Instance> ip = new AdminPanel<Instance>("Edit instance", null) {
       ManagedItemEditor makeEditor(Instance i, final DialogBox db, boolean addNew) {
-        return new InstanceEditor(addNew) {
+        return new InstanceEditor(i, addNew) {
           @Override
           protected void onFinishOrAbort() {
             db.hide();
@@ -95,7 +95,7 @@ public class AdminConsole implements EntryPoint {
   private Widget makeDatasetPanel() {
     AdminPanel<Dataset> dp = new AdminPanel<Dataset>("Edit datasets", null) {
       ManagedItemEditor makeEditor(Dataset d, final DialogBox db, boolean addNew) {
-        return new InstanceEditor(addNew) {
+        return new DatasetEditor(d, addNew) {
           @Override
           protected void onFinishOrAbort() {
             db.hide();
@@ -129,7 +129,7 @@ public class AdminConsole implements EntryPoint {
   private Widget makePlatformPanel() {
     AdminPanel<Platform> pp = new AdminPanel<Platform>("Edit platform", null) {
       Widget makeEditor(Platform p, final DialogBox db, boolean addNew) {
-        return new PlatformEditor(addNew) {
+        return new PlatformEditor(p, addNew) {
           @Override
           protected void onFinishOrAbort() {
             db.hide();
@@ -254,7 +254,7 @@ public class AdminConsole implements EntryPoint {
     if (!Window.confirm("Are you sure you want to delete the instance " + title + "?")) {
       return;
     }
-    maintenanceService.deleteInstance(object.getTitle(), new AsyncCallback<Void>() {
+    maintenanceService.delete(object, new AsyncCallback<Void>() {
 
       @Override
       public void onFailure(Throwable caught) {
@@ -275,7 +275,7 @@ public class AdminConsole implements EntryPoint {
         + "? Batches will not be deleted.")) {
       return;
     }
-    maintenanceService.deleteDataset(object.getTitle(), new AsyncCallback<Void>() {
+    maintenanceService.delete(object, new AsyncCallback<Void>() {
 
       @Override
       public void onFailure(Throwable caught) {
