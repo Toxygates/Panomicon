@@ -41,7 +41,7 @@
 	</context-param>
 	<context-param>
 		<param-name>csvUrlBase</param-name>
-		<param-value>http://toxygates.nibiohn.go.jp:8080/toxygates/csv</param-value>
+		<param-value>http://toxygates.nibiohn.go.jp/toxygates/csv</param-value>
 	</context-param>	
 	<context-param>
 		<param-name>feedbackReceivers</param-name>
@@ -87,6 +87,10 @@
 		<servlet-name>targetmineServlet</servlet-name>
 		<servlet-class>otgviewer.server.targetmine.TargetmineServiceImpl</servlet-class>
 	</servlet>
+    <servlet-mapping>
+		<servlet-name>targetmineServlet</servlet-name>
+    	<url-pattern>/toxygates/targetmine</url-pattern>
+  	</servlet-mapping>
   	
 	
   <!-- Default page to serve -->
@@ -94,5 +98,5 @@
     <welcome-file>toxygates.html</welcome-file>
   </welcome-file-list>
 
-<!-- The closing </webapp> will be filled in by scripts like 
+<!-- The closing </web-app> will be filled in by scripts like 
 new_instance.public.sh -->

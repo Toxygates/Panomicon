@@ -60,6 +60,8 @@ public class GeneSetSelector extends DataListenerWidget {
         logger.info("Items: " + items.toArray(new String[0]));
         screen.probesChanged(items.toArray(new String[0]));
         screen.geneSetChanged(getSelectedText());
+        
+        GeneSetSelector.this.itemsChanged(items);
       }
     };
     addListener(geneSets);
@@ -86,25 +88,25 @@ public class GeneSetSelector extends DataListenerWidget {
   }
 
   private GeneSetEditor geneSetEditor() {
-    return new GeneSetEditor(screen) {
-      @Override
-      protected void onSaved(String title, List<String> items) {
-        super.onSaved(title, items);
-        screen.probesChanged(items.toArray(new String[0]));
-        screen.geneSetChanged(title);
-      }
-    };
+    GeneSetEditor gse = screen.factory().geneSetEditor(screen);      
+    addListener(gse);
+    return gse;
   }
 
   public Widget selector() {
     return selector;
   }
+  
+  /**
+   * To be overridden by subclasses/users. Called when the user has triggered a change.
+   */
+  public void itemsChanged(List<String> items) {};
 
   @Override
   public void itemListsChanged(List<ItemList> lists) {
     super.itemListsChanged(lists);
     geneSets.setLists(lists);
-  }
+  }  
 
   @Override
   public void geneSetChanged(String geneSet) {

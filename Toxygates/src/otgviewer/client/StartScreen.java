@@ -36,7 +36,7 @@ public class StartScreen extends Screen {
 	public static String key = "st";	
 	
 	public StartScreen(ScreenManager man) {
-		super("Start", key, false, man);		
+		super("Start", key, false, man, resources.startHTML(), null);		
 	}
 
 	final private HTML welcomeHtml = new HTML();
@@ -46,7 +46,7 @@ public class StartScreen extends Screen {
 		hp.setHeight("100%");
 
 		hp.add(welcomeHtml);
-		welcomeHtml.setWidth("40em");
+		welcomeHtml.setWidth("40em");		
 		Utils.loadHTML(manager.appInfo().welcomeHtmlURL(), 
 				new Utils.HTMLCallback() {
 			@Override

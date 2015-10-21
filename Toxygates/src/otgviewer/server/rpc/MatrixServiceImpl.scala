@@ -35,7 +35,7 @@ class MatrixServiceImpl extends t.viewer.server.rpc.MatrixServiceImpl
   with OTGServiceServlet {
 
     private val logger = Logger.getLogger("MatrixService")
-    
+
     var userDir: String = null
 
     override def localInit(config: Configuration) {
@@ -45,9 +45,9 @@ class MatrixServiceImpl extends t.viewer.server.rpc.MatrixServiceImpl
 
     def prepareHeatmap(groups: JList[Group], chosenProbes: Array[String],
     valueType: ValueType): String = {
-    
-    loadMatrix(groups, chosenProbes, valueType, null)
-    
+
+    loadMatrix(groups, chosenProbes, valueType)
+
     val mm = getSessionData.matrix
     var mat = mm.current
     var info = mm.info
@@ -57,10 +57,10 @@ class MatrixServiceImpl extends t.viewer.server.rpc.MatrixServiceImpl
     val columns = mat.sortedColumnMap.filter(x => !info.isPValueColumn(x._2))
     val colNames = columns.map(_._1)
     val values = columns.map(x => mat.data.map(_.map(asScala(_).value)).map{_(x._2)})
-    
+
     clustering(values.flatten, rowNames, colNames)
   }
-  
+
   @throws(classOf[RserveException])
   def clustering(data: Seq[Double], rowName: Seq[String], colName: Seq[String]) = {
     assert(data.length == rowName.length * colName.length)
@@ -72,7 +72,7 @@ class MatrixServiceImpl extends t.viewer.server.rpc.MatrixServiceImpl
     r.addCommand(s"r <- c(${rowName.map{"\"" + _ + "\""}.mkString(", ")})")
     r.addCommand(s"c <- c(${colName.map{"\"" + _ + "\""}.mkString(", ")})")
     r.addCommand(s"getClusterAsJSON(data, r, c)")
-    
+
     r.exec() match {
       case Some(x) => x.asString()
       case None    => ""

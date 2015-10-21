@@ -28,14 +28,19 @@ public class Dataset extends ManagedItem {
 	public Dataset() { }
 	
 	private String description;
+	private String publicComment;
 	
-	public Dataset(String title, String description, String comment, Date date) {
+	public Dataset(String title, String description, String comment, Date date, 
+	    String publicComment) {
 		super(title, comment, date);
 		this.description = description;
+		this.publicComment = publicComment;
 	}
 	
 	public String getDescription() { return description; }
 	
 	@Override
 	public String getUserTitle() { return description; }
+	
+	public String getPublicComment() { return publicComment; } 
 }

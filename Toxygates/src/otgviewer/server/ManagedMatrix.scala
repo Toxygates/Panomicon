@@ -32,6 +32,10 @@ import t.db.PExprValue
 import t.db.ExprValue
 import t.db.MatrixContext
 import t.db.BasicExprValue
+import t.common.shared.sample.SimpleAnnotation
+import t.common.shared.sample.ExprMatrix
+import t.viewer.server.EVArray
+import t.viewer.shared.{Unit => TUnit}
 
 /**
  * Routines for loading a ManagedMatrix
@@ -65,13 +69,17 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     // A simple average column
     val tus = treatedAndControl(g)._1
     val treatedIdx = unitIdxs(tus, sortedBarcodes)
+    val samples = TUnit.collectBarcodes(tus)
 
-    info.addColumn(false, g.toString, "Average of treated samples", false, g, false)
+    info.addColumn(false, g.toString, g.toString + ": average of treated samples", false, g,
+        false, samples)
     ExprMatrix.withRows(data.map(vs =>
       EVArray(Seq(javaMean(selectIdx(vs, treatedIdx))))),
       probes,
       List(g.toString))
   }
+
+  protected def inverseTransform: Boolean = false
 
   def loadRawData(requestColumns: Seq[Group],
     reader: MatrixDBReader[E], sparseRead: Boolean,
@@ -82,21 +90,23 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
 
     val annotations = probes.map(x => new SimpleAnnotation(x)).toVector
 
-    val parts = requestColumns.par.map(g => {
+    val parts = requestColumns.map(g => {
       //Remove repeated samples as some other algorithms assume distinct samples
       //Also for efficiency
       val samples =
-        (if (fullLoad) g.getSamples.toList else samplesForDisplay(g)).
+        (if (fullLoad) g.getSamples.toList else samplesToLoad(g)).
           toVector.distinct
       val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.id)))
       val data = reader.valuesForSamplesAndProbes(sortedSamples,
-        packedProbes, sparseRead, false, true)
+        packedProbes, sparseRead, false, inverseTransform)
 
       println(g.getUnits()(0).toString())
 
       val rowLookup = Map() ++ data.map(r => r(0).probe -> r)
       val standardOrder = probes.map(p => rowLookup(p))
 
+      //Note, columnsFor causes mutable state in the MatrixInfo being built
+      //to change
       val grouped = columnsFor(g, sortedSamples, standardOrder)
 
       val ungrouped = ExprMatrix.withRows(standardOrder.map(r => EVArray(r.map(asJava(_)))),
@@ -104,7 +114,9 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
       (grouped, ungrouped)
     })
 
-    val (rawGroupedMat, rawUngroupedMat) = parts.reduce((p1, p2) => {
+    //Non-commutative operation, so needs reduceLeft instead of plain reduce
+    //(collection is parallel)
+    val (rawGroupedMat, rawUngroupedMat) = parts.reduceLeft((p1, p2) => {
       val grouped = p1._1 adjoinRight p2._1
       val newCols = p2._2.columnKeys.toSet -- p1._2.columnKeys
       //account for the fact that samples may be shared between requestColumns
@@ -123,15 +135,27 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
       case true => ExprValue.presentMean(data, "")
       case _    => ExprValue.allMean(data, "")
     }
-    var tooltip = data.take(10).map(_.toString).mkString(" ")
-    if (data.size > 10) {
-      tooltip += ", ..."
-    }
-    new ExpressionValue(mean.value, mean.call, tooltip)
+
+    new ExpressionValue(mean.value, mean.call, makeTooltip(data))
   }
-  
+
+  protected def makeTooltip[E <: ExprValue](data: Iterable[E]): String = {
+    val r = data.take(10).map(_.toString).mkString(" ")
+    if (data.size > 10) {
+      r + ", ..."
+    } else {
+      r
+    }
+  }
+
+  private val l2 = Math.log(2)
+
   final protected def log2(value: ExpressionValue) = {
-    new ExpressionValue(Math.log(value.getValue) / Math.log(2), value.getCall, value.getTooltip)
+    new ExpressionValue(Math.log(value.getValue) / l2, value.getCall, value.getTooltip)
+  }
+
+  final protected def log2[E <: ExprValue](value: E): ExprValue = {
+    ExprValue.apply(Math.log(value.value) / l2, value.call, value.probe)
   }
 
   protected def unitIdxs(us: Iterable[t.viewer.shared.Unit], samples: Seq[Sample]): Seq[Int] = {
@@ -140,16 +164,9 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     inSet.zipWithIndex.filter(_._1).map(_._2)
   }
 
-  protected def samplesForDisplay(g: Group): Iterable[OTGSample] = {
-    //TODO
+  protected def samplesToLoad(g: Group): Iterable[OTGSample] = {
     val (tus, cus) = treatedAndControl(g)
-    if (tus.size > 1) {
-      //treated samples only
-      tus.flatMap(_.getSamples())
-    } else {
-      //all samples
-      g.getSamples()
-    }
+    tus.flatMap(_.getSamples())
   }
 
   //TODO use schema
@@ -165,6 +182,8 @@ class FoldBuilder(reader: MatrixDBReader[ExprValue], probes: Seq[String])
   protected def columnsFor(g: Group, sortedBarcodes: Seq[Sample],
     data: Seq[Seq[ExprValue]]): ExprMatrix =
     defaultColumns(g, sortedBarcodes, data)
+
+  override protected def inverseTransform = true
 }
 
 trait TreatedControlBuilder[E >: Null <: ExprValue] {
@@ -217,13 +236,27 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[Exp
       javaMean(selectIdx(raw, controlIdx))))
 
   protected def addColumnInfo(g: Group) {
-    info.addColumn(false, colNames(g)(0), "Average of treated samples", false, g, false)
-    info.addColumn(false, colNames(g)(1), "Average of control samples", false, g, false)
+    val (tus, cus) = treatedAndControl(g)
+    info.addColumn(false, colNames(g)(0),
+        colNames(g)(0) + ": average of treated samples", false, g, false,
+        TUnit.collectBarcodes(tus))
+    info.addColumn(false, colNames(g)(1),
+        colNames(g)(1) + ": average of control samples", false, g, false,
+        TUnit.collectBarcodes(cus))
   }
 
   def colNames(g: Group): Seq[String] =
     List(g.toString, g.toString + "(cont)")
 
+  override protected def samplesToLoad(g: Group): Iterable[OTGSample] = {
+    val (tus, cus) = treatedAndControl(g)
+    if (tus.size > 1) {
+      super.samplesToLoad(g)
+    } else {
+      //all samples
+      g.getSamples()
+    }
+  }
 }
 
 /**
@@ -233,6 +266,11 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
   probes: Seq[String]) extends ManagedMatrixBuilder[PExprValue](reader, probes)
     with TreatedControlBuilder[PExprValue] {
 
+  //TODO this log2 hack (if we keep it) also applies to the FoldBuilder above.
+  //However, FoldBuilder is not currently being used. We should re-evaluate whether it
+  //is needed. (Actually, I'd like to unify the two different ExtFold/Fold formats and only
+  //use simple Fold. - Johan
+
   protected def buildRow(raw: Seq[PExprValue],
     treatedIdx: Seq[Int], controlIdx: Seq[Int]): EVArray = {
     val treatedVs = selectIdx(raw, treatedIdx)
@@ -241,13 +279,23 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
     EVArray(Seq(fold, new ExpressionValue(first.p, fold.call)))
   }
 
+  override protected def makeTooltip[E <: ExprValue](data: Iterable[E]): String =
+    super.makeTooltip(data.map(log2))
+
   protected def addColumnInfo(g: Group) {
-    info.addColumn(false, colNames(g)(0), "Average of treated samples", false, g, false)
-    info.addColumn(false, colNames(g)(1), "p-values of treated against control", true, g, true)
+    val tus = treatedAndControl(g)._1
+    val samples = TUnit.collectBarcodes(tus)
+    info.addColumn(false, colNames(g)(0),
+        colNames(g)(0) + ": average of treated samples", false, g, false, samples)
+    info.addColumn(false, colNames(g)(1),
+        colNames(g)(1) + ": p-values of treated against control", true, g, true,
+        Array[OTGSample]())
   }
 
   def colNames(g: Group) =
     List(g.toString, g.toString + "(p)")
+
+  override protected def inverseTransform = true
 }
 
 /**
@@ -305,7 +353,7 @@ class ManagedMatrix(val initProbes: Seq[String],
   /**
    * Select only the rows corresponding to the given probes.
    */
-  def selectProbes(probes: Array[String]): Unit = {
+  def selectProbes(probes: Seq[String]): Unit = {
     requestProbes = probes
     resetSortAndFilter()
     filterAndSort()
@@ -320,21 +368,21 @@ class ManagedMatrix(val initProbes: Seq[String],
         thresh = currentInfo.columnFilter(col);
         if (thresh != null)
       ) {
-        val isUpper = currentInfo.isUpperFiltering(col)
-        val pass: Boolean = (if (isUpper) {
-          Math.abs(r(col).value) <= thresh
-        } else {
-          Math.abs(r(col).value) >= thresh
-        })
-        if (!(pass && !java.lang.Double.isNaN(r(col).value))) {
+        val av = Math.abs(r(col).value)
+
+        //Note, comparisons with NaN are always false
+        val pass = (if (currentInfo.isUpperFiltering(col))
+          av <= thresh
+        else
+          av >= thresh)
+        if (!pass || !r(col).getPresent) {
           return false
         }
       }
       true
     }
 
-    currentMat = currentMat.selectNamedRows(requestProbes)
-    currentMat = currentMat.filterRows(f)
+    currentMat = currentMat.selectNamedRows(requestProbes).filterRows(f)
 
     currentInfo.setNumRows(currentMat.rows)
     (_sortColumn, _sortAuxTable) match {
@@ -422,7 +470,8 @@ class ManagedMatrix(val initProbes: Seq[String],
             currentMat.appendDiffTest(rawData, g1s, g2s, md.getShortTitle(null)) //TODO
           case _ => throw new Exception("Unexpected test type!")
         }
-        currentInfo.addColumn(true, test.getShortTitle(null), test.getTooltip(), upper, null, false) //TODO
+        currentInfo.addColumn(true, test.getShortTitle(null), test.getTooltip(), upper, null, false,
+            Array[OTGSample]()) //TODO
       case _ => throw new Exception("Unexpected test type")
     }
   }

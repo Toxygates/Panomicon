@@ -24,6 +24,8 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import t.common.shared.sample.ExpressionValue
+import t.viewer.server.EVArray
+import t.viewer.server.EVABuilder
 
 @RunWith(classOf[JUnitRunner])
 class EVArrayTest extends FunSuite {

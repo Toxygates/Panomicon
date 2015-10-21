@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -37,10 +37,10 @@ import t.viewer.server.Platforms
 import otgviewer.server.rpc.OTGServiceServlet
 
 class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
-  var affyProbes: Probes = _ 
+  var affyProbes: Probes = _
   var platforms: Platforms = _
   //TODO how to best initialise this?
-  val serviceUri = "http://targetmine.nibiohn.go.jp/targetmine/service"
+  val serviceUri = "http://targetmine.mizuguchilab.org/targetmine/service"
 
   // Useful for testing
   override def localInit(config: Configuration) {
@@ -48,7 +48,7 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
     affyProbes = context.probes
     platforms = Platforms(affyProbes)
   }
-  
+
   def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig =
     OTGBConfig(ts, data)
 
@@ -56,11 +56,11 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
     affyProbes.close()
     super.destroy()
   }
-  
+
   // TODO: pass in a preferred species, get status info back
   def importTargetmineLists(user: String, pass: String,
     asProbes: Boolean): Array[t.common.shared.StringList] = {
-    val ls = TargetMine.getListService(serviceUri, user, pass)    
+    val ls = TargetMine.getListService(serviceUri, user, pass)
     val tmLists = ls.getAccessibleLists()
     tmLists.filter(_.getType == "Gene").map(
       l => {
@@ -75,9 +75,9 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
       }).toArray
   }
 
-  def exportTargetmineLists(user: String, pass: String, 
+  def exportTargetmineLists(user: String, pass: String,
       lists: Array[StringList], replace: Boolean): Unit = {
     val ls = TargetMine.getListService(serviceUri, user, pass)
     TargetMine.addLists(affyProbes, ls, lists.toList, replace)
-  }    
+  }
 }

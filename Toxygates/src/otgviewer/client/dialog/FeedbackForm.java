@@ -51,8 +51,10 @@ public class FeedbackForm extends InteractionDialog {
 	protected Widget content() {
 		VerticalPanel vpanel = Utils.mkVerticalPanel();
 		
-		Label l = new Label("We welcome comments, bug reports, questions or any kind of inquiries.\n" +
-				"If you report a problem, we will try to respond to you as soon as possible.");
+		Label l = new Label("We welcome comments, bug reports, questions or any kind of inquiries. " +
+				"If you report a problem, we will try to respond to you as soon as possible. " +
+		        "Alternatively, you may e-mail us directly (kenji@nibiohn.go.jp, " +
+		        "y-igarashi@nibiohn.go.jp or jtnystrom@gmail.com). ");
 		l.setWordWrap(true);
 		vpanel.add(l);
 		l.setWidth("40em");

@@ -55,6 +55,7 @@ import t.sparql.Datasets
 import t.viewer.server.rpc.TServiceServlet
 import t.common.shared.Dataset
 import t.common.server.SharedDatasets
+import t.common.shared.ManagedItem
 
 abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceService {
 
@@ -112,11 +113,11 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
       throw new MaintenanceException(e)
   }
 
-  def addBatchAsync(title: String, comment: String): Unit = {
-	showUploadedFiles()
-	grabRunner()
+  def addBatchAsync(b: Batch): Unit = {
+	  showUploadedFiles()
+	  grabRunner()
 
-	val bm = new BatchManager(context) //TODO configuration parsing
+	  val bm = new BatchManager(context) //TODO configuration parsing
 
     cleanMaintenance {
       TaskRunner.start()
@@ -128,32 +129,23 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
       if (getFile(metaPrefix) == None) {
         throw new MaintenanceException("The metadata file has not been uploaded yet.")
       }
-      if (getFile(niPrefix) == None) {
+      if (getFile(dataPrefix) == None) {
         throw new MaintenanceException("The normalized intensity file has not been uploaded yet.")
-      }
-      if (getFile(foldPrefix) == None) {
-        throw new MaintenanceException("The fold expression file has not been uploaded yet.")
       }
 
       val metaFile = getAsTempFile(tempFiles, metaPrefix, metaPrefix, "tsv").get
-      val niFile = getAsTempFile(tempFiles, niPrefix, niPrefix, "csv")
-      val foldFile = getAsTempFile(tempFiles, foldPrefix, foldPrefix, "csv").get
-      val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv")
-      val foldCallsFile = getAsTempFile(tempFiles, foldCallPrefix, foldCallPrefix, "csv")
-      val foldPValueFile = getAsTempFile(tempFiles, foldPPrefix, foldPPrefix, "csv")
+      val dataFile = getAsTempFile(tempFiles, dataPrefix, dataPrefix, "csv")
+          val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv")
 
       val md = factory.tsvMetadata(metaFile.getAbsolutePath())
-      TaskRunner ++= bm.addBatch(title, comment, md,
-        niFile.map(_.getAbsolutePath()),
+      TaskRunner ++= bm.addBatch(b.getTitle, b.getComment, md,
+        dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
-        foldFile.getAbsolutePath(),
-        foldCallsFile.map(_.getAbsolutePath()),
-        foldPValueFile.map(_.getAbsolutePath()),
         false, baseConfig.seriesBuilder)
     }
   }
 
-  def addPlatformAsync(id: String, comment: String, affymetrixFormat: Boolean): Unit = {
+  def addPlatformAsync(p: Platform, affymetrixFormat: Boolean): Unit = {
     showUploadedFiles()
 	grabRunner()
 	val pm = new PlatformManager(context) //TODO configuration parsing
@@ -168,6 +160,9 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
         throw new MaintenanceException("The platform file has not been uploaded yet.")
       }
 
+      val id = p.getTitle
+      val comment = p.getComment
+
       if (!TRDF.isValidIdentifier(id)) {
         throw new MaintenanceException(
           s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
@@ -178,7 +173,15 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     }
   }
 
-  def addInstance(i: Instance): Unit = {
+  def add(i: ManagedItem): Unit = {
+    i match {
+      case d: Dataset => addDataset(d)
+      case i: Instance => addInstance(i)
+      case _ => throw new MaintenanceException(s"Illegal API usage, cannot add $i")
+    }
+  }
+
+  private def addInstance(i: Instance): Unit = {
     val im = new Instances(baseConfig.triplestore)
 
     val id = i.getTitle()
@@ -209,7 +212,7 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     }
   }
 
-  def addDataset(d: Dataset): Unit = {
+  private def addDataset(d: Dataset): Unit = {
     val dm = new Datasets(baseConfig.triplestore)
 
     val id = d.getTitle()
@@ -248,7 +251,15 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     }
   }
 
-  def deleteInstance(id: String): Unit = {
+  def delete(i: ManagedItem): Unit = {
+    i match {
+      case i: Instance => deleteInstance(i.getTitle)
+      case d: Dataset => deleteDataset(d.getTitle)
+      case _ => throw new MaintenanceException("Illegal API usage")
+    }
+  }
+
+  private def deleteInstance(id: String): Unit = {
     val im = new Instances(baseConfig.triplestore)
     maintenance {
       val cmd = s"sh $homeDir/delete_instance.sh $id $id"
@@ -262,7 +273,7 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     }
   }
 
-  def deleteDataset(id: String): Unit = {
+  private def deleteDataset(id: String): Unit = {
     val dm = new Datasets(baseConfig.triplestore)
     maintenance {
       dm.delete(id)
@@ -325,10 +336,11 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     val np = prs.numProbes()
     val ps = new Platforms(baseConfig.triplestore)
     val comments = ps.comments
+    val pubComments = ps.publicComments
     val dates = ps.timestamps
     ps.list.map(p => {
       new Platform(p, np.getOrElse(p, 0), comments.getOrElse(p, ""),
-          dates.getOrElse(p, null))
+          dates.getOrElse(p, null), pubComments.getOrElse(p, ""))
     }).toArray
   }
 
@@ -345,7 +357,16 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     ds.sharedList.toArray
   }
 
-  def updateBatch(b: Batch): Unit = {
+  def update(i: ManagedItem): Unit = {
+    i match {
+      case b: Batch => updateBatch(b)
+      case i: Instance => updateInstance(i)
+      case p: Platform => updatePlatform(p)
+      case d: Dataset => updateDataset(d)
+    }
+  }
+
+  private def updateBatch(b: Batch): Unit = {
     val bs = new Batches(baseConfig.triplestore)
     val existingAccess = bs.listAccess(b.getTitle())
     val newAccess = b.getEnabledInstances()
@@ -365,6 +386,24 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
       }
       ds.addMember(b.getTitle, newDs)
     }
+    bs.setComment(b.getTitle, TRDF.escape(b.getComment))
+  }
+
+  private def updatePlatform(p: Platform): Unit = {
+    val pfs = new Platforms(baseConfig.triplestore)
+    pfs.setComment(p.getTitle, p.getComment)
+    pfs.setPublicComment(p.getTitle, p.getPublicComment)
+  }
+
+  private def updateDataset(d: Dataset): Unit = {
+    val ds = new Datasets(baseConfig.triplestore)
+    ds.setComment(d.getTitle, TRDF.escape(d.getComment))
+    ds.setPublicComment(d.getTitle, TRDF.escape(d.getPublicComment))
+  }
+
+  private def updateInstance(i: Instance): Unit = {
+    val is = new Instances(baseConfig.triplestore)
+    is.setComment(i.getTitle, TRDF.escape(i.getComment))
   }
 
   /**

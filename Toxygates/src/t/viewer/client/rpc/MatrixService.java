@@ -90,13 +90,10 @@ public interface MatrixService extends RemoteService {
 	 * @param barcodes
 	 * @param probes
 	 * @param type
-	 * @param synthCols Synthetic columns, such as T-Tests, that should be computed
-	 * from the start.
 	 * @return The number of rows that remain after filtering.
 	 */
 	public ManagedMatrixInfo loadMatrix(List<Group> columns, 
-			String[] probes, ValueType type, List<Synthetic> synthCols) 
-					throws ServerError;
+			String[] probes, ValueType type) throws ServerError;
 	
 	/**
 	 * Filter data that has already been loaded into the session.

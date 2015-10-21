@@ -21,6 +21,8 @@ package otgviewer.client;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import otgviewer.client.components.GeneSetSelector;
 import otgviewer.client.components.ListChooser;
 import otgviewer.client.components.Screen;
@@ -44,9 +46,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 /**
  * The main data display screen. Data is displayed in the ExpressionTable widget.
- * 
- * @author johan
- *
  */
 public class DataScreen extends Screen {
 
@@ -57,30 +56,43 @@ public class DataScreen extends Screen {
   protected String[] lastProbes;
   protected List<Group> lastColumns;
 
+  // TODO: factor out heat map management logic + state
+  // together with UIFactory.hasHeatMapMenu
+  @Nullable
   private MenuItem heatMapMenu;
-
-  // private final MatrixServiceAsync matrixService;
-  // private final SparqlServiceAsync sparqlService;
 
   public DataScreen(ScreenManager man) {
     super("View data", key, true, man, resources.dataDisplayHTML(), resources
         .dataDisplayHelp());
     gs = makeGeneSetSelector();
     et = makeExpressionTable();
+    et.setDisplayPColumns(false);
     addListener(et);
     // To ensure that GeneSetSelector has chosenColumns
     addListener(gs);
-
-    // matrixService = man.matrixService();
-    // sparqlService = man.sparqlService();
   }
 
   protected GeneSetSelector makeGeneSetSelector() {
-    return new GeneSetSelector(this);
+    return new GeneSetSelector(this) {
+      @Override
+      public void itemsChanged(List<String> items) {
+        updateProbes();
+      }
+    };
   }
 
   protected ExpressionTable makeExpressionTable() {
-    return new ExpressionTable(this, true);
+    return new ExpressionTable(this, true) {
+      @Override
+      protected void onGettingExpressionFailed() {
+        super.onGettingExpressionFailed();
+
+        DataScreen.this.probesChanged(new String[0]);
+        DataScreen.this.geneSetChanged(new String());
+
+        updateProbes();
+      }
+    };
   }
 
   @Override
@@ -183,26 +195,26 @@ public class DataScreen extends Screen {
       }
     }.menuItem());
 
-    heatMapMenu = new MenuItem("Show heat map", new Command() {
-      public void execute() {
-        if (chosenProbes.length < 2) {
-          Window.alert("Please choose at least 2 probes.");
-        } else if (chosenProbes.length > 1000) {
-          Window.alert("Please choose at most 1,000 probes.");
-        } else if (chosenColumns.size() < 2) {
-          Window.alert("Please choose at least 2 samples.");
-        } else if (chosenColumns.size() > 1000) {
-          Window.alert("Please choose at most 1,000 samples.");
-        } else {
-          new HeatmapDialog(DataScreen.this, et.getValueType());
+    if (factory().hasHeatMapMenu()) {
+      heatMapMenu = new MenuItem("Show heat map", new Command() {
+        public void execute() {
+          if (chosenProbes.length < 2) {
+            Window.alert("Please choose at least 2 probes.");
+          } else if (chosenProbes.length > 1000) {
+            Window.alert("Please choose at most 1,000 probes.");
+          } else if (chosenColumns.size() < 2) {
+            Window.alert("Please choose at least 2 samples.");
+          } else if (chosenColumns.size() > 1000) {
+            Window.alert("Please choose at most 1,000 samples.");
+          } else {
+            new HeatmapDialog(DataScreen.this, et.getValueType());
+          }
         }
-      }
-    });
-    heatMapMenu.setEnabled(false);
-    addAnalysisMenuItem(heatMapMenu);
+      });
+      heatMapMenu.setEnabled(false);
+      addAnalysisMenuItem(heatMapMenu);
+    }
   }
-
-
 
   @Override
   public boolean enabled() {
@@ -211,7 +223,7 @@ public class DataScreen extends Screen {
     return manager.isConfigured(ColumnScreen.key);
   }
 
-  private void updateProbes() {
+  protected void updateProbes() {
     logger.info("chosenProbes: " + chosenProbes.length + " lastProbes: "
         + (lastProbes == null ? "null" : "" + lastProbes.length));
 
@@ -252,17 +264,15 @@ public class DataScreen extends Screen {
   public void geneSetChanged(String geneSet) {
     super.geneSetChanged(geneSet);
 
-    heatMapMenu.setEnabled(!gs.isDefaultItemSelected());
-
     StorageParser p = getParser(this);
     storeGeneSet(p);
 
+    if (heatMapMenu != null) {
+      heatMapMenu.setEnabled(!gs.isDefaultItemSelected());
+    }
+
     lastProbes = null;
     lastColumns = null;
-
-    if (chosenGeneSet != null) {
-      updateProbes();
-    }
   }
 
 }

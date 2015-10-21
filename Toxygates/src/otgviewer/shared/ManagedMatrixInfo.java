@@ -42,6 +42,7 @@ public class ManagedMatrixInfo implements Serializable {
 	private List<Double> columnFilters = new ArrayList<Double>();
 	private List<String> platforms = new ArrayList<String>();
 	private List<Boolean> isPValueColumn = new ArrayList<Boolean>();
+	private List<OTGSample[]> samples = new ArrayList<OTGSample[]>();
 	
 	public ManagedMatrixInfo() { }
 		
@@ -49,14 +50,19 @@ public class ManagedMatrixInfo implements Serializable {
 	
 	/**
 	 * Add information about a single column to this column set.
-	 * @param synthetic
+	 * @param synthetic is the column synthetic?
 	 * @param name
-	 * @param hint
-	 * @param isUpperFiltering
+	 * @param hint tooltip to display
+	 * @param isUpperFiltering should the column have upper bound filtering? If not, lower bound is used.
+	 * @param baseGroup The group the column is based on
+	 * @param isPValue is this a p-value column?
+	 * @param samples The samples actually displayed in this column (may be a subset of the
+	 * ones in the base group)
 	 */
 	public void addColumn(boolean synthetic, String name, 
 			String hint, boolean isUpperFiltering,
-			Group baseGroup, boolean isPValue) {
+			Group baseGroup, boolean isPValue,
+			OTGSample[] samples) {
 		if (synthetic) {
 			numSynthetics++;
 		} else {
@@ -68,7 +74,8 @@ public class ManagedMatrixInfo implements Serializable {
 		upperBoundFiltering.add(isUpperFiltering);	
 		columnGroups.add(baseGroup);
 		columnFilters.add(null);
-		isPValueColumn.add(isPValue);		
+		isPValueColumn.add(isPValue);
+		this.samples.add(samples);		
 	}
 	
 	public void removeSynthetics() {
@@ -124,6 +131,15 @@ public class ManagedMatrixInfo implements Serializable {
 	 */
 	public String columnHint(int column) {
 		return columnHints.get(column);
+	}
+	
+	/**
+	 * The samples the column is based on.
+	 * @param column Column index. Must be 0 <= i <= numDataColumns.
+	 * @return
+	 */
+	public OTGSample[] samples(int column) {
+	  return samples.get(column);
 	}
 	
 	/**

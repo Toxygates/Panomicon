@@ -1,3 +1,4 @@
+
 .toxygatesTitle {
 	font-family: 'Play', sans-serif;
 	font-size: 36pt;
@@ -209,4 +210,25 @@ exprGrid {
 
 .gwt-MenuItem-disabled {
 	color: DarkGray;
+}
+
+/*
+ Fix "Ghost scrollbar" issue in Safari with trackpads.
+ See https://groups.google.com/forum/#!topic/google-web-toolkit/xxeS6LETdBs
+ 
+ Unfortunately this makes scrollbars permamently visible, which
+ doesn't always look good.
+ */
+
+::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+    width: 7px;
+    height: 7px;
+    -webkit-border-radius:3px;
+    border-radius:3px;
+    background:rgba(0,0,0,0.3);
 }

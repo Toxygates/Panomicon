@@ -23,6 +23,9 @@ package otgviewer.server
 import otgviewer.shared.ManagedMatrixInfo
 import t.common.shared.probe.ProbeMapper
 import t.common.shared.probe.ValueMapper
+import t.common.shared.sample.FullAnnotation
+import t.common.shared.sample.ExprMatrix
+import t.viewer.server.EVArray
 
 /**
  * A matrix mapper converts a whole matrix from one domain into
@@ -83,7 +86,8 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
     val r = new ManagedMatrixInfo()
     for (i <- 0 until from.numDataColumns()) {
       r.addColumn(false, from.columnName(i), from.columnHint(i),
-        from.isUpperFiltering(i), from.columnGroup(i), from.isPValueColumn(i))
+        from.isUpperFiltering(i), from.columnGroup(i), from.isPValueColumn(i),
+        from.samples(i))
     }
     r.setPlatforms(from.getPlatforms())
     r.setNumRows(from.numRows())

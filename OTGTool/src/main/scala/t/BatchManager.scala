@@ -50,6 +50,8 @@ import t.sparql.TriplestoreMetadata
 import t.util.TempFiles
 import t.db.kyotocabinet.KCMatrixDB
 import t.sparql.SampleFilter
+import t.db.file.PFoldValueBuilder
+import t.global.KCDBRegistry
 
 /**
  * Batch management CLI
@@ -65,39 +67,57 @@ object BatchManager extends ManagerTool {
       showHelp()
     }
 
+    startTaskRunner()
+
     args(0) match {
       case "add" =>
         val title = require(stringOption(args, "-title"),
           "Please specify a title with -title")
-        val metaFile = require(stringOption(args, "-metadata"),
-          "Please specify a metadata file with -metadata")
-        val niFile = stringOption(args, "-ni")
-        val foldFile = require(stringOption(args, "-fold"),
-          "Please specify a folds file with -fold")
-        val callFile = stringOption(args, "-calls")
-        val foldCallFile = stringOption(args, "-foldCalls")
-        val foldPFile = stringOption(args, "-foldP")
         val append = booleanOption(args, "-append")
         val comment = stringOption(args, "-comment").getOrElse("")
 
         if (batches.list.contains(title) && !append) {
-          val msg = s"Batch $title already exists"
+          val msg = s"Batch $title already exists. Did you mean to use -append?"
           throw new Exception(msg)
         }
 
         val bm = new BatchManager(context)
-        val md = factory.tsvMetadata(metaFile)
-        withTaskRunner(bm.addBatch(title, comment,
-          md, niFile, callFile,
-          foldFile, foldCallFile, foldPFile,
-          append, config.seriesBuilder))
+
+        val metaList = stringListOption(args, "-multiMetadata")
+        metaList match {
+          case Some(ml) =>
+            KCDBRegistry.setMaintenance(true)
+            for (mf <- ml) {
+              val md = factory.tsvMetadata(mf)
+              val dataFile = mf.replace(".meta.tsv", ".data.csv")
+
+              val f = new java.io.File(mf.replace(".meta.tsv", ".call.csv"))
+              val callFile = if (f.exists()) Some(f.getPath) else None
+              println(s"Insert $dataFile")
+              addTasklets(bm.addBatch(title, comment,
+                md, dataFile, callFile,
+                append, config.seriesBuilder))
+            }
+          case None =>
+            val metaFile = require(stringOption(args, "-metadata"),
+              "Please specify a metadata file with -metadata")
+            val dataFile = require(stringOption(args, "-data"),
+                "Please specify a data file with -data")
+            val callFile = stringOption(args, "-calls")
+
+            val md = factory.tsvMetadata(metaFile)
+            addTasklets(bm.addBatch(title, comment,
+              md, dataFile, callFile,
+              append, config.seriesBuilder))
+        }
+
       case "delete" =>
         val title = require(stringOption(args, "-title"),
           "Please specify a title with -title")
         // TODO move verification into the batches API
         verifyExists(batches, title)
         val bm = new BatchManager(context)
-        withTaskRunner(bm.deleteBatch(title, config.seriesBuilder))
+        addTasklets(bm.deleteBatch(title, config.seriesBuilder))
       case "list" =>
         println("Batch list")
         for (b <- batches.list) {
@@ -151,6 +171,15 @@ object BatchManager extends ManagerTool {
         sampleCheck(config.data.foldDb,
           args.size > 1 && args(1) == "delete")
       case _ => showHelp()
+    }
+
+    try {
+      waitForTasklets()
+    } finally {
+      if (KCDBRegistry.isMaintenance) {
+        KCDBRegistry.closeAll()
+      }
+      stopTaskRunner()
     }
   }
 
@@ -216,11 +245,10 @@ class BatchManager(context: Context) {
   val hlParameters = config.sampleParameters.highLevel.map(_.identifier)
 
   def addBatch[S <: Series[S]](title: String, comment: String, metadata: Metadata,
-    niFile: Option[String], callFile: Option[String], foldFile: String,
-    foldCallFile: Option[String], foldPValueFile: Option[String],
+    dataFile: String, callFile: Option[String],
     append: Boolean, sbuilder: SeriesBuilder[S]): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
-    val ts = config.triplestore.triplestore
+    val ts = config.triplestore.get
 
     r :+= consistencyCheck(title, metadata, config)
 
@@ -228,7 +256,7 @@ class BatchManager(context: Context) {
       r :+= addBatchRecord(title, comment, config.triplestore)
     }
     r :+= addSampleIDs(metadata)
-    r :+= addRDF(title, metadata, sbuilder, new SimpleTriplestore(ts))
+    r :+= addRDF(title, metadata, sbuilder, ts)
 
     // Note that we rely on these maps not being read until they are needed
     // (after addSampleIDs has run!)
@@ -236,10 +264,8 @@ class BatchManager(context: Context) {
     implicit val mc = matrixContext()
     r :+= addEnums(metadata, sbuilder)
 
-    if (niFile != None) {
-      r :+= addExprData(niFile.get, callFile)
-    }
-    r :+= addFoldsData(foldFile, foldCallFile, foldPValueFile)
+    r :+= addExprData(dataFile, callFile)
+    r :+= addFoldsData(metadata, dataFile, callFile)
     r :+= addSeriesData(metadata, sbuilder)
     r
   }
@@ -265,10 +291,11 @@ class BatchManager(context: Context) {
 
       val batches = new Batches(c.triplestore)
       if (batches.list.contains(title)) {
-        throw new Exception(s"The batch $title is already defined")
+        log(s"The batch $title is already defined, assuming update/append")
       }
 
-      //TODO check for reinsertion of sample IDs
+      val bsamples = batches.samples(title).toSet
+
       val ps = new Platforms(config.triplestore)
       val platforms = ps.list.toSet
       val existingSamples = samples.list.toSet
@@ -276,8 +303,10 @@ class BatchManager(context: Context) {
         if (!platforms.contains(p)) {
           throw new Exception(s"The sample ${s.identifier} contained an undefined platform_id ($p)")
         }
-        if (existingSamples.contains(s.identifier)) {
-          throw new Exception(s"The sample ${s.identifier} has already been defined in an existing batch")
+        if (bsamples.contains(s.identifier)) {
+          log(s"Replacing sample ${s.identifier}")
+        } else if (existingSamples.contains(s.identifier)) {
+          throw new Exception(s"The sample ${s.identifier} has already been defined in a different batch")
         }
         checkValidIdentifier(s.identifier, "sample ID")
       }
@@ -369,16 +398,16 @@ class BatchManager(context: Context) {
 
   def addExprData(niFile: String, callFile: Option[String])(implicit mc: MatrixContext) = {
     val ic = OTGInsert.insertionContext(false, config.data.exprDb)
-    val data = new CSVRawExpressionData(List(niFile), callFile.map(List(_)), None)
+    val data = new CSVRawExpressionData(List(niFile), callFile.map(List(_)))
     ic.insert(data)
   }
 
-  def addFoldsData(foldFile: String, callFile: Option[String],
-    pValueFile: Option[String])(implicit mc: MatrixContext) = {
+  def addFoldsData(md: Metadata, foldFile: String, callFile: Option[String])
+  (implicit mc: MatrixContext) = {
     val ic = OTGInsert.insertionContext(true, config.data.foldDb)
-    val data = new CSVRawExpressionData(List(foldFile), callFile.map(List(_)),
-      pValueFile.map(List(_)))
-    ic.insertFolds(data)
+    val data = new CSVRawExpressionData(List(foldFile), callFile.map(List(_)))
+    val fvs = new PFoldValueBuilder(md, data)
+    ic.insertFolds(fvs)
   }
 
   private def deleteFromDB(db: MatrixDBWriter[_], samples: Iterable[Sample]) {
@@ -448,6 +477,9 @@ class BatchManager(context: Context) {
   def addSeriesData[S <: Series[S], E <: ExprValue](md: Metadata,
     builder: SeriesBuilder[S])(implicit mc: MatrixContext) = new Tasklet("Insert series data") {
     def run() {
+      //idea: use RawExpressionData directly as source +
+      //give KCMatrixDB and e.g. CSVRawExpressionData a common trait/adapter
+
       val source = KCMatrixDB(config.data.foldDb, false)
       val target = KCSeriesDB[S](config.data.seriesDb, true, builder)
       var inserted = 0

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -29,11 +29,20 @@ import t.common.shared.Dataset
 trait SharedDatasets {
   this: Datasets =>
 
-  def sharedList: Iterable[Dataset] = {
+  def sharedList: Iterable[Dataset] =
+    list.map(asShared)
+
+  def sharedListForInstance(uri: String): Iterable[Dataset] =
+    withBatchesInInstance(uri).map(asShared)
+
+  private def asShared(d: String): Dataset = {
     val com = comments
+    val pcom = publicComments
     val ts = timestamps
     val descs = descriptions
-    list.map(d => new Dataset(d, descs.getOrElse(d, ""),
-      com.getOrElse(d, ""), ts.getOrElse(d, null)))
+    new Dataset(d, descs.getOrElse(d, ""),
+      com.getOrElse(d, ""), ts.getOrElse(d, null),
+      pcom.getOrElse(d, ""))
   }
+
 }

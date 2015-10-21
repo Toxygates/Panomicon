@@ -22,6 +22,11 @@ package t.sparql
 
 import t.TriplestoreConfig
 
+/**
+ * Datasets group batches in such a way that the user
+ * can control visibility.
+ * Each batch belongs to exactly one dataset.
+ */
 object Datasets extends RDFClass {
   val defaultPrefix: String = s"$tRoot/dataset"
   val memberRelation = "t:visibleIn"
@@ -49,5 +54,12 @@ class Datasets(config: TriplestoreConfig) extends BatchGroups(config) {
       s"where { <$defaultPrefix/$name> t:description ?desc } ")
     ts.update(s"$tPrefixes insert data { <$defaultPrefix/$name> t:description " +
       "\"" + desc + "\" } ")
+  }
+
+  def withBatchesInInstance(instanceURI: String): Seq[String] = {
+    ts.simpleQuery(s"$tPrefixes select distinct ?l WHERE " +
+      s"{ ?item a $itemClass; rdfs:label ?l. " +
+      s"?b a ${Batches.itemClass}; $memberRelation ?item; " +
+        s"${Batches.memberRelation} <$instanceURI> }")
   }
 }

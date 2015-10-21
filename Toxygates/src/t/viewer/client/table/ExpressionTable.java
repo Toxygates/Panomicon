@@ -155,9 +155,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   private final Logger logger = SharedUtils.getLogger("expressionTable");
 
   protected ValueType chosenValueType;
+  
+  private CheckBox pcb;
 
   public ExpressionTable(Screen _screen, boolean pValueOption) {
     super(_screen);
+    this.pValueOption = pValueOption;
     this.matrixService = _screen.matrixService();
     this.resources = _screen.resources();
     screen = _screen;
@@ -249,19 +252,26 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     horizontalPanel.add(pager);
 
     if (pValueOption) {
-      final CheckBox pcb = new CheckBox("p-value columns");
+      pcb = new CheckBox("p-value columns");
       horizontalPanel.add(pcb);
       pcb.setValue(true);
       pcb.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          displayPColumns = pcb.getValue();
+          setDisplayPColumns(pcb.getValue());
           setupColumns();
         }
       });
     }
 
     pager.setDisplay(grid);
+  }
+
+  public void setDisplayPColumns(boolean displayPColumns) {
+    if (pValueOption) {
+      this.displayPColumns = displayPColumns;
+      pcb.setValue(displayPColumns);
+    }    
   }
 
   protected void initTableList() {
@@ -772,7 +782,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     logger.info("begin loading data for " + chosenColumns.size() + " columns and "
         + chosenProbes.length + " probes");
     // load data
-    matrixService.loadMatrix(chosenColumns, chosenProbes, chosenValueType, synthetics,
+    matrixService.loadMatrix(chosenColumns, chosenProbes, chosenValueType,
         new AsyncCallback<ManagedMatrixInfo>() {
           public void onFailure(Throwable caught) {
             Window.alert("Unable to load dataset");
@@ -788,16 +798,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
               logger.info("Data successfully loaded");
             } else {
-              if (chosenProbes != null && chosenProbes.length > 0) {
-                Window
-                    .alert("No data was available. You may wish to choose different probes or samples.");
-              } else {
-                Window.alert("No data was available. You may wish to try reloading the page.");
-              }
+              Window
+                  .alert("No data was available.\nThe view will switch to default selection.");
+              onGettingExpressionFailed();
             }
           }
         });
   }
+  
+  protected void onGettingExpressionFailed() {}
 
   /**
    * This cell displays an image that can be clicked to display charts.

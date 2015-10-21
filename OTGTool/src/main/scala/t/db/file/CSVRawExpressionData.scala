@@ -25,8 +25,8 @@ import t.db.RawExpressionData
 import t.db.Sample
 import scala.collection.{ Map => CMap }
 
-class CSVRawExpressionData(exprFiles: Iterable[String], callFiles: Option[Iterable[String]],
-  pValueFiles: Option[Iterable[String]]) extends RawExpressionData {
+class CSVRawExpressionData(exprFiles: Iterable[String],
+    callFiles: Option[Iterable[String]]) extends RawExpressionData {
 
   private[this] def traverseFile[T](file: String,
     lineHandler: (Array[String], String) => Unit): Array[String] = {
@@ -77,16 +77,11 @@ class CSVRawExpressionData(exprFiles: Iterable[String], callFiles: Option[Iterab
     readValuesFromTable(file, _.toDouble)
   }
 
-  private[this] def readPValues(file: String): CMap[Sample, CMap[String, Double]] = {
-    readValuesFromTable(file, _.toDouble)
-  }
-
   import scala.collection.mutable.{Map => MuMap}  //more efficient to build
   lazy val data: CMap[Sample, CMap[String, (Double, Char, Double)]] = {
     val expr = Map() ++ exprFiles.map(readExprValues(_)).flatten
 
     val call = callFiles.map(fs => Map() ++ fs.map(readCalls(_)).flatten)
-    val pval = pValueFiles.map(fs => Map() ++ fs.map(readPValues(_)).flatten)
 
     var r = MuMap[Sample, CMap[String, (Double, Char, Double)]]()
 
@@ -95,24 +90,17 @@ class CSVRawExpressionData(exprFiles: Iterable[String], callFiles: Option[Iterab
         throw new Exception(s"No calls available for sample $s")
       }
 
-      for (pvals <- pval; if !pvals.contains(s)) {
-        throw new Exception(s"No p-values available for sample $s")
-      }
-
       val cm = call.map(_(s))
-      val pm = pval.map(_(s))
 
       var out = MuMap[String, (Double, Char, Double)]()
       for ((p, v) <- pv) {
         if (cm != None && !cm.get.contains(p)) {
           throw new Exception(s"No call available for probe $p in sample $s")
         }
-        if (pm != None && !pm.get.contains(p)) {
-          throw new Exception(s"No p-value available for probe $p in sample $s")
-        }
         val usec = cm.map(_(p)).getOrElse('P')
-        val usep = pm.map(_(p)).getOrElse(Double.NaN)
-        out += (p -> (v, usec, usep))
+
+        //TODO p-value handling
+        out += (p -> (v, usec, Double.NaN))
       }
       r += (s -> out)
       println(s"Finished reading data for sample $s")

@@ -55,7 +55,7 @@ class ChEMBL extends Triplestore with CompoundTargets {
       	?targetcmpt cco:targetCmptXref ?uniprot .
       	?uniprot a cco:UniprotRef .
       	FILTER (?t IN("Inhibition", "Ki", "IC50")) """ +
-      multiFilter("?orgName", Species.supportedSpecies.map(_.longName)) +
+      multiFilter("?orgName", Species.supportedSpecies.map("\"" + _.longName + "\"")) +
       "}")(60000)
     r.map(p => Protein.unpackUniprot(unbracket(p))).toSet
   }
@@ -75,10 +75,10 @@ class ChEMBL extends Triplestore with CompoundTargets {
       	?target cco:hasTargetComponent ?targetcmpt .
       	?targetcmpt cco:targetCmptXref ?uniprot .
       	?uniprot a cco:UniprotRef .
-      	FILTER (?t IN("Inhibition", "Ki", "IC50"))))""" +
+      	FILTER (?t IN("Inhibition", "Ki", "IC50"))""" +
       multiFilter("?uniprot", ps.map(p => "up:" + p.identifier).toSet) +
       multiFilter("?compound", expected.map(e => "\"" + e.name.toUpperCase + "\"")) +
-      multiFilter("?orgName", Species.supportedSpecies.map(_.longName)) +
+      multiFilter("?orgName", Species.supportedSpecies.map("\"" + _.longName + "\"")) +
       "}")(60000)
 
     makeMultiMap(r.map(x => (Protein.unpackUniprot(unbracket(x("uniprot"))) ->

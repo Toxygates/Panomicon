@@ -1,5 +1,21 @@
 <h3>Toxygates version history</h3>
 
+<H4>20150928</H4>
+Major changes have been made to the underlying framework. Most of these changes should not
+be visible to users. However, the following major user-facing changes have taken place:
+
+<ul>
+<li> The six data sets on the start screen have been replaced by a more general 
+sample class selector on the group definition screen (upper left corner).</li>
+<li> We changed the way that averages of samples are calculated when fold changes are displayed: 
+instead of the mean of log-2 ratios, we now use the log-2 of the mean.</li>
+<li> The probe selection screen has been removed and replaced by a probe set editor,
+which is a pop-up window on the data screen. This makes it easier to interactively 
+change the current probe set. </li>
+<li> CSV files can be downloaded both as grouped (average) and as individual samples. </li>
+<li> Data loading is faster, especially for a small probe set. </li>
+</ul>
+
 <H4>20140612</H4>
 Fixed a bug that prevented probes from being selected (for example by pathway) in some cases.
 Changed the popup charts to select time/dose intelligently based on user-defined groups.

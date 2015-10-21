@@ -35,7 +35,7 @@ import otg.Species.Human
 import t.sparql.secondary._
 import otg.sparql._
 import t.sparql._
-import otgviewer.server.ScalaUtils.gracefully
+import t.common.server.ScalaUtils.gracefully
 import otgviewer.shared.OTGColumn
 import otgviewer.shared.OTGSample
 import otgviewer.shared.Pathology
@@ -54,7 +54,7 @@ import t.viewer.server.Configuration
 import t.viewer.server.Conversions.asSpecies
 import t.viewer.server.Conversions.scAsScala
 import t.viewer.shared.Association
-import otgviewer.server.ScalaUtils
+import t.common.server.ScalaUtils
 import otgviewer.shared.TimeoutException
 import otgviewer.shared.OTGSchema
 import t.platform.Probe
@@ -107,7 +107,7 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
     r.toArray
   }
 
-  //TODO move to OTG
+  //TODO consider removing the sc argument (and the need for sp in orthologs)
   @throws[TimeoutException]
   override def probesTargetedByCompound(sc: SampleClass, compound: String, service: String,
     homologous: Boolean): Array[String] = {
@@ -160,7 +160,8 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
       r
     }
 
-    def getTargeting(sc: SampleClass, from: CompoundTargets): MMap[Probe, Compound] = {
+    def getTargeting(sc: SampleClass, from: CompoundTargets)
+      (implicit sf: SampleFilter): MMap[Probe, Compound] = {
       val expected = sampleStore.compounds(scAsScala(sc).filterAll).map(Compound.make(_))
 
       //strictly orthologous
@@ -175,7 +176,8 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
       })
     }
 
-    override def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe]): BBMap = {
+    override def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe])
+      (implicit sf: SampleFilter): BBMap = {
       at match {
         case _: AType.GOMF.type      => probeStore.mfGoTerms(probes)
         case _: AType.GOBP.type      => probeStore.bpGoTerms(probes)

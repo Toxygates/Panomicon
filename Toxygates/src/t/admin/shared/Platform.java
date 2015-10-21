@@ -28,15 +28,22 @@ import t.common.shared.ManagedItem;
 public class Platform extends ManagedItem {
 
 	private int numProbes;	
+	private String publicComment;
 	
 	public Platform() { }
 	
-	public Platform(String title, int numProbes, String comment, Date date) {
+	public Platform(String title, int numProbes, String comment, Date date,
+	    String publicComment) {
 		super(title, comment, date);
-		this.numProbes = numProbes;		
+		this.numProbes = numProbes;
+		this.publicComment = publicComment;
 	}
 	
 	public int getNumProbes() {
 		return numProbes;
+	}
+	
+	public String getPublicComment() {
+	  return publicComment;
 	}
 }

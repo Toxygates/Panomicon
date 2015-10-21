@@ -45,12 +45,15 @@ public class OTGViewer extends TApplication {
   private UIFactory initFactory() {
     //TODO hardcoding these instance names here may be controversial
     // - think of a better way of handling this
+    UIFactory f;
     if (instanceName().equals("toxygates") ||
         instanceName().equals("tg-update")) {
-      return new ClassicOTGFactory();
+      f = new ClassicOTGFactory();
     } else {
-      return new OTGFactory();
-    }
+      f = new OTGFactory();
+    }    
+    logger.info("Using factory: " + f.getClass().toString());
+    return f;
   }
   
   @Override

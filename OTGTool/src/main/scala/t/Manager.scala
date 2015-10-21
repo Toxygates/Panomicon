@@ -21,13 +21,14 @@
 package t
 
 import scala.collection.JavaConversions._
+import scala.concurrent._
 
 import friedrich.util.CmdLineOptions
 
 /**
  * Management tool for T framework applications.
  */
-abstract class Manager[C <: Context] {
+abstract class Manager[C <: Context, B <: BaseConfig] {
 
   def requireEnv(env: scala.collection.Map[String, String], key: String, errMsg: String) =
     env.getOrElse(key, throw new Exception(s"Missing environment variable $key: $errMsg"))
@@ -47,17 +48,17 @@ abstract class Manager[C <: Context] {
       requireEnv(env, "T_DATA_DIR", "Please specify data directory"),
       requireEnv(env, "T_DATA_MATDBCONFIG", "Please specify matrix db flags"))
 
-  def getBaseConfig(): BaseConfig = {
+  def getBaseConfig(): B = {
     val env = mapAsScalaMap(System.getenv())
     val ts = getTSConfig(env)
     val d = getDataConfig(env)
     makeBaseConfig(ts, d)
   }
 
-  def makeBaseConfig(ts: TriplestoreConfig, d: DataConfig): BaseConfig
+  def makeBaseConfig(ts: TriplestoreConfig, d: DataConfig): B
 
   def factory: Factory
-  def initContext(bc: BaseConfig): C
+  def initContext(bc: B): C
 
   def main(args: Array[String]) {
     implicit val c = initContext(getBaseConfig)
@@ -106,15 +107,12 @@ trait ManagerTool extends CmdLineOptions {
     }
   }
 
-  /**
-   * Start the TaskRunner, run a series of tasklets while printing
-   * log messages, then stop it again.
-   */
-  def withTaskRunner(tasklets: Iterable[Tasklet]) {
-    TaskRunner ++= tasklets
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  def startTaskRunner() {
     TaskRunner.start()
-    try {
-      while (TaskRunner.currentTask != None) {
+    Future {
+       while (TaskRunner.currentTask != None) {
         for (m <- TaskRunner.logMessages) {
           println(m)
         }
@@ -124,13 +122,25 @@ trait ManagerTool extends CmdLineOptions {
         }
         Thread.sleep(2000)
       }
-      TaskRunner.errorCause match {
-        case None    => //all good
-        case Some(e) => throw e
-      }
-    } finally {
-      TaskRunner.shutdown()
     }
+  }
+
+  def stopTaskRunner() {
+    TaskRunner.shutdown()
+    TaskRunner.errorCause match {
+      case None    => //all good
+      case Some(e) => throw e
+    }
+  }
+
+  def waitForTasklets() {
+    while (TaskRunner.currentTask != None) {
+      Thread.sleep(1000)
+    }
+  }
+
+  def addTasklets(tasklets: Iterable[Tasklet]) {
+    TaskRunner ++= tasklets
   }
 
   def showHelp(): Unit

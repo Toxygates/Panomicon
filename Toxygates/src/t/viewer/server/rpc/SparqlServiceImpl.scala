@@ -27,8 +27,8 @@ import scala.collection.{Set => CSet}
 import java.util.{List => JList}
 
 import otg.Species.Human
-import otgviewer.server.ScalaUtils
-import otgviewer.server.ScalaUtils.gracefully
+import t.common.server.ScalaUtils
+import t.common.server.ScalaUtils.gracefully
 import otgviewer.server.rpc.Conversions
 import otgviewer.server.rpc.Conversions.asJava
 import otgviewer.server.rpc.Conversions.asJavaSample
@@ -158,7 +158,10 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   private def datasets(): Array[Dataset] = {
     val ds = new Datasets(baseConfig.triplestore) with SharedDatasets
-    ds.sharedList.toArray
+    (instanceURI match {
+      case Some(u) => ds.sharedListForInstance(u)
+      case None => ds.sharedList
+    }).toArray
   }
 
   def chooseDatasets(ds: Array[Dataset]): scala.Unit = {
@@ -386,7 +389,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     lazy val proteins = toBioMap(aprobes, (_: Probe).proteins)
 
-    def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe]): BBMap =
+    def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe])
+      (implicit sf: SampleFilter): BBMap =
       at match {
 
         // The type annotation :BBMap is needed on at least one (!) match pattern
@@ -409,21 +413,25 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       gracefully(f, errorVals)
     }
 
-    def lookupFunction(t: AType): BBMap =
+    private def lookupFunction(t: AType)(implicit sf: SampleFilter): BBMap =
       queryOrEmpty(() => associationLookup(t, sc, aprobes))
 
     def standardMapping(m: BBMap): MMap[String, (String, String)] =
       m.mapKeys(_.identifier).mapInnerValues(p => (p.name, p.identifier))
 
     def resolve(): Array[Association] = {
-      val m1 = types.par.map(x => (x, standardMapping(lookupFunction(x)))).seq
+      implicit val filt = sf
+      val m1 = types.par.map(x => (x, standardMapping(lookupFunction(x)(filt)))).seq
       m1.map(p => new Association(p._1, convertPairs(p._2))).toArray
     }
   }
 
   @throws[TimeoutException]
   def geneSuggestions(sc: SampleClass, partialName: String): Array[String] = {
-      val plat = Option(schema.organismPlatform(sc.get("organism")))
+      val plat = for (scl <- Option(sc);
+        org <- Option(scl.get("organism"));
+        pl <- Option(schema.organismPlatform(org))) yield pl
+
       probeStore.probesForPartialSymbol(plat, partialName).map(_.identifier).toArray
   }
 
@@ -434,10 +442,10 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     probes.filter(x => acceptProbes.contains(x))
   }
-  
+
   def keywordSuggestions(partialName: String, maxSize: Int): Array[Pair[String, AType]] = {
     {
-      b2rKegg.forPattern(partialName, maxSize).map(new Pair(_, AType.KEGG)) ++ 
+      b2rKegg.forPattern(partialName, maxSize).map(new Pair(_, AType.KEGG)) ++
       probeStore.goTerms(partialName, maxSize).map(x => new Pair(x.name, AType.GO))
     }.toArray
   }
