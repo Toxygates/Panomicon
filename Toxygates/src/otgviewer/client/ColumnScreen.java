@@ -123,7 +123,7 @@ public class ColumnScreen extends Screen {
 				Arrays.asList(chosenDatasets)) {
 			@Override
 			public void onOK() {							
-				datasetsChanged(getSelection().toArray(new Dataset[0]));
+				datasetsChanged(selector.getSelection().toArray(new Dataset[0]));
 				sparqlService.chooseDatasets(chosenDatasets,
 						new PendingAsyncCallback<Void>(scr, "Unable to choose datasets") {					
 					public void handleSuccess(Void v) {

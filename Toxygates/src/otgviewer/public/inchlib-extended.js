@@ -3,36 +3,42 @@ var InCHlibEx;
 (function ($) {
 
   InCHlibEx = function (settings) {
-    console.log("InCHlibEx::anonymous function");
-    InCHlib.call(this, settings);
-
     var self = this;
+    InCHlib.call(self, settings);
 
-    self.colors = self.extendColors(self.colors);
-    self.objects_ref = self.extendObjectsRef(self.objects_ref);
+    self.colors = self._extendColors(self.colors);
+    self.objects_ref = self._extendObjectsRef(self.objects_ref);
+
     self.cluster_colors = [
-      "#001f3f",
-      "#0074D9",
-      "#7FDBFF",
-      "#39CCCC",
-      "#3D9970",
-      "#2ECC40",
-      "#01FF70",
-      "#FFDC00",
-      "#FF851B",
-      "#FF4136",
-      "#85144b",
-      "#F012BE",
-      "#B10DC9",
-      "#111111",
-      "#AAAAAA",
-      "#DDDDDD",
+      '#001f3f', // NAVY
+      '#0074D9', // BLUE
+      '#7FDBFF', // AQUA
+      '#39CCCC', // TEAL
+      '#3D9970', // OLIVE
+      '#2ECC40', // GREEN
+      '#01FF70', // LIME
+      '#FFDC00', // YELLOW
+      '#FF851B', // ORANGE
+      '#FF4136', // RED
+      '#85144b', // MAROON
+      '#F012BE', // FUCHSIA
+      '#B10DC9', // PURPLE
+      '#111111', // BLACK
+      '#AAAAAA', // GRAY
+      '#DDDDDD'  // SILVER
     ];
+
+    self.selection_state = {
+      none: 'none',
+      range: 'range',
+      dendrogram: 'dendrogram',
+      cutoff: 'cutoff'
+    };
   };
 
   InCHlibEx.prototype = new InCHlib({});
 
-  InCHlibEx.prototype.extendColors = function (colors) {
+  InCHlibEx.prototype._extendColors = function (colors) {
     colors["cm.colors"] = {
       "start": {"r": 128, "g": 255, "b": 255},
       "middle": {"r": 248, "g": 248, "b": 255},
@@ -61,7 +67,7 @@ var InCHlibEx;
     return colors;
   };
 
-  InCHlibEx.prototype.extendObjectsRef = function (objects_ref) {
+  InCHlibEx.prototype._extendObjectsRef = function (objects_ref) {
     objects_ref["distance_rect"] = new Kinetic.Rect({
       //fill: "blue",
       lineCap: 'butt',
@@ -75,199 +81,238 @@ var InCHlibEx;
       strokeWidth: 2,
       dash: [6, 2]
     });
-
     return objects_ref;
   };
 
+  InCHlibEx.prototype._change_selection_state = function (state) {
+    var self = this;
+
+    if (!state) {
+      state = self.selection_state.none;
+    }
+
+    self.current_selection_state = state;
+    self.selection_state_changed(state);
+  };
+
+  InCHlibEx.prototype.selection_state_changed = function (state) {};
+
+  /** @override */
+  InCHlibEx.prototype.read_data_from_file = function (json) {
+    var self = this;
+
+    var d = new $.Deferred;
+    self.loading = d.promise();
+
+    $.ajax({
+      url: json,
+      type: 'GET',
+      dataType: 'json',
+      timeout: 30000,
+      async: true // Synchronous XMLHttpRequest is deprecated
+    }).done(function (json_file) {
+      self.read_data(json_file);
+      d.resolve();
+    }).fail(function () {
+      d.reject();
+    });
+  };
+
+  /** @override */
+  InCHlibEx.prototype.read_data = function (json) {
+    var self = this;
+
+    var d = new $.Deferred;
+    self.loading = d.promise();
+
+    InCHlib.prototype.read_data.call(this, json);
+
+    d.resolve();
+  };
+
+  /** @override */
   InCHlibEx.prototype.draw = function () {
-    InCHlib.prototype.draw.call(this);
-
     var self = this;
 
-    self.selection_y = [];
-    self.current_object_ids = [];
-    self.mouse_down = null;
-    self.mouse_down_from = null;
-    self.mouse_down_to = null;
-    self.selection = null;
-  }
+    self.loading.done(function () {
+      InCHlib.prototype.draw.call(self);
 
+      self.last_highlighted_range = null
+      self.last_highlighted_cutoff_cluster = null
+      self.mouse_down = null;
+      self.mouse_down_from = null;
+      self.mouse_down_to = null;
+
+      self._change_selection_state(null);
+    }).fail(function () {
+      alert("Timeout while loading data.")
+    });
+  };
+
+  /** @override */
   InCHlibEx.prototype._draw_color_scale = function () {
-    console.log("InCHlibEx::_draw_color_scale");
     var self = this;
-
-    InCHlib.prototype._draw_color_scale.call(this);
+    InCHlib.prototype._draw_color_scale.call(self);
 
     var color_scale_up = new Kinetic.Text({
       x: 100,
       y: 80,
-      text: "+",
-      fontSize: 12,
+      text: '+',
+      fontSize: 14,
       fontFamily: self.settings.font,
       fontStyle: 'bold',
       fill: 'black',
       align: 'left',
       listening: false
     });
-    color_scale_up.setX(color_scale_up.getX() - color_scale_up.getWidth());
-    color_scale_up.setY(color_scale_up.getY() - color_scale_up.getHeight());
+    color_scale_up.x(color_scale_up.x() - color_scale_up.width());
+    color_scale_up.y(color_scale_up.y() - color_scale_up.height());
 
     var color_scale_down = new Kinetic.Text({
       x: 0,
       y: 80,
-      text: "-",
-      fontSize: 12,
+      text: '-',
+      fontSize: 14,
       fontFamily: self.settings.font,
       fontStyle: 'bold',
       fill: 'black',
       align: 'right',
       listening: false
     });
-    color_scale_down.setY(color_scale_down.getY() - color_scale_down.getHeight());
+    color_scale_down.y(color_scale_down.y() - color_scale_down.height());
 
     self.navigation_layer.add(color_scale_down, color_scale_up);
   };
 
+  /** @override */
   InCHlibEx.prototype._draw_heatmap = function () {
-    InCHlib.prototype._draw_heatmap.call(this);
-
     var self = this;
-    if (!self.settings.heatmap) {
-      return;
-    }
+    InCHlib.prototype._draw_heatmap.call(self);
 
-    // Disable super class's handler
+    // Disable the handler set in super class
     self.heatmap_layer.off("mouseleave");
     self.heatmap_layer.on("mouseleave", function (evt) {
-      self.last_header = null;
+      //self.last_header = null; // Defined in super class, but not used.
       self.heatmap_overlay.destroyChildren();
       self.heatmap_overlay.draw();
-      // Added
-      self._selection_end(null);
       self.events.heatmap_onmouseout(evt);
+
+      if (self.mouse_down) {
+        self._stop_drugging(evt);
+      }
     });
-
-    self.cutoff_tool_assist_overlay = new Kinetic.Layer();
-    self.cutoff_group_layer = new Kinetic.Layer();
-    self.stage.add(self.cutoff_tool_assist_overlay, self.cutoff_group_layer);
-
   };
 
+  /** @override */
   InCHlibEx.prototype._draw_dendrogram_layers = function () {
-    InCHlib.prototype._draw_dendrogram_layers.call(this);
-
     var self = this;
+    InCHlib.prototype._draw_dendrogram_layers.call(self);
 
-    // Disable super class's handler
+    // Disable the handler set in super class
     self.cluster_layer.off("click");
     self.cluster_layer.on("click", function (evt) {
-      self.unhighlight_cluster();
-      self.unhighlight_column_cluster();
-      self.unhighlight_selection();
-      self.unhighlight_cutoff_selection();
-      self.change_selection_mode(null);
+      self._reset_all_highlight();
       self.events.empty_space_onclick(evt);
     });
   };
 
+  /** @override */
   InCHlibEx.prototype._draw_stage_layer = function () {
-    InCHlib.prototype._draw_stage_layer.call(this);
-
     var self = this;
+    InCHlib.prototype._draw_stage_layer.call(self);
 
     // Disable super class's handler
     self.stage_layer.off("click");
     self.stage_layer.on("click", function (evt) {
-      self.unhighlight_cluster();
-      self.unhighlight_column_cluster();
-      self.unhighlight_selection();
-      self.unhighlight_cutoff_selection();
-      self.change_selection_mode(null);
+      self._reset_all_highlight();
       self.events.empty_space_onclick(evt);
     });
   };
 
+  /** @override */
   InCHlibEx.prototype._dendrogram_layers_click = function (layer, evt) {
-    InCHlib.prototype._dendrogram_layers_click.call(this, layer, evt);
-
     var self = this;
-    self.unhighlight_selection();
-    self.unhighlight_cutoff_selection();
-    self.change_selection_mode("dendrogram");
+
+    self._reset_all_highlight();
+
+    InCHlib.prototype._dendrogram_layers_click.call(self, layer, evt);
+
+    self._change_selection_state(self.selection_state.dendrogram);
   };
 
+  /** @override */
   InCHlibEx.prototype._column_dendrogram_layers_click = function (layer, evt) {
-    InCHlib.prototype._column_dendrogram_layers_click.call(this, layer, evt);
-
     var self = this;
-    self.unhighlight_selection();
-    self.unhighlight_cutoff_selection();
-    self.change_selection_mode(null);
+
+    self._reset_all_highlight();
+
+    InCHlib.prototype._column_dendrogram_layers_click.call(self, layer, evt);
+
+    self._change_selection_state(null);
   };
 
+  /** @override */
   InCHlibEx.prototype._dendrogram_layers_mousedown = function (layer, evt) {
     var self = this;
+
     var node_id = evt.target.attrs.path_id;
     clearTimeout(self.timer);
     self.timer = setTimeout(function () {
-      self.unhighlight_selection();
-      self.unhighlight_cutoff_selection();
+      self._reset_all_highlight();
       self._get_object_ids(node_id);
       self._zoom_cluster(node_id);
     }, 500);
   };
 
+  /** @override */
   InCHlibEx.prototype._column_dendrogram_layers_mousedown = function (layer, evt) {
     var self = this;
+
     var node_id = evt.target.attrs.path_id;
     clearTimeout(self.timer);
     self.timer = setTimeout(function () {
-      self.unhighlight_selection();
-      self.unhighlight_cutoff_selection();
+      self._reset_all_highlight();
       self._get_column_ids(node_id);
       self._zoom_column_cluster(node_id);
     }, 500);
   };
 
+  /** @override */
   InCHlibEx.prototype._zoom_cluster = function (node_id) {
-    InCHlib.prototype._zoom_cluster.call(this, node_id);
-
     var self = this;
-    self.unhighlight_selection();
-    self.unhighlight_cutoff_selection();
-    self.change_selection_mode(null);
+    InCHlib.prototype._zoom_cluster.call(self, node_id);
+
+    self._reset_all_highlight();
   }
 
+  /** @override */
   InCHlibEx.prototype._unzoom_cluster = function () {
-    InCHlib.prototype._unzoom_cluster.call(this);
-
     var self = this;
-    self.unhighlight_selection();
-    self.unhighlight_cutoff_selection();
-    self.change_selection_mode(null);
+    InCHlib.prototype._unzoom_cluster.call(self);
+
+    self._reset_all_highlight();
   }
 
+  /** @override */
   InCHlibEx.prototype._zoom_column_cluster = function (node_id) {
-    InCHlib.prototype._zoom_column_cluster.call(this, node_id);
-
     var self = this;
-    self.unhighlight_selection();
-    self.unhighlight_cutoff_selection();
-    self.change_selection_mode(null);
+    InCHlib.prototype._zoom_column_cluster.call(self, node_id);
+
+    self._reset_all_highlight();
   }
 
+  /** @override */
   InCHlibEx.prototype._unzoom_column_cluster = function () {
-    InCHlib.prototype._unzoom_column_cluster.call(this);
-
     var self = this;
-    self.unhighlight_selection();
-    self.unhighlight_cutoff_selection();
-    self.change_selection_mode(null);
+    InCHlib.prototype._unzoom_column_cluster.call(self);
+
+    self._reset_all_highlight();
   }
 
-  // To draw cells whose value is null
+  /** @override */
   InCHlibEx.prototype._draw_heatmap_row = function (node_id, x1, y1) {
     var self = this;
+
     var node = self.data.nodes[node_id];
     var row = new Kinetic.Group({id: node_id});
     var x2, y2, color, line, value, text, text_value, col_index;
@@ -318,7 +363,7 @@ var InCHlibEx;
         }
       }
 
-      // From here
+      // Changes from here
       if (!self.settings.images_as_alternative_data) {
         if (value !== null) {
           color = self._get_color_for_value(value, self.data_descs[col_index]["min"], self.data_descs[col_index]["max"], self.data_descs[col_index]["middle"], self.settings.heatmap_colors);
@@ -355,7 +400,7 @@ var InCHlibEx;
       var metadata = self.metadata.nodes[node_id];
 
       if (metadata !== undefined) {
-        for (var i = 0, len = self.on_features["metadata"].length; i < len; i++) {
+        for (i = 0, len = self.on_features["metadata"].length; i < len; i++) {
           col_index = self.on_features["metadata"][i];
           value = metadata[col_index];
           x2 = x1 + self.pixels_for_dimension;
@@ -425,10 +470,10 @@ var InCHlibEx;
     return row;
   }; // _draw_heatmap_row
 
+  /** @override */
   InCHlibEx.prototype._draw_row_ids = function () {
-    InCHlib.prototype._draw_row_ids.call(this);
-
     var self = this;
+    InCHlib.prototype._draw_row_ids.call(self);
 
     if (self.pixels_for_leaf < 6 || self.row_id_size < 5) {
       return;
@@ -449,18 +494,17 @@ var InCHlibEx;
     }
   };
 
+  /** @override */
   InCHlibEx.prototype._bind_row_events = function (row) {
-    InCHlib.prototype._bind_row_events.call(this, row);
-
     var self = this;
+    InCHlib.prototype._bind_row_events.call(self, row);
 
     row.on("mousedown", function (evt) {
-      console.log("mousedown")
-      self._selection_start(evt);
+      self._start_drugging(evt);
     });
 
     row.on("mouseup", function (evt) {
-      self._selection_end(evt);
+      self._stop_drugging(evt);
     });
 
     // Disable super class's event
@@ -468,70 +512,116 @@ var InCHlibEx;
     row.on("mouseover", function (evt) {
       self._draw_col_label(evt);
       if (self.mouse_down === true) {
-        var row_id = evt.target.parent.attrs.id;
-
-        if (self.last_row == row_id) {
-          return;
-        }
-        self.mouse_down_to = self.data.nodes[row_id].objects[0];
-
-        var from = self.row_id_in_order.indexOf(self.mouse_down_from);
-        var to = self.row_id_in_order.indexOf(self.mouse_down_to);
-        self.selection = self.row_id_in_order.slice(Math.min(from, to), Math.max(from, to) + 1);
-        self.selection_y = self.row_y_in_order.slice(Math.min(from, to), Math.max(from, to) + 1);
-
-        self.highlight_rows(self.selection);
-
-        self.last_row = row_id;
+        self._continue_drugging(evt.target.parent.attrs.id);
       }
     });
   };
 
-  InCHlibEx.prototype._selection_start = function (evt) {
+  InCHlibEx.prototype._highlight_range = function (from, to) {
     var self = this;
 
-    self.mouse_down = true;
-    self.unhighlight_selection();
-    self.unhighlight_cutoff_selection();
+    self.current_object_ids = self.row_id_in_order.slice(Math.min(from, to), Math.max(from, to) + 1);
+    self.highlighted_rows_y = self.row_y_in_order.slice(Math.min(from, to), Math.max(from, to) + 1);
+    self.last_highlighted_range = self.current_object_ids;
 
-    var row_id = evt.target.parent.attrs.id;
-    self.mouse_down_from = self.data.nodes[row_id].objects[0];
-    //$wnd.widget.@otgviewer.client.HeatmapDialog::updateSaveButton(Ljava/lang/String;)("F");
+    self.highlight_rows(self.current_object_ids);
+  }
+
+  InCHlibEx.prototype._unhighlight_range = function () {
+    var self = this;
+
+    if(self.last_highlighted_range) {
+      self.unhighlight_rows();
+
+      self.row_range_selection_group.destroy();
+      self.cluster_layer.draw();
+      self.current_object_ids = [];
+      self.highlighted_rows_y = [];
+      self.last_highlighted_range = null;
+      self.mouse_down = false;
+      self.mouse_down_from = null;
+      self.mouse_down_to = null;
+
+      self._change_selection_state(null);
+    }
   };
 
-  InCHlibEx.prototype._selection_end = function (evt) {
+  /** @override */
+  InCHlibEx.prototype.unhighlight_cluster = function(){
     var self = this;
 
-    if (self.mouse_down != true) {
+    var isNotNull = (self.last_highlighted_cluster != null);
+
+    InCHlib.prototype.unhighlight_cluster.call(this);
+
+    if (isNotNull) {
+      self._change_selection_state(null);
+    }
+  }
+
+  InCHlibEx.prototype._reset_all_highlight = function () {
+    var self = this;
+
+    self.unhighlight_rows();
+    self.unhighlight_cluster();
+    self.unhighlight_column_cluster();
+    self._unhighlight_range();
+    self._unhighlight_cutoff_cluster();
+  }
+
+  InCHlibEx.prototype._start_drugging = function (evt) {
+    var self = this;
+
+    self._reset_all_highlight();
+
+    self.mouse_down = true;
+    self.mouse_down_from = self.data.nodes[evt.target.parent.attrs.id].objects[0];
+  };
+
+  InCHlibEx.prototype._continue_drugging = function (row_id) {
+    var self = this;
+    if (self.last_row == row_id) {
+      return;
+    }
+
+    self.mouse_down_to = self.data.nodes[row_id].objects[0];
+
+    var from = self.row_id_in_order.indexOf(self.mouse_down_from);
+    var to = self.row_id_in_order.indexOf(self.mouse_down_to);
+
+    self._highlight_range(from, to);
+
+    self.last_row = row_id;
+  };
+
+  InCHlibEx.prototype._stop_drugging = function (evt) {
+    var self = this;
+
+    if (!self.mouse_down) {
       return;
     }
 
     self.mouse_down = false;
-    if (self.selection) {
-      if (self.selection.length == 0) {
-        self.unhighlight_rows();
-        self.unhighlight_cutoff_selection();
-        //$wnd.widget.@otgviewer.client.HeatmapDialog::updateSaveButton(Ljava/lang/String;)("F");
-      } else {
-        self.change_selection_mode("free");
-        self._draw_selection_layer(self.selection);
-        //$wnd.widget.@otgviewer.client.HeatmapDialog::updateSaveButton(Ljava/lang/String;)("T");
-      }
+    if (self.current_object_ids.length == 0) {
+      self._reset_all_highlight();
+    } else {
+      self._draw_range_selection_overlay();
+      self._change_selection_state(self.selection_state.range);
     }
   };
 
-  InCHlibEx.prototype._draw_selection_layer = function (selection) {
+  InCHlibEx.prototype._draw_range_selection_overlay = function () {
     var self = this;
-    self.row_selection_group = new Kinetic.Group();
+
+    self.row_range_selection_group = new Kinetic.Group();
     var visible = self._get_visible_count();
-    var count = selection.length;
     var x = self.distance - 30;
     var y = self.header_height + self.column_metadata_height - 40;
 
     x = self.distance + self.dendrogram_heatmap_distance;
     var width = visible * self.pixels_for_dimension + self.heatmap_distance;
-    var upper_y = self.selection_y[0] - self.pixels_for_leaf / 2;
-    var lower_y = self.selection_y[self.selection_y.length - 1] + self.pixels_for_leaf / 2;
+    var upper_y = self.highlighted_rows_y[0] - self.pixels_for_leaf / 2;
+    var lower_y = self.highlighted_rows_y[self.highlighted_rows_y.length - 1] + self.pixels_for_leaf / 2;
 
     var cluster_overlay_1 = self.objects_ref.cluster_overlay.clone({
       x: x,
@@ -555,52 +645,37 @@ var InCHlibEx;
       points: [0, lower_y, width, lower_y],
     });
 
-    self.row_selection_group.add(cluster_overlay_1, cluster_overlay_2, cluster_border_1, cluster_border_2);
-    self.cluster_layer.add(self.row_selection_group);
+    self.row_range_selection_group.add(cluster_overlay_1, cluster_overlay_2, cluster_border_1, cluster_border_2);
+    self.cluster_layer.add(self.row_range_selection_group);
     self.stage.add(self.cluster_layer);
 
-    self.row_selection_group.on("mousedown", function (evt) {
-      self.unhighlight_selection();
+    self.row_range_selection_group.on("mousedown", function (evt) {
+      self._unhighlight_range();
     });
 
     self.cluster_layer.draw();
     self.navigation_layer.moveToTop();
   };
 
-  InCHlibEx.prototype.unhighlight_selection = function () {
+  /** @override */
+  InCHlibEx.prototype._draw_column_cluster = function(node_id){
     var self = this;
-    if (self.selection) {
-      self.unhighlight_rows();
-      self.row_selection_group.destroy();
-      self.dendrogram_layer.draw();
-      self.cluster_layer.draw();
-      self.selection_y = [];
-      self.current_object_ids = [];
-      self.mouse_down = null;
-      self.mouse_down_from = null;
-      self.mouse_down_to = null;
-      self.selection = null;
-      self.change_selection_mode(null);
-    }
-  };
 
-  InCHlibEx.prototype._dendrogram_layers_mouseover = function (layer, evt) {
-    var self = this;
-    if (evt.target.attrs.id) {
-      self.path_overlay = evt.target.attrs.path.clone({"strokeWidth": 4});
-      self.dendrogram_hover_layer.add(self.path_overlay);
-      self.dendrogram_hover_layer.draw();
-    }
-  };
-
-  InCHlibEx.prototype._draw_column_cluster = function (node_id) {
-    var self = this;
     self.columns_start_index = self.current_column_ids[0];
     self.on_features["data"] = self.current_column_ids;
     var distance = self.distance;
     self._adjust_horizontal_sizes();
-    self._delete_layers([self.column_dendrogram_layer, self.heatmap_layer, self.heatmap_overlay, self.column_cluster_group, self.navigation_layer, self.highlighted_rows_layer], [self.dendrogram_hover_layer]);
-    if (self.settings.heatmap_header) {
+    self._delete_layers([
+      self.column_dendrogram_layer,
+      self.cutoff_line_layer,
+      self.cutoff_cluster_overlay,
+      self.heatmap_layer,
+      self.heatmap_overlay,
+      self.column_cluster_group,
+      self.navigation_layer,
+      self.highlighted_rows_layer
+    ], [self.dendrogram_hover_layer]);
+    if(self.settings.heatmap_header){
       self._delete_layers([self.header_layer]);
     }
     self._draw_column_dendrogram(node_id);
@@ -608,36 +683,52 @@ var InCHlibEx;
     self._draw_heatmap_header();
     self._draw_navigation();
 
-    if (distance !== self.distance) {
-      self._delete_layers([self.dendrogram_layer, self.cluster_layer]);
-      var row_node = (self.zoomed_clusters["row"].length > 0) ? self.zoomed_clusters["row"][self.zoomed_clusters["row"].length - 1] : self.root_id;
+    if(distance !== self.distance){
+      self._delete_layers([self.scale_mouseover_layer, self.dendrogram_layer, self.cluster_layer]);
+      var row_node = (self.zoomed_clusters["row"].length > 0)?self.zoomed_clusters["row"][self.zoomed_clusters["row"].length - 1]:self.root_id;
       self._draw_row_dendrogram(row_node);
-      if (self.last_highlighted_cluster !== null) {
+      if(self.last_highlighted_cluster !== null){
         self._highlight_path(self.last_highlighted_cluster, "#F5273C");
         self.dendrogram_layer.draw();
+        self.scale_mouseover_layer.draw();
         self._draw_cluster_layer(self.last_highlighted_cluster);
       }
     }
-    else {
+    else{
       self.cluster_layer.moveToTop();
       self.cluster_layer.draw();
     }
   };
 
-  InCHlibEx.prototype._draw_row_dendrogram = function (node_id) {
+  /** @override */
+  InCHlibEx.prototype._draw_cluster = function(node_id){
     var self = this;
-    self.cutoff_tool_layer = new Kinetic.Layer();
-    self.stage.add(self.cutoff_tool_layer);
 
-    InCHlib.prototype._draw_row_dendrogram.call(this, node_id);
+    self._delete_layers([self.scale_mouseover_layer, self.cutoff_line_layer, self.cutoff_cluster_overlay]);
 
-    self.cutoff_tool_layer.draw();
+    InCHlib.prototype._draw_cluster.call(this, node_id);
   };
 
-  InCHlibEx.prototype._draw_distance_scale = function (distance) {
-    InCHlib.prototype._draw_distance_scale.call(this, distance);
-
+  /** @override */
+  InCHlibEx.prototype._draw_row_dendrogram = function (node_id) {
     var self = this;
+
+    InCHlib.prototype._draw_row_dendrogram.call(self, node_id);
+    self.stage.add(self.scale_mouseover_layer);
+
+    // initialise layers for cutoff specification
+    self.cutoff_line_layer = new Kinetic.Layer();
+    self.cutoff_cluster_overlay = new Kinetic.Layer();
+    self.stage.add(self.cutoff_line_layer, self.cutoff_cluster_overlay);
+
+    self.scale_mouseover_layer.draw();
+  };
+
+  /** @override */
+  InCHlibEx.prototype._draw_distance_scale = function (distance) {
+    var self = this;
+    InCHlib.prototype._draw_distance_scale.call(self, distance);
+
     if (!self.settings.navigation_toggle.distance_scale) {
       return;
     }
@@ -646,52 +737,39 @@ var InCHlibEx;
     var x1 = 0;
     var x2 = self.distance;
 
-    var distance = Math.round(100 * self.distance / self.distance_step) / 100;
+    var d = Math.round(100 * self.distance / self.distance_step) / 100;
 
-    var cutoff_assist_rect = new Kinetic.Line({
+    var scale_mouseover_area = new Kinetic.Line({
       points: [x1, y1, x2, y2],
       stroke: "white",
       strokeWidth: 15,
       opacity: 0,
     });
-    self.cutoff_tool_layer.add(cutoff_assist_rect);
+    self.scale_mouseover_layer = new Kinetic.Layer();
+    self.scale_mouseover_layer.add(scale_mouseover_area);
 
-    cutoff_assist_rect.on("mouseenter", function (evt) {
-      var x = evt.evt["layerX"];
-      var value = (distance > 0) ? Math.round(100 * (x2 - x) / x2 * distance) / 100 : 0;
-      self._cutoff_assist_rect_mouseenter(evt, x, y1 - 10, value);
+    var y3 = y1 - 10;
+    scale_mouseover_area.on("mouseenter", function (evt) {
+      self._scale_mouseover_area_enter(evt.evt["layerX"], y3);
     });
-    cutoff_assist_rect.on("mousemove", function (evt) {
-      var x = evt.evt["layerX"];
-      var value = (distance > 0) ? Math.round(100 * (x2 - x) / x2 * distance) / 100 : 0;
-      self._cutoff_assist_rect_mousemove(evt, x, y1 - 10, value);
+    scale_mouseover_area.on("mousemove", function (evt) {
+      self._scale_mouseover_area_move(evt.evt["layerX"], y3);
     });
-    cutoff_assist_rect.on("mouseleave", function (evt) {
-      self._cutoff_assist_rect_mouseleave(evt);
-    });
-    cutoff_assist_rect.on("click", function (evt) {
-      self.unhighlight_cluster();
-      self.unhighlight_column_cluster();
-      self.unhighlight_selection();
-      self.change_selection_mode("cutoff");
-
-      var x = evt.evt["layerX"];
-      var value = (distance > 0) ? Math.round(100 * (x2 - x) / x2 * distance) / 100 : 0;
-      self.highlight_cutoff_selection(value);
-
-      var y1 = self.header_height;
-      var y2 = self.header_height + self.column_metadata_height + (self.heatmap_array.length + 0.5) * self.pixels_for_leaf;
-      var cutoff_line = self.objects_ref.cutoff_line.clone({points: [0, y1, 0, y2], stroke: "#F00"}).x(x);
-
-      self.cutoff_group_layer.add(cutoff_line);
-      self.cutoff_group_layer.draw();
+    scale_mouseover_area.on("click", function (evt) {
+      self._scale_mouseover_area_click(evt.evt["layerX"], y3);
     })
+    scale_mouseover_area.on("mouseleave", function (evt) {
+      self._scale_mouseover_area_leave();
+    });
   };
 
-  InCHlibEx.prototype._cutoff_assist_rect_mouseenter = function (evt, x, y, value) {
+  InCHlibEx.prototype._scale_mouseover_area_enter = function (x, y) {
     var self = this;
-    self.cutoff_tool_assist_overlay.destroyChildren();
 
+    var d = Math.round(100 * self.distance / self.distance_step) / 100;
+    var value = (d > 0) ? Math.round(100 * (self.distance - x) / self.distance * d) / 100 : 0;
+
+    self.cutoff_line_layer.destroyChildren();
     self.cutoff_distance_tooltip = self.objects_ref.tooltip_label.clone({x: x, y: y, id: "cotoff_tooltip_label"});
     self.cutoff_distance_tooltip.add(self.objects_ref.tooltip_tag.clone({pointerDirection: 'down'}));
     self.cutoff_distance_tooltip.add(self.objects_ref.tooltip_text.clone({text: value, id: "cutoff_tooltip_tag"}));
@@ -699,41 +777,60 @@ var InCHlibEx;
     var y1 = self.header_height;
     var y2 = self.header_height + self.column_metadata_height + (self.heatmap_array.length + 0.5) * self.pixels_for_leaf;
     var cutoff_line = self.objects_ref.cutoff_line.clone({points: [0, y1, 0, y2], id: "cutoff_line"}).x(x);
-    self.cutoff_tool_assist_overlay.add(cutoff_line);
-    self.cutoff_tool_assist_overlay.add(self.cutoff_distance_tooltip);
-    self.cutoff_tool_assist_overlay.moveToTop();
+    self.cutoff_line_layer.add(cutoff_line);
+    self.cutoff_line_layer.add(self.cutoff_distance_tooltip);
+    self.cutoff_line_layer.moveToTop();
 
-    self.cutoff_tool_assist_overlay.draw();
+    self.cutoff_line_layer.draw();
   };
 
-  InCHlibEx.prototype._cutoff_assist_rect_mousemove = function (evt, x, y, value) {
+  InCHlibEx.prototype._scale_mouseover_area_move = function (x, y) {
     var self = this;
+
+    var d = Math.round(100 * self.distance / self.distance_step) / 100;
+    var value = (d > 0) ? Math.round(100 * (self.distance - x) / self.distance * d) / 100 : 0;
 
     if (self.cutoff_distance_tooltip) {
       var minX = self.cutoff_distance_tooltip.width() / 2.0;
       var x1 = (x < minX) ? minX : x;
-      self.cutoff_tool_assist_overlay.find("#cotoff_tooltip_label")[0].x(x1);
-      self.cutoff_tool_assist_overlay.find("#cutoff_tooltip_tag")[0].text(value);
-      self.cutoff_tool_assist_overlay.find("#cutoff_line")[0].x(x);
+      self.cutoff_line_layer.find("#cotoff_tooltip_label")[0].x(x1);
+      self.cutoff_line_layer.find("#cutoff_tooltip_tag")[0].text(value);
+      self.cutoff_line_layer.find("#cutoff_line")[0].x(x);
     }
 
-    self.cutoff_tool_assist_overlay.draw();
+    self.cutoff_line_layer.draw();
   };
 
-  InCHlibEx.prototype._cutoff_assist_rect_mouseleave = function (evt) {
+  InCHlibEx.prototype._scale_mouseover_area_leave = function () {
     var self = this;
+
     self.cutoff_distance_tooltip = null;
-    self.cutoff_tool_assist_overlay.destroyChildren();
+    self.cutoff_line_layer.destroyChildren();
 
-    self.cutoff_tool_assist_overlay.draw();
+    self.cutoff_line_layer.draw();
   };
 
-  InCHlibEx.prototype.highlight_cutoff_selection = function (distance) {
+  InCHlibEx.prototype._scale_mouseover_area_click = function (x, y) {
     var self = this;
 
-    self.unhighlight_cutoff_selection();
+    self._reset_all_highlight();
+    self._change_selection_state(self.selection_state.cutoff);
 
-    self.cutoff_distance = distance;
+    var d = Math.round(100 * self.distance / self.distance_step) / 100;
+    var value = (d > 0) ? Math.round(100 * (self.distance - x) / self.distance * d) / 100 : 0;
+
+    self._highlight_cutoff_cluster(value);
+
+    var y1 = self.header_height;
+    var y2 = self.header_height + self.column_metadata_height + (self.heatmap_array.length + 0.5) * self.pixels_for_leaf;
+    var cutoff_line = self.objects_ref.cutoff_line.clone({points: [0, y1, 0, y2], stroke: "#F00"}).x(x);
+
+    self.cutoff_cluster_overlay.add(cutoff_line);
+    self.cutoff_cluster_overlay.draw();
+  };
+
+  InCHlibEx.prototype._divide_cluster_by_distance = function(distance) {
+    var self = this;
 
     var custer_groups = {};
     var nodes = self.data.nodes;
@@ -746,7 +843,6 @@ var InCHlibEx;
       }
       tmp[key] = nodes[key];
     }
-    ;
 
     for (key in tmp) {
       if (tmp[key]["left_child"] || tmp[key]["right_child"]) {
@@ -767,31 +863,38 @@ var InCHlibEx;
       custer_groups[group_id].push(tmp[key]["objects"][0]);
     }
 
-    var toArray = function (hash) {
-      var ret = [];
-      for (key in hash) {
-        ret.push(hash[key]);
-      }
-      return ret;
+    var ret = [];
+    for (key in custer_groups) {
+      ret.push(custer_groups[key]);
     }
 
-    self._draw_cutoff_group_layer(toArray(custer_groups));
+    return ret;
+  }
+
+  InCHlibEx.prototype._highlight_cutoff_cluster = function (distance) {
+    var self = this;
+
+    self.current_object_ids = self._divide_cluster_by_distance(distance);
+    self.last_highlighted_cutoff_cluster = self.current_object_ids
+
+    self._draw_cutoff_cluster_overlay(self.current_object_ids);
   };
 
-  InCHlibEx.prototype.unhighlight_cutoff_selection = function () {
+  InCHlibEx.prototype._unhighlight_cutoff_cluster = function () {
     var self = this;
-    if (self.cutoff_distance) {
-      self.cutoff_group_layer.destroyChildren();
-      self.cutoff_group_layer.draw();
-      self.cutoff_distance = null;
-      self.change_selection_mode(null);
+    if (self.last_highlighted_cutoff_cluster) {
+      self.cutoff_cluster_overlay.destroyChildren();
+      self.cutoff_cluster_overlay.draw();
+      self.current_object_ids = [];
+      self.last_highlighted_cutoff_cluster = null;
+      self._change_selection_state(null);
     }
   };
 
-  InCHlibEx.prototype._draw_cutoff_group_layer = function (custer_groups) {
+  InCHlibEx.prototype._draw_cutoff_cluster_overlay = function (custer_groups) {
     var self = this;
 
-    self.cutoff_group = new Kinetic.Group();
+    self.cutoff_cluster_group = new Kinetic.Group();
 
     var x = self.distance + self.dendrogram_heatmap_distance;
     var y = self.header_height + self.column_metadata_height - 40;
@@ -831,25 +934,13 @@ var InCHlibEx;
     });
 
     cluster_overlays.forEach(function (element, index, arrar) {
-      self.cutoff_group.add(element);
+      self.cutoff_cluster_group.add(element);
     });
     cluster_borders.forEach(function (element, index, arrar) {
-      self.cutoff_group.add(element);
+      self.cutoff_cluster_group.add(element);
     });
 
-    self.cutoff_group_layer.add(self.cutoff_group);
-
-    self.cutoff_group_layer.moveToTop();
-  }
-
-  InCHlibEx.prototype.change_selection_mode = function (selection_mode) {
-    var self = this;
-    self.selection_mode = selection_mode;
-    self.selection_mode_changed();
-  }
-
-  InCHlibEx.prototype.selection_mode_changed = function () {
-    // TODO override in GWT
-  }
+    self.cutoff_cluster_overlay.add(self.cutoff_cluster_group);
+  };
 
 })(jQuery);

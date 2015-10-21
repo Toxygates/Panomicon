@@ -20,16 +20,49 @@
 
 package otgviewer.client.components;
 
-import java.util.Collection;
+import static t.common.client.Utils.makeButtons;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import t.common.client.Command;
 import t.common.client.DataRecordSelector;
 import t.common.shared.Dataset;
 
-public class DatasetSelector extends DataRecordSelector<Dataset> {
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.VerticalPanel;
+
+public class DatasetSelector extends Composite {
 	final static private String message = "Please select the datasets you want to work with.";
+	final protected DataRecordSelector<Dataset> selector; 
 	
 	public DatasetSelector(Collection<Dataset> items, Collection<Dataset> selectedItems) {
-		super(items, message);
-		setSelection(selectedItems);
+	    selector = new DataRecordSelector<>(items);
+		selector.setSelection(selectedItems);
+		
+		VerticalPanel vp = new VerticalPanel();
+		vp.add(new Label(message));
+		vp.add(selector);
+		initWidget(vp);
+		
+        List<Command> commands = new ArrayList<Command>();
+        commands.add(new Command("OK") {
+            @Override 
+            public void run() { onOK(); }
+        });
+        commands.add(new Command("Cancel") {
+            @Override 
+            public void run() { onCancel(); }
+        });
+        
+        vp.add(makeButtons(commands));  
 	}
+	
+	public void onOK() {}
+	
+	public void onCancel() {}
+	
+	public DataRecordSelector<Dataset> selector() { return selector; }
 }

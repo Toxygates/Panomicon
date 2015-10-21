@@ -22,7 +22,7 @@ export T_TS_PASS=ttest
 export T_TS_REPO=ttest
 
 #export T_DATA_DIR=/home/johan/data_dev
-export T_DATA_DIR=/ext/scratch/data_rebuild
+export T_DATA_DIR=/home/johan/data_rebuild
 export T_DATA_MATDBCONFIG="#bnum=6250000#pccap=1073741824#msiz=4294967296"
 
 exec $SCALA_ROOT/bin/scala -J-Xmx4g -classpath $OTGTOOL_ROOT/bin:$CLASSPATH otg.Manager $@

@@ -2,20 +2,20 @@ package otgviewer.client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.ListChooser;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import t.common.shared.ItemList;
-import t.common.shared.StringList;
 import t.common.shared.ValueType;
 import t.viewer.client.rpc.MatrixServiceAsync;
 
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.core.client.ScriptInjector;
@@ -39,7 +39,6 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class HeatmapDialog extends DataListenerWidget {
-
   private static final String[] injectList = {"kinetic-v5.1.0.min.js",
       "jquery-2.0.3.min.js", "inchlib-1.2.0.js", "inchlib-extended.js"};
 
@@ -93,12 +92,13 @@ public class HeatmapDialog extends DataListenerWidget {
       }
 
       public void handleFailure(Throwable caught) {
+        logger.severe(caught.getMessage());
         Window.alert("Fail to generate heat map data.");
       }
     };
   }
 
-  public ValueType getValueType() {
+  private ValueType getValueType() {
     String vt = valType.getItemText(valType.getSelectedIndex());
     return ValueType.unpack(vt);
   }
@@ -128,6 +128,11 @@ public class HeatmapDialog extends DataListenerWidget {
   private void onReady() {
     draw(JsonUtils.safeEval(json));
   }
+
+  private native JavaScriptObject draw(JavaScriptObject json)/*-{
+    $wnd.inchlib.read_data(json)
+    $wnd.inchlib.draw();
+  }-*/;
 
   private void initializeHeatmap() {
     createInstance();
@@ -274,32 +279,19 @@ public class HeatmapDialog extends DataListenerWidget {
     });
     buttonGroup.add(btnClose);
 
-    saveButton = new Button("Save as gene set...");
-    saveButton.addClickHandler(new ClickHandler() {
+    saveButton = new Button("Save as gene set...", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        String mode = getSelectionMode();
-        if (mode == null) {
-          return;
-        }
-        
-        if (mode.equals("free") || mode.equals("dendrogram")) {
-          JsArrayString array = getSelection();
-          
-          if (array == null) {
-            return;
-          }
+        List<List<String>> objectIds = parse2dJsArray(getCurrentObjectIds());
 
-          List<String> chosenProbes = new ArrayList<String>();
-          for (int i = 0; i < array.length(); ++i) {
-            chosenProbes.add(array.get(i));
-          }
-          saveSimpleGeneSelection(chosenProbes);
-        } else if (mode.equals("cutoff")) {
-          
-        } else {
-          
-        }
+        ItemListsStoreHelper helper =
+            new ItemListsStoreHelper("probes", screen) {
+              @Override
+              protected void onSaveSuccess(String name, Collection<String> items) {
+                Window.alert("Gene sets are successfully saved.");
+              }
+            };
+        helper.save(objectIds);
       }
     });
     buttonGroup.add(saveButton);
@@ -323,34 +315,6 @@ public class HeatmapDialog extends DataListenerWidget {
     dialog.setText("Heatmap");
     dialog.setWidget(vp);
   }
-  
-  private void saveSimpleGeneSelection(List<String> chosenProbes) {
-    ListChooser lc =
-        new ListChooser(new ArrayList<StringList>(), "probes") {
-          @Override
-          protected void listsChanged(List<ItemList> lists) {
-            screen.itemListsChanged(lists);
-            screen.storeItemLists(screen.getParser());
-          }
-          @Override
-          protected boolean checkName(String name) {
-            if (!super.checkName(name)) {
-              return false;
-            }
-            if (containsEntry("probes", name)) {
-              Window.alert("The title \"" + name + "\" is already taken.\n"
-                  + "Please choose a different name.");
-              return false;
-            }
-            return true;
-          }
-        };
-    // TODO make ListChooser use the DataListener propagate mechanism?
-    lc.setLists(screen.chosenItemLists);
-
-    lc.setItems(chosenProbes);
-    lc.saveAction();
-  }
 
   private void toggleDendrogram(boolean b) {
     toggleRowDendrogram(b);
@@ -358,36 +322,23 @@ public class HeatmapDialog extends DataListenerWidget {
     redraw();
   }
 
-  native JsArrayString getSelection()/*-{    
-    var mode = $wnd.inchlib.selection_mode;
-    if (!mode) {
-      return null;
-    }
-    
-    if (mode == "free") {
-      return $wnd.inchlib.selection;
-    } else {
-      return $wnd.inchlib.current_object_ids;
-    }
+  private native JsArray<JsArrayString> getCurrentObjectIds() /*-{
+    return $wnd.inchlib.get_current_object_ids();
   }-*/;
 
-  native String getSelectionMode()/*-{
-    return $wnd.inchlib.selection_mode;
-  }-*/;
-
-  native JavaScriptObject toggleRowDendrogram(boolean b)/*-{
+  private native JavaScriptObject toggleRowDendrogram(boolean b)/*-{
     $wnd.inchlib.settings.dendrogram = b;
   }-*/;
 
-  native JavaScriptObject toggleColumnDendrogram(boolean b)/*-{
+  private native JavaScriptObject toggleColumnDendrogram(boolean b)/*-{
     $wnd.inchlib.settings.column_dendrogram = b;
   }-*/;
 
-  native JavaScriptObject redraw()/*-{
+  private native JavaScriptObject redraw()/*-{
     $wnd.inchlib.redraw();
   }-*/;
-    
-  public void updateSaveButton(String enabled) {
+
+  private void updateSaveButton(String enabled) {
     String b = enabled.trim().toLowerCase();
     if (b.equals("t") || b.equals("true")) {
       saveButton.setEnabled(true);
@@ -396,7 +347,7 @@ public class HeatmapDialog extends DataListenerWidget {
     }
   }
 
-  native JavaScriptObject createInstance()/*-{
+  private native JavaScriptObject createInstance()/*-{
     $wnd.widget = this;
 
     $wnd.inchlib = new $wnd.InCHlibEx({
@@ -425,20 +376,59 @@ public class HeatmapDialog extends DataListenerWidget {
         "hint_button" : false
       },
     });
-    
-    $wnd.inchlib.selection_mode_changed = function() {
+
+    $wnd.inchlib.selection_state_changed = function(state) {
+      $wnd.widget.@otgviewer.client.HeatmapDialog::selectionStateChanged(Ljava/lang/String;)(state);
+    }
+
+    $wnd.inchlib.get_current_object_ids = function() {
       var self = this;
-      if (!self.selection_mode || self.selection_mode == "cutoff") {
-        $wnd.widget.@otgviewer.client.HeatmapDialog::updateSaveButton(Ljava/lang/String;)("F");
-      } else {
-        $wnd.widget.@otgviewer.client.HeatmapDialog::updateSaveButton(Ljava/lang/String;)("T");     
+      switch (self.current_selection_state) {
+      case self.selection_state.range:
+      case self.selection_state.dendrogram:
+        return [ self.current_object_ids ];
+      case self.selection_state.cutoff:
+        return self.current_object_ids;
+      default:
+        return [ [] ];
       }
     }
   }-*/;
 
-  native JavaScriptObject draw(JavaScriptObject json)/*-{
-    $wnd.inchlib.read_data(json)
-    $wnd.inchlib.draw(); //draw cluster heatmap
-  }-*/;
+  private void selectionStateChanged(String state) {
+    boolean enabled = false;
+
+    if (state != null) {
+      switch (state.trim().toLowerCase()) {
+        case "range":
+        case "dendrogram":
+        case "cutoff":
+          enabled = true;
+          break;
+        default:
+          enabled = false;
+      }
+    }
+
+    saveButton.setEnabled(enabled);
+  }
+
+  private List<List<String>> parse2dJsArray(JsArray<JsArrayString> array) {
+    List<List<String>> result = new LinkedList<List<String>>();
+    int size = array.length();
+    for (int i = 0; i < size; ++i) {
+      result.add(parseJsArrayString(array.get(i)));
+    }
+    return result;
+  }
+
+  private List<String> parseJsArrayString(JsArrayString array) {
+    List<String> result = new LinkedList<String>();
+    int size = array.length();
+    for (int i = 0; i < size; ++i) {
+      result.add(array.get(i));
+    }
+    return result;
+  }
 
 }
