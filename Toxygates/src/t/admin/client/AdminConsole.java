@@ -186,7 +186,7 @@ public class AdminConsole implements EntryPoint {
         };
 
         table.addColumn(samplesColumn, "Samples");
-        table.setColumnWidth(samplesColumn, "12.5em");
+        table.setColumnWidth(samplesColumn, "6em");
 
         TextColumn<Batch> dsColumn = new TextColumn<Batch>() {
           @Override
@@ -195,7 +195,7 @@ public class AdminConsole implements EntryPoint {
           }
         };
         table.addColumn(dsColumn, "Dataset");
-        table.setColumnWidth(dsColumn, "12.5em");
+        table.setColumnWidth(dsColumn, "8em");
 
         TextColumn<Batch> visibilityColumn = new TextColumn<Batch>() {
           @Override

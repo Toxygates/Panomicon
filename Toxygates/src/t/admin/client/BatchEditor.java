@@ -42,16 +42,15 @@ public class BatchEditor extends ManagedItemEditor {
       Collection<Instance> instances) {
     super(b, addNew);
 
-    if (addNew) {
-      uploader = new BatchUploader();
-      vp.add(uploader);
-    }
-
     vp.add(new Label("In dataset:"));
-    datasetBox = new ListBox();
-    datasetBox.addItem(b.getDataset());
+    datasetBox = new ListBox(); 
+    
+    if (b != null) {
+      datasetBox.addItem(b.getDataset());
+    }
+    
     for (Dataset d : datasets) {
-      if (!d.getTitle().equals(b.getDataset())) {
+      if (b == null || !d.getTitle().equals(b.getDataset())) {
         datasetBox.addItem(d.getTitle());
       }
     }
@@ -61,6 +60,11 @@ public class BatchEditor extends ManagedItemEditor {
     visibility = new VisibilityEditor(b, instances);
     vp.add(visibility);
     visibility.setWidth("200px");
+
+    if (addNew) { 
+      uploader = new BatchUploader();
+      vp.add(uploader);
+    }
 
     addCommands();
   }

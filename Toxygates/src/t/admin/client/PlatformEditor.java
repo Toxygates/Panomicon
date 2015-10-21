@@ -17,15 +17,14 @@ public class PlatformEditor extends ManagedItemEditor {
     super(p, addNew);
     publicComments = addTextArea("Public comments");
 
-    if (addNew) {
-      uploader = new PlatformUploader();
-      vp.add(uploader);
-    }
-    
     if (p != null) {
       publicComments.setValue(p.getPublicComment());
     }
 
+    if (addNew) {
+      uploader = new PlatformUploader();
+      vp.add(uploader);
+    }
     addCommands();
   }
 
