@@ -20,7 +20,6 @@ import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.core.java.util.Collections;
 import com.google.gwt.user.client.ui.DialogBox;
 
 public class ItemListsStoreHelper {
@@ -215,8 +214,8 @@ public class ItemListsStoreHelper {
 
   private List<String> getSerialNumberedNames(String base, int count) {
     List<String> names = new ArrayList<String>(count);
-    for (int i = 1; i < count; ++i) {
-      names.add(base + " " + i);
+    for (int i = 0; i < count; ++i) {
+      names.add(base + " " + (i + 1));
     }
     return names;
   }
