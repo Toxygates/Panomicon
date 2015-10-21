@@ -2,6 +2,8 @@ package otgviewer.client;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import otgviewer.client.components.GeneSetEditor;
 import otgviewer.client.components.GroupLabels;
 import otgviewer.client.components.Screen;
@@ -15,7 +17,6 @@ import otgviewer.client.components.ranking.SimpleCompoundRanker;
 import otgviewer.shared.Group;
 import t.common.shared.DataSchema;
 
-import com.sun.istack.internal.Nullable;
 
 /**
  * This is the standard factory for new Toxygates/AdjuvantDB instances.

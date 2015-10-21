@@ -23,6 +23,8 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -50,7 +52,6 @@ public class HeatmapDialog extends DataListenerWidget {
   private final ListBox valType;
 
   private String json;
-
 
   public HeatmapDialog(Screen screen, ValueType defaultType) {
     matrixService = screen.matrixService();
@@ -144,9 +145,19 @@ public class HeatmapDialog extends DataListenerWidget {
   }
 
   private void createPanel(ValueType defaultType) {
-    ScrollPanel mainContent = new ScrollPanel();
-    mainContent.setPixelSize(600, 500);
+    final ScrollPanel mainContent = new ScrollPanel();
+    mainContent.setPixelSize((int) (Window.getClientWidth() * 0.7),
+        (int) (Window.getClientHeight() * 0.7));
     mainContent.setWidget(new HTML("<div id=\"inchlib\"></div>"));
+    Window.addResizeHandler(new ResizeHandler() {
+      @Override
+      public void onResize(ResizeEvent event) {
+        int width = (int) (Window.getClientWidth() * 0.7);
+        int height = (int) (Window.getClientHeight() * 0.7);
+        mainContent.setPixelSize(width, height);
+        redraw(width, height);
+      }
+    });
 
     VerticalPanel eastContent = new VerticalPanel();
     eastContent.setSpacing(4);
@@ -338,6 +349,12 @@ public class HeatmapDialog extends DataListenerWidget {
     $wnd.inchlib.redraw();
   }-*/;
 
+  private native JavaScriptObject redraw(int w, int h)/*-{
+    $wnd.inchlib.settings.width = w;
+    $wnd.inchlib.settings.max_height = h;
+    $wnd.inchlib.redraw();
+  }-*/;
+
   private void updateSaveButton(String enabled) {
     String b = enabled.trim().toLowerCase();
     if (b.equals("t") || b.equals("true")) {
@@ -355,8 +372,6 @@ public class HeatmapDialog extends DataListenerWidget {
       dendrogram : true,
       metadata : false,
       column_metadata : false,
-      max_height : 1200,
-      width : 600,
       heatmap_colors : "BuWhRd",
       heatmap_font_color : "black",
       column_dendrogram : true,
