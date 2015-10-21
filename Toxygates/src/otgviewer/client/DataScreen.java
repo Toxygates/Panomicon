@@ -72,6 +72,7 @@ public class DataScreen extends Screen {
         .dataDisplayHelp());
     gs = makeGeneSetSelector();
     et = makeExpressionTable();
+    et.setDisplayPColumns(false);
     addListener(et);
     // To ensure that GeneSetSelector has chosenColumns
     addListener(gs);

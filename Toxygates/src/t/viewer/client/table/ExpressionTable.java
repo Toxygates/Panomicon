@@ -155,9 +155,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   private final Logger logger = SharedUtils.getLogger("expressionTable");
 
   protected ValueType chosenValueType;
+  
+  private CheckBox pcb;
 
   public ExpressionTable(Screen _screen, boolean pValueOption) {
     super(_screen);
+    this.pValueOption = pValueOption;
     this.matrixService = _screen.matrixService();
     this.resources = _screen.resources();
     screen = _screen;
@@ -249,19 +252,26 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     horizontalPanel.add(pager);
 
     if (pValueOption) {
-      final CheckBox pcb = new CheckBox("p-value columns");
+      pcb = new CheckBox("p-value columns");
       horizontalPanel.add(pcb);
       pcb.setValue(true);
       pcb.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          displayPColumns = pcb.getValue();
+          setDisplayPColumns(pcb.getValue());
           setupColumns();
         }
       });
     }
 
     pager.setDisplay(grid);
+  }
+
+  public void setDisplayPColumns(boolean displayPColumns) {
+    if (pValueOption) {
+      this.displayPColumns = displayPColumns;
+      pcb.setValue(displayPColumns);
+    }    
   }
 
   protected void initTableList() {
