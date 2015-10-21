@@ -46,9 +46,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 /**
  * The main data display screen. Data is displayed in the ExpressionTable widget.
- * 
- * @author johan
- *
  */
 public class DataScreen extends Screen {
 
@@ -64,9 +61,6 @@ public class DataScreen extends Screen {
   @Nullable  
   private MenuItem heatMapMenu;
 
-  // private final MatrixServiceAsync matrixService;
-  // private final SparqlServiceAsync sparqlService;
-
   public DataScreen(ScreenManager man) {
     super("View data", key, true, man, resources.dataDisplayHTML(), resources
         .dataDisplayHelp());
@@ -75,9 +69,6 @@ public class DataScreen extends Screen {
     addListener(et);
     // To ensure that GeneSetSelector has chosenColumns
     addListener(gs);
-
-    // matrixService = man.matrixService();
-    // sparqlService = man.sparqlService();
   }
 
   protected GeneSetSelector makeGeneSetSelector() {
@@ -208,8 +199,6 @@ public class DataScreen extends Screen {
       addAnalysisMenuItem(heatMapMenu);
     }
   }
-
-
 
   @Override
   public boolean enabled() {
