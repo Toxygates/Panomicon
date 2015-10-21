@@ -20,6 +20,7 @@ import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.core.java.util.Collections;
 import com.google.gwt.user.client.ui.DialogBox;
 
 public class ItemListsStoreHelper {
@@ -55,12 +56,18 @@ public class ItemListsStoreHelper {
   }
 
   public void save(Collection<String> list) {
-    List<Collection<String>> lists = new ArrayList<Collection<String>>();
-    lists.add(list);
+    List<List<String>> lists = new ArrayList<List<String>>();
+    lists.add(new ArrayList<String>(list));
     saveAction("Name entry", "Please enter a name for the list.", lists);
   }
+  
+  public void saveAs(Collection<String> list, String listName) {
+    List<Collection<String>> lists = new ArrayList<Collection<String>>();
+    lists.add(list);
+    saveAction("Name entry", "Please enter a name for the list.", lists, listName);
+  }
 
-  public void save(List<Collection<String>> lists) {
+  public void save(List<List<String>> lists) {
     saveAction("Name entry", "Please enter a name prefix for each lists.",
         lists);
   }
@@ -124,7 +131,7 @@ public class ItemListsStoreHelper {
   }
 
   private void saveAction(String title, String message,
-      final List<Collection<String>> lists) {
+      final List<List<String>> lists) {
     InputDialog entry = new InputDialog(message) {
       @Override
       protected void onChange(String value) {
@@ -138,7 +145,7 @@ public class ItemListsStoreHelper {
           return;
         }
 
-        Iterator<Collection<String>> itr = lists.iterator();
+        Iterator<List<String>> itr = lists.iterator();
         for (int i = 0; itr.hasNext(); ++i) {
           putIfAbsent(type).put(names.get(i), itr.next());
         }
@@ -152,6 +159,29 @@ public class ItemListsStoreHelper {
     };
     inputDialog = Utils.displayInPopup(title, entry, DialogPosition.Center);
   }
+
+  private void saveAction(String title, String message,
+      final List<Collection<String>> lists, String name) {
+    if (name == null) {
+      return;
+    }
+
+    List<String> names = generateNameList(name, lists.size());
+    if (!validate(names)) {
+      return;
+    }
+
+    Iterator<Collection<String>> itr = lists.iterator();
+    for (int i = 0; itr.hasNext(); ++i) {
+      putIfAbsent(type).put(names.get(i), itr.next());
+    }
+
+    storeItemLists();
+    logger.info("Stored " + lists.size() + " list(s).");
+
+    onSaveSuccess(names.get(0), lists.get(0));
+  }
+
 
   protected void onSaveSuccess(String name, Collection<String> items) {}
 
@@ -185,7 +215,7 @@ public class ItemListsStoreHelper {
 
   private List<String> getSerialNumberedNames(String base, int count) {
     List<String> names = new ArrayList<String>(count);
-    for (int i = 0; i < count; ++i) {
+    for (int i = 1; i < count; ++i) {
       names.add(base + " " + i);
     }
     return names;
