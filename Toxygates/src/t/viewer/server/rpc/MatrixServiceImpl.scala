@@ -69,20 +69,14 @@ import javax.annotation.Nullable
 
 object MatrixServiceImpl {
 
-  /**
-   * Note that in some cases, using the ServletContext rather than
-   * static vars is more robust.
-   */
+  private var orthologs: Option[Iterable[OrthologMapping]] = None
 
-  var inited = false
-  var orthologs: Iterable[OrthologMapping] = _
-
-  def staticInit(c: Context) = synchronized {
-    if (!inited) {
+  def getOrthologs(c: Context) = synchronized {
+    if (orthologs == None) {
       val probes = c.probes
-      orthologs = probes.orthologMappings
-      inited = true
+      orthologs = Some(probes.orthologMappings)
     }
+    orthologs.get
   }
 }
 
@@ -107,7 +101,6 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     super.localInit(config)
     this.config = config
     mcontext = context.matrix
-    staticInit(context)
   }
 
   protected class MatrixState {
@@ -165,7 +158,8 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   def loadMatrix(groups: JList[Group], probes: Array[String],
     typ: ValueType): ManagedMatrixInfo = {
     getSessionData.controller =
-      new MatrixController(context, orthologs, groups, probes, typ, false, false, false)
+      new MatrixController(context, () => getOrthologs(context),
+          groups, probes, typ, false, false, false)
     getSessionData.matrix.info
   }
 
@@ -260,8 +254,8 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   def getFullData(gs: JList[Group], rprobes: Array[String], sparseRead: Boolean,
     withSymbols: Boolean, typ: ValueType): FullMatrix = {
     val sgs = Vector() ++ gs
-    val controller = new MatrixController(context, orthologs, gs, rprobes,
-        typ, true, sparseRead, true)
+    val controller = new MatrixController(context, () => getOrthologs(context),
+        gs, rprobes, typ, true, sparseRead, true)
     val mm = controller.managedMatrix
 
     val raw = if (sgs.size == 1) {
@@ -329,7 +323,6 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
         //Grouped
         mm.current
       }
-
 
     val colNames = mat.sortedColumnMap.map(_._1)
     val rows = mat.asRows

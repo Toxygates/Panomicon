@@ -281,7 +281,6 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
    * gets. Such attributes and related sparql queries should be centralised in one
    * column definition.
    */
-
   def withAttributes(probes: Iterable[Probe]): Iterable[Probe] = {
     def obtain(m: Map[String, String], key: String) = m.getOrElse(key, "")
 
@@ -386,9 +385,8 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
       // "?probe a t:probe; rdfs:label ?probeLabel. " + //filter out invalid probeLabels
       "}"
 
-    val mq = ts.mapQuery(q)
-    //    val byGroup = makeMultiMap(mq.map(x => x("l") -> Gene(x("entrez"))))
-    //    val probes = forGenes(byGroup.values.flatten.toList.distinct)
+   //May be slow
+    val mq = ts.mapQuery(q)(20000)
     makeMultiMap(mq.map(x => x("list") -> Probe(x("probeLabel"))))
   }
 
