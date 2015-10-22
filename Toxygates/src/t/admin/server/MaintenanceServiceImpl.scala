@@ -56,6 +56,7 @@ import t.viewer.server.rpc.TServiceServlet
 import t.common.shared.Dataset
 import t.common.server.SharedDatasets
 import t.common.shared.ManagedItem
+import t.Tasklet
 
 abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceService {
 
@@ -142,13 +143,14 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
         dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
         false, baseConfig.seriesBuilder)
+      TaskRunner += Tasklet.simple("Set batch parameters", () => updateBatch(b))
     }
   }
 
   def addPlatformAsync(p: Platform, affymetrixFormat: Boolean): Unit = {
     showUploadedFiles()
-	grabRunner()
-	val pm = new PlatformManager(context) //TODO configuration parsing
+    grabRunner()
+    val pm = new PlatformManager(context) //TODO configuration parsing
 
     cleanMaintenance {
       val tempFiles = new TempFiles()
@@ -169,7 +171,9 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
       }
 
       val metaFile = getAsTempFile(tempFiles, platformPrefix, platformPrefix, "dat").get
-      TaskRunner ++= pm.addPlatform(id, TRDF.escape(comment), metaFile.getAbsolutePath(), affymetrixFormat)
+      TaskRunner ++= pm.addPlatform(id, TRDF.escape(comment),
+          metaFile.getAbsolutePath(), affymetrixFormat)
+      TaskRunner += Tasklet.simple("Set platform parameters", () => updatePlatform(p))
     }
   }
 
@@ -227,7 +231,7 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
 
     maintenance {
       dm.addWithTimestamp(id, TRDF.escape(d.getComment))
-      dm.setDescription(id, TRDF.escape(d.getDescription))
+      updateDataset(d)
     }
   }
 
@@ -398,6 +402,7 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
   private def updateDataset(d: Dataset): Unit = {
     val ds = new Datasets(baseConfig.triplestore)
     ds.setComment(d.getTitle, TRDF.escape(d.getComment))
+    ds.setDescription(d.getTitle, TRDF.escape(d.getDescription))
     ds.setPublicComment(d.getTitle, TRDF.escape(d.getPublicComment))
   }
 

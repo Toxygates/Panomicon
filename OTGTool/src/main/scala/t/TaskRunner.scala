@@ -22,6 +22,14 @@ package t
 
 import scala.concurrent._
 
+object Tasklet {
+  def simple(name: String, f:() => Unit) = new Tasklet(name) {
+    def run() {
+      f()
+    }
+  }
+}
+
 /**
  * TODO consider replacing with Futures
  */
