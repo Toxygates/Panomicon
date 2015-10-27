@@ -64,7 +64,7 @@ public class ItemListsStoreHelper {
    *  An input box that ask the gene set title will be shown.
    */
   public void save(Collection<String> list) {
-    List<List<String>> lists = new ArrayList<List<String>>();
+    List<Collection<String>> lists = new ArrayList<Collection<String>>();
     lists.add(new ArrayList<String>(list));
     saveAction("Name entry", "Please enter a name for the list.", lists);
   }
@@ -73,7 +73,7 @@ public class ItemListsStoreHelper {
    *  Save gene sets to local storage.
    *  An input box that ask the prefix of gene sets will be shown.
    */
-  public void save(List<List<String>> lists) {
+  public void save(List<Collection<String>> lists) {
     saveAction("Name entry", "Please enter a name prefix for each lists.",
         lists);
   }
@@ -150,7 +150,7 @@ public class ItemListsStoreHelper {
   }
 
   private void saveAction(String title, String message,
-      final List<List<String>> lists) {
+      final List<Collection<String>> lists) {
     InputDialog entry = new InputDialog(message) {
       @Override
       protected void onChange(String value) {
@@ -164,7 +164,7 @@ public class ItemListsStoreHelper {
           return;
         }
 
-        Iterator<List<String>> itr = lists.iterator();
+        Iterator<Collection<String>> itr = lists.iterator();
         for (int i = 0; itr.hasNext(); ++i) {
           putIfAbsent(type).put(names.get(i), itr.next());
         }

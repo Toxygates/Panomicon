@@ -293,7 +293,7 @@ public class HeatmapDialog extends DataListenerWidget {
     saveButton = new Button("Save as gene set...", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        List<List<String>> objectIds = parse2dJsArray(getCurrentObjectIds());
+        List<Collection<String>> objectIds = parse2dJsArray(getCurrentObjectIds());
 
         ItemListsStoreHelper helper =
             new ItemListsStoreHelper("probes", screen) {
@@ -428,8 +428,8 @@ public class HeatmapDialog extends DataListenerWidget {
     saveButton.setEnabled(enabled);
   }
 
-  private List<List<String>> parse2dJsArray(JsArray<JsArrayString> array) {
-    List<List<String>> result = new LinkedList<List<String>>();
+  private List<Collection<String>> parse2dJsArray(JsArray<JsArrayString> array) {
+    List<Collection<String>> result = new LinkedList<Collection<String>>();
     int size = array.length();
     for (int i = 0; i < size; ++i) {
       result.add(parseJsArrayString(array.get(i)));
