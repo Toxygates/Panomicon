@@ -20,9 +20,10 @@
 
 package otg.db
 
-import otg.Annotation
-import t.db.Sample
+import scala.collection.immutable.ListMap
+
 import t.db.ParameterSet
+import t.db.Sample
 
 /**
  * Information about a set of samples.
@@ -44,10 +45,115 @@ trait Metadata extends t.db.Metadata {
 }
 
 object OTGParameterSet extends ParameterSet {
+
+   /**
+   * Map human-readable descriptions to the keys we expect to find in the RDF data.
+   * The RDF predicates are of the form <http://127.0.0.1:3333/(key)>.
+   */
+
+  private val nonNumericalKeys = ListMap(
+      "Sample ID" -> "sample_id",
+      "Platform ID" -> "platform_id",
+    "Experiment ID" -> "exp_id",
+    "Control group" -> "control_group",
+    "Group ID" -> "group_id",
+    "Individual ID" -> "individual_id",
+    "Organ" -> "organ_id",
+    "Material ID" -> "material_id",
+    "Compound" -> "compound_name",
+    "Compound abbreviation" -> "compound_abbr",
+    "Compound no" -> "compound_no",
+    "CAS number" -> "cas_number",
+    "KEGG drug" -> "kegg_drug",
+    "KEGG compound" -> "kegg_compound",
+    "Organism" -> "organism",
+    "Test type" -> "test_type",
+    "Repeat?" -> "sin_rep_type",
+    "Sex" -> "sex_type",
+    "Strain" -> "strain_type",
+    "Administration route" -> "adm_route_type",
+    "Animal age (weeks)" -> "animal_age_week",
+    "Exposure time" -> "exposure_time",
+    "Dose" -> "dose",
+    "Dose unit" -> "dose_unit",
+    "Dose level" -> "dose_level",
+    "Medium type" -> "medium_type",
+    "Product information" -> "product_information",
+    "CRO type" -> "cro_type")
+
+  /**
+   * These are the annotations that it makes sense to consider in a
+   * statistical, numerical way.
+   */
+  private val numericalKeys = ListMap("Terminal body weight (g)" -> "terminal_bw",
+    "Liver weight (g)" -> "liver_wt",
+    "Kidney weight total (g)" -> "kidney_total_wt",
+    "Kidney weight left (g)" -> "kidney_wt_left",
+    "Kidney weight right (g)" -> "kidney_wt_right",
+    "RBC (x 10^4/uL)" -> "RBC",
+    "Hb (g/DL)" -> "Hb",
+    "Ht (%)" -> "Ht",
+    "MCV (fL)" -> "MCV",
+    "MCH (pg)" -> "MCH",
+    "MCHC (%)" -> "MCHC",
+    "Ret (%)" -> "Ret",
+    "Plat (x 10^4/uL)" -> "Plat",
+    "WBC (x 10^2/uL)" -> "WBC",
+    "Neutrophil (%)" -> "Neu",
+    "Eosinophil (%)" -> "Eos",
+    "Basophil (%)" -> "Bas",
+    "Monocyte (%)" -> "Mono",
+    "Lymphocyte (%)" -> "Lym",
+    "PT (s)" -> "PT",
+    "APTT (s)" -> "APTT",
+    "Fbg (mg/dL)" -> "Fbg",
+    "ALP (IU/L)" -> "ALP",
+    "TC (mg/dL)" -> "TC",
+    "TBIL (mg/dL)" -> "TBIL",
+    "DBIL (mg/dL)" -> "DBIL",
+    "GLC (mg/dL)" -> "GLC",
+    "BUN (mg/dL)" -> "BUN",
+    "CRE (mg/dL)" -> "CRE",
+    "Na (meq/L)" -> "Na",
+    "K (meq/L)" -> "K",
+    "Cl (meq/L)" -> "Cl",
+    "Ca (mg/dL)" -> "Ca",
+    "IP (mg/dL)" -> "IP",
+    "TP (g/dL)" -> "TP",
+    "RALB (g/dL)" -> "RALB",
+    "A / G ratio" -> "AGratio",
+    "AST (GOT) (IU/L)" -> "AST",
+    "ALT (GPT) (IU/L)" -> "ALT",
+    "LDH (IU/L)" -> "LDH",
+    "gamma-GTP (IU/L)" -> "GTP",
+    "DNA (%)" -> "DNA")
+
+    //TODO reconsider this method
+  def postReadAdjustment(kv: (String, String)): String = kv._1 match {
+    case "CAS number" => {
+      val s = kv._2.split("3333/")
+      if (s.size > 1) {
+        s(1)
+      } else {
+        "N/A"
+      }
+    }
+    //expect e.g. http://bio2rdf.org/dr:D00268
+    case "KEGG drug" | "KEGG compound" => {
+      val s = kv._1.split(":")
+      if (s.size > 2) {
+        s(2)
+      } else {
+        "N/A"
+      }
+    }
+    case _ => kv._2
+  }
+
   val all =
-    Annotation.keys.map(x => t.db.SampleParameter(x._2, x._1)) ++
-      List(t.db.SampleParameter("sample_id", "Sample ID"),
-        t.db.SampleParameter("control_group", "Control group"))
+    (numericalKeys ++ nonNumericalKeys).map(x => t.db.SampleParameter(x._2, x._1))
+
+  def isNumerical(x: String) = numericalKeys.values.toSet.contains(x)
 
   val highLevel = List("organism", "test_type", "sin_rep_type", "organ_id").map(byId)
 
