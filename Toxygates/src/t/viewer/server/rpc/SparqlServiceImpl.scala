@@ -407,7 +407,6 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe])
       (implicit sf: SampleFilter): BBMap =
       at match {
-
         // The type annotation :BBMap is needed on at least one (!) match pattern
         // to make the match statement compile. TODO: research this
         case _: AType.Uniprot.type   => proteins: BBMap
@@ -419,6 +418,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
         case _: AType.Enzymes.type =>
           val sp = asSpecies(sc)
           b2rKegg.enzymes(probes.flatMap(_.genes), sp)
+        case _ => throw new Exception("Unexpected annotation type")
       }
 
     val emptyVal = CSet(DefaultBio("error", "(Timeout or error)"))
