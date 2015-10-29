@@ -160,17 +160,16 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
       ts.simpleQueryNonQuiet)
   }
 
-  def sampleAttributeQuery(attribute: Iterable[String])
-    (implicit sf: SampleFilter): Query[Seq[Seq[String]]] = {
-    val pwi = attribute.zipWithIndex.map(a => (a._1, "?q" + a._2))
+  def sampleAttributeQuery(attribute: Seq[String])
+    (implicit sf: SampleFilter): Query[Seq[Map[String, String]]] = {
 
     Query(tPrefixes,
-      "SELECT DISTINCT " + pwi.map(_._2).mkString(" ") +
+      "SELECT DISTINCT " + attribute.map("?" + _).mkString(" ") +
         " WHERE { GRAPH ?batchGraph { " +
         "?x " +
-          pwi.map(p => "?x " + p._1 + " " + p._2).mkString(";") + ".",
+          attribute.map(x => s"t:$x ?$x").mkString("; "),
       s"} ${sf.standardSampleFilters} } ",
-      ts.multiQuery)
+      ts.mapQuery)
   }
 
   def attributeValues(filter: TFilter, attribute: String)(implicit sf: SampleFilter) =

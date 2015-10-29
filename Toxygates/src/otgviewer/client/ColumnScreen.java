@@ -40,6 +40,7 @@ import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SparqlServiceAsync;
+import static t.common.client.Utils.makeScrolled;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -169,7 +170,7 @@ public class ColumnScreen extends Screen {
 
 		if (hasCompoundRanking) {
 			CompoundRanker cr = factory().compoundRanker(this, cs);
-			tp.add(Utils.makeScrolled(cr), rankingLabel);
+			tp.add(makeScrolled(cr), rankingLabel);
 		}
 		tp.selectTab(0);		
 		

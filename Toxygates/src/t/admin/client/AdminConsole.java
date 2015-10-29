@@ -25,6 +25,7 @@ import t.admin.shared.Platform;
 import t.common.client.ImageClickCell;
 import t.common.shared.Dataset;
 import t.common.shared.ManagedItem;
+import static t.common.client.Utils.makeScrolled;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -198,9 +199,19 @@ public class AdminConsole implements EntryPoint {
             new ImageClickCell.StringImageClickCell(resources.magnify(), false) {
 
           @Override
-          public void onClick(String value) {
-            // TODO Auto-generated method stub
-            
+          public void onClick(final String value) {
+            maintenanceService.batchParameterSummary(new Batch(value, ""), 
+                new AsyncCallback<String[][]>() {
+                  @Override
+                  public void onFailure(Throwable caught) {
+                    Window.alert("Unable to obtain batch data");                    
+                  }
+
+                  @Override
+                  public void onSuccess(String[][] result) {
+                    showBatchOverview(value, result);                    
+                  }              
+            });
           }          
         };
         class InspectColumn extends Column<Batch, String> {        
@@ -343,4 +354,13 @@ public class AdminConsole implements EntryPoint {
     maintenanceService.getDatasets(new ListDataCallback<Dataset>(datasetData, "platform list"));
   }
 
+  private void showBatchOverview(String title, String[][] data) {
+    final DialogBox db = new DialogBox(true, true);
+    db.setText("Overview for batch " + title);
+    Widget w = makeScrolled(new BatchOverviewTable(data));
+    w.setHeight("600px");
+    w.setWidth("800px");
+    db.setWidget(w);
+    db.show();
+  }
 }

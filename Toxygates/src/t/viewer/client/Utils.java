@@ -50,12 +50,12 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
-import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
+import static t.common.client.Utils.makeScrolled;
 
 /**
  * GUI/GWT utility methods.
@@ -241,31 +241,18 @@ public class Utils {
           pp.setHeight((Window.getClientHeight() - 100) + "px");
           if (center != null && dp != null) {
             dp.remove(center);
-            Widget scrl = makeScrolledSize(center, w);
+            Widget scrl = makeScrolled(center);
             scrl.setHeight((Window.getClientHeight() - 120) + "px");
             dp.add(scrl, DockPanel.CENTER);
           } else {
             Widget wd = pp.getWidget();
-            pp.setWidget(makeScrolledSize(wd, w));
+            pp.setWidget(makeScrolled(wd));
           }
         }
         pp.setPopupPosition(atX != -1 ? atX : pos.computeX(w), atY != -1 ? atY : pos.computeY(h));
         pp.setWidth("auto");
       }
     };
-  }
-
-  public static ScrollPanel makeScrolled(Widget w) {
-    ScrollPanel sp = new ScrollPanel(w);
-    sp.setWidth("auto");
-    return sp;
-  }
-
-  public static ScrollPanel makeScrolledSize(Widget w, int width) {
-    ScrollPanel sp = makeScrolled(w);
-    sp.setWidth("auto");
-    // sp.setWidth(width + "px");
-    return sp;
   }
 
   public static void showHelp(TextResource helpText, ImageResource helpImage) {

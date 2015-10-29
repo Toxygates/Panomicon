@@ -28,6 +28,6 @@ class BatchOverviewTable extends Composite {
     
     String[][] disp = Arrays.copyOfRange(data, 1, data.length);
     table.setRowData(Arrays.asList(disp));
-    table.setPageSize(100);
+//    table.setPageSize(100);
   }
 }

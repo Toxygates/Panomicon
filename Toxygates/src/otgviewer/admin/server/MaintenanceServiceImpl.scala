@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -22,7 +22,14 @@ package otgviewer.admin.server
 
 import otgviewer.server.rpc.OTGServiceServlet
 
-class MaintenanceServiceImpl extends t.admin.server.MaintenanceServiceImpl 
+class MaintenanceServiceImpl extends t.admin.server.MaintenanceServiceImpl
   with OTGServiceServlet {
+
+  override protected def overviewParameters: Seq[t.db.SampleParameter] = {
+    val r = Vector("organism", "test_type", "sin_rep_type", "organ_id",
+        "compound_name", "dose_level", "exposure_time",
+        "platform_id", "control_group")
+    r.map(context.config.sampleParameters.byId)
+  }
 
 }
