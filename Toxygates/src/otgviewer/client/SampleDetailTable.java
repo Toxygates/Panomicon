@@ -28,16 +28,13 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.OTGSample;
+import t.common.client.Utils;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
-import com.google.gwt.user.cellview.client.SafeHtmlHeader;
-import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.view.client.NoSelectionModel;
@@ -74,11 +71,11 @@ public class SampleDetailTable extends Composite {
 		while(table.getColumnCount() > 0) {
 			table.removeColumn(0);
 		}
-		makeColumn(0, title, "15em");
+		Utils.makeColumn(table, 0, title, "15em");
 		for (int i = 1; i < barcodes.length + 1; ++i) {
 			// TODO
 			String name = barcodes[i - 1].id().substring(2); //remove leading 00					
-			makeColumn(i, name, "9em");
+			Utils.makeColumn(table, i, name, "9em");
 		}
 		table.setWidth((15 + 9 * barcodes.length) + "em", true);
 		
@@ -96,25 +93,6 @@ public class SampleDetailTable extends Composite {
 						setData(useAnnots.toArray(new Annotation[0]), rangeStart, rangeEnd);
 					}
 				});
-	}
-	
-	private TextColumn<String[]> makeColumn(final int idx, String title, String width) {
-		TextColumn<String[]> col = new TextColumn<String[]>() {
-			public String getValue(String[] x) {
-				if (x.length > idx) {
-					return x[idx];
-				} else {
-					return "";
-				}
-			}
-		};		
-		
-		SafeHtml hhtml = SafeHtmlUtils.fromSafeConstant(
-				"<span title=\"" + title + "\">" + title + "</span>");
-		SafeHtmlHeader header = new SafeHtmlHeader(hhtml);
-		table.addColumn(col, header);		
-		table.setColumnWidth(col, width);				
-		return col;
 	}
 
 	private String[] makeAnnotItem(int i, Annotation[] as) {

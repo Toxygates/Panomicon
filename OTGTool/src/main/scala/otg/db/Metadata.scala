@@ -46,14 +46,14 @@ trait Metadata extends t.db.Metadata {
 
 object OTGParameterSet extends ParameterSet {
 
-   /**
+  /**
    * Map human-readable descriptions to the keys we expect to find in the RDF data.
    * The RDF predicates are of the form <http://127.0.0.1:3333/(key)>.
    */
 
   private val nonNumericalKeys = ListMap(
-      "Sample ID" -> "sample_id",
-      "Platform ID" -> "platform_id",
+    "Sample ID" -> "sample_id",
+    "Platform ID" -> "platform_id",
     "Experiment ID" -> "exp_id",
     "Control group" -> "control_group",
     "Group ID" -> "group_id",
@@ -128,7 +128,7 @@ object OTGParameterSet extends ParameterSet {
     "gamma-GTP (IU/L)" -> "GTP",
     "DNA (%)" -> "DNA")
 
-    //TODO reconsider this method
+  //TODO reconsider this method
   def postReadAdjustment(kv: (String, String)): String = kv._1 match {
     case "CAS number" => {
       val s = kv._2.split("3333/")

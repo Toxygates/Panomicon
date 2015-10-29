@@ -151,13 +151,26 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
     }
   }
 
-  def sampleAttributeQuery(attribute: String)(implicit sf: SampleFilter): Query[Seq[String]] = {
+   def sampleAttributeQuery(attribute: String)(implicit sf: SampleFilter): Query[Seq[String]] = {
     Query(tPrefixes,
       "SELECT DISTINCT ?q " +
         s"WHERE { GRAPH ?batchGraph { " +
         "?x " + attribute + " ?q . ",
       s"} ${sf.standardSampleFilters} } ",
       ts.simpleQueryNonQuiet)
+  }
+
+  def sampleAttributeQuery(attribute: Iterable[String])
+    (implicit sf: SampleFilter): Query[Seq[Seq[String]]] = {
+    val pwi = attribute.zipWithIndex.map(a => (a._1, "?q" + a._2))
+
+    Query(tPrefixes,
+      "SELECT DISTINCT " + pwi.map(_._2).mkString(" ") +
+        " WHERE { GRAPH ?batchGraph { " +
+        "?x " +
+          pwi.map(p => "?x " + p._1 + " " + p._2).mkString(";") + ".",
+      s"} ${sf.standardSampleFilters} } ",
+      ts.multiQuery)
   }
 
   def attributeValues(filter: TFilter, attribute: String)(implicit sf: SampleFilter) =

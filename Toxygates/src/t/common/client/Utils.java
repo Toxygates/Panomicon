@@ -24,6 +24,11 @@ import java.util.List;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
+import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.SafeHtmlHeader;
+import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -49,5 +54,24 @@ public class Utils {
 			}
 		});
 		return b;
+	}
+	
+	 public static TextColumn<String[]> makeColumn(CellTable<String[]> table, final int idx, String title, String width) {
+	    TextColumn<String[]> col = new TextColumn<String[]>() {
+	        public String getValue(String[] x) {
+	            if (x.length > idx) {
+	                return x[idx];
+	            } else {
+	                return "";
+	            }
+	        }
+	    };      
+	    
+	    SafeHtml hhtml = SafeHtmlUtils.fromSafeConstant(
+	            "<span title=\"" + title + "\">" + title + "</span>");
+	    SafeHtmlHeader header = new SafeHtmlHeader(hhtml);
+	    table.addColumn(col, header);       
+	    table.setColumnWidth(col, width);               
+	    return col;
 	}
 }
