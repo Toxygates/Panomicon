@@ -131,12 +131,6 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   def setSessionData(m: MatrixState) =
     getThreadLocalRequest().getSession().setAttribute("matrix", m)
 
-  //Should this be in sparqlService?
-  def identifiersToProbes(identifiers: Array[String], precise: Boolean,
-    titlePatternMatch: Boolean): Array[String] = {
-    identifiersToProbes(identifiers, precise, titlePatternMatch, null)
-  }
-
   def identifiersToProbes(identifiers: Array[String], precise: Boolean,
     titlePatternMatch: Boolean, samples: JList[OTGSample]): Array[String] = {
     val ps = if (titlePatternMatch) {
