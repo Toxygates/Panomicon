@@ -43,6 +43,7 @@ import t.common.client.components.SelectionTable;
 import t.common.shared.DataSchema;
 import t.common.shared.Dataset;
 import t.common.shared.Pair;
+import static t.common.client.Utils.makeScrolled;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.viewer.client.Utils;
@@ -209,9 +210,9 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
 		existingGroupsTable.setVisible(false);
 		existingGroupsTable.table().setRowStyles(new GroupColouring());
 		existingGroupsTable.setSize("100%", "100px");
-		sp.addSouth(Utils.makeScrolled(existingGroupsTable), 200);
+		sp.addSouth(makeScrolled(existingGroupsTable), 200);
 		
-		sp.add(Utils.makeScrolled(vp));		
+		sp.add(makeScrolled(vp));		
 	}
 	
 	abstract protected void makeGroupColumns(CellTable<Group> table);
