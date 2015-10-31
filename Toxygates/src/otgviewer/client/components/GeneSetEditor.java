@@ -26,6 +26,7 @@ import java.util.Set;
 
 import otgviewer.client.ClusteringSelector;
 import otgviewer.client.GeneOracle;
+import otgviewer.client.ItemListsStoreHelper;
 import otgviewer.client.ProbeSelector;
 import otgviewer.shared.Group;
 import t.common.client.components.ResizingDockLayoutPanel;
@@ -33,7 +34,6 @@ import t.common.client.components.ResizingListBox;
 import t.common.shared.ItemList;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
-import t.common.shared.StringList;
 import t.common.shared.Term;
 import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.Utils;
@@ -83,7 +83,7 @@ public class GeneSetEditor extends DataListenerWidget {
 
   private ListBox probesList;
   private final ListBox compoundList = new ListBox();
-  private TextArea customProbeText;  
+  private TextArea customProbeText;
   private DockLayoutPanel plPanel;
   private Widget plNorth, plSouth;
 
@@ -110,6 +110,17 @@ public class GeneSetEditor extends DataListenerWidget {
 
     initWindow();
   }
+  
+  /*
+   *  Override this function to handle post save event
+   *   and what genes were saved
+   */
+  protected void onSaved(String title, List<String> items) {}
+
+  /*
+   *  Override this function to handle what genes were saved
+   */
+  protected void onCanceled() {}
 
   protected boolean hasChembl() {
     return true;
@@ -227,9 +238,8 @@ public class GeneSetEditor extends DataListenerWidget {
       @Override
       public void onClick(ClickEvent event) {
         String title = titleText.getText().trim();
-        int ret = saveAs(title);
-        
-        if (ret == ListChooser.SAVE_SUCCESS) {
+
+        if (saveAs(title)) {
           GeneSetEditor.this.dialog.hide();
           onSaved(title, new ArrayList<String>(listedProbes));
         }
@@ -273,37 +283,18 @@ public class GeneSetEditor extends DataListenerWidget {
     dialog.center();
   }
 
-  protected void onSaved(String title, List<String> items) {
-    screen.probesChanged(items.toArray(new String[0]));
-    screen.geneSetChanged(title);
-  }
+  private boolean saveAs(String name) {
+    ItemListsStoreHelper helper = new ItemListsStoreHelper("probes", screen);
 
-  protected void onCanceled() {}
-
-  private int saveAs(String name) {
-    // Create an invisible listChooser that we exploit only for
-    // the sake of saving a new list.
-    final ListChooser lc =
-        new ListChooser(new ArrayList<StringList>(), "probes") {
-          @Override
-          protected void listsChanged(List<ItemList> lists) {
-            screen.itemListsChanged(lists);
-            screen.storeItemLists(screen.getParser());
-          }
-        };
-
-    // set current stored item lists
-    lc.setLists(chosenItemLists);
-
-    if (!name.equals(originalTitle) && lc.containsEntry("probes", name)) {
+    if (!name.equals(originalTitle) && helper.contains("probes", name)) {
       // TODO Show confirm message box whether to overwrite or not?
       Window.alert("The title \"" + name + "\" is already taken.\n"
           + "Please choose a different name.");
-
-      return ListChooser.SAVE_FAILURE;
+      return false;
     }
+    helper.saveAs(new ArrayList<String>(listedProbes), name);
 
-    return lc.saveAs(name, new ArrayList<String>(listedProbes));
+    return true;
   }
 
   private ProbeSelector probeSelector() {
@@ -499,14 +490,16 @@ public class GeneSetEditor extends DataListenerWidget {
   private void doTargetLookup(final String service, final boolean homologs) {
     final DataListenerWidget w = screen;
     if (compoundList.getSelectedIndex() != -1) {
-      String compound = compoundList.getItemText(compoundList.getSelectedIndex());
-      
-      //Used for organism - TODO fix this for multi-organism cases
+      String compound =
+          compoundList.getItemText(compoundList.getSelectedIndex());
+
+      // Used for organism - TODO fix this for multi-organism cases
       SampleClass sc = screen.chosenColumns.get(0).samples()[0].sampleClass();
       logger.info("Target lookup for: " + sc.toString());
-      
+
       sparqlService.probesTargetedByCompound(sc, compound, service, homologs,
-          new PendingAsyncCallback<String[]>(w, "Unable to get probes (technical error).") {
+          new PendingAsyncCallback<String[]>(w,
+              "Unable to get probes (technical error).") {
             public void handleSuccess(String[] probes) {
               if (probes.length == 0) {
                 Window.alert("No matching probes were found.");
@@ -542,8 +535,8 @@ public class GeneSetEditor extends DataListenerWidget {
     }
     selectDefaultTargets();
     vpi.add(hp);
-    
-    vpi.add(compoundList);    
+
+    vpi.add(compoundList);
 
     Button button = new Button("Add direct targets >>");
     button.addClickHandler(new ClickHandler() {
@@ -610,15 +603,15 @@ public class GeneSetEditor extends DataListenerWidget {
 
   @Override
   public void columnsChanged(List<Group> cs) {
-    super.columnsChanged(cs);    
-    Set<String> compounds = 
+    super.columnsChanged(cs);
+    Set<String> compounds =
         Group.collectAll(cs, screen.schema().majorParameter());
     compoundList.clear();
-    for (String c: compounds) {
+    for (String c : compounds) {
       compoundList.addItem(c);
     }
   }
-  
+
   public void createNew() {
     // Create temporal DataListenerWidget to avoid loading probes chosen in parent screen
     DataListenerWidget dlw = new DataListenerWidget();
