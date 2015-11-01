@@ -20,13 +20,11 @@
 
 package t.sparql
 
+import t.BaseConfig
 import t.TriplestoreConfig
 import t.db.Sample
-import otg.Annotation
-import t.sparql.secondary.GOTerm
-import t.sparql.{ Filter => TFilter }
-import t.BaseConfig
 import t.db.SampleParameter
+import t.sparql.{ Filter => TFilter }
 
 object Samples extends RDFClass {
   val defaultPrefix = s"$tRoot/sample"
@@ -152,23 +150,26 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
       withIndex.map(x => (x._1, h.get("k" + x._2)))
     }
   }
-  /**
-   * Produces human-readable values
-   */
-  @deprecated("being replaced with parameterQuery", "July 15")
-  def annotations(sample: String, querySet: Iterable[SampleParameter] = Set()): Annotation = {
-    val m = parameterQuery(sample, querySet).map(x =>
-      (x._1.humanReadable, x._2.getOrElse("N/A"))).toSeq
-    Annotation(m, sample).postReadAdjustment
-  }
 
-  def sampleAttributeQuery(attribute: String)(implicit sf: SampleFilter): Query[Seq[String]] = {
+   def sampleAttributeQuery(attribute: String)(implicit sf: SampleFilter): Query[Seq[String]] = {
     Query(tPrefixes,
       "SELECT DISTINCT ?q " +
         s"WHERE { GRAPH ?batchGraph { " +
         "?x " + attribute + " ?q . ",
       s"} ${sf.standardSampleFilters} } ",
       ts.simpleQueryNonQuiet)
+  }
+
+  def sampleAttributeQuery(attribute: Seq[String])
+    (implicit sf: SampleFilter): Query[Seq[Map[String, String]]] = {
+
+    Query(tPrefixes,
+      "SELECT DISTINCT " + attribute.map("?" + _).mkString(" ") +
+        " WHERE { GRAPH ?batchGraph { " +
+        "?x " +
+          attribute.map(x => s"t:$x ?$x").mkString("; "),
+      s"} ${sf.standardSampleFilters} } ",
+      ts.mapQuery)
   }
 
   def attributeValues(filter: TFilter, attribute: String)(implicit sf: SampleFilter) =

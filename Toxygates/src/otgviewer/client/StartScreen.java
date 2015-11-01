@@ -23,6 +23,7 @@ package otgviewer.client;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import t.viewer.client.Utils;
+import static t.common.client.Utils.makeScrolled;
 
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -55,7 +56,7 @@ public class StartScreen extends Screen {
 			}
 		});
 
-		return Utils.makeScrolled(hp);
+		return makeScrolled(hp);
 	}
 
 	@Override

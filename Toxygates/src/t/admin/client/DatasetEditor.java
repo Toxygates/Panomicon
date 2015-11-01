@@ -24,7 +24,6 @@ import javax.annotation.Nullable;
 
 import t.common.shared.Dataset;
 
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 

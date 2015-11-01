@@ -99,5 +99,12 @@ public interface MaintenanceService extends RemoteService {
    * @return
    */
   Progress getProgress();
-  // etc. TODO
+
+  /**
+   * Get parameter summaries for samples in a batch.
+   * The result is a row-major table. The first row will be column headers.
+   * @param b
+   * @return
+   */
+  String[][] batchParameterSummary(Batch b);
 }

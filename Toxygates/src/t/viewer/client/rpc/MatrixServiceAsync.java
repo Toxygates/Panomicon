@@ -42,15 +42,10 @@ public interface MatrixServiceAsync {
 
 	public void matrixRows(int offset, int size, SortKey sortKey,
 			boolean ascending, AsyncCallback<List<ExpressionRow>> callback);
-	
-	@Deprecated
-	public void identifiersToProbes(String[] identifiers,
-			boolean precise, boolean titlePatternMatch,
-			AsyncCallback<String[]> callback);
 
 	public void identifiersToProbes(String[] identifiers,
 			boolean precise, boolean titlePatternMatch,
-			List<OTGSample> samples, AsyncCallback<String[]> callback);
+			@Nullable List<OTGSample> samples, AsyncCallback<String[]> callback);
 
 	public void selectProbes(String[] probes,
 			AsyncCallback<ManagedMatrixInfo> callback);

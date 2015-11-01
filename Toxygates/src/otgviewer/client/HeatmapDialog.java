@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * (NIBIOHN), Japan.
+ *
+ * This file is part of Toxygates.
+ *
+ * Toxygates is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Toxygates is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
+ */
 package otgviewer.client;
 
 import java.util.ArrayList;
@@ -293,7 +312,7 @@ public class HeatmapDialog extends DataListenerWidget {
     saveButton = new Button("Save as gene set...", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        List<List<String>> objectIds = parse2dJsArray(getCurrentObjectIds());
+        List<Collection<String>> objectIds = parse2dJsArray(getCurrentObjectIds());
 
         ItemListsStoreHelper helper =
             new ItemListsStoreHelper("probes", screen) {
@@ -428,8 +447,8 @@ public class HeatmapDialog extends DataListenerWidget {
     saveButton.setEnabled(enabled);
   }
 
-  private List<List<String>> parse2dJsArray(JsArray<JsArrayString> array) {
-    List<List<String>> result = new LinkedList<List<String>>();
+  private List<Collection<String>> parse2dJsArray(JsArray<JsArrayString> array) {
+    List<Collection<String>> result = new LinkedList<Collection<String>>();
     int size = array.length();
     for (int i = 0; i < size; ++i) {
       result.add(parseJsArrayString(array.get(i)));
