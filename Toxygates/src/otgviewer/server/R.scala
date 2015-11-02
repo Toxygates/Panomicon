@@ -42,10 +42,7 @@ class R() {
   def exec(): Option[REXP] = {
     try {
       conn = new RConnection
-      cmds.nonEmpty match {
-        case true => Some(exec(cmds))
-        case _    => None
-      }
+      if (cmds.nonEmpty) Some(exec(cmds)) else None
     } catch {
       case e: Exception => logger.severe(e.getMessage); None
     } finally {
@@ -56,15 +53,16 @@ class R() {
   private def exec(q: Queue[String]): REXP = {
     q.dequeue match {
       case (x, Queue()) => eval(x)
-      case (x, xs) => eval(x); exec(xs)
+      case (x, xs)      => eval(x); exec(xs)
     }
   }
 
   private def eval(cmd: String) = {
     val r = conn.parseAndEval(s"try($cmd)")
-    r.inherits("try-error") match {
-      case true => throw new RserveException(conn, r.asString())
-      case _    => r
+    if (r.inherits("try-error")) {
+      throw new RserveException(conn, r.asString())
+    } else {
+      r
     }
   }
 
