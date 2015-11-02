@@ -277,11 +277,17 @@ class BatchManager(context: Context) {
 
     //Enums can not yet be deleted.
 
-    r :+= deleteSeriesData(title, sbuilder)
-    r :+= deleteFoldData(title)
-    r :+= deleteExprData(title)
-    r :+= deleteSampleIDs(title)
-    r :+= deleteRDF(title) //Also removes the "batch record"
+    try {
+      r :+= deleteSeriesData(title, sbuilder)
+      r :+= deleteFoldData(title)
+      r :+= deleteExprData(title)
+      r :+= deleteSampleIDs(title)
+    } finally {
+      //The steps above can fail if there's a lookup exception for sample_index
+      //(for example due to malformed data).
+      //Make sure that the RDF record is deleted even in this case.
+      r :+= deleteRDF(title) //Also removes the "batch record"
+    }
     r
   }
 
