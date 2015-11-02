@@ -114,10 +114,11 @@ object BatchManager extends ManagerTool {
       case "delete" =>
         val title = require(stringOption(args, "-title"),
           "Please specify a title with -title")
+        val rdfOnly = booleanOption(args, "-rdfonly")
         // TODO move verification into the batches API
         verifyExists(batches, title)
         val bm = new BatchManager(context)
-        addTasklets(bm.deleteBatch(title, config.seriesBuilder))
+        addTasklets(bm.deleteBatch(title, config.seriesBuilder, rdfOnly))
       case "list" =>
         println("Batch list")
         for (b <- batches.list) {
@@ -271,23 +272,21 @@ class BatchManager(context: Context) {
   }
 
   def deleteBatch[S <: Series[S]](title: String,
-    sbuilder: SeriesBuilder[S]): Iterable[Tasklet] = {
+    sbuilder: SeriesBuilder[S], rdfOnly: Boolean = false): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
     implicit val mc = matrixContext()
 
     //Enums can not yet be deleted.
-
-    try {
+    if (!rdfOnly) {
       r :+= deleteSeriesData(title, sbuilder)
       r :+= deleteFoldData(title)
       r :+= deleteExprData(title)
       r :+= deleteSampleIDs(title)
-    } finally {
-      //The steps above can fail if there's a lookup exception for sample_index
-      //(for example due to malformed data).
-      //Make sure that the RDF record is deleted even in this case.
-      r :+= deleteRDF(title) //Also removes the "batch record"
+    } else {
+      println("RDF ONLY mode - not deleting series, fold, expr, sample ID data")
     }
+    r :+= deleteRDF(title) //Also removes the "batch record"
+
     r
   }
 
