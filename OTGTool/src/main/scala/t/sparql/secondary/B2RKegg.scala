@@ -70,18 +70,23 @@ class B2RKegg(val con: RepositoryConnection) extends Triplestore with Store[Path
   def geneIds(pathway: String): Iterable[String] = genes(Pathway(null, pathway)).map(_.identifier)
 
   override def withAttributes(pw: Pathway): Pathway = {
+    val (prefixes, q) = attributes(pw)
+    val genes = simpleQuery(s"$prefixes\n + SELECT DISTINCT ?g { $q }").map(g => Gene.unpackKegg(g)).toSet
+    pw.copy(genes = genes)
+  }
+
+  //TODO simplify, move functionality into Query
+  //track prefixes, selected vars
+  private[sparql] def attributes(pw: Pathway): (String, String) = {
     val (constraint, endFilter) = if (pw.identifier == null) {
       ("dc:title ?title", "FILTER(STR(?title)=\"" + pw.name + "\")")
     } else {
       ("bv:uri " + bracket(pw.identifier), "")
     }
+    val q = s" GRAPH ?pwGraph { ?pw $constraint . " +
+      s"?ko kv:pathway ?pw; kv:gene ?kgene; t:entrez ?gene } $endFilter "
 
-    val q = prefixes +
-      s"SELECT DISTINCT ?g { GRAPH ?gr { ?pw $constraint . " +
-      s"?ko kv:pathway ?pw; kv:gene ?g. } $endFilter }"
-
-    val genes = simpleQuery(q).map(g => Gene.unpackKegg(g)).toSet
-    pw.copy(genes = genes)
+    (prefixes, q)
   }
 
   def forPattern(pattern: String): Vector[String] = {
@@ -92,16 +97,15 @@ class B2RKegg(val con: RepositoryConnection) extends Triplestore with Store[Path
       "filter regex(?title, '.*" + pattern + ".*', 'i') " +
       "} } limit 100").toVector
   }
-  
+
   def forPattern(pattern: String, maxSize: Int): Vector[String] = {
      simpleQuery(prefixes +
-      """SELECT DISTINCT ?title where { graph ?gr {        
+      """SELECT DISTINCT ?title where { graph ?gr {
         ?pw rdf:type kv:Pathway;
         dc:title ?title .  """ +
         "filter regex(?title, '.*" + pattern + ".*', 'i') " +
-        "} } order by ?title limit " + maxSize).toVector                
+        "} } order by ?title limit " + maxSize).toVector
   }
-
 
   /**
    * Obtain all enzymes associated with each of a set of genes.
@@ -130,7 +134,7 @@ class B2RKegg(val con: RepositoryConnection) extends Triplestore with Store[Path
     }
 
     val r = mapQuery(prefixes +
-      """SELECT DISTINCT ?g ?title ?uri where { graph ?gr {
+      """SELECT DISTINCT ?g ?title ?uri where { graph [] {
         ?ko kv:gene ?g; kv:pathway ?pw.
         ?pw bv:uri ?uri; dc:title ?title . """ +
       multiFilter("?g", genes.map(g => bracket(g.packKegg))) +
