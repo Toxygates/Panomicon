@@ -53,8 +53,8 @@ public class BatchUploader extends ItemUploader {
   boolean canProceed() {
     return metadata.hasFile()
         && data.hasFile()
-        && Window.confirm("The Affymetrix calls file is missing. "
-            + "Upload batch without calls data (all values present)?");
+        && (calls.hasFile() || Window.confirm("The Affymetrix calls file is missing. "
+            + "Upload batch without calls data (all values present)?"));
 
   }
 }

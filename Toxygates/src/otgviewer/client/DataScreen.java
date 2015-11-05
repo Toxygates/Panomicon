@@ -223,7 +223,7 @@ public class DataScreen extends Screen {
     return manager.isConfigured(ColumnScreen.key);
   }
 
-  protected void updateProbes() {
+  public void updateProbes() {
     logger.info("chosenProbes: " + chosenProbes.length + " lastProbes: "
         + (lastProbes == null ? "null" : "" + lastProbes.length));
 
@@ -258,6 +258,9 @@ public class DataScreen extends Screen {
 
     StorageParser p = getParser(this);
     storeProbes(p);
+
+    lastProbes = null;
+    lastColumns = null;
   }
 
   @Override
@@ -270,9 +273,6 @@ public class DataScreen extends Screen {
     if (heatMapMenu != null) {
       heatMapMenu.setEnabled(!gs.isDefaultItemSelected());
     }
-
-    lastProbes = null;
-    lastColumns = null;
   }
 
 }

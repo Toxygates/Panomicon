@@ -62,7 +62,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-public class GeneSetEditor extends DataListenerWidget {
+public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHandler {
 
   private static final String NEW_TITLE_PREFIX = "NewGeneSet";
 
@@ -97,6 +97,8 @@ public class GeneSetEditor extends DataListenerWidget {
   protected static final int STACK_ITEM_HEIGHT = 29;
   private static final int PL_NORTH_HEIGHT = 30;
   private static final int PL_SOUTH_HEIGHT = 40;
+
+  private List<SaveActionHandler> saveActions = new ArrayList<SaveActionHandler>();
 
   public GeneSetEditor(Screen screen) {
     super();
@@ -212,7 +214,9 @@ public class GeneSetEditor extends DataListenerWidget {
         }
 
         GeneSetEditor.this.dialog.hide();
-        onCanceled();
+        for (SaveActionHandler h : saveActions) {
+          h.onCanceled();
+        }
       }
     });
     Button btnSave = new Button("Save");
@@ -221,9 +225,11 @@ public class GeneSetEditor extends DataListenerWidget {
       public void onClick(ClickEvent event) {
         String title = titleText.getText().trim();
 
-        if (saveAs(title)) {
+        if (save(title)) {
           GeneSetEditor.this.dialog.hide();
-          onSaved(title, new ArrayList<String>(listedProbes));
+          for (SaveActionHandler h : saveActions) {
+            h.onSaved(title, new ArrayList<String>(listedProbes));
+          }
         }
       }
 
@@ -287,13 +293,13 @@ public class GeneSetEditor extends DataListenerWidget {
 
   }
 
-  private boolean saveAs(String name) {
+  private boolean save(String name) {
     ItemListsStoreHelper helper = new ItemListsStoreHelper("probes", screen);
 
     if (!name.equals(originalTitle) && helper.contains("probes", name)) {
       // TODO Show confirm message box whether to overwrite or not?
-      Window.alert("The title \"" + name + "\" is already taken.\n"
-          + "Please choose a different name.");
+      Window.alert(
+          "The title \"" + name + "\" is already taken.\n" + "Please choose a different name.");
       return false;
     }
     helper.saveAs(new ArrayList<String>(listedProbes), name);
@@ -302,22 +308,21 @@ public class GeneSetEditor extends DataListenerWidget {
   }
 
   private ProbeSelector probeSelector() {
-    return new ProbeSelector(
-        screen,
+    return new ProbeSelector(screen,
         "This lets you view probes that correspond to a given KEGG pathway or GO term. "
-            + "Enter a partial pathway name and press enter to search.", true) {
+            + "Enter a partial pathway name and press enter to search.",
+        true) {
 
       @Override
       protected void getProbes(Term term) {
         switch (term.getAssociation()) {
           case KEGG:
-            sparqlService
-                .probesForPathway(chosenSampleClass, term.getTermString(),
-                    getAllSamples(), retrieveProbesCallback());
+            sparqlService.probesForPathway(chosenSampleClass, term.getTermString(), getAllSamples(),
+                retrieveProbesCallback());
             break;
           case GO:
-            sparqlService.probesForGoTerm(term.getTermString(),
-                getAllSamples(), retrieveProbesCallback());
+            sparqlService.probesForGoTerm(term.getTermString(), getAllSamples(),
+                retrieveProbesCallback());
             break;
           default:
         }
@@ -377,8 +382,7 @@ public class GeneSetEditor extends DataListenerWidget {
         String[] split = text.split("[\n ,\t]");
 
         if (split.length == 0) {
-          Window
-              .alert("Please enter identifiers in the text box and try again.");
+          Window.alert("Please enter identifiers in the text box and try again.");
         } else {
           addManualProbes(split, false);
         }
@@ -483,8 +487,7 @@ public class GeneSetEditor extends DataListenerWidget {
     probesList.clear();
     for (int i = 0; i < probes.length; ++i) {
       if (syms[i].length > 0) {
-        probesList.addItem(SharedUtils.mkString(syms[i], "/") + " ("
-            + probes[i] + ")");
+        probesList.addItem(SharedUtils.mkString(syms[i], "/") + " (" + probes[i] + ")");
       } else {
         probesList.addItem(probes[i]);
       }
@@ -494,16 +497,14 @@ public class GeneSetEditor extends DataListenerWidget {
   private void doTargetLookup(final String service, final boolean homologs) {
     final DataListenerWidget w = screen;
     if (compoundList.getSelectedIndex() != -1) {
-      String compound =
-          compoundList.getItemText(compoundList.getSelectedIndex());
+      String compound = compoundList.getItemText(compoundList.getSelectedIndex());
 
       // Used for organism - TODO fix this for multi-organism cases
       SampleClass sc = screen.chosenColumns.get(0).samples()[0].sampleClass();
       logger.info("Target lookup for: " + sc.toString());
 
       sparqlService.probesTargetedByCompound(sc, compound, service, homologs,
-          new PendingAsyncCallback<String[]>(w,
-              "Unable to get probes (technical error).") {
+          new PendingAsyncCallback<String[]>(w, "Unable to get probes (technical error).") {
             public void handleSuccess(String[] probes) {
               if (probes.length == 0) {
                 Window.alert("No matching probes were found.");
@@ -608,8 +609,7 @@ public class GeneSetEditor extends DataListenerWidget {
   @Override
   public void columnsChanged(List<Group> cs) {
     super.columnsChanged(cs);
-    Set<String> compounds =
-        Group.collectAll(cs, screen.schema().majorParameter());
+    Set<String> compounds = Group.collectAll(cs, screen.schema().majorParameter());
     compoundList.clear();
     for (String c : compounds) {
       compoundList.addItem(c);
@@ -664,6 +664,11 @@ public class GeneSetEditor extends DataListenerWidget {
     }
 
     return false;
+  }
+
+  @Override
+  public void addSaveActionHandler(SaveActionHandler handler) {
+    this.saveActions.add(handler);
   }
 
 }
