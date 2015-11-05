@@ -230,6 +230,20 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     (resolver.all.filter(map.isToken).toSeq).map(Probe(_))
   }
 
+  private[sparql] def probeToGene: (String, String) = {
+    val q = "GRAPH ?probeGraph { ?p a t:probe; t:entrez ?gene }"
+    (tPrefixes, q)
+  }
+
+  import t.sparql.secondary.B2RKegg
+  //TODO best location for this?
+  def forPathway(kegg: B2RKegg, pw: t.sparql.secondary.Pathway): Iterable[Probe] = {
+    val (p1, q1) = probeToGene
+    val (p2, q2) = kegg.attributes(pw)
+    val q = s"$p2\n SELECT DISTINCT ?p {\n $q2 \n $q1\n }"
+    ts.simpleQuery(q).map(Probe.unpack)
+  }
+
   /**
    * based on a set of entrez gene ID's (numbers), return the
    * corresponding probes.
@@ -249,7 +263,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   def forUniprots(uniprots: Iterable[Protein]): Iterable[Probe] =
     emptyCheck(uniprots) {
       probeQuery(uniprots.map("\"" + _.identifier + "\""), "t:swissprot", 20000)()
-        .map(Probe.unpack).toSeq
+        .map(Probe.unpack)
     }
 
   /**

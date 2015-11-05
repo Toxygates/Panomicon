@@ -343,9 +343,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   @throws[TimeoutException]
   def probesForPathway(sc: SampleClass, pathway: String, samples: JList[OTGSample]): Array[String] = {
-    val geneIds = b2rKegg.geneIds(pathway).map(Gene(_))
-    println("Probes for " + geneIds.size + " genes")
-    val prs = probeStore.forGenes(geneIds).toArray
+    val pw = Pathway(null, pathway)
+    val prs = probeStore.forPathway(b2rKegg, pw)
     val pmap = context.matrix.probeMap //TODO
     val result = prs.map(_.identifier).filter(pmap.isToken).toArray
 

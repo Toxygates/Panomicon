@@ -77,14 +77,10 @@ public class ColumnInfo {
 	 */
 	public ColumnInfo trimTitle(int maxLength) {
 		String ntitle = title;
-		String ntooltip = tooltip;
 		if (ntitle.length() > maxLength) {			
-			if (!ntooltip.equals(ntitle)) {
-				ntooltip = ntitle + " (" + ntooltip + ")";
-			}
-			ntitle = ntitle.substring(0, maxLength) + "...";
+			ntitle = ntitle.substring(0, maxLength - 2) + "...";
 		}
-		return new ColumnInfo(ntitle, ntooltip, sortable,
+		return new ColumnInfo(ntitle, tooltip, sortable,
 				hideable, width, cellStyleNames,
 				defaultSortAsc, filterable);
 	}

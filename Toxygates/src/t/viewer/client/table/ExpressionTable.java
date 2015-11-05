@@ -442,10 +442,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
   @Override
   protected Header<SafeHtml> getColumnHeader(ColumnInfo info) {
+    Header<SafeHtml> superHeader = super.getColumnHeader(info);
     if (info.filterable()) {
-      return new FilteringHeader(info.headerHtml());
+      return new FilteringHeader(superHeader.getValue());
     } else {
-      return super.getColumnHeader(info);
+      return superHeader;
     }
   }
 
