@@ -94,7 +94,7 @@ public class GeneSetEditor extends DataListenerWidget {
   private RadioButton drugbank;
 
   private static final int STACK_WIDTH = 350;
-  private static final int STACK_ITEM_HEIGHT = 29;
+  protected static final int STACK_ITEM_HEIGHT = 29;
   private static final int PL_NORTH_HEIGHT = 30;
   private static final int PL_SOUTH_HEIGHT = 40;
 
@@ -145,25 +145,7 @@ public class GeneSetEditor extends DataListenerWidget {
   private void initWindow() {
     StackLayoutPanel probeSelStack = new StackLayoutPanel(Unit.PX);
     probeSelStack.setWidth(STACK_WIDTH + "px");
-
-    ProbeSelector psel = probeSelector();
-    probeSelStack.add(psel, "Keyword search", STACK_ITEM_HEIGHT);
-    addListener(psel);
-
-    if (hasChembl() || hasDrugbank()) {
-      Widget targets =
-          makeTargetLookupPanel("This lets you view probes that are known targets of the currently selected compound.");
-      probeSelStack.add(targets, "Targets", STACK_ITEM_HEIGHT);
-    }
-
-    if (hasClustering()) {
-      ClusteringSelector clustering = clusteringSelector();
-      clustering.setAvailable(ProbeClustering.createFrom((screen.appInfo()
-          .predefinedProbeLists())));
-      probeSelStack.add(clustering, "Clustering", STACK_ITEM_HEIGHT);
-    }
-
-    probeSelStack.add(manualSelection(), "Free selection", STACK_ITEM_HEIGHT);
+    addProbeSelectionTools(probeSelStack);
 
     Label l = new Label("Selected probes");
     l.setStylePrimaryName("heading");
@@ -281,6 +263,28 @@ public class GeneSetEditor extends DataListenerWidget {
     dialog.setGlassEnabled(true);
     dialog.setModal(true);
     dialog.center();
+  }
+  
+  protected void addProbeSelectionTools(StackLayoutPanel probeSelStack) {
+    ProbeSelector psel = probeSelector();
+    probeSelStack.add(psel, "Keyword search", STACK_ITEM_HEIGHT);
+    addListener(psel);
+
+    if (hasChembl() || hasDrugbank()) {
+      Widget targets =
+          makeTargetLookupPanel("This lets you view probes that are known targets of the currently selected compound.");
+      probeSelStack.add(targets, "Targets", STACK_ITEM_HEIGHT);
+    }
+
+    if (hasClustering()) {
+      ClusteringSelector clustering = clusteringSelector();
+      clustering.setAvailable(ProbeClustering.createFrom((screen.appInfo()
+          .predefinedProbeLists())));
+      probeSelStack.add(clustering, "Clustering", STACK_ITEM_HEIGHT);
+    }
+
+    probeSelStack.add(manualSelection(), "Free selection", STACK_ITEM_HEIGHT);
+
   }
 
   private boolean saveAs(String name) {
@@ -429,7 +433,7 @@ public class GeneSetEditor extends DataListenerWidget {
    * 
    * @param probes
    */
-  private void addProbes(String[] probes) {
+  protected void addProbes(String[] probes) {
     for (String p : probes) {
       listedProbes.add(p);
     }
@@ -452,7 +456,7 @@ public class GeneSetEditor extends DataListenerWidget {
     // updateProceedButton();
   }
 
-  private void addManualProbes(String[] probes, boolean titleMatch) {
+  protected void addManualProbes(String[] probes, boolean titleMatch) {
     // change the identifiers (which can be mixed format, for example genes
     // and proteins etc) into a
     // homogenous format (probes only)
@@ -642,14 +646,14 @@ public class GeneSetEditor extends DataListenerWidget {
     }
 
     int i = 1;
-    while (isExist(newTitle)) {
+    while (exists(newTitle)) {
       newTitle = NEW_TITLE_PREFIX + " " + (++i);
     }
 
     return newTitle;
   }
 
-  private boolean isExist(String name) {
+  private boolean exists(String name) {
     for (ItemList li : chosenItemLists) {
       if (!li.type().equals("probes")) {
         continue;
