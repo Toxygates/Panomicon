@@ -86,7 +86,7 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
     TargetMine.addLists(affyProbes, ls, lists.toList, replace)
   }
 
-  def enrichment(user: String, pass: String, list: StringList): Unit = {
+  def enrichment(user: String, pass: String, list: StringList): Array[Array[String]] = {
       val ls = TargetMine.getListService(serviceUri, user, pass)
       val tags = List("H. sapiens") //!!
 
@@ -111,10 +111,8 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
       val con = ls.executeRequest(request)
       println("Response code: " + con.getResponseCode)
       val res = new TabTableResult(con)
-      for (r <- res.getIterator) {
-        println(r.mkString("\t"))
-      }
-
       ls.deleteList(tempList)
+      val headers = Array("ID", "Description", "p-value", "Matches")
+      headers +: res.getIterator.toArray.map(asScalaBuffer(_).toArray)
   }
 }

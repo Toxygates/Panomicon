@@ -38,6 +38,6 @@ public interface TargetmineService extends RemoteService {
 
   public void exportTargetmineLists(String user, String pass, StringList[] lists, boolean replace);
 
-  public void enrichment(String user, String pass, StringList list);
+  public String[][] enrichment(String user, String pass, StringList list);
 
 }

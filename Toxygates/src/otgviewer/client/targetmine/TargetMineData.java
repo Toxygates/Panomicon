@@ -30,6 +30,7 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.dialog.InteractionDialog;
 import otgviewer.client.dialog.TargetMineSyncDialog;
+import t.common.client.components.StringArrayTable;
 import t.common.shared.ItemList;
 import t.common.shared.SharedUtils;
 import t.common.shared.StringList;
@@ -121,10 +122,12 @@ public class TargetMineData {
   }
 
   public void doEnrich(final String user, final String pass, StringList list) {
-    tmService.enrichment(user, pass, list, new PendingAsyncCallback<Void>(parent,
+    tmService.enrichment(user, pass, list, new PendingAsyncCallback<String[][]>(parent,
         "Unable to perform enrichment analysis. Check your username and password. "
             + "There may also be a server error.") {
-
+      public void handleSuccess(String[][] result) {
+        StringArrayTable.displayDialog(result, "Enrichment results", 800, 600);            
+      }
     });
   }
 

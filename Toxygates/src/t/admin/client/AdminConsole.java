@@ -18,14 +18,15 @@
 
 package t.admin.client;
 
-import t.common.client.Resources;
+import static t.common.client.Utils.makeScrolled;
 import t.admin.shared.Batch;
 import t.admin.shared.Instance;
 import t.admin.shared.Platform;
 import t.common.client.ImageClickCell;
+import t.common.client.Resources;
+import t.common.client.components.StringArrayTable;
 import t.common.shared.Dataset;
 import t.common.shared.ManagedItem;
-import static t.common.client.Utils.makeScrolled;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -355,12 +356,7 @@ public class AdminConsole implements EntryPoint {
   }
 
   private void showBatchOverview(String title, String[][] data) {
-    final DialogBox db = new DialogBox(true, true);
-    db.setText("Overview for batch " + title);
-    Widget w = makeScrolled(new BatchOverviewTable(data));
-    w.setHeight("600px");
-    w.setWidth("800px");
-    db.setWidget(w);
-    db.show();
+    StringArrayTable.displayDialog(data, "Overview for for batch" + title, 
+        800, 600);    
   }
 }

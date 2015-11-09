@@ -30,5 +30,5 @@ public interface TargetmineServiceAsync {
   public void exportTargetmineLists(String user, String pass, StringList[] lists, boolean replace,
       AsyncCallback<Void> callback);
 
-  public void enrichment(String user, String pass, StringList list, AsyncCallback<Void> callback);
+  void enrichment(String user, String pass, StringList list, AsyncCallback<String[][]> callback);
 }
