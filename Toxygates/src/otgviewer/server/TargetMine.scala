@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -30,6 +30,7 @@ import t.common.shared.StringList
 import otgviewer.server.rpc.Conversions
 import otg.sparql.Probes
 import t.platform.Probe
+import org.intermine.webservice.client.lists.ItemList
 
 object TargetMine {
   import Conversions._
@@ -40,41 +41,59 @@ object TargetMine {
     sf.setApplicationName("targetmine")
     sf.getListService()
   }
-    
+
   def asTGList(l: org.intermine.webservice.client.lists.ItemList,
       ap: Probes,
       filterProbes: (Seq[String]) => Seq[String]): StringList = {
       var items: Vector[Gene] = Vector()
-      for (i <- 0 until l.getSize()) {        
+      for (i <- 0 until l.getSize()) {
         val it = l.get(i)
-        items :+= Gene(it.getString("Gene.primaryIdentifier"))        
+        items :+= Gene(it.getString("Gene.primaryIdentifier"))
       }
       //we will have obtained the genes as ENTREZ identifiers
-      println(items)      
+      println(items)
       val probes = ap.forGenes(items).map(_.identifier).toSeq
-      println(probes)    
+      println(probes)
       val filtered = filterProbes(probes)
       println(filtered)
-    
+
       new StringList("probes", l.getName(), filtered.toArray);
   }
-  
-  def addLists(ap: Probes, ls: ListService, 
-      lists: List[StringList], replace: Boolean): Unit = {
+
+  /**
+   * Add a set of probe lists by first mapping them to genes
+   */
+  def addLists(ap: Probes, ls: ListService,
+      lists: Iterable[StringList], replace: Boolean): Unit = {
+
     for (l <- lists) {
-      var serverList = ls.getList(l.name)
-      if (serverList != null && replace) {
-        ls.deleteList(serverList)
-      }
-      if (serverList == null || replace) {
-        val ci = new ls.ListCreationInfo("Gene")
-        val probes = l.items.map(Probe(_)).toSeq
-        //TODO we have the option of doing a fuzzy (e.g. symbol-based) export here
-        val genes = ap.withAttributes(probes).flatMap(_.genes.map(_.identifier))
-        ci.setContent(seqAsJavaList(genes.toList))
-        var newList = ls.createList(ci)
-        newList = ls.rename(newList, l.name)
-      } 
+      addList(ap, ls, l.items(), Some(l.name()), replace)
     }
   }
+
+  /**
+   * Add a probe list by first mapping it into genes
+   */
+  def addList(probeStore: Probes, ls: ListService,
+    input: Seq[String], name: Option[String], replace: Boolean,
+    tags: Seq[String] = Seq()): ItemList = {
+
+    var serverList = name.map(ls.getList(_))
+    if (serverList != None && replace) {
+      ls.deleteList(serverList.get)
+    }
+
+    if (serverList == None || replace) {
+      val ci = new ls.ListCreationInfo("Gene", name.getOrElse(""))
+      val probes = input.map(Probe(_)).toSeq
+      //TODO we have the option of doing a fuzzy (e.g. symbol-based) export here
+      val genes = probeStore.withAttributes(probes).flatMap(_.genes.map(_.identifier))
+      ci.setContent(seqAsJavaList(genes.toList))
+      ci.addTags(seqAsJavaList(tags))
+      ls.createList(ci)
+    } else {
+      throw new Exception(s"Unable to add list, $name already existed and replace not requested")
+    }
+  }
+
 }

@@ -35,6 +35,11 @@ import t.TriplestoreConfig
 import t.BaseConfig
 import t.viewer.server.Platforms
 import otgviewer.server.rpc.OTGServiceServlet
+import org.intermine.webservice.client.services.ListService
+import java.util.Arrays
+import org.intermine.webservice.client.core.ContentType
+import org.intermine.webservice.client.results.JSONResult
+import org.intermine.webservice.client.results.TabTableResult
 
 class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
   var affyProbes: Probes = _
@@ -79,5 +84,37 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
       lists: Array[StringList], replace: Boolean): Unit = {
     val ls = TargetMine.getListService(serviceUri, user, pass)
     TargetMine.addLists(affyProbes, ls, lists.toList, replace)
+  }
+
+  def enrichment(user: String, pass: String, list: StringList): Unit = {
+      val ls = TargetMine.getListService(serviceUri, user, pass)
+      val tags = List("H. sapiens") //!!
+
+      val tempList = TargetMine.addList(affyProbes, ls, list.items(),
+          None, false, tags)
+
+      val listName = tempList.getName
+      println(s"Created temporary list $listName")
+
+      val widget = "gene_pathway_enrichment"
+      val maxp = 0.05
+      val corrMethod = "Benjamini Hochberg"
+      val filter = "All"
+
+      val request = ls.createGetRequest(serviceUri + "/list/enrichment", ContentType.TEXT_TAB)
+      request.addParameter("list", listName)
+      request.addParameter("widget", widget)
+      request.addParameter("maxp", maxp.toString)
+      request.addParameter("correction", corrMethod)
+      request.addParameter("filter", filter)
+
+      val con = ls.executeRequest(request)
+      println("Response code: " + con.getResponseCode)
+      val res = new TabTableResult(con)
+      for (r <- res.getIterator) {
+        println(r.mkString("\t"))
+      }
+
+      ls.deleteList(tempList)
   }
 }
