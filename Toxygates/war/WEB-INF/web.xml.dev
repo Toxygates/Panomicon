@@ -93,6 +93,15 @@
 		<servlet-name>matrixServlet</servlet-name>
 		<url-pattern>/toxygates/matrix</url-pattern>
 	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>targetmineServlet</servlet-name>
+		<servlet-class>otgviewer.server.targetmine.TargetmineServiceImpl</servlet-class>
+	</servlet>
+    <servlet-mapping>
+		<servlet-name>targetmineServlet</servlet-name>
+    	<url-pattern>/toxygates/targetmine</url-pattern>
+  	</servlet-mapping>
 
 	<!-- For AdminGUI -->
 	<servlet>
