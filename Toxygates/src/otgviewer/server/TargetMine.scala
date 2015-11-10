@@ -34,10 +34,15 @@ import org.intermine.webservice.client.lists.ItemList
 
 object TargetMine {
   import Conversions._
-  def getListService(serviceUri: String, user: String, pass: String): ListService = {
+  def getListService(serviceUri: String, user: Option[String] = None,
+      pass: Option[String] = None): ListService = {
        println("Connect to TargetMine")
     // TODO this is insecure - ideally, auth tokens should be used.
-    val sf = new ServiceFactory(serviceUri, user, pass)
+    val sf = (user, pass) match {
+      case (Some(u), Some(p)) => new ServiceFactory(serviceUri, u, p)
+      case _                  => new ServiceFactory(serviceUri)
+    }
+
     sf.setApplicationName("targetmine")
     sf.getListService()
   }

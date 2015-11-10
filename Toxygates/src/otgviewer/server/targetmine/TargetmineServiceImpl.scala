@@ -65,7 +65,7 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
   // TODO: pass in a preferred species, get status info back
   def importTargetmineLists(user: String, pass: String,
     asProbes: Boolean): Array[t.common.shared.StringList] = {
-    val ls = TargetMine.getListService(serviceUri, user, pass)
+    val ls = TargetMine.getListService(serviceUri, Some(user), Some(pass))
     val tmLists = ls.getAccessibleLists()
     tmLists.filter(_.getType == "Gene").map(
       l => {
@@ -82,12 +82,12 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
 
   def exportTargetmineLists(user: String, pass: String,
       lists: Array[StringList], replace: Boolean): Unit = {
-    val ls = TargetMine.getListService(serviceUri, user, pass)
+    val ls = TargetMine.getListService(serviceUri, Some(user), Some(pass))
     TargetMine.addLists(affyProbes, ls, lists.toList, replace)
   }
 
   def enrichment(user: String, pass: String, list: StringList): Array[Array[String]] = {
-      val ls = TargetMine.getListService(serviceUri, user, pass)
+      val ls = TargetMine.getListService(serviceUri, Some(user), Some(pass))
       val tags = List("H. sapiens") //!!
 
       val tempList = TargetMine.addList(affyProbes, ls, list.items(),

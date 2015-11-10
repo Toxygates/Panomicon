@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.annotation.Nullable;
+
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.dialog.InteractionDialog;
@@ -88,7 +90,7 @@ public class TargetMineData {
       @Override
       protected void userProceed(String user, String pass, boolean replace) {
         super.userProceed();
-        doExport(user, pass, pickProbeLists(parent.chosenItemLists), replace);
+        doExport(user, pass, pickProbeLists(parent.chosenItemLists, null), replace);
       }
 
     };
@@ -114,9 +116,14 @@ public class TargetMineData {
       @Override
       protected void userProceed(String user, String pass, boolean replace) {
         super.userProceed();
-        doEnrich(user, pass, pickProbeLists(parent.chosenItemLists).get(0));
+        String chosen = parent.chosenGeneSet;
+        if (chosen != null && chosen != "") {          
+          doEnrich(user, pass, 
+              pickProbeLists(parent.chosenItemLists, chosen).get(0));
+        } else {
+          Window.alert("Please define and select a probe list first.");
+        }        
       }
-
     };
     ui.display("TargetMine enrichment", DialogPosition.Center);
   }
@@ -131,10 +138,11 @@ public class TargetMineData {
     });
   }
 
-  List<StringList> pickProbeLists(List<? extends ItemList> from) {
+  List<StringList> pickProbeLists(List<? extends ItemList> from, @Nullable String title) {
     List<StringList> r = new LinkedList<StringList>();
     for (ItemList l : from) {
-      if (l.type().equals("probes")) {
+      if (l.type().equals("probes") && 
+          (title == null || l.name().equals(title))) {
         r.add((StringList) l);
       }
     }

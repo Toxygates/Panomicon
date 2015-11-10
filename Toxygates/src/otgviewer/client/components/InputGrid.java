@@ -54,4 +54,8 @@ public class InputGrid extends Composite {
 	public String getValue(int i) {
 		return inputs[i].getValue();
 	}
+	
+	public void setValue(int i, String v) {
+	  inputs[i].setValue(v);
+	}
 }
