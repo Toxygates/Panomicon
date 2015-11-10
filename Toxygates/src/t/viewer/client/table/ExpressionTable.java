@@ -35,12 +35,12 @@ import otgviewer.client.charts.AdjustableGrid;
 import otgviewer.client.charts.Charts;
 import otgviewer.client.charts.Charts.AChartAcceptor;
 import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import t.viewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.FilterEditor;
 import otgviewer.shared.Group;
+import t.common.client.ImageClickCell;
 import t.common.shared.GroupUtils;
 import otgviewer.shared.ManagedMatrixInfo;
 import otgviewer.shared.OTGSample;
@@ -442,10 +442,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
   @Override
   protected Header<SafeHtml> getColumnHeader(ColumnInfo info) {
+    Header<SafeHtml> superHeader = super.getColumnHeader(info);
     if (info.filterable()) {
-      return new FilteringHeader(info.headerHtml());
+      return new FilteringHeader(superHeader.getValue());
     } else {
-      return super.getColumnHeader(info);
+      return superHeader;
     }
   }
 

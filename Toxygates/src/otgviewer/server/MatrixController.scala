@@ -48,7 +48,7 @@ import t.common.shared.sample.ExpressionValue
  * instance is created.
  */
 class MatrixController(context: Context,
-    orthologs: Iterable[OrthologMapping],
+    orthologs: () => Iterable[OrthologMapping],
     val groups: Seq[Group], val initProbes: Seq[String],
     typ: ValueType, useStandardMapper: Boolean, sparseRead: Boolean,
     fullLoad: Boolean) {
@@ -106,10 +106,10 @@ class MatrixController(context: Context,
   }
 
   protected lazy val standardMapper = {
-    if (orthologs.isEmpty) {
+    if (orthologs().isEmpty) {
       None
     } else {
-      val pm = new OrthologProbeMapper(orthologs.head)
+      val pm = new OrthologProbeMapper(orthologs().head)
       val vm = MedianValueMapper
       Some(new MatrixMapper(pm, vm))
     }
@@ -134,14 +134,14 @@ class MatrixController(context: Context,
 
   var managedMatrix: ManagedMatrix = {
     val pt = new PerfTimer(Logger.getLogger("matrixController.loadMatrix"))
-    
+
     val mm = if (filteredProbes.size > 0) {
       makeMatrix(filteredProbes, typ, sparseRead, fullLoad)
     } else {
       val emptyMatrix = new ExprMatrix(List(), 0, 0,Map(), Map(), List())
       new ManagedMatrix(List(), new ManagedMatrixInfo(), emptyMatrix, emptyMatrix)
     }
-    
+
     pt.mark("MakeMatrix")
     mm.info.setPlatforms(groupPlatforms.toArray)
 

@@ -203,9 +203,9 @@ public class DataScreen extends Screen {
           } else if (chosenProbes.length > 1000) {
             Window.alert("Please choose at most 1,000 probes.");
           } else if (chosenColumns.size() < 2) {
-            Window.alert("Please choose at least 2 samples.");
+            Window.alert("Please define at least 2 columns.");
           } else if (chosenColumns.size() > 1000) {
-            Window.alert("Please choose at most 1,000 samples.");
+            Window.alert("Please define at most 1,000 columns.");
           } else {
             new HeatmapDialog(DataScreen.this, et.getValueType());
           }
@@ -223,7 +223,7 @@ public class DataScreen extends Screen {
     return manager.isConfigured(ColumnScreen.key);
   }
 
-  protected void updateProbes() {
+  public void updateProbes() {
     logger.info("chosenProbes: " + chosenProbes.length + " lastProbes: "
         + (lastProbes == null ? "null" : "" + lastProbes.length));
 
@@ -258,6 +258,9 @@ public class DataScreen extends Screen {
 
     StorageParser p = getParser(this);
     storeProbes(p);
+
+    lastProbes = null;
+    lastColumns = null;
   }
 
   @Override
@@ -270,9 +273,10 @@ public class DataScreen extends Screen {
     if (heatMapMenu != null) {
       heatMapMenu.setEnabled(!gs.isDefaultItemSelected());
     }
-
-    lastProbes = null;
-    lastColumns = null;
+  }
+  
+  public String[] displayedAtomicProbes() {
+    return et.displayedAtomicProbes();
   }
 
 }

@@ -6,7 +6,7 @@ function updateBatch {
 	gzip $2/*.tsv $2/*.csv
 }
 
-udpateBatch HumanVitroLiver Human/in_vitro 
+updateBatch HumanVitroLiver Human/in_vitro 
 updateBatch RatVitroLiver Rat/in_vitro
 updateBatch RatVivoKidneyRepeat Rat/in_vivo/Kidney/Repeat
 updateBatch RatVivoKidneySingle Rat/in_vivo/Kidney/Single

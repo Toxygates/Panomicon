@@ -35,6 +35,12 @@ import t.TriplestoreConfig
 import t.BaseConfig
 import t.viewer.server.Platforms
 import otgviewer.server.rpc.OTGServiceServlet
+import org.intermine.webservice.client.services.ListService
+import java.util.Arrays
+import org.intermine.webservice.client.core.ContentType
+import org.intermine.webservice.client.results.JSONResult
+import org.intermine.webservice.client.results.TabTableResult
+import otgviewer.shared.targetmine.EnrichmentWidget
 
 class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
   var affyProbes: Probes = _
@@ -60,7 +66,7 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
   // TODO: pass in a preferred species, get status info back
   def importTargetmineLists(user: String, pass: String,
     asProbes: Boolean): Array[t.common.shared.StringList] = {
-    val ls = TargetMine.getListService(serviceUri, user, pass)
+    val ls = TargetMine.getListService(serviceUri, Some(user), Some(pass))
     val tmLists = ls.getAccessibleLists()
     tmLists.filter(_.getType == "Gene").map(
       l => {
@@ -77,7 +83,41 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
 
   def exportTargetmineLists(user: String, pass: String,
       lists: Array[StringList], replace: Boolean): Unit = {
-    val ls = TargetMine.getListService(serviceUri, user, pass)
+    val ls = TargetMine.getListService(serviceUri, Some(user), Some(pass))
     TargetMine.addLists(affyProbes, ls, lists.toList, replace)
+  }
+
+  def multiEnrichment(user: String, pass: String, widget: EnrichmentWidget,
+      lists: Array[StringList]): Array[Array[Array[String]]] =
+    lists.map(enrichment(user, pass, widget, _)).toArray
+
+  def enrichment(user: String, pass: String, widget: EnrichmentWidget,
+      list: StringList): Array[Array[String]] = {
+      val ls = TargetMine.getListService(serviceUri, Some(user), Some(pass))
+      val tags = List("H. sapiens") //!!
+
+      val tempList = TargetMine.addList(affyProbes, ls, list.items(),
+          None, false, tags)
+
+      val listName = tempList.getName
+      println(s"Created temporary list $listName")
+
+      val maxp = 0.05
+      val corrMethod = "Benjamini Hochberg"
+      val filter = "All"
+
+      val request = ls.createGetRequest(serviceUri + "/list/enrichment", ContentType.TEXT_TAB)
+      request.addParameter("list", listName)
+      request.addParameter("widget", widget.getKey)
+      request.addParameter("maxp", maxp.toString)
+      request.addParameter("correction", corrMethod)
+      request.addParameter("filter", filter)
+
+      val con = ls.executeRequest(request)
+      println("Response code: " + con.getResponseCode)
+      val res = new TabTableResult(con)
+      ls.deleteList(tempList)
+      val headers = Array("ID", "Description", "p-value", "Matches")
+      headers +: res.getIterator.toArray.map(asScalaBuffer(_).toArray)
   }
 }

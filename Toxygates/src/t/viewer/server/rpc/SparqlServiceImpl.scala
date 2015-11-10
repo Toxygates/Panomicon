@@ -23,9 +23,7 @@ package t.viewer.server.rpc
 import scala.Array.canBuildFrom
 import scala.collection.JavaConversions._
 import scala.collection.{Set => CSet}
-
 import java.util.{List => JList}
-
 import otg.Species.Human
 import t.common.server.ScalaUtils
 import t.common.server.ScalaUtils.gracefully
@@ -61,6 +59,7 @@ import t.viewer.shared.AppInfo
 import t.viewer.shared.Association
 import t.common.shared.StringList
 import t.viewer.shared.Unit
+import otg.db.OTGParameterSet
 
 object SparqlServiceImpl {
   var inited = false
@@ -286,9 +285,21 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   @throws[TimeoutException]
   def pathologies(column: OTGColumn): Array[Pathology] = Array()
 
+  private def parametersToAnnotation(barcode: OTGSample,
+      ps: Iterable[(t.db.SampleParameter, Option[String])]): Annotation = {
+     val params = ps.map(x => {
+      var p = (x._1.humanReadable, x._2.getOrElse("N/A"))
+      p = (p._1, OTGParameterSet.postReadAdjustment(p))
+      new Annotation.Entry(p._1, p._2, OTGParameterSet.isNumerical(p._1))
+    }).toSeq
+    new Annotation(barcode.id, new java.util.ArrayList(params))
+  }
+
   @throws[TimeoutException]
-  def annotations(barcode: OTGSample): Annotation =
-    asJava( sampleStore.annotations(barcode.id) )
+  def annotations(barcode: OTGSample): Annotation = {
+    val params = sampleStore.parameterQuery(barcode.id)
+    parametersToAnnotation(barcode, params)
+  }
 
   //TODO get these from schema, etc.
   @throws[TimeoutException]
@@ -298,7 +309,11 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     } else {
       List()
     }
-    column.getSamples.map(x => sampleStore.annotations(x.id, keys)).map(asJava(_))
+
+    column.getSamples.map(x => {
+      val ps = sampleStore.parameterQuery(x.id, keys)
+      parametersToAnnotation(x, ps)
+    })
   }
 
   //TODO remove sc
@@ -328,9 +343,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   @throws[TimeoutException]
   def probesForPathway(sc: SampleClass, pathway: String, samples: JList[OTGSample]): Array[String] = {
-    val geneIds = b2rKegg.geneIds(pathway).map(Gene(_))
-    println("Probes for " + geneIds.size + " genes")
-    val prs = probeStore.forGenes(geneIds).toArray
+    val pw = Pathway(null, pathway)
+    val prs = probeStore.forPathway(b2rKegg, pw)
     val pmap = context.matrix.probeMap //TODO
     val result = prs.map(_.identifier).filter(pmap.isToken).toArray
 
@@ -392,7 +406,6 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe])
       (implicit sf: SampleFilter): BBMap =
       at match {
-
         // The type annotation :BBMap is needed on at least one (!) match pattern
         // to make the match statement compile. TODO: research this
         case _: AType.Uniprot.type   => proteins: BBMap
@@ -404,6 +417,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
         case _: AType.Enzymes.type =>
           val sp = asSpecies(sc)
           b2rKegg.enzymes(probes.flatMap(_.genes), sp)
+        case _ => throw new Exception("Unexpected annotation type")
       }
 
     val emptyVal = CSet(DefaultBio("error", "(Timeout or error)"))

@@ -30,11 +30,13 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
+import otgviewer.client.DataScreen;
+
 public class GeneSetSelector extends DataListenerWidget {
 
   private static final String ALL_PROBES = "All probes";
 
-  private final Screen screen;
+  private final DataScreen screen;
 
   private HorizontalPanel selector;
   private ListChooser geneSets;
@@ -42,7 +44,7 @@ public class GeneSetSelector extends DataListenerWidget {
   private Button btnNew;
   private Button btnEdit;
 
-  public GeneSetSelector(Screen screen) {
+  public GeneSetSelector(DataScreen screen) {
     this.screen = screen;
     makeSelector();
   }
@@ -69,7 +71,7 @@ public class GeneSetSelector extends DataListenerWidget {
     btnNew = new Button("New", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        geneSetEditor().createNew();
+        geneSetEditor().createNew(screen.displayedAtomicProbes());        
       }
     });
 
@@ -88,7 +90,18 @@ public class GeneSetSelector extends DataListenerWidget {
   }
 
   private GeneSetEditor geneSetEditor() {
-    GeneSetEditor gse = screen.factory().geneSetEditor(screen);      
+    GeneSetEditor gse = screen.factory().geneSetEditor(screen);
+    gse.addSaveActionHandler(new SaveActionHandler() {
+      @Override
+      public void onSaved(String title, List<String> items) {
+        geneSets.trySelect(title);
+        screen.geneSetChanged(title);
+        screen.probesChanged(items.toArray(new String[0]));
+        screen.updateProbes();
+      }
+      @Override
+      public void onCanceled() {}
+    });
     addListener(gse);
     return gse;
   }

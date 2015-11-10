@@ -21,6 +21,9 @@ package t.admin.client;
 import t.admin.shared.Batch;
 import t.admin.shared.Instance;
 import t.admin.shared.Platform;
+import t.common.client.ImageClickCell;
+import t.common.client.Resources;
+import t.common.client.components.StringArrayTable;
 import t.common.shared.Dataset;
 import t.common.shared.ManagedItem;
 
@@ -28,6 +31,7 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
@@ -48,6 +52,8 @@ public class AdminConsole implements EntryPoint {
   protected MaintenanceServiceAsync maintenanceService = (MaintenanceServiceAsync) GWT
       .create(MaintenanceService.class);
 
+  private final Resources resources = GWT.create(Resources.class);
+  
   // TODO lift these into AdminPanel, reduce code duplication
   final ListDataProvider<Batch> batchData = new ListDataProvider<Batch>();
   final ListDataProvider<Platform> platformData = new ListDataProvider<Platform>();
@@ -188,6 +194,40 @@ public class AdminConsole implements EntryPoint {
         table.addColumn(samplesColumn, "Samples");
         table.setColumnWidth(samplesColumn, "6em");
 
+        //TODO factor out column construction code, share with e.g. PathologyScreen
+        final ImageClickCell<String> overviewCell = 
+            new ImageClickCell.StringImageClickCell(resources.magnify(), false) {
+
+          @Override
+          public void onClick(final String value) {
+            maintenanceService.batchParameterSummary(new Batch(value, ""), 
+                new AsyncCallback<String[][]>() {
+                  @Override
+                  public void onFailure(Throwable caught) {
+                    Window.alert("Unable to obtain batch data");                    
+                  }
+
+                  @Override
+                  public void onSuccess(String[][] result) {
+                    showBatchOverview(value, result);                    
+                  }              
+            });
+          }          
+        };
+        class InspectColumn extends Column<Batch, String> {        
+          public InspectColumn() {
+              super(overviewCell);          
+          }
+          
+          public String getValue(Batch b) {
+              return b.getTitle();         
+          }
+        }
+        InspectColumn ic = new InspectColumn();
+        table.addColumn(ic, "");
+        table.setColumnWidth(ic, "40px");
+        ic.setCellStyleNames("clickCell");
+        
         TextColumn<Batch> dsColumn = new TextColumn<Batch>() {
           @Override
           public String getValue(Batch object) {
@@ -314,4 +354,8 @@ public class AdminConsole implements EntryPoint {
     maintenanceService.getDatasets(new ListDataCallback<Dataset>(datasetData, "platform list"));
   }
 
+  private void showBatchOverview(String title, String[][] data) {
+    StringArrayTable.displayDialog(data, "Overview for for batch" + title, 
+        800, 600);    
+  }
 }

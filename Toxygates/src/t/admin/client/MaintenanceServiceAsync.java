@@ -61,4 +61,6 @@ public interface MaintenanceServiceAsync {
 
   void getProgress(AsyncCallback<Progress> callback);
 
+  void batchParameterSummary(Batch b, AsyncCallback<String[][]> callback);
+
 }

@@ -230,6 +230,20 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     (resolver.all.filter(map.isToken).toSeq).map(Probe(_))
   }
 
+  private[sparql] def probeToGene: (String, String) = {
+    val q = "GRAPH ?probeGraph { ?p a t:probe; t:entrez ?gene }"
+    (tPrefixes, q)
+  }
+
+  import t.sparql.secondary.B2RKegg
+  //TODO best location for this?
+  def forPathway(kegg: B2RKegg, pw: t.sparql.secondary.Pathway): Iterable[Probe] = {
+    val (p1, q1) = probeToGene
+    val (p2, q2) = kegg.attributes(pw)
+    val q = s"$p2\n SELECT DISTINCT ?p {\n $q2 \n $q1\n }"
+    ts.simpleQuery(q).map(Probe.unpack)
+  }
+
   /**
    * based on a set of entrez gene ID's (numbers), return the
    * corresponding probes.
@@ -249,7 +263,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   def forUniprots(uniprots: Iterable[Protein]): Iterable[Probe] =
     emptyCheck(uniprots) {
       probeQuery(uniprots.map("\"" + _.identifier + "\""), "t:swissprot", 20000)()
-        .map(Probe.unpack).toSeq
+        .map(Probe.unpack)
     }
 
   /**
@@ -281,7 +295,6 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
    * gets. Such attributes and related sparql queries should be centralised in one
    * column definition.
    */
-
   def withAttributes(probes: Iterable[Probe]): Iterable[Probe] = {
     def obtain(m: Map[String, String], key: String) = m.getOrElse(key, "")
 
@@ -386,9 +399,8 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
       // "?probe a t:probe; rdfs:label ?probeLabel. " + //filter out invalid probeLabels
       "}"
 
-    val mq = ts.mapQuery(q)
-    //    val byGroup = makeMultiMap(mq.map(x => x("l") -> Gene(x("entrez"))))
-    //    val probes = forGenes(byGroup.values.flatten.toList.distinct)
+   //May be slow
+    val mq = ts.mapQuery(q)(20000)
     makeMultiMap(mq.map(x => x("list") -> Probe(x("probeLabel"))))
   }
 

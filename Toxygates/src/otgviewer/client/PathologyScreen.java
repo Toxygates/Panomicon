@@ -26,13 +26,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
 import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
+import t.common.client.ImageClickCell;
 import t.common.shared.GroupUtils;
 import t.common.shared.SampleClass;
 import t.viewer.client.Utils;
