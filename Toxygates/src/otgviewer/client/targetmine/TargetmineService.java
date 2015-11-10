@@ -18,6 +18,7 @@
 
 package otgviewer.client.targetmine;
 
+import otgviewer.shared.targetmine.EnrichmentWidget;
 import t.common.shared.StringList;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -36,8 +37,13 @@ public interface TargetmineService extends RemoteService {
    */
   public StringList[] importTargetmineLists(String user, String pass, boolean asProbes);
 
-  public void exportTargetmineLists(String user, String pass, StringList[] lists, boolean replace);
+  public void exportTargetmineLists(String user, String pass, 
+      StringList[] lists, boolean replace);
 
-  public String[][] enrichment(String user, String pass, StringList list);
+  public String[][] enrichment(String user, String pass, 
+      EnrichmentWidget widget, StringList list);
+  
+  public String[][][] multiEnrichment(String user, String pass, 
+      EnrichmentWidget widget, StringList[] list);
 
 }

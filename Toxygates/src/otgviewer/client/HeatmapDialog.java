@@ -28,6 +28,8 @@ import java.util.List;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
+import otgviewer.client.targetmine.TargetMineData;
+import t.common.shared.StringList;
 import t.common.shared.ValueType;
 import t.viewer.client.rpc.MatrixServiceAsync;
 
@@ -300,6 +302,15 @@ public class HeatmapDialog extends DataListenerWidget {
     bottomContent.setWidth("100%");
     bottomContent.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 
+    Button btnEnrich = new Button("Enrichment...");
+    btnEnrich.addClickHandler(new ClickHandler() {      
+      @Override
+      public void onClick(ClickEvent event) {
+        HeatmapDialog.this.doEnrichment();        
+      }
+    });
+    buttonGroup.add(btnEnrich);
+    
     Button btnClose = new Button("Close");
     btnClose.addClickHandler(new ClickHandler() {
       @Override
@@ -463,6 +474,19 @@ public class HeatmapDialog extends DataListenerWidget {
       result.add(array.get(i));
     }
     return result;
+  }
+  
+  private void doEnrichment() {
+    TargetMineData tm = new TargetMineData(screen);
+    List<Collection<String>> clusters = parse2dJsArray(getCurrentObjectIds());
+    List<StringList> clusterLists = new ArrayList<StringList>();
+    int i = 0;
+    for (Collection<String> clust: clusters) {
+      StringList sl = new StringList("probes", "Cluster " + i, clust.toArray(new String[0]));
+      clusterLists.add(sl);
+      i++;
+    }
+    tm.multiEnrich(clusterLists.toArray(new StringList[0]));    
   }
 
 }

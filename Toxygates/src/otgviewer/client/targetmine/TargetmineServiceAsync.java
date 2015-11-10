@@ -18,6 +18,7 @@
 
 package otgviewer.client.targetmine;
 
+import otgviewer.shared.targetmine.EnrichmentWidget;
 import t.common.shared.StringList;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -30,5 +31,10 @@ public interface TargetmineServiceAsync {
   public void exportTargetmineLists(String user, String pass, StringList[] lists, boolean replace,
       AsyncCallback<Void> callback);
 
-  void enrichment(String user, String pass, StringList list, AsyncCallback<String[][]> callback);
+  void enrichment(String user, String pass, EnrichmentWidget widget,
+      StringList list, AsyncCallback<String[][]> callback);
+
+  void multiEnrichment(String user, String pass, 
+      EnrichmentWidget widget, StringList[] list,
+      AsyncCallback<String[][][]> callback);
 }

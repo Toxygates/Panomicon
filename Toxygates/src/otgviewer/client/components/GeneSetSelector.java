@@ -49,8 +49,6 @@ public class GeneSetSelector extends DataListenerWidget {
     makeSelector();
   }
 
-  private final static int MAX_AUTO_LIST_LENGTH = 1000;
-  
   private void makeSelector() {
     selector = Utils.mkHorizontalPanel(true);
     selector.setStylePrimaryName("colored");

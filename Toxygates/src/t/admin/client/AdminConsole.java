@@ -18,7 +18,6 @@
 
 package t.admin.client;
 
-import static t.common.client.Utils.makeScrolled;
 import t.admin.shared.Batch;
 import t.admin.shared.Instance;
 import t.admin.shared.Platform;

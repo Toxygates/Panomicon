@@ -32,6 +32,7 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.dialog.InteractionDialog;
 import otgviewer.client.dialog.TargetMineSyncDialog;
+import otgviewer.shared.targetmine.EnrichmentWidget;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.ItemList;
 import t.common.shared.SharedUtils;
@@ -129,11 +130,45 @@ public class TargetMineData {
   }
 
   public void doEnrich(final String user, final String pass, StringList list) {
-    tmService.enrichment(user, pass, list, new PendingAsyncCallback<String[][]>(parent,
+    tmService.enrichment(user, pass, EnrichmentWidget.GenePathway, 
+        list, new PendingAsyncCallback<String[][]>(parent,
         "Unable to perform enrichment analysis. Check your username and password. "
             + "There may also be a server error.") {
       public void handleSuccess(String[][] result) {
         StringArrayTable.displayDialog(result, "Enrichment results", 800, 600);            
+      }
+    });
+  }
+  
+  public void multiEnrich(final StringList[] lists) {
+    InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Cluster enrichment") {
+      @Override
+      protected void userProceed(String user, String pass, boolean replace) {
+        super.userProceed();
+        doEnrich(user, pass, lists);
+      }
+    };
+    ui.display("TargetMine cluster enrichment", DialogPosition.Center);
+  }
+  
+  public void doEnrich(final String user, final String pass, StringList[] lists) {
+    tmService.multiEnrichment(user, pass, EnrichmentWidget.GenePathway, lists, 
+         new PendingAsyncCallback<String[][][]>(parent,
+        "Unable to perform enrichment analysis. Check your username and password. "
+            + "There may also be a server error.") {
+      public void handleSuccess(String[][][] result) {
+        List<String[]> best = new ArrayList<String[]>();
+        best.add(result[0][0]); //Headers
+        for (String[][] clust: result) {
+          if (clust.length < 2) {
+            //TODO don't hardcode length here
+            String[] res = new String[] { "(No result)", "", "", "" };
+            best.add(res);
+          } else {
+            best.add(clust[1]);
+          }
+        }
+        StringArrayTable.displayDialog(best.toArray(new String[0][0]), "Best enrichment results", 800, 400);            
       }
     });
   }
