@@ -49,6 +49,8 @@ public class GeneSetSelector extends DataListenerWidget {
     makeSelector();
   }
 
+  private final static int MAX_AUTO_LIST_LENGTH = 1000;
+  
   private void makeSelector() {
     selector = Utils.mkHorizontalPanel(true);
     selector.setStylePrimaryName("colored");
@@ -71,7 +73,7 @@ public class GeneSetSelector extends DataListenerWidget {
     btnNew = new Button("New", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        geneSetEditor().createNew();
+        geneSetEditor().createNew(screen.displayedAtomicProbes());        
       }
     });
 

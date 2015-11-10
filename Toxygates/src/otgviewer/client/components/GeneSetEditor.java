@@ -616,11 +616,11 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     }
   }
 
-  public void createNew() {
-    // Create temporal DataListenerWidget to avoid loading probes chosen in parent screen
+  public void createNew(String[] initProbes) {
+    // Create temporary DataListenerWidget to avoid loading probes chosen in parent screen
     DataListenerWidget dlw = new DataListenerWidget();
     screen.propagateTo(dlw);
-    dlw.probesChanged(new String[0]);
+    dlw.probesChanged(initProbes);
     dlw.propagateTo(this);
 
     originalProbes = null;
@@ -640,7 +640,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
 
   private String getAvailableName() {
     String newTitle = NEW_TITLE_PREFIX;
-    System.out.println("Exist names");
+    System.out.println("Existing names");
     for (ItemList li : chosenItemLists) {
       System.out.println(li.name());
     }

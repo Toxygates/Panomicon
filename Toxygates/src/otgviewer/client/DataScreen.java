@@ -274,5 +274,9 @@ public class DataScreen extends Screen {
       heatMapMenu.setEnabled(!gs.isDefaultItemSelected());
     }
   }
+  
+  public String[] displayedAtomicProbes() {
+    return et.displayedAtomicProbes();
+  }
 
 }
