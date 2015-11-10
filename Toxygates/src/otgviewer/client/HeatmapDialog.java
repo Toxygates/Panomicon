@@ -62,8 +62,8 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class HeatmapDialog extends DataListenerWidget {
-  private static final String[] injectList = {"kinetic-v5.1.0.min.js",
-      "jquery-2.0.3.min.js", "inchlib-1.2.0.js", "inchlib-extended.js"};
+  private static final String[] injectList =
+      {"kinetic-v5.1.0.min.js", "jquery-2.0.3.min.js", "inchlib-1.2.0.js", "inchlib-extended.js"};
 
   private final MatrixServiceAsync matrixService;
   private final Screen screen;
@@ -72,7 +72,13 @@ public class HeatmapDialog extends DataListenerWidget {
   private Button saveButton;
   private final ListBox valType;
 
-  private String json;
+  private CheckBox chkLogAxis;
+  private CheckBox chkDendrogram;
+  
+  private ListBox rDist;
+  private ListBox rMethod;
+  private ListBox cDist;
+  private ListBox cMethod;
 
   public HeatmapDialog(Screen screen, ValueType defaultType) {
     matrixService = screen.matrixService();
@@ -136,7 +142,6 @@ public class HeatmapDialog extends DataListenerWidget {
 
       @Override
       public void onSuccess(Void ok) {
-        logger.info("Script load succeeded. (" + js + ")");
         if (!p_jsList.isEmpty()) {
           inject(p_jsList);
         } else {
@@ -147,22 +152,31 @@ public class HeatmapDialog extends DataListenerWidget {
     }).setWindow(ScriptInjector.TOP_WINDOW).inject();
   }
 
-  private void onReady() {
-    draw(JsonUtils.safeEval(json));
-  }
-
-  private native JavaScriptObject draw(JavaScriptObject json)/*-{
-    $wnd.inchlib.read_data(json)
-    $wnd.inchlib.draw();
+  private native void draw(JavaScriptObject json)/*-{
+		$wnd.inchlib.read_data(json)
+		$wnd.inchlib.draw();
   }-*/;
 
   private void initializeHeatmap() {
     createInstance();
-    updateSaveButton("F");
+    updateUI();
     dialog.setGlassEnabled(false);
     dialog.setModal(true);
     dialog.center();
     dialog.setVisible(true);
+  }
+
+  private void updateUI() {
+    boolean b = getDendrogramState();
+    chkDendrogram.setValue(b);
+
+    chkLogAxis.setEnabled(b);
+    chkLogAxis.setValue(getAxisState());
+    
+    rDist.setEnabled(b);
+    rMethod.setEnabled(b);
+    cDist.setEnabled(b);
+    cMethod.setEnabled(b);
   }
 
   private void createPanel(ValueType defaultType) {
@@ -187,25 +201,43 @@ public class HeatmapDialog extends DataListenerWidget {
     l.addStyleName("heading");
     eastContent.add(l);
 
-    final CheckBox cb = new CheckBox("Dendrogram");
-    cb.setValue(true);
-    eastContent.add(cb);
+    chkDendrogram = new CheckBox("Dendrogram");
+    chkDendrogram.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        boolean b = chkDendrogram.getValue();
+        setDendrogramState(b);
+        setColumnDendrogramState(b);
+        redraw();
+        updateUI();
+      }
+    });
+    eastContent.add(chkDendrogram);
+
+    chkLogAxis = new CheckBox("Log-axis");
+    chkLogAxis.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        boolean b = chkLogAxis.getValue();
+        setAxisState(b);
+        redraw();
+        updateUI();
+      }
+    });
+    eastContent.add(chkLogAxis);
 
     l = new Label("Row");
-    l.addStyleName("indent1");
+    l.addStyleName("emphasized");
     eastContent.add(l);
 
     l = new Label("Method:");
-    l.addStyleName("indent2");
     eastContent.add(l);
 
-    final ListBox rDist = new ListBox();
+    rDist = new ListBox();
     rDist.addItem("Correlation");
-    rDist.addStyleName("indent2");
 
-    final ListBox rMethod = new ListBox();
+    rMethod = new ListBox();
     rMethod.addItem("Ward");
-    rMethod.addStyleName("indent2");
     rMethod.addChangeHandler(new ChangeHandler() {
       @Override
       public void onChange(ChangeEvent event) {
@@ -219,25 +251,21 @@ public class HeatmapDialog extends DataListenerWidget {
     eastContent.add(rMethod);
 
     l = new Label("Distance:");
-    l.addStyleName("indent2");
     eastContent.add(l);
     eastContent.add(rDist);
 
     l = new Label("Column");
-    l.addStyleName("indent1");
+    l.addStyleName("emphasized");
     eastContent.add(l);
 
     l = new Label("Method:");
-    l.addStyleName("indent2");
     eastContent.add(l);
 
-    final ListBox cDist = new ListBox();
+    cDist = new ListBox();
     cDist.addItem("Correlation");
-    cDist.addStyleName("indent2");
 
-    final ListBox cMethod = new ListBox();
+    cMethod = new ListBox();
     cMethod.addItem("Ward");
-    cMethod.addStyleName("indent2");
     cMethod.addChangeHandler(new ChangeHandler() {
       @Override
       public void onChange(ChangeEvent event) {
@@ -251,7 +279,6 @@ public class HeatmapDialog extends DataListenerWidget {
     eastContent.add(cMethod);
 
     l = new Label("Distance:");
-    l.addStyleName("indent2");
     eastContent.add(l);
     eastContent.add(cDist);
 
@@ -260,22 +287,11 @@ public class HeatmapDialog extends DataListenerWidget {
     updateButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        boolean b = cb.getValue();
-
-        toggleDendrogram(b);
-      }
-    });
-
-    cb.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        boolean b = cb.getValue();
-        rMethod.setEnabled(b);
-        rDist.setEnabled(b);
-        cMethod.setEnabled(b);
-        cDist.setEnabled(b);
-        updateButton.setEnabled(b);
-        toggleDendrogram(b);
+        boolean b = chkDendrogram.getValue();
+        setDendrogramState(b);
+        setColumnDendrogramState(b);
+        redraw();
+        updateUI();
       }
     });
 
@@ -325,13 +341,12 @@ public class HeatmapDialog extends DataListenerWidget {
       public void onClick(ClickEvent event) {
         List<Collection<String>> objectIds = parse2dJsArray(getCurrentObjectIds());
 
-        ItemListsStoreHelper helper =
-            new ItemListsStoreHelper("probes", screen) {
-              @Override
-              protected void onSaveSuccess(String name, Collection<String> items) {
-                Window.alert("Gene sets are successfully saved.");
-              }
-            };
+        ItemListsStoreHelper helper = new ItemListsStoreHelper("probes", screen) {
+          @Override
+          protected void onSaveSuccess(String name, Collection<String> items) {
+            Window.alert("Gene sets are successfully saved.");
+          }
+        };
         helper.save(objectIds);
       }
     });
@@ -357,87 +372,89 @@ public class HeatmapDialog extends DataListenerWidget {
     dialog.setWidget(vp);
   }
 
-  private void toggleDendrogram(boolean b) {
-    toggleRowDendrogram(b);
-    toggleColumnDendrogram(b);
-    redraw();
-  }
-
   private native JsArray<JsArrayString> getCurrentObjectIds() /*-{
-    return $wnd.inchlib.get_current_object_ids();
+		return $wnd.inchlib.get_current_object_ids();
   }-*/;
 
-  private native JavaScriptObject toggleRowDendrogram(boolean b)/*-{
-    $wnd.inchlib.settings.dendrogram = b;
+  private native boolean getDendrogramState() /*-{
+		return $wnd.inchlib.settings.dendrogram;
   }-*/;
 
-  private native JavaScriptObject toggleColumnDendrogram(boolean b)/*-{
-    $wnd.inchlib.settings.column_dendrogram = b;
+  private native boolean getColumnDendrogramState() /*-{
+		return $wnd.inchlib.settings.column_dendrogram;
   }-*/;
 
-  private native JavaScriptObject redraw()/*-{
-    $wnd.inchlib.redraw();
+  private native boolean getAxisState() /*-{
+		return $wnd.inchlib.settings.log_axis;
   }-*/;
 
-  private native JavaScriptObject redraw(int w, int h)/*-{
-    $wnd.inchlib.settings.width = w;
-    $wnd.inchlib.settings.max_height = h;
-    $wnd.inchlib.redraw();
+  private native void setDendrogramState(boolean b)/*-{
+		$wnd.inchlib.settings.dendrogram = b;
   }-*/;
 
-  private void updateSaveButton(String enabled) {
-    String b = enabled.trim().toLowerCase();
-    if (b.equals("t") || b.equals("true")) {
-      saveButton.setEnabled(true);
-    } else {
-      saveButton.setEnabled(false);
-    }
-  }
+  private native void setColumnDendrogramState(boolean b)/*-{
+		$wnd.inchlib.settings.column_dendrogram = b;
+  }-*/;
 
-  private native JavaScriptObject createInstance()/*-{
-    $wnd.widget = this;
+  private native void setAxisState(boolean b)/*-{
+		$wnd.inchlib.settings.log_axis = b;
+  }-*/;
 
-    $wnd.inchlib = new $wnd.InCHlibEx({
-      target : "inchlib",
-      dendrogram : true,
-      metadata : false,
-      column_metadata : false,
-      heatmap_colors : "BuWhRd",
-      heatmap_font_color : "black",
-      column_dendrogram : true,
-      independent_columns : false,
-      highlight_colors : "Oranges",
-      label_color : "#9E9E9E",
-      min_row_height : 20,
-      max_column_width : 20,
-      font : "Helvetica",
-      draw_row_ids : true,
-      fixed_row_id_size : 14,
-      navigation_toggle : {
-        "color_scale" : true,
-        "distance_scale" : true,
-        "export_button" : true,
-        "filter_button" : false,
-        "hint_button" : false
-      },
-    });
+  private native void redraw()/*-{
+		$wnd.inchlib.redraw();
+  }-*/;
 
-    $wnd.inchlib.selection_state_changed = function(state) {
-      $wnd.widget.@otgviewer.client.HeatmapDialog::selectionStateChanged(Ljava/lang/String;)(state);
-    }
+  private native void redraw(int w, int h)/*-{
+		$wnd.inchlib.settings.width = w;
+		$wnd.inchlib.settings.max_height = h;
+		$wnd.inchlib.redraw();
+  }-*/;
 
-    $wnd.inchlib.get_current_object_ids = function() {
-      var self = this;
-      switch (self.current_selection_state) {
-      case self.selection_state.range:
-      case self.selection_state.dendrogram:
-        return [ self.current_object_ids ];
-      case self.selection_state.cutoff:
-        return self.current_object_ids;
-      default:
-        return [ [] ];
-      }
-    }
+  private native void createInstance()/*-{
+		$wnd.widget = this;
+
+		$wnd.inchlib = new $wnd.InCHlibEx({
+			target : "inchlib",
+			dendrogram : true,
+			metadata : false,
+			column_metadata : false,
+			heatmap_colors : "BuWhRd",
+			heatmap_font_color : "black",
+			column_dendrogram : true,
+			independent_columns : false,
+			highlight_colors : "Oranges",
+			label_color : "#9E9E9E",
+			min_row_height : 20,
+			max_column_width : 20,
+			font : "Helvetica",
+			draw_row_ids : true,
+			fixed_row_id_size : 14,
+			navigation_toggle : {
+				"color_scale" : true,
+				"distance_scale" : true,
+				"export_button" : true,
+				"filter_button" : false,
+				"hint_button" : false
+			},
+			log_axis : true,
+		});
+
+		$wnd.inchlib.selection_state_changed = function(state) {
+			$wnd.widget.@otgviewer.client.HeatmapDialog::selectionStateChanged(Ljava/lang/String;)(state);
+		}
+
+		$wnd.inchlib.get_current_object_ids = function() {
+			var self = this;
+			switch (self.current_selection_state) {
+			case self.selection_state.range:
+			case self.selection_state.dendrogram:
+				return [ self.current_object_ids ];
+			case self.selection_state.cutoff:
+				return self.current_object_ids;
+			default:
+				return [ [] ];
+			}
+		}
   }-*/;
 
   private void selectionStateChanged(String state) {
