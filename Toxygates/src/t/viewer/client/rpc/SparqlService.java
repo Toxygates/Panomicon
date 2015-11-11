@@ -25,7 +25,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import otgviewer.shared.OTGColumn;
-import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
 import otgviewer.shared.TimeoutException;
 import t.common.shared.AType;
@@ -34,6 +33,7 @@ import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
+import t.common.shared.sample.Sample;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.Association;
 import t.viewer.shared.Unit;
@@ -87,7 +87,7 @@ public interface SparqlService extends RemoteService {
 	 * @return
 	 * @throws TimeoutException
 	 */
-	public OTGSample[] samplesById(String[] ids) throws TimeoutException;
+	public Sample[] samplesById(String[] ids) throws TimeoutException;
 	
 	/**
 	 * Obtain samples for a given sample class.
@@ -95,7 +95,7 @@ public interface SparqlService extends RemoteService {
 	 * @param sc
 	 * @return
 	 */
-	public OTGSample[] samples(SampleClass sc) throws TimeoutException;
+	public Sample[] samples(SampleClass sc) throws TimeoutException;
 
 	/**
 	 * Obtain samples with a filter on one parameter.
@@ -103,10 +103,10 @@ public interface SparqlService extends RemoteService {
 	 * @param sc
 	 * @return
 	 */
-	public OTGSample[] samples(SampleClass sc, String param,
+	public Sample[] samples(SampleClass sc, String param,
 			String[] paramValues) throws TimeoutException;
 
-	public OTGSample[] samples(SampleClass[] scs, String param,
+	public Sample[] samples(SampleClass[] scs, String param,
 			String[] paramValues) throws TimeoutException;
 
 	/**
@@ -148,7 +148,7 @@ public interface SparqlService extends RemoteService {
 	 * @param barcode
 	 * @return
 	 */
-	public Annotation annotations(OTGSample barcode) throws TimeoutException;
+	public Annotation annotations(Sample barcode) throws TimeoutException;
 
 	/**
 	 * Obtain annotations for a set of samples
@@ -159,7 +159,7 @@ public interface SparqlService extends RemoteService {
 	 *            If false, all annotations will be obtained.
 	 * @return
 	 */
-	public Annotation[] annotations(HasSamples<OTGSample> column,
+	public Annotation[] annotations(HasSamples<Sample> column,
 			boolean importantOnly) throws TimeoutException;
 
 	/**
@@ -179,7 +179,7 @@ public interface SparqlService extends RemoteService {
 	 *            If null, all probes will be obtained.
 	 * @return
 	 */
-	public String[] probesForPathway(SampleClass sc, String pathway, @Nullable List<OTGSample> samples)
+	public String[] probesForPathway(SampleClass sc, String pathway, @Nullable List<Sample> samples)
 			throws TimeoutException;
 
 	/**
@@ -219,7 +219,7 @@ public interface SparqlService extends RemoteService {
 	 * @param goTerm
 	 * @return
 	 */
-	public String[] probesForGoTerm(String goTerm, @Nullable List<OTGSample> samples) throws TimeoutException;
+	public String[] probesForGoTerm(String goTerm, @Nullable List<Sample> samples) throws TimeoutException;
 	
 	/**
 	 * Obtain gene symbols for the given probes. The resulting array will
@@ -261,7 +261,7 @@ public interface SparqlService extends RemoteService {
 	 * @param samples
 	 * @return
 	 */
-	public String[] filterProbesByGroup(String[] probes, List<OTGSample> samples);
+	public String[] filterProbesByGroup(String[] probes, List<Sample> samples);
 
 	/**
 	 * Obtain suggestions from a partial gene symbol

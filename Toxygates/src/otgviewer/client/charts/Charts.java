@@ -34,7 +34,6 @@ import otgviewer.client.charts.google.GVizFactory;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Group;
-import otgviewer.shared.OTGSample;
 import otgviewer.shared.Series;
 import t.common.shared.DataSchema;
 import t.common.shared.GroupUtils;
@@ -43,6 +42,7 @@ import t.common.shared.SampleClass;
 import t.common.shared.SampleMultiFilter;
 import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
+import t.common.shared.sample.Sample;
 import t.viewer.client.rpc.SeriesServiceAsync;
 import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.Unit;
@@ -58,7 +58,7 @@ public class Charts {
 	
 	public static interface AChartAcceptor {
 		void acceptCharts(AdjustableGrid<?,?> cg);
-		void acceptBarcodes(OTGSample[] barcodes);
+		void acceptBarcodes(Sample[] barcodes);
 	}
 	
 	private final Logger logger = SharedUtils.getLogger("cgf");
@@ -157,7 +157,7 @@ public class Charts {
 		}
 	}
 	
-	public void makeRowCharts(final Screen screen, final OTGSample[] barcodes, 
+	public void makeRowCharts(final Screen screen, final Sample[] barcodes, 
 			final ValueType vt, final String[] probes,
 			final AChartAcceptor acceptor) {
 		Set<String> organisms = Group.collectAll(groups, "organism");
@@ -183,7 +183,7 @@ public class Charts {
 		} else if (barcodes == null) {
 			sparqlService.samples(sampleClasses, schema.majorParameter(), 
 					majorVals,
-					new AsyncCallback<OTGSample[]>() {
+					new AsyncCallback<Sample[]>() {
 
 				@Override
 				public void onFailure(Throwable caught) {
@@ -192,7 +192,7 @@ public class Charts {
 				}
 
 				@Override
-				public void onSuccess(final OTGSample[] barcodes) {
+				public void onSuccess(final Sample[] barcodes) {
 					finishRowCharts(screen, probes, vt, groups, barcodes, acceptor);
 					//TODO is this needed/well designed?
 					acceptor.acceptBarcodes(barcodes);
@@ -205,7 +205,7 @@ public class Charts {
 	}
 	
 	private void finishRowCharts(Screen screen, String[] probes, ValueType vt, List<Group> groups, 
-			OTGSample[] barcodes, AChartAcceptor acceptor) {
+			Sample[] barcodes, AChartAcceptor acceptor) {
 		DataSource cds = new DataSource.DynamicExpressionRowSource(schema, 
 				probes, vt, barcodes, screen);
 		AdjustableGrid<?,?> acg = 

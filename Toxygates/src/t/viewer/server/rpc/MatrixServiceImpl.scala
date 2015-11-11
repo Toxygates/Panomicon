@@ -63,7 +63,7 @@ import t.viewer.shared.table.SortKey
 import t.common.server.ScalaUtils
 import t.common.shared.PerfTimer
 import java.util.logging.Logger
-import otgviewer.shared.OTGSample
+import t.common.shared.sample.Sample
 import otgviewer.server.MatrixController
 import javax.annotation.Nullable
 
@@ -125,7 +125,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     getThreadLocalRequest().getSession().setAttribute("matrix", m)
 
   def identifiersToProbes(identifiers: Array[String], precise: Boolean,
-    titlePatternMatch: Boolean, samples: JList[OTGSample]): Array[String] = {
+    titlePatternMatch: Boolean, samples: JList[Sample]): Array[String] = {
     val ps = if (titlePatternMatch) {
       probes.forTitlePatterns(identifiers)
     } else {
@@ -141,7 +141,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   }
 
   // TODO Shared logic with SparqlService
-  def filterProbesByGroup(ps: Array[String], samples: JList[OTGSample]): Array[String] = {
+  def filterProbesByGroup(ps: Array[String], samples: JList[Sample]): Array[String] = {
     val platforms: Set[String] = samples.map(x => x.get("platform_id")).toSet
     val lookup = probes.platformsAndProbes
     val acceptProbes = platforms.flatMap(p => lookup(p))

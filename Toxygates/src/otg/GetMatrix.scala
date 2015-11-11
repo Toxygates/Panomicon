@@ -21,13 +21,11 @@
 package otg
 
 import java.io.File
-
 import java.net.URL
 import scala.sys.process._
 import scala.language.postfixOps
 import com.gdevelop.gwt.syncrpc.SyncProxy
 import otgviewer.shared.Group
-import otgviewer.shared.OTGSample
 import otgviewer.shared.OTGSchema
 import otgviewer.shared.Synthetic
 import t.common.shared.sample.ExpressionValue
@@ -35,6 +33,7 @@ import t.viewer.client.rpc.MatrixService
 import t.viewer.client.rpc.SparqlService
 import t.common.shared.ValueType
 import t.viewer.shared.table.SortKey
+import t.common.shared.sample.Sample
 
 object GetMatrix {
 
@@ -43,7 +42,7 @@ object GetMatrix {
 
   val schema = new OTGSchema()
 
-  def extractGroup(arg: String, ss: Map[String, OTGSample]): Group = {
+  def extractGroup(arg: String, ss: Map[String, Sample]): Group = {
      val s = arg.split("=")
      if (s.length == 1) {
        val sample = ss(s(0))

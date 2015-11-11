@@ -31,9 +31,9 @@ import otgviewer.client.TimeDoseGrid;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Group;
-import otgviewer.shared.OTGSample;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
+import t.common.shared.sample.Sample;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.shared.Unit;
@@ -252,8 +252,8 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     }
   }
 
-  public List<OTGSample> getSelectedBarcodes() {
-    List<OTGSample> r = new ArrayList<OTGSample>();
+  public List<Sample> getSelectedBarcodes() {
+    List<Sample> r = new ArrayList<Sample>();
     for (Unit k : unitUis.keySet()) {
       if (unitUis.get(k).getValue()) {
         r.addAll(Arrays.asList(k.getSamples()));

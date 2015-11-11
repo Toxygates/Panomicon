@@ -24,8 +24,9 @@ import java.util.Set;
 
 import t.common.shared.DataSchema;
 import t.common.shared.sample.DataColumn;
+import t.common.shared.sample.Sample;
 
-public interface OTGColumn extends DataColumn<OTGSample> {
+public interface OTGColumn extends DataColumn<Sample> {
 	/**
 	 * Obtain the set of all compounds that the samples in this column are associated with.
 	 * @return

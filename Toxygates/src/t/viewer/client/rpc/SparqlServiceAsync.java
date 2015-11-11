@@ -23,7 +23,6 @@ package t.viewer.client.rpc;
 import java.util.List;
 
 import otgviewer.shared.OTGColumn;
-import otgviewer.shared.OTGSample;
 import otgviewer.shared.Pathology;
 import t.common.shared.AType;
 import t.common.shared.Dataset;
@@ -31,6 +30,7 @@ import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
+import t.common.shared.sample.Sample;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.Association;
 import t.viewer.shared.Unit;
@@ -53,12 +53,12 @@ public interface SparqlServiceAsync {
 	public void parameterValues(SampleClass[] scs, String parameter, 
 			AsyncCallback<String[]> callback);
 		
-	public void samplesById(String[] ids, AsyncCallback<OTGSample[]> callback);
-	public void samples(SampleClass sc, AsyncCallback<OTGSample[]> callback);	
+	public void samplesById(String[] ids, AsyncCallback<Sample[]> callback);
+	public void samples(SampleClass sc, AsyncCallback<Sample[]> callback);	
 	public void samples(SampleClass sc, String param, String[] paramValues, 
-			AsyncCallback<OTGSample[]> callback);
+			AsyncCallback<Sample[]> callback);
 	public void samples(SampleClass[] scs, String param, String[] paramValues, 
-			AsyncCallback<OTGSample[]> callback);
+			AsyncCallback<Sample[]> callback);
 	
 	public void units(SampleClass sc,
 			String param, String[] paramValues, 
@@ -71,13 +71,13 @@ public interface SparqlServiceAsync {
 	//TODO this is OTG-specific
 	public void pathologies(OTGColumn column, AsyncCallback<Pathology[]> callback);
 	
-	public void annotations(HasSamples<OTGSample> column, boolean importantOnly,
+	public void annotations(HasSamples<Sample> column, boolean importantOnly,
 			AsyncCallback<Annotation[]> callback);
-	public void annotations(OTGSample barcode, AsyncCallback<Annotation> callback);
+	public void annotations(Sample barcode, AsyncCallback<Annotation> callback);
 	
 	public void pathways(SampleClass sc, String pattern, AsyncCallback<String[]> callback);
 	
-	public void probesForPathway(SampleClass sc, String pathway, List<OTGSample> samples,
+	public void probesForPathway(SampleClass sc, String pathway, List<Sample> samples,
 		AsyncCallback<String[]> callback);
 	public void probesTargetedByCompound(SampleClass sc, String compound, String service, 
 			boolean homologous, AsyncCallback<String[]> callback);
@@ -88,9 +88,9 @@ public interface SparqlServiceAsync {
 	public void goTerms(String pattern, AsyncCallback<String[]> callback);
 	@Deprecated
 	public void probesForGoTerm(String term, AsyncCallback<String[]> callback);
-	public void probesForGoTerm(String pattern, List<OTGSample> samples, AsyncCallback<String[]> callback);
+	public void probesForGoTerm(String pattern, List<Sample> samples, AsyncCallback<String[]> callback);
 	
-	public void filterProbesByGroup(String[] probes, List<OTGSample> samples, AsyncCallback<String[]> callback);
+	public void filterProbesByGroup(String[] probes, List<Sample> samples, AsyncCallback<String[]> callback);
 	
 	public void associations(SampleClass sc, AType[] types, String[] probes, 
 			AsyncCallback<Association[]> callback);

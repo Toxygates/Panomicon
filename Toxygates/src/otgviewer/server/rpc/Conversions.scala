@@ -37,7 +37,7 @@ import otg.Species._
 import otg.OTGSeries
 import t.common.shared.SampleClass
 import t.common.shared.Pair
-import otgviewer.shared.OTGSample
+import t.common.shared.sample.Sample
 import t.db.{ExprValue => TExprValue}
 import t.db.MatrixContext
 import t.common.shared.FirstKeyedPair
@@ -56,9 +56,9 @@ object Conversions {
         path.finding.getOrElse(null),
         path.spontaneous, path.grade.getOrElse(null), path.digitalViewerLink);
 
-  def asJavaSample(s: t.db.Sample): OTGSample = {
+  def asJavaSample(s: t.db.Sample): Sample = {
     val sc = scAsJava(s.sampleClass)
-    new OTGSample(s.sampleId, sc, s.cgroup.getOrElse(null))
+    new Sample(s.sampleId, sc)
   }
 
   implicit def asScala(series: Series)(implicit context: MatrixContext): OTGSeries = {

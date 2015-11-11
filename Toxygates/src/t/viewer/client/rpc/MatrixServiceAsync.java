@@ -27,10 +27,10 @@ import javax.annotation.Nullable;
 import otgviewer.shared.FullMatrix;
 import otgviewer.shared.Group;
 import otgviewer.shared.ManagedMatrixInfo;
-import otgviewer.shared.OTGSample;
 import otgviewer.shared.Synthetic;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
+import t.common.shared.sample.Sample;
 import t.viewer.shared.table.SortKey;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -45,7 +45,7 @@ public interface MatrixServiceAsync {
 
 	public void identifiersToProbes(String[] identifiers,
 			boolean precise, boolean titlePatternMatch,
-			@Nullable List<OTGSample> samples, AsyncCallback<String[]> callback);
+			@Nullable List<Sample> samples, AsyncCallback<String[]> callback);
 
 	public void selectProbes(String[] probes,
 			AsyncCallback<ManagedMatrixInfo> callback);

@@ -25,10 +25,10 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import otgviewer.shared.OTGSample;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
+import t.common.shared.sample.Sample;
 
 /**
  * A Dataset can construct Data objects based on SampleClass filters.
@@ -90,7 +90,7 @@ abstract public class Dataset<D extends Data> {
 	 * @param column
 	 * @return
 	 */
-	OTGSample getSample(int row, int column) {
+	Sample getSample(int row, int column) {
 		return null;
 	}
 
