@@ -31,6 +31,9 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.targetmine.TargetMineData;
 import t.common.shared.StringList;
 import t.common.shared.ValueType;
+import t.common.shared.userclustering.Algorithm;
+import t.common.shared.userclustering.Distances;
+import t.common.shared.userclustering.Methods;
 import t.viewer.client.rpc.MatrixServiceAsync;
 
 import com.google.gwt.core.client.Callback;
@@ -62,8 +65,8 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class HeatmapDialog extends DataListenerWidget {
-  private static final String[] injectList = {"kinetic-v5.1.0.min.js",
-      "jquery-2.0.3.min.js", "inchlib-1.2.0.js", "inchlib-extended.js"};
+  private static final String[] injectList =
+      {"kinetic-v5.1.0.min.js", "jquery-2.0.3.min.js", "inchlib-1.2.0.js", "inchlib-extended.js"};
 
   private final MatrixServiceAsync matrixService;
   private final Screen screen;
@@ -72,7 +75,13 @@ public class HeatmapDialog extends DataListenerWidget {
   private Button saveButton;
   private final ListBox valType;
 
-  private String json;
+  private CheckBox chkLogAxis;
+  private CheckBox chkDendrogram;
+
+  private ListBox rDist;
+  private ListBox rMethod;
+  private ListBox cDist;
+  private ListBox cMethod;
 
   public HeatmapDialog(Screen screen, ValueType defaultType) {
     matrixService = screen.matrixService();
@@ -90,18 +99,49 @@ public class HeatmapDialog extends DataListenerWidget {
     createPanel(defaultType);
     inject(new ArrayList<String>(Arrays.asList(injectList)));
 
-    // call DialogBox#show here in order to generate <div> container used by InCHlib.js
+    // call DialogBox#show here in order to generate <div> container used by
+    // InCHlib.js
     // but keep the dialog invisible until drawing heat map is finished
     dialog.show();
     dialog.setVisible(false);
   }
 
-  private void executeClustering() {
-    logger.info("Execute clustering with " + getValueType().name());
-    matrixService.prepareHeatmap(chosenColumns, chosenProbes, getValueType(),
-        prepareHeatmapCallback());
+  private void inject(final List<String> p_jsList) {
+    final String js = GWT.getModuleBaseForStaticFiles() + p_jsList.remove(0);
+
+    ScriptInjector.fromUrl(js).setCallback(new Callback<Void, Exception>() {
+      @Override
+      public void onFailure(Exception e) {
+        logger.severe("Script load failed. (" + js + ")");
+      }
+
+      @Override
+      public void onSuccess(Void ok) {
+        if (!p_jsList.isEmpty()) {
+          inject(p_jsList);
+        } else {
+          initializeHeatmap();
+          executeClustering(new Algorithm());
+        }
+      }
+    }).setWindow(ScriptInjector.TOP_WINDOW).inject();
   }
 
+  private void initializeHeatmap() {
+    createInstance();
+    updateUI();
+    dialog.setGlassEnabled(false);
+    dialog.setModal(true);
+    dialog.center();
+    dialog.setVisible(true);
+  }
+  
+  private void executeClustering(Algorithm algo) {
+    logger.info("Execute clustering with " + getValueType().name() + " " + algo.toString());
+    matrixService.prepareHeatmap(chosenColumns, chosenProbes, getValueType(), algo,
+        prepareHeatmapCallback());
+  }
+  
   private AsyncCallback<String> prepareHeatmapCallback() {
     return new PendingAsyncCallback<String>(this) {
       public void handleSuccess(String result) {
@@ -125,44 +165,17 @@ public class HeatmapDialog extends DataListenerWidget {
     return ValueType.unpack(vt);
   }
 
-  private void inject(final List<String> p_jsList) {
-    final String js = GWT.getModuleBaseForStaticFiles() + p_jsList.remove(0);
+  private void updateUI() {
+    boolean b = getDendrogramState();
+    chkDendrogram.setValue(b);
 
-    ScriptInjector.fromUrl(js).setCallback(new Callback<Void, Exception>() {
-      @Override
-      public void onFailure(Exception e) {
-        logger.severe("Script load failed. (" + js + ")");
-      }
+    chkLogAxis.setEnabled(b);
+    chkLogAxis.setValue(getAxisState());
 
-      @Override
-      public void onSuccess(Void ok) {
-        logger.info("Script load succeeded. (" + js + ")");
-        if (!p_jsList.isEmpty()) {
-          inject(p_jsList);
-        } else {
-          initializeHeatmap();
-          executeClustering();
-        }
-      }
-    }).setWindow(ScriptInjector.TOP_WINDOW).inject();
-  }
-
-  private void onReady() {
-    draw(JsonUtils.safeEval(json));
-  }
-
-  private native JavaScriptObject draw(JavaScriptObject json)/*-{
-    $wnd.inchlib.read_data(json)
-    $wnd.inchlib.draw();
-  }-*/;
-
-  private void initializeHeatmap() {
-    createInstance();
-    updateSaveButton("F");
-    dialog.setGlassEnabled(false);
-    dialog.setModal(true);
-    dialog.center();
-    dialog.setVisible(true);
+    rDist.setEnabled(b);
+    rMethod.setEnabled(b);
+    cDist.setEnabled(b);
+    cMethod.setEnabled(b);
   }
 
   private void createPanel(ValueType defaultType) {
@@ -187,71 +200,72 @@ public class HeatmapDialog extends DataListenerWidget {
     l.addStyleName("heading");
     eastContent.add(l);
 
-    final CheckBox cb = new CheckBox("Dendrogram");
-    cb.setValue(true);
-    eastContent.add(cb);
+    chkDendrogram = new CheckBox("Dendrogram");
+    chkDendrogram.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        boolean b = chkDendrogram.getValue();
+        setDendrogramState(b);
+        setColumnDendrogramState(b);
+        redraw();
+        updateUI();
+      }
+    });
+    eastContent.add(chkDendrogram);
+
+    chkLogAxis = new CheckBox("Log-axis");
+    chkLogAxis.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        boolean b = chkLogAxis.getValue();
+        setAxisState(b);
+        redraw();
+        updateUI();
+      }
+    });
+    eastContent.add(chkLogAxis);
 
     l = new Label("Row");
-    l.addStyleName("indent1");
+    l.addStyleName("emphasized");
     eastContent.add(l);
 
     l = new Label("Method:");
-    l.addStyleName("indent2");
     eastContent.add(l);
 
-    final ListBox rDist = new ListBox();
-    rDist.addItem("Correlation");
-    rDist.addStyleName("indent2");
+    rDist = new ListBox();
+    for (Distances d : Distances.values()) {
+      rDist.addItem(d.asParam());
+    }
 
-    final ListBox rMethod = new ListBox();
-    rMethod.addItem("Ward");
-    rMethod.addStyleName("indent2");
-    rMethod.addChangeHandler(new ChangeHandler() {
-      @Override
-      public void onChange(ChangeEvent event) {
-        if (rMethod.getSelectedIndex() == 0) {
-          rDist.setEnabled(false);
-        } else {
-          rDist.setEnabled(true);
-        }
-      }
-    });
+    rMethod = new ListBox();
+    for (Methods m : Methods.values()) {
+      rMethod.addItem(m.asParam());
+    }
     eastContent.add(rMethod);
 
     l = new Label("Distance:");
-    l.addStyleName("indent2");
     eastContent.add(l);
     eastContent.add(rDist);
 
     l = new Label("Column");
-    l.addStyleName("indent1");
+    l.addStyleName("emphasized");
     eastContent.add(l);
 
     l = new Label("Method:");
-    l.addStyleName("indent2");
     eastContent.add(l);
 
-    final ListBox cDist = new ListBox();
-    cDist.addItem("Correlation");
-    cDist.addStyleName("indent2");
+    cDist = new ListBox();
+    for (Distances d : Distances.values()) {
+      cDist.addItem(d.asParam());
+    }
 
-    final ListBox cMethod = new ListBox();
-    cMethod.addItem("Ward");
-    cMethod.addStyleName("indent2");
-    cMethod.addChangeHandler(new ChangeHandler() {
-      @Override
-      public void onChange(ChangeEvent event) {
-        if (cMethod.getSelectedIndex() == 0) {
-          cDist.setEnabled(false);
-        } else {
-          cDist.setEnabled(true);
-        }
-      }
-    });
+    cMethod = new ListBox();
+    for (Methods m : Methods.values()) {
+      cMethod.addItem(m.asParam());
+    }
     eastContent.add(cMethod);
 
     l = new Label("Distance:");
-    l.addStyleName("indent2");
     eastContent.add(l);
     eastContent.add(cDist);
 
@@ -260,22 +274,16 @@ public class HeatmapDialog extends DataListenerWidget {
     updateButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        boolean b = cb.getValue();
+        Algorithm algo = new Algorithm(Methods.lookup(rMethod.getSelectedValue()),
+            Distances.lookup(rDist.getSelectedValue()), Methods.lookup(cMethod.getSelectedValue()),
+            Distances.lookup(cDist.getSelectedValue()));
 
-        toggleDendrogram(b);
-      }
-    });
-
-    cb.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        boolean b = cb.getValue();
-        rMethod.setEnabled(b);
-        rDist.setEnabled(b);
-        cMethod.setEnabled(b);
-        cDist.setEnabled(b);
-        updateButton.setEnabled(b);
-        toggleDendrogram(b);
+        executeClustering(algo);
+        // boolean b = chkDendrogram.getValue();
+        // setDendrogramState(b);
+        // setColumnDendrogramState(b);
+        // redraw();
+        // updateUI();
       }
     });
 
@@ -292,7 +300,11 @@ public class HeatmapDialog extends DataListenerWidget {
     valType.addChangeHandler(new ChangeHandler() {
       @Override
       public void onChange(ChangeEvent event) {
-        executeClustering();
+        Algorithm algo = new Algorithm(Methods.lookup(rMethod.getSelectedValue()),
+            Distances.lookup(rDist.getSelectedValue()), Methods.lookup(cMethod.getSelectedValue()),
+            Distances.lookup(cDist.getSelectedValue()));
+
+        executeClustering(algo);
       }
     });
     topContent.add(valType);
@@ -303,14 +315,14 @@ public class HeatmapDialog extends DataListenerWidget {
     bottomContent.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 
     Button btnEnrich = new Button("Enrichment...");
-    btnEnrich.addClickHandler(new ClickHandler() {      
+    btnEnrich.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        HeatmapDialog.this.doEnrichment();        
+        HeatmapDialog.this.doEnrichment();
       }
     });
     buttonGroup.add(btnEnrich);
-    
+
     Button btnClose = new Button("Close");
     btnClose.addClickHandler(new ClickHandler() {
       @Override
@@ -325,13 +337,12 @@ public class HeatmapDialog extends DataListenerWidget {
       public void onClick(ClickEvent event) {
         List<Collection<String>> objectIds = parse2dJsArray(getCurrentObjectIds());
 
-        ItemListsStoreHelper helper =
-            new ItemListsStoreHelper("probes", screen) {
-              @Override
-              protected void onSaveSuccess(String name, Collection<String> items) {
-                Window.alert("Gene sets are successfully saved.");
-              }
-            };
+        ItemListsStoreHelper helper = new ItemListsStoreHelper("probes", screen) {
+          @Override
+          protected void onSaveSuccess(String name, Collection<String> items) {
+            Window.alert("Gene sets are successfully saved.");
+          }
+        };
         helper.save(objectIds);
       }
     });
@@ -357,44 +368,50 @@ public class HeatmapDialog extends DataListenerWidget {
     dialog.setWidget(vp);
   }
 
-  private void toggleDendrogram(boolean b) {
-    toggleRowDendrogram(b);
-    toggleColumnDendrogram(b);
-    redraw();
-  }
-
   private native JsArray<JsArrayString> getCurrentObjectIds() /*-{
     return $wnd.inchlib.get_current_object_ids();
   }-*/;
 
-  private native JavaScriptObject toggleRowDendrogram(boolean b)/*-{
+  private native boolean getDendrogramState() /*-{
+    return $wnd.inchlib.settings.dendrogram;
+  }-*/;
+
+  private native boolean getColumnDendrogramState() /*-{
+    return $wnd.inchlib.settings.column_dendrogram;
+  }-*/;
+
+  private native boolean getAxisState() /*-{
+    return $wnd.inchlib.settings.log_axis;
+  }-*/;
+
+  private native void setDendrogramState(boolean b)/*-{
     $wnd.inchlib.settings.dendrogram = b;
   }-*/;
 
-  private native JavaScriptObject toggleColumnDendrogram(boolean b)/*-{
+  private native void setColumnDendrogramState(boolean b)/*-{
     $wnd.inchlib.settings.column_dendrogram = b;
   }-*/;
 
-  private native JavaScriptObject redraw()/*-{
+  private native void setAxisState(boolean b)/*-{
+    $wnd.inchlib.settings.log_axis = b;
+  }-*/;
+
+  private native void draw(JavaScriptObject json)/*-{
+    $wnd.inchlib.read_data(json);
+    $wnd.inchlib.draw();
+  }-*/;
+
+  private native void redraw()/*-{
     $wnd.inchlib.redraw();
   }-*/;
 
-  private native JavaScriptObject redraw(int w, int h)/*-{
+  private native void redraw(int w, int h)/*-{
     $wnd.inchlib.settings.width = w;
     $wnd.inchlib.settings.max_height = h;
     $wnd.inchlib.redraw();
   }-*/;
 
-  private void updateSaveButton(String enabled) {
-    String b = enabled.trim().toLowerCase();
-    if (b.equals("t") || b.equals("true")) {
-      saveButton.setEnabled(true);
-    } else {
-      saveButton.setEnabled(false);
-    }
-  }
-
-  private native JavaScriptObject createInstance()/*-{
+  private native void createInstance()/*-{
     $wnd.widget = this;
 
     $wnd.inchlib = new $wnd.InCHlibEx({
@@ -420,6 +437,7 @@ public class HeatmapDialog extends DataListenerWidget {
         "filter_button" : false,
         "hint_button" : false
       },
+      log_axis : true,
     });
 
     $wnd.inchlib.selection_state_changed = function(state) {
@@ -475,18 +493,18 @@ public class HeatmapDialog extends DataListenerWidget {
     }
     return result;
   }
-  
+
   private void doEnrichment() {
     TargetMineData tm = new TargetMineData(screen);
     List<Collection<String>> clusters = parse2dJsArray(getCurrentObjectIds());
     List<StringList> clusterLists = new ArrayList<StringList>();
     int i = 0;
-    for (Collection<String> clust: clusters) {
+    for (Collection<String> clust : clusters) {
       StringList sl = new StringList("probes", "Cluster " + i, clust.toArray(new String[0]));
       clusterLists.add(sl);
       i++;
     }
-    tm.multiEnrich(clusterLists.toArray(new StringList[0]));    
+    tm.multiEnrich(clusterLists.toArray(new StringList[0]));
   }
 
 }
