@@ -34,13 +34,13 @@ import java.util.logging.Logger;
 
 import otgviewer.shared.Group;
 import otgviewer.shared.OTGColumn;
-import otgviewer.shared.OTGSample;
 import t.common.shared.DataSchema;
 import t.common.shared.Dataset;
 import t.common.shared.ItemList;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.DataColumn;
+import t.common.shared.sample.Sample;
 import t.viewer.client.Utils;
 
 import com.google.gwt.storage.client.Storage;
@@ -431,10 +431,10 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     }
   }
 
-  protected List<OTGSample> getAllSamples() {
-    List<OTGSample> list = new ArrayList<OTGSample>();
+  protected List<Sample> getAllSamples() {
+    List<Sample> list = new ArrayList<Sample>();
     for (Group g : chosenColumns) {
-      List<OTGSample> ss = Arrays.asList(g.getSamples());
+      List<Sample> ss = Arrays.asList(g.getSamples());
       list.addAll(ss);
     }
     return list;

@@ -27,10 +27,10 @@ import java.util.List;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.shared.OTGSample;
 import t.common.client.Utils;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
+import t.common.shared.sample.Sample;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
 import com.google.gwt.user.cellview.client.CellTable;
@@ -44,8 +44,8 @@ import com.google.gwt.view.client.NoSelectionModel;
  */
 public class SampleDetailTable extends Composite {
 	private CellTable<String[]> table;
-	private OTGSample[] barcodes;
-	private HasSamples<OTGSample> displayColumn;
+	private Sample[] barcodes;
+	private HasSamples<Sample> displayColumn;
 	private SparqlServiceAsync sparqlService;
 	private final String title;
 	private final DataListenerWidget waitListener;
@@ -61,7 +61,7 @@ public class SampleDetailTable extends Composite {
 		table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 	}
 	
-	public void loadFrom(HasSamples<OTGSample> c, boolean importantOnly, 
+	public void loadFrom(HasSamples<Sample> c, boolean importantOnly, 
 			final int rangeStart, final int rangeEnd) {
 		if (Arrays.equals(barcodes, c.getSamples())) {
 			return;

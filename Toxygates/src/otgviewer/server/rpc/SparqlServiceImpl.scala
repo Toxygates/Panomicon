@@ -37,7 +37,6 @@ import otg.sparql._
 import t.sparql._
 import t.common.server.ScalaUtils.gracefully
 import otgviewer.shared.OTGColumn
-import otgviewer.shared.OTGSample
 import otgviewer.shared.Pathology
 import t.BaseConfig
 import t.DataConfig
@@ -45,6 +44,7 @@ import t.TriplestoreConfig
 import t.common.shared.SampleClass
 import t.common.shared.sample.Annotation
 import t.common.shared.sample.HasSamples
+import t.common.shared.sample.Sample
 import t.common.shared.Pair
 import t.db.DefaultBio
 import t.sparql.Instances

@@ -26,7 +26,7 @@ import otgviewer.shared.Group
 import otgviewer.shared.ManagedMatrixInfo
 import otgviewer.shared.Synthetic
 import t.db.MatrixDBReader
-import otgviewer.shared.OTGSample
+import t.common.shared.sample.{Sample => SSample}
 import t.db.Sample
 import t.db.PExprValue
 import t.db.ExprValue
@@ -94,7 +94,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
       //Remove repeated samples as some other algorithms assume distinct samples
       //Also for efficiency
       val samples =
-        (if (fullLoad) g.getSamples.toList else samplesToLoad(g)).
+        (if (fullLoad) g.getSamples else samplesToLoad(g)).
           toVector.distinct
       val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.id)))
       val data = reader.valuesForSamplesAndProbes(sortedSamples,
@@ -164,7 +164,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     inSet.zipWithIndex.filter(_._1).map(_._2)
   }
 
-  protected def samplesToLoad(g: Group): Iterable[OTGSample] = {
+  protected def samplesToLoad(g: Group): Array[SSample] = {
     val (tus, cus) = treatedAndControl(g)
     tus.flatMap(_.getSamples())
   }
@@ -248,7 +248,7 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[Exp
   def colNames(g: Group): Seq[String] =
     List(g.toString, g.toString + "(cont)")
 
-  override protected def samplesToLoad(g: Group): Iterable[OTGSample] = {
+  override protected def samplesToLoad(g: Group): Array[SSample] = {
     val (tus, cus) = treatedAndControl(g)
     if (tus.size > 1) {
       super.samplesToLoad(g)
@@ -289,7 +289,7 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
         colNames(g)(0) + ": average of treated samples", false, g, false, samples)
     info.addColumn(false, colNames(g)(1),
         colNames(g)(1) + ": p-values of treated against control", true, g, true,
-        Array[OTGSample]())
+        Array[SSample]())
   }
 
   def colNames(g: Group) =
@@ -471,7 +471,7 @@ class ManagedMatrix(val initProbes: Seq[String],
           case _ => throw new Exception("Unexpected test type!")
         }
         currentInfo.addColumn(true, test.getShortTitle(null), test.getTooltip(), upper, null, false,
-            Array[OTGSample]()) //TODO
+            Array[SSample]()) //TODO
       case _ => throw new Exception("Unexpected test type")
     }
   }

@@ -19,7 +19,8 @@
  */
 
 package t.common.shared.sample;
-import t.common.shared.*;
+import t.common.shared.DataSchema;
+import t.common.shared.Packable;
 
 
 public interface DataColumn<S extends Sample> extends HasSamples<S>, Packable {

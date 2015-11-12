@@ -28,9 +28,9 @@ import otgviewer.client.Resources;
 import otgviewer.client.SampleDetailScreen;
 import otgviewer.client.UIFactory;
 import otgviewer.shared.Group;
-import otgviewer.shared.OTGSample;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
+import t.common.shared.sample.Sample;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.rpc.SeriesServiceAsync;
@@ -573,9 +573,9 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
    * 
    * @param b
    */
-  public void displaySampleDetail(OTGSample b) {
+  public void displaySampleDetail(Sample b) {
     StorageParser p = getParser(this);
-    Group g = new Group(schema(), "custom", new OTGSample[] {b});
+    Group g = new Group(schema(), "custom", new Sample[] {b});
     storeCustomColumn(p, g);
     configuredProceed(SampleDetailScreen.key);
   }
