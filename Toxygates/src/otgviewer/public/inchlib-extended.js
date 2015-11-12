@@ -141,7 +141,7 @@ var InCHlibEx;
 
     self.loading.done(function () {
       self.minDistance = Math.min(Number.MAX_VALUE);
-      self.maxDistance = Math.max(Number.MIN_VALUE);
+      self.maxDistance = -Math.min(Number.MAX_VALUE);
 
       InCHlib.prototype.draw.call(self);
 
@@ -753,7 +753,8 @@ var InCHlibEx;
     var count = node.count;
 
     if (self.settings.log_axis) {
-      self.distance_step = (self.distance - 5) / (log10(node.distance) - log10(self.minDistance));
+      var logVal = log10(self.minDistance);
+      self.distance_step = (self.distance - 5) / (log10(node.distance) - (Number.isFinite(logVal) ? logVal : 0));
     } else {
       self.distance_step = self.distance / node.distance;
     }
@@ -850,7 +851,8 @@ var InCHlibEx;
   InCHlibEx.prototype._coordToDistance = function (log_axis, x) {
     var self = this;
     if (log_axis) {
-      return (Math.pow(10, (self.distance - (5 + x)) / self.distance_step + log10(self.minDistance))).toExponential(2);
+      var logVal = log10(self.minDistance);
+      return (Math.pow(10, (self.distance - (5 + x)) / self.distance_step + (Number.isFinite(logVal) ? logVal : 0))).toExponential(2);
     } else {
       return Math.round(100 * (self.distance - x) / self.distance_step) / 100;
     }
@@ -859,7 +861,8 @@ var InCHlibEx;
   InCHlibEx.prototype._distanceToCoord = function (log_axis, d) {
     var self = this;
     if (log_axis) {
-      return log10(d) != Number.NEGATIVE_INFINITY ? self.distance - (5 + self.distance_step * (log10(d) - log10(self.minDistance))) : self._hack_round(self.distance);
+      var logVal = log10(self.minDistance);
+      return log10(d) != Number.NEGATIVE_INFINITY ? self.distance - (5 + self.distance_step * (log10(d) - (Number.isFinite(logVal) ? logVal : 0))) : self._hack_round(self.distance);
     } else {
       return self.distance - self.distance_step * d;
     }
@@ -917,6 +920,10 @@ var InCHlibEx;
     }
 
     if (self.settings.log_axis) {
+      if (Number.isFinite(log10(self.maxDistance)) == false) {
+        return;
+      }
+
       var from = Math.ceil(log10(self.minDistance));
       var to = Math.ceil(log10(self.maxDistance));
       marker_counter = from;
