@@ -31,6 +31,7 @@ import otgviewer.shared.OTGSample;
 import otgviewer.shared.Synthetic;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
+import t.common.shared.userclustering.Algorithm;
 import t.viewer.shared.table.SortKey;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -69,6 +70,6 @@ public interface MatrixServiceAsync {
 			AsyncCallback<Void> callback);
 
   public void prepareHeatmap(List<Group> chosenColumns, String[] chosenProbes,
-      ValueType valueType, AsyncCallback<String> prepareHeatmapCallback);
+      ValueType valueType, Algorithm algorithm, AsyncCallback<String> prepareHeatmapCallback);
 	
 }

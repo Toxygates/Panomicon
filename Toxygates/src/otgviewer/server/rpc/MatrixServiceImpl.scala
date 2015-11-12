@@ -30,6 +30,7 @@ import java.util.logging.Logger
 import otgviewer.shared.Group
 import java.io.File
 import javax.servlet.ServletContext
+import t.common.shared.userclustering.Algorithm
 
 class MatrixServiceImpl extends t.viewer.server.rpc.MatrixServiceImpl
     with OTGServiceServlet {
@@ -44,7 +45,7 @@ class MatrixServiceImpl extends t.viewer.server.rpc.MatrixServiceImpl
   }
 
   def prepareHeatmap(groups: JList[Group], chosenProbes: Array[String],
-    valueType: ValueType): String = {
+    valueType: ValueType, algorithm: Algorithm): String = {
 
     loadMatrix(groups, chosenProbes, valueType)
 
@@ -58,11 +59,11 @@ class MatrixServiceImpl extends t.viewer.server.rpc.MatrixServiceImpl
     val colNames = columns.map(_._1)
     val values = columns.map(x => mat.data.map(_.map(asScala(_).value)).map { _(x._2) })
 
-    clustering(values.flatten, rowNames, colNames)
+    clustering(values.flatten, rowNames, colNames, algorithm)
   }
 
   @throws(classOf[RserveException])
-  def clustering(data: Seq[Double], rowName: Seq[String], colName: Seq[String]) = {
+  def clustering(data: Seq[Double], rowName: Seq[String], colName: Seq[String], algorithm: Algorithm = new Algorithm()) = {
     assert(data.length == rowName.length * colName.length)
 
     val r = new R
@@ -71,11 +72,18 @@ class MatrixServiceImpl extends t.viewer.server.rpc.MatrixServiceImpl
     r.addCommand(s"data <- c(${data.mkString(", ")})")
     r.addCommand(s"r <- c(${rowName.map { "\"" + _ + "\"" }.mkString(", ")})")
     r.addCommand(s"c <- c(${colName.map { "\"" + _ + "\"" }.mkString(", ")})")
-    r.addCommand(s"getClusterAsJSON(data, r, c)")
+    r.addCommand("rowMethod <- \"" + algorithm.getRowMethod.asParam() + "\"")
+    r.addCommand("rowDistance <- \"" + algorithm.getRowDistance.asParam() + "\"")
+    r.addCommand("colMethod <- \"" + algorithm.getColMethod.asParam() + "\"")
+    r.addCommand("colDistance <- \"" + algorithm.getColDistance.asParam() + "\"")
+    
+    logger.info(s"Row clustering: ${algorithm.getRowMethod.asParam()}, ${algorithm.getRowDistance.asParam()}")
+    logger.info(s"Col clustering: ${algorithm.getColMethod.asParam()}, ${algorithm.getColDistance.asParam()}")
+    r.addCommand("getClusterAsJSON(data, r, c, rowMethod, rowDistance, colMethod, colDistance)")
 
     r.exec() match {
-      case Some(x) => x.asString()
-      case None    => ""
+      case Some(x) => logger.info("Finish clustering."); logger.info(x.asString()); x.asString()
+      case None => logger.severe("Fail clustering."); ""
     }
   }
 

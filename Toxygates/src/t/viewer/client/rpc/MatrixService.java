@@ -33,6 +33,7 @@ import otgviewer.shared.ServerError;
 import otgviewer.shared.Synthetic;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
+import t.common.shared.userclustering.Algorithm;
 import t.viewer.shared.table.SortKey;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -154,6 +155,5 @@ public interface MatrixService extends RemoteService {
 	 */
 	public void sendFeedback(String name, String email, String feedback);
 
-  String prepareHeatmap(List<Group> chosenColumns, String[] chosenProbes,
-      ValueType valueType);
+	public String prepareHeatmap(List<Group> chosenColumns, String[] chosenProbes, ValueType valueType, Algorithm algorithm);
 }
