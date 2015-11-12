@@ -51,7 +51,7 @@ public class Sample implements Packable, Serializable, HasClass {
     public boolean equals(Object other) {
         if (other instanceof Sample) {
             Sample that = (Sample) other;
-            id.equals(that.id());
+            return id.equals(that.id());
         }
         return false;
     }
