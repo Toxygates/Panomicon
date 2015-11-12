@@ -22,11 +22,10 @@ package otgviewer.server
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import t.common.shared.sample.ExpressionValue
+import t.common.shared.sample._
 import t.db.testing._
 import t.db.testing.TestData._
 import org.scalatest.FunSuite
-import otgviewer.shared.Group
 import otgviewer.server.rpc.Conversions._
 
 @RunWith(classOf[JUnitRunner])

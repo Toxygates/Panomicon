@@ -27,7 +27,7 @@ import org.rosuda.REngine.Rserve.RserveException
 import otgviewer.server.R
 import t.viewer.server.Configuration
 import java.util.logging.Logger
-import otgviewer.shared.Group
+import t.common.shared.sample._
 import java.io.File
 import javax.servlet.ServletContext
 import t.common.shared.userclustering.Algorithm
@@ -76,7 +76,7 @@ class MatrixServiceImpl extends t.viewer.server.rpc.MatrixServiceImpl
     r.addCommand("rowDistance <- \"" + algorithm.getRowDistance.asParam() + "\"")
     r.addCommand("colMethod <- \"" + algorithm.getColMethod.asParam() + "\"")
     r.addCommand("colDistance <- \"" + algorithm.getColDistance.asParam() + "\"")
-    
+
     logger.info(s"Row clustering: ${algorithm.getRowMethod.asParam()}, ${algorithm.getRowDistance.asParam()}")
     logger.info(s"Col clustering: ${algorithm.getColMethod.asParam()}, ${algorithm.getColDistance.asParam()}")
     r.addCommand("getClusterAsJSON(data, r, c, rowMethod, rowDistance, colMethod, colDistance)")

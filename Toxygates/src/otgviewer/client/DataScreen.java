@@ -29,9 +29,9 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.components.TickMenuItem;
-import otgviewer.shared.Group;
 import t.common.shared.ItemList;
 import t.common.shared.sample.ExpressionRow;
+import t.common.shared.sample.Group;
 import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.RichTable.HideableColumn;
 

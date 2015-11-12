@@ -22,11 +22,11 @@ package otgviewer.client.components;
 
 import java.util.List;
 
-import otgviewer.shared.Group;
-import otgviewer.shared.OTGColumn;
 import t.common.shared.Dataset;
 import t.common.shared.ItemList;
 import t.common.shared.SampleClass;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.SampleColumn;
 
 public interface DataViewListener {
 	public void datasetsChanged(Dataset[] ds);
@@ -43,7 +43,7 @@ public interface DataViewListener {
 	
 	public void columnsChanged(List<Group> columns);
 	
-	public void customColumnChanged(OTGColumn column);
+	public void customColumnChanged(SampleColumn column);
 	
 	public void itemListsChanged(List<ItemList> lists);
 	

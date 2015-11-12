@@ -22,7 +22,6 @@ package otgviewer.server
 
 import t.common.shared.sample.ExpressionValue
 import otgviewer.server.rpc.Conversions._
-import otgviewer.shared.Group
 import otgviewer.shared.ManagedMatrixInfo
 import otgviewer.shared.Synthetic
 import t.db.MatrixDBReader
@@ -32,8 +31,7 @@ import t.db.PExprValue
 import t.db.ExprValue
 import t.db.MatrixContext
 import t.db.BasicExprValue
-import t.common.shared.sample.SimpleAnnotation
-import t.common.shared.sample.ExprMatrix
+import t.common.shared.sample._
 import t.viewer.server.EVArray
 import t.viewer.shared.{Unit => TUnit}
 

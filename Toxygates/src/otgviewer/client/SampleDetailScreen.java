@@ -28,11 +28,11 @@ import java.util.Set;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
-import otgviewer.shared.Group;
-import otgviewer.shared.OTGColumn;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.DataColumn;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.SampleColumn;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 
@@ -70,7 +70,7 @@ public class SampleDetailScreen extends Screen {
 	
 	private SampleClass lastClass;	
 	private List<Group> lastColumns;
-	private OTGColumn lastCustomColumn;
+	private SampleColumn lastCustomColumn;
 	
 	private HorizontalPanel tools;
 	
@@ -123,7 +123,7 @@ public class SampleDetailScreen extends Screen {
 	}
 
 	@Override
-	public void customColumnChanged(OTGColumn customColumn) {
+	public void customColumnChanged(SampleColumn customColumn) {
 		super.customColumnChanged(customColumn);		
 		if (visible) {
 			updateColumnList();
@@ -151,8 +151,8 @@ public class SampleDetailScreen extends Screen {
 			@Override
 			public void onClick(ClickEvent event) {
 				Set<String> compounds = new HashSet<String>();
-				for (OTGColumn d: chosenColumns) {
-					compounds.addAll(((Group) d).getMajors(schema()));
+				for (SampleColumn d: chosenColumns) {
+					compounds.addAll(SampleClass.getMajors(schema(), d));
 				}
 				List<String> compounds_ = new ArrayList<String>(compounds);
 				atd.compoundsChanged(compounds_);
@@ -176,7 +176,7 @@ public class SampleDetailScreen extends Screen {
 	}
 	
 	
-	private void setDisplayColumn(OTGColumn c) {
+	private void setDisplayColumn(SampleColumn c) {
 		experimentTable.loadFrom(c, false, 0, 23);
 		biologicalTable.loadFrom(c, false, 23, -1);
 	}
@@ -187,7 +187,7 @@ public class SampleDetailScreen extends Screen {
 			setDisplayColumn(chosenCustomColumn);
 			return;
 		} else {
-			for (OTGColumn c : chosenColumns) {
+			for (SampleColumn c : chosenColumns) {
 				if (c.getShortTitle(schema).equals(column)) {
 					setDisplayColumn(c);
 					return;

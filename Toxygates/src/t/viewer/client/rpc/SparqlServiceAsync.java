@@ -22,7 +22,6 @@ package t.viewer.client.rpc;
 
 import java.util.List;
 
-import otgviewer.shared.OTGColumn;
 import otgviewer.shared.Pathology;
 import t.common.shared.AType;
 import t.common.shared.Dataset;
@@ -31,6 +30,7 @@ import t.common.shared.SampleClass;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
 import t.common.shared.sample.Sample;
+import t.common.shared.sample.SampleColumn;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.Association;
 import t.viewer.shared.Unit;
@@ -69,7 +69,7 @@ public interface SparqlServiceAsync {
 			AsyncCallback<Pair<Unit, Unit>[]> callback);
 
 	//TODO this is OTG-specific
-	public void pathologies(OTGColumn column, AsyncCallback<Pathology[]> callback);
+	public void pathologies(SampleColumn column, AsyncCallback<Pathology[]> callback);
 	
 	public void annotations(HasSamples<Sample> column, boolean importantOnly,
 			AsyncCallback<Annotation[]> callback);

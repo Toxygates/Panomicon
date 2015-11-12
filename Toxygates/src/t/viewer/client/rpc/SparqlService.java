@@ -24,7 +24,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import otgviewer.shared.OTGColumn;
 import otgviewer.shared.Pathology;
 import otgviewer.shared.TimeoutException;
 import t.common.shared.AType;
@@ -34,6 +33,7 @@ import t.common.shared.SampleClass;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
 import t.common.shared.sample.Sample;
+import t.common.shared.sample.SampleColumn;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.Association;
 import t.viewer.shared.Unit;
@@ -139,7 +139,7 @@ public interface SparqlService extends RemoteService {
 	 * @param column
 	 * @return
 	 */
-	public Pathology[] pathologies(OTGColumn column) throws TimeoutException;
+	public Pathology[] pathologies(SampleColumn column) throws TimeoutException;
 
 	/**
 	 * Annotations are experiment-associated information such as dose, time,

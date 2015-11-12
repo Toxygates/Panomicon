@@ -27,6 +27,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 
 /**

@@ -28,12 +28,13 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import otgviewer.client.components.Screen;
-import otgviewer.shared.Group;
 import t.common.shared.DataSchema;
 import t.common.shared.GroupUtils;
+import t.common.shared.SampleClass;
 import t.common.shared.SampleMultiFilter;
 import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
+import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.viewer.client.Utils;
 import t.viewer.shared.Unit;
@@ -275,7 +276,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
       if (groups != null) {
         Set<String> majors = new HashSet<String>();
         for (Group g : groups) {
-          majors.addAll(g.getMajors(schema));
+          majors.addAll(SampleClass.getMajors(schema, g));
         }
         String[] majorsA = majors.toArray(new String[0]);
         SimplePanel sp = makeGridPanel(majorsA);

@@ -31,12 +31,10 @@ import otgviewer.server.rpc.Conversions
 import otgviewer.server.rpc.Conversions.asJava
 import otgviewer.server.rpc.Conversions.asJavaSample
 import otgviewer.server.rpc.Conversions.convertPairs
-import otgviewer.shared.OTGColumn
 import otgviewer.shared.Pathology
 import otgviewer.shared.TimeoutException
 import t.BaseConfig
 import t.TriplestoreConfig
-import t.common.server.SharedDatasets
 import t.common.shared.AType
 import t.common.shared.Dataset
 import t.common.shared.Pair
@@ -61,6 +59,8 @@ import t.common.shared.StringList
 import t.viewer.shared.Unit
 import otg.db.OTGParameterSet
 import t.common.shared.sample.Sample
+import t.viewer.server.SharedDatasets
+import t.common.shared.sample.SampleColumn
 
 object SparqlServiceImpl {
   var inited = false
@@ -273,7 +273,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   //TODO this is not used currently
   @throws[TimeoutException]
-  def probes(columns: Array[OTGColumn]): Array[String] = {
+  def probes(columns: Array[SampleColumn]): Array[String] = {
     val samples = columns.flatMap(_.getSamples)
     val metadata = new TriplestoreMetadata(sampleStore)
     val usePlatforms = samples.map(s => metadata.parameter(
@@ -284,7 +284,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   //TODO move to OTG
   @throws[TimeoutException]
-  def pathologies(column: OTGColumn): Array[Pathology] = Array()
+  def pathologies(column: SampleColumn): Array[Pathology] = Array()
 
   private def parametersToAnnotation(barcode: Sample,
       ps: Iterable[(t.db.SampleParameter, Option[String])]): Annotation = {

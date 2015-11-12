@@ -32,15 +32,15 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import otgviewer.shared.Group;
-import otgviewer.shared.OTGColumn;
 import t.common.shared.DataSchema;
 import t.common.shared.Dataset;
 import t.common.shared.ItemList;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.DataColumn;
+import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
+import t.common.shared.sample.SampleColumn;
 import t.viewer.client.Utils;
 
 import com.google.gwt.storage.client.Storage;
@@ -65,7 +65,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   public List<String> chosenCompounds = new ArrayList<String>();
   protected String chosenCompound;
   protected List<Group> chosenColumns = new ArrayList<Group>();
-  protected OTGColumn chosenCustomColumn;
+  protected SampleColumn chosenCustomColumn;
   public List<ItemList> chosenItemLists = new ArrayList<ItemList>(); // TODO
   public String chosenGeneSet = new String();
 
@@ -123,7 +123,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     changeColumns(columns);
   }
 
-  public void customColumnChanged(OTGColumn customColumn) {
+  public void customColumnChanged(SampleColumn customColumn) {
     this.chosenCustomColumn = customColumn;
     changeCustomColumn(customColumn);
   }
@@ -201,7 +201,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     }
   }
 
-  protected void changeCustomColumn(OTGColumn customColumn) {
+  protected void changeCustomColumn(SampleColumn customColumn) {
     this.chosenCustomColumn = customColumn;
     for (DataViewListener l : listeners) {
       l.customColumnChanged(customColumn);
@@ -275,9 +275,9 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   }
 
   protected void storeColumns(StorageParser p, String key,
-      Collection<? extends OTGColumn> columns) {
+      Collection<? extends SampleColumn> columns) {
     if (!columns.isEmpty()) {
-      OTGColumn first = columns.iterator().next();
+      SampleColumn first = columns.iterator().next();
       String representative =
           (first.getSamples().length > 0) ? first.getSamples()[0].toString()
               : "(no samples)";
@@ -306,7 +306,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   // Separator hierarchy for columns:
   // ### > ::: > ^^^ > $$$
   protected List<Group> loadColumns(StorageParser p, DataSchema schema,
-      String key, Collection<? extends OTGColumn> expectedColumns)
+      String key, Collection<? extends SampleColumn> expectedColumns)
       throws Exception {
     // TODO unpack old format columns
     String v = p.getItem(key);

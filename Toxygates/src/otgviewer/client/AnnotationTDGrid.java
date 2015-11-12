@@ -24,9 +24,9 @@ import java.util.List;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.shared.Group;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.Annotation;
+import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.viewer.shared.Unit;
 

@@ -34,7 +34,6 @@ import otgviewer.server.rpc.Conversions
 import otgviewer.server.rpc.Conversions.asScala
 import otgviewer.shared.DBUnavailableException
 import otgviewer.shared.FullMatrix
-import otgviewer.shared.Group
 import otgviewer.shared.ManagedMatrixInfo
 import otgviewer.shared.NoDataLoadedException
 import otgviewer.shared.Synthetic
@@ -45,8 +44,7 @@ import t.common.shared.DataSchema
 import t.common.shared.ValueType
 import t.common.shared.probe.MedianValueMapper
 import t.common.shared.probe.OrthologProbeMapper
-import t.common.shared.sample.ExpressionRow
-import t.common.shared.sample.ExpressionValue
+import t.common.shared.sample._
 import t.db.MatrixContext
 import t.db.MatrixDBReader
 import t.db.kyotocabinet.KCExtMatrixDB

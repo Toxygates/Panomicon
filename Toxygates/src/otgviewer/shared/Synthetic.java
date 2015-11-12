@@ -24,6 +24,7 @@ import java.io.Serializable;
 
 import t.common.shared.DataSchema;
 import t.common.shared.sample.DataColumn;
+import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 
 @SuppressWarnings("serial")
