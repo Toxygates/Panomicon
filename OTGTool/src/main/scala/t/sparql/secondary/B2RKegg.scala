@@ -134,7 +134,7 @@ class B2RKegg(val con: RepositoryConnection) extends Triplestore with Store[Path
     }
 
     val r = mapQuery(prefixes +
-      """SELECT DISTINCT ?g ?title ?uri where { graph [] {
+      """SELECT DISTINCT ?g ?title ?uri where { graph ?pwGraph {
         ?ko kv:gene ?g; kv:pathway ?pw.
         ?pw bv:uri ?uri; dc:title ?title . """ +
       multiFilter("?g", genes.map(g => bracket(g.packKegg))) +
