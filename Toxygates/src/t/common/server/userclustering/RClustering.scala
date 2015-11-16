@@ -13,7 +13,6 @@ class RClustering(userDir: String) {
     assert(data.length == rowName.length * colName.length)
 
     val r = new R
-    logger.info(s"Read source file: $userDir/R/InCHlibUtils.R")
     r.addCommand(s"source('$userDir/R/InCHlibUtils.R')")
     r.addCommand(s"data <- c(${data.mkString(", ")})")
     r.addCommand(s"r <- c(${rowName.map { "\"" + _ + "\"" }.mkString(", ")})")
@@ -23,13 +22,11 @@ class RClustering(userDir: String) {
     r.addCommand("colMethod <- \"" + algorithm.getColMethod.asParam() + "\"")
     r.addCommand("colDistance <- \"" + algorithm.getColDistance.asParam() + "\"")
 
-    logger.info(s"Row clustering: ${algorithm.getRowMethod.asParam()}, ${algorithm.getRowDistance.asParam()}")
-    logger.info(s"Col clustering: ${algorithm.getColMethod.asParam()}, ${algorithm.getColDistance.asParam()}")
     r.addCommand("getClusterAsJSON(data, r, c, rowMethod, rowDistance, colMethod, colDistance)")
 
     r.exec() match {
-      case Some(x) => logger.info("Finish clustering."); logger.info(x.asString()); x.asString()
-      case None => logger.severe("Clustering failed."); ""
+      case Some(x) => x.asString()
+      case None => ""
     }
   }
 }
