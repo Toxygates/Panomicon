@@ -29,9 +29,6 @@ import t.common.shared.SharedUtils;
 
 /**
  * A way of grouping microarray samples. Unique colors for each group can be generated.
- * 
- * @author johan
- *
  * @param <S>
  */
 @SuppressWarnings("serial")

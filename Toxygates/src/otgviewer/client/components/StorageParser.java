@@ -28,12 +28,12 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import otgviewer.shared.Group;
-import otgviewer.shared.OTGColumn;
 import t.common.shared.DataSchema;
 import t.common.shared.ItemList;
 import t.common.shared.Packable;
 import t.common.shared.SharedUtils;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.SampleColumn;
 
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Window;
@@ -74,7 +74,7 @@ public class StorageParser {
 		storage.removeItem(prefix + "." + key);
 	}
 	
-	public static String packColumns(Collection<? extends OTGColumn> columns) {
+	public static String packColumns(Collection<? extends SampleColumn> columns) {
 		return packPackableList(columns, "###");
 	}
 

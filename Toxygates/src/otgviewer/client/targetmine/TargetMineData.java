@@ -21,12 +21,9 @@ package otgviewer.client.targetmine;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-
-import javax.annotation.Nullable;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
@@ -91,7 +88,8 @@ public class TargetMineData {
       @Override
       protected void userProceed(String user, String pass, boolean replace) {
         super.userProceed();
-        doExport(user, pass, pickProbeLists(parent.chosenItemLists, null), replace);
+        doExport(user, pass, 
+            StringList.pickProbeLists(parent.chosenItemLists, null), replace);
       }
 
     };
@@ -118,9 +116,9 @@ public class TargetMineData {
       protected void userProceed(String user, String pass, boolean replace) {
         super.userProceed();
         String chosen = parent.chosenGeneSet;
-        if (chosen != null && chosen != "") {          
+        if (chosen != null && !chosen.equals("")) {          
           doEnrich(user, pass, 
-              pickProbeLists(parent.chosenItemLists, chosen).get(0));
+              StringList.pickProbeLists(parent.chosenItemLists, chosen).get(0));
         } else {
           Window.alert("Please define and select a probe list first.");
         }        
@@ -171,17 +169,6 @@ public class TargetMineData {
         StringArrayTable.displayDialog(best.toArray(new String[0][0]), "Best enrichment results", 800, 400);            
       }
     });
-  }
-
-  List<StringList> pickProbeLists(List<? extends ItemList> from, @Nullable String title) {
-    List<StringList> r = new LinkedList<StringList>();
-    for (ItemList l : from) {
-      if (l.type().equals("probes") && 
-          (title == null || l.name().equals(title))) {
-        r.add((StringList) l);
-      }
-    }
-    return r;
   }
 
   List<ItemList> mergeLists(List<? extends ItemList> into, List<? extends ItemList> from,

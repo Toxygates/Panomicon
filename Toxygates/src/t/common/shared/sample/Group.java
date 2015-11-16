@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.shared;
+package t.common.shared.sample;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,23 +24,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import t.common.shared.DataSchema;
-import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleGroup;
 import t.viewer.shared.Unit;
 
 /**
- * A group of barcodes. Values will be computed as an average.
- * 
- * @author johan
- *
+ * A group of barcodes. 
  */
 @SuppressWarnings("serial")
-public class Group extends SampleGroup<Sample> implements OTGColumn {
+public class Group extends SampleGroup<Sample> implements SampleColumn {
 
   // TODO lift units up
   protected Unit[] _units;
@@ -130,17 +122,6 @@ public class Group extends SampleGroup<Sample> implements OTGColumn {
     } else {
       return r;
     }
-  }
-
-  public Set<String> getMajors(DataSchema schema) {
-    return getMajors((SampleClass) null);
-  }
-
-  // TODO is this method necessary?
-  public Set<String> getMajors(@Nullable SampleClass sc) {
-    List<Sample> sList = Arrays.asList(_samples);
-    List<Sample> filtered = (sc != null) ? sc.filter(sList) : sList;
-    return SampleClass.collectInner(filtered, schema.majorParameter());
   }
 
   // See SampleGroup for the packing method

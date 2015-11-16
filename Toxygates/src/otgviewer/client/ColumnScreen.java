@@ -33,11 +33,11 @@ import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.components.groupdef.GroupInspector;
 import otgviewer.client.components.ranking.CompoundRanker;
-import otgviewer.shared.Group;
-import otgviewer.shared.OTGColumn;
 import t.common.shared.DataSchema;
 import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.SampleColumn;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SparqlServiceAsync;
 import static t.common.client.Utils.makeScrolled;
@@ -209,7 +209,7 @@ public class ColumnScreen extends Screen {
 		if (visible) {
 			try {
 				List<Group> ics = loadColumns(p, schema(), "inactiveColumns", 
-						new ArrayList<OTGColumn>(gi.existingGroupsTable().inverseSelection()));
+						new ArrayList<SampleColumn>(gi.existingGroupsTable().inverseSelection()));
 				if (ics != null && ics.size() > 0) {
 					logger.info("Unpacked i. columns: " + ics.get(0) + ": " + ics.get(0).getSamples()[0] + " ... ");
 					gi.inactiveColumnsChanged(ics);

@@ -28,13 +28,13 @@ import java.util.Set;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
-import otgviewer.shared.Group;
-import otgviewer.shared.OTGColumn;
 import otgviewer.shared.Pathology;
 import t.common.client.ImageClickCell;
 import t.common.shared.GroupUtils;
 import t.common.shared.SampleClass;
+import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
+import t.common.shared.sample.SampleColumn;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
@@ -98,7 +98,7 @@ public class PathologyScreen extends Screen {
 		addToolbar(tools, 30);
 	}
 
-	public Widget content() {
+	public Widget content() { 
 		
 		sp.setWidget(pathologyTable);
 		pathologyTable.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
@@ -185,7 +185,7 @@ public class PathologyScreen extends Screen {
 		if (visible && (lastClass == null || !lastClass.equals(chosenSampleClass)
 				|| lastColumns == null || !chosenColumns.equals(lastColumns))) {
 			pathologies.clear();
-			for (OTGColumn c : chosenColumns) {
+			for (SampleColumn c : chosenColumns) {
 				sparqlService.pathologies(c, new AsyncCallback<Pathology[]>() {
 					public void onFailure(Throwable caught) {
 						Window.alert("Unable to get pathologies.");

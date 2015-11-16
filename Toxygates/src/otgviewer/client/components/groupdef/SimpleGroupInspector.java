@@ -24,7 +24,7 @@ import com.google.gwt.user.cellview.client.TextColumn;
 
 import otgviewer.client.CompoundSelector;
 import otgviewer.client.components.Screen;
-import otgviewer.shared.Group;
+import t.common.shared.sample.Group;
 
 public class SimpleGroupInspector extends GroupInspector {
 

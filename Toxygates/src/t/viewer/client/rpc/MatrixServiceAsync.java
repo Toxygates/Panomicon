@@ -25,11 +25,11 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import otgviewer.shared.FullMatrix;
-import otgviewer.shared.Group;
 import otgviewer.shared.ManagedMatrixInfo;
 import otgviewer.shared.Synthetic;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
+import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.common.shared.userclustering.Algorithm;
 import t.viewer.shared.table.SortKey;

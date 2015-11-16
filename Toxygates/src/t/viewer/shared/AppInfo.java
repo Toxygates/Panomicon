@@ -25,10 +25,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import otgviewer.shared.Group;
 import t.common.shared.Dataset;
 import t.common.shared.StringList;
 import t.common.shared.clustering.ProbeClustering;
+import t.common.shared.sample.Group;
 
 /**
  * Container for various client side application parameters.

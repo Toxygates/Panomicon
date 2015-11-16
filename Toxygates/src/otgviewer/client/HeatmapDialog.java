@@ -159,7 +159,7 @@ public class HeatmapDialog extends DataListenerWidget {
 
       public void handleFailure(Throwable caught) {
         logger.severe(caught.getMessage());
-        Window.alert("Fail to generate heat map data.");
+        Window.alert("Failed to generate heat map data.");
       }
     };
   }

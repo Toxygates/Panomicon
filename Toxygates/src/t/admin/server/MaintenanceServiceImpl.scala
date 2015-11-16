@@ -54,7 +54,7 @@ import t.common.shared.Dataset
 import t.sparql.Datasets
 import t.viewer.server.rpc.TServiceServlet
 import t.common.shared.Dataset
-import t.common.server.SharedDatasets
+import t.viewer.server.SharedDatasets
 import t.common.shared.ManagedItem
 import t.Tasklet
 import t.sparql.SampleFilter

@@ -26,9 +26,9 @@ import java.util.List;
 import java.util.Map;
 
 import otgviewer.client.components.groupdef.GroupInspector;
-import otgviewer.shared.Group;
 import t.common.shared.DataSchema;
 import t.common.shared.Pair;
+import t.common.shared.sample.Group;
 import t.viewer.shared.Unit;
 
 public class GroupMaker {

@@ -27,8 +27,8 @@ import otgviewer.client.charts.ChartSample;
 import otgviewer.client.charts.DataSource;
 import otgviewer.client.charts.Factory;
 import otgviewer.client.components.Screen;
-import otgviewer.shared.Group;
 import t.common.shared.ValueType;
+import t.common.shared.sample.Group;
 
 public class GVizFactory extends Factory<GDTData, GDTDataset> {
 

@@ -23,7 +23,6 @@ package otgviewer.server
 import java.util.logging.Logger
 import scala.collection.JavaConversions._
 import otgviewer.shared.DBUnavailableException
-import otgviewer.shared.Group
 import otgviewer.shared.ManagedMatrixInfo
 import otgviewer.shared.Synthetic
 import t.Context
@@ -38,7 +37,7 @@ import t.platform.OrthologMapping
 import t.viewer.server.Platforms
 import t.common.shared.AType
 import t.viewer.shared.table.SortKey
-import t.common.shared.sample.ExprMatrix
+import t.common.shared.sample._
 import t.viewer.server.EVArray
 import t.common.shared.sample.ExpressionValue
 

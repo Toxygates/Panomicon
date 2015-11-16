@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.common.server
+package t.viewer.server
 
 import t.sparql.Datasets
 import t.common.shared.Dataset

@@ -27,7 +27,7 @@ import org.rosuda.REngine.Rserve.RserveException
 import otgviewer.server.R
 import t.viewer.server.Configuration
 import java.util.logging.Logger
-import otgviewer.shared.Group
+import t.common.shared.sample._
 import java.io.File
 import javax.servlet.ServletContext
 import t.common.shared.userclustering.Algorithm
@@ -37,51 +37,8 @@ class MatrixServiceImpl extends t.viewer.server.rpc.MatrixServiceImpl
 
   private val logger = Logger.getLogger("MatrixService")
 
-  var userDir: String = null
-
   override def localInit(config: Configuration) {
     super.localInit(config)
-    this.userDir = this.getServletContext.getRealPath("/WEB-INF/")
-  }
-
-  def prepareHeatmap(groups: JList[Group], chosenProbes: Array[String],
-    valueType: ValueType, algorithm: Algorithm): String = {
-
-    loadMatrix(groups, chosenProbes, valueType)
-
-    val mm = getSessionData.matrix
-    var mat = mm.current
-    var info = mm.info
-
-    //TODO shared logic with e.g. insertAnnotations, extract
-    val rowNames = mat.asRows.map(_.getAtomicProbes.mkString("/"))
-    val columns = mat.sortedColumnMap.filter(x => !info.isPValueColumn(x._2))
-    val colNames = columns.map(_._1)
-    val values = columns.map(x => mat.data.map(_.map(asScala(_).value)).map { _(x._2) })
-
-    clustering(values.flatten, rowNames, colNames, algorithm)
-  }
-
-  @throws(classOf[RserveException])
-  def clustering(data: Seq[Double], rowName: Seq[String], colName: Seq[String], algorithm: Algorithm = new Algorithm()) = {
-    assert(data.length == rowName.length * colName.length)
-
-    val r = new R
-    r.addCommand(s"source('$userDir/R/InCHlibUtils.R')")
-    r.addCommand(s"data <- c(${data.mkString(", ")})")
-    r.addCommand(s"r <- c(${rowName.map { "\"" + _ + "\"" }.mkString(", ")})")
-    r.addCommand(s"c <- c(${colName.map { "\"" + _ + "\"" }.mkString(", ")})")
-    r.addCommand("rowMethod <- \"" + algorithm.getRowMethod.asParam() + "\"")
-    r.addCommand("rowDistance <- \"" + algorithm.getRowDistance.asParam() + "\"")
-    r.addCommand("colMethod <- \"" + algorithm.getColMethod.asParam() + "\"")
-    r.addCommand("colDistance <- \"" + algorithm.getColDistance.asParam() + "\"")
-    
-    r.addCommand("getClusterAsJSON(data, r, c, rowMethod, rowDistance, colMethod, colDistance)")
-
-    r.exec() match {
-      case Some(x) => logger.info("Finish clustering."); logger.info(x.asString()); x.asString()
-      case None => logger.severe("Fail clustering."); ""
-    }
   }
 
 }

@@ -33,8 +33,8 @@ import otgviewer.client.components.groupdef.TreatedControlGroupInspector;
 import otgviewer.client.components.groupdef.TreatedControlSelTDGrid;
 import otgviewer.client.components.ranking.CompoundRanker;
 import otgviewer.client.components.ranking.SimpleCompoundRanker;
-import otgviewer.shared.Group;
 import t.common.shared.DataSchema;
+import t.common.shared.sample.Group;
 
 
 /**
