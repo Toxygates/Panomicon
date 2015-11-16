@@ -27,6 +27,9 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import t.common.shared.sample.Group;
+import t.common.shared.sample.Sample;
+
 /**
  * Information about a ManagedMatrix that the server maintains on behalf of the client. 
  * The main purpose is to track information about columns in a matrix.
@@ -42,7 +45,7 @@ public class ManagedMatrixInfo implements Serializable {
 	private List<Double> columnFilters = new ArrayList<Double>();
 	private List<String> platforms = new ArrayList<String>();
 	private List<Boolean> isPValueColumn = new ArrayList<Boolean>();
-	private List<OTGSample[]> samples = new ArrayList<OTGSample[]>();
+	private List<Sample[]> samples = new ArrayList<Sample[]>();
 	
 	public ManagedMatrixInfo() { }
 		
@@ -62,7 +65,7 @@ public class ManagedMatrixInfo implements Serializable {
 	public void addColumn(boolean synthetic, String name, 
 			String hint, boolean isUpperFiltering,
 			Group baseGroup, boolean isPValue,
-			OTGSample[] samples) {
+			Sample[] samples) {
 		if (synthetic) {
 			numSynthetics++;
 		} else {
@@ -138,7 +141,7 @@ public class ManagedMatrixInfo implements Serializable {
 	 * @param column Column index. Must be 0 <= i <= numDataColumns.
 	 * @return
 	 */
-	public OTGSample[] samples(int column) {
+	public Sample[] samples(int column) {
 	  return samples.get(column);
 	}
 	

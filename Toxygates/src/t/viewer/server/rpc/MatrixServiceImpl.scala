@@ -34,7 +34,6 @@ import otgviewer.server.rpc.Conversions
 import otgviewer.server.rpc.Conversions.asScala
 import otgviewer.shared.DBUnavailableException
 import otgviewer.shared.FullMatrix
-import otgviewer.shared.Group
 import otgviewer.shared.ManagedMatrixInfo
 import otgviewer.shared.NoDataLoadedException
 import otgviewer.shared.Synthetic
@@ -45,8 +44,7 @@ import t.common.shared.DataSchema
 import t.common.shared.ValueType
 import t.common.shared.probe.MedianValueMapper
 import t.common.shared.probe.OrthologProbeMapper
-import t.common.shared.sample.ExpressionRow
-import t.common.shared.sample.ExpressionValue
+import t.common.shared.sample._
 import t.db.MatrixContext
 import t.db.MatrixDBReader
 import t.db.kyotocabinet.KCExtMatrixDB
@@ -63,9 +61,13 @@ import t.viewer.shared.table.SortKey
 import t.common.server.ScalaUtils
 import t.common.shared.PerfTimer
 import java.util.logging.Logger
-import otgviewer.shared.OTGSample
+import t.common.shared.sample.Sample
 import otgviewer.server.MatrixController
 import javax.annotation.Nullable
+import otgviewer.server.R
+import org.rosuda.REngine.Rserve.RserveException
+import t.common.shared.userclustering.Algorithm
+import t.common.server.userclustering.RClustering
 
 object MatrixServiceImpl {
 
@@ -95,11 +97,13 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   private def probes = context.probes
   private var config: Configuration = _
   private val logger = Logger.getLogger("MatrixService")
+  private var userDir: String = null
 
   // Useful for testing
   override def localInit(config: Configuration) {
     super.localInit(config)
     this.config = config
+    this.userDir = this.getServletContext.getRealPath("/WEB-INF/")
     mcontext = context.matrix
   }
 
@@ -125,7 +129,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     getThreadLocalRequest().getSession().setAttribute("matrix", m)
 
   def identifiersToProbes(identifiers: Array[String], precise: Boolean,
-    titlePatternMatch: Boolean, samples: JList[OTGSample]): Array[String] = {
+    titlePatternMatch: Boolean, samples: JList[Sample]): Array[String] = {
     val ps = if (titlePatternMatch) {
       probes.forTitlePatterns(identifiers)
     } else {
@@ -141,7 +145,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   }
 
   // TODO Shared logic with SparqlService
-  def filterProbesByGroup(ps: Array[String], samples: JList[OTGSample]): Array[String] = {
+  def filterProbesByGroup(ps: Array[String], samples: JList[Sample]): Array[String] = {
     val platforms: Set[String] = samples.map(x => x.get("platform_id")).toSet
     val lookup = probes.platformsAndProbes
     val acceptProbes = platforms.flatMap(p => lookup(p))
@@ -363,4 +367,24 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     Feedback.send(name, email, feedback, state, config.feedbackReceivers,
       config.feedbackFromAddress, context.config.appName)
   }
+
+  def prepareHeatmap(groups: JList[Group], chosenProbes: Array[String],
+    valueType: ValueType, algorithm: Algorithm): String = {
+//
+//    loadMatrix(groups, chosenProbes, valueType)
+
+    val mm = getSessionData.matrix
+    var mat = mm.current
+    var info = mm.info
+
+    //TODO shared logic with e.g. insertAnnotations, extract
+    val rowNames = mat.asRows.map(_.getAtomicProbes.mkString("/"))
+    val columns = mat.sortedColumnMap.filter(x => !info.isPValueColumn(x._2))
+    val colNames = columns.map(_._1)
+    val values = mat.selectColumns(columns.map(_._2)).toRowVectors.map(r => r.map(_.value))
+
+    val clust = new RClustering(userDir)
+    clust.clustering(values.flatten, rowNames, colNames, algorithm)
+  }
+
 }

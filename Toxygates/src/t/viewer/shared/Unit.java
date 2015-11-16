@@ -24,9 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import otgviewer.shared.OTGSample;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
+import t.common.shared.sample.Sample;
 
 /**
  * A sample class with associated samples.
@@ -36,46 +36,46 @@ import t.common.shared.SampleClass;
 @SuppressWarnings("serial")
 public class Unit extends SampleClass {
 
-  private OTGSample[] samples;
+  private Sample[] samples;
 
   public Unit() {}
 
-  public Unit(SampleClass sc, OTGSample[] samples) {
+  public Unit(SampleClass sc, Sample[] samples) {
     super(sc.getMap());
     this.samples = samples;
   }
 
-  public OTGSample[] getSamples() {
+  public Sample[] getSamples() {
     return samples;
   }
 
-  public static Unit[] formUnits(DataSchema schema, OTGSample[] samples) {
+  public static Unit[] formUnits(DataSchema schema, Sample[] samples) {
     if (samples.length == 0) {
       return new Unit[] {};
     }
-    Map<SampleClass, List<OTGSample>> groups = new HashMap<SampleClass, List<OTGSample>>();
-    for (OTGSample os : samples) {
+    Map<SampleClass, List<Sample>> groups = new HashMap<SampleClass, List<Sample>>();
+    for (Sample os : samples) {
       SampleClass unit = os.sampleClass().asUnit(schema);
       if (!groups.containsKey(unit)) {
-        groups.put(unit, new ArrayList<OTGSample>());
+        groups.put(unit, new ArrayList<Sample>());
       }
       groups.get(unit).add(os);
     }
 
     List<Unit> r = new ArrayList<Unit>();
     for (SampleClass u : groups.keySet()) {
-      Unit uu = new Unit(u, groups.get(u).toArray(new OTGSample[] {}));
+      Unit uu = new Unit(u, groups.get(u).toArray(new Sample[] {}));
       r.add(uu);
     }
     return r.toArray(new Unit[] {});
   }
 
-  public static OTGSample[] collectBarcodes(Unit[] units) {
-    List<OTGSample> r = new ArrayList<OTGSample>();
+  public static Sample[] collectBarcodes(Unit[] units) {
+    List<Sample> r = new ArrayList<Sample>();
     for (Unit b : units) {
       Collections.addAll(r, b.getSamples());
     }
-    return r.toArray(new OTGSample[0]);
+    return r.toArray(new Sample[0]);
   }
 
   public static boolean contains(Unit[] units, String param, String value) {

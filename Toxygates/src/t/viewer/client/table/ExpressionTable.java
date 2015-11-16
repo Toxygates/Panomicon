@@ -39,11 +39,9 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import t.viewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.FilterEditor;
-import otgviewer.shared.Group;
 import t.common.client.ImageClickCell;
 import t.common.shared.GroupUtils;
 import otgviewer.shared.ManagedMatrixInfo;
-import otgviewer.shared.OTGSample;
 import otgviewer.shared.Synthetic;
 import t.common.shared.AType;
 import t.common.shared.DataSchema;
@@ -53,6 +51,8 @@ import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
 import t.common.shared.sample.DataColumn;
 import t.common.shared.sample.ExpressionRow;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.Sample;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.table.SortKey;
 
@@ -148,7 +148,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   private boolean loadedData = false;
   private ManagedMatrixInfo matrixInfo = null;
 
-  private OTGSample[] chartBarcodes = null;
+  private Sample[] chartBarcodes = null;
 
   private DialogBox filterDialog = null;
 
@@ -832,7 +832,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
               Utils.displayInPopup("Charts", cg, true, DialogPosition.Side);
             }
 
-            public void acceptBarcodes(OTGSample[] bcs) {
+            public void acceptBarcodes(Sample[] bcs) {
               chartBarcodes = bcs;
             }
           });

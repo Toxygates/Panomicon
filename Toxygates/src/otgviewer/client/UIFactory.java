@@ -30,8 +30,8 @@ import otgviewer.client.components.groupdef.GroupInspector;
 import otgviewer.client.components.groupdef.SelectionTDGrid;
 import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
 import otgviewer.client.components.ranking.CompoundRanker;
-import otgviewer.shared.Group;
 import t.common.shared.DataSchema;
+import t.common.shared.sample.Group;
 
 public interface UIFactory {
 

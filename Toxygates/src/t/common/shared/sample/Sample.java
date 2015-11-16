@@ -19,65 +19,79 @@
  */
 
 package t.common.shared.sample;
+
 import java.io.Serializable;
 
-import javax.annotation.Nullable;
-
+import t.common.shared.DataSchema;
 import t.common.shared.HasClass;
 import t.common.shared.Packable;
 import t.common.shared.SampleClass;
 
-/**
- * A microarray sample with a unique identifier that can be represented as a string.
-
- * TODO make non-abstract
- */
 @SuppressWarnings("serial")
-abstract public class Sample implements Packable, Serializable, HasClass {
+public class Sample implements Packable, Serializable, HasClass {
 
-	protected SampleClass sampleClass;
-	protected @Nullable String controlGroup;
+	public Sample() { }
 	
-	public Sample() {}
-	
-	public Sample(String _id, SampleClass _sampleClass, 
-			@Nullable String controlGroup) {
-		id = _id;
-		sampleClass = _sampleClass;
+	public Sample(String _code, SampleClass _sampleClass) {
+	   id = _code;
+       sampleClass = _sampleClass;	
 	}
-	
-	private String id;	
-	public String id() { return id; }
-	
-	@Override
-	public int hashCode() {
-		return id.hashCode();
-	}
-	
-	/**
-	 * TODO change to a subclass-safe equals with canEqual etc
-	 */
-	@Override
-	public boolean equals(Object other) {
-		if (other instanceof Sample) {
-			Sample that = (Sample) other;
-			return that.canEqual(this) && id.equals(that.id());
-		}
-		return false;
-	}
-	
-	protected boolean canEqual(Sample other) {
-		return other instanceof Sample;
-	}
-	
-	public SampleClass sampleClass() { return sampleClass; }
-	
-	abstract public String pack();
-	
-	@Nullable String controlGroup() { return controlGroup; }
+
+    protected SampleClass sampleClass;
+    
+    private String id;  
+    public String id() { return id; }
+    
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+    
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof Sample) {
+            Sample that = (Sample) other;
+            return id.equals(that.id());
+        }
+        return false;
+    }
+    
+    public SampleClass sampleClass() { return sampleClass; }
 
     public String get(String parameter) {
         return sampleClass.get(parameter);
     }
-    
+	
+	public String getTitle(DataSchema schema) {
+		return getShortTitle(schema) + " (" + id() + ")";
+	}
+	
+	public String getShortTitle(DataSchema schema) {
+		return get(schema.mediumParameter()) + "/" + get(schema.minorParameter());
+	}
+
+	public String toString() {
+		return sampleClass.toString();
+	}
+	
+	public static Sample unpack(String s) {
+		String[] spl = s.split("\\$\\$\\$");
+		String v = spl[0];
+		if (!v.equals("Barcode_v3")) {
+		  //Incorrect/legacy format - TODO: warn here
+		   return null;
+		} 
+		String id = spl[1];
+		SampleClass sc = SampleClass.unpack(spl[2]);
+		return new Sample(id, sc);		
+	}
+	
+	public String pack() {
+		final String sep = "$$$";
+		StringBuilder sb = new StringBuilder();
+		sb.append("Barcode_v3").append(sep);
+		sb.append(id()).append(sep);
+		sb.append(sampleClass.pack()).append(sep);
+		return sb.toString();
+	}
 }

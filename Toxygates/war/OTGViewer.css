@@ -1,4 +1,3 @@
-
 .toxygatesTitle {
 	font-family: 'Play', sans-serif;
 	font-size: 36pt;
@@ -132,6 +131,7 @@ exprGrid {
 
 .highlightedRow {
 	font-style: italic;	
+	font-weight: bold;	
 }
 
 .dataColumn {

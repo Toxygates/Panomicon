@@ -139,13 +139,22 @@ toMatrix <- function(data, rowNames, colNames, byrow=F) {
 #' @param data        a vector object containing the data values
 #' @param rownames    a vector object containing the row names
 #' @param colNames    a vector object containing the column names
+#' @param rowMethod   a string object that gives which method to be used for row clustering.
+#'                    This should be one of "ward.D", "ward.D2", "single", "complete", 
+#'                                          "average", "mcquitty", "median" or "centroid".
+#' @param rowDistance a string object that gives which distance to be used for row clustering.
+#'                    This should be one of "euclidean", "maximum", "manhattan", "canberra", 
+#'                                          "binary", "pearson", "abspearson", "correlation", 
+#'                                          "abscorrelation", "spearman" or "kendall".
+#' @param colMethod   a string object that gives which method to be used for column clustering.
+#' @param colDistance a string object that gives which distance to be used for column clustering.
 #'
-getClusterAsJSON <- function(data, rowNames, colNames) {
+getClusterAsJSON <- function(data, rowNames, colNames, rowMethod, rowDistance, colMethod, colDistance) {
   mat <- toMatrix(data, rowNames, colNames)
-  d <- Dist(mat, method="correlation")
-  d.col <- Dist(t(mat), method="correlation")
-  hc <- hclust(d, method="ward.D")
-  hc.col <- hclust(d.col, method="ward.D")
+  d <- Dist(mat, method=rowDistance)
+  d.col <- Dist(t(mat), method=colDistance)
+  hc <- hclust(d, method=rowMethod)
+  hc.col <- hclust(d.col, method=colMethod)
   inch <- InCHlib(hc, hc.col, data.frame(mat))
   return(toJSON(inch))
 }

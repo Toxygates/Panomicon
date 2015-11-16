@@ -36,9 +36,6 @@ import otgviewer.client.components.GroupMaker;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.StorageParser;
-import otgviewer.shared.Group;
-import otgviewer.shared.OTGColumn;
-import otgviewer.shared.OTGSample;
 import t.common.client.components.SelectionTable;
 import t.common.shared.DataSchema;
 import t.common.shared.Dataset;
@@ -46,6 +43,9 @@ import t.common.shared.Pair;
 import static t.common.client.Utils.makeScrolled;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.Sample;
+import t.common.shared.sample.SampleColumn;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.Unit;
@@ -483,7 +483,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
 	public void storeColumns(StorageParser p) {
 		super.storeColumns(p);			
 		storeColumns(p, "inactiveColumns", 
-				new ArrayList<OTGColumn>(existingGroupsTable.inverseSelection()));
+				new ArrayList<SampleColumn>(existingGroupsTable.inverseSelection()));
 	}
 	
 	public Map<String, Group> getGroups() {
@@ -526,7 +526,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
 	private void loadTimeWarningIfNeeded() {
 		int totalSize = 0;		
 		for (Group g : existingGroupsTable.getSelection()) {			
-			for (OTGSample b: g.samples()) {
+			for (Sample b: g.samples()) {
 				if (!schema.isSelectionControl(b.sampleClass())) {				
 					totalSize += 1;
 				}
@@ -567,7 +567,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
 		setHeading("editing " + name);
 		
 		List<String> compounds = new ArrayList<String>(
-				groups.get(name).getMajors(chosenSampleClass));
+				SampleClass.getMajors(schema, groups.get(name), chosenSampleClass));
 		
 		compoundSel.setSelection(compounds);		
 		txtbxGroup.setValue(name);

@@ -31,8 +31,6 @@ import java.util.logging.Logger;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.FullMatrix;
-import otgviewer.shared.Group;
-import otgviewer.shared.OTGSample;
 import otgviewer.shared.Series;
 import t.common.shared.DataSchema;
 import t.common.shared.HasClass;
@@ -42,6 +40,8 @@ import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.ExpressionValue;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.Sample;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.Unit;
 
@@ -147,9 +147,9 @@ abstract public class DataSource {
 	 * An expression row source with a fixed dataset.
 	 */
 	static class ExpressionRowSource extends DataSource {
-		protected OTGSample[] samples;
+		protected Sample[] samples;
 		
-		ExpressionRowSource(DataSchema schema, OTGSample[] samples, 
+		ExpressionRowSource(DataSchema schema, Sample[] samples, 
 				List<ExpressionRow> rows) {
 			super(schema);
 			this.samples = samples;			
@@ -157,7 +157,7 @@ abstract public class DataSource {
 			initParams(Arrays.asList(samples), true);
 		}
 		
-		protected void addSamplesFromBarcodes(OTGSample[] samples, List<ExpressionRow> rows) {
+		protected void addSamplesFromBarcodes(Sample[] samples, List<ExpressionRow> rows) {
 			logger.info("Add samples from " + samples.length + " samples and " + 
 					rows.size() + " rows");
 			for (int i = 0; i < samples.length; ++i) {
@@ -182,7 +182,7 @@ abstract public class DataSource {
 		protected Screen screen;
 		
 		DynamicExpressionRowSource(DataSchema schema, String[] probes, 
-				ValueType vt, OTGSample[] barcodes, Screen screen) {
+				ValueType vt, Sample[] barcodes, Screen screen) {
 			super(schema, barcodes, new ArrayList<ExpressionRow>());			
 			this.probes = probes;
 			this.type = vt;		
@@ -194,8 +194,8 @@ abstract public class DataSource {
 				final SampleAcceptor acceptor) {
 			logger.info("Dynamic source: load for " + smf);
 			
-			final List<OTGSample> useSamples = new ArrayList<OTGSample>();
-			for (OTGSample b: samples) {
+			final List<Sample> useSamples = new ArrayList<Sample>();
+			for (Sample b: samples) {
 				if (smf.accepts(b)) {				
 					useSamples.add(b);
 				}
@@ -203,7 +203,7 @@ abstract public class DataSource {
 			
 			chartSamples.clear();
 			Group g = new Group(schema, "temporary", 
-					useSamples.toArray(new OTGSample[0]));
+					useSamples.toArray(new Sample[0]));
 			List<Group> gs = new ArrayList<Group>();
 			gs.add(g);
 			matrixService.getFullData(gs, 
@@ -212,7 +212,7 @@ abstract public class DataSource {
 
 				@Override
 				public void handleSuccess(final FullMatrix mat) {
-					addSamplesFromBarcodes(useSamples.toArray(new OTGSample[0]), mat.rows());					
+					addSamplesFromBarcodes(useSamples.toArray(new Sample[0]), mat.rows());					
 					getLoadedSamples(smf, policy, acceptor);
 				}					
 			});

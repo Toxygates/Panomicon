@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.shared;
+package t.common.shared.sample;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,29 +24,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import t.common.shared.DataSchema;
-import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
-import t.common.shared.sample.SampleGroup;
 import t.viewer.shared.Unit;
 
 /**
- * A group of barcodes. Values will be computed as an average.
- * 
- * @author johan
- *
+ * A group of barcodes. 
  */
 @SuppressWarnings("serial")
-public class Group extends SampleGroup<OTGSample> implements OTGColumn {
+public class Group extends SampleGroup<Sample> implements SampleColumn {
 
   // TODO lift units up
   protected Unit[] _units;
 
   public Group() {}
 
-  public Group(DataSchema schema, String name, OTGSample[] barcodes, String color) {
+  public Group(DataSchema schema, String name, Sample[] barcodes, String color) {
     super(schema, name, barcodes, color);
     // TODO unit formation will not work if the barcodes have different sample classes
     // - fix
@@ -57,7 +50,7 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
     }
   }
 
-  public Group(DataSchema schema, String name, OTGSample[] barcodes) {
+  public Group(DataSchema schema, String name, Sample[] barcodes) {
     super(schema, name, barcodes);
     // TODO unit formation will not work if the barcodes have different sample classes
     // - fix
@@ -81,28 +74,28 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
     return name;
   }
 
-  public OTGSample[] getSamples() {
+  public Sample[] getSamples() {
     return _samples;
   }
 
-  public OTGSample[] getTreatedSamples() {
-    List<OTGSample> r = new ArrayList<OTGSample>();
+  public Sample[] getTreatedSamples() {
+    List<Sample> r = new ArrayList<Sample>();
     for (Unit u : _units) {
       if (!schema.isSelectionControl(u)) {
         r.addAll(Arrays.asList(u.getSamples()));
       }
     }
-    return r.toArray(new OTGSample[0]);
+    return r.toArray(new Sample[0]);
   }
 
-  public OTGSample[] getControlSamples() {
-    List<OTGSample> r = new ArrayList<OTGSample>();
+  public Sample[] getControlSamples() {
+    List<Sample> r = new ArrayList<Sample>();
     for (Unit u : _units) {
       if (schema.isSelectionControl(u)) {
         r.addAll(Arrays.asList(u.getSamples()));
       }
     }
-    return r.toArray(new OTGSample[0]);
+    return r.toArray(new Sample[0]);
   }
 
   public Unit[] getUnits() {
@@ -131,17 +124,6 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
     }
   }
 
-  public Set<String> getMajors(DataSchema schema) {
-    return getMajors((SampleClass) null);
-  }
-
-  // TODO is this method necessary?
-  public Set<String> getMajors(@Nullable SampleClass sc) {
-    List<OTGSample> sList = Arrays.asList(_samples);
-    List<OTGSample> filtered = (sc != null) ? sc.filter(sList) : sList;
-    return SampleClass.collectInner(filtered, schema.majorParameter());
-  }
-
   // See SampleGroup for the packing method
   // TODO lift up the unpacking code to have
   // the mirror images in the same class, if possible
@@ -162,9 +144,9 @@ public class Group extends SampleGroup<OTGSample> implements OTGColumn {
 
 
     String[] s2 = barcodes.split("\\^\\^\\^");
-    OTGSample[] bcs = new OTGSample[s2.length];
+    Sample[] bcs = new Sample[s2.length];
     for (int i = 0; i < s2.length; ++i) {
-      OTGSample b = OTGSample.unpack(s2[i]);
+      Sample b = Sample.unpack(s2[i]);
       bcs[i] = b;
     }
     // DataFilter useFilter = (bcs[0].getUnit().getOrgan() == null) ? filter : null;

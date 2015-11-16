@@ -22,8 +22,8 @@ package otgviewer.client.components;
 
 import java.util.List;
 
-import otgviewer.shared.Group;
 import t.common.shared.DataSchema;
+import t.common.shared.sample.Group;
 import t.viewer.client.Utils;
 
 import com.google.gwt.dom.client.Style.Unit;

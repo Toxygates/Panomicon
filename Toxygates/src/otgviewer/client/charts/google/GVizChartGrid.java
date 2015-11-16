@@ -25,7 +25,7 @@ import java.util.List;
 import otgviewer.client.charts.Factory;
 import otgviewer.client.charts.ChartGrid;
 import otgviewer.client.components.Screen;
-import otgviewer.shared.OTGSample;
+import t.common.shared.sample.Sample;
 
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.user.client.ui.Widget;
@@ -107,7 +107,7 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
 					int row = s.getRow();
 					String bc = dt.getProperty(row, col, "barcode");
 					if (bc != null) {
-						OTGSample b = OTGSample.unpack(bc);
+						Sample b = Sample.unpack(bc);
 						screen.displaySampleDetail(b);
 					}
 				}

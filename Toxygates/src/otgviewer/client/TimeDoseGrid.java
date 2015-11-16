@@ -28,11 +28,11 @@ import java.util.logging.Logger;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.shared.OTGSample;
 import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
+import t.common.shared.sample.Sample;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.Unit;
@@ -190,7 +190,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		});			
 	}
 	
-	protected String keyFor(OTGSample b) {
+	protected String keyFor(Sample b) {
 		//TODO efficiency
 		return b.sampleClass().tripleString(schema);		
 	}
@@ -307,7 +307,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 					sc.put(mediumParameter, mediumValues.get(d));
 					sc.put(minorParameter, minorValues.get(t));
 					sc.mergeDeferred(chosenSampleClass);
-					Unit unit = new Unit(sc, new OTGSample[] {});									
+					Unit unit = new Unit(sc, new Sample[] {});									
 					allUnits.add(new Pair<Unit, Unit>(unit, null)); 
 					hp.add(guiForUnit(unit));
 				}

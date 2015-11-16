@@ -24,10 +24,10 @@ import java.util.Arrays;
 
 import javax.annotation.Nullable;
 
-import otgviewer.shared.OTGSample;
 import t.common.shared.DataSchema;
 import t.common.shared.HasClass;
 import t.common.shared.SampleClass;
+import t.common.shared.sample.Sample;
 import t.viewer.shared.Unit;
 
 public class ChartSample implements HasClass {
@@ -36,12 +36,12 @@ public class ChartSample implements HasClass {
 	
 	final double value;
 	final char call;
-	final @Nullable OTGSample barcode; 
+	final @Nullable Sample barcode; 
 	final String probe;
 	String color = "grey";
 	
 	ChartSample(SampleClass sc, DataSchema schema,
-			double value, OTGSample barcode, String probe, char call) {
+			double value, Sample barcode, String probe, char call) {
 		
 		this.sc = sc.copyOnly(Arrays.asList(schema.chartParameters()));
 		this.schema = schema;
@@ -51,7 +51,7 @@ public class ChartSample implements HasClass {
 		this.call = call;						 
 	}
 
-	ChartSample(OTGSample sample, DataSchema schema,
+	ChartSample(Sample sample, DataSchema schema,
 			double value, String probe, char call) {
 		this(sample.sampleClass(), schema, value, sample, probe, call);					
 	}
@@ -64,7 +64,7 @@ public class ChartSample implements HasClass {
 	public DataSchema schema() { return schema; }	
 	public SampleClass sampleClass() { return sc; }	
 	public double value() { return value; } 
-	public OTGSample barcode() { return barcode; }
+	public Sample barcode() { return barcode; }
 	public char call() { return call; }
 	public String color() { return color; }
 	public String probe() { return probe; }

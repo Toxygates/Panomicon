@@ -31,19 +31,17 @@ import otgviewer.server.rpc.Conversions
 import otgviewer.server.rpc.Conversions.asJava
 import otgviewer.server.rpc.Conversions.asJavaSample
 import otgviewer.server.rpc.Conversions.convertPairs
-import otgviewer.shared.OTGColumn
-import otgviewer.shared.OTGSample
 import otgviewer.shared.Pathology
 import otgviewer.shared.TimeoutException
 import t.BaseConfig
 import t.TriplestoreConfig
-import t.common.server.SharedDatasets
 import t.common.shared.AType
 import t.common.shared.Dataset
 import t.common.shared.Pair
 import t.common.shared.SampleClass
 import t.common.shared.sample.Annotation
 import t.common.shared.sample.HasSamples
+import t.common.shared.sample.Sample
 import t.db.DefaultBio
 import t.platform.Probe
 import t.sparql._
@@ -60,6 +58,9 @@ import t.viewer.shared.Association
 import t.common.shared.StringList
 import t.viewer.shared.Unit
 import otg.db.OTGParameterSet
+import t.common.shared.sample.Sample
+import t.viewer.server.SharedDatasets
+import t.common.shared.sample.SampleColumn
 
 object SparqlServiceImpl {
   var inited = false
@@ -85,7 +86,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   import t.viewer.server.Conversions._
   import ScalaUtils._
 
-  type DataColumn = t.common.shared.sample.DataColumn[OTGSample]
+  type DataColumn = t.common.shared.sample.DataColumn[Sample]
 
   var instanceURI: Option[String] = None
 
@@ -191,25 +192,25 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       filter(x => !schema.isMajorParamSharedControl(x)).toArray
   }
 
-  def samplesById(ids: Array[String]): Array[OTGSample] =
+  def samplesById(ids: Array[String]): Array[Sample] =
     sampleStore.samples(Filter("", ""), "id",
         ids).map(asJavaSample(_)).toArray
 
   //TODO compound_name is a dummy parameter below
   @throws[TimeoutException]
-  def samples(sc: SampleClass): Array[OTGSample] = {
+  def samples(sc: SampleClass): Array[Sample] = {
     val ss = sampleStore.sampleQuery.constrain(scAsScala(sc).filterAll)()
     ss.map(asJavaSample).toArray
   }
 
   @throws[TimeoutException]
   def samples(sc: SampleClass, param: String,
-      paramValues: Array[String]): Array[OTGSample] =
+      paramValues: Array[String]): Array[Sample] =
     sampleStore.samples(sc.filterAll, param, paramValues).map(asJavaSample(_)).toArray
 
   @throws[TimeoutException]
   def samples(scs: Array[SampleClass], param: String,
-      paramValues: Array[String]): Array[OTGSample] =
+      paramValues: Array[String]): Array[Sample] =
         scs.flatMap(x => samples(x, param, paramValues)).distinct.toArray
 
   @throws[TimeoutException]
@@ -272,7 +273,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   //TODO this is not used currently
   @throws[TimeoutException]
-  def probes(columns: Array[OTGColumn]): Array[String] = {
+  def probes(columns: Array[SampleColumn]): Array[String] = {
     val samples = columns.flatMap(_.getSamples)
     val metadata = new TriplestoreMetadata(sampleStore)
     val usePlatforms = samples.map(s => metadata.parameter(
@@ -283,9 +284,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   //TODO move to OTG
   @throws[TimeoutException]
-  def pathologies(column: OTGColumn): Array[Pathology] = Array()
+  def pathologies(column: SampleColumn): Array[Pathology] = Array()
 
-  private def parametersToAnnotation(barcode: OTGSample,
+  private def parametersToAnnotation(barcode: Sample,
       ps: Iterable[(t.db.SampleParameter, Option[String])]): Annotation = {
      val params = ps.map(x => {
       var p = (x._1.humanReadable, x._2.getOrElse("N/A"))
@@ -296,14 +297,14 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   }
 
   @throws[TimeoutException]
-  def annotations(barcode: OTGSample): Annotation = {
+  def annotations(barcode: Sample): Annotation = {
     val params = sampleStore.parameterQuery(barcode.id)
     parametersToAnnotation(barcode, params)
   }
 
   //TODO get these from schema, etc.
   @throws[TimeoutException]
-  def annotations(column: HasSamples[OTGSample], importantOnly: Boolean = false): Array[Annotation] = {
+  def annotations(column: HasSamples[Sample], importantOnly: Boolean = false): Array[Annotation] = {
     val keys = if (importantOnly) {
       baseConfig.sampleParameters.previewDisplay
     } else {
@@ -342,7 +343,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   }
 
   @throws[TimeoutException]
-  def probesForPathway(sc: SampleClass, pathway: String, samples: JList[OTGSample]): Array[String] = {
+  def probesForPathway(sc: SampleClass, pathway: String, samples: JList[Sample]): Array[String] = {
     val pw = Pathway(null, pathway)
     val prs = probeStore.forPathway(b2rKegg, pw)
     val pmap = context.matrix.probeMap //TODO
@@ -372,7 +373,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   //TODO move to OTG
   @throws[TimeoutException]
-  def probesForGoTerm(goTerm: String, samples: JList[OTGSample]): Array[String] = {
+  def probesForGoTerm(goTerm: String, samples: JList[Sample]): Array[String] = {
     val pmap = context.matrix.probeMap
     val got = GOTerm("", goTerm)
 
@@ -449,7 +450,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       probeStore.probesForPartialSymbol(plat, partialName).map(_.identifier).toArray
   }
 
-  def filterProbesByGroup(probes: Array[String], samples: JList[OTGSample]): Array[String] = {
+  def filterProbesByGroup(probes: Array[String], samples: JList[Sample]): Array[String] = {
     val platforms: Set[String] = samples.map(x => x.get("platform_id")).toSet
     val lookup = probeStore.platformsAndProbes
     val acceptProbes = platforms.flatMap(p => lookup(p))

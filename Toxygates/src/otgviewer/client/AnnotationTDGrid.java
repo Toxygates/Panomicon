@@ -24,10 +24,10 @@ import java.util.List;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.shared.Group;
-import otgviewer.shared.OTGSample;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.Annotation;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.Sample;
 import t.viewer.shared.Unit;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -82,8 +82,8 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 		if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
 			SampleClass sc = chosenSampleClass.copy();
 			sc.put("compound_name", compounds.get(0));
-			sparqlService.samples(sc, new AsyncCallback<OTGSample[]>() {
-				public void onSuccess(OTGSample[] bcs) {
+			sparqlService.samples(sc, new AsyncCallback<Sample[]>() {
+				public void onSuccess(Sample[] bcs) {
 					
 					sparqlService.annotations(bcs[0], new AsyncCallback<Annotation>() {
 						public void onSuccess(Annotation a) {
@@ -124,15 +124,15 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 		sc.put("compound_name", compound);
 		
 		sparqlService.samples(sc,
-				new PendingAsyncCallback<OTGSample[]>(this, "Unable to retrieve barcodes for the group definition.") {
-					public void handleSuccess(OTGSample[] barcodes) {
+				new PendingAsyncCallback<Sample[]>(this, "Unable to retrieve barcodes for the group definition.") {
+					public void handleSuccess(Sample[] barcodes) {
 						processAnnotationBarcodes(annotation, row, col, time, barcodes);						
 					}
 				});
 	}
 	
 	private void processAnnotationBarcodes(final String annotation, final int row, final int col,
-			final String time, final OTGSample[] barcodes) {
+			final String time, final Sample[] barcodes) {
 		final NumberFormat fmt = NumberFormat.getFormat("#0.00");
 		Group g = new Group(schema, "temporary", barcodes, null);
 		sparqlService.annotations(g, false, 
