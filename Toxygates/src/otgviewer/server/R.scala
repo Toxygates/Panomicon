@@ -27,6 +27,7 @@ import org.rosuda.REngine.Rserve.RserveException
 import org.rosuda.REngine.Rserve.RConnection
 import org.rosuda.REngine.REXP
 import scala.collection.immutable.Queue
+import java.util.logging.Level
 
 class R() {
   private val logger = Logger.getLogger("R")
@@ -44,7 +45,7 @@ class R() {
       conn = new RConnection
       if (cmds.nonEmpty) Some(exec(cmds)) else None
     } catch {
-      case e: Exception => logger.severe(e.getMessage); None
+      case e: Exception => logger.log(Level.SEVERE, e.getMessage, e); None
     } finally {
       if (conn != null) conn.close()
     }

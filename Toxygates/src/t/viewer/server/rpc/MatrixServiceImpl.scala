@@ -64,6 +64,10 @@ import java.util.logging.Logger
 import t.common.shared.sample.Sample
 import otgviewer.server.MatrixController
 import javax.annotation.Nullable
+import otgviewer.server.R
+import org.rosuda.REngine.Rserve.RserveException
+import t.common.shared.userclustering.Algorithm
+import t.common.server.userclustering.RClustering
 
 object MatrixServiceImpl {
 
@@ -93,11 +97,13 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   private def probes = context.probes
   private var config: Configuration = _
   private val logger = Logger.getLogger("MatrixService")
+  private var userDir: String = null
 
   // Useful for testing
   override def localInit(config: Configuration) {
     super.localInit(config)
     this.config = config
+    this.userDir = this.getServletContext.getRealPath("/WEB-INF/")
     mcontext = context.matrix
   }
 
@@ -361,4 +367,24 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     Feedback.send(name, email, feedback, state, config.feedbackReceivers,
       config.feedbackFromAddress, context.config.appName)
   }
+
+  def prepareHeatmap(groups: JList[Group], chosenProbes: Array[String],
+    valueType: ValueType, algorithm: Algorithm): String = {
+//
+//    loadMatrix(groups, chosenProbes, valueType)
+
+    val mm = getSessionData.matrix
+    var mat = mm.current
+    var info = mm.info
+
+    //TODO shared logic with e.g. insertAnnotations, extract
+    val rowNames = mat.asRows.map(_.getAtomicProbes.mkString("/"))
+    val columns = mat.sortedColumnMap.filter(x => !info.isPValueColumn(x._2))
+    val colNames = columns.map(_._1)
+    val values = mat.selectColumns(columns.map(_._2)).toRowVectors.map(r => r.map(_.value))
+
+    val clust = new RClustering(userDir)
+    clust.clustering(values.flatten, rowNames, colNames, algorithm)
+  }
+
 }
