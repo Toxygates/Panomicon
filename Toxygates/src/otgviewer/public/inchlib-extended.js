@@ -165,6 +165,7 @@ var InCHlibEx;
     for (i = 0, keys = Object.keys(self.data.nodes), len = keys.length; i < len; i++) {
       key = keys[i];
       node = self.data.nodes[key];
+
       if (node.count == 1) {
         data = node.features;
         heatmap_array.push([key]);
@@ -178,6 +179,16 @@ var InCHlibEx;
       }
       self.maxDistance = Math.max(self.maxDistance, node.distance);
     }
+    console.log("distance domain: [" + self.minDistance + ", " + self.maxDistance + "]");
+
+    self.shift = (function () {
+      if (self.settings.log_axis) {
+        return self.minDistance < 1.0e-15 ? Math.abs(1.0e-15 - self.minDistance) : 0;
+      } else {
+        return self.minDistance < 0 ? Math.abs(self.minDistance) + self.maxDistance * 0.05 : 0;
+      }
+    })();
+
     return heatmap_array;
   };
 
@@ -270,6 +281,9 @@ var InCHlibEx;
     InCHlib.prototype._dendrogram_layers_click.call(self, layer, evt);
 
     self._change_selection_state(self.selection_state.dendrogram);
+
+    var path_id = evt.target.attrs.path_id;
+    console.log(path_id + ": d = " + self.data.nodes[path_id].distance)
   };
 
   /** @override */
@@ -745,6 +759,10 @@ var InCHlibEx;
       return Math.log(x) / Math.LN10;
     };
 
+  var ensureFinite = function (value, defaultValue) {
+    return Number.isFinite(value) ? value : defaultValue;
+  }
+
   /** @override */
   InCHlibEx.prototype._draw_row_dendrogram = function (node_id) {
     var self = this;
@@ -752,12 +770,13 @@ var InCHlibEx;
     var node = self.data.nodes[node_id];
     var count = node.count;
 
-    if (self.settings.log_axis) {
-      var logVal = log10(self.minDistance);
-      self.distance_step = (self.distance - 5) / (log10(node.distance) - (Number.isFinite(logVal) ? logVal : 0));
-    } else {
-      self.distance_step = self.distance / node.distance;
-    }
+    self.distance_step = (function () {
+      if (self.settings.log_axis) {
+        return (self.distance - 5) / (log10(node.distance + self.shift) - log10(self.minDistance + self.shift));
+      } else {
+        return self.distance / (node.distance + self.shift);
+      }
+    })();
 
     self.leaves_y_coordinates = {};
     self.objects2leaves = {};
@@ -778,7 +797,7 @@ var InCHlibEx;
     }
     self._draw_row_dendrogram_node(node_id, node, current_left_count, current_right_count, 0, y);
     self.middle_item_count = (self.min_item_count + self.max_item_count) / 2;
-    self._draw_distance_scale(node.distance);
+    self._draw_distance_scale(node.distance + self.shift);
     self.stage.add(self.dendrogram_layer);
 
     self._bind_dendrogram_hover_events(self.dendrogram_layer);
@@ -815,13 +834,20 @@ var InCHlibEx;
       var left_child = self.data.nodes[node.left_child];
       var y1 = self._get_y1(node_neighbourhood, current_left_count, current_right_count);
       var y2 = self._get_y2(node_neighbourhood, current_left_count, current_right_count);
-      var x1 = self._distanceToCoord(self.settings.log_axis, node.distance);
+      var x1 = self._distanceToCoord(node.distance);
 
       x1 = (x1 == 0) ? 2 : x1;
 
       var x2 = x1;
-      var left_distance = self._distanceToCoord(self.settings.log_axis, self.data.nodes[node.left_child].distance);
-      var right_distance = self._distanceToCoord(self.settings.log_axis, self.data.nodes[node.right_child].distance);
+      var child_distance = function (child) {
+        if (child.count == 1) {
+          return self.distance;
+        } else {
+          return self._distanceToCoord(child.distance);
+        }
+      };
+      var left_distance = child_distance(self.data.nodes[node.left_child]);
+      var right_distance = child_distance(self.data.nodes[node.right_child]);
       if (right_child.count == 1) {
         y2 = y2 + self.pixels_for_leaf / 2;
       }
@@ -848,23 +874,25 @@ var InCHlibEx;
 
   };
 
-  InCHlibEx.prototype._coordToDistance = function (log_axis, x) {
+  InCHlibEx.prototype._coordToDistance = function (x) {
     var self = this;
-    if (log_axis) {
-      var logVal = log10(self.minDistance);
-      return (Math.pow(10, (self.distance - (5 + x)) / self.distance_step + (Number.isFinite(logVal) ? logVal : 0))).toExponential(2);
+    if (self.settings.log_axis) {
+      return (Math.pow(10, (self.distance - (5 + x)) / self.distance_step + log10(self.minDistance + self.shift)) - self.shift).toExponential(2);
     } else {
-      return Math.round(100 * (self.distance - x) / self.distance_step) / 100;
+      return ((self.distance - x) / self.distance_step - self.shift).toExponential(2);
     }
   };
 
-  InCHlibEx.prototype._distanceToCoord = function (log_axis, d) {
+  InCHlibEx.prototype._distanceToCoord = function (d) {
     var self = this;
-    if (log_axis) {
-      var logVal = log10(self.minDistance);
-      return log10(d) != Number.NEGATIVE_INFINITY ? self.distance - (5 + self.distance_step * (log10(d) - (Number.isFinite(logVal) ? logVal : 0))) : self._hack_round(self.distance);
+    if (self.minDistance == 0 && self.maxDistance == 0) {
+      return self.distance;
+    }
+
+    if (self.settings.log_axis) {
+      return self.distance - (5 + self.distance_step * (log10(d + self.shift) - log10(self.minDistance + self.shift)));
     } else {
-      return self.distance - self.distance_step * d;
+      return self.distance - self.distance_step * (d + self.shift);
     }
   };
 
@@ -897,7 +925,7 @@ var InCHlibEx;
     var marker_tail = 3;
     var marker_distance = x2;
     var marker_number_distance = self._hack_round(30 / self.distance_step * 10) / 10;
-    var dist = self._coordToDistance(self.settings.log_axis, 0);
+    var dist = self._coordToDistance(0);
 
     var marker_distance_step = self._hack_round(self.distance_step * marker_number_distance);
     var marker_counter = 0;
@@ -920,15 +948,13 @@ var InCHlibEx;
     }
 
     if (self.settings.log_axis) {
-      if (Number.isFinite(log10(self.maxDistance)) == false) {
-        return;
-      }
-
-      var from = Math.ceil(log10(self.minDistance));
-      var to = Math.ceil(log10(self.maxDistance));
+      var from = Math.ceil(log10(self.minDistance + self.shift));
+      var to = Math.ceil(log10(self.maxDistance + self.shift));
+      console.log("scale domain: [" + log10(self.minDistance + self.shift) + ", " + log10(self.maxDistance + self.shift)) + "]";
       marker_counter = from;
+
       while (marker_counter != to) {
-        marker_distance = self.distance - 5 + self.distance_step * (log10(self.minDistance) - marker_counter);
+        marker_distance = self.distance - 5 + self.distance_step * (log10(self.minDistance + self.shift) - marker_counter);
         path = new Kinetic.Line({
           points: [marker_distance, (y1 - marker_tail), marker_distance, (y2 + marker_tail)],
           stroke: "black",
@@ -986,7 +1012,7 @@ var InCHlibEx;
   InCHlibEx.prototype._scale_mouseover_area_enter = function (x, y) {
     var self = this;
 
-    var dist = self._coordToDistance(self.settings.log_axis, x);
+    var dist = self._coordToDistance(x);
 
     self.cutoff_line_layer.destroyChildren();
     self.cutoff_distance_tooltip = self.objects_ref.tooltip_label.clone({x: x, y: y, id: 'cotoff_tooltip_label'});
@@ -1009,7 +1035,7 @@ var InCHlibEx;
   InCHlibEx.prototype._scale_mouseover_area_move = function (x, y) {
     var self = this;
 
-    var dist = self._coordToDistance(self.settings.log_axis, x);
+    var dist = self._coordToDistance(x);
 
     if (self.cutoff_distance_tooltip) {
       var minX = self.cutoff_distance_tooltip.width() / 2.0;
@@ -1037,7 +1063,7 @@ var InCHlibEx;
     self._reset_all_highlight();
     self._change_selection_state(self.selection_state.cutoff);
 
-    var dist = self._coordToDistance(self.settings.log_axis, x);
+    var dist = self._coordToDistance(x);
     self._highlight_cutoff_cluster(dist);
 
     var y1 = self.header_height;

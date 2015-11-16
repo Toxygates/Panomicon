@@ -83,6 +83,8 @@ public class HeatmapDialog extends DataListenerWidget {
   private ListBox cDist;
   private ListBox cMethod;
 
+  private Algorithm lastClusteringAlgorithm = new Algorithm();
+
   public HeatmapDialog(Screen screen, ValueType defaultType) {
     matrixService = screen.matrixService();
     this.screen = screen;
@@ -121,7 +123,7 @@ public class HeatmapDialog extends DataListenerWidget {
           inject(p_jsList);
         } else {
           initializeHeatmap();
-          executeClustering(new Algorithm());
+          executeClustering(lastClusteringAlgorithm);
         }
       }
     }).setWindow(ScriptInjector.TOP_WINDOW).inject();
@@ -129,7 +131,7 @@ public class HeatmapDialog extends DataListenerWidget {
 
   private void initializeHeatmap() {
     createInstance();
-    updateUI();
+
     dialog.setGlassEnabled(false);
     dialog.setModal(true);
     dialog.center();
@@ -138,6 +140,7 @@ public class HeatmapDialog extends DataListenerWidget {
   
   private void executeClustering(Algorithm algo) {
     logger.info("Execute clustering with " + getValueType().name() + " " + algo.toString());
+    this.lastClusteringAlgorithm = algo;
     matrixService.prepareHeatmap(chosenColumns, chosenProbes, getValueType(), algo,
         prepareHeatmapCallback());
   }
@@ -147,6 +150,7 @@ public class HeatmapDialog extends DataListenerWidget {
       public void handleSuccess(String result) {
         try {
           draw(JsonUtils.safeEval(result));
+          updateUI();
         } catch (Exception e) {
           handleFailure(e);
           return;
@@ -172,10 +176,15 @@ public class HeatmapDialog extends DataListenerWidget {
     chkLogAxis.setEnabled(b);
     chkLogAxis.setValue(getAxisState());
 
-    rDist.setEnabled(b);
     rMethod.setEnabled(b);
-    cDist.setEnabled(b);
+    rDist.setEnabled(b);
     cMethod.setEnabled(b);
+    cDist.setEnabled(b);
+    
+    rMethod.setSelectedIndex(lastClusteringAlgorithm.getRowMethod().ordinal());
+    rDist.setSelectedIndex(lastClusteringAlgorithm.getRowDistance().ordinal());
+    cMethod.setSelectedIndex(lastClusteringAlgorithm.getColMethod().ordinal());
+    cDist.setSelectedIndex(lastClusteringAlgorithm.getColDistance().ordinal());
   }
 
   private void createPanel(ValueType defaultType) {
@@ -279,11 +288,6 @@ public class HeatmapDialog extends DataListenerWidget {
             Distances.lookup(cDist.getSelectedValue()));
 
         executeClustering(algo);
-        // boolean b = chkDendrogram.getValue();
-        // setDendrogramState(b);
-        // setColumnDendrogramState(b);
-        // redraw();
-        // updateUI();
       }
     });
 

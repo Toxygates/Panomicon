@@ -67,7 +67,6 @@ class MatrixServiceImpl extends t.viewer.server.rpc.MatrixServiceImpl
     assert(data.length == rowName.length * colName.length)
 
     val r = new R
-    logger.info(s"Read source file: $userDir/R/InCHlibUtils.R")
     r.addCommand(s"source('$userDir/R/InCHlibUtils.R')")
     r.addCommand(s"data <- c(${data.mkString(", ")})")
     r.addCommand(s"r <- c(${rowName.map { "\"" + _ + "\"" }.mkString(", ")})")
@@ -77,8 +76,6 @@ class MatrixServiceImpl extends t.viewer.server.rpc.MatrixServiceImpl
     r.addCommand("colMethod <- \"" + algorithm.getColMethod.asParam() + "\"")
     r.addCommand("colDistance <- \"" + algorithm.getColDistance.asParam() + "\"")
     
-    logger.info(s"Row clustering: ${algorithm.getRowMethod.asParam()}, ${algorithm.getRowDistance.asParam()}")
-    logger.info(s"Col clustering: ${algorithm.getColMethod.asParam()}, ${algorithm.getColDistance.asParam()}")
     r.addCommand("getClusterAsJSON(data, r, c, rowMethod, rowDistance, colMethod, colDistance)")
 
     r.exec() match {

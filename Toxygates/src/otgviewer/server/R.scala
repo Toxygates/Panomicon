@@ -58,6 +58,7 @@ class R() {
   }
 
   private def eval(cmd: String) = {
+    logger.info(cmd)
     val r = conn.parseAndEval(s"try($cmd)")
     if (r.inherits("try-error")) {
       throw new RserveException(conn, r.asString())
