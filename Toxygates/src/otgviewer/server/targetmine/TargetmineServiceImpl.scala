@@ -103,14 +103,12 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
       val listName = tempList.getName
       println(s"Created temporary list $listName")
 
-      val filter = "All"
-
       val request = ls.createGetRequest(serviceUri + "/list/enrichment", ContentType.TEXT_TAB)
       request.addParameter("list", listName)
       request.addParameter("widget", params.widget.getKey)
       request.addParameter("maxp", params.cutoff.toString())
       request.addParameter("correction", params.correction.getKey())
-      request.addParameter("filter", filter)
+      request.addParameter("filter", params.filter)
 
       val con = ls.executeRequest(request)
       println("Response code: " + con.getResponseCode)
