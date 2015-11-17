@@ -27,6 +27,8 @@ import scala.collection.JavaConversions._
 import otgviewer.shared.OTGSchema
 
 object SampleSearch {
+  import ProxyTools._
+
   def showHelp() {
     println("Usage: sampleSearch (url) param1=val1 param2=val2 ...")
     val s = new OTGSchema()
@@ -42,8 +44,9 @@ object SampleSearch {
     }
 
     val url = args(0)
-    val sparqlServiceAsync = SyncProxy.newProxyInstance(classOf[SparqlService],
-        url, "sparql").asInstanceOf[SparqlService]
+    SyncProxy.setBaseURL(url)
+
+    val sparqlServiceAsync = getProxy(classOf[SparqlService], "sparql")
 
     val sc = new SampleClass()
     for (kv <- args.drop(1)) {
