@@ -28,8 +28,9 @@ import java.util.logging.Logger;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.dialog.InteractionDialog;
+import otgviewer.client.dialog.TargetMineEnrichDialog;
 import otgviewer.client.dialog.TargetMineSyncDialog;
-import otgviewer.shared.targetmine.EnrichmentWidget;
+import otgviewer.shared.targetmine.EnrichmentParams;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.ItemList;
 import t.common.shared.SharedUtils;
@@ -111,14 +112,15 @@ public class TargetMineData {
   }
 
   public void enrich() {
-    InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Enrich") {
+    InteractionDialog ui = new TargetMineEnrichDialog(parent, url, "Enrich") {
       @Override
       protected void userProceed(String user, String pass, boolean replace) {
         super.userProceed();
         String chosen = parent.chosenGeneSet;
         if (chosen != null && !chosen.equals("")) {          
           doEnrich(user, pass, 
-              StringList.pickProbeLists(parent.chosenItemLists, chosen).get(0));
+              StringList.pickProbeLists(parent.chosenItemLists, chosen).get(0),
+              getParams());
         } else {
           Window.alert("Please define and select a probe list first.");
         }        
@@ -127,9 +129,9 @@ public class TargetMineData {
     ui.display("TargetMine enrichment", DialogPosition.Center);
   }
 
-  public void doEnrich(final String user, final String pass, StringList list) {
-    tmService.enrichment(user, pass, EnrichmentWidget.GenePathway, 
-        list, new PendingAsyncCallback<String[][]>(parent,
+  public void doEnrich(final String user, final String pass, StringList list,
+      EnrichmentParams params) {
+    tmService.enrichment(user, pass, list, params, new PendingAsyncCallback<String[][]>(parent,
         "Unable to perform enrichment analysis. Check your username and password. "
             + "There may also be a server error.") {
       public void handleSuccess(String[][] result) {
@@ -139,18 +141,19 @@ public class TargetMineData {
   }
   
   public void multiEnrich(final StringList[] lists) {
-    InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Cluster enrichment") {
+    InteractionDialog ui = new TargetMineEnrichDialog(parent, url, "Cluster enrichment") {
       @Override
       protected void userProceed(String user, String pass, boolean replace) {
         super.userProceed();
-        doEnrich(user, pass, lists);
+        doEnrich(user, pass, lists, getParams());
       }
     };
     ui.display("TargetMine cluster enrichment", DialogPosition.Center);
   }
   
-  public void doEnrich(final String user, final String pass, StringList[] lists) {
-    tmService.multiEnrichment(user, pass, EnrichmentWidget.GenePathway, lists, 
+  public void doEnrich(final String user, final String pass, StringList[] lists,
+      EnrichmentParams params) {
+    tmService.multiEnrichment(user, pass, lists, params,
          new PendingAsyncCallback<String[][][]>(parent,
         "Unable to perform enrichment analysis. Check your username and password. "
             + "There may also be a server error.") {
