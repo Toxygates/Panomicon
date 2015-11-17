@@ -26,7 +26,6 @@ import java.util.Set;
 
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
-import t.viewer.shared.Unit;
 
 /**
  * A group of barcodes. 

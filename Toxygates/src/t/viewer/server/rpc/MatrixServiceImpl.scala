@@ -44,7 +44,9 @@ import t.common.shared.DataSchema
 import t.common.shared.ValueType
 import t.common.shared.probe.MedianValueMapper
 import t.common.shared.probe.OrthologProbeMapper
-import t.common.shared.sample._
+import t.common.shared.sample.Group
+import t.common.shared.sample.ExprMatrix
+import t.common.shared.sample.ExpressionRow
 import t.db.MatrixContext
 import t.db.MatrixDBReader
 import t.db.kyotocabinet.KCExtMatrixDB

@@ -28,7 +28,7 @@ import t.common.shared.DataSchema;
 import t.common.shared.HasClass;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.Sample;
-import t.viewer.shared.Unit;
+import t.common.shared.sample.Unit;
 
 public class ChartSample implements HasClass {
 	final SampleClass sc;

@@ -21,7 +21,6 @@
 package otgviewer.server.rpc
 
 import scala.Array.canBuildFrom
-import scala.collection.JavaConversions.asJavaMap
 import scala.collection.{ Set => CSet }
 
 import Conversions.asJava

@@ -20,7 +20,7 @@
 package otgviewer.client.components.groupdef;
 
 import otgviewer.client.components.Screen;
-import t.viewer.shared.Unit;
+import t.common.shared.sample.Unit;
 
 /**
  * A SelTDGrid that ignores the "control" sample count

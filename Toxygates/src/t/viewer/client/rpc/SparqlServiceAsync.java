@@ -31,9 +31,9 @@ import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.SampleColumn;
+import t.common.shared.sample.Unit;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.Association;
-import t.viewer.shared.Unit;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 

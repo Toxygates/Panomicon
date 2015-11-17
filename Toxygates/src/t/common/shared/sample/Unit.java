@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.shared;
+package t.common.shared.sample;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +26,6 @@ import java.util.Map;
 
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
-import t.common.shared.sample.Sample;
 
 /**
  * A sample class with associated samples.

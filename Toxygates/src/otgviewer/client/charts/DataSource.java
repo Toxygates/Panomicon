@@ -42,8 +42,8 @@ import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.ExpressionValue;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
+import t.common.shared.sample.Unit;
 import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.shared.Unit;
 
 /**
  * This class brings series and row data into a unified interface for the purposes of

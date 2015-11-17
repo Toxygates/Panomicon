@@ -56,10 +56,10 @@ import t.viewer.server.Conversions.scAsScala
 import t.viewer.shared.AppInfo
 import t.viewer.shared.Association
 import t.common.shared.StringList
-import t.viewer.shared.Unit
 import otg.db.OTGParameterSet
 import t.common.shared.sample.Sample
 import t.viewer.server.SharedDatasets
+import t.common.shared.sample.Unit
 import t.common.shared.sample.SampleColumn
 
 object SparqlServiceImpl {
