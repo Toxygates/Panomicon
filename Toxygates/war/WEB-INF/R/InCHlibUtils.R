@@ -150,7 +150,7 @@ toMatrix <- function(data, rowNames, colNames, byrow=F) {
 #' @param colDistance a string object that gives which distance to be used for column clustering.
 #'
 getClusterAsJSON <- function(data, rowNames, colNames, rowMethod, rowDistance, colMethod, colDistance) {
-  mat <- toMatrix(data, rowNames, colNames)
+  mat <- toMatrix(data, rowNames, colNames, TRUE)
   d <- Dist(mat, method=rowDistance)
   d.col <- Dist(t(mat), method=colDistance)
   hc <- hclust(d, method=rowMethod)
