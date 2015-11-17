@@ -298,8 +298,9 @@ public class HeatmapDialog extends DataListenerWidget {
     topContent.setSpacing(4);
     topContent.add(new Label("Value:"));
 
-    valType.addItem(ValueType.Folds.toString());
-    valType.addItem(ValueType.Absolute.toString());
+    for (ValueType v : ValueType.values()) {
+      valType.addItem(v.toString());
+    }
     valType.setSelectedIndex(defaultType.ordinal());
     valType.addChangeHandler(new ChangeHandler() {
       @Override
