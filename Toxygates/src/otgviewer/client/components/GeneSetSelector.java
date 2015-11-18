@@ -34,7 +34,7 @@ import otgviewer.client.DataScreen;
 
 public class GeneSetSelector extends DataListenerWidget {
 
-  private static final String ALL_PROBES = "All probes";
+  public static final String ALL_PROBES = "All probes";
 
   private final DataScreen screen;
 
