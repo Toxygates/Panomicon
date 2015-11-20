@@ -7,7 +7,6 @@ import otgviewer.shared.targetmine.EnrichmentWidget;
 import t.common.client.components.EnumSelector;
 
 import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
