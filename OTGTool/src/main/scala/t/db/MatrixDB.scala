@@ -60,7 +60,7 @@ trait MatrixDBReader[+E >: Null <: ExprValue] {
    * each array.
    * Probes must be sorted.
    */
-  def valuesInSample(x: Sample, probes: Iterable[Int], inverseTransform: Boolean = false): Iterable[E]
+  def valuesInSample(x: Sample, probes: Iterable[Int]): Iterable[E]
 
   //  def presentValuesInSample(x: Sample): Iterable[(Int, E)] =
   //    valuesInSample(x).filter(_._2.present)
@@ -76,7 +76,7 @@ trait MatrixDBReader[+E >: Null <: ExprValue] {
    * each array.
    * Samples must be ordered (see sortSamples above)
    */
-  def valuesForProbe(probe: Int, xs: Seq[Sample], inverseTransform: Boolean = false): Iterable[(Sample, E)]
+  def valuesForProbe(probe: Int, xs: Seq[Sample]): Iterable[(Sample, E)]
 
   def presentValuesForProbe(probe: Int,
     samples: Seq[Sample]): Iterable[(Sample, E)] =
@@ -136,13 +136,13 @@ trait MatrixDBReader[+E >: Null <: ExprValue] {
    *  empty value.
    */
   def valuesForSamplesAndProbes(xs: Seq[Sample], probes: Seq[Int],
-    sparseRead: Boolean = false, presentOnly: Boolean = false, inverseTransform: Boolean = false): Vector[Seq[E]] = {
+    sparseRead: Boolean = false, presentOnly: Boolean = false): Vector[Seq[E]] = {
 
     val ps = probes.filter(probeMap.keys.contains(_)).sorted
 
     val rows = (if (sparseRead) {
       probes.par.map(p => {
-        val dat = Map() ++ valuesForProbe(p, xs, inverseTransform).filter(!presentOnly || _._2.present)
+        val dat = Map() ++ valuesForProbe(p, xs).filter(!presentOnly || _._2.present)
         val row = Vector() ++ xs.map(bc => dat.getOrElse(bc, emptyValue(probeMap, p)))
         row
       }).seq
@@ -157,7 +157,7 @@ trait MatrixDBReader[+E >: Null <: ExprValue] {
       //not sparse read, go sample-wise
       (xs zipWithIndex).par.foreach(bc => {
         //probe to expression
-        var vs = valuesInSample(bc._1, ps, inverseTransform).filter(!presentOnly || _.present)
+        var vs = valuesInSample(bc._1, ps).filter(!presentOnly || _.present)
         rows.synchronized {
           for (v <- vs) {
             rows(v.probe)(bc._2) = v

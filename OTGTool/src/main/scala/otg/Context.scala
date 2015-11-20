@@ -36,6 +36,7 @@ import t.sparql.Samples
 import otg.sparql.Probes
 import t.db.TRefresher
 import t.db.SeriesBuilder
+import t.db.TransformingWrapper
 
 object Context {
   val factory = new Factory()
@@ -89,7 +90,9 @@ class OTGContext(baseConfig: BaseConfig,
    * Obtain a reader for the folds database.
    */
   def foldsDBReader: MatrixDBReader[PExprValue] =
-    KCMatrixDB.applyExt(data.foldDb, false)(this)
+    new TransformingWrapper(KCMatrixDB.applyExt(data.foldDb, false)(this)) {
+      def tfmValue(x: PExprValue) = x.copy(value = Math.pow(2, x.value))
+    }
 
   def seriesBuilder: OTGSeries.type = OTGSeries
 
