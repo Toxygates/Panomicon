@@ -151,7 +151,18 @@ public class TargetMineData {
     ui.display("TargetMine cluster enrichment", DialogPosition.Center);
   }
   
-  public void doEnrich(final String user, final String pass, StringList[] lists,
+  private static String[] append(String[] first, String[] last) {    
+    String[] r = new String[first.length + last.length];
+    for (int i = 0; i < first.length; ++i) {
+      r[i] = first[i];      
+    }
+    for (int i = 0; i < last.length; ++i) {
+      r[i + first.length] = last[i];
+    }
+    return r;    
+  }
+  
+  public void doEnrich(final String user, final String pass, final StringList[] lists,
       EnrichmentParams params) {
     tmService.multiEnrichment(user, pass, lists, params,
          new PendingAsyncCallback<String[][][]>(parent,
@@ -159,15 +170,18 @@ public class TargetMineData {
             + "There may also be a server error.") {
       public void handleSuccess(String[][][] result) {
         List<String[]> best = new ArrayList<String[]>();
-        best.add(result[0][0]); //Headers
+        best.add(append(new String[] {"Cluster", "Size"}, result[0][0])); //Headers
+        int i = 1;
         for (String[][] clust: result) {
+          int n = lists[i-1].size();
           if (clust.length < 2) {
             //TODO don't hardcode length here
-            String[] res = new String[] { "(No result)", "", "", "" };
+            String[] res = new String[] { "Cluster " + i, "" + n, "(No result)", "", "", "" };
             best.add(res);
           } else {
-            best.add(clust[1]);
+            best.add(append(new String[] {"Cluster " + i, "" + n }, clust[1]));
           }
+          i += 1;
         }
         StringArrayTable.displayDialog(best.toArray(new String[0][0]), "Best enrichment results", 800, 400);            
       }

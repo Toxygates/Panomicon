@@ -6,6 +6,7 @@ import otgviewer.shared.targetmine.EnrichmentParams;
 import otgviewer.shared.targetmine.EnrichmentWidget;
 import t.common.client.components.EnumSelector;
 
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -24,11 +25,9 @@ public class TargetMineEnrichDialog extends TargetMineSyncDialog {
 
   }
 
-  private void addWithLabel(String l, Widget w) {
-    HorizontalPanel hp = new HorizontalPanel();
-    hp.add(new Label(l));
-    hp.add(w);
-    vp.add(hp);
+  private void addWithLabel(Grid g, int row, String l, Widget w) {
+    g.setWidget(row, 0, new Label(l));
+    g.setWidget(row, 1, w);    
   }
   
   VerticalPanel vp = new VerticalPanel();
@@ -56,12 +55,14 @@ public class TargetMineEnrichDialog extends TargetMineSyncDialog {
   ListBox filter = new ListBox();
   
   @Override
-  protected Widget customUI() { 
-    addWithLabel("Enrichment: ", widget);      
-    addWithLabel("Filter: ", filter);
+  protected Widget customUI() {
+    Grid g = new Grid(4, 2);
+    vp.add(g);
+    addWithLabel(g, 0, "Enrichment: ", widget);      
+    addWithLabel(g, 1, "Filter: ", filter);
     pValueCutoff.setValue("0.05");
-    addWithLabel("p-value cutoff: ", pValueCutoff);
-    addWithLabel("Correction: ", corr);
+    addWithLabel(g, 2, "p-value cutoff: ", pValueCutoff);
+    addWithLabel(g, 3, "Correction: ", corr);
     
     setFilterItems(EnrichmentWidget.values()[0].filterValues());
     

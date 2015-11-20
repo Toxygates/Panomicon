@@ -88,6 +88,13 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
     TargetMine.addLists(affyProbes, ls, lists.toList, replace)
   }
 
+  // This is mainly to adjust the formatting of the p-value
+  private def adjustEnrichResult(res: Seq[String]): Seq[String] = {
+    Seq(res(0), res(1),
+        "%.3g".format(res(2).toDouble),
+        res(3))
+  }
+
   def multiEnrichment(user: String, pass: String,
       lists: Array[StringList], params: EnrichmentParams): Array[Array[Array[String]]] =
     lists.map(enrichment(user, pass, _, params)).toArray
@@ -115,6 +122,6 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
       val res = new TabTableResult(con)
       ls.deleteList(tempList)
       val headers = Array("ID", "Description", "p-value", "Matches")
-      headers +: res.getIterator.toArray.map(asScalaBuffer(_).toArray)
+      headers +: res.getIterator.toArray.map(adjustEnrichResult(_).toArray)
   }
 }
