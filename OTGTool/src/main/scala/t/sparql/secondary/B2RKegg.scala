@@ -173,4 +173,9 @@ class B2RKegg(val con: RepositoryConnection) extends Triplestore with Store[Path
       "FILTER (str(?titl) = \"" + pathway + "\") }"
     simpleQuery(q)
   }
+
+  //For enrichment. May be slow.
+  def osaGeneToPathwayFullMap: MMap[DefaultBio, Pathway] =
+    forGenesOSA(List())
+
 }
