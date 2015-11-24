@@ -95,6 +95,8 @@ public class DataScreen extends Screen {
     };
   }
 
+  static final public int STANDARD_TOOL_HEIGHT = 43;
+  
   @Override
   protected void addToolbars() {
     super.addToolbars();
@@ -102,8 +104,8 @@ public class DataScreen extends Screen {
     mainTools.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
     mainTools.add(et.tools());
     mainTools.add(gs.selector());
-    addToolbar(mainTools, 43);
-    addToolbar(et.analysisTools(), 43);
+    addToolbar(mainTools, STANDARD_TOOL_HEIGHT);
+    addToolbar(et.analysisTools(), STANDARD_TOOL_HEIGHT);
   }
 
   public Widget content() {

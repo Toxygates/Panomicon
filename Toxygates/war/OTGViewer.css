@@ -23,6 +23,11 @@ exprGrid {
 	margin: 2px;
 }
 
+.slightlySpacedLeftRight {
+	margin-left: 2px;
+	margin-right: 2px;
+}
+
 .colored {
 	background: Beige;
 }

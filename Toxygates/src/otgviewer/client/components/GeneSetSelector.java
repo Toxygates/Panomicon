@@ -51,6 +51,7 @@ public class GeneSetSelector extends DataListenerWidget {
 
   private void makeSelector() {
     selector = Utils.mkHorizontalPanel(true);
+    selector.setHeight(DataScreen.STANDARD_TOOL_HEIGHT + "px");
     selector.setStylePrimaryName("colored");
     selector.addStyleName("slightlySpaced");
 
