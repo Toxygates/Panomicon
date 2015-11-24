@@ -16,7 +16,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class TargetMineEnrichDialog extends TargetMineSyncDialog {
 
   public TargetMineEnrichDialog(DataListenerWidget parent, String url, String action) {
-    super(parent, url, action);
+    super(parent, url, action, false);
   }
 
   @Override

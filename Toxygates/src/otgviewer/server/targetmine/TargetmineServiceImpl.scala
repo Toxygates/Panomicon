@@ -46,6 +46,8 @@ import otgviewer.shared.targetmine.EnrichmentParams
 class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
   var affyProbes: Probes = _
   var platforms: Platforms = _
+  var apiKey: String = _
+
   //TODO how to best initialise this?
   val serviceUri = "http://targetmine.mizuguchilab.org/targetmine/service"
 
@@ -54,6 +56,7 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
     super.localInit(config)
     affyProbes = context.probes
     platforms = Platforms(affyProbes)
+    apiKey = config.targetmineApiKey
   }
 
   def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig =
@@ -95,13 +98,12 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
         res(3))
   }
 
-  def multiEnrichment(user: String, pass: String,
-      lists: Array[StringList], params: EnrichmentParams): Array[Array[Array[String]]] =
-    lists.map(enrichment(user, pass, _, params)).toArray
+  def multiEnrichment(lists: Array[StringList], params: EnrichmentParams): Array[Array[Array[String]]] =
+    lists.map(enrichment(_, params)).toArray
 
-  def enrichment(user: String, pass: String,
-      list: StringList, params: EnrichmentParams): Array[Array[String]] = {
-      val ls = TargetMine.getListService(serviceUri, Some(user), Some(pass))
+  def enrichment(list: StringList, params: EnrichmentParams): Array[Array[String]] = {
+      val ls = TargetMine.getListService(serviceUri, None, None)
+      ls.setAuthentication(apiKey)
       val tags = List("H. sapiens") //!!
 
       val tempList = TargetMine.addList(affyProbes, ls, list.items(),
@@ -111,6 +113,8 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
       println(s"Created temporary list $listName")
 
       val request = ls.createGetRequest(serviceUri + "/list/enrichment", ContentType.TEXT_TAB)
+      request.setAuthToken(apiKey)
+//      request.addParameter("token", apiKey)
       request.addParameter("list", listName)
       request.addParameter("widget", params.widget.getKey)
       request.addParameter("maxp", params.cutoff.toString())
