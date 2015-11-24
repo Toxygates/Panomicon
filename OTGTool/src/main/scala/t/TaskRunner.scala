@@ -176,6 +176,7 @@ object TaskRunner {
               t.printStackTrace() //TODO pass exception to log
               log("Deleting remaining tasks")
               _errorCause = Some(t)
+              _waitingForTask = false
               shutdown()
           }
         } else {
