@@ -22,21 +22,20 @@ package otg
 
 import java.io.File
 import java.net.URL
-
 import scala.language.postfixOps
 import scala.sys.process._
-
 import com.gdevelop.gwt.syncrpc.SyncProxy
-
 import otgviewer.shared.OTGSchema
 import t.common.shared.ValueType
 import t.common.shared.sample._
 import t.viewer.client.rpc.MatrixService
 import t.viewer.client.rpc.SparqlService
 import t.viewer.shared.table.SortKey
+import com.gdevelop.gwt.syncrpc.ProxySettings
 
 object GetMatrix {
 
+  import ProxyTools._
   import java.util.{LinkedList => JList}
   import scala.collection.JavaConversions._
 
@@ -119,8 +118,9 @@ object GetMatrix {
     }
 
     println(s"Create instance for $url")
-    val sServiceAsync = SyncProxy.newProxyInstance(classOf[SparqlService],
-    		url, "sparql").asInstanceOf[SparqlService]
+    SyncProxy.setBaseURL(url)
+
+    val sServiceAsync = getProxy(classOf[SparqlService], "sparql")
 
     val samples = args.drop(3).flatMap(discoverSamples)
     val resolvedSamples = Map() ++ sServiceAsync.samplesById(samples).map(x => x.id -> x)
@@ -130,9 +130,7 @@ object GetMatrix {
       groups.add(g)
     }
 
-		val matServiceAsync = SyncProxy.newProxyInstance(classOf[MatrixService],
-		    url, "matrix").asInstanceOf[MatrixService]
-
+		val matServiceAsync = getProxy(classOf[MatrixService], "matrix")
 		val probes = Array[String]() //empty -> load all
 
 		println("Load dataset")

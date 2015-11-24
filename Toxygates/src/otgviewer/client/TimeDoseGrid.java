@@ -33,9 +33,9 @@ import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.Sample;
+import t.common.shared.sample.Unit;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SparqlServiceAsync;
-import t.viewer.shared.Unit;
 
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;

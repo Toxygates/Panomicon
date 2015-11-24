@@ -36,8 +36,8 @@ import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
+import t.common.shared.sample.Unit;
 import t.viewer.client.Utils;
-import t.viewer.shared.Unit;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;

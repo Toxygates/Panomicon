@@ -25,15 +25,16 @@ import otgviewer.server.rpc.Conversions._
 import otgviewer.shared.ManagedMatrixInfo
 import otgviewer.shared.Synthetic
 import t.db.MatrixDBReader
-import t.common.shared.sample.{Sample => SSample}
+import t.common.shared.sample.{Sample => SSample, Unit => TUnit}
+import t.common.shared.sample.ExprMatrix
+import t.common.shared.sample.Group
+import t.common.shared.sample.SimpleAnnotation
 import t.db.Sample
 import t.db.PExprValue
 import t.db.ExprValue
 import t.db.MatrixContext
 import t.db.BasicExprValue
-import t.common.shared.sample._
 import t.viewer.server.EVArray
-import t.viewer.shared.{Unit => TUnit}
 
 /**
  * Routines for loading a ManagedMatrix
@@ -156,7 +157,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     ExprValue.apply(Math.log(value.value) / l2, value.call, value.probe)
   }
 
-  protected def unitIdxs(us: Iterable[t.viewer.shared.Unit], samples: Seq[Sample]): Seq[Int] = {
+  protected def unitIdxs(us: Iterable[t.common.shared.sample.Unit], samples: Seq[Sample]): Seq[Int] = {
     val ids = us.flatMap(u => u.getSamples.map(_.id)).toSet
     val inSet = samples.map(s => ids.contains(s.sampleId))
     inSet.zipWithIndex.filter(_._1).map(_._2)

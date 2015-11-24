@@ -29,7 +29,7 @@ import otgviewer.client.components.groupdef.GroupInspector;
 import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.sample.Group;
-import t.viewer.shared.Unit;
+import t.common.shared.sample.Unit;
 
 public class GroupMaker {
 	

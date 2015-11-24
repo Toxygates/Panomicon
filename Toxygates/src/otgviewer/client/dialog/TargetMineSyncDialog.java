@@ -18,6 +18,8 @@
 
 package otgviewer.client.dialog;
 
+import javax.annotation.Nullable;
+
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.InputGrid;
 import t.viewer.client.Utils;
@@ -53,6 +55,11 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
     VerticalPanel vp = new VerticalPanel();
     vp.setWidth("400px");
 
+    Widget custom = customUI();
+    if (custom != null) {
+      vp.add(custom);
+    }
+    
     Label l =
         new Label("You must have a TargetMine account in order to use "
             + "this function. If you do not have one, you may create one " + "at " + url + ".");
@@ -94,6 +101,10 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
     HorizontalPanel hp = Utils.mkHorizontalPanel(true, b, b2);
     vp.add(hp);
     return vp;
+  }
+  
+  protected @Nullable Widget customUI() {
+    return null;
   }
 
   abstract protected void userProceed(String user, String pass, boolean replace);

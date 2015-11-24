@@ -34,9 +34,9 @@ import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
+import t.common.shared.sample.Unit;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
-import t.viewer.shared.Unit;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

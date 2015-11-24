@@ -28,7 +28,7 @@ import t.common.shared.SampleClass;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
-import t.viewer.shared.Unit;
+import t.common.shared.sample.Unit;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

@@ -41,6 +41,7 @@ import org.intermine.webservice.client.core.ContentType
 import org.intermine.webservice.client.results.JSONResult
 import org.intermine.webservice.client.results.TabTableResult
 import otgviewer.shared.targetmine.EnrichmentWidget
+import otgviewer.shared.targetmine.EnrichmentParams
 
 class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
   var affyProbes: Probes = _
@@ -87,12 +88,12 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
     TargetMine.addLists(affyProbes, ls, lists.toList, replace)
   }
 
-  def multiEnrichment(user: String, pass: String, widget: EnrichmentWidget,
-      lists: Array[StringList]): Array[Array[Array[String]]] =
-    lists.map(enrichment(user, pass, widget, _)).toArray
+  def multiEnrichment(user: String, pass: String,
+      lists: Array[StringList], params: EnrichmentParams): Array[Array[Array[String]]] =
+    lists.map(enrichment(user, pass, _, params)).toArray
 
-  def enrichment(user: String, pass: String, widget: EnrichmentWidget,
-      list: StringList): Array[Array[String]] = {
+  def enrichment(user: String, pass: String,
+      list: StringList, params: EnrichmentParams): Array[Array[String]] = {
       val ls = TargetMine.getListService(serviceUri, Some(user), Some(pass))
       val tags = List("H. sapiens") //!!
 
@@ -102,15 +103,13 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
       val listName = tempList.getName
       println(s"Created temporary list $listName")
 
-      val maxp = 0.05
-      val corrMethod = "Benjamini Hochberg"
       val filter = "All"
 
       val request = ls.createGetRequest(serviceUri + "/list/enrichment", ContentType.TEXT_TAB)
       request.addParameter("list", listName)
-      request.addParameter("widget", widget.getKey)
-      request.addParameter("maxp", maxp.toString)
-      request.addParameter("correction", corrMethod)
+      request.addParameter("widget", params.widget.getKey)
+      request.addParameter("maxp", params.cutoff.toString())
+      request.addParameter("correction", params.correction.getKey())
       request.addParameter("filter", filter)
 
       val con = ls.executeRequest(request)

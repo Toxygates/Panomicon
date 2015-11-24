@@ -43,9 +43,9 @@ import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
+import t.common.shared.sample.Unit;
 import t.viewer.client.rpc.SeriesServiceAsync;
 import t.viewer.client.rpc.SparqlServiceAsync;
-import t.viewer.shared.Unit;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
