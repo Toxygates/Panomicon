@@ -151,6 +151,10 @@ public class DataScreen extends Screen {
         }
       };
     }
+    
+    GeneSetsMenuItem geneSetsMenu = factory().geneSetsMenuItem(this);
+    addListener(geneSetsMenu);
+    addMenu(geneSetsMenu.menuItem());
 
     MenuItem mColumns = new MenuItem("View", false, mb);
     addMenu(mColumns);
@@ -216,6 +220,7 @@ public class DataScreen extends Screen {
       heatMapMenu.setEnabled(false);
       addAnalysisMenuItem(heatMapMenu);
     }
+    logger.warning("Menu initialised.");
   }
 
   @Override
