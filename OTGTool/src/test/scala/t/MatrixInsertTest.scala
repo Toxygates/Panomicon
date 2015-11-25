@@ -18,20 +18,23 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg
+package t
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import t.db.MemoryLookupMap
 import t.db.testing.FakeBasicMatrixDB
 import t.db.testing.FakeRawExpressionData
 import t.testing.FakeContext
 import t.db.SampleIndex
 import t.db.Sample
 import t.db.ProbeMap
+import t.db.BasicExprValue
+import otg.OTGTestSuite
+import t.db.MemoryLookupMap
+import t.db.BasicValueInsert
 
 @RunWith(classOf[JUnitRunner])
-class OTGInsertTest extends OTGTestSuite {
+class MatrixInsertTest extends OTGTestSuite {
 
   val ids = (1 to 24).toStream.iterator
   val samples = for (
@@ -79,10 +82,15 @@ class OTGInsertTest extends OTGTestSuite {
   test("Absolute value insertion") {
     val data = makeTestData()
     val db = new FakeBasicMatrixDB()
-    val builder = new AbsoluteValueBuilder()
-    val inserter = new MicroarrayInsertion(() => db)
-    inserter.insertFrom("Absolute value data insert", data, builder)
-    val s1 = db.records.map(ev => (ev._1, ev._2, ev._3.value, ev._3.call)).toSet
+
+    val ins = new BasicValueInsert(db, data) {
+      def mkValue(v: Double, c: Char, p: Double) =
+       BasicExprValue(v, c)
+    }
+
+    ins.insert("Absolute value data insert").run()
+    val s1 = db.records.map(ev => (ev._1, context.probeMap.unpack(ev._2),
+        ev._3.value, ev._3.call)).toSet
     val s2 = data.data.flatMap(x => x._2.map(y => (x._1, y._1, y._2._1, y._2._2))).toSet
     s1 should equal(s2)
   }

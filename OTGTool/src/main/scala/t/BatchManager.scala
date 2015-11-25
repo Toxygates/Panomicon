@@ -20,38 +20,37 @@
 
 package t
 
-import t.db.ExprValue
-import otg.OTGContext
-import otg.OTGInsert
-import t.db.ProbeMap
-import t.db.SampleMap
-import t.db.LookupFailedException
-import t.db.Metadata
-import t.db.file.CSVRawExpressionData
+import scala.Vector
+
 import otg.sparql.OTGSamples
+import t.db.AbsoluteValueInsert
+import t.db.SimplePFoldValueInsert
+import t.db.ExprValue
+import t.db.LookupFailedException
 import t.db.MatrixContext
-import t.db.MatrixDB
-import t.db.MatrixDBReader
 import t.db.MatrixDBWriter
+import t.db.MatrixInsert
+import t.db.Metadata
 import t.db.ProbeIndex
+import t.db.ProbeMap
 import t.db.Sample
 import t.db.SampleIndex
+import t.db.SampleMap
 import t.db.Series
 import t.db.SeriesBuilder
-import t.db.kyotocabinet.KCExtMatrixDB
+import t.db.file.CSVRawExpressionData
+import t.db.file.PFoldValueBuilder
 import t.db.kyotocabinet.KCIndexDB
+import t.db.kyotocabinet.KCMatrixDB
 import t.db.kyotocabinet.KCSeriesDB
+import t.global.KCDBRegistry
 import t.sparql.Batches
 import t.sparql.Platforms
-import t.sparql.SimpleTriplestore
+import t.sparql.SampleFilter
 import t.sparql.TRDF
 import t.sparql.Triplestore
 import t.sparql.TriplestoreMetadata
 import t.util.TempFiles
-import t.db.kyotocabinet.KCMatrixDB
-import t.sparql.SampleFilter
-import t.db.file.PFoldValueBuilder
-import t.global.KCDBRegistry
 
 /**
  * Batch management CLI
@@ -402,17 +401,15 @@ class BatchManager(context: Context) {
   }
 
   def addExprData(niFile: String, callFile: Option[String])(implicit mc: MatrixContext) = {
-    val ic = OTGInsert.insertionContext(false, config.data.exprDb)
     val data = new CSVRawExpressionData(List(niFile), callFile.map(List(_)))
-    ic.insert(data)
+    new AbsoluteValueInsert(config.data.exprDb, data).insert("Insert normalised intensity data")
   }
 
   def addFoldsData(md: Metadata, foldFile: String, callFile: Option[String])
   (implicit mc: MatrixContext) = {
-    val ic = OTGInsert.insertionContext(true, config.data.foldDb)
     val data = new CSVRawExpressionData(List(foldFile), callFile.map(List(_)))
     val fvs = new PFoldValueBuilder(md, data)
-    ic.insertFolds(fvs)
+    new SimplePFoldValueInsert(config.data.foldDb, fvs).insert("Insert fold value data")
   }
 
   private def deleteFromDB(db: MatrixDBWriter[_], samples: Iterable[Sample]) {
@@ -432,7 +429,7 @@ class BatchManager(context: Context) {
       def run() {
         val bs = new Batches(config.triplestore)
         val ss = bs.samples(title).map(Sample(_))
-        val db = OTGInsert.matrixDB(true, config.data.foldDb)
+        val db = MatrixInsert.matrixDB(true, config.data.foldDb)
         try {
           deleteFromDB(db, ss)
         } finally {
@@ -446,7 +443,7 @@ class BatchManager(context: Context) {
       def run() {
         val bs = new Batches(config.triplestore)
         val ss = bs.samples(title).map(Sample(_))
-        val db = OTGInsert.matrixDB(false, config.data.exprDb)
+        val db = MatrixInsert.matrixDB(false, config.data.exprDb)
         try {
           deleteFromDB(db, ss)
         } finally {
