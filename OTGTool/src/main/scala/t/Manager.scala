@@ -29,11 +29,10 @@ import friedrich.util.CmdLineOptions
  * Management tool for T framework applications.
  */
 abstract class Manager[C <: Context, B <: BaseConfig] {
+  import scala.collection.{ Map => CMap }
 
   def requireEnv(env: scala.collection.Map[String, String], key: String, errMsg: String) =
     env.getOrElse(key, throw new Exception(s"Missing environment variable $key: $errMsg"))
-
-  import scala.collection.{ Map => CMap }
 
   def getTSConfig(env: CMap[String, String]): TriplestoreConfig =
     TriplestoreConfig(
@@ -86,6 +85,7 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
       case "batch"    => BatchManager(args.drop(1))
       case "instance" => InstanceManager(args.drop(1))
       case "platform" => PlatformManager(args.drop(1))
+      case "matrix" => MatrixManager(args.drop(1), this)
       case "help"     => showHelp()
     }
   }
@@ -109,6 +109,9 @@ trait ManagerTool extends CmdLineOptions {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  /**
+   * Run the task runner and monitor its progress on the console
+   */
   def startTaskRunner() {
     TaskRunner.start()
     Future {
