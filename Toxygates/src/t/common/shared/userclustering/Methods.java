@@ -31,6 +31,12 @@ public enum Methods {
     return method;
   }
 
+  /** 
+   *  Return an enum constant that matches given method.
+   *  Note that the usage of this function differs from Enum#valueOf(String).
+   *  
+   *  @see Enum#valueOf(Class, String)
+   */
   static public Methods lookup(String method) {
     for (Methods m : Methods.values()) {
       if (m.method.equalsIgnoreCase(method)) {
