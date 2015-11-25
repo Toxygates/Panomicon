@@ -373,7 +373,17 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   def prepareHeatmap(groups: JList[Group], chosenProbes: Array[String],
     valueType: ValueType, algorithm: Algorithm): String = {
 
-    val mm = getSessionData.matrix
+    //Reload data in a temporary controller if groups do not correspond to
+    //the ones in the current session
+    val cont = if (getSessionData.controller == null ||
+        getSessionData().controller.groups.toSet != groups.toSet) {
+      new MatrixController(context, () => getOrthologs(context),
+          groups, chosenProbes, valueType, false, false, false)
+    } else {
+      getSessionData.controller
+    }
+
+    val mm = cont.managedMatrix
     var mat = mm.current
     var info = mm.info
 

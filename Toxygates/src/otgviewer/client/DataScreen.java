@@ -30,6 +30,7 @@ import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.components.TickMenuItem;
 import t.common.shared.ItemList;
+import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.table.ExpressionTable;
@@ -209,13 +210,17 @@ public class DataScreen extends Screen {
           } else if (chosenColumns.size() > 1000) {
             Window.alert("Please define at most 1,000 columns.");
           } else {
-            new HeatmapDialog(DataScreen.this, et.getValueType());
+            makeHeatMap(DataScreen.this, et.getValueType());           
           }
         }
       });
       heatMapMenu.setEnabled(false);
       addAnalysisMenuItem(heatMapMenu);
     }
+  }
+  
+  protected HeatmapDialog makeHeatMap(Screen scr, ValueType vt) {
+    return new HeatmapDialog(DataScreen.this, et.getValueType());
   }
 
   @Override
