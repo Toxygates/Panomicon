@@ -70,6 +70,7 @@ import otgviewer.server.R
 import org.rosuda.REngine.Rserve.RserveException
 import t.common.shared.userclustering.Algorithm
 import t.common.server.userclustering.RClustering
+import org.apache.commons.lang3.StringUtils
 
 object MatrixServiceImpl {
 
@@ -380,7 +381,8 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     val geneSyms = mat.asRows.map(r => {
       val atomics = r.getAtomicProbes.map(Probe(_))
       val atrs = probes.withAttributes(atomics)
-      atrs.flatMap(_.symbols.map(_.symbol)).mkString("/")
+      // If character length of gene symbols is more than 30, abbreviate it
+      StringUtils.abbreviate(atrs.flatMap(_.symbols.map(_.symbol)).mkString("/"), 30)
     })
 
     val columns = mat.sortedColumnMap.filter(x => !info.isPValueColumn(x._2))
