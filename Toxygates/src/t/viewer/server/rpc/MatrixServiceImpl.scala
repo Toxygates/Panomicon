@@ -372,8 +372,6 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
   def prepareHeatmap(groups: JList[Group], chosenProbes: Array[String],
     valueType: ValueType, algorithm: Algorithm): String = {
-//
-//    loadMatrix(groups, chosenProbes, valueType)
 
     val mm = getSessionData.matrix
     var mat = mm.current
@@ -383,7 +381,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     val rowNames = mat.asRows.map(_.getAtomicProbes.mkString("/"))
     val columns = mat.sortedColumnMap.filter(x => !info.isPValueColumn(x._2))
     val colNames = columns.map(_._1)
-    val values = mat.selectColumns(columns.map(_._2)).toRowVectors.map(r => r.map(_.value))
+    val values = mat.selectColumns(columns.map(_._2)).toColVectors.map(r => r.map(_.value))
 
     val clust = new RClustering(userDir)
     clust.clustering(values.flatten, rowNames, colNames, algorithm)
