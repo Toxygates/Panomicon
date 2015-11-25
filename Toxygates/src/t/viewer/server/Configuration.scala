@@ -53,7 +53,8 @@ object Configuration {
       p("webappHomeDir"),
       p("matrixDbOptions"),
       p("feedbackReceivers"),
-      p("feedbackFromAddress"))
+      p("feedbackFromAddress"),
+      p("targetmineApiKey"))
   }
 }
 
@@ -71,7 +72,8 @@ class Configuration(val repositoryName: String,
     val webappHomeDir: String = null,
     val matrixDbOptions: String = null,
     val feedbackReceivers: String = null,
-    val feedbackFromAddress: String = null) {
+    val feedbackFromAddress: String = null,
+    val targetmineApiKey: String = null) {
 
   def this(owlimRepository: String, toxygatesHome: String, foldsDBVersion: Int) =
     this(owlimRepository, toxygatesHome, System.getProperty("otg.csvDir"),

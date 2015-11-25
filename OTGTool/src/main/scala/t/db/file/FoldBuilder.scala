@@ -28,7 +28,6 @@ import t.db.Metadata
 import t.db.Sample
 import t.db.PExprValue
 import t.db.ExprValue
-import otg.ExprValueBuilder
 import otg.Factory
 import scala.Vector
 

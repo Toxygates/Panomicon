@@ -91,6 +91,7 @@ public class ColumnScreen extends Screen {
 		final Screen s = this;
 		HorizontalPanel r = new HorizontalPanel();
 		r.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		r.addStyleName("slightlySpacedLeftRight");
 
 		Button b = new Button("Data...");
 		r.add(b);

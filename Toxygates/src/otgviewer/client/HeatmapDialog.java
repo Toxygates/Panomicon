@@ -187,16 +187,23 @@ public class HeatmapDialog extends DataListenerWidget {
     cDist.setSelectedIndex(lastClusteringAlgorithm.getColDistance().ordinal());
   }
 
+  private int mainWidth() {
+    return Window.getClientWidth() - 160;
+  }
+  
+  private int mainHeight() {
+    return Window.getClientHeight() - 120;
+  }
+  
   private void createPanel(ValueType defaultType) {
-    final ScrollPanel mainContent = new ScrollPanel();
-    mainContent.setPixelSize((int) (Window.getClientWidth() * 0.7),
-        (int) (Window.getClientHeight() * 0.7));
+    final ScrollPanel mainContent = new ScrollPanel(); 
+    mainContent.setPixelSize(mainWidth(), mainHeight());
     mainContent.setWidget(new HTML("<div id=\"inchlib\"></div>"));
     Window.addResizeHandler(new ResizeHandler() {
       @Override
       public void onResize(ResizeEvent event) {
-        int width = (int) (Window.getClientWidth() * 0.7);
-        int height = (int) (Window.getClientHeight() * 0.7);
+        int width = mainWidth();
+        int height = mainHeight();
         mainContent.setPixelSize(width, height);
         redraw(width, height);
       }

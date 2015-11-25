@@ -367,7 +367,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
 	@Override
 	public void sampleClassChanged(SampleClass sc) {		
 		if (!sc.equals(chosenSampleClass)) {			
-			super.sampleClassChanged(sc); //this call changes chosenDataFilter						
+			super.sampleClassChanged(sc); 						
 //			groups.clear();
 //			existingGroupsTable.setItems(new ArrayList<Group>(), true);			
 			compoundsChanged(new ArrayList<String>());
@@ -565,6 +565,10 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
 
 	private void displayGroup(String name) {
 		setHeading("editing " + name);
+		Group g = groups.get(name);
+		SampleClass macroClass = g.getSamples()[0].sampleClass().asMacroClass(schema);
+		changeSampleClass(macroClass);
+		screen.sampleClassChanged(macroClass);
 		
 		List<String> compounds = new ArrayList<String>(
 				SampleClass.getMajors(schema, groups.get(name), chosenSampleClass));
@@ -572,8 +576,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
 		compoundSel.setSelection(compounds);		
 		txtbxGroup.setValue(name);
 		nameIsAutoGen = false;
-		
-		Group g = groups.get(name);
+				
 		msg.setSelection(g.getUnits());
 		
 		setEditing(true);

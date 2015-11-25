@@ -43,12 +43,15 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
   String action;
   String url;
 
+  boolean withPassword;
   static String account, password;
 
-  public TargetMineSyncDialog(DataListenerWidget parent, String url, String action) {
+  public TargetMineSyncDialog(DataListenerWidget parent, String url, String action,
+      boolean withPassword) {
     super(parent);
     this.action = action;
     this.url = url;
+    this.withPassword = withPassword;
   }
 
   protected Widget content() {
@@ -59,39 +62,46 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
     if (custom != null) {
       vp.add(custom);
     }
-    
-    Label l =
-        new Label("You must have a TargetMine account in order to use "
-            + "this function. If you do not have one, you may create one " + "at " + url + ".");
-    l.setWordWrap(true);
-    vp.add(l);
 
-    ig = new InputGrid("Account name (e-mail address)", "Password") {
-      @Override
-      protected TextBox initTextBox(int i) {
-        if (i == 1) {
-          return new PasswordTextBox();
-        } else {
-          return super.initTextBox(i);
+    if (withPassword) {
+      Label l =
+          new Label("You must have a TargetMine account in order to use "
+              + "this function. If you do not have one, you may create one " + "at " + url + ".");
+      l.setWordWrap(true);
+      vp.add(l);
+      
+      ig = new InputGrid("Account name (e-mail address)", "Password") {
+        @Override
+        protected TextBox initTextBox(int i) {
+          if (i == 1) {
+            return new PasswordTextBox();
+          } else {
+            return super.initTextBox(i);
+          }
         }
-      }
-    };
-    ig.setValue(0, account);
-    ig.setValue(1, password);
-   
-    vp.add(ig);
+      };
+      ig.setValue(0, account);
+      ig.setValue(1, password);
+
+      vp.add(ig);
+    }
+
     vp.add(replaceCheck);
 
     Button b = new Button(action);
     b.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        if (ig.getValue(0).trim().equals("") || ig.getValue(1).trim().equals("")) {
+        if (withPassword && 
+            (ig.getValue(0).trim().equals("") || ig.getValue(1).trim().equals(""))
+            ) {
           Window.alert("Please enter both your account name and password.");
-        } else {
+        } else if (withPassword) {
           account = ig.getValue(0);
           password = ig.getValue(1);
           userProceed(ig.getValue(0), ig.getValue(1), replaceCheck.getValue());
+        } else {
+          userProceed(null, null, replaceCheck.getValue());
         }
       }
     });

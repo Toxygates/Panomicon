@@ -78,8 +78,6 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
       List(g.toString))
   }
 
-  protected def inverseTransform: Boolean = false
-
   def loadRawData(requestColumns: Seq[Group],
     reader: MatrixDBReader[E], sparseRead: Boolean,
     fullLoad: Boolean)(implicit context: MatrixContext): ManagedMatrix = {
@@ -97,7 +95,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
           toVector.distinct
       val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.id)))
       val data = reader.valuesForSamplesAndProbes(sortedSamples,
-        packedProbes, sparseRead, false, inverseTransform)
+        packedProbes, sparseRead, false)
 
       println(g.getUnits()(0).toString())
 
@@ -178,11 +176,11 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
  */
 class FoldBuilder(reader: MatrixDBReader[ExprValue], probes: Seq[String])
     extends ManagedMatrixBuilder[ExprValue](reader, probes) {
+
   protected def columnsFor(g: Group, sortedBarcodes: Seq[Sample],
     data: Seq[Seq[ExprValue]]): ExprMatrix =
     defaultColumns(g, sortedBarcodes, data)
 
-  override protected def inverseTransform = true
 }
 
 trait TreatedControlBuilder[E >: Null <: ExprValue] {
@@ -293,8 +291,6 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
 
   def colNames(g: Group) =
     List(g.toString, g.toString + "(p)")
-
-  override protected def inverseTransform = true
 }
 
 /**

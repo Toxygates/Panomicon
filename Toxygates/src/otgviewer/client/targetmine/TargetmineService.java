@@ -40,10 +40,8 @@ public interface TargetmineService extends RemoteService {
   public void exportTargetmineLists(String user, String pass, 
       StringList[] lists, boolean replace);
 
-  public String[][] enrichment(String user, String pass, 
-      StringList list, EnrichmentParams params);
+  public String[][] enrichment(StringList list, EnrichmentParams params);
   
-  public String[][][] multiEnrichment(String user, String pass, 
-      StringList[] lists, EnrichmentParams params);
+  public String[][][] multiEnrichment(StringList[] lists, EnrichmentParams params);
 
 }

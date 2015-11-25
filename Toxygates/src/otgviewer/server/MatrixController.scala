@@ -21,25 +21,28 @@
 package otgviewer.server
 
 import java.util.logging.Logger
-import scala.collection.JavaConversions._
+
+import scala.collection.JavaConversions.asScalaSet
+
 import otgviewer.shared.DBUnavailableException
 import otgviewer.shared.ManagedMatrixInfo
-import otgviewer.shared.Synthetic
 import t.Context
+import t.common.shared.AType
 import t.common.shared.PerfTimer
 import t.common.shared.ValueType
 import t.common.shared.probe.MedianValueMapper
 import t.common.shared.probe.OrthologProbeMapper
-import t.db.MatrixContext
+import t.common.shared.sample.ExprMatrix
+import t.common.shared.sample.ExpressionValue
+import t.common.shared.sample.Group
+import t.db.PExprValue
+import t.db.TransformingWrapper
 import t.db.kyotocabinet.KCExtMatrixDB
 import t.db.kyotocabinet.KCMatrixDB
 import t.platform.OrthologMapping
-import t.viewer.server.Platforms
-import t.common.shared.AType
-import t.viewer.shared.table.SortKey
-import t.common.shared.sample._
 import t.viewer.server.EVArray
-import t.common.shared.sample.ExpressionValue
+import t.viewer.server.Platforms
+import t.viewer.shared.table.SortKey
 
 /**
  * A managed matrix session and associated state.
@@ -87,6 +90,10 @@ class MatrixController(context: Context,
       val enhancedCols = !multiPlat
 
       val b = reader match {
+        case wrapped: TransformingWrapper[PExprValue] =>
+          assert(wrapped.wrapped.isInstanceOf[KCExtMatrixDB])
+          assert(typ == ValueType.Folds)
+          new ExtFoldBuilder(enhancedCols, wrapped, probes)
         case ext: KCExtMatrixDB =>
           assert(typ == ValueType.Folds)
           new ExtFoldBuilder(enhancedCols, ext, probes)

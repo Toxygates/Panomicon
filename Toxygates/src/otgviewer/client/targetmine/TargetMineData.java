@@ -61,7 +61,7 @@ public class TargetMineData {
   DialogBox dialog;
 
   public void importLists(final boolean asProbes) {
-    InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Import") {
+    InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Import", true) {
       @Override
       protected void userProceed(String user, String pass, boolean replace) {
         super.userProceed();
@@ -85,7 +85,7 @@ public class TargetMineData {
   }
 
   public void exportLists() {
-    InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Export") {
+    InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Export", true) {
       @Override
       protected void userProceed(String user, String pass, boolean replace) {
         super.userProceed();
@@ -118,8 +118,7 @@ public class TargetMineData {
         super.userProceed();
         String chosen = parent.chosenGeneSet;
         if (chosen != null && !chosen.equals("")) {          
-          doEnrich(user, pass, 
-              StringList.pickProbeLists(parent.chosenItemLists, chosen).get(0),
+          doEnrich(StringList.pickProbeLists(parent.chosenItemLists, chosen).get(0),
               getParams());
         } else {
           Window.alert("Please define and select a probe list first.");
@@ -129,9 +128,9 @@ public class TargetMineData {
     ui.display("TargetMine enrichment", DialogPosition.Center);
   }
 
-  public void doEnrich(final String user, final String pass, StringList list,
+  public void doEnrich(StringList list,
       EnrichmentParams params) {
-    tmService.enrichment(user, pass, list, params, new PendingAsyncCallback<String[][]>(parent,
+    tmService.enrichment(list, params, new PendingAsyncCallback<String[][]>(parent,
         "Unable to perform enrichment analysis. Check your username and password. "
             + "There may also be a server error.") {
       public void handleSuccess(String[][] result) {
@@ -145,29 +144,43 @@ public class TargetMineData {
       @Override
       protected void userProceed(String user, String pass, boolean replace) {
         super.userProceed();
-        doEnrich(user, pass, lists, getParams());
+        doEnrich(lists, getParams());
       }
     };
     ui.display("TargetMine cluster enrichment", DialogPosition.Center);
   }
   
-  public void doEnrich(final String user, final String pass, StringList[] lists,
+  private static String[] append(String[] first, String[] last) {    
+    String[] r = new String[first.length + last.length];
+    for (int i = 0; i < first.length; ++i) {
+      r[i] = first[i];      
+    }
+    for (int i = 0; i < last.length; ++i) {
+      r[i + first.length] = last[i];
+    }
+    return r;    
+  }
+  
+  public void doEnrich(final StringList[] lists,
       EnrichmentParams params) {
-    tmService.multiEnrichment(user, pass, lists, params,
+    tmService.multiEnrichment(lists, params,
          new PendingAsyncCallback<String[][][]>(parent,
         "Unable to perform enrichment analysis. Check your username and password. "
             + "There may also be a server error.") {
       public void handleSuccess(String[][][] result) {
         List<String[]> best = new ArrayList<String[]>();
-        best.add(result[0][0]); //Headers
+        best.add(append(new String[] {"Cluster", "Size"}, result[0][0])); //Headers
+        int i = 1;
         for (String[][] clust: result) {
+          int n = lists[i-1].size();
           if (clust.length < 2) {
             //TODO don't hardcode length here
-            String[] res = new String[] { "(No result)", "", "", "" };
+            String[] res = new String[] { "Cluster " + i, "" + n, "(No result)", "", "", "" };
             best.add(res);
           } else {
-            best.add(clust[1]);
+            best.add(append(new String[] {"Cluster " + i, "" + n }, clust[1]));
           }
+          i += 1;
         }
         StringArrayTable.displayDialog(best.toArray(new String[0][0]), "Best enrichment results", 800, 400);            
       }

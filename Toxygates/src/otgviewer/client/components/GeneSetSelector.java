@@ -34,7 +34,7 @@ import otgviewer.client.DataScreen;
 
 public class GeneSetSelector extends DataListenerWidget {
 
-  private static final String ALL_PROBES = "All probes";
+  public static final String ALL_PROBES = "All probes";
 
   private final DataScreen screen;
 
@@ -51,6 +51,7 @@ public class GeneSetSelector extends DataListenerWidget {
 
   private void makeSelector() {
     selector = Utils.mkHorizontalPanel(true);
+    selector.setHeight(DataScreen.STANDARD_TOOL_HEIGHT + "px");
     selector.setStylePrimaryName("colored");
     selector.addStyleName("slightlySpaced");
 
