@@ -353,7 +353,7 @@ public class HeatmapDialog extends DataListenerWidget {
         ClusteringListsStoreHelper helper = new ClusteringListsStoreHelper("userclustering", screen, lastClusteringAlgorithm) {
           @Override
           protected void onSaveSuccess(String name, ClusteringList items) {
-            Window.alert("Clustering are successfully saved.");
+            Window.alert("Clusters are successfully saved.");
           }
         };
         helper.save(objectIds);

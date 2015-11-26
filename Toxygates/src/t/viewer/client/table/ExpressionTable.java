@@ -643,8 +643,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
    */
   class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
     private Range range;
+    String appName = screen.appInfo().applicationName();
     final String errMsg =
-        "Unable to obtain data. If you have not used Toxygates in a while, try reloading the page.";
+        "Unable to obtain data. If you have not used " + appName + " in a while, try reloading the page.";
     AsyncCallback<List<ExpressionRow>> rowCallback = new AsyncCallback<List<ExpressionRow>>() {
       public void onFailure(Throwable caught) {
         loadedData = false;
@@ -800,7 +801,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
               logger.info("Data successfully loaded");
             } else {
               Window
-                  .alert("No data was available.\nThe view will switch to default selection.");
+                  .alert("No data was available for this gene set.\nThe view will switch to default selection.");
               onGettingExpressionFailed();
             }
           }
