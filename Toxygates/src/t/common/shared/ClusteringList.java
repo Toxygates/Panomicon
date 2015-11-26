@@ -167,17 +167,6 @@ public class ClusteringList extends ItemList {
       @Nullable String title) {
     List<ClusteringList> r = new LinkedList<ClusteringList>();
     for (ItemList l : from) {
-      if (l.type().equals("probes") && (title == null || l.name().equals(title))) {
-        r.add((ClusteringList) l);
-      }
-    }
-    return r;
-  }
-
-  public static List<ClusteringList> pickProbeLists(Collection<? extends ItemList> from,
-      @Nullable String title) {
-    List<ClusteringList> r = new LinkedList<ClusteringList>();
-    for (ItemList l : from) {
       if (l.type().equals("userclustering") && (title == null || l.name().equals(title))) {
         r.add((ClusteringList) l);
       }
