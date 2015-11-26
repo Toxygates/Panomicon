@@ -134,10 +134,17 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     }
 
     root.addSeparator(new MenuItemSeparator());
-    root.addItem(new MenuItem("Add new", false, addNewUserSet()));
-    root.addItem(new MenuItem("Manage", false, manageUserSet()));
+    root.addItem(new MenuItem("Manage", false, manageUserClustering()));
   }
   
+  private Command manageUserClustering() {
+    return new Command() {
+      public void execute() {
+        
+      }
+    };
+  }
+
   private String clusteringCaption(Algorithm algorithm) {
     StringBuffer sb = new StringBuffer();
     sb.append("Row -> ");
