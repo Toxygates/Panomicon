@@ -51,7 +51,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
       getElement().removeAllChildren();
       
       Element div = DOM.createDiv();
-      div.setInnerText(caption);
+      div.setInnerHTML(caption.replaceAll("\n", "<br>"));
       DOM.appendChild(getElement(), div);
       setStyleName(div, "menuSeparatorCaption");
 
