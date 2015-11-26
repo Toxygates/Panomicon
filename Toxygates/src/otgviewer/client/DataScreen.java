@@ -220,7 +220,6 @@ public class DataScreen extends Screen {
       heatMapMenu.setEnabled(false);
       addAnalysisMenuItem(heatMapMenu);
     }
-    logger.warning("Menu initialised.");
   }
 
   @Override
