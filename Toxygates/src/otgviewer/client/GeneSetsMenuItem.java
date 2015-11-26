@@ -151,7 +151,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     sb.append(algorithm.getRowMethod().asParam());
     sb.append(", ");
     sb.append(algorithm.getRowDistance().asParam());
-    sb.append("Col -> ");
+    sb.append(" Col -> ");
     sb.append(algorithm.getColMethod().asParam());
     sb.append(", ");
     sb.append(algorithm.getColDistance().asParam());
