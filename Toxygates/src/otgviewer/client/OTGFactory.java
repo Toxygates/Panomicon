@@ -76,4 +76,9 @@ public class OTGFactory implements UIFactory {
   public boolean hasHeatMapMenu() {
     return true;
   }
+
+  @Override
+  public GeneSetsMenuItem geneSetsMenuItem(DataScreen screen) {
+    return new GeneSetsMenuItem(screen);
+  }
 }

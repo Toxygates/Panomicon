@@ -29,6 +29,7 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.targetmine.TargetMineData;
+import t.common.shared.ClusteringList;
 import t.common.shared.StringList;
 import t.common.shared.ValueType;
 import t.common.shared.sample.Group;
@@ -311,8 +312,9 @@ public class HeatmapDialog extends DataListenerWidget {
     topContent.setSpacing(4);
     topContent.add(new Label("Value:"));
 
-    valType.addItem(ValueType.Folds.toString());
-    valType.addItem(ValueType.Absolute.toString());
+    for (ValueType v : ValueType.values()) {
+      valType.addItem(v.toString());
+    }
     valType.setSelectedIndex(defaultType.ordinal());
     valType.addChangeHandler(new ChangeHandler() {
       @Override
@@ -354,10 +356,10 @@ public class HeatmapDialog extends DataListenerWidget {
       public void onClick(ClickEvent event) {
         List<Collection<String>> objectIds = parse2dJsArray(getCurrentObjectIds());
 
-        ItemListsStoreHelper helper = new ItemListsStoreHelper("probes", screen) {
+        ClusteringListsStoreHelper helper = new ClusteringListsStoreHelper("userclustering", screen, lastClusteringAlgorithm) {
           @Override
-          protected void onSaveSuccess(String name, Collection<String> items) {
-            Window.alert("Gene sets are successfully saved.");
+          protected void onSaveSuccess(String name, ClusteringList items) {
+            Window.alert("Clustering are successfully saved.");
           }
         };
         helper.save(objectIds);

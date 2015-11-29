@@ -31,6 +31,12 @@ public enum Distances {
     return distance;
   }
 
+  /** 
+   *  Return an enum constant that matches given distance.
+   *  Note that the usage of this function differs from Enum#valueOf(String).
+   *  
+   *  @see Enum#valueOf(Class, String)
+   */
   static public Distances lookup(String distance) {
     for (Distances d : Distances.values()) {
       if (d.distance.equalsIgnoreCase(distance)) {

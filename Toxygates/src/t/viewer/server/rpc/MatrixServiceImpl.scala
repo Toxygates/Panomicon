@@ -32,7 +32,6 @@ import otgviewer.server.MatrixMapper
 import otgviewer.server.NormalizedBuilder
 import otgviewer.server.rpc.Conversions
 import otgviewer.server.rpc.Conversions.asScala
-
 import otgviewer.shared.FullMatrix
 import otgviewer.shared.ManagedMatrixInfo
 import otgviewer.shared.NoDataLoadedException
@@ -70,6 +69,7 @@ import otgviewer.server.R
 import org.rosuda.REngine.Rserve.RserveException
 import t.common.shared.userclustering.Algorithm
 import t.common.server.userclustering.RClustering
+import org.apache.commons.lang.StringUtils
 
 object MatrixServiceImpl {
 
@@ -81,7 +81,7 @@ object MatrixServiceImpl {
       orthologs = Some(probes.orthologMappings)
     }
     orthologs.get
-  } 
+  }
 }
 
 /**
@@ -389,12 +389,19 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
     //TODO shared logic with e.g. insertAnnotations, extract
     val rowNames = mat.asRows.map(_.getAtomicProbes.mkString("/"))
+    val geneSyms = mat.asRows.map(r => {
+      val atomics = r.getAtomicProbes.map(Probe(_))
+      val atrs = probes.withAttributes(atomics)
+      // If character length of gene symbols is more than 30, abbreviate it
+      StringUtils.abbreviate(atrs.flatMap(_.symbols.map(_.symbol)).mkString("/"), 30)
+    })
+
     val columns = mat.sortedColumnMap.filter(x => !info.isPValueColumn(x._2))
     val colNames = columns.map(_._1)
     val values = mat.selectColumns(columns.map(_._2)).toColVectors.map(r => r.map(_.value))
 
     val clust = new RClustering(userDir)
-    clust.clustering(values.flatten, rowNames, colNames, algorithm)
+    clust.clustering(values.flatten, rowNames, colNames, geneSyms, algorithm)
   }
 
 }
