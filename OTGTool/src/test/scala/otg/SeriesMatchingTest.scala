@@ -24,11 +24,12 @@ import org.junit.runner.RunWith
 import t.SeriesRanking.safePCorrelation
 import friedrich.data.Statistics.pearsonCorrelation
 import org.scalatest.junit.JUnitRunner
+import t.TTestSuite
 
 //TODO move to package t
 
 @RunWith(classOf[JUnitRunner])
-class SeriesMatchingTest extends OTGTestSuite {
+class SeriesMatchingTest extends TTestSuite {
   //	import SeriesRanking._
   //	import friedrich.data.Statistics._
   //

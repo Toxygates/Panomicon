@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -18,10 +18,10 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg
+package t
 
 import org.scalatest.Matchers
 import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
 
-trait OTGTestSuite extends FunSuite with Matchers with BeforeAndAfter
+trait TTestSuite extends FunSuite with Matchers with BeforeAndAfter

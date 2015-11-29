@@ -34,28 +34,30 @@ import t.db.MatrixContext
 import t.db.Sample
 import t.global.KCDBRegistry
 import t.platform.Probe
+import t.db.kyotocabinet.chunk.KCChunkMatrixDB
+import t.db.MatrixDBReader
+import t.db.MatrixDBWriter
 
 object KCMatrixDB {
-  def apply(file: String, writeMode: Boolean, ext: Boolean)
-  (implicit context: MatrixContext): AbstractKCMatrixDB[_] =
-    if (ext) applyExt(file, writeMode)
-    else apply(file, writeMode)
 
-  def applyExt(file: String, writeMode: Boolean)(implicit context: MatrixContext): KCExtMatrixDB = {
+  def get(file: String, writeMode: Boolean)(implicit context: MatrixContext): KCMatrixDB = {
     val db = KCDBRegistry.get(file, writeMode)
     db match {
-      case Some(d) =>
-        new KCExtMatrixDB(file, d)
+      case Some(d) => new KCMatrixDB(d)
       case None => throw new Exception("Unable to get DB")
     }
   }
 
-  def apply(file: String, writeMode: Boolean)(implicit context: MatrixContext): KCMatrixDB = {
-    val db = KCDBRegistry.get(file, writeMode)
-    db match {
-      case Some(d) =>
-        new KCMatrixDB(file, d)
-      case None => throw new Exception("Unable to get DB")
+  def getExt(file: String, writeMode: Boolean)(implicit context: MatrixContext): MatrixDB[PExprValue, PExprValue] = {
+    import KCChunkMatrixDB._
+    if (file.startsWith(CHUNK_PREFIX)) {
+      KCChunkMatrixDB.apply(removePrefix(file), writeMode)
+    } else {
+      val db = KCDBRegistry.get(file, writeMode)
+      db match {
+        case Some(d) => new KCExtMatrixDB(d)
+        case None    => throw new Exception("Unable to get DB")
+      }
     }
   }
 }
@@ -65,9 +67,9 @@ object KCMatrixDB {
  * indexed by sample ID and probe.
  *
  */
-abstract class AbstractKCMatrixDB[E >: Null <: ExprValue](file: String, db: DB)
+abstract class AbstractKCMatrixDB[E >: Null <: ExprValue](db: DB)
 (implicit val context: MatrixContext)
-  extends KyotoCabinetDB(file, db) with MatrixDB[E, E] {
+  extends KyotoCabinetDB(db) with MatrixDB[E, E] {
 
   /**
    * Key size: 8 bytes
@@ -137,9 +139,9 @@ abstract class AbstractKCMatrixDB[E >: Null <: ExprValue](file: String, db: DB)
 
             if (lastCode != i) {
               lastCode = i
-              r +:= (i, Sample(i))
+              r :+= (i, Sample(i))
               if (verbose) {
-                println(s"$count probes")
+                println(s"$count samples")
                 println(s"Begin sample ${i}")
                 count = 0
               }
@@ -253,8 +255,8 @@ abstract class AbstractKCMatrixDB[E >: Null <: ExprValue](file: String, db: DB)
   }
 }
 
-class KCMatrixDB(file: String, db: DB)(implicit context: MatrixContext)
-  extends AbstractKCMatrixDB[BasicExprValue](file, db) {
+class KCMatrixDB(db: DB)(implicit context: MatrixContext)
+  extends AbstractKCMatrixDB[BasicExprValue](db) {
 
   implicit val probeMap = context.probeMap
 
@@ -280,8 +282,8 @@ class KCMatrixDB(file: String, db: DB)(implicit context: MatrixContext)
   def emptyValue(probe: String) = BasicExprValue(0.0, 'A', probe)
 }
 
-class KCExtMatrixDB(file: String, db: DB)(implicit context: MatrixContext)
-  extends AbstractKCMatrixDB[PExprValue](file, db) with ExtMatrixDB {
+class KCExtMatrixDB(db: DB)(implicit context: MatrixContext)
+  extends AbstractKCMatrixDB[PExprValue](db) with ExtMatrixDB {
 
   implicit val probeMap = context.probeMap
 

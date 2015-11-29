@@ -18,12 +18,12 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg.db.kyotocabinet
+package t.db.kyotocabinet
 
 import org.junit.runner.RunWith
 import t.db.ExprValue
 import otg.OTGContext
-import otg.OTGTestSuite
+import t.TTestSuite
 import t.db.MatrixDBReader
 import org.scalatest.junit.JUnitRunner
 import otg.Species._
@@ -31,7 +31,7 @@ import t.testing.TestConfig
 import t.db.Sample
 
 @RunWith(classOf[JUnitRunner])
-class KCTest extends OTGTestSuite {
+class KCTest extends TTestSuite {
   var db: MatrixDBReader[ExprValue] = _
 
   val config = TestConfig.config

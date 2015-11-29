@@ -43,7 +43,7 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
       requireEnv(env, "T_TS_REPO", "Please specify triplestore repository"))
 
   def getDataConfig(env: CMap[String, String]): DataConfig =
-    new DataConfig(
+    factory.dataConfig(
       requireEnv(env, "T_DATA_DIR", "Please specify data directory"),
       requireEnv(env, "T_DATA_MATDBCONFIG", "Please specify matrix db flags"))
 
@@ -77,7 +77,7 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
 
   protected def showHelp() {
     println("Please supply one of the following commands")
-    println(" batch, instance, platform, help")
+    println(" batch, instance, platform, matrix, help")
   }
 
   protected def handleArgs(args: Array[String])(implicit context: C) {

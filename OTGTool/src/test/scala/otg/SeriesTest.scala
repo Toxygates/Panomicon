@@ -26,9 +26,10 @@ import t.db.kyotocabinet.KCSeriesDB
 import org.scalatest.junit.JUnitRunner
 import otg.Species._
 import t.testing.TestConfig
+import t.TTestSuite
 
 @RunWith(classOf[JUnitRunner])
-class SeriesTest extends OTGTestSuite {
+class SeriesTest extends TTestSuite {
   //  var db: SeriesDB = _
 
   val config = TestConfig.config

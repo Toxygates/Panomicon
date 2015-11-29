@@ -32,7 +32,7 @@ import otgviewer.server.MatrixMapper
 import otgviewer.server.NormalizedBuilder
 import otgviewer.server.rpc.Conversions
 import otgviewer.server.rpc.Conversions.asScala
-import otgviewer.shared.DBUnavailableException
+
 import otgviewer.shared.FullMatrix
 import otgviewer.shared.ManagedMatrixInfo
 import otgviewer.shared.NoDataLoadedException
@@ -81,7 +81,7 @@ object MatrixServiceImpl {
       orthologs = Some(probes.orthologMappings)
     }
     orthologs.get
-  }
+  } 
 }
 
 /**

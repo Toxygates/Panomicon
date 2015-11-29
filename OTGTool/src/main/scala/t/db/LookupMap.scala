@@ -35,6 +35,7 @@ trait LookupMap[T] {
   def tokens: Set[String]
 
   def pack(item: String): T
+
   def unpack(item: T): String
   def tryUnpack(item: T): Option[String]
 
@@ -44,19 +45,22 @@ trait LookupMap[T] {
 trait CachedLookupMap[T] extends LookupMap[T] {
   def data: Map[String, T]
 
-  protected[this] val map = data
-  protected[this] val revMap = Map[T, String]() ++ map.map(_.swap)
+  protected val revMap = Map[T, String]() ++ data.map(_.swap)
 
   def keys = revMap.keySet
-  def tokens: Set[String] = map.keySet
-  def pack(item: String): T = map.get(item).getOrElse(
+  def tokens: Set[String] = data.keySet
+  def pack(item: String): T = data.get(item).getOrElse(
     throw new LookupFailedException(s"Lookup failed for $item"))
   def unpack(item: T): String = revMap(item)
   def tryUnpack(item: T) = revMap.get(item)
 }
 
-abstract class MemoryLookupMap[T](val data: Map[String, T])
-  extends CachedLookupMap[T]
+trait CachedIntLookupMap extends CachedLookupMap[Int] {
+  protected val revLookup = Array.tabulate(keys.max + 1)(x => revMap.get(x))
+
+  override def tryUnpack(x: Int) = revLookup(x)
+  override def unpack(x: Int) =  revLookup(x).get
+}
 
 class LookupFailedException(reason: String) extends Exception(reason)
 
@@ -65,4 +69,7 @@ class LookupFailedException(reason: String) extends Exception(reason)
  */
 trait ProbeMap extends LookupMap[Int]
 
+/**
+ * A sample encoding.
+ */
 trait SampleMap extends LookupMap[Int]

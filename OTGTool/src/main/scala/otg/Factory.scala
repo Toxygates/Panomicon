@@ -42,7 +42,4 @@ class Factory extends t.Factory {
     otg.Context(bc)
   }
 
-  def dataConfig(dir: String, matrixDbOptions: String): DataConfig = {
-    new DataConfig(dir, matrixDbOptions)
-  }
 }

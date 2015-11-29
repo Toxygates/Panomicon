@@ -72,7 +72,7 @@ object KCDBRegistry {
 
   def isMaintenance: Boolean = maintenance
 
-  //To be used at the end if noClose mode is activated.
+  //To be used at the end if noClose/maintenance mode is activated.
   def closeAll() {
     SimpleRegistry.closeAll()
   }
@@ -89,7 +89,7 @@ object KCDBRegistry {
     if (myWriters.get == null) {
       None
     } else {
-      myWriters.get.get(file)
+      myWriters.get.get(realPath(file))
     }
   }
 
@@ -99,6 +99,7 @@ object KCDBRegistry {
    * will be removed.
    */
   private def setMyWriter(file: String, db: DB) = {
+    val rp = realPath(file)
     val m = if (myWriters.get == null) {
       val m = Map[String, DB]()
       myWriters.set(m)
@@ -107,9 +108,9 @@ object KCDBRegistry {
       myWriters.get
     }
     if (db == null) {
-      m -= file
+      m -= rp
     } else {
-      m += (file -> db)
+      m += (rp-> db)
     }
   }
 
@@ -120,21 +121,22 @@ object KCDBRegistry {
    */
   def getReader(file: String): Option[DB] = synchronized {
     println(s"Read request for $file")
+    val rp = realPath(file)
     if (maintenance) {
       return Some(SimpleRegistry.findOrCreate(file))
     }
 
-    if (getMyWriter(file) != None) {
+    if (getMyWriter(rp) != None) {
       //this thread is writing
-      incrReadCount(file)
-      getMyWriter(file)
-    } else if (inWriting.contains(file)) {
+      incrReadCount(rp)
+      getMyWriter(rp)
+    } else if (inWriting.contains(rp)) {
       println("Writing in progress - reader denied")
       None
     } else {
-      incrReadCount(file)
-      if (readers.contains(file)) {
-        Some(readers(file))
+      incrReadCount(rp)
+      if (readers.contains(rp)) {
+        Some(readers(rp))
       } else {
         val d = openRead(file)
         readers += file -> d
@@ -144,9 +146,10 @@ object KCDBRegistry {
   }
 
   private def incrReadCount(file: String) {
-    val oc = readCount.getOrElse(file, 0)
+    val rp = realPath(file)
+    val oc = readCount.getOrElse(rp, 0)
     println(s"Read count: $oc")
-    readCount += file -> (oc + 1)
+    readCount += rp -> (oc + 1)
   }
 
   /**
@@ -162,10 +165,11 @@ object KCDBRegistry {
       return Some(SimpleRegistry.findOrCreate(file))
     }
 
+    val rp = realPath(file)
     synchronized {
-      if (getMyWriter(file) != None) {
-        return getMyWriter(file)
-      } else if (inWriting.contains(file)) {
+      if (getMyWriter(rp) != None) {
+        return getMyWriter(rp)
+      } else if (inWriting.contains(rp)) {
         println("Writing by other thread in progress - writer denied")
         return None
       }
@@ -180,7 +184,7 @@ object KCDBRegistry {
       r = innerGetWriter(file)
     }
     if (r != None) {
-      setMyWriter(file, r.get)
+      setMyWriter(rp, r.get)
     } else {
       println("Writer request timed out")
     }
@@ -188,16 +192,17 @@ object KCDBRegistry {
   }
 
   private def innerGetWriter(file: String): Option[DB] = synchronized {
-    val rc = readCount.getOrElse(file, 0)
-    val iw = inWriting.contains(file)
+    val rp = realPath(file)
+    val rc = readCount.getOrElse(rp, 0)
+    val iw = inWriting.contains(rp)
     println(s"Read count for $file: $rc (waiting for 0) in writing: $iw (waiting for false)")
-    if (rc == 0 && !inWriting.contains(file)) {
-      if (readers.contains(file)) {
-        readers(file).close()
-        readers -= file
+    if (rc == 0 && !inWriting.contains(rp)) {
+      if (readers.contains(rp)) {
+        readers(rp).close()
+        readers -= rp
       }
       val w = openWrite(file)
-      inWriting += file
+      inWriting += rp
       Some(w)
     } else {
       None
@@ -212,21 +217,27 @@ object KCDBRegistry {
       return
     }
 
-    if (readCount.getOrElse(file, 0) > 0) {
-      readCount += (file -> (readCount(file) - 1))
+    val rp = realPath(file)
+    if (readCount.getOrElse(rp, 0) > 0) {
+      readCount += (rp -> (readCount(rp) - 1))
       //note we could close the DB here but we keep it open
       //for future users
-    } else if (inWriting.contains(file)) {
+    } else if (inWriting.contains(rp)) {
       //This release request must come from the same thread
       assert(getMyWriter(file) != None)
-      getMyWriter(file).get.close()
-      inWriting -= file
-      setMyWriter(file, null)
+      getMyWriter(rp).get.close()
+      inWriting -= rp
+      setMyWriter(rp, null)
 
     } else {
-      throw new Exception(s"Incorrect release request - $file was not open")
+      System.err.println(s"Warning, incorrect release request - $file was not open")
     }
   }
+
+  /**
+   * Remove kyoto cabinet options from file name
+   */
+  private def realPath(file: String) = file.split("#")(0)
 
   /**
    * Open the database for reading.

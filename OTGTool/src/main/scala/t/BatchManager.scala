@@ -21,7 +21,6 @@
 package t
 
 import scala.Vector
-
 import otg.sparql.OTGSamples
 import t.db.AbsoluteValueInsert
 import t.db.SimplePFoldValueInsert
@@ -51,6 +50,7 @@ import t.sparql.TRDF
 import t.sparql.Triplestore
 import t.sparql.TriplestoreMetadata
 import t.util.TempFiles
+import t.db.kyotocabinet.AbstractKCMatrixDB
 
 /**
  * Batch management CLI
@@ -142,9 +142,11 @@ object BatchManager extends ManagerTool {
         expectArgs(args, 4)
         val len = Integer.parseInt(args(3))
         val bm = new BatchManager(context)
-        val db = KCMatrixDB.apply(config.data.exprDb, false)(bm.matrixContext)
+        val db = config.data.absoluteDBReader(context.matrix)
+        //TODO don't cast here
+        val kdb = db.asInstanceOf[KCMatrixDB]
         try {
-          db.dumpKeys(args(1), args(2), len)
+          kdb.dumpKeys(args(1), args(2), len)
         } finally {
           db.release
         }
@@ -156,7 +158,7 @@ object BatchManager extends ManagerTool {
           println(s"$i of $n")
 
           val bm = new BatchManager(context)
-          val db = KCMatrixDB.apply(config.data.exprDb, false)(bm.matrixContext)
+          val db = config.data.absoluteDBReader(context.matrix)
           try {
             val keys = bm.matrixContext.probeMap.keys
             val xs = bm.matrixContext.sampleMap.tokens.take(len).map(Sample(_))
@@ -166,6 +168,7 @@ object BatchManager extends ManagerTool {
           }
         }
       case "sampleCheck" =>
+        //TODO: do not access the db files directly
         sampleCheck(config.data.exprDb,
           args.size > 1 && args(1) == "delete")
         sampleCheck(config.data.foldDb,
@@ -186,15 +189,18 @@ object BatchManager extends ManagerTool {
   private def sampleCheck(dbf: String, delete: Boolean)(implicit context: Context) {
     val bm = new BatchManager(context)
     implicit val mc = bm.matrixContext
-    val db = KCMatrixDB.apply(dbf, true)
+    val db = KCMatrixDB.get(dbf, true)
+    //TODO don't cast here
+    val kdb = db.asInstanceOf[KCMatrixDB]
+
     try {
-      val ss = db.allSamples(true, Set())
+      val ss = kdb.allSamples(true, Set())
       val xs = bm.matrixContext.sampleMap
       val unknowns = ss.map(_._1).toSet -- xs.keys
 
       println("Unknown set: " + unknowns)
       if (delete && !unknowns.isEmpty) {
-        db.allSamples(true, unknowns)
+        kdb.allSamples(true, unknowns)
       }
     } finally {
       db.release
@@ -409,7 +415,8 @@ class BatchManager(context: Context) {
   (implicit mc: MatrixContext) = {
     val data = new CSVRawExpressionData(List(foldFile), callFile.map(List(_)))
     val fvs = new PFoldValueBuilder(md, data)
-    new SimplePFoldValueInsert(config.data.foldDb, fvs).insert("Insert fold value data")
+    val db = config.data.extWriter(config.data.foldDb)
+    new SimplePFoldValueInsert(db, fvs).insert("Insert fold value data")
   }
 
   private def deleteFromDB(db: MatrixDBWriter[_], samples: Iterable[Sample]) {
@@ -482,7 +489,7 @@ class BatchManager(context: Context) {
       //idea: use RawExpressionData directly as source +
       //give KCMatrixDB and e.g. CSVRawExpressionData a common trait/adapter
 
-      val source = KCMatrixDB(config.data.foldDb, false)
+      val source = config.data.foldsDBReader
       val target = KCSeriesDB[S](config.data.seriesDb, true, builder)
       var inserted = 0
       try {
@@ -517,7 +524,7 @@ class BatchManager(context: Context) {
       //Note, strictly speaking we don't need the source data here.
       //This dependency could be removed by having the builder make points
       //with all zeroes.
-      val source = KCMatrixDB(config.data.foldDb, false)
+      val source = config.data.foldsDBReader
       val target = KCSeriesDB[S](config.data.seriesDb, true, builder)
       val filtSamples = tsmd.samples
       val total = filtSamples.size

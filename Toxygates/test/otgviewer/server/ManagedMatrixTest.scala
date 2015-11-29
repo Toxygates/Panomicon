@@ -30,12 +30,13 @@ import otgviewer.server.rpc.Conversions._
 
 @RunWith(classOf[JUnitRunner])
 class ManagedMatrixTest extends FunSuite {
+  import TestData._
 
-  implicit val testContext = TestData
   val schema = t.common.testing.TestData.dataSchema()
 
-  def normBuilder = new NormalizedBuilder(false, testContext.matrix,
-      TestData.probes)
+  //TODO absoluteDBReader will be null
+  def normBuilder = new NormalizedBuilder(false, context.absoluteDBReader,
+      probes.map(probeMap.unpack))
 
   val groups = TestData.samples.take(10).grouped(2).zipWithIndex.map(ss => {
     val sss = ss._1.map(s => asJavaSample(s))

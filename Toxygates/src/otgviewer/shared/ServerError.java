@@ -27,5 +27,10 @@ public class ServerError extends Exception implements Serializable {
 	
 	public ServerError() {}
 	
+	public ServerError(String reason, Throwable inner) {
+	  super(reason, inner);
+	}
+	
 	public ServerError(String reason) { super(reason); }
+	
 }
