@@ -33,6 +33,8 @@ case class VectorChunk[E <: ExprValue] (sample: Int, start: Int, xs: Seq[(Int, E
   def insert(p: Int, x: E): VectorChunk[E] = {
     val nxs = (xs.takeWhile(_._1 < p) :+ (p, x)) ++ xs.dropWhile(_._1 <= p)
 
+    assert(p >= start)
+    assert(p < start + CHUNKSIZE)
     assert(nxs.size <= CHUNKSIZE)
     VectorChunk(sample, start, nxs)
   }
@@ -87,8 +89,10 @@ class KCChunkMatrixDB(db: DB)(implicit mc: MatrixContext)
     (b.getInt, b.getInt)
   }
 
+  private val CHUNKVALSIZE = (4 + (8 + 8 + 2))
+
   protected def formValue(vc: V): Array[Byte] = {
-    val r = ByteBuffer.allocate(vc.xs.size * (4 + (8 + 8 + 2)))
+    val r = ByteBuffer.allocate(vc.xs.size * CHUNKVALSIZE)
     for (x <- vc.xs) {
       r.putInt(x._1) //probe
       r.putDouble(x._2.value)
@@ -101,15 +105,16 @@ class KCChunkMatrixDB(db: DB)(implicit mc: MatrixContext)
   protected def extractValue(sample: Int, start: Int,
       data: Array[Byte]): V = {
     val b = ByteBuffer.wrap(data)
-    var r = Seq[(Int, PExprValue)]()
+    var r = List[(Int, PExprValue)]()
+
     while(b.hasRemaining()) {
       val pr = b.getInt
       val x = b.getDouble
       val p = b.getDouble
       val c = b.getChar
-      r +:= (pr, PExprValue(x, p, c))
+      r ::= (pr, PExprValue(x, p, c))
     }
-    VectorChunk(sample, start, r)
+    VectorChunk(sample, start, r.reverse)
   }
 
   /**
@@ -191,15 +196,43 @@ class KCChunkMatrixDB(db: DB)(implicit mc: MatrixContext)
       yield (Sample(c.sample), x._2.copy(probe = probeName))
   }
 
+  //probes must be sorted in an order consistent with the chunkDB.
   def valuesInSample(x: Sample, probes: Iterable[Int]): Iterable[PExprValue] = {
+    //The chunk system guarantees that values will be read in order.
+    //We exploit the ordering here when checking for missing values.
+
+//    assert(probes.toSeq.sorted == probes.toSeq)
+
     val keys = probes.map(p => chunkStartFor(p)).toSeq.distinct
     val chunks = keys.map(k => findOrCreateChunk(x.dbCode, k))
-    val ps = probes.toSet
-    for (
-      c <- chunks; x <- c.xs;
-      if (ps.contains(x._1));
-      probeName <- probeMap.tryUnpack(x._1)
-    ) yield x._2.copy(probe = probeName)
+
+//    assert(chunks.sortBy(_.start) == chunks)
+//    for (c <- chunks) {
+//      if(c.xs.sortBy(_._1) != c.xs) {
+//        println(c.xs)
+//        assert(false)
+//      }
+//    }
+
+    val pit = probes.iterator.buffered
+    val vit = (chunks.flatMap(_.xs)).iterator.buffered
+    var r = Vector[PExprValue]()
+
+    while (vit.hasNext && pit.hasNext) {
+      if (vit.head._1 > pit.head) {
+        //missing value - do not advance vit
+        r :+= emptyValue(probeMap.unpack(pit.next))
+      } else if (vit.head._1 < pit.head) {
+        //non-requested value
+        vit.next
+      } else {
+        r :+= vit.next._2.copy(probe = probeMap.unpack(pit.next))
+      }
+    }
+    while (pit.hasNext) {
+        r :+= emptyValue(probeMap.unpack(pit.next))
+    }
+    r
   }
 
   def deleteSample(s: Sample): Unit = {

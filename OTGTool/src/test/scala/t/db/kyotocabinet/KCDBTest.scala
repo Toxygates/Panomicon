@@ -31,12 +31,13 @@ object KCDBTest extends Matchers {
     //test valuesAndProbes
     mdb.allSamples.toSet should equal (samples)
     val sseq = samples.toSeq
-    val ppacked = d.probes.map(probeMap.pack)
+    val ppacked = d.probes.map(probeMap.pack).toSeq.sorted
 
     for (s <- sseq.par; confirm = evs(s)) {
       val vs = mdb.valuesForSamplesAndProbes(List(s), ppacked, false, false).flatten
       //In the case of sparse matrices, we may extract additional "absent" values
       //in addition to the ones requested. Hence the subset method is necessary.
+
       confirm.values.toSet.subsetOf(vs.toSet) should be(true)
     }
 
@@ -57,20 +58,26 @@ object KCDBTest extends Matchers {
     }
 
     //test valuesinsample
-    for (s <- samples.par) {
+    for (s <- samples.par; cvs = evs(s)) {
        val vs = mdb.valuesInSample(s, ppacked)
-       val confirm = evs(s).map(_._2)
-       vs.toSet should equal(confirm.toSet)
+       val confirm = for (p <- ppacked;
+         v = cvs.getOrElse(probeMap.unpack(p),
+          mdb.emptyValue(probeMap.unpack(p)))
+          ) yield v
+       vs should equal(confirm)
     }
 
     //non-contiguous read
-    val ss = (0 until 50).map(i => pickOne(samples.toSeq))
-    val ps = (0 until 400).map(i => pickOne(probes))
+    val ss = (0 until 50).map(i => pickOne(samples.toSeq)).distinct
+    val ps = (0 until 400).map(i => pickOne(probes)).distinct
     val pset = ps.toSet.map(probeMap.unpack)
     val vs = mdb.valuesForSamplesAndProbes(ss, ps, false, false)
+//
+//    println("Request s: " + ss)
+//    println("Request p: " + ps)
 
     //Fill in with empty values as needed to get a full matrix
-    //for the confirmation data (the extMatrixDb should do this
+    //for the confirmation data (the db under test should do this
     //for missing values)
     val confirm = ps.map(p => evs.mapValues(_.getOrElse(probeMap.unpack(p),
         mdb.emptyValue(probeMap.unpack(p)))))
@@ -88,7 +95,7 @@ object KCDBTest extends Matchers {
       } else {
         if (r1 != r2) {
           for (p <- (r1.get zip r2.get)) {
-            println(p._1 + "," + p._2 + "," + (p._1 == p._2) + "\t")
+            println(p._1 + "," + p._2 + "," + (p._1 == p._2) + " " + p._1.probe + "\t")
           }
         }
         r1 should equal(r2)

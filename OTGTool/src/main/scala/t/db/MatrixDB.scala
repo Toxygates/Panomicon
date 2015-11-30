@@ -59,11 +59,11 @@ trait MatrixDBReader[+E >: Null <: ExprValue] {
    * This routine is optimised for the case of accessing many probes in
    * each array.
    * Probes must be sorted.
+   * The size of the returned iterable is the same as the passed in probes, and
+   * in the same order. Empty values will be inserted where none was found in the
+   * database.
    */
   def valuesInSample(x: Sample, probes: Iterable[Int]): Iterable[E]
-
-  //  def presentValuesInSample(x: Sample): Iterable[(Int, E)] =
-  //    valuesInSample(x).filter(_._2.present)
 
   def valuesInSamples(xs: Iterable[Sample], probes: Iterable[Int]) = {
     val sk = probes.toSeq.sorted
@@ -102,7 +102,7 @@ trait MatrixDBReader[+E >: Null <: ExprValue] {
    * The ordering of columns is guaranteed.
    * @param sparseRead if set, we use an algorithm that is optimised
    *  for the case of reading only a few values from each sample.
-   *  @param presentOnly if set, samples whose call is 'A' are replaced with the
+   * @param presentOnly if set, samples whose call is 'A' are replaced with the
    *  empty value.
    */
   def valuesForSamplesAndProbes(xs: Seq[Sample], probes: Seq[Int],
@@ -118,33 +118,15 @@ trait MatrixDBReader[+E >: Null <: ExprValue] {
       }).seq
 
     } else {
-      import scala.collection.mutable.{ Seq => MSeq }
-      var rows = Map[String, MSeq[E]]()
-      for (p <- ps) {
-        rows += probeMap.unpack(p) -> MSeq.fill[E](xs.size)(null)
-      }
-
       //not sparse read, go sample-wise
       //TODO this loop is a source of inefficiency - too much map manipulation
-      (xs zipWithIndex).par.foreach(bc => {
-        //probe to expression
-        var vs = valuesInSample(bc._1, ps).filter(!presentOnly || _.present)
-        rows.synchronized {
-          val it = vs.iterator
-          while (it.hasNext) {
-            val v = it.next
-            rows(v.probe)(bc._2) = v
-          }
-          for (p <- rows.keys) {
-            if (rows(p)(bc._2) == null) {
-//              Console.err.println(s"Failed read for $p ${bc._1}")
-              rows(p)(bc._2) = emptyValue(p)
-            }
-          }
-        }
+      val rs = (xs zipWithIndex).par.map(bc => {
+        valuesInSample(bc._1, ps).toSeq
+      }).seq.toSeq
+       Vector.tabulate(ps.size, xs.size)((p, x) =>
+         rs(x)(p))
+
       })
-      probes.map(p => rows(probeMap.unpack(p)))
-    })
     rows.toVector
   }
 }

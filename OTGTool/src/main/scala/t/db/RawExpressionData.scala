@@ -39,7 +39,7 @@ trait RawExpressionData {
   def expr(x: Sample, probe: String) = data(x)(probe)._1
   def p(x: Sample, probe: String) = data(x)(probe)._3
 
-  lazy val probes: Seq[String] =
+  lazy val probes: Iterable[String] =
     data.toSeq.flatMap(_._2.keys).distinct
 
 }
