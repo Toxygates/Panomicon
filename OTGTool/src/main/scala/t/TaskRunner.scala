@@ -103,7 +103,7 @@ object TaskRunner {
   /**
    * The task that is currently running or most recently completed.
    */
-  def currentTask: Option[Tasklet] = _currentTask
+  def currentTask: Option[Tasklet] =  _currentTask
 
   /**
    * Whether a task is currently busy. Even if this is false, the queue
@@ -185,6 +185,8 @@ object TaskRunner {
         }
         Thread.sleep(1000)
       }
+      _currentTask = None
+      _waitingForTask = false
       println("TaskRunner stopping")
       for (r <- resultMessages) {
         println(r)
