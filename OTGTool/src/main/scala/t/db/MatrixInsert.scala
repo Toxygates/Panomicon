@@ -25,18 +25,19 @@ import t.db.kyotocabinet.KCMatrixDB
 
 object MatrixInsert {
   def matrixDB(fold: Boolean, dbfile: String)(implicit mc: MatrixContext): MatrixDBWriter[_] =
-    KCMatrixDB(dbfile, true, fold)
+    if (fold) {
+      KCMatrixDB.getExt(dbfile, true)
+    } else {
+      KCMatrixDB.get(dbfile, true)
+    }
 }
 
 abstract class BasicValueInsert[E <: ExprValue](val db: MatrixDBWriter[E],
     raw: RawExpressionData)(implicit mc: MatrixContext) extends MatrixInsert[E](raw)
 
-/**
- * Build straightforward ExprValues with no p-values.
- */
 class AbsoluteValueInsert(dbfile: String, raw: RawExpressionData)
 (implicit mc: MatrixContext) extends MatrixInsert[BasicExprValue](raw) {
-  def db = KCMatrixDB(dbfile, true)
+  lazy val db = KCMatrixDB.get(dbfile, true)
 
   def mkValue(v: Double, c: Char, p: Double) =
     BasicExprValue(v, c)
@@ -45,10 +46,8 @@ class AbsoluteValueInsert(dbfile: String, raw: RawExpressionData)
 /**
  * As above but with p-values.
  */
-class SimplePFoldValueInsert(dbfile: String, raw: RawExpressionData)
+class SimplePFoldValueInsert(val db: MatrixDBWriter[PExprValue], raw: RawExpressionData)
 (implicit mc: MatrixContext) extends MatrixInsert[PExprValue](raw) {
-  val db = KCMatrixDB.applyExt(dbfile, true)
-
   def mkValue(v: Double, c: Char, p: Double) =
     PExprValue(v, p, c)
 }

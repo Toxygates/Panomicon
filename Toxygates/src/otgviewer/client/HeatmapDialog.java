@@ -32,6 +32,7 @@ import otgviewer.client.targetmine.TargetMineData;
 import t.common.shared.ClusteringList;
 import t.common.shared.StringList;
 import t.common.shared.ValueType;
+import t.common.shared.sample.Group;
 import t.common.shared.userclustering.Algorithm;
 import t.common.shared.userclustering.Distances;
 import t.common.shared.userclustering.Methods;
@@ -142,8 +143,13 @@ public class HeatmapDialog extends DataListenerWidget {
   private void executeClustering(Algorithm algo) {
     logger.info("Execute clustering with " + getValueType().name() + " " + algo.toString());
     this.lastClusteringAlgorithm = algo;
-    matrixService.prepareHeatmap(chosenColumns, chosenProbes, getValueType(), algo,
+    matrixService.prepareHeatmap(columnsForClustering(chosenColumns), 
+        chosenProbes, getValueType(), algo,
         prepareHeatmapCallback());
+  }
+  
+  protected List<Group> columnsForClustering(List<Group> inputs) {
+    return chosenColumns;
   }
   
   private AsyncCallback<String> prepareHeatmapCallback() {
@@ -188,11 +194,11 @@ public class HeatmapDialog extends DataListenerWidget {
     cDist.setSelectedIndex(lastClusteringAlgorithm.getColDistance().ordinal());
   }
 
-  private int mainWidth() {
+  protected int mainWidth() {
     return Window.getClientWidth() - 160;
   }
   
-  private int mainHeight() {
+  protected int mainHeight() {
     return Window.getClientHeight() - 120;
   }
   

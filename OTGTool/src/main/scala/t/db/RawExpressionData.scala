@@ -27,6 +27,9 @@ import scala.collection.{ Map => CMap }
  */
 trait RawExpressionData {
 
+  lazy val asExtValues: CMap[Sample, CMap[String, PExprValue]] =
+    data.mapValues(_.map(p => p._1 -> PExprValue(p._2._1, p._2._3, p._2._2, p._1)))
+
   /**
    * Map samples to (probe -> (expr value, call, p))
    */
@@ -36,6 +39,7 @@ trait RawExpressionData {
   def expr(x: Sample, probe: String) = data(x)(probe)._1
   def p(x: Sample, probe: String) = data(x)(probe)._3
 
-  // This assumes that all samples contain the same probe set.
-  def probes: Iterable[String] = data.headOption.map(_._2.keys).getOrElse(Iterable.empty)
+  lazy val probes: Seq[String] =
+    data.toSeq.flatMap(_._2.keys).distinct
+
 }

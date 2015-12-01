@@ -21,9 +21,7 @@
 package otgviewer.server
 
 import java.util.logging.Logger
-
 import scala.collection.JavaConversions.asScalaSet
-
 import otgviewer.shared.DBUnavailableException
 import otgviewer.shared.ManagedMatrixInfo
 import t.Context
@@ -43,6 +41,7 @@ import t.platform.OrthologMapping
 import t.viewer.server.EVArray
 import t.viewer.server.Platforms
 import t.viewer.shared.table.SortKey
+import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 
 /**
  * A managed matrix session and associated state.
@@ -81,7 +80,9 @@ class MatrixController(context: Context,
         mcontext.foldsDBReader
       }
     } catch {
-      case e: Exception => throw new DBUnavailableException()
+      case e: Exception =>
+        e.printStackTrace()
+        throw new DBUnavailableException(e)
     }
 
     val multiPlat = groupPlatforms.size > 1
@@ -89,10 +90,11 @@ class MatrixController(context: Context,
     try {
       val enhancedCols = !multiPlat
 
+      //TODO get rid of/factor out this, possibly to a factory of some kind
       val b = reader match {
         case wrapped: TransformingWrapper[PExprValue] =>
-          assert(wrapped.wrapped.isInstanceOf[KCExtMatrixDB])
-          assert(typ == ValueType.Folds)
+//          assert(wrapped.wrapped.isInstanceOf[KCExtMatrixDB])
+//          assert(typ == ValueType.Folds)
           new ExtFoldBuilder(enhancedCols, wrapped, probes)
         case ext: KCExtMatrixDB =>
           assert(typ == ValueType.Folds)
@@ -102,6 +104,12 @@ class MatrixController(context: Context,
             new NormalizedBuilder(enhancedCols, db, probes)
           } else {
             new FoldBuilder(db, probes)
+          }
+        case db: KCChunkMatrixDB =>
+          if (typ == ValueType.Absolute) {
+            new NormalizedBuilder(enhancedCols, db, probes)
+          } else {
+            new ExtFoldBuilder(enhancedCols, db, probes)
           }
         case _ => throw new Exception("Unexpected DB reader type")
       }

@@ -38,9 +38,9 @@ object ExprValue {
 
   def allMean(vs: Iterable[ExprValue], probe: String): ExprValue = {
     val value = if (vs.size > 0) {
-      vs.map(_.value).sum / vs.size 
+      vs.map(_.value).sum / vs.size
     } else {
-      0 
+      0
     }
 
     val nps = vs.filter(_.call != 'A')

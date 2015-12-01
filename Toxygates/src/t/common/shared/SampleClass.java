@@ -41,7 +41,7 @@ import t.common.shared.sample.Sample;
  * hardcoding strings.
  */
 @SuppressWarnings("serial")
-public class SampleClass implements Serializable, Packable {
+public class SampleClass implements Serializable, Packable, HasClass {
 
   /*
    * TODO: carry reference to schema?
@@ -110,6 +110,10 @@ public class SampleClass implements Serializable, Packable {
     keys.add(schema.mediumParameter());
     keys.add(schema.minorParameter());
     return copyOnly(keys);
+  }
+  
+  public SampleClass sampleClass() {
+    return this;
   }
 
   /**
@@ -272,6 +276,42 @@ public class SampleClass implements Serializable, Packable {
     return r;
   }
 
+  public static class Comparator implements java.util.Comparator<HasClass> {
+    DataSchema schema;
+    public Comparator(DataSchema schema) {
+      this.schema = schema;
+    }
+    
+    //negative iff x1 is before x2,
+    //positive iff x2 is before x1.
+    public int compare(String[] ref, String x1, String x2) {
+      return SharedUtils.indexOf(ref, x1) - SharedUtils.indexOf(ref, x2);
+    }
+    
+    public int compare(HasClass sc1, HasClass sc2) {
+      String maj1 = schema.getMajor(sc1), maj2 = schema.getMajor(sc2);
+      String med1 = schema.getMedium(sc1), med2 = schema.getMedium(sc2);
+      String min1 = schema.getMinor(sc1), min2 = schema.getMinor(sc2);
+      try {
+        String[] smaj = schema.sortedValues(schema.majorParameter());
+        String[] smed = schema.sortedValues(schema.mediumParameter());
+        String[] smin = schema.sortedValues(schema.minorParameter());
+
+        int c1 = compare(smaj, maj1, maj2);
+        if (c1 == 0) {
+          int c2 = compare(smed, med1, med2);
+          if (c2 == 0) {
+            return compare(smin, min1, min2);
+          }
+          return c2;
+        }
+        return c1;
+      } catch (Exception e) {
+        return 1;
+      }        
+    }    
+  }
+  
   public <T extends HasClass> List<T> filter(List<T> from) {
     List<T> r = new ArrayList<T>();
     for (T t : from) {

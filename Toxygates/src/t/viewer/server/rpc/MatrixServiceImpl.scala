@@ -22,16 +22,14 @@ package t.viewer.server.rpc
 
 import java.util.ArrayList
 import java.util.{ List => JList }
-import java.util.logging.Logger
-import javax.annotation.Nullable
+import t.viewer.server.EVArray
+import t.common.shared.sample.ExprMatrix
 import otgviewer.server.ExtFoldBuilder
 import otgviewer.server.FoldBuilder
 import otgviewer.server.ManagedMatrix
 import otgviewer.server.ManagedMatrixBuilder
-import otgviewer.server.MatrixController
 import otgviewer.server.MatrixMapper
 import otgviewer.server.NormalizedBuilder
-import otgviewer.server.R
 import otgviewer.server.rpc.Conversions
 import otgviewer.server.rpc.Conversions.asScala
 import otgviewer.shared.FullMatrix
@@ -40,30 +38,38 @@ import otgviewer.shared.NoDataLoadedException
 import otgviewer.shared.Synthetic
 import t.BaseConfig
 import t.Context
-import t.common.server.userclustering.RClustering
+import t.common.shared.AType
 import t.common.shared.DataSchema
 import t.common.shared.ValueType
+import t.common.shared.probe.MedianValueMapper
 import t.common.shared.probe.OrthologProbeMapper
-import t.common.shared.sample.ExprMatrix
+import t.common.shared.sample.Group
 import t.common.shared.sample.ExprMatrix
 import t.common.shared.sample.ExpressionRow
-import t.common.shared.sample.Group
-import t.common.shared.sample.Sample
-import t.common.shared.userclustering.Algorithm
 import t.db.MatrixContext
 import t.db.MatrixDBReader
 import t.db.kyotocabinet.KCExtMatrixDB
+import t.db.kyotocabinet.KCMatrixDB
 import t.platform.OrthologMapping
 import t.platform.Probe
 import t.sparql._
 import t.viewer.client.rpc.MatrixService
 import t.viewer.server.CSVHelper
 import t.viewer.server.Configuration
-import t.viewer.server.EVArray
 import t.viewer.server.Feedback
+import t.viewer.server.Platforms
 import t.viewer.shared.table.SortKey
-import org.apache.commons.lang.StringUtils
 import t.common.server.ScalaUtils
+import t.common.shared.PerfTimer
+import java.util.logging.Logger
+import t.common.shared.sample.Sample
+import otgviewer.server.MatrixController
+import javax.annotation.Nullable
+import otgviewer.server.R
+import org.rosuda.REngine.Rserve.RserveException
+import t.common.shared.userclustering.Algorithm
+import t.common.server.userclustering.RClustering
+import org.apache.commons.lang.StringUtils
 
 object MatrixServiceImpl {
 
@@ -367,7 +373,17 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   def prepareHeatmap(groups: JList[Group], chosenProbes: Array[String],
     valueType: ValueType, algorithm: Algorithm): String = {
 
-    val mm = getSessionData.matrix
+    //Reload data in a temporary controller if groups do not correspond to
+    //the ones in the current session
+    val cont = if (getSessionData.controller == null ||
+        getSessionData().controller.groups.toSet != groups.toSet) {
+      new MatrixController(context, () => getOrthologs(context),
+          groups, chosenProbes, valueType, false, false, false)
+    } else {
+      getSessionData.controller
+    }
+
+    val mm = cont.managedMatrix
     var mat = mm.current
     var info = mm.info
 

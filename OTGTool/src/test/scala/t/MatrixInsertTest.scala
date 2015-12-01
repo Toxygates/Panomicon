@@ -23,64 +23,21 @@ package t
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import t.db.testing.FakeBasicMatrixDB
-import t.db.testing.FakeRawExpressionData
 import t.testing.FakeContext
 import t.db.SampleIndex
 import t.db.Sample
 import t.db.ProbeMap
 import t.db.BasicExprValue
-import otg.OTGTestSuite
-import t.db.MemoryLookupMap
 import t.db.BasicValueInsert
+import t.db.testing.TestData
 
 @RunWith(classOf[JUnitRunner])
-class MatrixInsertTest extends OTGTestSuite {
+class MatrixInsertTest extends TTestSuite {
 
-  val ids = (1 to 24).toStream.iterator
-  val samples = for (
-    dose <- Set("Control", "High"); time <- Set("3hr", "24hr");
-    ind <- Set("1", "2", "3"); compound <- Set("Chocolate", "Tea");
-    s = Sample("s" + ids.next, Map("dose_level" -> dose, "individual_id" -> ind,
-      "exposure_time" -> time, "compound_name" -> compound))
-  ) yield s
-
-  def randomExpr(): (Double, Char, Double) = {
-    val v = Math.random * 10000
-    val call = (Math.random * 3).toInt match {
-      case 0 => 'A'
-      case 1 => 'P'
-      case 2 => 'M'
-    }
-    (v, call, Double.NaN)
-  }
-
-  val probes = (1 to 10)
-  implicit val probeMap = {
-    val pmap = Map() ++ probes.map(x => ("probe_" + x -> x))
-    new MemoryLookupMap(pmap) with ProbeMap
-  }
-
-  val dbIdMap = {
-    val dbIds = Map() ++ samples.zipWithIndex.map(s => (s._1.sampleId -> s._2))
-    new SampleIndex(dbIds)
-  }
-
-  implicit val context = new FakeContext(dbIdMap, probeMap)
-
-  def makeTestData(): FakeRawExpressionData = {
-    var testData = Map[Sample, Map[String, (Double, Char, Double)]]()
-    for (s <- samples) {
-      var thisProbe = Map[String, (Double, Char, Double)]()
-      for (p <- probeMap.tokens) {
-        thisProbe += (p -> randomExpr())
-      }
-      testData += (s -> thisProbe)
-    }
-    new FakeRawExpressionData(testData)
-  }
+  import TestData._
 
   test("Absolute value insertion") {
-    val data = makeTestData()
+    val data = makeTestData(false)
     val db = new FakeBasicMatrixDB()
 
     val ins = new BasicValueInsert(db, data) {

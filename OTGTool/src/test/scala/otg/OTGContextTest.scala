@@ -26,9 +26,10 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import otg.Species._
 import t.testing.TestConfig
+import t.TTestSuite
 
 @RunWith(classOf[JUnitRunner])
-class OTGContextTest extends OTGTestSuite {
+class OTGContextTest extends TTestSuite {
 
   val config = TestConfig.config
   val context = new OTGContext(config)
