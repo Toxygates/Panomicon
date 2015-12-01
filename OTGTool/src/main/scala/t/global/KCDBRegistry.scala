@@ -150,6 +150,18 @@ object KCDBRegistry {
     }
   }
 
+  protected[global] def getReadCount(file: String): Int = {
+    readCount.getOrElse(realPath(file), 0)
+  }
+
+  protected[global] def threadHasWriter(file: String): Boolean = {
+    getMyWriter(realPath(file)) != None
+  }
+
+  protected[global] def isInWriting(file: String): Boolean = {
+    inWriting.contains(realPath(file))
+  }
+
   private def incrReadCount(file: String) {
     val rp = realPath(file)
     val oc = readCount.getOrElse(rp, 0)
@@ -181,7 +193,7 @@ object KCDBRegistry {
     }
 
     var count = 0
-    var r: Option[DB] = None
+    var r: Option[DB] = innerGetWriter(file)
     //sleep at most 20s here
     while (count < 10 && r == None) {
       Thread.sleep(2000)
