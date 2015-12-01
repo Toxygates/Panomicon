@@ -63,7 +63,7 @@ public class StorageParser {
 //		logger.info("SET " + prefix + "." + key + " -> " + value);
 	}
 	
-	String getItem(String key) {
+	public String getItem(String key) {
 		String v = storage.getItem(prefix + "." + key);
 //		logger.info("GET " + prefix + "." + key + " -> " + v);
 		return v;
