@@ -338,7 +338,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   
   protected void showDataSources() {
     Widget info = new PlatformInfo(appInfo.platforms());
-    info.setWidth("300px");
     Utils.displayInPopup("Data sources information", info, DialogPosition.Center);
   }
 

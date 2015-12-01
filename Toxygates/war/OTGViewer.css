@@ -228,11 +228,24 @@ exprGrid {
 }
 
 .platform-info-title {
-	font-size:1.5em;
+	font-size:1.1em;
+	font-weight: bold;
+	margin:0.5em;
+	margin-right:2em;
+}
+
+.platform-info-heading {
+	font-size: 1.2em;	
+	font-weight: bold; 
+	margin:0.5em;
 }
 
 .platform-info-comment {
-	
+	margin:0.5em;
+}
+
+.platform-grid {
+	width: 500px;
 }
 
 /*

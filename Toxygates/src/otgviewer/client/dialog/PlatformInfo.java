@@ -23,10 +23,9 @@ package otgviewer.client.dialog;
 import t.common.shared.Platform;
 
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 public class PlatformInfo extends Composite {
 
@@ -34,22 +33,27 @@ public class PlatformInfo extends Composite {
     VerticalPanel vp = new VerticalPanel();
     initWidget(vp);
     
+    Grid g = new Grid(platforms.length + 1, 2);
+    vp.add(g);
+    g.setStylePrimaryName("platform-grid");
+    
+    Label l = new Label("Platform");
+    l.setStylePrimaryName("platform-info-heading");
+    g.setWidget(0, 0, l);
+    l = new Label("Comment");
+    l.setStylePrimaryName("platform-info-heading");
+    g.setWidget(0, 1, l);
+    
+    int i = 1;
     for (Platform p: platforms) {
-      vp.add(mkInfo(p));
+      l = new Label(p.getTitle());
+      l.setStylePrimaryName("platform-info-title");
+      g.setWidget(i, 0, l);
+      
+      l = new Label(p.getPublicComment());
+      l.setStylePrimaryName("platform-info-comment");
+      g.setWidget(i, 1, l);
+      i++;
     }
-  }
-  
-  private Widget mkInfo(Platform p) {
-    HorizontalPanel hp = new HorizontalPanel();
-    hp.setStylePrimaryName("platform-info");
-    
-    Label l = new Label(p.getTitle());
-    l.setStylePrimaryName("platform-info-title");
-    hp.add(l);
-    
-    l = new Label(p.getPublicComment());
-    l.setStylePrimaryName("platform-info-comment");
-    hp.add(l);
-    return hp;
-  }
+  }  
 }
