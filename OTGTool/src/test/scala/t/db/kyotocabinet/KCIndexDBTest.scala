@@ -11,8 +11,8 @@ class KCIndexDBTest extends TTestSuite {
   import TestData._
 
   test("basic") {
-    val db = memDB
-    val kci = new KCIndexDB(memDB)
+    val db = memDBHash
+    val kci = new KCIndexDB(memDBHash)
     for (k <- probeMap.tokens) {
       kci.put(k)
     }

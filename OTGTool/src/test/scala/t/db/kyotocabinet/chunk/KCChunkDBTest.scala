@@ -14,7 +14,7 @@ class KCChunkMatrixDBTest extends TTestSuite {
   import KCChunkMatrixDB._
 
   test("basic") {
-    val db = memDB
+    val db = memDBHash
     val edb = new KCChunkMatrixDB(db)
 
     testExtDb(edb, makeTestData(false))
@@ -22,7 +22,7 @@ class KCChunkMatrixDBTest extends TTestSuite {
   }
 
   test("sparse data") {
-    val db = memDB
+    val db = memDBHash
     val edb = new KCChunkMatrixDB(db)
 
     testExtDb(edb, makeTestData(true))

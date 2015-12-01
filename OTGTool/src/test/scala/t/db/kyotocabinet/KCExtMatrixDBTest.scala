@@ -11,7 +11,7 @@ class KCExtMatrixDBTest extends TTestSuite {
   import TestData._
 
   test("basic") {
-    val db = memDB
+    val db = memDBTree
     val edb = new KCExtMatrixDB(db)
 
     testExtDb(edb, makeTestData(false))
@@ -20,7 +20,7 @@ class KCExtMatrixDBTest extends TTestSuite {
   }
 
   test("sparse data") {
-    val db = memDB
+    val db = memDBTree
     val edb = new KCExtMatrixDB(db)
 
     testExtDb(edb, makeTestData(true))

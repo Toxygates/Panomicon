@@ -13,9 +13,15 @@ object KCDBTest extends Matchers {
   /**
    * Obtain a cache hash database (in-memory)
    */
-  def memDB: DB = {
+  def memDBHash: DB = {
     val r = new DB
     r.open("*", DB.OCREATE | DB.OWRITER)
+    r
+  }
+
+  def memDBTree: DB = {
+     val r = new DB
+    r.open("%", DB.OCREATE | DB.OWRITER)
     r
   }
 
