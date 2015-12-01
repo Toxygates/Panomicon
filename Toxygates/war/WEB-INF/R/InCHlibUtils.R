@@ -49,7 +49,7 @@ getCount <- function(i, cluster) {
 #' #hc.col <- hclust(dist(t(USArrests)), "ave")
 #' #getDendro(hc, rownames(USArrests), USArrests)
 #' #getDendro(hc.col, colnames(USArrests))
-getDendro <- function(cluster, leafNames, values=NA) {
+getDendro <- function(cluster, leafNames, values=NA, appendixes=list()) {
   getName <- function(id, leafNames) {
     if (length(id) == 1 && id < 0) {
       return(leafNames[abs(id)])
@@ -57,6 +57,15 @@ getDendro <- function(cluster, leafNames, values=NA) {
       return(paste("nodes@", id, sep=""))
     }
   }
+  getAppendix <- function(leaf) {
+    str <- appendixes[[leaf]]
+    if (is.null(str)) {
+      return("")
+    } else {
+      return(str)
+    }
+  }
+  
   nodes <- list()
   isRow <- FALSE
   if(is.data.frame(values)) {
@@ -77,7 +86,9 @@ getDendro <- function(cluster, leafNames, values=NA) {
       nodes[[leaf]] <- list("count"=1,
                             "parent"=nodeName,
                             "distance"=0,
-                            "objects"=list(leaf))
+                            "objects"=list(leaf),
+                            "appendix"=getAppendix(leaf)
+                           )
       if( isRow )
         nodes[[leaf]][['features']] <- unname(as.numeric(values[leaf, ]))
       }
@@ -107,16 +118,18 @@ getMetadata <- function(meta) {
 #' inch <- InCHlib(hc, hc.col, USArrests)
 #' library(rjson)
 #' writeLines(toJSON(inch), "heatmap.json")
-InCHlib <- function(hclustRow, hclustCol, valDf, metaDf=NA) {
-	# reorder cols
-	valDf <- valDf[, hclustCol[['order']]]
-  inch <- list('data'=list('nodes'=getDendro(hclustRow, rownames(valDf), valDf), 'feature_names'=colnames(valDf)), 'column_dendrogram'=list('nodes'=getDendro(hclustCol, colnames(valDf))))
-	# reorder columns dendrogram
+InCHlib <- function(hclustRow, hclustCol, valDf, metaDf=NA, appendixes=list()) {
+  # reorder cols
+  valDf <- valDf[, hclustCol[['order']]]
+  inch <- list('data'=list('nodes'=getDendro(hclustRow, rownames(valDf), valDf, appendixes), 'feature_names'=colnames(valDf)), 'column_dendrogram'=list('nodes'=getDendro(hclustCol, colnames(valDf))))
+  
+  # reorder columns dendrogram
   inch[['column_dendrogram']][['nodes']] <- inch[['column_dendrogram']][['nodes']][c(colnames(valDf), names(subset(inch[['column_dendrogram']][['nodes']], grepl("nodes@", names(inch[['column_dendrogram']][['nodes']])))))]
   if (is.data.frame(metaDf)) {
     inch[['metadata']]=list("nodes"=getMetadata(metaDf), 'feature_names'=colnames(metaDf))
   }
-	class(inch) <- "InCHlib"
+  class(inch) <- "InCHlib"
+
   return(inch)
 }
 
@@ -149,12 +162,12 @@ toMatrix <- function(data, rowNames, colNames, byrow=F) {
 #' @param colMethod   a string object that gives which method to be used for column clustering.
 #' @param colDistance a string object that gives which distance to be used for column clustering.
 #'
-getClusterAsJSON <- function(data, rowNames, colNames, rowMethod, rowDistance, colMethod, colDistance) {
+getClusterAsJSON <- function(data, rowNames, colNames, rowMethod, rowDistance, colMethod, colDistance, appendixes=list()) {
   mat <- toMatrix(data, rowNames, colNames, TRUE)
   d <- Dist(mat, method=rowDistance)
   d.col <- Dist(t(mat), method=colDistance)
   hc <- hclust(d, method=rowMethod)
   hc.col <- hclust(d.col, method=colMethod)
-  inch <- InCHlib(hc, hc.col, data.frame(mat))
+  inch <- InCHlib(hc, hc.col, data.frame(mat), appendixes=appendixes)
   return(toJSON(inch))
 }

@@ -61,6 +61,8 @@ import t.common.shared.sample.Sample
 import t.viewer.server.SharedDatasets
 import t.common.shared.sample.Unit
 import t.common.shared.sample.SampleColumn
+import t.common.shared.Platform
+import t.viewer.server.SharedPlatforms
 
 object SparqlServiceImpl {
   var inited = false
@@ -117,8 +119,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     this.instanceURI = instanceURI
 
     //TODO: set ProbeClusterings in appInfo
-    _appInfo = new AppInfo(conf.instanceName, datasets(),
-        predefProbeLists())
+    _appInfo = new AppInfo(conf.instanceName, sDatasets(),
+        sPlatforms(), predefProbeLists())
   }
 
   protected class SparqlState(ds: Datasets) {
@@ -156,12 +158,17 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     new java.util.LinkedList(seqAsJavaList(sls.sortBy(_.name)))
   }
 
-  private def datasets(): Array[Dataset] = {
+  private def sDatasets(): Array[Dataset] = {
     val ds = new Datasets(baseConfig.triplestore) with SharedDatasets
     (instanceURI match {
       case Some(u) => ds.sharedListForInstance(u)
       case None => ds.sharedList
     }).toArray
+  }
+
+  private def sPlatforms(): Array[Platform] = {
+    val pf = new Platforms(baseConfig.triplestore) with SharedPlatforms
+    pf.sharedList.toArray
   }
 
   def chooseDatasets(ds: Array[Dataset]): scala.Unit = {

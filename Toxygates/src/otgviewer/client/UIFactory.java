@@ -48,4 +48,7 @@ public interface UIFactory {
   public GeneSetEditor geneSetEditor(Screen screen);
   
   public boolean hasHeatMapMenu();
+  
+  public GeneSetsMenuItem geneSetsMenuItem(DataScreen screen);
+
 }

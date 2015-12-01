@@ -517,15 +517,54 @@ var InCHlibEx;
   }; // _draw_heatmap_row
 
   /** @override */
+  InCHlibEx.prototype._get_row_id_size = function(){
+    var self = this;
+    var objects, object_y = [], leaf_id, values = [], text;
+
+    for (var i = 0, len = self.heatmap_array.length; i < len; i++) {
+      leaf_id = self.heatmap_array[i][0];
+      objects = self.data.nodes[leaf_id].objects;
+      if(objects.length > 1){
+        return;
+      }
+      values.push(objects[0] + self.data.nodes[leaf_id].appendix);
+    }
+    var max_length = self._get_max_length(values);
+    var test_string = "";
+    for (var i = 0; i < max_length; i++) {
+      test_string += "E";
+    }
+
+    if (self.settings.fixed_row_id_size) {
+      var test = new Kinetic.Text({
+        fontFamily: self.settings.font,
+        fontSize: self.settings.fixed_row_id_size,
+        fontStyle: "italic",
+        listening: false,
+        text: test_string
+      });
+      self.row_id_size = self.settings.fixed_row_id_size;
+      self.right_margin = 20 + test.width();
+
+      if (this.right_margin < 100) {
+        self.right_margin = 100;
+      }
+    } else {
+      self.row_id_size = self._get_font_size(max_length, 85, self.pixels_for_leaf, 10);
+      self.right_margin = 100;
+    }
+
+  };
+
+  /** @override */
   InCHlibEx.prototype._draw_row_ids = function () {
     var self = this;
-    InCHlib.prototype._draw_row_ids.call(self);
-
     if (self.pixels_for_leaf < 6 || self.row_id_size < 5) {
       return;
     }
 
     var i, objects, keys, len;
+    var object_y = [];
     self.row_id_in_order = [];
     self.row_y_in_order = [];
 
@@ -535,9 +574,33 @@ var InCHlibEx;
       if (objects.length > 1) {
         return;
       }
+      object_y.push([objects[0], self.leaves_y_coordinates[leaf_id], self.data.nodes[leaf_id].appendix]);
+
       self.row_id_in_order.push(objects[0]);
       self.row_y_in_order.push(self.leaves_y_coordinates[leaf_id]);
     }
+
+    var x = self.distance + self._get_visible_count()*self.pixels_for_dimension + 15;
+
+    var displayText = function(object_y, i) {
+      var text = object_y[i][0];
+      if (object_y[i][2]) {
+        text = text + '(' + object_y[i][2] + ')';
+      }
+      return text;
+    };
+    for (i = 0; i < object_y.length; i++) {
+      var text = self.objects_ref.heatmap_value.clone({
+        x: x,
+        y: self._hack_round(object_y[i][1] - self.row_id_size/2),
+        fontSize: self.row_id_size,
+        text: displayText(object_y, i),
+        fontStyle: 'italic',
+        fill: "gray"
+      });
+      self.heatmap_layer.add(text);
+    }
+
   };
 
   /** @override */
@@ -758,10 +821,6 @@ var InCHlibEx;
   var log10 = Math.log10 || function (x) {
       return Math.log(x) / Math.LN10;
     };
-
-  var ensureFinite = function (value, defaultValue) {
-    return Number.isFinite(value) ? value : defaultValue;
-  }
 
   /** @override */
   InCHlibEx.prototype._draw_row_dendrogram = function (node_id) {

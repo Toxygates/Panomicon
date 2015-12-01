@@ -48,4 +48,18 @@ public class ClassicOTGFactory extends OTGFactory {
   public boolean hasHeatMapMenu() {
     return false;
   }
+  
+  @Override
+  public GeneSetsMenuItem geneSetsMenuItem(DataScreen screen) {
+    return new GeneSetsMenuItem(screen) {
+      @Override
+      protected boolean hasUserClustering() {
+        return false;
+      }
+      @Override
+      protected boolean hasPredefinedClustering() {
+        return false;
+      }
+    };
+  }
 }

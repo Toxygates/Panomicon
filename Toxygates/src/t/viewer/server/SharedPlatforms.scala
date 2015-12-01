@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -18,32 +18,25 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.admin.shared;
+package t.viewer.server
 
-import java.util.Date;
+import t.common.shared.Platform
 
-import t.common.shared.ManagedItem;
+/**
+ * Conversion into t.common.shared.Platform
+ */
+trait SharedPlatforms {
+  this: t.sparql.Platforms =>
 
-@SuppressWarnings("serial")
-public class Platform extends ManagedItem {
+  def sharedList: Iterable[Platform] =
+    list.map(asShared)
 
-	private int numProbes;	
-	private String publicComment;
-	
-	public Platform() { }
-	
-	public Platform(String title, int numProbes, String comment, Date date,
-	    String publicComment) {
-		super(title, comment, date);
-		this.numProbes = numProbes;
-		this.publicComment = publicComment;
-	}
-	
-	public int getNumProbes() {
-		return numProbes;
-	}
-	
-	public String getPublicComment() {
-	  return publicComment;
-	}
+  private def asShared(d: String): Platform = {
+    val com = comments
+    val pcom = publicComments
+    val ts = timestamps
+    new Platform(d, 0,
+      com.getOrElse(d, ""), ts.getOrElse(d, null),
+      pcom.getOrElse(d, ""))
+  }
 }

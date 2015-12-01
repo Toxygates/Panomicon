@@ -24,22 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import otgviewer.client.ClusteringSelector;
-import otgviewer.client.GeneOracle;
-import otgviewer.client.ItemListsStoreHelper;
-import otgviewer.client.ProbeSelector;
-import t.common.client.components.ResizingDockLayoutPanel;
-import t.common.client.components.ResizingListBox;
-import t.common.shared.ItemList;
-import t.common.shared.SampleClass;
-import t.common.shared.SharedUtils;
-import t.common.shared.Term;
-import t.common.shared.clustering.ProbeClustering;
-import t.common.shared.sample.Group;
-import t.viewer.client.Utils;
-import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.client.rpc.SparqlServiceAsync;
-
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -61,6 +45,22 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+
+import otgviewer.client.ClusteringSelector;
+import otgviewer.client.GeneOracle;
+import otgviewer.client.ProbeSelector;
+import otgviewer.client.StringListsStoreHelper;
+import t.common.client.components.ResizingDockLayoutPanel;
+import t.common.client.components.ResizingListBox;
+import t.common.shared.ItemList;
+import t.common.shared.SampleClass;
+import t.common.shared.SharedUtils;
+import t.common.shared.Term;
+import t.common.shared.clustering.ProbeClustering;
+import t.common.shared.sample.Group;
+import t.viewer.client.Utils;
+import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.client.rpc.SparqlServiceAsync;
 
 public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHandler {
 
@@ -294,7 +294,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
   }
 
   private boolean save(String name) {
-    ItemListsStoreHelper helper = new ItemListsStoreHelper("probes", screen);
+    StringListsStoreHelper helper = new StringListsStoreHelper("probes", screen);
 
     if (!name.equals(originalTitle) && helper.contains("probes", name)) {
       // TODO Show confirm message box whether to overwrite or not?

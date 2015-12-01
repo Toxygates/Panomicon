@@ -79,6 +79,8 @@ abstract public class ItemList implements Packable, Serializable {
 			return new StringList(type, name, items);
 		} else if (type.equals("compounds")) {
 			return new StringList(type, name, items);
+	    } else if (type.equals("userclustering")) {
+            return new ClusteringList(type, name, items);
 		} else {
 			// Unexpected type, ignore
 			return null;

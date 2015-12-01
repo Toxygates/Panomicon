@@ -68,6 +68,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   protected SampleColumn chosenCustomColumn;
   public List<ItemList> chosenItemLists = new ArrayList<ItemList>(); // TODO
   public String chosenGeneSet = new String();
+  public List<ItemList> chosenClusteringList = new ArrayList<ItemList>();
 
   protected final Logger logger = SharedUtils.getLogger("dlwidget");
   private StorageParser parser;
@@ -136,6 +137,11 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   public void geneSetChanged(String geneSet) {
     this.chosenGeneSet = geneSet;
     changeGeneSet(geneSet);
+  }
+
+  public void clusteringListsChanged(List<ItemList> lists) {
+    this.chosenClusteringList = lists;
+    changeClusteringLists(lists);
   }
 
   // outgoing signals
@@ -222,6 +228,13 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     }
   }
 
+  protected void changeClusteringLists(List<ItemList> lists) {
+    chosenClusteringList = lists;
+    for (DataViewListener l : listeners) {
+      l.clusteringListsChanged(lists);
+    }
+  }
+
   public void propagateTo(DataViewListener other) {
     other.datasetsChanged(chosenDatasets);
     other.sampleClassChanged(chosenSampleClass);
@@ -232,6 +245,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     other.customColumnChanged(chosenCustomColumn);
     other.itemListsChanged(chosenItemLists);
     other.geneSetChanged(chosenGeneSet);
+    other.clusteringListsChanged(chosenClusteringList);
   }
 
   protected Storage tryGetStorage() {
@@ -331,13 +345,24 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   }
 
   public void storeGeneSet(StorageParser p) {
-    logger.info("save gene set : " + chosenGeneSet);
     p.setItem("geneset", chosenGeneSet);
   }
 
+  public void storeClusteringLists(StorageParser p) {
+    p.setItem("clusterings", packItemLists(chosenClusteringList, "###"));
+  }
+
   public List<ItemList> loadItemLists(StorageParser p) {
+    return loadLists(p, "lists");
+  }
+
+  public List<ItemList> loadClusteringLists(StorageParser p) {
+    return loadLists(p, "clusterings");
+  }
+
+  public List<ItemList> loadLists(StorageParser p, String name) {
     List<ItemList> r = new ArrayList<ItemList>();
-    String v = p.getItem("lists");
+    String v = p.getItem(name);
     if (v != null) {
       String[] spl = v.split("###");
       for (String x : spl) {
@@ -349,6 +374,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     }
     return r;
   }
+
 
   /**
    * Load saved state from the local storage. 
@@ -405,6 +431,12 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     if (geneSet != null) {
       chosenGeneSet = geneSet;
       geneSetChanged(geneSet);
+    }
+    
+    lists = loadClusteringLists(p);
+    if (lists.size() > 0) {
+      chosenClusteringList = lists;
+      clusteringListsChanged(lists);
     }
   }
 

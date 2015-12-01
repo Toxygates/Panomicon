@@ -37,7 +37,8 @@ abstract class KyotoCabinetDB(db: DB) {
     //TODO in-memory dbs etc?
     val path = db.path()
     if (path != null &&
-        path != "*") { //in-memory DB)
+        path != "*" && //in memory cache DB
+        path != "%") { //in-memory tree DB
       KCDBRegistry.release(path)
     }
   }
