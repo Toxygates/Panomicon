@@ -72,6 +72,11 @@ object KCDBRegistry {
 
   def isMaintenance: Boolean = maintenance
 
+  /**
+   * Remove kyoto cabinet options from file name
+   */
+  private def realPath(file: String) = file.split("#")(0)
+
   //To be used at the end if noClose/maintenance mode is activated.
   def closeAll() {
     SimpleRegistry.closeAll()
@@ -139,7 +144,7 @@ object KCDBRegistry {
         Some(readers(rp))
       } else {
         val d = openRead(file)
-        readers += file -> d
+        readers += rp -> d
         Some(d)
       }
     }
@@ -233,11 +238,6 @@ object KCDBRegistry {
       System.err.println(s"Warning, incorrect release request - $file was not open")
     }
   }
-
-  /**
-   * Remove kyoto cabinet options from file name
-   */
-  private def realPath(file: String) = file.split("#")(0)
 
   /**
    * Open the database for reading.

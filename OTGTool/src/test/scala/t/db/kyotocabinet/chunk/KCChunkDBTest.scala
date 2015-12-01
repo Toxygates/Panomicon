@@ -33,7 +33,7 @@ class KCChunkMatrixDBTest extends TTestSuite {
     def mkValues(n: Int) = (0 until n).map(i => randomPExpr(probeMap.unpack(i)))
 
     var vc = new VectorChunk[PExprValue](0, 0, Seq())
-    val xs = (mkValues(500) zipWithIndex)
+    val xs = (mkValues(500).zipWithIndex)
 
     val p1 = xs.take(100)
     for (x <- p1) {
