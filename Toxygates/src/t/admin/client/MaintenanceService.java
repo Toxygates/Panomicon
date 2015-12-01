@@ -22,10 +22,10 @@ import t.admin.shared.Batch;
 import t.admin.shared.Instance;
 import t.admin.shared.MaintenanceException;
 import t.admin.shared.OperationResults;
-import t.admin.shared.Platform;
 import t.admin.shared.Progress;
 import t.common.shared.Dataset;
 import t.common.shared.ManagedItem;
+import t.common.shared.Platform;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;

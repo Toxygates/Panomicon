@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 
 import t.common.shared.Dataset;
+import t.common.shared.Platform;
 import t.common.shared.StringList;
 import t.common.shared.clustering.ProbeClustering;
 import t.common.shared.sample.Group;
@@ -38,6 +39,7 @@ public class AppInfo implements Serializable {
 
   private String instanceName, pathologyTermsURL, targetmineURL, applicationName;
 
+  private Platform[] platforms = new Platform[0];
   private Group[] predefGroups = new Group[0];
   private Dataset[] datasets = new Dataset[0];
   private List<StringList> predefProbeLists = new ArrayList<StringList>();
@@ -51,19 +53,22 @@ public class AppInfo implements Serializable {
     pathologyTermsURL = pathologyTermsURL_;
     targetmineURL = targetmineURL_;
     applicationName = applicationName_;
-    // NB does not set datasets
+    // NB does not set datasets or platforms
   }
 
-  public AppInfo(String instanceName_, Dataset[] datasets, List<StringList> probeLists) {
+  public AppInfo(String instanceName_, Dataset[] datasets, Platform[] platforms,
+      List<StringList> probeLists) {
     this(instanceName_, "http://toxico.nibiohn.go.jp/open-tggates/doc/pathology_parameter.pdf",
         "http://targetmine.mizuguchilab.org", "Toxygates");
     this.datasets = datasets;
     predefProbeLists = probeLists;
+    this.platforms = platforms;
   }
 
-  public AppInfo(String instanceName_, Dataset[] datasets, List<StringList> probeLists,
+  public AppInfo(String instanceName_, Dataset[] datasets,
+      Platform[] platforms, List<StringList> probeLists,
       List<ProbeClustering> probeClusterings) {
-    this(instanceName_, datasets, probeLists);
+    this(instanceName_, datasets, platforms, probeLists);
     this.probeClusterings = probeClusterings;
     // probeClusterings.add(new ProbeClustering("LV_K120", new Algorithm("Hierarchical"), "K"));
   }
@@ -100,6 +105,10 @@ public class AppInfo implements Serializable {
 
   public Dataset[] datasets() {
     return datasets;
+  }
+  
+  public Platform[] platforms() {
+    return platforms;
   }
 
   public Collection<StringList> predefinedProbeLists() {

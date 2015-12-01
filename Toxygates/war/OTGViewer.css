@@ -223,6 +223,18 @@ exprGrid {
   font-size: 0.75em;
 }
 
+.platform-info {
+	margin: 5px;
+}
+
+.platform-info-title {
+	font-size:1.5em;
+}
+
+.platform-info-comment {
+	
+}
+
 /*
  Fix "Ghost scrollbar" issue in Safari with trackpads.
  See https://groups.google.com/forum/#!topic/google-web-toolkit/xxeS6LETdBs

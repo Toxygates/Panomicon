@@ -33,6 +33,7 @@ import javax.annotation.Nullable;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.dialog.FeedbackForm;
+import otgviewer.client.dialog.PlatformInfo;
 import otgviewer.client.targetmine.TargetMineData;
 import t.common.shared.SharedUtils;
 import t.viewer.client.Utils;
@@ -72,6 +73,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * The main entry point for Toxygates. The main task of this class is to manage the history
@@ -300,6 +302,12 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
         currentScreen.showHelp();
       }
     }));
+    
+    hm.addItem(new MenuItem("Data sources...", new Command() {
+      public void execute() {
+        showDataSources();
+      }
+    }));
 
     hm.addItem(new MenuItem("Download user guide...", new Command() {
       public void execute() {
@@ -326,6 +334,12 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     }));
 
     return menuBar;
+  }
+  
+  protected void showDataSources() {
+    Widget info = new PlatformInfo(appInfo.platforms());
+    info.setWidth("300px");
+    Utils.displayInPopup("Data sources information", info, DialogPosition.Center);
   }
 
   /**

@@ -31,8 +31,11 @@ object Platforms {
   }
 }
 
-//TODO update mechanism
+/**
+ * A probe and platform registry.
+ */
 class Platforms(val data: Map[String, Set[String]]) {
+//TODO: update mechanism
 
 //  println("Platforms: ")
 //  for (p <- data) {

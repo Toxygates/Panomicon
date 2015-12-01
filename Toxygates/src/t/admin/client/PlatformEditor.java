@@ -23,7 +23,7 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
-import t.admin.shared.Platform;
+import t.common.shared.Platform;
 
 import com.google.gwt.user.client.ui.TextArea;
 
