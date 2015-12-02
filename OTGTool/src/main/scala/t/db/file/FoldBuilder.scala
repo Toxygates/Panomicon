@@ -115,7 +115,12 @@ class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
     for (probe <- input.probes) {
       val cs = controlSamples.map(input.expr(_, probe))
       val ts = treatedSamples.map(input.expr(_, probe))
-      pVals += (probe -> tt.tTest(cs.toArray, ts.toArray))
+      val pval = if (cs.size >= 2 && ts.size >= 2) {
+        tt.tTest(cs.toArray, ts.toArray)
+      } else {
+        Double.NaN
+      }
+      pVals += (probe -> pval)
     }
 
     for (x <- treatedSamples) {

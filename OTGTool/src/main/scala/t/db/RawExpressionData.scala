@@ -43,3 +43,10 @@ trait RawExpressionData {
     data.toSeq.flatMap(_._2.keys).distinct
 
 }
+
+class Log2Data(raw: RawExpressionData) extends RawExpressionData {
+  private val log2 = Math.log(2)
+  private def l2(x: Double) = Math.log(x) / log2
+
+  def data = raw.data.mapValues(_.mapValues(x => (l2(x._1), x._2, x._3)))
+}

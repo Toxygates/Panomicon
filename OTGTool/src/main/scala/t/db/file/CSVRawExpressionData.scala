@@ -74,7 +74,8 @@ class CSVRawExpressionData(exprFiles: Iterable[String],
    * The result is a map that maps samples to probe IDs and values.
    */
   private[this] def readExprValues(file: String): CMap[Sample, CMap[String, Double]] = {
-    readValuesFromTable(file, _.toDouble)
+    import java.lang.{Double => JDouble}
+    readValuesFromTable(file, _.toDouble).mapValues(_.filter(v => !JDouble.isNaN(v._2)))
   }
 
   import scala.collection.mutable.{Map => MuMap}  //more efficient to build

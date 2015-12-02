@@ -66,7 +66,7 @@ object MatrixManager extends ManagerTool {
             val data = Map(s -> (Map() ++
               vs.map(v => v.probe -> (v.value, v.call, v.p))))
           }
-          val t = new SimplePFoldValueInsert(toDConfig.extWriter(toDConfig.foldDb), raw).
+          val t = new SimplePFoldValueInsert(() => toDConfig.extWriter(toDConfig.foldDb), raw).
             insert("insert folds")
           TaskRunner.runAndStop(t)
           println(s"$s (folds)")
@@ -82,7 +82,7 @@ object MatrixManager extends ManagerTool {
           //Not a bug - we insert PExprValue here as well, so we
           //do not use the AbsoluteValueInsert. The BasicExprValue format is
           //deprecated.
-          val t = new SimplePFoldValueInsert(toDConfig.extWriter(toDConfig.exprDb), raw).
+          val t = new SimplePFoldValueInsert(() => toDConfig.extWriter(toDConfig.exprDb), raw).
             insert("insert absolute values")
           TaskRunner.runAndStop(t)
           println(s"$s (abs)")

@@ -21,15 +21,18 @@
 package t
 
 import scala.Vector
+
 import otg.sparql.OTGSamples
 import t.db.AbsoluteValueInsert
-import t.db.SimplePFoldValueInsert
 import t.db.ExprValue
+import t.db.Log2Data
 import t.db.LookupFailedException
 import t.db.MatrixContext
+import t.db.MatrixDBReader
 import t.db.MatrixDBWriter
 import t.db.MatrixInsert
 import t.db.Metadata
+import t.db.PExprValue
 import t.db.ProbeIndex
 import t.db.ProbeMap
 import t.db.Sample
@@ -37,6 +40,7 @@ import t.db.SampleIndex
 import t.db.SampleMap
 import t.db.Series
 import t.db.SeriesBuilder
+import t.db.SimplePFoldValueInsert
 import t.db.file.CSVRawExpressionData
 import t.db.file.PFoldValueBuilder
 import t.db.kyotocabinet.KCIndexDB
@@ -50,7 +54,6 @@ import t.sparql.TRDF
 import t.sparql.Triplestore
 import t.sparql.TriplestoreMetadata
 import t.util.TempFiles
-import t.db.kyotocabinet.AbstractKCMatrixDB
 
 /**
  * Batch management CLI
@@ -252,7 +255,8 @@ class BatchManager(context: Context) {
 
   def addBatch[S <: Series[S]](title: String, comment: String, metadata: Metadata,
     dataFile: String, callFile: Option[String],
-    append: Boolean, sbuilder: SeriesBuilder[S]): Iterable[Tasklet] = {
+    append: Boolean, sbuilder: SeriesBuilder[S],
+    exprAsFold: Boolean = false, simpleLog2: Boolean = false): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
     val ts = config.triplestore.get
 
@@ -270,8 +274,8 @@ class BatchManager(context: Context) {
     implicit val mc = matrixContext()
     r :+= addEnums(metadata, sbuilder)
 
-    r :+= addExprData(dataFile, callFile)
-    r :+= addFoldsData(metadata, dataFile, callFile)
+    r :+= addExprData(dataFile, callFile, exprAsFold)
+    r :+= addFoldsData(metadata, dataFile, callFile, simpleLog2)
     r :+= addSeriesData(metadata, sbuilder)
     r
   }
@@ -406,16 +410,28 @@ class BatchManager(context: Context) {
     }
   }
 
-  def addExprData(niFile: String, callFile: Option[String])(implicit mc: MatrixContext) = {
+  //TODO: remove treatAsFold parameter when possible
+  def addExprData(niFile: String, callFile: Option[String],
+    treatAsFold: Boolean)(implicit mc: MatrixContext) = {
     val data = new CSVRawExpressionData(List(niFile), callFile.map(List(_)))
-    new AbsoluteValueInsert(config.data.exprDb, data).insert("Insert normalised intensity data")
+    if (treatAsFold) {
+      val db = () => config.data.extWriter(config.data.exprDb)
+      new SimplePFoldValueInsert(db, data).insert("Insert fold value data")
+    } else {
+      new AbsoluteValueInsert(config.data.exprDb, data).insert("Insert normalised intensity data")
+    }
   }
 
-  def addFoldsData(md: Metadata, foldFile: String, callFile: Option[String])
+  def addFoldsData(md: Metadata, foldFile: String, callFile: Option[String],
+      simpleLog2: Boolean)
   (implicit mc: MatrixContext) = {
     val data = new CSVRawExpressionData(List(foldFile), callFile.map(List(_)))
-    val fvs = new PFoldValueBuilder(md, data)
-    val db = config.data.extWriter(config.data.foldDb)
+    val fvs = if (simpleLog2) {
+      new Log2Data(data)
+    } else {
+      new PFoldValueBuilder(md, data)
+    }
+    val db = () => config.data.extWriter(config.data.foldDb)
     new SimplePFoldValueInsert(db, fvs).insert("Insert fold value data")
   }
 
@@ -489,10 +505,11 @@ class BatchManager(context: Context) {
       //idea: use RawExpressionData directly as source +
       //give KCMatrixDB and e.g. CSVRawExpressionData a common trait/adapter
 
-      val source = config.data.foldsDBReader
-      val target = KCSeriesDB[S](config.data.seriesDb, true, builder)
+      val source: MatrixDBReader[PExprValue] = config.data.foldsDBReader
+      var target: KCSeriesDB[S] = null
       var inserted = 0
       try {
+        target = KCSeriesDB[S](config.data.seriesDb, true, builder)
         val xs = builder.makeNew(source, md)
         val total = xs.size
         var pcomp = 0d
@@ -505,8 +522,10 @@ class BatchManager(context: Context) {
         }
       } finally {
         logResult(s"$inserted series inserted")
+        if (target != null) {
+          target.release
+        }
         source.release
-        target.release
       }
     }
   }
@@ -524,12 +543,13 @@ class BatchManager(context: Context) {
       //Note, strictly speaking we don't need the source data here.
       //This dependency could be removed by having the builder make points
       //with all zeroes.
-      val source = config.data.foldsDBReader
-      val target = KCSeriesDB[S](config.data.seriesDb, true, builder)
-      val filtSamples = tsmd.samples
-      val total = filtSamples.size
-      var pcomp = 0d
+      val source: MatrixDBReader[PExprValue] = config.data.foldsDBReader
+      var target: KCSeriesDB[S] = null
       try {
+        target = KCSeriesDB[S](config.data.seriesDb, true, builder)
+        val filtSamples = tsmd.samples
+        val total = filtSamples.size
+        var pcomp = 0d
         var it = filtSamples.grouped(100)
         while (it.hasNext && shouldContinue(pcomp)) {
           val sg = it.next
@@ -540,8 +560,10 @@ class BatchManager(context: Context) {
           pcomp += 100.0 / total
         }
       } finally {
+        if (target != null) {
+          target.release
+        }
         source.release
-        target.release
       }
     }
   }

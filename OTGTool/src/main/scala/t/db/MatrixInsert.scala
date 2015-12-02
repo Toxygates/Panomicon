@@ -46,10 +46,15 @@ class AbsoluteValueInsert(dbfile: String, raw: RawExpressionData)
 /**
  * As above but with p-values.
  */
-class SimplePFoldValueInsert(val db: MatrixDBWriter[PExprValue], raw: RawExpressionData)
+class SimplePFoldValueInsert(getDB: () => MatrixDBWriter[PExprValue], raw: RawExpressionData)
 (implicit mc: MatrixContext) extends MatrixInsert[PExprValue](raw) {
   def mkValue(v: Double, c: Char, p: Double) =
     PExprValue(v, p, c)
+
+   //Importantly, this does not get initialised until  MatrixInsert.insert actually runs
+    //(which means the releasing finalizer will also run)
+    //The same is true for AbsoluteValueInsert above
+  lazy val db = getDB()
 }
 
 abstract class MatrixInsert[E <: ExprValue](raw: RawExpressionData)

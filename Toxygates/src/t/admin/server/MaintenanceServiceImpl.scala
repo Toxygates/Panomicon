@@ -115,6 +115,9 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
       throw new MaintenanceException(e)
   }
 
+  protected def exprAsFold: Boolean = false
+  protected def simpleLog2: Boolean = false
+
   def addBatchAsync(b: Batch): Unit = {
 	  showUploadedFiles()
 	  grabRunner()
@@ -143,7 +146,8 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
       TaskRunner ++= bm.addBatch(b.getTitle, b.getComment, md,
         dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
-        false, baseConfig.seriesBuilder)
+        false, baseConfig.seriesBuilder,
+        exprAsFold, simpleLog2)
       TaskRunner += Tasklet.simple("Set batch parameters", () => updateBatch(b))
     }
   }
