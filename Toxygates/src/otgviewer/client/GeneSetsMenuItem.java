@@ -1,21 +1,19 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
- * (NIBIOHN), Japan.
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * and Nutrition (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
  *
- * Toxygates is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
+ * Toxygates is free software: you can redistribute it and/or modify it under the terms of the GNU
+ * General Public License as published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
  *
- * Toxygates is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * Toxygates is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with Toxygates. If not,
+ * see <http://www.gnu.org/licenses/>.
  */
 
 package otgviewer.client;
@@ -31,6 +29,8 @@ import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.MenuItemSeparator;
 
 import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.GeneSetEditor;
+import otgviewer.client.components.SaveActionHandler;
 import t.common.shared.ClusteringList;
 import t.common.shared.ItemList;
 import t.common.shared.SharedUtils;
@@ -69,7 +69,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     public MenuItemCaptionSeparator(String caption) {
       super();
       getElement().removeAllChildren();
-      
+
       Element div = DOM.createDiv();
       div.setInnerHTML(caption.replaceAll("\n", "<br>"));
       DOM.appendChild(getElement(), div);
@@ -83,7 +83,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
 
   private void createMenuItem() {
     createUserSets();
-    
+
     if (hasUserClustering()) {
       createUserClusterings();
     }
@@ -92,54 +92,95 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     }
 
   }
-  
+
   private void createUserSets() {
     root.addSeparator(new MenuItemCaptionSeparator("User sets"));
-    
+
     List<StringList> geneSets = StringList.pickProbeLists(screen.chosenItemLists, null);
     for (final StringList sl : geneSets) {
-      MenuItem item = new MenuItem(sl.name(), false, new Command() {
-        public void execute() {
-          screen.probesChanged(sl.items());
-          screen.geneSetChanged(sl.name());
-          screen.updateProbes();
-        }
-      });
-      root.addItem(item);
+      MenuBar item = new MenuBar(true);
+
+      item.addItem(new MenuItem("Show", false, showUserSet(sl)));
+      item.addItem(new MenuItem("Edit", false, editUserSet(sl)));
+      item.addItem(new MenuItem("Delete", false, deleteUserSet(sl)));
+      root.addItem(sl.name(), item);
     }
 
     root.addSeparator(new MenuItemSeparator());
     root.addItem(new MenuItem("Add new", false, addNewUserSet()));
-    root.addItem(new MenuItem("Manage", false, manageUserSet()));
   }
-  
-  private Command addNewUserSet() {
+
+  private GeneSetEditor geneSetEditor() {
+    // TODO same code as GeneSetSelector
+    GeneSetEditor gse = screen.factory().geneSetEditor(screen);
+    gse.addSaveActionHandler(new SaveActionHandler() {
+      @Override
+      public void onSaved(String title, List<String> items) {
+        // geneSets.trySelect(title);
+        screen.geneSetChanged(title);
+        screen.probesChanged(items.toArray(new String[0]));
+        screen.updateProbes();
+      }
+
+      @Override
+      public void onCanceled() {}
+    });
+    addListener(gse);
+    return gse;
+  }
+
+  private Command showUserSet(final StringList sl) {
     return new Command() {
       public void execute() {
-        
+        screen.probesChanged(sl.items());
+        screen.geneSetChanged(sl.name());
+        screen.updateProbes();
       }
     };
   }
 
-  private Command manageUserSet() {
+  private Command addNewUserSet() {
     return new Command() {
       public void execute() {
-        
+        geneSetEditor().createNew(screen.displayedAtomicProbes());
+      }
+    };
+  }
+
+  private Command editUserSet(final StringList sl) {
+    return new Command() {
+      public void execute() {
+        geneSetEditor().edit(sl.name());
+      }
+    };
+  }
+
+  private Command deleteUserSet(final StringList sl) {
+    return new Command() {
+      public void execute() {
+        StringListsStoreHelper helper = new StringListsStoreHelper("probes", screen);
+        helper.delete(sl.name());
+        // If the user deletes chosen gene set, switch to "All probes" automatically.
+        if (sl.name().equals(screen.chosenGeneSet)) {
+          screen.geneSetChanged(new String());
+          screen.probesChanged(new String[0]);
+          screen.updateProbes();
+        }
       }
     };
   }
 
   private void createUserClusterings() {
     root.addSeparator(new MenuItemCaptionSeparator("Clusterings (user)"));
-    
-    List<ClusteringList> clusterings = ClusteringList.pickUserClusteringLists(screen.chosenClusteringList, null);
-    logger.info("Obtained " + clusterings.size() +  " user clusterings.");
+
+    List<ClusteringList> clusterings =
+        ClusteringList.pickUserClusteringLists(screen.chosenClusteringList, null);
     for (final ClusteringList cl : clusterings) {
       MenuBar mb = new MenuBar(true);
-      
+
       String caption = clusteringCaption(cl.algorithm());
       mb.addSeparator(new MenuItemCaptionSeparator(caption));
-      
+
       for (final StringList sl : cl.items()) {
         MenuItem item = new MenuItem(sl.name(), false, new Command() {
           public void execute() {
@@ -156,11 +197,11 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     root.addSeparator(new MenuItemSeparator());
     root.addItem(new MenuItem("Manage", false, manageUserClustering()));
   }
-  
+
   private Command manageUserClustering() {
     return new Command() {
       public void execute() {
-        
+
       }
     };
   }
@@ -183,11 +224,11 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   }
 
   /**
-   *  Refresh menu items on itemListsChanged fired.
-   *  Note the events would be also fired when the DataScreen is activated.
-   *  [DataScreen#show -> Screen#show -> Screen#lodaState -> DataListenerWidget#lodaState]
-   *  
-   *  @see otgviewer.client.DataScreen#show()
+   * Refresh menu items on itemListsChanged fired. Note the events would be also fired when the
+   * DataScreen is activated. [DataScreen#show -> Screen#show -> Screen#lodaState ->
+   * DataListenerWidget#lodaState]
+   * 
+   * @see otgviewer.client.DataScreen#show()
    */
   @Override
   public void itemListsChanged(List<ItemList> lists) {
@@ -197,11 +238,11 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   }
 
   /**
-   *  Refresh menu items on clusteringListsChanged fired.
-   *  Note the events would be also fired when the DataScreen is activated.
-   *  [DataScreen#show -> Screen#show -> Screen#lodaState -> DataListenerWidget#lodaState]
-   *  
-   *  @see otgviewer.client.DataScreen#show()
+   * Refresh menu items on clusteringListsChanged fired. Note the events would be also fired when
+   * the DataScreen is activated. [DataScreen#show -> Screen#show -> Screen#lodaState ->
+   * DataListenerWidget#lodaState]
+   * 
+   * @see otgviewer.client.DataScreen#show()
    */
   @Override
   public void clusteringListsChanged(List<ItemList> lists) {
