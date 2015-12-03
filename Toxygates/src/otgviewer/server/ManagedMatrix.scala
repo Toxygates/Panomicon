@@ -112,9 +112,15 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     val (grouped, rawUngroupedMat) = parts2.par.reduceLeft((p1, p2) => {
       val grouped = p1._1._1 adjoinRight p2._1._1
       val info = p1._1._2.addAllNonSynthetic(p2._1._2)
-      val newCols = p2._2.columnKeys.toSet -- p1._2.columnKeys
+
+      val rightHandColSet = p2._2.columnKeys.toSet
+      val newCols = rightHandColSet -- p1._2.columnKeys
+      val ungrouped =  (if (rightHandColSet != newCols) {
       //account for the fact that samples may be shared between requestColumns
-      val ungrouped = p1._2 adjoinRight p2._2.selectNamedColumns(newCols.toSeq)
+        p1._2 adjoinRight p2._2.selectNamedColumns(newCols.toSeq)
+      } else {
+        p1._2 adjoinRight p2._2
+      })
       ((grouped, info), ungrouped)
     })
 
