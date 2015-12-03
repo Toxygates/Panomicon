@@ -95,7 +95,6 @@ public class GeneSetSelector extends DataListenerWidget {
     gse.addSaveActionHandler(new SaveActionHandler() {
       @Override
       public void onSaved(String title, List<String> items) {
-        geneSets.trySelect(title);
         screen.geneSetChanged(title);
         screen.probesChanged(items.toArray(new String[0]));
         screen.updateProbes();
