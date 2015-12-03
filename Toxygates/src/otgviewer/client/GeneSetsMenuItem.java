@@ -23,9 +23,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.MenuItemSeparator;
@@ -100,7 +102,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
 
     List<StringList> geneSets = StringList.pickProbeLists(screen.chosenItemLists, null);
     ensureSorted(geneSets);
-    
+
     for (final StringList sl : geneSets) {
       MenuBar item = new MenuBar(true);
 
@@ -113,7 +115,45 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     root.addSeparator(new MenuItemSeparator());
     root.addItem(new MenuItem("Add new", false, addNewUserSet()));
   }
-  
+
+  private ScheduledCommand showCluster(final ClusteringList cl, final StringList sl) {
+    return new Command() {
+      public void execute() {
+        screen.geneSetChanged(
+            new ClusteringList("userclustering", cl.name(), cl.algorithm(), new StringList[] {sl}));
+        screen.probesChanged(sl.items());
+        screen.updateProbes();
+      }
+    };
+  }
+
+  private ScheduledCommand deleteClustering(final ClusteringList cl) {
+    return new Command() {
+      @Override
+      public void execute() {
+        if (!Window
+            .confirm("About to delete the clustering \"" + cl.name() + "\". \nAre you sure?")) {
+          return;
+        }
+
+        ClusteringListsStoreHelper helper =
+            new ClusteringListsStoreHelper("userclustering", screen);
+        helper.delete(cl.name());
+        // If the user deletes chosen gene set, switch to "All probes" automatically.
+        if (screen.chosenGeneSet != null && cl.type().equals(screen.chosenGeneSet.type())
+            && cl.name().equals(screen.chosenGeneSet.name())) {
+          switchToAllProbes();
+        }
+      }
+    };
+  }
+
+  private void switchToAllProbes() {
+    screen.geneSetChanged(null);
+    screen.probesChanged(new String[0]);
+    screen.updateProbes();
+  }
+
   private void ensureSorted(List<? extends ItemList> list) {
     Collections.sort(list, new Comparator<ItemList>() {
       @Override
@@ -127,16 +167,16 @@ public class GeneSetsMenuItem extends DataListenerWidget {
       }
     });
   }
-  
+
   private GeneSetEditor geneSetEditor() {
     // TODO same code as GeneSetSelector
     GeneSetEditor gse = screen.factory().geneSetEditor(screen);
     gse.addSaveActionHandler(new SaveActionHandler() {
       @Override
       public void onSaved(String title, List<String> items) {
-        // geneSets.trySelect(title);
-        screen.geneSetChanged(title);
-        screen.probesChanged(items.toArray(new String[0]));
+        String[] itemsArray = items.toArray(new String[0]);
+        screen.geneSetChanged(new StringList("probes", title, itemsArray));
+        screen.probesChanged(itemsArray);
         screen.updateProbes();
       }
 
@@ -150,8 +190,8 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   private Command showUserSet(final StringList sl) {
     return new Command() {
       public void execute() {
+        screen.geneSetChanged(sl);
         screen.probesChanged(sl.items());
-        screen.geneSetChanged(sl.name());
         screen.updateProbes();
       }
     };
@@ -176,13 +216,17 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   private Command deleteUserSet(final StringList sl) {
     return new Command() {
       public void execute() {
+        if (!Window
+            .confirm("About to delete the user set \"" + sl.name() + "\". \nAre you sure?")) {
+          return;
+        }
+
         StringListsStoreHelper helper = new StringListsStoreHelper("probes", screen);
         helper.delete(sl.name());
         // If the user deletes chosen gene set, switch to "All probes" automatically.
-        if (sl.name().equals(screen.chosenGeneSet)) {
-          screen.geneSetChanged(new String());
-          screen.probesChanged(new String[0]);
-          screen.updateProbes();
+        if (screen.chosenGeneSet != null && sl.type().equals(screen.chosenGeneSet.type())
+            && sl.name().equals(screen.chosenGeneSet.name())) {
+          switchToAllProbes();
         }
       }
     };
@@ -193,44 +237,33 @@ public class GeneSetsMenuItem extends DataListenerWidget {
 
     List<ClusteringList> clusterings =
         ClusteringList.pickUserClusteringLists(screen.chosenClusteringList, null);
+    ensureSorted(clusterings);
+
     for (final ClusteringList cl : clusterings) {
       MenuBar mb = new MenuBar(true);
 
+      // put clustering description
       String caption = clusteringCaption(cl.algorithm());
       mb.addSeparator(new MenuItemCaptionSeparator(caption));
 
       for (final StringList sl : cl.items()) {
-        MenuItem item = new MenuItem(sl.name(), false, new Command() {
-          public void execute() {
-            screen.probesChanged(sl.items());
-            screen.geneSetChanged(sl.name());
-            screen.updateProbes();
-          }
-        });
-        mb.addItem(item);
+        mb.addItem(new MenuItem(sl.name(), showCluster(cl, sl)));
       }
+      mb.addSeparator(new MenuItemSeparator());
+      mb.addItem(new MenuItem("Delete", deleteClustering(cl)));
       root.addItem(cl.name(), mb);
     }
 
     root.addSeparator(new MenuItemSeparator());
-    root.addItem(new MenuItem("Manage", false, manageUserClustering()));
-  }
-
-  private Command manageUserClustering() {
-    return new Command() {
-      public void execute() {
-
-      }
-    };
   }
 
   private String clusteringCaption(Algorithm algorithm) {
     StringBuffer sb = new StringBuffer();
-    sb.append("Row -> ");
+    sb.append("Row : ");
     sb.append(algorithm.getRowMethod().asParam());
     sb.append(", ");
     sb.append(algorithm.getRowDistance().asParam());
-    sb.append(" Col -> ");
+    sb.append("\n Col : ");
     sb.append(algorithm.getColMethod().asParam());
     sb.append(", ");
     sb.append(algorithm.getColDistance().asParam());
