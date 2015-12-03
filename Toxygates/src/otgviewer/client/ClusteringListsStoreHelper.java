@@ -112,4 +112,21 @@ public class ClusteringListsStoreHelper extends ItemListsStoreHelper {
     screen.storeClusteringLists(screen.getParser());
   }
 
+  /**
+   * Delete specified list from storage
+   * 
+   * @param name the name to be deleted
+   */
+  @Override
+  public void delete(String name) {
+    if (!itemLists.containsKey(type)) {
+      throw new RuntimeException("Type \"" + type + "\" not found.");
+    }
+    
+    if (itemLists.get(type).remove(name) != null) {
+      screen.clusteringListsChanged(buildItemLists());
+      screen.storeClusteringLists(screen.getParser());
+    }
+  }
+
 }
