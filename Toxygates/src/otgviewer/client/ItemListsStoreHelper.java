@@ -91,8 +91,12 @@ public abstract class ItemListsStoreHelper {
     }
     return false;
   }
-
+  
   protected boolean validate(String name) {
+    return validate(name, false);
+  }
+
+  protected boolean validate(String name, boolean overwrite) {
     if (name == null) {
       return false;
     }
@@ -107,7 +111,7 @@ public abstract class ItemListsStoreHelper {
       Window.alert("This name is reserved for the system and cannot be used.");
       return false;
     }
-    if (contains(type, name)) {
+    if (!overwrite && contains(type, name)) {
       Window.alert(
           "The title \"" + name + "\" is already taken.\n" + "Please choose a different name.");
       return false;

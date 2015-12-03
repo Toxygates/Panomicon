@@ -52,7 +52,11 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
    * Save gene set with specified title. No input box will be shown.
    */
   public void saveAs(Collection<String> list, String name) {
-    saveAction(list, name);
+    saveAction(list, name, false);
+  }
+
+  public void saveAs(Collection<String> list, String name, boolean overwrite) {
+    saveAction(list, name, overwrite);
   }
 
   private void saveAction(final Collection<String> list, String caption, String message) {
@@ -64,15 +68,15 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
           return;
         }
 
-        saveAction(list, value);
+        saveAction(list, value, false);
         inputDialog.setVisible(false);
       }
     };
     inputDialog = Utils.displayInPopup(caption, entry, DialogPosition.Center);
   }
 
-  private void saveAction(Collection<String> list, String name) {
-    if (!validate(name)) {
+  private void saveAction(Collection<String> list, String name, boolean overwrite) {
+    if (!validate(name, overwrite)) {
       return;
     }
 
