@@ -18,6 +18,8 @@
 
 package otgviewer.client;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -97,6 +99,8 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     root.addSeparator(new MenuItemCaptionSeparator("User sets"));
 
     List<StringList> geneSets = StringList.pickProbeLists(screen.chosenItemLists, null);
+    ensureSorted(geneSets);
+    
     for (final StringList sl : geneSets) {
       MenuBar item = new MenuBar(true);
 
@@ -109,7 +113,21 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     root.addSeparator(new MenuItemSeparator());
     root.addItem(new MenuItem("Add new", false, addNewUserSet()));
   }
-
+  
+  private void ensureSorted(List<? extends ItemList> list) {
+    Collections.sort(list, new Comparator<ItemList>() {
+      @Override
+      public int compare(ItemList o1, ItemList o2) {
+        String name1 = o1.name();
+        String name2 = o2.name();
+        if (name1.length() == name2.length()) {
+          return name1.compareTo(name2);
+        }
+        return (name1.length() < name2.length() ? -1 : 1);
+      }
+    });
+  }
+  
   private GeneSetEditor geneSetEditor() {
     // TODO same code as GeneSetSelector
     GeneSetEditor gse = screen.factory().geneSetEditor(screen);
