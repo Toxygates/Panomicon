@@ -38,10 +38,10 @@ import t.db.TransformingWrapper
 import t.db.kyotocabinet.KCExtMatrixDB
 import t.db.kyotocabinet.KCMatrixDB
 import t.platform.OrthologMapping
-import t.viewer.server.EVArray
 import t.viewer.server.Platforms
 import t.viewer.shared.table.SortKey
 import t.db.kyotocabinet.chunk.KCChunkMatrixDB
+import t.common.shared.sample.EVArray
 
 /**
  * A managed matrix session and associated state.

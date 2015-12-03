@@ -24,8 +24,6 @@ import org.apache.commons.math3.stat.inference.MannWhitneyUTest
 import org.apache.commons.math3.stat.inference.TTest
 import friedrich.data.immutable._
 import t.util.SafeMath.safeMean
-import t.viewer.server.EVABuilder
-import t.viewer.server.EVArray
 import scala.language.postfixOps
 
 object ExprMatrix {

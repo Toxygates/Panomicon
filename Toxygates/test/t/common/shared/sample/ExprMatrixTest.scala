@@ -23,9 +23,6 @@ package t.common.shared.sample
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import friedrich.data.immutable._
-import t.viewer.server.EVArray
-import t.viewer.server.EVABuilder
 
 @RunWith(classOf[JUnitRunner])
 class ExprMatrixTest extends FunSuite {

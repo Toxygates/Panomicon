@@ -22,7 +22,7 @@ package t.viewer.server.rpc
 
 import java.util.ArrayList
 import java.util.{ List => JList }
-import t.viewer.server.EVArray
+
 import t.common.shared.sample.ExprMatrix
 import otgviewer.server.ExtFoldBuilder
 import otgviewer.server.FoldBuilder
@@ -43,6 +43,7 @@ import t.common.shared.DataSchema
 import t.common.shared.ValueType
 import t.common.shared.probe.MedianValueMapper
 import t.common.shared.probe.OrthologProbeMapper
+import t.common.shared.sample.EVArray
 import t.common.shared.sample.Group
 import t.common.shared.sample.ExprMatrix
 import t.common.shared.sample.ExpressionRow

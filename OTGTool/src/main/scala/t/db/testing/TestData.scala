@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,11 +20,15 @@
 
 package t.db.testing
 
+import kyotocabinet.DB
+import t.db.ExtMatrixDB
+import t.db.MatrixDB
 import t.db.PExprValue
 import t.db.ProbeIndex
 import t.db.RawExpressionData
 import t.db.Sample
 import t.db.SampleIndex
+import t.db.kyotocabinet.KCExtMatrixDB
 import t.testing.FakeContext
 
 object TestData {
@@ -66,8 +70,6 @@ object TestData {
     new SampleIndex(dbIds)
   }
 
-  implicit val context = new FakeContext(dbIdMap, probeMap)
-
   def makeTestData(sparse: Boolean): RawExpressionData = {
     var testData = Map[Sample, Map[String, (Double, Char, Double)]]()
     for (s <- samples) {
@@ -83,5 +85,32 @@ object TestData {
       val data = testData
     }
   }
+
+  /**
+   * Obtain a cache hash database (in-memory)
+   */
+  def memDBHash: DB = {
+    val r = new DB
+    r.open("*", DB.OCREATE | DB.OWRITER)
+    r
+  }
+
+  /**
+   * Ditto, cache tree database
+   */
+  def memDBTree: DB = {
+     val r = new DB
+    r.open("%", DB.OCREATE | DB.OWRITER)
+    r
+  }
+
+  def populate(db: ExtMatrixDB, d: RawExpressionData) {
+    val evs = d.asExtValues
+    for ((s, vs) <- evs; (p, v) <- vs) {
+      db.write(s, probeMap.pack(p), v)
+    }
+  }
+
+  implicit val context = new FakeContext(dbIdMap, probeMap)
 
 }

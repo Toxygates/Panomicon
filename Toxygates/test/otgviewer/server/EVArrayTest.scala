@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -24,8 +24,8 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import t.common.shared.sample.ExpressionValue
-import t.viewer.server.EVArray
-import t.viewer.server.EVABuilder
+import t.common.shared.sample.EVABuilder
+import t.common.shared.sample.EVArray
 
 @RunWith(classOf[JUnitRunner])
 class EVArrayTest extends FunSuite {
@@ -35,40 +35,40 @@ class EVArrayTest extends FunSuite {
     val a = EVArray(d)
     assert(a === d)
     assert(a.length === 3)
-    assert(a(0) === d(0))    
-    
+    assert(a(0) === d(0))
+
     val x = new ExpressionValue(4, 'M', "tooltip")
     val big = a :+ x
     assert(a === d)
     assert(big === d :+ x)
     assert(big.length == 4)
-    
+
     val b2 = EVArray(big)
     assert(b2 === big)
   }
-  
+
   implicit def builder() = EVABuilder()
-  
+
   test("append") {
     val d = (1 to 4).map(x => new ExpressionValue(x, 'M', "tooltip"))
-    
+
     val b1 = EVArray(d take 2)
-    val b2 = EVArray(d drop 2)    
+    val b2 = EVArray(d drop 2)
     val app = b1 ++ b2
     println(app)
     assert(app === d)
   }
-  
+
   test("builder") {
     val d = (1 to 3).map(x => new ExpressionValue(x, 'M', "tooltip"))
     val ea = (EVABuilder() ++= d).result
     assert(ea === d)
-    
+
     var b = EVABuilder()
     for (i <- d) {
-      b += i      
+      b += i
     }
-        
+
     var b2 = EVABuilder()
     b2 ++= d
     assert(b.result === b2.result)
