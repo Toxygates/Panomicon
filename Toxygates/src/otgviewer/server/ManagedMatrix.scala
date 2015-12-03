@@ -130,7 +130,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
       case _    => ExprValue.allMean(data, "")
     }
 
-    new ExpressionValue(mean.value, mean.call, makeTooltip(data))
+    new ExpressionValue(mean.value, mean.call, null) // makeTooltip(data))
   }
 
   protected def makeTooltip[E <: ExprValue](data: Iterable[E]): String = {
@@ -297,6 +297,19 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
 object ManagedMatrix {
   def makeTooltip[E <: ExprValue](data: Iterable[E]): String = {
     val r = data.take(10).map(_.toString).mkString(" ")
+    if (data.size > 10) {
+      r + ", ..."
+    } else {
+      r
+    }
+  }
+
+  def makeTooltipShared(data: Iterable[ExpressionValue]): String = {
+    //TODO
+    val r = data.take(10).map(x => {
+      s"(${ExprValue.nf.format(x.getValue)}:${x.getCall})"
+    }).mkString(" ")
+
     if (data.size > 10) {
       r + ", ..."
     } else {

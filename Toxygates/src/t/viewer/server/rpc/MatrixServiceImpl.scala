@@ -186,8 +186,25 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
     val mergeMode = mm.info.getPlatforms.size > 1
 
-    new ArrayList[ExpressionRow](
-      insertAnnotations(mm.current.asRows.drop(offset).take(size), mergeMode))
+    val groups = getSessionData().controller.groups
+    //TODO avoid the asRows here, perhaps
+    val grouped = mm.current.asRows.drop(offset).take(size)
+
+    val rowNames = grouped.map(_.getProbe)
+    //TODO
+    //val rowNames = (offset until (offset+size)).map(i => mm.current.rowAt(i))
+    println("Rows: " + rowNames)
+    val rawData = mm.rawData.selectNamedRows(rowNames).data
+    for ((gr, rr) <- grouped zip rawData;
+      (gv, g) <- gr.getValues zip groups) {
+      val sampleIds = g.getSamples.map(_.id)
+      val sampleIdxs = sampleIds.map(i => mm.rawData.columnMap(i))
+      val rawRow = sampleIdxs.map(i => rr(i))
+      val tt = ManagedMatrix.makeTooltipShared(rawRow)
+      gv.setTooltip(tt)
+    }
+
+    new ArrayList[ExpressionRow](insertAnnotations(grouped, mergeMode))
   }
 
   //this is probably quite inefficient
@@ -251,6 +268,15 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       }
     })
   }
+//
+//
+//  private def makeTooltips(mm: ManagedMatrix, er: ExpressionRow, rawData: ExprMatrix): ExpressionRow = {
+//    val nvs = (0 until er.getValues.size).map(i => {
+//      val ss = mm.info.samples(i)
+//      val indValues = rawData.selectNamedColumns(ss.map(_.id()))
+//      ManagedMatrix.makeTooltip(indValues)
+//    }}
+//  }
 
   def getFullData(gs: JList[Group], rprobes: Array[String], sparseRead: Boolean,
     withSymbols: Boolean, typ: ValueType): FullMatrix = {
