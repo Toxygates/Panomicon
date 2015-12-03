@@ -116,7 +116,7 @@ public class TargetMineData {
       @Override
       protected void userProceed(String user, String pass, boolean replace) {
         super.userProceed();
-        String chosen = parent.chosenGeneSet;
+        String chosen = parent.chosenGeneSet.name();
         if (chosen != null && !chosen.equals("")) {          
           doEnrich(StringList.pickProbeLists(parent.chosenItemLists, chosen).get(0),
               getParams());
