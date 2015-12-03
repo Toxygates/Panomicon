@@ -20,25 +20,5 @@
 
 package otgviewer.server.rpc
 
-import java.util.{ List => JList }
-import otgviewer.server.rpc.Conversions.asScala
-import t.common.shared.ValueType
-import org.rosuda.REngine.Rserve.RserveException
-import otgviewer.server.R
-import t.viewer.server.Configuration
-import java.util.logging.Logger
-import t.common.shared.sample._
-import java.io.File
-import javax.servlet.ServletContext
-import t.common.shared.userclustering.Algorithm
-
 class MatrixServiceImpl extends t.viewer.server.rpc.MatrixServiceImpl
-    with OTGServiceServlet {
-
-  private val logger = Logger.getLogger("MatrixService")
-
-  override def localInit(config: Configuration) {
-    super.localInit(config)
-  }
-
-}
+    with OTGServiceServlet

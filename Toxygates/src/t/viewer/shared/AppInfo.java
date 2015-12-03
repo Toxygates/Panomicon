@@ -57,9 +57,9 @@ public class AppInfo implements Serializable {
   }
 
   public AppInfo(String instanceName_, Dataset[] datasets, Platform[] platforms,
-      List<StringList> probeLists) {
+      List<StringList> probeLists, String appName) {
     this(instanceName_, "http://toxico.nibiohn.go.jp/open-tggates/doc/pathology_parameter.pdf",
-        "http://targetmine.mizuguchilab.org", "Toxygates");
+        "http://targetmine.mizuguchilab.org", appName);
     this.datasets = datasets;
     predefProbeLists = probeLists;
     this.platforms = platforms;
@@ -67,8 +67,8 @@ public class AppInfo implements Serializable {
 
   public AppInfo(String instanceName_, Dataset[] datasets,
       Platform[] platforms, List<StringList> probeLists,
-      List<ProbeClustering> probeClusterings) {
-    this(instanceName_, datasets, platforms, probeLists);
+      List<ProbeClustering> probeClusterings, String appName) {
+    this(instanceName_, datasets, platforms, probeLists, appName);
     this.probeClusterings = probeClusterings;
     // probeClusterings.add(new ProbeClustering("LV_K120", new Algorithm("Hierarchical"), "K"));
   }

@@ -120,7 +120,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     //TODO: set ProbeClusterings in appInfo
     _appInfo = new AppInfo(conf.instanceName, sDatasets(),
-        sPlatforms(), predefProbeLists())
+        sPlatforms(), predefProbeLists(), appName)
   }
 
   protected class SparqlState(ds: Datasets) {
