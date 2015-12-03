@@ -35,11 +35,8 @@ public class ClusteringListsStoreHelper extends ItemListsStoreHelper {
 
   // private final Logger logger = SharedUtils.getLogger("ClusteringListsStoreHelper");
 
-  private Algorithm algorithm;
-
-  public ClusteringListsStoreHelper(String type, Screen screen, Algorithm algorithm) {
+  public ClusteringListsStoreHelper(String type, Screen screen) {
     super(type, screen);
-    this.algorithm = algorithm;
   }
 
   @Override
@@ -57,11 +54,12 @@ public class ClusteringListsStoreHelper extends ItemListsStoreHelper {
    */
   protected void onSaveSuccess(String name, ClusteringList items) {}
 
-  public void save(List<Collection<String>> lists) {
-    saveAction(lists, "Name entry", "Please enter a name for the list.");
+  public void save(List<Collection<String>> lists, Algorithm algorithm) {
+    saveAction(lists, algorithm, "Name entry", "Please enter a name for the list.");
   }
 
-  private void saveAction(final List<Collection<String>> lists, String caption, String message) {
+  private void saveAction(final List<Collection<String>> lists, final Algorithm algorithm,
+      String caption, String message) {
     InputDialog entry = new InputDialog(message) {
       @Override
       protected void onChange(String value) {
