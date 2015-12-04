@@ -356,13 +356,13 @@ public class HeatmapDialog extends DataListenerWidget {
       public void onClick(ClickEvent event) {
         List<Collection<String>> objectIds = parse2dJsArray(getCurrentObjectIds());
 
-        ClusteringListsStoreHelper helper = new ClusteringListsStoreHelper("userclustering", screen, lastClusteringAlgorithm) {
+        ClusteringListsStoreHelper helper = new ClusteringListsStoreHelper("userclustering", screen) {
           @Override
           protected void onSaveSuccess(String name, ClusteringList items) {
             Window.alert("Clusters are successfully saved.");
           }
         };
-        helper.save(objectIds);
+        helper.save(objectIds, lastClusteringAlgorithm);
       }
     });
     buttonGroup.add(saveButton);

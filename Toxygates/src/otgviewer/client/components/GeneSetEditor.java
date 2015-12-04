@@ -295,14 +295,13 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
 
   private boolean save(String name) {
     StringListsStoreHelper helper = new StringListsStoreHelper("probes", screen);
+    boolean overwrite = false;
 
-    if (!name.equals(originalTitle) && helper.contains("probes", name)) {
-      // TODO Show confirm message box whether to overwrite or not?
-      Window.alert(
-          "The title \"" + name + "\" is already taken.\n" + "Please choose a different name.");
-      return false;
+    if (name.equals(originalTitle)) {
+      overwrite = true;
     }
-    helper.saveAs(new ArrayList<String>(listedProbes), name);
+    
+    helper.saveAs(new ArrayList<String>(listedProbes), name, overwrite);
 
     return true;
   }

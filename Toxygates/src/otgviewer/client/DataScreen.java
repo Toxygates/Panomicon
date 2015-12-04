@@ -89,7 +89,7 @@ public class DataScreen extends Screen {
         super.onGettingExpressionFailed();
 
         DataScreen.this.probesChanged(new String[0]);
-        DataScreen.this.geneSetChanged(new String());
+        DataScreen.this.geneSetChanged(null);
 
         updateProbes();
       }
@@ -275,7 +275,7 @@ public class DataScreen extends Screen {
   }
 
   @Override
-  public void geneSetChanged(String geneSet) {
+  public void geneSetChanged(ItemList geneSet) {
     super.geneSetChanged(geneSet);
 
     StorageParser p = getParser(this);

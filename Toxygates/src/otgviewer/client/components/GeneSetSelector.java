@@ -21,6 +21,7 @@ package otgviewer.client.components;
 import java.util.List;
 
 import t.common.shared.ItemList;
+import t.common.shared.StringList;
 import t.viewer.client.Utils;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -60,9 +61,10 @@ public class GeneSetSelector extends DataListenerWidget {
       protected void itemsChanged(List<String> items) {
         super.itemsChanged(items);
 
-        logger.info("Items: " + items.toArray(new String[0]));
-        screen.probesChanged(items.toArray(new String[0]));
-        screen.geneSetChanged(getSelectedText());
+        String[] itemsArray = items.toArray(new String[0]);
+        logger.info("Items: " + itemsArray);
+        screen.geneSetChanged(new StringList("probes", getSelectedText(), itemsArray));
+        screen.probesChanged(itemsArray);
         
         GeneSetSelector.this.itemsChanged(items);
       }
@@ -95,9 +97,9 @@ public class GeneSetSelector extends DataListenerWidget {
     gse.addSaveActionHandler(new SaveActionHandler() {
       @Override
       public void onSaved(String title, List<String> items) {
-        geneSets.trySelect(title);
-        screen.geneSetChanged(title);
-        screen.probesChanged(items.toArray(new String[0]));
+        String[] itemsArray = items.toArray(new String[0]);
+        screen.geneSetChanged(new StringList("probes", title, itemsArray));
+        screen.probesChanged(itemsArray);
         screen.updateProbes();
       }
       @Override
@@ -123,9 +125,14 @@ public class GeneSetSelector extends DataListenerWidget {
   }  
 
   @Override
-  public void geneSetChanged(String geneSet) {
+  public void geneSetChanged(ItemList geneSet) {
     super.geneSetChanged(geneSet);
-    int selected = geneSets.trySelect(geneSet);
+    
+    int selected = 0;
+    if (geneSet != null) {
+      selected = geneSets.trySelect(geneSet.name());
+    }
+    
     btnEdit.setEnabled(selected > 0);
   }
 
