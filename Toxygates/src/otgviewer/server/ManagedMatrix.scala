@@ -126,8 +126,11 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
 
     new ManagedMatrix(sortedProbes, grouped._2,
       rawUngroupedMat.copyWithAnnotations(annotations),
-      grouped._1.copyWithAnnotations(annotations))
+      grouped._1.copyWithAnnotations(annotations),
+      log2tooltips)
   }
+
+  protected def log2tooltips: Boolean = false
 
   final protected def selectIdx[E <: ExprValue](data: Seq[E], is: Seq[Int]) = is.map(data(_))
   final protected def javaMean[E <: ExprValue](data: Iterable[E], presentOnly: Boolean = true) = {
@@ -146,16 +149,6 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     } else {
       r
     }
-  }
-
-  private val l2 = Math.log(2)
-
-  final protected def log2(value: ExpressionValue) = {
-    new ExpressionValue(Math.log(value.getValue) / l2, value.getCall, value.getTooltip)
-  }
-
-  final protected def log2[E <: ExprValue](value: E): ExprValue = {
-    ExprValue.apply(Math.log(value.value) / l2, value.call, value.probe)
   }
 
   protected def unitIdxs(us: Iterable[t.common.shared.sample.Unit], samples: Seq[Sample]): Seq[Int] = {
@@ -268,6 +261,8 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
   probes: Seq[String]) extends ManagedMatrixBuilder[PExprValue](reader, probes)
     with TreatedControlBuilder[PExprValue] {
 
+  import ManagedMatrix._
+
   //TODO this log2 hack (if we keep it) also applies to the FoldBuilder above.
   //However, FoldBuilder is not currently being used. We should re-evaluate whether it
   //is needed. (Actually, I'd like to unify the two different ExtFold/Fold formats and only
@@ -281,8 +276,7 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
     EVArray(Seq(fold, new ExpressionValue(first.p, fold.call)))
   }
 
-  override protected def makeTooltip[E <: ExprValue](data: Iterable[E]): String =
-    super.makeTooltip(data.map(log2))
+  override protected def log2tooltips = true
 
   override protected def columnInfo(g: Group): ManagedMatrixInfo = {
     val tus = treatedAndControl(g)._1
@@ -301,7 +295,18 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
 }
 
 object ManagedMatrix {
-  def makeTooltip[E <: ExprValue](data: Iterable[E]): String = {
+
+  private val l2 = Math.log(2)
+
+  def log2(value: ExpressionValue) = {
+    new ExpressionValue(Math.log(value.getValue) / l2, value.getCall, value.getTooltip)
+  }
+
+  def log2[E <: ExprValue](value: E): ExprValue = {
+    ExprValue.apply(Math.log(value.value) / l2, value.call, value.probe)
+  }
+
+  def makeTooltip[E <: ExprValue](data: Iterable[E], log2: Boolean): String = {
     val r = data.take(10).map(_.toString).mkString(" ")
     if (data.size > 10) {
       r + ", ..."
@@ -310,9 +315,10 @@ object ManagedMatrix {
     }
   }
 
-  def makeTooltipShared(data: Iterable[ExpressionValue]): String = {
-    //TODO
-    val r = data.take(10).map(x => {
+  def makeTooltipShared(data: Iterable[ExpressionValue], log2tfm: Boolean): String = {
+    val d = if (log2tfm) data.map(log2) else data
+
+    val r = d.take(10).map(x => {
       s"(${ExprValue.nf.format(x.getValue)}:${x.getCall})"
     }).mkString(" ")
 
@@ -343,7 +349,8 @@ object ManagedMatrix {
 class ManagedMatrix(val initProbes: Seq[String],
     //TODO visibility of these 3 vars
     var currentInfo: ManagedMatrixInfo, var rawUngroupedMat: ExprMatrix,
-    var rawGroupedMat: ExprMatrix) {
+    var rawGroupedMat: ExprMatrix,
+    val log2Tooltips: Boolean = false) {
 
   protected var currentMat: ExprMatrix = rawGroupedMat
 

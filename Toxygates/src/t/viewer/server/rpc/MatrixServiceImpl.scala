@@ -189,18 +189,20 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     val groups = getSessionData().controller.groups
     //TODO avoid the asRows here, perhaps
     val grouped = mm.current.asRows.drop(offset).take(size)
+    val groupSamples = (0 until groups.size).map(g =>
+      mm.info.samples(g))
 
     val rowNames = grouped.map(_.getProbe)
     //TODO
     //val rowNames = (offset until (offset+size)).map(i => mm.current.rowAt(i))
-    println("Rows: " + rowNames)
     val rawData = mm.rawData.selectNamedRows(rowNames).data
     for ((gr, rr) <- grouped zip rawData;
-      (gv, g) <- gr.getValues zip groups) {
-      val sampleIds = g.getSamples.map(_.id)
+      (gv, gs) <- gr.getValues zip groupSamples) {
+      val sampleIds = gs.map(_.id)
+      println("Columns: " + mm.rawData.columnKeys)
       val sampleIdxs = sampleIds.map(i => mm.rawData.columnMap(i))
       val rawRow = sampleIdxs.map(i => rr(i))
-      val tt = ManagedMatrix.makeTooltipShared(rawRow)
+      val tt = ManagedMatrix.makeTooltipShared(rawRow, mm.log2Tooltips)
       gv.setTooltip(tt)
     }
 
