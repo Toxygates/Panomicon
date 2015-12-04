@@ -231,7 +231,7 @@ exprGrid {
 	font-size:1.1em;
 	font-weight: bold;
 	margin:0.5em;
-	margin-right:2em;
+	margin-right:3em;
 }
 
 .platform-info-heading {
@@ -245,7 +245,7 @@ exprGrid {
 }
 
 .platform-grid {
-	width: 500px;
+	width: 700px;
 }
 
 /*
