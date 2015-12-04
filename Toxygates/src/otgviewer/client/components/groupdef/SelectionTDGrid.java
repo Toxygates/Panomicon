@@ -372,17 +372,6 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     super.drawGridInner(grid);
   }
 
-  //
-  // private String unitString(Unit u) {
-  // if (u == null) {
-  // return "(null)";
-  // } else if (u.getSamples() == null || u.getSamples().length == 0) {
-  // return "(no samples)";
-  // } else {
-  // return u.getSamples().length + " sampl: " + u.getSamples()[0].getCode();
-  // }
-  // }
-
   @Override
   protected void samplesAvailable() {
     logger.info("Samples available: " + availableUnits.length + " units");
