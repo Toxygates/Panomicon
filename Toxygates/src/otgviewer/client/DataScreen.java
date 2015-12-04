@@ -24,7 +24,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import otgviewer.client.components.GeneSetSelector;
-import otgviewer.client.components.ListChooser;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
@@ -159,26 +158,6 @@ public class DataScreen extends Screen {
 
     MenuItem mColumns = new MenuItem("View", false, mb);
     addMenu(mColumns);
-
-    addAnalysisMenuItem(new MenuItem("Save visible genes as list...",
-        new Command() {
-          public void execute() {
-            // Create an invisible listChooser that we exploit only for
-            // the sake of saving a new list.
-            ListChooser lc =
-                new ListChooser(appInfo().predefinedProbeLists(), "probes") {
-                  @Override
-                  protected void listsChanged(List<ItemList> lists) {
-                    w.itemListsChanged(lists);
-                    w.storeItemLists(w.getParser());
-                  }
-                };
-            // TODO make ListChooser use the DataListener propagate mechanism?
-            lc.setLists(chosenItemLists);
-            lc.setItems(Arrays.asList(et.displayedAtomicProbes()));
-            lc.saveAction();
-          }
-        }));
 
     // TODO: this is effectively a tick menu item without the tick.
     // It would be nice to display the tick graphic, but then the textual alignment
