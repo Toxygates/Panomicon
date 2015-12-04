@@ -107,7 +107,6 @@ public class ClusteringList extends ItemList {
     String[] spl = header.split("\\$\\$\\$");
     if (spl.length < 1) {
       // return default algorithm
-      System.out.println("length < 1");
       return new Algorithm();
     }
 
@@ -115,8 +114,6 @@ public class ClusteringList extends ItemList {
     // t.common.shared.userclustering.Algorithm#toString()
     String[] algo = spl[0].split(",");
     if (algo.length != 4) {
-      // return default algorithm
-      System.out.println("length != 4");
       return new Algorithm();
     }
 
@@ -125,7 +122,6 @@ public class ClusteringList extends ItemList {
     Methods colMethod = Methods.lookup(algo[2]);
     Distances colDistance = Distances.lookup(algo[3]);
     if (rowMethod == null || rowDistance == null || colMethod == null || colDistance == null) {
-      System.out.println("some null");
       return new Algorithm();
     }
 
