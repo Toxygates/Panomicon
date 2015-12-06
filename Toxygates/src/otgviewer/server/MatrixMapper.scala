@@ -25,7 +25,7 @@ import t.common.shared.probe.ProbeMapper
 import t.common.shared.probe.ValueMapper
 import t.common.shared.sample.FullAnnotation
 import t.common.shared.sample.ExprMatrix
-import t.viewer.server.EVArray
+import t.common.shared.sample.EVArray
 
 /**
  * A matrix mapper converts a whole matrix from one domain into
@@ -74,7 +74,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
     val rks = (0 until ungr.rows).map(ungr.rowAt)
 
     //Note, we re-fix initProbes for the new matrix
-    new ManagedMatrix(rks, convert(from.currentInfo), ungr, gr)
+    new ManagedMatrix(rks, convert(from.currentInfo), ungr, gr, from.log2Tooltips)
   }
 
   /**

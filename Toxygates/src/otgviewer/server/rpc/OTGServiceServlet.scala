@@ -46,4 +46,5 @@ trait OTGServiceServlet extends TServiceServlet {
 
   protected val schema: OTGSchema = new OTGSchema()
 
+  def appName = "Toxygates"
 }

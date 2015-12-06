@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -29,21 +29,6 @@ import t.db.RawExpressionData
 
 object KCDBTest extends Matchers {
   import TestData._
-
-  /**
-   * Obtain a cache hash database (in-memory)
-   */
-  def memDBHash: DB = {
-    val r = new DB
-    r.open("*", DB.OCREATE | DB.OWRITER)
-    r
-  }
-
-  def memDBTree: DB = {
-     val r = new DB
-    r.open("%", DB.OCREATE | DB.OWRITER)
-    r
-  }
 
   /**
    * General test case for databases that implement MatrixDB.

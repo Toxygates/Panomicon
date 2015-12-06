@@ -196,6 +196,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	}
 	
 	private boolean fetchingSamples = false;
+	private String[] fetchingForCompounds = new String[0];
 	
 	protected void fetchSamples() {
 		if (fetchingSamples) {
@@ -204,6 +205,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		fetchingSamples = true;
 		availableUnits = new Pair[0]; 
 		String[] compounds = chosenCompounds.toArray(new String[0]);
+		fetchingForCompounds = compounds;
 		sparqlService.units(chosenSampleClass, majorParameter, compounds,
 				new PendingAsyncCallback<Pair<Unit, Unit>[]>(this, "Unable to obtain samples.") {
 
@@ -218,6 +220,11 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 				availableUnits = result;							
 				samplesAvailable();				
 				fetchingSamples = false;
+				if (!Arrays.equals(fetchingForCompounds, 
+				    chosenCompounds.toArray(new String[0]))) {
+				    //Fetch again - the compounds changed while we were loading data
+				    fetchSamples();
+				}
 			}			
 		});
 	}

@@ -125,16 +125,10 @@ public abstract class ClusteringSelector extends DataListenerWidget implements R
     this.dp = new DockLayoutPanel(Unit.PX);
     this.probeClusterings = clusterings;
     
-    for (ProbeClustering pc : clusterings) {
-      logger.warning("Recieved : " + pc.getClustering().getTitle());
-    }
-
     initWidget(dp);
   }
   
   private void algorithmChanged(String algorithm) {
-    logger.info("algorithmChanged");
-
     if (algorithm == null) {
       return;
     }
@@ -152,10 +146,7 @@ public abstract class ClusteringSelector extends DataListenerWidget implements R
   }
   
   private void clusteringChanged(String clustering) {
-    logger.info("clusteringChanged");
-    
     if (clustering == null) {
-      logger.info("clustering == null");
       return;
     }
     // create components
@@ -165,7 +156,6 @@ public abstract class ClusteringSelector extends DataListenerWidget implements R
     
     int numParams = lastAlgorithm.getParams().length;
     if (numParams == 0) {
-      logger.info("numParams == 0");
       return;
     }
     
@@ -173,7 +163,6 @@ public abstract class ClusteringSelector extends DataListenerWidget implements R
     Grid paramLists = new Grid(numParams, 1);
     int i = 0;
     for (String p : lastAlgorithm.getParams()) {
-      logger.info("param: " + p);
       ClListBox box = new ClListBox();
       box.addChangeHandler(new ChangeHandler() {
         @Override

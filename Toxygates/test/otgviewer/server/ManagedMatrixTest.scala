@@ -27,9 +27,10 @@ import t.db.testing._
 import t.db.testing.TestData._
 import org.scalatest.FunSuite
 import otgviewer.server.rpc.Conversions._
+import t.TTestSuite
 
 @RunWith(classOf[JUnitRunner])
-class ManagedMatrixTest extends FunSuite {
+class ManagedMatrixTest extends TTestSuite {
   import TestData._
 
   val schema = t.common.testing.TestData.dataSchema()
@@ -38,25 +39,32 @@ class ManagedMatrixTest extends FunSuite {
   def normBuilder = new NormalizedBuilder(false, context.absoluteDBReader,
       probes.map(probeMap.unpack))
 
+  def foldBuilder = new ExtFoldBuilder(false, context.foldsDBReader,
+      probes.map(probeMap.unpack))
+
   val groups = TestData.samples.take(10).grouped(2).zipWithIndex.map(ss => {
     val sss = ss._1.map(s => asJavaSample(s))
     new Group(schema, "Gr" + ss._2, sss.toArray)
   }).toSeq
 
-  test("build") {
-    val m = normBuilder.build(groups, false, true)
-    val cur = m.current
-    assert (cur.rows === TestData.probes.size)
-    assert (cur.columns === groups.size)
+  context.populate()
 
-    val raw = m.rawUngroupedMat
-    assert (raw.columns === 10)
-    assert (raw.rows === cur.rows)
+  test("build") {
+    val m = foldBuilder.build(groups, false, true)
+    val cur = m.current
+    cur.rows should equal(probes.size)
+    cur.columns should equal(groups.size)
 
     val info = m.info
     val colNames = (0 until info.numColumns()).map(info.columnName)
-    assert (colNames === (0 until 5).map(g => s"Gr$g"))
+    colNames should equal(groups.map(_.getName))
 
+    val raw = m.rawUngroupedMat
+    raw.columns should equal(10)
+    raw.rows should equal(probes.size)
+    val sortedProbes = probes.sorted.map(probeMap.unpack)
+    raw.rowMap.size should equal(probes.size)
+    raw.sortedRowMap.map(_._1) should equal(sortedProbes)
   }
 
 //

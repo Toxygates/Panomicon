@@ -29,9 +29,15 @@ import t.db.MatrixDBReader
 import t.db.PExprValue
 import t.db.ExprValue
 import t.db.SeriesBuilder
+import t.db.testing.TestData
+import t.db.kyotocabinet.KCMatrixDB
+import t.db.kyotocabinet.KCExtMatrixDB
+import t.db.MatrixDB
+import t.db.ExtMatrixDB
 
 class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap,
   val enumMaps: Map[String, Map[String, Int]] = Map()) extends MatrixContext {
+  import TestData._
 
   def species = List(Rat)
 
@@ -44,9 +50,18 @@ class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap,
    */
   def metadata: Option[Metadata] = None
 
-  def samples = null //TODO
+  def samples = ???
 
-  def absoluteDBReader: MatrixDBReader[ExprValue] = null //TODO
-  def foldsDBReader: MatrixDBReader[PExprValue] = null //TODO
-  def seriesBuilder: SeriesBuilder[_] = null //TODO
+  private val td = makeTestData(false)
+
+  private val folds = memDBHash
+  private val abs = memDBHash
+
+  lazy val absoluteDBReader: KCMatrixDB = ???
+  lazy val foldsDBReader: KCExtMatrixDB = new KCExtMatrixDB(folds)
+  lazy val seriesBuilder: SeriesBuilder[_] = ???
+
+  def populate() {
+    TestData.populate(foldsDBReader, td)
+  }
 }

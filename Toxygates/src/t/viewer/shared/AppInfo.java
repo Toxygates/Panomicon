@@ -57,17 +57,17 @@ public class AppInfo implements Serializable {
   }
 
   public AppInfo(String instanceName_, Dataset[] datasets, Platform[] platforms,
-      List<StringList> probeLists) {
+      List<StringList> probeLists, String appName) {
     this(instanceName_, "http://toxico.nibiohn.go.jp/open-tggates/doc/pathology_parameter.pdf",
-        "http://targetmine.mizuguchilab.org", "Toxygates");
+        "http://targetmine.mizuguchilab.org", appName);
     this.datasets = datasets;
     this.platforms = platforms;
     this.predefProbeLists = probeLists;
   }
 
   public AppInfo(String instanceName_, Dataset[] datasets, Platform[] platforms,
-      List<StringList> probeLists, List<ProbeClustering> probeClusterings) {
-    this(instanceName_, datasets, platforms, probeLists);
+      List<StringList> probeLists, List<ProbeClustering> probeClusterings, String appName) {
+    this(instanceName_, datasets, platforms, probeLists, appName);
     this.probeClusterings = probeClusterings;
   }
 

@@ -91,6 +91,20 @@ public class ManagedMatrixInfo implements Serializable {
 		columnFilters = columnFilters.subList(0, n);
 	}
 	
+	/**
+	 * Add all non-synthetic columns from the other matrix into
+	 * this one.
+	 * @param other
+	 */
+	public ManagedMatrixInfo addAllNonSynthetic(ManagedMatrixInfo other) {
+	  for (int c = 0; c < other.numDataColumns(); c++) {
+	    addColumn(false, other.columnName(c), other.columnHint(c),
+	        other.isUpperFiltering(c), other.columnGroup(c),
+	        other.isPValueColumn(c), other.samples(c));	        
+	  }	  
+	  return this;
+	}
+	
 	public int numColumns() {
 		return numDataColumns + numSynthetics;
 	}

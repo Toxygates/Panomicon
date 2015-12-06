@@ -22,7 +22,7 @@ package t.viewer.server.rpc
 
 import java.util.ArrayList
 import java.util.{ List => JList }
-import t.viewer.server.EVArray
+
 import t.common.shared.sample.ExprMatrix
 import otgviewer.server.ExtFoldBuilder
 import otgviewer.server.FoldBuilder
@@ -43,6 +43,7 @@ import t.common.shared.DataSchema
 import t.common.shared.ValueType
 import t.common.shared.probe.MedianValueMapper
 import t.common.shared.probe.OrthologProbeMapper
+import t.common.shared.sample.EVArray
 import t.common.shared.sample.Group
 import t.common.shared.sample.ExprMatrix
 import t.common.shared.sample.ExpressionRow
@@ -185,8 +186,27 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
     val mergeMode = mm.info.getPlatforms.size > 1
 
-    new ArrayList[ExpressionRow](
-      insertAnnotations(mm.current.asRows.drop(offset).take(size), mergeMode))
+    val groups = getSessionData().controller.groups
+    //TODO avoid the asRows here, perhaps
+    val grouped = mm.current.asRows.drop(offset).take(size)
+    val groupSamples = (0 until groups.size).map(g =>
+      mm.info.samples(g))
+
+    val rowNames = grouped.map(_.getProbe)
+    //TODO
+    //val rowNames = (offset until (offset+size)).map(i => mm.current.rowAt(i))
+    val rawData = mm.rawData.selectNamedRows(rowNames).data
+    for ((gr, rr) <- grouped zip rawData;
+      (gv, gs) <- gr.getValues zip groupSamples) {
+      val sampleIds = gs.map(_.id)
+      println("Columns: " + mm.rawData.columnKeys)
+      val sampleIdxs = sampleIds.map(i => mm.rawData.columnMap(i))
+      val rawRow = sampleIdxs.map(i => rr(i))
+      val tt = ManagedMatrix.makeTooltipShared(rawRow, mm.log2Tooltips)
+      gv.setTooltip(tt)
+    }
+
+    new ArrayList[ExpressionRow](insertAnnotations(grouped, mergeMode))
   }
 
   //this is probably quite inefficient
@@ -250,6 +270,15 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       }
     })
   }
+//
+//
+//  private def makeTooltips(mm: ManagedMatrix, er: ExpressionRow, rawData: ExprMatrix): ExpressionRow = {
+//    val nvs = (0 until er.getValues.size).map(i => {
+//      val ss = mm.info.samples(i)
+//      val indValues = rawData.selectNamedColumns(ss.map(_.id()))
+//      ManagedMatrix.makeTooltip(indValues)
+//    }}
+//  }
 
   def getFullData(gs: JList[Group], rprobes: Array[String], sparseRead: Boolean,
     withSymbols: Boolean, typ: ValueType): FullMatrix = {

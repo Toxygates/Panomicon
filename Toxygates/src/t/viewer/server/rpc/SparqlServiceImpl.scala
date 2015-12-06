@@ -121,7 +121,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     this.instanceURI = instanceURI
 
     _appInfo = new AppInfo(conf.instanceName, sDatasets(),
-        sPlatforms(), predefProbeLists(), probeClusterings())
+        sPlatforms(), predefProbeLists(), probeClusterings(), appName)
   }
 
   protected class SparqlState(ds: Datasets) {
