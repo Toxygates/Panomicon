@@ -56,7 +56,6 @@ import t.common.shared.ItemList;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.Term;
-import t.common.shared.clustering.ProbeClustering;
 import t.common.shared.sample.Group;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.MatrixServiceAsync;
@@ -104,7 +103,6 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     super();
 
     this.screen = screen;
-
     dialog = new DialogBox();
     oracle = new GeneOracle(screen);
     sparqlService = screen.manager.sparqlService();
@@ -284,8 +282,6 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
 
     if (hasClustering()) {
       ClusteringSelector clustering = clusteringSelector();
-      clustering.setAvailable(ProbeClustering.createFrom((screen.appInfo()
-          .predefinedProbeLists())));
       probeSelStack.add(clustering, "Clustering", STACK_ITEM_HEIGHT);
     }
 
@@ -336,7 +332,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
   }
 
   private ClusteringSelector clusteringSelector() {
-    return new ClusteringSelector() {
+    return new ClusteringSelector(screen.appInfo().probeClusterings()) {
       @Override
       public void clusterChanged(List<String> items) {
         addProbes(items.toArray(new String[0]));

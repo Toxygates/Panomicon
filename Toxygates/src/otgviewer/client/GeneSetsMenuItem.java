@@ -18,8 +18,11 @@
 
 package otgviewer.client;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -39,6 +42,7 @@ import t.common.shared.ClusteringList;
 import t.common.shared.ItemList;
 import t.common.shared.SharedUtils;
 import t.common.shared.StringList;
+import t.common.shared.clustering.ProbeClustering;
 import t.common.shared.userclustering.Algorithm;
 
 public class GeneSetsMenuItem extends DataListenerWidget {
@@ -85,16 +89,23 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     }
   }
 
+  /**
+   * Obtain menu item
+   * 
+   * @return MenuItem for gene sets
+   */
+  public MenuItem menuItem() {
+    return mi;
+  }
+
   private void createMenuItem() {
     createUserSets();
-
     if (hasUserClustering()) {
       createUserClusterings();
     }
-
     if (hasPredefinedClustering()) {
+      createPredefinedClusterings();
     }
-
   }
 
   private void createUserSets() {
@@ -116,7 +127,155 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     root.addItem(new MenuItem("Add new", false, addNewUserSet()));
   }
 
-  private ScheduledCommand showCluster(final ClusteringList cl, final StringList sl) {
+  private void createUserClusterings() {
+    root.addSeparator(new MenuItemCaptionSeparator("Clusterings (user)"));
+
+    List<ClusteringList> clusterings =
+        ClusteringList.pickUserClusteringLists(screen.chosenClusteringList, null);
+    ensureSorted(clusterings);
+
+    for (final ClusteringList cl : clusterings) {
+      MenuBar mb = new MenuBar(true);
+
+      // put clustering description
+      String caption = clusteringCaption(cl.algorithm());
+      mb.addSeparator(new MenuItemCaptionSeparator(caption));
+
+      for (final StringList sl : cl.items()) {
+        mb.addItem(new MenuItem(sl.name(), showClustering(cl, sl)));
+      }
+      mb.addSeparator(new MenuItemSeparator());
+      mb.addItem(new MenuItem("Delete", deleteClustering(cl)));
+      root.addItem(cl.name(), mb);
+    }
+
+    root.addSeparator(new MenuItemSeparator());
+  }
+
+  private String clusteringCaption(Algorithm algorithm) {
+    StringBuffer sb = new StringBuffer();
+    sb.append("Row : ");
+    sb.append(algorithm.getRowMethod().asParam());
+    sb.append(", ");
+    sb.append(algorithm.getRowDistance().asParam());
+    sb.append("\n Col : ");
+    sb.append(algorithm.getColMethod().asParam());
+    sb.append(", ");
+    sb.append(algorithm.getColDistance().asParam());
+    return sb.toString();
+  }
+
+  private void createPredefinedClusterings() {
+    root.addSeparator(new MenuItemCaptionSeparator("Clusterings (pre-defined)"));
+
+    Collection<ProbeClustering> clusterings = screen.appInfo().probeClusterings();
+
+    // append items recursively
+    for (t.common.shared.clustering.Algorithm algo : t.common.shared.clustering.Algorithm
+        .values()) {
+      MenuBar mb = new MenuBar(true);
+
+      appendChildren(mb, algo, ProbeClustering.filterByAlgorithm(clusterings, algo));
+
+      root.addItem(algo.getTitle(), mb);
+    }
+
+  }
+
+  private void appendChildren(MenuBar parent, t.common.shared.clustering.Algorithm algo,
+      Collection<ProbeClustering> clusterings) {
+    for (String cl : algo.getClusterings()) {
+      MenuBar mb = new MenuBar(true);
+
+      List<String> paramNames = new LinkedList<String>(Arrays.asList(algo.getParams()));
+      Collections.sort(paramNames);
+      appendChildren(mb, paramNames, ProbeClustering.filterByClustering(clusterings, cl));
+      parent.addItem(cl, mb);
+    }
+  }
+
+  private void appendChildren(MenuBar parent, List<String> paramNames,
+      Collection<ProbeClustering> clusterings) {
+    // append as leaf
+    if (paramNames.size() == 0) {
+      List<ProbeClustering> items = new LinkedList<ProbeClustering>(clusterings);
+      Collections.sort(items, new Comparator<ProbeClustering>() {
+        @Override
+        public int compare(ProbeClustering o1, ProbeClustering o2) {
+          String mine = o1.getClustering().getCluster();
+          String theirs = o2.getClustering().getCluster();
+          return mine.compareTo(theirs);
+        }
+      });
+
+      for (ProbeClustering pc : items) {
+        parent.addItem(new MenuItem(pc.getClustering().getCluster(), showClustering(pc)));
+      }
+      return;
+    }
+
+    String paramName = paramNames.remove(0);
+    List<String> paramValues = ProbeClustering.collectParamValue(clusterings, paramName);
+    Collections.sort(paramValues);
+    for (String s : paramValues) {
+      MenuBar mb = new MenuBar(true);
+      appendChildren(mb, paramNames, ProbeClustering.filterByParam(clusterings, paramName, s));
+      parent.addItem(s, mb);
+    }
+  }
+
+  /*
+   * Commands for User Set
+   */
+  private ScheduledCommand showUserSet(final StringList sl) {
+    return new Command() {
+      public void execute() {
+        screen.geneSetChanged(sl);
+        screen.probesChanged(sl.items());
+        screen.updateProbes();
+      }
+    };
+  }
+
+  private ScheduledCommand addNewUserSet() {
+    return new Command() {
+      public void execute() {
+        geneSetEditor().createNew(screen.displayedAtomicProbes());
+      }
+    };
+  }
+
+  private ScheduledCommand editUserSet(final StringList sl) {
+    return new Command() {
+      public void execute() {
+        geneSetEditor().edit(sl.name());
+      }
+    };
+  }
+
+  private ScheduledCommand deleteUserSet(final StringList sl) {
+    return new Command() {
+      public void execute() {
+        if (!Window
+            .confirm("About to delete the user set \"" + sl.name() + "\". \nAre you sure?")) {
+          return;
+        }
+
+        StringListsStoreHelper helper = new StringListsStoreHelper("probes", screen);
+        helper.delete(sl.name());
+        // If the user deletes chosen gene set, switch to "All probes" automatically.
+        if (screen.chosenGeneSet != null && sl.type().equals(screen.chosenGeneSet.type())
+            && sl.name().equals(screen.chosenGeneSet.name())) {
+          switchToAllProbes();
+        }
+      }
+    };
+  }
+
+  /*
+   * Commands for User Defined Clustering
+   */
+  private ScheduledCommand showClustering(final ClusteringList cl, final StringList sl) {
     return new Command() {
       public void execute() {
         screen.geneSetChanged(
@@ -148,6 +307,19 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     };
   }
 
+  /*
+   * Commands for Pre-Defined Clustering
+   */
+  private ScheduledCommand showClustering(final ProbeClustering pc) {
+    return new Command() {
+      public void execute() {
+        screen.geneSetChanged(pc.getList());
+        screen.probesChanged(pc.getList().items());
+        screen.updateProbes();
+      }
+    };
+  }
+
   private void switchToAllProbes() {
     screen.geneSetChanged(null);
     screen.probesChanged(new String[0]);
@@ -155,17 +327,25 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   }
 
   private void ensureSorted(List<? extends ItemList> list) {
+    // TODO consider ordering
     Collections.sort(list, new Comparator<ItemList>() {
       @Override
       public int compare(ItemList o1, ItemList o2) {
-        String name1 = o1.name();
-        String name2 = o2.name();
-        if (name1.length() == name2.length()) {
-          return name1.compareTo(name2);
-        }
-        return (name1.length() < name2.length() ? -1 : 1);
+        return o1.name().compareTo(o2.name());
       }
     });
+
+    // new Comparator<ItemList>() {
+    // @Override
+    // public int compare(ItemList o1, ItemList o2) {
+    // String name1 = o1.name();
+    // String name2 = o2.name();
+    // if (name1.length() == name2.length()) {
+    // return name1.compareTo(name2);
+    // }
+    // return (name1.length() < name2.length() ? -1 : 1);
+    // }
+    // });
   }
 
   private GeneSetEditor geneSetEditor() {
@@ -185,93 +365,6 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     });
     addListener(gse);
     return gse;
-  }
-
-  private Command showUserSet(final StringList sl) {
-    return new Command() {
-      public void execute() {
-        screen.geneSetChanged(sl);
-        screen.probesChanged(sl.items());
-        screen.updateProbes();
-      }
-    };
-  }
-
-  private Command addNewUserSet() {
-    return new Command() {
-      public void execute() {
-        geneSetEditor().createNew(screen.displayedAtomicProbes());
-      }
-    };
-  }
-
-  private Command editUserSet(final StringList sl) {
-    return new Command() {
-      public void execute() {
-        geneSetEditor().edit(sl.name());
-      }
-    };
-  }
-
-  private Command deleteUserSet(final StringList sl) {
-    return new Command() {
-      public void execute() {
-        if (!Window
-            .confirm("About to delete the user set \"" + sl.name() + "\". \nAre you sure?")) {
-          return;
-        }
-
-        StringListsStoreHelper helper = new StringListsStoreHelper("probes", screen);
-        helper.delete(sl.name());
-        // If the user deletes chosen gene set, switch to "All probes" automatically.
-        if (screen.chosenGeneSet != null && sl.type().equals(screen.chosenGeneSet.type())
-            && sl.name().equals(screen.chosenGeneSet.name())) {
-          switchToAllProbes();
-        }
-      }
-    };
-  }
-
-  private void createUserClusterings() {
-    root.addSeparator(new MenuItemCaptionSeparator("Clusterings (user)"));
-
-    List<ClusteringList> clusterings =
-        ClusteringList.pickUserClusteringLists(screen.chosenClusteringList, null);
-    ensureSorted(clusterings);
-
-    for (final ClusteringList cl : clusterings) {
-      MenuBar mb = new MenuBar(true);
-
-      // put clustering description
-      String caption = clusteringCaption(cl.algorithm());
-      mb.addSeparator(new MenuItemCaptionSeparator(caption));
-
-      for (final StringList sl : cl.items()) {
-        mb.addItem(new MenuItem(sl.name(), showCluster(cl, sl)));
-      }
-      mb.addSeparator(new MenuItemSeparator());
-      mb.addItem(new MenuItem("Delete", deleteClustering(cl)));
-      root.addItem(cl.name(), mb);
-    }
-
-    root.addSeparator(new MenuItemSeparator());
-  }
-
-  private String clusteringCaption(Algorithm algorithm) {
-    StringBuffer sb = new StringBuffer();
-    sb.append("Row : ");
-    sb.append(algorithm.getRowMethod().asParam());
-    sb.append(", ");
-    sb.append(algorithm.getRowDistance().asParam());
-    sb.append("\n Col : ");
-    sb.append(algorithm.getColMethod().asParam());
-    sb.append(", ");
-    sb.append(algorithm.getColDistance().asParam());
-    return sb.toString();
-  }
-
-  public MenuItem menuItem() {
-    return mi;
   }
 
   /**
