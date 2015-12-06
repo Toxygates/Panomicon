@@ -105,7 +105,7 @@ public class ListChooser extends DataListenerWidget {
 
   public ListChooser(Collection<StringList> predefinedLists, String listType,
       boolean hasButtons) {
-    this(predefinedLists, listType, true, "Click to see available lists");
+    this(predefinedLists, listType, hasButtons, "Click to see available lists");
   }
 
   public ListChooser(Collection<StringList> predefinedLists, String listType,
