@@ -63,6 +63,8 @@ import t.common.shared.sample.Unit
 import t.common.shared.sample.SampleColumn
 import t.common.shared.Platform
 import t.viewer.server.SharedPlatforms
+import t.common.shared.clustering.ProbeClustering
+import t.common.shared.clustering.HierarchicalClustering
 
 object SparqlServiceImpl {
   var inited = false
@@ -118,9 +120,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     this.instanceURI = instanceURI
 
-    //TODO: set ProbeClusterings in appInfo
     _appInfo = new AppInfo(conf.instanceName, sDatasets(),
-        sPlatforms(), predefProbeLists())
+        sPlatforms(), predefProbeLists(), probeClusterings())
   }
 
   protected class SparqlState(ds: Datasets) {
@@ -156,6 +157,14 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val ls = probeStore.probeLists(instanceURI).mapInnerValues(p => p.identifier)
     val sls = ls.map(x => new StringList("probes", x._1, x._2.toArray)).toList
     new java.util.LinkedList(seqAsJavaList(sls.sortBy(_.name)))
+  }
+
+  private def probeClusterings() = {
+    val ls = probeStore.probeLists(instanceURI).mapInnerValues(p => p.identifier)
+    val sls = ls.map(x => new StringList("probes", x._1, x._2.toArray)).toList
+    val cls = sls.map { x => ProbeClustering.buildFrom(x) }
+    
+    new java.util.LinkedList(seqAsJavaList(cls))
   }
 
   private def sDatasets(): Array[Dataset] = {
