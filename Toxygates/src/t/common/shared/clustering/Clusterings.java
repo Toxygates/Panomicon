@@ -18,20 +18,49 @@
 
 package t.common.shared.clustering;
 
-import java.util.HashMap;
+import java.io.Serializable;
 import java.util.Map;
 
-public class Clusterings {
+/**
+ * Class Clustering is basic concept for clustering informations
+ *
+ */
+@SuppressWarnings("serial")
+public abstract class Clusterings implements Serializable {
+  protected Algorithm algorithm;
+  protected String clustering; // e.g. "LV"
+  protected Map<String, String> params; // e.g. { K -> 120 }
+  protected String cluster; // e.g. "C1"
+  protected String title; // "LV_K120_C1"
 
-  private static Map<String, Algorithm> algos = new HashMap<String, Algorithm>();
+  public Clusterings() {}
 
-  public Clusterings() {
-    for (Algorithm a : Algorithm.values()) {
-      algos.put(a.getTitle(), a);
-    }
+  public Clusterings(Algorithm algorithm, String clustering, Map<String, String> params,
+      String cluster, String title) {
+    this.algorithm = algorithm;
+    this.clustering = clustering;
+    this.params = params;
+    this.cluster = cluster;
+    this.title = title;
   }
 
-  public static Algorithm lookup(String name) {
-    return algos.get(name);
+  public Algorithm getAlgorithm() {
+    return algorithm;
+  }
+
+  public String getClustering() {
+    return clustering;
+  }
+
+  public Map<String, String> getParams() {
+    return params;
+  }
+
+  public String getCluster() {
+    return cluster;
+  }
+
+  public String getTitle() {
+    return title;
   }
 }

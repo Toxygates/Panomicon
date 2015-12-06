@@ -18,159 +18,109 @@
 
 package t.common.shared.clustering;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import t.common.shared.ItemList;
 import t.common.shared.StringList;
 
-public class ProbeClustering {
-  private Algorithm algorithm; // example: Hierarchical
-  private String param1; // Example: 120
-  private String name; // example: LV_K120
-  private List<ItemList> clusters;
+@SuppressWarnings("serial")
+public class ProbeClustering implements Serializable {
 
-  public ProbeClustering(Algorithm algorithm, String param1, String name, List<ItemList> clusters) {
-    this.algorithm = algorithm;
-    this.param1 = param1;
-    this.name = name;
-    this.clusters = clusters;
+  private Clusterings clustering;
+  private StringList list;
+
+  public StringList getList() {
+    return list;
+  }
+  
+  public Clusterings getClustering() {
+    return clustering;
   }
 
-  // TODO should use sparql query
-  public static List<ProbeClustering> createFrom(Collection<StringList> clusters) {
-    Map<String, ProbeClustering> m = new HashMap<String, ProbeClustering>();
+  // need for gwt serialization
+  protected ProbeClustering() {}
 
-    for (StringList c : clusters) {
-      String title = getTitle(c.name());
-      if (!m.containsKey(title)) {
-        m.put(title, new ProbeClustering(Algorithm.HIERARCHICAL, getParam(title), title,
-            new LinkedList<ItemList>()));
+  public ProbeClustering(Clusterings clustering, StringList probes) {
+    this.clustering = clustering;
+    this.list = probes;
+  }
+
+  /**
+   * Build a ProbeClustering from a StringList.
+   * 
+   * @param list
+   * @return null if failed to parse title
+   */
+  public static ProbeClustering buildFrom(StringList list) {
+    // currently, support only hierarchical clustering
+    Clusterings cl = HierarchicalClustering.parse(list.name());
+    if (cl == null) {
+      return null;
+    }
+
+    return new ProbeClustering(cl, new StringList("probes", cl.cluster, list.items()));
+  }
+
+  public static Collection<ProbeClustering> filterByAlgorithm(Collection<ProbeClustering> from,
+      final Algorithm algorithm) {
+    return new ProbeClusteringFilter() {
+      @Override
+      protected boolean accept(ProbeClustering pc) {
+        return pc.clustering.getAlgorithm() == algorithm;
       }
-
-      ProbeClustering p = m.get(title);
-      p.clusters.add(c);
-    }
-
-    return new ArrayList<ProbeClustering>(m.values());
+    }.filter(from);
   }
 
-  // TODO improve robustness
-  private static String getTitle(String name) {
-    int i = name.lastIndexOf("_C");
-    if (i == -1) {
-      throw new IllegalArgumentException("unknow format: " + name);
-    }
-    return name.substring(0, i);
+  public static Collection<ProbeClustering> filterByClustering(Collection<ProbeClustering> from,
+      final String clustering) {
+    return new ProbeClusteringFilter() {
+      @Override
+      protected boolean accept(ProbeClustering pc) {
+        return pc.clustering.getClustering().equals(clustering);
+      }
+    }.filter(from);
   }
 
-  // TODO improve robustness
-  private static String getParam(String title) {
-    int i = title.indexOf("_K");
-    if (i == -1) {
-      throw new IllegalArgumentException("unknow format: " + title);
-    }
-    return title.substring(i + 2);
+  public static Collection<ProbeClustering> filterByParam(Collection<ProbeClustering> from,
+      final String paramName, final String paramValue) {
+    return new ProbeClusteringFilter() {
+      @Override
+      protected boolean accept(ProbeClustering pc) {
+        if (!pc.clustering.getParams().containsKey(paramName)) {
+          return false;
+        }
+        if (!pc.clustering.getParams().get(paramName).equals(paramValue)) {
+          return false;
+        }
+        return true;
+      }
+    }.filter(from);
   }
-
-  public Algorithm getAlgorithm() {
-    return algorithm;
-  }
-
-  public String getParam1() {
-    return param1;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  // Suggested API
-  // TODO future work: fetch cluster by sparql query
-  public List<ItemList> getClusters() {
-    return clusters;
-  }
-
-  public static List<ProbeClustering> filterByAlgorithm(List<ProbeClustering> from,
-      String algorithm) {
-    List<ProbeClustering> l = new ArrayList<ProbeClustering>();
-
+  public static List<String> collectParamValue(Collection<ProbeClustering> from, String paramName) {
+    Set<String> result = new HashSet<String>();
     for (ProbeClustering pc : from) {
-      if (pc.getAlgorithm().getTitle().equals(algorithm)) {
-        l.add(pc);
-      }
+      result.add(pc.clustering.getParams().get(paramName));
     }
-
-    return l;
+    return new ArrayList<String>(result);
   }
 
-  public static List<ProbeClustering> filterByParam1(List<ProbeClustering> from, String param1) {
-    List<ProbeClustering> l = new ArrayList<ProbeClustering>();
+}
 
+abstract class ProbeClusteringFilter {
+  protected abstract boolean accept(ProbeClustering pc);
+
+  public Collection<ProbeClustering> filter(Collection<ProbeClustering> from) {
+    Collection<ProbeClustering> result = new ArrayList<ProbeClustering>();
     for (ProbeClustering pc : from) {
-      if (pc.getParam1().equals(param1)) {
-        l.add(pc);
+      if (accept(pc)) {
+        result.add(pc);
       }
     }
 
-    return l;
+    return result;
   }
-
-  public static List<ProbeClustering> filterByName(List<ProbeClustering> from, String name) {
-    List<ProbeClustering> l = new ArrayList<ProbeClustering>();
-
-    for (ProbeClustering pc : from) {
-      if (pc.getName().equals(name)) {
-        l.add(pc);
-      }
-    }
-
-    return l;
-  }
-
-  public static Set<String> collectAlgorithm(List<ProbeClustering> from) {
-    Set<String> s = new HashSet<String>();
-
-    for (ProbeClustering p : from) {
-      Algorithm algo = p.getAlgorithm();
-      if (algo != null) {
-        s.add(algo.getTitle());
-      }
-    }
-
-    return s;
-  }
-
-  public static Set<String> collectParam1(List<ProbeClustering> from) {
-    Set<String> s = new HashSet<String>();
-
-    for (ProbeClustering p : from) {
-      String param = p.getParam1();
-      if (param != null) {
-        s.add(param);
-      }
-    }
-
-    return s;
-  }
-
-  public static Set<String> collectName(List<ProbeClustering> from) {
-    Set<String> s = new HashSet<String>();
-
-    for (ProbeClustering p : from) {
-      String name = p.getName();
-      if (name != null) {
-        s.add(name);
-      }
-    }
-
-    return s;
-  }
-
 }

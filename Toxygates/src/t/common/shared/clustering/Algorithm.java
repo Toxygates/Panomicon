@@ -18,63 +18,35 @@
 
 package t.common.shared.clustering;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.annotation.Nullable;
 
+/**
+ * Definitions of available clusterings
+ */
 public enum Algorithm {
-  HIERARCHICAL("Hierarchical", "Cut-off") {
-    @Override
-    public String[] getParam1Items() {
-      return new String[] {"40", "80", "120"};
-    }
+  HIERARCHICAL("Hierarchical", new String[] {"LV", "LN", "SP"}, new String[] {"K"});
 
-    @Override
-    public String[] getAllClusterings(String param1) {
-      List<String> list = new ArrayList<String>();
+  private String title;
+  private String[] clusterings;
+  private String[] params;
 
-      for (String c : new String[] {"LN", "LV", "SP"}) {
-        list.add(c + "_K" + param1);
-      }
-
-      return list.toArray(new String[0]);
-    }
-  };
-
-  private String title; // Example: Hierarchical
-
-  /**
-   * User-readable name of param1
-   */
-  private String param1Name;
-
-  private int numParams;
-
-  private Algorithm(String title, String param1Name) {
+  private Algorithm(String title, String[] clusterings, @Nullable String[] params) {
     this.title = title;
-    this.param1Name = param1Name;
-    numParams = 1;
+    this.clusterings = clusterings;
+    this.params = params;
   }
 
   public String getTitle() {
     return title;
   }
 
-  public String getParam1Name() {
-    return param1Name;
+  public String[] getClusterings() {
+    return clusterings;
   }
 
-  public int getNumOfParams() {
-    return numParams;
+  @Nullable
+  public String[] getParams() {
+    return params;
   }
-
-  // Override this
-  public String[] getParam1Items() {
-    throw new RuntimeException("Algorithm#getParam1Items is not implemented");
-  }
-
-  // Override this
-  public String[] getAllClusterings(String param1) {
-    throw new RuntimeException("Algorithm#getAllClusterings is not implemented");
-  }
-
+  
 }
