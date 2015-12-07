@@ -22,7 +22,6 @@ package t.viewer.server.rpc
 
 import java.util.ArrayList
 import java.util.{ List => JList }
-
 import t.common.shared.sample.ExprMatrix
 import otgviewer.server.ExtFoldBuilder
 import otgviewer.server.FoldBuilder
@@ -71,6 +70,7 @@ import org.rosuda.REngine.Rserve.RserveException
 import t.common.shared.userclustering.Algorithm
 import t.common.server.userclustering.RClustering
 import org.apache.commons.lang.StringUtils
+import t.common.shared.sample.ExpressionValue
 
 object MatrixServiceImpl {
 
@@ -199,7 +199,6 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     for ((gr, rr) <- grouped zip rawData;
       (gv, gs) <- gr.getValues zip groupSamples) {
       val sampleIds = gs.map(_.id)
-      println("Columns: " + mm.rawData.columnKeys)
       val sampleIdxs = sampleIds.map(i => mm.rawData.columnMap(i))
       val rawRow = sampleIdxs.map(i => rr(i))
       val tt = ManagedMatrix.makeTooltipShared(rawRow, mm.log2Tooltips)
@@ -427,10 +426,15 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
     val columns = mat.sortedColumnMap.filter(x => !info.isPValueColumn(x._2))
     val colNames = columns.map(_._1)
-    val values = mat.selectColumns(columns.map(_._2)).toColVectors.map(r => r.map(_.value))
+    val values = mat.selectColumns(columns.map(_._2)).data.
+      map(_.map(_.value))
 
     val clust = new RClustering(userDir)
-    clust.clustering(values.flatten, rowNames, colNames, geneSyms, algorithm)
+    clust.clustering(values.flatten, rowNamesForHeatmap(rowNames),
+        colNames, geneSyms, algorithm)
   }
+
+  protected def rowNamesForHeatmap(names: Seq[String]): Seq[String] =
+    names
 
 }
