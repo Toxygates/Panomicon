@@ -38,12 +38,10 @@ import com.google.gwt.user.client.ui.MenuItemSeparator;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.GeneSetEditor;
 import otgviewer.client.components.SaveActionHandler;
-import otgviewer.client.components.Screen;
 import t.common.shared.ClusteringList;
 import t.common.shared.ItemList;
 import t.common.shared.SharedUtils;
 import t.common.shared.StringList;
-import t.common.shared.ValueType;
 import t.common.shared.clustering.ProbeClustering;
 import t.common.shared.userclustering.Algorithm;
 
@@ -315,18 +313,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   private ScheduledCommand addNewClustering() {
     return new Command() {
       public void execute() {
-        // TODO simplify, same code in DataScreen
-        if (chosenProbes.length < 2) {
-          Window.alert("Please choose at least 2 probes.");
-        } else if (chosenProbes.length > 1000) {
-          Window.alert("Please choose at most 1,000 probes.");
-        } else if (chosenColumns.size() < 2) {
-          Window.alert("Please define at least 2 columns.");
-        } else if (chosenColumns.size() > 1000) {
-          Window.alert("Please define at most 1,000 columns.");
-        } else {
-          screen.makeHeatMap();
-        }
+        HeatmapDialog.show(screen, screen.et.getValueType());
       }
     };
   }
