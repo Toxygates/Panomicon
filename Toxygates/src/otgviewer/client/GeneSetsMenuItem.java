@@ -125,6 +125,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
 
     root.addSeparator(new MenuItemSeparator());
     root.addItem(new MenuItem("Add new", false, addNewUserSet()));
+    root.addSeparator(new MenuItemSeparator());
   }
 
   private void createUserClusterings() {
@@ -179,7 +180,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
 
       root.addItem(algo.getTitle(), mb);
     }
-
+    root.addSeparator(new MenuItemSeparator());
   }
 
   private void appendChildren(MenuBar parent, t.common.shared.clustering.Algorithm algo,
