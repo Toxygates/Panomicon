@@ -192,7 +192,7 @@ public class DataScreen extends Screen {
           } else if (chosenColumns.size() > 1000) {
             Window.alert("Please define at most 1,000 columns.");
           } else {
-            makeHeatMap(DataScreen.this, et.getValueType());           
+            makeHeatMap();           
           }
         }
       });
@@ -201,7 +201,7 @@ public class DataScreen extends Screen {
     }
   }
   
-  protected HeatmapDialog makeHeatMap(Screen scr, ValueType vt) {
+  protected HeatmapDialog makeHeatMap() {
     return new HeatmapDialog(DataScreen.this, et.getValueType());
   }
 
