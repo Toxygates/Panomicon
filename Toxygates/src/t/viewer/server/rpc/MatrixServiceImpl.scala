@@ -22,7 +22,6 @@ package t.viewer.server.rpc
 
 import java.util.ArrayList
 import java.util.{ List => JList }
-
 import t.common.shared.sample.ExprMatrix
 import otgviewer.server.ExtFoldBuilder
 import otgviewer.server.FoldBuilder
@@ -71,6 +70,7 @@ import org.rosuda.REngine.Rserve.RserveException
 import t.common.shared.userclustering.Algorithm
 import t.common.server.userclustering.RClustering
 import org.apache.commons.lang.StringUtils
+import t.common.shared.sample.ExpressionValue
 
 object MatrixServiceImpl {
 
@@ -427,7 +427,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     val columns = mat.sortedColumnMap.filter(x => !info.isPValueColumn(x._2))
     val colNames = columns.map(_._1)
     val values = mat.selectColumns(columns.map(_._2)).data.
-      map(_.filter(_.present).map(_.value))
+      map(_.map(_.value))
 
     val clust = new RClustering(userDir)
     clust.clustering(values.flatten, rowNamesForHeatmap(rowNames),
