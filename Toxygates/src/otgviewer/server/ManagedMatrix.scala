@@ -78,55 +78,38 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
   def loadRawData(requestColumns: Seq[Group],
     reader: MatrixDBReader[E], sparseRead: Boolean,
     fullLoad: Boolean)(implicit context: MatrixContext): ManagedMatrix = {
-    val pmap = context.probeMap
+    val packedProbes = probes.map(context.probeMap.pack)
 
-    val packedProbes = probes.map(pmap.pack)
-
-    val parts = requestColumns.par.map(g => {
-      //Remove repeated samples as some other algorithms assume distinct samples
-      //Also for efficiency
-      val samples =
-        (if (fullLoad) g.getSamples else samplesToLoad(g)).
-          toVector.distinct
-      val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.id)))
-
-      val data = reader.valuesForSamplesAndProbes(sortedSamples,
+    val samples = requestColumns.flatMap(g =>
+      (if (fullLoad) g.getSamples else samplesToLoad(g)).
+          toVector).distinct
+    val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.id)))
+    val data = reader.valuesForSamplesAndProbes(sortedSamples,
         packedProbes, sparseRead, false)
-      (g, data, sortedSamples)
-    }).seq
 
-    //The probe ordering returned will be consistent
-    val sortedProbes = parts.headOption.map(col =>
-      col._2.map(row => row(0).probe)).getOrElse(List())
+    val sortedProbes = data.map(row => row(0).probe)
     val annotations = sortedProbes.map(x => new SimpleAnnotation(x)).toVector
 
-    val parts2 = parts.par.map({
-      case (g, data, sortedSamples) =>
+    val cols = requestColumns.par.map(g => {
         println(g.getUnits()(0).toString())
-        val grouped = columnsFor(g, sortedSamples, data)
-        val ungrouped = ExprMatrix.withRows(data.map(r => EVArray(r.map(asJava(_)))),
-          sortedProbes, sortedSamples.map(_.sampleId))
-        (grouped, ungrouped)
+        //TODO avoid EVArray building
+        columnsFor(g, sortedSamples, data)
     }).seq
 
-    val (grouped, rawUngroupedMat) = parts2.par.reduceLeft((p1, p2) => {
-      val grouped = p1._1._1 adjoinRight p2._1._1
-      val info = p1._1._2.addAllNonSynthetic(p2._1._2)
-
-      val rightHandColSet = p2._2.columnKeys.toSet
-      val newCols = rightHandColSet -- p1._2.columnKeys
-      val ungrouped =  (if (rightHandColSet != newCols) {
-      //account for the fact that samples may be shared between requestColumns
-        p1._2 adjoinRight p2._2.selectNamedColumns(newCols.toSeq)
-      } else {
-        p1._2 adjoinRight p2._2
-      })
-      ((grouped, info), ungrouped)
+    //TODO try to avoid adjoining lots of small matrices
+    val (grouped, info) = cols.par.reduceLeft((p1, p2) => {
+      val grouped = p1._1 adjoinRight p2._1
+      val info = p1._2.addAllNonSynthetic(p2._2)
+      (grouped, info)
     })
 
-    new ManagedMatrix(sortedProbes, grouped._2,
-      rawUngroupedMat.copyWithAnnotations(annotations),
-      grouped._1.copyWithAnnotations(annotations),
+    //TODO: avoid EVArray building
+    val ungrouped = ExprMatrix.withRows(data.par.map(r => EVArray(r.map(asJava(_)))).seq,
+        sortedProbes, sortedSamples.map(_.sampleId))
+
+    new ManagedMatrix(sortedProbes, info,
+      ungrouped.copyWithAnnotations(annotations),
+      grouped.copyWithAnnotations(annotations),
       log2tooltips)
   }
 
