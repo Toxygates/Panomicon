@@ -38,8 +38,15 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
   /**
    * This list was generated using the service at http://tools.medialab.sciences-po.fr/iwanthue/
    */
-  protected static final String[] groupColors = new String[] {"#97BDBD", "#C46839", "#9F6AC8",
-      "#9CD05B", "#513C4D", "#6B7644", "#C75880"};
+  protected static final String[] groupColors = new String[] { 
+    "#8582B5",
+   "#7AC653",
+   "#C3534D",
+   "#90C1AB",
+   "#504239",
+   "#C1A54A",
+   "#B354B3" };
+    
   private static int nextColor = 0;
 
 
