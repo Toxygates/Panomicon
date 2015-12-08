@@ -42,6 +42,7 @@ import t.viewer.server.Platforms
 import t.viewer.shared.table.SortKey
 import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 import t.common.shared.sample.EVArray
+import t.db.ExprValue
 
 /**
  * A managed matrix session and associated state.
@@ -225,11 +226,10 @@ class MatrixController(context: Context,
       println("aux: " + sm.take(10))
       val evs = rowKeys.map(r =>
         sm.get(r) match {
-          case Some(v) => new ExpressionValue(v)
-          case None    => new ExpressionValue(Double.NaN, 'A')
+          case Some(v) => ExprValue(v)
+          case None    => ExprValue(Double.NaN, 'A')
         })
-      val evas = evs.map(v => EVArray(Seq(v)))
-      ExprMatrix.withRows(evas, rowKeys, List("POPSEQ"))
+      ExprMatrix.withRows(evs.map(ev => Seq(ev)), rowKeys, List("POPSEQ"))
     } else {
       throw new Exception(s"No sort key for $ass")
     }

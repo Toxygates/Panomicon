@@ -69,7 +69,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     info.addColumn(false, g.toString, g.toString + ": average of treated samples", false, g,
         false, samples)
     val e = ExprMatrix.withRows(data.map(vs =>
-      EVArray(Seq(javaMean(selectIdx(vs, treatedIdx))))),
+      Seq(mean(selectIdx(vs, treatedIdx)))),
       probes,
       List(g.toString))
     (e, info)
@@ -104,7 +104,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     })
 
     //TODO: avoid EVArray building
-    val ungrouped = ExprMatrix.withRows(data.par.map(r => EVArray(r.map(asJava(_)))).seq,
+    val ungrouped = ExprMatrix.withRows(data,
         sortedProbes, sortedSamples.map(_.sampleId))
 
     new ManagedMatrix(sortedProbes, info,
@@ -114,6 +114,14 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
   }
 
   protected def log2tooltips: Boolean = false
+
+  protected def mean(data: Iterable[ExprValue], presentOnly: Boolean = true) = {
+    if (presentOnly) {
+      ExprValue.presentMean(data, "")
+    } else {
+      ExprValue.allMean(data, "")
+    }
+  }
 
   final protected def selectIdx[E <: ExprValue](data: Seq[E], is: Seq[Int]) = is.map(data(_))
   final protected def javaMean[E <: ExprValue](data: Iterable[E], presentOnly: Boolean = true) = {
@@ -167,7 +175,7 @@ trait TreatedControlBuilder[E >: Null <: ExprValue] {
   def enhancedColumns: Boolean
 
   protected def buildRow(raw: Seq[E],
-    treatedIdx: Seq[Int], controlIdx: Seq[Int]): EVArray
+    treatedIdx: Seq[Int], controlIdx: Seq[Int]): Seq[ExprValue]
 
   protected def columnInfo(g: Group): ManagedMatrixInfo
   def colNames(g: Group): Seq[String]
@@ -206,10 +214,10 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[Exp
     with TreatedControlBuilder[ExprValue] {
 
   protected def buildRow(raw: Seq[ExprValue],
-    treatedIdx: Seq[Int], controlIdx: Seq[Int]): EVArray =
-    EVArray(Seq(
-      javaMean(selectIdx(raw, treatedIdx)),
-      javaMean(selectIdx(raw, controlIdx))))
+    treatedIdx: Seq[Int], controlIdx: Seq[Int]): Seq[ExprValue] =
+    Seq(
+      mean(selectIdx(raw, treatedIdx)),
+      mean(selectIdx(raw, controlIdx)))
 
   protected def columnInfo(g: Group) = {
     val (tus, cus) = treatedAndControl(g)
@@ -252,11 +260,11 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
   //use simple Fold. - Johan
 
   protected def buildRow(raw: Seq[PExprValue],
-    treatedIdx: Seq[Int], controlIdx: Seq[Int]): EVArray = {
+    treatedIdx: Seq[Int], controlIdx: Seq[Int]): Seq[ExprValue] = {
     val treatedVs = selectIdx(raw, treatedIdx)
     val first = treatedVs.head
     val fold = log2(javaMean(treatedVs, false))
-    EVArray(Seq(fold, new ExpressionValue(first.p, fold.call)))
+    Seq(fold, new BasicExprValue(first.p, fold.call))
   }
 
   override protected def log2tooltips = true
@@ -378,7 +386,7 @@ class ManagedMatrix(val initProbes: Seq[String],
   def probesForAuxTable: Seq[String] = rawGroupedMat.orderedRowKeys
 
   protected def filterAndSort(): Unit = {
-    def f(r: Seq[ExpressionValue]): Boolean = {
+    def f(r: Seq[ExprValue]): Boolean = {
       for (
         col <- 0 until currentInfo.numColumns();
         thresh = currentInfo.columnFilter(col);
@@ -391,7 +399,7 @@ class ManagedMatrix(val initProbes: Seq[String],
           av <= thresh
         else
           av >= thresh)
-        if (!pass || !r(col).getPresent) {
+        if (!pass || !r(col).present) {
           return false
         }
       }
@@ -411,7 +419,7 @@ class ManagedMatrix(val initProbes: Seq[String],
     }
   }
 
-  private def sortData(col: Int, ascending: Boolean)(v1: EVArray, v2: EVArray): Boolean = {
+  private def sortData(col: Int, ascending: Boolean)(v1: Seq[ExprValue], v2: Seq[ExprValue]): Boolean = {
     val ev1 = v1(col)
     val ev2 = v2(col)
     if (ev1.call == 'A' && ev2.call != 'A') {

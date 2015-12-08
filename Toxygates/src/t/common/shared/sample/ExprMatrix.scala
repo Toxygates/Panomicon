@@ -20,11 +20,16 @@
 
 package t.common.shared.sample
 
+import scala.language.postfixOps
+
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest
 import org.apache.commons.math3.stat.inference.TTest
+
 import friedrich.data.immutable._
+import t.db.BasicExprValue
+import t.db.ExprValue
 import t.util.SafeMath.safeMean
-import scala.language.postfixOps
+import otgviewer.server.rpc.Conversions
 
 object ExprMatrix {
   val ttest = new TTest()
@@ -33,7 +38,7 @@ object ExprMatrix {
   def safeCountColumns(rows: Seq[Seq[Any]]) =
     if (rows.size > 0) { rows(0).size } else 0
 
-  def withRows(data: Seq[EVArray], metadata: ExprMatrix = null) = {
+  def withRows(data: Seq[Seq[ExprValue]], metadata: ExprMatrix = null) = {
     if (metadata != null) {
       metadata.copyWith(data)
     } else {
@@ -43,7 +48,7 @@ object ExprMatrix {
     }
   }
 
-  def withRows(data: Seq[EVArray], rowNames: Seq[String], colNames: Seq[String]) =
+  def withRows(data: Seq[Seq[ExprValue]], rowNames: Seq[String], colNames: Seq[String]) =
     new ExprMatrix(data, data.size, safeCountColumns(data),
         Map() ++ rowNames.zipWithIndex, Map() ++ colNames.zipWithIndex,
         emptyAnnotations(data.size))
@@ -72,26 +77,27 @@ case class SimpleAnnotation(probe: String) extends RowAnnotation {
  * TODO: reconsider whether annotations are needed. Might be a major efficiency
  * problem + redundant.
  */
-class ExprMatrix(data: Seq[EVArray], rows: Int, columns: Int,
+class ExprMatrix(data: Seq[Seq[ExprValue]], rows: Int, columns: Int,
     rowMap: Map[String, Int], columnMap: Map[String, Int],
     val annotations: Seq[RowAnnotation])
     extends
-    AllocatedDataMatrix[ExprMatrix, ExpressionValue, EVArray, String, String](data, rows, columns, rowMap, columnMap) {
+    AllocatedDataMatrix[ExprMatrix, ExprValue,
+      Seq[ExprValue], String, String](data, rows, columns, rowMap, columnMap) {
 
   import ExprMatrix._
   import t.util.SafeMath._
 
-  implicit def builder() = EVABuilder
-
   println(rows + " x " + columns)
 //  println(sortedColumnMap)
 
-  val emptyVal = new ExpressionValue(0, 'A')
+  def fromSeq(s: Seq[ExprValue]) = s
+
+//  val emptyVal = new ExpressionValue(0, 'A')
 
   /**
    * This is the bottom level copyWith method - all the other ones ultimately delegate to this one.
    */
-  def copyWith(rowData: Seq[EVArray], rowMap: Map[String, Int],
+  def copyWith(rowData: Seq[Seq[ExprValue]], rowMap: Map[String, Int],
       columnMap: Map[String, Int],
       annotations: Seq[RowAnnotation]): ExprMatrix =  {
 
@@ -100,7 +106,7 @@ class ExprMatrix(data: Seq[EVArray], rows: Int, columns: Int,
             rowMap, columnMap, annotations)
   }
 
-  def copyWith(rowData: Seq[EVArray], rowMap: Map[String, Int],
+  def copyWith(rowData: Seq[Seq[ExprValue]], rowMap: Map[String, Int],
       columnMap: Map[String, Int]): ExprMatrix = {
     copyWith(rowData, rowMap, columnMap, annotations)
   }
@@ -114,7 +120,8 @@ class ExprMatrix(data: Seq[EVArray], rows: Int, columns: Int,
 
   lazy val asRows: Seq[ExpressionRow] = toRowVectors.zip(annotations).map(x => {
     val ann = x._2
-    new ExpressionRow(ann.probe, ann.atomics.toArray, null, null, null, x._1.toArray)
+    new ExpressionRow(ann.probe, ann.atomics.toArray, null, null, null,
+        x._1.map(Conversions.asJava).toArray)
   })
 
   override def selectRows(rows: Seq[Int]): ExprMatrix =
@@ -132,16 +139,16 @@ class ExprMatrix(data: Seq[EVArray], rows: Int, columns: Int,
     val ps = sourceCols1.toRowVectors.zip(sourceCols2.toRowVectors) zipWithIndex
     val pvals = ps.map(r => {
       val probe = sourceData.rowAt(r._2)
-      val vs1 = r._1._1.filter(_.getPresent).map(_.getValue())
-      val vs2 = r._1._2.filter(_.getPresent).map(_.getValue())
+      val vs1 = r._1._1.filter(_.present).map(_.value)
+      val vs2 = r._1._2.filter(_.present).map(_.value)
 
       if (vs1.size >= minValues && vs2.size >= minValues) {
-        new ExpressionValue(test(vs1, vs2), 'P')
+        new BasicExprValue(test(vs1, vs2), 'P')
       } else {
-        new ExpressionValue(Double.NaN, 'A')
+        new BasicExprValue(Double.NaN, 'A')
       }
     })
-    appendColumn(EVArray(pvals), colName)
+    appendColumn(pvals, colName)
   }
 
   private def equals0(x: Double) = java.lang.Double.compare(x, 0d) == 0

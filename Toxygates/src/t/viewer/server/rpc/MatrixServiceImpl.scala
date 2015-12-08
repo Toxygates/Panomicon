@@ -201,7 +201,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       val sampleIds = gs.map(_.id)
       val sampleIdxs = sampleIds.map(i => mm.rawData.columnMap(i))
       val rawRow = sampleIdxs.map(i => rr(i))
-      val tt = ManagedMatrix.makeTooltipShared(rawRow, mm.log2Tooltips)
+      val tt = ManagedMatrix.makeTooltip(rawRow, mm.log2Tooltips)
       gv.setTooltip(tt)
     }
 
