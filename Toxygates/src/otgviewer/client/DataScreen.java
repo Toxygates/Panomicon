@@ -23,26 +23,24 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.components.GeneSetSelector;
-import otgviewer.client.components.Screen;
-import otgviewer.client.components.ScreenManager;
-import otgviewer.client.components.StorageParser;
-import otgviewer.client.components.TickMenuItem;
-import t.common.shared.ItemList;
-import t.common.shared.ValueType;
-import t.common.shared.sample.ExpressionRow;
-import t.common.shared.sample.Group;
-import t.viewer.client.table.ExpressionTable;
-import t.viewer.client.table.RichTable.HideableColumn;
-
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.ResizeLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
+
+import otgviewer.client.components.GeneSetSelector;
+import otgviewer.client.components.Screen;
+import otgviewer.client.components.ScreenManager;
+import otgviewer.client.components.StorageParser;
+import otgviewer.client.components.TickMenuItem;
+import t.common.shared.ItemList;
+import t.common.shared.sample.ExpressionRow;
+import t.common.shared.sample.Group;
+import t.viewer.client.table.ExpressionTable;
+import t.viewer.client.table.RichTable.HideableColumn;
 
 /**
  * The main data display screen. Data is displayed in the ExpressionTable widget.
@@ -62,8 +60,7 @@ public class DataScreen extends Screen {
   private MenuItem heatMapMenu;
 
   public DataScreen(ScreenManager man) {
-    super("View data", key, true, man, resources.dataDisplayHTML(), resources
-        .dataDisplayHelp());
+    super("View data", key, true, man, resources.dataDisplayHTML(), resources.dataDisplayHelp());
     gs = makeGeneSetSelector();
     et = makeExpressionTable();
     et.setDisplayPColumns(false);
@@ -96,7 +93,7 @@ public class DataScreen extends Screen {
   }
 
   static final public int STANDARD_TOOL_HEIGHT = 43;
-  
+
   @Override
   protected void addToolbars() {
     super.addToolbars();
@@ -129,14 +126,12 @@ public class DataScreen extends Screen {
           }
         });
     mb.addItem(mntmDownloadCsv);
-    mntmDownloadCsv =
-        new MenuItem("Download CSV (individual samples)...", false,
-            new Command() {
-              public void execute() {
-                et.downloadCSV(true);
+    mntmDownloadCsv = new MenuItem("Download CSV (individual samples)...", false, new Command() {
+      public void execute() {
+        et.downloadCSV(true);
 
-              }
-            });
+      }
+    });
     mb.addItem(mntmDownloadCsv);
 
     addMenu(mActions);
@@ -150,7 +145,7 @@ public class DataScreen extends Screen {
         }
       };
     }
-    
+
     GeneSetsMenuItem geneSetsMenu = factory().geneSetsMenuItem(this);
     addListener(geneSetsMenu);
     addMenu(geneSetsMenu.menuItem());
@@ -161,8 +156,7 @@ public class DataScreen extends Screen {
     // TODO: this is effectively a tick menu item without the tick.
     // It would be nice to display the tick graphic, but then the textual alignment
     // of the other items on the menu becomes odd.
-    addAnalysisMenuItem(new TickMenuItem("Compare two sample groups", false,
-        false) {
+    addAnalysisMenuItem(new TickMenuItem("Compare two sample groups", false, false) {
       public void stateChange(boolean newState) {
         if (!visible) {
           // Trigger screen
@@ -183,26 +177,11 @@ public class DataScreen extends Screen {
     if (factory().hasHeatMapMenu()) {
       heatMapMenu = new MenuItem("Show heat map", new Command() {
         public void execute() {
-          if (chosenProbes.length < 2) {
-            Window.alert("Please choose at least 2 probes.");
-          } else if (chosenProbes.length > 1000) {
-            Window.alert("Please choose at most 1,000 probes.");
-          } else if (chosenColumns.size() < 2) {
-            Window.alert("Please define at least 2 columns.");
-          } else if (chosenColumns.size() > 1000) {
-            Window.alert("Please define at most 1,000 columns.");
-          } else {
-            makeHeatMap(DataScreen.this, et.getValueType());           
-          }
+          HeatmapDialog.show(DataScreen.this, et.getValueType());
         }
       });
-      heatMapMenu.setEnabled(false);
       addAnalysisMenuItem(heatMapMenu);
     }
-  }
-  
-  protected HeatmapDialog makeHeatMap(Screen scr, ValueType vt) {
-    return new HeatmapDialog(DataScreen.this, et.getValueType());
   }
 
   @Override
@@ -258,12 +237,8 @@ public class DataScreen extends Screen {
 
     StorageParser p = getParser(this);
     storeGeneSet(p);
-
-    if (heatMapMenu != null) {
-      heatMapMenu.setEnabled(!gs.isDefaultItemSelected());
-    }
   }
-  
+
   public String[] displayedAtomicProbes() {
     return et.displayedAtomicProbes();
   }

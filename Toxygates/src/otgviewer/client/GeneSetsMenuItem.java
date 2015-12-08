@@ -125,6 +125,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
 
     root.addSeparator(new MenuItemSeparator());
     root.addItem(new MenuItem("Add new", false, addNewUserSet()));
+    root.addSeparator(new MenuItemSeparator());
   }
 
   private void createUserClusterings() {
@@ -149,6 +150,8 @@ public class GeneSetsMenuItem extends DataListenerWidget {
       root.addItem(cl.name(), mb);
     }
 
+    root.addSeparator(new MenuItemSeparator());
+    root.addItem(new MenuItem("Add new", addNewClustering()));
     root.addSeparator(new MenuItemSeparator());
   }
 
@@ -179,7 +182,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
 
       root.addItem(algo.getTitle(), mb);
     }
-
+    root.addSeparator(new MenuItemSeparator());
   }
 
   private void appendChildren(MenuBar parent, t.common.shared.clustering.Algorithm algo,
@@ -303,6 +306,14 @@ public class GeneSetsMenuItem extends DataListenerWidget {
             && cl.name().equals(screen.chosenGeneSet.name())) {
           switchToAllProbes();
         }
+      }
+    };
+  }
+
+  private ScheduledCommand addNewClustering() {
+    return new Command() {
+      public void execute() {
+        HeatmapDialog.show(screen, screen.et.getValueType());
       }
     };
   }
