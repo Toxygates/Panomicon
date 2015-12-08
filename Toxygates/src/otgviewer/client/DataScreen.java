@@ -177,11 +177,15 @@ public class DataScreen extends Screen {
     if (factory().hasHeatMapMenu()) {
       heatMapMenu = new MenuItem("Show heat map", new Command() {
         public void execute() {
-          HeatmapDialog.show(DataScreen.this, et.getValueType());
+          makeHeatMap();          
         }
       });
       addAnalysisMenuItem(heatMapMenu);
     }
+  }
+  
+  protected void makeHeatMap() {
+    HeatmapDialog.show(DataScreen.this, et.getValueType());
   }
 
   @Override

@@ -71,7 +71,7 @@ public class HeatmapDialog extends DataListenerWidget {
       {"kinetic-v5.1.0.min.js", "jquery-2.0.3.min.js", "inchlib-1.2.0.js", "inchlib-extended.js"};
 
   private final MatrixServiceAsync matrixService;
-  private final Screen screen;
+  protected final Screen screen;
 
   private DialogBox dialog;
   private Button saveButton;
@@ -87,7 +87,7 @@ public class HeatmapDialog extends DataListenerWidget {
 
   private Algorithm lastClusteringAlgorithm = new Algorithm();
 
-  public HeatmapDialog(Screen screen, ValueType defaultType) {
+  public HeatmapDialog(Screen screen) {
     matrixService = screen.matrixService();
     this.screen = screen;
     dialog = new DialogBox();
@@ -106,7 +106,11 @@ public class HeatmapDialog extends DataListenerWidget {
   }
   
   public static void show(Screen screen, ValueType defaultType) {
-    HeatmapDialog dialog = new HeatmapDialog(screen, defaultType);
+    HeatmapDialog dialog = new HeatmapDialog(screen);
+    show(dialog, screen, defaultType);    
+  }
+  
+  public static void show(HeatmapDialog dialog, Screen screen, ValueType defaultType) {    
     screen.propagateTo(dialog);
     
     int probesCount = (dialog.chosenProbes != null ? dialog.chosenProbes.length : 0);
