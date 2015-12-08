@@ -313,7 +313,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   private ScheduledCommand addNewClustering() {
     return new Command() {
       public void execute() {
-        HeatmapDialog.show(screen, screen.et.getValueType());
+        new HeatmapDialog(screen, screen.et.getValueType()).show();
       }
     };
   }

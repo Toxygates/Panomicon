@@ -72,6 +72,7 @@ public class HeatmapDialog extends DataListenerWidget {
 
   private final MatrixServiceAsync matrixService;
   private final Screen screen;
+  private ValueType defaultType;
 
   private DialogBox dialog;
   private Button saveButton;
@@ -90,11 +91,12 @@ public class HeatmapDialog extends DataListenerWidget {
   public HeatmapDialog(Screen screen, ValueType defaultType) {
     matrixService = screen.matrixService();
     this.screen = screen;
+    this.defaultType = defaultType;
     dialog = new DialogBox();
     valType = new ListBox();
   }
 
-  private void initWindow(ValueType defaultType) {
+  private void initWindow() {
     createPanel(defaultType);
     inject(new ArrayList<String>(Arrays.asList(injectList)));
 
@@ -105,11 +107,10 @@ public class HeatmapDialog extends DataListenerWidget {
     dialog.setVisible(false);
   }
   
-  public static void show(Screen screen, ValueType defaultType) {
-    HeatmapDialog dialog = new HeatmapDialog(screen, defaultType);
-    screen.propagateTo(dialog);
+  public void show() {
+    screen.propagateTo(this);
     
-    int probesCount = (dialog.chosenProbes != null ? dialog.chosenProbes.length : 0);
+    int probesCount = (chosenProbes != null ? chosenProbes.length : 0);
     if (probesCount == 0 || probesCount > 1000) {
       Window.alert("Please choose at most 1,000 probes.");
       return;
@@ -118,7 +119,7 @@ public class HeatmapDialog extends DataListenerWidget {
       Window.alert("Please choose at least 2 probes.");
       return;
     } 
-    int columnsCount = dialog.chosenColumns.size();
+    int columnsCount = chosenColumns.size();
     if (columnsCount < 2) {
       Window.alert("Please define at least 2 columns.");
       return;
@@ -129,7 +130,7 @@ public class HeatmapDialog extends DataListenerWidget {
     }
     
     // all check passed
-    dialog.initWindow(defaultType);;
+    initWindow();;
   }
 
   private void inject(final List<String> p_jsList) {

@@ -37,6 +37,7 @@ import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.components.TickMenuItem;
 import t.common.shared.ItemList;
+import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.table.ExpressionTable;
@@ -177,11 +178,15 @@ public class DataScreen extends Screen {
     if (factory().hasHeatMapMenu()) {
       heatMapMenu = new MenuItem("Show heat map", new Command() {
         public void execute() {
-          HeatmapDialog.show(DataScreen.this, et.getValueType());
+          makeHeatMap(DataScreen.this, et.getValueType()).show();
         }
       });
       addAnalysisMenuItem(heatMapMenu);
     }
+  }
+  
+  protected HeatmapDialog makeHeatMap(Screen scr, ValueType vt) {
+    return new HeatmapDialog(DataScreen.this, vt);
   }
 
   @Override
