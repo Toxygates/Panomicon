@@ -135,7 +135,7 @@ abstract public class DataSource {
 					SampleClass sc = s.sampleClass().
 							copyWith(schema.timeParameter(), time);
 					ChartSample cs = new ChartSample(sc, schema,
-							ev.getValue(), null, s.probe(), ev.getCall());
+							ev.getValue(), null, s.probe(), ev.getCall(), null);
 					chartSamples.add(cs);
 				}
 			}
@@ -164,7 +164,7 @@ abstract public class DataSource {
 				for (ExpressionRow er : rows) {
 					ExpressionValue ev = er.getValue(i);
 					ChartSample cs = new ChartSample(samples[i], schema,
-							ev.getValue(), er.getProbe(), ev.getCall());
+							ev.getValue(), er.getProbe(), ev.getCall(), schema.chartLabel(samples[i]));
 					chartSamples.add(cs);
 				}
 			}		

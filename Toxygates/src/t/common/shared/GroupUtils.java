@@ -105,7 +105,7 @@ public class GroupUtils {
    * Extract the sample that has the given id from the list of groups.
    * 
    * @param columns
-   * @param barcode
+   * @param sample
    * @return
    */
   public static <T extends Sample> T sampleFor(

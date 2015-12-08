@@ -162,4 +162,6 @@ public abstract class DataSchema implements Serializable {
 		return null;
 	}
 	
+	@Nullable public String chartLabel(HasClass hc) { return null; }
+	
 }

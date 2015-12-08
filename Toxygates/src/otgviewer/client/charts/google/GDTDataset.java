@@ -81,10 +81,10 @@ public class GDTDataset extends Dataset<GDTData> {
 				
 				final int col = valCount[cat] * 2 + 1;
 				dt.setValue(cat, col, s.value());
-				if (s.barcode() != null) {
-					dt.setProperty(cat, col, "barcode", s.barcode().pack());
+				if (s.sample() != null) {
+					dt.setProperty(cat, col, "barcode", s.sample().pack());
 				}
-				dt.setFormattedValue(cat, col, Utils.formatNumber(s.value()) + ":" + s.call());
+				dt.setFormattedValue(cat, col, s.formattedValue());
 				String style = "fill-color:" + s.color() + "; stroke-width:1px; ";
 
 				dt.setValue(cat, col + 1, style);
