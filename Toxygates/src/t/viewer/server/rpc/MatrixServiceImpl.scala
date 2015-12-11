@@ -193,14 +193,13 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       mm.info.samples(g))
 
     val rowNames = grouped.map(_.getProbe)
-    //TODO
-    //val rowNames = (offset until (offset+size)).map(i => mm.current.rowAt(i))
+
     val rawData = mm.rawData.selectNamedRows(rowNames).data
+
     for ((gr, rr) <- grouped zip rawData;
-      (gv, gs) <- gr.getValues zip groupSamples) {
-      val sampleIds = gs.map(_.id)
-      val sampleIdxs = sampleIds.map(i => mm.rawData.columnMap(i))
-      val rawRow = sampleIdxs.map(i => rr(i))
+      (gv, i) <- gr.getValues zipWithIndex) {
+      val basis = mm.baseColumns(i)
+      val rawRow = basis.map(i => rr(i))
       val tt = ManagedMatrix.makeTooltip(rawRow, mm.log2Tooltips)
       gv.setTooltip(tt)
     }
@@ -269,15 +268,6 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       }
     })
   }
-//
-//
-//  private def makeTooltips(mm: ManagedMatrix, er: ExpressionRow, rawData: ExprMatrix): ExpressionRow = {
-//    val nvs = (0 until er.getValues.size).map(i => {
-//      val ss = mm.info.samples(i)
-//      val indValues = rawData.selectNamedColumns(ss.map(_.id()))
-//      ManagedMatrix.makeTooltip(indValues)
-//    }}
-//  }
 
   def getFullData(gs: JList[Group], rprobes: Array[String], sparseRead: Boolean,
     withSymbols: Boolean, typ: ValueType): FullMatrix = {

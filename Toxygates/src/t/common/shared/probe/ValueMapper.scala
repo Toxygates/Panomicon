@@ -44,7 +44,7 @@ object MedianValueMapper extends ValueMapper {
 
   def convert(rangeProbe: String, domainVs: Iterable[ExprValue]): ExprValue = {
     if (domainVs.size == 0) {
-      return ExprValue(0.0, 'A') //, "(absent)")
+      return ExprValue(0.0, 'A')
     }
 
     //TODO call handling here
@@ -56,8 +56,6 @@ object MedianValueMapper extends ValueMapper {
       sorted(mid).value
     }
 
-    val tooltip = "med(" + sorted.map(x => format(x.value)).mkString(", ") + ")"
-
     var call = 0d
     for (v <- domainVs) {
       v.call match {
@@ -68,6 +66,6 @@ object MedianValueMapper extends ValueMapper {
     }
     val nc = Math.round(call/domainVs.size)
     val rc = if (nc == 2) 'P' else (if (nc == 1) 'M' else 'A')
-    ExprValue(nv, rc) //, tooltip)
+    ExprValue(nv, rc)
   }
 }

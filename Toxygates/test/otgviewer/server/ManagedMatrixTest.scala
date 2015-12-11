@@ -66,6 +66,10 @@ class ManagedMatrixTest extends TTestSuite {
     raw.rowMap.size should equal(probes.size)
     raw.sortedRowMap.map(_._1) should equal(sortedProbes)
   }
+  
+  test("sort") {
+    
+  }
 
 //
 //  test("adjoined sorting") {

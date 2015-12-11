@@ -107,9 +107,17 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     val ungrouped = ExprMatrix.withRows(data,
         sortedProbes, sortedSamples.map(_.sampleId))
 
+    val bmap = Map() ++ (0 until requestColumns.size).map(i => {
+      val cg = info.columnGroup(i)
+      val sampleIds = cg.samples.map(_.id).toSeq
+      val sampleIdxs = sampleIds.map(i => ungrouped.columnMap.get(i)).flatten
+      (i -> sampleIdxs)
+    })
+
     new ManagedMatrix(sortedProbes, info,
       ungrouped.copyWithAnnotations(annotations),
       grouped.copyWithAnnotations(annotations),
+      bmap,
       log2tooltips)
   }
 
@@ -131,15 +139,6 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     }
 
     new ExpressionValue(mean.value, mean.call, null) // makeTooltip(data))
-  }
-
-  protected def makeTooltip[E <: ExprValue](data: Iterable[E]): String = {
-    val r = data.take(10).map(_.toString).mkString(" ")
-    if (data.size > 10) {
-      r + ", ..."
-    } else {
-      r
-    }
   }
 
   protected def unitIdxs(us: Iterable[t.common.shared.sample.Unit], samples: Seq[Sample]): Seq[Int] = {
@@ -297,23 +296,11 @@ object ManagedMatrix {
     ExprValue.apply(Math.log(value.value) / l2, value.call, value.probe)
   }
 
-  def makeTooltip[E <: ExprValue](data: Iterable[E], log2: Boolean): String = {
-    val r = data.take(10).map(_.toString).mkString(" ")
-    if (data.size > 10) {
-      r + ", ..."
-    } else {
-      r
-    }
-  }
-
-  def makeTooltipShared(data: Iterable[ExpressionValue], log2tfm: Boolean): String = {
+  def makeTooltip[E <: ExprValue](data: Iterable[E], log2tfm: Boolean): String = {
     val d = if (log2tfm) data.map(log2) else data
 
-    val r = d.take(10).map(x => {
-      s"(${ExprValue.nf.format(x.getValue)}:${x.getCall})"
-    }).mkString(" ")
-
-    if (data.size > 10) {
+    val r = d.filter(_.present).take(10).map(_.toString).mkString(" ")
+    if (d.size > 10) {
       r + ", ..."
     } else {
       r
@@ -341,6 +328,7 @@ class ManagedMatrix(val initProbes: Seq[String],
     //TODO visibility of these 3 vars
     var currentInfo: ManagedMatrixInfo, var rawUngroupedMat: ExprMatrix,
     var rawGroupedMat: ExprMatrix,
+    val baseColumnMap: Map[Int, Seq[Int]],
     val log2Tooltips: Boolean = false) {
 
   protected var currentMat: ExprMatrix = rawGroupedMat
@@ -353,6 +341,12 @@ class ManagedMatrix(val initProbes: Seq[String],
   protected var requestProbes: Seq[String] = initProbes
 
   currentInfo.setNumRows(currentMat.rows)
+
+  /**
+   * For the given column in the grouped matrix,
+   * which columns in the ungrouped matrix are its basis?
+   */
+  def baseColumns(col: Int): Seq[Int] = baseColumnMap.get(col).getOrElse(List())
 
   /**
    * What is the current sort column?
