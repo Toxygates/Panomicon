@@ -30,6 +30,7 @@ import t.db.Sample
 import t.db.SampleIndex
 import t.db.kyotocabinet.KCExtMatrixDB
 import t.testing.FakeContext
+import t.platform.OrthologMapping
 
 object TestData {
   def pickOne[T](xs: Seq[T]): T = {
@@ -113,4 +114,11 @@ object TestData {
 
   implicit val context = new FakeContext(dbIdMap, probeMap)
 
+  val orthologs: OrthologMapping = {
+    val n = 100
+    val pmap = probeMap
+    val orths = (0 until n).map(p =>
+      List(pmap.unpack(p), pmap.unpack(p + n)))
+    OrthologMapping("test", orths)
+  }
 }

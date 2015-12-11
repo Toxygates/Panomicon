@@ -52,7 +52,7 @@ class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap,
 
   def samples = ???
 
-  private val td = makeTestData(false)
+  val testData = makeTestData(false)
 
   private val folds = memDBHash
   private val abs = memDBHash
@@ -62,6 +62,6 @@ class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap,
   lazy val seriesBuilder: SeriesBuilder[_] = ???
 
   def populate() {
-    TestData.populate(foldsDBReader, td)
+    TestData.populate(foldsDBReader, testData)
   }
 }

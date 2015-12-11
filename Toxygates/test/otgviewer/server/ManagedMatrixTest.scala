@@ -33,7 +33,7 @@ import t.TTestSuite
 class ManagedMatrixTest extends TTestSuite {
   import TestData._
 
-  val schema = t.common.testing.TestData.dataSchema()
+  val schema = t.common.testing.TestData.dataSchema
 
   //TODO absoluteDBReader will be null
   def normBuilder = new NormalizedBuilder(false, context.absoluteDBReader,
@@ -66,9 +66,9 @@ class ManagedMatrixTest extends TTestSuite {
     raw.rowMap.size should equal(probes.size)
     raw.sortedRowMap.map(_._1) should equal(sortedProbes)
   }
-  
+
   test("sort") {
-    
+
   }
 
 //
