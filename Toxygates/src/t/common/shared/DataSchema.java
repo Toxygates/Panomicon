@@ -164,4 +164,5 @@ public abstract class DataSchema implements Serializable {
 	
 	@Nullable public String chartLabel(HasClass hc) { return null; }
 	
+	@Nullable public String suggestedColor(HasClass hc) { return null; }
 }

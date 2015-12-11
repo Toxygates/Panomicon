@@ -25,11 +25,10 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.charts.Dataset;
 import otgviewer.client.charts.ChartSample;
+import otgviewer.client.charts.Dataset;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
-import t.viewer.client.Utils;
 
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;

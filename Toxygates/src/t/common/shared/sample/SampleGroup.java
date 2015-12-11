@@ -38,8 +38,8 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
   /**
    * This list was generated using the service at http://tools.medialab.sciences-po.fr/iwanthue/
    */
-  protected static final String[] groupColors = new String[] { 
-    "#8582B5",
+  public static final String[] groupColors = new String[] { 
+   "#8582B5",
    "#7AC653",
    "#C3534D",
    "#90C1AB",
@@ -104,8 +104,12 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
     return "Group" + getColorIndex();
   }
 
-  private int getColorIndex() {
+  public static int colorIndexOf(String color) {
     return SharedUtils.indexOf(groupColors, color);
+  }
+  
+  private int getColorIndex() {
+    return colorIndexOf(color);
   }
 
   public String pack() {
