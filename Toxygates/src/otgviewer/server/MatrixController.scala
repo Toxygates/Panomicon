@@ -57,6 +57,7 @@ class MatrixController(context: Context,
 
   private def probes = context.probes
   private def platforms = Platforms(probes)
+
   private implicit val mcontext = context.matrix
   private var sortAssoc: AType = _
 
@@ -64,6 +65,7 @@ class MatrixController(context: Context,
     val samples = groups.toList.flatMap(_.getSamples().map(_.id))
     context.samples.platforms(samples)
   }
+  def multiPlatform = groupPlatforms.size > 1
 
   lazy val filteredProbes =
     platforms.filterProbes(initProbes, groupPlatforms)
@@ -86,10 +88,8 @@ class MatrixController(context: Context,
         throw new DBUnavailableException(e)
     }
 
-    val multiPlat = groupPlatforms.size > 1
-
     try {
-      val enhancedCols = !multiPlat
+      val enhancedCols = !multiPlatform
 
       //TODO get rid of/factor out this, possibly to a factory of some kind
       val b = reader match {
@@ -142,18 +142,22 @@ class MatrixController(context: Context,
 
   protected def applyMapper(mm: ManagedMatrix, mapper: Option[MatrixMapper]): ManagedMatrix = {
     mapper match {
-      case Some(m) => m.convert(mm)
-      case None    => mm
+      case Some(m) =>
+        println(s"Apply mapper: $m")
+        m.convert(mm)
+      case None    =>
+        println("No mapper being applied")
+        mm
     }
   }
 
-  var managedMatrix: ManagedMatrix = {
+  val managedMatrix: ManagedMatrix = {
     val pt = new PerfTimer(Logger.getLogger("matrixController.loadMatrix"))
 
     val mm = if (filteredProbes.size > 0) {
       makeMatrix(filteredProbes, typ, sparseRead, fullLoad)
     } else {
-      val emptyMatrix = new ExprMatrix(List(), 0, 0,Map(), Map(), List())
+      val emptyMatrix = new ExprMatrix(List(), 0, 0, Map(), Map(), List())
       new ManagedMatrix(List(), new ManagedMatrixInfo(), emptyMatrix, emptyMatrix, Map())
     }
 
@@ -161,7 +165,7 @@ class MatrixController(context: Context,
     mm.info.setPlatforms(groupPlatforms.toArray)
 
     val mapper = if (useStandardMapper) {
-      if (groupPlatforms.size > 1) {
+      if (multiPlatform) {
         standardMapper
       } else {
         None

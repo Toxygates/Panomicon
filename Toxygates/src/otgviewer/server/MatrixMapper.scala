@@ -53,26 +53,25 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
     val fromRowSet = from.rowKeys.toSet
 
     val nrows = rangeProbes.flatMap(rng => {
-      val domProbes = pm.toDomain(rng).filter(fromRowSet.contains(_))
+      val domProbes = pm.toDomain(rng).toSeq.filter(fromRowSet.contains(_))
+      if (!domProbes.isEmpty) {
 
-      //pull out e.g. all the rows corresponding to probes (domain)
-      //for gene G1 (range)
-      val domainRows = domProbes.map(dp => from.row(dp))
-      if (!domainRows.isEmpty) {
-        val cols = domainRows.head.size
-        val nr = (0 until cols).map(c => {
-              val xs = domainRows.map(dr => dr(c)).filter(_.present)
-              (vm.convert(rng, xs), xs)
-          })
-
+        //pull out e.g. all the rows corresponding to probes (domain)
+        //for gene G1 (range)
+        val domainRows = domProbes.map(from.row(_))
+        val nr = (0 until from.columns).map(c => {
+          val xs = domainRows.map(dr => dr(c)).filter(_.present)
+          val v = vm.convert(rng, xs)
+          println(v + ":" + xs)
+          (v, xs)
+        })
         Some((nr, FullAnnotation(rng, domProbes)))
       } else {
         None
       }
     })
 
-    println(from.sortedColumnMap)
-    val cols = (0 until from.columns).map(x => from.columnAt(x))
+    val cols = from.sortedColumnMap.map(_._1)
 
     val annots = nrows.map(_._2)
     val groupedVals = nrows.map(_._1.map(_._1))
@@ -92,9 +91,10 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
       at += ungroupedSizes(i)
     }
 
+    val usedRowNames = annots.map(_.probe)
     val ungroupedColNames = (0 until ungroupedVals(0).size).map(i => s"Ungrouped-$i")
-    val grouped = ExprMatrix.withRows(groupedVals, rangeProbes, cols).copyWithAnnotations(annots)
-    val ungrouped = ExprMatrix.withRows(ungroupedVals, rangeProbes, ungroupedColNames)
+    val grouped = ExprMatrix.withRows(groupedVals, usedRowNames, cols).copyWithAnnotations(annots)
+    val ungrouped = ExprMatrix.withRows(ungroupedVals, usedRowNames, ungroupedColNames)
     (grouped, ungrouped, baseMap)
   }
 

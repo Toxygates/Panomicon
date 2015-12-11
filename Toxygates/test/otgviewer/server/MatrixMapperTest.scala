@@ -29,6 +29,11 @@ class MatrixMapperTest extends TTestSuite {
      }
   }
 
+  private def medianCompatible(x: ExprValue, test: Iterable[ExprValue]) {
+    assert(test.exists(_.value == x.value) ||
+        (test.size == 2 && test.map(_.value).sum / 2 == x.value))
+  }
+
   test("values") {
     val d = makeTestData(false)
     for (m <- os.mappings; s <- d.samples;
@@ -36,10 +41,13 @@ class MatrixMapperTest extends TTestSuite {
       val data = d.data.mapValues(vs => vs.filter(p => ms.contains(p._1)))
       val vs = data(s).map(r => ExprValue(r._2._1, r._2._2, r._1))
       for (p <- m) {
-        val c = vm.convert(p, vs)
-        //for size 2 we use mean rather than median.
-        //call may change
-        assert(vs.exists(_.value == c.value) || vs.size == 2)
+        val filt = vs.filter(_.present)
+        if (filt.size > 0) {
+          val c = vm.convert(p, filt)
+          //for size 2 we use mean rather than median.
+          //call may change
+          medianCompatible(c, filt)
+        }
       }
     }
   }
@@ -70,6 +78,7 @@ class MatrixMapperTest extends TTestSuite {
 
     val ug = conv.rawUngroupedMat
     ug.rowKeys should equal(cur.rowKeys)
+    ug.rowMap should equal(cur.rowMap)
 
     for (r <- cur.rowKeys) {
       val row = cur.row(r)
@@ -77,10 +86,9 @@ class MatrixMapperTest extends TTestSuite {
       val domainRows = m.current.selectNamedRows(inDomain).toRowVectors
       //size 2 uses mean instead of median
       //call may change.
-      for (i <- 0 until cur.columns) {
+      for (i <- 0 until cur.columns; if (row(i).present)) {
         val present = domainRows.map(_(i)).filter(_.present)
-        assert(present.size == 2 ||
-            present.exists(_.value == row(i).value))
+        medianCompatible(row(i), present)
       }
     }
 

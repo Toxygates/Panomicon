@@ -52,7 +52,7 @@ class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap,
 
   def samples = ???
 
-  val testData = makeTestData(false)
+  val testData = makeTestData(true)
 
   private val folds = memDBHash
   private val abs = memDBHash
