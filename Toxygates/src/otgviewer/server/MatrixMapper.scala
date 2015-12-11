@@ -83,7 +83,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
     val ungroupedVals = for (r <- nrows)
       yield (0 until from.columns).flatMap(c => padToSize(r._1(c)._2, ungroupedSizes(c)))
 
-    //The base map will be used for generating tooltips from the ungrouped matrix 
+    //The base map will be used for generating tooltips from the ungrouped matrix
     //that we constructed above
     var at = 0
     var baseMap = Map[Int, Seq[Int]]()
@@ -92,7 +92,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
       at += ungroupedSizes(i)
     }
 
-    val ungroupedColNames = (0 until ungroupedVals.size).map(i => s"Ungrouped-$i")
+    val ungroupedColNames = (0 until ungroupedVals(0).size).map(i => s"Ungrouped-$i")
     val grouped = ExprMatrix.withRows(groupedVals, rangeProbes, cols).copyWithAnnotations(annots)
     val ungrouped = ExprMatrix.withRows(ungroupedVals, rangeProbes, ungroupedColNames)
     (grouped, ungrouped, baseMap)

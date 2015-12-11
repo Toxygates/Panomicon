@@ -37,8 +37,9 @@ class MatrixMapperTest extends TTestSuite {
       val vs = data(s).map(r => ExprValue(r._2._1, r._2._2, r._1))
       for (p <- m) {
         val c = vm.convert(p, vs)
-        //for size 2 we use mean rather than median
-        assert(vs.exists(_ == c) || vs.size == 2)
+        //for size 2 we use mean rather than median.
+        //call may change
+        assert(vs.exists(_.value == c.value) || vs.size == 2)
       }
     }
   }
@@ -69,6 +70,19 @@ class MatrixMapperTest extends TTestSuite {
 
     val ug = conv.rawUngroupedMat
     ug.rowKeys should equal(cur.rowKeys)
+
+    for (r <- cur.rowKeys) {
+      val row = cur.row(r)
+      val inDomain = pm.reverse(r).toSeq
+      val domainRows = m.current.selectNamedRows(inDomain).toRowVectors
+      //size 2 uses mean instead of median
+      //call may change.
+      for (i <- 0 until cur.columns) {
+        val present = domainRows.map(_(i)).filter(_.present)
+        assert(present.size == 2 ||
+            present.exists(_.value == row(i).value))
+      }
+    }
 
   }
 }

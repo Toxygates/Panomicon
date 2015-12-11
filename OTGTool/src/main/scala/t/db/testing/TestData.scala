@@ -118,7 +118,7 @@ object TestData {
     val n = 100
     val pmap = probeMap
     val orths = (0 until n).map(p =>
-      List(pmap.unpack(p), pmap.unpack(p + n)))
+      List(pmap.unpack(p), pmap.unpack(p + n), pmap.unpack(p + n * 2)))
     OrthologMapping("test", orths)
   }
 }
