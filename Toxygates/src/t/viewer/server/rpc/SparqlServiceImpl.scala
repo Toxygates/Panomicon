@@ -163,7 +163,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val ls = probeStore.probeLists(instanceURI).mapInnerValues(p => p.identifier)
     val sls = ls.map(x => new StringList("probes", x._1, x._2.toArray)).toList
     val cls = sls.map { x => ProbeClustering.buildFrom(x) }
-    
+
     new java.util.LinkedList(seqAsJavaList(cls))
   }
 
@@ -242,16 +242,12 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     val majorParam = schema.majorParameter()
     //Ensure shared control is always included, if possible
-    val useParamValues = if (param == majorParam) {
-      val allMajors =
-        sampleStore.attributeValues(scAsScala(sc).filterAll, majorParam)
-      val shared = allMajors.filter(schema.isMajorParamSharedControl(_))
-      (shared.toSeq ++ paramValues.toSeq)
+    val useParamValues = if (param == majorParam && schema.majorParamSharedControl != null) {
+      paramValues.toSeq ++ schema.majorParamSharedControl
     } else {
       paramValues.toSeq
     }
 
-    //TODO rethink how to use batch here
     val ss = sampleStore.samples(sc.filterAll, param, useParamValues).
         groupBy(x =>(
             x.sampleClass(schema.timeParameter()),
