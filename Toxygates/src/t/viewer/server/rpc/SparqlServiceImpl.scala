@@ -209,20 +209,20 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   }
 
   def samplesById(ids: Array[String]): Array[Sample] =
-    sampleStore.samples(Filter("", ""), "id",
+    sampleStore.samples(t.sparql.SampleClass(), "id",
         ids).map(asJavaSample(_)).toArray
 
   //TODO compound_name is a dummy parameter below
   @throws[TimeoutException]
   def samples(sc: SampleClass): Array[Sample] = {
-    val ss = sampleStore.sampleQuery.constrain(scAsScala(sc).filterAll)()
+    val ss = sampleStore.sampleQuery(scAsScala(sc))()
     ss.map(asJavaSample).toArray
   }
 
   @throws[TimeoutException]
   def samples(sc: SampleClass, param: String,
       paramValues: Array[String]): Array[Sample] =
-    sampleStore.samples(sc.filterAll, param, paramValues).map(asJavaSample(_)).toArray
+    sampleStore.samples(scAsScala(sc), param, paramValues).map(asJavaSample(_)).toArray
 
   @throws[TimeoutException]
   def samples(scs: Array[SampleClass], param: String,
@@ -248,7 +248,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       paramValues.toSeq
     }
 
-    val ss = sampleStore.samples(sc.filterAll, param, useParamValues).
+    val ss = sampleStore.samples(scAsScala(sc), param, useParamValues).
         groupBy(x =>(
             x.sampleClass(schema.timeParameter()),
             x.sampleClass.get("control_group")))

@@ -156,6 +156,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 
   protected void runActions() {
     for (QueuedAction qa : actionQueue) {
+      logger.info("Action queue: run " + qa.name);
       qa.run();
     }
     actionQueue.clear();
@@ -170,6 +171,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
   public void enqueue(QueuedAction qa) {
     actionQueue.remove(qa); // remove it if it's already there (so we can update it)
     actionQueue.add(qa);
+    logger.info("Action queue: added " + qa.name);
   }
 
   public Screen(String title, String key, boolean showGroups, ScreenManager man,

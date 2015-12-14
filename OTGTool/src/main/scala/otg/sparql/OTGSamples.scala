@@ -52,16 +52,20 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
 
   //TODO case with no attributes won't work
   //TODO consider lifting up
-  //TODO query var's are repeated when SampleClass.filterAll is used
-  def sampleQuery(implicit sf: SampleFilter): Query[Vector[Sample]] = Query(prefixes,
+  def sampleQuery(filter: SampleClass): Query[Vector[Sample]] = {
+    Query(prefixes,
     "SELECT * WHERE { GRAPH ?batchGraph { ?x a t:sample; " +
-      standardAttributes.map(a => s"t:$a ?$a").mkString("; ") + "." +
+
+      standardAttributes.map(a => s"t:$a " +
+          filter.get(a).map("\"" + _ + "\"").getOrElse(s"?$a")).mkString("; ") + "." +
+
       "?x rdfs:label ?id. OPTIONAL { ?x t:control_group ?control_group . } ",
-    s" } ${sf.standardSampleFilters} }",
+    s" } }",
     eval = (q => ts.mapQuery(q)(20000).map(x => {
-      val sc = SampleClass(adjustSample(x))
+      val sc = SampleClass(adjustSample(x)) ++ filter
       Sample(x("id"), sc, x.get("control_group"))
     })))
+  }
 
   def sampleClasses(implicit sf: SampleFilter): Seq[Map[String, String]] = {
     //TODO case with no attributes
