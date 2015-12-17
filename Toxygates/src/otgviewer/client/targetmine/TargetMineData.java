@@ -61,7 +61,7 @@ public class TargetMineData {
   DialogBox dialog;
 
   public void importLists(final boolean asProbes) {
-    InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Import", true) {
+    InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Import", true, true) {
       @Override
       protected void userProceed(String user, String pass, boolean replace) {
         super.userProceed();
@@ -85,7 +85,7 @@ public class TargetMineData {
   }
 
   public void exportLists() {
-    InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Export", true) {
+    InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Export", true, true) {
       @Override
       protected void userProceed(String user, String pass, boolean replace) {
         super.userProceed();

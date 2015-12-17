@@ -539,8 +539,7 @@ public class HeatmapDialog extends DataListenerWidget {
     return result;
   }
 
-  private void doEnrichment() {
-    TargetMineData tm = new TargetMineData(screen);
+  private void doEnrichment() {  
     List<Collection<String>> clusters = parse2dJsArray(getCurrentObjectIds());
     List<StringList> clusterLists = new ArrayList<StringList>();
     int i = 0;
@@ -549,7 +548,7 @@ public class HeatmapDialog extends DataListenerWidget {
       clusterLists.add(sl);
       i++;
     }
-    tm.multiEnrich(clusterLists.toArray(new StringList[0]));
+    screen.factory().multiEnrichment(screen, clusterLists.toArray(new StringList[0]));
   }
 
 }

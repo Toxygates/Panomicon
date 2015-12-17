@@ -208,14 +208,14 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       filter(x => !schema.isMajorParamSharedControl(x)).toArray
   }
 
-  def samplesById(ids: Array[String]): Array[Sample] =
+  def samplesById(ids: Array[String]): Array[Sample] = {
     sampleStore.samples(t.sparql.SampleClass(), "id",
         ids).map(asJavaSample(_)).toArray
+  }
 
-  //TODO compound_name is a dummy parameter below
   @throws[TimeoutException]
   def samples(sc: SampleClass): Array[Sample] = {
-    val ss = sampleStore.sampleQuery(scAsScala(sc))()
+    val ss = sampleStore.sampleQuery(scAsScala(sc))(sf)()
     ss.map(asJavaSample).toArray
   }
 

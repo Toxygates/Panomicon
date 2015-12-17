@@ -33,7 +33,9 @@ import otgviewer.client.components.groupdef.TreatedControlGroupInspector;
 import otgviewer.client.components.groupdef.TreatedControlSelTDGrid;
 import otgviewer.client.components.ranking.CompoundRanker;
 import otgviewer.client.components.ranking.SimpleCompoundRanker;
+import otgviewer.client.targetmine.TargetMineData;
 import t.common.shared.DataSchema;
+import t.common.shared.StringList;
 import t.common.shared.sample.Group;
 
 
@@ -81,4 +83,17 @@ public class OTGFactory implements UIFactory {
   public GeneSetsMenuItem geneSetsMenuItem(DataScreen screen) {
     return new GeneSetsMenuItem(screen);
   }
+
+  @Override
+  public void enrichment(Screen screen) {
+    TargetMineData tm = new TargetMineData(screen);
+    tm.enrich();
+  }
+
+  @Override
+  public void multiEnrichment(Screen screen, StringList[] lists) {
+    TargetMineData tm = new TargetMineData(screen);
+    tm.multiEnrich(lists);    
+  }
+  
 }

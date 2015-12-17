@@ -174,6 +174,12 @@ public class DataScreen extends Screen {
       }
     }.menuItem());
 
+    addAnalysisMenuItem(new MenuItem("Enrichment...", new Command() {
+      public void execute() {
+       DataScreen.this.factory().enrichment(DataScreen.this);       
+      }
+    }));
+    
     if (factory().hasHeatMapMenu()) {
       heatMapMenu = new MenuItem("Show heat map", new Command() {
         public void execute() {

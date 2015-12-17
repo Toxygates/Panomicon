@@ -43,15 +43,16 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
   String action;
   String url;
 
-  boolean withPassword;
+  boolean withPassword, withReplace;
   static String account, password;
 
   public TargetMineSyncDialog(DataListenerWidget parent, String url, String action,
-      boolean withPassword) {
+      boolean withPassword, boolean withReplace) {
     super(parent);
     this.action = action;
     this.url = url;
     this.withPassword = withPassword;
+    this.withReplace = withReplace;
   }
 
   protected Widget content() {
@@ -86,7 +87,9 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
       vp.add(ig);
     }
 
-    vp.add(replaceCheck);
+    if (withReplace) {
+      vp.add(replaceCheck);
+    }
 
     Button b = new Button(action);
     b.addClickHandler(new ClickHandler() {

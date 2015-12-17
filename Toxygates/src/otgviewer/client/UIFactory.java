@@ -31,6 +31,7 @@ import otgviewer.client.components.groupdef.SelectionTDGrid;
 import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
 import otgviewer.client.components.ranking.CompoundRanker;
 import t.common.shared.DataSchema;
+import t.common.shared.StringList;
 import t.common.shared.sample.Group;
 
 public interface UIFactory {
@@ -51,4 +52,17 @@ public interface UIFactory {
   
   public GeneSetsMenuItem geneSetsMenuItem(DataScreen screen);
 
+  /**
+   * Enrichment for the currently selected gene set
+   * @param screen
+   */
+  void enrichment(Screen screen);
+
+  /**
+   * Enrichment for multiple gene sets
+   * @param screen
+   * @param lists
+   */
+  void multiEnrichment(Screen screen, StringList[] lists);
+  
 }
