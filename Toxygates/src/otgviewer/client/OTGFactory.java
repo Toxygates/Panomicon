@@ -26,6 +26,8 @@ import javax.annotation.Nullable;
 import otgviewer.client.components.GeneSetEditor;
 import otgviewer.client.components.GroupLabels;
 import otgviewer.client.components.Screen;
+import otgviewer.client.components.compoundsel.CompoundSelector;
+import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.client.components.groupdef.GroupInspector;
 import otgviewer.client.components.groupdef.SelectionTDGrid;
 import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
@@ -55,7 +57,7 @@ public class OTGFactory implements UIFactory {
   }
 
   @Override
-  public CompoundRanker compoundRanker(Screen _screen, CompoundSelector selector) {
+  public CompoundRanker compoundRanker(Screen _screen, RankingCompoundSelector selector) {
     return new SimpleCompoundRanker(_screen, selector);
   }
 

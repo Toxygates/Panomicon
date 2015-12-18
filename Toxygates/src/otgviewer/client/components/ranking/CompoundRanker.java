@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import otgviewer.client.CompoundSelector;
 import otgviewer.client.GeneOracle;
 import otgviewer.client.OTGClientUtils;
 import otgviewer.client.Resources;
@@ -32,6 +31,7 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ListChooser;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
+import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.shared.RankRule;
 import t.common.shared.DataSchema;
 import t.common.shared.ItemList;
@@ -42,11 +42,13 @@ import t.viewer.client.rpc.SparqlServiceAsync;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -57,7 +59,7 @@ import com.google.gwt.user.client.ui.Widget;
  */
 abstract public class CompoundRanker extends DataListenerWidget {
 	protected final Resources resources; 
-	final CompoundSelector selector;
+	final RankingCompoundSelector selector;
 	protected final Screen screen;
 	protected ListChooser listChooser;
 	
@@ -80,7 +82,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
 	 * 
 	 * @param selector the selector that this CompoundRanker will communicate with.
 	 */
-	public CompoundRanker(Screen _screen, CompoundSelector selector) {
+	public CompoundRanker(Screen _screen, RankingCompoundSelector selector) {
 		this.selector = selector;
 		screen = _screen;
 		oracle = new GeneOracle(screen);
@@ -130,7 +132,15 @@ abstract public class CompoundRanker extends DataListenerWidget {
 		csVerticalPanel
 				.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		initWidget(csVerticalPanel);
-		HorizontalPanel hp = Utils.mkHorizontalPanel(true, listChooser);
+		
+		Button clearBtn = new Button("Clear rules", new ClickHandler() {          
+          @Override
+          public void onClick(ClickEvent event) {
+            clearRules();
+          }
+        });
+		
+		HorizontalPanel hp = Utils.mkHorizontalPanel(true, new Label("Gene set: "), listChooser, clearBtn);
 		csVerticalPanel.add(hp);
 
 		grid = new Grid(1, gridColumns()); //Initially space for 1 rule
@@ -169,6 +179,10 @@ abstract public class CompoundRanker extends DataListenerWidget {
 		rih.populate(grid, ruleIdx);
 	}
 	
+	private void clearRules() {
+	  setProbeList(new ArrayList<String>());
+	}
+	
 	/**
 	 * Map the current ranking rules to a list of probes and return the result.
 	 * @return
@@ -189,9 +203,14 @@ abstract public class CompoundRanker extends DataListenerWidget {
 	 * @param probes
 	 */
 	private void setProbeList(List<String> probes) {
-		for (RuleInputHelper rih: inputHelpers) {
-			rih.reset();			
+		while(inputHelpers.size() > probes.size()) {
+		  inputHelpers.remove(inputHelpers.size() - 1);
 		}
+		grid.resize(probes.size() + 1, gridColumns());
+	    for (RuleInputHelper rih: inputHelpers) {
+            rih.reset();            
+        }
+		
 		for (int i = 0; i < probes.size(); ++i) {
 			String probe = probes.get(i);			
 			if (i >= inputHelpers.size()) {

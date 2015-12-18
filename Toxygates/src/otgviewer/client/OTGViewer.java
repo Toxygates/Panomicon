@@ -26,9 +26,9 @@ public class OTGViewer extends TApplication {
   @Override
   protected void initScreens() {
     addScreenSeq(new StartScreen(this));
-    addScreenSeq(new ColumnScreen(this, "Compound ranking (optional)", true));
-//    addScreenSeq(new ProbeScreen(this));
+    addScreenSeq(new ColumnScreen(this));
     addScreenSeq(new DataScreen(this));
+    addScreenSeq(new RankingScreen(this));
     addScreenSeq(new PathologyScreen(this));
     addScreenSeq(new SampleDetailScreen(this));
   }

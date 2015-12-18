@@ -55,4 +55,5 @@ public interface SetEditor<T> {
 	public Set<T> validateItems(List<T> items);
 	
 	public List<Suggestion> getSuggestions(String request);
+	
 }

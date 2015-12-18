@@ -30,12 +30,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import otgviewer.client.CompoundSelector;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.GroupMaker;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.StorageParser;
+import otgviewer.client.components.compoundsel.CompoundSelector;
 import t.common.client.components.SelectionTable;
 import t.common.shared.DataSchema;
 import t.common.shared.Dataset;
