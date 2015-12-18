@@ -64,28 +64,49 @@ exprGrid {
 	text-align: center;	
 }
 
-.headingBlack {
-	font-size: 1.2em;
-	color: black;
-	margin: 5px;
-	text-align: center;
+.navPanel {	
+	float: left;
 }
 
-.clickHeading {
+.navOuterPanel {
+	background: Beige;
+	float: left;
+}
+
+.navlink {
 	font-size: 1.2em;
-	color: DarkBlue;
-	margin: 5px;
-	text-align: center;
+	font-weight: bold;
+	color: grey;
+	margin: 0px;	
+	padding: 5px;
+}
+
+.navlink-mouseover {
+	background: BurlyWood;
 	cursor: pointer;
 }
 
-.headingCurrent {
-	font-size: 1.2em;
-	color: SteelBlue;
-	margin: 1px;
-	text-align: center;
-	border: dotted 1px;
-	padding: 3px;
+.navlink-disabled {	
+	color: grey;	
+}
+
+.navlink-enabled {	
+	color: black;	
+	cursor: pointer;	
+}
+
+.navlink-inner {
+	border-left: solid 2px grey;
+	margin-left: 0px;	
+}
+
+.navlink-current {	
+	background: #505050;
+	color: beige;		
+}
+
+.navlink-enabled-mouseover {
+	
 }
 
 .border {

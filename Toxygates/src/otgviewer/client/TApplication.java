@@ -56,6 +56,12 @@ import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.MouseMoveEvent;
+import com.google.gwt.event.dom.client.MouseMoveHandler;
+import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.MouseOutHandler;
+import com.google.gwt.event.dom.client.MouseOverEvent;
+import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -73,6 +79,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -164,8 +171,14 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
     mainDockPanel.addNorth(menuBar, 35);
 
+    HorizontalPanel navOuter = Utils.mkHorizontalPanel();
+    navOuter.setWidth("100%");
+    navOuter.setStylePrimaryName("navOuterPanel");
+    
     navPanel = Utils.mkHorizontalPanel();
-    mainDockPanel.addNorth(navPanel, 35);
+    navPanel.setStylePrimaryName("navPanel");
+    navOuter.add(navPanel);
+    mainDockPanel.addNorth(navOuter, 35);
 
     final Logger l = SharedUtils.getLogger();
     final DialogBox wait = Utils.waitDialog();
@@ -270,19 +283,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     }));
     analysisMenuBar.addItem(mi);
 
-    mi = new MenuItem("Rank compounds...", new Command() {
-      public void execute() {
-        ColumnScreen cs = (ColumnScreen) screens.get("columns");
-        if (cs.enabled()) {
-          showScreen(cs);
-          cs.displayCompoundRankUI();
-        } else {
-          Window.alert("Please select a dataset to rank compounds.");
-        }
-      }
-    });
-    analysisMenuBar.addItem(mi);
-
     MenuBar hm = new MenuBar(true);
     mi = new MenuItem("Help / feedback", hm);
     postMenuItems.add(mi);
@@ -352,23 +352,42 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     navPanel.clear();
     for (int i = 0; i < workflow.size(); ++i) {
       final Screen s = workflow.get(i);
-      String link = (i < workflow.size() - 1) ? (s.getTitle() + " >> ") : s.getTitle();
-      Label l = new Label(link);
+      //String link = (i < workflow.size() - 1) ? (s.getTitle() + " >> ") : s.getTitle();
+      String link = s.getTitle();
+      final Label l = new Label(link);
+      l.addStyleName("navlink");
       if (s.enabled() && s != current) {
         l.addClickHandler(new ClickHandler() {
           public void onClick(ClickEvent e) {
             History.newItem(s.key());
           }
         });
-        l.setStylePrimaryName("clickHeading");
+        l.setStylePrimaryName("navlink-enabled");
+        
+        l.addMouseOverHandler(new MouseOverHandler() {          
+          @Override
+          public void onMouseOver(MouseOverEvent event) {
+            l.setStylePrimaryName("navlink-mouseover");            
+          }
+        });
+        l.addMouseOutHandler(new MouseOutHandler() {          
+          @Override
+          public void onMouseOut(MouseOutEvent event) {
+            l.setStylePrimaryName("navlink-enabled");            
+          }
+        });
+        
       } else {
         if (s == current) {
-          l.setStylePrimaryName("headingCurrent");
+          l.setStylePrimaryName("navlink-current");
         } else {
-          l.setStylePrimaryName("headingBlack");
+          l.setStylePrimaryName("navlink-disabled");
         }
       }
-      navPanel.add(l);
+      if (i > 0) {
+        l.addStyleName("navlink-inner");
+      }            
+      navPanel.add(l);      
     }
   }
 
