@@ -23,6 +23,7 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import otgviewer.client.components.DataListenerWidget;
@@ -126,13 +127,9 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	public void sampleClassChanged(SampleClass sc) {
 		if (!sc.equals(chosenSampleClass)) {
 			super.sampleClassChanged(sc);
-			minorValues = new ArrayList<String>();			
-			screen.enqueue(new Screen.QueuedAction("fetchTimes") {				
-				@Override
-				public void run() {
-					fetchMinor();					
-				}
-			});
+			minorValues = new ArrayList<String>();
+			logger.info("SC change trigger minor " + sc);
+			lazyFetchMinor();
 		} else {
 			super.sampleClassChanged(sc);
 		}		
@@ -163,7 +160,11 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		}
 	}
 	
+	protected boolean fetchingMinor;
 	private void lazyFetchMinor() {
+	    if (fetchingMinor) {
+	      return;
+	    }
 		if (minorValues != null && minorValues.size() > 0) {
 			logger.info("Reuse cached minor values");
 			drawGridInner(grid);
@@ -173,22 +174,30 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	}
 	
 	private void fetchMinor() {		
+	    fetchingMinor = true;
 		logger.info("Fetch minor");
 		sparqlService.parameterValues(chosenSampleClass, minorParameter,
 				new PendingAsyncCallback<String[]>(this, "Unable to fetch minor parameter for samples") {
 			public void handleSuccess(String[] times) {
 				try {
-					logger.info("Sort " + times.length + " times");
+//					logger.info("Sort " + times.length + " times");
 					schema.sort(minorParameter, times);
 					minorValues = Arrays.asList(times);				
 					drawGridInner(grid);
-					//TODO: block compound selection until we have obtained this data
+					fetchingMinor = false;
+					onMinorsDone();
 				} catch (Exception e) {
-					logger.warning("Unable to sort times " + e.getMessage());
+				  logger.log(Level.WARNING, "Unable to sort times", e);
 				}
-			}			
+			}	
+			public void handleFailure(Throwable caught) {
+			  super.handleFailure(caught);
+			  fetchingMinor = false;
+			}
 		});			
 	}
+	
+	protected void onMinorsDone() { }
 	
 	protected String keyFor(Sample b) {
 		//TODO efficiency
@@ -196,7 +205,6 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	}
 	
 	private boolean fetchingSamples = false;
-	private String[] fetchingForCompounds = new String[0];
 	
 	protected void fetchSamples() {
 		if (fetchingSamples) {
@@ -205,7 +213,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 		fetchingSamples = true;
 		availableUnits = new Pair[0]; 
 		String[] compounds = chosenCompounds.toArray(new String[0]);
-		fetchingForCompounds = compounds;
+		final String[] fetchingForCompounds = compounds;
 		sparqlService.units(chosenSampleClass, majorParameter, compounds,
 				new PendingAsyncCallback<Pair<Unit, Unit>[]>(this, "Unable to obtain samples.") {
 
@@ -216,14 +224,16 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			}
 
 			@Override
-			public void handleSuccess(Pair<Unit, Unit>[] result) {
-				availableUnits = result;							
-				samplesAvailable();				
+			public void handleSuccess(Pair<Unit, Unit>[] result) {			                                      		
 				fetchingSamples = false;
 				if (!Arrays.equals(fetchingForCompounds, 
 				    chosenCompounds.toArray(new String[0]))) {
 				    //Fetch again - the compounds changed while we were loading data
 				    fetchSamples();
+				} else {
+	              availableUnits = result;
+//	              logger.info("Got " + result.length + " units");
+	              samplesAvailable();
 				}
 			}			
 		});
@@ -329,7 +339,9 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			}
 			r++;
 		}
-		availableUnits = allUnits.toArray(new Pair[0]);
+		if (availableUnits == null || availableUnits.length == 0) {
+		  availableUnits = allUnits.toArray(new Pair[0]);
+		}
 	}
 	
 }
