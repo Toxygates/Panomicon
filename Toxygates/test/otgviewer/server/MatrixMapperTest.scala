@@ -11,9 +11,6 @@ import t.db.ExprValue
 import t.common.shared.sample.Group
 import otgviewer.server.rpc.Conversions._
 
-/**
- * @author johan
- */
 @RunWith(classOf[JUnitRunner])
 class MatrixMapperTest extends TTestSuite {
   import TestData._
@@ -84,8 +81,6 @@ class MatrixMapperTest extends TTestSuite {
       val row = cur.row(r)
       val inDomain = pm.reverse(r).toSeq
       val domainRows = m.current.selectNamedRows(inDomain).toRowVectors
-      //size 2 uses mean instead of median
-      //call may change.
       for (i <- 0 until cur.columns; if (row(i).present)) {
         val present = domainRows.map(_(i)).filter(_.present)
         medianCompatible(row(i), present)

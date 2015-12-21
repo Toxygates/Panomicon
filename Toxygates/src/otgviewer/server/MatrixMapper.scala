@@ -49,7 +49,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
    * Converts grouped into (grouped, ungrouped)
    */
   private def convert(from: ExprMatrix): (ExprMatrix, ExprMatrix, Map[Int, Seq[Int]]) = {
-    val rangeProbes = pm.range
+    val rangeProbes = pm.range.toSeq
     val fromRowSet = from.rowKeys.toSet
 
     val nrows = rangeProbes.flatMap(rng => {
@@ -62,7 +62,6 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
         val nr = (0 until from.columns).map(c => {
           val xs = domainRows.map(dr => dr(c)).filter(_.present)
           val v = vm.convert(rng, xs)
-          println(v + ":" + xs)
           (v, xs)
         })
         Some((nr, FullAnnotation(rng, domProbes)))
@@ -104,7 +103,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
     val rks = (0 until ungr.rows).map(ungr.rowAt)
 
     //Note, we re-fix initProbes for the new matrix
-    new ManagedMatrix(rks, convert(from.currentInfo), ungr, gr, bm, false)
+    new ManagedMatrix(rks, convert(from.currentInfo, rks), ungr, gr, bm, false)
   }
 
   /**
@@ -112,7 +111,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
    * but removes synthetics and filtering options.
    * TODO synthetics handling needs to be tested
    */
-  private def convert(from: ManagedMatrixInfo): ManagedMatrixInfo = {
+  private def convert(from: ManagedMatrixInfo, newRows: Seq[String]): ManagedMatrixInfo = {
     val r = new ManagedMatrixInfo()
     for (i <- 0 until from.numDataColumns()) {
       r.addColumn(false, from.columnName(i), from.columnHint(i),
@@ -120,7 +119,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
         from.samples(i))
     }
     r.setPlatforms(from.getPlatforms())
-    r.setNumRows(from.numRows())
+    r.setNumRows(newRows.size)
     r
   }
 }

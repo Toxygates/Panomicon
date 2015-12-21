@@ -68,6 +68,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     val info = new ManagedMatrixInfo()
     info.addColumn(false, g.toString, g.toString + ": average of treated samples", false, g,
         false, samples)
+    val probes = data.map(_(0).probe)
     val e = ExprMatrix.withRows(data.map(vs =>
       Seq(mean(selectIdx(vs, treatedIdx)))),
       probes,
@@ -184,6 +185,7 @@ trait TreatedControlBuilder[E >: Null <: ExprValue] {
     //TODO
     val (tus, cus) = treatedAndControl(g)
     println(s"#Control units: ${cus.size} #Non-control units: ${tus.size}")
+    val probes = data.map(_(0).probe)
 
     if (tus.size > 1 || (!enhancedColumns) || cus.size == 0 || tus.size == 0) {
       // A simple average column

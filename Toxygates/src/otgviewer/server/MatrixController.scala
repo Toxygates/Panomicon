@@ -130,6 +130,8 @@ class MatrixController(context: Context,
     }
   }
 
+  //TODO consider retiring/simplifying, use multiPlatform instead to test -
+  //check charts to see if it works
   protected def groupMapper(groups: Iterable[Group]): Option[MatrixMapper] = {
     val os = groups.flatMap(_.collect("organism")).toSet
     println("Detected species in groups: " + os)
@@ -184,15 +186,14 @@ class MatrixController(context: Context,
    * Select probes and update the current managed matrix
    */
   def selectProbes(probes: Seq[String]): ManagedMatrix = {
-    if (!probes.isEmpty) {
+    val useProbes = (if (!probes.isEmpty) {
       println("Refilter probes: " + probes.length)
-      managedMatrix.selectProbes(probes)
+      probes
     } else {
-      val info = managedMatrix.info
-      val groups = (0 until info.numDataColumns()).map(i => info.columnGroup(i))
-      val allProbes = platforms.filterProbes(List(), groupPlatforms).toArray
-      managedMatrix.selectProbes(allProbes)
-    }
+      //all probes
+      platforms.filterProbes(List(), groupPlatforms)
+    })
+    managedMatrix.selectProbes(useProbes)
     managedMatrix
   }
 

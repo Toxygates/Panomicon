@@ -73,9 +73,6 @@ case class SimpleAnnotation(probe: String) extends RowAnnotation {
  * TODO: need to optimise/simplify the ExpressionValue/ExprValue/ExpressionRow classes.
  * Probably, at least 1 of these can be removed.
  * Scalability for larger matrices is a concern.
- *
- * TODO: reconsider whether annotations are needed. Might be a major efficiency
- * problem + redundant.
  */
 class ExprMatrix(data: Seq[Seq[ExprValue]], rows: Int, columns: Int,
     rowMap: Map[String, Int], columnMap: Map[String, Int],
@@ -88,11 +85,8 @@ class ExprMatrix(data: Seq[Seq[ExprValue]], rows: Int, columns: Int,
   import t.util.SafeMath._
 
   println(rows + " x " + columns)
-//  println(sortedColumnMap)
 
   def fromSeq(s: Seq[ExprValue]) = s
-
-//  val emptyVal = new ExpressionValue(0, 'A')
 
   /**
    * This is the bottom level copyWith method - all the other ones ultimately delegate to this one.
