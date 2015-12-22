@@ -55,10 +55,10 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
    * Construct the columns representing a particular group (g), from the given
    * raw data. Update info to reflect the changes.
    */
-  protected def columnsFor(g: Group, sortedBarcodes: Seq[Sample],
+  protected def columnsFor(g: Group, probes: Seq[String], sortedBarcodes: Seq[Sample],
     data: Seq[Seq[E]]): (ExprMatrix, ManagedMatrixInfo)
 
-  protected def defaultColumns[E <: ExprValue](g: Group, sortedBarcodes: Seq[Sample],
+  protected def defaultColumns[E <: ExprValue](g: Group, probes: Seq[String], sortedBarcodes: Seq[Sample],
     data: Seq[Seq[ExprValue]]): (ExprMatrix, ManagedMatrixInfo) = {
     // A simple average column
     val tus = treatedAndControl(g)._1
@@ -68,7 +68,6 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     val info = new ManagedMatrixInfo()
     info.addColumn(false, g.toString, g.toString + ": average of treated samples", false, g,
         false, samples)
-    val probes = data.map(_(0).probe)
     val e = ExprMatrix.withRows(data.map(vs =>
       Seq(mean(selectIdx(vs, treatedIdx)))),
       probes,
@@ -94,7 +93,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     val cols = requestColumns.par.map(g => {
         println(g.getUnits()(0).toString())
         //TODO avoid EVArray building
-        columnsFor(g, sortedSamples, data)
+        columnsFor(g, sortedProbes, sortedSamples, data)
     }).seq
 
     //TODO try to avoid adjoining lots of small matrices
@@ -164,9 +163,9 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
 class FoldBuilder(reader: MatrixDBReader[ExprValue], probes: Seq[String])
     extends ManagedMatrixBuilder[ExprValue](reader, probes) {
 
-  protected def columnsFor(g: Group, sortedBarcodes: Seq[Sample],
+  protected def columnsFor(g: Group, pobes: Seq[String], sortedBarcodes: Seq[Sample],
     data: Seq[Seq[ExprValue]]): (ExprMatrix, ManagedMatrixInfo) =
-    defaultColumns(g, sortedBarcodes, data)
+    defaultColumns(g, probes, sortedBarcodes, data)
 
 }
 
@@ -180,16 +179,15 @@ trait TreatedControlBuilder[E >: Null <: ExprValue] {
   protected def columnInfo(g: Group): ManagedMatrixInfo
   def colNames(g: Group): Seq[String]
 
-  protected def columnsFor(g: Group, sortedBarcodes: Seq[Sample],
+  protected def columnsFor(g: Group, probes: Seq[String], sortedBarcodes: Seq[Sample],
     data: Seq[Seq[E]]): (ExprMatrix, ManagedMatrixInfo) = {
     //TODO
     val (tus, cus) = treatedAndControl(g)
     println(s"#Control units: ${cus.size} #Non-control units: ${tus.size}")
-    val probes = data.map(_(0).probe)
 
     if (tus.size > 1 || (!enhancedColumns) || cus.size == 0 || tus.size == 0) {
       // A simple average column
-      defaultColumns(g, sortedBarcodes, data)
+      defaultColumns(g, probes, sortedBarcodes, data)
     } else if (tus.size == 1) {
       // Possibly insert a control column as well as the usual one
 
