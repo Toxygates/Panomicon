@@ -28,7 +28,6 @@ import java.util.List;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.client.targetmine.TargetMineData;
 import t.common.shared.ClusteringList;
 import t.common.shared.StringList;
 import t.common.shared.ValueType;
