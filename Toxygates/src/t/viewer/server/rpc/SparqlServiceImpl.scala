@@ -98,7 +98,6 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   private def sampleStore: Samples = context.samples
 
   protected var uniprot: Uniprot = _
-  protected var b2rKegg: B2RKegg = _
   protected var _appInfo: AppInfo = _
 
   override def localInit(conf: Configuration) {
@@ -110,7 +109,6 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     val ts = baseConfig.triplestore.triplestore
     uniprot = new LocalUniprot(ts)
-    b2rKegg = new B2RKegg(ts)
 
     if (conf.instanceName == null || conf.instanceName == "") {
       instanceURI = None
@@ -123,6 +121,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     _appInfo = new AppInfo(conf.instanceName, sDatasets(),
         sPlatforms(), predefProbeLists(), probeClusterings(), appName)
   }
+
+  protected lazy val b2rKegg: B2RKegg =
+    new B2RKegg(baseConfig.triplestore.triplestore)
 
   protected class SparqlState(ds: Datasets) {
     var sampleFilter: SampleFilter = SampleFilter(instanceURI = instanceURI)
