@@ -43,6 +43,7 @@ import t.viewer.shared.table.SortKey
 import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 import t.common.shared.sample.EVArray
 import t.db.ExprValue
+import t.db.ExtMatrixDB
 
 /**
  * A managed matrix session and associated state.
@@ -52,7 +53,7 @@ import t.db.ExprValue
 class MatrixController(context: Context,
     orthologs: () => Iterable[OrthologMapping],
     val groups: Seq[Group], val initProbes: Seq[String],
-    typ: ValueType, useStandardMapper: Boolean, sparseRead: Boolean,
+    typ: ValueType, sparseRead: Boolean,
     fullLoad: Boolean) {
 
   private def probes = context.probes
@@ -94,19 +95,11 @@ class MatrixController(context: Context,
       //TODO get rid of/factor out this, possibly to a factory of some kind
       val b = reader match {
         case wrapped: TransformingWrapper[PExprValue] =>
-//          assert(wrapped.wrapped.isInstanceOf[KCExtMatrixDB])
-//          assert(typ == ValueType.Folds)
           new ExtFoldBuilder(enhancedCols, wrapped, probes)
-        case ext: KCExtMatrixDB =>
-          assert(typ == ValueType.Folds)
-          new ExtFoldBuilder(enhancedCols, ext, probes)
         case db: KCMatrixDB =>
-          if (typ == ValueType.Absolute) {
-            new NormalizedBuilder(enhancedCols, db, probes)
-          } else {
-            new FoldBuilder(db, probes)
-          }
-        case db: KCChunkMatrixDB =>
+          assert(typ == ValueType.Absolute)
+          new NormalizedBuilder(enhancedCols, db, probes)
+        case db: ExtMatrixDB =>
           if (typ == ValueType.Absolute) {
             new NormalizedBuilder(enhancedCols, db, probes)
           } else {
@@ -127,18 +120,6 @@ class MatrixController(context: Context,
       val pm = new OrthologProbeMapper(orthologs().head)
       val vm = MedianValueMapper
       Some(new MatrixMapper(pm, vm))
-    }
-  }
-
-  //TODO consider retiring/simplifying, use multiPlatform instead to test -
-  //check charts to see if it works
-  protected def groupMapper(groups: Iterable[Group]): Option[MatrixMapper] = {
-    val os = groups.flatMap(_.collect("organism")).toSet
-    println("Detected species in groups: " + os)
-    if (os.size > 1) {
-      standardMapper
-    } else {
-      None
     }
   }
 
@@ -166,15 +147,11 @@ class MatrixController(context: Context,
     pt.mark("MakeMatrix")
     mm.info.setPlatforms(groupPlatforms.toArray)
 
-    val mapper = if (useStandardMapper) {
-      if (multiPlatform) {
+    val mapper = if (multiPlatform) {
         standardMapper
       } else {
         None
       }
-    } else {
-      groupMapper(groups)
-    }
 
     val mm2 = applyMapper(mm, mapper)
     pt.mark("ApplyMapper")
