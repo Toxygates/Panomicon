@@ -29,10 +29,17 @@ import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.viewer.client.Utils;
+import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.Anchor;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -196,8 +203,8 @@ abstract public class ChartGrid<D extends Data> extends Composite {
 	 * @param width
 	 * @param columnCount
 	 */
-	private void displaySeriesAt(int row, int column, int width, double minVal,
-			double maxVal, int columnCount, String label) {
+	private void displaySeriesAt(final int row, final int column, final int width, final double minVal,
+			final double maxVal, final int columnCount, String label) {
 		final D dt = tables[row][column];
 
 		if (dt.numberOfColumns() == 1) {			
@@ -208,10 +215,26 @@ abstract public class ChartGrid<D extends Data> extends Composite {
 			//add the label if this is the first chart for the rowFilter
 			g.setWidget(row * 2 + 1, 0, Utils.mkEmphLabel(label));
 		}
-		g.setWidget(row * 2 + 2, column,
-				chartFor(dt, width, minVal, maxVal, column, columnCount));
+		final HTML downloadLink = new HTML();
+		VerticalPanel vp = new VerticalPanel();
+		vp.add(chartFor(dt, width, minVal, maxVal, column, columnCount, downloadLink, false));
+		Anchor a = new Anchor("Download");
+		a.addClickHandler(new ClickHandler() {          
+          @Override
+          public void onClick(ClickEvent event) {
+            //Larger chart
+            VerticalPanel vp = new VerticalPanel();            
+            Widget w = chartFor(dt, width, minVal, maxVal, column, columnCount, downloadLink, true);
+            vp.add(w);
+            vp.add(downloadLink);
+            Utils.displayInPopup("Download chart", vp, DialogPosition.Center);
+          }
+        });
+		vp.add(a);
+		
+		g.setWidget(row * 2 + 2, column, vp);
 	}
 	
 	abstract protected Widget chartFor(final D dt, int width, double minVal, double maxVal, 
-			int column, int columnCount); 
+			int column, int columnCount, HTML downloadLink, boolean bigMode); 
 }

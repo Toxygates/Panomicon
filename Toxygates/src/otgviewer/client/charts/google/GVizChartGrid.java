@@ -22,17 +22,20 @@ package otgviewer.client.charts.google;
 
 import java.util.List;
 
-import otgviewer.client.charts.Factory;
 import otgviewer.client.charts.ChartGrid;
+import otgviewer.client.charts.Factory;
 import otgviewer.client.components.Screen;
 import t.common.shared.sample.Sample;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.ChartArea;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.Selection;
+import com.google.gwt.visualization.client.events.ReadyHandler;
 import com.google.gwt.visualization.client.events.SelectHandler;
 import com.google.gwt.visualization.client.visualizations.corechart.AxisOptions;
 import com.google.gwt.visualization.client.visualizations.corechart.ColumnChart;
@@ -67,7 +70,7 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
 	 */
 	@Override
 	protected Widget chartFor(final GDTData gdt, int width, double minVal, double maxVal, 
-			int column, int columnCount) {		
+			int column, int columnCount, final HTML downloadLink, boolean bigMode) {		
 		final DataTable dt = gdt.data();
 		AxisOptions ao = AxisOptions.create();
 		
@@ -83,16 +86,20 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
 		
 		Options o = GVizCharts.createChartOptions();
 		final int useWidth = width <= MAX_WIDTH ? width : MAX_WIDTH;
-		o.setWidth(useWidth);
-		o.setHeight(170);
+		
+		final int finalWidth = bigMode ? useWidth * 2 : useWidth;
+		final int finalHeight = bigMode ? 170 * 2 : 170;
+		
+		o.setWidth(finalWidth);
+		o.setHeight(finalHeight);
 		o.setVAxisOptions(ao);
 		
 		//TODO: this is a hack to distinguish between creating series charts or not
 		//(if we are, columnCount is 2)
 		if (columnCount > 2) {
 			ChartArea ca = ChartArea.create();
-			ca.setWidth(useWidth - 75);
-			ca.setHeight(140);		
+			ca.setWidth(finalWidth * 0.8);
+			ca.setHeight(finalHeight * 0.8);		
 			o.setChartArea(ca);
 		}
 		
@@ -113,6 +120,17 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
 				}
 			});
 		}
+		c.addReadyHandler(new ReadyHandler() {          
+          @Override
+          public void onReady(ReadyEvent event) {
+            String URI = imageURI(c.getJso());
+            downloadLink.setHTML("<a target=_blank href=\"" + URI + "\">Download</a>");
+          }
+        });
 		return c;
 	}
+	
+	private static native String imageURI(JavaScriptObject coreChart) /*-{
+	  return coreChart.getImageURI();
+	}-*/;
 }
