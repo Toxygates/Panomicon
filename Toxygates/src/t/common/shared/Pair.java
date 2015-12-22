@@ -42,8 +42,10 @@ public class Pair<T, U> implements Serializable {
 	public U second() { return _u; }
 	
 	@Override
-	public String toString() {
-		return "(" + _t.toString() + ", " + _u.toString() + ")";
+	public String toString() {	    
+		return "(" +
+		    (_t == null ? "null" : _t.toString()) + ", " + 
+		    (_u == null ? "null" : _u.toString()) + ")";
 	}
 	
 	public int hashCode() {

@@ -68,8 +68,9 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     val info = new ManagedMatrixInfo()
     info.addColumn(false, g.toString, g.toString + ": average of treated samples", false, g,
         false, samples)
+    val probes = data.map(_(0).probe)
     val e = ExprMatrix.withRows(data.map(vs =>
-      EVArray(Seq(javaMean(selectIdx(vs, treatedIdx))))),
+      Seq(mean(selectIdx(vs, treatedIdx)))),
       probes,
       List(g.toString))
     (e, info)
@@ -78,59 +79,58 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
   def loadRawData(requestColumns: Seq[Group],
     reader: MatrixDBReader[E], sparseRead: Boolean,
     fullLoad: Boolean)(implicit context: MatrixContext): ManagedMatrix = {
-    val pmap = context.probeMap
+    val packedProbes = probes.map(context.probeMap.pack)
 
-    val packedProbes = probes.map(pmap.pack)
-
-    val parts = requestColumns.par.map(g => {
-      //Remove repeated samples as some other algorithms assume distinct samples
-      //Also for efficiency
-      val samples =
-        (if (fullLoad) g.getSamples else samplesToLoad(g)).
-          toVector.distinct
-      val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.id)))
-
-      val data = reader.valuesForSamplesAndProbes(sortedSamples,
+    val samples = requestColumns.flatMap(g =>
+      (if (fullLoad) g.getSamples else samplesToLoad(g)).
+          toVector).distinct
+    val sortedSamples = reader.sortSamples(samples.map(b => Sample(b.id)))
+    val data = reader.valuesForSamplesAndProbes(sortedSamples,
         packedProbes, sparseRead, false)
-      (g, data, sortedSamples)
-    }).seq
 
-    //The probe ordering returned will be consistent
-    val sortedProbes = parts.headOption.map(col =>
-      col._2.map(row => row(0).probe)).getOrElse(List())
+    val sortedProbes = data.map(row => row(0).probe)
     val annotations = sortedProbes.map(x => new SimpleAnnotation(x)).toVector
 
-    val parts2 = parts.par.map({
-      case (g, data, sortedSamples) =>
+    val cols = requestColumns.par.map(g => {
         println(g.getUnits()(0).toString())
-        val grouped = columnsFor(g, sortedSamples, data)
-        val ungrouped = ExprMatrix.withRows(data.map(r => EVArray(r.map(asJava(_)))),
-          sortedProbes, sortedSamples.map(_.sampleId))
-        (grouped, ungrouped)
+        //TODO avoid EVArray building
+        columnsFor(g, sortedSamples, data)
     }).seq
 
-    val (grouped, rawUngroupedMat) = parts2.par.reduceLeft((p1, p2) => {
-      val grouped = p1._1._1 adjoinRight p2._1._1
-      val info = p1._1._2.addAllNonSynthetic(p2._1._2)
-
-      val rightHandColSet = p2._2.columnKeys.toSet
-      val newCols = rightHandColSet -- p1._2.columnKeys
-      val ungrouped =  (if (rightHandColSet != newCols) {
-      //account for the fact that samples may be shared between requestColumns
-        p1._2 adjoinRight p2._2.selectNamedColumns(newCols.toSeq)
-      } else {
-        p1._2 adjoinRight p2._2
-      })
-      ((grouped, info), ungrouped)
+    //TODO try to avoid adjoining lots of small matrices
+    val (grouped, info) = cols.par.reduceLeft((p1, p2) => {
+      val grouped = p1._1 adjoinRight p2._1
+      val info = p1._2.addAllNonSynthetic(p2._2)
+      (grouped, info)
     })
 
-    new ManagedMatrix(sortedProbes, grouped._2,
-      rawUngroupedMat.copyWithAnnotations(annotations),
-      grouped._1.copyWithAnnotations(annotations),
+    //TODO: avoid EVArray building
+    val ungrouped = ExprMatrix.withRows(data,
+        sortedProbes, sortedSamples.map(_.sampleId))
+
+    val bmap = Map() ++ (0 until requestColumns.size).map(i => {
+      val cg = info.columnGroup(i)
+      val sampleIds = cg.samples.map(_.id).toSeq
+      val sampleIdxs = sampleIds.map(i => ungrouped.columnMap.get(i)).flatten
+      (i -> sampleIdxs)
+    })
+
+    new ManagedMatrix(sortedProbes, info,
+      ungrouped.copyWithAnnotations(annotations),
+      grouped.copyWithAnnotations(annotations),
+      bmap,
       log2tooltips)
   }
 
   protected def log2tooltips: Boolean = false
+
+  protected def mean(data: Iterable[ExprValue], presentOnly: Boolean = true) = {
+    if (presentOnly) {
+      ExprValue.presentMean(data, "")
+    } else {
+      ExprValue.allMean(data, "")
+    }
+  }
 
   final protected def selectIdx[E <: ExprValue](data: Seq[E], is: Seq[Int]) = is.map(data(_))
   final protected def javaMean[E <: ExprValue](data: Iterable[E], presentOnly: Boolean = true) = {
@@ -140,15 +140,6 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     }
 
     new ExpressionValue(mean.value, mean.call, null) // makeTooltip(data))
-  }
-
-  protected def makeTooltip[E <: ExprValue](data: Iterable[E]): String = {
-    val r = data.take(10).map(_.toString).mkString(" ")
-    if (data.size > 10) {
-      r + ", ..."
-    } else {
-      r
-    }
   }
 
   protected def unitIdxs(us: Iterable[t.common.shared.sample.Unit], samples: Seq[Sample]): Seq[Int] = {
@@ -184,7 +175,7 @@ trait TreatedControlBuilder[E >: Null <: ExprValue] {
   def enhancedColumns: Boolean
 
   protected def buildRow(raw: Seq[E],
-    treatedIdx: Seq[Int], controlIdx: Seq[Int]): EVArray
+    treatedIdx: Seq[Int], controlIdx: Seq[Int]): Seq[ExprValue]
 
   protected def columnInfo(g: Group): ManagedMatrixInfo
   def colNames(g: Group): Seq[String]
@@ -194,6 +185,7 @@ trait TreatedControlBuilder[E >: Null <: ExprValue] {
     //TODO
     val (tus, cus) = treatedAndControl(g)
     println(s"#Control units: ${cus.size} #Non-control units: ${tus.size}")
+    val probes = data.map(_(0).probe)
 
     if (tus.size > 1 || (!enhancedColumns) || cus.size == 0 || tus.size == 0) {
       // A simple average column
@@ -223,10 +215,10 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[Exp
     with TreatedControlBuilder[ExprValue] {
 
   protected def buildRow(raw: Seq[ExprValue],
-    treatedIdx: Seq[Int], controlIdx: Seq[Int]): EVArray =
-    EVArray(Seq(
-      javaMean(selectIdx(raw, treatedIdx)),
-      javaMean(selectIdx(raw, controlIdx))))
+    treatedIdx: Seq[Int], controlIdx: Seq[Int]): Seq[ExprValue] =
+    Seq(
+      mean(selectIdx(raw, treatedIdx)),
+      mean(selectIdx(raw, controlIdx)))
 
   protected def columnInfo(g: Group) = {
     val (tus, cus) = treatedAndControl(g)
@@ -269,11 +261,11 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
   //use simple Fold. - Johan
 
   protected def buildRow(raw: Seq[PExprValue],
-    treatedIdx: Seq[Int], controlIdx: Seq[Int]): EVArray = {
+    treatedIdx: Seq[Int], controlIdx: Seq[Int]): Seq[ExprValue] = {
     val treatedVs = selectIdx(raw, treatedIdx)
     val first = treatedVs.head
     val fold = log2(javaMean(treatedVs, false))
-    EVArray(Seq(fold, new ExpressionValue(first.p, fold.call)))
+    Seq(fold, new BasicExprValue(first.p, fold.call))
   }
 
   override protected def log2tooltips = true
@@ -306,23 +298,11 @@ object ManagedMatrix {
     ExprValue.apply(Math.log(value.value) / l2, value.call, value.probe)
   }
 
-  def makeTooltip[E <: ExprValue](data: Iterable[E], log2: Boolean): String = {
-    val r = data.take(10).map(_.toString).mkString(" ")
-    if (data.size > 10) {
-      r + ", ..."
-    } else {
-      r
-    }
-  }
-
-  def makeTooltipShared(data: Iterable[ExpressionValue], log2tfm: Boolean): String = {
+  def makeTooltip[E <: ExprValue](data: Iterable[E], log2tfm: Boolean): String = {
     val d = if (log2tfm) data.map(log2) else data
 
-    val r = d.take(10).map(x => {
-      s"(${ExprValue.nf.format(x.getValue)}:${x.getCall})"
-    }).mkString(" ")
-
-    if (data.size > 10) {
+    val r = d.filter(_.present).take(10).map(_.toString).mkString(" ")
+    if (d.size > 10) {
       r + ", ..."
     } else {
       r
@@ -350,6 +330,7 @@ class ManagedMatrix(val initProbes: Seq[String],
     //TODO visibility of these 3 vars
     var currentInfo: ManagedMatrixInfo, var rawUngroupedMat: ExprMatrix,
     var rawGroupedMat: ExprMatrix,
+    val baseColumnMap: Map[Int, Seq[Int]],
     val log2Tooltips: Boolean = false) {
 
   protected var currentMat: ExprMatrix = rawGroupedMat
@@ -362,6 +343,12 @@ class ManagedMatrix(val initProbes: Seq[String],
   protected var requestProbes: Seq[String] = initProbes
 
   currentInfo.setNumRows(currentMat.rows)
+
+  /**
+   * For the given column in the grouped matrix,
+   * which columns in the ungrouped matrix are its basis?
+   */
+  def baseColumns(col: Int): Seq[Int] = baseColumnMap.get(col).getOrElse(List())
 
   /**
    * What is the current sort column?
@@ -395,7 +382,7 @@ class ManagedMatrix(val initProbes: Seq[String],
   def probesForAuxTable: Seq[String] = rawGroupedMat.orderedRowKeys
 
   protected def filterAndSort(): Unit = {
-    def f(r: Seq[ExpressionValue]): Boolean = {
+    def f(r: Seq[ExprValue]): Boolean = {
       for (
         col <- 0 until currentInfo.numColumns();
         thresh = currentInfo.columnFilter(col);
@@ -408,7 +395,7 @@ class ManagedMatrix(val initProbes: Seq[String],
           av <= thresh
         else
           av >= thresh)
-        if (!pass || !r(col).getPresent) {
+        if (!pass || !r(col).present) {
           return false
         }
       }
@@ -428,7 +415,7 @@ class ManagedMatrix(val initProbes: Seq[String],
     }
   }
 
-  private def sortData(col: Int, ascending: Boolean)(v1: EVArray, v2: EVArray): Boolean = {
+  private def sortData(col: Int, ascending: Boolean)(v1: Seq[ExprValue], v2: Seq[ExprValue]): Boolean = {
     val ev1 = v1(col)
     val ev2 = v2(col)
     if (ev1.call == 'A' && ev2.call != 'A') {

@@ -98,7 +98,6 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   private def sampleStore: Samples = context.samples
 
   protected var uniprot: Uniprot = _
-  protected var b2rKegg: B2RKegg = _
   protected var _appInfo: AppInfo = _
 
   override def localInit(conf: Configuration) {
@@ -110,7 +109,6 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     val ts = baseConfig.triplestore.triplestore
     uniprot = new LocalUniprot(ts)
-    b2rKegg = new B2RKegg(ts)
 
     if (conf.instanceName == null || conf.instanceName == "") {
       instanceURI = None
@@ -123,6 +121,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     _appInfo = new AppInfo(conf.instanceName, sDatasets(),
         sPlatforms(), predefProbeLists(), probeClusterings(), appName)
   }
+
+  protected lazy val b2rKegg: B2RKegg =
+    new B2RKegg(baseConfig.triplestore.triplestore)
 
   protected class SparqlState(ds: Datasets) {
     var sampleFilter: SampleFilter = SampleFilter(instanceURI = instanceURI)
@@ -163,7 +164,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val ls = probeStore.probeLists(instanceURI).mapInnerValues(p => p.identifier)
     val sls = ls.map(x => new StringList("probes", x._1, x._2.toArray)).toList
     val cls = sls.map { x => ProbeClustering.buildFrom(x) }
-    
+
     new java.util.LinkedList(seqAsJavaList(cls))
   }
 
@@ -208,21 +209,21 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       filter(x => !schema.isMajorParamSharedControl(x)).toArray
   }
 
-  def samplesById(ids: Array[String]): Array[Sample] =
-    sampleStore.samples(Filter("", ""), "id",
+  def samplesById(ids: Array[String]): Array[Sample] = {
+    sampleStore.samples(t.sparql.SampleClass(), "id",
         ids).map(asJavaSample(_)).toArray
+  }
 
-  //TODO compound_name is a dummy parameter below
   @throws[TimeoutException]
   def samples(sc: SampleClass): Array[Sample] = {
-    val ss = sampleStore.sampleQuery.constrain(scAsScala(sc).filterAll)()
+    val ss = sampleStore.sampleQuery(scAsScala(sc))(sf)()
     ss.map(asJavaSample).toArray
   }
 
   @throws[TimeoutException]
   def samples(sc: SampleClass, param: String,
       paramValues: Array[String]): Array[Sample] =
-    sampleStore.samples(sc.filterAll, param, paramValues).map(asJavaSample(_)).toArray
+    sampleStore.samples(scAsScala(sc), param, paramValues).map(asJavaSample(_)).toArray
 
   @throws[TimeoutException]
   def samples(scs: Array[SampleClass], param: String,
@@ -242,17 +243,13 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     val majorParam = schema.majorParameter()
     //Ensure shared control is always included, if possible
-    val useParamValues = if (param == majorParam) {
-      val allMajors =
-        sampleStore.attributeValues(scAsScala(sc).filterAll, majorParam)
-      val shared = allMajors.filter(schema.isMajorParamSharedControl(_))
-      (shared.toSeq ++ paramValues.toSeq)
+    val useParamValues = if (param == majorParam && schema.majorParamSharedControl != null) {
+      paramValues.toSeq ++ schema.majorParamSharedControl
     } else {
       paramValues.toSeq
     }
 
-    //TODO rethink how to use batch here
-    val ss = sampleStore.samples(sc.filterAll, param, useParamValues).
+    val ss = sampleStore.samples(scAsScala(sc), param, useParamValues).
         groupBy(x =>(
             x.sampleClass(schema.timeParameter()),
             x.sampleClass.get("control_group")))

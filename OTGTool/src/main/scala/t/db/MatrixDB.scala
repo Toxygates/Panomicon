@@ -119,13 +119,11 @@ trait MatrixDBReader[+E >: Null <: ExprValue] {
 
     } else {
       //not sparse read, go sample-wise
-      //TODO this loop is a source of inefficiency - too much map manipulation
       val rs = (xs zipWithIndex).par.map(bc => {
         valuesInSample(bc._1, ps).toSeq
       }).seq.toSeq
        Vector.tabulate(ps.size, xs.size)((p, x) =>
          rs(x)(p))
-
       })
     rows.toVector
   }

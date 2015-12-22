@@ -21,36 +21,27 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
-import otgviewer.client.components.DataFilterEditor;
-import otgviewer.client.components.DatasetSelector;
-import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.FilterTools;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
+import otgviewer.client.components.compoundsel.CompoundSelector;
 import otgviewer.client.components.groupdef.GroupInspector;
-import otgviewer.client.components.ranking.CompoundRanker;
 import t.common.shared.DataSchema;
-import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.SampleColumn;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SparqlServiceAsync;
-import static t.common.client.Utils.makeScrolled;
 
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -61,91 +52,23 @@ public class ColumnScreen extends Screen {
 	
 	private GroupInspector gi;
 	private CompoundSelector cs;
-	private HorizontalPanel filterTools;
-	private TabLayoutPanel tp;
-	private final String rankingLabel;
-	private DataFilterEditor dfe;
-	private boolean hasCompoundRanking;
+	private FilterTools filterTools;
+//	private TabLayoutPanel tp;
 	
 	private final SparqlServiceAsync sparqlService;
 	
-	public ColumnScreen(ScreenManager man, String rankingLabel,
-			boolean hasCompoundRanking) {
-		super("Sample group definitions", key, false, man,
+	public ColumnScreen(ScreenManager man) {
+		super("Sample groups", key, false, man,
 				resources.groupDefinitionHTML(), resources.groupDefinitionHelp());
 		
-		this.rankingLabel = rankingLabel;
-		this.hasCompoundRanking = hasCompoundRanking;
 		sparqlService = man.sparqlService();
 		
 		String majorParam = man.schema().majorParameter();
 		cs = man.factory().compoundSelector(this, man.schema().title(majorParam));
 		this.addListener(cs);
 		cs.setStylePrimaryName("compoundSelector");
-		filterTools = mkFilterTools();
-		
-		chosenDatasets = appInfo().datasets();		
+		filterTools = new FilterTools(this); 		
 	} 
-	
-	private HorizontalPanel mkFilterTools() {
-		final Screen s = this;
-		HorizontalPanel r = new HorizontalPanel();
-		r.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-		r.addStyleName("slightlySpacedLeftRight");
-
-		Button b = new Button("Data...");
-		r.add(b);
-		b.addClickHandler(new ClickHandler() {			
-			@Override
-			public void onClick(ClickEvent event) {
-				showDatasetSelector();										
-			}
-		});
-		
-		dfe = new DataFilterEditor(this) {
-			@Override
-			protected void changeSampleClass(SampleClass sc) {
-				super.changeSampleClass(sc);				
-				s.sampleClassChanged(sc);
-				//TODO I'm not sure that exposing the action queue mechanism 
-				//like this is a good thing to do. Think of a better way.
-				runActions();
-			}
-		};
-		this.addListener(dfe);
-		r.add(dfe);		
-		return r;
-	}
-	
-	protected void showDatasetSelector() {
-		final DialogBox db = new DialogBox(false, true);
-		final Screen scr = this;
-		//TODO set init. selection
-		DatasetSelector dsel = new DatasetSelector(Arrays.asList(appInfo().datasets()), 
-				Arrays.asList(chosenDatasets)) {
-			@Override
-			public void onOK() {							
-				datasetsChanged(selector.getSelection().toArray(new Dataset[0]));
-				sparqlService.chooseDatasets(chosenDatasets,
-						new PendingAsyncCallback<Void>(scr, "Unable to choose datasets") {					
-					public void handleSuccess(Void v) {
-						dfe.update();
-					}
-				});				
-				db.hide();				
-			}
-			
-			@Override
-			public void onCancel() {
-				super.onCancel();
-				db.hide();
-			}
-		};
-		db.setText("Select datasets");
-		db.setWidget(dsel);
-		db.setWidth("500px");
-		db.show();
-	}
 	
 	@Override
 	protected void addToolbars() {
@@ -160,23 +83,12 @@ public class ColumnScreen extends Screen {
 	}
 
 	public Widget content() {				
-		tp = new TabLayoutPanel(30, Unit.PX);
-		
 		gi = factory().groupInspector(cs, this);
 		this.addListener(gi);
 		cs.addListener(gi);
 		gi.datasetsChanged(chosenDatasets);
-		
-		tp.add(gi, "Sample groups");
-
-		if (hasCompoundRanking) {
-			CompoundRanker cr = factory().compoundRanker(this, cs);
-			tp.add(makeScrolled(cr), rankingLabel);
-		}
-		tp.selectTab(0);		
-		
-		gi.addStaticGroups(appInfo().predefinedSampleGroups());		
-		return tp;
+		gi.addStaticGroups(appInfo().predefinedSampleGroups());
+		return gi;
 	}
 
 	@Override
@@ -245,16 +157,12 @@ public class ColumnScreen extends Screen {
 	public void resizeInterface() {
 		//Test carefully in IE8, IE9 and all other browsers if changing this method
 		cs.resizeInterface();
-		tp.forceLayout();
+//		tp.forceLayout();
 		super.resizeInterface();		
 	}
 
 	@Override
 	public String getGuideText() {
 		return "Please define at least one sample group to proceed. Start by selecting compounds to the left. Then select doses and times.";
-	}
-	
-	public void displayCompoundRankUI() {
-		tp.selectTab(1);
 	}
 }

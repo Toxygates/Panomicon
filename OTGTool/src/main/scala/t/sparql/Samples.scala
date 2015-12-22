@@ -99,10 +99,10 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
   /**
    * The sample query must query for ?batchGraph and ?dataset.
    */
-  def sampleQuery(implicit sf: SampleFilter): Query[Vector[Sample]]
+  def sampleQuery(sc: SampleClass)(implicit sf: SampleFilter): Query[Vector[Sample]]
 
-  def samples(implicit sf: SampleFilter): Seq[Sample] =
-    sampleQuery(sf)()
+  def samples(sc: SampleClass)(implicit sf: SampleFilter): Seq[Sample] =
+    sampleQuery(sc)(sf)()
 
   def allValuesForSampleAttribute(attribute: String,
     graphURI: Option[String] = None): Iterable[String] = {
@@ -120,8 +120,8 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
       " }")
   }
 
-  def samples(filter: TFilter, fparam: String, fvalues: Iterable[String])(implicit sf: SampleFilter): Seq[Sample] = {
-    sampleQuery.constrain(filter).constrain(
+  def samples(sc: SampleClass, fparam: String, fvalues: Iterable[String])(implicit sf: SampleFilter): Seq[Sample] = {
+    sampleQuery(sc).constrain(
       multiFilter(s"?$fparam", fvalues.map("\"" + _ + "\"")))()
   }
 
@@ -175,7 +175,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
   def attributeValues(filter: TFilter, attribute: String)(implicit sf: SampleFilter) =
     sampleAttributeQuery("t:" + attribute).constrain(filter)()
 
-  def sampleGroups(implicit sf: SampleFilter): Iterable[(String, Iterable[Sample])] = {
+  def sampleGroups(sf: SampleFilter): Iterable[(String, Iterable[Sample])] = {
     val q = tPrefixes +
       "SELECT DISTINCT ?l ?sid WHERE { " +
       s"?g a ${SampleGroups.itemClass}. " +
@@ -188,7 +188,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
     val mq = ts.mapQuery(q)
     val byGroup = mq.groupBy(_("l"))
     val allIds = mq.map(_("sid")).distinct
-    val withAttributes = sampleQuery.constrain(
+    val withAttributes = sampleQuery(SampleClass())(sf).constrain(
       "FILTER (?id IN (" + allIds.map('"' + _ + '"').mkString(",") + ")).")()
     val lookup = Map() ++ withAttributes.map(x => (x.identifier -> x))
 

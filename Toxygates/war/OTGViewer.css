@@ -64,28 +64,49 @@ exprGrid {
 	text-align: center;	
 }
 
-.headingBlack {
-	font-size: 1.2em;
-	color: black;
-	margin: 5px;
-	text-align: center;
+.navPanel {	
+	float: left;
 }
 
-.clickHeading {
+.navOuterPanel {
+	background: Beige;
+	float: left;
+}
+
+.navlink {
 	font-size: 1.2em;
-	color: DarkBlue;
-	margin: 5px;
-	text-align: center;
+	font-weight: bold;
+	color: grey;
+	margin: 0px;	
+	padding: 5px;
+}
+
+.navlink-mouseover {
+	background: BurlyWood;
 	cursor: pointer;
 }
 
-.headingCurrent {
-	font-size: 1.2em;
-	color: SteelBlue;
-	margin: 1px;
-	text-align: center;
-	border: dotted 1px;
-	padding: 3px;
+.navlink-disabled {	
+	color: grey;	
+}
+
+.navlink-enabled {	
+	color: black;	
+	cursor: pointer;	
+}
+
+.navlink-inner {
+	border-left: solid 2px #505050;
+	margin-left: 0px;	
+}
+
+.navlink-current {	
+	background: #505050;
+	color: beige;		
+}
+
+.navlink-enabled-mouseover {
+	
 }
 
 .border {
@@ -165,28 +186,28 @@ exprGrid {
 	color: green;
 }
 
-/* This must correspond to the colors in Group.java
+/* This must correspond to the colors in SampleGroup.java
 */
-.Group0 {
-	color: #97BDBD;
+.Group0 {	
+	color: #8582B5;
 }
 .Group1 {
-	color: #C46839;
+	color: #7AC653;	
 }
 .Group2 {
-	color: #9F6AC8;
+	color: #C3534D;
 }
 .Group3 {
-	color: #9CD05B;
+	color: #90C1AB;
 }
 .Group4 {
-	color: #513C4D;
+	color: #504239;
 }
 .Group5 {
-	color: #6B7644;
+	color: #C1A54A;
 }
 .Group6 {
-	color: #C75880;
+	color: #B354B3;
 }
 
 .watermark {

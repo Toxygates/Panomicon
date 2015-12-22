@@ -23,6 +23,7 @@ package t.common.shared.sample
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import t.db.ExprValue
 
 @RunWith(classOf[JUnitRunner])
 class ExprMatrixTest extends FunSuite {
@@ -47,8 +48,8 @@ class ExprMatrixTest extends FunSuite {
       List(1, 2, 1, 9, 8, 10),
       List(2, 1, 1, 19, 18, 20),
       List(4, 4, 4, 2, 1, 2),
-      List(5, 2, 3, 2, 4, 3)).map(_.map(new ExpressionValue(_)))
-    new ExprMatrix(data.map(x => EVArray(x)), data.size, data(0).size,
+      List(5, 2, 3, 2, 4, 3)).map(_.map(ExprValue(_)))
+    new ExprMatrix(data, data.size, data(0).size,
     		Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4),
     		Map("a" -> 0, "b" -> 1, "c" -> 2, "d" -> 3, "e" -> 4, "f" -> 5),
     		(1 to 5).map(x => new SimpleAnnotation("p" + x)))
@@ -61,7 +62,7 @@ class ExprMatrixTest extends FunSuite {
     assert(em.column("a") === em.column(0))
     assert(em.row("a") === em.row(0))
 
-    def tv(x: Seq[Int]) = EVArray(x.map(new ExpressionValue(_)))
+    def tv(x: Seq[Int]) = x.map(ExprValue(_))
 
     assert(em.column(0) === tv(Seq(3,1,2,4,5)))
     assert(em.column(1) === tv(Seq(3,2,1,4,2)))
@@ -100,35 +101,35 @@ class ExprMatrixTest extends FunSuite {
     val em2 = em.appendTTest(em, Seq("a", "b", "c"), Seq("d", "e", "f"), "TTest")
     assert(em2.columns === 7)
 
-    val em3 = em2.sortRows((v1, v2) => v1(6).getValue < v2(6).getValue)
+    val em3 = em2.sortRows((v1, v2) => v1(6).value < v2(6).value)
     println(em3.row(0))
-    assert(em3(0,6).getValue < 0.002)
-    assert(em3(4,6).getValue > 0.8)
+    assert(em3(0,6).value < 0.002)
+    assert(em3(4,6).value > 0.8)
 
-    val em4 = em3.sortRows((v1, v2) => v1(6).getValue > v2(6).getValue)
+    val em4 = em3.sortRows((v1, v2) => v1(6).value > v2(6).value)
     println(em4.row(0))
-    assert(em4(4,6).getValue < 0.002)
-    assert(em4(0,6).getValue > 0.8)
+    assert(em4(4,6).value < 0.002)
+    assert(em4(0,6).value > 0.8)
 
   }
 
   test("sorting") {
     val em = testMatrix
     val em2 = em.sortRows(
-        (v1, v2) => v1(0).getValue < v2(0).getValue)
+        (v1, v2) => v1(0).value < v2(0).value)
     println(em2)
     println(em2.rowMap)
     assert(em2.rowMap("b") === 0)
 
-    assert(em2("b", "b").getValue === 2)
-    assert(em2("b", "c").getValue === 1)
-    assert(em2("d", "a").getValue === 4)
+    assert(em2("b", "b").value === 2)
+    assert(em2("b", "c").value === 1)
+    assert(em2("d", "a").value === 4)
 
     assert(em2.annotations(0).probe === "p2")
     assert(em2.annotations(1).probe === "p3")
     assert(em2.annotations(2).probe === "p1")
 
-    val em3 = em2.sortRows((v1, v2) => v1(0).getValue > v2(0).getValue)
+    val em3 = em2.sortRows((v1, v2) => v1(0).value > v2(0).value)
     println(em3)
     println(em3.rowMap)
 
@@ -201,7 +202,7 @@ class ExprMatrixTest extends FunSuite {
 
   test("filtering") {
     val em = testMatrix
-    val f = em.filterRows(_.head.getValue > 2)
+    val f = em.filterRows(_.head.value > 2)
     assert(f.columnMap === em.columnMap)
     assert(f.rowMap.keySet subsetOf em.rowMap.keySet)
     assert(f.annotations(0) === em.annotations(0))
@@ -215,7 +216,7 @@ class ExprMatrixTest extends FunSuite {
         List(2),
         List(3),
         List(4),
-        List(5)).map(r => EVArray(r.map(new ExpressionValue(_)))))
+        List(5)).map(r => r.map(ExprValue(_))))
     val r = em.adjoinRight(small)
     assert(r.columns === 7)
     assert(r.rows === 5)
@@ -225,7 +226,7 @@ class ExprMatrixTest extends FunSuite {
     implicit def builder = EVABuilder
 
     val em = testMatrix
-    val evals = EVArray((1 to 5).map(new ExpressionValue(_)))
+    val evals = (1 to 5).map(ExprValue(_))
 
     val r = em.appendColumn(evals)
 
@@ -239,12 +240,12 @@ class ExprMatrixTest extends FunSuite {
         List(2),
         List(3),
         List(4),
-        List(5)).map(r => EVArray(r.map(new ExpressionValue(_))))
+        List(5)).map(_.map(ExprValue(_)))
 
     val small = ExprMatrix.withRows(rows)
 
     val (s1, s2) = em.modifyJointly(small,
-        _.sortRows((v1, v2) => v1(0).getValue < v2(0).getValue))
+        _.sortRows((v1, v2) => v1(0).value < v2(0).value))
     println(em.rowMap)
     println(s1.rowMap)
     assert(s2.rowMap === s1.rowMap)

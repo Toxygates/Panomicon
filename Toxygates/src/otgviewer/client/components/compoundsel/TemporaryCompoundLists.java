@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client;
+package otgviewer.client.components.compoundsel;
 
 import java.util.ArrayList;
 import java.util.List;

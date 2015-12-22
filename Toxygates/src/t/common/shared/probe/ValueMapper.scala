@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -35,33 +35,30 @@ trait ValueMapper {
   /**
    * @return the domain value.
    */
-  def convert(rangeProbe: String, domainVs: Iterable[ExpressionValue]): ExpressionValue
-  
+  def convert(rangeProbe: String, domainVs: Iterable[ExprValue]): ExprValue
+
 }
 
 object MedianValueMapper extends ValueMapper {
   def format(x: Double) = ExprValue.nf.format(x)
-  
-  def convert(rangeProbe: String, domainVs: Iterable[ExpressionValue]): ExpressionValue = {
+
+  def convert(rangeProbe: String, domainVs: Iterable[ExprValue]): ExprValue = {
     if (domainVs.size == 0) {
-      return new ExpressionValue(0.0, 'A', "(absent)")
+      return ExprValue(0.0, 'A')
     }
-    
+
     //TODO call handling here
-    val sorted = domainVs.toList.sortWith(_.getValue < _.getValue)
+    val sorted = domainVs.toList.sortWith(_.value < _.value)
     val mid = domainVs.size / 2
     val nv = if (domainVs.size % 2 == 0) {
-      (sorted(mid - 1).getValue + sorted(mid).getValue) / 2
+      (sorted(mid - 1).value + sorted(mid).value) / 2
     } else {
-      sorted(mid).getValue
+      sorted(mid).value
     }
-    
-    
-    val tooltip = "med(" + sorted.map(x => format(x.getValue)).mkString(", ") + ")"
 
     var call = 0d
     for (v <- domainVs) {
-      v.getCall() match {
+      v.call match {
         case 'M' => call += 1.0
         case 'P' => call += 2.0
         case _ => {}
@@ -69,6 +66,6 @@ object MedianValueMapper extends ValueMapper {
     }
     val nc = Math.round(call/domainVs.size)
     val rc = if (nc == 2) 'P' else (if (nc == 1) 'M' else 'A')
-    new ExpressionValue(nv, rc, tooltip)    
+    ExprValue(nv, rc)
   }
 }

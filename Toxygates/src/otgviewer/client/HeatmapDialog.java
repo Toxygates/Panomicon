@@ -28,7 +28,6 @@ import java.util.List;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.client.targetmine.TargetMineData;
 import t.common.shared.ClusteringList;
 import t.common.shared.StringList;
 import t.common.shared.ValueType;
@@ -71,7 +70,7 @@ public class HeatmapDialog extends DataListenerWidget {
       {"kinetic-v5.1.0.min.js", "jquery-2.0.3.min.js", "inchlib-1.2.0.min.js", "inchlib-extended-1.0.0.min.js"};
 
   private final MatrixServiceAsync matrixService;
-  private final Screen screen;
+  protected final Screen screen;
 
   private DialogBox dialog;
   private Button saveButton;
@@ -87,19 +86,14 @@ public class HeatmapDialog extends DataListenerWidget {
 
   private Algorithm lastClusteringAlgorithm = new Algorithm();
 
-  public HeatmapDialog(Screen screen, ValueType defaultType) {
+  public HeatmapDialog(Screen screen) {
     matrixService = screen.matrixService();
     this.screen = screen;
     dialog = new DialogBox();
     valType = new ListBox();
-
-    screen.propagateTo(this);
-    initWindow(defaultType);
   }
 
   private void initWindow(ValueType defaultType) {
-    logger.info("Heatmap.initWindow()");
-
     createPanel(defaultType);
     inject(new ArrayList<String>(Arrays.asList(injectList)));
 
@@ -108,6 +102,37 @@ public class HeatmapDialog extends DataListenerWidget {
     // but keep the dialog invisible until drawing heat map is finished
     dialog.show();
     dialog.setVisible(false);
+  }
+  
+  public static void show(Screen screen, ValueType defaultType) {
+    HeatmapDialog dialog = new HeatmapDialog(screen);
+    show(dialog, screen, defaultType);    
+  }
+  
+  public static void show(HeatmapDialog dialog, Screen screen, ValueType defaultType) {    
+    screen.propagateTo(dialog);
+    
+    int probesCount = (dialog.chosenProbes != null ? dialog.chosenProbes.length : 0);
+    if (probesCount == 0 || probesCount > 1000) {
+      Window.alert("Please choose at most 1,000 probes.");
+      return;
+    } 
+    if (probesCount < 2) {
+      Window.alert("Please choose at least 2 probes.");
+      return;
+    } 
+    int columnsCount = dialog.chosenColumns.size();
+    if (columnsCount < 2) {
+      Window.alert("Please define at least 2 columns.");
+      return;
+    } 
+    if (columnsCount > 1000) {
+      Window.alert("Please define at most 1,000 columns.");
+      return;
+    }
+    
+    // all check passed
+    dialog.initWindow(defaultType);;
   }
 
   private void inject(final List<String> p_jsList) {
@@ -513,8 +538,7 @@ public class HeatmapDialog extends DataListenerWidget {
     return result;
   }
 
-  private void doEnrichment() {
-    TargetMineData tm = new TargetMineData(screen);
+  private void doEnrichment() {  
     List<Collection<String>> clusters = parse2dJsArray(getCurrentObjectIds());
     List<StringList> clusterLists = new ArrayList<StringList>();
     int i = 0;
@@ -523,7 +547,7 @@ public class HeatmapDialog extends DataListenerWidget {
       clusterLists.add(sl);
       i++;
     }
-    tm.multiEnrich(clusterLists.toArray(new StringList[0]));
+    screen.factory().multiEnrichment(screen, clusterLists.toArray(new StringList[0]));
   }
 
 }

@@ -146,36 +146,4 @@ class B2RKegg(val con: RepositoryConnection) extends Triplestore with Store[Path
     }))
   }
 
-  //For Tritigate. TODO: Unify with the above.
-  def forGenesOSA(genes: Iterable[GenBioObject]): MMap[DefaultBio, Pathway] = {
-    //convert from e.g. http://bio2rdf.org/kegg:map03010
-    def convert(uri: String) =
-      "http://www.genome.jp/dbget-bin/www_bget?path:osa" + uri.split("map")(1)
-
-    val r = mapQuery(prefixes +
-      """SELECT DISTINCT ?osagene ?title ?uri where { graph ?gr {
-        ?g t:symbol ?osagene.
-        ?ko kv:gene ?g; kv:pathway ?pw.
-        ?pw bv:uri ?uri; dc:title ?title . """ +
-      multiFilter("?osagene", genes.map(g => "\"" + g.identifier + "\"")) +
-      " } } ")
-    makeMultiMap(r.map(x =>
-      DefaultBio(x("osagene"), x("osagene")) ->
-        Pathway(convert(x("uri")), x("title"))))
-  }
-
-  def OSAGeneSyms(pathway: String): Iterable[String] = {
-    val q = prefixes +
-      """SELECT DISTINCT ?osagene WHERE { GRAPH ?gr {
-    ?g t:symbol ?osagene.
-    ?ko kv:gene ?g; kv:pathway ?pw.
-    ?pw dc:title ?titl. } """ +
-      "FILTER (str(?titl) = \"" + pathway + "\") }"
-    simpleQuery(q)
-  }
-
-  //For enrichment. May be slow.
-  def osaGeneToPathwayFullMap: MMap[DefaultBio, Pathway] =
-    forGenesOSA(List())
-
 }

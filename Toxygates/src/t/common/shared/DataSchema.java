@@ -137,6 +137,10 @@ public abstract class DataSchema implements Serializable {
 		return false;
 	}
 	
+	public @Nullable String[] majorParamSharedControl() {
+	  return new String[] {};
+	}
+	
 	public AType[] associations() { return new AType[] {}; }
 	
 	public String getMinor(HasClass hc) {
@@ -162,4 +166,7 @@ public abstract class DataSchema implements Serializable {
 		return null;
 	}
 	
+	@Nullable public String chartLabel(HasClass hc) { return null; }
+	
+	@Nullable public String suggestedColor(HasClass hc) { return null; }
 }

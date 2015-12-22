@@ -67,8 +67,8 @@ class ColorPolicy {
 		
 		@Override
 		String colorFor(ChartSample sample) {
-			if (colors.containsKey(sample.barcode)) {
-				return colors.get(sample.barcode);
+			if (colors.containsKey(sample.sample)) {
+				return colors.get(sample.sample);
 			}
 			return super.colorFor(sample);
 		}

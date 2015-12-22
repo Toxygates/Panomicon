@@ -162,42 +162,20 @@ abstract class AbstractKCMatrixDB[E >: Null <: ExprValue](db: DB)
   def sortSamples(ss: Iterable[Sample]): Seq[Sample] = ss.toList.sortWith(_.dbCode < _.dbCode)
 
   def valuesInSample(x: Sample, keys: Iterable[Int]): Iterable[E] = {
-    valuesInSampleBulk(x, keys)
-  }
-
-  /**
-   * Employs the get_bulk function to get values.
-   * Keys need not be sorted.
-   */
-  private def valuesInSampleBulk(x: Sample, keys: Iterable[Int]): Iterable[E] = {
     var r: Vector[E] = Vector()
+    println(x.identifier + " (" + keys.size + ")")
 
-    println(x.identifier + " (" + keys.size + ") (bulk)")
+    val useKeys = if (!keys.isEmpty) { keys } else { pmap.keys.toSeq.sorted }
 
-    val reqKeys = if (!keys.isEmpty) {
-      keys.toArray.map(formKey(x, _))
-    } else {
-      //Not very good for sparse matrices - consider retiring
-      pmap.keys.toArray.map(p => formKey(x, p))
-    }
-
-    val data = db.get_bulk(reqKeys, false)
-    if (data != null) {
-      // keys and values are interleaved in the array returned by get_bulk
-      for (i <- Range(0, data.length, 2)) {
-        val k = data(i)
-        val v = data(i + 1)
-        val extr = extractKey(k)
-        val probeStr = pmap.tryUnpack(extr._2)
-        probeStr match {
-          case Some(ps) =>
-            r :+= extractValue(v, ps)
-          case None =>
-            Console.err.println("Unable to unpack probe " + extr._2)
-        }
+    for (k <- useKeys; lookup = formKey(x, k);
+      unpacked = pmap.unpack(k)) {
+      val data = db.get(lookup)
+      if (data == null) {
+        r :+= emptyValue(unpacked)
+      } else {
+        r :+= extractValue(data, unpacked)
       }
-    } else {
-      println("valuesInSample: data was null")
+      r
     }
     r
   }

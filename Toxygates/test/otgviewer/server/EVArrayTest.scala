@@ -26,9 +26,10 @@ import org.scalatest.junit.JUnitRunner
 import t.common.shared.sample.ExpressionValue
 import t.common.shared.sample.EVABuilder
 import t.common.shared.sample.EVArray
+import t.TTestSuite
 
 @RunWith(classOf[JUnitRunner])
-class EVArrayTest extends FunSuite {
+class EVArrayTest extends TTestSuite {
 
   test("basic") {
     val d = (1 to 3).map(x => new ExpressionValue(x, 'M', "tooltip"))

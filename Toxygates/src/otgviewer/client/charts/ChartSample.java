@@ -29,6 +29,7 @@ import t.common.shared.HasClass;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
+import t.viewer.client.Utils;
 
 public class ChartSample implements HasClass {
 	final SampleClass sc;
@@ -36,35 +37,38 @@ public class ChartSample implements HasClass {
 	
 	final double value;
 	final char call;
-	final @Nullable Sample barcode; 
+	final @Nullable Sample sample; 
 	final String probe;
 	String color = "grey";
+	final String label;
 	
 	ChartSample(SampleClass sc, DataSchema schema,
-			double value, Sample barcode, String probe, char call) {
+			double value, Sample sample, String probe, char call,
+			@Nullable String label) {
 		
 		this.sc = sc.copyOnly(Arrays.asList(schema.chartParameters()));
 		this.schema = schema;
 		this.value = value;
-		this.barcode = barcode;
+		this.sample = sample;
 		this.probe = probe;
-		this.call = call;						 
+		this.call = call;
+		this.label = label;
 	}
 
 	ChartSample(Sample sample, DataSchema schema,
-			double value, String probe, char call) {
-		this(sample.sampleClass(), schema, value, sample, probe, call);					
+			double value, String probe, char call, @Nullable String label) {
+		this(sample.sampleClass(), schema, value, sample, probe, call, label);					
 	}
 	
 	ChartSample(Unit u, DataSchema schema, double value, String probe, char call) {
 		this(u, schema, value, u.getSamples()[0], //representative sample only
-				probe, call);			
+				probe, call, "");			
 	}
 	
 	public DataSchema schema() { return schema; }	
 	public SampleClass sampleClass() { return sc; }	
 	public double value() { return value; } 
-	public Sample barcode() { return barcode; }
+	public Sample sample() { return sample; }
 	public char call() { return call; }
 	public String color() { return color; }
 	public String probe() { return probe; }
@@ -74,8 +78,8 @@ public class ChartSample implements HasClass {
 	@Override
 	public int hashCode() {
 		int r = 0;			
-		if (barcode != null) {
-			r = barcode.hashCode();
+		if (sample != null) {
+			r = sample.hashCode();
 		} else {
 			r = r * 41 + sc.hashCode();				
 			r = r * 41 + ((Double) value).hashCode();
@@ -86,8 +90,8 @@ public class ChartSample implements HasClass {
 	@Override
 	public boolean equals(Object other) {
 		if (other instanceof ChartSample) {
-			if (barcode != null) {
-				return (barcode == ((ChartSample) other).barcode);
+			if (sample != null) {
+				return (sample == ((ChartSample) other).sample);
 			} else {
 				ChartSample ocs = (ChartSample) other;
 				return sc.equals(((ChartSample) other).sampleClass()) &&
@@ -96,5 +100,10 @@ public class ChartSample implements HasClass {
 		} else {
 			return false;
 		}
+	}
+	
+	public String formattedValue() {
+	  String r = (label != null ? label : "");
+	  return r + "\n" + Utils.formatNumber(value()) + ":" + call();
 	}
 }

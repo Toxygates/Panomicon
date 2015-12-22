@@ -26,6 +26,8 @@ import javax.annotation.Nullable;
 import otgviewer.client.components.GeneSetEditor;
 import otgviewer.client.components.GroupLabels;
 import otgviewer.client.components.Screen;
+import otgviewer.client.components.compoundsel.CompoundSelector;
+import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.client.components.groupdef.GroupInspector;
 import otgviewer.client.components.groupdef.SelectionTDGrid;
 import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
@@ -33,7 +35,9 @@ import otgviewer.client.components.groupdef.TreatedControlGroupInspector;
 import otgviewer.client.components.groupdef.TreatedControlSelTDGrid;
 import otgviewer.client.components.ranking.CompoundRanker;
 import otgviewer.client.components.ranking.SimpleCompoundRanker;
+import otgviewer.client.targetmine.TargetMineData;
 import t.common.shared.DataSchema;
+import t.common.shared.StringList;
 import t.common.shared.sample.Group;
 
 
@@ -53,7 +57,7 @@ public class OTGFactory implements UIFactory {
   }
 
   @Override
-  public CompoundRanker compoundRanker(Screen _screen, CompoundSelector selector) {
+  public CompoundRanker compoundRanker(Screen _screen, RankingCompoundSelector selector) {
     return new SimpleCompoundRanker(_screen, selector);
   }
 
@@ -81,4 +85,17 @@ public class OTGFactory implements UIFactory {
   public GeneSetsMenuItem geneSetsMenuItem(DataScreen screen) {
     return new GeneSetsMenuItem(screen);
   }
+
+  @Override
+  public void enrichment(Screen screen) {
+    TargetMineData tm = new TargetMineData(screen);
+    tm.enrich();
+  }
+
+  @Override
+  public void multiEnrichment(Screen screen, StringList[] lists) {
+    TargetMineData tm = new TargetMineData(screen);
+    tm.multiEnrich(lists);    
+  }
+  
 }

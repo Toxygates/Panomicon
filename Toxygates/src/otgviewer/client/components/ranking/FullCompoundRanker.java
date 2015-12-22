@@ -20,14 +20,14 @@
 
 package otgviewer.client.components.ranking;
 
-import otgviewer.client.CompoundSelector;
 import otgviewer.client.components.Screen;
+import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.shared.RankRule;
 import t.viewer.client.Utils;
 
 public class FullCompoundRanker extends CompoundRanker {
 
-	public FullCompoundRanker(Screen _screen, CompoundSelector selector) {
+	public FullCompoundRanker(Screen _screen, RankingCompoundSelector selector) {
 		super(_screen, selector);		
 	}
 	

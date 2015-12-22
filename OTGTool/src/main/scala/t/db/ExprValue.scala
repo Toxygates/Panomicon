@@ -53,7 +53,7 @@ object ExprValue {
     apply(value, call, probe)
   }
 
-  def apply(v: Double, call: Char = 'P', probe: String = "") = BasicExprValue(v, call, probe)
+  def apply(v: Double, call: Char = 'P', probe: String = null) = BasicExprValue(v, call, probe)
 
   val nf = NumberFormat.getNumberInstance()
 }

@@ -42,6 +42,7 @@ import t.viewer.server.Platforms
 import t.viewer.shared.table.SortKey
 import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 import t.common.shared.sample.EVArray
+import t.db.ExprValue
 
 /**
  * A managed matrix session and associated state.
@@ -56,6 +57,7 @@ class MatrixController(context: Context,
 
   private def probes = context.probes
   private def platforms = Platforms(probes)
+
   private implicit val mcontext = context.matrix
   private var sortAssoc: AType = _
 
@@ -63,6 +65,7 @@ class MatrixController(context: Context,
     val samples = groups.toList.flatMap(_.getSamples().map(_.id))
     context.samples.platforms(samples)
   }
+  def multiPlatform = groupPlatforms.size > 1
 
   lazy val filteredProbes =
     platforms.filterProbes(initProbes, groupPlatforms)
@@ -85,10 +88,8 @@ class MatrixController(context: Context,
         throw new DBUnavailableException(e)
     }
 
-    val multiPlat = groupPlatforms.size > 1
-
     try {
-      val enhancedCols = !multiPlat
+      val enhancedCols = !multiPlatform
 
       //TODO get rid of/factor out this, possibly to a factory of some kind
       val b = reader match {
@@ -129,6 +130,8 @@ class MatrixController(context: Context,
     }
   }
 
+  //TODO consider retiring/simplifying, use multiPlatform instead to test -
+  //check charts to see if it works
   protected def groupMapper(groups: Iterable[Group]): Option[MatrixMapper] = {
     val os = groups.flatMap(_.collect("organism")).toSet
     println("Detected species in groups: " + os)
@@ -141,26 +144,30 @@ class MatrixController(context: Context,
 
   protected def applyMapper(mm: ManagedMatrix, mapper: Option[MatrixMapper]): ManagedMatrix = {
     mapper match {
-      case Some(m) => m.convert(mm)
-      case None    => mm
+      case Some(m) =>
+        println(s"Apply mapper: $m")
+        m.convert(mm)
+      case None    =>
+        println("No mapper being applied")
+        mm
     }
   }
 
-  var managedMatrix: ManagedMatrix = {
+  val managedMatrix: ManagedMatrix = {
     val pt = new PerfTimer(Logger.getLogger("matrixController.loadMatrix"))
 
     val mm = if (filteredProbes.size > 0) {
       makeMatrix(filteredProbes, typ, sparseRead, fullLoad)
     } else {
-      val emptyMatrix = new ExprMatrix(List(), 0, 0,Map(), Map(), List())
-      new ManagedMatrix(List(), new ManagedMatrixInfo(), emptyMatrix, emptyMatrix)
+      val emptyMatrix = new ExprMatrix(List(), 0, 0, Map(), Map(), List())
+      new ManagedMatrix(List(), new ManagedMatrixInfo(), emptyMatrix, emptyMatrix, Map())
     }
 
     pt.mark("MakeMatrix")
     mm.info.setPlatforms(groupPlatforms.toArray)
 
     val mapper = if (useStandardMapper) {
-      if (groupPlatforms.size > 1) {
+      if (multiPlatform) {
         standardMapper
       } else {
         None
@@ -179,15 +186,14 @@ class MatrixController(context: Context,
    * Select probes and update the current managed matrix
    */
   def selectProbes(probes: Seq[String]): ManagedMatrix = {
-    if (!probes.isEmpty) {
+    val useProbes = (if (!probes.isEmpty) {
       println("Refilter probes: " + probes.length)
-      managedMatrix.selectProbes(probes)
+      probes
     } else {
-      val info = managedMatrix.info
-      val groups = (0 until info.numDataColumns()).map(i => info.columnGroup(i))
-      val allProbes = platforms.filterProbes(List(), groupPlatforms).toArray
-      managedMatrix.selectProbes(allProbes)
-    }
+      //all probes
+      platforms.filterProbes(List(), groupPlatforms)
+    })
+    managedMatrix.selectProbes(useProbes)
     managedMatrix
   }
 
@@ -225,11 +231,10 @@ class MatrixController(context: Context,
       println("aux: " + sm.take(10))
       val evs = rowKeys.map(r =>
         sm.get(r) match {
-          case Some(v) => new ExpressionValue(v)
-          case None    => new ExpressionValue(Double.NaN, 'A')
+          case Some(v) => ExprValue(v)
+          case None    => ExprValue(Double.NaN, 'A')
         })
-      val evas = evs.map(v => EVArray(Seq(v)))
-      ExprMatrix.withRows(evas, rowKeys, List("POPSEQ"))
+      ExprMatrix.withRows(evs.map(ev => Seq(ev)), rowKeys, List("POPSEQ"))
     } else {
       throw new Exception(s"No sort key for $ass")
     }

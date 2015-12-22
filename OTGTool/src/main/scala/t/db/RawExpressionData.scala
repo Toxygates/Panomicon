@@ -42,6 +42,8 @@ trait RawExpressionData {
   lazy val probes: Iterable[String] =
     data.toSeq.flatMap(_._2.keys).distinct
 
+  def samples: Iterable[Sample] = data.keys
+
 }
 
 class Log2Data(raw: RawExpressionData) extends RawExpressionData {

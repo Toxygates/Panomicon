@@ -46,6 +46,8 @@ class KCTest extends TTestSuite {
     db.release
   }
 
+  val nprobes = 130692 //mouse + rat + human
+
   test("Read data") {
     val s = Sample("003017629005")
     println(s.dbCode)
@@ -55,14 +57,14 @@ class KCTest extends TTestSuite {
 
     println(context.sampleMap.tokens.take(5))
     val r = db.valuesInSample(s, List())
-    r.size should equal(31042) //number of probes for rat arrays
+    r.size should equal(nprobes)
   }
 
   test("Read by probe and barcode") {
     // Verify that data read probe-wise equals data read barcode-wise
     val ss = db.sortSamples(List("003017629001", "003017629013", "003017629014").map(Sample(_)))
     val r1 = db.valuesInSamples(ss, List())
-    r1.toVector.flatten.size should equal(93126)
+    r1.toVector.flatten.size should equal(nprobes * 3)
 
     val ps = List("1371970_at", "1371034_at", "1372727_at")
     val packedProbes = ps.map(pmap.pack(_))
