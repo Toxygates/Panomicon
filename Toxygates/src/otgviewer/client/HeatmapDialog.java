@@ -67,7 +67,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class HeatmapDialog extends DataListenerWidget {
   private static final String[] injectList =
-      {"kinetic-v5.1.0.min.js", "jquery-2.0.3.min.js", "inchlib-1.2.0.js", "inchlib-extended.js"};
+      {"kinetic-v5.1.0.min.js", "jquery-2.0.3.min.js", "inchlib-1.2.0.min.js", "inchlib-extended-1.0.0.min.js"};
 
   private final MatrixServiceAsync matrixService;
   protected final Screen screen;

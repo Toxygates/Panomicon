@@ -77,8 +77,7 @@ var InCHlibEx;
       lineCap: 'butt',
       value: false,
       stroke: "blue",
-      strokeWidth: 100,
-      //opacity: 0,
+      strokeWidth: 100
     });
     objects_ref["cutoff_line"] = new Kinetic.Line({
       stroke: "#666",
@@ -106,7 +105,7 @@ var InCHlibEx;
   InCHlibEx.prototype.read_data_from_file = function (json) {
     var self = this;
 
-    var d = new $.Deferred;
+    var d = new $.Deferred();
     self.loading = d.promise();
 
     $.ajax({
@@ -127,7 +126,7 @@ var InCHlibEx;
   InCHlibEx.prototype.read_data = function (json) {
     var self = this;
 
-    var d = new $.Deferred;
+    var d = new $.Deferred();
     self.loading = d.promise();
 
     InCHlib.prototype.read_data.call(this, json);
@@ -145,15 +144,15 @@ var InCHlibEx;
 
       InCHlib.prototype.draw.call(self);
 
-      self.last_highlighted_range = null
-      self.last_highlighted_cutoff_cluster = null
+      self.last_highlighted_range = null;
+      self.last_highlighted_cutoff_cluster = null;
       self.mouse_down = null;
       self.mouse_down_from = null;
       self.mouse_down_to = null;
 
       self._change_selection_state(null);
     }).fail(function () {
-      alert("Fail to load data.")
+      alert("Fail to load data.");
     });
   };
 
@@ -166,7 +165,7 @@ var InCHlibEx;
       key = keys[i];
       node = self.data.nodes[key];
 
-      if (node.count == 1) {
+      if (node.count === 1) {
         data = node.features;
         heatmap_array.push([key]);
         heatmap_array[j].push.apply(heatmap_array[j], data);
@@ -175,19 +174,12 @@ var InCHlibEx;
         }
         j++;
       } else {
-        self.minDistance = Math.min(self.minDistance, node.distance);
+        if (node.distance > 0) {
+          self.minDistance = Math.min(self.minDistance, node.distance);
+        }
       }
       self.maxDistance = Math.max(self.maxDistance, node.distance);
     }
-    console.log("distance domain: [" + self.minDistance + ", " + self.maxDistance + "]");
-
-    self.shift = (function () {
-      if (self.settings.log_axis) {
-        return self.minDistance < 1.0e-15 ? Math.abs(1.0e-15 - self.minDistance) : 0;
-      } else {
-        return self.minDistance < 0 ? Math.abs(self.minDistance) + self.maxDistance * 0.05 : 0;
-      }
-    })();
 
     return heatmap_array;
   };
@@ -283,7 +275,7 @@ var InCHlibEx;
     self._change_selection_state(self.selection_state.dendrogram);
 
     var path_id = evt.target.attrs.path_id;
-    console.log(path_id + ": d = " + self.data.nodes[path_id].distance)
+    // console.log(path_id + ": d = " + self.data.nodes[path_id].distance)
   };
 
   /** @override */
@@ -329,7 +321,7 @@ var InCHlibEx;
     InCHlib.prototype._zoom_cluster.call(self, node_id);
 
     self._reset_all_highlight();
-  }
+  };
 
   /** @override */
   InCHlibEx.prototype._unzoom_cluster = function () {
@@ -337,7 +329,7 @@ var InCHlibEx;
     InCHlib.prototype._unzoom_cluster.call(self);
 
     self._reset_all_highlight();
-  }
+  };
 
   /** @override */
   InCHlibEx.prototype._zoom_column_cluster = function (node_id) {
@@ -345,7 +337,7 @@ var InCHlibEx;
     InCHlib.prototype._zoom_column_cluster.call(self, node_id);
 
     self._reset_all_highlight();
-  }
+  };
 
   /** @override */
   InCHlibEx.prototype._unzoom_column_cluster = function () {
@@ -353,7 +345,7 @@ var InCHlibEx;
     InCHlib.prototype._unzoom_column_cluster.call(self);
 
     self._reset_all_highlight();
-  }
+  };
 
   /** @override */
   InCHlibEx.prototype._draw_heatmap_row = function (node_id, x1, y1) {
@@ -373,7 +365,7 @@ var InCHlibEx;
       if (self.settings.alternative_data) {
         text_value = self.alternative_data[node_id][col_index];
 
-        if (self.settings.images_as_alternative_data && text_value !== undefined && text_value !== null && text_value != "") {
+        if (self.settings.images_as_alternative_data && text_value !== undefined && text_value !== null && text_value !== "") {
           value = null;
           var filepath = self.settings.images_path.dir + text_value + self.settings.images_path.ext;
           filepath = escape(filepath);
@@ -423,7 +415,7 @@ var InCHlibEx;
           points: [x1, y1, x2, y2],
           value: text_value,
           column: ["d", col_index].join("_"),
-          strokeWidth: self.pixels_for_leaf,
+          strokeWidth: self.pixels_for_leaf
         });
         row.add(line);
 
@@ -432,7 +424,7 @@ var InCHlibEx;
             x: self._hack_round((x1 + x2) / 2 - ("" + text_value).length * (self.value_font_size / 4)),
             y: self._hack_round(y1 - self.value_font_size / 2),
             fontSize: self.value_font_size,
-            text: text_value,
+            text: text_value
           });
           row.add(text);
         }
@@ -465,14 +457,14 @@ var InCHlibEx;
               points: [x1, y1, x2, y2],
               value: text_value,
               column: ["m", col_index].join("_"),
-              strokeWidth: self.pixels_for_leaf,
+              strokeWidth: self.pixels_for_leaf
             });
             row.add(line);
 
             if (self.current_draw_values) {
               text = self.objects_ref.heatmap_value.clone({
                 text: text_value,
-                fontSize: self.value_font_size,
+                fontSize: self.value_font_size
               });
 
               width = text.getWidth();
@@ -497,13 +489,13 @@ var InCHlibEx;
         points: [x1, y1, x2, y2],
         value: count,
         column: "Count",
-        strokeWidth: self.pixels_for_leaf,
+        strokeWidth: self.pixels_for_leaf
       });
       row.add(line);
 
       if (self.current_draw_values) {
         text = self.objects_ref.heatmap_value.clone({
-          text: count,
+          text: count
         });
 
         width = text.getWidth();
@@ -531,7 +523,7 @@ var InCHlibEx;
     }
     var max_length = self._get_max_length(values);
     var test_string = "";
-    for (var i = 0; i < max_length; i++) {
+    for (i = 0; i < max_length; i++) {
       test_string += "E";
     }
 
@@ -634,7 +626,7 @@ var InCHlibEx;
     self.last_highlighted_range = self.current_object_ids;
 
     self.highlight_rows(self.current_object_ids);
-  }
+  };
 
   InCHlibEx.prototype._unhighlight_range = function () {
     var self = this;
@@ -659,14 +651,14 @@ var InCHlibEx;
   InCHlibEx.prototype.unhighlight_cluster = function () {
     var self = this;
 
-    var isNotNull = (self.last_highlighted_cluster != null);
+    var isNotNull = (self.last_highlighted_cluster !== null);
 
     InCHlib.prototype.unhighlight_cluster.call(this);
 
     if (isNotNull) {
       self._change_selection_state(null);
     }
-  }
+  };
 
   InCHlibEx.prototype._reset_all_highlight = function () {
     var self = this;
@@ -676,7 +668,7 @@ var InCHlibEx;
     self.unhighlight_column_cluster();
     self._unhighlight_range();
     self._unhighlight_cutoff_cluster();
-  }
+  };
 
   InCHlibEx.prototype._start_drugging = function (evt) {
     var self = this;
@@ -689,7 +681,7 @@ var InCHlibEx;
 
   InCHlibEx.prototype._continue_drugging = function (row_id) {
     var self = this;
-    if (self.last_row == row_id) {
+    if (self.last_row === row_id) {
       return;
     }
 
@@ -711,7 +703,7 @@ var InCHlibEx;
     }
 
     self.mouse_down = false;
-    if (self.current_object_ids.length == 0) {
+    if (self.current_object_ids.length === 0) {
       self._reset_all_highlight();
     } else {
       self._draw_range_selection_overlay();
@@ -736,22 +728,22 @@ var InCHlibEx;
       x: x,
       y: self.header_height + self.column_metadata_height + 5,
       width: width,
-      height: self._hack_round(upper_y - self.header_height - self.column_metadata_height - 5),
+      height: self._hack_round(upper_y - self.header_height - self.column_metadata_height - 5)
     });
 
     var cluster_border_1 = self.objects_ref.cluster_border.clone({
-      points: [0, upper_y, width, upper_y],
+      points: [0, upper_y, width, upper_y]
     });
 
     var cluster_overlay_2 = self.objects_ref.cluster_overlay.clone({
       x: x,
       y: lower_y,
       width: width,
-      height: self.settings.height - lower_y - self.footer_height + 5,
+      height: self.settings.height - lower_y - self.footer_height + 5
     });
 
     var cluster_border_2 = self.objects_ref.cluster_border.clone({
-      points: [0, lower_y, width, lower_y],
+      points: [0, lower_y, width, lower_y]
     });
 
     self.row_range_selection_group.add(cluster_overlay_1, cluster_overlay_2, cluster_border_1, cluster_border_2);
@@ -831,9 +823,9 @@ var InCHlibEx;
 
     self.distance_step = (function () {
       if (self.settings.log_axis) {
-        return (self.distance - 5) / (log10(node.distance + self.shift) - log10(self.minDistance + self.shift));
+        return (self.distance - 5) / (log10(node.distance) - log10(self.minDistance));
       } else {
-        return self.distance / (node.distance + self.shift);
+        return self.distance / node.distance;
       }
     })();
 
@@ -856,7 +848,7 @@ var InCHlibEx;
     }
     self._draw_row_dendrogram_node(node_id, node, current_left_count, current_right_count, 0, y);
     self.middle_item_count = (self.min_item_count + self.max_item_count) / 2;
-    self._draw_distance_scale(node.distance + self.shift);
+    self._draw_distance_scale(node.distance);
     self.stage.add(self.dendrogram_layer);
 
     self._bind_dendrogram_hover_events(self.dendrogram_layer);
@@ -887,7 +879,7 @@ var InCHlibEx;
   InCHlibEx.prototype._draw_row_dendrogram_node = function (node_id, node, current_left_count, current_right_count, x, y) {
     var self = this;
 
-    if (node.count != 1) {
+    if (node.count !== 1) {
       var node_neighbourhood = self._get_node_neighbourhood(node, self.data.nodes);
       var right_child = self.data.nodes[node.right_child];
       var left_child = self.data.nodes[node.left_child];
@@ -895,11 +887,11 @@ var InCHlibEx;
       var y2 = self._get_y2(node_neighbourhood, current_left_count, current_right_count);
       var x1 = self._distanceToCoord(node.distance);
 
-      x1 = (x1 == 0) ? 2 : x1;
+      x1 = (x1 === 0) ? 2 : x1;
 
       var x2 = x1;
       var child_distance = function (child) {
-        if (child.count == 1) {
+        if (child.count === 1) {
           return self.distance;
         } else {
           return self._distanceToCoord(child.distance);
@@ -907,7 +899,7 @@ var InCHlibEx;
       };
       var left_distance = child_distance(self.data.nodes[node.left_child]);
       var right_distance = child_distance(self.data.nodes[node.right_child]);
-      if (right_child.count == 1) {
+      if (right_child.count === 1) {
         y2 = y2 + self.pixels_for_leaf / 2;
       }
 
@@ -936,22 +928,26 @@ var InCHlibEx;
   InCHlibEx.prototype._coordToDistance = function (x) {
     var self = this;
     if (self.settings.log_axis) {
-      return (Math.pow(10, (self.distance - (5 + x)) / self.distance_step + log10(self.minDistance + self.shift)) - self.shift).toExponential(2);
+      return (Math.max(0, Math.pow(10, (self.distance - (5 + x)) / self.distance_step + log10(self.minDistance)))).toExponential(2);
     } else {
-      return ((self.distance - x) / self.distance_step - self.shift).toExponential(2);
+      return ((self.distance - x) / self.distance_step).toExponential(2);
     }
   };
 
   InCHlibEx.prototype._distanceToCoord = function (d) {
     var self = this;
-    if (self.minDistance == 0 && self.maxDistance == 0) {
+    if (self.minDistance === 0 && self.maxDistance === 0) {
       return self.distance;
     }
 
     if (self.settings.log_axis) {
-      return self.distance - (5 + self.distance_step * (log10(d + self.shift) - log10(self.minDistance + self.shift)));
+      var dist = log10(d) - log10(self.minDistance);
+      if (!Number.isFinite(dist)) {
+        dist = 0;
+      }
+      return self.distance - (5 + self.distance_step * dist);
     } else {
-      return self.distance - self.distance_step * (d + self.shift);
+      return self.distance - self.distance_step * d;
     }
   };
 
@@ -970,7 +966,7 @@ var InCHlibEx;
       points: [x1, y1, x2, y2],
       stroke: "black",
       listening: false
-    })
+    });
 
     var circle = new Kinetic.Circle({
       x: x2,
@@ -978,7 +974,7 @@ var InCHlibEx;
       radius: 3,
       fill: "black",
       listening: false
-    })
+    });
 
     var number = 0;
     var marker_tail = 3;
@@ -998,26 +994,26 @@ var InCHlibEx;
       fontStyle: 'bold',
       fill: 'black',
       align: 'right',
-      listening: false,
+      listening: false
     });
     self.dendrogram_layer.add(path, circle, distance_number);
 
-    if (marker_distance_step == 0) {
+    if (marker_distance_step === 0) {
       marker_distance_step = 0.5;
     }
 
     if (self.settings.log_axis) {
-      var from = Math.ceil(log10(self.minDistance + self.shift));
-      var to = Math.ceil(log10(self.maxDistance + self.shift));
-      console.log("scale domain: [" + log10(self.minDistance + self.shift) + ", " + log10(self.maxDistance + self.shift)) + "]";
+      var from = Math.ceil(log10(self.minDistance));
+      var to = Math.ceil(Math.max(0, log10(self.maxDistance)));
+
       marker_counter = from;
 
-      while (marker_counter != to) {
-        marker_distance = self.distance - 5 + self.distance_step * (log10(self.minDistance + self.shift) - marker_counter);
+      while (marker_counter !== to) {
+        marker_distance = self.distance - 5 + self.distance_step * (log10(self.minDistance) - marker_counter);
         path = new Kinetic.Line({
           points: [marker_distance, (y1 - marker_tail), marker_distance, (y2 + marker_tail)],
           stroke: "black",
-          listening: false,
+          listening: false
         });
         self.dendrogram_layer.add(path);
 
@@ -1029,7 +1025,7 @@ var InCHlibEx;
           path = new Kinetic.Line({
             points: [marker_distance, (y1 - marker_tail), marker_distance, (y2 + marker_tail)],
             stroke: "black",
-            listening: false,
+            listening: false
           });
           self.dendrogram_layer.add(path);
 
@@ -1071,7 +1067,7 @@ var InCHlibEx;
   InCHlibEx.prototype._scale_mouseover_area_enter = function (x, y) {
     var self = this;
 
-    var dist = self._coordToDistance(x);
+    var dist = Math.max(0.0, self._coordToDistance(x));
 
     self.cutoff_line_layer.destroyChildren();
     self.cutoff_distance_tooltip = self.objects_ref.tooltip_label.clone({x: x, y: y, id: 'cotoff_tooltip_label'});
@@ -1094,7 +1090,7 @@ var InCHlibEx;
   InCHlibEx.prototype._scale_mouseover_area_move = function (x, y) {
     var self = this;
 
-    var dist = self._coordToDistance(x);
+    var dist = Math.max(0.0, self._coordToDistance(x));
 
     if (self.cutoff_distance_tooltip) {
       var minX = self.cutoff_distance_tooltip.width() / 2.0;
@@ -1142,7 +1138,7 @@ var InCHlibEx;
     var key;
     for (key in nodes) {
       var d = nodes[key]["distance"];
-      if (d == null || distance < d) {
+      if (d === null || distance < d) {
         continue;
       }
       tmp[key] = nodes[key];
@@ -1173,13 +1169,13 @@ var InCHlibEx;
     }
 
     return ret;
-  }
+  };
 
   InCHlibEx.prototype._highlight_cutoff_cluster = function (distance) {
     var self = this;
 
     self.current_object_ids = self._divide_cluster_by_distance(distance);
-    self.last_highlighted_cutoff_cluster = self.current_object_ids
+    self.last_highlighted_cutoff_cluster = self.current_object_ids;
 
     self._draw_cutoff_cluster_overlay(self.current_object_ids);
   };
@@ -1207,13 +1203,11 @@ var InCHlibEx;
 
     var cluster_overlays = [];
     var cluster_borders = [];
-    {
-      var upper_y = self.row_y_in_order[0] - self.pixels_for_leaf / 2;
-      cluster_borders.push(self.objects_ref.cluster_border.clone({points: [0, upper_y, width, upper_y]}));
-    }
+    var upper_y = self.row_y_in_order[0] - self.pixels_for_leaf / 2;
+    cluster_borders.push(self.objects_ref.cluster_border.clone({points: [0, upper_y, width, upper_y]}));
 
     custer_groups.forEach(function (element, index, array) {
-      if (element.length == 0) {
+      if (element.length === 0) {
         return;
       }
       var min = Number.MAX_VALUE;
@@ -1223,7 +1217,7 @@ var InCHlibEx;
         min = (i < min) ? i : min;
         max = (max < i) ? i : max;
       });
-      var upper_y = self.row_y_in_order[min] - self.pixels_for_leaf / 2.0;
+      upper_y = self.row_y_in_order[min] - self.pixels_for_leaf / 2.0;
       var lower_y = self.row_y_in_order[max] + self.pixels_for_leaf / 2.0;
 
       cluster_overlays.push(self.objects_ref.cluster_overlay.clone({
@@ -1232,7 +1226,7 @@ var InCHlibEx;
         width: width,
         height: self._hack_round(lower_y - upper_y),
         fill: self.cluster_colors[index % self.cluster_colors.length],
-        opacity: 0.2,
+        opacity: 0.2
       }));
       cluster_borders.push(self.objects_ref.cluster_border.clone({points: [0, lower_y, width, lower_y]}));
     });
