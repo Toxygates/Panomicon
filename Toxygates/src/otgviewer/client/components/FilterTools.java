@@ -41,8 +41,6 @@ public class FilterTools extends DataListenerWidget {
   final SparqlServiceAsync sparqlService;
   
   public FilterTools(final Screen screen) {
-    AppInfo appInfo = screen.appInfo();
-    chosenDatasets = appInfo.datasets();
     this.screen = screen;
     sparqlService = screen.sparqlService();
     

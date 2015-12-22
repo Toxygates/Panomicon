@@ -160,7 +160,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     typ: ValueType): ManagedMatrixInfo = {
     getSessionData.controller =
       new MatrixController(context, () => getOrthologs(context),
-          groups, probes, typ, false, false, false)
+          groups, probes, typ, false, false)
     getSessionData.matrix.info
   }
 
@@ -197,7 +197,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     val rawData = mm.rawData.selectNamedRows(rowNames).data
 
     for ((gr, rr) <- grouped zip rawData;
-      (gv, i) <- gr.getValues zipWithIndex) {
+      (gv, i) <- gr.getValues.zipWithIndex) {
       val basis = mm.baseColumns(i)
       val rawRow = basis.map(i => rr(i))
       val tt = ManagedMatrix.makeTooltip(rawRow, mm.log2Tooltips)
@@ -273,7 +273,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     withSymbols: Boolean, typ: ValueType): FullMatrix = {
     val sgs = Vector() ++ gs
     val controller = new MatrixController(context, () => getOrthologs(context),
-        gs, rprobes, typ, true, sparseRead, true)
+        gs, rprobes, typ, sparseRead, true)
     val mm = controller.managedMatrix
 
     val raw = if (sgs.size == 1) {
@@ -396,7 +396,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     val cont = if (getSessionData.controller == null ||
         getSessionData().controller.groups.toSet != groups.toSet) {
       new MatrixController(context, () => getOrthologs(context),
-          groups, chosenProbes, valueType, false, false, false)
+          groups, chosenProbes, valueType, false, false)
     } else {
       getSessionData.controller
     }

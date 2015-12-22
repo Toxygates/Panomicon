@@ -41,7 +41,9 @@ public class RankingScreen extends Screen {
     super("Compound ranking", key, false, man,
         resources.defaultHelpHTML(), null);
     
-    filterTools = new FilterTools(this);
+    chosenDatasets = appInfo().datasets();
+    filterTools = new FilterTools(this);    
+    this.addListener(filterTools);    
     
     String majorParam = man.schema().majorParameter();
     cs = new RankingCompoundSelector(this, man.schema().title(majorParam));
@@ -79,6 +81,11 @@ public class RankingScreen extends Screen {
   
   public void show() {
     super.show();
+  }
+  
+  @Override
+  public String getGuideText() {
+      return "Specify at least one gene symbol to rank compounds according to their effect.";
   }
 
 }

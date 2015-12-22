@@ -35,7 +35,6 @@ import t.common.shared.SampleClass;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.SampleColumn;
 import t.viewer.client.Utils;
-import t.viewer.client.rpc.SparqlServiceAsync;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -53,21 +52,19 @@ public class ColumnScreen extends Screen {
 	private GroupInspector gi;
 	private CompoundSelector cs;
 	private FilterTools filterTools;
-//	private TabLayoutPanel tp;
-	
-	private final SparqlServiceAsync sparqlService;
-	
+
 	public ColumnScreen(ScreenManager man) {
 		super("Sample groups", key, false, man,
 				resources.groupDefinitionHTML(), resources.groupDefinitionHelp());
-		
-		sparqlService = man.sparqlService();
 		
 		String majorParam = man.schema().majorParameter();
 		cs = man.factory().compoundSelector(this, man.schema().title(majorParam));
 		this.addListener(cs);
 		cs.setStylePrimaryName("compoundSelector");
-		filterTools = new FilterTools(this); 		
+		
+	    chosenDatasets = appInfo().datasets();
+		filterTools = new FilterTools(this); 	
+		this.addListener(filterTools);
 	} 
 	
 	@Override
