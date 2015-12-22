@@ -71,12 +71,22 @@ getDendro <- function(cluster, leafNames, values=NA, appendixes=list()) {
   if(is.data.frame(values)) {
     isRow <- TRUE
   }
+  EPSILON <- 1e-10
   for(i in 1:nrow(cluster[['merge']])) {
     nodeName <- getName(i, leafNames)
+
+    dist <- cluster[['height']][i]
+    # validate value
+    if ( dist < -EPSILON ) {
+      stop(paste("Distance can not be negative. nodeName =" , nodeName, ", distance =", dist, "\n"))
+    } else if ( -EPSILON <= dist && dist < 0 ) {
+      dist <- 0
+    }
+
     nodes[[nodeName]] <- list("left_child"=getName(cluster[['merge']][i, 1], leafNames),
                               "right_child"=getName(cluster[['merge']][i, 2], leafNames),
                               "count"=getCount(i, cluster),
-                              "distance"=cluster[['height']][i])
+                              "distance"=dist)
     if (length(parent <- getParent(i, cluster))) 
       nodes[[nodeName]][["parent"]] <- getName(parent)
     for(j in 1:2) {
