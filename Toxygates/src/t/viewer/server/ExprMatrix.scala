@@ -127,7 +127,7 @@ class ExprMatrix(data: Seq[Seq[ExprValue]], rows: Int, columns: Int,
     val sourceCols1 = sourceData.selectNamedColumns(group1)
     val sourceCols2 = sourceData.selectNamedColumns(group2)
 
-    val ps = sourceCols1.toRowVectors.zip(sourceCols2.toRowVectors) zipWithIndex
+    val ps = sourceCols1.toRowVectors.zip(sourceCols2.toRowVectors).zipWithIndex
     val pvals = ps.map(r => {
       val probe = sourceData.rowAt(r._2)
       val vs1 = r._1._1.filter(_.present).map(_.value)

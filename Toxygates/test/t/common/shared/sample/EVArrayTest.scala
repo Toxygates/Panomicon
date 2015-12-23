@@ -22,9 +22,7 @@ package t.common.shared.sample
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import t.common.shared.sample.ExpressionValue
-import t.common.shared.sample.EVABuilder
-import t.common.shared.sample.EVArray
+
 import t.TTestSuite
 
 @RunWith(classOf[JUnitRunner])
