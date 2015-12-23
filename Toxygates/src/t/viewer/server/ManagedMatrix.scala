@@ -54,12 +54,13 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
   /**
    * Construct the columns representing a particular group (g), from the given
    * raw data. Update info to reflect the changes.
+   * Resulting data should be row-major.
    */
-  protected def columnsFor(g: Group, probes: Seq[String], sortedBarcodes: Seq[Sample],
-    data: Seq[Seq[E]]): (ExprMatrix, ManagedMatrixInfo)
+  protected def columnsFor(g: Group, sortedBarcodes: Seq[Sample],
+    data: Seq[Seq[E]]): (Seq[Seq[ExprValue]], ManagedMatrixInfo)
 
-  protected def defaultColumns[E <: ExprValue](g: Group, probes: Seq[String], sortedBarcodes: Seq[Sample],
-    data: Seq[Seq[ExprValue]]): (ExprMatrix, ManagedMatrixInfo) = {
+  protected def defaultColumns[E <: ExprValue](g: Group, sortedBarcodes: Seq[Sample],
+    data: Seq[Seq[ExprValue]]): (Seq[Seq[ExprValue]], ManagedMatrixInfo) = {
     // A simple average column
     val tus = treatedAndControl(g)._1
     val treatedIdx = unitIdxs(tus, sortedBarcodes)
@@ -68,11 +69,9 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     val info = new ManagedMatrixInfo()
     info.addColumn(false, g.toString, g.toString + ": average of treated samples", false, g,
         false, samples)
-    val e = ExprMatrix.withRows(data.map(vs =>
-      Seq(mean(selectIdx(vs, treatedIdx)))),
-      probes,
-      List(g.toString))
-    (e, info)
+    val d = data.map(vs => Seq(mean(selectIdx(vs, treatedIdx))))
+
+    (d, info)
   }
 
   def loadRawData(requestColumns: Seq[Group],
@@ -93,15 +92,17 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     val cols = requestColumns.par.map(g => {
         println(g.getUnits()(0).toString())
         //TODO avoid EVArray building
-        columnsFor(g, sortedProbes, sortedSamples, data)
+        columnsFor(g, sortedSamples, data)
     }).seq
 
     //TODO try to avoid adjoining lots of small matrices
-    val (grouped, info) = cols.par.reduceLeft((p1, p2) => {
-      val grouped = p1._1 adjoinRight p2._1
+    val (groupedData, info) = cols.par.reduceLeft((p1, p2) => {
+      val d = (p1._1 zip p2._1).map(r => r._1 ++ r._2)
       val info = p1._2.addAllNonSynthetic(p2._2)
-      (grouped, info)
+      (d, info)
     })
+    val colNames = (0 until info.numColumns()).map(i => info.columnName(i))
+    val grouped = ExprMatrix.withRows(groupedData, sortedProbes, colNames)
 
     //TODO: avoid EVArray building
     val ungrouped = ExprMatrix.withRows(data,
@@ -163,9 +164,9 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
 class FoldBuilder(reader: MatrixDBReader[ExprValue], probes: Seq[String])
     extends ManagedMatrixBuilder[ExprValue](reader, probes) {
 
-  protected def columnsFor(g: Group, pobes: Seq[String], sortedBarcodes: Seq[Sample],
-    data: Seq[Seq[ExprValue]]): (ExprMatrix, ManagedMatrixInfo) =
-    defaultColumns(g, probes, sortedBarcodes, data)
+  protected def columnsFor(g: Group, sortedBarcodes: Seq[Sample],
+    data: Seq[Seq[ExprValue]]): (Seq[Seq[ExprValue]], ManagedMatrixInfo) =
+    defaultColumns(g, sortedBarcodes, data)
 
 }
 
@@ -179,15 +180,15 @@ trait TreatedControlBuilder[E >: Null <: ExprValue] {
   protected def columnInfo(g: Group): ManagedMatrixInfo
   def colNames(g: Group): Seq[String]
 
-  protected def columnsFor(g: Group, probes: Seq[String], sortedBarcodes: Seq[Sample],
-    data: Seq[Seq[E]]): (ExprMatrix, ManagedMatrixInfo) = {
+  protected def columnsFor(g: Group, sortedBarcodes: Seq[Sample],
+    data: Seq[Seq[E]]): (Seq[Seq[ExprValue]], ManagedMatrixInfo) = {
     //TODO
     val (tus, cus) = treatedAndControl(g)
     println(s"#Control units: ${cus.size} #Non-control units: ${tus.size}")
 
     if (tus.size > 1 || (!enhancedColumns) || cus.size == 0 || tus.size == 0) {
       // A simple average column
-      defaultColumns(g, probes, sortedBarcodes, data)
+      defaultColumns(g, sortedBarcodes, data)
     } else if (tus.size == 1) {
       // Possibly insert a control column as well as the usual one
 
@@ -197,7 +198,7 @@ trait TreatedControlBuilder[E >: Null <: ExprValue] {
       val rows = data.map(vs => buildRow(vs, ti, ci))
       val i = columnInfo(g)
 
-      (ExprMatrix.withRows(rows, probes, colNames(g)), i)
+      (rows, i)
     } else {
       throw new Exception("No units in group")
     }
