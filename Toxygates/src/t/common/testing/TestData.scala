@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -21,9 +21,9 @@
 package t.common.testing
 
 import t.db.RawExpressionData
-import t.common.shared.sample.ExprMatrix
+import t.viewer.server.ExprMatrix
 import t.common.shared.sample.Group
-import otgviewer.server.rpc.Conversions._
+import t.viewer.server.Conversions._
 
 /**
  * @author johan

@@ -23,14 +23,14 @@ package otgviewer.server
 import java.util.logging.Logger
 import scala.collection.JavaConversions.asScalaSet
 import otgviewer.shared.DBUnavailableException
-import otgviewer.shared.ManagedMatrixInfo
+import t.viewer.shared.ManagedMatrixInfo
 import t.Context
 import t.common.shared.AType
 import t.common.shared.PerfTimer
 import t.common.shared.ValueType
 import t.common.shared.probe.MedianValueMapper
 import t.common.shared.probe.OrthologProbeMapper
-import t.common.shared.sample.ExprMatrix
+import t.viewer.server.ExprMatrix
 import t.common.shared.sample.ExpressionValue
 import t.common.shared.sample.Group
 import t.db.PExprValue

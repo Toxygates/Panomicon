@@ -18,18 +18,15 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.common.shared.sample
-
-import scala.language.postfixOps
+package t.viewer.server
 
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest
 import org.apache.commons.math3.stat.inference.TTest
-
 import friedrich.data.immutable._
 import t.db.BasicExprValue
 import t.db.ExprValue
-import t.util.SafeMath.safeMean
-import otgviewer.server.rpc.Conversions
+import t.common.shared.sample.ExpressionRow
+import t.util.SafeMath
 
 object ExprMatrix {
   val ttest = new TTest()

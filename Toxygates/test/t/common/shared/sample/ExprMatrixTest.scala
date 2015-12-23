@@ -24,6 +24,8 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import t.db.ExprValue
+import t.viewer.server.SimpleAnnotation
+import t.viewer.server.ExprMatrix
 
 @RunWith(classOf[JUnitRunner])
 class ExprMatrixTest extends FunSuite {

@@ -41,8 +41,6 @@ import t.viewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.FilterEditor;
 import t.common.client.ImageClickCell;
 import t.common.shared.GroupUtils;
-import otgviewer.shared.ManagedMatrixInfo;
-import otgviewer.shared.Synthetic;
 import t.common.shared.AType;
 import t.common.shared.DataSchema;
 import t.common.shared.Pair;
@@ -54,6 +52,8 @@ import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.shared.ManagedMatrixInfo;
+import t.viewer.shared.Synthetic;
 import t.viewer.shared.table.SortKey;
 
 import com.google.gwt.cell.client.Cell;

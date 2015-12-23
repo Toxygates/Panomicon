@@ -25,7 +25,6 @@ import java.util.Arrays;
 import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
 import t.viewer.client.rpc.SparqlServiceAsync;
-import t.viewer.shared.AppInfo;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

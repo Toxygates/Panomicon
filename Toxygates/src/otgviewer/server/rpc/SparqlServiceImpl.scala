@@ -23,9 +23,6 @@ package otgviewer.server.rpc
 import scala.Array.canBuildFrom
 import scala.collection.{ Set => CSet }
 
-import Conversions.asJava
-import Conversions.asJavaSample
-import Conversions.convertPairs
 import otg.OTGContext
 import otg.Species.Human
 import otg.sparql._
@@ -44,8 +41,7 @@ import t.sparql._
 import t.sparql.TriplestoreMetadata
 import t.sparql.secondary._
 import t.viewer.server.Configuration
-import t.viewer.server.Conversions.asSpecies
-import t.viewer.server.Conversions.scAsScala
+import t.viewer.server.Conversions._
 import t.viewer.shared.Association
 
 /**
@@ -116,7 +112,8 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
 
   @throws[TimeoutException]
   override def pathologies(column: SampleColumn): Array[Pathology] =
-    column.getSamples.flatMap(x => sampleStore.pathologies(x.id)).map(asJava(_))
+    column.getSamples.flatMap(x => sampleStore.pathologies(x.id)).map(
+        otgviewer.server.rpc.Conversions.asJava(_))
 
   override def associations(sc: SampleClass, types: Array[AType],
     _probes: Array[String]): Array[Association] =

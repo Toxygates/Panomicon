@@ -20,11 +20,11 @@
 
 package otgviewer.server
 
-import otgviewer.shared.ManagedMatrixInfo
+import t.viewer.shared.ManagedMatrixInfo
 import t.common.shared.probe.ProbeMapper
 import t.common.shared.probe.ValueMapper
-import t.common.shared.sample.FullAnnotation
-import t.common.shared.sample.ExprMatrix
+import t.viewer.server.FullAnnotation
+import t.viewer.server.ExprMatrix
 import t.common.shared.sample.EVArray
 import t.db.ExprValue
 

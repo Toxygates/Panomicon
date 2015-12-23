@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -29,7 +29,7 @@ import t.common.shared.probe.OrthologProbeMapper
 import t.common.shared.probe.MedianValueMapper
 import t.db.ExprValue
 import t.common.shared.sample.Group
-import otgviewer.server.rpc.Conversions._
+import t.viewer.server.Conversions._
 
 @RunWith(classOf[JUnitRunner])
 class MatrixMapperTest extends TTestSuite {

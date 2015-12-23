@@ -22,19 +22,17 @@ package t.viewer.server.rpc
 
 import java.util.ArrayList
 import java.util.{ List => JList }
-import t.common.shared.sample.ExprMatrix
+import t.viewer.server.ExprMatrix
 import otgviewer.server.ExtFoldBuilder
 import otgviewer.server.FoldBuilder
 import otgviewer.server.ManagedMatrix
 import otgviewer.server.ManagedMatrixBuilder
 import otgviewer.server.MatrixMapper
 import otgviewer.server.NormalizedBuilder
-import otgviewer.server.rpc.Conversions
-import otgviewer.server.rpc.Conversions.asScala
 import otgviewer.shared.FullMatrix
-import otgviewer.shared.ManagedMatrixInfo
+import t.viewer.shared.ManagedMatrixInfo
 import otgviewer.shared.NoDataLoadedException
-import otgviewer.shared.Synthetic
+import t.viewer.shared.Synthetic
 import t.BaseConfig
 import t.Context
 import t.common.shared.AType
@@ -44,7 +42,7 @@ import t.common.shared.probe.MedianValueMapper
 import t.common.shared.probe.OrthologProbeMapper
 import t.common.shared.sample.EVArray
 import t.common.shared.sample.Group
-import t.common.shared.sample.ExprMatrix
+import t.viewer.server.ExprMatrix
 import t.common.shared.sample.ExpressionRow
 import t.db.MatrixContext
 import t.db.MatrixDBReader
@@ -91,8 +89,8 @@ object MatrixServiceImpl {
  * TODO move dependencies from otgviewer to t.common
  */
 abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
-  import Conversions._
   import scala.collection.JavaConversions._
+  import t.viewer.server.Conversions._
   import ScalaUtils._
   import MatrixServiceImpl._
 

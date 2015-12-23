@@ -25,16 +25,14 @@ import scala.collection.JavaConversions._
 import scala.collection.{Set => CSet}
 import java.util.{List => JList}
 import otg.Species.Human
-import t.common.server.ScalaUtils
-import t.common.server.ScalaUtils.gracefully
-import otgviewer.server.rpc.Conversions
-import otgviewer.server.rpc.Conversions.asJava
-import otgviewer.server.rpc.Conversions.asJavaSample
-import otgviewer.server.rpc.Conversions.convertPairs
+import otg.db.OTGParameterSet
+
 import otgviewer.shared.Pathology
 import otgviewer.shared.TimeoutException
 import t.BaseConfig
 import t.TriplestoreConfig
+import t.common.server.ScalaUtils
+import t.common.server.ScalaUtils.gracefully
 import t.common.shared.AType
 import t.common.shared.Dataset
 import t.common.shared.Pair
@@ -51,12 +49,10 @@ import t.sparql.TriplestoreMetadata
 import t.sparql.secondary._
 import t.viewer.client.rpc.SparqlService
 import t.viewer.server.Configuration
-import t.viewer.server.Conversions.asSpecies
-import t.viewer.server.Conversions.scAsScala
+import t.viewer.server.Conversions._
 import t.viewer.shared.AppInfo
 import t.viewer.shared.Association
 import t.common.shared.StringList
-import otg.db.OTGParameterSet
 import t.common.shared.sample.Sample
 import t.viewer.server.SharedDatasets
 import t.common.shared.sample.Unit
@@ -85,9 +81,7 @@ object SparqlServiceImpl {
  */
 abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
-  import Conversions._
   import SparqlServiceImpl._
-  import t.viewer.server.Conversions._
   import ScalaUtils._
 
   type DataColumn = t.common.shared.sample.DataColumn[Sample]

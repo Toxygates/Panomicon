@@ -21,14 +21,14 @@
 package otgviewer.server
 
 import t.common.shared.sample.ExpressionValue
-import otgviewer.server.rpc.Conversions._
-import otgviewer.shared.ManagedMatrixInfo
-import otgviewer.shared.Synthetic
+import t.viewer.server.Conversions._
+import t.viewer.shared.ManagedMatrixInfo
+import t.viewer.shared.Synthetic
 import t.db.MatrixDBReader
 import t.common.shared.sample.{Sample => SSample, Unit => TUnit}
-import t.common.shared.sample.ExprMatrix
+import t.viewer.server.ExprMatrix
 import t.common.shared.sample.Group
-import t.common.shared.sample.SimpleAnnotation
+import t.viewer.server.SimpleAnnotation
 import t.db.Sample
 import t.db.PExprValue
 import t.db.ExprValue
