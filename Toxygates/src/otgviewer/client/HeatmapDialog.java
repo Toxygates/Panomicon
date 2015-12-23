@@ -35,6 +35,7 @@ import t.common.shared.sample.Group;
 import t.common.shared.userclustering.Algorithm;
 import t.common.shared.userclustering.Distances;
 import t.common.shared.userclustering.Methods;
+import t.viewer.client.CodeDownload;
 import t.viewer.client.rpc.MatrixServiceAsync;
 
 import com.google.gwt.core.client.Callback;
@@ -104,9 +105,17 @@ public class HeatmapDialog extends DataListenerWidget {
     dialog.setVisible(false);
   }
   
-  public static void show(Screen screen, ValueType defaultType) {
+  public static void show(final Screen screen, final ValueType defaultType) {
+    GWT.runAsync(new CodeDownload(screen.getLogger()) {
+      public void onSuccess() {
+        asyncShowHeatMap(screen, defaultType);
+      }
+    });
+  }
+  
+  private static void asyncShowHeatMap(Screen screen, ValueType defaultType) {
     HeatmapDialog dialog = new HeatmapDialog(screen);
-    show(dialog, screen, defaultType);    
+    show(dialog, screen, defaultType);
   }
   
   public static void show(HeatmapDialog dialog, Screen screen, ValueType defaultType) {    
@@ -132,7 +141,7 @@ public class HeatmapDialog extends DataListenerWidget {
     }
     
     // all check passed
-    dialog.initWindow(defaultType);;
+    dialog.initWindow(defaultType);
   }
 
   private void inject(final List<String> p_jsList) {

@@ -20,18 +20,19 @@ package otgviewer.client.components;
 
 import java.util.List;
 
+import otgviewer.client.DataScreen;
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
+import t.viewer.client.CodeDownload;
 import t.viewer.client.Utils;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
-
-import otgviewer.client.DataScreen;
 
 public class GeneSetSelector extends DataListenerWidget {
 
@@ -74,14 +75,22 @@ public class GeneSetSelector extends DataListenerWidget {
     btnNew = new Button("New", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        geneSetEditor().createNew(screen.displayedAtomicProbes());        
+       GWT.runAsync(new CodeDownload(logger) {
+         public void onSuccess() {
+           geneSetEditorNew();
+         }
+       });
       }
     });
 
     btnEdit = new Button("Edit", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        geneSetEditor().edit(geneSets.getSelectedText());
+        GWT.runAsync(new CodeDownload(logger) {
+          public void onSuccess() {
+            geneSetEditorEdit();
+          }
+        });
       }
     });
     btnEdit.setEnabled(false);
@@ -92,6 +101,14 @@ public class GeneSetSelector extends DataListenerWidget {
     selector.add(btnEdit);
   }
 
+  private void geneSetEditorNew() {
+    geneSetEditor().createNew(screen.displayedAtomicProbes());        
+  }
+  
+  private void geneSetEditorEdit() {
+    geneSetEditor().edit(geneSets.getSelectedText());
+  }
+  
   private GeneSetEditor geneSetEditor() {
     GeneSetEditor gse = screen.factory().geneSetEditor(screen);
     gse.addSaveActionHandler(new SaveActionHandler() {

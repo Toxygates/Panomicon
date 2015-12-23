@@ -36,10 +36,12 @@ import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;
 import t.common.client.ImageClickCell;
 import t.common.shared.SampleClass;
+import t.viewer.client.CodeDownload;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SeriesServiceAsync;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.IdentityColumn;
 import com.google.gwt.user.cellview.client.TextColumn;
@@ -177,14 +179,18 @@ public class RankingCompoundSelector extends CompoundSelector {
     }
 
     private void makeSeriesCharts(final String value, final List<Series> ss) {
-      Charts cgf = new Charts(screen, new SampleClass[] {w.chosenSampleClass});
-      cgf.makeSeriesCharts(ss, false, scores.get(value).dose(), new Charts.ChartAcceptor() {
-
+      GWT.runAsync(new CodeDownload(logger) {        
         @Override
-        public void acceptCharts(ChartGrid<?> cg) {
-          Utils.displayInPopup("Charts", cg, DialogPosition.Side);
-        }
-      }, screen);
+        public void onSuccess() {
+          Charts cgf = new Charts(screen, new SampleClass[] {w.chosenSampleClass});
+          cgf.makeSeriesCharts(ss, false, scores.get(value).dose(), new Charts.ChartAcceptor() {
+            @Override
+            public void acceptCharts(ChartGrid<?> cg) {
+              Utils.displayInPopup("Charts", cg, DialogPosition.Side);
+            }
+          }, screen);          
+        }        
+      });
     }
   }
 

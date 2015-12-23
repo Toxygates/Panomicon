@@ -26,14 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.MenuItemSeparator;
+import javax.annotation.Nullable;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.GeneSetEditor;
@@ -44,6 +37,17 @@ import t.common.shared.SharedUtils;
 import t.common.shared.StringList;
 import t.common.shared.clustering.ProbeClustering;
 import t.common.shared.userclustering.Algorithm;
+import t.viewer.client.CodeDownload;
+
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.MenuItemSeparator;
 
 public class GeneSetsMenuItem extends DataListenerWidget {
 
@@ -243,7 +247,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   private ScheduledCommand addNewUserSet() {
     return new Command() {
       public void execute() {
-        geneSetEditor().createNew(screen.displayedAtomicProbes());
+        geneSetEditor(null);
       }
     };
   }
@@ -251,7 +255,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   private ScheduledCommand editUserSet(final StringList sl) {
     return new Command() {
       public void execute() {
-        geneSetEditor().edit(sl.name());
+        geneSetEditor(sl);
       }
     };
   }
@@ -359,7 +363,20 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     // });
   }
 
-  private GeneSetEditor geneSetEditor() {
+  private void geneSetEditor(@Nullable final StringList list) {
+    
+    GWT.runAsync(new CodeDownload(logger) {
+      public void onSuccess() {
+        if (list != null) {
+          geneSetEditorAsync().edit(list.name());
+        } else {
+          geneSetEditorAsync().createNew(screen.displayedAtomicProbes());
+        }
+      }
+    });
+  }
+  
+  private GeneSetEditor geneSetEditorAsync() {
     // TODO same code as GeneSetSelector
     GeneSetEditor gse = screen.factory().geneSetEditor(screen);
     gse.addSaveActionHandler(new SaveActionHandler() {

@@ -30,19 +30,17 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 import otgviewer.client.StandardColumns;
-import t.viewer.client.Utils;
 import otgviewer.client.charts.AdjustableGrid;
 import otgviewer.client.charts.Charts;
 import otgviewer.client.charts.Charts.AChartAcceptor;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import t.viewer.client.dialog.DialogPosition;
 import otgviewer.client.dialog.FilterEditor;
 import t.common.client.ImageClickCell;
-import t.common.shared.GroupUtils;
 import t.common.shared.AType;
 import t.common.shared.DataSchema;
+import t.common.shared.GroupUtils;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
@@ -51,6 +49,9 @@ import t.common.shared.sample.DataColumn;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
+import t.viewer.client.CodeDownload;
+import t.viewer.client.Utils;
+import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.ManagedMatrixInfo;
 import t.viewer.shared.Synthetic;
@@ -812,6 +813,25 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   
   protected void onGettingExpressionFailed() {}
 
+  private void asyncDisplayCharts() {
+    GWT.runAsync(new CodeDownload(logger) {      
+      public void onSuccess() {
+        final Charts cgf = new Charts(screen, chosenColumns);
+        ExpressionRow dispRow = grid.getVisibleItem(highlightedRow);
+        final String[] probes = dispRow.getAtomicProbes();
+        cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, probes, new AChartAcceptor() {
+          public void acceptCharts(final AdjustableGrid<?, ?> cg) {
+            Utils.displayInPopup("Charts", cg, true, DialogPosition.Side);
+          }
+
+          public void acceptBarcodes(Sample[] bcs) {
+            chartBarcodes = bcs;
+          }
+        });
+      }      
+    });
+  }
+  
   /**
    * This cell displays an image that can be clicked to display charts.
    */
@@ -824,21 +844,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     public void onClick(final String value) {
       highlightedRow = SharedUtils.indexOf(displayedProbes, value);
       grid.redraw();
-      ExpressionRow dispRow = grid.getVisibleItem(highlightedRow);
-      final String[] probes = dispRow.getAtomicProbes();
-
-      final Charts cgf = new Charts(screen, chosenColumns);
       Utils.ensureVisualisationAndThen(new Runnable() {
         public void run() {
-          cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, probes, new AChartAcceptor() {
-            public void acceptCharts(final AdjustableGrid<?, ?> cg) {
-              Utils.displayInPopup("Charts", cg, true, DialogPosition.Side);
-            }
-
-            public void acceptBarcodes(Sample[] bcs) {
-              chartBarcodes = bcs;
-            }
-          });
+          asyncDisplayCharts();
         }
       });
     }
