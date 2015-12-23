@@ -60,12 +60,13 @@ object TestData {
   }
 
   val probes = (0 until 500)
-  val unpackedProbes = probes.map(probeMap.unpack)
 
   implicit val probeMap = {
     val pmap = Map() ++ probes.map(x => ("probe_" + x -> x))
     new ProbeIndex(pmap)
   }
+
+  val unpackedProbes = probes.map(probeMap.unpack)
 
   val dbIdMap = {
     val dbIds = Map() ++ samples.zipWithIndex.map(s => (s._1.sampleId -> s._2))
