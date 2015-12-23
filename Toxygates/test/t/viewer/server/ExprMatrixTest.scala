@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.common.shared.sample
+package t.viewer.server
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -26,6 +26,7 @@ import org.scalatest.junit.JUnitRunner
 import t.db.ExprValue
 import t.viewer.server.SimpleAnnotation
 import t.viewer.server.ExprMatrix
+import t.common.shared.sample.EVABuilder
 
 @RunWith(classOf[JUnitRunner])
 class ExprMatrixTest extends FunSuite {

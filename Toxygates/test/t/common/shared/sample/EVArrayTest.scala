@@ -18,10 +18,9 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.server
+package t.common.shared.sample
 
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import t.common.shared.sample.ExpressionValue
 import t.common.shared.sample.EVABuilder
