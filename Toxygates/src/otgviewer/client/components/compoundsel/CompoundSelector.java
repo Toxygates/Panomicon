@@ -46,13 +46,9 @@ import com.google.gwt.view.client.NoSelectionModel;
 /**
  * This widget is for selecting a compound or a set of 
  * compounds using various data sources.
- * It can also request compound ranking and display the results of such a ranking.
- * 
  * 
  * Receives: dataFilter
  * Emits: compounds
- * @author johan
- *
  */
 public class CompoundSelector extends DataListenerWidget implements RequiresResize {
 
@@ -149,7 +145,15 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 		});
 	}
 	
-	public void setSelection(List<String> compounds) {						
+	
+	
+  @Override
+  public void compoundsChanged(List<String> compounds) {
+    super.compoundsChanged(compounds);
+    setSelection(compounds);
+  }
+
+  public void setSelection(List<String> compounds) {						
 		compoundEditor.setSelection(compounds);
 			
 		Collections.sort(compounds);

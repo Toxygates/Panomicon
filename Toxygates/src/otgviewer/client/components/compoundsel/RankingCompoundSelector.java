@@ -60,7 +60,7 @@ public class RankingCompoundSelector extends CompoundSelector {
   private final Resources resources;
   
   public RankingCompoundSelector(Screen screen, String heading) {
-    super(screen, heading, false    , false);
+    super(screen, heading, false, false);
     this.seriesService = screen.seriesService();
     this.resources = screen.resources();    
   }

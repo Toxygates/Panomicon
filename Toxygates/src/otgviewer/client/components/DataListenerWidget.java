@@ -351,7 +351,33 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   public void storeClusteringLists(StorageParser p) {
     p.setItem("clusterings", packItemLists(chosenClusteringList, "###"));
   }
-
+  
+  private String packCompounds(StorageParser p) {
+    return StorageParser.packList(chosenCompounds, "###");
+  }
+  
+  public void storeCompounds(StorageParser p) {
+    p.setItem("compounds", packCompounds(p));
+  }
+  
+  private String packDatasets(StorageParser p) {
+    List<String> r = new ArrayList<String>();
+    for (Dataset d: chosenDatasets) {
+      r.add(d.getTitle());
+    }
+    return StorageParser.packList(r, "###");
+  }
+  
+  public void storeDatasets(StorageParser p) {  
+    p.setItem("datasets", packDatasets(p));
+  }
+  
+  public void storeSampleClass(StorageParser p) {
+    if (chosenSampleClass != null) {
+      p.setItem("sampleClass", chosenSampleClass.pack());
+    }    
+  }
+  
   public List<ItemList> loadItemLists(StorageParser p) {
     return loadLists(p, "lists");
   }
@@ -374,7 +400,39 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     }
     return r;
   }
-
+  
+  public void loadDatasets(StorageParser p) {
+    String v = p.getItem("datasets");
+    if (v == null || v.equals(packDatasets(p))) {
+      return;
+    }
+    List<Dataset> r = new ArrayList<Dataset>();
+    for (String ds: v.split("###")) {
+      r.add(new Dataset(ds, "", "", null, ds));
+    }
+    changeDatasets(r.toArray(new Dataset[0]));
+  }
+  
+  public void loadCompounds(StorageParser p) {
+    String v = p.getItem("compounds");
+    if (v == null || v.equals(packCompounds(p))) {
+      return;
+    }
+    List<String> r = new ArrayList<String>();    
+    for (String c: v.split("###")) {
+      r.add(c);
+    }
+    changeCompounds(r);
+  }
+  
+  public void loadSampleClass(StorageParser p) {
+    String v = p.getItem("sampleClass");
+    if (v == null || v.equals(chosenSampleClass.pack())) {
+      return;
+    }
+    SampleClass sc = SampleClass.unpack(v);
+    changeSampleClass(sc);    
+  }
 
   /**
    * Load saved state from the local storage. 
@@ -438,6 +496,11 @@ public class DataListenerWidget extends Composite implements DataViewListener {
       chosenClusteringList = lists;
       clusteringListsChanged(lists);
     }
+    
+    //Note: the ordering of the following 3 is important
+    loadDatasets(p);
+    loadSampleClass(p);
+    loadCompounds(p);
   }
 
   private int numPendingRequests = 0;

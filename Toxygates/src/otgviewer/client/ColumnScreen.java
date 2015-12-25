@@ -154,7 +154,6 @@ public class ColumnScreen extends Screen {
 	public void resizeInterface() {
 		//Test carefully in IE8, IE9 and all other browsers if changing this method
 		cs.resizeInterface();
-//		tp.forceLayout();
 		super.resizeInterface();		
 	}
 

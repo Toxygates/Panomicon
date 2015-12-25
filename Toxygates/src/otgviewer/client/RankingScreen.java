@@ -21,13 +21,18 @@
 package otgviewer.client;
 
 import static t.common.client.Utils.makeScrolled;
+
+import java.util.List;
+
 import otgviewer.client.components.FilterTools;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.client.components.ranking.CompoundRanker;
+import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
 
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 public class RankingScreen extends Screen {
@@ -36,21 +41,36 @@ public class RankingScreen extends Screen {
   
   private RankingCompoundSelector cs;
   private FilterTools filterTools;
+  private ScrollPanel sp;
   
   public RankingScreen(ScreenManager man) {
     super("Compound ranking", key, false, man,
         resources.defaultHelpHTML(), null);
     
     chosenDatasets = appInfo().datasets();
-    filterTools = new FilterTools(this);    
+    filterTools = new FilterTools(this) {
+
+      @Override
+      public void datasetsChanged(Dataset[] ds) {
+        super.datasetsChanged(ds);
+        Screen s = RankingScreen.this;
+        storeDatasets(getParser(s));
+      }      
+    };
     this.addListener(filterTools);    
     
     String majorParam = man.schema().majorParameter();
-    cs = new RankingCompoundSelector(this, man.schema().title(majorParam));
+    cs = new RankingCompoundSelector(this, man.schema().title(majorParam)) {
+      @Override
+      public void changeCompounds(List<String> compounds) {
+        super.changeCompounds(compounds);
+        storeCompounds(getParser(RankingScreen.this));
+      }      
+    };
     this.addListener(cs);
     cs.setStylePrimaryName("compoundSelector");
   }
-  
+
   @Override
   protected void addToolbars() {
       super.addToolbars();
@@ -60,7 +80,13 @@ public class RankingScreen extends Screen {
   
   public Widget content() {
     CompoundRanker cr = factory().compoundRanker(this, cs);
-    return makeScrolled(cr);    
+    sp = makeScrolled(cr);
+    return sp;
+  }
+  
+  @Override
+  protected boolean shouldShowStatusBar() {
+    return false;
   }
   
   @Override
@@ -70,12 +96,14 @@ public class RankingScreen extends Screen {
       if (!sc.getMap().isEmpty()) {
           super.changeSampleClass(sc);
       }
+      
+      storeSampleClass(getParser());
   }
   
   @Override
   public void resizeInterface() {
       //Test carefully in IE8, IE9 and all other browsers if changing this method
-      cs.resizeInterface();
+      cs.resizeInterface();     
       super.resizeInterface();        
   }
   
