@@ -244,29 +244,35 @@ exprGrid {
   font-size: 0.75em;
 }
 
-.platform-info {
+.metadata-info {
 	margin: 5px;
 }
 
-.platform-info-title {
+.metadata-info-title {
 	font-size:1.1em;
 	font-weight: bold;
 	margin:0.5em;
-	margin-right:3em;
+	margin-right:3em;	
 }
 
-.platform-info-heading {
+.metadata-info-heading {
 	font-size: 1.2em;	
 	font-weight: bold; 
 	margin:0.5em;
+	border-top: solid black 1px;
+	border-bottom: solid black 1px;
 }
 
-.platform-info-comment {
+.metadata-info-comment {
 	margin:0.5em;
 }
 
-.platform-grid {
+.metadata-grid {
 	width: 700px;
+}
+
+.metadata-firstColumn {
+	width: 200px;
 }
 
 /*
