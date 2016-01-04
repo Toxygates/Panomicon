@@ -560,7 +560,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
     });
 
-    r.add(new HTMLHideableColumn<ExpressionRow>(shc, "Gene Sym",
+    r.add(new HTMLHideableColumn<ExpressionRow>(shc, "Gene Symbol",
         initVisibility(StandardColumns.GeneSym), initWidth(StandardColumns.GeneSym)) {
       protected String getHtml(ExpressionRow er) {
         return mkAssociationList(er.getGeneSyms());
@@ -568,7 +568,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
     });
 
-    r.add(new HTMLHideableColumn<ExpressionRow>(shc, "Probe title",
+    r.add(new HTMLHideableColumn<ExpressionRow>(shc, "Probe Title",
         initVisibility(StandardColumns.ProbeTitle), initWidth(StandardColumns.ProbeTitle)) {
       protected String getHtml(ExpressionRow er) {
         return mkAssociationList(er.getAtomicProbeTitles());
