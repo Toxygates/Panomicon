@@ -411,4 +411,11 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   def auxSortMap(probes: Iterable[String], key: String): Map[String, Double] = {
     Map() ++ probes.map(x => x -> 0.0) //default map does nothing
   }
+
+  def annotationsAndComments: Iterable[(String, String)] = {
+    val q = tPrefixes +
+    """SELECT DISTINCT ?title ?comment WHERE { ?x a t:annotation;
+      rdfs:label ?title; t:comment ?comment } """
+    ts.mapQuery(q).map(x => (x("title"), x("comment")))
+  }
 }

@@ -113,7 +113,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     this.instanceURI = instanceURI
 
     _appInfo = new AppInfo(conf.instanceName, sDatasets(),
-        sPlatforms(), predefProbeLists(), probeClusterings(), appName)
+        sPlatforms(), predefProbeLists(), probeClusterings(), appName,
+        getAnnotationInfo)
   }
 
   protected lazy val b2rKegg: B2RKegg =
@@ -140,6 +141,23 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   protected def setSessionData(m: SparqlState) =
     getThreadLocalRequest().getSession().setAttribute("sparql", m)
+
+  protected def getAnnotationInfo: Array[Array[String]] = {
+    val dynamic = probeStore.annotationsAndComments.toArray
+    /*
+     * Note: the only data sources hardcoded here should be the ones
+     * whose provisioning is independent of SPARQL data that we
+     * control. For example, the ones obtained solely from remote
+     * sources.
+     */
+    Array(
+      dynamic.map(_._1) ++
+        Array("ChEMBL", "DrugBank"),
+      dynamic.map(_._2) ++
+        Array(
+        "Dynamically obtained from https://www.ebi.ac.uk/rdf/services/chembl/sparql",
+        "Dynamically obtained from http://drugbank.bio2rdf.org/sparql"))
+  }
 
   def appInfo: AppInfo = {
     getSessionData() //initialise this if needed

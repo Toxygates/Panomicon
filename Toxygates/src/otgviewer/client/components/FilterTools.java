@@ -104,8 +104,12 @@ public class FilterTools extends DataListenerWidget {
 
   @Override
   public void datasetsChanged(Dataset[] ds) {
+    boolean realChange = !Arrays.equals(ds, chosenDatasets);
     super.datasetsChanged(ds);
     storeDatasets(getParser(screen));
+    if (realChange) {
+      dfe.update();
+    }
   }
 
 }

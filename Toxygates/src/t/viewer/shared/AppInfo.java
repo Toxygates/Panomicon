@@ -45,6 +45,9 @@ public class AppInfo implements Serializable {
   private List<StringList> predefProbeLists = new ArrayList<StringList>();
   private List<ProbeClustering> probeClusterings = new ArrayList<ProbeClustering>();
 
+  private String[] annotationTitles;
+  private String[] annotationComments;
+  
   public AppInfo() {}
 
   public AppInfo(String instanceName_, String pathologyTermsURL_, String targetmineURL_,
@@ -66,9 +69,12 @@ public class AppInfo implements Serializable {
   }
 
   public AppInfo(String instanceName_, Dataset[] datasets, Platform[] platforms,
-      List<StringList> probeLists, List<ProbeClustering> probeClusterings, String appName) {
+      List<StringList> probeLists, List<ProbeClustering> probeClusterings, String appName,
+      String[][] annotationInfo) {
     this(instanceName_, datasets, platforms, probeLists, appName);
     this.probeClusterings = probeClusterings;
+    this.annotationTitles = annotationInfo[0];
+    this.annotationComments = annotationInfo[1];
   }
 
   public String welcomeHtmlURL() {
@@ -113,8 +119,15 @@ public class AppInfo implements Serializable {
     return predefProbeLists;
   }
 
-  // Suggested API
   public Collection<ProbeClustering> probeClusterings() {
     return probeClusterings;
+  }
+  
+  public String[] getAnnotationTitles() {
+    return annotationTitles;
+  }
+  
+  public String[] getAnnotationComments() {
+    return annotationComments;
   }
 }
