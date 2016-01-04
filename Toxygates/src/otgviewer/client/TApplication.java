@@ -336,7 +336,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   protected void showDataSources() {
     VerticalPanel vp = new VerticalPanel();
     vp.add(MetadataInfo.fromPlatforms(appInfo.platforms()));
-    vp.add(MetadataInfo.annotations());
+    vp.add(MetadataInfo.annotations(appInfo));
     Utils.displayInPopup("Data sources information", vp, DialogPosition.Center);
   }
 

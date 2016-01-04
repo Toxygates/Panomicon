@@ -21,6 +21,7 @@
 package otgviewer.client.dialog;
 
 import t.common.shared.Platform;
+import t.viewer.shared.AppInfo;
 
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
@@ -41,24 +42,9 @@ public class MetadataInfo extends Composite {
     return new MetadataInfo("Platform", titles, comments);
   }
   
-  public static MetadataInfo annotations() {
-    /*
-     * Note: the only data sources hardcoded here should be the ones
-     * whose provisioning is independent of SPARQL data that we 
-     * control. For example, the ones obtained solely from remote 
-     * sources.
-     */
-    String[] titles = new String[] { 
-        "ChEMBL",
-        "DrugBank",
-        };
-    String[] comments = new String[] { 
-        "Dynamically obtained from https://www.ebi.ac.uk/rdf/services/chembl/sparql",
-        "Dynamically obtained from http://drugbank.bio2rdf.org/sparql",
-        };
-    
-    
-    return new MetadataInfo("Annotation", titles, comments);
+  public static MetadataInfo annotations(AppInfo appInfo) {    
+    return new MetadataInfo("Annotation", appInfo.getAnnotationTitles(),
+        appInfo.getAnnotationComments());
   }
 
   public MetadataInfo(String type, String[] titles, String[] comments) {  
