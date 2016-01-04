@@ -40,8 +40,6 @@ public interface UIFactory {
 
   public SelectionTDGrid selectionTDGrid(Screen scr, @Nullable UnitListener listener);
 
-  public CompoundSelector compoundSelector(Screen screen, String heading);
-  
   public CompoundRanker compoundRanker(Screen _screen, RankingCompoundSelector selector);
   
   public GroupInspector groupInspector(CompoundSelector cs, Screen scr);

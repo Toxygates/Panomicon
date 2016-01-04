@@ -50,11 +50,6 @@ public class OTGFactory implements UIFactory {
   public SelectionTDGrid selectionTDGrid(Screen scr, @Nullable UnitListener listener) {
     return new TreatedControlSelTDGrid(scr, listener);
   }
-  
-  @Override
-  public CompoundSelector compoundSelector(Screen screen, String heading) {
-    return new CompoundSelector(screen, heading, true, true);
-  }
 
   @Override
   public CompoundRanker compoundRanker(Screen _screen, RankingCompoundSelector selector) {

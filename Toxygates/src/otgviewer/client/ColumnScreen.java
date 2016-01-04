@@ -58,7 +58,13 @@ public class ColumnScreen extends Screen {
 				resources.groupDefinitionHTML(), resources.groupDefinitionHelp());
 		
 		String majorParam = man.schema().majorParameter();
-		cs = man.factory().compoundSelector(this, man.schema().title(majorParam));
+		cs = new CompoundSelector(this, man.schema().title(majorParam), true, true) {
+		  @Override
+	      public void changeCompounds(List<String> compounds) {
+	        super.changeCompounds(compounds);
+	        storeCompounds(getParser(ColumnScreen.this));
+	      }  
+		};		
 		this.addListener(cs);
 		cs.setStylePrimaryName("compoundSelector");
 		
@@ -140,6 +146,7 @@ public class ColumnScreen extends Screen {
 		//DataListenerWidget
 		if (!sc.getMap().isEmpty()) {
 			super.changeSampleClass(sc);
+			storeSampleClass(getParser());
 		}
 	}
 

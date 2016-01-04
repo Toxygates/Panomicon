@@ -107,12 +107,12 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 	
 	@Override
 	public void sampleClassChanged(SampleClass sc) {
-		super.sampleClassChanged(sc);						
+		super.sampleClassChanged(sc);			
 		screen.enqueue(new Screen.QueuedAction("loadCompounds") {			
 			@Override
 			public void run() {
 				loadMajors();
-				compoundEditor.clearSelection();				
+//				compoundEditor.clearSelection();				
 			}
 		});		
 	}
@@ -139,23 +139,23 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
 			public void handleSuccess(String[] result) {
 				Arrays.sort(result);
 				List<String> r = new ArrayList<String>((Arrays.asList(result)));
-				compoundEditor.setItems(r, true, true);
-				changeAvailableCompounds(Arrays.asList(result));								
+				compoundEditor.setItems(r, false, true);
+				changeAvailableCompounds(Arrays.asList(result));
+				if (!compoundEditor.getSelection().isEmpty()) {
+				  compoundEditor.triggerChange();
+				}
 			}			
 		});
 	}
 	
-	
-	
   @Override
   public void compoundsChanged(List<String> compounds) {
-    super.compoundsChanged(compounds);
+    super.compoundsChanged(compounds);   
     setSelection(compounds);
   }
 
   public void setSelection(List<String> compounds) {						
-		compoundEditor.setSelection(compounds);
-			
+		compoundEditor.setSelection(compounds);			
 		Collections.sort(compounds);
 		changeCompounds(compounds);
 	}

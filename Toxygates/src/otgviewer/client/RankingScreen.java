@@ -29,7 +29,6 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.client.components.ranking.CompoundRanker;
-import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
 
 import com.google.gwt.user.client.ui.ScrollPanel;
@@ -48,15 +47,7 @@ public class RankingScreen extends Screen {
         resources.defaultHelpHTML(), null);
     
     chosenDatasets = appInfo().datasets();
-    filterTools = new FilterTools(this) {
-
-      @Override
-      public void datasetsChanged(Dataset[] ds) {
-        super.datasetsChanged(ds);
-        Screen s = RankingScreen.this;
-        storeDatasets(getParser(s));
-      }      
-    };
+    filterTools = new FilterTools(this);
     this.addListener(filterTools);    
     
     String majorParam = man.schema().majorParameter();
@@ -95,9 +86,8 @@ public class RankingScreen extends Screen {
       //DataListenerWidget
       if (!sc.getMap().isEmpty()) {
           super.changeSampleClass(sc);
-      }
-      
-      storeSampleClass(getParser());
+          storeSampleClass(getParser());
+      }      
   }
   
   @Override
