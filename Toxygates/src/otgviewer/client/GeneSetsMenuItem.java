@@ -57,6 +57,8 @@ public class GeneSetsMenuItem extends DataListenerWidget {
 
   private MenuBar root;
   private MenuItem mi;
+  
+  private final int ITEMS_PER_MENU = 20;
 
   public GeneSetsMenuItem(DataScreen screen) {
     this.screen = screen;
@@ -205,7 +207,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
       Collection<ProbeClustering> clusterings) {
     // append as leaf
     if (paramNames.size() == 0) {
-      List<ProbeClustering> items = new LinkedList<ProbeClustering>(clusterings);
+      List<ProbeClustering> items = new LinkedList<>(clusterings);
       Collections.sort(items, new Comparator<ProbeClustering>() {
         @Override
         public int compare(ProbeClustering o1, ProbeClustering o2) {
@@ -214,6 +216,27 @@ public class GeneSetsMenuItem extends DataListenerWidget {
           return mine.compareTo(theirs);
         }
       });
+      
+      if (items.size() > ITEMS_PER_MENU) {
+        // split into each ITEMS_PER_MENU items
+        List<List<ProbeClustering>> grouped = new LinkedList<>();
+        for (int i = 0; i < items.size() / ITEMS_PER_MENU; ++i) {
+          int from = ITEMS_PER_MENU * i;
+          int to = ITEMS_PER_MENU * (i + 1);
+          grouped.add(items.subList(from, to));
+        }
+        
+        for (List<ProbeClustering> g : grouped) {
+          if (g.isEmpty()) {
+            continue;
+          }
+          MenuBar mb = new MenuBar(true);
+          appendChildren(mb, paramNames, g);
+          String title = g.get(0).getClustering().getCluster() + " ~ " + g.get(g.size() - 1).getClustering().getCluster();
+          parent.addItem(title, mb);
+        }
+        return;
+      }
 
       for (ProbeClustering pc : items) {
         parent.addItem(new MenuItem(pc.getClustering().getCluster(), showClustering(pc)));
