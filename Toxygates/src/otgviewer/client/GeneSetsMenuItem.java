@@ -400,7 +400,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   }
   
   private GeneSetEditor geneSetEditorAsync() {
-    // TODO same code as GeneSetSelector
+    // TODO same code as GeneSetToolbar
     GeneSetEditor gse = screen.factory().geneSetEditor(screen);
     gse.addSaveActionHandler(new SaveActionHandler() {
       @Override

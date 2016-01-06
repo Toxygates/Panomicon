@@ -23,8 +23,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
+import t.common.shared.SharedUtils;
 import t.common.shared.StringList;
 
 @SuppressWarnings("serial")
@@ -61,8 +63,16 @@ public class ProbeClustering implements Serializable {
     if (cl == null) {
       return null;
     }
+    
+    List<String> path = new ArrayList<>();
+    path.add(cl.algorithm.getTitle());
+    path.add(cl.clustering);
+    for (Entry<String, String> e : cl.params.entrySet()) {
+      path.add(e.getValue());
+    }
+    path.add(cl.cluster);
 
-    return new ProbeClustering(cl, new StringList("probes", cl.cluster, list.items()));
+    return new ProbeClustering(cl, new StringList("probeclustering", SharedUtils.packList(path, "###"), list.items()));
   }
 
   public static Collection<ProbeClustering> filterByAlgorithm(Collection<ProbeClustering> from,

@@ -31,7 +31,7 @@ import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.ResizeLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import otgviewer.client.components.GeneSetSelector;
+import otgviewer.client.components.GeneSetToolbar;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
@@ -48,7 +48,7 @@ import t.viewer.client.table.RichTable.HideableColumn;
 public class DataScreen extends Screen {
 
   public static final String key = "data";
-  protected GeneSetSelector gs;
+  protected GeneSetToolbar gs;
   protected ExpressionTable et;
 
   protected String[] lastProbes;
@@ -65,12 +65,12 @@ public class DataScreen extends Screen {
     et = makeExpressionTable();
     et.setDisplayPColumns(false);
     addListener(et);
-    // To ensure that GeneSetSelector has chosenColumns
+    // To ensure that GeneSetToolbar has chosenColumns
     addListener(gs);
   }
 
-  protected GeneSetSelector makeGeneSetSelector() {
-    return new GeneSetSelector(this) {
+  protected GeneSetToolbar makeGeneSetSelector() {
+    return new GeneSetToolbar(this) {
       @Override
       public void itemsChanged(List<String> items) {
         updateProbes();

@@ -21,6 +21,7 @@ package otgviewer.client.components;
 import java.util.List;
 
 import otgviewer.client.DataScreen;
+import t.common.shared.ClusteringList;
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
 import t.viewer.client.CodeDownload;
@@ -34,43 +35,31 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
-public class GeneSetSelector extends DataListenerWidget {
+public class GeneSetToolbar extends DataListenerWidget {
 
-  public static final String ALL_PROBES = "All probes";
+  public static final String ALL_PROBES = "All Probes";
+  private static final String PATH_SEPARATOR = " / ";
 
   private final DataScreen screen;
 
   private HorizontalPanel selector;
-  private ListChooser geneSets;
+  private Label lblSelected;
 
   private Button btnNew;
   private Button btnEdit;
-
-  public GeneSetSelector(DataScreen screen) {
+  
+  public GeneSetToolbar(DataScreen screen) {
     this.screen = screen;
-    makeSelector();
+    makeTool();
   }
 
-  private void makeSelector() {
+  private void makeTool() {
     selector = Utils.mkHorizontalPanel(true);
     selector.setHeight(DataScreen.STANDARD_TOOL_HEIGHT + "px");
     selector.setStylePrimaryName("colored");
     selector.addStyleName("slightlySpaced");
 
-    geneSets = new ListChooser("probes", false, ALL_PROBES) {
-      @Override
-      protected void itemsChanged(List<String> items) {
-        super.itemsChanged(items);
-
-        String[] itemsArray = items.toArray(new String[0]);
-        logger.info("Items: " + itemsArray);
-        screen.geneSetChanged(new StringList("probes", getSelectedText(), itemsArray));
-        screen.probesChanged(itemsArray);
-        
-        GeneSetSelector.this.itemsChanged(items);
-      }
-    };
-    addListener(geneSets);
+    lblSelected = new Label();
 
     btnNew = new Button("New", new ClickHandler() {
       @Override
@@ -95,8 +84,7 @@ public class GeneSetSelector extends DataListenerWidget {
     });
     btnEdit.setEnabled(false);
 
-    selector.add(new Label("GeneSet:"));
-    selector.add(geneSets);
+    selector.add(lblSelected);
     selector.add(btnNew);
     selector.add(btnEdit);
   }
@@ -106,7 +94,7 @@ public class GeneSetSelector extends DataListenerWidget {
   }
   
   private void geneSetEditorEdit() {
-    geneSetEditor().edit(geneSets.getSelectedText());
+    geneSetEditor().edit(screen.chosenGeneSet.name());
   }
   
   private GeneSetEditor geneSetEditor() {
@@ -136,24 +124,33 @@ public class GeneSetSelector extends DataListenerWidget {
   public void itemsChanged(List<String> items) {};
 
   @Override
-  public void itemListsChanged(List<ItemList> lists) {
-    super.itemListsChanged(lists);
-    geneSets.setLists(lists);
-  }  
-
-  @Override
   public void geneSetChanged(ItemList geneSet) {
     super.geneSetChanged(geneSet);
     
-    int selected = 0;
-    if (geneSet != null) {
-      selected = geneSets.trySelect(geneSet.name());
+    btnEdit.setEnabled(false);
+    
+    if (geneSet == null) {
+      lblSelected.setText(ALL_PROBES);
+      return;
     }
     
-    btnEdit.setEnabled(selected > 0);
+    String path = null;
+    if (geneSet.type().equals("probes")) {
+      path = geneSet.name();
+      btnEdit.setEnabled(true);
+    } else if (geneSet.type().equals("userclustering")) {
+      ClusteringList cl = (ClusteringList) geneSet;
+      path = geneSet.name() + PATH_SEPARATOR + cl.items()[0].name(); 
+    } else if (geneSet.type().equals("probeclustering")) {
+      path = geneSet.name().replaceAll("\\#\\#\\#", PATH_SEPARATOR);
+      if (path.endsWith(PATH_SEPARATOR)) {
+        path = path.substring(0, path.lastIndexOf(PATH_SEPARATOR));
+      }
+    } else {
+      path = geneSet.name();
+    }    
+    lblSelected.setText(path);
+    
   }
 
-  public boolean isDefaultItemSelected() {
-    return (geneSets.getSelectedIndex() == 0);
-  }
 }

@@ -488,8 +488,8 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     ItemList geneSet = ItemList.unpack(p.getItem("geneset"));
     if (geneSet != null) {
       chosenGeneSet = geneSet;
-      geneSetChanged(geneSet);
     }
+    geneSetChanged(geneSet);
     
     lists = loadClusteringLists(p);
     if (lists.size() > 0) {
