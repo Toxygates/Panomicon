@@ -59,6 +59,15 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
 				columnsAreTimes, totalWidth);
 	}
 	
+	protected int adjustWidth(int width, boolean bigMode) {
+	     int useWidth = width <= MAX_WIDTH ? width : MAX_WIDTH;	       
+	     return bigMode ? useWidth * 2 : useWidth;
+	}
+
+	protected int adjustHeight(int height, boolean bigMode) {
+	      return bigMode ? 170 * 2 : 170;
+	}
+	
 	/**
 	 * We normalise the column count of each data table when displaying it
 	 * in order to force the charts to have equally wide bars.
@@ -85,21 +94,19 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
 		ao.setMaxValue(maxVal != Double.NaN ? maxVal : dataset.getMax());		
 		
 		Options o = GVizCharts.createChartOptions();
-		final int useWidth = width <= MAX_WIDTH ? width : MAX_WIDTH;
-		
-		final int finalWidth = bigMode ? useWidth * 2 : useWidth;
-		final int finalHeight = bigMode ? 170 * 2 : 170;
-		
-		o.setWidth(finalWidth);
-		o.setHeight(finalHeight);
+	
+		int fw = adjustWidth(width, bigMode);
+		int fh = adjustHeight(170, bigMode);
+		o.setWidth(fw);
+		o.setHeight(fh);
 		o.setVAxisOptions(ao);
 		
 		//TODO: this is a hack to distinguish between creating series charts or not
 		//(if we are, columnCount is 2)
 		if (columnCount > 2) {
 			ChartArea ca = ChartArea.create();
-			ca.setWidth(finalWidth * 0.8);
-			ca.setHeight(finalHeight * 0.8);		
+			ca.setWidth(bigMode ? fw * 0.7 : fw - 75);			
+			ca.setHeight(bigMode ? fh * 0.8 : fh - 75);		
 			o.setChartArea(ca);
 		}
 		

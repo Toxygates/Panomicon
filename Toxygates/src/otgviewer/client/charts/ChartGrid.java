@@ -164,33 +164,18 @@ abstract public class ChartGrid<D extends Data> extends Composite {
 		return max;
 	}
 
-	public void adjustAndDisplay(int tableColumnCount, double minVal, double maxVal) {
+	void adjustAndDisplay(int tableColumnCount, double minVal, double maxVal) {
 		final int width = totalWidth / minsOrMeds.length; //width of each individual chart
 		final int osize = organisms.size();
 		for (int c = 0; c < minsOrMeds.length; ++c) {						
 			for (int r = 0; r < rowFilters.size(); ++r) {					
 				for (int o = 0; o < osize; ++o) {
 					String label = organisms.get(o) + ":" + rowFilters.get(r);
-					displaySeriesAt(r * osize + o, c, width, minVal, maxVal, 
+					displayAt(r * osize + o, c, width, minVal, maxVal, 
 							tableColumnCount, label);
 				}
 			}
 		}
-			/*	
-		for (int r = 2; r < g.getRowCount(); r += 2) {
-			boolean hasChart = false;
-			for (int c = 0; c < minsOrMeds.length; ++c) {
-				if (g.getWidget(r, c) != null) {
-					hasChart = true;
-				}
-			}
-			if (!hasChart) {
-				//remove empty rows
-				g.removeRow(r - 1);
-				g.removeRow(r);
-				r -= 2; //repeat from same r
-			}
-		}*/
 	}
 	
 	/**
@@ -202,7 +187,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
 	 * @param width
 	 * @param columnCount
 	 */
-	private void displaySeriesAt(final int row, final int column, final int width, final double minVal,
+	private void displayAt(final int row, final int column, final int width, final double minVal,
 			final double maxVal, final int columnCount, String label) {
 		final D dt = tables[row][column];
 
@@ -226,7 +211,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
             Widget w = chartFor(dt, width, minVal, maxVal, column, columnCount, downloadLink, true);
             vp.add(w);
             vp.add(downloadLink);
-            Utils.displayInPopup("Download chart", vp, DialogPosition.Center);
+            Utils.displayInPopup("Large chart", vp, DialogPosition.Center);
           }
         });
 		vp.add(a);
