@@ -117,11 +117,18 @@ public class TargetMineData {
       protected void userProceed(String user, String pass, boolean replace) {
         super.userProceed();
         String chosen = parent.chosenGeneSet.name();
-        if (chosen != null && !chosen.equals("")) {          
-          doEnrich(StringList.pickProbeLists(parent.chosenItemLists, chosen).get(0),
-              getParams());
+        StringList useList = null;
+        
+        if (chosen != null && !chosen.equals("")) {
+          List<StringList> lists = StringList.pickProbeLists(parent.chosenItemLists, chosen);
+          if (lists.size() > 0) {
+            useList = lists.get(0);
+          }
+        }
+        if (useList != null) {
+          doEnrich(useList, getParams());
         } else {
-          Window.alert("Please define and select a probe list first.");
+          Window.alert("Please define and select a gene set first.");
         }        
       }
     };
