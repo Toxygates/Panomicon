@@ -287,7 +287,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
     mi = new MenuItem("Leave feedback...", new Command() {
       public void execute() {
-        FeedbackForm feedbackDialog = new FeedbackForm(currentScreen, currentScreen);
+        FeedbackForm feedbackDialog = new FeedbackForm(currentScreen, currentScreen,
+            "kenji@nibiohn.go.jp, y-igarashi@nibiohn.go.jp or jtnystrom@gmail.com");
         feedbackDialog.display("Leave feedback", DialogPosition.Center);
       }
     });

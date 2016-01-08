@@ -42,9 +42,12 @@ public class FeedbackForm extends InteractionDialog {
 	TextArea commentArea;
 	InputGrid ig;
 	private final MatrixServiceAsync matrixService;
+	private final String emailAddresses;
 	
-	public FeedbackForm(final DataListenerWidget parent, Screen screen) {
+	public FeedbackForm(final DataListenerWidget parent, Screen screen,
+	    String emailAddresses) {
 		super(parent);
+		this.emailAddresses = emailAddresses;
 		matrixService = screen.matrixService();
 	}
 	
@@ -53,8 +56,7 @@ public class FeedbackForm extends InteractionDialog {
 		
 		Label l = new Label("We welcome comments, bug reports, questions or any kind of inquiries. " +
 				"If you report a problem, we will try to respond to you as soon as possible. " +
-		        "Alternatively, you may e-mail us directly (kenji@nibiohn.go.jp, " +
-		        "y-igarashi@nibiohn.go.jp or jtnystrom@gmail.com). ");
+		        "Alternatively, you may e-mail us directly (" + emailAddresses + ").");
 		l.setWordWrap(true);
 		vpanel.add(l);
 		l.setWidth("40em");
