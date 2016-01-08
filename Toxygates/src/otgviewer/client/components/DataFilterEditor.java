@@ -83,14 +83,14 @@ public class DataFilterEditor extends DataListenerWidget {
     }
   }
 
-  void changeFrom(int sel) {
+  void changeFrom(int sel, boolean emitChange) {
     List<SampleClass> selected = sampleClasses;
     // Get the selected values on the left of, and including, this one
     for (int i = 0; i <= sel; ++i) {
       String sval = selectors[i].getSelected();
       if (sval != null) {
         selected = SampleClass.filter(selected, parameters[i], sval);
-        logger.info("Filtered to " + selected.size());
+//        logger.info("Filtered to " + selected.size());
       }
     }
     // Constrain the selectors to the right of this one
@@ -99,7 +99,7 @@ public class DataFilterEditor extends DataListenerWidget {
     }
 
     if (sel < selectors.length - 1) {
-      changeFrom(sel + 1);
+      changeFrom(sel + 1, emitChange);
     } else if (sel == selectors.length - 1) {
       SampleClass r = new SampleClass();
       boolean allSet = true;
@@ -112,8 +112,8 @@ public class DataFilterEditor extends DataListenerWidget {
         }
       }
 
-      if (allSet) {
-        logger.info("Propagate change to " + r.toString());
+      if (allSet && emitChange) {
+//        logger.info("Propagate change to " + r.toString());
         changeSampleClass(r);
       }
     }
@@ -136,7 +136,7 @@ public class DataFilterEditor extends DataListenerWidget {
       selectors[i].addChangeHandler(new ChangeHandler() {
         @Override
         public void onChange(ChangeEvent event) {
-          changeFrom(sel);
+          changeFrom(sel, true);
         }
       });
 
@@ -160,7 +160,7 @@ public class DataFilterEditor extends DataListenerWidget {
     }
     this.sampleClasses = Arrays.asList(sampleClasses);
     selectors[0].setItemsFrom(this.sampleClasses, parameters[0]);
-    changeFrom(0); // Propagate the constraint
+    changeFrom(0, true); // Propagate the constraint
   }
 
   @Override
@@ -169,7 +169,8 @@ public class DataFilterEditor extends DataListenerWidget {
     chosenSampleClass = sc;
 
     for (int i = 0; i < selectors.length; ++i) {
-      selectors[i].trySelect(sc.get(parameters[i]));
+      selectors[i].trySelect(sc.get(parameters[i]));      
+      changeFrom(i, false);
     }
   }
 }
