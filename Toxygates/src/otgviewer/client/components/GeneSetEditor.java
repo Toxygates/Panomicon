@@ -110,15 +110,14 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
 
     initWindow();
   }
-  
+
   /*
-   *  Override this function to handle post save event
-   *   and what genes were saved
+   * Override this function to handle post save event and what genes were saved
    */
   protected void onSaved(String title, List<String> items) {}
 
   /*
-   *  Override this function to handle what genes were saved
+   * Override this function to handle what genes were saved
    */
   protected void onCanceled() {}
 
@@ -155,25 +154,24 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     probesList.setWidth("100%");
 
     HorizontalPanel buttons = Utils.mkHorizontalPanel(true);
-    Button removeSelected =
-        new Button("Remove selected probes", new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            for (int i = 0; i < probesList.getItemCount(); ++i) {
-              if (probesList.isItemSelected(i)) {
-                String sel = probesList.getItemText(i);
-                int from = sel.lastIndexOf('(');
-                int to = sel.lastIndexOf(')');
-                if (from != -1 && to != -1) {
-                  sel = sel.substring(from + 1, to);
-                }
-                listedProbes.remove(sel);
-              }
+    Button removeSelected = new Button("Remove selected probes", new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        for (int i = 0; i < probesList.getItemCount(); ++i) {
+          if (probesList.isItemSelected(i)) {
+            String sel = probesList.getItemText(i);
+            int from = sel.lastIndexOf('(');
+            int to = sel.lastIndexOf(')');
+            if (from != -1 && to != -1) {
+              sel = sel.substring(from + 1, to);
             }
-
-            probesChanged(listedProbes.toArray(new String[0]));
+            listedProbes.remove(sel);
           }
-        });
+        }
+
+        probesChanged(listedProbes.toArray(new String[0]));
+      }
+    });
     Button removeAll = new Button("Remove all probes", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -268,7 +266,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     dialog.setModal(true);
     dialog.center();
   }
-  
+
   protected void addProbeSelectionTools(StackLayoutPanel probeSelStack) {
     ProbeSelector psel = probeSelector();
     probeSelStack.add(psel, "Keyword search", STACK_ITEM_HEIGHT);
@@ -296,7 +294,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     if (name.equals(originalTitle)) {
       overwrite = true;
     }
-    
+
     helper.saveAs(new ArrayList<String>(listedProbes), name, overwrite);
 
     return true;
@@ -305,15 +303,14 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
   private ProbeSelector probeSelector() {
     return new ProbeSelector(screen,
         "This lets you view probes that correspond to a given KEGG pathway or GO term. "
-            + "Enter a partial pathway name and press enter to search.",
-        true) {
+            + "Enter a partial pathway name and press enter to search.", true) {
 
       @Override
       protected void getProbes(Term term) {
         switch (term.getAssociation()) {
           case KEGG:
-            sparqlService.probesForPathway(chosenSampleClass, term.getTermString(), getAllSamples(),
-                retrieveProbesCallback());
+            sparqlService.probesForPathway(chosenSampleClass, term.getTermString(),
+                getAllSamples(), retrieveProbesCallback());
             break;
           case GO:
             sparqlService.probesForGoTerm(term.getTermString(), getAllSamples(),
@@ -459,17 +456,17 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     // change the identifiers (which can be mixed format, for example genes
     // and proteins etc) into a
     // homogenous format (probes only)
-    matrixService.identifiersToProbes(probes, true, titleMatch, screen
-        .getAllSamples(), new PendingAsyncCallback<String[]>(screen,
-        "Unable to obtain manual probes (technical error).") {
-      public void handleSuccess(String[] probes) {
-        if (probes.length == 0) {
-          Window.alert("No matching probes were found.");
-        } else {
-          addProbes(probes);
-        }
-      }
-    });
+    matrixService.identifiersToProbes(probes, true, titleMatch, screen.getAllSamples(),
+        new PendingAsyncCallback<String[]>(screen,
+            "Unable to obtain manual probes (technical error).") {
+          public void handleSuccess(String[] probes) {
+            if (probes.length == 0) {
+              Window.alert("No matching probes were found.");
+            } else {
+              addProbes(probes);
+            }
+          }
+        });
   }
 
   /**

@@ -47,7 +47,7 @@ public class GeneSetToolbar extends DataListenerWidget {
 
   private Button btnNew;
   private Button btnEdit;
-  
+
   public GeneSetToolbar(DataScreen screen) {
     this.screen = screen;
     makeTool();
@@ -64,11 +64,11 @@ public class GeneSetToolbar extends DataListenerWidget {
     btnNew = new Button("New", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-       GWT.runAsync(new CodeDownload(logger) {
-         public void onSuccess() {
-           geneSetEditorNew();
-         }
-       });
+        GWT.runAsync(new CodeDownload(logger) {
+          public void onSuccess() {
+            geneSetEditorNew();
+          }
+        });
       }
     });
 
@@ -90,13 +90,13 @@ public class GeneSetToolbar extends DataListenerWidget {
   }
 
   private void geneSetEditorNew() {
-    geneSetEditor().createNew(screen.displayedAtomicProbes());        
+    geneSetEditor().createNew(screen.displayedAtomicProbes());
   }
-  
+
   private void geneSetEditorEdit() {
     geneSetEditor().edit(screen.chosenGeneSet.name());
   }
-  
+
   private GeneSetEditor geneSetEditor() {
     GeneSetEditor gse = screen.factory().geneSetEditor(screen);
     gse.addSaveActionHandler(new SaveActionHandler() {
@@ -107,6 +107,7 @@ public class GeneSetToolbar extends DataListenerWidget {
         screen.probesChanged(itemsArray);
         screen.updateProbes();
       }
+
       @Override
       public void onCanceled() {}
     });
@@ -117,7 +118,7 @@ public class GeneSetToolbar extends DataListenerWidget {
   public Widget selector() {
     return selector;
   }
-  
+
   /**
    * To be overridden by subclasses/users. Called when the user has triggered a change.
    */
@@ -126,21 +127,21 @@ public class GeneSetToolbar extends DataListenerWidget {
   @Override
   public void geneSetChanged(ItemList geneSet) {
     super.geneSetChanged(geneSet);
-    
+
     btnEdit.setEnabled(false);
-    
+
     if (geneSet == null) {
       lblSelected.setText(ALL_PROBES);
       return;
     }
-    
+
     String path = null;
     if (geneSet.type().equals("probes")) {
       path = geneSet.name();
       btnEdit.setEnabled(true);
     } else if (geneSet.type().equals("userclustering")) {
       ClusteringList cl = (ClusteringList) geneSet;
-      path = geneSet.name() + PATH_SEPARATOR + cl.items()[0].name(); 
+      path = geneSet.name() + PATH_SEPARATOR + cl.items()[0].name();
     } else if (geneSet.type().equals("probeclustering")) {
       path = geneSet.name().replaceAll("\\#\\#\\#", PATH_SEPARATOR);
       if (path.endsWith(PATH_SEPARATOR)) {
@@ -148,9 +149,9 @@ public class GeneSetToolbar extends DataListenerWidget {
       }
     } else {
       path = geneSet.name();
-    }    
+    }
     lblSelected.setText(path);
-    
+
   }
 
 }
