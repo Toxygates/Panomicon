@@ -41,8 +41,7 @@ public class RankingScreen extends Screen {
   private ScrollPanel sp;
 
   public RankingScreen(ScreenManager man) {
-    super("Compound ranking", key, false, man, resources.defaultHelpHTML(), null);
-
+    super("Compound ranking", key, false, man);
     chosenDatasets = appInfo().datasets();
     filterTools = new FilterTools(this);
     this.addListener(filterTools);

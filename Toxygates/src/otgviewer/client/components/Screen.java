@@ -199,7 +199,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
   }
 
   public Screen(String title, String key, boolean showGroups, ScreenManager man) {
-    this(title, key, showGroups, man, null, null);
+    this(title, key, showGroups, man, resources.defaultHelpHTML(), null);
   }
 
   public ScreenManager manager() {
