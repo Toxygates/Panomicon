@@ -112,9 +112,8 @@ public abstract class ItemListsStoreHelper {
       return false;
     }
     if (!overwrite && contains(type, name)) {
-      Window.alert(
-          "The title \"" + name + "\" is already taken.\n" + "Please choose a different name.");
-      return false;
+      return Window.confirm(
+          "The title \"" + name + "\" is already taken.\n" + "Do you wish to replace it?");
     }
     return true;
   }
