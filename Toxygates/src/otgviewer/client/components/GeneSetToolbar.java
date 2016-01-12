@@ -89,7 +89,7 @@ public class GeneSetToolbar extends DataListenerWidget {
     selector.add(btnEdit);
   }
 
-  private void geneSetEditorNew() {
+  private void geneSetEditorNew() {    
     geneSetEditor().createNew(screen.displayedAtomicProbes());
   }
 

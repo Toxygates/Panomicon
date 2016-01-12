@@ -38,14 +38,21 @@ import t.common.shared.sample.Sample;
 public class ManagedMatrixInfo implements Serializable {
 
 	private int numDataColumns = 0, numSynthetics = 0, numRows = 0;
+	
+	//Per-column information
 	private List<String> columnNames = new ArrayList<String>();
 	private List<String> columnHints = new ArrayList<String>();
 	private List<Boolean> upperBoundFiltering = new ArrayList<Boolean>();
 	private List<Group> columnGroups = new ArrayList<Group>();
-	private List<Double> columnFilters = new ArrayList<Double>();
-	private List<String> platforms = new ArrayList<String>();
+	private List<Double> columnFilters = new ArrayList<Double>();	
 	private List<Boolean> isPValueColumn = new ArrayList<Boolean>();
 	private List<Sample[]> samples = new ArrayList<Sample[]>();
+	
+	private List<String> platforms = new ArrayList<String>();
+	
+	//The currently visible probes
+	private String[] atomicProbes = new String[0];	
+	public static final int ATOMICS_MAX_LENGTH = 1000;
 	
 	public ManagedMatrixInfo() { }
 		
@@ -196,4 +203,18 @@ public class ManagedMatrixInfo implements Serializable {
 	
 	public String[] getPlatforms() { return platforms.toArray(new String[0]); }
 
+	public void setAtomicProbes(String[] probes) {	  
+	  atomicProbes = (probes.length > ATOMICS_MAX_LENGTH ? 
+	      Arrays.copyOf(probes, ATOMICS_MAX_LENGTH) :
+	        probes);
+	}
+	
+	/**
+	 * The currently displayed probes, in order, up to a maximum limit
+	 * (if too many, not all will be returned)
+	 * @return
+	 */
+	public String[] getAtomicProbes() {
+	  return atomicProbes;
+	}	
 }

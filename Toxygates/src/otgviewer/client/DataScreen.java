@@ -23,14 +23,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.ResizeLayoutPanel;
-import com.google.gwt.user.client.ui.Widget;
-
 import otgviewer.client.components.GeneSetToolbar;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
@@ -41,6 +33,15 @@ import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.RichTable.HideableColumn;
+
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.ResizeLayoutPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * The main data display screen. Data is displayed in the ExpressionTable widget.
@@ -250,7 +251,11 @@ public class DataScreen extends Screen {
   }
 
   public String[] displayedAtomicProbes() {
-    return et.displayedAtomicProbes();
+    String[] r = et.currentMatrixInfo().getAtomicProbes();
+    if (r.length < et.currentMatrixInfo().numRows()) {
+      Window.alert("Too many genes. Only the first " + r.length + " genes will be used.");
+    }
+    return r;
   }
 
 }

@@ -341,7 +341,7 @@ class ManagedMatrix(val initProbes: Seq[String],
 
   protected var requestProbes: Seq[String] = initProbes
 
-  currentInfo.setNumRows(currentMat.rows)
+  updateRowInfo()
 
   /**
    * For the given column in the grouped matrix,
@@ -403,8 +403,6 @@ class ManagedMatrix(val initProbes: Seq[String],
 
     //TODO avoid selecting here
     currentMat = currentMat.selectNamedRows(requestProbes).filterRows(f)
-
-    currentInfo.setNumRows(currentMat.rows)
     (_sortColumn, _sortAuxTable) match {
       case (Some(sc), _) => sort(sc, _sortAscending)
       case (_, Some(sat)) =>
@@ -436,6 +434,7 @@ class ManagedMatrix(val initProbes: Seq[String],
     _sortColumn = Some(col)
     _sortAscending = ascending
     currentMat = currentMat.sortRows(sortData(col, ascending))
+    updateRowInfo()
   }
 
   /**
@@ -450,6 +449,7 @@ class ManagedMatrix(val initProbes: Seq[String],
     val sortMat = adj.selectNamedRows(currentMat.orderedRowKeys)
     currentMat =
       currentMat.modifyJointly(sortMat, _.sortRows(sortData(col, ascending)))._1
+    updateRowInfo()
   }
 
   def addSynthetic(s: Synthetic): Unit = {
@@ -508,8 +508,13 @@ class ManagedMatrix(val initProbes: Seq[String],
    */
   def resetSortAndFilter(): Unit = {
     currentMat = rawGroupedMat
-    currentInfo.setNumRows(currentMat.rows)
+    updateRowInfo()
     applySynthetics()
+  }
+
+  private def updateRowInfo() {
+    currentInfo.setNumRows(currentMat.rows)
+    currentInfo.setAtomicProbes(currentMat.annotations.flatMap(_.atomics).toArray)
   }
 
   /**

@@ -186,6 +186,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   public Widget tools() {
     return this.tools;
   }
+  
+  public ManagedMatrixInfo currentMatrixInfo() {
+    return matrixInfo;
+  }
 
   /**
    * Enable or disable the GUI
@@ -478,9 +482,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     // Identify a click on the filter image.
     // TODO use a more robust identification method (!!)
     boolean isFilterClick =
-        ((target.startsWith("<img") || target.startsWith("<IMG")) && (target.indexOf("width:12") != -1
-            || // most
-            // browsers
+        ((target.startsWith("<img") || target.startsWith("<IMG")) && 
+            (target.indexOf("width:12") != -1 || // most browsers
             target.indexOf("WIDTH: 12") != -1 || // IE9
         target.indexOf("width: 12") != -1)); // IE8
     if (isFilterClick) {
@@ -852,29 +855,5 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     }
   }
 
-  class FilterCell extends ImageClickCell.SafeHtmlImageClickCell {
-    public FilterCell() {
-      super(resources.filter(), true);
-    }
 
-    public void onClick(SafeHtml value) {
-      /*
-       * The filtering mechanism is not handled here, but in ExpressionTable.interceptGridClick.
-       */
-    }
-  }
-
-  class FilteringHeader extends Header<SafeHtml> {
-    private SafeHtml value;
-
-    public FilteringHeader(SafeHtml value) {
-      super(new FilterCell());
-      this.value = value;
-    }
-
-    @Override
-    public SafeHtml getValue() {
-      return value;
-    }
-  }
 }

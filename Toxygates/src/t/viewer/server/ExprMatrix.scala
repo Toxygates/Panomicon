@@ -69,7 +69,6 @@ case class SimpleAnnotation(probe: String) extends RowAnnotation {
  *
  * TODO: need to optimise/simplify the ExpressionValue/ExprValue/ExpressionRow classes.
  * Probably, at least 1 of these can be removed.
- * Scalability for larger matrices is a concern.
  */
 class ExprMatrix(data: Seq[Seq[ExprValue]], rows: Int, columns: Int,
     rowMap: Map[String, Int], columnMap: Map[String, Int],
