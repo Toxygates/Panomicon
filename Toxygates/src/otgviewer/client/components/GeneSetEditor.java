@@ -295,9 +295,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
       overwrite = true;
     }
 
-    helper.saveAs(new ArrayList<String>(listedProbes), name, overwrite);
-
-    return true;
+    return helper.saveAs(new ArrayList<String>(listedProbes), name, overwrite);
   }
 
   private ProbeSelector probeSelector() {

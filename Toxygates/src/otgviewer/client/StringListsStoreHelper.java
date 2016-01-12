@@ -48,15 +48,16 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
     saveAction(list, "Name entry", "Please enter a name for the list.");
   }
 
-  /*
+  /**
    * Save gene set with specified title. No input box will be shown.
+   * @return true iff the save action was successful
    */
-  public void saveAs(Collection<String> list, String name) {
-    saveAction(list, name, false);
+  public boolean saveAs(Collection<String> list, String name) {
+    return saveAction(list, name, false);
   }
 
-  public void saveAs(Collection<String> list, String name, boolean overwrite) {
-    saveAction(list, name, overwrite);
+  public boolean saveAs(Collection<String> list, String name, boolean overwrite) {
+    return saveAction(list, name, overwrite);
   }
 
   private void saveAction(final Collection<String> list, String caption, String message) {
@@ -75,9 +76,9 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
     inputDialog = Utils.displayInPopup(caption, entry, DialogPosition.Center);
   }
 
-  private void saveAction(Collection<String> list, String name, boolean overwrite) {
+  private boolean saveAction(Collection<String> list, String name, boolean overwrite) {
     if (!validate(name, overwrite)) {
-      return;
+      return false;
     }
 
     StringList sl = new StringList(type, name, list.toArray(new String[0]));
@@ -86,6 +87,7 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
     storeItemLists();
 
     onSaveSuccess(name, sl);
+    return true;
   }
 
   private void storeItemLists() {
