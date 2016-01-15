@@ -29,6 +29,15 @@ public enum FilterType {
     this.upper = upper;
   }
   
+  public static FilterType parse(String x) {
+    boolean abs = x.contains("|");
+    boolean lower = x.contains("<");
+    if (abs) {
+      return lower? AbsGT : AbsLT;      
+    }
+    return lower ? GT : LT;
+  }
+  
   @Override
   public String toString() {
     StringBuilder r = new StringBuilder();

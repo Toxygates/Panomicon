@@ -67,8 +67,15 @@ public class FilterEditor extends Composite {
     }
     
     filterType = new EnumSelector<FilterType>() {
+      @Override
       public FilterType[] values() { return FilterType.values(); }
+      
+      @Override
+      protected FilterType parse(String s) {
+        return FilterType.parse(s);
+      }
     };
+    
     filterType.setSelected(initValue.filterType);
 
     HorizontalPanel hp = Utils.mkHorizontalPanel(true, filterType, input);

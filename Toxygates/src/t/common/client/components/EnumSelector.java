@@ -56,7 +56,7 @@ public abstract class EnumSelector<T extends Enum<T>> extends Composite {
 		return lb;
 	}
 	
-	private T parse(String s) {
+	protected T parse(String s) {
 		for (T t: values()) {
 			if (s.equals(t.toString())) {
 				return t;
