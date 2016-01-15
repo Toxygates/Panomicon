@@ -28,6 +28,7 @@ import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.common.shared.userclustering.Algorithm;
+import t.viewer.shared.ColumnFilter;
 import t.viewer.shared.ManagedMatrixInfo;
 import t.viewer.shared.Synthetic;
 import t.viewer.shared.table.SortKey;
@@ -47,7 +48,7 @@ public interface MatrixServiceAsync {
 
   public void selectProbes(String[] probes, AsyncCallback<ManagedMatrixInfo> callback);
 
-  public void setColumnThreshold(int column, @Nullable Double threshold,
+  public void setColumnFilter(int column, @Nullable ColumnFilter filter,
       AsyncCallback<ManagedMatrixInfo> callback);
 
   public void getFullData(List<Group> g, String[] probes, boolean sparseRead, boolean withSymbols,

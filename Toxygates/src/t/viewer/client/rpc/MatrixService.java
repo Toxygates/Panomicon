@@ -30,6 +30,7 @@ import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.common.shared.userclustering.Algorithm;
+import t.viewer.shared.ColumnFilter;
 import t.viewer.shared.ManagedMatrixInfo;
 import t.viewer.shared.Synthetic;
 import t.viewer.shared.table.SortKey;
@@ -86,14 +87,13 @@ public interface MatrixService extends RemoteService {
   public ManagedMatrixInfo selectProbes(String[] probes);
 
   /**
-   * Set the filtering threshold for a single column. The interpretation of the threshold depends on
-   * the column.
+   * Set the filtering threshold for a single column.
    * 
    * @param column
-   * @param threshold the threshold, or null to reset.
+   * @param filter the filter, or null to reset.
    * @return
    */
-  public ManagedMatrixInfo setColumnThreshold(int column, @Nullable Double threshold);
+  public ManagedMatrixInfo setColumnFilter(int column, @Nullable ColumnFilter filter);
 
   /**
    * Add a T-test/U-test/fold change difference column. Requires that loadDataset was first used to

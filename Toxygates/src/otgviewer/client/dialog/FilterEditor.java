@@ -21,6 +21,7 @@ package otgviewer.client.dialog;
 import javax.annotation.Nullable;
 
 import t.viewer.client.Utils;
+import t.viewer.shared.ColumnFilter;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -45,7 +46,8 @@ public class FilterEditor extends Composite {
   private TextBox input = new TextBox();
   protected int editColumn;
 
-  public FilterEditor(String columnTitle, int column, boolean isUpper, @Nullable Double initValue) {
+  public FilterEditor(String columnTitle, int column,
+      final ColumnFilter initValue) {
     this.editColumn = column;
     VerticalPanel vp = Utils.mkVerticalPanel(true);
     initWidget(vp);
@@ -57,11 +59,11 @@ public class FilterEditor extends Composite {
     l.setWordWrap(true);
     vp.add(l);
 
-    if (initValue != null) {
-      input.setValue(formatNumber(initValue));
+    if (initValue.threshold != null) {
+      input.setValue(formatNumber(initValue.threshold));
     }
 
-    Label l1 = new Label(isUpper ? "x <=" : "|x| >=");
+    Label l1 = new Label(initValue.upper ? "|x| <=" : "|x| >=");
     HorizontalPanel hp = Utils.mkHorizontalPanel(true, l1, input);
     vp.add(hp);
 
@@ -71,7 +73,8 @@ public class FilterEditor extends Composite {
       public void onClick(ClickEvent event) {
         try {
           Double newVal = parseNumber(input.getText());
-          onChange(newVal);
+          ColumnFilter newFilt = new ColumnFilter(newVal, initValue.upper);
+          onChange(newFilt);
         } catch (NumberFormatException e) {
           Window.alert("Invalid number format.");
         }
@@ -82,7 +85,6 @@ public class FilterEditor extends Composite {
       @Override
       public void onValueChange(ValueChangeEvent<String> event) {
         setButton.click();
-
       }
     });
 
@@ -121,5 +123,5 @@ public class FilterEditor extends Composite {
    * Called when the filter is changed. To be overridden by subclasses.
    */
 
-  protected void onChange(@Nullable Double newFilter) {}
+  protected void onChange(@Nullable ColumnFilter newFilter) {}
 }

@@ -35,6 +35,7 @@ import t.db.ExprValue
 import t.db.MatrixContext
 import t.db.BasicExprValue
 import t.common.shared.sample.EVArray
+import t.viewer.shared.ColumnFilter
 
 /**
  * Routines for loading a ManagedMatrix
@@ -363,8 +364,8 @@ class ManagedMatrix(val initProbes: Seq[String],
   /**
    * Set the filtering threshold for a column with separate filtering.
    */
-  def setFilterThreshold(col: Int, threshold: java.lang.Double): Unit = {
-    currentInfo.setColumnFilter(col, threshold)
+  def setFilter(col: Int, f: ColumnFilter): Unit = {
+    currentInfo.setColumnFilter(col, f)
     resetSortAndFilter()
     filterAndSort()
   }
@@ -384,16 +385,11 @@ class ManagedMatrix(val initProbes: Seq[String],
     def f(r: Seq[ExprValue]): Boolean = {
       for (
         col <- 0 until currentInfo.numColumns();
-        thresh = currentInfo.columnFilter(col);
-        if (thresh != null)
+        filt = currentInfo.columnFilter(col);
+        if (filt != null)
       ) {
-        val av = Math.abs(r(col).value)
-
         //Note, comparisons with NaN are always false
-        val pass = (if (currentInfo.isUpperFiltering(col))
-          av <= thresh
-        else
-          av >= thresh)
+        val pass = filt.test(r(col).value)
         if (!pass || !r(col).present) {
           return false
         }

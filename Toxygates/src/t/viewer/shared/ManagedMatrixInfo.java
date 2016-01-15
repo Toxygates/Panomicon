@@ -42,7 +42,7 @@ public class ManagedMatrixInfo implements Serializable {
   private List<String> columnHints = new ArrayList<String>();
   private List<Boolean> upperBoundFiltering = new ArrayList<Boolean>();
   private List<Group> columnGroups = new ArrayList<Group>();
-  private List<Double> columnFilters = new ArrayList<Double>();
+  private List<ColumnFilter> columnFilters = new ArrayList<ColumnFilter>();
   private List<Boolean> isPValueColumn = new ArrayList<Boolean>();
   private List<Sample[]> samples = new ArrayList<Sample[]>();
 
@@ -189,11 +189,11 @@ public class ManagedMatrixInfo implements Serializable {
    * @param column
    * @return The filter, or null if none was set.
    */
-  public @Nullable Double columnFilter(int column) {
+  public @Nullable ColumnFilter columnFilter(int column) {
     return columnFilters.get(column);
   }
 
-  public void setColumnFilter(int column, @Nullable Double filter) {
+  public void setColumnFilter(int column, @Nullable ColumnFilter filter) {
     columnFilters.set(column, filter);
   }
 

@@ -53,6 +53,7 @@ import t.viewer.client.CodeDownload;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.shared.ColumnFilter;
 import t.viewer.shared.ManagedMatrixInfo;
 import t.viewer.shared.Synthetic;
 import t.viewer.shared.table.SortKey;
@@ -496,22 +497,30 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     return !isFilterClick;
   }
 
+  protected ColumnFilter defaultFilter(int column) {
+    return new ColumnFilter(null, matrixInfo.isUpperFiltering(column));
+  }
+  
   protected void editColumnFilter(int column) {
+    ColumnFilter filt = matrixInfo.columnFilter(column);
+    if (filt == null) {
+      filt = defaultFilter(column);
+    }
     FilterEditor fe =
-        new FilterEditor(matrixInfo.columnName(column), column,
-            matrixInfo.isUpperFiltering(column), matrixInfo.columnFilter(column)) {
+        new FilterEditor(matrixInfo.columnName(column), column, filt) {
 
           @Override
-          protected void onChange(Double newVal) {
+          protected void onChange(ColumnFilter newVal) {
             applyColumnFilter(editColumn, newVal);
           }
         };
     filterDialog = Utils.displayInPopup("Edit filter", fe, DialogPosition.Center);
   }
 
-  protected void applyColumnFilter(final int column, final Double filter) {
+  protected void applyColumnFilter(final int column, 
+      final @Nullable ColumnFilter filter) {
     setEnabled(false);
-    matrixService.setColumnThreshold(column, filter, new AsyncCallback<ManagedMatrixInfo>() {
+    matrixService.setColumnFilter(column, filter, new AsyncCallback<ManagedMatrixInfo>() {
       @Override
       public void onFailure(Throwable caught) {
         Window.alert("An error occurred when the column filter was changed.");
