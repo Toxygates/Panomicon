@@ -20,8 +20,10 @@ package otgviewer.client.dialog;
 
 import javax.annotation.Nullable;
 
+import t.common.client.components.EnumSelector;
 import t.viewer.client.Utils;
 import t.viewer.shared.ColumnFilter;
+import t.viewer.shared.FilterType;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -45,6 +47,7 @@ public class FilterEditor extends Composite {
 
   private TextBox input = new TextBox();
   protected int editColumn;
+  private EnumSelector<FilterType> filterType;
 
   public FilterEditor(String columnTitle, int column,
       final ColumnFilter initValue) {
@@ -62,9 +65,13 @@ public class FilterEditor extends Composite {
     if (initValue.threshold != null) {
       input.setValue(formatNumber(initValue.threshold));
     }
+    
+    filterType = new EnumSelector<FilterType>() {
+      public FilterType[] values() { return FilterType.values(); }
+    };
+    filterType.setSelected(initValue.filterType);
 
-    Label l1 = new Label(initValue.upper ? "|x| <=" : "|x| >=");
-    HorizontalPanel hp = Utils.mkHorizontalPanel(true, l1, input);
+    HorizontalPanel hp = Utils.mkHorizontalPanel(true, filterType, input);
     vp.add(hp);
 
     final Button setButton = new Button("OK");
@@ -73,7 +80,7 @@ public class FilterEditor extends Composite {
       public void onClick(ClickEvent event) {
         try {
           Double newVal = parseNumber(input.getText());
-          ColumnFilter newFilt = new ColumnFilter(newVal, initValue.upper);
+          ColumnFilter newFilt = new ColumnFilter(newVal, filterType.value());
           onChange(newFilt);
         } catch (NumberFormatException e) {
           Window.alert("Invalid number format.");

@@ -36,6 +36,7 @@ import t.db.MatrixContext
 import t.db.BasicExprValue
 import t.common.shared.sample.EVArray
 import t.viewer.shared.ColumnFilter
+import t.viewer.shared.FilterType
 
 /**
  * Routines for loading a ManagedMatrix
@@ -68,7 +69,8 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     val samples = TUnit.collectBarcodes(tus)
 
     val info = new ManagedMatrixInfo()
-    info.addColumn(false, g.toString, g.toString + ": average of treated samples", false, g,
+    info.addColumn(false, g.toString, g.toString + ": average of treated samples",
+        ColumnFilter.emptyAbsGT, g,
         false, samples)
     val d = data.map(vs => Seq(mean(selectIdx(vs, treatedIdx))))
 
@@ -224,10 +226,10 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[Exp
     val (tus, cus) = treatedAndControl(g)
     val info = new ManagedMatrixInfo()
     info.addColumn(false, colNames(g)(0),
-        colNames(g)(0) + ": average of treated samples", false, g, false,
+        colNames(g)(0) + ": average of treated samples", ColumnFilter.emptyAbsGT, g, false,
         TUnit.collectBarcodes(tus))
     info.addColumn(false, colNames(g)(1),
-        colNames(g)(1) + ": average of control samples", false, g, false,
+        colNames(g)(1) + ": average of control samples", ColumnFilter.emptyAbsGT, g, false,
         TUnit.collectBarcodes(cus))
     info
   }
@@ -275,9 +277,11 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
     val samples = TUnit.collectBarcodes(tus)
     val info = new ManagedMatrixInfo()
     info.addColumn(false, colNames(g)(0),
-        colNames(g)(0) + ": average of treated samples", false, g, false, samples)
+        colNames(g)(0) + ": average of treated samples",
+        ColumnFilter.emptyAbsGT, g, false, samples)
     info.addColumn(false, colNames(g)(1),
-        colNames(g)(1) + ": p-values of treated against control", true, g, true,
+        colNames(g)(1) + ": p-values of treated against control",
+        ColumnFilter.emptyLT, g, true,
         Array[SSample]())
     info
   }
@@ -486,7 +490,8 @@ class ManagedMatrix(val initProbes: Seq[String],
             currentMat.appendDiffTest(rawData, g1s, g2s, md.getShortTitle(null)) //TODO
           case _ => throw new Exception("Unexpected test type!")
         }
-        currentInfo.addColumn(true, test.getShortTitle(null), test.getTooltip(), upper, null, false,
+        currentInfo.addColumn(true, test.getShortTitle(null), test.getTooltip(),
+            ColumnFilter.emptyLT, null, false,
             Array[SSample]()) //TODO
       case _ => throw new Exception("Unexpected test type")
     }

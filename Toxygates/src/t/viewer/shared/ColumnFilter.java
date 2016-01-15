@@ -25,26 +25,24 @@ import javax.annotation.Nullable;
 @SuppressWarnings("serial")
 public class ColumnFilter implements Serializable {
 
+  public static ColumnFilter emptyAbsGT = new ColumnFilter(null, FilterType.AbsGT);
+  public static ColumnFilter emptyLT =  new ColumnFilter(null, FilterType.LT);
+  
   /**
    * GWT constructor
    */
   public ColumnFilter() {}
   
-  /**
-   * True iff this filter is an upper bound (<=)
-   * If not, it is >=
-   * More test types may be added in the future.
-   */
-  public boolean upper;
+  public FilterType filterType;
   
   /**
    * Threshold value for this filter.
    */
   public @Nullable Double threshold;
   
-  public ColumnFilter(@Nullable Double threshold, boolean upper) {
+  public ColumnFilter(@Nullable Double threshold, FilterType filterType) {
     this.threshold = threshold;
-    this.upper = upper;
+    this.filterType = filterType;
   }
   
   /**
@@ -55,7 +53,10 @@ public class ColumnFilter implements Serializable {
     if (threshold == null) {
       return true;
     }
-    return (upper && Math.abs(x) <= threshold) || 
-        (!upper && Math.abs(x) >= threshold);
+    
+    boolean upper = filterType.upper;
+    double v = filterType.abs ? Math.abs(x) : x;
+    return (upper && v <= threshold) ||        
+        (!upper && v >= threshold);
   }
 }

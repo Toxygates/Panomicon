@@ -496,16 +496,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     // If we return true, the click will be passed on to the other widgets
     return !isFilterClick;
   }
-
-  protected ColumnFilter defaultFilter(int column) {
-    return new ColumnFilter(null, matrixInfo.isUpperFiltering(column));
-  }
   
   protected void editColumnFilter(int column) {
-    ColumnFilter filt = matrixInfo.columnFilter(column);
-    if (filt == null) {
-      filt = defaultFilter(column);
-    }
+    ColumnFilter filt = matrixInfo.columnFilter(column);    
     FilterEditor fe =
         new FilterEditor(matrixInfo.columnName(column), column, filt) {
 
