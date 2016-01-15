@@ -23,6 +23,7 @@ import otgviewer.client.components.InputGrid;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import t.viewer.client.Utils;
+import t.viewer.client.dialog.InteractionDialog;
 import t.viewer.client.rpc.MatrixServiceAsync;
 
 import com.google.gwt.event.dom.client.ClickEvent;

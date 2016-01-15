@@ -23,13 +23,13 @@ import java.util.Collection;
 import java.util.List;
 
 import otgviewer.client.components.Screen;
-import otgviewer.client.dialog.InputDialog;
 import t.common.shared.ClusteringList;
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
 import t.common.shared.userclustering.Algorithm;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.dialog.InputDialog;
 
 public class ClusteringListsStoreHelper extends ItemListsStoreHelper {
 
