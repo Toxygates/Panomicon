@@ -6,8 +6,8 @@ import com.google.gwt.user.cellview.client.Header;
 class FilteringHeader extends Header<SafeHtml> {
   private SafeHtml value;
 
-  public FilteringHeader(SafeHtml value) {
-    super(new FilterCell());
+  public FilteringHeader(SafeHtml value, boolean active) {
+    super(new FilterCell(active));
     this.value = value;
   }
 

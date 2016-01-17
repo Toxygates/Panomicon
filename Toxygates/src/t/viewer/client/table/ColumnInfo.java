@@ -30,10 +30,10 @@ public class ColumnInfo {
   private String title, tooltip, width;
   private @Nullable String cellStyleNames;
   // TODO hideable may not be needed here
-  private boolean sortable, hideable, defaultSortAsc, filterable;
+  private boolean sortable, hideable, defaultSortAsc, filterable, filterActive;
 
   public ColumnInfo(String title, String tooltip, boolean sortable, boolean hideable, String width,
-      String cellStyleNames, boolean defaultSortAsc, boolean filterable) {
+      String cellStyleNames, boolean defaultSortAsc, boolean filterable, boolean filterActive) {
     this.title = title;
     this.sortable = sortable;
     this.hideable = hideable;
@@ -42,20 +42,22 @@ public class ColumnInfo {
     this.cellStyleNames = cellStyleNames;
     this.defaultSortAsc = defaultSortAsc;
     this.filterable = filterable;
+    this.filterActive = filterActive;
   }
 
   public ColumnInfo(ColumnInfo ci) {
     this(ci.title(), ci.tooltip(), ci.sortable(), ci.hideable(), ci.width(), ci.cellStyleNames(),
-        ci.defaultSortAsc(), ci.filterable());
+        ci.defaultSortAsc(), ci.filterable(), ci.filterActive());
   }
 
   public ColumnInfo(String title, String tooltip, boolean sortable, boolean hideable,
-      boolean filterable) {
-    this(title, tooltip, sortable, hideable, DEFAULT_COL_WIDTH, null, false, filterable);
+      boolean filterable, boolean filterActive) {
+    this(title, tooltip, sortable, hideable, DEFAULT_COL_WIDTH, null, false, filterable,
+        filterActive);
   }
 
   public ColumnInfo(String name, String width, boolean sortable) {
-    this(name, name, sortable, true, false);
+    this(name, name, sortable, true, false, false);
     this.width = width;
   }
 
@@ -75,13 +77,17 @@ public class ColumnInfo {
       ntitle = ntitle.substring(0, maxLength - 2) + "...";
     }
     return new ColumnInfo(ntitle, tooltip, sortable, hideable, width, cellStyleNames,
-        defaultSortAsc, filterable);
+        defaultSortAsc, filterable, filterActive);
   }
 
   public boolean filterable() {
     return filterable;
   }
 
+  public boolean filterActive() {
+    return filterActive;
+  }
+  
   public String title() {
     return title;
   }

@@ -10,8 +10,8 @@ class FilterCell extends ImageClickCell.SafeHtmlImageClickCell {
   
   private static Resources resources = GWT.create(Resources.class);
   
-  public FilterCell() {
-    super(resources.filter(), true);
+  public FilterCell(boolean active) {
+    super(active ? resources.filterActive() : resources.filter(), true);
   }
 
   public void onClick(SafeHtml value) {

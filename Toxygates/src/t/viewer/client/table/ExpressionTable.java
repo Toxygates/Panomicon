@@ -387,7 +387,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       if (displayPColumns || !matrixInfo.isPValueColumn(i)) {
         Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);
         ColumnInfo ci =
-            new ColumnInfo(matrixInfo.columnName(i), matrixInfo.columnHint(i), true, false, true);
+            new ColumnInfo(matrixInfo.columnName(i), 
+                matrixInfo.columnHint(i), true, false, true,
+                matrixInfo.columnFilter(i) != null);
         ci.setCellStyleNames("dataColumn");
         addColumn(valueCol, "data", ci);
         Group g = matrixInfo.columnGroup(i);
@@ -430,7 +432,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     int dcs = sectionCount("data") + sectionCount("synthetic");
     Column<ExpressionRow, String> synCol = new ExpressionColumn(tc, dcs);
     synthColumns.add(synCol);
-    ColumnInfo info = new ColumnInfo(title, tooltip, true, false, true);
+    ColumnInfo info = new ColumnInfo(title, tooltip, true, false, true, false);
     info.setCellStyleNames("extraColumn");
     info.setDefaultSortAsc(s.isDefaultSortAscending());
     addColumn(synCol, "synthetic", info);
@@ -449,7 +451,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   protected Header<SafeHtml> getColumnHeader(ColumnInfo info) {
     Header<SafeHtml> superHeader = super.getColumnHeader(info);
     if (info.filterable()) {
-      return new FilteringHeader(superHeader.getValue());
+      return new FilteringHeader(superHeader.getValue(), info.filterActive());
     } else {
       return superHeader;
     }

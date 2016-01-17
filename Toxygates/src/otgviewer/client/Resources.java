@@ -37,6 +37,9 @@ public interface Resources extends t.common.client.Resources {
 	@Source("images/12_filter.png")
 	ImageResource filter();
 	
+	@Source("images/12_filter_blue.png")
+    ImageResource filterActive();
+	
 	@Source("help/default.html")
 	TextResource defaultHelpHTML();
 	
