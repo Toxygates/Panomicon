@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.dialog;
+package t.viewer.client.dialog;
 
 import t.common.shared.Platform;
 import t.viewer.shared.AppInfo;

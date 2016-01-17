@@ -40,9 +40,8 @@ public class ManagedMatrixInfo implements Serializable {
   // Per-column information
   private List<String> columnNames = new ArrayList<String>();
   private List<String> columnHints = new ArrayList<String>();
-  private List<Boolean> upperBoundFiltering = new ArrayList<Boolean>();
   private List<Group> columnGroups = new ArrayList<Group>();
-  private List<Double> columnFilters = new ArrayList<Double>();
+  private List<ColumnFilter> columnFilters = new ArrayList<ColumnFilter>();
   private List<Boolean> isPValueColumn = new ArrayList<Boolean>();
   private List<Sample[]> samples = new ArrayList<Sample[]>();
 
@@ -71,7 +70,8 @@ public class ManagedMatrixInfo implements Serializable {
    * @param samples The samples actually displayed in this column (may be a subset of the ones in
    *        the base group)
    */
-  public void addColumn(boolean synthetic, String name, String hint, boolean isUpperFiltering,
+  public void addColumn(boolean synthetic, String name, String hint,
+      ColumnFilter defaultFilter,
       Group baseGroup, boolean isPValue, Sample[] samples) {
     if (synthetic) {
       numSynthetics++;
@@ -81,9 +81,8 @@ public class ManagedMatrixInfo implements Serializable {
 
     columnNames.add(name);
     columnHints.add(hint);
-    upperBoundFiltering.add(isUpperFiltering);
     columnGroups.add(baseGroup);
-    columnFilters.add(null);
+    columnFilters.add(defaultFilter);
     isPValueColumn.add(isPValue);
     this.samples.add(samples);
   }
@@ -93,7 +92,6 @@ public class ManagedMatrixInfo implements Serializable {
     int n = numDataColumns;
     columnNames = columnNames.subList(0, n);
     columnHints = columnHints.subList(0, n);
-    upperBoundFiltering = upperBoundFiltering.subList(0, n);
     columnGroups = columnGroups.subList(0, n);
     columnFilters = columnFilters.subList(0, n);
   }
@@ -105,7 +103,8 @@ public class ManagedMatrixInfo implements Serializable {
    */
   public ManagedMatrixInfo addAllNonSynthetic(ManagedMatrixInfo other) {
     for (int c = 0; c < other.numDataColumns(); c++) {
-      addColumn(false, other.columnName(c), other.columnHint(c), other.isUpperFiltering(c),
+      addColumn(false, other.columnName(c), other.columnHint(c),
+          other.columnFilter(c),
           other.columnGroup(c), other.isPValueColumn(c), other.samples(c));
     }
     return this;
@@ -137,13 +136,6 @@ public class ManagedMatrixInfo implements Serializable {
     return numRows;
   }
 
-  /**
-   * @param column Column index. Must be 0 <= i < numColumns.
-   * @return
-   */
-  public boolean isUpperFiltering(int column) {
-    return upperBoundFiltering.get(column);
-  }
 
   /**
    * @param column Column index. Must be 0 <= i < numColumns.
@@ -189,11 +181,11 @@ public class ManagedMatrixInfo implements Serializable {
    * @param column
    * @return The filter, or null if none was set.
    */
-  public @Nullable Double columnFilter(int column) {
+  public @Nullable ColumnFilter columnFilter(int column) {
     return columnFilters.get(column);
   }
 
-  public void setColumnFilter(int column, @Nullable Double filter) {
+  public void setColumnFilter(int column, @Nullable ColumnFilter filter) {
     columnFilters.set(column, filter);
   }
 

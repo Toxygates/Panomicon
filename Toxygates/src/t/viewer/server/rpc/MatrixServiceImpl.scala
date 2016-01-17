@@ -69,6 +69,7 @@ import t.common.shared.userclustering.Algorithm
 import t.common.server.userclustering.RClustering
 import org.apache.commons.lang.StringUtils
 import t.common.shared.sample.ExpressionValue
+import t.viewer.shared.ColumnFilter
 
 object MatrixServiceImpl {
 
@@ -169,10 +170,10 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   }
 
   @throws(classOf[NoDataLoadedException])
-  def setColumnThreshold(column: Int, threshold: java.lang.Double): ManagedMatrixInfo = {
+  def setColumnFilter(column: Int, f: ColumnFilter): ManagedMatrixInfo = {
     val mm = getSessionData.matrix
-    println(s"Filter column $column at $threshold")
-    mm.setFilterThreshold(column, threshold)
+    println(s"Filter for column $column: at $f")
+    mm.setFilter(column, f)
     mm.info
   }
 

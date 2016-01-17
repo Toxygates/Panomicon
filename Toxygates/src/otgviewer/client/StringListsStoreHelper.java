@@ -20,10 +20,10 @@ package otgviewer.client;
 import java.util.Collection;
 
 import otgviewer.client.components.Screen;
-import otgviewer.client.dialog.InputDialog;
 import t.common.shared.StringList;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.dialog.InputDialog;
 
 public class StringListsStoreHelper extends ItemListsStoreHelper {
 

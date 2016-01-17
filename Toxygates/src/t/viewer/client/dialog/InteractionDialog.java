@@ -16,11 +16,10 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.dialog;
+package t.viewer.client.dialog;
 
 import otgviewer.client.components.DataListenerWidget;
 import t.viewer.client.Utils;
-import t.viewer.client.dialog.DialogPosition;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

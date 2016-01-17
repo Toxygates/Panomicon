@@ -115,7 +115,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
     val r = new ManagedMatrixInfo()
     for (i <- 0 until from.numDataColumns()) {
       r.addColumn(false, from.columnName(i), from.columnHint(i),
-        from.isUpperFiltering(i), from.columnGroup(i), from.isPValueColumn(i),
+        from.columnFilter(i), from.columnGroup(i), from.isPValueColumn(i),
         from.samples(i))
     }
     r.setPlatforms(from.getPlatforms())

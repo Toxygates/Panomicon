@@ -29,8 +29,6 @@ import com.google.gwt.user.client.ui.ListBox;
  * A convenience widget for selecting among the values of an enum. NB this assumes that the toString
  * values of each enum member are unique.
  * 
- * @author johan
- *
  * @param <T>
  */
 public abstract class EnumSelector<T extends Enum<T>> extends Composite {
@@ -55,7 +53,7 @@ public abstract class EnumSelector<T extends Enum<T>> extends Composite {
     return lb;
   }
 
-  private T parse(String s) {
+  protected T parse(String s) {
     for (T t : values()) {
       if (s.equals(t.toString())) {
         return t;

@@ -16,32 +16,43 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.shared.table;
+package t.viewer.shared;
 
-import java.io.Serializable;
-
-import t.common.shared.AType;
-
-public interface SortKey extends Serializable {
-  @SuppressWarnings("serial")
-  static class MatrixColumn implements SortKey {
-    public int matrixIndex;
-
-    public MatrixColumn() {}
-
-    public MatrixColumn(int idx) {
-      this.matrixIndex = idx;
-    }
+public enum FilterType {
+  GT(false, false), LT(false, true), AbsGT(true, false), AbsLT(true, true);
+  
+  boolean abs;
+  boolean upper;
+  
+  private FilterType(boolean abs, boolean upper) {
+    this.abs = abs;
+    this.upper = upper;
   }
-
-  @SuppressWarnings("serial")
-  static class Association implements SortKey {
-    public AType atype;
-
-    public Association() {}
-
-    public Association(AType assoc) {
-      this.atype = assoc;
+  
+  public static FilterType parse(String x) {
+    boolean abs = x.contains("|");
+    boolean lower = x.contains("<");
+    if (abs) {
+      return lower? AbsGT : AbsLT;      
     }
+    return lower ? GT : LT;
   }
+  
+  @Override
+  public String toString() {
+    StringBuilder r = new StringBuilder();
+    if (abs) {
+      r.append("|x|");
+    } else {
+      r.append("x");
+    }
+    
+    if (upper) {
+      r.append(" <= ");
+    } else {
+      r.append(" >= ");
+    }
+    return r.toString();
+  }
+  
 }
