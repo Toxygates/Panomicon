@@ -105,6 +105,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   }
 
   private void createMenuItem() {
+    root.addItem(new MenuItem("Show all", false, showAll()));
     createUserSets();
     if (hasUserClustering()) {
       createUserClusterings();
@@ -254,6 +255,16 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     }
   }
 
+  private ScheduledCommand showAll() {
+    return new Command() {
+      public void execute() {
+        screen.geneSetChanged(null);
+        screen.probesChanged(new String[0]);
+        screen.updateProbes();
+      }
+    };
+  }
+  
   /*
    * Commands for User Set
    */
