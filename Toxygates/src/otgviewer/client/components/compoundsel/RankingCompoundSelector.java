@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import otgviewer.client.Resources;
+import t.common.client.Resources;
 import otgviewer.client.charts.ChartGrid;
 import otgviewer.client.charts.Charts;
 import otgviewer.client.components.DataListenerWidget;

@@ -42,6 +42,6 @@ public interface Resources extends ClientBundle {
   @Source("images/12_filter.png")
   ImageResource filter();
   
-  @Source("images/12_filter_blue.png")
+  @Source("images/12_filter_blue_2.png")
   ImageResource filterActive();
 }

@@ -20,7 +20,7 @@
 
 package t.viewer.client.table;
 
-import otgviewer.client.Resources;
+import t.common.client.Resources;
 import t.common.client.ImageClickCell;
 
 import com.google.gwt.core.shared.GWT;
