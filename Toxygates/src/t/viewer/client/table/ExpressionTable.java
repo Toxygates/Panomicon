@@ -390,7 +390,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         ColumnInfo ci =
             new ColumnInfo(matrixInfo.columnName(i), 
                 matrixInfo.columnHint(i), true, false, true,
-                matrixInfo.columnFilter(i) != null);
+                matrixInfo.columnFilter(i).active());
         ci.setCellStyleNames("dataColumn");
         addColumn(valueCol, "data", ci);
         Group g = matrixInfo.columnGroup(i);
@@ -525,11 +525,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
       @Override
       public void onSuccess(ManagedMatrixInfo result) {
-        if (result.numRows() == 0 && filter != null) {
+        if (result.numRows() == 0 && filter.active()) {
           Window.alert("No rows match the selected filter. The filter will be reset.");
-          applyColumnFilter(column, null);
+          applyColumnFilter(column, filter.asInactive());
         } else {
           setMatrix(result);
+          setupColumns();
           filterDialog.setVisible(false);
         }
       }
