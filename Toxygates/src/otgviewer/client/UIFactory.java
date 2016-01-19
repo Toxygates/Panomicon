@@ -53,10 +53,10 @@ public interface UIFactory {
   public GeneSetsMenuItem geneSetsMenuItem(DataScreen screen);
 
   /**
-   * Enrichment for the currently selected gene set
+   * Enrichment for a gene set
    * @param screen
    */
-  void enrichment(Screen screen);
+  void enrichment(Screen screen, StringList list);
 
   /**
    * Enrichment for multiple gene sets

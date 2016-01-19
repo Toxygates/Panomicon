@@ -269,7 +269,14 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
     targetmineMenu.addItem(new MenuItem("Enrichment...", new Command() {
       public void execute() {
-        new TargetMineData(currentScreen).enrich();
+        //TODO this should be disabled if we are not on the data screen.
+        //The menu item is only here in order to be logically grouped with other 
+        //TargetMine items, but it is a duplicate and may be removed.
+        if (currentScreen instanceof DataScreen) {
+          ((DataScreen) currentScreen).runEnrichment();
+        } else {
+          Window.alert("Please go to the data screen to use this function.");
+        }
       }
     }));
 

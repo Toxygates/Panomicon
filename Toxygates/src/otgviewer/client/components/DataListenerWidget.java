@@ -59,9 +59,10 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 
   private List<DataViewListener> listeners = new ArrayList<DataViewListener>();
 
+  //TODO visibility of these members
   protected Dataset[] chosenDatasets = new Dataset[0];
-  public SampleClass chosenSampleClass; // TODO public
-  protected String[] chosenProbes = new String[0];
+  public SampleClass chosenSampleClass; 
+  public String[] chosenProbes = new String[0];
   public List<String> chosenCompounds = new ArrayList<String>();
   protected String chosenCompound;
   protected List<Group> chosenColumns = new ArrayList<Group>();

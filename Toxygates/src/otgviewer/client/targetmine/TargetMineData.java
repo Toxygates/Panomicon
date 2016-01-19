@@ -111,22 +111,13 @@ public class TargetMineData {
         });
   }
 
-  public void enrich() {
+  public void enrich(final StringList probes) {
     InteractionDialog ui = new TargetMineEnrichDialog(parent, url, "Enrich") {
       @Override
       protected void userProceed(String user, String pass, boolean replace) {
         super.userProceed();
-        String chosen = parent.chosenGeneSet.name();
-        StringList useList = null;
-        
-        if (chosen != null && !chosen.equals("")) {
-          List<StringList> lists = StringList.pickProbeLists(parent.chosenItemLists, chosen);
-          if (lists.size() > 0) {
-            useList = lists.get(0);
-          }
-        }
-        if (useList != null) {
-          doEnrich(useList, getParams());
+        if (probes.items() != null && probes.items().length > 0) {        
+          doEnrich(probes, getParams());
         } else {
           Window.alert("Please define and select a gene set first.");
         }        

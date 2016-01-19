@@ -82,9 +82,9 @@ public class OTGFactory implements UIFactory {
   }
 
   @Override
-  public void enrichment(Screen screen) {
+  public void enrichment(Screen screen, StringList probes) {
     TargetMineData tm = new TargetMineData(screen);
-    tm.enrich();
+    tm.enrich(probes);
   }
 
   @Override
