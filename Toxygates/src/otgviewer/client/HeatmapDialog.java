@@ -105,7 +105,7 @@ public class HeatmapDialog extends DataListenerWidget {
     dialog.setVisible(false);
   }
   
-  public static void show(final Screen screen, final ValueType defaultType) {
+  public static void show(final DataScreen screen, final ValueType defaultType) {
     GWT.runAsync(new CodeDownload(screen.getLogger()) {
       public void onSuccess() {
         asyncShowHeatMap(screen, defaultType);
@@ -113,13 +113,14 @@ public class HeatmapDialog extends DataListenerWidget {
     });
   }
   
-  private static void asyncShowHeatMap(Screen screen, ValueType defaultType) {
+  private static void asyncShowHeatMap(DataScreen screen, ValueType defaultType) {
     HeatmapDialog dialog = new HeatmapDialog(screen);
     show(dialog, screen, defaultType);
   }
   
-  public static void show(HeatmapDialog dialog, Screen screen, ValueType defaultType) {    
+  public static void show(HeatmapDialog dialog, DataScreen screen, ValueType defaultType) {    
     screen.propagateTo(dialog);
+    dialog.probesChanged(screen.displayedAtomicProbes());
     
     int probesCount = (dialog.chosenProbes != null ? dialog.chosenProbes.length : 0);
     if (probesCount == 0 || probesCount > 1000) {

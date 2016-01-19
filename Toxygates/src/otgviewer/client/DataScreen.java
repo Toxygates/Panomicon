@@ -84,10 +84,8 @@ public class DataScreen extends Screen {
       @Override
       protected void onGettingExpressionFailed() {
         super.onGettingExpressionFailed();
-
         DataScreen.this.probesChanged(new String[0]);
         DataScreen.this.geneSetChanged(null);
-
         updateProbes();
       }
     };
