@@ -27,7 +27,7 @@ select distinct ?p ?ogroup ?org {
 
 EOF
 
-curl -g http://beta.sparql.uniprot.org/sparql \
+curl -g http://sparql.uniprot.org/sparql \
 --data-urlencode query="$QUERY" \
 --data-urlencode format="csv" | tail -n+2 | sed "s///" > $TEMPFILE
 
