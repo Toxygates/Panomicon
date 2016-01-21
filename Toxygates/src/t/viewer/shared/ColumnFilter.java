@@ -59,4 +59,16 @@ public class ColumnFilter implements Serializable {
     return (upper && v <= threshold) ||        
         (!upper && v >= threshold);
   }
+  
+  public boolean active() {
+    return threshold != null;
+  }
+  
+  public String toString() {
+    return filterType.toString() + " " + threshold;
+  }
+  
+  public ColumnFilter asInactive() {
+    return new ColumnFilter(null, filterType);
+  }
 }

@@ -106,7 +106,7 @@ public class FilterEditor extends Composite {
     clearButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        onChange(null);
+        onChange(new ColumnFilter(null, filterType.value()));
       }
 
     });

@@ -20,7 +20,7 @@
 
 package t.viewer.client.table;
 
-import otgviewer.client.Resources;
+import t.common.client.Resources;
 import t.common.client.ImageClickCell;
 
 import com.google.gwt.core.shared.GWT;
@@ -30,8 +30,8 @@ class FilterCell extends ImageClickCell.SafeHtmlImageClickCell {
   
   private static Resources resources = GWT.create(Resources.class);
   
-  public FilterCell() {
-    super(resources.filter(), true);
+  public FilterCell(boolean active) {
+    super(active ? resources.filterActive() : resources.filter(), true);
   }
 
   public void onClick(SafeHtml value) {

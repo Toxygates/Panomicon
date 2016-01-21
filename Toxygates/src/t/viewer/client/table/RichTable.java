@@ -117,7 +117,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
     grid.addColumn(tcl, "");
     increaseSectionCount("default");
     // This object will never be used - mainly to keep indexes consistent
-    columnInfos.add(new ColumnInfo("", "", false, false, false));
+    columnInfos.add(new ColumnInfo("", "", false, false, false, false));
 
     tcl.setCellStyleNames("clickCell");
     grid.setColumnWidth(tcl, "40px");

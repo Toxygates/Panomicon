@@ -31,7 +31,7 @@ public enum FilterType {
   
   public static FilterType parse(String x) {
     boolean abs = x.contains("|");
-    boolean lower = x.contains("<");
+    boolean lower = x.contains(">");
     if (abs) {
       return lower? AbsGT : AbsLT;      
     }

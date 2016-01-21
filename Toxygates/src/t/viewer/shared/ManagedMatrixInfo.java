@@ -176,16 +176,16 @@ public class ManagedMatrixInfo implements Serializable {
   }
 
   /**
-   * The individual filter threshold for a column, if any.
+   * The individual filter for a column.
    * 
    * @param column
-   * @return The filter, or null if none was set.
+   * @return The filter
    */
-  public @Nullable ColumnFilter columnFilter(int column) {
+  public ColumnFilter columnFilter(int column) {
     return columnFilters.get(column);
   }
 
-  public void setColumnFilter(int column, @Nullable ColumnFilter filter) {
+  public void setColumnFilter(int column, ColumnFilter filter) {
     columnFilters.set(column, filter);
   }
 

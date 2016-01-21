@@ -172,7 +172,8 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   @throws(classOf[NoDataLoadedException])
   def setColumnFilter(column: Int, f: ColumnFilter): ManagedMatrixInfo = {
     val mm = getSessionData.matrix
-    println(s"Filter for column $column: at $f")
+    
+    println(s"Filter for column $column: $f")
     mm.setFilter(column, f)
     mm.info
   }
