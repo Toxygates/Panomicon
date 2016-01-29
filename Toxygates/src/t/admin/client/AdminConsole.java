@@ -170,7 +170,7 @@ public class AdminConsole implements EntryPoint {
   private Widget makeBatchPanel() {
     AdminPanel<Batch> bp = new AdminPanel<Batch>("Edit batch", null) {
       Widget makeEditor(Batch b, final DialogBox db, boolean addNew) {
-        return new BatchEditor(b, addNew, datasetData.getList(), instanceData.getList()) {
+        return new FullBatchEditor(b, addNew, datasetData.getList(), instanceData.getList()) {
           @Override
           protected void onFinishOrAbort() {
             db.hide();

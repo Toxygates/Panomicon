@@ -21,7 +21,6 @@ package t.admin.client;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -29,8 +28,6 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * Handles the uploading of a number of files.
  */
 abstract public class ItemUploader extends Composite {
-  protected MaintenanceServiceAsync maintenanceService = (MaintenanceServiceAsync) GWT
-      .create(MaintenanceService.class);
 
   protected boolean completed;
   protected List<UploadWrapper> uploaders = new ArrayList<UploadWrapper>();
