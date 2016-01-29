@@ -114,7 +114,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     _appInfo = new AppInfo(conf.instanceName, sDatasets(),
         sPlatforms(), predefProbeLists(), probeClusterings(), appName,
-        getAnnotationInfo)
+        makeUserKey(), getAnnotationInfo)
   }
 
   protected lazy val b2rKegg: B2RKegg =
@@ -157,6 +157,15 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
         Array(
         "Dynamically obtained from https://www.ebi.ac.uk/rdf/services/chembl/sparql",
         "Dynamically obtained from http://drugbank.bio2rdf.org/sparql"))
+  }
+
+  /**
+   * Generate a new user key, to be used when the client does not already have one.
+   */
+  protected def makeUserKey(): String = {
+    val time = System.currentTimeMillis()
+    val random = (Math.random * Int.MaxValue).toInt
+    "%x%x".format(time, random)
   }
 
   def appInfo: AppInfo = {

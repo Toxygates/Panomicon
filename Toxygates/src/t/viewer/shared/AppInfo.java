@@ -48,21 +48,24 @@ public class AppInfo implements Serializable {
   private String[] annotationTitles;
   private String[] annotationComments;
   
+  private String userKey;
+  
   public AppInfo() {}
 
   public AppInfo(String instanceName_, String pathologyTermsURL_, String targetmineURL_,
-      String applicationName_) {
+      String applicationName_, String userKey_) {
     instanceName = instanceName_;
     pathologyTermsURL = pathologyTermsURL_;
     targetmineURL = targetmineURL_;
     applicationName = applicationName_;
+    userKey = userKey_;
     // NB does not set datasets or platforms
   }
 
   public AppInfo(String instanceName_, Dataset[] datasets, Platform[] platforms,
-      List<StringList> probeLists, String appName) {
+      List<StringList> probeLists, String appName, String userKey) {
     this(instanceName_, "http://toxico.nibiohn.go.jp/open-tggates/doc/pathology_parameter.pdf",
-        "http://targetmine.mizuguchilab.org", appName);
+        "http://targetmine.mizuguchilab.org", appName, userKey);
     this.datasets = datasets;
     this.platforms = platforms;
     this.predefProbeLists = probeLists;
@@ -70,8 +73,9 @@ public class AppInfo implements Serializable {
 
   public AppInfo(String instanceName_, Dataset[] datasets, Platform[] platforms,
       List<StringList> probeLists, List<ProbeClustering> probeClusterings, String appName,
+      String userKey,
       String[][] annotationInfo) {
-    this(instanceName_, datasets, platforms, probeLists, appName);
+    this(instanceName_, datasets, platforms, probeLists, appName, userKey);
     this.probeClusterings = probeClusterings;
     this.annotationTitles = annotationInfo[0];
     this.annotationComments = annotationInfo[1];
@@ -129,5 +133,9 @@ public class AppInfo implements Serializable {
   
   public String[] getAnnotationComments() {
     return annotationComments;
+  }
+  
+  public String getUserKey() {
+    return userKey;
   }
 }
