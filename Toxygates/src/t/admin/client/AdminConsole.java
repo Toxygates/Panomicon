@@ -355,7 +355,7 @@ public class AdminConsole implements EntryPoint {
   }
 
   private void showBatchOverview(String title, String[][] data) {
-    StringArrayTable.displayDialog(data, "Overview for for batch" + title, 
+    StringArrayTable.displayDialog(data, "Overview for for batch " + title, 
         800, 600);    
   }
 }
