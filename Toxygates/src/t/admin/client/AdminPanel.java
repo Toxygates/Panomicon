@@ -66,7 +66,7 @@ abstract class AdminPanel<T extends ManagedItem> {
     sc.addEndColumns();
 
     dlp.addSouth(makeButtons(cmds), 35);
-    dlp.add(table);
+    dlp.add(t.common.client.Utils.makeScrolled(table));
   }
 
   void showEditor(@Nullable T obj, boolean addNew) {
