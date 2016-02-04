@@ -33,7 +33,7 @@ trait RawExpressionData {
   /**
    * Map samples to (probe -> (expr value, call, p))
    */
-  def data: CMap[Sample, CMap[String, (Double, Char, Double)]]
+  def data: CMap[Sample, CMap[String, FoldPExpr]]
 
   def call(x: Sample, probe: String) = data(x)(probe)._2
   def expr(x: Sample, probe: String) = data(x)(probe)._1

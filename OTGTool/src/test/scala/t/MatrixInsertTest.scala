@@ -20,6 +20,7 @@
 
 package t
 
+import t.db.FoldPExpr
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import t.db.testing.FakeBasicMatrixDB
@@ -41,8 +42,8 @@ class MatrixInsertTest extends TTestSuite {
     val db = new FakeBasicMatrixDB()
 
     val ins = new BasicValueInsert(db, data) {
-      def mkValue(v: Double, c: Char, p: Double) =
-       BasicExprValue(v, c)
+      def mkValue(v: FoldPExpr) =
+       BasicExprValue(v._1, v._2)
     }
 
     ins.insert("Absolute value data insert").run()

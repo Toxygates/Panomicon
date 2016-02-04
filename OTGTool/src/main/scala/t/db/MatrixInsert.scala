@@ -39,8 +39,8 @@ class AbsoluteValueInsert(dbfile: String, raw: RawExpressionData)
 (implicit mc: MatrixContext) extends MatrixInsert[BasicExprValue](raw) {
   lazy val db = KCMatrixDB.get(dbfile, true)
 
-  def mkValue(v: Double, c: Char, p: Double) =
-    BasicExprValue(v, c)
+  def mkValue(v: FoldPExpr) =
+    BasicExprValue(v._1, v._2)
 }
 
 /**
@@ -48,8 +48,8 @@ class AbsoluteValueInsert(dbfile: String, raw: RawExpressionData)
  */
 class SimplePFoldValueInsert(getDB: () => MatrixDBWriter[PExprValue], raw: RawExpressionData)
 (implicit mc: MatrixContext) extends MatrixInsert[PExprValue](raw) {
-  def mkValue(v: Double, c: Char, p: Double) =
-    PExprValue(v, p, c)
+  def mkValue(v: FoldPExpr) =
+    PExprValue(v._1, v._3, v._2)
 
    //Importantly, this does not get initialised until  MatrixInsert.insert actually runs
     //(which means the releasing finalizer will also run)
@@ -62,7 +62,7 @@ abstract class MatrixInsert[E <: ExprValue](raw: RawExpressionData)
 
   def db: MatrixDBWriter[E]
 
-  protected def mkValue(v: Double, c: Char, p: Double): E
+  protected def mkValue(v: FoldPExpr): E
 
   private lazy val values =
     for (

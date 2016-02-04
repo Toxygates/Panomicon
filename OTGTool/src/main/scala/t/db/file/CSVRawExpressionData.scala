@@ -24,6 +24,7 @@ import scala.io.Source
 import t.db.RawExpressionData
 import t.db.Sample
 import scala.collection.{ Map => CMap }
+import t.db.FoldPExpr
 
 class CSVRawExpressionData(exprFiles: Iterable[String],
     callFiles: Option[Iterable[String]]) extends RawExpressionData {
@@ -79,12 +80,12 @@ class CSVRawExpressionData(exprFiles: Iterable[String],
   }
 
   import scala.collection.mutable.{Map => MuMap}  //more efficient to build
-  lazy val data: CMap[Sample, CMap[String, (Double, Char, Double)]] = {
+  lazy val data: CMap[Sample, CMap[String, FoldPExpr]] = {
     val expr = Map() ++ exprFiles.map(readExprValues(_)).flatten
 
     val call = callFiles.map(fs => Map() ++ fs.map(readCalls(_)).flatten)
 
-    var r = MuMap[Sample, CMap[String, (Double, Char, Double)]]()
+    var r = MuMap[Sample, CMap[String, FoldPExpr]]()
 
     for ((s, pv) <- expr) {
       for (calls <- call; if !calls.contains(s)) {
@@ -93,7 +94,7 @@ class CSVRawExpressionData(exprFiles: Iterable[String],
 
       val cm = call.map(_(s))
 
-      var out = MuMap[String, (Double, Char, Double)]()
+      var out = MuMap[String, FoldPExpr]()
       for ((p, v) <- pv) {
         if (cm != None && !cm.get.contains(p)) {
           throw new Exception(s"No call available for probe $p in sample $s")

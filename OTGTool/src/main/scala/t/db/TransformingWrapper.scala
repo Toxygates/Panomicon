@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -23,7 +23,8 @@ package t.db
 /**
  * Wraps a matrix DB to apply a transformation to each value read.
  */
-abstract class TransformingWrapper[E >: Null <: ExprValue](val wrapped: MatrixDBReader[E]) extends MatrixDBReader[E] {
+abstract class TransformingWrapper[E >: Null <: ExprValue](val
+    wrapped: MatrixDBReader[E]) extends MatrixDBReader[E] {
   def allSamples: Iterable[Sample] =
     wrapped.allSamples
 

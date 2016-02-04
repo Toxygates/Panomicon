@@ -81,13 +81,15 @@ trait SeriesBuilder[S <: Series[S]] {
    * Using values from the given MatrixDB, construct all possible series for the
    * samples indicated in the metadata.
    */
-  def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata, samples: Iterable[Sample])(implicit mc: MatrixContext): Iterable[S]
+  def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E],
+      md: Metadata, samples: Iterable[Sample])(implicit mc: MatrixContext): Iterable[S]
 
   /**
    * Using values from the given MatrixDB, construct all possible series for the
    * samples indicated in the metadata.
    */
-  def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata)(implicit mc: MatrixContext): Iterable[S] = makeNew(from, md, md.samples)
+  def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata)
+  (implicit mc: MatrixContext): Iterable[S] = makeNew(from, md, md.samples)
 
   /**
    * Enum keys that are necessary for this SeriesBuilder.

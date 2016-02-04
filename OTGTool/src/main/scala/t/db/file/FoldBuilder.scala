@@ -30,6 +30,7 @@ import t.db.PExprValue
 import t.db.ExprValue
 import otg.Factory
 import scala.Vector
+import t.db.FoldPExpr
 
 /**
  * log-2 fold values constructed from the input data
@@ -138,7 +139,7 @@ class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
 
   import scala.collection.{Map => CMap}
 
-  lazy val data: CMap[Sample, CMap[String, (Double, Char, Double)]] = {
+  lazy val data: CMap[Sample, CMap[String, FoldPExpr]] = {
     val bySample = values.groupBy(_._1)
     val byProbe = bySample.mapValues(x => x.groupBy(_._2))
     byProbe.mapValues(v => v.mapValues(_.map(p => (p._3.value, p._3.call, p._3.p)).head))
