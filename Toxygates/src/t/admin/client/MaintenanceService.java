@@ -18,12 +18,12 @@
 
 package t.admin.client;
 
+import t.common.client.rpc.BatchOperations;
 import t.common.shared.Dataset;
 import t.common.shared.ManagedItem;
 import t.common.shared.Platform;
 import t.common.shared.maintenance.Instance;
 import t.common.shared.maintenance.MaintenanceException;
-import t.viewer.client.rpc.BatchOperations;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;

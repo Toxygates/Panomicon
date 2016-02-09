@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.admin.client;
+package t.common.client.maintenance;
 
 import java.util.Date;
 

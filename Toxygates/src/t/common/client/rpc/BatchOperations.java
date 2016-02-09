@@ -1,4 +1,4 @@
-package t.viewer.client.rpc;
+package t.common.client.rpc;
 
 import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.MaintenanceException;

@@ -18,12 +18,12 @@
 
 package t.admin.client;
 
+import t.common.client.rpc.BatchOperationsAsync;
 import t.common.shared.Dataset;
 import t.common.shared.ManagedItem;
 import t.common.shared.Platform;
 import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.Instance;
-import t.viewer.client.rpc.BatchOperationsAsync;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 

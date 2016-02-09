@@ -1,5 +1,7 @@
 package t.viewer.client.rpc;
 
+import t.common.client.rpc.BatchOperations;
+
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 

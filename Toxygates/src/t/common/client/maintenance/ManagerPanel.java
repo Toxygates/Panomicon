@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.admin.client;
+package t.common.client.maintenance;
 
 import static t.common.client.Utils.makeButtons;
 
@@ -34,15 +34,15 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-abstract class AdminPanel<T extends ManagedItem> {
+abstract public class ManagerPanel<T extends ManagedItem> {
 
-  CellTable<T> table = AdminConsole.makeTable();
+  private CellTable<T> table = t.common.client.Utils.makeTable();
   List<Command> cmds = new ArrayList<Command>();
   private DockLayoutPanel dlp = new DockLayoutPanel(Unit.PX);
   private final String editCaption;
   private final @Nullable String dialogWidth;
 
-  AdminPanel(String editCaption, @Nullable String dialogWidth) {
+  public ManagerPanel(String editCaption, @Nullable String dialogWidth) {
     this.editCaption = editCaption;
     this.dialogWidth = dialogWidth;
     cmds.add(new Command("Add new...") {
@@ -53,7 +53,7 @@ abstract class AdminPanel<T extends ManagedItem> {
 
     StandardColumns<T> sc = new StandardColumns<T>(table) {
       void onDelete(T object) {
-        AdminPanel.this.onDelete(object);
+        ManagerPanel.this.onDelete(object);
       }
 
       void onEdit(T object) {
@@ -69,7 +69,9 @@ abstract class AdminPanel<T extends ManagedItem> {
     dlp.add(t.common.client.Utils.makeScrolled(table));
   }
 
-  void showEditor(@Nullable T obj, boolean addNew) {
+  public CellTable<T> table() { return table; }
+  
+  protected void showEditor(@Nullable T obj, boolean addNew) {
     final DialogBox db = new DialogBox(false, true);
     db.setText(editCaption);
     db.setWidget(makeEditor(obj, db, addNew));
@@ -79,17 +81,17 @@ abstract class AdminPanel<T extends ManagedItem> {
     db.show();
   }
 
-  abstract Widget makeEditor(@Nullable T obj, DialogBox db, boolean addNew);
+  abstract protected Widget makeEditor(@Nullable T obj, DialogBox db, boolean addNew);
 
-  abstract void onDelete(T object);
+  abstract protected void onDelete(T object);
 
-  void addMidColumns(CellTable<T> table) {}
+  protected void addMidColumns(CellTable<T> table) {}
 
-  List<Command> commands() {
+  protected List<Command> commands() {
     return cmds;
   }
 
-  Widget panel() {
+  public Widget panel() {
     return dlp;
   }
 

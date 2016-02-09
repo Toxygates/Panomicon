@@ -20,6 +20,8 @@ package t.common.client;
 
 import java.util.List;
 
+import t.common.shared.ManagedItem;
+
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.safehtml.shared.SafeHtml;
@@ -27,10 +29,12 @@ import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.SafeHtmlHeader;
 import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.view.client.NoSelectionModel;
 
 public class Utils {
 
@@ -79,5 +83,12 @@ public class Utils {
     ScrollPanel sp = new ScrollPanel(w);
     sp.setWidth("auto");
     return sp;
+  }
+  
+  public static <T extends ManagedItem> CellTable<T> makeTable() {
+    CellTable<T> table = new CellTable<T>();
+    table.setSelectionModel(new NoSelectionModel<T>());
+    table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
+    return table;
   }
 }
