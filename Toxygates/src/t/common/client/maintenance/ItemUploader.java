@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.admin.client;
+package t.common.client.maintenance;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +49,6 @@ abstract public class ItemUploader extends Composite {
   // TODO retire?
   public void updateStatus() {}
 
-  abstract boolean canProceed();
+  abstract protected boolean canProceed();
 
 }

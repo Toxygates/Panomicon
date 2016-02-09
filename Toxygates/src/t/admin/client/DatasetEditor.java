@@ -22,6 +22,7 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
+import t.common.client.maintenance.ManagedItemEditor;
 import t.common.shared.Dataset;
 
 import com.google.gwt.user.client.ui.TextArea;

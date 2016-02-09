@@ -18,14 +18,16 @@
 
 package t.admin.client;
 
-import t.admin.shared.Instance;
 import t.common.client.ImageClickCell;
 import t.common.client.Resources;
 import t.common.client.components.StringArrayTable;
+import t.common.client.maintenance.ManagedItemEditor;
+import t.common.client.maintenance.TaskCallback;
 import t.common.shared.Dataset;
 import t.common.shared.ManagedItem;
 import t.common.shared.Platform;
 import t.common.shared.maintenance.Batch;
+import t.common.shared.maintenance.Instance;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -270,7 +272,7 @@ public class AdminConsole implements EntryPoint {
     }
     maintenanceService.deleteBatchAsync(object.getTitle(), new TaskCallback("Delete batch") {
       @Override
-      void onCompletion() {
+      protected void onCompletion() {
         refreshBatches();
       }
     });
@@ -283,7 +285,7 @@ public class AdminConsole implements EntryPoint {
     }
     maintenanceService.deletePlatformAsync(object.getTitle(), new TaskCallback("Delete platform") {
       @Override
-      void onCompletion() {
+      protected void onCompletion() {
         refreshPlatforms();
       }
     });

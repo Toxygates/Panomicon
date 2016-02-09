@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.admin.client;
+package t.common.client.maintenance;
 
 import gwtupload.client.IUploader;
 import gwtupload.client.SingleUploader;
@@ -32,14 +32,14 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 /**
  * Handles the uploading of a single file.
  */
-class UploadWrapper extends Composite {
+public class UploadWrapper extends Composite {
   Uploader u;
   boolean finished;
   Label statusLabel = new Label();
   VerticalPanel vp = new VerticalPanel();
   ItemUploader manager;
 
-  UploadWrapper(ItemUploader manager, String description, String prefix, String... extensions) {
+  public UploadWrapper(ItemUploader manager, String description, String prefix, String... extensions) {
     this.manager = manager;
     initWidget(vp);
     Label l = new Label(description);
@@ -93,7 +93,7 @@ class UploadWrapper extends Composite {
     }
   }
 
-  boolean hasFile() {
+  public boolean hasFile() {
     return finished;
   }
 

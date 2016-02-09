@@ -36,7 +36,7 @@ import t.TaskRunner
 import t.Tasklet
 import t.admin.client.MaintenanceService
 import t.common.shared.maintenance.Batch
-import t.admin.shared.Instance
+import t.common.shared.maintenance.Instance
 import t.admin.shared.MaintenanceConstants.callPrefix
 import t.admin.shared.MaintenanceConstants.dataPrefix
 import t.admin.shared.MaintenanceConstants.metaPrefix

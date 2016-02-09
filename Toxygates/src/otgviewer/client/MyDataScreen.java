@@ -23,12 +23,20 @@ package otgviewer.client;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 
+import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.Widget;
+
 public class MyDataScreen extends Screen {
 
   public static final String key = "my";
   
   public MyDataScreen(ScreenManager man) {
     super("My data", key, false, man);
+  }
+  
+  public Widget content() {
+    return new SimplePanel();
+    //return new BatchEditor(b, addNew, datasets, instances)
   }
 
 }

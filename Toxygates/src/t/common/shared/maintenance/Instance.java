@@ -18,10 +18,11 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.admin.shared;
+package t.common.shared.maintenance;
 
 import java.util.Date;
 
+import t.admin.shared.AccessPolicy;
 import t.common.shared.ManagedItem;
 
 @SuppressWarnings("serial")

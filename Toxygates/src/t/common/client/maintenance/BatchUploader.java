@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.admin.client;
+package t.common.client.maintenance;
 
 import static t.admin.shared.MaintenanceConstants.callPrefix;
 import static t.admin.shared.MaintenanceConstants.dataPrefix;
@@ -50,7 +50,7 @@ public class BatchUploader extends ItemUploader {
     vp.add(hp);
   }
 
-  boolean canProceed() {
+  public boolean canProceed() {
     return metadata.hasFile()
         && data.hasFile()
         && (calls.hasFile() || Window.confirm("The Affymetrix calls file is missing. "

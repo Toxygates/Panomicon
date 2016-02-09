@@ -18,6 +18,8 @@
 
 package t.admin.client;
 
+import t.common.client.maintenance.ProgressDisplay;
+
 import com.google.gwt.user.client.ui.DialogBox;
 
 public class Utils {

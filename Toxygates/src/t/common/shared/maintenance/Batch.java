@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import t.admin.shared.Instance;
 import t.common.shared.ManagedItem;
 
 @SuppressWarnings("serial")

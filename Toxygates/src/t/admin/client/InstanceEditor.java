@@ -23,8 +23,9 @@ import java.util.Date;
 import javax.annotation.Nullable;
 
 import t.admin.shared.AccessPolicy;
-import t.admin.shared.Instance;
 import t.common.client.components.EnumSelector;
+import t.common.client.maintenance.ManagedItemEditor;
+import t.common.shared.maintenance.Instance;
 
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;

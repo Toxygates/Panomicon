@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.admin.client;
+package t.common.client.maintenance;
 
 import static t.common.client.Utils.makeButtons;
 
@@ -25,6 +25,8 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import t.admin.client.MaintenanceService;
+import t.admin.client.MaintenanceServiceAsync;
 import t.common.client.Command;
 import t.common.shared.ManagedItem;
 
@@ -39,7 +41,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 
-abstract class ManagedItemEditor extends Composite {
+public abstract class ManagedItemEditor extends Composite {
 
   protected MaintenanceServiceAsync maintenanceService = (MaintenanceServiceAsync) GWT
       .create(MaintenanceService.class);

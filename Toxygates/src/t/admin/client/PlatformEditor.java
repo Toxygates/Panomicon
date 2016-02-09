@@ -23,6 +23,8 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
+import t.common.client.maintenance.ManagedItemEditor;
+import t.common.client.maintenance.TaskCallback;
 import t.common.shared.Platform;
 
 import com.google.gwt.user.client.ui.TextArea;
@@ -55,7 +57,7 @@ public class PlatformEditor extends ManagedItemEditor {
       maintenanceService.addPlatformAsync(p, uploader.affyRadio.getValue(), new TaskCallback(
           "Add platform") {
         @Override
-        void onCompletion() {
+        protected void onCompletion() {
           onFinish();
           onFinishOrAbort();
         }

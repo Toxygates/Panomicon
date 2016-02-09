@@ -16,10 +16,12 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.admin.client;
+package t.common.client.maintenance;
 
 import java.util.Date;
 
+import t.admin.client.MaintenanceService;
+import t.admin.client.MaintenanceServiceAsync;
 import t.common.shared.maintenance.OperationResults;
 import t.common.shared.maintenance.Progress;
 

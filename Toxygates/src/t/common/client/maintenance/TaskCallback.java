@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.admin.client;
+package t.common.client.maintenance;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -55,11 +55,11 @@ public class TaskCallback implements AsyncCallback<Void> {
     onFailure();
   }
 
-  void onCompletion() {
+  protected void onCompletion() {
 
   }
 
-  void onFailure() {
+  protected void onFailure() {
 
   }
 

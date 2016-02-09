@@ -1,13 +1,13 @@
-package t.admin.client;
+package t.common.client.maintenance;
 
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import t.admin.shared.Instance;
 import t.common.shared.Dataset;
 import t.common.shared.maintenance.Batch;
+import t.common.shared.maintenance.Instance;
 
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -58,7 +58,7 @@ public class BatchEditor extends ManagedItemEditor {
           "Upload batch") {
 
         @Override
-        void onCompletion() {          
+        protected void onCompletion() {          
           onFinish();
           onFinishOrAbort();
         }

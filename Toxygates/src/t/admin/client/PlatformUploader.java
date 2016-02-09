@@ -19,6 +19,8 @@
 package t.admin.client;
 
 import static t.admin.shared.MaintenanceConstants.platformPrefix;
+import t.common.client.maintenance.ItemUploader;
+import t.common.client.maintenance.UploadWrapper;
 
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -59,7 +61,7 @@ public class PlatformUploader extends ItemUploader {
     return r;
   }
 
-  boolean canProceed() {
+  protected boolean canProceed() {
     return (platform.hasFile() && (affyRadio.getValue() || tRadio.getValue()));
   }
 }

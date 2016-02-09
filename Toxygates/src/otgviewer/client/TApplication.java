@@ -44,6 +44,8 @@ import t.viewer.client.rpc.SeriesService;
 import t.viewer.client.rpc.SeriesServiceAsync;
 import t.viewer.client.rpc.SparqlService;
 import t.viewer.client.rpc.SparqlServiceAsync;
+import t.viewer.client.rpc.UserDataService;
+import t.viewer.client.rpc.UserDataServiceAsync;
 import t.viewer.shared.AppInfo;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -96,6 +98,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       .create(MatrixService.class);
   private static SeriesServiceAsync seriesService = (SeriesServiceAsync) GWT
       .create(SeriesService.class);
+  private static UserDataServiceAsync userDataService = (UserDataServiceAsync) GWT
+      .create(UserDataService.class);
 
   private RootLayoutPanel rootPanel;
   private DockLayoutPanel mainDockPanel;
@@ -553,6 +557,10 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
   public MatrixServiceAsync matrixService() {
     return matrixService;
+  }
+  
+  public UserDataServiceAsync userDataService() {
+    return userDataService;
   }
 
 }
