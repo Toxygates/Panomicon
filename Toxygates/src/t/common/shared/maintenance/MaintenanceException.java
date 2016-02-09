@@ -18,36 +18,24 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.admin.shared;
-
-import java.io.Serializable;
+package t.common.shared.maintenance;
 
 @SuppressWarnings("serial")
-public class Progress implements Serializable {
+public class MaintenanceException extends Exception {
 
-	public Progress() { }
-	public Progress(String task, int percentage, boolean allFinished) {
-		this.task = task;
-		this.percentage = percentage;
-		this.allFinished = allFinished;
+	public MaintenanceException() {
 	}
-	
-	private String task;
-	private int percentage;
-	private String[] messages = new String[0];
-	private boolean allFinished;
-	
-	public void setMessages(String[] messages) {
-		this.messages = messages;
+
+	public MaintenanceException(String message) {
+		super(message);
 	}
-	
-	public String getTask() { return task; }
-	public int getPercentage() { return percentage; }
-	public String[] getMessages() { return messages; }
-	
-	/**
-	 * Is every task finished?
-	 * @return
-	 */
-	public boolean isAllFinished() { return allFinished; }
+
+	public MaintenanceException(Throwable cause) {
+		super(cause);
+	}
+
+	public MaintenanceException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
 }

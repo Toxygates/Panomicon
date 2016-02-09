@@ -18,7 +18,6 @@
 
 package t.admin.client;
 
-import t.admin.shared.Batch;
 import t.admin.shared.Instance;
 import t.common.client.ImageClickCell;
 import t.common.client.Resources;
@@ -26,6 +25,7 @@ import t.common.client.components.StringArrayTable;
 import t.common.shared.Dataset;
 import t.common.shared.ManagedItem;
 import t.common.shared.Platform;
+import t.common.shared.maintenance.Batch;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;

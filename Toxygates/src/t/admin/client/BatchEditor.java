@@ -5,9 +5,9 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import t.admin.shared.Batch;
 import t.admin.shared.Instance;
 import t.common.shared.Dataset;
+import t.common.shared.maintenance.Batch;
 
 import com.google.gwt.user.client.ui.VerticalPanel;
 

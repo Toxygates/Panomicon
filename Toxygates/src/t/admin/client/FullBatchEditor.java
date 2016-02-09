@@ -25,9 +25,9 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import t.admin.shared.Batch;
 import t.admin.shared.Instance;
 import t.common.shared.Dataset;
+import t.common.shared.maintenance.Batch;
 
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;

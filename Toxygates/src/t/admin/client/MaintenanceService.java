@@ -18,34 +18,24 @@
 
 package t.admin.client;
 
-import t.admin.shared.Batch;
 import t.admin.shared.Instance;
-import t.admin.shared.MaintenanceException;
-import t.admin.shared.OperationResults;
-import t.admin.shared.Progress;
 import t.common.shared.Dataset;
 import t.common.shared.ManagedItem;
 import t.common.shared.Platform;
+import t.common.shared.maintenance.MaintenanceException;
+import t.viewer.client.rpc.BatchOperations;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 @RemoteServiceRelativePath("maintenance")
-public interface MaintenanceService extends RemoteService {
-
-  Batch[] getBatches();
+public interface MaintenanceService extends BatchOperations, RemoteService {
 
   Instance[] getInstances();
 
   Platform[] getPlatforms();
 
   Dataset[] getDatasets();
-
-  /**
-   * Try to add a batch, based on files that were previously uploaded. The results can be obtained
-   * after completion by using getOperationResults. Only title and comment are read from b.
-   */
-  void addBatchAsync(Batch b) throws MaintenanceException;
 
   /**
    * Try to add a platform, based on files that were previously uploaded. The results can be
@@ -57,13 +47,6 @@ public interface MaintenanceService extends RemoteService {
   void add(ManagedItem i) throws MaintenanceException;
 
 
-  /**
-   * Delete a batch.
-   * 
-   * @param id
-   */
-  void deleteBatchAsync(String id) throws MaintenanceException;
-
   void deletePlatformAsync(String id) throws MaintenanceException;
 
   /**
@@ -73,38 +56,4 @@ public interface MaintenanceService extends RemoteService {
    */
   void delete(ManagedItem i) throws MaintenanceException;
 
-  /**
-   * Modify the item, altering fields such as visibility and comment.
-   * 
-   * @param b
-   */
-  void update(ManagedItem i) throws MaintenanceException;
-
-
-  /**
-   * The results of the last completed asynchronous operation.
-   * 
-   * @return
-   */
-  OperationResults getOperationResults() throws MaintenanceException;
-
-  /**
-   * Cancel the current task, if any.
-   */
-  void cancelTask();
-
-  /**
-   * Get the status of the current task.
-   * 
-   * @return
-   */
-  Progress getProgress();
-
-  /**
-   * Get parameter summaries for samples in a batch.
-   * The result is a row-major table. The first row will be column headers.
-   * @param b
-   * @return
-   */
-  String[][] batchParameterSummary(Batch b);
 }

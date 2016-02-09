@@ -20,8 +20,8 @@ package t.admin.client;
 
 import java.util.Date;
 
-import t.admin.shared.OperationResults;
-import t.admin.shared.Progress;
+import t.common.shared.maintenance.OperationResults;
+import t.common.shared.maintenance.Progress;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;

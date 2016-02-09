@@ -35,15 +35,13 @@ import t.PlatformManager
 import t.TaskRunner
 import t.Tasklet
 import t.admin.client.MaintenanceService
-import t.admin.shared.Batch
+import t.common.shared.maintenance.Batch
 import t.admin.shared.Instance
 import t.admin.shared.MaintenanceConstants.callPrefix
 import t.admin.shared.MaintenanceConstants.dataPrefix
 import t.admin.shared.MaintenanceConstants.metaPrefix
 import t.admin.shared.MaintenanceConstants.platformPrefix
-import t.admin.shared.MaintenanceException
-import t.admin.shared.OperationResults
-import t.admin.shared.Progress
+import t.common.shared.maintenance._
 import t.common.shared.Dataset
 import t.common.shared.ManagedItem
 import t.common.shared.Platform

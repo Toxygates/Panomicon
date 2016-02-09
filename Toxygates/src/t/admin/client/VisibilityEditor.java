@@ -24,9 +24,9 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import t.admin.shared.Batch;
 import t.admin.shared.Instance;
 import t.common.client.DataRecordSelector;
+import t.common.shared.maintenance.Batch;
 
 /**
  * GUI for editing the visibility of a batch.
