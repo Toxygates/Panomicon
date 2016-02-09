@@ -22,11 +22,12 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
-import t.admin.shared.AccessPolicy;
 import t.common.client.components.EnumSelector;
+import t.common.client.maintenance.AccessPolicy;
 import t.common.client.maintenance.ManagedItemEditor;
 import t.common.shared.maintenance.Instance;
 
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 
@@ -35,6 +36,8 @@ public class InstanceEditor extends ManagedItemEditor {
   private final TextBox roleText;
   private final EnumSelector<AccessPolicy> policySelector;
 
+  protected final MaintenanceServiceAsync maintenanceService = GWT.create(MaintenanceService.class);
+  
   public InstanceEditor(@Nullable Instance i, boolean addNew) {
     super(i, addNew);
 

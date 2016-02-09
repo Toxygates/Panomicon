@@ -31,6 +31,7 @@ import t.common.shared.Dataset;
 import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.Instance;
 
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -40,9 +41,11 @@ public class FullBatchEditor extends BatchEditor {
   protected VisibilityEditor visibility;
   protected ListBox datasetBox;
 
+  protected final static MaintenanceServiceAsync maintenanceService = GWT.create(MaintenanceService.class);
+  
   public FullBatchEditor(@Nullable Batch b, boolean addNew, Collection<Dataset> datasets,
       Collection<Instance> instances) {
-    super(b, addNew, datasets, instances);   
+    super(b, addNew, datasets, instances, maintenanceService);   
   }
 
   @Override
@@ -93,8 +96,8 @@ public class FullBatchEditor extends BatchEditor {
             instancesForBatch(), datasetForBatch());
 
     if (addNew && uploader.canProceed()) {
-      maintenanceService.addBatchAsync(b, new TaskCallback(
-          "Upload batch") {
+      batchOps.addBatchAsync(b, new TaskCallback(
+          "Upload batch", batchOps) {
 
         @Override
         protected void onCompletion() {          
@@ -103,7 +106,7 @@ public class FullBatchEditor extends BatchEditor {
         }
       });
     } else {
-      maintenanceService.update(b, editCallback());
+      batchOps.update(b, editCallback());
     }
   }
 

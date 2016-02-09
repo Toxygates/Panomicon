@@ -19,14 +19,14 @@
 package t.admin.client;
 
 import t.common.client.maintenance.ProgressDisplay;
+import t.common.client.rpc.MaintenanceOperationsAsync;
 
 import com.google.gwt.user.client.ui.DialogBox;
 
 public class Utils {
-
-  static void showProgress(String title) {
+  static void showProgress(String title, MaintenanceOperationsAsync maintenanceOps) {
     final DialogBox db = new DialogBox();
-    ProgressDisplay pd = new ProgressDisplay(title) {
+    ProgressDisplay pd = new ProgressDisplay(title, maintenanceOps) {
       @Override
       protected void onDone() {
         db.hide();

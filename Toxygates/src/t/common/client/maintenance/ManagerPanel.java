@@ -26,6 +26,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import t.common.client.Command;
+import t.common.client.Resources;
 import t.common.shared.ManagedItem;
 
 import com.google.gwt.dom.client.Style.Unit;
@@ -40,11 +41,12 @@ abstract public class ManagerPanel<T extends ManagedItem> {
   List<Command> cmds = new ArrayList<Command>();
   private DockLayoutPanel dlp = new DockLayoutPanel(Unit.PX);
   private final String editCaption;
-  private final @Nullable String dialogWidth;
-
-  public ManagerPanel(String editCaption, @Nullable String dialogWidth) {
+  protected final Resources resources;
+  
+  public ManagerPanel(String editCaption, 
+      Resources resources) {
     this.editCaption = editCaption;
-    this.dialogWidth = dialogWidth;
+    this.resources = resources;
     cmds.add(new Command("Add new...") {
       public void run() {
         showEditor(null, true);
@@ -74,10 +76,7 @@ abstract public class ManagerPanel<T extends ManagedItem> {
   protected void showEditor(@Nullable T obj, boolean addNew) {
     final DialogBox db = new DialogBox(false, true);
     db.setText(editCaption);
-    db.setWidget(makeEditor(obj, db, addNew));
-    if (dialogWidth != null) {
-      db.setWidth(dialogWidth);
-    }
+    db.setWidget(makeEditor(obj, db, addNew));    
     db.show();
   }
 

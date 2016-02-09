@@ -19,6 +19,7 @@
 package t.admin.client;
 
 import t.common.client.Resources;
+import t.common.client.maintenance.ListDataCallback;
 import t.common.client.maintenance.ManagerPanel;
 import t.common.client.maintenance.BatchPanel;
 import t.common.client.maintenance.ManagedItemEditor;
@@ -74,7 +75,7 @@ public class AdminConsole implements EntryPoint {
   }
 
   private Widget makeInstancePanel() {
-    ManagerPanel<Instance> ip = new ManagerPanel<Instance>("Edit instance", null) {
+    ManagerPanel<Instance> ip = new ManagerPanel<Instance>("Edit instance", resources) {
       protected ManagedItemEditor makeEditor(Instance i, final DialogBox db, boolean addNew) {
         return new InstanceEditor(i, addNew) {
           @Override
@@ -97,7 +98,7 @@ public class AdminConsole implements EntryPoint {
   }
 
   private Widget makeDatasetPanel() {
-    ManagerPanel<Dataset> dp = new ManagerPanel<Dataset>("Edit datasets", null) {
+    ManagerPanel<Dataset> dp = new ManagerPanel<Dataset>("Edit datasets", resources) {
       protected ManagedItemEditor makeEditor(Dataset d, final DialogBox db, boolean addNew) {
         return new DatasetEditor(d, addNew) {
           @Override
@@ -131,7 +132,7 @@ public class AdminConsole implements EntryPoint {
   }
 
   private Widget makePlatformPanel() {
-    ManagerPanel<Platform> pp = new ManagerPanel<Platform>("Edit platform", null) {
+    ManagerPanel<Platform> pp = new ManagerPanel<Platform>("Edit platform", resources) {
       protected Widget makeEditor(Platform p, final DialogBox db, boolean addNew) {
         return new PlatformEditor(p, addNew) {
           @Override
@@ -198,7 +199,8 @@ public class AdminConsole implements EntryPoint {
     if (!Window.confirm("Are you sure you want to delete the batch " + title + "?")) {
       return;
     }
-    maintenanceService.deleteBatchAsync(object.getTitle(), new TaskCallback("Delete batch") {
+    maintenanceService.deleteBatchAsync(object.getTitle(), 
+        new TaskCallback("Delete batch", maintenanceService) {
       @Override
       protected void onCompletion() {
         refreshBatches();
@@ -211,7 +213,8 @@ public class AdminConsole implements EntryPoint {
     if (!Window.confirm("Are you sure you want to delete the platform " + title + "?")) {
       return;
     }
-    maintenanceService.deletePlatformAsync(object.getTitle(), new TaskCallback("Delete platform") {
+    maintenanceService.deletePlatformAsync(object.getTitle(), 
+        new TaskCallback("Delete platform", maintenanceService) {
       @Override
       protected void onCompletion() {
         refreshPlatforms();

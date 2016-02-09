@@ -18,21 +18,25 @@
 
 package t.common.client.maintenance;
 
+import t.common.client.rpc.MaintenanceOperationsAsync;
+
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.DialogBox;
 
 public class TaskCallback implements AsyncCallback<Void> {
   final String title;
-
-  public TaskCallback(String title) {
+  final MaintenanceOperationsAsync maintenanceOps;
+  
+  public TaskCallback(String title, MaintenanceOperationsAsync maintenanceOps) {
     this.title = title;
+    this.maintenanceOps = maintenanceOps;
   }
 
   @Override
   public void onSuccess(Void result) {
     final DialogBox db = new DialogBox(false, true);
-    ProgressDisplay pd = new ProgressDisplay(title) {
+    ProgressDisplay pd = new ProgressDisplay(title, maintenanceOps) {
       @Override
       protected void onDone() {
         db.hide();

@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import t.common.client.rpc.BatchOperationsAsync;
 import t.common.shared.Dataset;
 import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.Instance;
@@ -16,12 +17,14 @@ public class BatchEditor extends ManagedItemEditor {
   
   final protected Collection<Dataset> datasets;
   final protected Collection<Instance> instances;
+  final protected BatchOperationsAsync batchOps;
   
   public BatchEditor(Batch b, boolean addNew, Collection<Dataset> datasets,
-      Collection<Instance> instances) {
+      Collection<Instance> instances, BatchOperationsAsync batchOps) {
     super(b, addNew);
     this.datasets = datasets;
     this.instances = instances;
+    this.batchOps = batchOps;
     guiBeforeUploader(vp, b, addNew);
 
     if (addNew) { 
@@ -54,8 +57,8 @@ public class BatchEditor extends ManagedItemEditor {
             instancesForBatch(), datasetForBatch());
 
     if (addNew && uploader.canProceed()) {
-      maintenanceService.addBatchAsync(b, new TaskCallback(
-          "Upload batch") {
+      batchOps.addBatchAsync(b, new TaskCallback(
+          "Upload batch", batchOps) {
 
         @Override
         protected void onCompletion() {          
@@ -64,7 +67,7 @@ public class BatchEditor extends ManagedItemEditor {
         }
       });
     } else {
-      maintenanceService.update(b, editCallback());
+      batchOps.update(b, editCallback());
     }
   }
 }

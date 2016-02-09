@@ -25,8 +25,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import t.admin.client.MaintenanceService;
-import t.admin.client.MaintenanceServiceAsync;
 import t.common.client.Command;
 import t.common.shared.ManagedItem;
 
@@ -42,10 +40,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 
 public abstract class ManagedItemEditor extends Composite {
-
-  protected MaintenanceServiceAsync maintenanceService = (MaintenanceServiceAsync) GWT
-      .create(MaintenanceService.class);
-
 
   protected VerticalPanel vp;
   /**
@@ -68,8 +62,7 @@ public abstract class ManagedItemEditor extends Composite {
     if (i != null) {
       idText.setValue(i.getTitle());
       commentArea.setValue(i.getComment());
-    }    
-      
+    }          
   }
 
   protected TextArea addTextArea(String label) {

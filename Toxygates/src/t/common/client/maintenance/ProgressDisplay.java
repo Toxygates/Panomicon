@@ -20,8 +20,8 @@ package t.common.client.maintenance;
 
 import java.util.Date;
 
-import t.admin.client.MaintenanceService;
-import t.admin.client.MaintenanceServiceAsync;
+import t.common.client.rpc.MaintenanceOperations;
+import t.common.client.rpc.MaintenanceOperationsAsync;
 import t.common.shared.maintenance.OperationResults;
 import t.common.shared.maintenance.Progress;
 
@@ -57,10 +57,10 @@ public class ProgressDisplay extends Composite {
   Timer timer;
   private boolean cancelled = false;
 
-  final MaintenanceServiceAsync maintenanceService = (MaintenanceServiceAsync) GWT
-      .create(MaintenanceService.class);
-
-  public ProgressDisplay(String taskName) {
+  final MaintenanceOperationsAsync maintenanceService; 
+      
+  public ProgressDisplay(String taskName, MaintenanceOperationsAsync maintenanceService) {
+    this.maintenanceService = maintenanceService;
     VerticalPanel vp = new VerticalPanel();
     initWidget(vp);
     statusLabel.setStylePrimaryName("taskStatus");
@@ -100,7 +100,7 @@ public class ProgressDisplay extends Composite {
     timer = new Timer() {
       @Override
       public void run() {
-        maintenanceService.getProgress(new AsyncCallback<Progress>() {
+        ProgressDisplay.this.maintenanceService.getProgress(new AsyncCallback<Progress>() {
           @Override
           public void onSuccess(Progress result) {
             setProgress(result);

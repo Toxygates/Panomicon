@@ -20,23 +20,64 @@
 
 package otgviewer.client;
 
+import java.util.ArrayList;
+
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
+import t.common.client.maintenance.BatchEditor;
+import t.common.client.maintenance.BatchPanel;
+import t.common.client.maintenance.ListDataCallback;
+import t.common.shared.Dataset;
+import t.common.shared.maintenance.Batch;
+import t.common.shared.maintenance.Instance;
+import t.viewer.client.rpc.UserDataServiceAsync;
 
-import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.view.client.ListDataProvider;
 
 public class MyDataScreen extends Screen {
 
   public static final String key = "my";
   
+  private final UserDataServiceAsync userData;
+  private final Resources resources; 
+  private final ListDataProvider<Batch> batchData = new ListDataProvider<Batch>();
+  
   public MyDataScreen(ScreenManager man) {
     super("My data", key, false, man);
+    userData = man.userDataService();
+    resources = man.resources();
   }
   
   public Widget content() {
-    return new SimplePanel();
-    //return new BatchEditor(b, addNew, datasets, instances)
+    BatchPanel bp = new BatchPanel("Edit batch", userData, resources) {
+      
+      @Override
+      protected void onDelete(Batch object) {
+        // TODO Auto-generated method stub
+        
+      }
+      
+      @Override
+      protected Widget makeEditor(Batch b, final DialogBox db, boolean addNew) {
+        return new BatchEditor(b, addNew, new ArrayList<Dataset>(), 
+            new ArrayList<Instance>(), userData) {
+          @Override
+          protected void onFinishOrAbort() {
+            db.hide();
+            doRefresh();
+          }
+        };
+      }
+      
+      @Override
+      protected void doRefresh() {
+        userData.getBatches(new ListDataCallback<Batch>(batchData, "batch list"));        
+      }
+    };   
+    batchData.addDataDisplay(bp.table());
+    return bp.table();
   }
 
 }

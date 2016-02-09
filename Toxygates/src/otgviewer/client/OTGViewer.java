@@ -31,7 +31,7 @@ public class OTGViewer extends TApplication {
     addScreenSeq(new RankingScreen(this));
     addScreenSeq(new PathologyScreen(this));
     addScreenSeq(new SampleDetailScreen(this));
-//    addScreenSeq(new MyDataScreen(this));
+    addScreenSeq(new MyDataScreen(this));
   }
 
   final private OTGSchema schema = new OTGSchema();

@@ -25,6 +25,7 @@ import javax.annotation.Nullable;
 import t.common.client.maintenance.ManagedItemEditor;
 import t.common.shared.Dataset;
 
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 
@@ -33,6 +34,8 @@ public class DatasetEditor extends ManagedItemEditor {
   private final TextBox descText;
   protected TextArea publicComments;
 
+  protected final MaintenanceServiceAsync maintenanceService = GWT.create(MaintenanceService.class);
+  
   public DatasetEditor(@Nullable Dataset d, boolean addNew) {
     super(d, addNew);
 

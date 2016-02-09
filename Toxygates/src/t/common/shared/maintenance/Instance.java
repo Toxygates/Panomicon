@@ -22,7 +22,7 @@ package t.common.shared.maintenance;
 
 import java.util.Date;
 
-import t.admin.shared.AccessPolicy;
+import t.common.client.maintenance.AccessPolicy;
 import t.common.shared.ManagedItem;
 
 @SuppressWarnings("serial")
