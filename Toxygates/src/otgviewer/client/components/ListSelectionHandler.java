@@ -20,7 +20,7 @@ package otgviewer.client.components;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -42,7 +42,7 @@ public abstract class ListSelectionHandler<T> {
   protected List<ListSelectionHandler<?>> afterHandlers = new ArrayList<ListSelectionHandler<?>>();
   protected String description;
   protected ListBox list;
-  protected T[] lastResult;
+  protected List<T> lastResult;
   protected T lastSelected;
   protected boolean allOption;
   protected String[] referenceOrdering; // optional reference to assist sorting of items
@@ -72,7 +72,7 @@ public abstract class ListSelectionHandler<T> {
           if (list.getItemText(sel).equals("(All)") && allOption) {
             lastSelected = null;
           } else if (sel != -1) {
-            lastSelected = lastResult[sel];
+            lastSelected = lastResult.get(sel);
           } else {
             lastSelected = null;
           }
@@ -127,31 +127,27 @@ public abstract class ListSelectionHandler<T> {
         if (warnIfNone && result.length == 0) {
           Window.alert("No results were found.");
         }
-        setItems(result);
+        setItems(Arrays.asList(result));
       }
     };
   }
 
-  public void setItems(Collection<T> items) {
-    setItems((T[]) items.toArray());
-  }
-
-  public void setItems(T[] result) {
-    sort(result);
-    lastResult = result;
+  public void setItems(List<T> items) {
+    sort(items);
+    lastResult = items;
     list.clear();
-    for (T t : result) {
+    for (T t : items) {
       list.addItem(representation(t));
     }
     if (allOption) {
       list.addItem("(All)");
     }
     list.setEnabled(true);
-    handleRetrieval(result);
+    handleRetrieval(items);
   }
 
-  protected void sort(T[] items) {
-    Arrays.sort(items, new Comparator<T>() {
+  protected void sort(List<T> items) {
+    Collections.sort(items, new Comparator<T>() {
       public int compare(T o1, T o2) {
         if (referenceOrdering != null) {
           Integer i1 = SharedUtils.indexOf(referenceOrdering, representation(o1));
@@ -170,7 +166,7 @@ public abstract class ListSelectionHandler<T> {
     return value.toString();
   }
 
-  protected void handleRetrieval(T[] result) {
+  protected void handleRetrieval(List<T> result) {
 
   }
 
