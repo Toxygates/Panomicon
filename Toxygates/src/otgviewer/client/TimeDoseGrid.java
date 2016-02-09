@@ -70,7 +70,8 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 	protected List<String> minorValues = new ArrayList<String>();
 	
 	//First pair member: treated samples, second: control samples or null
-	protected Pair<Unit, Unit>[] availableUnits;
+	protected List<Pair<Unit, Unit>> availableUnits = 
+	    new ArrayList<Pair<Unit, Unit>>();
 	protected Logger logger = SharedUtils.getLogger("tdgrid");
 	
 	protected String emptyMessage;
@@ -211,7 +212,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			return;
 		}
 		fetchingSamples = true;
-		availableUnits = new Pair[0]; 
+		availableUnits.clear(); 
 		String[] compounds = chosenCompounds.toArray(new String[0]);
 		final String[] fetchingForCompounds = compounds;
 		sparqlService.units(chosenSampleClass, majorParameter, compounds,
@@ -231,7 +232,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 				    //Fetch again - the compounds changed while we were loading data
 				    fetchSamples();
 				} else {
-	              availableUnits = result;
+	              availableUnits = Arrays.asList(result);	              
 //	              logger.info("Got " + result.length + " units");
 	              samplesAvailable();
 				}
@@ -339,8 +340,8 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			}
 			r++;
 		}
-		if (availableUnits == null || availableUnits.length == 0) {
-		  availableUnits = allUnits.toArray(new Pair[0]);
+		if (availableUnits.size() == 0) {
+		  availableUnits = allUnits;
 		}
 	}
 	

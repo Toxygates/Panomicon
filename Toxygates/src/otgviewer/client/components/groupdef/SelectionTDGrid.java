@@ -384,9 +384,9 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
       samplesWaiting = true;
       return; //wait
     }
-    logger.info("Samples available: " + availableUnits.length + " units.");
-    if (availableUnits[0] != null) {
-      logger.info("1st: " + availableUnits[0]);
+    logger.info("Samples available: " + availableUnits.size() + " units.");
+    if (availableUnits.get(0) != null) {
+      logger.info("1st: " + availableUnits.get(0));
     }
     
     controlUnits.clear();
@@ -434,7 +434,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     }
 
     if (listener != null) {
-      listener.availableUnitsChanged(this, Arrays.asList(availableUnits));
+      listener.availableUnitsChanged(this, availableUnits);
     }
   }
   

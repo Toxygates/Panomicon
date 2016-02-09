@@ -8,7 +8,6 @@ import java.util.Set;
 import t.admin.shared.Batch;
 import t.admin.shared.Instance;
 import t.common.shared.Dataset;
-import t.common.shared.ManagedItem;
 
 import com.google.gwt.user.client.ui.VerticalPanel;
 
