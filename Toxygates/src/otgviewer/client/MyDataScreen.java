@@ -36,6 +36,8 @@ import t.viewer.client.rpc.UserDataServiceAsync;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 
@@ -70,10 +72,31 @@ public class MyDataScreen extends Screen {
       protected Widget makeEditor(Batch b, final DialogBox db, boolean addNew) {
         return new BatchEditor(b, addNew, new ArrayList<Dataset>(), 
             new ArrayList<Instance>(), userData) {
+          ListBox visList;
+          
           @Override
           protected void onFinishOrAbort() {
             db.hide();
             doRefresh();
+          }
+          
+          @Override
+          protected void guiBeforeUploader(VerticalPanel vp, Batch b, boolean addNew) {
+            visList = new ListBox();
+            vp.add(new Label("Visibility"));
+            visList.addItem("Private");
+            visList.addItem("Shared");
+            vp.add(visList);
+          }
+          
+          @Override
+          protected String datasetForBatch() {
+            String vis = visList.getSelectedValue();
+            if (vis.equals("Private")) {
+              return "user-unique"; //TODO
+            } else {
+              return "adjuvant-shared"; //TODO
+            }
           }
         };
       }

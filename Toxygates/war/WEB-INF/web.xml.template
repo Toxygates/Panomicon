@@ -84,6 +84,15 @@
   	</servlet-mapping>
   	
   	<servlet>
+		<servlet-name>userDataServlet</servlet-name>
+		<servlet-class>otgviewer.server.rpc.UserDataServiceImpl</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>userDataServlet</servlet-name>
+		<url-pattern>/toxygates/userData</url-pattern>
+	</servlet-mapping>
+		
+  	<servlet>
 		<servlet-name>targetmineServlet</servlet-name>
 		<servlet-class>otgviewer.server.targetmine.TargetmineServiceImpl</servlet-class>
 	</servlet>
