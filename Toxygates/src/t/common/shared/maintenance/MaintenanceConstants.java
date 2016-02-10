@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.admin.shared;
+package t.common.shared.maintenance;
 
 public interface MaintenanceConstants {
 

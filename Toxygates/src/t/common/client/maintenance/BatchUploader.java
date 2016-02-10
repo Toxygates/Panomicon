@@ -18,9 +18,9 @@
 
 package t.common.client.maintenance;
 
-import static t.admin.shared.MaintenanceConstants.callPrefix;
-import static t.admin.shared.MaintenanceConstants.dataPrefix;
-import static t.admin.shared.MaintenanceConstants.metaPrefix;
+import static t.common.shared.maintenance.MaintenanceConstants.callPrefix;
+import static t.common.shared.maintenance.MaintenanceConstants.dataPrefix;
+import static t.common.shared.maintenance.MaintenanceConstants.metaPrefix;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;

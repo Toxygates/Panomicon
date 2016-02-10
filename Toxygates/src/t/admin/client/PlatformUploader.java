@@ -18,7 +18,7 @@
 
 package t.admin.client;
 
-import static t.admin.shared.MaintenanceConstants.platformPrefix;
+import static t.common.shared.maintenance.MaintenanceConstants.platformPrefix;
 import t.common.client.maintenance.ItemUploader;
 import t.common.client.maintenance.UploadWrapper;
 

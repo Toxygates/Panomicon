@@ -44,7 +44,9 @@ abstract public class ManagerPanel<T extends ManagedItem> {
   protected final Resources resources;
   
   public ManagerPanel(String editCaption, 
-      Resources resources) {
+      Resources resources,
+      boolean scrolled,
+      boolean buttonsNorth) {
     this.editCaption = editCaption;
     this.resources = resources;
     cmds.add(new Command("Add new...") {
@@ -67,8 +69,10 @@ abstract public class ManagerPanel<T extends ManagedItem> {
     addMidColumns(table);
     sc.addEndColumns();
 
-    dlp.addSouth(makeButtons(cmds), 35);
-    dlp.add(t.common.client.Utils.makeScrolled(table));
+    if (!buttonsNorth) {
+      dlp.addSouth(makeButtons(cmds), 35);
+    }
+    dlp.add(scrolled ? t.common.client.Utils.makeScrolled(table) : table);
   }
 
   public CellTable<T> table() { return table; }
@@ -86,7 +90,7 @@ abstract public class ManagerPanel<T extends ManagedItem> {
 
   protected void addMidColumns(CellTable<T> table) {}
 
-  protected List<Command> commands() {
+  public List<Command> commands() {
     return cmds;
   }
 

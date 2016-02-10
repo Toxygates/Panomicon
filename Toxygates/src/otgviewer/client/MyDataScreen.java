@@ -24,6 +24,7 @@ import java.util.ArrayList;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
+import t.common.client.Utils;
 import t.common.client.maintenance.BatchEditor;
 import t.common.client.maintenance.BatchPanel;
 import t.common.client.maintenance.ListDataCallback;
@@ -33,6 +34,8 @@ import t.common.shared.maintenance.Instance;
 import t.viewer.client.rpc.UserDataServiceAsync;
 
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 
@@ -44,14 +47,18 @@ public class MyDataScreen extends Screen {
   private final Resources resources; 
   private final ListDataProvider<Batch> batchData = new ListDataProvider<Batch>();
   
+  private HorizontalPanel cmds = t.viewer.client.Utils.mkHorizontalPanel();
+  
   public MyDataScreen(ScreenManager man) {
     super("My data", key, false, man);
     userData = man.userDataService();
     resources = man.resources();
+    addToolbar(cmds, 35);
   }
   
   public Widget content() {
-    BatchPanel bp = new BatchPanel("Edit batch", userData, resources) {
+    BatchPanel bp = new BatchPanel("Edit batch", userData, resources,
+        true, true) {
       
       @Override
       protected void onDelete(Batch object) {
@@ -75,8 +82,15 @@ public class MyDataScreen extends Screen {
       protected void doRefresh() {
         userData.getBatches(new ListDataCallback<Batch>(batchData, "batch list"));        
       }
+      
+      @Override
+      protected boolean hasVisibility() {
+        return false;
+      }
     };   
     batchData.addDataDisplay(bp.table());
+    cmds.add(Utils.makeButtons(bp.commands()));
+    cmds.add(new Label("(Click here to download example files)"));
     return bp.table();
   }
 

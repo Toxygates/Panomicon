@@ -75,7 +75,8 @@ public class AdminConsole implements EntryPoint {
   }
 
   private Widget makeInstancePanel() {
-    ManagerPanel<Instance> ip = new ManagerPanel<Instance>("Edit instance", resources) {
+    ManagerPanel<Instance> ip = new ManagerPanel<Instance>("Edit instance", resources,
+        true, false) {
       protected ManagedItemEditor makeEditor(Instance i, final DialogBox db, boolean addNew) {
         return new InstanceEditor(i, addNew) {
           @Override
@@ -98,7 +99,8 @@ public class AdminConsole implements EntryPoint {
   }
 
   private Widget makeDatasetPanel() {
-    ManagerPanel<Dataset> dp = new ManagerPanel<Dataset>("Edit datasets", resources) {
+    ManagerPanel<Dataset> dp = new ManagerPanel<Dataset>("Edit datasets", resources,
+        true, false) {
       protected ManagedItemEditor makeEditor(Dataset d, final DialogBox db, boolean addNew) {
         return new DatasetEditor(d, addNew) {
           @Override
@@ -132,7 +134,8 @@ public class AdminConsole implements EntryPoint {
   }
 
   private Widget makePlatformPanel() {
-    ManagerPanel<Platform> pp = new ManagerPanel<Platform>("Edit platform", resources) {
+    ManagerPanel<Platform> pp = new ManagerPanel<Platform>("Edit platform", resources,
+        true, false) {
       protected Widget makeEditor(Platform p, final DialogBox db, boolean addNew) {
         return new PlatformEditor(p, addNew) {
           @Override
@@ -167,7 +170,8 @@ public class AdminConsole implements EntryPoint {
   }
 
   private Widget makeBatchPanel() {    
-    BatchPanel bp = new BatchPanel("Edit batch", maintenanceService, resources) {
+    BatchPanel bp = new BatchPanel("Edit batch", maintenanceService, resources,
+        true, false) {
       @Override
       protected Widget makeEditor(Batch b, final DialogBox db, boolean addNew) {
         return new FullBatchEditor(b, addNew, datasetData.getList(), instanceData.getList()) {

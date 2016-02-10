@@ -18,8 +18,9 @@ abstract public class BatchPanel extends ManagerPanel<Batch> {
 
   protected final BatchOperationsAsync batchOps;
   
-  public BatchPanel(String editCaption, BatchOperationsAsync batchOps, Resources resources) {
-    super(editCaption, resources);
+  public BatchPanel(String editCaption, BatchOperationsAsync batchOps, 
+      Resources resources, boolean scrolled, boolean buttonsNorth) {
+    super(editCaption, resources, scrolled, buttonsNorth);
     this.batchOps = batchOps;
   }
   
@@ -27,6 +28,10 @@ abstract public class BatchPanel extends ManagerPanel<Batch> {
 
   abstract protected Widget makeEditor(Batch b, final DialogBox db, boolean addNew);
 
+  protected boolean hasVisibility() {
+    return true;
+  }
+  
   @Override 
   protected void addMidColumns(CellTable<Batch> table) {
     TextColumn<Batch> samplesColumn = new TextColumn<Batch>() {
@@ -82,24 +87,25 @@ abstract public class BatchPanel extends ManagerPanel<Batch> {
     table.addColumn(dsColumn, "Dataset");
     table.setColumnWidth(dsColumn, "8em");
 
-    TextColumn<Batch> visibilityColumn = new TextColumn<Batch>() {
-      @Override
-      public String getValue(Batch object) {
-        StringBuilder sb = new StringBuilder();
-        for (String inst : object.getEnabledInstances()) {
-          sb.append(inst);
-          sb.append(", ");
+    if (hasVisibility()) {
+      TextColumn<Batch> visibilityColumn = new TextColumn<Batch>() {
+        @Override
+        public String getValue(Batch object) {
+          StringBuilder sb = new StringBuilder();
+          for (String inst : object.getEnabledInstances()) {
+            sb.append(inst);
+            sb.append(", ");
+          }
+          String r = sb.toString();
+          if (r.length() > 2) {
+            return r.substring(0, r.length() - 2);
+          } else {
+            return "";
+          }
         }
-        String r = sb.toString();
-        if (r.length() > 2) {
-          return r.substring(0, r.length() - 2);
-        } else {
-          return "";
-        }
-      }
-    };
-
-    table.addColumn(visibilityColumn, "Visibility");
+      };
+      table.addColumn(visibilityColumn, "Visibility");
+    }
   }
 
   protected void showBatchOverview(String title, String[][] data) {
