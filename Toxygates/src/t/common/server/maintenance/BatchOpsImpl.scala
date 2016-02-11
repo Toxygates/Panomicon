@@ -14,6 +14,7 @@ import t.sparql.Batches
 import scala.collection.JavaConversions._
 import t.common.shared.ManagedItem
 import t.sparql.TRDF
+import t.common.shared.Dataset
 
 /**
  * Routines for servlets that support the management of batches.
@@ -130,4 +131,37 @@ import java.util.HashSet
       case _ => throw new Exception(s"Unexpected item type $i")
     }
   }
+
+  /**
+   * Add a new dataset.
+   * @param mustNotExist if true, we throw an exception if the dataset already exists.
+   */
+  protected def addDataset(d: Dataset, mustNotExist: Boolean): Unit = {
+    val dm = new Datasets(baseConfig.triplestore)
+
+    val id = d.getTitle()
+    if (!TRDF.isValidIdentifier(id)) {
+      throw new MaintenanceException(
+        s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
+    }
+
+    if (dm.list.contains(id)) {
+      if (mustNotExist) {
+        throw new MaintenanceException(s"The dataset $id already exists, please choose a different name")
+      }
+    } else {
+      maintenance {
+        dm.addWithTimestamp(id, TRDF.escape(d.getComment))
+        updateDataset(d)
+      }
+    }
+  }
+
+  protected def updateDataset(d: Dataset): Unit = {
+    val ds = new Datasets(baseConfig.triplestore)
+    ds.setComment(d.getTitle, TRDF.escape(d.getComment))
+    ds.setDescription(d.getTitle, TRDF.escape(d.getDescription))
+    ds.setPublicComment(d.getTitle, TRDF.escape(d.getPublicComment))
+  }
+
 }

@@ -9,6 +9,7 @@ import t.common.shared.maintenance.OperationResults
 import org.apache.commons.fileupload.FileItem
 import t.common.shared.maintenance.Progress
 import scala.collection.JavaConversions._
+import javax.servlet.http.HttpServletRequest
 
 /**
  * Servlet routines for uploading files and running tasks.
@@ -16,11 +17,12 @@ import scala.collection.JavaConversions._
 trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
   this: TServiceServlet =>
 
-  protected def getAttribute[T](name: String) =
-    getThreadLocalRequest().getSession().getAttribute(name).asInstanceOf[T]
-
-  protected def setAttribute(name: String, x: AnyRef) =
-     getThreadLocalRequest().getSession().setAttribute(name, x)
+  //Methods for accessing the http request's thread local state.
+  //Must be abstract here or an access error will be thrown at runtime.
+  //(Implement in the concrete subclass)
+  protected def getAttribute[T](name: String): T
+  protected def setAttribute(name: String, x: AnyRef): Unit
+  protected def request: HttpServletRequest
 
   protected def setLastTask(task: String) = setAttribute("lastTask", task)
   protected def lastTask: String = getAttribute("lastTask")
@@ -32,12 +34,12 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
     if (tc != null) {
     	tc.dropAll()
     }
-    UploadServlet.removeSessionFileItems(getThreadLocalRequest())
+    UploadServlet.removeSessionFileItems(request)
     TaskRunner.shutdown()
   }
 
   protected def beforeTaskCleanup() {
-    UploadServlet.removeSessionFileItems(getThreadLocalRequest())
+    UploadServlet.removeSessionFileItems(request)
   }
 
   def getOperationResults(): OperationResults = {
@@ -118,7 +120,7 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
    * @return
    */
   protected def getFile(tag: String): Option[FileItem] = {
-    val items = UploadServlet.getSessionFileItems(getThreadLocalRequest());
+    val items = UploadServlet.getSessionFileItems(request);
     if (items == null) {
       throw new MaintenanceException("No files have been uploaded yet.")
     }
@@ -132,7 +134,7 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
   }
 
   protected def showUploadedFiles(): Unit = {
-    val items = UploadServlet.getSessionFileItems(getThreadLocalRequest())
+    val items = UploadServlet.getSessionFileItems(request)
     if (items != null) {
       for (fi <- items) {
         System.out.println("File " + fi.getName() + " size "

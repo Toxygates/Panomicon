@@ -65,6 +65,14 @@ with BatchOpsImpl with MaintenanceService {
     homeDir = config.webappHomeDir
   }
 
+  override protected def getAttribute[T](name: String) =
+    getThreadLocalRequest().getSession().getAttribute(name).asInstanceOf[T]
+
+  override protected def setAttribute(name: String, x: AnyRef): Unit =
+     getThreadLocalRequest().getSession().setAttribute(name, x)
+
+  override protected def request = getThreadLocalRequest
+
   def addPlatformAsync(p: Platform, affymetrixFormat: Boolean): Unit = {
     showUploadedFiles()
     grabRunner()
@@ -97,7 +105,7 @@ with BatchOpsImpl with MaintenanceService {
 
   def add(i: ManagedItem): Unit = {
     i match {
-      case d: Dataset => addDataset(d)
+      case d: Dataset => addDataset(d, true)
       case i: Instance => addInstance(i)
       case _ => throw new MaintenanceException(s"Illegal API usage, cannot add $i")
     }
@@ -131,25 +139,6 @@ with BatchOpsImpl with MaintenanceService {
         throw new MaintenanceException(s"Creating webapp instance failed: return code $p")
       }
       im.addWithTimestamp(id, TRDF.escape(i.getComment))
-    }
-  }
-
-  private def addDataset(d: Dataset): Unit = {
-    val dm = new Datasets(baseConfig.triplestore)
-
-    val id = d.getTitle()
-    if (!TRDF.isValidIdentifier(id)) {
-      throw new MaintenanceException(
-        s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
-    }
-
-    if (dm.list.contains(id)) {
-      throw new MaintenanceException(s"The dataset $id already exists, please choose a different name")
-    }
-
-    maintenance {
-      dm.addWithTimestamp(id, TRDF.escape(d.getComment))
-      updateDataset(d)
     }
   }
 
@@ -222,13 +211,6 @@ with BatchOpsImpl with MaintenanceService {
     val pfs = new Platforms(baseConfig.triplestore)
     pfs.setComment(p.getTitle, p.getComment)
     pfs.setPublicComment(p.getTitle, p.getPublicComment)
-  }
-
-  private def updateDataset(d: Dataset): Unit = {
-    val ds = new Datasets(baseConfig.triplestore)
-    ds.setComment(d.getTitle, TRDF.escape(d.getComment))
-    ds.setDescription(d.getTitle, TRDF.escape(d.getDescription))
-    ds.setPublicComment(d.getTitle, TRDF.escape(d.getPublicComment))
   }
 
   private def updateInstance(i: Instance): Unit = {

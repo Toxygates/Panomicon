@@ -21,6 +21,8 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
@@ -59,6 +61,12 @@ public class MyDataScreen extends Screen {
   }
   
   public Widget content() {
+    final String userKey = manager().appInfo().getUserKey();
+    logger.info("The unique user key is: " + userKey);
+    final Set<String> instancesForBatch = new HashSet<String>();
+    instancesForBatch.add("dev");
+    instancesForBatch.add("toxygates-test");
+    
     BatchPanel bp = new BatchPanel("Edit batch", userData, resources,
         true, true) {
       
@@ -93,10 +101,15 @@ public class MyDataScreen extends Screen {
           protected String datasetForBatch() {
             String vis = visList.getSelectedValue();
             if (vis.equals("Private")) {
-              return "user-unique"; //TODO
-            } else {
+              return "user-" + userKey;
+            } else {              
               return "adjuvant-shared"; //TODO
             }
+          }
+          
+          @Override
+          protected Set<String> instancesForBatch() {
+            return instancesForBatch;
           }
         };
       }
@@ -114,6 +127,7 @@ public class MyDataScreen extends Screen {
     batchData.addDataDisplay(bp.table());
     cmds.add(Utils.makeButtons(bp.commands()));
     cmds.add(new Label("(Click here to download example files)"));
+    cmds.add(new Label("Your access key is: " + userKey));
     return bp.table();
   }
 

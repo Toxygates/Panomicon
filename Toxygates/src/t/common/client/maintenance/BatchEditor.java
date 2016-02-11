@@ -12,7 +12,7 @@ import t.common.shared.maintenance.Instance;
 
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-public class BatchEditor extends ManagedItemEditor {
+abstract public class BatchEditor extends ManagedItemEditor {
   protected BatchUploader uploader;
   
   final protected Collection<Dataset> datasets;
@@ -42,13 +42,9 @@ public class BatchEditor extends ManagedItemEditor {
   protected void guiAfterUploader(VerticalPanel vp, Batch b, boolean addNew) {    
   }
   
-  protected Set<String> instancesForBatch() {
-    return new HashSet<String>(); //TODO
-  }
+  abstract protected Set<String> instancesForBatch();
   
-  protected String datasetForBatch() {
-    return ""; //TODO
-  }
+  abstract protected String datasetForBatch();
   
   @Override
   protected void triggerEdit() {  
