@@ -257,6 +257,7 @@ object KCDBRegistry {
       getMyWriter(rp).get.close()
       inWriting -= rp
       setMyWriter(rp, null)
+      readers -= rp
 
     } else {
       System.err.println(s"Warning, incorrect release request - $file was not open")
