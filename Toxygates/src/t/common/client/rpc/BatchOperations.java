@@ -1,5 +1,7 @@
 package t.common.client.rpc;
 
+import javax.annotation.Nullable;
+
 import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.MaintenanceException;
 
@@ -7,7 +9,7 @@ import t.common.shared.maintenance.MaintenanceException;
  * Management operations for batches.
  */
 public interface BatchOperations extends MaintenanceOperations {
-  public Batch[] getBatches();
+  public Batch[] getBatches(@Nullable String dataset);
   
   void addBatchAsync(Batch b);
 

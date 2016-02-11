@@ -132,22 +132,27 @@ object KCDBRegistry {
     }
 
     if (getMyWriter(rp) != None) {
-      //this thread is writing
-      incrReadCount(rp)
-      getMyWriter(rp)
+      if (inWriting.contains(rp)) {
+        //this thread is writing
+        incrReadCount(rp)
+        return getMyWriter(rp)
+      } else {
+        //was forcibly closed
+        setMyWriter(rp, null)
+      }
     } else if (inWriting.contains(rp)) {
       println("Writing in progress - reader denied")
-      None
-    } else {
-      incrReadCount(rp)
-      if (readers.contains(rp)) {
-        Some(readers(rp))
-      } else {
-        val d = openRead(file)
-        readers += rp -> d
-        Some(d)
-      }
+      return None
     }
+    incrReadCount(rp)
+    if (readers.contains(rp)) {
+      Some(readers(rp))
+    } else {
+      val d = openRead(file)
+      readers += rp -> d
+      Some(d)
+    }
+
   }
 
   protected[global] def getReadCount(file: String): Int = {
@@ -185,7 +190,13 @@ object KCDBRegistry {
     val rp = realPath(file)
     synchronized {
       if (getMyWriter(rp) != None) {
-        return getMyWriter(rp)
+        if (inWriting.contains(rp)) {
+          return getMyWriter(rp)
+        } else {
+          //was forcibly closed
+          setMyWriter(rp, null)
+          inWriting -= rp
+        }
       } else if (inWriting.contains(rp)) {
         println("Writing by other thread in progress - writer denied")
         return None
@@ -220,6 +231,7 @@ object KCDBRegistry {
       }
       val w = openWrite(file)
       inWriting += rp
+      readers += rp -> w
       Some(w)
     } else {
       None
@@ -249,6 +261,17 @@ object KCDBRegistry {
     } else {
       System.err.println(s"Warning, incorrect release request - $file was not open")
     }
+  }
+
+  //TODO simplify this and this class in general (interacts with algorithms above)
+  def forceCloseWriters(): Unit = synchronized {
+    val all = inWriting
+    for (f <- all) {
+      readers(f).close()
+    }
+    readCount --= all
+    readers --= all
+    inWriting = Set()
   }
 
   /**

@@ -256,7 +256,8 @@ class BatchManager(context: Context) {
   def addBatch[S <: Series[S]](title: String, comment: String, metadata: Metadata,
     dataFile: String, callFile: Option[String],
     append: Boolean, sbuilder: SeriesBuilder[S],
-    exprAsFold: Boolean = false, simpleLog2: Boolean = false): Iterable[Tasklet] = {
+    exprAsFold: Boolean = false, simpleLog2: Boolean = false,
+    withSeries: Boolean = true): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
     val ts = config.triplestore.get
 
@@ -276,18 +277,23 @@ class BatchManager(context: Context) {
 
     r :+= addExprData(dataFile, callFile, exprAsFold)
     r :+= addFoldsData(metadata, dataFile, callFile, simpleLog2)
-    r :+= addSeriesData(metadata, sbuilder)
+    if (withSeries) {
+      r :+= addSeriesData(metadata, sbuilder)
+    }
     r
   }
 
   def deleteBatch[S <: Series[S]](title: String,
-    sbuilder: SeriesBuilder[S], rdfOnly: Boolean = false): Iterable[Tasklet] = {
+    sbuilder: SeriesBuilder[S], rdfOnly: Boolean = false,
+    withSeries: Boolean = true): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
     implicit val mc = matrixContext()
 
     //Enums can not yet be deleted.
     if (!rdfOnly) {
-      r :+= deleteSeriesData(title, sbuilder)
+      if (withSeries) {
+        r :+= deleteSeriesData(title, sbuilder)
+      }
       r :+= deleteFoldData(title)
       r :+= deleteExprData(title)
       r :+= deleteSampleIDs(title)

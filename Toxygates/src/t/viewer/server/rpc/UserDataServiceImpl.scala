@@ -5,6 +5,7 @@ import t.common.server.maintenance.BatchOpsImpl
 import t.viewer.server.Configuration
 import t.common.shared.maintenance.Batch
 import t.common.shared.Dataset
+import t.global.KCDBRegistry
 
 /**
  * A servlet for managing user data (as batches).
@@ -14,6 +15,8 @@ import t.common.shared.Dataset
 abstract class UserDataServiceImpl extends TServiceServlet
   with BatchOpsImpl with UserDataService {
   private var homeDir: String = _
+
+  override protected def withSeries: Boolean = false
 
   override def localInit(config: Configuration) {
     super.localInit(config)
@@ -36,5 +39,10 @@ abstract class UserDataServiceImpl extends TServiceServlet
         "Automatically generated", null, "Automatically generated")
     addDataset(d, false)
     super.updateBatch(b)
+  }
+
+  override protected def afterTaskCleanup(): Unit = {
+    super.afterTaskCleanup()
+    KCDBRegistry.forceCloseWriters()
   }
 }

@@ -25,6 +25,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
   protected def exprAsFold: Boolean = false
   protected def simpleLog2: Boolean = false
+  protected def withSeries: Boolean = true
 
   def addBatchAsync(b: Batch): Unit = {
 	  showUploadedFiles()
@@ -48,33 +49,39 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
       val metaFile = getAsTempFile(tempFiles, metaPrefix, metaPrefix, "tsv").get
       val dataFile = getAsTempFile(tempFiles, dataPrefix, dataPrefix, "csv")
-          val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv")
+      val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv")
 
       val md = factory.tsvMetadata(metaFile.getAbsolutePath())
       TaskRunner ++= bm.addBatch(b.getTitle, b.getComment, md,
         dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
         false, baseConfig.seriesBuilder,
-        exprAsFold, simpleLog2)
+        exprAsFold, simpleLog2, withSeries)
       TaskRunner += Tasklet.simple("Set batch parameters", () => updateBatch(b))
     }
   }
 
 import java.util.HashSet
 
-  def getBatches: Array[Batch] = {
+  def getBatches(dataset: String): Array[Batch] = {
+    val useDataset = Option(dataset)
+
     val bs = new Batches(baseConfig.triplestore)
     val ns = bs.numSamples
     val comments = bs.comments
     val dates = bs.timestamps
     val datasets = bs.datasets
-    bs.list.map(b => {
+    val r = bs.list.map(b => {
       val samples = ns.getOrElse(b, 0)
       new Batch(b, samples, comments.getOrElse(b, ""),
           dates.getOrElse(b, null),
           new HashSet(setAsJavaSet(bs.listAccess(b).toSet)),
           datasets.getOrElse(b, ""))
     }).toArray
+    useDataset match {
+      case None => r
+      case Some(ds) => r.filter(_.getDataset == ds)
+    }
   }
 
   def deleteBatchAsync(id: String): Unit = {
@@ -83,7 +90,7 @@ import java.util.HashSet
     cleanMaintenance {
       TaskRunner.start()
       setLastTask("Delete batch")
-      TaskRunner ++= bm.deleteBatch(id, baseConfig.seriesBuilder)
+      TaskRunner ++= bm.deleteBatch(id, baseConfig.seriesBuilder, false, withSeries)
     }
   }
 

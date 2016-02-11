@@ -212,7 +212,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 			return;
 		}
 		fetchingSamples = true;
-		availableUnits.clear(); 
+		availableUnits = new ArrayList<Pair<Unit, Unit>>(); 
 		String[] compounds = chosenCompounds.toArray(new String[0]);
 		final String[] fetchingForCompounds = compounds;
 		sparqlService.units(chosenSampleClass, majorParameter, compounds,

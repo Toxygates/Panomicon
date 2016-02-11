@@ -24,17 +24,20 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import t.common.client.Utils;
 import t.common.client.maintenance.BatchEditor;
 import t.common.client.maintenance.BatchPanel;
 import t.common.client.maintenance.ListDataCallback;
+import t.common.client.maintenance.TaskCallback;
 import t.common.shared.Dataset;
 import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.Instance;
 import t.viewer.client.rpc.UserDataServiceAsync;
 
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -53,16 +56,27 @@ public class MyDataScreen extends Screen {
   
   private HorizontalPanel cmds = t.viewer.client.Utils.mkHorizontalPanel();
   
+  final String userKey; 
+  final String userDataset;  
+  
   public MyDataScreen(ScreenManager man) {
     super("My data", key, false, man);
     userData = man.userDataService();
     resources = man.resources();
     addToolbar(cmds, 35);
+    
+    String key = getParser().getItem("userDataKey");
+    if (key == null) {
+      key = manager().appInfo().getUserKey();
+      getParser().setItem("userDataKey", key);
+    }
+    userKey = key;
+    userDataset = "user-" + key;
+    
+    logger.info("The unique user key is: " + userKey);
   }
   
   public Widget content() {
-    final String userKey = manager().appInfo().getUserKey();
-    logger.info("The unique user key is: " + userKey);
     final Set<String> instancesForBatch = new HashSet<String>();
     instancesForBatch.add("dev");
     instancesForBatch.add("toxygates-test");
@@ -72,8 +86,9 @@ public class MyDataScreen extends Screen {
       
       @Override
       protected void onDelete(Batch object) {
-        // TODO Auto-generated method stub
-        
+        if (Window.confirm("Are you sure?")) {
+          deleteBatch(object);
+        }
       }
       
       @Override
@@ -101,7 +116,7 @@ public class MyDataScreen extends Screen {
           protected String datasetForBatch() {
             String vis = visList.getSelectedValue();
             if (vis.equals("Private")) {
-              return "user-" + userKey;
+              return userDataset;
             } else {              
               return "adjuvant-shared"; //TODO
             }
@@ -116,7 +131,7 @@ public class MyDataScreen extends Screen {
       
       @Override
       protected void doRefresh() {
-        userData.getBatches(new ListDataCallback<Batch>(batchData, "batch list"));        
+        refreshBatches();        
       }
       
       @Override
@@ -125,10 +140,25 @@ public class MyDataScreen extends Screen {
       }
     };   
     batchData.addDataDisplay(bp.table());
+    cmds.setSpacing(10);
     cmds.add(Utils.makeButtons(bp.commands()));
     cmds.add(new Label("(Click here to download example files)"));
     cmds.add(new Label("Your access key is: " + userKey));
+    
+    refreshBatches();
+    
     return bp.table();
   }
 
+  private void refreshBatches() {
+    userData.getBatches(userDataset, new ListDataCallback<Batch>(batchData, "batch list"));
+  }
+  
+  private void deleteBatch(Batch b) {
+    userData.deleteBatchAsync(b.getTitle(), new TaskCallback("Delete batch", userData) {      
+      public void onCompletion() {
+        refreshBatches();
+      }          
+    });
+  }
 }

@@ -267,7 +267,7 @@ public class AdminConsole implements EntryPoint {
   }
 
   private void refreshBatches() {
-    maintenanceService.getBatches(new ListDataCallback<Batch>(batchData, "batch list"));
+    maintenanceService.getBatches(null, new ListDataCallback<Batch>(batchData, "batch list"));
   }
 
   private void refreshInstances() {
