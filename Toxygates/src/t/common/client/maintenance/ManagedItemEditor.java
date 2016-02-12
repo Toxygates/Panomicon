@@ -28,7 +28,6 @@ import javax.annotation.Nullable;
 import t.common.client.Command;
 import t.common.shared.ManagedItem;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;

@@ -20,12 +20,10 @@ package t.common.client.maintenance;
 
 import java.util.Date;
 
-import t.common.client.rpc.MaintenanceOperations;
 import t.common.client.rpc.MaintenanceOperationsAsync;
 import t.common.shared.maintenance.OperationResults;
 import t.common.shared.maintenance.Progress;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
