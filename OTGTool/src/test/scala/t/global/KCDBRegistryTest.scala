@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -39,7 +39,6 @@ class KCDBRegistryTest extends TTestSuite {
     w should not equal(None)
 
     KCDBRegistry.isInWriting(testFile) should equal(true)
-    KCDBRegistry.threadHasWriter(testFile) should equal(true)
 
     KCDBRegistry.getReadCount(testFile) should equal(0)
     val r = KCDBRegistry.getReader(testFile)
@@ -50,16 +49,16 @@ class KCDBRegistryTest extends TTestSuite {
     KCDBRegistry.getReadCount(testFile) should equal(2)
     KCDBRegistry.getReadCount(testFileShort) should equal(2)
 
-    KCDBRegistry.release(testFile)
+    KCDBRegistry.releaseReader(testFile)
     KCDBRegistry.getReadCount(testFile) should equal(1)
 
-    KCDBRegistry.release(testFile)
+    KCDBRegistry.releaseReader(testFile)
     KCDBRegistry.getReadCount(testFile) should equal(0)
     KCDBRegistry.getReadCount(testFileShort) should equal(0)
 
-    KCDBRegistry.release(testFile)
+    KCDBRegistry.closeWriters()
+
     KCDBRegistry.isInWriting(testFile) should equal(false)
-    KCDBRegistry.threadHasWriter(testFile) should equal(false)
     KCDBRegistry.getReadCount(testFile) should equal(0)
   }
 

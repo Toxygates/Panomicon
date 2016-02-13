@@ -85,14 +85,14 @@ object KCIndexDB {
   def apply(file: String, writeMode: Boolean): KCIndexDB = {
     val db = KCDBRegistry.get(file, writeMode)
     db match {
-      case Some(d) => new KCIndexDB(d)
+      case Some(d) => new KCIndexDB(d, writeMode)
       case None    => throw new Exception("Unable to get DB")
     }
   }
 }
 
-class KCIndexDB(db: DB)
-  extends KyotoCabinetDB(db) with IndexDBWriter {
+class KCIndexDB(db: DB, writeMode: Boolean)
+  extends KyotoCabinetDB(db, writeMode) with IndexDBWriter {
 
   val nextKey = "##next"
 

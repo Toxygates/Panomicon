@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -77,7 +77,7 @@ object KCChunkMatrixDB {
     val db = KCDBRegistry.get(file, writeMode)
     db match {
       case Some(d) =>
-        new KCChunkMatrixDB(d)
+        new KCChunkMatrixDB(d, writeMode)
       case None => throw new Exception("Unable to get DB")
     }
   }
@@ -89,8 +89,8 @@ object KCChunkMatrixDB {
  * Value size: 22b * chunksize (2816b at 128 probe chunks)
  * Expected number of records: 5-10 million
  */
-class KCChunkMatrixDB(db: DB)(implicit mc: MatrixContext)
-  extends KyotoCabinetDB(db) with ExtMatrixDB {
+class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
+  extends KyotoCabinetDB(db, writeMode) with ExtMatrixDB {
 
   type V = VectorChunk[PExprValue]
 

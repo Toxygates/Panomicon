@@ -43,6 +43,6 @@ abstract class UserDataServiceImpl extends TServiceServlet
 
   override protected def afterTaskCleanup(): Unit = {
     super.afterTaskCleanup()
-    KCDBRegistry.forceCloseWriters()
+    KCDBRegistry.closeWriters()
   }
 }

@@ -43,7 +43,7 @@ object KCMatrixDB {
   def get(file: String, writeMode: Boolean)(implicit context: MatrixContext): KCMatrixDB = {
     val db = KCDBRegistry.get(file, writeMode)
     db match {
-      case Some(d) => new KCMatrixDB(d)
+      case Some(d) => new KCMatrixDB(d, writeMode)
       case None => throw new Exception("Unable to get DB")
     }
   }
@@ -55,7 +55,7 @@ object KCMatrixDB {
     } else {
       val db = KCDBRegistry.get(file, writeMode)
       db match {
-        case Some(d) => new KCExtMatrixDB(d)
+        case Some(d) => new KCExtMatrixDB(d, writeMode)
         case None    => throw new Exception("Unable to get DB")
       }
     }
@@ -67,9 +67,9 @@ object KCMatrixDB {
  * indexed by sample ID and probe.
  *
  */
-abstract class AbstractKCMatrixDB[E >: Null <: ExprValue](db: DB)
+abstract class AbstractKCMatrixDB[E >: Null <: ExprValue](db: DB, writeMode: Boolean)
 (implicit val context: MatrixContext)
-  extends KyotoCabinetDB(db) with MatrixDB[E, E] {
+  extends KyotoCabinetDB(db, writeMode) with MatrixDB[E, E] {
 
   /**
    * Key size: 8 bytes
@@ -233,8 +233,8 @@ abstract class AbstractKCMatrixDB[E >: Null <: ExprValue](db: DB)
   }
 }
 
-class KCMatrixDB(db: DB)(implicit context: MatrixContext)
-  extends AbstractKCMatrixDB[BasicExprValue](db) {
+class KCMatrixDB(db: DB, writeMode: Boolean)(implicit context: MatrixContext)
+  extends AbstractKCMatrixDB[BasicExprValue](db, writeMode) {
 
   implicit val probeMap = context.probeMap
 
@@ -260,8 +260,8 @@ class KCMatrixDB(db: DB)(implicit context: MatrixContext)
   def emptyValue(probe: String) = BasicExprValue(0.0, 'A', probe)
 }
 
-class KCExtMatrixDB(db: DB)(implicit context: MatrixContext)
-  extends AbstractKCMatrixDB[PExprValue](db) with ExtMatrixDB {
+class KCExtMatrixDB(db: DB, writeMode: Boolean)(implicit context: MatrixContext)
+  extends AbstractKCMatrixDB[PExprValue](db, writeMode) with ExtMatrixDB {
 
   implicit val probeMap = context.probeMap
 

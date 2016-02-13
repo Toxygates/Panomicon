@@ -48,7 +48,7 @@ object KCSeriesDB {
   (implicit context: MatrixContext): KCSeriesDB[S] = {
     val db = KCDBRegistry.get(file, writeMode)
     db match {
-      case Some(d) => new KCSeriesDB(d, builder)
+      case Some(d) => new KCSeriesDB(d, writeMode, builder)
       case None => throw new Exception("Unable to get DB")
     }
   }
@@ -65,9 +65,9 @@ object KCSeriesDB {
  *
  *
  */
-class KCSeriesDB[S <: Series[S]](db: DB,
+class KCSeriesDB[S <: Series[S]](db: DB, writeMode: Boolean,
     builder: SeriesBuilder[S])(implicit val context: MatrixContext) extends
-  KyotoCabinetDB(db) with SeriesDB[S] {
+  KyotoCabinetDB(db, writeMode) with SeriesDB[S] {
 
   private[this] def formKey(series: S): Array[Byte] = {
     val r = ByteBuffer.allocate(12)

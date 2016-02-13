@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -32,7 +32,7 @@ class KCIndexDBTest extends TTestSuite {
 
   test("basic") {
     val db = memDBHash
-    val kci = new KCIndexDB(memDBHash)
+    val kci = new KCIndexDB(memDBHash, false)
     for (k <- probeMap.tokens) {
       kci.put(k)
     }

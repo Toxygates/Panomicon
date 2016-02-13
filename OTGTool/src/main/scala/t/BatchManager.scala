@@ -182,9 +182,7 @@ object BatchManager extends ManagerTool {
     try {
       waitForTasklets()
     } finally {
-      if (KCDBRegistry.isMaintenance) {
-        KCDBRegistry.closeAll()
-      }
+      KCDBRegistry.closeWriters
       stopTaskRunner()
     }
   }
@@ -356,7 +354,6 @@ class BatchManager(context: Context) {
         }
       }
       logResult(s"$newSamples new samples added, $existingSamples samples already existed")
-      db.release()
       log(s"Closed $dbfile")
     }
   }
@@ -368,7 +365,6 @@ class BatchManager(context: Context) {
       log(s"Opened $dbfile for writing")
       val bs = new Batches(config.triplestore)
       db.remove(bs.samples(title))
-      db.release()
     }
   }
 
@@ -486,21 +482,16 @@ class BatchManager(context: Context) {
       //TODO these cannot be deleted currently
       def run() {
         val db = KCIndexDB(config.data.enumIndex, true)
-        try {
-          for (
-            s <- md.samples; paramMap = md.parameterMap(s);
-            e <- sb.enums
-          ) {
-            db.findOrCreate(e, paramMap(e))
-          }
+        for (
+          s <- md.samples; paramMap = md.parameterMap(s);
+          e <- sb.enums
+        ) {
+          db.findOrCreate(e, paramMap(e))
+        }
 
-          //Insert standard values to ensure they are always present
-          for ((k, v) <- sb.standardEnumValues) {
-            db.findOrCreate(k, v)
-          }
-
-        } finally {
-          db.release()
+        //Insert standard values to ensure they are always present
+        for ((k, v) <- sb.standardEnumValues) {
+          db.findOrCreate(k, v)
         }
       }
     }

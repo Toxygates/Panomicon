@@ -58,7 +58,7 @@ class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap,
   private val abs = memDBHash
 
   lazy val absoluteDBReader: KCMatrixDB = ???
-  lazy val foldsDBReader: KCExtMatrixDB = new KCExtMatrixDB(folds)
+  lazy val foldsDBReader: KCExtMatrixDB = new KCExtMatrixDB(folds, false)
   lazy val seriesBuilder: SeriesBuilder[_] = ???
 
   def populate() {

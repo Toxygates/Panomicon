@@ -92,7 +92,7 @@ object MatrixManager extends ManagerTool {
     }
 
     KCDBRegistry.setMaintenance(false)
-    KCDBRegistry.closeAll()
+    KCDBRegistry.closeWriters
   }
 
   def showHelp(): Unit = {

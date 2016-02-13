@@ -10,6 +10,7 @@ import org.apache.commons.fileupload.FileItem
 import t.common.shared.maintenance.Progress
 import scala.collection.JavaConversions._
 import javax.servlet.http.HttpServletRequest
+import t.global.KCDBRegistry
 
 /**
  * Servlet routines for uploading files and running tasks.
@@ -36,6 +37,7 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
     }
     UploadServlet.removeSessionFileItems(request)
     TaskRunner.shutdown()
+    KCDBRegistry.closeWriters()
   }
 
   protected def beforeTaskCleanup() {

@@ -50,7 +50,7 @@ t.viewer.server.rpc.SeriesServiceImpl[OTGSeries] with OTGServiceServlet {
       val file = baseConfig.data.seriesDb
       val db = KCDBRegistry.get(file, false)
       db match {
-        case Some(d) => new KCSeriesDB(d, OTGSeries) {
+        case Some(d) => new KCSeriesDB(d, false, OTGSeries) {
           override def read(key: OTGSeries): Iterable[OTGSeries] = {
             OTGSeries.normalize(super.read(key))
           }
