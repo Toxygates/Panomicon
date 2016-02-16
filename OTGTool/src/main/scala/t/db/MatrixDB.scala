@@ -67,7 +67,7 @@ trait MatrixDBReader[+E >: Null <: ExprValue] {
 
   def valuesInSamples(xs: Iterable[Sample], probes: Iterable[Int]) = {
     val sk = probes.toSeq.sorted
-    xs.par.map(valuesInSample(_, sk)).seq
+    xs.map(valuesInSample(_, sk))
   }
 
   /**

@@ -28,6 +28,12 @@ import t.db.SimplePFoldValueInsert
 import t.db.AbsoluteValueInsert
 import t.global.KCDBRegistry
 import t.db.Sample
+import t.db.MatrixDBReader
+import t.db.MatrixContext
+import t.db.PExprValue
+import t.db.FoldPExpr
+import t.db.ExprValue
+import t.db.MatrixDBWriter
 
 /**
  * Mid-level copy tool for copying matrix data between different formats.
@@ -40,59 +46,56 @@ object MatrixManager extends ManagerTool {
     def config = context.config
     def factory = context.factory
 
-    KCDBRegistry.setMaintenance(true)
-
-    args(0) match {
-      case "copy" =>
-        val todir = require(stringOption(args, "-toDir"),
-          "Please specify a destination directory with -toDir")
-        val tsconfig = config.triplestore
-        val dataParams = (Map() ++ mapAsScalaMap(System.getenv())) + ("T_DATA_DIR" -> todir)
-        val toDConfig = m.getDataConfig(dataParams)
-        val toBConfig = m.makeBaseConfig(tsconfig, toDConfig)
-
-        implicit val mat = context.matrix
-
-        val allProbes = mat.probeMap.keys.toSeq.sorted
-
-        //Do not do the log-2 wrap
-        val from = config.data.foldsDBReaderNowrap(mat)
-
-        val allSamples = mat.sampleMap.tokens.map(Sample(_))
-
-        for (s <- allSamples) {
-          val vs = from.valuesInSample(s, allProbes)
-          val raw = new RawExpressionData {
-            val data = Map(s -> (Map() ++
-              vs.map(v => v.probe -> (v.value, v.call, v.p))))
-          }
-          val t = new SimplePFoldValueInsert(() => toDConfig.extWriter(toDConfig.foldDb), raw).
-            insert("insert folds")
-          TaskRunner.runAndStop(t)
-          println(s"$s (folds)")
+    def matcopy[E >: Null <: ExprValue](from: MatrixDBReader[E],
+        getDB: () => MatrixDBWriter[PExprValue],
+        formVal: E => FoldPExpr,
+        label: String)
+    (implicit mat: MatrixContext) {
+      val allProbes = mat.probeMap.keys.toSeq.sorted
+      val allSamples = from.sortSamples(mat.sampleMap.tokens.map(Sample(_)).toSeq)
+      for (ss <- allSamples.grouped(50)) {
+        val vs = from.valuesInSamples(ss, allProbes)
+        val svs = (ss zip vs)
+        val raw = new RawExpressionData {
+          val data = Map() ++ svs.map(x => x._1 -> (Map() ++
+            x._2.filter(_.present).map(v => v.probe -> formVal(v))))
         }
-        val from2 = mat.absoluteDBReader
-
-        for (s <- allSamples) {
-          val vs = from2.valuesInSample(s, allProbes)
-          val raw = new RawExpressionData {
-            val data = Map(s -> (Map() ++
-              vs.map(v => v.probe -> (v.value, v.call, 0.0))))
-          }
-          //Not a bug - we insert PExprValue here as well, so we
-          //do not use the AbsoluteValueInsert. The BasicExprValue format is
-          //deprecated.
-          val t = new SimplePFoldValueInsert(() => toDConfig.extWriter(toDConfig.exprDb), raw).
-            insert("insert absolute values")
-          TaskRunner.runAndStop(t)
-          println(s"$s (abs)")
-        }
-
-      case _ => showHelp()
+        val t = new SimplePFoldValueInsert(getDB, raw).
+          insert(s"$label")
+        TaskRunner.runAndStop(t)
+        println(s"$ss ($label)")
+      }
     }
 
-    KCDBRegistry.setMaintenance(false)
-    KCDBRegistry.closeWriters
+    try {
+
+      args(0) match {
+        case "copy" =>
+          val todir = require(stringOption(args, "-toDir"),
+            "Please specify a destination directory with -toDir")
+          val tsconfig = config.triplestore
+          val dataParams = (Map() ++ mapAsScalaMap(System.getenv())) + ("T_DATA_DIR" -> todir)
+          val toDConfig = m.getDataConfig(dataParams)
+          val toBConfig = m.makeBaseConfig(tsconfig, toDConfig)
+
+          implicit val mat = context.matrix
+
+          //No log-2 wrap
+          matcopy[PExprValue](config.data.foldsDBReaderNowrap(mat),
+              () => toDConfig.extWriter(toDConfig.foldDb),
+              v => (v.value, v.call, v.p),
+              "Insert folds")
+
+          matcopy[ExprValue](mat.absoluteDBReader,
+              () => toDConfig.extWriter(toDConfig.exprDb),
+              v => (v.value, v.call, 0.0),
+              "Insert absolute values")
+
+        case _ => showHelp()
+      }
+    } finally {
+      KCDBRegistry.closeWriters
+    }
   }
 
   def showHelp(): Unit = {
