@@ -37,55 +37,57 @@ class SeriesTest extends TTestSuite {
 
   val config = TestConfig.config
   implicit val context = new otg.testing.FakeContext(TestData.dbIdMap,
-      TestData.probeMap, otg.testing.TestData.enumMaps)
+    TestData.probeMap, otg.testing.TestData.enumMaps)
 
   //TODO change
   val pmap = context.probeMap
   val cmap = context.enumMaps("compound_name")
 
-    before {
-      // TODO change the way this is configured
-  //    System.setProperty("otg.home", "/Users/johan/otg/20120221/open-tggates")
-      db = context.seriesDBReader
-    }
+  before {
+    // TODO change the way this is configured
+    //    System.setProperty("otg.home", "/Users/johan/otg/20120221/open-tggates")
+    db = context.seriesDBReader
+  }
 
-    test("Series retrieval") {
-      val packed = pmap.pack("probe_1")
+  def writer() = new KCSeriesDB(context.seriesDB, true, OTGSeries, true)(context)
 
-      for (c <- cmap.keys) {
-        val key = OTGSeries("Single", "Liver", "Rat", packed, c, null, null, Seq())
-        val ss = db.read(key)
-        if (!ss.isEmpty) {
-          val s = ss.head
-          println(s)
-          s.compound should equal(c)
-          s.probe should equal(packed)
-        }
+  test("Series retrieval") {
+    val packed = pmap.pack("probe_1")
+
+    for (c <- cmap.keys) {
+      val key = OTGSeries("Single", "Liver", "Rat", packed, c, null, null, Seq())
+      val ss = db.read(key)
+      if (!ss.isEmpty) {
+        val s = ss.head
+        println(s)
+        s.compound should equal(c)
+        s.probe should equal(packed)
       }
     }
+  }
 
-    test("Series retrieval with blank compound") {
-      val packed = pmap.pack("probe_1")
-      def checkCombination(repeat: String, organ: String, organism: String, expectedCount: Int) {
-        val key = OTGSeries(repeat, organ, organism, packed, null, null, null, Seq())
-        val ss = db.read(key)
-        val n = ss.map(_.compound).toSet.size
-        println(s"$repeat/$organ/$organism: $n")
-        assert(n === expectedCount)
-      }
-
-      // These counts are valid for otg-test (adjuvant version)
-      checkCombination("Single", "Liver", "Rat", 162)
-      checkCombination("Repeat", "Liver", "Rat", 143)
-      checkCombination("Single", "Kidney", "Rat", 43)
-      checkCombination("Repeat", "Kidney", "Rat", 41)
-
-      //Note that "Vitro" is treated as an organ here
-      checkCombination("Single", "Vitro", "Rat", 145)
-      checkCombination("Single", "Vitro", "Human", 158)
+  test("Series retrieval with blank compound") {
+    val packed = pmap.pack("probe_1")
+    def checkCombination(repeat: String, organ: String, organism: String, expectedCount: Int) {
+      val key = OTGSeries(repeat, organ, organism, packed, null, null, null, Seq())
+      val ss = db.read(key)
+      val n = ss.map(_.compound).toSet.size
+      println(s"$repeat/$organ/$organism: $n")
+      assert(n === expectedCount)
     }
 
-    after {
-      db.release()
-    }
+    // These counts are valid for otg-test (adjuvant version)
+    checkCombination("Single", "Liver", "Rat", 162)
+    checkCombination("Repeat", "Liver", "Rat", 143)
+    checkCombination("Single", "Kidney", "Rat", 43)
+    checkCombination("Repeat", "Kidney", "Rat", 41)
+
+    //Note that "Vitro" is treated as an organ here
+    checkCombination("Single", "Vitro", "Rat", 145)
+    checkCombination("Single", "Vitro", "Human", 158)
+  }
+
+  after {
+    db.release()
+  }
 }
