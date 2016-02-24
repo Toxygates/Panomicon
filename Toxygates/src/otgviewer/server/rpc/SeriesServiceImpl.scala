@@ -44,25 +44,8 @@ t.viewer.server.rpc.SeriesServiceImpl[OTGSeries] with OTGServiceServlet {
   override protected def fromShared(s: SSeries): OTGSeries =
     Conversions.asScala(s)
 
-  override protected def getDB(): SeriesDB[OTGSeries] = {
-    //TODO organise this better
-    try {
-      val file = baseConfig.data.seriesDb
-      val db = KCDBRegistry.get(file, false)
-      db match {
-        case Some(d) => new KCSeriesDB(d, false, OTGSeries) {
-          override def read(key: OTGSeries): Iterable[OTGSeries] = {
-            OTGSeries.normalize(super.read(key))
-          }
-        }
-        case None => throw new DBUnavailableException(new Exception("Unable to get DB"))
-      }
-    } catch {
-      case e: Exception =>
-        e.printStackTrace()
-        throw new DBUnavailableException(e)
-    }
-  }
+  override protected def getDB(): SeriesDB[OTGSeries] =
+    mat.seriesDBReader
 
   //TODO lift up this method
   def expectedTimes(s: SSeries): Array[String] = {
