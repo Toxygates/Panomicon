@@ -122,4 +122,6 @@ trait SeriesBuilder[S <: Series[S]] {
     }
     byProbe.map(x => ExprValue.presentMean(x._2, x._1))
   }
+
+  def normalize(data: Iterable[S])(implicit mc: MatrixContext): Iterable[S]
 }

@@ -44,11 +44,12 @@ object KCSeriesDB {
   /**
    * Options: linear, no alignment, 10 million buckets (approx 10% of size), 5g memory mapped
    */
-  def apply[S <: Series[S]](file: String, writeMode: Boolean, builder: SeriesBuilder[S])
+  def apply[S <: Series[S]](file: String, writeMode: Boolean, builder: SeriesBuilder[S],
+      normalize: Boolean)
   (implicit context: MatrixContext): KCSeriesDB[S] = {
     val db = KCDBRegistry.get(file, writeMode)
     db match {
-      case Some(d) => new KCSeriesDB(d, writeMode, builder)
+      case Some(d) => new KCSeriesDB(d, writeMode, builder, normalize)
       case None => throw new Exception("Unable to get DB")
     }
   }
@@ -66,7 +67,7 @@ object KCSeriesDB {
  *
  */
 class KCSeriesDB[S <: Series[S]](db: DB, writeMode: Boolean,
-    builder: SeriesBuilder[S])(implicit val context: MatrixContext) extends
+    builder: SeriesBuilder[S], normalize: Boolean)(implicit val context: MatrixContext) extends
   KyotoCabinetDB(db, writeMode) with SeriesDB[S] {
 
   private[this] def formKey(series: S): Array[Byte] = {
@@ -117,7 +118,11 @@ class KCSeriesDB[S <: Series[S]](db: DB, writeMode: Boolean,
       val v = data(i + 1)
       r :+= extractValue(v, extractKey(k))
     }
-    r
+    if (normalize) {
+      builder.normalize(r)
+    } else {
+      r
+    }
   }
 
   def addPoints(s: S): Unit = {

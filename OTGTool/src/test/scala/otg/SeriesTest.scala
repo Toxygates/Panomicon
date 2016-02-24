@@ -26,30 +26,31 @@ import t.db.kyotocabinet.KCSeriesDB
 import org.scalatest.junit.JUnitRunner
 import otg.Species._
 import t.testing.TestConfig
+import t.db.testing.TestData
 import t.TTestSuite
 import t.db.BasicExprValue
 import t.db.SeriesPoint
 
 @RunWith(classOf[JUnitRunner])
 class SeriesTest extends TTestSuite {
-    var db: SeriesDB[OTGSeries] = _
+  var db: SeriesDB[OTGSeries] = _
 
   val config = TestConfig.config
+  implicit val context = new otg.testing.FakeContext(TestData.dbIdMap,
+      TestData.probeMap, otg.testing.TestData.enumMaps)
+
   //TODO change
-  implicit val context = new OTGContext(config)
   val pmap = context.probeMap
   val cmap = context.enumMaps("compound_name")
-
-  //TODO update tests
 
     before {
       // TODO change the way this is configured
   //    System.setProperty("otg.home", "/Users/johan/otg/20120221/open-tggates")
-      db = KCSeriesDB(System.getProperty("otg.home") + "/otgfs.kct", false, OTGSeries)(context)
+      db = context.seriesDBReader
     }
 
     test("Series retrieval") {
-      val packed = pmap.pack("1393108_at")
+      val packed = pmap.pack("probe_1")
 
       for (c <- cmap.keys) {
         val key = OTGSeries("Single", "Liver", "Rat", packed, c, null, null, Seq())
@@ -64,7 +65,7 @@ class SeriesTest extends TTestSuite {
     }
 
     test("Series retrieval with blank compound") {
-      val packed = pmap.pack("1393108_at")
+      val packed = pmap.pack("probe_1")
       def checkCombination(repeat: String, organ: String, organism: String, expectedCount: Int) {
         val key = OTGSeries(repeat, organ, organism, packed, null, null, null, Seq())
         val ss = db.read(key)

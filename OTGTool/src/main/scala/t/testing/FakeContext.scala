@@ -34,6 +34,7 @@ import t.db.kyotocabinet.KCMatrixDB
 import t.db.kyotocabinet.KCExtMatrixDB
 import t.db.MatrixDB
 import t.db.ExtMatrixDB
+import t.db.SeriesDB
 
 class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap,
   val enumMaps: Map[String, Map[String, Int]] = Map()) extends MatrixContext {
@@ -59,7 +60,9 @@ class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap,
 
   lazy val absoluteDBReader: KCMatrixDB = ???
   lazy val foldsDBReader: KCExtMatrixDB = new KCExtMatrixDB(folds, false)
-  lazy val seriesBuilder: SeriesBuilder[_] = ???
+
+  def seriesDBReader: SeriesDB[_] = ???
+  def seriesBuilder: SeriesBuilder[_] = ???
 
   def populate() {
     TestData.populate(foldsDBReader, testData)
