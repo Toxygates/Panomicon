@@ -202,20 +202,23 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     pf.sharedList.toArray
   }
 
+  private def sampleFilterFor(ds: Array[Dataset]) = {
+     val dsTitles = ds.toList.map(_.getTitle)
+    getSessionData.sampleFilter.copy(datasetURIs = dsTitles.map(Datasets.packURI(_)))
+  }
+
   def chooseDatasets(ds: Array[Dataset]): scala.Unit = {
-    val dsTitles = ds.toList.map(_.getTitle)
-    println("Choose datasets: " + dsTitles)
-    getSessionData.sampleFilter = getSessionData.sampleFilter.copy(datasetURIs =
-      dsTitles.map(Datasets.packURI(_)))
+    println("Choose datasets: " + ds.map(_.getTitle).mkString(" "))
+    getSessionData.sampleFilter = sampleFilterFor(ds)
   }
 
   @throws[TimeoutException]
   def parameterValues(ds: Array[Dataset], sc: SampleClass,
       parameter: String): Array[String] = {
-    val oldFilter = getSessionData.sampleFilter
-    chooseDatasets(ds)
-    val r = parameterValues(sc, parameter)
-    getSessionData.sampleFilter = oldFilter
+    //Get the parameters without changing the persistent datasets in getSessionData
+    val filter = sampleFilterFor(ds)
+    val r = sampleStore.attributeValues(scAsScala(sc).filterAllExcludeControl, parameter)(filter).
+      filter(x => !schema.isMajorParamSharedControl(x)).toArray
     r
   }
 
