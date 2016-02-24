@@ -28,7 +28,9 @@ object ProbeRecord {
   //Affymetrix definitions contain strings with single quotes.
   def asRdfTerm(key: String, value: String) = {
     key match {
-      case "go" | "gomf" | "gobp" | "gocc" => s"<http://bio2rdf.org/go:$value>"
+      //example value: 0050839
+      case "go" | "gomf" | "gobp" | "gocc" =>
+        s"<http://purl.obolibrary.org/obo/GO_$value>"
       case _                               => "\"" + value + "\""
     }
   }
