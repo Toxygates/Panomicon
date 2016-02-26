@@ -97,7 +97,7 @@ class OTGContext(baseConfig: BaseConfig,
 
   def seriesBuilder: OTGSeries.type = OTGSeries
 
-  def seriesDBReader: SeriesDB[OTGSeries] =
+  def seriesDBReader: SDB =
     KCSeriesDB(data.seriesDb, false, seriesBuilder, true)(this)
 
   var testRun: Boolean = false

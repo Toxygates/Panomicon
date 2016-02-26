@@ -38,12 +38,27 @@ object TestData {
     xs(n.toInt)
   }
 
+  private def mm(ss: Seq[String]) =
+    Map() ++ ss.zipWithIndex
+
+  val enumMaps = Map(
+    "compound_name" -> mm(Seq("acetaminophen", "methapyrilene", "cocoa", "water")),
+    "dose_level" -> mm(Seq("Control", "Low", "Middle", "High", "Really high")),
+    "organism" -> mm(Seq("Giraffe", "Squirrel", "Rat", "Mouse", "Human")),
+    "exposure_time" -> mm(Seq("3 hr", "6 hr", "9 hr", "24 hr")),
+    "sin_rep_type" -> mm(Seq("Single", "Repeat")),
+    "organ_id" -> mm(Seq("Liver", "Kidney")),
+    "test_type" -> mm(Seq("Vitro", "Vivo")))
+
+  private def em(k: String) = enumMaps(k).keySet
+  def enumValues(key: String) = em(key)
+
   def calls = List('A', 'P', 'M')
 
-  val ids = (0 until 96).toStream.iterator
+  val ids = (0 until (5 * 4 * 4 * 3)).toStream.iterator
   val samples = for (
-    dose <- Set("Control", "High"); time <- Set("3hr", "24hr");
-    ind <- Set("1", "2", "3"); compound <- Set("Chocolate", "Tea", "Cocoa", "Irish");
+    dose <- em("dose_level"); time <- em("exposure_time");
+    ind <- Set("1", "2", "3"); compound <- em("compound_name");
     s = Sample("s" + ids.next, Map("dose_level" -> dose, "individual_id" -> ind,
       "exposure_time" -> time, "compound_name" -> compound))
   ) yield s

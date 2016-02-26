@@ -123,5 +123,8 @@ trait SeriesBuilder[S <: Series[S]] {
     byProbe.map(x => ExprValue.presentMean(x._2, x._1))
   }
 
+  /**
+   * Sort time points and insert missing ones (as 0.0/A) according to standard expectations.
+   */
   def normalize(data: Iterable[S])(implicit mc: MatrixContext): Iterable[S]
 }

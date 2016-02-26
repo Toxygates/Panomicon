@@ -36,8 +36,7 @@ class SeriesMatchingTest extends TTestSuite {
   import friedrich.data.Statistics._
 
   val config = TestConfig.config
-  implicit val context = new otg.testing.FakeContext(TestData.dbIdMap,
-    TestData.probeMap, otg.testing.TestData.enumMaps)
+  implicit val context = new otg.testing.FakeContext()
 
   def mkSeries(points: Seq[ExprValue]) = {
     val doses = context.enumMaps("dose_level")

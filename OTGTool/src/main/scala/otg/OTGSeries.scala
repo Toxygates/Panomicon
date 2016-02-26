@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -41,7 +41,7 @@ import t.db.BasicExprValue
 
 case class OTGSeries(repeat: String, organ: String, organism: String, override val probe: Int,
   compound: String, dose: String, testType: String,
-  override val points: Seq[SeriesPoint]) extends TSeries[OTGSeries](probe, points) {
+  override val points: Seq[SeriesPoint] = Seq()) extends TSeries[OTGSeries](probe, points) {
 
   def classCode(implicit mc: MatrixContext): Long =
     OTGSeries.pack(this)
