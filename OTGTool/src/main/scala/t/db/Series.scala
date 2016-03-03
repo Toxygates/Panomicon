@@ -111,15 +111,8 @@ trait SeriesBuilder[S <: Series[S]] {
     (p & mask).toLong
   }
 
-  def presentMean(ds: Iterable[Iterable[ExprValue]]): Iterable[ExprValue] = {
-    var byProbe = Map[String, List[ExprValue]]()
-    for (xs <- ds; y <- xs; p = y.probe) {
-      if (byProbe.contains(p)) {
-        byProbe += (p -> (y :: byProbe(p)))
-      } else {
-        byProbe += (p -> List(y))
-      }
-    }
+  def presentMeanByProbe(ds: Iterable[ExprValue]): Iterable[ExprValue] = {
+    val byProbe = ds.groupBy(_.probe)
     byProbe.map(x => ExprValue.presentMean(x._2, x._1))
   }
 

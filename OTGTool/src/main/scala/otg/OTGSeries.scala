@@ -98,7 +98,8 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
     r
   }
 
-  def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata, samples: Iterable[Sample])(implicit mc: MatrixContext): Iterable[OTGSeries] = {
+  def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata,
+      samples: Iterable[Sample])(implicit mc: MatrixContext): Iterable[OTGSeries] = {
 
     def series(x: Sample) = {
       val paramMap = Map() ++ md.parameters(x).map(x => x._1.identifier -> x._2)
@@ -115,23 +116,25 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
 
     val grouped = samples.groupBy(series(_))
     var r = Vector[OTGSeries]()
-    for ((s, vs) <- grouped.par) {
 
-      val data = vs.map(v => {
-        val paramMap = Map() ++ md.parameters(v).map(x => x._1.identifier -> x._2)
-        val expr = from.valuesInSample(v, List())
-        (v, expr, paramMap("exposure_time"))
+    for ((s, xs) <- grouped) {
+      //Construct the series s for all probes, using the samples xs
+
+      val data = xs.map(x => {
+        //TODO getting too many probes here - limit somehow based on platform
+        val expr = from.valuesInSample(x, List())
+        (md.parameter(x, "exposure_time"), x, expr)
       })
 
-      //TODO this is too hard to read
-      val timeGroup = data.groupBy(_._3)
-      val pm = timeGroup.map(x => (x._1, presentMean(x._2.map(_._2))))
-      val points = pm.map(x => x._2.map(y => (mc.probeMap.pack(y.probe),
-        SeriesPoint(timeMap(x._1), y)))).
-        flatten.groupBy(_._1)
-      r.synchronized {
-        r ++= points.map(x => s.copy(probe = x._1, points = x._2.toSeq.map(_._2)))
-      }
+      val byTime = data.groupBy(_._1).map(x => {
+        val tc = timeMap(x._1)
+        presentMeanByProbe(x._2.flatMap(x => x._3)).map(v => SeriesPoint(tc, v))
+      })
+      val byProbe = byTime.flatten.groupBy(_.value.probe)
+      r ++= byProbe.map(x => {
+
+        s.copy(probe = mc.probeMap.pack(x._1), points = x._2.toSeq)
+      })
     }
     r
   }

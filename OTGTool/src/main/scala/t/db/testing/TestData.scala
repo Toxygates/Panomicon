@@ -31,6 +31,8 @@ import t.db.SampleIndex
 import t.db.kyotocabinet.KCExtMatrixDB
 import t.testing.FakeContext
 import t.platform.OrthologMapping
+import t.db.Metadata
+import t.db.SampleParameter
 
 object TestData {
   def pickOne[T](xs: Seq[T]): T = {
@@ -62,6 +64,21 @@ object TestData {
     s = Sample("s" + ids.next, Map("dose_level" -> dose, "individual_id" -> ind,
       "exposure_time" -> time, "compound_name" -> compound))
   ) yield s
+
+  def metadata: Metadata = new Metadata {
+     def samples = TestData.this.samples
+
+     def parameters(s: Sample): Iterable[(SampleParameter, String)] =
+       ???
+
+//       s.sampleClass.map(x => parameter)
+
+     def parameterValues(identifier: String): Set[String] = ???
+
+     override def isControl(s: Sample): Boolean = parameter(s, "dose_level") == "Control"
+
+     override def controlSamples(s: Sample): Iterable[Sample] = ???
+  }
 
   def randomExpr(): (Double, Char, Double) = {
     val v = Math.random * 100000

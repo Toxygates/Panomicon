@@ -37,19 +37,14 @@ import t.db.ExtMatrixDB
 import t.db.SeriesDB
 
 class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap,
-  val enumMaps: Map[String, Map[String, Int]] = Map()) extends MatrixContext {
+  val enumMaps: Map[String, Map[String, Int]] = Map(),
+  val metadata: Option[Metadata] = None) extends MatrixContext {
   import TestData._
 
   def species = List(Rat)
 
   def probes(s: Species): ProbeMap = probeMap
   def unifiedProbes = probeMap
-
-  /**
-   * Metadata for samples. Not always available.
-   * Only intended for use during maintenance operations.
-   */
-  def metadata: Option[Metadata] = None
 
   def samples = ???
 

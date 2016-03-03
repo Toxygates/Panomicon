@@ -38,7 +38,18 @@ class SeriesTest extends TTestSuite {
   implicit val context = new otg.testing.FakeContext()
   val cmap = context.enumMaps("compound_name")
 
-  test("normalization") {
+  test("pack and build") {
+    for (s <- OData.series) {
+      val p = OTGSeries.pack(s)
+      val b = OTGSeries.build(p, s.probe)
+      b should equal(s.copy(points = Seq()))
+    }
+  }
 
+//  test("normalization") {
+//  }
+
+  test("makeNew") {
+    OTGSeries.makeNew(context.foldsDBReader, context.metadata.get)
   }
 }
