@@ -61,24 +61,13 @@ object TestData {
   val samples = for (
     dose <- em("dose_level"); time <- em("exposure_time");
     ind <- Set("1", "2", "3"); compound <- em("compound_name");
-    s = Sample("s" + ids.next, Map("dose_level" -> dose, "individual_id" -> ind,
-      "exposure_time" -> time, "compound_name" -> compound))
+    s = Sample("s" + ids.next,
+        Map("dose_level" -> dose, "individual_id" -> ind,
+          "exposure_time" -> time, "compound_name" -> compound,
+          "sin_rep_type" -> "Single", "organ_id" -> "Liver",
+          "test_type" -> "Vivo", "organism" -> "Rat")
+        )
   ) yield s
-
-  def metadata: Metadata = new Metadata {
-     def samples = TestData.this.samples
-
-     def parameters(s: Sample): Iterable[(SampleParameter, String)] =
-       ???
-
-//       s.sampleClass.map(x => parameter)
-
-     def parameterValues(identifier: String): Set[String] = ???
-
-     override def isControl(s: Sample): Boolean = parameter(s, "dose_level") == "Control"
-
-     override def controlSamples(s: Sample): Iterable[Sample] = ???
-  }
 
   def randomExpr(): (Double, Char, Double) = {
     val v = Math.random * 100000

@@ -98,23 +98,23 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
     r
   }
 
+  def buildEmpty(x: Sample, md: Metadata) = {
+    val paramMap = Map() ++ md.parameters(x).map(x => x._1.identifier -> x._2)
+        val r = paramMap("sin_rep_type")
+        val d = paramMap("dose_level")
+        val o = paramMap("organ_id")
+        val s = paramMap("organism")
+        val c = paramMap("compound_name")
+        val t = paramMap("test_type")
+        OTGSeries(r, o, s, 0, c, d, t, Vector())
+  }
+
   def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata,
       samples: Iterable[Sample])(implicit mc: MatrixContext): Iterable[OTGSeries] = {
 
-    def series(x: Sample) = {
-      val paramMap = Map() ++ md.parameters(x).map(x => x._1.identifier -> x._2)
-      val r = paramMap("sin_rep_type")
-      val d = paramMap("dose_level")
-      val o = paramMap("organ_id")
-      val s = paramMap("organism")
-      val c = paramMap("compound_name")
-      val t = paramMap("test_type")
-      OTGSeries(r, o, s, 0, c, d, t, Vector())
-    }
-
     val timeMap = mc.enumMaps("exposure_time")
 
-    val grouped = samples.groupBy(series(_))
+    val grouped = samples.groupBy(buildEmpty(_, md))
     var r = Vector[OTGSeries]()
 
     for ((s, xs) <- grouped) {

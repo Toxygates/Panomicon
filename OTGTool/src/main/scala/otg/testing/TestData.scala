@@ -3,6 +3,10 @@ package otg.testing
 import t.db.SeriesPoint
 import otg.OTGSeries
 import t.db.BasicExprValue
+import otg.db.Metadata
+import t.db.SampleParameter
+import t.db.Sample
+import otg.db.OTGParameterSet
 
 object TestData {
   import t.db.testing.TestData._
@@ -27,4 +31,18 @@ object TestData {
     points = mkPoints(probeMap.unpack(probe))
     ) yield OTGSeries(repeat, organ, organism, probe,
         compound, doseLevel, testType, points)
+
+  def metadata: Metadata = new Metadata {
+    def samples = t.db.testing.TestData.samples
+
+    def parameterValues(identifier: String): Set[String] =
+      enumMaps(identifier).keySet
+
+    def parameters(s: Sample): Iterable[(SampleParameter, String)] = {
+      samples.find(_ == s).get.sampleClass.constraints.map(x =>  {
+         val k = OTGParameterSet.byId(x._1)
+         (k, x._2)
+      })
+    }
+  }
 }

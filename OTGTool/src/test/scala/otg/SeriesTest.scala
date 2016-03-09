@@ -50,6 +50,22 @@ class SeriesTest extends TTestSuite {
 //  }
 
   test("makeNew") {
-    OTGSeries.makeNew(context.foldsDBReader, context.metadata.get)
+    val ss = OTGSeries.makeNew(context.foldsDBReader, OData.metadata)
+    for (s <- ss) {
+      s.points.size should equal(4)
+    }
+
+    for (s <- TestData.samples) {
+      val x = OTGSeries.buildEmpty(s, OData.metadata)
+      ss.exists(_.classCode == x.classCode) should be(true)
+    }
+
+    val xs = TestData.samples.map(x => OTGSeries.buildEmpty(x, OData.metadata))
+    for (s <- ss) {
+      xs.exists(_.classCode == s.classCode) should be(true)
+    }
+
+    ss.map(s => (s.probe, s.classCode)).toSeq.distinct should
+      equal(ss.map(s => (s.probe, s.classCode)))
   }
 }
