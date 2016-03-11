@@ -39,6 +39,7 @@ import t.db.Metadata
 import t.db.ExprValue
 import t.db.BasicExprValue
 
+//TODO all parameters are nullable - use options
 case class OTGSeries(repeat: String, organ: String, organism: String, override val probe: Int,
   compound: String, dose: String, testType: String,
   override val points: Seq[SeriesPoint] = Seq()) extends TSeries[OTGSeries](probe, points) {
@@ -47,6 +48,15 @@ case class OTGSeries(repeat: String, organ: String, organism: String, override v
     OTGSeries.pack(this)
 
   def asSingleProbeKey = copy(probe = probe, compound = null, dose = null)
+
+  override def constraints: Map[String, String] = Map(
+       "test_type" -> testType,
+       "organ_id" -> organ,
+       "organism" -> organism,
+       "compound_name" -> compound,
+       "dose_level" -> dose,
+       "sin_rep_type" -> repeat
+       ).filter(_._2 != null)
 }
 
 object OTGSeries extends SeriesBuilder[OTGSeries] {
@@ -122,7 +132,7 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
 
       val data = xs.map(x => {
         //TODO getting too many probes here - limit somehow based on platform
-        val expr = from.valuesInSample(x, List())
+        val expr = from.valuesInSample(x, List()).filter(_.present)
         (md.parameter(x, "exposure_time"), x, expr)
       })
 
@@ -132,7 +142,6 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
       })
       val byProbe = byTime.flatten.groupBy(_.value.probe)
       r ++= byProbe.map(x => {
-
         s.copy(probe = mc.probeMap.pack(x._1), points = x._2.toSeq)
       })
     }

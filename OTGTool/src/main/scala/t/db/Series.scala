@@ -48,6 +48,8 @@ abstract class Series[This <: Series[This]](val probe: Int, val points: Seq[Seri
    * represents the constraints for ranking with a single probe.
    */
   def asSingleProbeKey: This
+
+  def constraints: Map[String, String] = Map()
 }
 
 /**

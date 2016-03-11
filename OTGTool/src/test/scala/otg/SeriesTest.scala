@@ -30,6 +30,7 @@ import t.db.testing.TestData
 import t.TTestSuite
 import t.db.BasicExprValue
 import t.db.SeriesPoint
+import t.db.kyotocabinet.KCExtMatrixDB
 
 @RunWith(classOf[JUnitRunner])
 class SeriesTest extends TTestSuite {
@@ -37,6 +38,8 @@ class SeriesTest extends TTestSuite {
   import otg.testing.{TestData => OData}
   implicit val context = new otg.testing.FakeContext()
   val cmap = context.enumMaps("compound_name")
+
+  TestData.makeTestData(false)
 
   test("pack and build") {
     for (s <- OData.series) {
@@ -50,17 +53,27 @@ class SeriesTest extends TTestSuite {
 //  }
 
   test("makeNew") {
-    val ss = OTGSeries.makeNew(context.foldsDBReader, OData.metadata)
-    for (s <- ss) {
-      s.points.size should equal(4)
+    context.populate()
+    val meta = OData.metadata
+    val timeMap = context.enumMaps("exposure_time")
+
+    val ss = OTGSeries.makeNew(context.foldsDBReader, meta)
+    val data = context.testData
+    for (s <- ss; const = s.constraints.filter(_._2 != null).toSet;
+      pr = context.probeMap.unpack(s.probe)) {
+       val relSamples = meta.samples.filter(x => const.subsetOf(x.sampleClass.constraints.toSet))
+       val present = relSamples.filter(x =>
+         data.asExtValues(x).get(pr).map(_.present).getOrElse(false))
+       val expectedTimes = present.map(x => meta.parameter(x, "exposure_time"))
+      s.points.map(_.code) should contain theSameElementsAs(expectedTimes.map(timeMap(_)))
     }
 
     for (s <- TestData.samples) {
-      val x = OTGSeries.buildEmpty(s, OData.metadata)
+      val x = OTGSeries.buildEmpty(s, meta)
       ss.exists(_.classCode == x.classCode) should be(true)
     }
 
-    val xs = TestData.samples.map(x => OTGSeries.buildEmpty(x, OData.metadata))
+    val xs = TestData.samples.map(x => OTGSeries.buildEmpty(x, meta))
     for (s <- ss) {
       xs.exists(_.classCode == s.classCode) should be(true)
     }
