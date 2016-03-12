@@ -19,6 +19,8 @@
  */
 
 package t.db
+
+import scala.Vector
 import scala.language.postfixOps
 
 trait MatrixContext {
@@ -31,6 +33,8 @@ trait MatrixContext {
 
   def absoluteDBReader: MatrixDBReader[ExprValue]
   def foldsDBReader: MatrixDBReader[PExprValue]
+  def seriesDBReader: SeriesDB[_]
+
   def seriesBuilder: SeriesBuilder[_]
 }
 

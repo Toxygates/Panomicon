@@ -228,9 +228,10 @@ class BatchManager(context: Context) {
 
   def matrixContext(): MatrixContext = {
     new MatrixContext {
-      def foldsDBReader = null
-      def absoluteDBReader = null
-      def seriesBuilder = null
+      def foldsDBReader = ???
+      def absoluteDBReader = ???
+      def seriesBuilder = ???
+      def seriesDBReader = ???
 
       lazy val probeMap: ProbeMap =
         new ProbeIndex(KCIndexDB.readOnce(config.data.probeIndex))
@@ -506,7 +507,7 @@ class BatchManager(context: Context) {
       var target: KCSeriesDB[S] = null
       var inserted = 0
       try {
-        target = KCSeriesDB[S](config.data.seriesDb, true, builder)
+        target = KCSeriesDB[S](config.data.seriesDb, true, builder, false)
         val xs = builder.makeNew(source, md)
         val total = xs.size
         var pcomp = 0d
@@ -543,7 +544,7 @@ class BatchManager(context: Context) {
       val source: MatrixDBReader[PExprValue] = config.data.foldsDBReader
       var target: KCSeriesDB[S] = null
       try {
-        target = KCSeriesDB[S](config.data.seriesDb, true, builder)
+        target = KCSeriesDB[S](config.data.seriesDb, true, builder, false)
         val filtSamples = tsmd.samples
         val total = filtSamples.size
         var pcomp = 0d

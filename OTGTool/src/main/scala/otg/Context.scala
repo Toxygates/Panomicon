@@ -38,6 +38,9 @@ import t.db.TRefresher
 import t.db.SeriesBuilder
 import t.db.TransformingWrapper
 import t.db.BasicExprValue
+import t.db.kyotocabinet.KCSeriesDB
+import t.global.KCDBRegistry
+import t.db.SeriesDB
 
 object Context {
   val factory = new Factory()
@@ -94,7 +97,8 @@ class OTGContext(baseConfig: BaseConfig,
 
   def seriesBuilder: OTGSeries.type = OTGSeries
 
-  //TODO add series DB reader
+  def seriesDBReader: SDB =
+    KCSeriesDB(data.seriesDb, false, seriesBuilder, true)(this)
 
   var testRun: Boolean = false
 

@@ -42,8 +42,8 @@ case $INPUT in
 esac
 
 URLBASE="http://sontaran:8081/owlim-workbench-webapp-5.3.1/repositories/$REPO"
-USER=x
-PASS=y
+USER=admin
+PASS=root
 
 QUERY="DROP GRAPH <$GRAPH>"
 curl -u $USER:$PASS "$URLBASE/statements" --data-urlencode update="$QUERY" 
