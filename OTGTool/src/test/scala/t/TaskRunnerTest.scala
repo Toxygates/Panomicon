@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -71,7 +71,7 @@ class TaskRunnerTest extends TTestSuite {
     TaskRunner.start()
     Thread.sleep(2000)
     TaskRunner.currentTask should equal(None)
-    TaskRunner.waitingForTask should equal(false)
+    TaskRunner.waitingForTask should be(false)
     TaskRunner.errorCause should equal(Some(e))
     TaskRunner.queueSize() should equal(0)
     hasRun should equal(false)
@@ -83,6 +83,33 @@ class TaskRunnerTest extends TTestSuite {
     Thread.sleep(100)
     hasRun should equal(true)
     TaskRunner.shutdown()
+  }
+
+  test("Interrupted task") {
+    var finished = false
+    val t = new Tasklet("interruptable") {
+      def run() {
+        while(shouldContinue(0.5)) {
+          println("working")
+          Thread.sleep(100)
+        }
+        finished = true
+      }
+    }
+
+    TaskRunner += t
+    TaskRunner.start()
+    Thread.sleep(500)
+    TaskRunner.currentTask should equal(Some(t))
+    TaskRunner.waitingForTask should be(true)
+    TaskRunner.queueSize() should equal(0)
+
+    TaskRunner.shutdown()
+    Thread.sleep(500)
+    TaskRunner.currentTask should equal(None)
+    TaskRunner.waitingForTask should be(false)
+    TaskRunner.queueSize() should equal(0)
+    finished should be(true)
   }
 
 }
