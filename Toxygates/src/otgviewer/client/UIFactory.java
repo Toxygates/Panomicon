@@ -65,4 +65,6 @@ public interface UIFactory {
    */
   void multiEnrichment(Screen screen, StringList[] lists);
   
+  boolean hasMyData();
+  
 }

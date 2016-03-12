@@ -93,4 +93,8 @@ public class OTGFactory implements UIFactory {
     tm.multiEnrich(lists);    
   }
   
+  @Override
+  public boolean hasMyData() {
+    return true;
+  }
 }
