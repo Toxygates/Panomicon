@@ -59,11 +59,17 @@ class SeriesTest extends TTestSuite {
 
     val ss = OTGSeries.makeNew(context.foldsDBReader, meta)
     val data = context.testData
-    for (s <- ss; const = s.constraints.filter(_._2 != null).toSet;
-      pr = context.probeMap.unpack(s.probe)) {
-       val relSamples = meta.samples.filter(x => const.subsetOf(x.sampleClass.constraints.toSet))
-       val present = relSamples.filter(x =>
-         data.asExtValues(x).get(pr).map(_.present).getOrElse(false))
+    for (s <- ss;
+        const = s.constraints.filter(_._2 != null).toSet;
+        pr = context.probeMap.unpack(s.probe);
+        relSamples = meta.samples.filter(x => const.subsetOf(x.sampleClass.constraints.toSet))) {
+
+      val present = for (
+        s <- relSamples;
+        ev <- data.asExtValues(s).get(pr);
+        if (ev.present)
+      ) yield s
+
        val expectedTimes = present.map(x => meta.parameter(x, "exposure_time"))
       s.points.map(_.code) should contain theSameElementsAs(expectedTimes.map(timeMap(_)))
     }
