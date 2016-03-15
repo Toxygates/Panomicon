@@ -347,7 +347,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
           UNION { ?probe t:go ?got . }
       }
       } LIMIT ${maxSize}"""
-    ts.mapQuery(query).map(x => GOTerm(x("got"), x("gotn")))
+    ts.mapQuery(query).map(x => GOTerm(unpackGoterm(x("got")), x("gotn")))
   }
 
   //TODO A better solution is to have the URI of the GOTerm as a starting point to find the
@@ -373,7 +373,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     ts.simpleQuery(query).map(Probe.unpack)
   }
 
-  protected def unpackGoterm(term: String) = term.split(".org/")(1)
+  protected def unpackGoterm(term: String) = term.split(".org/obo/")(1).replace("_", ":")
 
   def goTerms(probes: Iterable[Probe]): MMap[Probe, GOTerm] = {
     goTerms("?probe t:go ?got . ", probes)
