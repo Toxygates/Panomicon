@@ -21,9 +21,11 @@ package otgviewer.shared;
 @SuppressWarnings("serial")
 public class DBUnavailableException extends ServerError {
 
-  //GWT constructor
-  public DBUnavailableException() { super(); }
-  
+  // GWT constructor
+  public DBUnavailableException() {
+    super();
+  }
+
   public DBUnavailableException(Throwable cause) {
     super(
         "The database is currently unavailable, possibly for maintenance reasons. Please try again later.",
