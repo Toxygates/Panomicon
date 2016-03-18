@@ -65,9 +65,9 @@ object Probes extends RDFClass {
   }
 
   def annotationRDF(record: ProbeRecord): String = {
-    record.annotations.map(a => {
+    record.annotations.flatMap(a => {
       val k = a._1
-      a._2.map(v => s"t:$k ${ProbeRecord.asRdfTerm(k, v)}").mkString("; ")
+      a._2.map(v => s"t:$k ${ProbeRecord.asRdfTerms(k, v)}").mkString("; ")
     }).mkString(";\n ")
   }
 
@@ -172,19 +172,19 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     }
   }
 
-  protected def simpleMapQueryNoEmptyCheck(query: String): MMap[Probe, DefaultBio] = {
-    val r = ts.mapQuery(query).map(x => Probe.unpack(x("probe")) ->
-      DefaultBio(x("result"), x("result")))
-    makeMultiMap(r)
-  }
-
-  protected def simpleMapQuery(probes: Iterable[Probe],
-    query: String): MMap[Probe, DefaultBio] = {
-    if (probes.isEmpty) {
-      return emptyMMap()
-    }
-    simpleMapQueryNoEmptyCheck(query)
-  }
+//  protected def simpleMapQueryNoEmptyCheck(query: String): MMap[Probe, DefaultBio] = {
+//    val r = ts.mapQuery(query).map(x => Probe.unpack(x("probe")) ->
+//      DefaultBio(x("result"), x("result")))
+//    makeMultiMap(r)
+//  }
+//
+//  protected def simpleMapQuery(probes: Iterable[Probe],
+//    query: String): MMap[Probe, DefaultBio] = {
+//    if (probes.isEmpty) {
+//      return emptyMMap()
+//    }
+//    simpleMapQueryNoEmptyCheck(query)
+//  }
 
   protected class GradualProbeResolver(idents: Iterable[String]) {
     private var remaining = idents.map(_.trim).toSet

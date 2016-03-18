@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.platform
+package t.platform.affy
 
 import scala.io.Source
 

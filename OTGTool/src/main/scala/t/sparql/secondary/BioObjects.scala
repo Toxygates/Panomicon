@@ -42,6 +42,7 @@ object Gene {
     Gene(identifier = entrez, name = entrez)
   }
 
+  //e.g. http://bio2rdf.org/kegg:hsa_6512
   def unpackKegg(url: String): Gene = {
     val p1 = url.split(":")(2)
     val p1s = p1.split("_")
@@ -57,9 +58,7 @@ case class Gene(identifier: String,
   symbol: String = "",
   keggShortCode: String = "") extends StoredBioObject[Gene] {
 
-  //e.g. short code: MMU, entrez: 58810 ->
-  //<http://bio2rdf.org/kegg:MMU_58810>
-  def packKegg = s"http://bio2rdf.org/kegg:${keggShortCode}_$identifier"
+  private[secondary] def packKeggNCBI = s"http://bio2rdf.org/ncbigene:$identifier"
 
   override def equals(other: Any): Boolean = other match {
     case Gene(id, _, _, _) => id == identifier

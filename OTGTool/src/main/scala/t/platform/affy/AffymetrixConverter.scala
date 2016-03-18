@@ -18,36 +18,9 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.platform
+package t.platform.affy
 import scala.io._
-
-case class AffyColumn(title: String, annotKey: Option[String], isList: Boolean) {
-
-  //TODO support e.g. quoted strings so we don't need to remove commas
-  private def escape(x: String) = x.replace(",", " -")
-
-  def annotations(data: String): Option[String] = {
-    if (isList) {
-      val raw = procListItem(data).filter(!_.isEmpty)
-      if (!raw.isEmpty) {
-        Some(raw.map(s => s"${annotKey.get}=${escape(s(0))}").mkString(","))
-      } else {
-        None
-      }
-    } else {
-      if (data.trim != "---") {
-        Some(s"${annotKey.get}=${escape(data)}")
-      } else {
-        None
-      }
-    }
-  }
-
-  def procListItem(x: String): Seq[Seq[String]] = {
-    val records = x.split("///").toVector
-    records.map(_.split("//").map(_.trim).filter(_ != "---").toVector)
-  }
-}
+import scala.Vector
 
 /**
  * A tool for converting Affymetrix annotation files to the T
@@ -55,22 +28,10 @@ case class AffyColumn(title: String, annotKey: Option[String], isList: Boolean) 
  */
 object AffymetrixConverter {
 
-  val gobpColumn = AffyColumn("Gene Ontology Biological Process", Some("gobp"), true)
-  val goccColumn = AffyColumn("Gene Ontology Cellular Component", Some("gocc"), true)
-  val gomfColumn = AffyColumn("Gene Ontology Molecular Function", Some("gomf"), true)
-  val swissprotColumn = AffyColumn("SwissProt", Some("swissprot"), true)
-  val refseqColumn = AffyColumn("RefSeq Transcript ID", Some("refseq"), true)
-  val idColumn = AffyColumn("Probe Set ID", None, false)
-  val chipColumn = AffyColumn("GeneChip Array", Some("genechip"), false)
-  val titleColumn = AffyColumn("Gene Title", Some("title"), false)
-  val symbolColumn = AffyColumn("Gene Symbol", Some("symbol"), true)
-  val entrezColumn = AffyColumn("Entrez Gene", Some("entrez"), true)
-  val speciesColumn = AffyColumn("Species Scientific Name", Some("species"), false)
-  val unigeneColumn = AffyColumn("UniGene ID", Some("unigene"), false)
+  val columns = List(GOBP, GOCC, GOMF,
+      Swissprot, RefseqTranscript, ProbeID, GeneChip, Title,
+      Entrez, Species, Unigene, Symbol)
 
-  val columns = List(gobpColumn, goccColumn, gomfColumn,
-    swissprotColumn, refseqColumn, idColumn, chipColumn, titleColumn,
-    entrezColumn, speciesColumn, unigeneColumn, symbolColumn)
   val columnLookup = Map() ++ columns.map(c => c.title -> c)
 
   val listColumns = columns.filter(_.isList)
@@ -91,9 +52,9 @@ object AffymetrixConverter {
         map(l => rejoin(l.split(",").toList))
     val columns = data(0).map(procItem)
     val pdata = data.drop(1).map(_.map(procItem))
-    val idColumnOffset = columns.indexOf(idColumn.title)
+    val idColumnOffset = columns.indexOf(ProbeID.title)
     if (idColumnOffset == -1) {
-      throw new Exception(s"ID column '${idColumn.title}' not found in data")
+      throw new Exception(s"ID column '${ProbeID.title}' not found in data")
     }
 
     println(s"Writing output to $output")

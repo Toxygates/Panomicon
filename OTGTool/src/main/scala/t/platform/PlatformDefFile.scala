@@ -23,15 +23,28 @@ package t.platform
 import scala.io.Source
 import t.db.kyotocabinet.KCIndexDB
 
+//TODO extract standard columns and move outside affy package
+import t.platform.affy.{GOMF, GOBP, GOCC, Entrez}
+
 object ProbeRecord {
-  //Note that we must use double quote for the value.
-  //Affymetrix definitions contain strings with single quotes.
-  def asRdfTerm(key: String, value: String) = {
+  /**
+   * This is where we generate nonstandard relations for each probe.
+   * By default, each attribute will simply appear as a string.
+   * Note that we must use double quotes for the value:
+   * Affymetrix definitions contain strings with single quotes.
+   */
+
+  def asRdfTerms(key: String, value: String): Seq[String] = {
     key match {
       //example value: 0050839
-      case "go" | "gomf" | "gobp" | "gocc" =>
-        s"<http://purl.obolibrary.org/obo/GO_$value>"
-      case _                               => "\"" + value + "\""
+
+      case "go" | GOMF.key | GOBP.key | GOCC.key =>
+        Seq(s"<http://purl.obolibrary.org/obo/GO_$value>")
+      case Entrez.key =>
+        Seq("\"" + value + "\"",
+            s"<http://bio2rdf.org/ncbigene:$value>")
+      case _ =>
+        Seq("\"" + value + "\"")
     }
   }
 }

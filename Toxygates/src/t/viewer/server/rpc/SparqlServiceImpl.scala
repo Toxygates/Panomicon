@@ -452,9 +452,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
         case _: AType.KEGG.type =>
           toBioMap(probes, (_: Probe).genes) combine
             b2rKegg.forGenes(probes.flatMap(_.genes))
-        case _: AType.Enzymes.type =>
-          val sp = asSpecies(sc)
-          b2rKegg.enzymes(probes.flatMap(_.genes), sp)
+//        case _: AType.Enzymes.type =>
+//          val sp = asSpecies(sc)
+//          b2rKegg.enzymes(probes.flatMap(_.genes), sp)
         case _ => throw new Exception("Unexpected annotation type")
       }
 
