@@ -59,15 +59,17 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 
   private List<DataViewListener> listeners = new ArrayList<DataViewListener>();
 
+  //TODO visibility of these members
   protected Dataset[] chosenDatasets = new Dataset[0];
-  public SampleClass chosenSampleClass; // TODO public
-  protected String[] chosenProbes = new String[0];
+  public SampleClass chosenSampleClass; 
+  public String[] chosenProbes = new String[0];
   public List<String> chosenCompounds = new ArrayList<String>();
   protected String chosenCompound;
   protected List<Group> chosenColumns = new ArrayList<Group>();
   protected SampleColumn chosenCustomColumn;
   public List<ItemList> chosenItemLists = new ArrayList<ItemList>(); // TODO
-  public String chosenGeneSet = new String();
+  public ItemList chosenGeneSet = null;
+  public List<ItemList> chosenClusteringList = new ArrayList<ItemList>();
 
   protected final Logger logger = SharedUtils.getLogger("dlwidget");
   private StorageParser parser;
@@ -133,9 +135,14 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     changeItemLists(lists);
   }
 
-  public void geneSetChanged(String geneSet) {
+  public void geneSetChanged(ItemList geneSet) {
     this.chosenGeneSet = geneSet;
     changeGeneSet(geneSet);
+  }
+
+  public void clusteringListsChanged(List<ItemList> lists) {
+    this.chosenClusteringList = lists;
+    changeClusteringLists(lists);
   }
 
   // outgoing signals
@@ -215,10 +222,17 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     }
   }
 
-  protected void changeGeneSet(String geneSet) {
+  protected void changeGeneSet(ItemList geneSet) {
     chosenGeneSet = geneSet;
     for (DataViewListener l : listeners) {
       l.geneSetChanged(geneSet);
+    }
+  }
+
+  protected void changeClusteringLists(List<ItemList> lists) {
+    chosenClusteringList = lists;
+    for (DataViewListener l : listeners) {
+      l.clusteringListsChanged(lists);
     }
   }
 
@@ -232,6 +246,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     other.customColumnChanged(chosenCustomColumn);
     other.itemListsChanged(chosenItemLists);
     other.geneSetChanged(chosenGeneSet);
+    other.clusteringListsChanged(chosenClusteringList);
   }
 
   protected Storage tryGetStorage() {
@@ -331,13 +346,50 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   }
 
   public void storeGeneSet(StorageParser p) {
-    logger.info("save gene set : " + chosenGeneSet);
-    p.setItem("geneset", chosenGeneSet);
+    p.setItem("geneset", (chosenGeneSet != null ? chosenGeneSet.pack() : ""));
   }
 
+  public void storeClusteringLists(StorageParser p) {
+    p.setItem("clusterings", packItemLists(chosenClusteringList, "###"));
+  }
+  
+  private String packCompounds(StorageParser p) {
+    return StorageParser.packList(chosenCompounds, "###");
+  }
+  
+  public void storeCompounds(StorageParser p) {
+    p.setItem("compounds", packCompounds(p));
+  }
+  
+  private String packDatasets(StorageParser p) {
+    List<String> r = new ArrayList<String>();
+    for (Dataset d: chosenDatasets) {
+      r.add(d.getTitle());
+    }
+    return StorageParser.packList(r, "###");
+  }
+  
+  public void storeDatasets(StorageParser p) {  
+    p.setItem("datasets", packDatasets(p));
+  }
+  
+  public void storeSampleClass(StorageParser p) {
+    if (chosenSampleClass != null) {
+      p.setItem("sampleClass", chosenSampleClass.pack());
+    }    
+  }
+  
   public List<ItemList> loadItemLists(StorageParser p) {
+    return loadLists(p, "lists");
+  }
+
+  public List<ItemList> loadClusteringLists(StorageParser p) {
+    return loadLists(p, "clusterings");
+  }
+
+  public List<ItemList> loadLists(StorageParser p, String name) {
     List<ItemList> r = new ArrayList<ItemList>();
-    String v = p.getItem("lists");
+    String v = p.getItem(name);
     if (v != null) {
       String[] spl = v.split("###");
       for (String x : spl) {
@@ -348,6 +400,39 @@ public class DataListenerWidget extends Composite implements DataViewListener {
       }
     }
     return r;
+  }
+  
+  public void loadDatasets(StorageParser p) {
+    String v = p.getItem("datasets");
+    if (v == null || v.equals(packDatasets(p))) {
+      return;
+    }
+    List<Dataset> r = new ArrayList<Dataset>();
+    for (String ds: v.split("###")) {
+      r.add(new Dataset(ds, "", "", null, ds));
+    }
+    changeDatasets(r.toArray(new Dataset[0]));
+  }
+  
+  public void loadCompounds(StorageParser p) {
+    String v = p.getItem("compounds");
+    if (v == null || v.equals(packCompounds(p))) {
+      return;
+    }
+    List<String> r = new ArrayList<String>();    
+    for (String c: v.split("###")) {
+      r.add(c);
+    }
+    changeCompounds(r);
+  }
+  
+  public void loadSampleClass(StorageParser p) {
+    String v = p.getItem("sampleClass");
+    if (v == null || v.equals(chosenSampleClass.pack())) {
+      return;
+    }
+    SampleClass sc = SampleClass.unpack(v);
+    changeSampleClass(sc);    
   }
 
   /**
@@ -401,11 +486,22 @@ public class DataListenerWidget extends Composite implements DataViewListener {
       itemListsChanged(lists);
     }
     
-    String geneSet = p.getItem("geneset");
+    ItemList geneSet = ItemList.unpack(p.getItem("geneset"));
     if (geneSet != null) {
       chosenGeneSet = geneSet;
-      geneSetChanged(geneSet);
     }
+    geneSetChanged(geneSet);
+    
+    lists = loadClusteringLists(p);
+    if (lists.size() > 0) {
+      chosenClusteringList = lists;
+      clusteringListsChanged(lists);
+    }
+    
+    //Note: the ordering of the following 3 is important
+    loadDatasets(p);
+    loadSampleClass(p);
+    loadCompounds(p);
   }
 
   private int numPendingRequests = 0;

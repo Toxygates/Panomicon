@@ -36,6 +36,11 @@ import t.sparql.Samples
 import otg.sparql.Probes
 import t.db.TRefresher
 import t.db.SeriesBuilder
+import t.db.TransformingWrapper
+import t.db.BasicExprValue
+import t.db.kyotocabinet.KCSeriesDB
+import t.global.KCDBRegistry
+import t.db.SeriesDB
 
 object Context {
   val factory = new Factory()
@@ -64,7 +69,6 @@ class OTGContext(baseConfig: BaseConfig,
    */
   val metadata: Option[Metadata] = None) extends MatrixContext {
 
-  private val otgHomeDir = baseConfig.data.dir
   private val data = baseConfig.data
   private val maps = new TRefresher(baseConfig)
 
@@ -83,17 +87,18 @@ class OTGContext(baseConfig: BaseConfig,
    *  database.
    */
   def absoluteDBReader: MatrixDBReader[ExprValue] =
-    KCMatrixDB(data.exprDb, false)(this)
+    data.absoluteDBReader(this)
 
   /**
    * Obtain a reader for the folds database.
    */
   def foldsDBReader: MatrixDBReader[PExprValue] =
-    KCMatrixDB.applyExt(data.foldDb, false)(this)
+    data.foldsDBReader(this)
 
   def seriesBuilder: OTGSeries.type = OTGSeries
 
-  //TODO add series DB reader
+  def seriesDBReader: SDB =
+    KCSeriesDB(data.seriesDb, false, seriesBuilder, true)(this)
 
   var testRun: Boolean = false
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -29,39 +29,24 @@ import t.SeriesRanking
 import otgviewer.shared.{Series => SSeries}
 import t.common.shared.SampleClass
 
-class SeriesServiceImpl extends 
+class SeriesServiceImpl extends
 t.viewer.server.rpc.SeriesServiceImpl[OTGSeries] with OTGServiceServlet {
 
   implicit def mat = context.matrix
   implicit def ctxt = context
-  
-  override protected def ranking(db: SeriesDB[OTGSeries], key: OTGSeries) = 
+
+  override protected def ranking(db: SeriesDB[OTGSeries], key: OTGSeries) =
     new otg.SeriesRanking(db, key)
-  
-  override protected def asShared(s: OTGSeries): SSeries = 
+
+  override protected def asShared(s: OTGSeries): SSeries =
     Conversions.asJava(s)
-    
+
   override protected def fromShared(s: SSeries): OTGSeries =
     Conversions.asScala(s)
-  
-  override protected def getDB(): SeriesDB[OTGSeries] = {
-    //TODO organise this better
-    try {
-      val file = baseConfig.data.seriesDb
-      val db = KCDBRegistry.get(file, false)
-      db match {
-        case Some(d) => new KCSeriesDB(file, d, OTGSeries) {
-          override def read(key: OTGSeries): Iterable[OTGSeries] = {
-            OTGSeries.normalize(super.read(key))
-          }
-        }
-        case None => throw new Exception("Unable to get DB")
-      }
-    } catch {
-      case e: Exception => throw new DBUnavailableException()
-    }
-  }
-   
+
+  override protected def getDB(): SeriesDB[OTGSeries] =
+    mat.seriesDBReader
+
   //TODO lift up this method
   def expectedTimes(s: SSeries): Array[String] = {
     val key = fromShared(s)

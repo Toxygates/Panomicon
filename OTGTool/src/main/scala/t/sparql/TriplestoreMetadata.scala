@@ -38,7 +38,7 @@ class TriplestoreMetadata(os: Samples)(implicit sf: SampleFilter) extends Metada
     throw new Exception("Implement me")
   }
 
-  def samples: Iterable[Sample] = os.samples
+  def samples: Iterable[Sample] = os.samples(SampleClass())
 
   def parameters(s: Sample): Iterable[(SampleParameter, String)] = {
     os.parameterQuery(s.identifier).collect( {

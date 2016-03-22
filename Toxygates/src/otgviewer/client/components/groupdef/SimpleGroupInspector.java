@@ -22,8 +22,8 @@ package otgviewer.client.components.groupdef;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;
 
-import otgviewer.client.CompoundSelector;
 import otgviewer.client.components.Screen;
+import otgviewer.client.components.compoundsel.CompoundSelector;
 import t.common.shared.sample.Group;
 
 public class SimpleGroupInspector extends GroupInspector {

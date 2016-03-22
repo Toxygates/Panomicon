@@ -327,37 +327,53 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     Vector() //TODO
   }
 
+  /**
+   * Find GO terms matching the given string pattern.
+   */
   def goTerms(pattern: String): Iterable[GOTerm] = {
-    List() // TODO
+    goTerms(pattern, 1000)
   }
 
   def goTerms(pattern: String, maxSize: Int): Iterable[GOTerm] = {
-    List() // TODO
+    val query = tPrefixes +
+    "SELECT DISTINCT ?got ?gotn WHERE { GRAPH ?g { " + """
+     ?got rdfs:label ?gotn . } """ +
+    "FILTER regex(STR(?gotn), \"" + pattern + ".*\", \"i\")" +
+    s"""
+      GRAPH ?g2 {
+          { ?probe t:gomf ?got . }
+          UNION { ?probe t:gocc ?got . }
+          UNION { ?probe t:gobp ?got . }
+          UNION { ?probe t:go ?got . }
+      }
+      } LIMIT ${maxSize}"""
+    ts.mapQuery(query).map(x => GOTerm(unpackGoterm(x("got")), x("gotn")))
   }
 
-  //TODO this query is inelegant and probably will not work on Fuseki.
-  //A better solution is to have the URI of the GOTerm as a starting point to find the
+  //TODO A better solution is to have the URI of the GOTerm as a starting point to find the
   //probes.
   def forGoTerm(term: GOTerm): Iterable[Probe] = {
     val query = tPrefixes +
     s"""
-    PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>
 
     SELECT DISTINCT ?probe WHERE {
-        { ?got go:synonym "${term.name}" . }
-        UNION { ?got go:name "${term.name}" . }
-
-         ?probe a t:probe .
-        { ?probe t:gomf ?got . }
-        UNION { ?probe t:gocc ?got . }
-        UNION { ?probe t:gobp ?got . }
-
+        GRAPH ?g {
+        ?got rdfs:label ?label.
+        }
+        FILTER(STR(?label) = "${term.name}"^^xsd:string).
+        GRAPH ?g2 {
+          ?probe a t:probe .
+          { ?probe t:gomf ?got . }
+          UNION { ?probe t:gocc ?got . }
+          UNION { ?probe t:gobp ?got . }
+          UNION { ?probe t:go ?got . }
+        }
     }
     """
     ts.simpleQuery(query).map(Probe.unpack)
   }
 
-  protected def unpackGoterm(term: String) = term.split(".org/")(1)
+  protected def unpackGoterm(term: String) = term.split(".org/obo/")(1).replace("_", ":")
 
   def goTerms(probes: Iterable[Probe]): MMap[Probe, GOTerm] = {
     goTerms("?probe t:go ?got . ", probes)
@@ -376,14 +392,13 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
       multiFilter("?probe", probes.map(p => bracket(p.pack))) +
       """
     }
-    { GRAPH ?g2 {
-        ?got2 owl:sameAs ?got.
-      } GRAPH ?g3 {
-        ?got2 go:name ?gotname.
-      }
-    } UNION {
-      ?got go:name ?gotname }
-    } """
+    GRAPH ?g2 {
+      ?got rdfs:label ?gotname.
+    }
+     FILTER (?got NOT IN (<http://purl.obolibrary.org/obo/GO_0003674>, <http://purl.obolibrary.org/obo/GO_0005575>,
+    <http://purl.obolibrary.org/obo/GO_0008150>) )
+    }
+    """
 
     val r = ts.mapQuery(query).map(x => Probe.unpack(x("probe")) -> GOTerm(unpackGoterm(x("got")), x("gotname")))
     makeMultiMap(r)
@@ -410,5 +425,12 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
    */
   def auxSortMap(probes: Iterable[String], key: String): Map[String, Double] = {
     Map() ++ probes.map(x => x -> 0.0) //default map does nothing
+  }
+
+  def annotationsAndComments: Iterable[(String, String)] = {
+    val q = tPrefixes +
+    """SELECT DISTINCT ?title ?comment WHERE { ?x a t:annotation;
+      rdfs:label ?title; t:comment ?comment } """
+    ts.mapQuery(q).map(x => (x("title"), x("comment")))
   }
 }

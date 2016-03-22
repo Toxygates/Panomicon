@@ -488,13 +488,17 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
     if (listChooser != null) {
       listChooser.setItems(new ArrayList<String>(items));
     }
-    selectionChanged(selectedItems);
+    triggerChange();
   }
 
   public void setSelection(Collection<String> items) {
     setSelection(items, null);
   }
 
+  public void triggerChange() {
+    selectionChanged(selectedItems);
+  }
+  
   /**
    * Outgoing signal. Called when the selection has changed.
    * 

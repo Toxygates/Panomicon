@@ -57,7 +57,8 @@ package object sparql {
     override def size = data.size
     def mapInnerValues[V](f: U => V) = new RichMMap(map(x => (x._1 -> x._2.map(f))))
     def mapKeys[V](f: T => V) = new RichMMap(map(x => (f(x._1) -> x._2)))
-    def allValues = flatMap(_._2)
+    def allValues = flatMap(_._2).toSeq.distinct
+    def allPairs = data.toSeq.flatMap(x => x._2.toSeq.map((x._1, _)))
 
     def union(m2: MMap[T, U]): RichMMap[T, U] = {
       val allKeys = keySet ++ m2.keySet

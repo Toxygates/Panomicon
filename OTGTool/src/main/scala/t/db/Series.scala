@@ -48,6 +48,8 @@ abstract class Series[This <: Series[This]](val probe: Int, val points: Seq[Seri
    * represents the constraints for ranking with a single probe.
    */
   def asSingleProbeKey: This
+
+  def constraints: Map[String, String] = Map()
 }
 
 /**
@@ -81,13 +83,15 @@ trait SeriesBuilder[S <: Series[S]] {
    * Using values from the given MatrixDB, construct all possible series for the
    * samples indicated in the metadata.
    */
-  def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata, samples: Iterable[Sample])(implicit mc: MatrixContext): Iterable[S]
+  def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E],
+      md: Metadata, samples: Iterable[Sample])(implicit mc: MatrixContext): Iterable[S]
 
   /**
    * Using values from the given MatrixDB, construct all possible series for the
    * samples indicated in the metadata.
    */
-  def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata)(implicit mc: MatrixContext): Iterable[S] = makeNew(from, md, md.samples)
+  def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata)
+  (implicit mc: MatrixContext): Iterable[S] = makeNew(from, md, md.samples)
 
   /**
    * Enum keys that are necessary for this SeriesBuilder.
@@ -109,15 +113,13 @@ trait SeriesBuilder[S <: Series[S]] {
     (p & mask).toLong
   }
 
-  def presentMean(ds: Iterable[Iterable[ExprValue]]): Iterable[ExprValue] = {
-    var byProbe = Map[String, List[ExprValue]]()
-    for (xs <- ds; y <- xs; p = y.probe) {
-      if (byProbe.contains(p)) {
-        byProbe += (p -> (y :: byProbe(p)))
-      } else {
-        byProbe += (p -> List(y))
-      }
-    }
+  def presentMeanByProbe(ds: Iterable[ExprValue]): Iterable[ExprValue] = {
+    val byProbe = ds.groupBy(_.probe)
     byProbe.map(x => ExprValue.presentMean(x._2, x._1))
   }
+
+  /**
+   * Sort time points and insert missing ones (as 0.0/A) according to standard expectations.
+   */
+  def normalize(data: Iterable[S])(implicit mc: MatrixContext): Iterable[S]
 }

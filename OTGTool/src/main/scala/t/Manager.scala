@@ -29,11 +29,10 @@ import friedrich.util.CmdLineOptions
  * Management tool for T framework applications.
  */
 abstract class Manager[C <: Context, B <: BaseConfig] {
+  import scala.collection.{ Map => CMap }
 
   def requireEnv(env: scala.collection.Map[String, String], key: String, errMsg: String) =
     env.getOrElse(key, throw new Exception(s"Missing environment variable $key: $errMsg"))
-
-  import scala.collection.{ Map => CMap }
 
   def getTSConfig(env: CMap[String, String]): TriplestoreConfig =
     TriplestoreConfig(
@@ -44,7 +43,7 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
       requireEnv(env, "T_TS_REPO", "Please specify triplestore repository"))
 
   def getDataConfig(env: CMap[String, String]): DataConfig =
-    new DataConfig(
+    factory.dataConfig(
       requireEnv(env, "T_DATA_DIR", "Please specify data directory"),
       requireEnv(env, "T_DATA_MATDBCONFIG", "Please specify matrix db flags"))
 
@@ -78,7 +77,7 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
 
   protected def showHelp() {
     println("Please supply one of the following commands")
-    println(" batch, instance, platform, help")
+    println(" batch, instance, platform, matrix, help")
   }
 
   protected def handleArgs(args: Array[String])(implicit context: C) {
@@ -86,6 +85,7 @@ abstract class Manager[C <: Context, B <: BaseConfig] {
       case "batch"    => BatchManager(args.drop(1))
       case "instance" => InstanceManager(args.drop(1))
       case "platform" => PlatformManager(args.drop(1))
+      case "matrix" => MatrixManager(args.drop(1), this)
       case "help"     => showHelp()
     }
   }
@@ -109,6 +109,9 @@ trait ManagerTool extends CmdLineOptions {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  /**
+   * Run the task runner and monitor its progress on the console
+   */
   def startTaskRunner() {
     TaskRunner.start()
     Future {

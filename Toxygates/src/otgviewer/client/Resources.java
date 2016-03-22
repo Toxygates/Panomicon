@@ -25,18 +25,6 @@ import com.google.gwt.resources.client.TextResource;
 
 public interface Resources extends t.common.client.Resources {
 
-	@Source("images/16_statistics.png")
-	ImageResource chart();
-	
-	@Source("images/16_close.png")
-	ImageResource close();
-	
-	@Source("images/16_faq.png")
-	ImageResource help();
-	
-	@Source("images/12_filter.png")
-	ImageResource filter();
-	
 	@Source("help/default.html")
 	TextResource defaultHelpHTML();
 	

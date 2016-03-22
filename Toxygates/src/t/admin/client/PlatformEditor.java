@@ -23,8 +23,11 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
-import t.admin.shared.Platform;
+import t.common.client.maintenance.ManagedItemEditor;
+import t.common.client.maintenance.TaskCallback;
+import t.common.shared.Platform;
 
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.user.client.ui.TextArea;
 
 public class PlatformEditor extends ManagedItemEditor {
@@ -32,6 +35,8 @@ public class PlatformEditor extends ManagedItemEditor {
   private @Nullable PlatformUploader uploader;
   protected TextArea publicComments;
 
+  protected final MaintenanceServiceAsync maintenanceService = GWT.create(MaintenanceService.class);
+  
   public PlatformEditor(@Nullable Platform p, boolean addNew) {
     super(p, addNew);
     publicComments = addTextArea("Public comments");
@@ -53,9 +58,9 @@ public class PlatformEditor extends ManagedItemEditor {
         new Date(), publicComments.getValue());
     if (addNew) {
       maintenanceService.addPlatformAsync(p, uploader.affyRadio.getValue(), new TaskCallback(
-          "Add platform") {
+          "Add platform", maintenanceService) {
         @Override
-        void onCompletion() {
+        protected void onCompletion() {
           onFinish();
           onFinishOrAbort();
         }

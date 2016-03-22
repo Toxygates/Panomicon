@@ -27,14 +27,15 @@ import java.util.logging.Logger;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.client.dialog.InteractionDialog;
+import otgviewer.client.dialog.TargetMineEnrichDialog;
 import otgviewer.client.dialog.TargetMineSyncDialog;
-import otgviewer.shared.targetmine.EnrichmentWidget;
+import otgviewer.shared.targetmine.EnrichmentParams;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.ItemList;
 import t.common.shared.SharedUtils;
 import t.common.shared.StringList;
 import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.dialog.InteractionDialog;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
@@ -60,7 +61,7 @@ public class TargetMineData {
   DialogBox dialog;
 
   public void importLists(final boolean asProbes) {
-    InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Import") {
+    InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Import", true, true) {
       @Override
       protected void userProceed(String user, String pass, boolean replace) {
         super.userProceed();
@@ -84,7 +85,7 @@ public class TargetMineData {
   }
 
   public void exportLists() {
-    InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Export") {
+    InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Export", true, true) {
       @Override
       protected void userProceed(String user, String pass, boolean replace) {
         super.userProceed();
@@ -110,26 +111,24 @@ public class TargetMineData {
         });
   }
 
-  public void enrich() {
-    InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Enrich") {
+  public void enrich(final StringList probes) {
+    InteractionDialog ui = new TargetMineEnrichDialog(parent, url, "Enrich") {
       @Override
       protected void userProceed(String user, String pass, boolean replace) {
         super.userProceed();
-        String chosen = parent.chosenGeneSet;
-        if (chosen != null && !chosen.equals("")) {          
-          doEnrich(user, pass, 
-              StringList.pickProbeLists(parent.chosenItemLists, chosen).get(0));
+        if (probes.items() != null && probes.items().length > 0) {        
+          doEnrich(probes, getParams());
         } else {
-          Window.alert("Please define and select a probe list first.");
+          Window.alert("Please define and select a gene set first.");
         }        
       }
     };
     ui.display("TargetMine enrichment", DialogPosition.Center);
   }
 
-  public void doEnrich(final String user, final String pass, StringList list) {
-    tmService.enrichment(user, pass, EnrichmentWidget.GenePathway, 
-        list, new PendingAsyncCallback<String[][]>(parent,
+  public void doEnrich(StringList list,
+      EnrichmentParams params) {
+    tmService.enrichment(list, params, new PendingAsyncCallback<String[][]>(parent,
         "Unable to perform enrichment analysis. Check your username and password. "
             + "There may also be a server error.") {
       public void handleSuccess(String[][] result) {
@@ -139,32 +138,47 @@ public class TargetMineData {
   }
   
   public void multiEnrich(final StringList[] lists) {
-    InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Cluster enrichment") {
+    InteractionDialog ui = new TargetMineEnrichDialog(parent, url, "Cluster enrichment") {
       @Override
       protected void userProceed(String user, String pass, boolean replace) {
         super.userProceed();
-        doEnrich(user, pass, lists);
+        doEnrich(lists, getParams());
       }
     };
     ui.display("TargetMine cluster enrichment", DialogPosition.Center);
   }
   
-  public void doEnrich(final String user, final String pass, StringList[] lists) {
-    tmService.multiEnrichment(user, pass, EnrichmentWidget.GenePathway, lists, 
+  private static String[] append(String[] first, String[] last) {    
+    String[] r = new String[first.length + last.length];
+    for (int i = 0; i < first.length; ++i) {
+      r[i] = first[i];      
+    }
+    for (int i = 0; i < last.length; ++i) {
+      r[i + first.length] = last[i];
+    }
+    return r;    
+  }
+  
+  public void doEnrich(final StringList[] lists,
+      EnrichmentParams params) {
+    tmService.multiEnrichment(lists, params,
          new PendingAsyncCallback<String[][][]>(parent,
         "Unable to perform enrichment analysis. Check your username and password. "
             + "There may also be a server error.") {
       public void handleSuccess(String[][][] result) {
         List<String[]> best = new ArrayList<String[]>();
-        best.add(result[0][0]); //Headers
+        best.add(append(new String[] {"Cluster", "Size"}, result[0][0])); //Headers
+        int i = 1;
         for (String[][] clust: result) {
+          int n = lists[i-1].size();
           if (clust.length < 2) {
             //TODO don't hardcode length here
-            String[] res = new String[] { "(No result)", "", "", "" };
+            String[] res = new String[] { "Cluster " + i, "" + n, "(No result)", "", "", "" };
             best.add(res);
           } else {
-            best.add(clust[1]);
+            best.add(append(new String[] {"Cluster " + i, "" + n }, clust[1]));
           }
+          i += 1;
         }
         StringArrayTable.displayDialog(best.toArray(new String[0][0]), "Best enrichment results", 800, 400);            
       }

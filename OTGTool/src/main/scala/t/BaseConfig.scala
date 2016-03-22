@@ -30,6 +30,15 @@ import t.db.ParameterSet
 import t.db.file.TSVMetadata
 import t.db.kyotocabinet.KCSeriesDB
 import t.db.kyotocabinet.KCIndexDB
+import t.db.kyotocabinet.chunk.KCChunkMatrixDB
+import t.db.kyotocabinet.KCMatrixDB
+import t.db.MatrixDBReader
+import t.db.PExprValue
+import t.db.BasicExprValue
+import t.db.MatrixContext
+import t.db.ExprValue
+import t.db.TransformingWrapper
+import t.db.MatrixDB
 
 //TODO should BaseConfig be invariant between applications?
 trait BaseConfig {
@@ -59,12 +68,66 @@ case class TriplestoreConfig(url: String, updateUrl: String,
   def get = new t.sparql.SimpleTriplestore(triplestore, updateUrl == null)
 }
 
+object DataConfig {
+  def apply(dir: String, matrixDbOptions: String): DataConfig = {
+    if (dir.startsWith(KCChunkMatrixDB.CHUNK_PREFIX)) {
+      new ChunkDataConfig(dir, matrixDbOptions)
+    } else {
+      new DataConfig(dir, matrixDbOptions)
+    }
+  }
+}
+
 class DataConfig(val dir: String, val matrixDbOptions: String) {
-  def exprDb: String = s"$dir/expr.kct" + matrixDbOptions
-  def foldDb: String = s"$dir/fold.kct" + matrixDbOptions
+  protected def exprFile: String = "expr.kct" + matrixDbOptions
+  protected def foldFile: String = "fold.kct" + matrixDbOptions
+
+  def exprDb: String = s"$dir/$exprFile"
+  def foldDb: String = s"$dir/$foldFile"
+
   def seriesDb: String = s"$dir/series.kct" + KCSeriesDB.options
 
   def sampleIndex: String = s"$dir/sample_index.kct" + KCIndexDB.options
   def probeIndex: String = s"$dir/probe_index.kct" + KCIndexDB.options
   def enumIndex: String = s"$dir/enum_index.kct" + KCIndexDB.options
+
+  //TODO remove the fold wrap when possible
+  def foldWrap(db: MatrixDBReader[PExprValue]): MatrixDBReader[PExprValue] =
+    new TransformingWrapper(db) {
+      def tfmValue(x: PExprValue) = x.copy(value = Math.pow(2, x.value))
+    }
+
+  def absoluteDBReader(implicit c: MatrixContext): MatrixDBReader[ExprValue] =
+    KCMatrixDB.get(exprDb, false)
+  def foldsDBReader(implicit c: MatrixContext): MatrixDBReader[PExprValue] =
+    foldWrap(foldsDBReaderNowrap)
+  def foldsDBReaderNowrap(implicit c: MatrixContext): MatrixDBReader[PExprValue] =
+    KCMatrixDB.getExt(foldDb, false)
+
+  def extWriter(file: String)(implicit c: MatrixContext): MatrixDB[PExprValue, PExprValue] =
+    KCMatrixDB.getExt(file, true)
+}
+
+class HashDataConfig(dir: String, matrixDbOptions: String)
+extends DataConfig(dir, matrixDbOptions) {
+  override def exprFile = "expr.kch" + matrixDbOptions
+  override def foldFile = "fold.kch" + matrixDbOptions
+}
+
+class ChunkDataConfig(dir: String, matrixDbOptions: String) extends
+  DataConfig(KCChunkMatrixDB.removePrefix(dir), matrixDbOptions) {
+  override def exprFile: String = "expr.kch" + matrixDbOptions
+  override def foldFile: String = "fold.kch" + matrixDbOptions
+
+  override def absoluteDBReader(implicit c: MatrixContext): MatrixDBReader[PExprValue] =
+    KCChunkMatrixDB(exprDb, false)
+
+  override def foldsDBReaderNowrap(implicit c: MatrixContext): MatrixDBReader[PExprValue] =
+    KCChunkMatrixDB(foldDb, false)
+
+  override def extWriter(file: String)(implicit c: MatrixContext): MatrixDB[PExprValue, PExprValue] =
+    KCChunkMatrixDB.apply(file, true)
+
+  override def seriesDb: String =
+    KCChunkMatrixDB.removePrefix(super.seriesDb)
 }

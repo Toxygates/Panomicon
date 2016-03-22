@@ -55,18 +55,31 @@ public class Algorithm implements Serializable {
     return colDistance;
   }
 
+  /**
+   * Note that generated string is based on the value returned by asParam()
+   */
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("Row=");
-    sb.append(rowMethod.toString());
+    sb.append(rowMethod.asParam());
     sb.append(",");
-    sb.append(rowDistance.toString());
-    sb.append(" Col=");
-    sb.append(colMethod.toString());
+    sb.append(rowDistance.asParam());
     sb.append(",");
-    sb.append(colDistance.toString());
+    sb.append(colMethod.asParam());
+    sb.append(",");
+    sb.append(colDistance.asParam());
 
     return sb.toString();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Algorithm)) {
+      return false;
+    }
+    Algorithm algo = (Algorithm) obj;
+
+    return rowMethod.equals(algo.rowMethod) && rowDistance.equals(algo.rowDistance)
+        && colMethod.equals(algo.colMethod) && colDistance.equals(algo.colDistance);
   }
 }

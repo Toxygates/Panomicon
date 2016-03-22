@@ -49,4 +49,6 @@ abstract class TServiceServlet extends RemoteServiceServlet {
   protected def baseConfig = context.config
 
   protected def schema: DataSchema
+
+  protected def appName: String
 }

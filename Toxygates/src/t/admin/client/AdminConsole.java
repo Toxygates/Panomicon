@@ -18,21 +18,21 @@
 
 package t.admin.client;
 
-import t.admin.shared.Batch;
-import t.admin.shared.Instance;
-import t.admin.shared.Platform;
-import t.common.client.ImageClickCell;
 import t.common.client.Resources;
-import t.common.client.components.StringArrayTable;
+import t.common.client.maintenance.ListDataCallback;
+import t.common.client.maintenance.ManagerPanel;
+import t.common.client.maintenance.BatchPanel;
+import t.common.client.maintenance.ManagedItemEditor;
+import t.common.client.maintenance.TaskCallback;
 import t.common.shared.Dataset;
-import t.common.shared.ManagedItem;
+import t.common.shared.Platform;
+import t.common.shared.maintenance.Batch;
+import t.common.shared.maintenance.Instance;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -41,7 +41,6 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
-import com.google.gwt.view.client.NoSelectionModel;
 
 /**
  * Entry point for the data and instance management tool.
@@ -76,8 +75,9 @@ public class AdminConsole implements EntryPoint {
   }
 
   private Widget makeInstancePanel() {
-    AdminPanel<Instance> ip = new AdminPanel<Instance>("Edit instance", null) {
-      ManagedItemEditor makeEditor(Instance i, final DialogBox db, boolean addNew) {
+    ManagerPanel<Instance> ip = new ManagerPanel<Instance>("Edit instance", resources,
+        true, false) {
+      protected ManagedItemEditor makeEditor(Instance i, final DialogBox db, boolean addNew) {
         return new InstanceEditor(i, addNew) {
           @Override
           protected void onFinishOrAbort() {
@@ -87,11 +87,11 @@ public class AdminConsole implements EntryPoint {
         };
       }
 
-      void onDelete(Instance i) {
+      protected void onDelete(Instance i) {
         deleteInstance(i);
       }
     };
-    instanceData.addDataDisplay(ip.table);
+    instanceData.addDataDisplay(ip.table());
 
     refreshInstances();
     refreshDatasets();
@@ -99,8 +99,9 @@ public class AdminConsole implements EntryPoint {
   }
 
   private Widget makeDatasetPanel() {
-    AdminPanel<Dataset> dp = new AdminPanel<Dataset>("Edit datasets", null) {
-      ManagedItemEditor makeEditor(Dataset d, final DialogBox db, boolean addNew) {
+    ManagerPanel<Dataset> dp = new ManagerPanel<Dataset>("Edit datasets", resources,
+        true, false) {
+      protected ManagedItemEditor makeEditor(Dataset d, final DialogBox db, boolean addNew) {
         return new DatasetEditor(d, addNew) {
           @Override
           protected void onFinishOrAbort() {
@@ -110,11 +111,11 @@ public class AdminConsole implements EntryPoint {
         };
       }
 
-      void onDelete(Dataset d) {
+      protected void onDelete(Dataset d) {
         deleteDataset(d);
       }
 
-      void addMidColumns(CellTable<Dataset> table) {
+      protected void addMidColumns(CellTable<Dataset> table) {
         TextColumn<Dataset> textColumn = new TextColumn<Dataset>() {
           @Override
           public String getValue(Dataset object) {
@@ -126,15 +127,16 @@ public class AdminConsole implements EntryPoint {
         table.setColumnWidth(textColumn, "12.5em");
       }
     };
-    datasetData.addDataDisplay(dp.table);
+    datasetData.addDataDisplay(dp.table());
 
     refreshDatasets();
     return dp.panel();
   }
 
   private Widget makePlatformPanel() {
-    AdminPanel<Platform> pp = new AdminPanel<Platform>("Edit platform", null) {
-      Widget makeEditor(Platform p, final DialogBox db, boolean addNew) {
+    ManagerPanel<Platform> pp = new ManagerPanel<Platform>("Edit platform", resources,
+        true, false) {
+      protected Widget makeEditor(Platform p, final DialogBox db, boolean addNew) {
         return new PlatformEditor(p, addNew) {
           @Override
           protected void onFinishOrAbort() {
@@ -144,11 +146,11 @@ public class AdminConsole implements EntryPoint {
         };
       }
 
-      void onDelete(Platform p) {
+      protected void onDelete(Platform p) {
         deletePlatform(p);
       }
 
-      void addMidColumns(CellTable<Platform> table) {
+      protected void addMidColumns(CellTable<Platform> table) {
         TextColumn<Platform> textColumn = new TextColumn<Platform>() {
           @Override
           public String getValue(Platform object) {
@@ -162,103 +164,36 @@ public class AdminConsole implements EntryPoint {
     };
 
 
-    platformData.addDataDisplay(pp.table);
+    platformData.addDataDisplay(pp.table());
     refreshPlatforms();
     return pp.panel();
   }
 
-  private Widget makeBatchPanel() {
-    AdminPanel<Batch> bp = new AdminPanel<Batch>("Edit batch", null) {
-      Widget makeEditor(Batch b, final DialogBox db, boolean addNew) {
-        return new BatchEditor(b, addNew, datasetData.getList(), instanceData.getList()) {
+  private Widget makeBatchPanel() {    
+    BatchPanel bp = new BatchPanel("Edit batch", maintenanceService, resources,
+        true, false) {
+      @Override
+      protected Widget makeEditor(Batch b, final DialogBox db, boolean addNew) {
+        return new FullBatchEditor(b, addNew, datasetData.getList(), instanceData.getList()) {
           @Override
           protected void onFinishOrAbort() {
             db.hide();
-            refreshBatches();
+            doRefresh();
           }
         };
       }
-
-      void onDelete(Batch b) {
+      
+      @Override
+      protected void onDelete(Batch b) {
         deleteBatch(b);
       }
-
-      void addMidColumns(CellTable<Batch> table) {
-        TextColumn<Batch> samplesColumn = new TextColumn<Batch>() {
-          @Override
-          public String getValue(Batch object) {
-            return "" + object.getNumSamples();
-          }
-        };
-
-        table.addColumn(samplesColumn, "Samples");
-        table.setColumnWidth(samplesColumn, "6em");
-
-        //TODO factor out column construction code, share with e.g. PathologyScreen
-        final ImageClickCell<String> overviewCell = 
-            new ImageClickCell.StringImageClickCell(resources.magnify(), false) {
-
-          @Override
-          public void onClick(final String value) {
-            maintenanceService.batchParameterSummary(new Batch(value, ""), 
-                new AsyncCallback<String[][]>() {
-                  @Override
-                  public void onFailure(Throwable caught) {
-                    Window.alert("Unable to obtain batch data");                    
-                  }
-
-                  @Override
-                  public void onSuccess(String[][] result) {
-                    showBatchOverview(value, result);                    
-                  }              
-            });
-          }          
-        };
-        class InspectColumn extends Column<Batch, String> {        
-          public InspectColumn() {
-              super(overviewCell);          
-          }
-          
-          public String getValue(Batch b) {
-              return b.getTitle();         
-          }
-        }
-        InspectColumn ic = new InspectColumn();
-        table.addColumn(ic, "");
-        table.setColumnWidth(ic, "40px");
-        ic.setCellStyleNames("clickCell");
-        
-        TextColumn<Batch> dsColumn = new TextColumn<Batch>() {
-          @Override
-          public String getValue(Batch object) {
-            return "" + object.getDataset();
-          }
-        };
-        table.addColumn(dsColumn, "Dataset");
-        table.setColumnWidth(dsColumn, "8em");
-
-        TextColumn<Batch> visibilityColumn = new TextColumn<Batch>() {
-          @Override
-          public String getValue(Batch object) {
-            StringBuilder sb = new StringBuilder();
-            for (String inst : object.getEnabledInstances()) {
-              sb.append(inst);
-              sb.append(", ");
-            }
-            String r = sb.toString();
-            if (r.length() > 2) {
-              return r.substring(0, r.length() - 2);
-            } else {
-              return "";
-            }
-          }
-        };
-
-        table.addColumn(visibilityColumn, "Visibility");
+      
+      @Override
+      protected void doRefresh() {
+        refreshBatches();
       }
     };
-
-    batchData.addDataDisplay(bp.table);
+    batchData.addDataDisplay(bp.table());
     refreshBatches();
     return bp.panel();
   }
@@ -268,9 +203,10 @@ public class AdminConsole implements EntryPoint {
     if (!Window.confirm("Are you sure you want to delete the batch " + title + "?")) {
       return;
     }
-    maintenanceService.deleteBatchAsync(object.getTitle(), new TaskCallback("Delete batch") {
+    maintenanceService.deleteBatchAsync(object.getTitle(), 
+        new TaskCallback("Delete batch", maintenanceService) {
       @Override
-      void onCompletion() {
+      protected void onCompletion() {
         refreshBatches();
       }
     });
@@ -281,9 +217,10 @@ public class AdminConsole implements EntryPoint {
     if (!Window.confirm("Are you sure you want to delete the platform " + title + "?")) {
       return;
     }
-    maintenanceService.deletePlatformAsync(object.getTitle(), new TaskCallback("Delete platform") {
+    maintenanceService.deletePlatformAsync(object.getTitle(), 
+        new TaskCallback("Delete platform", maintenanceService) {
       @Override
-      void onCompletion() {
+      protected void onCompletion() {
         refreshPlatforms();
       }
     });
@@ -329,16 +266,8 @@ public class AdminConsole implements EntryPoint {
     });
   }
 
-
-  static <T extends ManagedItem> CellTable<T> makeTable() {
-    CellTable<T> table = new CellTable<T>();
-    table.setSelectionModel(new NoSelectionModel<T>());
-    table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
-    return table;
-  }
-
   private void refreshBatches() {
-    maintenanceService.getBatches(new ListDataCallback<Batch>(batchData, "batch list"));
+    maintenanceService.getBatches(null, new ListDataCallback<Batch>(batchData, "batch list"));
   }
 
   private void refreshInstances() {
@@ -354,8 +283,4 @@ public class AdminConsole implements EntryPoint {
     maintenanceService.getDatasets(new ListDataCallback<Dataset>(datasetData, "platform list"));
   }
 
-  private void showBatchOverview(String title, String[][] data) {
-    StringArrayTable.displayDialog(data, "Overview for for batch" + title, 
-        800, 600);    
-  }
 }

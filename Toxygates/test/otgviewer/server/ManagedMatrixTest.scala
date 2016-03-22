@@ -27,35 +27,70 @@ import t.db.testing._
 import t.db.testing.TestData._
 import org.scalatest.FunSuite
 import otgviewer.server.rpc.Conversions._
+import t.TTestSuite
 
 @RunWith(classOf[JUnitRunner])
-class ManagedMatrixTest extends FunSuite {
+class ManagedMatrixTest extends TTestSuite {
+  import TestData._
+  import t.common.testing.TestData.groups
 
-  implicit val testContext = TestData
-  val schema = t.common.testing.TestData.dataSchema()
+  val schema = t.common.testing.TestData.dataSchema
 
-  def normBuilder = new NormalizedBuilder(false, testContext.matrix,
-      TestData.probes)
+  //TODO absoluteDBReader will be null
+  def normBuilder = new NormalizedBuilder(false, context.absoluteDBReader,
+      probes.map(probeMap.unpack))
 
-  val groups = TestData.samples.take(10).grouped(2).zipWithIndex.map(ss => {
-    val sss = ss._1.map(s => asJavaSample(s))
-    new Group(schema, "Gr" + ss._2, sss.toArray)
-  }).toSeq
+  def foldBuilder = new ExtFoldBuilder(false, context.foldsDBReader,
+      probes.map(probeMap.unpack))
+
+  context.populate()
 
   test("build") {
-    val m = normBuilder.build(groups, false, true)
+    val m = foldBuilder.build(groups, false, true)
     val cur = m.current
-    assert (cur.rows === TestData.probes.size)
-    assert (cur.columns === groups.size)
+    val sortedProbes = probes.sorted.map(probeMap.unpack)
 
-    val raw = m.rawUngroupedMat
-    assert (raw.columns === 10)
-    assert (raw.rows === cur.rows)
+    cur.rows should equal(probes.size)
+    cur.columns should equal(groups.size)
+    cur.sortedRowMap.map(_._1) should equal(sortedProbes)
 
     val info = m.info
     val colNames = (0 until info.numColumns()).map(info.columnName)
-    assert (colNames === (0 until 5).map(g => s"Gr$g"))
+    colNames should equal(groups.map(_.getName))
 
+    val raw = m.rawUngroupedMat
+    raw.columns should equal(10)
+    raw.rows should equal(probes.size)
+    raw.sortedRowMap.map(_._1) should equal(sortedProbes)
+
+    val gr = m.rawGroupedMat
+    gr.rows should equal(probes.size)
+    gr.sortedRowMap.map(_._1) should equal(sortedProbes)
+  }
+
+  test("sort and select") {
+    val m = foldBuilder.build(groups, false, true)
+    val ps = TestData.probes.take(10).map(probeMap.unpack)
+
+    val preSort = m.current
+
+    m.sort(0, false)
+    m.selectProbes(ps)
+
+    var mat = m.current
+    mat.rows should equal(ps.size)
+    val srm = mat.sortedRowMap
+
+    mat = m.rawGroupedMat
+    mat.rows should equal(probes.size)
+
+    mat = m.rawUngroupedMat
+    mat.rows should equal(probes.size)
+
+    for (p <- ps) {
+      preSort.row(p) should equal(m.current.row(p))
+      preSort.row(p) should equal(m.rawGroupedMat.row(p))
+    }
   }
 
 //

@@ -28,12 +28,14 @@ import java.util.List;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.client.targetmine.TargetMineData;
+import t.common.shared.ClusteringList;
 import t.common.shared.StringList;
 import t.common.shared.ValueType;
+import t.common.shared.sample.Group;
 import t.common.shared.userclustering.Algorithm;
 import t.common.shared.userclustering.Distances;
 import t.common.shared.userclustering.Methods;
+import t.viewer.client.CodeDownload;
 import t.viewer.client.rpc.MatrixServiceAsync;
 
 import com.google.gwt.core.client.Callback;
@@ -66,10 +68,10 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class HeatmapDialog extends DataListenerWidget {
   private static final String[] injectList =
-      {"kinetic-v5.1.0.min.js", "jquery-2.0.3.min.js", "inchlib-1.2.0.js", "inchlib-extended.js"};
+      {"kinetic-v5.1.0.min.js", "jquery-2.0.3.min.js", "inchlib-1.2.0.min.js", "inchlib-extended-1.0.0.min.js"};
 
   private final MatrixServiceAsync matrixService;
-  private final Screen screen;
+  protected final Screen screen;
 
   private DialogBox dialog;
   private Button saveButton;
@@ -85,19 +87,14 @@ public class HeatmapDialog extends DataListenerWidget {
 
   private Algorithm lastClusteringAlgorithm = new Algorithm();
 
-  public HeatmapDialog(Screen screen, ValueType defaultType) {
+  public HeatmapDialog(Screen screen) {
     matrixService = screen.matrixService();
     this.screen = screen;
     dialog = new DialogBox();
     valType = new ListBox();
-
-    screen.propagateTo(this);
-    initWindow(defaultType);
   }
 
   private void initWindow(ValueType defaultType) {
-    logger.info("Heatmap.initWindow()");
-
     createPanel(defaultType);
     inject(new ArrayList<String>(Arrays.asList(injectList)));
 
@@ -106,6 +103,46 @@ public class HeatmapDialog extends DataListenerWidget {
     // but keep the dialog invisible until drawing heat map is finished
     dialog.show();
     dialog.setVisible(false);
+  }
+  
+  public static void show(final DataScreen screen, final ValueType defaultType) {
+    GWT.runAsync(new CodeDownload(screen.getLogger()) {
+      public void onSuccess() {
+        asyncShowHeatMap(screen, defaultType);
+      }
+    });
+  }
+  
+  private static void asyncShowHeatMap(DataScreen screen, ValueType defaultType) {
+    HeatmapDialog dialog = new HeatmapDialog(screen);
+    show(dialog, screen, defaultType);
+  }
+  
+  public static void show(HeatmapDialog dialog, DataScreen screen, ValueType defaultType) {    
+    screen.propagateTo(dialog);
+    dialog.probesChanged(screen.displayedAtomicProbes());
+    
+    int probesCount = (dialog.chosenProbes != null ? dialog.chosenProbes.length : 0);
+    if (probesCount == 0 || probesCount > 1000) {
+      Window.alert("Please choose at most 1,000 probes.");
+      return;
+    } 
+    if (probesCount < 2) {
+      Window.alert("Please choose at least 2 probes.");
+      return;
+    } 
+    int columnsCount = dialog.chosenColumns.size();
+    if (columnsCount < 2) {
+      Window.alert("Please define at least 2 columns.");
+      return;
+    } 
+    if (columnsCount > 1000) {
+      Window.alert("Please define at most 1,000 columns.");
+      return;
+    }
+    
+    // all check passed
+    dialog.initWindow(defaultType);
   }
 
   private void inject(final List<String> p_jsList) {
@@ -141,8 +178,13 @@ public class HeatmapDialog extends DataListenerWidget {
   private void executeClustering(Algorithm algo) {
     logger.info("Execute clustering with " + getValueType().name() + " " + algo.toString());
     this.lastClusteringAlgorithm = algo;
-    matrixService.prepareHeatmap(chosenColumns, chosenProbes, getValueType(), algo,
+    matrixService.prepareHeatmap(columnsForClustering(chosenColumns), 
+        chosenProbes, getValueType(), algo,
         prepareHeatmapCallback());
+  }
+  
+  protected List<Group> columnsForClustering(List<Group> inputs) {
+    return chosenColumns;
   }
   
   private AsyncCallback<String> prepareHeatmapCallback() {
@@ -187,16 +229,23 @@ public class HeatmapDialog extends DataListenerWidget {
     cDist.setSelectedIndex(lastClusteringAlgorithm.getColDistance().ordinal());
   }
 
+  protected int mainWidth() {
+    return Window.getClientWidth() - 160;
+  }
+  
+  protected int mainHeight() {
+    return Window.getClientHeight() - 120;
+  }
+  
   private void createPanel(ValueType defaultType) {
-    final ScrollPanel mainContent = new ScrollPanel();
-    mainContent.setPixelSize((int) (Window.getClientWidth() * 0.7),
-        (int) (Window.getClientHeight() * 0.7));
+    final ScrollPanel mainContent = new ScrollPanel(); 
+    mainContent.setPixelSize(mainWidth(), mainHeight());
     mainContent.setWidget(new HTML("<div id=\"inchlib\"></div>"));
     Window.addResizeHandler(new ResizeHandler() {
       @Override
       public void onResize(ResizeEvent event) {
-        int width = (int) (Window.getClientWidth() * 0.7);
-        int height = (int) (Window.getClientHeight() * 0.7);
+        int width = mainWidth();
+        int height = mainHeight();
         mainContent.setPixelSize(width, height);
         redraw(width, height);
       }
@@ -298,8 +347,9 @@ public class HeatmapDialog extends DataListenerWidget {
     topContent.setSpacing(4);
     topContent.add(new Label("Value:"));
 
-    valType.addItem(ValueType.Folds.toString());
-    valType.addItem(ValueType.Absolute.toString());
+    for (ValueType v : ValueType.values()) {
+      valType.addItem(v.toString());
+    }
     valType.setSelectedIndex(defaultType.ordinal());
     valType.addChangeHandler(new ChangeHandler() {
       @Override
@@ -341,13 +391,13 @@ public class HeatmapDialog extends DataListenerWidget {
       public void onClick(ClickEvent event) {
         List<Collection<String>> objectIds = parse2dJsArray(getCurrentObjectIds());
 
-        ItemListsStoreHelper helper = new ItemListsStoreHelper("probes", screen) {
+        ClusteringListsStoreHelper helper = new ClusteringListsStoreHelper("userclustering", screen) {
           @Override
-          protected void onSaveSuccess(String name, Collection<String> items) {
-            Window.alert("Gene sets are successfully saved.");
+          protected void onSaveSuccess(String name, ClusteringList items) {
+            Window.alert("Clusters are successfully saved.");
           }
         };
-        helper.save(objectIds);
+        helper.save(objectIds, lastClusteringAlgorithm);
       }
     });
     buttonGroup.add(saveButton);
@@ -498,8 +548,7 @@ public class HeatmapDialog extends DataListenerWidget {
     return result;
   }
 
-  private void doEnrichment() {
-    TargetMineData tm = new TargetMineData(screen);
+  private void doEnrichment() {  
     List<Collection<String>> clusters = parse2dJsArray(getCurrentObjectIds());
     List<StringList> clusterLists = new ArrayList<StringList>();
     int i = 0;
@@ -508,7 +557,7 @@ public class HeatmapDialog extends DataListenerWidget {
       clusterLists.add(sl);
       i++;
     }
-    tm.multiEnrich(clusterLists.toArray(new StringList[0]));
+    screen.factory().multiEnrichment(screen, clusterLists.toArray(new StringList[0]));
   }
 
 }

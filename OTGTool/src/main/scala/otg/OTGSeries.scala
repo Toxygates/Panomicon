@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -39,14 +39,24 @@ import t.db.Metadata
 import t.db.ExprValue
 import t.db.BasicExprValue
 
+//TODO all parameters are nullable - use options
 case class OTGSeries(repeat: String, organ: String, organism: String, override val probe: Int,
   compound: String, dose: String, testType: String,
-  override val points: Seq[SeriesPoint]) extends TSeries[OTGSeries](probe, points) {
+  override val points: Seq[SeriesPoint] = Seq()) extends TSeries[OTGSeries](probe, points) {
 
   def classCode(implicit mc: MatrixContext): Long =
     OTGSeries.pack(this)
 
   def asSingleProbeKey = copy(probe = probe, compound = null, dose = null)
+
+  override def constraints: Map[String, String] = Map(
+       "test_type" -> testType,
+       "organ_id" -> organ,
+       "organism" -> organism,
+       "compound_name" -> compound,
+       "dose_level" -> dose,
+       "sin_rep_type" -> repeat
+       ).filter(_._2 != null)
 }
 
 object OTGSeries extends SeriesBuilder[OTGSeries] {
@@ -98,40 +108,42 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
     r
   }
 
-  def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata, samples: Iterable[Sample])(implicit mc: MatrixContext): Iterable[OTGSeries] = {
+  def buildEmpty(x: Sample, md: Metadata) = {
+    val paramMap = Map() ++ md.parameters(x).map(x => x._1.identifier -> x._2)
+        val r = paramMap("sin_rep_type")
+        val d = paramMap("dose_level")
+        val o = paramMap("organ_id")
+        val s = paramMap("organism")
+        val c = paramMap("compound_name")
+        val t = paramMap("test_type")
+        OTGSeries(r, o, s, 0, c, d, t, Vector())
+  }
 
-    def series(x: Sample) = {
-      val paramMap = Map() ++ md.parameters(x).map(x => x._1.identifier -> x._2)
-      val r = paramMap("sin_rep_type")
-      val d = paramMap("dose_level")
-      val o = paramMap("organ_id")
-      val s = paramMap("organism")
-      val c = paramMap("compound_name")
-      val t = paramMap("test_type")
-      OTGSeries(r, o, s, 0, c, d, t, Vector())
-    }
+  def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata,
+      samples: Iterable[Sample])(implicit mc: MatrixContext): Iterable[OTGSeries] = {
 
     val timeMap = mc.enumMaps("exposure_time")
 
-    val grouped = samples.groupBy(series(_))
+    val grouped = samples.groupBy(buildEmpty(_, md))
     var r = Vector[OTGSeries]()
-    for ((s, vs) <- grouped.par) {
 
-      val data = vs.map(v => {
-        val paramMap = Map() ++ md.parameters(v).map(x => x._1.identifier -> x._2)
-        val expr = from.valuesInSample(v, List())
-        (v, expr, paramMap("exposure_time"))
+    for ((s, xs) <- grouped) {
+      //Construct the series s for all probes, using the samples xs
+
+      val data = xs.map(x => {
+        //TODO getting too many probes here - limit somehow based on platform
+        val expr = from.valuesInSample(x, List()).filter(_.present)
+        (md.parameter(x, "exposure_time"), x, expr)
       })
 
-      //TODO this is too hard to read
-      val timeGroup = data.groupBy(_._3)
-      val pm = timeGroup.map(x => (x._1, presentMean(x._2.map(_._2))))
-      val points = pm.map(x => x._2.map(y => (mc.probeMap.pack(y.probe),
-        SeriesPoint(timeMap(x._1), y)))).
-        flatten.groupBy(_._1)
-      r.synchronized {
-        r ++= points.map(x => s.copy(probe = x._1, points = x._2.toSeq.map(_._2)))
-      }
+      val byTime = data.groupBy(_._1).map(x => {
+        val tc = timeMap(x._1)
+        presentMeanByProbe(x._2.flatMap(x => x._3)).map(v => SeriesPoint(tc, v))
+      })
+      val byProbe = byTime.flatten.groupBy(_.value.probe)
+      r ++= byProbe.map(x => {
+        s.copy(probe = mc.probeMap.pack(x._1), points = x._2.toSeq)
+      })
     }
     r
   }

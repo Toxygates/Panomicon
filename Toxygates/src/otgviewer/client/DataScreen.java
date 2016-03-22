@@ -23,13 +23,13 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.components.GeneSetSelector;
-import otgviewer.client.components.ListChooser;
+import otgviewer.client.components.GeneSetToolbar;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.components.TickMenuItem;
 import t.common.shared.ItemList;
+import t.common.shared.StringList;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.table.ExpressionTable;
@@ -50,7 +50,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class DataScreen extends Screen {
 
   public static final String key = "data";
-  protected GeneSetSelector gs;
+  protected GeneSetToolbar gs;
   protected ExpressionTable et;
 
   protected String[] lastProbes;
@@ -62,18 +62,17 @@ public class DataScreen extends Screen {
   private MenuItem heatMapMenu;
 
   public DataScreen(ScreenManager man) {
-    super("View data", key, true, man, resources.dataDisplayHTML(), resources
-        .dataDisplayHelp());
+    super("View data", key, true, man, resources.dataDisplayHTML(), resources.dataDisplayHelp());
     gs = makeGeneSetSelector();
     et = makeExpressionTable();
     et.setDisplayPColumns(false);
     addListener(et);
-    // To ensure that GeneSetSelector has chosenColumns
+    // To ensure that GeneSetToolbar has chosenColumns
     addListener(gs);
   }
 
-  protected GeneSetSelector makeGeneSetSelector() {
-    return new GeneSetSelector(this) {
+  protected GeneSetToolbar makeGeneSetSelector() {
+    return new GeneSetToolbar(this) {
       @Override
       public void itemsChanged(List<String> items) {
         updateProbes();
@@ -86,14 +85,14 @@ public class DataScreen extends Screen {
       @Override
       protected void onGettingExpressionFailed() {
         super.onGettingExpressionFailed();
-
         DataScreen.this.probesChanged(new String[0]);
-        DataScreen.this.geneSetChanged(new String());
-
+        DataScreen.this.geneSetChanged(null);
         updateProbes();
       }
     };
   }
+
+  static final public int STANDARD_TOOL_HEIGHT = 43;
 
   @Override
   protected void addToolbars() {
@@ -102,8 +101,8 @@ public class DataScreen extends Screen {
     mainTools.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
     mainTools.add(et.tools());
     mainTools.add(gs.selector());
-    addToolbar(mainTools, 43);
-    addToolbar(et.analysisTools(), 43);
+    addToolbar(mainTools, STANDARD_TOOL_HEIGHT);
+    addToolbar(et.analysisTools(), STANDARD_TOOL_HEIGHT);
   }
 
   public Widget content() {
@@ -119,7 +118,6 @@ public class DataScreen extends Screen {
   private void setupMenuItems() {
     MenuBar mb = new MenuBar(true);
     MenuItem mActions = new MenuItem("File", false, mb);
-    final DataScreen w = this;
     MenuItem mntmDownloadCsv =
         new MenuItem("Download CSV (grouped samples)...", false, new Command() {
           public void execute() {
@@ -128,14 +126,12 @@ public class DataScreen extends Screen {
           }
         });
     mb.addItem(mntmDownloadCsv);
-    mntmDownloadCsv =
-        new MenuItem("Download CSV (individual samples)...", false,
-            new Command() {
-              public void execute() {
-                et.downloadCSV(true);
+    mntmDownloadCsv = new MenuItem("Download CSV (individual samples)...", false, new Command() {
+      public void execute() {
+        et.downloadCSV(true);
 
-              }
-            });
+      }
+    });
     mb.addItem(mntmDownloadCsv);
 
     addMenu(mActions);
@@ -150,34 +146,17 @@ public class DataScreen extends Screen {
       };
     }
 
+    GeneSetsMenuItem geneSetsMenu = factory().geneSetsMenuItem(this);
+    addListener(geneSetsMenu);
+    addMenu(geneSetsMenu.menuItem());
+
     MenuItem mColumns = new MenuItem("View", false, mb);
     addMenu(mColumns);
-
-    addAnalysisMenuItem(new MenuItem("Save visible genes as list...",
-        new Command() {
-          public void execute() {
-            // Create an invisible listChooser that we exploit only for
-            // the sake of saving a new list.
-            ListChooser lc =
-                new ListChooser(appInfo().predefinedProbeLists(), "probes") {
-                  @Override
-                  protected void listsChanged(List<ItemList> lists) {
-                    w.itemListsChanged(lists);
-                    w.storeItemLists(w.getParser());
-                  }
-                };
-            // TODO make ListChooser use the DataListener propagate mechanism?
-            lc.setLists(chosenItemLists);
-            lc.setItems(Arrays.asList(et.displayedAtomicProbes()));
-            lc.saveAction();
-          }
-        }));
 
     // TODO: this is effectively a tick menu item without the tick.
     // It would be nice to display the tick graphic, but then the textual alignment
     // of the other items on the menu becomes odd.
-    addAnalysisMenuItem(new TickMenuItem("Compare two sample groups", false,
-        false) {
+    addAnalysisMenuItem(new TickMenuItem("Compare two sample groups", false, false) {
       public void stateChange(boolean newState) {
         if (!visible) {
           // Trigger screen
@@ -195,25 +174,31 @@ public class DataScreen extends Screen {
       }
     }.menuItem());
 
+    addAnalysisMenuItem(new MenuItem("Enrichment...", new Command() {
+      public void execute() {
+        runEnrichment();              
+      }
+    }));
+    
     if (factory().hasHeatMapMenu()) {
       heatMapMenu = new MenuItem("Show heat map", new Command() {
         public void execute() {
-          if (chosenProbes.length < 2) {
-            Window.alert("Please choose at least 2 probes.");
-          } else if (chosenProbes.length > 1000) {
-            Window.alert("Please choose at most 1,000 probes.");
-          } else if (chosenColumns.size() < 2) {
-            Window.alert("Please define at least 2 columns.");
-          } else if (chosenColumns.size() > 1000) {
-            Window.alert("Please define at most 1,000 columns.");
-          } else {
-            new HeatmapDialog(DataScreen.this, et.getValueType());
-          }
+          makeHeatMap();          
         }
       });
-      heatMapMenu.setEnabled(false);
       addAnalysisMenuItem(heatMapMenu);
     }
+  }
+  
+  public void runEnrichment() {
+    logger.info("Enrich " + DataScreen.this.displayedAtomicProbes().length + " ps");
+    StringList genes = 
+        new StringList("probes", "temp", DataScreen.this.displayedAtomicProbes());
+    DataScreen.this.factory().enrichment(DataScreen.this, genes);
+  }
+  
+  protected void makeHeatMap() {
+    HeatmapDialog.show(DataScreen.this, et.getValueType());
   }
 
   @Override
@@ -264,19 +249,19 @@ public class DataScreen extends Screen {
   }
 
   @Override
-  public void geneSetChanged(String geneSet) {
+  public void geneSetChanged(ItemList geneSet) {
     super.geneSetChanged(geneSet);
 
     StorageParser p = getParser(this);
     storeGeneSet(p);
-
-    if (heatMapMenu != null) {
-      heatMapMenu.setEnabled(!gs.isDefaultItemSelected());
-    }
   }
-  
+
   public String[] displayedAtomicProbes() {
-    return et.displayedAtomicProbes();
+    String[] r = et.currentMatrixInfo().getAtomicProbes();
+    if (r.length < et.currentMatrixInfo().numRows()) {
+      Window.alert("Too many genes. Only the first " + r.length + " genes will be used.");
+    }
+    return r;
   }
 
 }

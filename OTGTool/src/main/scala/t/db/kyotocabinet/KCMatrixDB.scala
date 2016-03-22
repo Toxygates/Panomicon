@@ -34,28 +34,30 @@ import t.db.MatrixContext
 import t.db.Sample
 import t.global.KCDBRegistry
 import t.platform.Probe
+import t.db.kyotocabinet.chunk.KCChunkMatrixDB
+import t.db.MatrixDBReader
+import t.db.MatrixDBWriter
 
 object KCMatrixDB {
-  def apply(file: String, writeMode: Boolean, ext: Boolean)
-  (implicit context: MatrixContext): AbstractKCMatrixDB[_] =
-    if (ext) applyExt(file, writeMode)
-    else apply(file, writeMode)
 
-  def applyExt(file: String, writeMode: Boolean)(implicit context: MatrixContext): KCExtMatrixDB = {
+  def get(file: String, writeMode: Boolean)(implicit context: MatrixContext): KCMatrixDB = {
     val db = KCDBRegistry.get(file, writeMode)
     db match {
-      case Some(d) =>
-        new KCExtMatrixDB(file, d)
+      case Some(d) => new KCMatrixDB(d, writeMode)
       case None => throw new Exception("Unable to get DB")
     }
   }
 
-  def apply(file: String, writeMode: Boolean)(implicit context: MatrixContext): KCMatrixDB = {
-    val db = KCDBRegistry.get(file, writeMode)
-    db match {
-      case Some(d) =>
-        new KCMatrixDB(file, d)
-      case None => throw new Exception("Unable to get DB")
+  def getExt(file: String, writeMode: Boolean)(implicit context: MatrixContext): MatrixDB[PExprValue, PExprValue] = {
+    import KCChunkMatrixDB._
+    if (file.startsWith(CHUNK_PREFIX)) {
+      KCChunkMatrixDB.apply(removePrefix(file), writeMode)
+    } else {
+      val db = KCDBRegistry.get(file, writeMode)
+      db match {
+        case Some(d) => new KCExtMatrixDB(d, writeMode)
+        case None    => throw new Exception("Unable to get DB")
+      }
     }
   }
 }
@@ -65,9 +67,9 @@ object KCMatrixDB {
  * indexed by sample ID and probe.
  *
  */
-abstract class AbstractKCMatrixDB[E >: Null <: ExprValue](file: String, db: DB)
+abstract class AbstractKCMatrixDB[E >: Null <: ExprValue](db: DB, writeMode: Boolean)
 (implicit val context: MatrixContext)
-  extends KyotoCabinetDB(file, db) with MatrixDB[E, E] {
+  extends KyotoCabinetDB(db, writeMode) with MatrixDB[E, E] {
 
   /**
    * Key size: 8 bytes
@@ -98,7 +100,7 @@ abstract class AbstractKCMatrixDB[E >: Null <: ExprValue](file: String, db: DB)
 
   protected def formValue(value: E): Array[Byte]
 
-  protected def extractValue(data: Array[Byte], probe: String, inverseTransform: Boolean = false): E
+  protected def extractValue(data: Array[Byte], probe: String): E
 
   def allSamples: Vector[Sample] = allSamples(false, Set()).map(_._2)
 
@@ -137,9 +139,9 @@ abstract class AbstractKCMatrixDB[E >: Null <: ExprValue](file: String, db: DB)
 
             if (lastCode != i) {
               lastCode = i
-              r +:= (i, Sample(i))
+              r :+= (i, Sample(i))
               if (verbose) {
-                println(s"$count probes")
+                println(s"$count samples")
                 println(s"Begin sample ${i}")
                 count = 0
               }
@@ -159,43 +161,21 @@ abstract class AbstractKCMatrixDB[E >: Null <: ExprValue](file: String, db: DB)
   //TODO consider removing/encapsulating
   def sortSamples(ss: Iterable[Sample]): Seq[Sample] = ss.toList.sortWith(_.dbCode < _.dbCode)
 
-  def valuesInSample(x: Sample, keys: Iterable[Int], inverseTransform: Boolean = false): Iterable[E] = {
-    valuesInSampleBulk(x, keys, inverseTransform)
-  }
-
-  /**
-   * Employs the get_bulk function to get values.
-   * Keys need not be sorted.
-   */
-  private def valuesInSampleBulk(x: Sample, keys: Iterable[Int], inverseTransform: Boolean = false): Iterable[E] = {
+  def valuesInSample(x: Sample, keys: Iterable[Int]): Iterable[E] = {
     var r: Vector[E] = Vector()
+    println(x.identifier + " (" + keys.size + ")")
 
-    println(x.identifier + " (" + keys.size + ") (bulk)")
+    val useKeys = if (!keys.isEmpty) { keys } else { pmap.keys.toSeq.sorted }
 
-    val reqKeys = if (!keys.isEmpty) {
-      keys.toArray.map(formKey(x, _))
-    } else {
-      //Not very good for sparse matrices - consider retiring
-      pmap.keys.toArray.map(p => formKey(x, p))
-    }
-
-    val data = db.get_bulk(reqKeys, false)
-    if (data != null) {
-      // keys and values are interleaved in the array returned by get_bulk
-      for (i <- Range(0, data.length, 2)) {
-        val k = data(i)
-        val v = data(i + 1)
-        val extr = extractKey(k)
-        val probeStr = pmap.tryUnpack(extr._2)
-        probeStr match {
-          case Some(ps) =>
-            r :+= extractValue(v, ps, inverseTransform)
-          case None =>
-            Console.err.println("Unable to unpack probe " + extr._2)
-        }
+    for (k <- useKeys; lookup = formKey(x, k);
+      unpacked = pmap.unpack(k)) {
+      val data = db.get(lookup)
+      if (data == null) {
+        r :+= emptyValue(unpacked)
+      } else {
+        r :+= extractValue(data, unpacked)
       }
-    } else {
-      println("valuesInSample: data was null")
+      r
     }
     r
   }
@@ -207,7 +187,7 @@ abstract class AbstractKCMatrixDB[E >: Null <: ExprValue](file: String, db: DB)
     }
   }
 
-  def valuesForProbe(probe: Int, xs: Seq[Sample], inverseTransform: Boolean = false): Iterable[(Sample, E)] = {
+  def valuesForProbe(probe: Int, xs: Seq[Sample]): Iterable[(Sample, E)] = {
     var r: Vector[(Sample, E)] = Vector.empty
     println("Requested probe " + probe + " for barcodes " + xs)
     val probeName = pmap.unpack(probe)
@@ -220,7 +200,7 @@ abstract class AbstractKCMatrixDB[E >: Null <: ExprValue](file: String, db: DB)
         val k = data(i)
         val v = data(i + 1)
         val extr = extractKey(k)
-        r :+= (Sample(extr._1), extractValue(v, probeName, inverseTransform))
+        r :+= (Sample(extr._1), extractValue(v, probeName))
       }
     } else {
       println("valuesForProbe: data was null")
@@ -253,18 +233,14 @@ abstract class AbstractKCMatrixDB[E >: Null <: ExprValue](file: String, db: DB)
   }
 }
 
-class KCMatrixDB(file: String, db: DB)(implicit context: MatrixContext)
-  extends AbstractKCMatrixDB[BasicExprValue](file, db) {
+class KCMatrixDB(db: DB, writeMode: Boolean)(implicit context: MatrixContext)
+  extends AbstractKCMatrixDB[BasicExprValue](db, writeMode) {
 
   implicit val probeMap = context.probeMap
 
-  protected def extractValue(data: Array[Byte], probe: String, inverseTransform: Boolean = false) = {
+  protected def extractValue(data: Array[Byte], probe: String) = {
     val b = ByteBuffer.wrap(data)
-    val x = (inverseTransform, b.getDouble) match { 
-      case (true, v) => Math.pow(2, v)
-      case (false, v) => v
-    }
-
+    val x = b.getDouble
     BasicExprValue(x, b.getChar, probe)
   }
 
@@ -284,20 +260,14 @@ class KCMatrixDB(file: String, db: DB)(implicit context: MatrixContext)
   def emptyValue(probe: String) = BasicExprValue(0.0, 'A', probe)
 }
 
-class KCExtMatrixDB(file: String, db: DB)(implicit context: MatrixContext)
-  extends AbstractKCMatrixDB[PExprValue](file, db) with ExtMatrixDB {
+class KCExtMatrixDB(db: DB, writeMode: Boolean)(implicit context: MatrixContext)
+  extends AbstractKCMatrixDB[PExprValue](db, writeMode) with ExtMatrixDB {
 
   implicit val probeMap = context.probeMap
 
-  protected def extractValue(data: Array[Byte], probe: String, inverseTransform: Boolean = false) = {
+  protected def extractValue(data: Array[Byte], probe: String) = {
     val b = ByteBuffer.wrap(data)
-    
-    val x = if (inverseTransform) {
-      Math.pow(2, b.getDouble)
-    } else {
-      b.getDouble
-    }
-    
+    val x = b.getDouble
     val call = b.getChar
     val p = b.getDouble
 

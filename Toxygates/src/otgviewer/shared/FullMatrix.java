@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import t.common.shared.sample.ExpressionRow;
+import t.viewer.shared.ManagedMatrixInfo;
 
 @SuppressWarnings("serial")
 public class FullMatrix implements Serializable {

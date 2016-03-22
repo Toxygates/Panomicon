@@ -121,7 +121,7 @@ public enum AType {
 	
 	public static String formGOLink(String value) {
 		if (value != null) {
-			return "http://amigo.geneontology.org/cgi-bin/amigo/term_details?term=" + value.toUpperCase();
+		    return "http://amigo.geneontology.org/amigo/term/" + value.toUpperCase();
 		} else {
 			return null;
 		}

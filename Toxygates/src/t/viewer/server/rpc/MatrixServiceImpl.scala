@@ -22,21 +22,17 @@ package t.viewer.server.rpc
 
 import java.util.ArrayList
 import java.util.{ List => JList }
-import t.viewer.server.EVArray
-import t.common.shared.sample.ExprMatrix
+import t.viewer.server.ExprMatrix
 import otgviewer.server.ExtFoldBuilder
 import otgviewer.server.FoldBuilder
 import otgviewer.server.ManagedMatrix
 import otgviewer.server.ManagedMatrixBuilder
 import otgviewer.server.MatrixMapper
 import otgviewer.server.NormalizedBuilder
-import otgviewer.server.rpc.Conversions
-import otgviewer.server.rpc.Conversions.asScala
-import otgviewer.shared.DBUnavailableException
 import otgviewer.shared.FullMatrix
-import otgviewer.shared.ManagedMatrixInfo
+import t.viewer.shared.ManagedMatrixInfo
 import otgviewer.shared.NoDataLoadedException
-import otgviewer.shared.Synthetic
+import t.viewer.shared.Synthetic
 import t.BaseConfig
 import t.Context
 import t.common.shared.AType
@@ -44,7 +40,10 @@ import t.common.shared.DataSchema
 import t.common.shared.ValueType
 import t.common.shared.probe.MedianValueMapper
 import t.common.shared.probe.OrthologProbeMapper
-import t.common.shared.sample._
+import t.common.shared.sample.EVArray
+import t.common.shared.sample.Group
+import t.viewer.server.ExprMatrix
+import t.common.shared.sample.ExpressionRow
 import t.db.MatrixContext
 import t.db.MatrixDBReader
 import t.db.kyotocabinet.KCExtMatrixDB
@@ -68,6 +67,9 @@ import otgviewer.server.R
 import org.rosuda.REngine.Rserve.RserveException
 import t.common.shared.userclustering.Algorithm
 import t.common.server.userclustering.RClustering
+import org.apache.commons.lang.StringUtils
+import t.common.shared.sample.ExpressionValue
+import t.viewer.shared.ColumnFilter
 
 object MatrixServiceImpl {
 
@@ -88,8 +90,8 @@ object MatrixServiceImpl {
  * TODO move dependencies from otgviewer to t.common
  */
 abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
-  import Conversions._
   import scala.collection.JavaConversions._
+  import t.viewer.server.Conversions._
   import ScalaUtils._
   import MatrixServiceImpl._
 
@@ -157,7 +159,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     typ: ValueType): ManagedMatrixInfo = {
     getSessionData.controller =
       new MatrixController(context, () => getOrthologs(context),
-          groups, probes, typ, false, false, false)
+          groups, probes, typ, false, false)
     getSessionData.matrix.info
   }
 
@@ -168,10 +170,11 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   }
 
   @throws(classOf[NoDataLoadedException])
-  def setColumnThreshold(column: Int, threshold: java.lang.Double): ManagedMatrixInfo = {
+  def setColumnFilter(column: Int, f: ColumnFilter): ManagedMatrixInfo = {
     val mm = getSessionData.matrix
-    println(s"Filter column $column at $threshold")
-    mm.setFilterThreshold(column, threshold)
+    
+    println(s"Filter for column $column: $f")
+    mm.setFilter(column, f)
     mm.info
   }
 
@@ -183,8 +186,25 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
     val mergeMode = mm.info.getPlatforms.size > 1
 
-    new ArrayList[ExpressionRow](
-      insertAnnotations(mm.current.asRows.drop(offset).take(size), mergeMode))
+    val groups = getSessionData().controller.groups
+    //TODO avoid the asRows here, perhaps
+    val grouped = mm.current.asRows.drop(offset).take(size)
+    val groupSamples = (0 until groups.size).map(g =>
+      mm.info.samples(g))
+
+    val rowNames = grouped.map(_.getProbe)
+
+    val rawData = mm.rawData.selectNamedRows(rowNames).data
+
+    for ((gr, rr) <- grouped zip rawData;
+      (gv, i) <- gr.getValues.zipWithIndex) {
+      val basis = mm.baseColumns(i)
+      val rawRow = basis.map(i => rr(i))
+      val tt = ManagedMatrix.makeTooltip(rawRow, mm.log2Tooltips)
+      gv.setTooltip(tt)
+    }
+
+    new ArrayList[ExpressionRow](insertAnnotations(grouped, mergeMode))
   }
 
   //this is probably quite inefficient
@@ -253,7 +273,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     withSymbols: Boolean, typ: ValueType): FullMatrix = {
     val sgs = Vector() ++ gs
     val controller = new MatrixController(context, () => getOrthologs(context),
-        gs, rprobes, typ, true, sparseRead, true)
+        gs, rprobes, typ, sparseRead, true)
     val mm = controller.managedMatrix
 
     val raw = if (sgs.size == 1) {
@@ -370,21 +390,41 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
   def prepareHeatmap(groups: JList[Group], chosenProbes: Array[String],
     valueType: ValueType, algorithm: Algorithm): String = {
-//
-//    loadMatrix(groups, chosenProbes, valueType)
 
-    val mm = getSessionData.matrix
+    //Reload data in a temporary controller if groups do not correspond to
+    //the ones in the current session
+    val cont = if (getSessionData.controller == null ||
+        getSessionData().controller.groups.toSet != groups.toSet) {
+      new MatrixController(context, () => getOrthologs(context),
+          groups, chosenProbes, valueType, false, false)
+    } else {
+      getSessionData.controller
+    }
+
+    val mm = cont.managedMatrix
     var mat = mm.current
     var info = mm.info
 
     //TODO shared logic with e.g. insertAnnotations, extract
     val rowNames = mat.asRows.map(_.getAtomicProbes.mkString("/"))
+    val geneSyms = mat.asRows.map(r => {
+      val atomics = r.getAtomicProbes.map(Probe(_))
+      val atrs = probes.withAttributes(atomics)
+      // If character length of gene symbols is more than 30, abbreviate it
+      StringUtils.abbreviate(atrs.flatMap(_.symbols.map(_.symbol)).mkString("/"), 30)
+    })
+
     val columns = mat.sortedColumnMap.filter(x => !info.isPValueColumn(x._2))
     val colNames = columns.map(_._1)
-    val values = mat.selectColumns(columns.map(_._2)).toRowVectors.map(r => r.map(_.value))
+    val values = mat.selectColumns(columns.map(_._2)).data.
+      map(_.map(_.value))
 
     val clust = new RClustering(userDir)
-    clust.clustering(values.flatten, rowNames, colNames, algorithm)
+    clust.clustering(values.flatten, rowNamesForHeatmap(rowNames),
+        colNames, geneSyms, algorithm)
   }
+
+  protected def rowNamesForHeatmap(names: Seq[String]): Seq[String] =
+    names
 
 }

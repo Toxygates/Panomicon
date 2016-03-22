@@ -37,12 +37,15 @@ import otgviewer.client.targetmine.TargetMineData;
 import t.common.shared.SharedUtils;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.dialog.MetadataInfo;
 import t.viewer.client.rpc.MatrixService;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.rpc.SeriesService;
 import t.viewer.client.rpc.SeriesServiceAsync;
 import t.viewer.client.rpc.SparqlService;
 import t.viewer.client.rpc.SparqlServiceAsync;
+import t.viewer.client.rpc.UserDataService;
+import t.viewer.client.rpc.UserDataServiceAsync;
 import t.viewer.shared.AppInfo;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -55,6 +58,10 @@ import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.MouseOutHandler;
+import com.google.gwt.event.dom.client.MouseOverEvent;
+import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -72,6 +79,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  * The main entry point for Toxygates. The main task of this class is to manage the history
@@ -90,6 +98,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       .create(MatrixService.class);
   private static SeriesServiceAsync seriesService = (SeriesServiceAsync) GWT
       .create(SeriesService.class);
+  private static UserDataServiceAsync userDataService = (UserDataServiceAsync) GWT
+      .create(UserDataService.class);
 
   private RootLayoutPanel rootPanel;
   private DockLayoutPanel mainDockPanel;
@@ -162,8 +172,14 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
     mainDockPanel.addNorth(menuBar, 35);
 
+    HorizontalPanel navOuter = Utils.mkHorizontalPanel();
+    navOuter.setWidth("100%");
+    navOuter.setStylePrimaryName("navOuterPanel");
+    
     navPanel = Utils.mkHorizontalPanel();
-    mainDockPanel.addNorth(navPanel, 35);
+    navPanel.setStylePrimaryName("navPanel");
+    navOuter.add(navPanel);
+    mainDockPanel.addNorth(navOuter, 35);
 
     final Logger l = SharedUtils.getLogger();
     final DialogBox wait = Utils.waitDialog();
@@ -257,7 +273,14 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
     targetmineMenu.addItem(new MenuItem("Enrichment...", new Command() {
       public void execute() {
-        new TargetMineData(currentScreen).enrich();
+        //TODO this should be disabled if we are not on the data screen.
+        //The menu item is only here in order to be logically grouped with other 
+        //TargetMine items, but it is a duplicate and may be removed.
+        if (currentScreen instanceof DataScreen) {
+          ((DataScreen) currentScreen).runEnrichment();
+        } else {
+          Window.alert("Please go to the data screen to use this function.");
+        }
       }
     }));
 
@@ -268,19 +291,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     }));
     analysisMenuBar.addItem(mi);
 
-    mi = new MenuItem("Rank compounds...", new Command() {
-      public void execute() {
-        ColumnScreen cs = (ColumnScreen) screens.get("columns");
-        if (cs.enabled()) {
-          showScreen(cs);
-          cs.displayCompoundRankUI();
-        } else {
-          Window.alert("Please select a dataset to rank compounds.");
-        }
-      }
-    });
-    analysisMenuBar.addItem(mi);
-
     MenuBar hm = new MenuBar(true);
     mi = new MenuItem("Help / feedback", hm);
     postMenuItems.add(mi);
@@ -288,7 +298,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
     mi = new MenuItem("Leave feedback...", new Command() {
       public void execute() {
-        FeedbackForm feedbackDialog = new FeedbackForm(currentScreen, currentScreen);
+        FeedbackForm feedbackDialog = new FeedbackForm(currentScreen, currentScreen,
+            "kenji@nibiohn.go.jp, y-igarashi@nibiohn.go.jp or jtnystrom@gmail.com");
         feedbackDialog.display("Leave feedback", DialogPosition.Center);
       }
     });
@@ -298,6 +309,12 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     hm.addItem(new MenuItem("Help for this screen...", new Command() {
       public void execute() {
         currentScreen.showHelp();
+      }
+    }));
+    
+    hm.addItem(new MenuItem("Data sources...", new Command() {
+      public void execute() {
+        showDataSources();
       }
     }));
 
@@ -327,6 +344,13 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
     return menuBar;
   }
+  
+  protected void showDataSources() {
+    VerticalPanel vp = new VerticalPanel();
+    vp.add(MetadataInfo.fromPlatforms(appInfo.platforms()));
+    vp.add(MetadataInfo.annotations(appInfo));
+    Utils.displayInPopup("Data sources information", vp, DialogPosition.Center);
+  }
 
   /**
    * This method sets up the navigation links that allow the user to jump between screens. The
@@ -339,23 +363,42 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     navPanel.clear();
     for (int i = 0; i < workflow.size(); ++i) {
       final Screen s = workflow.get(i);
-      String link = (i < workflow.size() - 1) ? (s.getTitle() + " >> ") : s.getTitle();
-      Label l = new Label(link);
+      //String link = (i < workflow.size() - 1) ? (s.getTitle() + " >> ") : s.getTitle();
+      String link = s.getTitle();
+      final Label l = new Label(link);
+      l.addStyleName("navlink");
       if (s.enabled() && s != current) {
         l.addClickHandler(new ClickHandler() {
           public void onClick(ClickEvent e) {
             History.newItem(s.key());
           }
         });
-        l.setStylePrimaryName("clickHeading");
+        l.setStylePrimaryName("navlink-enabled");
+        
+        l.addMouseOverHandler(new MouseOverHandler() {          
+          @Override
+          public void onMouseOver(MouseOverEvent event) {
+            l.setStylePrimaryName("navlink-mouseover");            
+          }
+        });
+        l.addMouseOutHandler(new MouseOutHandler() {          
+          @Override
+          public void onMouseOut(MouseOutEvent event) {
+            l.setStylePrimaryName("navlink-enabled");            
+          }
+        });
+        
       } else {
         if (s == current) {
-          l.setStylePrimaryName("headingCurrent");
+          l.setStylePrimaryName("navlink-current");
         } else {
-          l.setStylePrimaryName("headingBlack");
+          l.setStylePrimaryName("navlink-disabled");
         }
       }
-      navPanel.add(l);
+      if (i > 0) {
+        l.addStyleName("navlink-inner");
+      }            
+      navPanel.add(l);      
     }
   }
 
@@ -514,6 +557,10 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
   public MatrixServiceAsync matrixService() {
     return matrixService;
+  }
+  
+  public UserDataServiceAsync userDataService() {
+    return userDataService;
   }
 
 }

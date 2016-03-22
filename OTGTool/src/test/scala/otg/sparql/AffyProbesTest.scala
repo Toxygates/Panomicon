@@ -25,13 +25,14 @@ import org.scalatest.junit.JUnitRunner
 
 import otg._
 import otg.Species._
+import t.TTestSuite
 import t.sparql._
 import t.sparql.secondary._
 import t.testing.TestConfig
 import t.platform.Probe
 
 @RunWith(classOf[JUnitRunner])
-class AffyProbesTest extends OTGTestSuite {
+class AffyProbesTest extends TTestSuite {
 
   val config = TestConfig.config
   val affyProbes = new Probes(config.triplestore)

@@ -21,6 +21,7 @@ package otgviewer.client;
 
 import otgviewer.client.components.GeneSetEditor;
 import otgviewer.client.components.Screen;
+import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.client.components.ranking.CompoundRanker;
 import otgviewer.client.components.ranking.FullCompoundRanker;
 
@@ -30,7 +31,7 @@ import otgviewer.client.components.ranking.FullCompoundRanker;
  */
 public class ClassicOTGFactory extends OTGFactory {
   @Override
-  public CompoundRanker compoundRanker(Screen _screen, CompoundSelector selector) {
+  public CompoundRanker compoundRanker(Screen _screen, RankingCompoundSelector selector) {
     return new FullCompoundRanker(_screen, selector);
   }
 
@@ -46,6 +47,25 @@ public class ClassicOTGFactory extends OTGFactory {
 
   @Override
   public boolean hasHeatMapMenu() {
+    return false;
+  }
+  
+  @Override
+  public GeneSetsMenuItem geneSetsMenuItem(DataScreen screen) {
+    return new GeneSetsMenuItem(screen) {
+      @Override
+      protected boolean hasUserClustering() {
+        return false;
+      }
+      @Override
+      protected boolean hasPredefinedClustering() {
+        return false;
+      }
+    };
+  }
+  
+  @Override
+  public boolean hasMyData() {
     return false;
   }
 }

@@ -20,46 +20,43 @@
 
 package t.admin.server
 
-import scala.collection.JavaConversions._
+import java.util.HashSet
+
+import scala.collection.JavaConversions.asScalaBuffer
+import scala.collection.JavaConversions.asScalaSet
+import scala.collection.JavaConversions.setAsJavaSet
+import scala.sys.process.Process
+
 import org.apache.commons.fileupload.FileItem
-import com.google.gwt.user.server.rpc.RemoteServiceServlet
+
 import gwtupload.server.UploadServlet
-import javax.servlet.ServletConfig
-import javax.servlet.ServletException
-import t.viewer.server.Configuration
-import t.BaseConfig
 import t.BatchManager
 import t.PlatformManager
 import t.TaskRunner
-import t.TriplestoreConfig
+import t.Tasklet
 import t.admin.client.MaintenanceService
-import t.admin.shared.Batch
-import t.admin.shared.Instance
-import t.admin.shared.MaintenanceConstants._
-import t.admin.shared.MaintenanceException
-import t.admin.shared.OperationResults
-import t.admin.shared.Platform
-import t.admin.shared.Progress
+import t.common.shared.maintenance.Batch
+import t.common.shared.maintenance.Instance
+import t.common.shared.maintenance._
+import t.common.shared.maintenance.MaintenanceConstants._
+import t.common.shared.Dataset
+import t.common.shared.ManagedItem
+import t.common.shared.Platform
 import t.sparql.Batches
+import t.sparql.Datasets
+import t.sparql.Instances
 import t.sparql.Platforms
 import t.sparql.Probes
-import t.util.TempFiles
-import t.DataConfig
-import otg.OTGBConfig
-import t.sparql.Instances
-import t.InstanceManager
-import t.sparql.TRDF
-import scala.sys.process._
-import t.common.shared.Dataset
-import t.sparql.Datasets
-import t.viewer.server.rpc.TServiceServlet
-import t.common.shared.Dataset
-import t.viewer.server.SharedDatasets
-import t.common.shared.ManagedItem
-import t.Tasklet
 import t.sparql.SampleFilter
+import t.sparql.TRDF
+import t.util.TempFiles
+import t.viewer.server.Configuration
+import t.viewer.server.SharedDatasets
+import t.viewer.server.rpc.TServiceServlet
+import t.common.server.maintenance.BatchOpsImpl
 
-abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceService {
+abstract class MaintenanceServiceImpl extends TServiceServlet
+with BatchOpsImpl with MaintenanceService {
 
   private var homeDir: String = _
 
@@ -68,85 +65,13 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     homeDir = config.webappHomeDir
   }
 
-  private def getAttribute[T](name: String) =
+  override protected def getAttribute[T](name: String) =
     getThreadLocalRequest().getSession().getAttribute(name).asInstanceOf[T]
 
-  private def setAttribute(name: String, x: AnyRef) =
+  override protected def setAttribute(name: String, x: AnyRef): Unit =
+     getThreadLocalRequest().getSession().setAttribute(name, x)
 
-  getThreadLocalRequest().getSession().setAttribute(name, x)
-  private def setLastTask(task: String) = setAttribute("lastTask", task)
-  private def lastTask: String = getAttribute("lastTask")
-  private def setLastResults(results: OperationResults) = setAttribute("lastResults", results)
-  private def lastResults: OperationResults = getAttribute("lastResults")
-
-  private def afterTaskCleanup() {
-    val tc: TempFiles = getAttribute("tempFiles")
-    if (tc != null) {
-    	tc.dropAll()
-    }
-    UploadServlet.removeSessionFileItems(getThreadLocalRequest())
-    TaskRunner.shutdown()
-  }
-
-  private def beforeTaskCleanup() {
-    UploadServlet.removeSessionFileItems(getThreadLocalRequest())
-  }
-
-  private def grabRunner() {
-    if (TaskRunner.queueSize > 0 || TaskRunner.waitingForTask) {
-	  throw new Exception("Another task is already in progress.")
-	}
-  }
-
-  private def maintenance[T](task: => T): T = try {
-    task
-  } catch {
-    case e: Exception =>
-      e.printStackTrace()
-      throw new MaintenanceException(e)
-  }
-
-  private def cleanMaintenance[T](task: => T): T = try {
-    task
-  } catch {
-    case e: Exception =>
-      e.printStackTrace()
-      afterTaskCleanup()
-      throw new MaintenanceException(e)
-  }
-
-  def addBatchAsync(b: Batch): Unit = {
-	  showUploadedFiles()
-	  grabRunner()
-
-	  val bm = new BatchManager(context) //TODO configuration parsing
-
-    cleanMaintenance {
-      TaskRunner.start()
-      setLastTask("Add batch")
-
-      val tempFiles = new TempFiles()
-      setAttribute("tempFiles", tempFiles)
-
-      if (getFile(metaPrefix) == None) {
-        throw new MaintenanceException("The metadata file has not been uploaded yet.")
-      }
-      if (getFile(dataPrefix) == None) {
-        throw new MaintenanceException("The normalized intensity file has not been uploaded yet.")
-      }
-
-      val metaFile = getAsTempFile(tempFiles, metaPrefix, metaPrefix, "tsv").get
-      val dataFile = getAsTempFile(tempFiles, dataPrefix, dataPrefix, "csv")
-          val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv")
-
-      val md = factory.tsvMetadata(metaFile.getAbsolutePath())
-      TaskRunner ++= bm.addBatch(b.getTitle, b.getComment, md,
-        dataFile.get.getAbsolutePath(),
-        callsFile.map(_.getAbsolutePath()),
-        false, baseConfig.seriesBuilder)
-      TaskRunner += Tasklet.simple("Set batch parameters", () => updateBatch(b))
-    }
-  }
+  override protected def request = getThreadLocalRequest
 
   def addPlatformAsync(p: Platform, affymetrixFormat: Boolean): Unit = {
     showUploadedFiles()
@@ -180,7 +105,7 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
 
   def add(i: ManagedItem): Unit = {
     i match {
-      case d: Dataset => addDataset(d)
+      case d: Dataset => addDataset(d, true)
       case i: Instance => addInstance(i)
       case _ => throw new MaintenanceException(s"Illegal API usage, cannot add $i")
     }
@@ -214,35 +139,6 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
         throw new MaintenanceException(s"Creating webapp instance failed: return code $p")
       }
       im.addWithTimestamp(id, TRDF.escape(i.getComment))
-    }
-  }
-
-  private def addDataset(d: Dataset): Unit = {
-    val dm = new Datasets(baseConfig.triplestore)
-
-    val id = d.getTitle()
-    if (!TRDF.isValidIdentifier(id)) {
-      throw new MaintenanceException(
-        s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
-    }
-
-    if (dm.list.contains(id)) {
-      throw new MaintenanceException(s"The dataset $id already exists, please choose a different name")
-    }
-
-    maintenance {
-      dm.addWithTimestamp(id, TRDF.escape(d.getComment))
-      updateDataset(d)
-    }
-  }
-
-  def deleteBatchAsync(id: String): Unit = {
-    grabRunner()
-    val bm = new BatchManager(context) //TODO configuration parsing
-    cleanMaintenance {
-      TaskRunner.start()
-      setLastTask("Delete batch")
-      TaskRunner ++= bm.deleteBatch(id, baseConfig.seriesBuilder)
     }
   }
 
@@ -285,57 +181,6 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     }
   }
 
-  def getOperationResults(): OperationResults = {
-    lastResults
-  }
-
-  def cancelTask(): Unit = {
-    TaskRunner.log("* * * Cancel requested * * *")
-    TaskRunner.shutdown()
-    //It may still take time for the current task to respond to the cancel request.
-    //Progress should be checked repeatedly.
-  }
-
-  def getProgress(): Progress = {
-    TaskRunner.synchronized {
-      val messages = TaskRunner.logMessages.toArray
-      for (m <- messages) {
-        println(m)
-      }
-      val p = if (TaskRunner.queueSize == 0 && !TaskRunner.waitingForTask) {
-        setLastResults(new OperationResults(lastTask,
-        		   TaskRunner.errorCause == None,
-        		   TaskRunner.resultMessages.toArray))
-          afterTaskCleanup()
-          new Progress("No task in progress", 0, true)
-      } else {
-        TaskRunner.currentTask match {
-          case Some(t) => new Progress(t.name, t.percentComplete, false)
-          case None => new Progress("??", 0, false)
-        }
-      }
-      p.setMessages(messages)
-      p
-    }
-  }
-
-  import java.util.HashSet
-
-  def getBatches: Array[Batch] = {
-    val bs = new Batches(baseConfig.triplestore)
-    val ns = bs.numSamples
-    val comments = bs.comments
-    val dates = bs.timestamps
-    val datasets = bs.datasets
-    bs.list.map(b => {
-      val samples = ns.getOrElse(b, 0)
-      new Batch(b, samples, comments.getOrElse(b, ""),
-          dates.getOrElse(b, null),
-          new HashSet(setAsJavaSet(bs.listAccess(b).toSet)),
-          datasets.getOrElse(b, ""))
-    }).toArray
-  }
-
   def getPlatforms: Array[Platform] = {
     val prs = new Probes(baseConfig.triplestore)
     val np = prs.numProbes()
@@ -362,49 +207,10 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     ds.sharedList.toArray
   }
 
-  def update(i: ManagedItem): Unit = {
-    i match {
-      case b: Batch => updateBatch(b)
-      case i: Instance => updateInstance(i)
-      case p: Platform => updatePlatform(p)
-      case d: Dataset => updateDataset(d)
-    }
-  }
-
-  private def updateBatch(b: Batch): Unit = {
-    val bs = new Batches(baseConfig.triplestore)
-    val existingAccess = bs.listAccess(b.getTitle())
-    val newAccess = b.getEnabledInstances()
-    for (i <- newAccess; if !existingAccess.contains(i)) {
-      bs.enableAccess(b.getTitle(), i)
-    }
-    for (i <- existingAccess; if !newAccess.contains(i)) {
-      bs.disableAccess(b.getTitle(), i)
-    }
-
-    val oldDs = bs.datasets.getOrElse(b.getTitle, null)
-    val newDs = b.getDataset
-    if (newDs != oldDs) {
-      val ds = new Datasets(baseConfig.triplestore)
-      if (oldDs != null) {
-        ds.removeMember(b.getTitle, oldDs)
-      }
-      ds.addMember(b.getTitle, newDs)
-    }
-    bs.setComment(b.getTitle, TRDF.escape(b.getComment))
-  }
-
   private def updatePlatform(p: Platform): Unit = {
     val pfs = new Platforms(baseConfig.triplestore)
     pfs.setComment(p.getTitle, p.getComment)
     pfs.setPublicComment(p.getTitle, p.getPublicComment)
-  }
-
-  private def updateDataset(d: Dataset): Unit = {
-    val ds = new Datasets(baseConfig.triplestore)
-    ds.setComment(d.getTitle, TRDF.escape(d.getComment))
-    ds.setDescription(d.getTitle, TRDF.escape(d.getDescription))
-    ds.setPublicComment(d.getTitle, TRDF.escape(d.getPublicComment))
   }
 
   private def updateInstance(i: Instance): Unit = {
@@ -412,62 +218,12 @@ abstract class MaintenanceServiceImpl extends TServiceServlet with MaintenanceSe
     is.setComment(i.getTitle, TRDF.escape(i.getComment))
   }
 
-  /**
-   * Retrive the last uploaded file with a particular tag.
-   * @param tag the tag to look for.
-   * @return
-   */
-  private def getFile(tag: String): Option[FileItem] = {
-    val items = UploadServlet.getSessionFileItems(getThreadLocalRequest());
-    if (items == null) {
-      throw new MaintenanceException("No files have been uploaded yet.")
+  override def update(i: ManagedItem): Unit = {
+    i match {
+      case i: Instance => updateInstance(i)
+      case p: Platform => updatePlatform(p)
+      case d: Dataset => updateDataset(d)
+      case _ => super.update(i)
     }
-
-    for (fi <- items) {
-      if (fi.getFieldName().startsWith(tag)) {
-        return Some(fi)
-      }
-    }
-    return None
-  }
-
-  /**
-   * Get an uploaded file as a temporary file.
-   * Should be deleted after use.
-   */
-  private def getAsTempFile(tempFiles: TempFiles, tag: String, prefix: String,
-      suffix: String): Option[java.io.File] = {
-    getFile(tag) match {
-      case None => None
-      case Some(fi) =>
-        val f = tempFiles.makeNew(prefix, suffix)
-        fi.write(f)
-        Some(f)
-    }
-  }
-
-  private def showUploadedFiles(): Unit = {
-    val items = UploadServlet.getSessionFileItems(getThreadLocalRequest())
-    if (items != null) {
-      for (fi <- items) {
-        System.out.println("File " + fi.getName() + " size "
-          + fi.getSize() + " field: " + fi.getFieldName())
-      }
-    }
-  }
-
-  protected def overviewParameters: Seq[t.db.SampleParameter] =
-    context.config.sampleParameters.required.toSeq
-
-  def batchParameterSummary(batch: Batch): Array[Array[String]] = {
-    val samples = context.samples
-    val params = overviewParameters
-    val paramIds = params.map(_.identifier)
-    val batchURI = Batches.packURI(batch.getTitle)
-    val sf = SampleFilter(None, Some(batchURI))
-    val data = samples.sampleAttributeQuery(paramIds)(sf)()
-    val titles = params.map(_.humanReadable).toArray
-    val adata = data.map(row => paramIds.map(c => row(c)).toArray).toArray
-    Array(titles) ++ adata
   }
 }

@@ -20,38 +20,40 @@
 
 package t
 
-import t.db.ExprValue
-import otg.OTGContext
-import otg.OTGInsert
-import t.db.ProbeMap
-import t.db.SampleMap
-import t.db.LookupFailedException
-import t.db.Metadata
-import t.db.file.CSVRawExpressionData
+import scala.Vector
+
 import otg.sparql.OTGSamples
+import t.db.AbsoluteValueInsert
+import t.db.ExprValue
+import t.db.Log2Data
+import t.db.LookupFailedException
 import t.db.MatrixContext
-import t.db.MatrixDB
 import t.db.MatrixDBReader
 import t.db.MatrixDBWriter
+import t.db.MatrixInsert
+import t.db.Metadata
+import t.db.PExprValue
 import t.db.ProbeIndex
+import t.db.ProbeMap
 import t.db.Sample
 import t.db.SampleIndex
+import t.db.SampleMap
 import t.db.Series
 import t.db.SeriesBuilder
-import t.db.kyotocabinet.KCExtMatrixDB
+import t.db.SimplePFoldValueInsert
+import t.db.file.CSVRawExpressionData
+import t.db.file.PFoldValueBuilder
 import t.db.kyotocabinet.KCIndexDB
+import t.db.kyotocabinet.KCMatrixDB
 import t.db.kyotocabinet.KCSeriesDB
+import t.global.KCDBRegistry
 import t.sparql.Batches
 import t.sparql.Platforms
-import t.sparql.SimpleTriplestore
+import t.sparql.SampleFilter
 import t.sparql.TRDF
 import t.sparql.Triplestore
 import t.sparql.TriplestoreMetadata
 import t.util.TempFiles
-import t.db.kyotocabinet.KCMatrixDB
-import t.sparql.SampleFilter
-import t.db.file.PFoldValueBuilder
-import t.global.KCDBRegistry
 
 /**
  * Batch management CLI
@@ -143,9 +145,11 @@ object BatchManager extends ManagerTool {
         expectArgs(args, 4)
         val len = Integer.parseInt(args(3))
         val bm = new BatchManager(context)
-        val db = KCMatrixDB.apply(config.data.exprDb, false)(bm.matrixContext)
+        val db = config.data.absoluteDBReader(context.matrix)
+        //TODO don't cast here
+        val kdb = db.asInstanceOf[KCMatrixDB]
         try {
-          db.dumpKeys(args(1), args(2), len)
+          kdb.dumpKeys(args(1), args(2), len)
         } finally {
           db.release
         }
@@ -157,7 +161,7 @@ object BatchManager extends ManagerTool {
           println(s"$i of $n")
 
           val bm = new BatchManager(context)
-          val db = KCMatrixDB.apply(config.data.exprDb, false)(bm.matrixContext)
+          val db = config.data.absoluteDBReader(context.matrix)
           try {
             val keys = bm.matrixContext.probeMap.keys
             val xs = bm.matrixContext.sampleMap.tokens.take(len).map(Sample(_))
@@ -167,6 +171,7 @@ object BatchManager extends ManagerTool {
           }
         }
       case "sampleCheck" =>
+        //TODO: do not access the db files directly
         sampleCheck(config.data.exprDb,
           args.size > 1 && args(1) == "delete")
         sampleCheck(config.data.foldDb,
@@ -177,9 +182,7 @@ object BatchManager extends ManagerTool {
     try {
       waitForTasklets()
     } finally {
-      if (KCDBRegistry.isMaintenance) {
-        KCDBRegistry.closeAll()
-      }
+      KCDBRegistry.closeWriters
       stopTaskRunner()
     }
   }
@@ -187,15 +190,18 @@ object BatchManager extends ManagerTool {
   private def sampleCheck(dbf: String, delete: Boolean)(implicit context: Context) {
     val bm = new BatchManager(context)
     implicit val mc = bm.matrixContext
-    val db = KCMatrixDB.apply(dbf, true)
+    val db = KCMatrixDB.get(dbf, true)
+    //TODO don't cast here
+    val kdb = db.asInstanceOf[KCMatrixDB]
+
     try {
-      val ss = db.allSamples(true, Set())
+      val ss = kdb.allSamples(true, Set())
       val xs = bm.matrixContext.sampleMap
       val unknowns = ss.map(_._1).toSet -- xs.keys
 
       println("Unknown set: " + unknowns)
       if (delete && !unknowns.isEmpty) {
-        db.allSamples(true, unknowns)
+        kdb.allSamples(true, unknowns)
       }
     } finally {
       db.release
@@ -222,9 +228,10 @@ class BatchManager(context: Context) {
 
   def matrixContext(): MatrixContext = {
     new MatrixContext {
-      def foldsDBReader = null
-      def absoluteDBReader = null
-      def seriesBuilder = null
+      def foldsDBReader = ???
+      def absoluteDBReader = ???
+      def seriesBuilder = ???
+      def seriesDBReader = ???
 
       lazy val probeMap: ProbeMap =
         new ProbeIndex(KCIndexDB.readOnce(config.data.probeIndex))
@@ -247,7 +254,9 @@ class BatchManager(context: Context) {
 
   def addBatch[S <: Series[S]](title: String, comment: String, metadata: Metadata,
     dataFile: String, callFile: Option[String],
-    append: Boolean, sbuilder: SeriesBuilder[S]): Iterable[Tasklet] = {
+    append: Boolean, sbuilder: SeriesBuilder[S],
+    exprAsFold: Boolean = false, simpleLog2: Boolean = false,
+    withSeries: Boolean = true): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
     val ts = config.triplestore.get
 
@@ -265,20 +274,25 @@ class BatchManager(context: Context) {
     implicit val mc = matrixContext()
     r :+= addEnums(metadata, sbuilder)
 
-    r :+= addExprData(dataFile, callFile)
-    r :+= addFoldsData(metadata, dataFile, callFile)
-    r :+= addSeriesData(metadata, sbuilder)
+    r :+= addExprData(dataFile, callFile, exprAsFold)
+    r :+= addFoldsData(metadata, dataFile, callFile, simpleLog2)
+    if (withSeries) {
+      r :+= addSeriesData(metadata, sbuilder)
+    }
     r
   }
 
   def deleteBatch[S <: Series[S]](title: String,
-    sbuilder: SeriesBuilder[S], rdfOnly: Boolean = false): Iterable[Tasklet] = {
+    sbuilder: SeriesBuilder[S], rdfOnly: Boolean = false,
+    withSeries: Boolean = true): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
     implicit val mc = matrixContext()
 
     //Enums can not yet be deleted.
     if (!rdfOnly) {
-      r :+= deleteSeriesData(title, sbuilder)
+      if (withSeries) {
+        r :+= deleteSeriesData(title, sbuilder)
+      }
       r :+= deleteFoldData(title)
       r :+= deleteExprData(title)
       r :+= deleteSampleIDs(title)
@@ -341,7 +355,6 @@ class BatchManager(context: Context) {
         }
       }
       logResult(s"$newSamples new samples added, $existingSamples samples already existed")
-      db.release()
       log(s"Closed $dbfile")
     }
   }
@@ -353,7 +366,6 @@ class BatchManager(context: Context) {
       log(s"Opened $dbfile for writing")
       val bs = new Batches(config.triplestore)
       db.remove(bs.samples(title))
-      db.release()
     }
   }
 
@@ -401,18 +413,29 @@ class BatchManager(context: Context) {
     }
   }
 
-  def addExprData(niFile: String, callFile: Option[String])(implicit mc: MatrixContext) = {
-    val ic = OTGInsert.insertionContext(false, config.data.exprDb)
+  //TODO: remove treatAsFold parameter when possible
+  def addExprData(niFile: String, callFile: Option[String],
+    treatAsFold: Boolean)(implicit mc: MatrixContext) = {
     val data = new CSVRawExpressionData(List(niFile), callFile.map(List(_)))
-    ic.insert(data)
+    if (treatAsFold) {
+      val db = () => config.data.extWriter(config.data.exprDb)
+      new SimplePFoldValueInsert(db, data).insert("Insert fold value data")
+    } else {
+      new AbsoluteValueInsert(config.data.exprDb, data).insert("Insert normalised intensity data")
+    }
   }
 
-  def addFoldsData(md: Metadata, foldFile: String, callFile: Option[String])
+  def addFoldsData(md: Metadata, foldFile: String, callFile: Option[String],
+      simpleLog2: Boolean)
   (implicit mc: MatrixContext) = {
-    val ic = OTGInsert.insertionContext(true, config.data.foldDb)
     val data = new CSVRawExpressionData(List(foldFile), callFile.map(List(_)))
-    val fvs = new PFoldValueBuilder(md, data)
-    ic.insertFolds(fvs)
+    val fvs = if (simpleLog2) {
+      new Log2Data(data)
+    } else {
+      new PFoldValueBuilder(md, data)
+    }
+    val db = () => config.data.extWriter(config.data.foldDb)
+    new SimplePFoldValueInsert(db, fvs).insert("Insert fold value data")
   }
 
   private def deleteFromDB(db: MatrixDBWriter[_], samples: Iterable[Sample]) {
@@ -432,7 +455,7 @@ class BatchManager(context: Context) {
       def run() {
         val bs = new Batches(config.triplestore)
         val ss = bs.samples(title).map(Sample(_))
-        val db = OTGInsert.matrixDB(true, config.data.foldDb)
+        val db = MatrixInsert.matrixDB(true, config.data.foldDb)
         try {
           deleteFromDB(db, ss)
         } finally {
@@ -446,7 +469,7 @@ class BatchManager(context: Context) {
       def run() {
         val bs = new Batches(config.triplestore)
         val ss = bs.samples(title).map(Sample(_))
-        val db = OTGInsert.matrixDB(false, config.data.exprDb)
+        val db = MatrixInsert.matrixDB(false, config.data.exprDb)
         try {
           deleteFromDB(db, ss)
         } finally {
@@ -460,21 +483,16 @@ class BatchManager(context: Context) {
       //TODO these cannot be deleted currently
       def run() {
         val db = KCIndexDB(config.data.enumIndex, true)
-        try {
-          for (
-            s <- md.samples; paramMap = md.parameterMap(s);
-            e <- sb.enums
-          ) {
-            db.findOrCreate(e, paramMap(e))
-          }
+        for (
+          s <- md.samples; paramMap = md.parameterMap(s);
+          e <- sb.enums
+        ) {
+          db.findOrCreate(e, paramMap(e))
+        }
 
-          //Insert standard values to ensure they are always present
-          for ((k, v) <- sb.standardEnumValues) {
-            db.findOrCreate(k, v)
-          }
-
-        } finally {
-          db.release()
+        //Insert standard values to ensure they are always present
+        for ((k, v) <- sb.standardEnumValues) {
+          db.findOrCreate(k, v)
         }
       }
     }
@@ -485,10 +503,11 @@ class BatchManager(context: Context) {
       //idea: use RawExpressionData directly as source +
       //give KCMatrixDB and e.g. CSVRawExpressionData a common trait/adapter
 
-      val source = KCMatrixDB(config.data.foldDb, false)
-      val target = KCSeriesDB[S](config.data.seriesDb, true, builder)
+      val source: MatrixDBReader[PExprValue] = config.data.foldsDBReader
+      var target: KCSeriesDB[S] = null
       var inserted = 0
       try {
+        target = KCSeriesDB[S](config.data.seriesDb, true, builder, false)
         val xs = builder.makeNew(source, md)
         val total = xs.size
         var pcomp = 0d
@@ -501,8 +520,10 @@ class BatchManager(context: Context) {
         }
       } finally {
         logResult(s"$inserted series inserted")
+        if (target != null) {
+          target.release
+        }
         source.release
-        target.release
       }
     }
   }
@@ -520,12 +541,13 @@ class BatchManager(context: Context) {
       //Note, strictly speaking we don't need the source data here.
       //This dependency could be removed by having the builder make points
       //with all zeroes.
-      val source = KCMatrixDB(config.data.foldDb, false)
-      val target = KCSeriesDB[S](config.data.seriesDb, true, builder)
-      val filtSamples = tsmd.samples
-      val total = filtSamples.size
-      var pcomp = 0d
+      val source: MatrixDBReader[PExprValue] = config.data.foldsDBReader
+      var target: KCSeriesDB[S] = null
       try {
+        target = KCSeriesDB[S](config.data.seriesDb, true, builder, false)
+        val filtSamples = tsmd.samples
+        val total = filtSamples.size
+        var pcomp = 0d
         var it = filtSamples.grouped(100)
         while (it.hasNext && shouldContinue(pcomp)) {
           val sg = it.next
@@ -536,8 +558,10 @@ class BatchManager(context: Context) {
           pcomp += 100.0 / total
         }
       } finally {
+        if (target != null) {
+          target.release
+        }
         source.release
-        target.release
       }
     }
   }

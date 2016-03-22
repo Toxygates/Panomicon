@@ -1,21 +1,19 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
- * (NIBIOHN), Japan.
- *
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * and Nutrition (NIBIOHN), Japan.
+ * 
  * This file is part of Toxygates.
- *
- * Toxygates is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
- *
- * Toxygates is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * Toxygates is free software: you can redistribute it and/or modify it under the terms of the GNU
+ * General Public License as published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * Toxygates is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with Toxygates. If not,
+ * see <http://www.gnu.org/licenses/>.
  */
 
 package otgviewer.client.charts;
@@ -31,90 +29,91 @@ import t.common.shared.SharedUtils;
 import t.common.shared.sample.Sample;
 
 /**
- * A Dataset can construct Data objects based on SampleClass filters.
- * Each Data object can support one chart.
+ * A Dataset can construct Data objects based on SampleClass filters. Each Data object can support
+ * one chart.
  *
  * @param <D>
  */
 abstract public class Dataset<D extends Data> {
 
-	protected List<ChartSample> samples;
-	protected String[] categories;
-	protected boolean categoriesAreMins;
-	
-	protected double min = Double.NaN;
-	protected double max = Double.NaN;
-	
-	protected Logger logger = SharedUtils.getLogger("ChartDataset");
-	
-	protected Dataset(List<ChartSample> samples, List<ChartSample> allSamples, 
-			String[] categories, boolean categoriesAreMins) {
-		this.samples = samples;
-		this.categoriesAreMins = categoriesAreMins;				
-		this.categories = categories;		
-		logger.info(categories.length + " categories");
-		init();
-	}
-	
-	protected void init() {
-		for (ChartSample s: samples) {
-			if (s.value < min || Double.isNaN(min)) { 
-				min = s.value;
-			}
-			if (s.value > max || Double.isNaN(max)) {
-				max = s.value;
-			}
-		}		
-	}
-	
-	/**
-	 * Minimum value across the whole sample space.
-	 * @return
-	 */
-	public double getMin() {
-		return min;	
-	}
-	
-	/**
-	 * Maximum value across the whole sample space.
-	 * @return
-	 */
-	public double getMax() {
-		return max;
-	}
-	
-	/**
-	 * Get the sample corresponding to a particular row and column.
-	 * May be null.
-	 * @param row
-	 * @param column
-	 * @return
-	 */
-	Sample getSample(int row, int column) {
-		return null;
-	}
+  protected List<ChartSample> samples;
+  protected String[] categories;
+  protected boolean categoriesAreMins;
 
-	/**
-	 * Make a table corresponding to the given filter
-	 * and (optionally) probe.
-	 * If a time is given, the table will be grouped by dose.
-	 * If a dose is given, the table will be grouped by time.
-	 * @param filter Sample filter
-	 */
-	abstract public D makeData(SampleClass filter, @Nullable String probe);
-	
-	protected String categoryForSample(ChartSample sample) {
-		DataSchema schema = sample.schema();
-		for (String c : categories) {
-			if (categoriesAreMins && schema.getMinor(sample).equals(c)) {
-				return c;
-			} else if (!categoriesAreMins && schema.getMedium(sample).equals(c)) {
-				return c;
-			}
-		}
-		return null;
-	}
-	
-	abstract protected void makeColumns(D dt, List<ChartSample> samples);
-	
+  protected double min = Double.NaN;
+  protected double max = Double.NaN;
+
+  protected Logger logger = SharedUtils.getLogger("ChartDataset");
+
+  protected Dataset(List<ChartSample> samples, List<ChartSample> allSamples, String[] categories,
+      boolean categoriesAreMins) {
+    this.samples = samples;
+    this.categoriesAreMins = categoriesAreMins;
+    this.categories = categories;
+    logger.info(categories.length + " categories");
+    init();
+  }
+
+  protected void init() {
+    for (ChartSample s : samples) {
+      if (s.value < min || Double.isNaN(min)) {
+        min = s.value;
+      }
+      if (s.value > max || Double.isNaN(max)) {
+        max = s.value;
+      }
+    }
+  }
+
+  /**
+   * Minimum value across the whole sample space.
+   * 
+   * @return
+   */
+  public double getMin() {
+    return min;
+  }
+
+  /**
+   * Maximum value across the whole sample space.
+   * 
+   * @return
+   */
+  public double getMax() {
+    return max;
+  }
+
+  /**
+   * Get the sample corresponding to a particular row and column. May be null.
+   * 
+   * @param row
+   * @param column
+   * @return
+   */
+  Sample getSample(int row, int column) {
+    return null;
+  }
+
+  /**
+   * Make a table corresponding to the given filter and (optionally) probe. If a time is given, the
+   * table will be grouped by dose. If a dose is given, the table will be grouped by time.
+   * 
+   * @param filter Sample filter
+   */
+  abstract public D makeData(SampleClass filter, @Nullable String probe);
+
+  protected String categoryForSample(ChartSample sample) {
+    DataSchema schema = sample.schema();
+    for (String c : categories) {
+      if (categoriesAreMins && schema.getMinor(sample).equals(c)) {
+        return c;
+      } else if (!categoriesAreMins && schema.getMedium(sample).equals(c)) {
+        return c;
+      }
+    }
+    return null;
+  }
+
+  abstract protected void makeColumns(D dt, List<ChartSample> samples);
+
 }

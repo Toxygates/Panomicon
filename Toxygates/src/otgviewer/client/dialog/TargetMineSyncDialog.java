@@ -18,9 +18,12 @@
 
 package otgviewer.client.dialog;
 
+import javax.annotation.Nullable;
+
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.InputGrid;
 import t.viewer.client.Utils;
+import t.viewer.client.dialog.InteractionDialog;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -41,50 +44,68 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
   String action;
   String url;
 
+  boolean withPassword, withReplace;
   static String account, password;
 
-  public TargetMineSyncDialog(DataListenerWidget parent, String url, String action) {
+  public TargetMineSyncDialog(DataListenerWidget parent, String url, String action,
+      boolean withPassword, boolean withReplace) {
     super(parent);
     this.action = action;
     this.url = url;
+    this.withPassword = withPassword;
+    this.withReplace = withReplace;
   }
 
   protected Widget content() {
     VerticalPanel vp = new VerticalPanel();
     vp.setWidth("400px");
 
-    Label l =
-        new Label("You must have a TargetMine account in order to use "
-            + "this function. If you do not have one, you may create one " + "at " + url + ".");
-    l.setWordWrap(true);
-    vp.add(l);
+    Widget custom = customUI();
+    if (custom != null) {
+      vp.add(custom);
+    }
 
-    ig = new InputGrid("Account name (e-mail address)", "Password") {
-      @Override
-      protected TextBox initTextBox(int i) {
-        if (i == 1) {
-          return new PasswordTextBox();
-        } else {
-          return super.initTextBox(i);
+    if (withPassword) {
+      Label l =
+          new Label("You must have a TargetMine account in order to use "
+              + "this function. If you do not have one, you may create one " + "at " + url + ".");
+      l.setWordWrap(true);
+      vp.add(l);
+      
+      ig = new InputGrid("Account name (e-mail address)", "Password") {
+        @Override
+        protected TextBox initTextBox(int i) {
+          if (i == 1) {
+            return new PasswordTextBox();
+          } else {
+            return super.initTextBox(i);
+          }
         }
-      }
-    };
-    ig.setValue(0, account);
-    ig.setValue(1, password);
-   
-    vp.add(ig);
-    vp.add(replaceCheck);
+      };
+      ig.setValue(0, account);
+      ig.setValue(1, password);
+
+      vp.add(ig);
+    }
+
+    if (withReplace) {
+      vp.add(replaceCheck);
+    }
 
     Button b = new Button(action);
     b.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        if (ig.getValue(0).trim().equals("") || ig.getValue(1).trim().equals("")) {
+        if (withPassword && 
+            (ig.getValue(0).trim().equals("") || ig.getValue(1).trim().equals(""))
+            ) {
           Window.alert("Please enter both your account name and password.");
-        } else {
+        } else if (withPassword) {
           account = ig.getValue(0);
           password = ig.getValue(1);
           userProceed(ig.getValue(0), ig.getValue(1), replaceCheck.getValue());
+        } else {
+          userProceed(null, null, replaceCheck.getValue());
         }
       }
     });
@@ -94,6 +115,10 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
     HorizontalPanel hp = Utils.mkHorizontalPanel(true, b, b2);
     vp.add(hp);
     return vp;
+  }
+  
+  protected @Nullable Widget customUI() {
+    return null;
   }
 
   abstract protected void userProceed(String user, String pass, boolean replace);

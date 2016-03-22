@@ -104,10 +104,10 @@ trait IndexDBWriter extends IndexDB {
   }
 }
 
-class SampleIndex(db: Map[String, Int]) extends MemoryLookupMap[Int](db) with SampleMap {
+class SampleIndex(val data: Map[String, Int]) extends SampleMap with CachedIntLookupMap {
   def this(db: IndexDB) = this(db.fullMap)
 }
 
-class ProbeIndex(db: Map[String, Int]) extends MemoryLookupMap(db) with ProbeMap {
+class ProbeIndex(val data: Map[String, Int]) extends ProbeMap with CachedIntLookupMap {
   def this(db: IndexDB) = this(db.fullMap)
 }

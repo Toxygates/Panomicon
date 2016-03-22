@@ -24,22 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import otgviewer.client.ClusteringSelector;
-import otgviewer.client.GeneOracle;
-import otgviewer.client.ItemListsStoreHelper;
-import otgviewer.client.ProbeSelector;
-import t.common.client.components.ResizingDockLayoutPanel;
-import t.common.client.components.ResizingListBox;
-import t.common.shared.ItemList;
-import t.common.shared.SampleClass;
-import t.common.shared.SharedUtils;
-import t.common.shared.Term;
-import t.common.shared.clustering.ProbeClustering;
-import t.common.shared.sample.Group;
-import t.viewer.client.Utils;
-import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.client.rpc.SparqlServiceAsync;
-
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -61,6 +45,21 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+
+import otgviewer.client.ClusteringSelector;
+import otgviewer.client.GeneOracle;
+import otgviewer.client.ProbeSelector;
+import otgviewer.client.StringListsStoreHelper;
+import t.common.client.components.ResizingDockLayoutPanel;
+import t.common.client.components.ResizingListBox;
+import t.common.shared.ItemList;
+import t.common.shared.SampleClass;
+import t.common.shared.SharedUtils;
+import t.common.shared.Term;
+import t.common.shared.sample.Group;
+import t.viewer.client.Utils;
+import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.client.rpc.SparqlServiceAsync;
 
 public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHandler {
 
@@ -104,7 +103,6 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     super();
 
     this.screen = screen;
-
     dialog = new DialogBox();
     oracle = new GeneOracle(screen);
     sparqlService = screen.manager.sparqlService();
@@ -112,15 +110,14 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
 
     initWindow();
   }
-  
+
   /*
-   *  Override this function to handle post save event
-   *   and what genes were saved
+   * Override this function to handle post save event and what genes were saved
    */
   protected void onSaved(String title, List<String> items) {}
 
   /*
-   *  Override this function to handle what genes were saved
+   * Override this function to handle what genes were saved
    */
   protected void onCanceled() {}
 
@@ -157,25 +154,24 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     probesList.setWidth("100%");
 
     HorizontalPanel buttons = Utils.mkHorizontalPanel(true);
-    Button removeSelected =
-        new Button("Remove selected probes", new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            for (int i = 0; i < probesList.getItemCount(); ++i) {
-              if (probesList.isItemSelected(i)) {
-                String sel = probesList.getItemText(i);
-                int from = sel.lastIndexOf('(');
-                int to = sel.lastIndexOf(')');
-                if (from != -1 && to != -1) {
-                  sel = sel.substring(from + 1, to);
-                }
-                listedProbes.remove(sel);
-              }
+    Button removeSelected = new Button("Remove selected probes", new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        for (int i = 0; i < probesList.getItemCount(); ++i) {
+          if (probesList.isItemSelected(i)) {
+            String sel = probesList.getItemText(i);
+            int from = sel.lastIndexOf('(');
+            int to = sel.lastIndexOf(')');
+            if (from != -1 && to != -1) {
+              sel = sel.substring(from + 1, to);
             }
-
-            probesChanged(listedProbes.toArray(new String[0]));
+            listedProbes.remove(sel);
           }
-        });
+        }
+
+        probesChanged(listedProbes.toArray(new String[0]));
+      }
+    });
     Button removeAll = new Button("Remove all probes", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -270,7 +266,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     dialog.setModal(true);
     dialog.center();
   }
-  
+
   protected void addProbeSelectionTools(StackLayoutPanel probeSelStack) {
     ProbeSelector psel = probeSelector();
     probeSelStack.add(psel, "Keyword search", STACK_ITEM_HEIGHT);
@@ -284,8 +280,6 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
 
     if (hasClustering()) {
       ClusteringSelector clustering = clusteringSelector();
-      clustering.setAvailable(ProbeClustering.createFrom((screen.appInfo()
-          .predefinedProbeLists())));
       probeSelStack.add(clustering, "Clustering", STACK_ITEM_HEIGHT);
     }
 
@@ -294,31 +288,27 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
   }
 
   private boolean save(String name) {
-    ItemListsStoreHelper helper = new ItemListsStoreHelper("probes", screen);
+    StringListsStoreHelper helper = new StringListsStoreHelper("probes", screen);
+    boolean overwrite = false;
 
-    if (!name.equals(originalTitle) && helper.contains("probes", name)) {
-      // TODO Show confirm message box whether to overwrite or not?
-      Window.alert(
-          "The title \"" + name + "\" is already taken.\n" + "Please choose a different name.");
-      return false;
+    if (name.equals(originalTitle)) {
+      overwrite = true;
     }
-    helper.saveAs(new ArrayList<String>(listedProbes), name);
 
-    return true;
+    return helper.saveAs(new ArrayList<String>(listedProbes), name, overwrite);
   }
 
   private ProbeSelector probeSelector() {
     return new ProbeSelector(screen,
         "This lets you view probes that correspond to a given KEGG pathway or GO term. "
-            + "Enter a partial pathway name and press enter to search.",
-        true) {
+            + "Enter a partial pathway name and press enter to search.", true) {
 
       @Override
       protected void getProbes(Term term) {
         switch (term.getAssociation()) {
           case KEGG:
-            sparqlService.probesForPathway(chosenSampleClass, term.getTermString(), getAllSamples(),
-                retrieveProbesCallback());
+            sparqlService.probesForPathway(chosenSampleClass, term.getTermString(),
+                getAllSamples(), retrieveProbesCallback());
             break;
           case GO:
             sparqlService.probesForGoTerm(term.getTermString(), getAllSamples(),
@@ -337,7 +327,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
   }
 
   private ClusteringSelector clusteringSelector() {
-    return new ClusteringSelector() {
+    return new ClusteringSelector(screen.appInfo().probeClusterings()) {
       @Override
       public void clusterChanged(List<String> items) {
         addProbes(items.toArray(new String[0]));
@@ -464,17 +454,17 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     // change the identifiers (which can be mixed format, for example genes
     // and proteins etc) into a
     // homogenous format (probes only)
-    matrixService.identifiersToProbes(probes, true, titleMatch, screen
-        .getAllSamples(), new PendingAsyncCallback<String[]>(screen,
-        "Unable to obtain manual probes (technical error).") {
-      public void handleSuccess(String[] probes) {
-        if (probes.length == 0) {
-          Window.alert("No matching probes were found.");
-        } else {
-          addProbes(probes);
-        }
-      }
-    });
+    matrixService.identifiersToProbes(probes, true, titleMatch, screen.getAllSamples(),
+        new PendingAsyncCallback<String[]>(screen,
+            "Unable to obtain manual probes (technical error).") {
+          public void handleSuccess(String[] probes) {
+            if (probes.length == 0) {
+              Window.alert("No matching probes were found.");
+            } else {
+              addProbes(probes);
+            }
+          }
+        });
   }
 
   /**

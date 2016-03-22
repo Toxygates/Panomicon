@@ -26,20 +26,21 @@ import javax.annotation.Nullable;
 import otgviewer.client.components.GeneSetEditor;
 import otgviewer.client.components.GroupLabels;
 import otgviewer.client.components.Screen;
+import otgviewer.client.components.compoundsel.CompoundSelector;
+import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.client.components.groupdef.GroupInspector;
 import otgviewer.client.components.groupdef.SelectionTDGrid;
 import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
 import otgviewer.client.components.ranking.CompoundRanker;
 import t.common.shared.DataSchema;
+import t.common.shared.StringList;
 import t.common.shared.sample.Group;
 
 public interface UIFactory {
 
   public SelectionTDGrid selectionTDGrid(Screen scr, @Nullable UnitListener listener);
 
-  public CompoundSelector compoundSelector(Screen screen, String heading);
-  
-  public CompoundRanker compoundRanker(Screen _screen, CompoundSelector selector);
+  public CompoundRanker compoundRanker(Screen _screen, RankingCompoundSelector selector);
   
   public GroupInspector groupInspector(CompoundSelector cs, Screen scr);
   
@@ -48,4 +49,22 @@ public interface UIFactory {
   public GeneSetEditor geneSetEditor(Screen screen);
   
   public boolean hasHeatMapMenu();
+  
+  public GeneSetsMenuItem geneSetsMenuItem(DataScreen screen);
+
+  /**
+   * Enrichment for a gene set
+   * @param screen
+   */
+  void enrichment(Screen screen, StringList list);
+
+  /**
+   * Enrichment for multiple gene sets
+   * @param screen
+   * @param lists
+   */
+  void multiEnrichment(Screen screen, StringList[] lists);
+  
+  boolean hasMyData();
+  
 }

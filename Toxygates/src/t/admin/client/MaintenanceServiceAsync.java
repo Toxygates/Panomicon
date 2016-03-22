@@ -18,19 +18,16 @@
 
 package t.admin.client;
 
-import t.admin.shared.Batch;
-import t.admin.shared.Instance;
-import t.admin.shared.OperationResults;
-import t.admin.shared.Platform;
-import t.admin.shared.Progress;
+import t.common.client.rpc.BatchOperationsAsync;
 import t.common.shared.Dataset;
 import t.common.shared.ManagedItem;
+import t.common.shared.Platform;
+import t.common.shared.maintenance.Batch;
+import t.common.shared.maintenance.Instance;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public interface MaintenanceServiceAsync {
-
-  void getBatches(AsyncCallback<Batch[]> callback);
+public interface MaintenanceServiceAsync extends BatchOperationsAsync {
 
   void getInstances(AsyncCallback<Instance[]> callback);
 
@@ -44,23 +41,8 @@ public interface MaintenanceServiceAsync {
 
   void add(ManagedItem i, AsyncCallback<Void> callback);
 
-
-  void deleteBatchAsync(String id, AsyncCallback<Void> callback);
-
   void deletePlatformAsync(String id, AsyncCallback<Void> calback);
 
   void delete(ManagedItem i, AsyncCallback<Void> callback);
-
-
-  void update(ManagedItem i, AsyncCallback<Void> callback);
-
-
-  void getOperationResults(AsyncCallback<OperationResults> callback);
-
-  void cancelTask(AsyncCallback<Void> callback);
-
-  void getProgress(AsyncCallback<Progress> callback);
-
-  void batchParameterSummary(Batch b, AsyncCallback<String[][]> callback);
 
 }

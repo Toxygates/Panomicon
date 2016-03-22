@@ -34,9 +34,9 @@ import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
+import t.common.shared.sample.Unit;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
-import t.viewer.shared.Unit;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -63,7 +63,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
 
   private CheckBox[] cmpDoseCheckboxes; // selecting all samples for a cmp/dose combo
   private CheckBox[] doseTimeCheckboxes; // selecting all samples for a dose/time combo
-  private Unit[] oldSelection;
+  private Unit[] preSelection;
 
   private Map<Unit, UnitUI> unitUis = new HashMap<Unit, UnitUI>();
   private Map<Unit, Unit> controlUnits = new HashMap<Unit, Unit>();
@@ -162,20 +162,22 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
 
   @Override
   public void compoundsChanged(List<String> compounds) {
-    oldSelection = getSelectedCombinations();
+    preSelection = getSelectedCombinations();
     super.compoundsChanged(compounds);
   }
 
   public void compoundsChanged(List<String> compounds, Unit[] initSel) {
-    oldSelection = initSel;
+    preSelection = initSel;
     super.compoundsChanged(compounds);
   }
 
-  public void setAll(boolean val) {
+  public void setAll(boolean val, boolean fire) {
     for (UnitUI ui : unitUis.values()) {
       ui.setValue(val);
     }
-    fireUnitsChanged();
+    if (fire) {
+      fireUnitsChanged();
+    }
   }
 
   protected void setSelected(Unit unit, boolean v) {
@@ -186,6 +188,8 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     UnitUI ui = unitUis.get(unit);
     if (ui != null) {
       ui.setValue(v);
+    } else {
+      logger.warning("Unable to set selection " + unit + " (missing ui)");
     }
     if (fire) {
       fireUnitsChanged();
@@ -199,7 +203,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
   }
 
   protected void setSelection(Unit[] units) {
-    setAll(false);
+    setAll(false, false);
     for (Unit u : units) {
       if (!schema.isSelectionControl(u)) {
         setSelected(u, true, false);
@@ -363,7 +367,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
   }
 
   @Override
-  protected void drawGridInner(Grid grid) {
+  synchronized protected void drawGridInner(Grid grid) {
     final int nd = mediumValues.size();
     cmpDoseCheckboxes = new CheckBox[chosenCompounds.size() * nd];
     doseTimeCheckboxes = new CheckBox[mediumValues.size() * minorValues.size()];
@@ -372,34 +376,37 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     super.drawGridInner(grid);
   }
 
-  //
-  // private String unitString(Unit u) {
-  // if (u == null) {
-  // return "(null)";
-  // } else if (u.getSamples() == null || u.getSamples().length == 0) {
-  // return "(no samples)";
-  // } else {
-  // return u.getSamples().length + " sampl: " + u.getSamples()[0].getCode();
-  // }
-  // }
-
+  private boolean samplesWaiting = false;
+  
   @Override
   protected void samplesAvailable() {
-    logger.info("Samples available: " + availableUnits.length + " units");
+    if (fetchingMinor) {
+      samplesWaiting = true;
+      return; //wait
+    }
+    logger.info("Samples available: " + availableUnits.size() + " units.");
+    if (availableUnits.get(0) != null) {
+      logger.info("1st: " + availableUnits.get(0));
+    }
+    
     controlUnits.clear();
     for (Pair<Unit, Unit> u : availableUnits) {
       controlUnits.put(u.first(), u.second());
-      // logger.info("treated: " + unitString(u.first()) + " control: " + unitString(u.second()));
+//      logger.info("treated: " + u.first() + " control: " + u.second());
     }
 
     for (Pair<Unit, Unit> treatedControl : availableUnits) {
       Unit u = treatedControl.first();
       if (u == null || u.getSamples() == null || u.getSamples().length == 0) {
+        if (u != null) {
+          logger.warning("Not creating UI for unit " + u);
+        }
         continue;
       }
 
       UnitUI ui = unitUis.get(u);
       if (ui == null) {
+//        logger.warning("No UI for unit " + u);
         continue;
       }
       unitUis.remove(u);
@@ -419,15 +426,23 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
 
       cmpDoseCheckboxes[cIdx * mediumValues.size() + dIdx].setEnabled(true);
       doseTimeCheckboxes[dIdx * minorValues.size() + tIdx].setEnabled(true);
-
     }
-    if (oldSelection != null) {
-      setSelection(oldSelection);
-      oldSelection = null;
+    if (preSelection != null) {
+      logger.info("Set preselection " + preSelection.length);
+      setSelection(preSelection);
+      preSelection = null;
     }
 
     if (listener != null) {
-      listener.availableUnitsChanged(this, Arrays.asList(availableUnits));
+      listener.availableUnitsChanged(this, availableUnits);
+    }
+  }
+  
+  @Override
+  protected void onMinorsDone() {
+    if (samplesWaiting) {
+      samplesAvailable();
+      samplesWaiting = false;
     }
   }
 }

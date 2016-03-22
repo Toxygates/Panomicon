@@ -21,25 +21,29 @@
 package otgviewer.server
 
 import java.util.logging.Logger
-import scala.collection.JavaConversions._
+import scala.collection.JavaConversions.asScalaSet
 import otgviewer.shared.DBUnavailableException
-import otgviewer.shared.ManagedMatrixInfo
-import otgviewer.shared.Synthetic
+import t.viewer.shared.ManagedMatrixInfo
 import t.Context
+import t.common.shared.AType
 import t.common.shared.PerfTimer
 import t.common.shared.ValueType
 import t.common.shared.probe.MedianValueMapper
 import t.common.shared.probe.OrthologProbeMapper
-import t.db.MatrixContext
+import t.viewer.server.ExprMatrix
+import t.common.shared.sample.ExpressionValue
+import t.common.shared.sample.Group
+import t.db.PExprValue
+import t.db.TransformingWrapper
 import t.db.kyotocabinet.KCExtMatrixDB
 import t.db.kyotocabinet.KCMatrixDB
 import t.platform.OrthologMapping
 import t.viewer.server.Platforms
-import t.common.shared.AType
 import t.viewer.shared.table.SortKey
-import t.common.shared.sample._
-import t.viewer.server.EVArray
-import t.common.shared.sample.ExpressionValue
+import t.db.kyotocabinet.chunk.KCChunkMatrixDB
+import t.common.shared.sample.EVArray
+import t.db.ExprValue
+import t.db.ExtMatrixDB
 
 /**
  * A managed matrix session and associated state.
@@ -49,11 +53,12 @@ import t.common.shared.sample.ExpressionValue
 class MatrixController(context: Context,
     orthologs: () => Iterable[OrthologMapping],
     val groups: Seq[Group], val initProbes: Seq[String],
-    typ: ValueType, useStandardMapper: Boolean, sparseRead: Boolean,
+    typ: ValueType, sparseRead: Boolean,
     fullLoad: Boolean) {
 
   private def probes = context.probes
   private def platforms = Platforms(probes)
+
   private implicit val mcontext = context.matrix
   private var sortAssoc: AType = _
 
@@ -61,6 +66,7 @@ class MatrixController(context: Context,
     val samples = groups.toList.flatMap(_.getSamples().map(_.id))
     context.samples.platforms(samples)
   }
+  def multiPlatform = groupPlatforms.size > 1
 
   lazy val filteredProbes =
     platforms.filterProbes(initProbes, groupPlatforms)
@@ -78,23 +84,26 @@ class MatrixController(context: Context,
         mcontext.foldsDBReader
       }
     } catch {
-      case e: Exception => throw new DBUnavailableException()
+      case e: Exception =>
+        e.printStackTrace()
+        throw new DBUnavailableException(e)
     }
 
-    val multiPlat = groupPlatforms.size > 1
-
     try {
-      val enhancedCols = !multiPlat
+      val enhancedCols = !multiPlatform
 
+      //TODO get rid of/factor out this, possibly to a factory of some kind
       val b = reader match {
-        case ext: KCExtMatrixDB =>
-          assert(typ == ValueType.Folds)
-          new ExtFoldBuilder(enhancedCols, ext, probes)
+        case wrapped: TransformingWrapper[PExprValue] =>
+          new ExtFoldBuilder(enhancedCols, wrapped, probes)
         case db: KCMatrixDB =>
+          assert(typ == ValueType.Absolute)
+          new NormalizedBuilder(enhancedCols, db, probes)
+        case db: ExtMatrixDB =>
           if (typ == ValueType.Absolute) {
             new NormalizedBuilder(enhancedCols, db, probes)
           } else {
-            new FoldBuilder(db, probes)
+            new ExtFoldBuilder(enhancedCols, db, probes)
           }
         case _ => throw new Exception("Unexpected DB reader type")
       }
@@ -114,45 +123,35 @@ class MatrixController(context: Context,
     }
   }
 
-  protected def groupMapper(groups: Iterable[Group]): Option[MatrixMapper] = {
-    val os = groups.flatMap(_.collect("organism")).toSet
-    println("Detected species in groups: " + os)
-    if (os.size > 1) {
-      standardMapper
-    } else {
-      None
-    }
-  }
-
   protected def applyMapper(mm: ManagedMatrix, mapper: Option[MatrixMapper]): ManagedMatrix = {
     mapper match {
-      case Some(m) => m.convert(mm)
-      case None    => mm
+      case Some(m) =>
+        println(s"Apply mapper: $m")
+        m.convert(mm)
+      case None    =>
+        println("No mapper being applied")
+        mm
     }
   }
 
-  var managedMatrix: ManagedMatrix = {
+  val managedMatrix: ManagedMatrix = {
     val pt = new PerfTimer(Logger.getLogger("matrixController.loadMatrix"))
 
     val mm = if (filteredProbes.size > 0) {
       makeMatrix(filteredProbes, typ, sparseRead, fullLoad)
     } else {
-      val emptyMatrix = new ExprMatrix(List(), 0, 0,Map(), Map(), List())
-      new ManagedMatrix(List(), new ManagedMatrixInfo(), emptyMatrix, emptyMatrix)
+      val emptyMatrix = new ExprMatrix(List(), 0, 0, Map(), Map(), List())
+      new ManagedMatrix(List(), new ManagedMatrixInfo(), emptyMatrix, emptyMatrix, Map())
     }
 
     pt.mark("MakeMatrix")
     mm.info.setPlatforms(groupPlatforms.toArray)
 
-    val mapper = if (useStandardMapper) {
-      if (groupPlatforms.size > 1) {
+    val mapper = if (multiPlatform) {
         standardMapper
       } else {
         None
       }
-    } else {
-      groupMapper(groups)
-    }
 
     val mm2 = applyMapper(mm, mapper)
     pt.mark("ApplyMapper")
@@ -164,15 +163,14 @@ class MatrixController(context: Context,
    * Select probes and update the current managed matrix
    */
   def selectProbes(probes: Seq[String]): ManagedMatrix = {
-    if (!probes.isEmpty) {
+    val useProbes = (if (!probes.isEmpty) {
       println("Refilter probes: " + probes.length)
-      managedMatrix.selectProbes(probes)
+      probes
     } else {
-      val info = managedMatrix.info
-      val groups = (0 until info.numDataColumns()).map(i => info.columnGroup(i))
-      val allProbes = platforms.filterProbes(List(), groupPlatforms).toArray
-      managedMatrix.selectProbes(allProbes)
-    }
+      //all probes
+      platforms.filterProbes(List(), groupPlatforms)
+    })
+    managedMatrix.selectProbes(useProbes)
     managedMatrix
   }
 
@@ -210,11 +208,10 @@ class MatrixController(context: Context,
       println("aux: " + sm.take(10))
       val evs = rowKeys.map(r =>
         sm.get(r) match {
-          case Some(v) => new ExpressionValue(v)
-          case None    => new ExpressionValue(Double.NaN, 'A')
+          case Some(v) => ExprValue(v)
+          case None    => ExprValue(Double.NaN, 'A')
         })
-      val evas = evs.map(v => EVArray(Seq(v)))
-      ExprMatrix.withRows(evas, rowKeys, List("POPSEQ"))
+      ExprMatrix.withRows(evs.map(ev => Seq(ev)), rowKeys, List("POPSEQ"))
     } else {
       throw new Exception(s"No sort key for $ass")
     }

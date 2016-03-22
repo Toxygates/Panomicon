@@ -24,6 +24,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javax.annotation.Nullable;
+
 import otgviewer.client.Resources;
 import otgviewer.client.SampleDetailScreen;
 import otgviewer.client.UIFactory;
@@ -117,10 +119,12 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
   /**
    * Help text for this screen.
    */
+  @Nullable
   protected TextResource helpHTML;
   /**
    * Image to show alongside the help text for this screen.
    */
+  @Nullable 
   protected ImageResource helpImage;
 
   private boolean showGuide;
@@ -156,6 +160,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 
   protected void runActions() {
     for (QueuedAction qa : actionQueue) {
+      logger.info("Action queue: run " + qa.name);
       qa.run();
     }
     actionQueue.clear();
@@ -167,13 +172,14 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
    * 
    * @param qa
    */
-  public void enqueue(QueuedAction qa) {
+  public void enqueue(QueuedAction qa) {   
     actionQueue.remove(qa); // remove it if it's already there (so we can update it)
     actionQueue.add(qa);
+    logger.info("Action queue: added " + qa.name);
   }
 
   public Screen(String title, String key, boolean showGroups, ScreenManager man,
-      TextResource helpHTML, ImageResource helpImage) {
+      @Nullable TextResource helpHTML, @Nullable ImageResource helpImage) {
     this.showGroups = showGroups;
     this.helpHTML = helpHTML;
     this.helpImage = helpImage;
@@ -193,7 +199,7 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
   }
 
   public Screen(String title, String key, boolean showGroups, ScreenManager man) {
-    this(title, key, showGroups, man, null, null);
+    this(title, key, showGroups, man, resources.defaultHelpHTML(), null);
   }
 
   public ScreenManager manager() {

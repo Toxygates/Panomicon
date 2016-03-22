@@ -27,6 +27,7 @@ import t.platform.AffymetrixConverter
 import t.db.kyotocabinet.KCIndexDB
 import t.sparql.Probes
 import t.sparql.TRDF
+import t.global.KCDBRegistry
 
 /**
  * Platform/probe management CLI
@@ -37,24 +38,28 @@ object PlatformManager extends ManagerTool {
     if (args.size < 1) {
       showHelp()
     }
-    args(0) match {
-      case "add" =>
-        val title = require(stringOption(args, "-title"),
-          "Please specify a title with -title")
-        val inputFile = require(stringOption(args, "-input"),
-          "Please specify a definition file with -input")
-        val defns = new PlatformDefFile(inputFile).records
-        val comment = stringOption(args, "-comment").getOrElse("")
-        platforms.redefine(title, comment, defns) //TODO
-      case "delete" =>
-        val title = require(stringOption(args, "-title"),
-          "Please specify a title with -title")
-        platforms.delete(title)
-      case "list" =>
-        for (p <- platforms.list) {
-          println(p)
-        }
-      case _ => showHelp()
+    try {
+      args(0) match {
+        case "add" =>
+          val title = require(stringOption(args, "-title"),
+            "Please specify a title with -title")
+          val inputFile = require(stringOption(args, "-input"),
+            "Please specify a definition file with -input")
+          val defns = new PlatformDefFile(inputFile).records
+          val comment = stringOption(args, "-comment").getOrElse("")
+          platforms.redefine(title, comment, defns) //TODO
+        case "delete" =>
+          val title = require(stringOption(args, "-title"),
+            "Please specify a title with -title")
+          platforms.delete(title)
+        case "list" =>
+          for (p <- platforms.list) {
+            println(p)
+          }
+        case _ => showHelp()
+      }
+    } finally {
+      KCDBRegistry.closeWriters()
     }
   }
 
@@ -141,20 +146,15 @@ class PlatformManager(context: Context) {
         val dbfile = config.data.probeIndex
         val db = KCIndexDB(dbfile, true)
         log(s"Opened $dbfile for writing")
-        try {
-          for (p <- probes) {
-            db.get(p) match {
-              case Some(id) => existingProbes += 1
-              case None =>
-                db.put(p)
-                newProbes += 1
-            }
+        for (p <- probes) {
+          db.get(p) match {
+            case Some(id) => existingProbes += 1
+            case None =>
+              db.put(p)
+              newProbes += 1
           }
-          logResult(s"$newProbes new probes added, $existingProbes probes already existed")
-        } finally {
-          db.release()
-          log(s"Closed $dbfile")
         }
+        logResult(s"$newProbes new probes added, $existingProbes probes already existed")
       }
     }
 
@@ -179,12 +179,9 @@ class PlatformManager(context: Context) {
         val dbfile = config.data.probeIndex
         val db = KCIndexDB(dbfile, true)
         val probes = new Probes(config.triplestore).forPlatform(title)
-        try {
-          log(s"Opened $dbfile for writing")
-          db.remove(probes)
-        } finally {
-          db.release()
-        }
+        log(s"Opened $dbfile for writing")
+        db.remove(probes)
+
       }
     }
 }
