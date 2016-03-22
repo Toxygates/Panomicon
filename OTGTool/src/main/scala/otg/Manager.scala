@@ -27,7 +27,7 @@ import t.DataConfig
 import t.TriplestoreConfig
 import otg.db.file.TSVMetadata
 
-abstract class Manager extends t.Manager[Context] with CmdLineOptions {
+object Manager extends t.Manager[Context, OTGBConfig] with CmdLineOptions {
   override protected def handleArgs(args: Array[String])(implicit context: Context) {
 
     args(0) match {
@@ -46,7 +46,7 @@ abstract class Manager extends t.Manager[Context] with CmdLineOptions {
 
   def initContext(bc: OTGBConfig): Context = otg.Context(bc)
 
-  def makeBaseConfig(ts: TriplestoreConfig, d: DataConfig): BaseConfig =
+  def makeBaseConfig(ts: TriplestoreConfig, d: DataConfig): OTGBConfig =
     OTGBConfig(ts, d)
 }
 

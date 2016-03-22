@@ -21,29 +21,27 @@
 package otg
 
 import java.io.File
-
 import java.net.URL
-import scala.sys.process._
 import scala.language.postfixOps
+import scala.sys.process._
 import com.gdevelop.gwt.syncrpc.SyncProxy
-import otgviewer.shared.Group
-import otgviewer.shared.OTGSample
 import otgviewer.shared.OTGSchema
-import otgviewer.shared.Synthetic
-import t.common.shared.sample.ExpressionValue
+import t.common.shared.ValueType
+import t.common.shared.sample._
 import t.viewer.client.rpc.MatrixService
 import t.viewer.client.rpc.SparqlService
-import t.common.shared.ValueType
 import t.viewer.shared.table.SortKey
+import com.gdevelop.gwt.syncrpc.ProxySettings
 
 object GetMatrix {
 
+  import ProxyTools._
   import java.util.{LinkedList => JList}
   import scala.collection.JavaConversions._
 
   val schema = new OTGSchema()
 
-  def extractGroup(arg: String, ss: Map[String, OTGSample]): Group = {
+  def extractGroup(arg: String, ss: Map[String, Sample]): Group = {
      val s = arg.split("=")
      if (s.length == 1) {
        val sample = ss(s(0))
@@ -120,8 +118,9 @@ object GetMatrix {
     }
 
     println(s"Create instance for $url")
-    val sServiceAsync = SyncProxy.newProxyInstance(classOf[SparqlService],
-    		url, "sparql").asInstanceOf[SparqlService]
+    SyncProxy.setBaseURL(url)
+
+    val sServiceAsync = getProxy(classOf[SparqlService], "sparql")
 
     val samples = args.drop(3).flatMap(discoverSamples)
     val resolvedSamples = Map() ++ sServiceAsync.samplesById(samples).map(x => x.id -> x)
@@ -131,15 +130,12 @@ object GetMatrix {
       groups.add(g)
     }
 
-		val matServiceAsync = SyncProxy.newProxyInstance(classOf[MatrixService],
-		    url, "matrix").asInstanceOf[MatrixService]
-
+		val matServiceAsync = getProxy(classOf[MatrixService], "matrix")
 		val probes = Array[String]() //empty -> load all
 
-		val synthCols = new JList[Synthetic]()
 		println("Load dataset")
 
-    val colInfo = matServiceAsync.loadMatrix(groups, probes, vtype, synthCols)
+    val colInfo = matServiceAsync.loadMatrix(groups, probes, vtype)
 
     range match {
       case Full =>

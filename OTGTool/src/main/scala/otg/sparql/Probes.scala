@@ -156,27 +156,4 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
     rs.resolve(ups)
   }
 
-  /**
-   * Find GO terms matching the given string.
-   * Note that we use go:synonym as well as go:name here for a maximally generous match.
-   */
-  override def goTerms(pattern: String): Iterable[GOTerm] = {
-	  goTerms(pattern, 1000)
-  }
-  
-  override def goTerms(pattern: String, maxSize: Int): Iterable[GOTerm] = {
-    val query = prefixes +
-    "SELECT DISTINCT ?got ?gotn WHERE { GRAPH ?g { " +
-    "{ ?got go:synonym ?gotn . " +
-//    "?gotn " + infixStringMatch(pattern) +
-    "FILTER regex(?gotn, \".*" + pattern + ".*\", \"i\")" +
-    "} UNION " +
-    "{ ?got go:name ?gotn . " +
-//    "?gotn " + infixStringMatch(pattern) +
-    "FILTER regex(?gotn, \".*" + pattern + ".*\", \"i\")" +
-    "} " + // FILTER STRSTARTS(STR(?got), \"http://bio2rdf.org\") " +
-    "} } limit " + maxSize
-    ts.mapQuery(query).map(x => GOTerm(x("got"), x("gotn")))
-  }
-
 }

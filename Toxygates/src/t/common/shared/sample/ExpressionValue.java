@@ -67,6 +67,10 @@ public class ExpressionValue implements Serializable {
 		return (_tooltip == null) ? "" : _tooltip; 
 	}
 	
+	public void setTooltip(String tt) {
+	  _tooltip = tt;
+	}
+	
 	@Override
 	public String toString() {
 		return "(" + _value + ", " + _call + ")";

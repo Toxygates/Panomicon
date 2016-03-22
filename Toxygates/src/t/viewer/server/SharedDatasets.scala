@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.common.server
+package t.viewer.server
 
 import t.sparql.Datasets
 import t.common.shared.Dataset
@@ -36,11 +36,13 @@ trait SharedDatasets {
     withBatchesInInstance(uri).map(asShared)
 
   private def asShared(d: String): Dataset = {
-     val com = comments
+    val com = comments
+    val pcom = publicComments
     val ts = timestamps
     val descs = descriptions
     new Dataset(d, descs.getOrElse(d, ""),
-      com.getOrElse(d, ""), ts.getOrElse(d, null))
+      com.getOrElse(d, ""), ts.getOrElse(d, null),
+      pcom.getOrElse(d, ""))
   }
 
 }

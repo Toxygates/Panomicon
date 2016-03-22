@@ -19,6 +19,8 @@
  */
 
 package t.db
+
+import scala.Vector
 import scala.language.postfixOps
 
 trait MatrixContext {
@@ -31,6 +33,8 @@ trait MatrixContext {
 
   def absoluteDBReader: MatrixDBReader[ExprValue]
   def foldsDBReader: MatrixDBReader[PExprValue]
+  def seriesDBReader: SeriesDB[_]
+
   def seriesBuilder: SeriesBuilder[_]
 }
 
@@ -59,15 +63,15 @@ trait MatrixDBReader[+E >: Null <: ExprValue] {
    * This routine is optimised for the case of accessing many probes in
    * each array.
    * Probes must be sorted.
+   * The size of the returned iterable is the same as the passed in probes, and
+   * in the same order. Empty values will be inserted where none was found in the
+   * database.
    */
-  def valuesInSample(x: Sample, probes: Iterable[Int], inverseTransform: Boolean = false): Iterable[E]
-
-  //  def presentValuesInSample(x: Sample): Iterable[(Int, E)] =
-  //    valuesInSample(x).filter(_._2.present)
+  def valuesInSample(x: Sample, probes: Iterable[Int]): Iterable[E]
 
   def valuesInSamples(xs: Iterable[Sample], probes: Iterable[Int]) = {
     val sk = probes.toSeq.sorted
-    xs.par.map(valuesInSample(_, sk)).seq
+    xs.map(valuesInSample(_, sk))
   }
 
   /**
@@ -76,7 +80,7 @@ trait MatrixDBReader[+E >: Null <: ExprValue] {
    * each array.
    * Samples must be ordered (see sortSamples above)
    */
-  def valuesForProbe(probe: Int, xs: Seq[Sample], inverseTransform: Boolean = false): Iterable[(Sample, E)]
+  def valuesForProbe(probe: Int, xs: Seq[Sample]): Iterable[(Sample, E)]
 
   def presentValuesForProbe(probe: Int,
     samples: Seq[Sample]): Iterable[(Sample, E)] =
@@ -94,83 +98,37 @@ trait MatrixDBReader[+E >: Null <: ExprValue] {
     emptyValue(pname)
   }
 
-  //(This version may be suitable later, when a smart adjoin operation is added
-  //to the managed matrix.)
-  //  def valuesForSamplesAndProbes(xs: Seq[Sample], probes: Seq[Int],
-  //    sparseRead: Boolean = false, presentOnly: Boolean = false): Vector[Seq[E]] = {
-  //
-  //    println("Load for probe count: " + probes.size)
-  //    var rows:Seq[Seq[Option[E]]] = if (sparseRead) {
-  //      (0 until probes.size).par.map(j => {
-  //        val dat = Map() ++ valuesForProbe(probes(j), xs).filter(!presentOnly || _._2.present)
-  //        val row = Vector() ++ xs.map(dat.get)
-  //        row
-  //      }).seq
-  //    } else {
-  //      //not sparse read, go sample-wise
-  //      val cols = xs.par.map(bc => {
-  //        //probe to expression
-  //        val dat = Map() ++ (valuesInSample(bc).map(x => (x._1 -> x._2))).filter(!presentOnly || _._2.present)
-  //        val col = probes.map(dat.get)
-  //        col
-  //      }).seq
-  //      //transpose
-  //      Vector.tabulate(probes.size, xs.size)((p, s) => cols(s)(p))
-  //    }
-  //(filter here)
-  //    rows.toVector.map(r => {
-  //      val pr = r.find(_ != None).get.get.probe
-  //      r.map(_.getOrElse(emptyValue(pr.id)))
-  //    })
-  //  }
-
   /**
    * Get values by probes and samples.
    * Samples should be sorted prior to calling this method (using sortSamples above).
    * The result is always a probe-major, sample-minor matrix.
-   * The ordering of rows in the result is not guaranteed.
+   * The ordering of rows in the result is guaranteed for non-sparse reads.
    * The ordering of columns is guaranteed.
    * @param sparseRead if set, we use an algorithm that is optimised
    *  for the case of reading only a few values from each sample.
-   *  @param presentOnly if set, samples whose call is 'A' are replaced with the
+   * @param presentOnly if set, samples whose call is 'A' are replaced with the
    *  empty value.
    */
   def valuesForSamplesAndProbes(xs: Seq[Sample], probes: Seq[Int],
-    sparseRead: Boolean = false, presentOnly: Boolean = false, inverseTransform: Boolean = false): Vector[Seq[E]] = {
+    sparseRead: Boolean = false, presentOnly: Boolean = false): Vector[Seq[E]] = {
 
     val ps = probes.filter(probeMap.keys.contains(_)).sorted
 
     val rows = (if (sparseRead) {
       probes.par.map(p => {
-        val dat = Map() ++ valuesForProbe(p, xs, inverseTransform).filter(!presentOnly || _._2.present)
+        val dat = Map() ++ valuesForProbe(p, xs).filter(!presentOnly || _._2.present)
         val row = Vector() ++ xs.map(bc => dat.getOrElse(bc, emptyValue(probeMap, p)))
         row
       }).seq
 
     } else {
-      import scala.collection.mutable.{ Seq => MSeq }
-      var rows = Map[String, MSeq[E]]()
-      for (p <- ps) {
-        rows += probeMap.unpack(p) -> MSeq.fill[E](xs.size)(null)
-      }
-
       //not sparse read, go sample-wise
-      (xs zipWithIndex).par.foreach(bc => {
-        //probe to expression
-        var vs = valuesInSample(bc._1, ps, inverseTransform).filter(!presentOnly || _.present)
-        rows.synchronized {
-          for (v <- vs) {
-            rows(v.probe)(bc._2) = v
-          }
-          for (p <- rows.keys) {
-            if (rows(p)(bc._2) == null) {
-              rows(p)(bc._2) = emptyValue(p)
-            }
-          }
-        }
+      val rs = (xs zipWithIndex).par.map(bc => {
+        valuesInSample(bc._1, ps).toSeq
+      }).seq.toSeq
+       Vector.tabulate(ps.size, xs.size)((p, x) =>
+         rs(x)(p))
       })
-      probes.map(p => rows(probeMap.unpack(p)))
-    })
     rows.toVector
   }
 }

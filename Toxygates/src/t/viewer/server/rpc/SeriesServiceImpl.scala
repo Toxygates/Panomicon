@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -24,7 +24,7 @@ import java.util.ArrayList
 import java.util.{List => JList}
 import scala.Array.canBuildFrom
 import scala.collection.JavaConversions.asJavaCollection
-import scala.collection.JavaConversions._  
+import scala.collection.JavaConversions._
 import scala.language.implicitConversions
 import otgviewer.server.rpc.Conversions
 import otgviewer.server.rpc.Conversions.asJava
@@ -48,14 +48,14 @@ import t.sparql.SampleFilter
 
 abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with SeriesService {
   import java.lang.{ Double => JDouble }
- 
+
   private implicit def mcontext: MatrixContext = context.matrix
   implicit protected def context: t.Context
 
   protected def getDB(): SeriesDB[S]
-  
-  protected def ranking(db: SeriesDB[S], key: S): SeriesRanking[S] = new SeriesRanking(db, key) 
-  
+
+  protected def ranking(db: SeriesDB[S], key: S): SeriesRanking[S] = new SeriesRanking(db, key)
+
   implicit protected def asShared(s: S): SSeries
   implicit protected def fromShared(s: SSeries): S
 
@@ -65,8 +65,8 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     context.samples.attributeValues(scAsScala(sc).filterAll,
       schema.majorParameter()).toSet
   }
-  
-  def rankedCompounds(ds: Array[Dataset], sc: SampleClass, 
+
+  def rankedCompounds(ds: Array[Dataset], sc: SampleClass,
       rules: Array[RankRule]): Array[MatchResult] = {
     val nnr = rules.takeWhile(_ != null)
     var srs = nnr.map(asScala(_))
@@ -74,7 +74,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
 
     //Convert the input probes (which may actually be gene symbols) into definite probes
     probesRules = probesRules.flatMap(pr => {
-      val resolved = context.probes.identifiersToProbes(mcontext.probeMap,  
+      val resolved = context.probes.identifiersToProbes(mcontext.probeMap,
           Array(pr._1), true, true)
       if (resolved.size == 0) {
         throw new NoSuchProbeException(pr._1)
@@ -83,7 +83,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     })
 
     val db = getDB()
-    try {      
+    try {
       val key: S = new SSeries("", probesRules.head._1, "dose_level", sc, Array.empty)
 
       val ranked = ranking(db, key).rankCompoundsCombined(probesRules)
@@ -98,13 +98,13 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
           v1 > v2
         }
       })
-    
+
       val allowedMajorVals = allowedMajors(ds, sc)
       val mediumVals = schema.sortedValues(schema.mediumParameter())
-      
+
       val r = rr.map(p => {
-        val (compound, score, dose) = (p._1, p._3, mediumVals.indexOf(p._2) - 1)        
-        new MatchResult(compound, score, dose) 
+        val (compound, score, dose) = (p._1, p._3, mediumVals.indexOf(p._2) - 1)
+        new MatchResult(compound, score, dose)
       }).filter(x => allowedMajorVals.contains(x.compound))
 
       for (s <- r.take(10)) {
@@ -113,30 +113,30 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       r.toArray
     } finally {
       db.release()
-    }    
+    }
   }
 
-  def getSingleSeries(sc: SampleClass, probe: String, timeDose: String, 
+  def getSingleSeries(sc: SampleClass, probe: String, timeDose: String,
       compound: String): SSeries = {
     val db = getDB()
     try {
-      val key: S = new SSeries("", probe, "dose_level", sc, Array.empty)           
+      val key: S = new SSeries("", probe, "dose_level", sc, Array.empty)
       asShared(db.read(key).head)
     } finally {
       db.release()
     }
   }
 
-  def getSeries(sc: SampleClass, probes: Array[String], timeDose: String, 
+  def getSeries(sc: SampleClass, probes: Array[String], timeDose: String,
       compounds: Array[String]): JList[SSeries] = {
-    val validated = context.probes.identifiersToProbes(mcontext.probeMap, 
+    val validated = context.probes.identifiersToProbes(mcontext.probeMap,
         probes, true, true).map(_.identifier)
     val db = getDB()
     try {
       val ss = validated.flatMap(p =>
         compounds.flatMap(c =>
-          db.read(fromShared(new SSeries("", p, "dose_level", 
-              sc.copyWith("compound_name", c), Array.empty)))))              
+          db.read(fromShared(new SSeries("", p, "dose_level",
+              sc.copyWith("compound_name", c), Array.empty)))))
       println(s"Read ${ss.size} series")
       println(ss.take(5).mkString("\n"))
       val jss = ss.map(asShared)

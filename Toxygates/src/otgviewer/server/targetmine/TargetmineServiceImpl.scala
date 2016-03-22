@@ -35,10 +35,19 @@ import t.TriplestoreConfig
 import t.BaseConfig
 import t.viewer.server.Platforms
 import otgviewer.server.rpc.OTGServiceServlet
+import org.intermine.webservice.client.services.ListService
+import java.util.Arrays
+import org.intermine.webservice.client.core.ContentType
+import org.intermine.webservice.client.results.JSONResult
+import org.intermine.webservice.client.results.TabTableResult
+import otgviewer.shared.targetmine.EnrichmentWidget
+import otgviewer.shared.targetmine.EnrichmentParams
 
 class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
   var affyProbes: Probes = _
   var platforms: Platforms = _
+  var apiKey: String = _
+
   //TODO how to best initialise this?
   val serviceUri = "http://targetmine.mizuguchilab.org/targetmine/service"
 
@@ -47,6 +56,7 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
     super.localInit(config)
     affyProbes = context.probes
     platforms = Platforms(affyProbes)
+    apiKey = config.targetmineApiKey
   }
 
   def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig =
@@ -60,7 +70,7 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
   // TODO: pass in a preferred species, get status info back
   def importTargetmineLists(user: String, pass: String,
     asProbes: Boolean): Array[t.common.shared.StringList] = {
-    val ls = TargetMine.getListService(serviceUri, user, pass)
+    val ls = TargetMine.getListService(serviceUri, Some(user), Some(pass))
     val tmLists = ls.getAccessibleLists()
     tmLists.filter(_.getType == "Gene").map(
       l => {
@@ -77,7 +87,45 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
 
   def exportTargetmineLists(user: String, pass: String,
       lists: Array[StringList], replace: Boolean): Unit = {
-    val ls = TargetMine.getListService(serviceUri, user, pass)
+    val ls = TargetMine.getListService(serviceUri, Some(user), Some(pass))
     TargetMine.addLists(affyProbes, ls, lists.toList, replace)
+  }
+
+  // This is mainly to adjust the formatting of the p-value
+  private def adjustEnrichResult(res: Seq[String]): Seq[String] = {
+    Seq(res(0), res(1),
+        "%.3g".format(res(2).toDouble),
+        res(3))
+  }
+
+  def multiEnrichment(lists: Array[StringList], params: EnrichmentParams): Array[Array[Array[String]]] =
+    lists.map(enrichment(_, params)).toArray
+
+  def enrichment(list: StringList, params: EnrichmentParams): Array[Array[String]] = {
+      val ls = TargetMine.getListService(serviceUri, None, None)
+      ls.setAuthentication(apiKey)
+      val tags = List("H. sapiens") //!!
+
+      val tempList = TargetMine.addList(affyProbes, ls, list.items(),
+          None, false, tags)
+
+      val listName = tempList.getName
+      println(s"Created temporary list $listName")
+
+      val request = ls.createGetRequest(serviceUri + "/list/enrichment", ContentType.TEXT_TAB)
+      request.setAuthToken(apiKey)
+//      request.addParameter("token", apiKey)
+      request.addParameter("list", listName)
+      request.addParameter("widget", params.widget.getKey)
+      request.addParameter("maxp", params.cutoff.toString())
+      request.addParameter("correction", params.correction.getKey())
+      request.addParameter("filter", params.filter)
+
+      val con = ls.executeRequest(request)
+      println("Response code: " + con.getResponseCode)
+      val res = new TabTableResult(con)
+      ls.deleteList(tempList)
+      val headers = Array("ID", "Description", "p-value", "Matches")
+      headers +: res.getIterator.toArray.map(adjustEnrichResult(_).toArray)
   }
 }

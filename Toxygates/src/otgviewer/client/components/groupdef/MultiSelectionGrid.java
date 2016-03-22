@@ -36,7 +36,7 @@ import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
-import t.viewer.shared.Unit;
+import t.common.shared.sample.Unit;
 
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -52,7 +52,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
   private UnitListener listener;
   private VerticalPanel vp;
   private final Screen scr;
-  protected final Logger logger = SharedUtils.getLogger("group");
+  protected final Logger logger = SharedUtils.getLogger("msg");
 
   public MultiSelectionGrid(Screen scr, @Nullable SelectionTDGrid.UnitListener listener) {
     vp = new VerticalPanel();
@@ -65,7 +65,6 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 
   private SelectionTDGrid findOrCreateSection(Screen scr, SampleClass sc, boolean noCompounds) {
     SelectionTDGrid g = sections.get(sc);
-    logger.info("Find or create for " + sc.toString());
     if (g == null) {
       g = scr.factory().selectionTDGrid(scr, this);
       g.sampleClassChanged(sc);
@@ -88,7 +87,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
     if (listener != null) {
       listener.unitsChanged(this, fullSel);
     }
-    logger.info("Size: " + fullSelAll.size() + " expected: " + expectedSelection.length);
+    logger.info("U.Chgd. Size: " + fullSelAll.size() + " expected: " + expectedSelection.length);
     if (fullSelAll.size() == expectedSelection.length && expectedSelection.length > 0) {
       clearEmptySections();
       expectedSelection = new Unit[] {};
@@ -120,10 +119,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 
   void setAll(boolean state) {
     for (SelectionTDGrid g : sections.values()) {
-      g.setAll(false);
-    }
-    if (state == false) {
-      clearEmptySections();
+      g.setAll(false, true);
     }
   }
 
@@ -150,14 +146,16 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
   }
 
   void setSelection(Unit[] selection) {
-    logger.info("Set selection: " + selection.length + " units");
+    logger.info("Set selection: " + selection.length + " units ");
+    if (selection.length > 0) {
+      logger.info("1st sel: " + selection[0]);
+    }
     final DataSchema schema = scr.schema();
 
     for (SelectionTDGrid g : sections.values()) {
-      g.setAll(false);
+      g.setAll(false, false);
     }
     expectedSelection = selection;
-
 
     final String majorParam = scr.schema().majorParameter();
     Map<SampleClass, Set<String>> lcompounds = new HashMap<SampleClass, Set<String>>();
@@ -167,7 +165,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
         lcompounds.put(sc, new HashSet<String>());
       }
       String majorVal = u.get(majorParam);
-      if (!schema.isMajorParamSharedControl(majorVal)) {
+      if (majorVal != null && !schema.isMajorParamSharedControl(majorVal)) {
         lcompounds.get(sc).add(majorVal);
       }
     }

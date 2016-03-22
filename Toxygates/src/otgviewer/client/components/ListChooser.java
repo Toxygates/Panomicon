@@ -27,11 +27,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import otgviewer.client.dialog.InputDialog;
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.dialog.InputDialog;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -61,11 +61,10 @@ public class ListChooser extends DataListenerWidget {
   private final String DEFAULT_ITEM;
 
   // ordered map
-  protected Map<String, List<String>> lists =
-      new TreeMap<String, List<String>>();
+  protected Map<String, List<String>> lists = new TreeMap<String, List<String>>();
 
-  private Map<String, List<String>> predefinedLists =
-      new TreeMap<String, List<String>>(); // ordered map
+  private Map<String, List<String>> predefinedLists = new TreeMap<String, List<String>>(); // ordered
+                                                                                           // map
   protected List<String> currentItems;
   private DialogBox inputDialog;
   final private ListBox listBox;
@@ -98,18 +97,16 @@ public class ListChooser extends DataListenerWidget {
     this(predefinedLists, listType, true);
   }
 
-  public ListChooser(Collection<StringList> predefinedLists, String listType,
-      String defaultItem) {
+  public ListChooser(Collection<StringList> predefinedLists, String listType, String defaultItem) {
     this(predefinedLists, listType, true, defaultItem);
   }
 
-  public ListChooser(Collection<StringList> predefinedLists, String listType,
-      boolean hasButtons) {
-    this(predefinedLists, listType, true, "Click to see available lists");
+  public ListChooser(Collection<StringList> predefinedLists, String listType, boolean hasButtons) {
+    this(predefinedLists, listType, hasButtons, "Click to see available lists");
   }
 
-  public ListChooser(Collection<StringList> predefinedLists, String listType,
-      boolean hasButtons, String defaultItem) {
+  public ListChooser(Collection<StringList> predefinedLists, String listType, boolean hasButtons,
+      String defaultItem) {
     this.listType = listType;
     this.DEFAULT_ITEM = defaultItem;
 
@@ -138,8 +135,7 @@ public class ListChooser extends DataListenerWidget {
         if (sel == null) {
           return;
         }
-        currentItems =
-            lists.containsKey(sel) ? lists.get(sel) : new ArrayList<String>();
+        currentItems = lists.containsKey(sel) ? lists.get(sel) : new ArrayList<String>();
         itemsChanged(currentItems);
       }
     });
@@ -177,7 +173,7 @@ public class ListChooser extends DataListenerWidget {
     }
     return listBox.getItemText(idx);
   }
-  
+
   public int getSelectedIndex() {
     return listBox.getSelectedIndex();
   }
@@ -227,8 +223,7 @@ public class ListChooser extends DataListenerWidget {
         inputDialog.setVisible(false);
       }
     };
-    inputDialog =
-        Utils.displayInPopup("Name entry", entry, DialogPosition.Center);
+    inputDialog = Utils.displayInPopup("Name entry", entry, DialogPosition.Center);
   }
 
   protected void deleteAction() {

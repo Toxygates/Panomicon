@@ -23,7 +23,7 @@ package t.db.kyotocabinet
 import kyotocabinet.DB
 import t.global.KCDBRegistry
 
-abstract class KyotoCabinetDB(file: String, db: DB) {
+abstract class KyotoCabinetDB(db: DB, writeMode: Boolean) {
   def get(key: Array[Byte]): Option[Array[Byte]] = {
     val d = db.get(key)
     if (d != null) {
@@ -34,6 +34,13 @@ abstract class KyotoCabinetDB(file: String, db: DB) {
   }
 
   def release() {
-    KCDBRegistry.release(file)
+    //TODO in-memory dbs etc?
+    val path = db.path()
+    if (path != null &&
+        path != "*" && //in memory cache DB
+        path != "%" && //in-memory tree DB
+        ! writeMode) {
+      KCDBRegistry.releaseReader(path)
+    }
   }
 }

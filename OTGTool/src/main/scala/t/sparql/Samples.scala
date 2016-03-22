@@ -20,17 +20,15 @@
 
 package t.sparql
 
+import t.BaseConfig
 import t.TriplestoreConfig
 import t.db.Sample
-import otg.Annotation
-import t.sparql.secondary.GOTerm
-import t.sparql.{ Filter => TFilter }
-import t.BaseConfig
 import t.db.SampleParameter
+import t.sparql.{ Filter => TFilter }
 
 object Samples extends RDFClass {
   val defaultPrefix = s"$tRoot/sample"
-  val itemClass = "t:Sample"
+  val itemClass = "t:sample"
 }
 
 case class SampleFilter(instanceURI: Option[String] = None,
@@ -101,10 +99,10 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
   /**
    * The sample query must query for ?batchGraph and ?dataset.
    */
-  def sampleQuery(implicit sf: SampleFilter): Query[Vector[Sample]]
+  def sampleQuery(sc: SampleClass)(implicit sf: SampleFilter): Query[Vector[Sample]]
 
-  def samples(implicit sf: SampleFilter): Seq[Sample] =
-    sampleQuery(sf)()
+  def samples(sc: SampleClass)(implicit sf: SampleFilter): Seq[Sample] =
+    sampleQuery(sc)(sf)()
 
   def allValuesForSampleAttribute(attribute: String,
     graphURI: Option[String] = None): Iterable[String] = {
@@ -122,8 +120,8 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
       " }")
   }
 
-  def samples(filter: TFilter, fparam: String, fvalues: Iterable[String])(implicit sf: SampleFilter): Seq[Sample] = {
-    sampleQuery.constrain(filter).constrain(
+  def samples(sc: SampleClass, fparam: String, fvalues: Iterable[String])(implicit sf: SampleFilter): Seq[Sample] = {
+    sampleQuery(sc).constrain(
       multiFilter(s"?$fparam", fvalues.map("\"" + _ + "\"")))()
   }
 
@@ -152,17 +150,8 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
       withIndex.map(x => (x._1, h.get("k" + x._2)))
     }
   }
-  /**
-   * Produces human-readable values
-   */
-  @deprecated("being replaced with parameterQuery", "July 15")
-  def annotations(sample: String, querySet: Iterable[SampleParameter] = Set()): Annotation = {
-    val m = parameterQuery(sample, querySet).map(x =>
-      (x._1.humanReadable, x._2.getOrElse("N/A"))).toSeq
-    Annotation(m, sample).postReadAdjustment
-  }
 
-  def sampleAttributeQuery(attribute: String)(implicit sf: SampleFilter): Query[Seq[String]] = {
+   def sampleAttributeQuery(attribute: String)(implicit sf: SampleFilter): Query[Seq[String]] = {
     Query(tPrefixes,
       "SELECT DISTINCT ?q " +
         s"WHERE { GRAPH ?batchGraph { " +
@@ -171,10 +160,22 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
       ts.simpleQueryNonQuiet)
   }
 
+  def sampleAttributeQuery(attribute: Seq[String])
+    (implicit sf: SampleFilter): Query[Seq[Map[String, String]]] = {
+
+    Query(tPrefixes,
+      "SELECT DISTINCT " + attribute.map("?" + _).mkString(" ") +
+        " WHERE { GRAPH ?batchGraph { " +
+        "?x " +
+          attribute.map(x => s"t:$x ?$x").mkString("; "),
+      s"} ${sf.standardSampleFilters} } ",
+      ts.mapQuery)
+  }
+
   def attributeValues(filter: TFilter, attribute: String)(implicit sf: SampleFilter) =
     sampleAttributeQuery("t:" + attribute).constrain(filter)()
 
-  def sampleGroups(implicit sf: SampleFilter): Iterable[(String, Iterable[Sample])] = {
+  def sampleGroups(sf: SampleFilter): Iterable[(String, Iterable[Sample])] = {
     val q = tPrefixes +
       "SELECT DISTINCT ?l ?sid WHERE { " +
       s"?g a ${SampleGroups.itemClass}. " +
@@ -187,7 +188,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
     val mq = ts.mapQuery(q)
     val byGroup = mq.groupBy(_("l"))
     val allIds = mq.map(_("sid")).distinct
-    val withAttributes = sampleQuery.constrain(
+    val withAttributes = sampleQuery(SampleClass())(sf).constrain(
       "FILTER (?id IN (" + allIds.map('"' + _ + '"').mkString(",") + ")).")()
     val lookup = Map() ++ withAttributes.map(x => (x.identifier -> x))
 

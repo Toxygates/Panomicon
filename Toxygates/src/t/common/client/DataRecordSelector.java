@@ -1,28 +1,25 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
- * (NIBIOHN), Japan.
- *
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * and Nutrition (NIBIOHN), Japan.
+ * 
  * This file is part of Toxygates.
- *
- * Toxygates is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
- *
- * Toxygates is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * Toxygates is free software: you can redistribute it and/or modify it under the terms of the GNU
+ * General Public License as published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * Toxygates is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with Toxygates. If not,
+ * see <http://www.gnu.org/licenses/>.
  */
 
 package t.common.client;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import t.common.client.components.SelectionTable;
@@ -31,76 +28,52 @@ import t.common.shared.DataRecord;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
-
-import static t.common.client.Utils.makeButtons;
 
 /**
  * Dialog for selecting from a list of DataRecords.
+ * 
  * @param <T> the type of DataRecord being selected.
  */
 public class DataRecordSelector<T extends DataRecord> extends Composite {
 
-	protected SelectionTable<T> st;
-	protected VerticalPanel vp;
-	
-	public DataRecordSelector(Collection<T> items, String message) {
-		vp = new VerticalPanel();
-		initWidget(vp);
+  protected SelectionTable<T> st;
+  protected VerticalPanel vp;
 
-		Label l = new Label(message);
-		vp.add(l);
-		
-		st = new SelectionTable<T>("", true) {
-			@Override
-			protected void initTable(CellTable<T> table) {
-				TextColumn<T> tc = new TextColumn<T>() {
-					@Override
-					public String getValue(T object) {
-						return object.getUserTitle();
-					}
-				};
-				table.addColumn(tc, "Title");				
-			}
-		};
-		setItems(items);
-		
-		List<Command> commands = new ArrayList<Command>();
-		commands.add(new Command("OK") {
-			@Override 
-			public void run() { onOK(); }
-		});
-		commands.add(new Command("Cancel") {
-			@Override 
-			public void run() { onCancel(); }
-		});
-		
-		vp.add(st);
-		vp.add(makeButtons(commands));	
-	}
+  public DataRecordSelector(Collection<T> items) {
+    vp = new VerticalPanel();
+    initWidget(vp);
 
-	public Set<T> getSelection() {
-		return st.getSelection();
-	}
-	
-	public void setItems(Collection<T> data) {
-		st.setItems(new ArrayList<T>(data));
-	}
-	
-	public void setSelection(Collection<T> items) {
-		st.setSelection(items);
-	}
-	
-	public void selectAll() {
-		st.selectAll(st.getItems());
-	}
-	
-	public void onOK() {
-		
-	}
-	
-	public void onCancel() {
-		
-	}
+    st = new SelectionTable<T>("", true) {
+      @Override
+      protected void initTable(CellTable<T> table) {
+        TextColumn<T> tc = new TextColumn<T>() {
+          @Override
+          public String getValue(T object) {
+            return object.getUserTitle();
+          }
+        };
+        table.addColumn(tc, "Title");
+      }
+    };
+    setItems(items);
+    vp.add(st);
+  }
+
+  public Set<T> getSelection() {
+    return st.getSelection();
+  }
+
+  public void setItems(Collection<T> data) {
+    st.setItems(new ArrayList<T>(data));
+  }
+
+  public void setSelection(Collection<T> items) {
+    st.setSelection(items);
+  }
+
+  public void selectAll() {
+    st.selectAll(st.getItems());
+  }
+
 }

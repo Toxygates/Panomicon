@@ -20,7 +20,7 @@
 
 package otg.sparql
 
-import otg.OTGTestSuite
+import t.TTestSuite
 import scala.collection.JavaConversions._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -32,7 +32,7 @@ import t.sparql.secondary._
 import t.testing.TestConfig
 
 @RunWith(classOf[JUnitRunner])
-class SPARQLTest extends OTGTestSuite {
+class SPARQLTest extends TTestSuite {
 
   val config = TestConfig.config
 

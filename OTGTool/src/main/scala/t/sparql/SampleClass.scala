@@ -55,4 +55,6 @@ case class SampleClass(constraints: CMap[String, String] = Map()) {
   def apply(key: String) = constraints(key)
 
   def get(key: String) = constraints.get(key)
+  
+  def ++(other: SampleClass) = SampleClass(constraints ++ other.constraints)
 }

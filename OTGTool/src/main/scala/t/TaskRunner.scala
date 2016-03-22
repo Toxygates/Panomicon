@@ -22,6 +22,14 @@ package t
 
 import scala.concurrent._
 
+object Tasklet {
+  def simple(name: String, f:() => Unit) = new Tasklet(name) {
+    def run() {
+      f()
+    }
+  }
+}
+
 /**
  * TODO consider replacing with Futures
  */
@@ -95,7 +103,7 @@ object TaskRunner {
   /**
    * The task that is currently running or most recently completed.
    */
-  def currentTask: Option[Tasklet] = _currentTask
+  def currentTask: Option[Tasklet] =  _currentTask
 
   /**
    * Whether a task is currently busy. Even if this is false, the queue
@@ -152,7 +160,6 @@ object TaskRunner {
           if (!tasks.isEmpty) {
             println(tasks.size + " tasks in queue")
             next = tasks.head
-            _currentTask = Some(next)
             tasks = tasks.tail
           }
         }
@@ -160,8 +167,8 @@ object TaskRunner {
           log("Start task \"" + next.name + "\"")
           try {
             _waitingForTask = true
+            _currentTask = Some(next)
             next.run() // could take a long time to complete
-            _waitingForTask = false
             log("Finish task \"" + next.name + "\"")
           } catch {
             case t: Throwable =>
@@ -172,9 +179,14 @@ object TaskRunner {
               _waitingForTask = false
               shutdown()
           }
+        } else {
+          _currentTask = None
+          _waitingForTask = false
         }
         Thread.sleep(1000)
       }
+      _currentTask = None
+      _waitingForTask = false
       println("TaskRunner stopping")
       for (r <- resultMessages) {
         println(r)

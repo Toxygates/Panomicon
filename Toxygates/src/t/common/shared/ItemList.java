@@ -75,13 +75,14 @@ abstract public class ItemList implements Packable, Serializable {
 	
 		// TODO would be good to avoid having this kind of central registry
 		// of list types here. Use enum?
-		if (type.equals("probes")) {
+		if (type.equals("probes") || type.equals("compounds") || type.equals("probeclustering")) {
 			return new StringList(type, name, items);
-		} else if (type.equals("compounds")) {
-			return new StringList(type, name, items);
+        } else if (type.equals("userclustering")) {
+          return new ClusteringList(type, name, items);
 		} else {
 			// Unexpected type, ignore
 			return null;
 		} 
 	}	
+
 }

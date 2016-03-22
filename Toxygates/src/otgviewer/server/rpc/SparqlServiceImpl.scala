@@ -21,46 +21,28 @@
 package otgviewer.server.rpc
 
 import scala.Array.canBuildFrom
-import scala.collection.{Set => CSet}
-import com.google.gwt.user.server.rpc.RemoteServiceServlet
-import Conversions.asJava
-import Conversions.asJavaSample
-import Conversions.convertPairs
-import javax.servlet.ServletConfig
-import javax.servlet.ServletException
-import otg.OTGBConfig
+import scala.collection.{ Set => CSet }
+
 import otg.OTGContext
 import otg.Species.Human
-import t.sparql.secondary._
 import otg.sparql._
-import t.sparql._
-import t.common.server.ScalaUtils.gracefully
-import otgviewer.shared.OTGColumn
-import otgviewer.shared.OTGSample
+import otg.sparql.Probes
+import otgviewer.shared.OTGSchema
 import otgviewer.shared.Pathology
+import otgviewer.shared.TimeoutException
 import t.BaseConfig
 import t.DataConfig
-import t.TriplestoreConfig
-import t.common.shared.SampleClass
-import t.common.shared.sample.Annotation
-import t.common.shared.sample.HasSamples
-import t.common.shared.Pair
-import t.db.DefaultBio
-import t.sparql.Instances
-import t.sparql.Triplestore
-import t.sparql.TriplestoreMetadata
-import t.viewer.server.Configuration
-import t.viewer.server.Conversions.asSpecies
-import t.viewer.server.Conversions.scAsScala
-import t.viewer.shared.Association
-import t.common.server.ScalaUtils
-import otgviewer.shared.TimeoutException
-import otgviewer.shared.OTGSchema
-import t.platform.Probe
-import otg.sparql.Probes
-import t.common.shared.Dataset
-import otgviewer.shared.Group
+import t.common.server.ScalaUtils.gracefully
 import t.common.shared.AType
+import t.common.shared.SampleClass
+import t.common.shared.sample._
+import t.platform.Probe
+import t.sparql._
+import t.sparql.TriplestoreMetadata
+import t.sparql.secondary._
+import t.viewer.server.Configuration
+import t.viewer.server.Conversions._
+import t.viewer.shared.Association
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -100,8 +82,8 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
     //we call this from localInit and sessionInfo.sampleFilter
     //will not be available yet
 
-    implicit val sf = SampleFilter(instanceURI = instanceURI)
-    val r = sampleStore.sampleGroups.filter(!_._2.isEmpty).map(x =>
+    val sf = SampleFilter(instanceURI = instanceURI)
+    val r = sampleStore.sampleGroups(sf).filter(!_._2.isEmpty).map(x =>
       new Group(schema, x._1, x._2.map(x => asJavaSample(x)).toArray))
     r.toArray
   }
@@ -129,8 +111,9 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
   }
 
   @throws[TimeoutException]
-  override def pathologies(column: OTGColumn): Array[Pathology] =
-    column.getSamples.flatMap(x => sampleStore.pathologies(x.id)).map(asJava(_))
+  override def pathologies(column: SampleColumn): Array[Pathology] =
+    column.getSamples.flatMap(x => sampleStore.pathologies(x.id)).map(
+        otgviewer.server.rpc.Conversions.asJava(_))
 
   override def associations(sc: SampleClass, types: Array[AType],
     _probes: Array[String]): Array[Association] =

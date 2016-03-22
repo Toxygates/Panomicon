@@ -97,7 +97,9 @@ object Triplestore {
 
 abstract class Triplestore extends Closeable {
 
-  def con: RepositoryConnection
+  def isReadonly: Boolean = true
+
+  protected def con: RepositoryConnection
 
   def close() {
     con.close()
@@ -132,13 +134,17 @@ abstract class Triplestore extends Closeable {
     if (!quiet) {
       println(query)
     }
-    try {
-      val pq = con.prepareUpdate(QueryLanguage.SPARQL, query)
-      pq.execute()
-    } catch {
-      case e: Exception =>
-        Console.err.println("Exception on query: " + query)
-        throw e
+    if (isReadonly) {
+      println("Triplestore is read-only, ignoring update query")
+    } else {
+      try {
+        val pq = con.prepareUpdate(QueryLanguage.SPARQL, query)
+        pq.execute()
+      } catch {
+        case e: Exception =>
+          Console.err.println("Exception on query: " + query)
+          throw e
+      }
     }
   }
 
@@ -146,8 +152,12 @@ abstract class Triplestore extends Closeable {
    * Insert a TRIG file.
    */
   def addTTL(file: java.io.File, context: String): Unit = {
-    println(s"Insert file $file into $context")
-    con.add(file, null, RDFFormat.TURTLE, new URIImpl(context))
+    if (isReadonly) {
+      println(s"Triplestore is read-only, ignoring data insertion of $file into $context")
+    } else {
+      println(s"Insert file $file into $context")
+      con.add(file, null, RDFFormat.TURTLE, new URIImpl(context))
+    }
   }
 
   def simpleQueryNonQuiet(query: String): Vector[String] = simpleQuery(query, true)
@@ -225,4 +235,8 @@ abstract class Triplestore extends Closeable {
   }
 }
 
-class SimpleTriplestore(val con: RepositoryConnection) extends Triplestore
+class SimpleTriplestore(val con: RepositoryConnection, override val isReadonly: Boolean) extends Triplestore {
+  if (isReadonly) {
+    println("SPARQL READ ONLY MODE - no RDF data will be inserted or updated")
+  }
+}

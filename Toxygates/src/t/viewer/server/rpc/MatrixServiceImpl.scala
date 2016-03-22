@@ -22,25 +22,17 @@ package t.viewer.server.rpc
 
 import java.util.ArrayList
 import java.util.{ List => JList }
-import scala.collection.JavaConversions.asScalaBuffer
-import scala.collection.JavaConversions.mapAsJavaMap
-import scala.collection.JavaConversions.seqAsJavaList
-import t.viewer.server.EVArray
-import t.common.shared.sample.ExprMatrix
+import t.viewer.server.ExprMatrix
 import otgviewer.server.ExtFoldBuilder
 import otgviewer.server.FoldBuilder
 import otgviewer.server.ManagedMatrix
 import otgviewer.server.ManagedMatrixBuilder
 import otgviewer.server.MatrixMapper
 import otgviewer.server.NormalizedBuilder
-import otgviewer.server.rpc.Conversions
-import otgviewer.server.rpc.Conversions.asScala
-import otgviewer.shared.DBUnavailableException
 import otgviewer.shared.FullMatrix
-import otgviewer.shared.Group
-import otgviewer.shared.ManagedMatrixInfo
+import t.viewer.shared.ManagedMatrixInfo
 import otgviewer.shared.NoDataLoadedException
-import otgviewer.shared.Synthetic
+import t.viewer.shared.Synthetic
 import t.BaseConfig
 import t.Context
 import t.common.shared.AType
@@ -48,8 +40,10 @@ import t.common.shared.DataSchema
 import t.common.shared.ValueType
 import t.common.shared.probe.MedianValueMapper
 import t.common.shared.probe.OrthologProbeMapper
+import t.common.shared.sample.EVArray
+import t.common.shared.sample.Group
+import t.viewer.server.ExprMatrix
 import t.common.shared.sample.ExpressionRow
-import t.common.shared.sample.ExpressionValue
 import t.db.MatrixContext
 import t.db.MatrixDBReader
 import t.db.kyotocabinet.KCExtMatrixDB
@@ -66,29 +60,27 @@ import t.viewer.shared.table.SortKey
 import t.common.server.ScalaUtils
 import t.common.shared.PerfTimer
 import java.util.logging.Logger
-import otgviewer.shared.OTGSample
+import t.common.shared.sample.Sample
+import otgviewer.server.MatrixController
+import javax.annotation.Nullable
+import otgviewer.server.R
+import org.rosuda.REngine.Rserve.RserveException
+import t.common.shared.userclustering.Algorithm
+import t.common.server.userclustering.RClustering
+import org.apache.commons.lang.StringUtils
+import t.common.shared.sample.ExpressionValue
+import t.viewer.shared.ColumnFilter
 
 object MatrixServiceImpl {
 
-  /**
-   * Note that in some cases, using the ServletContext rather than
-   * static vars is more robust.
-   */
+  private var orthologs: Option[Iterable[OrthologMapping]] = None
 
-  var inited = false
-
-  //This in particular could be put in a servlet context and shared between
-  //servlets.
-  var platforms: Platforms = _
-  var orthologs: Iterable[OrthologMapping] = _
-
-  def staticInit(c: Context) = synchronized {
-    if (!inited) {
+  def getOrthologs(c: Context) = synchronized {
+    if (orthologs == None) {
       val probes = c.probes
-      orthologs = probes.orthologMappings
-      platforms = Platforms(probes)
-      inited = true
+      orthologs = Some(probes.orthologMappings)
     }
+    orthologs.get
   }
 }
 
@@ -98,8 +90,8 @@ object MatrixServiceImpl {
  * TODO move dependencies from otgviewer to t.common
  */
 abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
-  import Conversions._
   import scala.collection.JavaConversions._
+  import t.viewer.server.Conversions._
   import ScalaUtils._
   import MatrixServiceImpl._
 
@@ -107,18 +99,19 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   private def probes = context.probes
   private var config: Configuration = _
   private val logger = Logger.getLogger("MatrixService")
+  private var userDir: String = null
 
   // Useful for testing
   override def localInit(config: Configuration) {
     super.localInit(config)
     this.config = config
+    this.userDir = this.getServletContext.getRealPath("/WEB-INF/")
     mcontext = context.matrix
-    staticInit(context)
   }
 
   protected class MatrixState {
-    var matrix: ManagedMatrix = _
-    var sortAssoc: AType = _
+    var controller: MatrixController = _
+    def matrix: ManagedMatrix = controller.managedMatrix
   }
 
   def getSessionData(): MatrixState = {
@@ -137,14 +130,8 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   def setSessionData(m: MatrixState) =
     getThreadLocalRequest().getSession().setAttribute("matrix", m)
 
-  //Should this be in sparqlService?
   def identifiersToProbes(identifiers: Array[String], precise: Boolean,
-    titlePatternMatch: Boolean): Array[String] = {
-    identifiersToProbes(identifiers, precise, titlePatternMatch, null)
-  }
-
-  def identifiersToProbes(identifiers: Array[String], precise: Boolean,
-    titlePatternMatch: Boolean, samples: JList[OTGSample]): Array[String] = {
+    titlePatternMatch: Boolean, samples: JList[Sample]): Array[String] = {
     val ps = if (titlePatternMatch) {
       probes.forTitlePatterns(identifiers)
     } else {
@@ -159,8 +146,8 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     }
   }
 
-  // TODO Same codes in SparqlService
-  def filterProbesByGroup(ps: Array[String], samples: JList[OTGSample]): Array[String] = {
+  // TODO Shared logic with SparqlService
+  def filterProbesByGroup(ps: Array[String], samples: JList[Sample]): Array[String] = {
     val platforms: Set[String] = samples.map(x => x.get("platform_id")).toSet
     val lookup = probes.platformsAndProbes
     val acceptProbes = platforms.flatMap(p => lookup(p))
@@ -168,166 +155,56 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     ps.filter(x => acceptProbes.contains(x))
   }
 
-  private def makeMatrix(requestColumns: Seq[Group], initProbes: Array[String],
-    typ: ValueType, sparseRead: Boolean = false, fullLoad: Boolean = false): ManagedMatrix = {
-
-    val reader = try {
-      if (typ == ValueType.Absolute) {
-        mcontext.absoluteDBReader
-      } else {
-        mcontext.foldsDBReader
-      }
-    } catch {
-      case e: Exception => throw new DBUnavailableException()
-    }
-
-    val pfs = platformsForGroups(requestColumns)
-    val multiPlat = pfs.size > 1
-
-    try {
-      val enhancedCols = !multiPlat
-
-      val b = reader match {
-        case ext: KCExtMatrixDB =>
-          assert(typ == ValueType.Folds)
-          new ExtFoldBuilder(enhancedCols, ext, initProbes)
-        case db: KCMatrixDB =>
-          if (typ == ValueType.Absolute) {
-            new NormalizedBuilder(enhancedCols, db, initProbes)
-          } else {
-            new FoldBuilder(db, initProbes)
-          }
-        case _ => throw new Exception("Unexpected DB reader type")
-      }
-      b.build(requestColumns, sparseRead, fullLoad)
-    } finally {
-      reader.release
-    }
-  }
-
-  private def platformsForGroups(gs: Iterable[Group]): Iterable[String] = {
-    val samples = gs.toList.flatMap(_.getSamples().map(_.id))
-    context.samples.platforms(samples)
-  }
-
-  private def platformsForProbes(ps: Iterable[String]): Iterable[String] =
-    ps.flatMap(platforms.platformForProbe(_))
-
-  private def applyMapper(groups: JList[Group], mm: ManagedMatrix): ManagedMatrix = {
-    mapper(groups) match {
-      case Some(m) => m.convert(mm)
-      case None    => mm
-    }
-  }
-
   def loadMatrix(groups: JList[Group], probes: Array[String],
-    typ: ValueType, syntheticColumns: JList[Synthetic]): ManagedMatrixInfo = {
-    val pt = new PerfTimer(Logger.getLogger("matrixService.loadMatrix"))
-
-    val pfs = platformsForGroups(groups.toList)
-    pt.mark("PlatformsForGroups")
-
-    val fProbes = platforms.filterProbes(probes, pfs).toArray
-    pt.mark("FilterProbes")
-
-    val ensureOrder = (xs :JList[Group]) => xs.sortBy(s => s.getName)
-
-    val mm = makeMatrix(ensureOrder(groups).toVector, fProbes, typ)
-    pt.mark("MakeMatrix")
-
-    mm.info.setPlatforms(pfs.toArray)
-    //    selectProbes(probes)
-    val mm2 = applyMapper(ensureOrder(groups), mm)
-    pt.mark("ApplyMapper")
-
-    getSessionData.matrix = mm2
-
-    pt.finish()
-
-    mm2.info
+    typ: ValueType): ManagedMatrixInfo = {
+    getSessionData.controller =
+      new MatrixController(context, () => getOrthologs(context),
+          groups, probes, typ, false, false)
+    getSessionData.matrix.info
   }
 
   @throws(classOf[NoDataLoadedException])
-  def selectProbes(probes: Array[String]): ManagedMatrixInfo = {
-    if (probes != null) {
-      println("Refilter probes: " + probes.length)
-    }
-    val mm = getSessionData.matrix
-
-    //    mm.filterData(Some(absValFilter))
-    if (probes != null && probes.length > 0) {
-      mm.selectProbes(probes)
-    } else {
-      val groups = (0 until mm.info.numDataColumns()).map(i => mm.info.columnGroup(i))
-      val ps = platformsForGroups(groups)
-      val allProbes = platforms.filterProbes(List(), ps).toArray
-      mm.selectProbes(allProbes)
-    }
-    mm.info
+  def selectProbes(@Nullable probes: Array[String]): ManagedMatrixInfo = {
+    val prs = Option(probes).getOrElse(Array()).toSeq
+    getSessionData.controller.selectProbes(prs).info
   }
 
   @throws(classOf[NoDataLoadedException])
-  def setColumnThreshold(column: Int, threshold: java.lang.Double): ManagedMatrixInfo = {
+  def setColumnFilter(column: Int, f: ColumnFilter): ManagedMatrixInfo = {
     val mm = getSessionData.matrix
-    println(s"Filter column $column at $threshold")
-    mm.setFilterThreshold(column, threshold)
+    
+    println(s"Filter for column $column: $f")
+    mm.setFilter(column, f)
     mm.info
-  }
-
-  protected def assocSortTable(ass: AType, rowKeys: Seq[String]): ExprMatrix = {
-    val key = ass.auxSortTableKey
-    if (key != null) {
-      val sm = context.auxSortMap(key)
-      println("Rows: " + rowKeys.take(10))
-      println("aux: " + sm.take(10))
-      val evs = rowKeys.map(r =>
-        sm.get(r) match {
-          case Some(v) => new ExpressionValue(v)
-          case None    => new ExpressionValue(Double.NaN, 'A')
-        })
-      val evas = evs.map(v => EVArray(Seq(v)))
-      ExprMatrix.withRows(evas, rowKeys, List("POPSEQ"))
-    } else {
-      throw new Exception(s"No sort key for $ass")
-    }
   }
 
   @throws(classOf[NoDataLoadedException])
   def matrixRows(offset: Int, size: Int, sortKey: SortKey,
     ascending: Boolean): JList[ExpressionRow] = {
-    val pt = new PerfTimer(Logger.getLogger("matrixService.matrixRows"))
+    val mm =
+      getSessionData.controller.applySorting(sortKey, ascending)
 
-    val session = getSessionData.matrix
+    val mergeMode = mm.info.getPlatforms.size > 1
 
-    sortKey match {
-      case mc: SortKey.MatrixColumn =>
-        if (Some(mc.matrixIndex) != session.sortColumn ||
-          ascending != session.sortAscending) {
-          session.sort(mc.matrixIndex, ascending)
-          println("SortCol: " + mc.matrixIndex + " asc: " + ascending)
-        }
-      case as: SortKey.Association =>
-        val old = getSessionData.sortAssoc
-        val nw = as.atype
-        if (old == null || nw != old
-          || ascending != session.sortAscending) {
-          getSessionData.sortAssoc = nw
-          val st = assocSortTable(as.atype,
-            getSessionData.matrix.probesForAuxTable)
-          session.sortWithAuxTable(st, ascending)
-          println("Sort with aux table for " + as)
-        }
+    val groups = getSessionData().controller.groups
+    //TODO avoid the asRows here, perhaps
+    val grouped = mm.current.asRows.drop(offset).take(size)
+    val groupSamples = (0 until groups.size).map(g =>
+      mm.info.samples(g))
+
+    val rowNames = grouped.map(_.getProbe)
+
+    val rawData = mm.rawData.selectNamedRows(rowNames).data
+
+    for ((gr, rr) <- grouped zip rawData;
+      (gv, i) <- gr.getValues.zipWithIndex) {
+      val basis = mm.baseColumns(i)
+      val rawRow = basis.map(i => rr(i))
+      val tt = ManagedMatrix.makeTooltip(rawRow, mm.log2Tooltips)
+      gv.setTooltip(tt)
     }
-    pt.mark("Sort")
 
-    val mm = session.current
-    val mergeMode = session.info.getPlatforms.size > 1
-
-    val r = new ArrayList[ExpressionRow](
-      insertAnnotations(mm.asRows.drop(offset).take(size), mergeMode))
-    pt.mark("insertAnnotations")
-    pt.finish()
-    r
+    new ArrayList[ExpressionRow](insertAnnotations(grouped, mergeMode))
   }
 
   //this is probably quite inefficient
@@ -392,28 +269,22 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     })
   }
 
-  //TODO simplify
   def getFullData(gs: JList[Group], rprobes: Array[String], sparseRead: Boolean,
     withSymbols: Boolean, typ: ValueType): FullMatrix = {
     val sgs = Vector() ++ gs
-    val pfs = platformsForGroups(sgs)
-
-    val realProbes = platforms.filterProbes(rprobes, pfs).toArray
-    val mm = makeMatrix(sgs, realProbes.toArray, typ, sparseRead, true)
-    mm.info.setPlatforms(pfs.toArray)
-
-    val mapper = mapperForProbes(realProbes)
-    val mm2 = mapper.map(mx => mx.convert(mm)).getOrElse(mm)
+    val controller = new MatrixController(context, () => getOrthologs(context),
+        gs, rprobes, typ, sparseRead, true)
+    val mm = controller.managedMatrix
 
     val raw = if (sgs.size == 1) {
-      //break out each individual sample
-      mm2.rawData.selectNamedColumns(sgs(0).getSamples().map(_.id())).asRows
+      //break out each individual sample if it's only one group
+      mm.rawData.selectNamedColumns(sgs(0).getSamples().map(_.id())).asRows
     } else {
-      mm2.current.selectNamedColumns(sgs.map(_.getName)).asRows
+      mm.current.selectNamedColumns(sgs.map(_.getName)).asRows
     }
 
     val rows = if (withSymbols) {
-      insertAnnotations(raw, pfs.size > 1)
+      insertAnnotations(raw, controller.groupPlatforms.size > 1)
     } else {
       val ps = raw.flatMap(or => or.getAtomicProbes.map(Probe(_)))
       val ats = probes.withAttributes(ps)
@@ -427,7 +298,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
           or.getGeneSyms, or.getValues)
       })
     }
-    new FullMatrix(mm2.info, new ArrayList[ExpressionRow](rows))
+    new FullMatrix(mm.info, new ArrayList[ExpressionRow](rows))
   }
 
   @throws(classOf[NoDataLoadedException])
@@ -438,38 +309,38 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   def removeTwoGroupTests(): Unit =
     getSessionData.matrix.removeSynthetics
 
-  @throws(classOf[NoDataLoadedException])
-  def prepareCSVDownload(individualSamples: Boolean): String = {
-    val mm = getSessionData.matrix
-    var mat = if (individualSamples &&
-      mm.rawUngroupedMat != null && mm.current != null) {
-      //Individual samples
-      val info = mm.info
-      val ug = mm.rawUngroupedMat.selectNamedRows(mm.current.rowKeys.toSeq)
-      val parts = (0 until info.numDataColumns).map(g => {
-        if (!info.isPValueColumn(g)) {
-          //Sample data.
-          //Help the user by renaming the columns.
-          //Prefix sample IDs by group IDs.
+    @throws(classOf[NoDataLoadedException])
+    def prepareCSVDownload(individualSamples: Boolean): String = {
+      val mm = getSessionData.matrix
+      var mat = if (individualSamples &&
+        mm.rawUngroupedMat != null && mm.current != null) {
+        //Individual samples
+        val info = mm.info
+        val ug = mm.rawUngroupedMat.selectNamedRows(mm.current.rowKeys.toSeq)
+        val parts = (0 until info.numDataColumns).map(g => {
+          if (!info.isPValueColumn(g)) {
+            //Sample data.
+            //Help the user by renaming the columns.
+            //Prefix sample IDs by group IDs.
 
-          //Here we get both treated and control samples from cg, but
-          //except for single unit columns in the normalized intensity case,
-          // only treated will be present in ug.
-          val ids = info.samples(g).map(_.id)
-          val sel = ug.selectNamedColumns(ids)
-          val newNames = Map() ++ sel.columnMap.map(x => (info.columnName(g) + ":" + x._1 -> x._2))
-          sel.copyWith(sel.data, sel.rowMap, newNames)
-        } else {
-          //p-value column, present as it is
-          mm.current.selectNamedColumns(List(info.columnName(g)))
-        }
-      })
+            //Here we get both treated and control samples from cg, but
+            //except for single unit columns in the normalized intensity case,
+            // only treated will be present in ug.
+            val ids = info.samples(g).map(_.id)
+            val sel = ug.selectNamedColumns(ids)
+            val newNames = Map() ++ sel.columnMap.map(x => (info.columnName(g) + ":" + x._1 -> x._2))
+            sel.copyWith(sel.data, sel.rowMap, newNames)
+          } else {
+            //p-value column, present as it is
+            mm.current.selectNamedColumns(List(info.columnName(g)))
+          }
+        })
 
-      parts.reduce(_ adjoinRight _)
-    } else {
-      //Grouped
-      mm.current
-    }
+        parts.reduce(_ adjoinRight _)
+      } else {
+        //Grouped
+        mm.current
+      }
 
     val colNames = mat.sortedColumnMap.map(_._1)
     val rows = mat.asRows
@@ -517,28 +388,43 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       config.feedbackFromAddress, context.config.appName)
   }
 
-  private lazy val standardMapper = {
-    val pm = new OrthologProbeMapper(orthologs.head)
-    val vm = MedianValueMapper
-    new MatrixMapper(pm, vm)
+  def prepareHeatmap(groups: JList[Group], chosenProbes: Array[String],
+    valueType: ValueType, algorithm: Algorithm): String = {
+
+    //Reload data in a temporary controller if groups do not correspond to
+    //the ones in the current session
+    val cont = if (getSessionData.controller == null ||
+        getSessionData().controller.groups.toSet != groups.toSet) {
+      new MatrixController(context, () => getOrthologs(context),
+          groups, chosenProbes, valueType, false, false)
+    } else {
+      getSessionData.controller
+    }
+
+    val mm = cont.managedMatrix
+    var mat = mm.current
+    var info = mm.info
+
+    //TODO shared logic with e.g. insertAnnotations, extract
+    val rowNames = mat.asRows.map(_.getAtomicProbes.mkString("/"))
+    val geneSyms = mat.asRows.map(r => {
+      val atomics = r.getAtomicProbes.map(Probe(_))
+      val atrs = probes.withAttributes(atomics)
+      // If character length of gene symbols is more than 30, abbreviate it
+      StringUtils.abbreviate(atrs.flatMap(_.symbols.map(_.symbol)).mkString("/"), 30)
+    })
+
+    val columns = mat.sortedColumnMap.filter(x => !info.isPValueColumn(x._2))
+    val colNames = columns.map(_._1)
+    val values = mat.selectColumns(columns.map(_._2)).data.
+      map(_.map(_.value))
+
+    val clust = new RClustering(userDir)
+    clust.clustering(values.flatten, rowNamesForHeatmap(rowNames),
+        colNames, geneSyms, algorithm)
   }
 
-  protected def mapper(groups: Iterable[Group]): Option[MatrixMapper] = {
-    val os = groups.flatMap(_.collect("organism")).toSet
-    println("Detected species in groups: " + os)
-    if (os.size > 1) {
-      Some(standardMapper)
-    } else {
-      None
-    }
-  }
+  protected def rowNamesForHeatmap(names: Seq[String]): Seq[String] =
+    names
 
-  protected def mapperForProbes(ps: Iterable[String]): Option[MatrixMapper] = {
-    val pfs = platformsForProbes(ps).toSet
-    if (pfs.size > 1) {
-      Some(standardMapper)
-    } else {
-      None
-    }
-  }
 }

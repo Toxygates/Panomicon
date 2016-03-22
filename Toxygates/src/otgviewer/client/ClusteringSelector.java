@@ -19,15 +19,21 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ListChooser;
+import t.common.shared.ItemList;
 import t.common.shared.StringList;
+import t.common.shared.clustering.Algorithm;
 import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.Utils;
 
@@ -46,22 +52,25 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-public abstract class ClusteringSelector extends DataListenerWidget implements
-    RequiresResize {
+public abstract class ClusteringSelector extends DataListenerWidget implements RequiresResize {
 
   private DockLayoutPanel dp;
 
-  private List<ProbeClustering> probeClusterings;
+  private Collection<ProbeClustering> probeClusterings;
 
   private ClListBox algorithm;
-  private ClListBox param;
   private ClListBox clustering;
+  private VerticalPanel paramTitlesContainer;
+  private VerticalPanel paramListsContainer;
   private ListChooser cluster;
 
   private Button addButton;
 
   private Set<String> loadedProbes = new HashSet<String>();
-
+  
+  private Algorithm lastAlgorithm;
+  private Map<String, ClListBox> params = new HashMap<String, ClListBox>();
+  
   class ClListBox extends ListBox {
     ClListBox() {}
 
@@ -109,15 +118,97 @@ public abstract class ClusteringSelector extends DataListenerWidget implements
   }
 
   public ClusteringSelector() {
+    this(Collections.<ProbeClustering>emptyList());
+  }
+
+  public ClusteringSelector(Collection<ProbeClustering> clusterings) {
     this.dp = new DockLayoutPanel(Unit.PX);
+    this.probeClusterings = clusterings;
     
     initWidget(dp);
   }
-
-  public void setAvailable(List<ProbeClustering> probeClusterings) {
-    this.probeClusterings = probeClusterings;
+  
+  private void algorithmChanged(String algorithm) {
+    if (algorithm == null) {
+      return;
+    }
     
-    initializeList();
+    Algorithm selected = Algorithm.valueOf(algorithm.toUpperCase());
+    lastAlgorithm = selected;
+    
+    List<String> items = new ArrayList<String>();
+    for (String cl : selected.getClusterings()) {
+      items.add(cl);
+    }
+    
+    clustering.setItems(items);
+    clusteringChanged(clustering.getSelected());
+  }
+  
+  private void clusteringChanged(String clustering) {
+    if (clustering == null) {
+      return;
+    }
+    // create components
+    params.clear();
+    paramTitlesContainer.clear();
+    paramListsContainer.clear();
+    
+    int numParams = lastAlgorithm.getParams().length;
+    if (numParams == 0) {
+      return;
+    }
+    
+    Grid paramTitles = new Grid(numParams, 1);
+    Grid paramLists = new Grid(numParams, 1);
+    int i = 0;
+    for (String p : lastAlgorithm.getParams()) {
+      ClListBox box = new ClListBox();
+      box.addChangeHandler(new ChangeHandler() {
+        @Override
+        public void onChange(ChangeEvent event) {
+          updateClusteringList();
+        }
+      });
+      
+      // set up list box
+      Collection<ProbeClustering> filter1 = ProbeClustering.filterByAlgorithm(probeClusterings, lastAlgorithm);
+      Collection<ProbeClustering> filter2 = ProbeClustering.filterByClustering(filter1, clustering);
+      box.setItems(ProbeClustering.collectParamValue(filter2, p));
+      
+      params.put(p, box);
+      paramTitles.setText(i, 0, p);
+      paramLists.setWidget(i, 0, box);
+      ++i;
+    }
+    
+    paramTitlesContainer.add(paramTitles);
+    paramListsContainer.add(paramLists);
+    updateClusteringList();
+  }
+  
+  private void updateClusteringList() {
+    // filter probe clusterings with current list selection
+    Collection<ProbeClustering> filter1 = ProbeClustering.filterByAlgorithm(probeClusterings, lastAlgorithm);
+    Collection<ProbeClustering> filter2 = ProbeClustering.filterByClustering(filter1, clustering.getSelected());
+    for (Entry<String, ClListBox> e : params.entrySet()) {
+      filter2 = ProbeClustering.filterByParam(filter2, e.getKey(), e.getValue().getSelected());
+    }
+    
+    List<ItemList> items = new ArrayList<ItemList>();
+    for (ProbeClustering pc : filter2) {
+      items.add(pc.getList());
+    }
+    
+    cluster.setLists(items);
+    // TODO consider behavior of ListChooser
+    // Reset selection of cluster to avoid loading problem here.
+    // Note: even if the clustering changed, if the clustering has the same cluster name
+    // as previous clustering, it would not load probes expected.
+    cluster.trySelect(null);
+    loadedProbes.clear();
+
+    updateAddButton();
   }
 
   @Override
@@ -137,16 +228,6 @@ public abstract class ClusteringSelector extends DataListenerWidget implements
     selector.setText(0, 0, "Algorithm");
     selector.setWidget(0, 1, algorithm);
 
-    param = new ClListBox();
-    param.addChangeHandler(new ChangeHandler() {
-      @Override
-      public void onChange(ChangeEvent event) {
-        paramChanged(param.getSelected());
-      }
-    });
-    selector.setText(1, 0, "K");
-    selector.setWidget(1, 1, param);
-
     clustering = new ClListBox();
     clustering.addChangeHandler(new ChangeHandler() {
       @Override
@@ -154,8 +235,13 @@ public abstract class ClusteringSelector extends DataListenerWidget implements
         clusteringChanged(clustering.getSelected());
       }
     });
-    selector.setText(2, 0, "Clustering");
-    selector.setWidget(2, 1, clustering);
+    selector.setText(1, 0, "Clustering");
+    selector.setWidget(1, 1, clustering);
+
+    paramTitlesContainer = Utils.mkVerticalPanel();
+    paramListsContainer = Utils.mkVerticalPanel();
+    selector.setWidget(2, 0, paramTitlesContainer);
+    selector.setWidget(2, 1, paramListsContainer);
 
     cluster = new ListChooser(new ArrayList<StringList>(), "probes", false) {
       @Override
@@ -176,16 +262,25 @@ public abstract class ClusteringSelector extends DataListenerWidget implements
       }
     });
     addButton.setEnabled(false);
-    
+
     VerticalPanel vp = Utils.mkVerticalPanel(true);
     vp.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
     vp.add(selector);
     vp.add(addButton);
-    
+
     HorizontalPanel hp = Utils.wideCentered(vp);
     hp.setStylePrimaryName("colored");
-    
+
     dp.add(Utils.wideCentered(hp));
+    
+    // set up algorithm list
+    List<String> items = new ArrayList<String>();
+    for (Algorithm algo : Algorithm.values()) {
+      items.add(algo.getTitle());
+    }
+    algorithm.setItems(items);
+    // force change event to refresh all selector
+    algorithmChanged(algorithm.getSelected());
   }
 
   private void updateAddButton() {
@@ -194,84 +289,6 @@ public abstract class ClusteringSelector extends DataListenerWidget implements
     } else {
       addButton.setEnabled(false);
     }
-  }
-
-  private void initializeList() {
-    algorithm.setItems(new ArrayList<String>(ProbeClustering
-        .collectAlgorithm(probeClusterings)));
-
-    String a = algorithm.getSelected();
-    if (a != null) {
-      changeParamsFrom(new ArrayList<ProbeClustering>(
-          ProbeClustering.filterByAlgorithm(probeClusterings, a)));
-    }
-  }
-
-  void changeParamsFrom(List<ProbeClustering> pc) {
-    param.setItems(new ArrayList<String>(ProbeClustering.collectParam1(pc)));
-
-    String p = param.getSelected();
-    if (p != null) {
-      changeClusteringFrom(new ArrayList<ProbeClustering>(
-          ProbeClustering.filterByParam1(pc, p)));
-    }
-  }
-
-  void changeClusteringFrom(List<ProbeClustering> pc) {
-    clustering.setItems(new ArrayList<String>(ProbeClustering.collectName(pc)));
-
-    String c = clustering.getSelected();
-    if (c != null) {
-      changeClusterFrom(new ArrayList<ProbeClustering>(
-          ProbeClustering.filterByName(pc, c)));
-    }
-  }
-
-  void changeClusterFrom(List<ProbeClustering> pc) {
-    if (pc.size() != 1) {
-      throw new IllegalArgumentException(
-          "Only one item is expected, but given list contains " + pc.size()
-              + " items");
-    }
-
-    cluster.setLists(pc.get(0).getClusters());
-  }
-
-  void algorithmChanged(String algorithm) {
-    if (algorithm == null) {
-      return;
-    }
-    changeParamsFrom(new ArrayList<ProbeClustering>(
-        ProbeClustering.filterByAlgorithm(probeClusterings, algorithm)));
-  }
-
-  void paramChanged(String param) {
-    if (param == null) {
-      return;
-    }
-
-    List<ProbeClustering> filtered =
-        new ArrayList<ProbeClustering>(ProbeClustering.filterByAlgorithm(
-            probeClusterings, algorithm.getSelected()));
-
-    changeClusteringFrom(new ArrayList<ProbeClustering>(
-        ProbeClustering.filterByParam1(filtered, param)));
-  }
-
-  void clusteringChanged(String clustering) {
-    if (clustering == null) {
-      return;
-    }
-
-    List<ProbeClustering> filtered =
-        new ArrayList<ProbeClustering>(ProbeClustering.filterByAlgorithm(
-            probeClusterings, algorithm.getSelected()));
-    filtered =
-        new ArrayList<ProbeClustering>(ProbeClustering.filterByParam1(filtered,
-            param.getSelected()));
-
-    changeClusterFrom(new ArrayList<ProbeClustering>(
-        ProbeClustering.filterByName(filtered, clustering)));
   }
 
   @Override

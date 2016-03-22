@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -34,22 +34,22 @@ import t.db.SeriesPoint
 import t.global.KCDBRegistry
 import t.platform.Probe
 
-
 object KCSeriesDB {
   val c20g = 20l * 1204 * 1204 * 1024
   val c1g = 1l * 1204 * 1204 * 1024
   val c4g = 1l * 1204 * 1204 * 1024
   //TODO possibly re-tune this
   val options = s"#bnum=10000000#apow=1#pccap=$c1g"
-  
+
   /**
    * Options: linear, no alignment, 10 million buckets (approx 10% of size), 5g memory mapped
-   */  
-  def apply[S <: Series[S]](file: String, writeMode: Boolean, builder: SeriesBuilder[S])
+   */
+  def apply[S <: Series[S]](file: String, writeMode: Boolean, builder: SeriesBuilder[S],
+      normalize: Boolean)
   (implicit context: MatrixContext): KCSeriesDB[S] = {
-    val db = KCDBRegistry.get(file, writeMode)    
+    val db = KCDBRegistry.get(file, writeMode)
     db match {
-      case Some(d) => new KCSeriesDB(file, d, builder)
+      case Some(d) => new KCSeriesDB(d, writeMode, builder, normalize)
       case None => throw new Exception("Unable to get DB")
     }
   }
@@ -59,29 +59,29 @@ object KCSeriesDB {
  * The database format used for "series" data,
  * e.g. dose series and time series.
  * Indexed by species/organ/repeat, probe, compound and time/dose.
- 
+
  * Key size: 12 bytes, value size: 40-70 bytes (for Open TG-Gates)
  * Expected number of records: < 100 million
  * Expected DB size: about 3 G
- * 
- * 
+ *
+ *
  */
-class KCSeriesDB[S <: Series[S]](file: String, db: DB,
-    builder: SeriesBuilder[S])(implicit val context: MatrixContext) extends 
-KyotoCabinetDB(file, db) with SeriesDB[S] {
-  
+class KCSeriesDB[S <: Series[S]](db: DB, writeMode: Boolean,
+    builder: SeriesBuilder[S], normalize: Boolean)(implicit val context: MatrixContext) extends
+  KyotoCabinetDB(db, writeMode) with SeriesDB[S] {
+
   private[this] def formKey(series: S): Array[Byte] = {
     val r = ByteBuffer.allocate(12)
     r.putInt(series.probe)
-    r.putLong(series.classCode)    
+    r.putLong(series.classCode)
     r.array()
   }
 
   private[this] def extractKey(data: Array[Byte]): S = {
     val b = ByteBuffer.wrap(data)
     val probe = b.getInt
-    val sclass = b.getLong    
-    builder.build(sclass, probe)    
+    val sclass = b.getLong
+    builder.build(sclass, probe)
   }
 
   private[this] def formValue(series: S): Array[Byte] = {
@@ -103,7 +103,7 @@ KyotoCabinetDB(file, db) with SeriesDB[S] {
       val c = b.getChar
       SeriesPoint(p, BasicExprValue(v, c, pmap.unpack(into.probe)))
     })
-    builder.rebuild(into, vs)    
+    builder.rebuild(into, vs)
   }
 
    /**
@@ -118,9 +118,13 @@ KyotoCabinetDB(file, db) with SeriesDB[S] {
       val v = data(i + 1)
       r :+= extractValue(v, extractKey(k))
     }
-    r
+    if (normalize) {
+      builder.normalize(r)
+    } else {
+      r
+    }
   }
-  
+
   def addPoints(s: S): Unit = {
     get(formKey(s)) match {
       case Some(d) =>
@@ -130,7 +134,7 @@ KyotoCabinetDB(file, db) with SeriesDB[S] {
         write(s)
     }
   }
-  
+
   def removePoints(s: S): Unit = {
     val k = formKey(s)
     get(k) match {
@@ -146,7 +150,7 @@ KyotoCabinetDB(file, db) with SeriesDB[S] {
         write(s)
     }
   }
-  
+
    /**
    * Insert or replace a series.
    */

@@ -24,9 +24,10 @@ import scala.io.Source
 import t.db.RawExpressionData
 import t.db.Sample
 import scala.collection.{ Map => CMap }
+import t.db.FoldPExpr
 
-class CSVRawExpressionData(exprFiles: Iterable[String], callFiles: Option[Iterable[String]],
-  pValueFiles: Option[Iterable[String]]) extends RawExpressionData {
+class CSVRawExpressionData(exprFiles: Iterable[String],
+    callFiles: Option[Iterable[String]]) extends RawExpressionData {
 
   private[this] def traverseFile[T](file: String,
     lineHandler: (Array[String], String) => Unit): Array[String] = {
@@ -74,45 +75,34 @@ class CSVRawExpressionData(exprFiles: Iterable[String], callFiles: Option[Iterab
    * The result is a map that maps samples to probe IDs and values.
    */
   private[this] def readExprValues(file: String): CMap[Sample, CMap[String, Double]] = {
-    readValuesFromTable(file, _.toDouble)
-  }
-
-  private[this] def readPValues(file: String): CMap[Sample, CMap[String, Double]] = {
-    readValuesFromTable(file, _.toDouble)
+    import java.lang.{Double => JDouble}
+    readValuesFromTable(file, _.toDouble).mapValues(_.filter(v => !JDouble.isNaN(v._2)))
   }
 
   import scala.collection.mutable.{Map => MuMap}  //more efficient to build
-  lazy val data: CMap[Sample, CMap[String, (Double, Char, Double)]] = {
+  lazy val data: CMap[Sample, CMap[String, FoldPExpr]] = {
     val expr = Map() ++ exprFiles.map(readExprValues(_)).flatten
 
     val call = callFiles.map(fs => Map() ++ fs.map(readCalls(_)).flatten)
-    val pval = pValueFiles.map(fs => Map() ++ fs.map(readPValues(_)).flatten)
 
-    var r = MuMap[Sample, CMap[String, (Double, Char, Double)]]()
+    var r = MuMap[Sample, CMap[String, FoldPExpr]]()
 
     for ((s, pv) <- expr) {
       for (calls <- call; if !calls.contains(s)) {
         throw new Exception(s"No calls available for sample $s")
       }
 
-      for (pvals <- pval; if !pvals.contains(s)) {
-        throw new Exception(s"No p-values available for sample $s")
-      }
-
       val cm = call.map(_(s))
-      val pm = pval.map(_(s))
 
-      var out = MuMap[String, (Double, Char, Double)]()
+      var out = MuMap[String, FoldPExpr]()
       for ((p, v) <- pv) {
         if (cm != None && !cm.get.contains(p)) {
           throw new Exception(s"No call available for probe $p in sample $s")
         }
-        if (pm != None && !pm.get.contains(p)) {
-          throw new Exception(s"No p-value available for probe $p in sample $s")
-        }
         val usec = cm.map(_(p)).getOrElse('P')
-        val usep = pm.map(_(p)).getOrElse(Double.NaN)
-        out += (p -> (v, usec, usep))
+
+        //TODO p-value handling
+        out += (p -> (v, usec, Double.NaN))
       }
       r += (s -> out)
       println(s"Finished reading data for sample $s")

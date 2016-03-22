@@ -20,8 +20,10 @@ trait DataMatrix[T, V <: Seq[T]] {
 
   def apply(row: Int, col: Int): T
 
-  implicit def builder: CanBuildFrom[Seq[T], T, V]
-  def fromSeq(s: Seq[T]): V = (builder() ++= s).result
+//  implicit def builder: CanBuildFrom[Seq[T], T, V]
+//  def fromSeq(s: Seq[T]): V = (builder() ++= s).result
+
+  def fromSeq(s: Seq[T]): V
 
   /**
    * A vector of rows.
@@ -89,4 +91,3 @@ trait RowColAllocation[T, V <: Seq[T], Row, Column] {
 
   def column(c: Column): V = column(obtainColumn(c))
 }
-

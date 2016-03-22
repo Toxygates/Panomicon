@@ -7,7 +7,6 @@
 	<inherits name="com.google.gwt.user.User" />
 	<inherits name='t.common.Common' />
 	<inherits name='com.google.gwt.user.theme.clean.Clean' />
-	<inherits name='gwtupload.GWTUpload' />
 	
 	<source path="client" />
 	<source path="shared" />	

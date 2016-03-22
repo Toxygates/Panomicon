@@ -1,13 +1,15 @@
 #!/bin/bash
 
-# Script to restore a Toxygates triplestore backup.
+# Backup restore script for RDF data. Use with caution.
+# Usage e.g.: restore.sh otg.trig otg-restored
+# Where otg-trig is the input file, and otg-restored is the repository to restore to
+# (the repository must exist prior to running this command).
+# To restore backed up .kct files, manually copy the files once tomcat has been shut down.
 
-source common.sh
+INPUT=$1
+shift
+REPO=$1
+shift
 
-if [ $# -lt 2 ]
-then
-	echo "Usage: $0 (repository name) (backup directory)"
-	exit 1
-fi
-
+curl -u xyzuser:xyzpass -X POST -H "Content-type:application/x-trig" "http://sontaran:8081/owlim-workbench-webapp-5.3.1/repositories/$REPO/statements" --data-binary @$INPUT
 

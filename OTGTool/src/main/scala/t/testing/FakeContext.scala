@@ -29,24 +29,37 @@ import t.db.MatrixDBReader
 import t.db.PExprValue
 import t.db.ExprValue
 import t.db.SeriesBuilder
+import t.db.testing.TestData
+import t.db.kyotocabinet.KCMatrixDB
+import t.db.kyotocabinet.KCExtMatrixDB
+import t.db.MatrixDB
+import t.db.ExtMatrixDB
+import t.db.SeriesDB
 
 class FakeContext(val sampleMap: SampleMap, val probeMap: ProbeMap,
-  val enumMaps: Map[String, Map[String, Int]] = Map()) extends MatrixContext {
+  val enumMaps: Map[String, Map[String, Int]] = Map(),
+  val metadata: Option[Metadata] = None) extends MatrixContext {
+  import TestData._
 
   def species = List(Rat)
 
   def probes(s: Species): ProbeMap = probeMap
   def unifiedProbes = probeMap
 
-  /**
-   * Metadata for samples. Not always available.
-   * Only intended for use during maintenance operations.
-   */
-  def metadata: Option[Metadata] = None
+  def samples = ???
 
-  def samples = null //TODO
+  val testData = makeTestData(true)
 
-  def absoluteDBReader: MatrixDBReader[ExprValue] = null //TODO
-  def foldsDBReader: MatrixDBReader[PExprValue] = null //TODO
-  def seriesBuilder: SeriesBuilder[_] = null //TODO
+  private val folds = memDBHash
+  private val abs = memDBHash
+
+  lazy val absoluteDBReader: KCMatrixDB = ???
+  lazy val foldsDBReader: KCExtMatrixDB = new KCExtMatrixDB(folds, false)
+
+  def seriesDBReader: SeriesDB[_] = ???
+  def seriesBuilder: SeriesBuilder[_] = ???
+
+  def populate() {
+    TestData.populate(foldsDBReader, testData)
+  }
 }

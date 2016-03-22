@@ -49,4 +49,18 @@ public abstract class ManagedItem implements Serializable, DataRecord {
 	public String toString() {
 		return getClass().toString() + ":" + title;
 	}
+	
+	@Override
+	public int hashCode() {
+	  return title.hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+	  if (other instanceof ManagedItem) {
+	    ManagedItem mi = (ManagedItem) other;
+	    return mi.getTitle().equals(title);
+	  }
+	  return false;
+	}
 }

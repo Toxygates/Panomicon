@@ -24,31 +24,43 @@ import org.junit.runner.RunWith
 import t.SeriesRanking.safePCorrelation
 import friedrich.data.Statistics.pearsonCorrelation
 import org.scalatest.junit.JUnitRunner
-
-//TODO move to package t
+import t.TTestSuite
+import t.db.Series
+import t.testing.TestConfig
+import t.db.testing.TestData
+import t.db.ExprValue
+import t.db.SeriesPoint
 
 @RunWith(classOf[JUnitRunner])
-class SeriesMatchingTest extends OTGTestSuite {
-  //	import SeriesRanking._
-  //	import friedrich.data.Statistics._
-  //
-  //	test("Pearson correlation with missing values") {
-  //	  val d1 = Series(null, null, null, 0, null, null,
-  //	      data = Vector(ExprValue(1.0), ExprValue(2.0, 'A'), ExprValue(3.0)))
-  //	  val d2 = Series(null, null, null, 0, null, null,
-  //	      data = Vector(ExprValue(3.0), ExprValue(4.0), ExprValue(5.0)))
-  //
-  //	  safePCorrelation(d1, d2) should equal(pearsonCorrelation(Seq(0.0, 1.0, 3.0), Seq(0.0, 3.0, 5.0)))
-  //	}
-  //
-  //	test("Pearson correlation with insufficient values") {
-  //	  //Only one mutual present value
-  //	  val d1 = Series(null, null, null, 0, null, null,
-  //	      data = Vector(ExprValue(1.0), ExprValue(2.0, 'A'), ExprValue(3.0)))
-  //	  val d2 = Series(null, null, null, 0, null, null,
-  //	      data = Vector(ExprValue(3.0, 'A'), ExprValue(4.0), ExprValue(5.0)))
-  //
-  //	  val x = safePCorrelation(d1, d2)
-  //	  assert(java.lang.Double.isNaN(x))
-  //	}
+class SeriesMatchingTest extends TTestSuite {
+  import friedrich.data.Statistics._
+
+  val config = TestConfig.config
+  implicit val context = new otg.testing.FakeContext()
+
+  def mkSeries(points: Seq[ExprValue]) = {
+    val doses = context.enumMaps("dose_level")
+    val dps = Seq("Low", "Middle", "High").map(doses)
+    dps.zip(points).map(p => SeriesPoint(p._1, p._2))
+  }
+
+  test("Pearson correlation with missing values") {
+    val d1 = OTGSeries(null, null, null, 0, null, null, null,
+      mkSeries(Seq(ExprValue(1.0), ExprValue(2.0, 'A'), ExprValue(3.0))))
+    val d2 = OTGSeries(null, null, null, 0, null, null, null,
+      mkSeries(Seq(ExprValue(3.0), ExprValue(4.0), ExprValue(5.0))))
+
+    safePCorrelation(d1, d2) should equal(pearsonCorrelation(Seq(0.0, 1.0, 3.0), Seq(0.0, 3.0, 5.0)))
+  }
+
+  test("Pearson correlation with insufficient values") {
+    //Only one mutual present value
+    val d1 = OTGSeries(null, null, null, 0, null, null, null,
+      mkSeries(Seq(ExprValue(1.0), ExprValue(2.0, 'A'), ExprValue(3.0))))
+    val d2 = OTGSeries(null, null, null, 0, null, null, null,
+      mkSeries(Seq(ExprValue(3.0, 'A'), ExprValue(4.0), ExprValue(5.0))))
+
+    val x = safePCorrelation(d1, d2)
+    assert(java.lang.Double.isNaN(x))
+  }
 }

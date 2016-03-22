@@ -39,7 +39,7 @@ abstract class ListManager(config: TriplestoreConfig) extends Closeable {
   //URI prefix
   def defaultPrefix: String
 
-  lazy val ts = new SimpleTriplestore(config.triplestore)
+  lazy val ts = config.get
 
   def close() {
     ts.close()
@@ -82,6 +82,13 @@ abstract class ListManager(config: TriplestoreConfig) extends Closeable {
     })
   }
 
+  def publicComments: Map[String, String] = {
+      Map() ++ ts.mapQuery(s"$tPrefixes select ?l ?com where { ?item a $itemClass; rdfs:label ?l ; " +
+      "t:publicComment ?com } ").map(x => {
+      x("l") -> x("com")
+    })
+  }
+
   def delete(name: String): Unit = {
     ts.update(s"$tPrefixes\n " +
       s"delete { <$defaultPrefix/$name> ?p ?o. } \n" +
@@ -90,5 +97,21 @@ abstract class ListManager(config: TriplestoreConfig) extends Closeable {
     ts.update(s"$tPrefixes\n " +
       s"delete { ?s ?p <$defaultPrefix/$name> . } \n" +
       s"where { ?s ?p <$defaultPrefix/$name> . } ")
+  }
+
+  def updateSinglePredicate(name: String, key: String, value: String): Unit = {
+       ts.update(s"$tPrefixes\n " +
+        s"delete { <$defaultPrefix/$name> $key ?o. } \n" +
+        s"where { <$defaultPrefix/$name> $key ?o. } ")
+    ts.update(s"$tPrefixes\n " +
+        s"insert data { <$defaultPrefix/$name> $key $value }")
+  }
+
+  def setComment(name: String, comment: String): Unit = {
+    updateSinglePredicate(name, "t:comment", "\"" + comment + "\"")
+  }
+
+  def setPublicComment(name: String, comment: String): Unit = {
+    updateSinglePredicate(name, "t:publicComment", "\"" + comment + "\"")
   }
 }

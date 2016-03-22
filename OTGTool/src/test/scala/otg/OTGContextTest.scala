@@ -22,16 +22,15 @@ package otg
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.junit.JUnitRunner
 import otg.Species._
 import t.testing.TestConfig
+import t.TTestSuite
 
 @RunWith(classOf[JUnitRunner])
-class OTGContextTest extends OTGTestSuite {
+class OTGContextTest extends TTestSuite {
 
-  val config = TestConfig.config
-  val context = new OTGContext(config)
+  val context = new otg.testing.FakeContext
 
   test("probe map") {
     val m1 = context.probeMap
@@ -40,7 +39,7 @@ class OTGContextTest extends OTGTestSuite {
 
     assert(m1.tokens.size === m1.keys.size)
 
-    val probes1 = List(0, 1500, 2382, 30000)
+    val probes1 = List(100, 1, 300, 122)
 
     println(m1.keys)
 

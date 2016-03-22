@@ -79,6 +79,7 @@
 		<servlet-class>otgviewer.server.rpc.MatrixServiceImpl</servlet-class>
 	</servlet>
 
+
 	<servlet-mapping>
 		<servlet-name>sparqlServlet</servlet-name>
 		<url-pattern>/toxygates/sparql</url-pattern>
@@ -94,16 +95,36 @@
 		<url-pattern>/toxygates/matrix</url-pattern>
 	</servlet-mapping>
 
-	<!-- For AdminGUI -->
+	<servlet>
+		<servlet-name>userDataServlet</servlet-name>
+		<servlet-class>otgviewer.server.rpc.UserDataServiceImpl</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>userDataServlet</servlet-name>
+		<url-pattern>/toxygates/userData</url-pattern>
+	</servlet-mapping>
+		
+	<servlet>
+		<servlet-name>targetmineServlet</servlet-name>
+		<servlet-class>otgviewer.server.targetmine.TargetmineServiceImpl</servlet-class>
+	</servlet>
+    <servlet-mapping>
+		<servlet-name>targetmineServlet</servlet-name>
+    	<url-pattern>/toxygates/targetmine</url-pattern>
+  	</servlet-mapping>
+
 	<servlet>
 		<servlet-name>uploadServlet</servlet-name>
 		<!-- This is the default servlet, it puts files in session -->
 		<servlet-class>gwtupload.server.UploadServlet</servlet-class>
 	</servlet>
+	
 	<servlet-mapping>
 		<servlet-name>uploadServlet</servlet-name>
 		<url-pattern>*.gupld</url-pattern>
 	</servlet-mapping>
+	
+	<!-- For AdminGUI -->
 
 	<servlet>
 		<servlet-name>maintenanceServlet</servlet-name>

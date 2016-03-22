@@ -30,30 +30,32 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 import otgviewer.client.StandardColumns;
-import t.viewer.client.Utils;
 import otgviewer.client.charts.AdjustableGrid;
 import otgviewer.client.charts.Charts;
 import otgviewer.client.charts.Charts.AChartAcceptor;
 import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.ImageClickCell;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import t.viewer.client.dialog.DialogPosition;
-import otgviewer.client.dialog.FilterEditor;
-import otgviewer.shared.Group;
-import t.common.shared.GroupUtils;
-import otgviewer.shared.ManagedMatrixInfo;
-import otgviewer.shared.OTGSample;
-import otgviewer.shared.Synthetic;
+import t.common.client.ImageClickCell;
 import t.common.shared.AType;
 import t.common.shared.DataSchema;
+import t.common.shared.GroupUtils;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
 import t.common.shared.sample.DataColumn;
 import t.common.shared.sample.ExpressionRow;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.Sample;
+import t.viewer.client.CodeDownload;
+import t.viewer.client.Utils;
+import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.dialog.FilterEditor;
 import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.shared.ColumnFilter;
+import t.viewer.shared.ManagedMatrixInfo;
+import t.viewer.shared.Synthetic;
 import t.viewer.shared.table.SortKey;
 
 import com.google.gwt.cell.client.Cell;
@@ -148,16 +150,19 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   private boolean loadedData = false;
   private ManagedMatrixInfo matrixInfo = null;
 
-  private OTGSample[] chartBarcodes = null;
+  private Sample[] chartBarcodes = null;
 
   private DialogBox filterDialog = null;
 
   private final Logger logger = SharedUtils.getLogger("expressionTable");
 
   protected ValueType chosenValueType;
+  
+  private CheckBox pcb;
 
   public ExpressionTable(Screen _screen, boolean pValueOption) {
     super(_screen);
+    this.pValueOption = pValueOption;
     this.matrixService = _screen.matrixService();
     this.resources = _screen.resources();
     screen = _screen;
@@ -181,6 +186,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
   public Widget tools() {
     return this.tools;
+  }
+  
+  public ManagedMatrixInfo currentMatrixInfo() {
+    return matrixInfo;
   }
 
   /**
@@ -249,19 +258,26 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     horizontalPanel.add(pager);
 
     if (pValueOption) {
-      final CheckBox pcb = new CheckBox("p-value columns");
+      pcb = new CheckBox("p-value columns");
       horizontalPanel.add(pcb);
       pcb.setValue(true);
       pcb.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          displayPColumns = pcb.getValue();
+          setDisplayPColumns(pcb.getValue());
           setupColumns();
         }
       });
     }
 
     pager.setDisplay(grid);
+  }
+
+  public void setDisplayPColumns(boolean displayPColumns) {
+    if (pValueOption) {
+      this.displayPColumns = displayPColumns;
+      pcb.setValue(displayPColumns);
+    }    
   }
 
   protected void initTableList() {
@@ -372,7 +388,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       if (displayPColumns || !matrixInfo.isPValueColumn(i)) {
         Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);
         ColumnInfo ci =
-            new ColumnInfo(matrixInfo.columnName(i), matrixInfo.columnHint(i), true, false, true);
+            new ColumnInfo(matrixInfo.columnName(i), 
+                matrixInfo.columnHint(i), true, false, true,
+                matrixInfo.columnFilter(i).active());
         ci.setCellStyleNames("dataColumn");
         addColumn(valueCol, "data", ci);
         Group g = matrixInfo.columnGroup(i);
@@ -415,7 +433,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     int dcs = sectionCount("data") + sectionCount("synthetic");
     Column<ExpressionRow, String> synCol = new ExpressionColumn(tc, dcs);
     synthColumns.add(synCol);
-    ColumnInfo info = new ColumnInfo(title, tooltip, true, false, true);
+    ColumnInfo info = new ColumnInfo(title, tooltip, true, false, true, false);
     info.setCellStyleNames("extraColumn");
     info.setDefaultSortAsc(s.isDefaultSortAscending());
     addColumn(synCol, "synthetic", info);
@@ -434,7 +452,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   protected Header<SafeHtml> getColumnHeader(ColumnInfo info) {
     Header<SafeHtml> superHeader = super.getColumnHeader(info);
     if (info.filterable()) {
-      return new FilteringHeader(superHeader.getValue());
+      return new FilteringHeader(superHeader.getValue(), info.filterActive());
     } else {
       return superHeader;
     }
@@ -467,9 +485,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     // Identify a click on the filter image.
     // TODO use a more robust identification method (!!)
     boolean isFilterClick =
-        ((target.startsWith("<img") || target.startsWith("<IMG")) && (target.indexOf("width:12") != -1
-            || // most
-            // browsers
+        ((target.startsWith("<img") || target.startsWith("<IMG")) && 
+            (target.indexOf("width:12") != -1 || // most browsers
             target.indexOf("WIDTH: 12") != -1 || // IE9
         target.indexOf("width: 12") != -1)); // IE8
     if (isFilterClick) {
@@ -481,23 +498,24 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     // If we return true, the click will be passed on to the other widgets
     return !isFilterClick;
   }
-
+  
   protected void editColumnFilter(int column) {
+    ColumnFilter filt = matrixInfo.columnFilter(column);    
     FilterEditor fe =
-        new FilterEditor(matrixInfo.columnName(column), column,
-            matrixInfo.isUpperFiltering(column), matrixInfo.columnFilter(column)) {
+        new FilterEditor(matrixInfo.columnName(column), column, filt) {
 
           @Override
-          protected void onChange(Double newVal) {
+          protected void onChange(ColumnFilter newVal) {
             applyColumnFilter(editColumn, newVal);
           }
         };
     filterDialog = Utils.displayInPopup("Edit filter", fe, DialogPosition.Center);
   }
 
-  protected void applyColumnFilter(final int column, final Double filter) {
+  protected void applyColumnFilter(final int column, 
+      final @Nullable ColumnFilter filter) {
     setEnabled(false);
-    matrixService.setColumnThreshold(column, filter, new AsyncCallback<ManagedMatrixInfo>() {
+    matrixService.setColumnFilter(column, filter, new AsyncCallback<ManagedMatrixInfo>() {
       @Override
       public void onFailure(Throwable caught) {
         Window.alert("An error occurred when the column filter was changed.");
@@ -507,11 +525,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
       @Override
       public void onSuccess(ManagedMatrixInfo result) {
-        if (result.numRows() == 0 && filter != null) {
+        if (result.numRows() == 0 && filter.active()) {
           Window.alert("No rows match the selected filter. The filter will be reset.");
-          applyColumnFilter(column, null);
+          applyColumnFilter(column, filter.asInactive());
         } else {
           setMatrix(result);
+          setupColumns();
           filterDialog.setVisible(false);
         }
       }
@@ -549,7 +568,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
     });
 
-    r.add(new HTMLHideableColumn<ExpressionRow>(shc, "Gene Sym",
+    r.add(new HTMLHideableColumn<ExpressionRow>(shc, "Gene Symbol",
         initVisibility(StandardColumns.GeneSym), initWidth(StandardColumns.GeneSym)) {
       protected String getHtml(ExpressionRow er) {
         return mkAssociationList(er.getGeneSyms());
@@ -557,7 +576,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
     });
 
-    r.add(new HTMLHideableColumn<ExpressionRow>(shc, "Probe title",
+    r.add(new HTMLHideableColumn<ExpressionRow>(shc, "Probe Title",
         initVisibility(StandardColumns.ProbeTitle), initWidth(StandardColumns.ProbeTitle)) {
       protected String getHtml(ExpressionRow er) {
         return mkAssociationList(er.getAtomicProbeTitles());
@@ -632,13 +651,16 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
    *
    */
   class KCAsyncProvider extends AsyncDataProvider<ExpressionRow> {
-    private Range range;
-    final String errMsg =
-        "Unable to obtain data. If you have not used Toxygates in a while, try reloading the page.";
+    private Range range;    
     AsyncCallback<List<ExpressionRow>> rowCallback = new AsyncCallback<List<ExpressionRow>>() {
-      public void onFailure(Throwable caught) {
+      
+      private String errMsg() {
+        String appName = screen.appInfo().applicationName();
+        return "Unable to obtain data. If you have not used " + appName + " in a while, try reloading the page.";
+      }
+      public void onFailure(Throwable caught) {        
         loadedData = false;
-        Window.alert(errMsg);
+        Window.alert(errMsg());
       }
 
       public void onSuccess(List<ExpressionRow> result) {
@@ -660,7 +682,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
           highlightedRow = -1;
           getAssociations();
         } else {
-          Window.alert(errMsg);
+          Window.alert(errMsg());
         }
       }
     };
@@ -773,7 +795,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     logger.info("begin loading data for " + chosenColumns.size() + " columns and "
         + chosenProbes.length + " probes");
     // load data
-    matrixService.loadMatrix(chosenColumns, chosenProbes, chosenValueType, synthetics,
+    matrixService.loadMatrix(chosenColumns, chosenProbes, chosenValueType,
         new AsyncCallback<ManagedMatrixInfo>() {
           public void onFailure(Throwable caught) {
             Window.alert("Unable to load dataset");
@@ -789,17 +811,35 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
               logger.info("Data successfully loaded");
             } else {
-              if (chosenProbes != null && chosenProbes.length > 0) {
-                Window
-                    .alert("No data was available. You may wish to choose different probes or samples.");
-              } else {
-                Window.alert("No data was available. You may wish to try reloading the page.");
-              }
+              Window
+                  .alert("No data was available for this gene set.\nThe view will switch to default selection.");
+              onGettingExpressionFailed();
             }
           }
         });
   }
+  
+  protected void onGettingExpressionFailed() {}
 
+  private void asyncDisplayCharts() {
+    GWT.runAsync(new CodeDownload(logger) {      
+      public void onSuccess() {
+        final Charts cgf = new Charts(screen, chosenColumns);
+        ExpressionRow dispRow = grid.getVisibleItem(highlightedRow);
+        final String[] probes = dispRow.getAtomicProbes();
+        cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, probes, new AChartAcceptor() {
+          public void acceptCharts(final AdjustableGrid<?, ?> cg) {
+            Utils.displayInPopup("Charts", cg, true, DialogPosition.Side);
+          }
+
+          public void acceptBarcodes(Sample[] bcs) {
+            chartBarcodes = bcs;
+          }
+        });
+      }      
+    });
+  }
+  
   /**
    * This cell displays an image that can be clicked to display charts.
    */
@@ -812,49 +852,13 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     public void onClick(final String value) {
       highlightedRow = SharedUtils.indexOf(displayedProbes, value);
       grid.redraw();
-      ExpressionRow dispRow = grid.getVisibleItem(highlightedRow);
-      final String[] probes = dispRow.getAtomicProbes();
-
-      final Charts cgf = new Charts(screen, chosenColumns);
       Utils.ensureVisualisationAndThen(new Runnable() {
         public void run() {
-          cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, probes, new AChartAcceptor() {
-            public void acceptCharts(final AdjustableGrid<?, ?> cg) {
-              Utils.displayInPopup("Charts", cg, true, DialogPosition.Side);
-            }
-
-            public void acceptBarcodes(OTGSample[] bcs) {
-              chartBarcodes = bcs;
-            }
-          });
+          asyncDisplayCharts();
         }
       });
     }
   }
 
-  class FilterCell extends ImageClickCell.SafeHtmlImageClickCell {
-    public FilterCell() {
-      super(resources.filter(), true);
-    }
 
-    public void onClick(SafeHtml value) {
-      /*
-       * The filtering mechanism is not handled here, but in ExpressionTable.interceptGridClick.
-       */
-    }
-  }
-
-  class FilteringHeader extends Header<SafeHtml> {
-    private SafeHtml value;
-
-    public FilteringHeader(SafeHtml value) {
-      super(new FilterCell());
-      this.value = value;
-    }
-
-    @Override
-    public SafeHtml getValue() {
-      return value;
-    }
-  }
 }

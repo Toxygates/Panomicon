@@ -10,7 +10,7 @@ library(rjson)
 #' #hc <- hclust(dist(USArrests), "ave")
 #' #getParent(-15, hc)   # 1
 getParent <- function(i, cluster) {
-  return(unname(which(cluster[['merge']] == i, arr.ind=TRUE)[, 1]))
+  return (unname(which(cluster[['merge']] == i, arr.ind=TRUE)[, 1]))
 }
 
 #' Get the number of leafs in node i
@@ -24,10 +24,10 @@ getParent <- function(i, cluster) {
 #' #getCount(40, hc)     # 9
 getCount <- function(i, cluster) {
   count <- 0
-  if ( i < 0 ) {
+  if (i < 0) {
     count <- 1
   } else {
-    for( j in 1:2 ) {
+    for (j in 1:2) {
       if (cluster[['merge']][i, j] < 0) {
         count = count + 1
       } else {
@@ -35,7 +35,7 @@ getCount <- function(i, cluster) {
       }
     }
   }
-  return(count)
+  return (count)
 }
 
 #' Get a dendrogram using the InCHlib format
@@ -49,41 +49,73 @@ getCount <- function(i, cluster) {
 #' #hc.col <- hclust(dist(t(USArrests)), "ave")
 #' #getDendro(hc, rownames(USArrests), USArrests)
 #' #getDendro(hc.col, colnames(USArrests))
-getDendro <- function(cluster, leafNames, values=NA) {
+getDendro <- function(cluster, leafNames, values=NA, appendixes=list()) {
+
   getName <- function(id, leafNames) {
     if (length(id) == 1 && id < 0) {
-      return(leafNames[abs(id)])
+      return (leafNames[abs(id)])
     } else {
-      return(paste("nodes@", id, sep=""))
+      return (paste("nodes@", id, sep=""))
     }
   }
+  
+  getAppendix <- function(leaf) {
+    str <- appendixes[[leaf]]
+    if (is.null(str)) {
+      return("")
+    } else {
+      return(str)
+    }
+  }
+
   nodes <- list()
   isRow <- FALSE
-  if(is.data.frame(values)) {
+  if (is.data.frame(values)) {
     isRow <- TRUE
   }
+
+  EPSILON <- 1e-10
   for(i in 1:nrow(cluster[['merge']])) {
     nodeName <- getName(i, leafNames)
-    nodes[[nodeName]] <- list("left_child"=getName(cluster[['merge']][i, 1], leafNames),
-                              "right_child"=getName(cluster[['merge']][i, 2], leafNames),
-                              "count"=getCount(i, cluster),
-                              "distance"=cluster[['height']][i])
-    if (length(parent <- getParent(i, cluster))) 
+
+    dist <- cluster[['height']][i]
+    # validate value
+    if (dist < -EPSILON) {
+      # stop calculation and raise exception
+      stop(paste("Distance can not be negative. nodeName =" , nodeName, ", distance =", dist, "\n"))
+    } else if (-EPSILON <= dist && dist < 0) {
+      dist <- 0
+    }
+
+    nodes[[nodeName]] <- list(
+      "left_child"=getName(cluster[['merge']][i, 1], leafNames),
+      "right_child"=getName(cluster[['merge']][i, 2], leafNames),
+      "count"=getCount(i, cluster),
+      "distance"=dist
+    )
+    
+    if (length(parent <- getParent(i, cluster))) {
       nodes[[nodeName]][["parent"]] <- getName(parent)
-    for(j in 1:2) {
-     id <- cluster[['merge']][i, j]
-     if ( id < 0 ) {
-      leaf <- getName(id, leafNames)
-      nodes[[leaf]] <- list("count"=1,
-                            "parent"=nodeName,
-                            "distance"=0,
-                            "objects"=list(leaf))
-      if( isRow )
-        nodes[[leaf]][['features']] <- unname(as.numeric(values[leaf, ]))
+    }
+    
+    for (j in 1:2) {
+      id <- cluster[['merge']][i, j]
+      if (id < 0) {
+        leaf <- getName(id, leafNames)
+        nodes[[leaf]] <- list(
+          "count"=1,
+          "parent"=nodeName,
+          "distance"=0,
+          "objects"=list(leaf),
+          "appendix"=getAppendix(leaf)
+        )
+        if (isRow) {
+          nodes[[leaf]][['features']] <- unname(as.numeric(values[leaf, ]))
+        }
       }
     }
   }
-  return(nodes)
+  return (nodes)
 }
 
 #' Get a metadata list using the InCHlib format
@@ -91,7 +123,7 @@ getDendro <- function(cluster, leafNames, values=NA) {
 #' @param meta    a data.frame containing the metadata
 #'
 getMetadata <- function(meta) {
-    return(lapply(apply(meta, 1, function(x) list(unname(x))), '[[', 1))
+  return (lapply(apply(meta, 1, function(x) list(unname(x))), '[[', 1))
 }
 
 #' Create an InCHlib heatmap
@@ -107,17 +139,29 @@ getMetadata <- function(meta) {
 #' inch <- InCHlib(hc, hc.col, USArrests)
 #' library(rjson)
 #' writeLines(toJSON(inch), "heatmap.json")
-InCHlib <- function(hclustRow, hclustCol, valDf, metaDf=NA) {
-	# reorder cols
-	valDf <- valDf[, hclustCol[['order']]]
-  inch <- list('data'=list('nodes'=getDendro(hclustRow, rownames(valDf), valDf), 'feature_names'=colnames(valDf)), 'column_dendrogram'=list('nodes'=getDendro(hclustCol, colnames(valDf))))
-	# reorder columns dendrogram
+InCHlib <- function(hclustRow, hclustCol, valDf, metaDf=NA, appendixes=list()) {
+  # reorder cols
+  valDf <- valDf[, hclustCol[['order']]]
+  inch <- list(
+    'data'=list(
+      'nodes'=getDendro(hclustRow, rownames(valDf), valDf, appendixes),
+      'feature_names'=colnames(valDf)
+    ),
+    'column_dendrogram'=list(
+      'nodes'=getDendro(hclustCol, colnames(valDf))
+    )
+  )
+
+  # reorder columns dendrogram
   inch[['column_dendrogram']][['nodes']] <- inch[['column_dendrogram']][['nodes']][c(colnames(valDf), names(subset(inch[['column_dendrogram']][['nodes']], grepl("nodes@", names(inch[['column_dendrogram']][['nodes']])))))]
   if (is.data.frame(metaDf)) {
-    inch[['metadata']]=list("nodes"=getMetadata(metaDf), 'feature_names'=colnames(metaDf))
+    inch[['metadata']]=list(
+      "nodes"=getMetadata(metaDf),
+      'feature_names'=colnames(metaDf)
+    )
   }
-	class(inch) <- "InCHlib"
-  return(inch)
+  class(inch) <- "InCHlib"
+  return (inch)
 }
 
 #' Create matrix with given vector
@@ -131,7 +175,7 @@ toMatrix <- function(data, rowNames, colNames, byrow=F) {
   mat <- matrix(data, length(rowNames), length(colNames), byrow=byrow)
   rownames(mat) <- rowNames
   colnames(mat) <- colNames
-  return(mat)
+  return (mat)
 }
 
 #' Execute clustering
@@ -139,13 +183,22 @@ toMatrix <- function(data, rowNames, colNames, byrow=F) {
 #' @param data        a vector object containing the data values
 #' @param rownames    a vector object containing the row names
 #' @param colNames    a vector object containing the column names
+#' @param rowMethod   a string object that gives which method to be used for row clustering.
+#'                    This should be one of "ward.D", "ward.D2", "single", "complete", 
+#'                                          "average", "mcquitty", "median" or "centroid".
+#' @param rowDistance a string object that gives which distance to be used for row clustering.
+#'                    This should be one of "euclidean", "maximum", "manhattan", "canberra", 
+#'                                          "binary", "pearson", "abspearson", "correlation", 
+#'                                          "abscorrelation", "spearman" or "kendall".
+#' @param colMethod   a string object that gives which method to be used for column clustering.
+#' @param colDistance a string object that gives which distance to be used for column clustering.
 #'
-getClusterAsJSON <- function(data, rowNames, colNames) {
-  mat <- toMatrix(data, rowNames, colNames)
-  d <- Dist(mat, method="correlation")
-  d.col <- Dist(t(mat), method="correlation")
-  hc <- hclust(d, method="ward.D")
-  hc.col <- hclust(d.col, method="ward.D")
-  inch <- InCHlib(hc, hc.col, data.frame(mat))
-  return(toJSON(inch))
+getClusterAsJSON <- function(data, rowNames, colNames, rowMethod, rowDistance, colMethod, colDistance, appendixes=list()) {
+  mat <- toMatrix(data, rowNames, colNames, TRUE)
+  d <- Dist(mat, method=rowDistance)
+  d.col <- Dist(t(mat), method=colDistance)
+  hc <- hclust(d, method=rowMethod)
+  hc.col <- hclust(d.col, method=colMethod)
+  inch <- InCHlib(hc, hc.col, data.frame(mat), appendixes=appendixes)
+  return (toJSON(inch))
 }

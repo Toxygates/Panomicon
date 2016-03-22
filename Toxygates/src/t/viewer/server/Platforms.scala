@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -24,23 +24,28 @@ import t.sparql.Probes
 
 object Platforms {
   def apply(probes: Probes): Platforms = {
+    //TODO load platforms incrementally - this is too big and slow
+    //Alternatively, speed up this query
     val pps = Probes.platformsAndProbes(probes)
-    new Platforms(pps.map(x => x._1 -> x._2.toSet)) 
+    new Platforms(pps.map(x => x._1 -> x._2.toSet))
   }
 }
 
-//TODO update mechanism
+/**
+ * A probe and platform registry.
+ */
 class Platforms(val data: Map[String, Set[String]]) {
+//TODO: update mechanism
 
-  println("Platforms: ")
-  for (p <- data) {
-    println(s"\t${p._1}: ${p._2.size}")
-  }
-  
+//  println("Platforms: ")
+//  for (p <- data) {
+//    println(s"\t${p._1}: ${p._2.size}")
+//  }
+
   /**
    * Filter probes for a number of platforms.
    */
-  def filterProbes(probes: Seq[String], platforms: Iterable[String]): Seq[String] = 
+  def filterProbes(probes: Seq[String], platforms: Iterable[String]): Seq[String] =
     platforms.toSeq.flatMap(pf => filterProbes(probes, pf))
 
   /**
@@ -48,12 +53,12 @@ class Platforms(val data: Map[String, Set[String]]) {
    */
   def filterProbesAllPlatforms(probes: Seq[String]): Seq[String] = {
     val pfs = data.keys
-    filterProbes(probes, pfs)    
+    filterProbes(probes, pfs)
   }
-  
-  def platformForProbe(p: String): Option[String] = 
+
+  def platformForProbe(p: String): Option[String] =
     data.find(_._2.contains(p)).map(_._1)
-  
+
   /**
    * Filter probes for one platform.
    */

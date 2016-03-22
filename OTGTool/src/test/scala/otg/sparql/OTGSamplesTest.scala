@@ -26,10 +26,10 @@ import otg.Species.Rat
 import t.testing.TestConfig
 import org.scalatest.junit.JUnitRunner
 import t.sparql._
-import otg.OTGTestSuite
+import t.TTestSuite
 
 @RunWith(classOf[JUnitRunner])
-class OTGSamplesTest extends OTGTestSuite {
+class OTGSamplesTest extends TTestSuite {
 
   val config = TestConfig.config
   implicit val context = new OTGContext(config)
