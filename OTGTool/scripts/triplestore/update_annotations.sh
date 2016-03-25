@@ -10,8 +10,10 @@ curl -O http://purl.obolibrary.org/obo/go.owl
 $TGHOME/replace.sh $AHOME/go.owl $REPO http://level-five.jp/t/annotation/go \
 	"GO terms" "Updated $(date) from go.owl"
 
-#TODO fetch kegg-pathways-genes.nt
-$TGHOME/replace.sh $AHOME/kegg-pathways-genes.nt $REPO http://level-five.jp/t/annotation/kegg \
+$TGHOME/kegg_rdf/build_kegg.sh
+cp $TGHOME/kegg_rdf/rdf/kegg-pathways-genes.f.nt $AHOME
+
+$TGHOME/replace.sh $AHOME/kegg-pathways-genes.f.nt $REPO http://level-five.jp/t/annotation/kegg \
 	"KEGG pathways" "Updated $(date) from ftp.bioinformatics.jp"
 	
 	
