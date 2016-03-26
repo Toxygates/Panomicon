@@ -54,7 +54,7 @@ object Probes extends RDFClass {
         val probe = s"<$defaultPrefix/${p.id}>"
         fout.write(s"$probe a $itemClass ; rdfs:label " + "\"" + p.id + "\" \n")
         if (p.annotations.size > 0) {
-          fout.write("; " + annotationRDF(p))
+          fout.write("; " + p.annotationRDF)
         }
         fout.write(". \n")
       }
@@ -62,13 +62,6 @@ object Probes extends RDFClass {
       fout.close()
     }
     f
-  }
-
-  def annotationRDF(record: ProbeRecord): String = {
-    record.annotations.flatMap(a => {
-      val k = a._1
-      a._2.map(v => s"t:$k ${ProbeRecord.asRdfTerms(k, v)}").mkString("; ")
-    }).mkString(";\n ")
   }
 
   var _platformsAndProbes: Map[String, Iterable[String]] = null

@@ -49,7 +49,15 @@ object ProbeRecord {
   }
 }
 
-case class ProbeRecord(id: String, annotations: Map[String, Iterable[String]])
+case class ProbeRecord(id: String, annotations: Map[String, Iterable[String]]) {
+  def annotationRDF: String =
+    (for (
+      (k, vs) <- annotations;
+      v <- vs;
+      t <- ProbeRecord.asRdfTerms(k, v);
+      item = s"t:$k $t"
+    ) yield item).mkString("; ")
+}
 
 class PlatformDefFile(file: String) {
 
@@ -92,7 +100,7 @@ object PlatformDefFile {
         }
       case None =>
         for (r <- new PlatformDefFile(args(0)).records) {
-          println(s"${r.id} ${r.annotations("refseq")}")
+          println(s"tprobe:${r.id} ${r.annotationRDF}.")
         }
     }
   }
