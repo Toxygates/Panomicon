@@ -28,23 +28,23 @@ import t.platform.affy.{GOMF, GOBP, GOCC, Entrez}
 
 object ProbeRecord {
   /**
-   * This is where we generate nonstandard relations for each probe.
-   * By default, each attribute will simply appear as a string.
+   * Generate RDF predicates for each probe.
    * Note that we must use double quotes for the value:
    * Affymetrix definitions contain strings with single quotes.
    */
 
-  def asRdfTerms(key: String, value: String): Seq[String] = {
+  def asRdfTerms(key: String, value: String): Seq[(String, String)] = {
     key match {
       //example value: 0050839
 
       case "go" | GOMF.key | GOBP.key | GOCC.key =>
-        Seq(s"<http://purl.obolibrary.org/obo/GO_$value>")
+        Seq((s"t:$key", s"<http://purl.obolibrary.org/obo/GO_$value>"))
       case Entrez.key =>
-        Seq("\"" + value + "\"",
-            s"<http://bio2rdf.org/ncbigene:$value>")
+        Seq((s"t:$key", "\"" + value + "\""),
+            ("<http://bio2rdf.org/kegg_vocabulary:x-ncbigene>",
+                s"<http://bio2rdf.org/ncbigene:$value>"))
       case _ =>
-        Seq("\"" + value + "\"")
+        Seq((s"t:$key", "\"" + value + "\""))
     }
   }
 }
@@ -54,8 +54,8 @@ case class ProbeRecord(id: String, annotations: Map[String, Iterable[String]]) {
     (for (
       (k, vs) <- annotations;
       v <- vs;
-      t <- ProbeRecord.asRdfTerms(k, v);
-      item = s"t:$k $t"
+      (predicate, objct) <- ProbeRecord.asRdfTerms(k, v);
+      item = s"$predicate $objct"
     ) yield item).mkString("; ")
 }
 

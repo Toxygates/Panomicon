@@ -107,22 +107,22 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
    * probes.
    * TODO: constrain by platform
    */
-  def forGeneSyms(symbols: Iterable[Gene], precise: Boolean): MMap[Gene, Probe] = {
+  def forGeneSyms(symbols: Iterable[String], precise: Boolean): MMap[String, Probe] = {
       val query = prefixes +
         "SELECT DISTINCT ?p ?gene WHERE { GRAPH ?g { " +
         "?p a t:probe . " +
         "?p t:symbol ?gene . " +
         caseInsensitiveMultiFilter("?gene",
           if (precise) {
-            symbols.map("\"^" + _.symbol + "$\"")
+            symbols.map("\"^" + _ + "$\"")
           } else {
-            symbols.map("\"" + _.symbol + "\"")
+            symbols.map("\"" + _ + "\"")
           }) +
           " } ?g rdfs:label ?plat }"
 
         val r = ts.mapQuery(query).map(
           x => (symbols.find(s =>
-            s.symbol.toLowerCase == x("gene").toLowerCase)
+            s.toLowerCase == x("gene").toLowerCase)
             .getOrElse(null) -> Probe.unpack(x("p"))))
       makeMultiMap(r.filter(_._1 != null))
   }
@@ -139,14 +139,32 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
    goTerms("?probe t:gobp ?got . ", probes)
   }
 
+  def simpleRelationQuery(probes: Iterable[Probe], relation: String): MMap[Probe, DefaultBio] = {
+    val query = prefixes +
+    s"""
+    SELECT DISTINCT ?probe ?result WHERE {
+      GRAPH ?g { ?probe $relation ?result. }
+     """ +
+    multiFilter("?probe", probes.map(p => bracket(p.pack))) +
+    " } "
+    simpleMapQuery(probes, query)
+  }
+
+  def refseqTrnLookup(probes: Iterable[Probe]): MMap[Probe, DefaultBio] =
+    simpleRelationQuery(probes, "t:" + t.platform.affy.RefseqTranscript.key)
+
+  def refseqProtLookup(probes: Iterable[Probe]): MMap[Probe, DefaultBio] =
+    simpleRelationQuery(probes, "t:" + t.platform.affy.RefseqProtein.key)
+
+  def ensemblLookup(probes: Iterable[Probe]): MMap[Probe, DefaultBio] =
+    simpleRelationQuery(probes, "t:" + t.platform.affy.Ensembl.key)
+
+  def ecLookup(probes: Iterable[Probe]): MMap[Probe, DefaultBio] =
+    simpleRelationQuery(probes, "t:" + t.platform.affy.EC.key)
+
   override protected def quickProbeResolution(rs: GradualProbeResolver, precise: Boolean): Unit = {
-    //NB Gene(s, symbol=s) is a hack because the first argument is expected to be an entrez id.
-    //However we have to put something non-null there to allow the gene objects to have proper
-    //hash codes and equality -- think about this.
     if (rs.unresolved.size > 0) {
-      val geneSyms = forGeneSyms(
-          rs.unresolved.map(s => Gene(s, symbol = s)), precise
-      ).allValues
+      val geneSyms = forGeneSyms(rs.unresolved, precise).allValues
       rs.resolve(geneSyms.map(_.identifier))
     }
   }
