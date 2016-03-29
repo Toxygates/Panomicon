@@ -65,6 +65,11 @@ public enum AType {
 	    return "https://www.ncbi.nlm.nih.gov/protein/" + value;
 	  }
 	},
+	Unigene("UniGene ID") {
+	  public String formLink(String value) {
+	    return "https://www.ncbi.nlm.nih.gov/UniGene/clust.cgi?UGID=" + value;
+	  }
+	},
 	Ensembl("Ensembl gene") {
 	  public String formLink(String value) {
 	    //TODO generalise to multi-species

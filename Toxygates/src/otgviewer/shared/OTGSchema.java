@@ -136,8 +136,7 @@ public class OTGSchema extends DataSchema {
 //      AType.Enzymes,
       AType.GOBP, AType.GOCC, AType.GOMF, AType.Homologene, AType.KEGG, AType.OrthProts,
       AType.Uniprot,
-      AType.RefseqTrn, AType.RefseqProt, AType.EC,      
-      AType.Ensembl};
+      AType.RefseqTrn, AType.RefseqProt, AType.EC, AType.Ensembl, AType.Unigene};
 
   public AType[] associations() {
     return associations;

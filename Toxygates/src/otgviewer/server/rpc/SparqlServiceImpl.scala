@@ -167,10 +167,10 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
         case _: AType.OrthProts.type  => oproteins
         case _: AType.Chembl.type     => getTargeting(sc, chembl)
         case _: AType.Drugbank.type   => getTargeting(sc, drugBank)
-        case _: AType.RefseqTrn.type  => errorVals //TODO
-        case _: AType.RefseqProt.type => errorVals //TODO
-        case _: AType.Ensembl.type    => errorVals //TODO
-        case _: AType.EC.type         => errorVals //TODO
+        case _: AType.RefseqTrn.type  => probeStore.refseqTrnLookup(probes)
+        case _: AType.RefseqProt.type => probeStore.refseqProtLookup(probes)
+        case _: AType.Ensembl.type    => probeStore.ensemblLookup(probes)
+        case _: AType.EC.type         => probeStore.ecLookup(probes)
         case _                        => super.associationLookup(at, sc, probes)
       }
     }

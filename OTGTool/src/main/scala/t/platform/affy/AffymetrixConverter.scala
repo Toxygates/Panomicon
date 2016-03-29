@@ -29,8 +29,10 @@ import scala.Vector
 object AffymetrixConverter {
 
   val columns = List(GOBP, GOCC, GOMF,
-      Swissprot, RefseqTranscript, ProbeID, GeneChip, Title,
-      Entrez, Species, Unigene, Symbol)
+      Swissprot, RefseqTranscript, RefseqProtein, ProbeID, GeneChip, Title,
+      Entrez, Species, Unigene, Symbol,
+      EC, Unigene, Ensembl
+      )
 
   val columnLookup = Map() ++ columns.map(c => c.title -> c)
 
