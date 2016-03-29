@@ -71,7 +71,7 @@ class B2RKegg(val con: RepositoryConnection) extends Triplestore with Store[Path
 
   override def withAttributes(pw: Pathway): Pathway = {
     val (prefixes, q) = attributes(pw)
-    val genes = simpleQuery(s"$prefixes\n + SELECT DISTINCT ?g { $q }").map(g => Gene.unpackKegg(g)).toSet
+    val genes = simpleQuery(s"$prefixes\n + SELECT DISTINCT ?gene { $q }").map(g => Gene.unpackKegg(g)).toSet
     pw.copy(genes = genes)
   }
 
@@ -86,7 +86,7 @@ class B2RKegg(val con: RepositoryConnection) extends Triplestore with Store[Path
     val q = s""" GRAPH ?pwGraph {
       ?pw $constraint .
       ?g2 kv:pathway ?pw;
-      kv:x-ncbigene ?g. } $endFilter """
+      kv:x-ncbigene ?gene. } $endFilter """
 
     (prefixes, q)
   }

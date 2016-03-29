@@ -384,10 +384,14 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val pw = Pathway(null, pathway)
     val prs = probeStore.forPathway(b2rKegg, pw)
     val pmap = context.matrix.probeMap //TODO
-    val result = prs.map(_.identifier).filter(pmap.isToken).toArray
 
+    val result = prs.map(_.identifier).filter(pmap.isToken)
+    filterByGroup(result, samples).toArray
+  }
+
+  private def filterByGroup(result: Iterable[String], samples: Iterable[Sample]) = {
     Option(samples) match {
-      case Some(_) => filterProbesByGroup(result, samples)
+      case Some(_) => filterProbesByGroupInner(result, samples)
       case None => result
     }
   }
@@ -414,12 +418,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val pmap = context.matrix.probeMap
     val got = GOTerm("", goTerm)
 
-    val result = probeStore.forGoTerm(got).map(_.identifier).filter(pmap.isToken).toArray
-
-    Option(samples) match {
-      case Some(_) => filterProbesByGroup(result, samples)
-      case None => result
-    }
+    val result = probeStore.forGoTerm(got).map(_.identifier).filter(pmap.isToken)
+    filterByGroup(result, samples).toArray
   }
 
   import scala.collection.{ Map => CMap, Set => CSet }
@@ -487,12 +487,15 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       probeStore.probesForPartialSymbol(plat, partialName).map(_.identifier).toArray
   }
 
-  def filterProbesByGroup(probes: Array[String], samples: JList[Sample]): Array[String] = {
-    val platforms: Set[String] = samples.map(x => x.get("platform_id")).toSet
+  private def filterProbesByGroupInner(probes: Iterable[String], group: Iterable[Sample])  = {
+    val platforms: Set[String] = group.map(x => x.get("platform_id")).toSet
     val lookup = probeStore.platformsAndProbes
-    val acceptProbes = platforms.flatMap(p => lookup(p))
+    val acceptable = platforms.flatMap(p => lookup(p))
+    probes.filter(acceptable.contains)
+  }
 
-    probes.filter(x => acceptProbes.contains(x))
+  def filterProbesByGroup(probes: Array[String], samples: JList[Sample]): Array[String] = {
+    filterProbesByGroupInner(probes, samples).toArray
   }
 
   def keywordSuggestions(partialName: String, maxSize: Int): Array[Pair[String, AType]] = {

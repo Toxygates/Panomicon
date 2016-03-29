@@ -230,6 +230,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
   import t.sparql.secondary.B2RKegg
   //TODO best location for this?
+  //Think about how to combine query fragments from different domains like this
   def forPathway(kegg: B2RKegg, pw: t.sparql.secondary.Pathway): Iterable[Probe] = {
     val (p1, q1) = probeToGene
     val (p2, q2) = kegg.attributes(pw)
