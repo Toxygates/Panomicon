@@ -6,7 +6,7 @@ REPO=ttest
 mkdir -p $AHOME
 cd $AHOME
 
-curl -O http://purl.obolibrary.org/obo/go.owl
+curl -O http://geneontology.org/ontology/go.owl
 $TGHOME/replace.sh $AHOME/go.owl $REPO http://level-five.jp/t/annotation/go \
 	"GO terms" "Updated $(date) from go.owl"
 

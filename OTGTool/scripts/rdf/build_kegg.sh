@@ -42,5 +42,5 @@ cat kegg-pathway.f.nt kegg-genes.f.nt > kegg-pathways-genes.f.nt
 
 #This directory will have too many files for a single rm command
 find $OUTDIR -print0 | xargs -0 rm
-find $RDFDIR -print0 | xargs -0 rm
+
 
