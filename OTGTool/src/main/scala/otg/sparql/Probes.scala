@@ -162,6 +162,9 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
   def ecLookup(probes: Iterable[Probe]): MMap[Probe, DefaultBio] =
     simpleRelationQuery(probes, "t:" + t.platform.affy.EC.key)
 
+  def unigeneLookup(probes: Iterable[Probe]): MMap[Probe, DefaultBio] =
+    simpleRelationQuery(probes, "t:" + t.platform.affy.Unigene.key)
+
   override protected def quickProbeResolution(rs: GradualProbeResolver, precise: Boolean): Unit = {
     if (rs.unresolved.size > 0) {
       val geneSyms = forGeneSyms(rs.unresolved, precise).allValues

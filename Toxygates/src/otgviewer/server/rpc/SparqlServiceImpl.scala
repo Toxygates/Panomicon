@@ -158,8 +158,7 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
       })
     }
 
-    override def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe])
-      (implicit sf: SampleFilter): BBMap = {
+    override def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe])(implicit sf: SampleFilter): BBMap = {
       at match {
         case _: AType.GOMF.type       => probeStore.mfGoTerms(probes)
         case _: AType.GOBP.type       => probeStore.bpGoTerms(probes)
@@ -171,6 +170,7 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
         case _: AType.RefseqProt.type => probeStore.refseqProtLookup(probes)
         case _: AType.Ensembl.type    => probeStore.ensemblLookup(probes)
         case _: AType.EC.type         => probeStore.ecLookup(probes)
+        case _: AType.Unigene.type    => probeStore.unigeneLookup(probes)
         case _                        => super.associationLookup(at, sc, probes)
       }
     }

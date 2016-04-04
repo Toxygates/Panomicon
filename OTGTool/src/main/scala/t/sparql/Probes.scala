@@ -223,8 +223,8 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     (resolver.all.filter(map.isToken).toSeq).map(Probe(_))
   }
 
-  private[sparql] def probeToGene: (String, String) = {
-    val q = "GRAPH ?probeGraph { ?p a t:probe; t:entrez ?gene }"
+  private[this] def probeToGene: (String, String) = {
+    val q = "GRAPH ?probeGraph { ?p a t:probe; kv:x-ncbigene ?gene }"
     (tPrefixes, q)
   }
 
