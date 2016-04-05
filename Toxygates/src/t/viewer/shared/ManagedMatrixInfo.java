@@ -90,10 +90,11 @@ public class ManagedMatrixInfo implements Serializable {
   public void removeSynthetics() {
     numSynthetics = 0;
     int n = numDataColumns;
-    columnNames = columnNames.subList(0, n);
-    columnHints = columnHints.subList(0, n);
-    columnGroups = columnGroups.subList(0, n);
-    columnFilters = columnFilters.subList(0, n);
+    //The standard implementation of subList can't be serialised by GWT
+    columnNames = new ArrayList<String>(columnNames.subList(0, n));
+    columnHints = new ArrayList<String>(columnHints.subList(0, n));
+    columnGroups = new ArrayList<Group>(columnGroups.subList(0, n));
+    columnFilters = new ArrayList<ColumnFilter>(columnFilters.subList(0, n));
   }
 
   /**

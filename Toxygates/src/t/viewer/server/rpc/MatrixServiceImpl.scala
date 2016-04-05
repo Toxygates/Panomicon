@@ -308,12 +308,18 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   }
 
   @throws(classOf[NoDataLoadedException])
-  def addTwoGroupTest(test: Synthetic.TwoGroupSynthetic): Unit =
-    getSessionData.matrix.addSynthetic(test)
+  def addTwoGroupTest(test: Synthetic.TwoGroupSynthetic): ManagedMatrixInfo = {
+    val current = getSessionData.matrix
+    current.addSynthetic(test)
+    current.info
+  }
 
   @throws(classOf[NoDataLoadedException])
-  def removeTwoGroupTests(): Unit =
-    getSessionData.matrix.removeSynthetics
+  def removeTwoGroupTests(): ManagedMatrixInfo = {
+    val current = getSessionData.matrix
+    current.removeSynthetics()
+    current.info
+  }
 
   @throws(classOf[NoDataLoadedException])
   def prepareCSVDownload(individualSamples: Boolean): String = {

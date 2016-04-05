@@ -103,13 +103,13 @@ public interface MatrixService extends RemoteService {
    * @param g1
    * @param g2
    */
-  public void addTwoGroupTest(Synthetic.TwoGroupSynthetic test) throws ServerError;
+  public ManagedMatrixInfo addTwoGroupTest(Synthetic.TwoGroupSynthetic test) throws ServerError;
 
   /**
    * Remove all test columns. The result will be reflected in subsequent calls to datasetItems or
    * getFullData.
    */
-  public void removeTwoGroupTests() throws ServerError;
+  public ManagedMatrixInfo removeTwoGroupTests() throws ServerError;
 
   /**
    * Get one page. Requires that loadMatrix was first used to load items.
