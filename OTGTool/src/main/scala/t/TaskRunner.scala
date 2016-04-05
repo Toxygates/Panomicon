@@ -81,7 +81,7 @@ class FailingTask(name: String) extends Tasklet(name) {
 }
 
 /**
- * A way of running administration tasks in a way that lets
+ * A way of running tasks, on a single thread, in a way that lets
  * them be monitored or stopped.
  * Tasks are queued up and run sequentially.
  */
@@ -94,7 +94,6 @@ object TaskRunner {
   private var _logMessages: Vector[String] = Vector()
   @volatile private var _resultMessages: Vector[String] = Vector()
   @volatile private var _errorCause: Option[Throwable] = None
-  @volatile private var _waitingForTask: Boolean = false
 
   def queueSize(): Int = synchronized {
     tasks.size
@@ -109,7 +108,8 @@ object TaskRunner {
    * Whether a task is currently busy. Even if this is false, the queue
    * is not necessarily empty.
    */
-  def waitingForTask: Boolean = _waitingForTask
+  def waitingForTask: Boolean = { _currentTask != None }
+
   def shouldStop = _shouldStop
 
   /**
@@ -126,9 +126,6 @@ object TaskRunner {
 
   def +=(task: Tasklet) = synchronized {
     tasks :+= task
-    if (_currentTask == None) {
-      _currentTask = Some(task)
-    }
   }
 
   def ++=(tasks: Iterable[Tasklet]) = synchronized {
@@ -155,38 +152,33 @@ object TaskRunner {
     Future {
       println("TaskRunner starting")
       while (!shouldStop) {
-        var next: Tasklet = null
         synchronized {
           if (!tasks.isEmpty) {
             println(tasks.size + " tasks in queue")
-            next = tasks.head
+            _currentTask = tasks.headOption
             tasks = tasks.tail
           }
         }
-        if (next != null) {
-          log("Start task \"" + next.name + "\"")
+        if (_currentTask != None) {
+          val nextt = _currentTask.get
+          log("Start task \"" + nextt.name + "\"")
           try {
-            _waitingForTask = true
-            _currentTask = Some(next)
-            next.run() // could take a long time to complete
-            log("Finish task \"" + next.name + "\"")
+            nextt.run() // could take a long time to complete
+            log("Finish task \"" + nextt.name + "\"")
+            _currentTask = None
           } catch {
             case t: Throwable =>
-              log("Error while running task " + next.name + ": " + t.getMessage())
+              _currentTask = None
+              log("Error while running task " + nextt.name + ": " + t.getMessage())
               t.printStackTrace() //TODO pass exception to log
               log("Deleting remaining tasks")
               _errorCause = Some(t)
-              _waitingForTask = false
               shutdown()
           }
-        } else {
-          _currentTask = None
-          _waitingForTask = false
         }
         Thread.sleep(1000)
       }
-      _currentTask = None
-      _waitingForTask = false
+      //Received the stop signal
       println("TaskRunner stopping")
       for (r <- resultMessages) {
         println(r)
@@ -194,11 +186,22 @@ object TaskRunner {
     }
   }
 
+  /**
+   * Stop the runner and drop any remaining non-started tasks.
+   * Note that an outstanding task could still be running.
+   * Clients should check waitingForTask to verify the state.
+   */
   def shutdown(): Unit = synchronized {
     _shouldStop = true
     tasks = Vector()
-    //Note that an outstanding task could still be running.
-    //Clients should check waitingForTask to verify the state.
+  }
+
+  /**
+   * Shutdown, as well as forcibly drop the current task
+   */
+  def reset(): Unit = synchronized {
+    shutdown()
+    _currentTask = None
   }
 
   def runAndStop(tasklet: Tasklet) {
@@ -209,7 +212,7 @@ object TaskRunner {
     TaskRunner ++= tasklets
     try {
       start()
-      while (currentTask != None) {
+      while (currentTask != None || queueSize() > 0) {
         Thread.sleep(1000)
       }
     } finally {

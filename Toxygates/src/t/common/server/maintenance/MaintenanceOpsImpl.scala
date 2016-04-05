@@ -80,8 +80,8 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
 
   protected def grabRunner() {
     if (TaskRunner.queueSize > 0 || TaskRunner.waitingForTask) {
-	  throw new Exception("Another task is already in progress.")
-	}
+      throw new Exception("Another task is already in progress.")
+    }
   }
 
   protected def maintenance[T](task: => T): T = try {
@@ -98,6 +98,7 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
     case e: Exception =>
       e.printStackTrace()
       afterTaskCleanup()
+      TaskRunner.reset()
       throw new MaintenanceException(e)
   }
 
