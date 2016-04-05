@@ -67,7 +67,12 @@ public enum AType {
 	},
 	Unigene("UniGene ID") {
 	  public String formLink(String value) {
-	    return "https://www.ncbi.nlm.nih.gov/UniGene/clust.cgi?UGID=" + value;
+	    //Example: Rn.162549
+	    String[] spl = value.split("\\.");
+	    if (spl.length == 2) {
+	      return "https://www.ncbi.nlm.nih.gov/UniGene/clust.cgi?ORG=" + spl[0] + "&CID=" + spl[1]; 
+	    }
+	    return null;
 	  }
 	},
 	Ensembl("Ensembl gene") {

@@ -134,7 +134,12 @@ public class OTGSchema extends DataSchema {
 
   private static AType[] associations = new AType[] {AType.Chembl, AType.Drugbank,
 //      AType.Enzymes,
-      AType.GOBP, AType.GOCC, AType.GOMF, AType.Homologene, AType.KEGG, AType.OrthProts,
+      AType.GOBP, AType.GOCC, AType.GOMF,
+      //needs repair
+      //AType.Homologene, 
+      AType.KEGG,
+      //needs repair
+      //AType.OrthProts,
       AType.Uniprot,
       AType.RefseqTrn, AType.RefseqProt, AType.EC, AType.Ensembl, AType.Unigene};
 
