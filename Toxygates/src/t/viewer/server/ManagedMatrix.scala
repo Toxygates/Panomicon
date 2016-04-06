@@ -332,7 +332,7 @@ object ManagedMatrix {
 
 class ManagedMatrix(val initProbes: Seq[String],
     //TODO visibility of these 3 vars
-    var currentInfo: ManagedMatrixInfo, var rawUngroupedMat: ExprMatrix,
+    val currentInfo: ManagedMatrixInfo, val rawUngroupedMat: ExprMatrix,
     var rawGroupedMat: ExprMatrix,
     val baseColumnMap: Map[Int, Seq[Int]],
     val log2Tooltips: Boolean = false) {
@@ -401,6 +401,8 @@ class ManagedMatrix(val initProbes: Seq[String],
       true
     }
 
+    println(s"Filter: ${currentInfo.numDataColumns} data ${currentInfo.numSynthetics} synthetic")
+
     //TODO avoid selecting here
     currentMat = currentMat.selectNamedRows(requestProbes).filterRows(f)
     (_sortColumn, _sortAuxTable) match {
@@ -452,11 +454,6 @@ class ManagedMatrix(val initProbes: Seq[String],
     updateRowInfo()
   }
 
-  def addSynthetic(s: Synthetic): Unit = {
-    _synthetics :+= s
-    addOneSynthetic(s)
-  }
-
   def removeSynthetics(): Unit = {
     _synthetics = Vector()
     val dataColumns = 0 until currentInfo.numDataColumns()
@@ -465,10 +462,15 @@ class ManagedMatrix(val initProbes: Seq[String],
     currentInfo.removeSynthetics()
   }
 
+  def addSynthetic(s: Synthetic): Unit = {
+    _synthetics :+= s
+    addSyntheticInner(s)
+  }
+
   /**
    * Adds one two-group test to the current matrix.
    */
-  protected def addOneSynthetic(s: Synthetic): Unit = {
+  protected def addSyntheticInner(s: Synthetic): Unit = {
     s match {
       case test: Synthetic.TwoGroupSynthetic =>
         //TODO
@@ -487,16 +489,19 @@ class ManagedMatrix(val initProbes: Seq[String],
             currentMat.appendTTest(rawData, g1s, g2s, tt.getShortTitle(null)) //TODO
           case _ => throw new Exception("Unexpected test type!")
         }
-        currentInfo.addColumn(true, test.getShortTitle(null), test.getTooltip(),
+        val name = test.getShortTitle(null);
+        if (!currentInfo.hasColumn(name)) {
+          currentInfo.addColumn(true, name, test.getTooltip(),
             ColumnFilter.emptyLT, null, false,
             Array[SSample]()) //TODO
+        }
       case _ => throw new Exception("Unexpected test type")
     }
   }
 
-  protected def applySynthetics(): Unit = {
+  protected def reapplySynthetics(): Unit = {
     for (s <- _synthetics) {
-      addOneSynthetic(s)
+      addSyntheticInner(s)
     }
   }
 
@@ -505,9 +510,11 @@ class ManagedMatrix(val initProbes: Seq[String],
    * Synthetics are restored after resetting.
    */
   def resetSortAndFilter(): Unit = {
+    //drops synthetic columns
     currentMat = rawGroupedMat
+    //note - we keep the synthetic column info (such as filters) in the currentInfo
     updateRowInfo()
-    applySynthetics()
+    reapplySynthetics()
   }
 
   private def updateRowInfo() {
