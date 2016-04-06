@@ -114,8 +114,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   private KCAsyncProvider asyncProvider = new KCAsyncProvider();
 
   private HorizontalPanel tools, analysisTools;
-  // We enable/disable this button when the value type changes
-  private Button foldChangeBtn = new Button("Add fold-change difference");
 
   protected ListBox tableList = new ListBox();
 
@@ -195,18 +193,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   private void setEnabled(boolean enabled) {
     Utils.setEnabled(tools, enabled);
     Utils.setEnabled(analysisTools, enabled);
-    enableFoldChangeUI(enabled);
-  }
-
-  private void enableFoldChangeUI(boolean enabled) {
-    switch (chosenValueType) {
-      case Absolute:
-        foldChangeBtn.setEnabled(false);
-        break;
-      case Folds:
-        foldChangeBtn.setEnabled(true && enabled);
-        break;
-    }
   }
 
   /**
@@ -323,13 +309,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         addTwoGroupSynthetic(new Synthetic.UTest(null, null), "U-Test");
       }
     }));
-
-    foldChangeBtn.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent e) {
-        addTwoGroupSynthetic(new Synthetic.MeanDifference(null, null), "Fold-change difference");
-      }
-    });
-    analysisTools.add(foldChangeBtn);
 
     analysisTools.add(new Button("Remove tests", new ClickHandler() {
       public void onClick(ClickEvent ce) {

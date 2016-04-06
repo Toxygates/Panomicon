@@ -485,9 +485,6 @@ class ManagedMatrix(val initProbes: Seq[String],
             currentMat.appendUTest(rawData, g1s, g2s, ut.getShortTitle(null)) //TODO don't pass null
           case tt: Synthetic.TTest =>
             currentMat.appendTTest(rawData, g1s, g2s, tt.getShortTitle(null)) //TODO
-          case md: Synthetic.MeanDifference =>
-            upper = false
-            currentMat.appendDiffTest(rawData, g1s, g2s, md.getShortTitle(null)) //TODO
           case _ => throw new Exception("Unexpected test type!")
         }
         currentInfo.addColumn(true, test.getShortTitle(null), test.getTooltip(),
