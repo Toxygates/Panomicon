@@ -127,7 +127,4 @@ class ChunkDataConfig(dir: String, matrixDbOptions: String) extends
 
   override def extWriter(file: String)(implicit c: MatrixContext): MatrixDB[PExprValue, PExprValue] =
     KCChunkMatrixDB.apply(file, true)
-
-  override def seriesDb: String =
-    KCChunkMatrixDB.removePrefix(super.seriesDb)
 }
