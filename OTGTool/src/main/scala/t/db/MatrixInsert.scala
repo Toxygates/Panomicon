@@ -24,6 +24,7 @@ import t.Tasklet
 import t.db.kyotocabinet.KCMatrixDB
 
 object MatrixInsert {
+  @deprecated("Use DataConfig methods", "13 April 2016")
   def matrixDB(fold: Boolean, dbfile: String)(implicit mc: MatrixContext): MatrixDBWriter[_] =
     if (fold) {
       KCMatrixDB.getExt(dbfile, true)

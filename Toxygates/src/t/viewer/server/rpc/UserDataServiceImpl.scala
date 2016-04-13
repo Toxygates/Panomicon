@@ -16,7 +16,8 @@ abstract class UserDataServiceImpl extends TServiceServlet
   with BatchOpsImpl with UserDataService {
   private var homeDir: String = _
 
-  override protected def withSeries: Boolean = false
+  @deprecated("to be removed", "April 12 2016")
+  override protected def withSeries: Boolean = true
 
   override def localInit(config: Configuration) {
     super.localInit(config)

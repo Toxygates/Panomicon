@@ -23,8 +23,11 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   with t.common.client.rpc.BatchOperations {
   this: TServiceServlet =>
 
-  protected def exprAsFold: Boolean = false
+  @deprecated("To be removed", "April 13 2016")
+  protected def exprAsFold: Boolean = true
   protected def simpleLog2: Boolean = false
+
+  @deprecated("To be removed", "April 12 2016")
   protected def withSeries: Boolean = true
 
   def addBatchAsync(b: Batch): Unit = {
@@ -90,7 +93,8 @@ import java.util.HashSet
     cleanMaintenance {
       TaskRunner.start()
       setLastTask("Delete batch")
-      TaskRunner ++= bm.deleteBatch(id, baseConfig.seriesBuilder, false, withSeries)
+      TaskRunner ++= bm.deleteBatch(id, baseConfig.seriesBuilder, false,
+          withSeries, exprAsFold)
     }
   }
 

@@ -255,8 +255,9 @@ class BatchManager(context: Context) {
   def addBatch[S <: Series[S]](title: String, comment: String, metadata: Metadata,
     dataFile: String, callFile: Option[String],
     append: Boolean, sbuilder: SeriesBuilder[S],
-    exprAsFold: Boolean = false, simpleLog2: Boolean = false,
-    withSeries: Boolean = true): Iterable[Tasklet] = {
+    @deprecated("To be removed", "April 12 2016") exprAsFold: Boolean = false,
+    simpleLog2: Boolean = false,
+    @deprecated("To be removed", "April 12 2016") withSeries: Boolean = true): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
     val ts = config.triplestore.get
 
@@ -284,7 +285,8 @@ class BatchManager(context: Context) {
 
   def deleteBatch[S <: Series[S]](title: String,
     sbuilder: SeriesBuilder[S], rdfOnly: Boolean = false,
-    withSeries: Boolean = true): Iterable[Tasklet] = {
+    @deprecated("To be removed", "April 12 2016") withSeries: Boolean = true,
+    @deprecated("To be removed", "April 13 2016") exprAsFold: Boolean = false): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
     implicit val mc = matrixContext()
 
@@ -294,7 +296,7 @@ class BatchManager(context: Context) {
         r :+= deleteSeriesData(title, sbuilder)
       }
       r :+= deleteFoldData(title)
-      r :+= deleteExprData(title)
+      r :+= deleteExprData(title, exprAsFold)
       r :+= deleteSampleIDs(title)
     } else {
       println("RDF ONLY mode - not deleting series, fold, expr, sample ID data")
@@ -419,7 +421,7 @@ class BatchManager(context: Context) {
     val data = new CSVRawExpressionData(List(niFile), callFile.map(List(_)))
     if (treatAsFold) {
       val db = () => config.data.extWriter(config.data.exprDb)
-      new SimplePFoldValueInsert(db, data).insert("Insert fold value data")
+      new SimplePFoldValueInsert(db, data).insert("Insert expr value data (quasi-fold format)")
     } else {
       new AbsoluteValueInsert(config.data.exprDb, data).insert("Insert normalised intensity data")
     }
@@ -439,14 +441,13 @@ class BatchManager(context: Context) {
   }
 
   private def deleteFromDB(db: MatrixDBWriter[_], samples: Iterable[Sample]) {
-    for (s <- samples) {
-      try {
-        db.deleteSample(s)
-      } catch {
-        case lf: LookupFailedException =>
-          println(s"Lookup failed for sample $s, ignoring (possible reason: interrupted data insertion)")
-        case t: Throwable => throw t
-      }
+    try {
+      db.deleteSamples(samples)
+    } catch {
+      case lf: LookupFailedException =>
+        println(s"Lookup failed for sample, ignoring (possible reason: interrupted data insertion)")
+        println("Please investigate manually!")
+      case t: Throwable => throw t
     }
   }
 
@@ -455,7 +456,7 @@ class BatchManager(context: Context) {
       def run() {
         val bs = new Batches(config.triplestore)
         val ss = bs.samples(title).map(Sample(_))
-        val db = MatrixInsert.matrixDB(true, config.data.foldDb)
+        val db = config.data.extWriter(config.data.foldDb)
         try {
           deleteFromDB(db, ss)
         } finally {
@@ -464,12 +465,17 @@ class BatchManager(context: Context) {
       }
     }
 
-  def deleteExprData(title: String)(implicit mc: MatrixContext) =
+  //TODO unify with deleteFoldData above once DB formats are unified
+  def deleteExprData(title: String, treatAsFold: Boolean = false)(implicit mc: MatrixContext) =
     new Tasklet("Delete normalized intensity data") {
       def run() {
         val bs = new Batches(config.triplestore)
         val ss = bs.samples(title).map(Sample(_))
-        val db = MatrixInsert.matrixDB(false, config.data.exprDb)
+        val db = if (treatAsFold) {
+          config.data.extWriter(config.data.exprDb)
+        } else {
+          config.data.writer(config.data.exprDb)
+        }
         try {
           deleteFromDB(db, ss)
         } finally {
