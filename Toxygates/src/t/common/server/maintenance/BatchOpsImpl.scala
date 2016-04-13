@@ -27,9 +27,6 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   protected def exprAsFold: Boolean = true
   protected def simpleLog2: Boolean = false
 
-  @deprecated("To be removed", "April 12 2016")
-  protected def withSeries: Boolean = true
-
   def addBatchAsync(b: Batch): Unit = {
 	  showUploadedFiles()
 	  grabRunner()
@@ -59,7 +56,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
         dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
         false, baseConfig.seriesBuilder,
-        exprAsFold, simpleLog2, withSeries)
+        exprAsFold, simpleLog2)
       TaskRunner += Tasklet.simple("Set batch parameters", () => updateBatch(b))
     }
   }
@@ -94,7 +91,7 @@ import java.util.HashSet
       TaskRunner.start()
       setLastTask("Delete batch")
       TaskRunner ++= bm.deleteBatch(id, baseConfig.seriesBuilder, false,
-          withSeries, exprAsFold)
+          exprAsFold)
     }
   }
 
