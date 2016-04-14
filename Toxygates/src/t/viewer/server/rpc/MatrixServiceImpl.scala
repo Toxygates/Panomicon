@@ -23,12 +23,7 @@ package t.viewer.server.rpc
 import java.util.ArrayList
 import java.util.{ List => JList }
 import t.viewer.server.ExprMatrix
-import otgviewer.server.ExtFoldBuilder
-import otgviewer.server.FoldBuilder
-import otgviewer.server.ManagedMatrix
-import otgviewer.server.ManagedMatrixBuilder
 import otgviewer.server.MatrixMapper
-import otgviewer.server.NormalizedBuilder
 import otgviewer.shared.FullMatrix
 import t.viewer.shared.ManagedMatrixInfo
 import otgviewer.shared.NoDataLoadedException
@@ -70,6 +65,7 @@ import t.common.server.userclustering.RClustering
 import org.apache.commons.lang.StringUtils
 import t.common.shared.sample.ExpressionValue
 import t.viewer.shared.ColumnFilter
+import t.viewer.server.ManagedMatrix
 
 object MatrixServiceImpl {
 

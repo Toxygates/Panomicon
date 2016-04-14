@@ -30,6 +30,7 @@ import t.common.shared.probe.MedianValueMapper
 import t.db.ExprValue
 import t.common.shared.sample.Group
 import t.viewer.server.Conversions._
+import t.viewer.server.ExtFoldBuilder
 
 @RunWith(classOf[JUnitRunner])
 class MatrixMapperTest extends TTestSuite {

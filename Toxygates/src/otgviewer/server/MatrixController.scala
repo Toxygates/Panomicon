@@ -44,11 +44,16 @@ import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 import t.common.shared.sample.EVArray
 import t.db.ExprValue
 import t.db.ExtMatrixDB
+import t.viewer.server.ManagedMatrix
+import t.viewer.server.NormalizedBuilder
+import t.viewer.server.ExtFoldBuilder
 
 /**
  * A managed matrix session and associated state.
  * The matrix is loaded automatically when a MatrixController
  * instance is created.
+ *
+ * TODO move to t.viewer.server
  */
 class MatrixController(context: Context,
     orthologs: () => Iterable[OrthologMapping],
