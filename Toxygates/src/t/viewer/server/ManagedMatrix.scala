@@ -388,7 +388,7 @@ class ManagedMatrix(val initProbes: Seq[String],
       for (
         col <- 0 until currentInfo.numColumns();
         filt = currentInfo.columnFilter(col);
-        if (filt != null)
+        if (filt != null && filt.active())
       ) {
         //Note, comparisons with NaN are always false
         val pass = filt.test(r(col).value)
