@@ -29,6 +29,8 @@ abstract class UserDataServiceImpl extends TServiceServlet
 
   override protected def request = getThreadLocalRequest
 
+  protected override def mayAppendBatch: Boolean = false
+
   override protected def updateBatch(b: Batch): Unit = {
     //Here, we must first ensure existence of the dataset.
     //For user data, the unique user id will here be supplied from the client side.

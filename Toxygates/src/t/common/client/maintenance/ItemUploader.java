@@ -46,9 +46,6 @@ abstract public class ItemUploader extends Composite {
 
   abstract protected void makeGUI(VerticalPanel vp);
 
-  // TODO retire?
-  public void updateStatus() {}
-
   abstract protected boolean canProceed();
 
 }

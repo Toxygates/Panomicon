@@ -15,6 +15,7 @@ import scala.collection.JavaConversions._
 import t.common.shared.ManagedItem
 import t.sparql.TRDF
 import t.common.shared.Dataset
+import t.db.Metadata
 
 /**
  * Routines for servlets that support the management of batches.
@@ -27,6 +28,8 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   protected def exprAsFold: Boolean = true
   protected def simpleLog2: Boolean = false
 
+  protected def mayAppendBatch: Boolean = true
+
   def addBatchAsync(b: Batch): Unit = {
 	  showUploadedFiles()
 	  grabRunner()
@@ -36,6 +39,11 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     cleanMaintenance {
       TaskRunner.start()
       setLastTask("Add batch")
+
+      val exbs = new Batches(context.config.triplestore).list
+      if (exbs.contains(b.getTitle) && ! mayAppendBatch) {
+        throw new MaintenanceException(s"The batch ${b.getTitle} already exists and appending is not allowed")
+      }
 
       val tempFiles = new TempFiles()
       setAttribute("tempFiles", tempFiles)
@@ -52,6 +60,9 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv")
 
       val md = factory.tsvMetadata(metaFile.getAbsolutePath())
+
+      checkMetadata(md)
+
       TaskRunner ++= bm.addBatch(b.getTitle, b.getComment, md,
         dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
@@ -60,6 +71,12 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       TaskRunner += Tasklet.simple("Set batch parameters", () => updateBatch(b))
     }
   }
+
+  @throws(classOf[MaintenanceException])
+  /**
+   * Check the validity of the sample parameters and throw an exception if there's a problem.
+   */
+  protected def checkMetadata(md: Metadata): Unit = { }
 
 import java.util.HashSet
 
