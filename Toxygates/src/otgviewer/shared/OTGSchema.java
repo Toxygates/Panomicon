@@ -66,17 +66,6 @@ public class OTGSchema extends DataSchema {
   }
 
   @Override
-  public boolean isMajorParamSharedControl(String value) {
-    return value.toLowerCase().startsWith("shared_control");
-  }
-
-  @Override
-  public String[] majorParamSharedControl() {
-    // TODO this is brittle
-    return new String[] {"shared_control", "Shared_control", "Shared_Control"};
-  }
-
-  @Override
   public String mediumParameter() {
     return "dose_level";
   }
