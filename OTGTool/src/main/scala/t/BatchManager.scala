@@ -461,7 +461,7 @@ class BatchManager(context: Context) {
     }
 
   //TODO unify with deleteFoldData above once DB formats are unified
-  def deleteExprData(title: String, treatAsFold: Boolean = false)(implicit mc: MatrixContext) =
+  def deleteExprData(title: String, treatAsFold: Boolean)(implicit mc: MatrixContext) =
     new Tasklet("Delete normalized intensity data") {
       def run() {
         val bs = new Batches(config.triplestore)

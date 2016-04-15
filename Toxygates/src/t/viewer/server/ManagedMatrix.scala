@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.server
+package t.viewer.server
 
 import t.common.shared.sample.ExpressionValue
 import t.viewer.server.Conversions._
@@ -26,9 +26,7 @@ import t.viewer.shared.ManagedMatrixInfo
 import t.viewer.shared.Synthetic
 import t.db.MatrixDBReader
 import t.common.shared.sample.{Sample => SSample, Unit => TUnit}
-import t.viewer.server.ExprMatrix
 import t.common.shared.sample.Group
-import t.viewer.server.SimpleAnnotation
 import t.db.Sample
 import t.db.PExprValue
 import t.db.ExprValue
@@ -390,7 +388,7 @@ class ManagedMatrix(val initProbes: Seq[String],
       for (
         col <- 0 until currentInfo.numColumns();
         filt = currentInfo.columnFilter(col);
-        if (filt != null)
+        if (filt != null && filt.active())
       ) {
         //Note, comparisons with NaN are always false
         val pass = filt.test(r(col).value)
