@@ -21,7 +21,7 @@ import t.db.Metadata
  * Routines for servlets that support the management of batches.
  */
 trait BatchOpsImpl extends MaintenanceOpsImpl
-  with t.common.client.rpc.BatchOperations {
+    with t.common.client.rpc.BatchOperations {
   this: TServiceServlet =>
 
   @deprecated("To be removed", "April 13 2016")
@@ -31,17 +31,17 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   protected def mayAppendBatch: Boolean = true
 
   def addBatchAsync(b: Batch): Unit = {
-	  showUploadedFiles()
-	  grabRunner()
+    showUploadedFiles()
+    grabRunner()
 
-	  val bm = new BatchManager(context) //TODO configuration parsing
+    val bm = new BatchManager(context) //TODO configuration parsing
 
     cleanMaintenance {
       TaskRunner.start()
       setLastTask("Add batch")
 
       val exbs = new Batches(context.config.triplestore).list
-      if (exbs.contains(b.getTitle) && ! mayAppendBatch) {
+      if (exbs.contains(b.getTitle) && !mayAppendBatch) {
         throw new MaintenanceException(s"The batch ${b.getTitle} already exists and appending is not allowed")
       }
 
@@ -72,13 +72,13 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     }
   }
 
-  @throws(classOf[MaintenanceException])
   /**
    * Check the validity of the sample parameters and throw an exception if there's a problem.
    */
-  protected def checkMetadata(md: Metadata): Unit = { }
+  @throws(classOf[MaintenanceException])
+  protected def checkMetadata(md: Metadata): Unit = {}
 
-import java.util.HashSet
+  import java.util.HashSet
 
   def getBatches(dataset: String): Array[Batch] = {
     val useDataset = Option(dataset)
@@ -91,12 +91,12 @@ import java.util.HashSet
     val r = bs.list.map(b => {
       val samples = ns.getOrElse(b, 0)
       new Batch(b, samples, comments.getOrElse(b, ""),
-          dates.getOrElse(b, null),
-          new HashSet(setAsJavaSet(bs.listAccess(b).toSet)),
-          datasets.getOrElse(b, ""))
+        dates.getOrElse(b, null),
+        new HashSet(setAsJavaSet(bs.listAccess(b).toSet)),
+        datasets.getOrElse(b, ""))
     }).toArray
     useDataset match {
-      case None => r
+      case None     => r
       case Some(ds) => r.filter(_.getDataset == ds)
     }
   }
@@ -108,7 +108,7 @@ import java.util.HashSet
       TaskRunner.start()
       setLastTask("Delete batch")
       TaskRunner ++= bm.deleteBatch(id, baseConfig.seriesBuilder, false,
-          exprAsFold)
+        exprAsFold)
     }
   }
 
@@ -153,7 +153,7 @@ import java.util.HashSet
   def update(i: ManagedItem): Unit = {
     i match {
       case b: Batch => updateBatch(b)
-      case _ => throw new Exception(s"Unexpected item type $i")
+      case _        => throw new Exception(s"Unexpected item type $i")
     }
   }
 
