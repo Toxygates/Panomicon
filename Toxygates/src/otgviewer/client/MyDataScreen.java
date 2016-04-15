@@ -38,6 +38,7 @@ import t.viewer.client.rpc.UserDataServiceAsync;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -141,7 +142,11 @@ public class MyDataScreen extends Screen {
     batchData.addDataDisplay(bp.table());
     cmds.setSpacing(10);
     cmds.add(Utils.makeButtons(bp.commands()));
-    cmds.add(new Label("(Click here to download example files)"));
+    
+    HTML h = new HTML();
+    h.setHTML("<a target=_blank href=\"Toxygates user data example.zip\"> Download example files</a>");
+    cmds.add(h);
+
     cmds.add(new Label("Your access key is: " + userKey));
     
     refreshBatches();
