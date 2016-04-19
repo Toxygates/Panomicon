@@ -45,10 +45,12 @@ import t.viewer.server.Conversions._
 import t.common.shared.Dataset
 import t.sparql.Datasets
 import t.sparql.SampleFilter
+import t.viewer.server.Configuration
 
 abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with SeriesService {
   import java.lang.{ Double => JDouble }
 
+  private var config: Configuration = _
   private implicit def mcontext: MatrixContext = context.matrix
   implicit protected def context: t.Context
 
@@ -59,9 +61,14 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
   implicit protected def asShared(s: S): SSeries
   implicit protected def fromShared(s: SSeries): S
 
+  override def localInit(config: Configuration): Unit = {
+    this.config = config
+  }
+
   private def allowedMajors(ds: Array[Dataset], sc: SampleClass): Set[String] = {
     val dsTitles = ds.map(_.getTitle).distinct.toList
-    implicit val sf = SampleFilter(datasetURIs = dsTitles.map(Datasets.packURI(_)))
+    implicit val sf = SampleFilter(instanceURI = config.instanceURI,
+        datasetURIs = dsTitles.map(Datasets.packURI(_)))
     context.samples.attributeValues(scAsScala(sc).filterAll,
       schema.majorParameter()).toSet
   }

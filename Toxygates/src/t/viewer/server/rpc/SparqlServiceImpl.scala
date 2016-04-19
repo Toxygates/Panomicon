@@ -104,13 +104,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val ts = baseConfig.triplestore.triplestore
     uniprot = new LocalUniprot(ts)
 
-    if (conf.instanceName == null || conf.instanceName == "") {
-      instanceURI = None
-    } else {
-      instanceURI = Some(Instances.defaultPrefix + "/" + conf.instanceName)
-    }
-
-    this.instanceURI = instanceURI
+    this.instanceURI = conf.instanceURI
 
     _appInfo = new AppInfo(conf.instanceName, sDatasets(),
         sPlatforms(), predefProbeLists(), probeClusterings(), appName,
