@@ -13,7 +13,7 @@ function makeWar {
     rm $OUTPUT
     rm WEB-INF/web.xml
     [ ! -d csv ] && mkdir csv
-    jar cf $OUTPUT toxygates csv *.pdf *.css images *.html.template
+    jar cf $OUTPUT toxygates csv *.pdf *.css images *.html.template *.zip
     #Exclude classes in t/admin and t/global
     jar uf $OUTPUT $(find WEB-INF \( -path WEB-INF/classes/t/admin -o \
       -path WEB-INF/classes/t/global \) -prune -o \( -type f -print \) )

@@ -29,11 +29,11 @@
 	</context-param>	
 	<context-param>
 		<param-name>dataDir</param-name>
-		<param-value>/opt/toxygates-dev</param-value>
+		<param-value>kcchunk:/opt/toxygates-chunk</param-value>
 	</context-param>
 	<context-param>
 		<param-name>matrixDbOptions</param-name>
-		<param-value>#bnum=6250000#pccap=1073741824#msiz=4294967296</param-value>
+		<param-value>#pccap=1073741824#msiz=4294967296</param-value>
 	</context-param>
  	<context-param>
 		<param-name>csvDir</param-name>
@@ -52,7 +52,34 @@
 		<param-value>root@nibiohn.go.jp</param-value>
 	</context-param>
 	
+		<context-param>
+		<!-- 256 MB -->
+		<param-name>maxSize</param-name>
+		<param-value>268435456</param-value>
+	</context-param>
+	<context-param>
+		<!-- 256 MB -->
+		<param-name>maxFileSize</param-name>
+		<param-value>268435456</param-value>
+	</context-param>
+	<context-param>
+		<param-name>updateURL</param-name>
+		<param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/update</param-value>  
+	</context-param>
+	
+	
   <!-- Servlets -->
+  
+	<servlet>
+		<servlet-name>uploadServlet</servlet-name>
+		<!-- This is the default servlet, it puts files in session -->
+		<servlet-class>gwtupload.server.UploadServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>uploadServlet</servlet-name>
+		<url-pattern>*.gupld</url-pattern>
+	</servlet-mapping>	
+	
 	<servlet>
 		<servlet-name>sparqlServlet</servlet-name>
 		<servlet-class>otgviewer.server.rpc.SparqlServiceImpl</servlet-class>
@@ -100,7 +127,6 @@
 		<servlet-name>targetmineServlet</servlet-name>
     	<url-pattern>/toxygates/targetmine</url-pattern>
   	</servlet-mapping>
-
 	
   <!-- Default page to serve -->
   <welcome-file-list>
