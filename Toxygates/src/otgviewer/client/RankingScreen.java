@@ -27,6 +27,7 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.client.components.ranking.CompoundRanker;
+import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
 
 import com.google.gwt.user.client.ui.ScrollPanel;
@@ -43,7 +44,16 @@ public class RankingScreen extends Screen {
   public RankingScreen(ScreenManager man) {
     super("Compound ranking", key, false, man);
     chosenDatasets = appInfo().datasets();
-    filterTools = new FilterTools(this);
+    filterTools = new FilterTools(this) {
+      @Override
+      public void datasetsChanged(Dataset[] ds) {
+        super.datasetsChanged(ds);
+        cs.datasetsChanged(ds);
+        //TODO: should really change the datasets in the RankingScreen
+        //but that would cause an infinite loop. 
+        //Think about changing the way we propagate events and data.
+      }      
+    };
     this.addListener(filterTools);
 
     String majorParam = man.schema().majorParameter();

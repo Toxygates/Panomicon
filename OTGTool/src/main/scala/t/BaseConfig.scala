@@ -106,6 +106,10 @@ class DataConfig(val dir: String, val matrixDbOptions: String) {
 
   def extWriter(file: String)(implicit c: MatrixContext): MatrixDB[PExprValue, PExprValue] =
     KCMatrixDB.getExt(file, true)
+
+  @deprecated("Ext format will be used for all data soon", "13 April 2016")
+  def writer(file: String)(implicit c: MatrixContext): KCMatrixDB =
+    KCMatrixDB.get(file, true)
 }
 
 class HashDataConfig(dir: String, matrixDbOptions: String)
@@ -128,6 +132,6 @@ class ChunkDataConfig(dir: String, matrixDbOptions: String) extends
   override def extWriter(file: String)(implicit c: MatrixContext): MatrixDB[PExprValue, PExprValue] =
     KCChunkMatrixDB.apply(file, true)
 
-  override def seriesDb: String =
-    KCChunkMatrixDB.removePrefix(super.seriesDb)
+  override def writer(file: String)(implicit c: MatrixContext): KCMatrixDB =
+    throw new Exception("Unsupported operation - chunk DB must use ext format")
 }

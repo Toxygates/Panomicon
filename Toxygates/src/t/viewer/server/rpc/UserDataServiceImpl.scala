@@ -16,8 +16,6 @@ abstract class UserDataServiceImpl extends TServiceServlet
   with BatchOpsImpl with UserDataService {
   private var homeDir: String = _
 
-  override protected def withSeries: Boolean = false
-
   override def localInit(config: Configuration) {
     super.localInit(config)
     homeDir = config.webappHomeDir
@@ -30,6 +28,8 @@ abstract class UserDataServiceImpl extends TServiceServlet
      getThreadLocalRequest().getSession().setAttribute(name, x)
 
   override protected def request = getThreadLocalRequest
+
+  protected override def mayAppendBatch: Boolean = false
 
   override protected def updateBatch(b: Batch): Unit = {
     //Here, we must first ensure existence of the dataset.

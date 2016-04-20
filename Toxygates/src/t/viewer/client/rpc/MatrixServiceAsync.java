@@ -56,9 +56,9 @@ public interface MatrixServiceAsync {
 
   public void prepareCSVDownload(boolean individualSamples, AsyncCallback<String> callback);
 
-  public void addTwoGroupTest(Synthetic.TwoGroupSynthetic test, AsyncCallback<Void> callback);
+  public void addTwoGroupTest(Synthetic.TwoGroupSynthetic test, AsyncCallback<ManagedMatrixInfo> callback);
 
-  public void removeTwoGroupTests(AsyncCallback<Void> callback);
+  public void removeTwoGroupTests(AsyncCallback<ManagedMatrixInfo> callback);
 
   public void sendFeedback(String name, String email, String feedback, AsyncCallback<Void> callback);
 

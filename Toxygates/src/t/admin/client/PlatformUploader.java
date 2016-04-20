@@ -45,19 +45,10 @@ public class PlatformUploader extends ItemUploader {
     vp.add(affyRadio);
     tRadio = makeRadio("type", "T platform TSV");
     vp.add(tRadio);
-
-    updateStatus();
   }
 
   private RadioButton makeRadio(String group, String label) {
-    RadioButton r = new RadioButton(group, label);
-    r.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
-      @Override
-      public void onValueChange(ValueChangeEvent<Boolean> event) {
-        updateStatus();
-
-      }
-    });
+    RadioButton r = new RadioButton(group, label);    
     return r;
   }
 

@@ -34,7 +34,8 @@ public enum AType {
 		public String formLink(String value) { return value; }		
 	},
 	Chembl("CHEMBL compounds") {
-		public String formLink(String value) { return "https://www.ebi.ac.uk/chembldb/compound/inspect/" + value; }		
+		public String formLink(String value) { 
+		  return "https://www.ebi.ac.uk/chembldb/compound/inspect/" + value; }		
 	},
 	Drugbank("DrugBank compounds") {
 		public String formLink(String value) { return value; }		
@@ -54,15 +55,43 @@ public enum AType {
 	GOBP("GO Biological process") {
 		public String formLink(String value) { return formGOLink(value); }		
 	},	
+	RefseqTrn("RefSeq transcript") {
+	  public String formLink(String value) { 
+	    return "https://www.ncbi.nlm.nih.gov/nuccore/" + value; 
+	  }
+	},
+	RefseqProt("Refseq protein") {
+	  public String formLink(String value) {
+	    return "https://www.ncbi.nlm.nih.gov/protein/" + value;
+	  }
+	},
+	Unigene("UniGene ID") {
+	  public String formLink(String value) {
+	    //Example: Rn.162549
+	    String[] spl = value.split("\\.");
+	    if (spl.length == 2) {
+	      return "https://www.ncbi.nlm.nih.gov/UniGene/clust.cgi?ORG=" + spl[0] + "&CID=" + spl[1]; 
+	    }
+	    return null;
+	  }
+	},
+	Ensembl("Ensembl gene") {
+	  public String formLink(String value) {
+	    //TODO generalise to multi-species
+	    //return "http://ensembl.org/Rattus_norvegicus/Transcript/Summary?db=core;t=" + value;
+	    return null;
+	  }	       
+	},
+	EC("EC enzymes"), //TODO link
 	Homologene("Homologene entries") {
 		public String formLink(String value) { return formGeneLink(value); }		
 	},
 	OrthProts("eggNOG orthologous proteins") {
 		 public String formLink(String value) { return formProteinLink(value); }		 
 	},
-	Enzymes("Kegg Enzymes") {
-		public String formLink(String value) { return value; }
-	},
+//	Enzymes("Kegg Enzymes") {
+//		public String formLink(String value) { return value; }
+//	},
 	EnsemblOSA("O.Sativa orth. genes") {
 		public String formLink(String value) { return formEnsemblPlantsLink(value); }
 	},

@@ -103,13 +103,13 @@ public interface MatrixService extends RemoteService {
    * @param g1
    * @param g2
    */
-  public void addTwoGroupTest(Synthetic.TwoGroupSynthetic test);
+  public ManagedMatrixInfo addTwoGroupTest(Synthetic.TwoGroupSynthetic test) throws ServerError;
 
   /**
    * Remove all test columns. The result will be reflected in subsequent calls to datasetItems or
    * getFullData.
    */
-  public void removeTwoGroupTests();
+  public ManagedMatrixInfo removeTwoGroupTests() throws ServerError;
 
   /**
    * Get one page. Requires that loadMatrix was first used to load items.
@@ -121,7 +121,8 @@ public interface MatrixService extends RemoteService {
    * @param ascending Whether to use ascending sort. Applies if sortColumn is not -1.
    * @return
    */
-  public List<ExpressionRow> matrixRows(int offset, int size, SortKey sortKey, boolean ascending);
+  public List<ExpressionRow> matrixRows(int offset, int size, SortKey sortKey, boolean ascending)
+      throws ServerError;
 
   /**
    * Get all data immediately, on the level of individual values (not averaged).
@@ -147,7 +148,7 @@ public interface MatrixService extends RemoteService {
    *        (only). If false, groups are used.
    * @return A downloadable URL.
    */
-  public String prepareCSVDownload(boolean individualSamples);
+  public String prepareCSVDownload(boolean individualSamples) throws ServerError;
 
   /**
    * Send a feedback email from a user. This should not necessarily be in MatrixService.
@@ -155,5 +156,5 @@ public interface MatrixService extends RemoteService {
   public void sendFeedback(String name, String email, String feedback);
 
   public String prepareHeatmap(List<Group> chosenColumns, String[] chosenProbes,
-      ValueType valueType, Algorithm algorithm);
+      ValueType valueType, Algorithm algorithm) throws ServerError;
 }

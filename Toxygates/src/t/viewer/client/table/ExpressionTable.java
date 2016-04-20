@@ -114,19 +114,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   private KCAsyncProvider asyncProvider = new KCAsyncProvider();
 
   private HorizontalPanel tools, analysisTools;
-  // We enable/disable this button when the value type changes
-  private Button foldChangeBtn = new Button("Add fold-change difference");
 
   protected ListBox tableList = new ListBox();
 
   private final MatrixServiceAsync matrixService;
   private final otgviewer.client.Resources resources;
 
-  /**
-   * "Synthetic" columns are tests columns such as t-test and u-test.
-   */
-  private List<Synthetic> synthetics = new ArrayList<Synthetic>();
-  private List<Column<ExpressionRow, ?>> synthColumns = new ArrayList<Column<ExpressionRow, ?>>();
   protected boolean displayPColumns = true;
   protected SortKey sortKey;
   protected boolean sortAsc;
@@ -200,18 +193,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   private void setEnabled(boolean enabled) {
     Utils.setEnabled(tools, enabled);
     Utils.setEnabled(analysisTools, enabled);
-    enableFoldChangeUI(enabled);
-  }
-
-  private void enableFoldChangeUI(boolean enabled) {
-    switch (chosenValueType) {
-      case Absolute:
-        foldChangeBtn.setEnabled(false);
-        break;
-      case Folds:
-        foldChangeBtn.setEnabled(true && enabled);
-        break;
-    }
   }
 
   /**
@@ -290,19 +271,19 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     return analysisTools;
   }
 
-  private void removeTests() {
-    if (!synthetics.isEmpty()) {
-      removeSyntheticColumnsLocal();
-      matrixService.removeTwoGroupTests(new AsyncCallback<Void>() {
-        @Override
-        public void onFailure(Throwable caught) {
-          Window.alert("There was an error removing the test columns.");
-        }
+  private void removeTests() {    
+    matrixService.removeTwoGroupTests(new AsyncCallback<ManagedMatrixInfo>() {
+      @Override
+      public void onFailure(Throwable caught) {
+        Window.alert("There was an error removing the test columns.");
+      }
 
-        @Override
-        public void onSuccess(Void result) {}
-      });
-    }
+      @Override
+      public void onSuccess(ManagedMatrixInfo result) {
+        matrixInfo = result; // no need to do the full setMatrix
+        setupColumns();
+      }
+    });    
   }
 
   /**
@@ -329,13 +310,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
     }));
 
-    foldChangeBtn.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent e) {
-        addTwoGroupSynthetic(new Synthetic.MeanDifference(null, null), "Fold-change difference");
-      }
-    });
-    analysisTools.add(foldChangeBtn);
-
     analysisTools.add(new Button("Remove tests", new ClickHandler() {
       public void onClick(ClickEvent ce) {
         removeTests();
@@ -357,12 +331,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       final Group g1 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel1));
       final Group g2 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel2));
       synth.setGroups(g1, g2);
-      matrixService.addTwoGroupTest(synth, new PendingAsyncCallback<Void>(this,
+      matrixService.addTwoGroupTest(synth, new PendingAsyncCallback<ManagedMatrixInfo>(this,
           "Adding test column failed") {
-        public void handleSuccess(Void v) {
-          addSynthColumn(synth, synth.getShortTitle(schema), synth.getTooltip());
-          // force reload
-          grid.setVisibleRangeAndClearData(grid.getVisibleRange(), true);
+        public void handleSuccess(ManagedMatrixInfo r) {
+          setMatrix(r);
+          setupColumns();
         }
       });
     }
@@ -399,12 +372,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         }
       }
     }
-
-    int i = matrixInfo.numDataColumns();
-    for (Synthetic s : synthetics) {
-      addSynthColumn(s, matrixInfo.columnName(i), matrixInfo.columnHint(i));
-      i++;
-    }
+    
+    for (int i = matrixInfo.numDataColumns(); i < matrixInfo.numColumns(); i++) {
+      addSynthColumn(matrixInfo.columnName(i), matrixInfo.columnHint(i), i);
+    }    
   }
 
   @Override
@@ -425,27 +396,13 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     return new ToolCell(this);
   }
 
-  // TODO remove synthetic bookkeeping from this class, now done on server
-  // side
-  private void addSynthColumn(Synthetic s, String title, String tooltip) {
-    TextCell tc = new TextCell();
-    synthetics.add(s);
-    int dcs = sectionCount("data") + sectionCount("synthetic");
-    Column<ExpressionRow, String> synCol = new ExpressionColumn(tc, dcs);
-    synthColumns.add(synCol);
+  private void addSynthColumn(String title, String tooltip, int matIndex) {
+    TextCell tc = new TextCell();    
+    Column<ExpressionRow, String> synCol = new ExpressionColumn(tc, matIndex);    
     ColumnInfo info = new ColumnInfo(title, tooltip, true, false, true, false);
     info.setCellStyleNames("extraColumn");
-    info.setDefaultSortAsc(s.isDefaultSortAscending());
+    info.setDefaultSortAsc(true);
     addColumn(synCol, "synthetic", info);
-  }
-
-  private void removeSyntheticColumnsLocal() {
-    for (int i = 0; i < synthColumns.size(); ++i) {
-      Column<ExpressionRow, ?> c = synthColumns.get(i);
-      removeColumn(c);
-    }
-    synthColumns.clear();
-    synthetics.clear();
   }
 
   @Override
@@ -714,9 +671,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     }
 
     super.columnsChanged(columns);
-    // invalidate synthetic columns, since they depend on
-    // normal columns
-    removeSyntheticColumnsLocal();
 
     // we set chosenSampleClass to the intersection of all the samples
     // in the groups here. Needed later for e.g. the associations() call.
@@ -772,7 +726,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
 
       public void onSuccess(ManagedMatrixInfo result) {
-        setMatrix(result);
+        setMatrix(result);        
       }
     };
   }

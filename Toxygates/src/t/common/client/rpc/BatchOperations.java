@@ -9,9 +9,9 @@ import t.common.shared.maintenance.MaintenanceException;
  * Management operations for batches.
  */
 public interface BatchOperations extends MaintenanceOperations {
-  public Batch[] getBatches(@Nullable String dataset);
+  public Batch[] getBatches(@Nullable String dataset) throws MaintenanceException;
   
-  void addBatchAsync(Batch b);
+  void addBatchAsync(Batch b) throws MaintenanceException;
 
   /**
    * Get parameter summaries for samples in a batch.
@@ -19,7 +19,7 @@ public interface BatchOperations extends MaintenanceOperations {
    * @param b
    * @return
    */
-  String[][] batchParameterSummary(Batch b);
+  String[][] batchParameterSummary(Batch b) throws MaintenanceException;
 
   /**
    * Delete a batch.

@@ -56,7 +56,7 @@ public class UploadWrapper extends Composite {
     u.addOnStartUploadHandler(new OnStartUploaderHandler() {
       @Override
       public void onStart(IUploader uploader) {
-        setFailure(true);
+        setFailure();
         statusLabel.setText("In progress");
       }
     });
@@ -69,28 +69,24 @@ public class UploadWrapper extends Composite {
     u.addOnCancelUploadHandler(new OnCancelUploaderHandler() {
       @Override
       public void onCancel(IUploader uploader) {
-        setFailure(true);
+        setFailure();
       }
     });
     vp.add(u);
     vp.add(statusLabel);
-    setFailure(false);
+    setFailure();
   }
 
   void setFinished() {
     finished = true;
     statusLabel.setText("OK");
     statusLabel.setStylePrimaryName("success");
-    manager.updateStatus();
   }
 
-  void setFailure(boolean signal) {
+  void setFailure() {
     finished = false;
     statusLabel.setStylePrimaryName("failure");
     statusLabel.setText("Please upload a file");
-    if (signal) {
-      manager.updateStatus();
-    }
   }
 
   public boolean hasFile() {
@@ -98,6 +94,6 @@ public class UploadWrapper extends Composite {
   }
 
   void reset() {
-    setFailure(true);
+    setFailure();
   }
 }

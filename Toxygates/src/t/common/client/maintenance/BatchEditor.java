@@ -9,6 +9,7 @@ import t.common.shared.Dataset;
 import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.Instance;
 
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 abstract public class BatchEditor extends ManagedItemEditor {
@@ -46,7 +47,12 @@ abstract public class BatchEditor extends ManagedItemEditor {
   abstract protected String datasetForBatch();
   
   @Override
-  protected void triggerEdit() {  
+  protected void triggerEdit() {
+    if (idText.getValue().equals("")) {
+      Window.alert("ID cannot be empty");
+      return;
+    }
+    
     Batch b =
         new Batch(idText.getValue(), 0, commentArea.getValue(), new Date(), 
             instancesForBatch(), datasetForBatch());
@@ -60,9 +66,22 @@ abstract public class BatchEditor extends ManagedItemEditor {
           onFinish();
           onFinishOrAbort();
         }
+        
+        @Override
+        protected void onFailure() {
+          onFinishOrAbort();
+        }
       });
     } else {
       batchOps.update(b, editCallback());
     }
+  }
+  
+  protected void onFinishOrAbort() {
+    uploader.resetAll();
+  }
+  
+  protected void onAbort() {
+    uploader.resetAll();
   }
 }

@@ -28,6 +28,7 @@ import t.BaseConfig
 import t.db.MatrixContext
 import t.Factory
 import t.Context
+import t.sparql.Instances
 
 object Configuration {
   /**
@@ -85,4 +86,12 @@ class Configuration(val repositoryName: String,
   def dataConfig(f: Factory) = f.dataConfig(toxygatesHomeDir, matrixDbOptions)
 
   def context(f: Factory): Context = f.context(tsConfig, dataConfig(f))
+
+  def instanceURI: Option[String] =
+    if (instanceName == null || instanceName == "") {
+      None
+    } else {
+      Some(Instances.defaultPrefix + "/" + instanceName)
+    }
+
 }

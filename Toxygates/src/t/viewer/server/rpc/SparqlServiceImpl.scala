@@ -104,13 +104,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val ts = baseConfig.triplestore.triplestore
     uniprot = new LocalUniprot(ts)
 
-    if (conf.instanceName == null || conf.instanceName == "") {
-      instanceURI = None
-    } else {
-      instanceURI = Some(Instances.defaultPrefix + "/" + conf.instanceName)
-    }
-
-    this.instanceURI = instanceURI
+    this.instanceURI = conf.instanceURI
 
     _appInfo = new AppInfo(conf.instanceName, sDatasets(),
         sPlatforms(), predefProbeLists(), probeClusterings(), appName,
@@ -384,10 +378,14 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val pw = Pathway(null, pathway)
     val prs = probeStore.forPathway(b2rKegg, pw)
     val pmap = context.matrix.probeMap //TODO
-    val result = prs.map(_.identifier).filter(pmap.isToken).toArray
 
+    val result = prs.map(_.identifier).filter(pmap.isToken)
+    filterByGroup(result, samples).toArray
+  }
+
+  private def filterByGroup(result: Iterable[String], samples: Iterable[Sample]) = {
     Option(samples) match {
-      case Some(_) => filterProbesByGroup(result, samples)
+      case Some(_) => filterProbesByGroupInner(result, samples)
       case None => result
     }
   }
@@ -414,12 +412,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val pmap = context.matrix.probeMap
     val got = GOTerm("", goTerm)
 
-    val result = probeStore.forGoTerm(got).map(_.identifier).filter(pmap.isToken).toArray
-
-    Option(samples) match {
-      case Some(_) => filterProbesByGroup(result, samples)
-      case None => result
-    }
+    val result = probeStore.forGoTerm(got).map(_.identifier).filter(pmap.isToken)
+    filterByGroup(result, samples).toArray
   }
 
   import scala.collection.{ Map => CMap, Set => CSet }
@@ -452,9 +446,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
         case _: AType.KEGG.type =>
           toBioMap(probes, (_: Probe).genes) combine
             b2rKegg.forGenes(probes.flatMap(_.genes))
-        case _: AType.Enzymes.type =>
-          val sp = asSpecies(sc)
-          b2rKegg.enzymes(probes.flatMap(_.genes), sp)
+//        case _: AType.Enzymes.type =>
+//          val sp = asSpecies(sc)
+//          b2rKegg.enzymes(probes.flatMap(_.genes), sp)
         case _ => throw new Exception("Unexpected annotation type")
       }
 
@@ -487,12 +481,15 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       probeStore.probesForPartialSymbol(plat, partialName).map(_.identifier).toArray
   }
 
-  def filterProbesByGroup(probes: Array[String], samples: JList[Sample]): Array[String] = {
-    val platforms: Set[String] = samples.map(x => x.get("platform_id")).toSet
+  private def filterProbesByGroupInner(probes: Iterable[String], group: Iterable[Sample])  = {
+    val platforms: Set[String] = group.map(x => x.get("platform_id")).toSet
     val lookup = probeStore.platformsAndProbes
-    val acceptProbes = platforms.flatMap(p => lookup(p))
+    val acceptable = platforms.flatMap(p => lookup(p))
+    probes.filter(acceptable.contains)
+  }
 
-    probes.filter(x => acceptProbes.contains(x))
+  def filterProbesByGroup(probes: Array[String], samples: JList[Sample]): Array[String] = {
+    filterProbesByGroupInner(probes, samples).toArray
   }
 
   def keywordSuggestions(partialName: String, maxSize: Int): Array[Pair[String, AType]] = {

@@ -144,6 +144,12 @@ trait MatrixDBWriter[E <: ExprValue] {
 
   def deleteSample(s: Sample): Unit
 
+  def deleteSamples(ss: Iterable[Sample]): Unit = {
+    for (s <- ss) {
+      deleteSample(s)
+    }
+  }
+
   /**
    * Close the database.
    */

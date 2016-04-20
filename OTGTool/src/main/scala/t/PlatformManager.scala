@@ -23,7 +23,7 @@ package t
 import t.sparql.Platforms
 import t.platform.PlatformDefFile
 import t.util.TempFiles
-import t.platform.AffymetrixConverter
+import t.platform.affy.AffymetrixConverter
 import t.db.kyotocabinet.KCIndexDB
 import t.sparql.Probes
 import t.sparql.TRDF

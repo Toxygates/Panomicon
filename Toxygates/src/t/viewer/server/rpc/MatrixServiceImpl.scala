@@ -23,12 +23,7 @@ package t.viewer.server.rpc
 import java.util.ArrayList
 import java.util.{ List => JList }
 import t.viewer.server.ExprMatrix
-import otgviewer.server.ExtFoldBuilder
-import otgviewer.server.FoldBuilder
-import otgviewer.server.ManagedMatrix
-import otgviewer.server.ManagedMatrixBuilder
 import otgviewer.server.MatrixMapper
-import otgviewer.server.NormalizedBuilder
 import otgviewer.shared.FullMatrix
 import t.viewer.shared.ManagedMatrixInfo
 import otgviewer.shared.NoDataLoadedException
@@ -70,6 +65,7 @@ import t.common.server.userclustering.RClustering
 import org.apache.commons.lang.StringUtils
 import t.common.shared.sample.ExpressionValue
 import t.viewer.shared.ColumnFilter
+import t.viewer.server.ManagedMatrix
 
 object MatrixServiceImpl {
 
@@ -110,8 +106,14 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   }
 
   protected class MatrixState {
-    var controller: MatrixController = _
-    def matrix: ManagedMatrix = controller.managedMatrix
+    var _controller: Option[MatrixController] = None
+    def controller =
+      _controller.getOrElse(throw new NoDataLoadedException)
+
+    def matrix: ManagedMatrix =
+      controller.managedMatrix
+
+    def matrixOption = _controller.map(_.managedMatrix)
   }
 
   def getSessionData(): MatrixState = {
@@ -157,9 +159,9 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
   def loadMatrix(groups: JList[Group], probes: Array[String],
     typ: ValueType): ManagedMatrixInfo = {
-    getSessionData.controller =
-      new MatrixController(context, () => getOrthologs(context),
-          groups, probes, typ, false, false)
+    getSessionData._controller =
+      Some(new MatrixController(context, () => getOrthologs(context),
+          groups, probes, typ, false, false))
     getSessionData.matrix.info
   }
 
@@ -172,7 +174,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   @throws(classOf[NoDataLoadedException])
   def setColumnFilter(column: Int, f: ColumnFilter): ManagedMatrixInfo = {
     val mm = getSessionData.matrix
-    
+
     println(s"Filter for column $column: $f")
     mm.setFilter(column, f)
     mm.info
@@ -302,45 +304,51 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   }
 
   @throws(classOf[NoDataLoadedException])
-  def addTwoGroupTest(test: Synthetic.TwoGroupSynthetic): Unit =
-    getSessionData.matrix.addSynthetic(test)
+  def addTwoGroupTest(test: Synthetic.TwoGroupSynthetic): ManagedMatrixInfo = {
+    val current = getSessionData.matrix
+    current.addSynthetic(test)
+    current.info
+  }
 
   @throws(classOf[NoDataLoadedException])
-  def removeTwoGroupTests(): Unit =
-    getSessionData.matrix.removeSynthetics
+  def removeTwoGroupTests(): ManagedMatrixInfo = {
+    val current = getSessionData.matrix
+    current.removeSynthetics()
+    current.info
+  }
 
-    @throws(classOf[NoDataLoadedException])
-    def prepareCSVDownload(individualSamples: Boolean): String = {
-      val mm = getSessionData.matrix
-      var mat = if (individualSamples &&
-        mm.rawUngroupedMat != null && mm.current != null) {
-        //Individual samples
-        val info = mm.info
-        val ug = mm.rawUngroupedMat.selectNamedRows(mm.current.rowKeys.toSeq)
-        val parts = (0 until info.numDataColumns).map(g => {
-          if (!info.isPValueColumn(g)) {
-            //Sample data.
-            //Help the user by renaming the columns.
-            //Prefix sample IDs by group IDs.
+  @throws(classOf[NoDataLoadedException])
+  def prepareCSVDownload(individualSamples: Boolean): String = {
+    val mm = getSessionData.matrix
+    var mat = if (individualSamples &&
+      mm.rawUngroupedMat != null && mm.current != null) {
+      //Individual samples
+      val info = mm.info
+      val ug = mm.rawUngroupedMat.selectNamedRows(mm.current.rowKeys.toSeq)
+      val parts = (0 until info.numDataColumns).map(g => {
+        if (!info.isPValueColumn(g)) {
+          //Sample data.
+          //Help the user by renaming the columns.
+          //Prefix sample IDs by group IDs.
 
-            //Here we get both treated and control samples from cg, but
-            //except for single unit columns in the normalized intensity case,
-            // only treated will be present in ug.
-            val ids = info.samples(g).map(_.id)
-            val sel = ug.selectNamedColumns(ids)
-            val newNames = Map() ++ sel.columnMap.map(x => (info.columnName(g) + ":" + x._1 -> x._2))
-            sel.copyWith(sel.data, sel.rowMap, newNames)
-          } else {
-            //p-value column, present as it is
-            mm.current.selectNamedColumns(List(info.columnName(g)))
-          }
-        })
+          //Here we get both treated and control samples from cg, but
+          //except for single unit columns in the normalized intensity case,
+          // only treated will be present in ug.
+          val ids = info.samples(g).map(_.id)
+          val sel = ug.selectNamedColumns(ids)
+          val newNames = Map() ++ sel.columnMap.map(x => (info.columnName(g) + ":" + x._1 -> x._2))
+          sel.copyWith(sel.data, sel.rowMap, newNames)
+        } else {
+          //p-value column, present as it is
+          mm.current.selectNamedColumns(List(info.columnName(g)))
+        }
+      })
 
-        parts.reduce(_ adjoinRight _)
-      } else {
-        //Grouped
-        mm.current
-      }
+      parts.reduce(_ adjoinRight _)
+    } else {
+      //Grouped
+      mm.current
+    }
 
     val colNames = mat.sortedColumnMap.map(_._1)
     val rows = mat.asRows
@@ -378,22 +386,24 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   }
 
   def sendFeedback(name: String, email: String, feedback: String): Unit = {
-    val mm = getSessionData.matrix
+    val mm = getSessionData.matrixOption
     var state = "(No user state available)"
-    if (mm != null && mm.current != null) {
-      state = "Matrix: " + mm.current.rowKeys.size + " x " + mm.current.columnKeys.size
-      state += "\nColumns: " + mm.current.columnKeys.mkString(", ")
+    if (mm != None && mm.get.current != null) {
+      val cmat = mm.get.current
+      state = "Matrix: " + cmat.rowKeys.size + " x " + cmat.columnKeys.size
+      state += "\nColumns: " + cmat.columnKeys.mkString(", ")
     }
     Feedback.send(name, email, feedback, state, config.feedbackReceivers,
       config.feedbackFromAddress, context.config.appName)
   }
 
+  @throws(classOf[NoDataLoadedException])
   def prepareHeatmap(groups: JList[Group], chosenProbes: Array[String],
     valueType: ValueType, algorithm: Algorithm): String = {
 
     //Reload data in a temporary controller if groups do not correspond to
     //the ones in the current session
-    val cont = if (getSessionData.controller == null ||
+    val cont = if (getSessionData._controller == None ||
         getSessionData().controller.groups.toSet != groups.toSet) {
       new MatrixController(context, () => getOrthologs(context),
           groups, chosenProbes, valueType, false, false)

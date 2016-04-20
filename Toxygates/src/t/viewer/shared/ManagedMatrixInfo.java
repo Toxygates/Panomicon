@@ -90,15 +90,17 @@ public class ManagedMatrixInfo implements Serializable {
   public void removeSynthetics() {
     numSynthetics = 0;
     int n = numDataColumns;
-    columnNames = columnNames.subList(0, n);
-    columnHints = columnHints.subList(0, n);
-    columnGroups = columnGroups.subList(0, n);
-    columnFilters = columnFilters.subList(0, n);
+    //The standard implementation of subList can't be serialised by GWT
+    columnNames = new ArrayList<String>(columnNames.subList(0, n));
+    columnHints = new ArrayList<String>(columnHints.subList(0, n));
+    columnGroups = new ArrayList<Group>(columnGroups.subList(0, n));
+    columnFilters = new ArrayList<ColumnFilter>(columnFilters.subList(0, n));
+    isPValueColumn = new ArrayList<Boolean>(isPValueColumn.subList(0, n));
+    samples = new ArrayList<Sample[]>(samples.subList(0, n));
   }
 
   /**
-   * Add all non-synthetic columns from the other matrix into this one.
-   * 
+   * Add all non-synthetic columns from the other matrix into this one. 
    * @param other
    */
   public ManagedMatrixInfo addAllNonSynthetic(ManagedMatrixInfo other) {
@@ -108,6 +110,10 @@ public class ManagedMatrixInfo implements Serializable {
           other.columnGroup(c), other.isPValueColumn(c), other.samples(c));
     }
     return this;
+  }
+  
+  public boolean hasColumn(String name) {
+    return columnNames.contains(name);
   }
 
   public int numColumns() {
@@ -124,7 +130,7 @@ public class ManagedMatrixInfo implements Serializable {
   }
 
   /**
-   * Synthetic columns are in the range numDataColumns until numColumns.
+   * Synthetic columns are in the range numDataColumns until numColumns - 1
    * 
    * @return
    */
