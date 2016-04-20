@@ -245,6 +245,13 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       pcb.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
+          if (pcb.getValue() && ! hasPValueColumns()) {
+            Window.alert("Precomputed p-values are only available for sample groups "
+                + "consisting of a single time and dose.\n"
+                + "If you wish to compare two columns, use "
+                + "\"Compare two sample groups\" in the tools menu.");
+            return;
+          }
           setDisplayPColumns(pcb.getValue());
           setupColumns();
         }
@@ -349,6 +356,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         Utils.displayURL("Your download is ready.", "Download", url);
       }
     });
+  }
+  
+  protected boolean hasPValueColumns() {
+    for (int i = 0; i < matrixInfo.numDataColumns(); ++i) {
+      if (matrixInfo.isPValueColumn(i)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   protected void setupColumns() {
