@@ -56,6 +56,18 @@ object ExprValue {
   def apply(v: Double, call: Char = 'P', probe: String = null) = BasicExprValue(v, call, probe)
 
   val nf = NumberFormat.getNumberInstance()
+
+  def isBefore(v1: ExprValue, v2: ExprValue): Boolean =
+    (v1.call, v2.call) match {
+      case ('A', 'M') => true
+      case ('A', 'P') => true
+      case ('M', 'A') => false
+      case ('M', 'P') => true
+      case ('P', 'A') => false
+      case ('P', 'M') => true
+      case _ => v1.value < v2.value
+    }
+
 }
 
 trait ExprValue {

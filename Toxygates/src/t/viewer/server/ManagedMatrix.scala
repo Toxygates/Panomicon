@@ -303,12 +303,8 @@ object ManagedMatrix {
   def makeTooltip[E <: ExprValue](data: Iterable[E], log2tfm: Boolean): String = {
     val d = if (log2tfm) data.map(log2) else data
 
-    val r = d.filter(_.present).take(10).map(_.toString).mkString(" ")
-    if (d.size > 10) {
-      r + ", ..."
-    } else {
-      r
-    }
+    val r = d.toSeq.sortWith(ExprValue.isBefore).map(_.toString).mkString(" ")
+    r
   }
 }
 
