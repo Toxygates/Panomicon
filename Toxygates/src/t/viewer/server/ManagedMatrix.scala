@@ -109,7 +109,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     val ungrouped = ExprMatrix.withRows(data,
         sortedProbes, sortedSamples.map(_.sampleId))
 
-    val bmap = Map() ++ (0 until requestColumns.size).map(i => {
+    val baseColumns = Map() ++ (0 until info.numDataColumns()).map(i => {
       val cg = info.columnGroup(i)
       val sampleIds = cg.samples.map(_.id).toSeq
       val sampleIdxs = sampleIds.map(i => ungrouped.columnMap.get(i)).flatten
@@ -119,7 +119,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     new ManagedMatrix(sortedProbes, info,
       ungrouped.copyWithAnnotations(annotations),
       grouped.copyWithAnnotations(annotations),
-      bmap,
+      baseColumns,
       log2tooltips)
   }
 

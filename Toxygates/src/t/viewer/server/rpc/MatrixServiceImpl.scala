@@ -188,22 +188,23 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
     val mergeMode = mm.info.getPlatforms.size > 1
 
-    val groups = getSessionData().controller.groups
+//    val groups = getSessionData().controller.groups
     //TODO avoid the asRows here, perhaps
     val grouped = mm.current.asRows.drop(offset).take(size)
-    val groupSamples = (0 until groups.size).map(g =>
-      mm.info.samples(g))
 
     val rowNames = grouped.map(_.getProbe)
-
     val rawData = mm.rawData.selectNamedRows(rowNames).data
 
     for ((gr, rr) <- grouped zip rawData;
       (gv, i) <- gr.getValues.zipWithIndex) {
-      val basis = mm.baseColumns(i)
-      val rawRow = basis.map(i => rr(i))
-      val tt = ManagedMatrix.makeTooltip(rawRow, mm.log2Tooltips)
-      gv.setTooltip(tt)
+      val tooltip = if (mm.info.isPValueColumn(i)) {
+        "p-value (t-test treated against control)"
+      } else {
+        val basis = mm.baseColumns(i)
+        val rawRow = basis.map(i => rr(i))
+        ManagedMatrix.makeTooltip(rawRow, mm.log2Tooltips)
+      }
+      gv.setTooltip(tooltip)
     }
 
     new ArrayList[ExpressionRow](insertAnnotations(grouped, mergeMode))
