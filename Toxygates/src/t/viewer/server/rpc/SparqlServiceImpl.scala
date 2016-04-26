@@ -106,7 +106,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     this.instanceURI = conf.instanceURI
 
-    _appInfo = new AppInfo(conf.instanceName, sDatasets(),
+    _appInfo = new AppInfo(conf.instanceName, Array(),
         sPlatforms(), predefProbeLists(), probeClusterings(), appName,
         makeUserKey(), getAnnotationInfo)
   }
@@ -164,7 +164,15 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   def appInfo: AppInfo = {
     getSessionData() //initialise this if needed
-     //Initialise the selected datasets by selecting all.
+
+    /* Reload the datasets since they can change due (with user data, admin
+     * operations etc.) We could also reload other parts of AppInfo but I prefer
+     * not to make too many queries every time appInfo is called.
+     * In the future, some kind of mechanism to determine whether AppInfo needs to be
+     * refreshed (such as a file timestamp) may be desirable.
+     */
+    _appInfo.setDatasets(sDatasets())
+    //Initialise the selected datasets by selecting all.
     chooseDatasets(_appInfo.datasets)
    _appInfo
   }
