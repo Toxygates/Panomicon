@@ -77,8 +77,12 @@ public class MyDataScreen extends Screen {
   }
   
   public Widget content() {
-    final Set<String> instancesForBatch = new HashSet<String>();
+    //Default instances for new user datasets. If the instance is not listed here,
+    //the user will not be able to see their data.
+    final Set<String> instancesForBatch = new HashSet<String>();    
     instancesForBatch.add("dev");
+    instancesForBatch.add("adjuvant");
+    instancesForBatch.add("toxygates");
     instancesForBatch.add("toxygates-test");
     
     BatchPanel bp = new BatchPanel("Edit batch", userData, resources,
