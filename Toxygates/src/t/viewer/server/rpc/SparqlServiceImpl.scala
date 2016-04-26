@@ -26,7 +26,6 @@ import scala.collection.{Set => CSet}
 import java.util.{List => JList}
 import otg.Species.Human
 import otg.db.OTGParameterSet
-
 import otgviewer.shared.Pathology
 import otgviewer.shared.TimeoutException
 import t.BaseConfig
@@ -61,6 +60,7 @@ import t.common.shared.Platform
 import t.viewer.server.SharedPlatforms
 import t.common.shared.clustering.ProbeClustering
 import t.common.shared.clustering.HierarchicalClustering
+import javax.annotation.Nullable
 
 object SparqlServiceImpl {
   var inited = false
@@ -162,7 +162,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     "%x%x".format(time, random)
   }
 
-  def appInfo: AppInfo = {
+  //TODO filter datasets by key
+  def appInfo(@Nullable userKey: String): AppInfo = {
     getSessionData() //initialise this if needed
 
     /* Reload the datasets since they can change due (with user data, admin

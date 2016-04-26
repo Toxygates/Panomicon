@@ -36,7 +36,10 @@ import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.Instance;
 import t.viewer.client.rpc.UserDataServiceAsync;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -56,8 +59,10 @@ public class MyDataScreen extends Screen {
   
   private HorizontalPanel cmds = t.viewer.client.Utils.mkHorizontalPanel();
   
-  final String userKey; 
-  final String userDataset;  
+  private String userKey;   
+  private String userDataset;
+  
+  private Label keyLabel;
   
   public MyDataScreen(ScreenManager man) {
     super("My data", key, false, man);
@@ -68,12 +73,8 @@ public class MyDataScreen extends Screen {
     String key = getParser().getItem("userDataKey");
     if (key == null) {
       key = manager().appInfo().getUserKey();
-      getParser().setItem("userDataKey", key);
     }
-    userKey = key;
-    userDataset = "user-" + key;
-    
-    logger.info("The unique user key is: " + userKey);
+    setUserKey(key);    
   }
   
   public Widget content() {
@@ -122,7 +123,7 @@ public class MyDataScreen extends Screen {
             if (vis.equals("Private")) {
               return userDataset;
             } else {              
-              return "adjuvant-shared"; //TODO
+              return "user-shared"; //TODO
             }
           }
           
@@ -150,12 +151,35 @@ public class MyDataScreen extends Screen {
     HTML h = new HTML();
     h.setHTML("<a target=_blank href=\"Toxygates user data example.zip\"> Download example files</a>");
     cmds.add(h);
-
-    cmds.add(new Label("Your access key is: " + userKey));
-    
-    refreshBatches();
-    
+    keyLabel = new Label("Your access key is: " + userKey); 
+    cmds.add(keyLabel);
+    Button b = new Button("Set...");
+    b.addClickHandler(new ClickHandler() {      
+      @Override
+      public void onClick(ClickEvent event) {   
+        if (Window.confirm("If you have uploaded any data, please save your existing key first.\n" +
+              "Without it, you will lose access to your data. Proceed?")) {
+          String newKey = Window.prompt("Please input your user data key.", "");
+          if (newKey != null) {
+            setUserKey(newKey);
+            refreshBatches();
+          }
+        }
+      }
+    });
+    cmds.add(b);    
+    refreshBatches();    
     return bp.table();
+  }
+  
+  private void setUserKey(String key) {
+    getParser().setItem("userDataKey", key);    
+    userKey = key;
+    userDataset = "user-" + key;    
+    logger.info("The unique user key is: " + userKey);
+    if (keyLabel != null) {
+      keyLabel.setText("Your access key is: " + userKey);
+    }
   }
 
   private void refreshBatches() {

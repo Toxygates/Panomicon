@@ -184,7 +184,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     final Logger l = SharedUtils.getLogger();
     final DialogBox wait = Utils.waitDialog();
 
-    sparqlService.appInfo(new AsyncCallback<AppInfo>() {
+    //TODO pass user key as first argument
+    sparqlService.appInfo(null, new AsyncCallback<AppInfo>() {
       @Override
       public void onSuccess(AppInfo result) {
         l.info("Got appInfo");

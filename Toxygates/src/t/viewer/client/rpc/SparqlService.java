@@ -52,13 +52,14 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface SparqlService extends RemoteService {
 
   /**
-   * Obtain general application info. TODO migrate one-time mandatory data retrival to this object
+   * Obtain general application info. 
+   * TODO migrate one-time mandatory data retrival to this object
    * to make the API smaller and reduce the number of calls
    * 
    * @return
    * @throws TimeoutException
    */
-  public AppInfo appInfo() throws TimeoutException;
+  public AppInfo appInfo(@Nullable String userDataKey) throws TimeoutException;
 
   /**
    * Choose the subset of datasets to work with. This must be a subset of the datasets previously
