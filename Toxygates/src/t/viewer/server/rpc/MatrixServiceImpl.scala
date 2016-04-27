@@ -256,7 +256,8 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
           repeatStrings(expandedSymbols).toArray,
           or.getValues)
 
-        val gils = withCount(expandedGenes).map(x => s"${x._1._1 + ":" + x._1._2} (${prbCount(x._2)})").toArray
+        val gils = withCount(expandedGenes).map(x =>
+          s"${x._1._1 + ":" + x._1._2} (${prbCount(x._2)})").toArray
         r.setGeneIdLabels(gils)
         r
       } else {
@@ -281,9 +282,11 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
     val raw = if (sgs.size == 1) {
       //break out each individual sample if it's only one group
-      mm.rawData.selectNamedColumns(sgs(0).getSamples().map(_.id())).asRows
+      val ss = sgs(0).getSamples().map(_.id)
+      mm.rawData.selectNamedColumns(ss).asRows
     } else {
-      mm.current.selectNamedColumns(sgs.map(_.getName)).asRows
+      val ss = sgs.map(_.getName)
+      mm.current.selectNamedColumns(ss).asRows
     }
 
     val rows = if (withSymbols) {
