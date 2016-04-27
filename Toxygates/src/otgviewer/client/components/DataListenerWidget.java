@@ -249,27 +249,23 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     other.clusteringListsChanged(chosenClusteringList);
   }
 
-  protected Storage tryGetStorage() {
-    Storage r = Storage.getLocalStorageIfSupported();
-    // TODO concurrency an issue for GWT here?
-    if (r == null) {
-      Window
-          .alert("Local storage must be supported in the web browser. The application cannot continue.");
-    }
-    return r;
-  }
+//  protected static Storage tryGetStorage() {
+//    Storage r = Storage.getLocalStorageIfSupported();
+//    // TODO concurrency an issue for GWT here?
+//    if (r == null) {
+//      Window
+//          .alert("Local storage must be supported in the web browser. The application cannot continue.");
+//    }
+//    return r;
+//  }
 
-  protected String keyPrefix(Screen s) {
-    // TODO use instance name
-    return s.manager.storagePrefix();
-  }
+//  protected String keyPrefix(Screen s) {
+//    // TODO use instance name
+//    return s.manager.storagePrefix();
+//  }
 
   public StorageParser getParser(Screen s) {
-    if (parser != null) {
-      return parser;
-    }
-    parser = new StorageParser(tryGetStorage(), keyPrefix(s));
-    return parser;
+    return s.manager().getParser();    
   }
 
   /**

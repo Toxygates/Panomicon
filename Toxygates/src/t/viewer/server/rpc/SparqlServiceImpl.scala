@@ -172,7 +172,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
      * In the future, some kind of mechanism to determine whether AppInfo needs to be
      * refreshed (such as a file timestamp) may be desirable.
      */
-    _appInfo.setDatasets(sDatasets())
+    _appInfo.setDatasets(sDatasets(userKey))
     //Initialise the selected datasets by selecting all.
     chooseDatasets(_appInfo.datasets)
    _appInfo
@@ -192,12 +192,22 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     new java.util.LinkedList(seqAsJavaList(cls))
   }
 
-  private def sDatasets(): Array[Dataset] = {
+  private def sDatasets(userKey: String): Array[Dataset] = {
     val ds = new Datasets(baseConfig.triplestore) with SharedDatasets
-    (instanceURI match {
+    var r = (instanceURI match {
       case Some(u) => ds.sharedListForInstance(u)
       case None => ds.sharedList
-    }).toArray
+    })
+
+    r = r.filter(ds => {
+      val spl = ds.getTitle.split("user-")
+      if (spl.size > 1) {
+        (userKey!= null && spl(1) == userKey) || spl(1) == "shared"
+      } else {
+        true
+      }
+    })
+    r.toArray
   }
 
   private def sPlatforms(): Array[Platform] = {

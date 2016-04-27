@@ -78,8 +78,6 @@ public interface ScreenManager extends ProvidesResize {
 
   Resources resources();
 
-  String storagePrefix();
-
   AppInfo appInfo();
 
   SparqlServiceAsync sparqlService();
@@ -91,4 +89,6 @@ public interface ScreenManager extends ProvidesResize {
   UserDataServiceAsync userDataService();
 
   UIFactory factory();
+  
+  StorageParser getParser();
 }

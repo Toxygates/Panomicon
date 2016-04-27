@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -62,7 +62,9 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
       val exbs = new Batches(context.config.triplestore).list
       if (exbs.contains(b.getTitle) && !mayAppendBatch) {
-        throw new MaintenanceException(s"The batch ${b.getTitle} already exists and appending is not allowed")
+        throw new MaintenanceException(
+            s"The batch ${b.getTitle} already exists and appending is not allowed. " +
+            "Please choose a different name.")
       }
 
       val tempFiles = new TempFiles()
@@ -83,12 +85,16 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
       checkMetadata(md)
 
+      TaskRunner += bm.addBatchRecord(b.getTitle, b.getComment, context.config.triplestore)
+      //Set the parameters immediately, so that the batch is in the right dataset
+      // -> can be seen and deleted, in the case of e.g. user data
+      TaskRunner += Tasklet.simple("Set batch parameters", () => updateBatch(b))
+
       TaskRunner ++= bm.addBatch(b.getTitle, b.getComment, md,
         dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
-        false, baseConfig.seriesBuilder,
+        true, baseConfig.seriesBuilder,
         exprAsFold, simpleLog2)
-      TaskRunner += Tasklet.simple("Set batch parameters", () => updateBatch(b))
     }
   }
 

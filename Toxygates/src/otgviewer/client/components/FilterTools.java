@@ -74,6 +74,10 @@ public class FilterTools extends DataListenerWidget {
 
   protected void showDatasetSelector() {
     final DialogBox db = new DialogBox(false, true);
+    
+    //TODO re-retrieve user data here (in case user key has changed) and re-populate
+    //datasets
+    
     // TODO set init. selection
     DatasetSelector dsel =
         new DatasetSelector(Arrays.asList(screen.appInfo().datasets()),

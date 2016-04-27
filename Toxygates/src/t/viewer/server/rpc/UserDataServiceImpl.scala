@@ -51,7 +51,7 @@ abstract class UserDataServiceImpl extends TServiceServlet
 
   protected override def mayAppendBatch: Boolean = false
 
-  override protected def updateBatch(b: Batch): Unit = {
+  override def addBatchAsync(b: Batch): Unit = {
     //Here, we must first ensure existence of the dataset.
     //For user data, the unique user id will here be supplied from the client side.
     //(e.g. user-a1f8032011c0f...)
@@ -60,7 +60,7 @@ abstract class UserDataServiceImpl extends TServiceServlet
     val d = new Dataset(b.getDataset, "User data",
         "Automatically generated", null, "Automatically generated")
     addDataset(d, false)
-    super.updateBatch(b)
+    super.addBatchAsync(b)
   }
 
   override protected def afterTaskCleanup(): Unit = {
