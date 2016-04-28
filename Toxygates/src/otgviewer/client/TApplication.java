@@ -225,11 +225,16 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   }
 
   private StorageParser parser;
+  
+  protected String storageParserPrefix() {
+    return instanceName();
+  }
+  
   public StorageParser getParser() {
     if (parser != null) {
       return parser;
     }
-    parser = new StorageParser(tryGetStorage(), instanceName());
+    parser = new StorageParser(tryGetStorage(), storageParserPrefix());
     return parser;
   }
 
