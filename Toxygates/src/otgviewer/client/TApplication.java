@@ -145,6 +145,26 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     return appInfo;
   }
 
+  public void reloadAppInfo(final AsyncCallback<AppInfo> handler) {
+    final Logger l = SharedUtils.getLogger();
+    final DialogBox wait = Utils.waitDialog();
+
+    @Nullable String existingKey = getParser().getItem("userDataKey");
+    sparqlService.appInfo(existingKey, new AsyncCallback<AppInfo>() {
+      public void onSuccess(AppInfo result) {
+        l.info("Got appInfo");
+        wait.hide();
+        appInfo = result;
+        handler.onSuccess(result);
+      }
+      public void onFailure(Throwable caught) {
+        wait.hide();
+        l.log(Level.WARNING, "Failed to obtain appInfo", caught);
+        handler.onFailure(caught);
+      }      
+    });
+  }
+  
   /**
    * This is the entry point method.
    */
@@ -183,27 +203,19 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     navOuter.add(navPanel);
     mainDockPanel.addNorth(navOuter, 35);
 
-    final Logger l = SharedUtils.getLogger();
-    final DialogBox wait = Utils.waitDialog();
-
-    @Nullable String existingKey = getParser().getItem("userDataKey");
-    sparqlService.appInfo(existingKey, new AsyncCallback<AppInfo>() {
+    reloadAppInfo(new AsyncCallback<AppInfo>() {
       @Override
       public void onSuccess(AppInfo result) {
-        l.info("Got appInfo");
-        appInfo = result;
-        wait.hide();
         prepareScreens();
       }
 
       @Override
       public void onFailure(Throwable caught) {
-        wait.hide();
-        Window.alert("Failed to obtain application information.");
-        l.log(Level.WARNING, "Failed to obtain appInfo", caught);
+        Window.alert("Failed to obtain application information.");        
       }
     });
 
+    Logger l = SharedUtils.getLogger();
     l.info("onModuleLoad() finished");
   }
 

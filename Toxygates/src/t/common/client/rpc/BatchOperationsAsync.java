@@ -28,7 +28,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface BatchOperationsAsync extends MaintenanceOperationsAsync {
   
-  void getBatches(@Nullable String dataset, AsyncCallback<Batch[]> callback);
+  void getBatches(@Nullable String[] datasets, AsyncCallback<Batch[]> callback);
   
   void addBatchAsync(Batch b, AsyncCallback<Void> callback);
 

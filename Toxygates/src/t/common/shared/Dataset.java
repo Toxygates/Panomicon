@@ -20,7 +20,11 @@
 
 package t.common.shared;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+
 
 @SuppressWarnings("serial")
 public class Dataset extends ManagedItem {
@@ -43,4 +47,55 @@ public class Dataset extends ManagedItem {
 	public String getUserTitle() { return description; }
 	
 	public String getPublicComment() { return publicComment; } 
+	
+	public Collection<Dataset> getSubDatasets() {
+	  List<Dataset> r = new ArrayList<Dataset>();
+	  r.add(this);
+	  return r;
+	}
+	
+	public static Collection<Dataset> groupUserShared(String userTitle, Collection<Dataset> from) {
+	  List<Dataset> r = new ArrayList<Dataset>();
+	  List<Dataset> shared = new ArrayList<Dataset>();
+	  for (Dataset d: from) {
+	    if (isSharedDataset(d.getTitle())) {
+	      shared.add(d);
+	    } else {
+	      r.add(d);
+	    }
+	  }
+	  GroupedDataset gd = new GroupedDataset("grouped-autogen", userTitle, shared);
+	  r.add(gd);
+	  return r;
+	}
+	
+	public static Collection<Dataset> ungroup(Collection<Dataset> from) {
+	  List<Dataset> r = new ArrayList<Dataset>();
+	  for (Dataset d: from) {
+	    if (d instanceof GroupedDataset) {
+	      r.addAll(((GroupedDataset) d).getSubDatasets());
+	    } else {
+	      r.add(d);
+	    }
+	  }
+	  return r;
+	}
+	
+	public static String userDatasetTitle(String userKey) {
+	  return "user-" + userKey;
+	}
+	
+	public static String userSharedDatasetTitle(String userKey) {
+	  return "user-shared-" + userKey;
+	}
+	
+	public static boolean isSharedDataset(String title) {
+	  return title.startsWith("user-shared-");	      
+	}
+	
+	public static boolean isDataVisible(String datasetTitle, String userKey) {
+	  return datasetTitle.equals(userDatasetTitle(userKey)) ||
+	      isSharedDataset(datasetTitle) ||
+	      ! datasetTitle.startsWith("user-");
+	}
 }

@@ -199,14 +199,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       case None => ds.sharedList
     })
 
-    r = r.filter(ds => {
-      val spl = ds.getTitle.split("user-")
-      if (spl.size > 1) {
-        (userKey!= null && spl(1) == userKey) || spl(1) == "shared"
-      } else {
-        true
-      }
-    })
+    r = r.filter(ds => Dataset.isDataVisible(ds.getTitle, userKey))
     r.toArray
   }
 

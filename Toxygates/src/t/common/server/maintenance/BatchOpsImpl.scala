@@ -36,6 +36,7 @@ import t.common.shared.ManagedItem
 import t.sparql.TRDF
 import t.common.shared.Dataset
 import t.db.Metadata
+import javax.annotation.Nullable
 
 /**
  * Routines for servlets that support the management of batches.
@@ -106,8 +107,8 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
   import java.util.HashSet
 
-  def getBatches(dataset: String): Array[Batch] = {
-    val useDataset = Option(dataset)
+  def getBatches(@Nullable dss: Array[String]): Array[Batch] = {
+    val useDatasets = Option(dss).toSet.flatten
 
     val bs = new Batches(baseConfig.triplestore)
     val ns = bs.numSamples
@@ -121,10 +122,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
         new HashSet(setAsJavaSet(bs.listAccess(b).toSet)),
         datasets.getOrElse(b, ""))
     }).toArray
-    useDataset match {
-      case None     => r
-      case Some(ds) => r.filter(_.getDataset == ds)
-    }
+    r.filter(b => useDatasets.contains(b.getDataset))
   }
 
   def deleteBatchAsync(id: String): Unit = {

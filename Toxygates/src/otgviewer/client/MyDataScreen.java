@@ -61,6 +61,7 @@ public class MyDataScreen extends Screen {
   
   private String userKey;   
   private String userDataset;
+  private String userSharedDataset;
   
   private Label keyLabel;
   
@@ -123,7 +124,7 @@ public class MyDataScreen extends Screen {
             if (vis.equals("Private")) {
               return userDataset;
             } else {              
-              return "user-shared"; //TODO
+              return userSharedDataset;
             }
           }
           
@@ -175,15 +176,17 @@ public class MyDataScreen extends Screen {
   private void setUserKey(String key) {
     getParser().setItem("userDataKey", key);    
     userKey = key;
-    userDataset = "user-" + key;    
-    logger.info("The unique user key is: " + userKey);
+    userDataset = Dataset.userDatasetTitle(key);
+    userSharedDataset = Dataset.userSharedDatasetTitle(key);        
+    logger.info("The unique user key is: " + key);
     if (keyLabel != null) {
       keyLabel.setText("Your access key is: " + userKey);
     }
   }
 
   private void refreshBatches() {
-    userData.getBatches(userDataset, new ListDataCallback<Batch>(batchData, "batch list"));
+    String[] dss = { userDataset, userSharedDataset };
+    userData.getBatches(dss, new ListDataCallback<Batch>(batchData, "batch list"));
   }
   
   private void deleteBatch(Batch b) {

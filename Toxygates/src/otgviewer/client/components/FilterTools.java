@@ -23,9 +23,12 @@ import java.util.Arrays;
 import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
 import t.viewer.client.rpc.SparqlServiceAsync;
+import t.viewer.shared.AppInfo;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -72,19 +75,33 @@ public class FilterTools extends DataListenerWidget {
     filterTools.add(dfe);
   }
 
-  protected void showDatasetSelector() {
-    final DialogBox db = new DialogBox(false, true);
-    
-    //TODO re-retrieve user data here (in case user key has changed) and re-populate
+  protected void showDatasetSelector() {    
+    //Re-retrieve user data here (in case user key has changed) and re-populate
     //datasets
+    
+    screen.manager().reloadAppInfo(new AsyncCallback<AppInfo>() {      
+      @Override
+      public void onSuccess(AppInfo result) {
+        proceedShowSelector(result);
+      }
+      
+      @Override
+      public void onFailure(Throwable caught) {
+        Window.alert("Failed to load datasets from server");        
+      }
+    });    
+  }
+  
+  protected void proceedShowSelector(AppInfo info) {    
+    final DialogBox db = new DialogBox(false, true);
     
     // TODO set init. selection
     DatasetSelector dsel =
-        new DatasetSelector(Arrays.asList(screen.appInfo().datasets()),
+        new DatasetSelector(Arrays.asList(info.datasets()),
             Arrays.asList(chosenDatasets)) {
           @Override
           public void onOK() {
-            datasetsChanged(selector.getSelection().toArray(new Dataset[0]));
+            datasetsChanged(getSelected().toArray(new Dataset[0]));
             sparqlService.chooseDatasets(chosenDatasets, new PendingAsyncCallback<Void>(screen,
                 "Unable to choose datasets") {
               public void handleSuccess(Void v) {

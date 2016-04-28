@@ -26,6 +26,7 @@ import t.viewer.server.Configuration
 import t.common.shared.maintenance.Batch
 import t.common.shared.Dataset
 import t.global.KCDBRegistry
+import t.common.shared.maintenance.MaintenanceException
 
 /**
  * A servlet for managing user data (as batches).
@@ -57,14 +58,32 @@ abstract class UserDataServiceImpl extends TServiceServlet
     //(e.g. user-a1f8032011c0f...)
     //can also be user-shared in the case of shared user data.
 
-    val d = new Dataset(b.getDataset, "User data",
-        "Automatically generated", null, "Automatically generated")
-    addDataset(d, false)
+    ensureDataset(b.getDataset)
     super.addBatchAsync(b)
   }
 
   override protected def afterTaskCleanup(): Unit = {
     super.afterTaskCleanup()
     KCDBRegistry.closeWriters()
+  }
+
+  override def getBatches(datasets: Array[String]): Array[Batch] = {
+    if (datasets == null || datasets.isEmpty) {
+      //Security check - don't list batches unless they have the keys
+      throw new MaintenanceException("In the user data service, datasets must be specified explicitly")
+    }
+    super.getBatches(datasets)
+  }
+
+  override protected def updateBatch(b: Batch): Unit = {
+    //Ensure the dataset exists
+    ensureDataset(b.getDataset)
+    super.updateBatch(b)
+  }
+
+  private def ensureDataset(ds: String): Unit = {
+     val d = new Dataset(ds, "User data",
+        "Automatically generated", null, "Automatically generated")
+    addDataset(d, false)
   }
 }

@@ -29,7 +29,14 @@ import t.common.shared.maintenance.MaintenanceException;
  * Management operations for batches.
  */
 public interface BatchOperations extends MaintenanceOperations {
-  public Batch[] getBatches(@Nullable String dataset) throws MaintenanceException;
+  /**
+   * Get the batches that the user is allowed to manage.
+   * @param datasets The datasets to request batches from, or null/empty to get all batches 
+   * (if this is allowed)
+   * @return Batches in the datasets
+   * @throws MaintenanceException
+   */
+  public Batch[] getBatches(@Nullable String[] datasets) throws MaintenanceException;
   
   void addBatchAsync(Batch b) throws MaintenanceException;
 

@@ -27,6 +27,7 @@ import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.client.rpc.UserDataServiceAsync;
 import t.viewer.shared.AppInfo;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.ProvidesResize;
 
 /**
@@ -79,6 +80,8 @@ public interface ScreenManager extends ProvidesResize {
   Resources resources();
 
   AppInfo appInfo();
+  
+  void reloadAppInfo(final AsyncCallback<AppInfo> handler);
 
   SparqlServiceAsync sparqlService();
 

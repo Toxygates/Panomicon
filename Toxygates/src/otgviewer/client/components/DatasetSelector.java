@@ -37,8 +37,10 @@ public class DatasetSelector extends Composite {
   final protected DataRecordSelector<Dataset> selector;
 
   public DatasetSelector(Collection<Dataset> items, Collection<Dataset> selectedItems) {
-    selector = new DataRecordSelector<>(items);
-    selector.setSelection(selectedItems);
+    Collection<Dataset> gi = Dataset.groupUserShared("Shared user data", items);    
+    selector = new DataRecordSelector<>(gi);
+    Collection<Dataset> sgi = Dataset.groupUserShared("Shared user data", selectedItems);    
+    selector.setSelection(sgi);
 
     VerticalPanel vp = new VerticalPanel();
     vp.add(new Label(message));
@@ -62,11 +64,11 @@ public class DatasetSelector extends Composite {
     vp.add(makeButtons(commands));
   }
 
+  protected Collection<Dataset> getSelected() {
+    return Dataset.ungroup(selector.getSelection());
+  }
+  
   public void onOK() {}
 
   public void onCancel() {}
-
-  public DataRecordSelector<Dataset> selector() {
-    return selector;
-  }
 }
