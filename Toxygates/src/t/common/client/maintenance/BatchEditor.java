@@ -24,6 +24,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import t.common.client.rpc.BatchOperationsAsync;
 import t.common.shared.Dataset;
 import t.common.shared.maintenance.Batch;
@@ -33,7 +35,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 abstract public class BatchEditor extends ManagedItemEditor {
-  protected BatchUploader uploader;
+  @Nullable protected BatchUploader uploader;
   
   final protected Collection<Dataset> datasets;
   final protected Collection<Instance> instances;
@@ -98,10 +100,14 @@ abstract public class BatchEditor extends ManagedItemEditor {
   }
   
   protected void onFinishOrAbort() {
-    uploader.resetAll();
+    if (uploader != null) {
+      uploader.resetAll();
+    }
   }
   
   protected void onAbort() {
-    uploader.resetAll();
+    if (uploader != null) {
+      uploader.resetAll();
+    }
   }
 }

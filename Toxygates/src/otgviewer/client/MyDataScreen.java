@@ -116,6 +116,11 @@ public class MyDataScreen extends Screen {
             visList.addItem("Private");
             visList.addItem("Shared");
             vp.add(visList);
+            if (b != null && Dataset.isSharedDataset(b.getDataset())) {
+              visList.setSelectedIndex(1);
+            } else {
+              visList.setSelectedIndex(0);
+            }
           }
           
           @Override
@@ -151,10 +156,10 @@ public class MyDataScreen extends Screen {
     
     HTML h = new HTML();
     h.setHTML("<a target=_blank href=\"Toxygates user data example.zip\"> Download example files</a>");
-    cmds.add(h);
-    keyLabel = new Label("Your access key is: " + userKey); 
+    cmds.add(h); 
+    keyLabel = new Label("Access key: " + userKey);
     cmds.add(keyLabel);
-    Button b = new Button("Set...");
+    Button b = new Button("Change ...");
     b.addClickHandler(new ClickHandler() {      
       @Override
       public void onClick(ClickEvent event) {   
