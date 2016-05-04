@@ -43,8 +43,6 @@ import t.common.shared.sample.Sample;
 import t.common.shared.sample.SampleColumn;
 import t.viewer.client.Utils;
 
-import com.google.gwt.storage.client.Storage;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
 
@@ -72,7 +70,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   public List<ItemList> chosenClusteringList = new ArrayList<ItemList>();
 
   protected final Logger logger = SharedUtils.getLogger("dlwidget");
-  private StorageParser parser;
 
   public Logger getLogger() {
     return logger;
