@@ -8,8 +8,9 @@ import java.util.List;
  * This class is intended mainly for grouping shared datasets, which will have
  * the same user title but different IDs.
  * @author johan
- *
  */
+
+@SuppressWarnings("serial")
 public class GroupedDataset extends Dataset {
 
   private List<Dataset> subDatasets;
