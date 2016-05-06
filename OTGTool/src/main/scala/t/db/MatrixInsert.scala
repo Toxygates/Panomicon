@@ -79,22 +79,35 @@ abstract class MatrixInsert[E <: ExprValue](raw: RawExpressionData)
           log(data.keySet.size + " samples")
           log(raw.probes.size + " probes")
 
+          val unknownProbes = raw.probes.toSet -- context.probeMap.tokens
+          for (probe <- unknownProbes) {
+            log(s"Warning: unknown probe '$probe' (this error may be safely ignored).")
+          }
+          val knownProbes = raw.probes.toSet -- unknownProbes
+          if (knownProbes.size == 0) {
+            throw new LookupFailedException("No valid probes in data.")
+          }
+
           val total = values.size
           val pmap = context.probeMap
           var pcomp = 0d
           val it = values.iterator
           while (it.hasNext && shouldContinue(pcomp)) {
             val (x, probe, v) = it.next
-            val packed = try {
-              pmap.pack(probe)
-            } catch {
-              case lf: LookupFailedException =>
-                throw new LookupFailedException(
-                  s"Unknown probe: $probe. Did you forget to upload a platform definition?")
-              case t: Throwable => throw t
-            }
+            if (knownProbes.contains(probe)) {
+              val packed = try {
+                pmap.pack(probe)
+              } catch {
+                case lf: LookupFailedException =>
+                  throw new LookupFailedException(
+                    s"Unknown probe: $probe. Did you forget to upload a platform definition?")
+                case t: Throwable => throw t
+              }
 
-            db.write(x, packed, v)
+              db.write(x, packed, v)
+            } else {
+              log(s"Not inserting unknown probe '$probe'")
+            }
             pcomp += 100.0 / total
           }
 

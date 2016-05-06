@@ -26,8 +26,13 @@ import t.db.Sample
 import scala.collection.{ Map => CMap }
 import t.db.FoldPExpr
 
+class ParseException(msg: String) extends Exception
+
 class CSVRawExpressionData(exprFiles: Iterable[String],
-    callFiles: Option[Iterable[String]]) extends RawExpressionData {
+    callFiles: Option[Iterable[String]], expectedSamples: Option[Int],
+    parseWarningHandler: (String) => Unit) extends RawExpressionData {
+
+  private val expectedColumns = expectedSamples.map(_ + 1)
 
   private[this] def traverseFile[T](file: String,
     lineHandler: (Array[String], String) => Unit): Array[String] = {
@@ -35,6 +40,13 @@ class CSVRawExpressionData(exprFiles: Iterable[String],
     val s = Source.fromFile(file)
     val ls = s.getLines
     val columns = ls.next.split(",", -1).map(_.trim)
+
+    //Would this be too strict?
+//    if (expectedColumns != None && expectedColumns.get != columns.size) {
+//      throw new ParseException(
+//          s"Wrong number of column headers - expected $expectedColumns got ${columns.size}")
+//    }
+//
     var call: Vector[T] = Vector.empty
     for (l <- ls) {
       lineHandler(columns, l)
@@ -48,7 +60,14 @@ class CSVRawExpressionData(exprFiles: Iterable[String],
 
     var raw: Vector[Array[String]] = Vector.empty
     val columns = traverseFile(file, (columns, l) => {
-      raw :+= l.split(",", -1).map(_.trim)
+      val spl = l.split(",", -1).map(_.trim)
+      if (expectedColumns != None && spl.size < expectedColumns.get) {
+        val wmsg =
+            s"Too few columns on line (expected $expectedColumns, got ${spl.size}. Line starts with: " + l.take(30)
+        parseWarningHandler(wmsg)
+      } else {
+        raw :+= spl
+      }
     })
 
     var data = scala.collection.mutable.Map[Sample, CMap[String, T]]()

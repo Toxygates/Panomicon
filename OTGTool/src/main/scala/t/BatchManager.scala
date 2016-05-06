@@ -274,8 +274,11 @@ class BatchManager(context: Context) {
     implicit val mc = matrixContext()
     r :+= addEnums(metadata, sbuilder)
 
-    r :+= addExprData(dataFile, callFile, exprAsFold)
-    r :+= addFoldsData(metadata, dataFile, callFile, simpleLog2)
+    //TODO logging directly to TaskRunner is controversial
+    r :+= addExprData(metadata, dataFile, callFile, exprAsFold,
+        m => TaskRunner.log(s"Warning: $m"))
+    r :+= addFoldsData(metadata, dataFile, callFile, simpleLog2,
+        m => TaskRunner.log(s"Warning: $m"))
     r :+= addSeriesData(metadata, sbuilder)
 
     r
@@ -411,9 +414,11 @@ class BatchManager(context: Context) {
   }
 
   //TODO: remove treatAsFold parameter when possible
-  def addExprData(niFile: String, callFile: Option[String],
-    treatAsFold: Boolean)(implicit mc: MatrixContext) = {
-    val data = new CSVRawExpressionData(List(niFile), callFile.map(List(_)))
+  def addExprData(md: Metadata, niFile: String, callFile: Option[String],
+    treatAsFold: Boolean,
+    warningHandler: (String) => Unit)(implicit mc: MatrixContext) = {
+    val data = new CSVRawExpressionData(List(niFile), callFile.map(List(_)),
+        Some(md.samples.size), warningHandler)
     if (treatAsFold) {
       val db = () => config.data.extWriter(config.data.exprDb)
       new SimplePFoldValueInsert(db, data).insert("Insert expr value data (quasi-fold format)")
@@ -423,9 +428,10 @@ class BatchManager(context: Context) {
   }
 
   def addFoldsData(md: Metadata, foldFile: String, callFile: Option[String],
-      simpleLog2: Boolean)
+      simpleLog2: Boolean, warningHandler: (String) => Unit)
   (implicit mc: MatrixContext) = {
-    val data = new CSVRawExpressionData(List(foldFile), callFile.map(List(_)))
+    val data = new CSVRawExpressionData(List(foldFile), callFile.map(List(_)),
+        Some(md.samples.size), warningHandler)
     val fvs = if (simpleLog2) {
       new Log2Data(data)
     } else {

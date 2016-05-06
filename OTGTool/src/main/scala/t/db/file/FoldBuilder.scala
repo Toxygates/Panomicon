@@ -160,7 +160,8 @@ object FoldBuilder extends CmdLineOptions {
     val factory = new otg.Factory //TODO
 
     val md = factory.tsvMetadata(input)
-    val data = new CSVRawExpressionData(List(input), Some(List(calls)))
+    val data = new CSVRawExpressionData(List(input), Some(List(calls)),
+        Some(md.samples.size), println)
     val builder = new PFoldValueBuilder(md, data)
 
     val output = input.replace(".csv", "_fold.csv")
