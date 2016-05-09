@@ -52,6 +52,12 @@ abstract class UserDataServiceImpl extends TServiceServlet
 
   protected override def mayAppendBatch: Boolean = false
 
+  override protected def afterTaskCleanup(): Unit = {
+    super.afterTaskCleanup()
+    KCDBRegistry.closeWriters()
+  }
+
+  //Public entry point
   override def addBatchAsync(b: Batch): Unit = {
     //Here, we must first ensure existence of the dataset.
     //For user data, the unique user id will here be supplied from the client side.
@@ -59,14 +65,18 @@ abstract class UserDataServiceImpl extends TServiceServlet
     //can also be user-shared in the case of shared user data.
 
     ensureDataset(b.getDataset)
+
+    //TODO security check
     super.addBatchAsync(b)
   }
 
-  override protected def afterTaskCleanup(): Unit = {
-    super.afterTaskCleanup()
-    KCDBRegistry.closeWriters()
+  //Public entry point
+  override def deleteBatchAsync(id: String): Unit = {
+    //TODO security check
+    super.deleteBatchAsync(id)
   }
 
+  //Public entry point
   override def getBatches(datasets: Array[String]): Array[Batch] = {
     if (datasets == null || datasets.isEmpty) {
       //Security check - don't list batches unless they have the keys
@@ -75,10 +85,19 @@ abstract class UserDataServiceImpl extends TServiceServlet
     super.getBatches(datasets)
   }
 
+  //Indirectly called by update(ManagedItem) which is public
   override protected def updateBatch(b: Batch): Unit = {
+    //TODO security check
+
     //Ensure the dataset exists
     ensureDataset(b.getDataset)
     super.updateBatch(b)
+  }
+
+  //Public entry point
+  override def batchParameterSummary(batch: Batch): Array[Array[String]] = {
+    //TODO security check
+    super.batchParameterSummary(batch)
   }
 
   private def ensureDataset(ds: String): Unit = {

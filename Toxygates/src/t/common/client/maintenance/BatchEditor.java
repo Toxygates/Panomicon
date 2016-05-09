@@ -91,7 +91,7 @@ abstract public class BatchEditor extends ManagedItemEditor {
         
         @Override
         protected void onFailure() {
-          onFinishOrAbort();
+          onError();
         }
       });
     } else {
@@ -99,13 +99,8 @@ abstract public class BatchEditor extends ManagedItemEditor {
     }
   }
   
-  protected void onFinishOrAbort() {
-    if (uploader != null) {
-      uploader.resetAll();
-    }
-  }
-  
-  protected void onAbort() {
+  protected void onError() {
+    super.onError();
     if (uploader != null) {
       uploader.resetAll();
     }
