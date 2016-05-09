@@ -97,7 +97,7 @@ with BatchOpsImpl with MaintenanceService {
       }
 
       val metaFile = getAsTempFile(tempFiles, platformPrefix, platformPrefix, "dat").get
-      TaskRunner ++= pm.addPlatform(id, TRDF.escape(comment),
+      TaskRunner ++= pm.add(id, TRDF.escape(comment),
           metaFile.getAbsolutePath(), affymetrixFormat)
       TaskRunner += Tasklet.simple("Set platform parameters", () => updatePlatform(p))
     }
@@ -148,7 +148,7 @@ with BatchOpsImpl with MaintenanceService {
     cleanMaintenance {
       TaskRunner.start()
       setLastTask("Delete platform")
-      TaskRunner ++= pm.deletePlatform(id)
+      TaskRunner ++= pm.delete(id)
     }
   }
 

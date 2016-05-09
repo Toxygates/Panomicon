@@ -86,12 +86,12 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
       checkMetadata(md)
 
-      TaskRunner += bm.addBatchRecord(b.getTitle, b.getComment, context.config.triplestore)
+      TaskRunner += bm.addRecord(b.getTitle, b.getComment, context.config.triplestore)
       //Set the parameters immediately, so that the batch is in the right dataset
       // -> can be seen and deleted, in the case of e.g. user data
       TaskRunner += Tasklet.simple("Set batch parameters", () => updateBatch(b))
 
-      TaskRunner ++= bm.addBatch(b.getTitle, b.getComment, md,
+      TaskRunner ++= bm.add(b.getTitle, b.getComment, md,
         dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
         true, baseConfig.seriesBuilder,
@@ -131,7 +131,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     cleanMaintenance {
       TaskRunner.start()
       setLastTask("Delete batch")
-      TaskRunner ++= bm.deleteBatch(id, baseConfig.seriesBuilder, false,
+      TaskRunner ++= bm.delete(id, baseConfig.seriesBuilder, false,
         exprAsFold)
     }
   }
