@@ -143,7 +143,7 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
   /**
    * Read all chunk keys as sample,probe-pairs
    */
-  private def allChunks(forSample: Iterable[Sample] = None): Iterable[(Int, Int)] = {
+  private def allChunks(forSample: Iterable[Sample] = List()): Iterable[(Int, Int)] = {
     val cur = db.cursor()
     var continue = cur.jump()
     var r = Vector[(Int, Int)]()
@@ -213,7 +213,7 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
    * Forces a full traversal
    */
   def allSamples: Iterable[Sample] =
-    allChunks(None).map(x => Sample(x._1))
+    allChunks(List()).map(x => Sample(x._1))
 
   implicit val probeMap = mc.probeMap
 
@@ -271,6 +271,10 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
   }
 
   override def deleteSamples(ss: Iterable[Sample]): Unit = {
+    if (ss.isEmpty) {
+      throw new Exception("Samples must be specified explicitly")
+      //If we proceeded here, we would actually delete all samples (!)
+    }
     println(s"Delete samples $ss")
     for (d <- allChunks(ss)) {
       deleteChunk(d._1, d._2)

@@ -457,6 +457,10 @@ class BatchManager(context: Context) {
       def run() {
         val bs = new Batches(config.triplestore)
         val ss = bs.samples(title).map(Sample(_))
+        if (ss.isEmpty) {
+          log("Nothing to do, batch has no samples")
+          return
+        }
         val db = config.data.extWriter(config.data.foldDb)
         try {
           deleteFromDB(db, ss)
@@ -472,6 +476,10 @@ class BatchManager(context: Context) {
       def run() {
         val bs = new Batches(config.triplestore)
         val ss = bs.samples(title).map(Sample(_))
+         if (ss.isEmpty) {
+          log("Nothing to do, batch has no samples")
+          return
+        }
         val db = if (treatAsFold) {
           config.data.extWriter(config.data.exprDb)
         } else {
