@@ -109,7 +109,6 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
   def getBatches(@Nullable dss: Array[String]): Array[Batch] = {
     val useDatasets = Option(dss).toSet.flatten
-
     val bs = new Batches(baseConfig.triplestore)
     val ns = bs.numSamples
     val comments = bs.comments
@@ -122,7 +121,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
         new HashSet(setAsJavaSet(bs.listAccess(b).toSet)),
         datasets.getOrElse(b, ""))
     }).toArray
-    r.filter(b => useDatasets.contains(b.getDataset))
+    r.filter(b => useDatasets.isEmpty || useDatasets.contains(b.getDataset))
   }
 
   def deleteBatchAsync(id: String): Unit = {
