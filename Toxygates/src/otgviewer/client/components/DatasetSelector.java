@@ -22,7 +22,9 @@ import static t.common.client.Utils.makeButtons;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import t.common.client.Command;
 import t.common.client.DataRecordSelector;
@@ -37,10 +39,30 @@ public class DatasetSelector extends Composite {
   final protected DataRecordSelector<Dataset> selector;
 
   public DatasetSelector(Collection<Dataset> items, Collection<Dataset> selectedItems) {
-    Collection<Dataset> gi = Dataset.groupUserShared("Shared user data", items);    
+    final String USERDATA = "Shared user data";
+    
+    Collection<Dataset> gi = Dataset.groupUserShared(USERDATA, items);    
     selector = new DataRecordSelector<>(gi);
-    Collection<Dataset> sgi = Dataset.groupUserShared("Shared user data", selectedItems);    
-    selector.setSelection(sgi);
+    
+    /**
+     * selectedItems can come from user storage, but dynamically defined
+     * datasets (currently, only shared user data) can change over time
+     * and the latest version comes from the server side in "items".
+     * For this reason, we need to translate the selected ids into the
+     * corresponding latest versions of the datasets.
+     */
+    Set<String> selectedIds = new HashSet<String>();
+    for (Dataset d: Dataset.groupUserShared(USERDATA, selectedItems)) {
+      selectedIds.add(d.getTitle());
+    }
+    List<Dataset> selectedGrouped = new ArrayList<Dataset>();
+    for (Dataset d: gi) {
+      if (selectedIds.contains(d.getTitle())) {
+        selectedGrouped.add(d);
+      }
+    }
+    
+    selector.setSelection(selectedGrouped);
 
     VerticalPanel vp = new VerticalPanel();
     vp.add(new Label(message));
