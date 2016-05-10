@@ -62,7 +62,7 @@ public class Dataset extends ManagedItem {
     List<Dataset> shared = new ArrayList<Dataset>();
     for (Dataset d : from) {
       if (isSharedDataset(d.getTitle())) {
-        shared.add(d);
+        shared.add(d);        
       } else {
         r.add(d);
       }
@@ -77,11 +77,7 @@ public class Dataset extends ManagedItem {
   public static Collection<Dataset> ungroup(Collection<Dataset> from) {
     List<Dataset> r = new ArrayList<Dataset>();
     for (Dataset d : from) {
-      if (d instanceof GroupedDataset) {
-        r.addAll(((GroupedDataset) d).getSubDatasets());
-      } else {
-        r.add(d);
-      }
+      r.addAll(d.getSubDatasets());
     }
     return r;
   }
