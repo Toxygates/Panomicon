@@ -37,6 +37,7 @@ import t.sparql.TRDF
 import t.common.shared.Dataset
 import t.db.Metadata
 import javax.annotation.Nullable
+import t.db.SampleParameter
 
 /**
  * Routines for servlets that support the management of batches.
@@ -158,7 +159,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     bs.setComment(b.getTitle, TRDF.escape(b.getComment))
   }
 
-  protected def overviewParameters: Seq[t.db.SampleParameter] =
+  protected def overviewParameters: Seq[SampleParameter] =
     context.config.sampleParameters.required.toSeq
 
   def batchParameterSummary(batch: Batch): Array[Array[String]] = {
