@@ -402,7 +402,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     }
     List<Dataset> r = new ArrayList<Dataset>();
     for (String ds: v.split("###")) {
-      r.add(new Dataset(ds, "", "", null, ds));
+      r.add(new Dataset(ds, "", "", null, ds, 0));
     }
     changeDatasets(r.toArray(new Dataset[0]));
   }

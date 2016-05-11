@@ -31,11 +31,14 @@ public class Dataset extends ManagedItem {
 
   private String description;
   private String publicComment;
+  private int numBatches;
 
-  public Dataset(String title, String description, String comment, Date date, String publicComment) {
+  public Dataset(String title, String description, String comment, Date date, 
+      String publicComment, int numBatches) {
     super(title, comment, date);
     this.description = description;
     this.publicComment = publicComment;
+    this.numBatches = numBatches;
   }
 
   public String getDescription() {
@@ -55,6 +58,10 @@ public class Dataset extends ManagedItem {
     List<Dataset> r = new ArrayList<Dataset>();
     r.add(this);
     return r;
+  }
+  
+  public int getNumBatches() {
+    return numBatches;
   }
 
   public static Collection<Dataset> groupUserShared(String userTitle, Collection<Dataset> from) {

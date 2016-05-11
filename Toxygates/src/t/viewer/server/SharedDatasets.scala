@@ -40,9 +40,11 @@ trait SharedDatasets {
     val pcom = publicComments
     val ts = timestamps
     val descs = descriptions
+    val nbs = numBatches
     new Dataset(d, descs.getOrElse(d, ""),
       com.getOrElse(d, ""), ts.getOrElse(d, null),
-      pcom.getOrElse(d, ""))
+      pcom.getOrElse(d, ""),
+      nbs.getOrElse(d, 0))
   }
 
 }

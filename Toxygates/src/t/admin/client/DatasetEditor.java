@@ -54,7 +54,7 @@ public class DatasetEditor extends ManagedItemEditor {
     Dataset d =
         new Dataset(idText.getValue(), descText.getValue(), 
             commentArea.getValue(), new Date(), 
-            publicComments.getValue());
+            publicComments.getValue(), 0);
     if (addNew) {
       maintenanceService.add(d, editCallback());
     } else {      

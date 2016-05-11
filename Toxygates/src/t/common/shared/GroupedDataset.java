@@ -16,7 +16,7 @@ public class GroupedDataset extends Dataset {
   private List<Dataset> subDatasets;
   
   public GroupedDataset(String title, String description, List<Dataset> subDatasets) {
-    super(title, description, "", new Date(), "");
+    super(title, description, "", new Date(), "", 0);
     this.subDatasets = subDatasets;
   }
   

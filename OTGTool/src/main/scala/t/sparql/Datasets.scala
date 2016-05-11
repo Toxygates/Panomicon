@@ -49,6 +49,13 @@ class Datasets(config: TriplestoreConfig) extends BatchGroups(config) {
     })
   }
 
+  def numBatches: Map[String, Int] = {
+    Map() ++ ts.mapQuery(s"$tPrefixes select ?l (count(?b) as ?n) { ?b a t:batch; t:visibleIn ?d. " +
+        " ?d a t:dataset; rdfs:label ?l } group by ?l").map(x => {
+        x("l") -> x("n").toInt
+    })
+  }
+
   def setDescription(name: String, desc: String) = {
     ts.update(s"$tPrefixes delete { <$defaultPrefix/$name> t:description ?desc } " +
       s"where { <$defaultPrefix/$name> t:description ?desc } ")
