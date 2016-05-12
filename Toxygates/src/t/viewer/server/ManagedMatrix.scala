@@ -159,18 +159,6 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     g.getUnits().partition(_.get("dose_level") != "Control")
 }
 
-/**
- * No extra columns. Simple averaged fold values.
- */
-class FoldBuilder(reader: MatrixDBReader[ExprValue], probes: Seq[String])
-    extends ManagedMatrixBuilder[ExprValue](reader, probes) {
-
-  protected def columnsFor(g: Group, sortedBarcodes: Seq[Sample],
-    data: Seq[Seq[ExprValue]]): (Seq[Seq[ExprValue]], ManagedMatrixInfo) =
-    defaultColumns(g, sortedBarcodes, data)
-
-}
-
 trait TreatedControlBuilder[E >: Null <: ExprValue] {
   this: ManagedMatrixBuilder[E] =>
   def enhancedColumns: Boolean
@@ -254,11 +242,6 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
     with TreatedControlBuilder[PExprValue] {
 
   import ManagedMatrix._
-
-  //TODO this log2 hack (if we keep it) also applies to the FoldBuilder above.
-  //However, FoldBuilder is not currently being used. We should re-evaluate whether it
-  //is needed. (Actually, I'd like to unify the two different ExtFold/Fold formats and only
-  //use simple Fold. - Johan
 
   protected def buildRow(raw: Seq[PExprValue],
     treatedIdx: Seq[Int], controlIdx: Seq[Int]): Seq[ExprValue] = {
