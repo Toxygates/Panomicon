@@ -193,7 +193,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     val grouped = mm.current.asRows.drop(offset).take(size)
 
     val rowNames = grouped.map(_.getProbe)
-    val rawData = mm.rawData.selectNamedRows(rowNames).data
+    val rawData = mm.finalTransform(mm.rawUngrouped.selectNamedRows(rowNames)).data
 
     for ((gr, rr) <- grouped zip rawData;
       (gv, i) <- gr.getValues.zipWithIndex) {
@@ -202,7 +202,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       } else {
         val basis = mm.baseColumns(i)
         val rawRow = basis.map(i => rr(i))
-        ManagedMatrix.makeTooltip(rawRow, mm.log2Tooltips)
+        ManagedMatrix.makeTooltip(rawRow)
       }
       gv.setTooltip(tooltip)
     }
@@ -283,7 +283,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     val raw = if (sgs.size == 1) {
       //break out each individual sample if it's only one group
       val ss = sgs(0).getSamples().map(_.id)
-      mm.rawData.selectNamedColumns(ss).asRows
+      mm.finalTransform(mm.rawUngrouped.selectNamedColumns(ss)).asRows
     } else {
       val ss = sgs.map(_.getName)
       mm.current.selectNamedColumns(ss).asRows
@@ -325,10 +325,11 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   def prepareCSVDownload(individualSamples: Boolean): String = {
     val mm = getSessionData.matrix
     var mat = if (individualSamples &&
-      mm.rawUngroupedMat != null && mm.current != null) {
+      mm.rawUngrouped != null && mm.current != null) {
       //Individual samples
       val info = mm.info
-      val ug = mm.rawUngroupedMat.selectNamedRows(mm.current.rowKeys.toSeq)
+      val keys = mm.current.rowKeys.toSeq
+      val ug = mm.finalTransform(mm.rawUngrouped.selectNamedRows(keys))
       val parts = (0 until info.numDataColumns).map(g => {
         if (!info.isPValueColumn(g)) {
           //Sample data.

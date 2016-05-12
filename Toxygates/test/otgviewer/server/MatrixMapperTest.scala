@@ -94,7 +94,7 @@ class MatrixMapperTest extends TTestSuite {
     assert(cur.rowKeys.size == orthologs.mappings.size)
     cur.columnKeys.toSet should equal(groups.map(_.getName).toSet)
 
-    val ug = conv.rawUngroupedMat
+    val ug = conv.rawUngrouped
     ug.rowKeys should equal(cur.rowKeys)
     ug.rowMap should equal(cur.rowMap)
 

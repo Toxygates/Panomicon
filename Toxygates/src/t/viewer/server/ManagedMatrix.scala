@@ -120,10 +120,10 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
       ungrouped.copyWithAnnotations(annotations),
       grouped.copyWithAnnotations(annotations),
       baseColumns,
-      log2tooltips)
+      log2transform)
   }
 
-  protected def log2tooltips: Boolean = false
+  protected def log2transform: Boolean = false
 
   protected def mean(data: Iterable[ExprValue], presentOnly: Boolean = true) = {
     if (presentOnly) {
@@ -251,7 +251,7 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
     Seq(fold, new BasicExprValue(first.p, fold.call))
   }
 
-  override protected def log2tooltips = true
+  override protected def log2transform = true
 
   override protected def columnInfo(g: Group): ManagedMatrixInfo = {
     val tus = treatedAndControl(g)._1
@@ -283,11 +283,8 @@ object ManagedMatrix {
     ExprValue.apply(Math.log(value.value) / l2, value.call, value.probe)
   }
 
-  def makeTooltip[E <: ExprValue](data: Iterable[E], log2tfm: Boolean): String = {
-    val d = if (log2tfm) data.map(log2) else data
-
-    val r = d.toSeq.sortWith(ExprValue.isBefore).map(_.toString).mkString(" ")
-    r
+  def makeTooltip[E <: ExprValue](data: Iterable[E]): String = {
+    data.toSeq.sortWith(ExprValue.isBefore).map(_.toString).mkString(" ")
   }
 }
 
@@ -308,13 +305,14 @@ object ManagedMatrix {
  */
 
 class ManagedMatrix(val initProbes: Seq[String],
-    //TODO visibility of these 3 vars
-    val currentInfo: ManagedMatrixInfo, val rawUngroupedMat: ExprMatrix,
-    var rawGroupedMat: ExprMatrix,
+    //TODO visibility of these members
+    val currentInfo: ManagedMatrixInfo,
+    val rawUngrouped: ExprMatrix,
+    var rawGrouped: ExprMatrix,
     val baseColumnMap: Map[Int, Seq[Int]],
-    val log2Tooltips: Boolean = false) {
+    val log2Transform: Boolean = false) {
 
-  protected var currentMat: ExprMatrix = rawGroupedMat
+  var current: ExprMatrix = rawGrouped
 
   protected var _synthetics: Vector[Synthetic] = Vector()
   protected var _sortColumn: Option[Int] = None
@@ -360,7 +358,7 @@ class ManagedMatrix(val initProbes: Seq[String],
     filterAndSort()
   }
 
-  def probesForAuxTable: Seq[String] = rawGroupedMat.orderedRowKeys
+  def probesForAuxTable: Seq[String] = rawGrouped.orderedRowKeys
 
   protected def filterAndSort(): Unit = {
     def f(r: Seq[ExprValue]): Boolean = {
@@ -381,7 +379,7 @@ class ManagedMatrix(val initProbes: Seq[String],
     println(s"Filter: ${currentInfo.numDataColumns} data ${currentInfo.numSynthetics} synthetic")
 
     //TODO avoid selecting here
-    currentMat = currentMat.selectNamedRows(requestProbes).filterRows(f)
+    current = current.selectNamedRows(requestProbes).filterRows(f)
     (_sortColumn, _sortAuxTable) match {
       case (Some(sc), _) => sort(sc, _sortAscending)
       case (_, Some(sat)) =>
@@ -412,7 +410,7 @@ class ManagedMatrix(val initProbes: Seq[String],
   def sort(col: Int, ascending: Boolean): Unit = {
     _sortColumn = Some(col)
     _sortAscending = ascending
-    currentMat = currentMat.sortRows(sortData(col, ascending))
+    current = current.sortRows(sortData(col, ascending))
     updateRowInfo()
   }
 
@@ -424,18 +422,18 @@ class ManagedMatrix(val initProbes: Seq[String],
     _sortColumn = None
     _sortAscending = ascending
     _sortAuxTable = Some(adj)
-    val col = currentMat.columns
-    val sortMat = adj.selectNamedRows(currentMat.orderedRowKeys)
-    currentMat =
-      currentMat.modifyJointly(sortMat, _.sortRows(sortData(col, ascending)))._1
+    val col = current.columns
+    val sortMat = adj.selectNamedRows(current.orderedRowKeys)
+    current =
+      current.modifyJointly(sortMat, _.sortRows(sortData(col, ascending)))._1
     updateRowInfo()
   }
 
   def removeSynthetics(): Unit = {
     _synthetics = Vector()
     val dataColumns = 0 until currentInfo.numDataColumns()
-    currentMat = currentMat.selectColumns(dataColumns)
-    rawGroupedMat = rawGroupedMat.selectColumns(dataColumns)
+    current = current.selectColumns(dataColumns)
+    rawGrouped = rawGrouped.selectColumns(dataColumns)
     currentInfo.removeSynthetics()
   }
 
@@ -455,15 +453,15 @@ class ManagedMatrix(val initProbes: Seq[String],
         val g2s = test.getGroup2.getSamples.filter(_.get("dose_level") != "Control").map(_.id)
         var upper = true
 
-        val currentRows = (0 until currentMat.rows).map(i => currentMat.rowAt(i))
+        val currentRows = (0 until current.rows).map(i => current.rowAt(i))
         //Need this to take into account sorting and filtering of currentMat
-        val rawData = rawUngroupedMat.selectNamedRows(currentRows)
+        val rawData = rawUngrouped.selectNamedRows(currentRows)
 
-        currentMat = test match {
+        current = test match {
           case ut: Synthetic.UTest =>
-            currentMat.appendUTest(rawData, g1s, g2s, ut.getShortTitle(null)) //TODO don't pass null
+            current.appendUTest(rawData, g1s, g2s, ut.getShortTitle(null)) //TODO don't pass null
           case tt: Synthetic.TTest =>
-            currentMat.appendTTest(rawData, g1s, g2s, tt.getShortTitle(null)) //TODO
+            current.appendTTest(rawData, g1s, g2s, tt.getShortTitle(null)) //TODO
           case _ => throw new Exception("Unexpected test type!")
         }
         val name = test.getShortTitle(null);
@@ -488,15 +486,15 @@ class ManagedMatrix(val initProbes: Seq[String],
    */
   def resetSortAndFilter(): Unit = {
     //drops synthetic columns
-    currentMat = rawGroupedMat
+    current = rawGrouped
     //note - we keep the synthetic column info (such as filters) in the currentInfo
     updateRowInfo()
     reapplySynthetics()
   }
 
   private def updateRowInfo() {
-    currentInfo.setNumRows(currentMat.rows)
-    currentInfo.setAtomicProbes(currentMat.annotations.flatMap(_.atomics).toArray)
+    currentInfo.setNumRows(current.rows)
+    currentInfo.setAtomicProbes(current.annotations.flatMap(_.atomics).toArray)
   }
 
   /**
@@ -508,10 +506,15 @@ class ManagedMatrix(val initProbes: Seq[String],
   def info: ManagedMatrixInfo = currentInfo
 
   /**
-   * Obtain the current view of this matrix, with all modifications
-   * applied.
+   * Obtain a view of a matrix with the log-2 transform
+   * potentially applied.
    */
-  def current: ExprMatrix = currentMat
+  def finalTransform(m: ExprMatrix): ExprMatrix = {
+    if (log2Transform) {
+      m.map(ManagedMatrix.log2)
+    } else {
+      m
+    }
+  }
 
-  def rawData: ExprMatrix = rawUngroupedMat
 }
