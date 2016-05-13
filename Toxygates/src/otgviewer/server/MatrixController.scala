@@ -71,10 +71,20 @@ class MatrixController(context: Context,
     val samples = groups.toList.flatMap(_.getSamples().map(_.id))
     context.samples.platforms(samples)
   }
+
   def multiPlatform = groupPlatforms.size > 1
 
-  lazy val filteredProbes =
-    platforms.filterProbes(initProbes, groupPlatforms)
+  lazy val filteredProbes = {
+    val expanded = if (multiPlatform) {
+      //Use orthologs to expand the probe set if this request is
+      //multi-platform
+      val or = orthologs().head
+      initProbes.map(or.forProbe.getOrElse(_, Set())).flatten
+    } else {
+      initProbes
+    }
+    platforms.filterProbes(expanded, groupPlatforms)
+  }
 
   protected def platformsForProbes(ps: Iterable[String]): Iterable[String] =
     ps.flatMap(platforms.platformForProbe(_)).toList.distinct
