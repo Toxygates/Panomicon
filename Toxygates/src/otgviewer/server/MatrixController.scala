@@ -163,10 +163,10 @@ class MatrixController(context: Context,
     mm.info.setPlatforms(groupPlatforms.toArray)
 
     val mapper = if (multiPlatform) {
-        standardMapper
-      } else {
-        None
-      }
+      standardMapper
+    } else {
+      None
+    }
 
     val mm2 = applyMapper(mm, mapper)
     pt.mark("ApplyMapper")

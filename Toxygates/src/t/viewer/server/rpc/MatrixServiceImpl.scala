@@ -188,8 +188,6 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
     val mergeMode = mm.info.getPlatforms.size > 1
 
-//    val groups = getSessionData().controller.groups
-    //TODO avoid the asRows here, perhaps
     val grouped = mm.current.asRows.drop(offset).take(size)
 
     val rowNames = grouped.map(_.getProbe)

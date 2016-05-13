@@ -281,8 +281,10 @@ object ManagedMatrix {
     ExprValue.apply(Math.log(value.value) / l2, value.call, value.probe)
   }
 
+  import java.lang.{Double => JDouble}
   def makeTooltip[E <: ExprValue](data: Iterable[E]): String = {
-    data.toSeq.sortWith(ExprValue.isBefore).map(_.toString).mkString(" ")
+    data.toSeq.filter(v => !JDouble.isNaN(v.value)).
+      sortWith(ExprValue.isBefore).map(_.toString).mkString(" ")
   }
 }
 
