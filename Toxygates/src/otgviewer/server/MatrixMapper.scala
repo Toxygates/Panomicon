@@ -43,9 +43,11 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
 
   private def padToSize(vs: Iterable[ExprValue], n: Int): Iterable[ExprValue] = {
     val diff = n - vs.size
-    val empty = (0 until diff).map(x => ExprValue(0, 'A'))
+    val empty = (0 until diff).map(x => ExprValue(Double.NaN, 'A'))
     vs ++ empty
   }
+
+  case class MappedValue(post: ExprValue, prior: Seq[ExprValue])
 
   /**
    * Converts grouped into (grouped, ungrouped)
@@ -64,7 +66,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
         val nr = (0 until from.columns).map(c => {
           val xs = domainRows.map(dr => dr(c)).filter(_.present)
           val v = vm.convert(rng, xs)
-          (v, xs)
+          MappedValue(v, xs)
         })
         Some((nr, FullAnnotation(rng, domProbes)))
       } else {
@@ -75,13 +77,13 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
     val cols = from.sortedColumnMap.map(_._1)
 
     val annots = nrows.map(_._2)
-    val groupedVals = nrows.map(_._1.map(_._1))
+    val groupedVals = nrows.map(_._1.map(_.post))
 
     //the max. size of each ungrouped column
-    val ungroupedSizes = (0 until from.columns).map(c => nrows.map(_._1(c)._2.size).max)
+    val ungroupedSizes = (0 until from.columns).map(c => nrows.map(_._1(c).prior.size).max)
     //pad to size to get a matrix
     val ungroupedVals = for (r <- nrows)
-      yield (0 until from.columns).flatMap(c => padToSize(r._1(c)._2, ungroupedSizes(c)))
+      yield (0 until from.columns).flatMap(c => padToSize(r._1(c).prior, ungroupedSizes(c)))
 
     //The base map will be used for generating tooltips from the ungrouped matrix
     //that we constructed above

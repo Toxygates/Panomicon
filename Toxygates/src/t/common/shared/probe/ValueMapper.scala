@@ -39,6 +39,9 @@ trait ValueMapper {
 
 }
 
+/**
+ * A mapper that picks/computes the median value.
+ */
 object MedianValueMapper extends ValueMapper {
   def format(x: Double) = ExprValue.nf.format(x)
 

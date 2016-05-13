@@ -92,7 +92,6 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
 
     val cols = requestColumns.par.map(g => {
         println(g.getUnits()(0).toString())
-        //TODO avoid EVArray building
         columnsFor(g, sortedSamples, data)
     }).seq
 
@@ -110,8 +109,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
         sortedProbes, sortedSamples.map(_.sampleId))
 
     val baseColumns = Map() ++ (0 until info.numDataColumns()).map(i => {
-      val cg = info.columnGroup(i)
-      val sampleIds = cg.samples.map(_.id).toSeq
+      val sampleIds = info.samples(i).map(_.id).toSeq
       val sampleIdxs = sampleIds.map(i => ungrouped.columnMap.get(i)).flatten
       (i -> sampleIdxs)
     })
