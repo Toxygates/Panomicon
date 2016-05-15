@@ -203,7 +203,7 @@ abstract public class DataSource {
       Group g = new Group(schema, "temporary", useSamples.toArray(new Sample[0]));
       List<Group> gs = new ArrayList<Group>();
       gs.add(g);
-      matrixService.getFullData(gs, probes, true, false, type,
+      matrixService.getFullData(gs, probes, false, type,
           new PendingAsyncCallback<FullMatrix>(screen, "Unable to obtain chart data.") {
 
             @Override
@@ -257,7 +257,7 @@ abstract public class DataSource {
       }
 
       chartSamples.clear();
-      matrixService.getFullData(groups, probes, true, false, type,
+      matrixService.getFullData(groups, probes, false, type,
           new PendingAsyncCallback<FullMatrix>(screen, "Unable to obtain chart data") {
 
             @Override

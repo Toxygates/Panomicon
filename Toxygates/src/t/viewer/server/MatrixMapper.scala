@@ -18,15 +18,10 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.server
+package t.viewer.server
 
-import t.viewer.shared.ManagedMatrixInfo
-import t.common.shared.probe.ProbeMapper
-import t.common.shared.probe.ValueMapper
-import t.viewer.server.FullAnnotation
-import t.viewer.server.ExprMatrix
 import t.db.ExprValue
-import t.viewer.server.ManagedMatrix
+import t.viewer.shared.ManagedMatrixInfo
 
 /**
  * A matrix mapper converts a whole matrix from one domain into
@@ -36,8 +31,6 @@ import t.viewer.server.ManagedMatrix
  *
  * This process changes the number and index keys of the rows, but
  * preserves columns.
- *
- * TODO move to t.viewer.server
  */
 class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
 

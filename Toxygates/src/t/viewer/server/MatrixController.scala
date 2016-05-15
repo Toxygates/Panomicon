@@ -18,79 +18,73 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.server
+package t.viewer.server
 
 import java.util.logging.Logger
-import scala.collection.JavaConversions.asScalaSet
+
 import otgviewer.shared.DBUnavailableException
-import t.viewer.shared.ManagedMatrixInfo
 import t.Context
 import t.common.shared.AType
 import t.common.shared.PerfTimer
 import t.common.shared.ValueType
-import t.common.shared.probe.MedianValueMapper
-import t.common.shared.probe.OrthologProbeMapper
-import t.viewer.server.ExprMatrix
-import t.common.shared.sample.ExpressionValue
 import t.common.shared.sample.Group
-import t.db.PExprValue
-import t.db.TransformingWrapper
-import t.db.kyotocabinet.KCExtMatrixDB
-import t.db.kyotocabinet.KCMatrixDB
-import t.platform.OrthologMapping
-import t.viewer.server.Platforms
-import t.viewer.shared.table.SortKey
-import t.db.kyotocabinet.chunk.KCChunkMatrixDB
-import t.common.shared.sample.EVArray
 import t.db.ExprValue
 import t.db.ExtMatrixDB
-import t.viewer.server.ManagedMatrix
-import t.viewer.server.NormalizedBuilder
-import t.viewer.server.ExtFoldBuilder
+import t.db.PExprValue
+import t.db.TransformingWrapper
+import t.db.kyotocabinet.KCMatrixDB
+import t.platform.OrthologMapping
+import t.viewer.shared.ManagedMatrixInfo
+import t.viewer.shared.table.SortKey
+
+object MatrixController {
+  def groupPlatforms(context: Context, groups: Seq[Group]): Iterable[String] = {
+    val samples = groups.toList.flatMap(_.getSamples().map(_.id))
+    context.samples.platforms(samples)
+  }
+
+  def apply(context: Context, orthologs: () => Iterable[OrthologMapping],
+    groups: Seq[Group], initProbes: Seq[String], typ: ValueType,
+    fullLoad: Boolean): MatrixController = {
+    val pfs = groupPlatforms(context, groups)
+    if (pfs.size > 1) {
+      new MergedMatrixController(context, orthologs, groups, initProbes,
+          pfs, typ, fullLoad)
+    } else {
+      new MatrixController(context, groups, initProbes,
+        pfs, typ, fullLoad)
+    }
+  }
+}
 
 /**
  * A managed matrix session and associated state.
  * The matrix is loaded automatically when a MatrixController
  * instance is created.
- *
- * TODO move to t.viewer.server
  */
 class MatrixController(context: Context,
-    orthologs: () => Iterable[OrthologMapping],
-    val groups: Seq[Group], val initProbes: Seq[String],
-    typ: ValueType, sparseRead: Boolean,
+    val groups: Seq[Group],
+    val initProbes: Seq[String],
+    val groupPlatforms: Iterable[String],
+    typ: ValueType,
     fullLoad: Boolean) {
 
   private def probes = context.probes
-  private def platforms = Platforms(probes)
+  protected val platforms = Platforms(probes)
 
   private implicit val mcontext = context.matrix
   private var sortAssoc: AType = _
 
-  lazy val groupPlatforms: Iterable[String] = {
-    val samples = groups.toList.flatMap(_.getSamples().map(_.id))
-    context.samples.platforms(samples)
-  }
-
-  def multiPlatform = groupPlatforms.size > 1
-
-  lazy val filteredProbes = {
-    val expanded = if (multiPlatform) {
-      //Use orthologs to expand the probe set if this request is
-      //multi-platform
-      val or = orthologs().head
-      initProbes.map(or.forProbe.getOrElse(_, Set())).flatten
-    } else {
-      initProbes
-    }
-    platforms.filterProbes(expanded, groupPlatforms)
-  }
+  lazy val filteredProbes =
+    platforms.filterProbes(initProbes, groupPlatforms)
 
   protected def platformsForProbes(ps: Iterable[String]): Iterable[String] =
     ps.flatMap(platforms.platformForProbe(_)).toList.distinct
 
+  protected def enhancedCols = true
+
   protected def makeMatrix(probes: Seq[String],
-      typ: ValueType, sparseRead: Boolean, fullLoad: Boolean): ManagedMatrix = {
+      typ: ValueType, fullLoad: Boolean): ManagedMatrix = {
 
     val reader = try {
       if (typ == ValueType.Absolute) {
@@ -105,9 +99,8 @@ class MatrixController(context: Context,
     }
 
     try {
-      val enhancedCols = !multiPlatform
-
       //TODO get rid of/factor out this, possibly to a factory of some kind
+      //TODO get rid of the enhancedCols flag
       val b = reader match {
         case wrapped: TransformingWrapper[PExprValue] =>
           new ExtFoldBuilder(enhancedCols, wrapped, probes)
@@ -122,21 +115,16 @@ class MatrixController(context: Context,
           }
         case _ => throw new Exception("Unexpected DB reader type")
       }
+
+      //TODO best location of this heuristic?
+      val sparseRead = probes.size <= 10
       b.build(groups, sparseRead, fullLoad)
     } finally {
       reader.release
     }
   }
 
-  protected lazy val standardMapper = {
-    if (orthologs().isEmpty) {
-      None
-    } else {
-      val pm = new OrthologProbeMapper(orthologs().head)
-      val vm = MedianValueMapper
-      Some(new MatrixMapper(pm, vm))
-    }
-  }
+  protected def mapper: Option[MatrixMapper] = None
 
   protected def applyMapper(mm: ManagedMatrix, mapper: Option[MatrixMapper]): ManagedMatrix = {
     mapper match {
@@ -153,7 +141,7 @@ class MatrixController(context: Context,
     val pt = new PerfTimer(Logger.getLogger("matrixController.loadMatrix"))
 
     val mm = if (filteredProbes.size > 0) {
-      makeMatrix(filteredProbes, typ, sparseRead, fullLoad)
+      makeMatrix(filteredProbes, typ, fullLoad)
     } else {
       val emptyMatrix = new ExprMatrix(List(), 0, 0, Map(), Map(), List())
       new ManagedMatrix(List(), new ManagedMatrixInfo(), emptyMatrix, emptyMatrix, Map())
@@ -161,12 +149,6 @@ class MatrixController(context: Context,
 
     pt.mark("MakeMatrix")
     mm.info.setPlatforms(groupPlatforms.toArray)
-
-    val mapper = if (multiPlatform) {
-      standardMapper
-    } else {
-      None
-    }
 
     val mm2 = applyMapper(mm, mapper)
     pt.mark("ApplyMapper")
@@ -230,6 +212,33 @@ class MatrixController(context: Context,
     } else {
       throw new Exception(s"No sort key for $ass")
     }
+  }
+}
+
+/**
+ * A matrix controller that applies the MedianValueMapper.
+ */
+class MergedMatrixController(context: Context,
+    orthologs: () => Iterable[OrthologMapping], groups: Seq[Group], initProbes: Seq[String],
+    groupPlatforms: Iterable[String],
+    typ: ValueType, fullLoad: Boolean)
+    extends MatrixController(context, groups, initProbes, groupPlatforms, typ, fullLoad) {
+
+  override protected def enhancedCols = false
+
+  lazy val orth = orthologs().head
+
+  override lazy val filteredProbes = {
+    //Use orthologs to expand the probe set if this request is
+    //multi-platform
+    val expanded = initProbes.map(orth.forProbe.getOrElse(_, Set())).flatten
+    platforms.filterProbes(expanded, groupPlatforms)
+  }
+
+  override protected def mapper: Option[MatrixMapper] = {
+    val pm = new OrthologProbeMapper(orth)
+    val vm = MedianValueMapper
+    Some(new MatrixMapper(pm, vm))
   }
 
 }

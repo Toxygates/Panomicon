@@ -22,50 +22,38 @@ package t.viewer.server.rpc
 
 import java.util.ArrayList
 import java.util.{ List => JList }
-import t.viewer.server.ExprMatrix
-import otgviewer.server.MatrixMapper
+import java.util.logging.Logger
+
+import scala.Vector
+
+import org.apache.commons.lang.StringUtils
+
+import javax.annotation.Nullable
 import otgviewer.shared.FullMatrix
-import t.viewer.shared.ManagedMatrixInfo
 import otgviewer.shared.NoDataLoadedException
-import t.viewer.shared.Synthetic
-import t.BaseConfig
 import t.Context
-import t.common.shared.AType
-import t.common.shared.DataSchema
+import t.common.server.ScalaUtils
+import t.common.server.userclustering.RClustering
 import t.common.shared.ValueType
-import t.common.shared.probe.MedianValueMapper
-import t.common.shared.probe.OrthologProbeMapper
-import t.common.shared.sample.EVArray
-import t.common.shared.sample.Group
-import t.viewer.server.ExprMatrix
 import t.common.shared.sample.ExpressionRow
+import t.common.shared.sample.Group
+import t.common.shared.sample.Sample
+import t.common.shared.userclustering.Algorithm
 import t.db.MatrixContext
-import t.db.MatrixDBReader
-import t.db.kyotocabinet.KCExtMatrixDB
-import t.db.kyotocabinet.KCMatrixDB
 import t.platform.OrthologMapping
 import t.platform.Probe
-import t.sparql._
+import t.sparql.makeRich
 import t.viewer.client.rpc.MatrixService
 import t.viewer.server.CSVHelper
 import t.viewer.server.Configuration
+import t.viewer.server.ExprMatrix
 import t.viewer.server.Feedback
-import t.viewer.server.Platforms
-import t.viewer.shared.table.SortKey
-import t.common.server.ScalaUtils
-import t.common.shared.PerfTimer
-import java.util.logging.Logger
-import t.common.shared.sample.Sample
-import otgviewer.server.MatrixController
-import javax.annotation.Nullable
-import otgviewer.server.R
-import org.rosuda.REngine.Rserve.RserveException
-import t.common.shared.userclustering.Algorithm
-import t.common.server.userclustering.RClustering
-import org.apache.commons.lang.StringUtils
-import t.common.shared.sample.ExpressionValue
-import t.viewer.shared.ColumnFilter
 import t.viewer.server.ManagedMatrix
+import t.viewer.server.MatrixController
+import t.viewer.shared.ColumnFilter
+import t.viewer.shared.ManagedMatrixInfo
+import t.viewer.shared.Synthetic
+import t.viewer.shared.table.SortKey
 
 object MatrixServiceImpl {
 
@@ -160,8 +148,8 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   def loadMatrix(groups: JList[Group], probes: Array[String],
     typ: ValueType): ManagedMatrixInfo = {
     getSessionData._controller =
-      Some(new MatrixController(context, () => getOrthologs(context),
-          groups, probes, typ, false, false))
+      Some(MatrixController(context, () => getOrthologs(context),
+          groups, probes, typ, false))
     getSessionData.matrix.info
   }
 
@@ -271,11 +259,11 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     })
   }
 
-  def getFullData(gs: JList[Group], rprobes: Array[String], sparseRead: Boolean,
+  def getFullData(gs: JList[Group], rprobes: Array[String],
     withSymbols: Boolean, typ: ValueType): FullMatrix = {
     val sgs = Vector() ++ gs
-    val controller = new MatrixController(context, () => getOrthologs(context),
-        gs, rprobes, typ, sparseRead, true)
+    val controller = MatrixController(context, () => getOrthologs(context),
+        gs, rprobes, typ, true)
     val mm = controller.managedMatrix
 
     val raw = if (sgs.size == 1) {
@@ -408,8 +396,8 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     //the ones in the current session
     val cont = if (getSessionData._controller == None ||
         getSessionData().controller.groups.toSet != groups.toSet) {
-      new MatrixController(context, () => getOrthologs(context),
-          groups, chosenProbes, valueType, false, false)
+      MatrixController(context, () => getOrthologs(context),
+          groups, chosenProbes, valueType, false)
     } else {
       getSessionData.controller
     }

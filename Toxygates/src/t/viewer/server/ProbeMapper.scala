@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.common.shared.probe
+package t.viewer.server
 
 import t.platform.OrthologMapping
 

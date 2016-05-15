@@ -51,7 +51,7 @@ public interface MatrixServiceAsync {
   public void setColumnFilter(int column, @Nullable ColumnFilter filter,
       AsyncCallback<ManagedMatrixInfo> callback);
 
-  public void getFullData(List<Group> g, String[] probes, boolean sparseRead, boolean withSymbols,
+  public void getFullData(List<Group> g, String[] probes, boolean withSymbols,
       ValueType typ, AsyncCallback<FullMatrix> callback);
 
   public void prepareCSVDownload(boolean individualSamples, AsyncCallback<String> callback);

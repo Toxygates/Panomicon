@@ -133,12 +133,8 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
 
   final protected def selectIdx[E <: ExprValue](data: Seq[E], is: Seq[Int]) = is.map(data(_))
   final protected def javaMean[E <: ExprValue](data: Iterable[E], presentOnly: Boolean = true) = {
-    val mean = presentOnly match {
-      case true => ExprValue.presentMean(data, "")
-      case _    => ExprValue.allMean(data, "")
-    }
-
-    new ExpressionValue(mean.value, mean.call, null) // makeTooltip(data))
+    val m = mean(data, presentOnly)
+    new ExpressionValue(m.value, m.call, null)
   }
 
   protected def unitIdxs(us: Iterable[t.common.shared.sample.Unit], samples: Seq[Sample]): Seq[Int] = {

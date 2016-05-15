@@ -131,13 +131,11 @@ public interface MatrixService extends RemoteService {
    *        appear as a column.
    * @param probes
    * @param type
-   * @param sparseRead If true, we optimise for the case of reading a single probe from multiple
-   *        arrays. If false, we optimise for reading full arrays.
    * @param withSymbols If true, gene IDs and gene symbols will also be loaded into the rows (may be
    *        slightly slower)
    * @return
    */
-  public FullMatrix getFullData(List<Group> gs, String[] probes, boolean sparseRead,
+  public FullMatrix getFullData(List<Group> gs, String[] probes, 
       boolean withSymbols, ValueType type) throws ServerError;
 
   /**
