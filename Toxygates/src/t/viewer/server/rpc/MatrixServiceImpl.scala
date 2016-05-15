@@ -174,8 +174,6 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     val mm =
       getSessionData.controller.applySorting(sortKey, ascending)
 
-    val mergeMode = mm.info.getPlatforms.size > 1
-
     val grouped = mm.current.asRows.drop(offset).take(size)
 
     val rowNames = grouped.map(_.getProbe)
@@ -193,70 +191,12 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       gv.setTooltip(tooltip)
     }
 
-    new ArrayList[ExpressionRow](insertAnnotations(grouped, mergeMode))
+    new ArrayList[ExpressionRow](insertAnnotations(grouped))
   }
 
-  //this is probably quite inefficient
-  private def withCount[T](xs: Seq[T]): Iterable[(T, Int)] =
-    xs.distinct.map(x => (x, xs.count(_ == x)))
-
-  private def prbCount(n: Int) = {
-    if (n == 0) {
-      "No probes"
-    } else if (n == 1) {
-      "1 probe"
-    } else {
-      s"$n probes"
-    }
-  }
-
-  private def repeatStrings[T](xs: Seq[T]): Iterable[String] =
-    withCount(xs).map(x => s"${x._1} (${prbCount(x._2)})")
-
-  /**
-   * Dynamically obtain annotations such as probe titles, gene IDs and gene symbols,
-   * appending them to the rows just before sending them back to the client.
-   * Unsuitable for large amounts of data.
-   */
-  private def insertAnnotations(rows: Seq[ExpressionRow], mergeMode: Boolean): Seq[ExpressionRow] = {
-    val allAtomics = rows.flatMap(_.getAtomicProbes)
-
-    val attribs = probes.withAttributes(allAtomics.map(Probe(_)))
-    val pm = Map() ++ attribs.map(a => (a.identifier -> a))
-    println(pm.take(5))
-
-    rows.map(or => {
-      val atomics = or.getAtomicProbes()
-      val ps = atomics.flatMap(pm.get(_))
-
-      if (mergeMode) {
-        val expandedGenes = ps.flatMap(p =>
-          p.genes.map(g => (schema.platformSpecies(p.platform), g.identifier)))
-        val expandedSymbols = ps.flatMap(p =>
-          p.symbols.map(schema.platformSpecies(p.platform) + ":" + _.symbol))
-
-        val r = new ExpressionRow(atomics.mkString("/"),
-          atomics,
-          repeatStrings(ps.map(p => p.name)).toArray,
-          expandedGenes.map(_._2).distinct,
-          repeatStrings(expandedSymbols).toArray,
-          or.getValues)
-
-        val gils = withCount(expandedGenes).map(x =>
-          s"${x._1._1 + ":" + x._1._2} (${prbCount(x._2)})").toArray
-        r.setGeneIdLabels(gils)
-        r
-      } else {
-        assert(ps.size == 1)
-        val p = atomics(0)
-        val pr = pm.get(p)
-        new ExpressionRow(p,
-          pr.map(_.name).getOrElse(""),
-          pr.toArray.flatMap(_.genes.map(_.identifier)),
-          pr.toArray.flatMap(_.symbols.map(_.symbol)),
-          or.getValues)
-      }
-    })
+  private def insertAnnotations(rows: Seq[ExpressionRow]): Seq[ExpressionRow] = {
+    val rl = getSessionData.controller.rowLabels(schema)
+    rl.insertAnnotations(rows)
   }
 
   def getFullData(gs: JList[Group], rprobes: Array[String],
@@ -276,13 +216,14 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     }
 
     val rows = if (withSymbols) {
-      insertAnnotations(raw, controller.groupPlatforms.size > 1)
+      insertAnnotations(raw)
     } else {
       val ps = raw.flatMap(or => or.getAtomicProbes.map(Probe(_)))
       val ats = probes.withAttributes(ps)
       val giMap = Map() ++ ats.map(x =>
         (x.identifier -> x.genes.map(_.identifier).toArray))
 
+      //Only insert geneIDs.
       //TODO: some clients need neither "symbols"/annotations nor geneIds
       raw.map(or => {
         new ExpressionRow(or.getProbe, or.getAtomicProbes, or.getAtomicProbeTitles,
@@ -343,7 +284,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
     val colNames = mat.sortedColumnMap.map(_._1)
     val rows = mat.asRows
-    //TODO shared logic with e.g. insertAnnotations, extract
+    //TODO move into RowLabels if possible
     val rowNames = rows.map(_.getAtomicProbes.mkString("/"))
 
     //May be slow!
@@ -388,6 +329,10 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       config.feedbackFromAddress, context.config.appName)
   }
 
+  private def joinedAbbreviated(items: Iterable[String], n: Int): String = {
+    StringUtils.abbreviate(items.toSeq.distinct.mkString("/"), 30)
+  }
+
   @throws(classOf[NoDataLoadedException])
   def prepareHeatmap(groups: JList[Group], chosenProbes: Array[String],
     valueType: ValueType, algorithm: Algorithm): String = {
@@ -406,13 +351,16 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     var mat = mm.current
     var info = mm.info
 
-    //TODO shared logic with e.g. insertAnnotations, extract
-    val rowNames = mat.asRows.map(_.getAtomicProbes.mkString("/"))
+    val allRows = mat.asRows
+    //TODO move into RowLabels if possible
+    //TODO extract the aaLookup pattern
+    val rowNames = allRows.map(r => joinedAbbreviated(r.getAtomicProbes, 20))
+    val allAtomics = allRows.flatMap(_.getAtomicProbes.map(p => Probe(p)))
+    val aaLookup = Map() ++ probes.withAttributes(allAtomics).map(a => a.identifier -> a)
+
     val geneSyms = mat.asRows.map(r => {
-      val atomics = r.getAtomicProbes.map(Probe(_))
-      val atrs = probes.withAttributes(atomics)
-      // If character length of gene symbols is more than 30, abbreviate it
-      StringUtils.abbreviate(atrs.flatMap(_.symbols.map(_.symbol)).mkString("/"), 30)
+      val atrs = r.getAtomicProbes.map(aaLookup(_))
+      joinedAbbreviated(atrs.flatMap(_.symbols.map(_.symbol)), 20)
     })
 
     val columns = mat.sortedColumnMap.filter(x => !info.isPValueColumn(x._2))

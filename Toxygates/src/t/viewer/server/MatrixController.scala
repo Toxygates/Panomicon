@@ -36,6 +36,7 @@ import t.db.kyotocabinet.KCMatrixDB
 import t.platform.OrthologMapping
 import t.viewer.shared.ManagedMatrixInfo
 import t.viewer.shared.table.SortKey
+import t.common.shared.DataSchema
 
 object MatrixController {
   def groupPlatforms(context: Context, groups: Seq[Group]): Iterable[String] = {
@@ -213,6 +214,8 @@ class MatrixController(context: Context,
       throw new Exception(s"No sort key for $ass")
     }
   }
+
+  def rowLabels(schema: DataSchema): RowLabels = new RowLabels(context, schema)
 }
 
 /**
@@ -241,4 +244,5 @@ class MergedMatrixController(context: Context,
     Some(new MatrixMapper(pm, vm))
   }
 
+  override def rowLabels(schema: DataSchema) = new MergedRowLabels(context, schema)
 }
