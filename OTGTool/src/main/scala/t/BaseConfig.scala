@@ -87,9 +87,13 @@ class DataConfig(val dir: String, val matrixDbOptions: String) {
 
   def seriesDb: String = s"$dir/series.kct" + KCSeriesDB.options
 
-  def sampleIndex: String = s"$dir/sample_index.kct" + KCIndexDB.options
-  def probeIndex: String = s"$dir/probe_index.kct" + KCIndexDB.options
-  def enumIndex: String = s"$dir/enum_index.kct" + KCIndexDB.options
+  def sampleDb: String = s"$dir/sample_index.kct"
+  def probeDb: String = s"$dir/probe_index.kct"
+  def enumDb: String = s"$dir/enum_index.kct"
+
+  def sampleIndex: String = sampleDb + KCIndexDB.options
+  def probeIndex: String = probeDb + KCIndexDB.options
+  def enumIndex: String = enumDb + KCIndexDB.options
 
   //TODO remove the fold wrap when possible
   def foldWrap(db: MatrixDBReader[PExprValue]): MatrixDBReader[PExprValue] =
