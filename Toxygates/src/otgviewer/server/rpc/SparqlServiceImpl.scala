@@ -29,7 +29,6 @@ import otg.sparql._
 import otg.sparql.Probes
 import otgviewer.shared.OTGSchema
 import otgviewer.shared.Pathology
-import otgviewer.shared.TimeoutException
 import t.BaseConfig
 import t.DataConfig
 import t.common.server.ScalaUtils.gracefully
@@ -43,6 +42,7 @@ import t.sparql.secondary._
 import t.viewer.server.Configuration
 import t.viewer.server.Conversions._
 import t.viewer.shared.Association
+import t.viewer.shared.TimeoutException
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our

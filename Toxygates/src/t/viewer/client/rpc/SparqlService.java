@@ -23,7 +23,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import otgviewer.shared.Pathology;
-import otgviewer.shared.TimeoutException;
 import t.common.shared.AType;
 import t.common.shared.Dataset;
 import t.common.shared.Pair;
@@ -35,6 +34,7 @@ import t.common.shared.sample.SampleColumn;
 import t.common.shared.sample.Unit;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.Association;
+import t.viewer.shared.TimeoutException;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;

@@ -27,7 +27,6 @@ import java.util.{List => JList}
 import otg.Species.Human
 import otg.db.OTGParameterSet
 import otgviewer.shared.Pathology
-import otgviewer.shared.TimeoutException
 import t.BaseConfig
 import t.TriplestoreConfig
 import t.common.server.ScalaUtils
@@ -61,6 +60,7 @@ import t.viewer.server.SharedPlatforms
 import t.common.shared.clustering.ProbeClustering
 import t.common.shared.clustering.HierarchicalClustering
 import javax.annotation.Nullable
+import t.viewer.shared.TimeoutException
 
 object SparqlServiceImpl {
   var inited = false

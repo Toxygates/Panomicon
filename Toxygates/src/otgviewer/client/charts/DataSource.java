@@ -28,7 +28,6 @@ import java.util.logging.Logger;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.shared.FullMatrix;
 import otgviewer.shared.Series;
 import t.common.shared.DataSchema;
 import t.common.shared.HasClass;
@@ -42,6 +41,7 @@ import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
 import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.shared.FullMatrix;
 
 /**
  * This class brings series and row data into a unified interface for the purposes of chart drawing.

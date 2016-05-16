@@ -29,8 +29,6 @@ import scala.Vector
 import org.apache.commons.lang.StringUtils
 
 import javax.annotation.Nullable
-import otgviewer.shared.FullMatrix
-import otgviewer.shared.NoDataLoadedException
 import t.Context
 import t.common.server.ScalaUtils
 import t.common.server.userclustering.RClustering
@@ -54,6 +52,8 @@ import t.viewer.shared.ColumnFilter
 import t.viewer.shared.ManagedMatrixInfo
 import t.viewer.shared.Synthetic
 import t.viewer.shared.table.SortKey
+import t.viewer.shared.NoDataLoadedException
+import t.viewer.shared.FullMatrix
 
 object MatrixServiceImpl {
 
@@ -70,8 +70,6 @@ object MatrixServiceImpl {
 
 /**
  * This servlet is responsible for obtaining and manipulating microarray data.
- *
- * TODO move dependencies from otgviewer to t.common
  */
 abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   import scala.collection.JavaConversions._

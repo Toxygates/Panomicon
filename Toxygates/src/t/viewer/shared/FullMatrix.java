@@ -16,14 +16,33 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.shared;
+package t.viewer.shared;
+
+import java.io.Serializable;
+import java.util.List;
+
+import t.common.shared.sample.ExpressionRow;
 
 @SuppressWarnings("serial")
-public class NoSuchProbeException extends ServerError {
+public class FullMatrix implements Serializable {
 
-  public NoSuchProbeException() {}
+  public FullMatrix() {}
 
-  public NoSuchProbeException(String probe) {
-    super("No such probe or gene: " + probe);
+  public FullMatrix(ManagedMatrixInfo mmi, List<ExpressionRow> data) {
+    this.mmi = mmi;
+    this.data = data;
   }
+
+  private ManagedMatrixInfo mmi;
+
+  public ManagedMatrixInfo managedMatrixInfo() {
+    return mmi;
+  }
+
+  private List<ExpressionRow> data;
+
+  public List<ExpressionRow> rows() {
+    return data;
+  }
+
 }
