@@ -114,6 +114,12 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       controller.managedMatrix
 
     def matrixOption = _controller.map(_.managedMatrix)
+
+    def needsReload(groups: Iterable[Group], typ: ValueType): Boolean = {
+      _controller == None ||
+        controller.groups.toSet != groups.toSet ||
+        controller.typ != typ
+    }
   }
 
   def getSessionData(): MatrixState = {
@@ -408,8 +414,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
     //Reload data in a temporary controller if groups do not correspond to
     //the ones in the current session
-    val cont = if (getSessionData._controller == None ||
-        getSessionData().controller.groups.toSet != groups.toSet) {
+    val cont = if (getSessionData.needsReload(groups, valueType)) {
       new MatrixController(context, () => getOrthologs(context),
           groups, chosenProbes, valueType, false, false)
     } else {
