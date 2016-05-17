@@ -17,7 +17,7 @@
  */
 package t.common.server.userclustering
 
-import otgviewer.server.R
+import t.viewer.server.R
 import org.rosuda.REngine.Rserve.RserveException
 import t.common.shared.userclustering.Algorithm
 import java.util.logging.Logger
