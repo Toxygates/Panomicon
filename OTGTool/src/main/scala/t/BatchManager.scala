@@ -325,11 +325,23 @@ class BatchManager(context: Context) {
         if (bsamples.contains(s.identifier)) {
           log(s"Replacing sample ${s.identifier}")
         } else if (existingSamples.contains(s.identifier)) {
-          throw new Exception(s"The sample ${s.identifier} has already been defined in a different batch")
+          val suggestion = suggestSampleId(existingSamples, s.identifier)
+          throw new Exception(s"The sample ${s.identifier} has " +
+              s" already been defined in a different batch. Consider using: $suggestion")
         }
         checkValidIdentifier(s.identifier, "sample ID")
       }
     }
+  }
+
+  private def suggestSampleId(existing: Set[String], candidate: String): String = {
+    var n = 1
+    var cand = candidate
+    while(existing.contains(cand)) {
+      cand = s"${candidate}_$n"
+      n += 1
+    }
+    cand
   }
 
   def addRecord(title: String, comment: String, ts: TriplestoreConfig) =
