@@ -21,12 +21,12 @@ package t.viewer.client.rpc;
 import java.util.List;
 
 import otgviewer.shared.MatchResult;
-import otgviewer.shared.NoSuchProbeException;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;
-import otgviewer.shared.ServerError;
 import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
+import t.viewer.shared.NoSuchProbeException;
+import t.viewer.shared.ServerError;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;

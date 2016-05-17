@@ -16,20 +16,9 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.shared;
+package t.viewer.shared;
 
 @SuppressWarnings("serial")
-public class DBUnavailableException extends ServerError {
-
-  // GWT constructor
-  public DBUnavailableException() {
-    super();
-  }
-
-  public DBUnavailableException(Throwable cause) {
-    super(
-        "The database is currently unavailable, possibly for maintenance reasons. Please try again later.",
-        cause);
-  }
+public class TimeoutException extends ServerError {
 
 }

@@ -16,21 +16,20 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.shared;
-
-import java.io.Serializable;
+package t.viewer.shared;
 
 @SuppressWarnings("serial")
-public class ServerError extends Exception implements Serializable {
+public class DBUnavailableException extends ServerError {
 
-  public ServerError() {}
-
-  public ServerError(String reason, Throwable inner) {
-    super(reason, inner);
+  // GWT constructor
+  public DBUnavailableException() {
+    super();
   }
 
-  public ServerError(String reason) {
-    super(reason);
+  public DBUnavailableException(Throwable cause) {
+    super(
+        "The database is currently unavailable, possibly for maintenance reasons. Please try again later.",
+        cause);
   }
 
 }

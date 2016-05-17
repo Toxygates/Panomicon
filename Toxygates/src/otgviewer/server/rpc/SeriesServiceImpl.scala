@@ -20,14 +20,9 @@
 
 package otgviewer.server.rpc
 
-import t.db.kyotocabinet.KCSeriesDB
-import otgviewer.shared.DBUnavailableException
-import t.global.KCDBRegistry
 import otg.OTGSeries
+import otgviewer.shared.{ Series => SSeries }
 import t.db.SeriesDB
-import t.SeriesRanking
-import otgviewer.shared.{Series => SSeries}
-import t.common.shared.SampleClass
 
 class SeriesServiceImpl extends
 t.viewer.server.rpc.SeriesServiceImpl[OTGSeries] with OTGServiceServlet {

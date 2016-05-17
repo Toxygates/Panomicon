@@ -30,7 +30,6 @@ import otgviewer.server.rpc.Conversions
 import otgviewer.server.rpc.Conversions.asJava
 import otgviewer.server.rpc.Conversions.asScala
 import otgviewer.shared.MatchResult
-import otgviewer.shared.NoSuchProbeException
 import otgviewer.shared.RankRule
 import otgviewer.shared.{Series => SSeries}
 import t.BaseConfig
@@ -46,6 +45,7 @@ import t.common.shared.Dataset
 import t.sparql.Datasets
 import t.sparql.SampleFilter
 import t.viewer.server.Configuration
+import t.viewer.shared.NoSuchProbeException
 
 abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with SeriesService {
   import java.lang.{ Double => JDouble }

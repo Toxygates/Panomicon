@@ -48,7 +48,8 @@ class TRefresher(config: BaseConfig) extends Refreshable[TMaps] {
 
   def currentTimestamp: Long = {
     //If this file has been updated, we reload all the maps
-    new java.io.File(config.data.exprDb).lastModified()
+    val files = List(config.data.sampleDb, config.data.probeDb, config.data.enumDb)
+    files.map(new java.io.File(_).lastModified()).max
   }
 
   def reload: TMaps = new TMaps(config)

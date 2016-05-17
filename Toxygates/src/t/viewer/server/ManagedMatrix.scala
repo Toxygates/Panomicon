@@ -92,7 +92,6 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
 
     val cols = requestColumns.par.map(g => {
         println(g.getUnits()(0).toString())
-        //TODO avoid EVArray building
         columnsFor(g, sortedSamples, data)
     }).seq
 
@@ -110,8 +109,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
         sortedProbes, sortedSamples.map(_.sampleId))
 
     val baseColumns = Map() ++ (0 until info.numDataColumns()).map(i => {
-      val cg = info.columnGroup(i)
-      val sampleIds = cg.samples.map(_.id).toSeq
+      val sampleIds = info.samples(i).map(_.id).toSeq
       val sampleIdxs = sampleIds.map(i => ungrouped.columnMap.get(i)).flatten
       (i -> sampleIdxs)
     })
@@ -135,12 +133,8 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
 
   final protected def selectIdx[E <: ExprValue](data: Seq[E], is: Seq[Int]) = is.map(data(_))
   final protected def javaMean[E <: ExprValue](data: Iterable[E], presentOnly: Boolean = true) = {
-    val mean = presentOnly match {
-      case true => ExprValue.presentMean(data, "")
-      case _    => ExprValue.allMean(data, "")
-    }
-
-    new ExpressionValue(mean.value, mean.call, null) // makeTooltip(data))
+    val m = mean(data, presentOnly)
+    new ExpressionValue(m.value, m.call, null)
   }
 
   protected def unitIdxs(us: Iterable[t.common.shared.sample.Unit], samples: Seq[Sample]): Seq[Int] = {
@@ -283,8 +277,10 @@ object ManagedMatrix {
     ExprValue.apply(Math.log(value.value) / l2, value.call, value.probe)
   }
 
+  import java.lang.{Double => JDouble}
   def makeTooltip[E <: ExprValue](data: Iterable[E]): String = {
-    data.toSeq.sortWith(ExprValue.isBefore).map(_.toString).mkString(" ")
+    data.toSeq.filter(v => !JDouble.isNaN(v.value)).
+      sortWith(ExprValue.isBefore).map(_.toString).mkString(" ")
   }
 }
 

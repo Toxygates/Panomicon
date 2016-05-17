@@ -16,9 +16,21 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.shared;
+package t.viewer.shared;
+
+import java.io.Serializable;
 
 @SuppressWarnings("serial")
-public class NoDataLoadedException extends ServerError {
-  public NoDataLoadedException() {}
+public class ServerError extends Exception implements Serializable {
+
+  public ServerError() {}
+
+  public ServerError(String reason, Throwable inner) {
+    super(reason, inner);
+  }
+
+  public ServerError(String reason) {
+    super(reason);
+  }
+
 }
