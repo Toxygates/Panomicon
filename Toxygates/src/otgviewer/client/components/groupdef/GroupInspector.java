@@ -249,8 +249,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     if (selectedUnits.isEmpty() && nameIsAutoGen) {
       //retract the previous suggestion
       txtbxGroup.setText("");
-    }
-    if (txtbxGroup.getText().equals("") || nameIsAutoGen) {
+    } else if (txtbxGroup.getText().equals("") || nameIsAutoGen) {
       txtbxGroup.setText(suggestGroupName(selectedUnits));
       nameIsAutoGen = true;
     } 
