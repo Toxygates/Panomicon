@@ -172,7 +172,7 @@ public class MyDataScreen extends Screen {
         if (Window.confirm("If you have uploaded any data, please save your existing key first.\n" +
               "Without it, you will lose access to your data. Proceed?")) {
           String newKey = Window.prompt("Please input your user data key.", "");
-          if (newKey != null) {
+          if (newKey != null && !newKey.equals("")) {
             setUserKey(newKey);
             refreshBatches();
           }
