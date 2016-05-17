@@ -246,10 +246,14 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
    */
   @Override
   public void unitsChanged(DataListenerWidget sender, List<Unit> selectedUnits) {
+    if (selectedUnits.isEmpty() && nameIsAutoGen) {
+      //retract the previous suggestion
+      txtbxGroup.setText("");
+    }
     if (txtbxGroup.getText().equals("") || nameIsAutoGen) {
       txtbxGroup.setText(suggestGroupName(selectedUnits));
       nameIsAutoGen = true;
-    }
+    } 
   }
 
   @Override
