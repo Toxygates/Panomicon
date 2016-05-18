@@ -136,22 +136,18 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   protected def setSessionData(m: SparqlState) =
     getThreadLocalRequest().getSession().setAttribute("sparql", m)
 
+    /**
+     * Obtain data sources information for AppInfo
+     */
   protected def getAnnotationInfo: Array[Array[String]] = {
     val dynamic = probeStore.annotationsAndComments.toArray
-    /*
-     * Note: the only data sources hardcoded here should be the ones
-     * whose provisioning is independent of SPARQL data that we
-     * control. For example, the ones obtained solely from remote
-     * sources.
-     */
+    val static = staticAnnotationInfo
     Array(
-      dynamic.map(_._1) ++
-        Array("ChEMBL", "DrugBank"),
-      dynamic.map(_._2) ++
-        Array(
-        "Dynamically obtained from https://www.ebi.ac.uk/rdf/services/chembl/sparql",
-        "Dynamically obtained from http://drugbank.bio2rdf.org/sparql"))
+      (dynamic ++ static).map(_._1),
+      (dynamic ++ static).map(_._2))
   }
+
+  protected def staticAnnotationInfo: Seq[(String, String)] = Seq()
 
   /**
    * Generate a new user key, to be used when the client does not already have one.

@@ -119,6 +119,19 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
     _probes: Array[String]): Array[Association] =
     new AnnotationResolver(sc, types, _probes).resolve
 
+  override def staticAnnotationInfo: Seq[(String, String)] = {
+     /*
+     * Note: the only data sources hardcoded here should be the ones
+     * whose provisioning is independent of SPARQL data that we
+     * control. For example, the ones obtained solely from remote
+     * sources.
+     */
+    Seq(
+      ("ChEMBL", "Dynamically obtained from https://www.ebi.ac.uk/rdf/services/chembl/sparql"),
+      ("DrugBank", "Dynamically obtained from http://drugbank.bio2rdf.org/sparql")
+      )
+  }
+
   protected class AnnotationResolver(sc: SampleClass, types: Array[AType],
      _probes: Iterable[String]) extends super.AnnotationResolver(sc, types, _probes) {
 
