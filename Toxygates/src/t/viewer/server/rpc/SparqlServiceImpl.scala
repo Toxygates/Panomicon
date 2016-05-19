@@ -61,6 +61,8 @@ import t.common.shared.clustering.ProbeClustering
 import t.common.shared.clustering.HierarchicalClustering
 import javax.annotation.Nullable
 import t.viewer.shared.TimeoutException
+import t.util.PeriodicRefresh
+import t.util.Refreshable
 
 object SparqlServiceImpl {
   var inited = false
@@ -92,7 +94,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   private def sampleStore: Samples = context.samples
 
   protected var uniprot: Uniprot = _
-  protected var _appInfo: AppInfo = _
+  protected var configuration: Configuration = _
 
   override def localInit(conf: Configuration) {
     super.localInit(conf)
@@ -100,13 +102,30 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     //fail on startup in Toxygates (probably due to a race condition).
     //Figure out why.
     staticInit(context)
+    this.configuration = conf
 
     val ts = baseConfig.triplestore.triplestore
     uniprot = new LocalUniprot(ts)
 
     this.instanceURI = conf.instanceURI
+    //Preload appInfo
+    appInfoLoader.latest
+  }
 
-    _appInfo = new AppInfo(conf.instanceName, Array(),
+  //AppInfo refreshes at most once per day.
+  //This is to allow updates such as clusterings, annotation info etc to feed through.
+  protected val appInfoLoader: Refreshable[AppInfo] =
+    new PeriodicRefresh[AppInfo]("AppInfo", 3600 * 24) {
+    def reload(): AppInfo = {
+      refreshAppInfo()
+    }
+  }
+
+  /**
+   * Called when AppInfo needs a full refresh.
+   */
+  protected def refreshAppInfo(): AppInfo = {
+    new AppInfo(configuration.instanceName, Array(),
         sPlatforms(), predefProbeLists(), probeClusterings(), appName,
         makeUserKey(), getAnnotationInfo)
   }
@@ -166,16 +185,15 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   def appInfo(@Nullable userKey: String): AppInfo = {
     getSessionData() //initialise this if needed
 
-    /* Reload the datasets since they can change due (with user data, admin
-     * operations etc.) We could also reload other parts of AppInfo but I prefer
-     * not to make too many queries every time appInfo is called.
-     * In the future, some kind of mechanism to determine whether AppInfo needs to be
-     * refreshed (such as a file timestamp) may be desirable.
+    val ai = appInfoLoader.latest
+
+    /* Reload the datasets since they can change often (with user data, admin
+     * operations etc.)
      */
-    _appInfo.setDatasets(sDatasets(userKey))
+    ai.setDatasets(sDatasets(userKey))
     //Initialise the selected datasets by selecting all.
-    chooseDatasets(_appInfo.datasets)
-   _appInfo
+    chooseDatasets(ai.datasets)
+   ai
   }
 
   private def predefProbeLists() = {
