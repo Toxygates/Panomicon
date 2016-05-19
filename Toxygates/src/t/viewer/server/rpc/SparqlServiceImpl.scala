@@ -191,8 +191,11 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
      * operations etc.)
      */
     ai.setDatasets(sDatasets(userKey))
-    //Initialise the selected datasets by selecting all.
-    chooseDatasets(ai.datasets)
+
+    if (getSessionData().sampleFilter.datasetURIs.isEmpty) {
+      //Initialise the selected datasets by selecting all.
+      chooseDatasets(ai.datasets)
+    }
    ai
   }
 
