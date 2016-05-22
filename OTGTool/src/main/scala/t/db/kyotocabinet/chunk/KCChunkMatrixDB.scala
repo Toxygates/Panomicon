@@ -281,6 +281,22 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
     }
   }
 
+  override def writeMany(vs: Iterable[(Sample, Int, PExprValue)]): Unit = {
+    val bySample = vs.groupBy(_._1)
+    for ((s, svs) <- bySample) {
+      val byChunk = svs.groupBy(v => chunkStartFor(v._2))
+      for ((c, vs) <- byChunk) {
+       synchronized {
+          var ch = findOrCreateChunk(s.dbCode, vs.head._2)
+          for (v <- vs) {
+            ch = ch.insert(v._2, v._3)
+          }
+          updateChunk(ch)
+        }
+      }
+    }
+  }
+
   def write(s: Sample, probe: Int, e: PExprValue): Unit = synchronized {
     val c = findOrCreateChunk(s.dbCode, probe)
     val u = c.insert(probe, e)

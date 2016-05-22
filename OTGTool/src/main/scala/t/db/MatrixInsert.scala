@@ -65,18 +65,18 @@ abstract class MatrixInsert[E <: ExprValue](raw: RawExpressionData)
 
   protected def mkValue(v: FoldPExpr): E
 
-  private lazy val values =
+  def values(x: Sample) =
     for (
-      x <- raw.data.keys;
       (probe, (v, c, p)) <- raw.data(x)
-    ) yield (x, probe, mkValue(v, c, p))
+    ) yield (probe, mkValue(v, c, p))
 
   def insert(name: String): Tasklet = {
     new Tasklet(name) {
       def run() {
         try {
           val data = raw.data
-          log(data.keySet.size + " samples")
+          val ns = data.keySet.size
+          log(s"$ns samples")
           log(raw.probes.size + " probes")
 
           val unknownProbes = raw.probes.toSet -- context.probeMap.tokens
@@ -88,30 +88,37 @@ abstract class MatrixInsert[E <: ExprValue](raw: RawExpressionData)
             throw new LookupFailedException("No valid probes in data.")
           }
 
-          val total = values.size
           val pmap = context.probeMap
           var pcomp = 0d
-          val it = values.iterator
+          var nvalues = 0
+          val it = raw.data.keys.iterator
           while (it.hasNext && shouldContinue(pcomp)) {
-            val (x, probe, v) = it.next
-            if (knownProbes.contains(probe)) {
-              val packed = try {
-                pmap.pack(probe)
-              } catch {
-                case lf: LookupFailedException =>
-                  throw new LookupFailedException(
-                    s"Unknown probe: $probe. Did you forget to upload a platform definition?")
-                case t: Throwable => throw t
-              }
+            val sample = it.next
+            val vs = values(sample)
 
-              db.write(x, packed, v)
-            } else {
-              log(s"Not inserting unknown probe '$probe'")
-            }
-            pcomp += 100.0 / total
+            val packed = vs.flatMap(vv => {
+              val (probe, v) = vv
+              if (knownProbes.contains(probe)) {
+                val pk = try {
+                  pmap.pack(probe)
+                } catch {
+                  case lf: LookupFailedException =>
+                    throw new LookupFailedException(
+                      s"Unknown probe: $probe. Did you forget to upload a platform definition?")
+                  case t: Throwable => throw t
+                }
+                Some(sample, pk, v)
+              } else {
+                log(s"Not inserting unknown probe '$probe'")
+                None
+              }
+            })
+            nvalues += packed.size
+            db.writeMany(packed)
+            pcomp += 100.0 / ns
           }
 
-          logResult(s"${values.size} values")
+          logResult(s"${nvalues} values written")
         } finally {
           db.release()
         }

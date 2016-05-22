@@ -142,6 +142,12 @@ trait MatrixDBWriter[E <: ExprValue] {
 
   def write(s: Sample, probe: Int, e: E): Unit
 
+  def writeMany(vs: Iterable[(Sample, Int, E)]): Unit = {
+    for (v <- vs) {
+      write(v._1, v._2, v._3)
+    }
+  }
+
   def deleteSample(s: Sample): Unit
 
   def deleteSamples(ss: Iterable[Sample]): Unit = {
