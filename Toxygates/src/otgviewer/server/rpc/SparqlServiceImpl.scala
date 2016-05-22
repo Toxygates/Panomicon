@@ -43,6 +43,7 @@ import t.viewer.server.Configuration
 import t.viewer.server.Conversions._
 import t.viewer.shared.Association
 import t.viewer.shared.TimeoutException
+import t.viewer.shared.AppInfo
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -62,8 +63,12 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
     chembl = new ChEMBL()
     drugBank = new DrugBank()
     homologene = new B2RHomologene()
+  }
 
-    _appInfo.setPredefinedGroups(predefinedGroups)
+  override protected def refreshAppInfo(): AppInfo = {
+    val r = super.refreshAppInfo()
+    r.setPredefinedGroups(predefinedGroups)
+    r
   }
 
   @throws[TimeoutException]

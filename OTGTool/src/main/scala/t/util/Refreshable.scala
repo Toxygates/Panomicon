@@ -18,23 +18,30 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t
+package t.util
 
 /**
- * A timestamp-based refreshable item that loads the latest data
- * when it is available.
+ * A timestamp-based refreshable asset that provides the latest data
+ * when appropriate.
  */
-abstract class Refreshable[T] {
+abstract class Refreshable[T](title: String) {
 
-  var lastTimestamp: Long = 0
+  /**
+   * Time of last refresh (ms)
+   */
+  protected var lastTimestamp: Long = 0
+
+  /**
+   * Current timestamp of asset (ms)
+   */
   def currentTimestamp: Long
-  var latestVal: Option[T] = None
+  protected var latestVal: Option[T] = None
 
-  private def shouldRefresh: Boolean = currentTimestamp > lastTimestamp
+  protected def shouldRefresh: Boolean = currentTimestamp > lastTimestamp
 
   def latest: T = {
     if (shouldRefresh || latestVal == None) {
-      println(this + ": change detected, reloading data")
+      println(s"Refreshable $title: reloading data")
       latestVal = Some(reload())
       lastTimestamp = currentTimestamp
     }
@@ -42,4 +49,12 @@ abstract class Refreshable[T] {
   }
 
   def reload(): T
+}
+
+abstract class PeriodicRefresh[T](title: String, intervalSeconds: Long) extends Refreshable[T](title) {
+
+  override def currentTimestamp = System.currentTimeMillis
+
+  override protected def shouldRefresh: Boolean =
+    (currentTimestamp - lastTimestamp) / 1000 >= intervalSeconds
 }
