@@ -135,10 +135,10 @@ with BatchOpsImpl with MaintenanceService {
       val cmd = s"sh $homeDir/new_instance.${policy}.sh $id $id $param"
       println(s"Run command: $cmd")
       val p = Process(cmd).!
-      if (p != 0) {
-        throw new MaintenanceException(s"Creating webapp instance failed: return code $p")
-      }
       im.addWithTimestamp(id, TRDF.escape(i.getComment))
+      if (p != 0) {
+        throw new MaintenanceException(s"Tomcat instance creation failed: return code $p. Please investigate manualy.")
+      }
     }
   }
 
@@ -166,11 +166,11 @@ with BatchOpsImpl with MaintenanceService {
       val cmd = s"sh $homeDir/delete_instance.sh $id $id"
       println(s"Run command: $cmd")
       val p = Process(cmd).!
+      im.delete(id)
       if (p != 0) {
-        throw new MaintenanceException(s"Deleting webapp instance failed: return code $p")
+        throw new MaintenanceException(s"Deleting tomcat instance failed: return code $p. Please investigate manually.")
       }
 
-      im.delete(id)
     }
   }
 
