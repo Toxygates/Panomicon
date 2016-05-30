@@ -458,7 +458,8 @@ class ManagedMatrix(val initProbes: Seq[String],
           case tt: Synthetic.TTest =>
             current.appendTTest(rawData, g1s, g2s, tt.getShortTitle(null)) //TODO
           case md: Synthetic.MeanDifference =>
-          current.appendDiffTest(rawData, g1s, g2s, md.getShortTitle(null)) //TODO
+            current.appendDiffTest(current, Seq(test.getGroup1.getName),
+                Seq(test.getGroup2.getName), md.getShortTitle(null)) //TODO
           case _ => throw new Exception("Unexpected test type!")
         }
         val name = test.getShortTitle(null);
