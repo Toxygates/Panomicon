@@ -79,13 +79,8 @@ public class MyDataScreen extends Screen {
   }
   
   public Widget content() {
-    //Default instances for new user datasets. If the instance is not listed here,
-    //the user will not be able to see their data.
-    final Set<String> instancesForBatch = new HashSet<String>();    
-    instancesForBatch.add("dev");
-    instancesForBatch.add("adjuvant");
-    instancesForBatch.add("toxygates");
-    instancesForBatch.add("toxygates-test");
+    final Set<String> instancesForBatch = new HashSet<String>();       
+    instancesForBatch.add(appInfo().instanceName());
     
     BatchPanel bp = new BatchPanel("Edit batch", userData, resources,
         true, true) {
@@ -120,7 +115,7 @@ public class MyDataScreen extends Screen {
             visList = new ListBox();
             vp.add(new Label("Visibility"));
             visList.addItem("Private");
-            visList.addItem("Shared");
+            visList.addItem("Public");
             vp.add(visList);
             if (b != null && Dataset.isSharedDataset(b.getDataset())) {
               visList.setSelectedIndex(1);

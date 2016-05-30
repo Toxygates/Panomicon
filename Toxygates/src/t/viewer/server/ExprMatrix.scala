@@ -152,4 +152,12 @@ class ExprMatrix(data: Seq[Seq[ExprValue]], rows: Int, columns: Int,
     colName: String): ExprMatrix =
     appendTwoColTest(sourceData, group1, group2,
         (x,y) => utest.mannWhitneyUTest(x.toArray, y.toArray), 2, colName)
+
+  def appendDiffTest(sourceData: ExprMatrix, group1: Seq[String], group2: Seq[String],
+    colName: String): ExprMatrix = {
+    def diffTest(a1: Seq[Double], a2: Seq[Double]): Double = safeMean(a1) - safeMean(a2)
+
+    appendTwoColTest(sourceData, group1, group2, diffTest(_, _), 1, colName)
+  }
+
 }
