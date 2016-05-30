@@ -96,7 +96,7 @@ object BatchManager extends ManagerTool {
               val f = new java.io.File(mf.replace(".meta.tsv", ".call.csv"))
               val callFile = if (f.exists()) Some(f.getPath) else None
               println(s"Insert $dataFile")
-              addTasklets(bm.addBatch(title, comment,
+              addTasklets(bm.add(title, comment,
                 md, dataFile, callFile,
                 append, config.seriesBuilder))
             }
@@ -108,7 +108,7 @@ object BatchManager extends ManagerTool {
             val callFile = stringOption(args, "-calls")
 
             val md = factory.tsvMetadata(metaFile)
-            addTasklets(bm.addBatch(title, comment,
+            addTasklets(bm.add(title, comment,
               md, dataFile, callFile,
               append, config.seriesBuilder))
         }
@@ -120,7 +120,7 @@ object BatchManager extends ManagerTool {
         // TODO move verification into the batches API
         verifyExists(batches, title)
         val bm = new BatchManager(context)
-        addTasklets(bm.deleteBatch(title, config.seriesBuilder, rdfOnly))
+        addTasklets(bm.delete(title, config.seriesBuilder, rdfOnly))
       case "list" =>
         println("Batch list")
         for (b <- batches.list) {
@@ -252,7 +252,7 @@ class BatchManager(context: Context) {
   val requiredParameters = config.sampleParameters.required.map(_.identifier)
   val hlParameters = config.sampleParameters.highLevel.map(_.identifier)
 
-  def addBatch[S <: Series[S]](title: String, comment: String, metadata: Metadata,
+  def add[S <: Series[S]](title: String, comment: String, metadata: Metadata,
     dataFile: String, callFile: Option[String],
     append: Boolean, sbuilder: SeriesBuilder[S],
     @deprecated("To be removed", "April 12 2016") exprAsFold: Boolean = false,
@@ -263,7 +263,7 @@ class BatchManager(context: Context) {
     r :+= consistencyCheck(title, metadata, config)
 
     if (!append) {
-      r :+= addBatchRecord(title, comment, config.triplestore)
+      r :+= addRecord(title, comment, config.triplestore)
     }
     r :+= addSampleIDs(metadata)
     r :+= addRDF(title, metadata, sbuilder, ts)
@@ -274,14 +274,17 @@ class BatchManager(context: Context) {
     implicit val mc = matrixContext()
     r :+= addEnums(metadata, sbuilder)
 
-    r :+= addExprData(dataFile, callFile, exprAsFold)
-    r :+= addFoldsData(metadata, dataFile, callFile, simpleLog2)
+    //TODO logging directly to TaskRunner is controversial
+    r :+= addExprData(metadata, dataFile, callFile, exprAsFold,
+        m => TaskRunner.log(s"Warning: $m"))
+    r :+= addFoldsData(metadata, dataFile, callFile, simpleLog2,
+        m => TaskRunner.log(s"Warning: $m"))
     r :+= addSeriesData(metadata, sbuilder)
 
     r
   }
 
-  def deleteBatch[S <: Series[S]](title: String,
+  def delete[S <: Series[S]](title: String,
     sbuilder: SeriesBuilder[S], rdfOnly: Boolean = false,
     @deprecated("To be removed", "April 13 2016") exprAsFold: Boolean = false): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
@@ -322,14 +325,26 @@ class BatchManager(context: Context) {
         if (bsamples.contains(s.identifier)) {
           log(s"Replacing sample ${s.identifier}")
         } else if (existingSamples.contains(s.identifier)) {
-          throw new Exception(s"The sample ${s.identifier} has already been defined in a different batch")
+          val suggestion = suggestSampleId(existingSamples, s.identifier)
+          throw new Exception(s"The sample ${s.identifier} has " +
+              s" already been defined in a different batch. Consider using: $suggestion")
         }
         checkValidIdentifier(s.identifier, "sample ID")
       }
     }
   }
 
-  def addBatchRecord(title: String, comment: String, ts: TriplestoreConfig) =
+  private def suggestSampleId(existing: Set[String], candidate: String): String = {
+    var n = 1
+    var cand = candidate
+    while(existing.contains(cand)) {
+      cand = s"${candidate}_$n"
+      n += 1
+    }
+    cand
+  }
+
+  def addRecord(title: String, comment: String, ts: TriplestoreConfig) =
     new Tasklet("Add batch record") {
       def run() {
         val bs = new Batches(ts)
@@ -411,9 +426,11 @@ class BatchManager(context: Context) {
   }
 
   //TODO: remove treatAsFold parameter when possible
-  def addExprData(niFile: String, callFile: Option[String],
-    treatAsFold: Boolean)(implicit mc: MatrixContext) = {
-    val data = new CSVRawExpressionData(List(niFile), callFile.map(List(_)))
+  def addExprData(md: Metadata, niFile: String, callFile: Option[String],
+    treatAsFold: Boolean,
+    warningHandler: (String) => Unit)(implicit mc: MatrixContext) = {
+    val data = new CSVRawExpressionData(List(niFile), callFile.map(List(_)),
+        Some(md.samples.size), warningHandler)
     if (treatAsFold) {
       val db = () => config.data.extWriter(config.data.exprDb)
       new SimplePFoldValueInsert(db, data).insert("Insert expr value data (quasi-fold format)")
@@ -423,9 +440,10 @@ class BatchManager(context: Context) {
   }
 
   def addFoldsData(md: Metadata, foldFile: String, callFile: Option[String],
-      simpleLog2: Boolean)
+      simpleLog2: Boolean, warningHandler: (String) => Unit)
   (implicit mc: MatrixContext) = {
-    val data = new CSVRawExpressionData(List(foldFile), callFile.map(List(_)))
+    val data = new CSVRawExpressionData(List(foldFile), callFile.map(List(_)),
+        Some(md.samples.size), warningHandler)
     val fvs = if (simpleLog2) {
       new Log2Data(data)
     } else {
@@ -451,6 +469,10 @@ class BatchManager(context: Context) {
       def run() {
         val bs = new Batches(config.triplestore)
         val ss = bs.samples(title).map(Sample(_))
+        if (ss.isEmpty) {
+          log("Nothing to do, batch has no samples")
+          return
+        }
         val db = config.data.extWriter(config.data.foldDb)
         try {
           deleteFromDB(db, ss)
@@ -466,6 +488,10 @@ class BatchManager(context: Context) {
       def run() {
         val bs = new Batches(config.triplestore)
         val ss = bs.samples(title).map(Sample(_))
+         if (ss.isEmpty) {
+          log("Nothing to do, batch has no samples")
+          return
+        }
         val db = if (treatAsFold) {
           config.data.extWriter(config.data.exprDb)
         } else {

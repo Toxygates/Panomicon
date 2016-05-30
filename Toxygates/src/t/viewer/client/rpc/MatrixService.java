@@ -23,15 +23,15 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import otgviewer.shared.FullMatrix;
-import otgviewer.shared.ServerError;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.common.shared.userclustering.Algorithm;
 import t.viewer.shared.ColumnFilter;
+import t.viewer.shared.FullMatrix;
 import t.viewer.shared.ManagedMatrixInfo;
+import t.viewer.shared.ServerError;
 import t.viewer.shared.Synthetic;
 import t.viewer.shared.table.SortKey;
 
@@ -131,13 +131,11 @@ public interface MatrixService extends RemoteService {
    *        appear as a column.
    * @param probes
    * @param type
-   * @param sparseRead If true, we optimise for the case of reading a single probe from multiple
-   *        arrays. If false, we optimise for reading full arrays.
    * @param withSymbols If true, gene IDs and gene symbols will also be loaded into the rows (may be
    *        slightly slower)
    * @return
    */
-  public FullMatrix getFullData(List<Group> gs, String[] probes, boolean sparseRead,
+  public FullMatrix getFullData(List<Group> gs, String[] probes, 
       boolean withSymbols, ValueType type) throws ServerError;
 
   /**

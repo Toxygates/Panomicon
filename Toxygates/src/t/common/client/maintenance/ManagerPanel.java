@@ -37,7 +37,10 @@ import com.google.gwt.user.client.ui.Widget;
 
 abstract public class ManagerPanel<T extends ManagedItem> {
 
-  private CellTable<T> table = t.common.client.Utils.makeTable();
+  //TODO 100 is an arbitrary number - we should eventually have paging controls in the GUI.
+  //For example, SimplePager.
+  //A page size of <= 20 is best to reduce the number of queries made to the server.
+  private CellTable<T> table = t.common.client.Utils.makeTable(100);
   List<Command> cmds = new ArrayList<Command>();
   private DockLayoutPanel dlp = new DockLayoutPanel(Unit.PX);
   private final String editCaption;

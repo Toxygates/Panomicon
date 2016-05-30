@@ -16,9 +16,14 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.shared;
+package t.viewer.shared;
 
 @SuppressWarnings("serial")
-public class TimeoutException extends ServerError {
+public class NoSuchProbeException extends ServerError {
 
+  public NoSuchProbeException() {}
+
+  public NoSuchProbeException(String probe) {
+    super("No such probe or gene: " + probe);
+  }
 }

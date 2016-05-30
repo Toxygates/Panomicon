@@ -1,3 +1,23 @@
+/*
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * (NIBIOHN), Japan.
+ *
+ * This file is part of Toxygates.
+ *
+ * Toxygates is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Toxygates is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package t.common.server.maintenance
 
 import t.viewer.server.rpc.TServiceServlet
@@ -16,6 +36,8 @@ import t.common.shared.ManagedItem
 import t.sparql.TRDF
 import t.common.shared.Dataset
 import t.db.Metadata
+import javax.annotation.Nullable
+import t.db.SampleParameter
 
 /**
  * Routines for servlets that support the management of batches.
@@ -42,7 +64,9 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
       val exbs = new Batches(context.config.triplestore).list
       if (exbs.contains(b.getTitle) && !mayAppendBatch) {
-        throw new MaintenanceException(s"The batch ${b.getTitle} already exists and appending is not allowed")
+        throw new MaintenanceException(
+            s"The batch ${b.getTitle} already exists and appending is not allowed. " +
+            "Please choose a different name.")
       }
 
       val tempFiles = new TempFiles()
@@ -63,12 +87,16 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
       checkMetadata(md)
 
-      TaskRunner ++= bm.addBatch(b.getTitle, b.getComment, md,
+      TaskRunner += bm.addRecord(b.getTitle, b.getComment, context.config.triplestore)
+      //Set the parameters immediately, so that the batch is in the right dataset
+      // -> can be seen and deleted, in the case of e.g. user data
+      TaskRunner += Tasklet.simple("Set batch parameters", () => updateBatch(b))
+
+      TaskRunner ++= bm.add(b.getTitle, b.getComment, md,
         dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
-        false, baseConfig.seriesBuilder,
+        true, baseConfig.seriesBuilder,
         exprAsFold, simpleLog2)
-      TaskRunner += Tasklet.simple("Set batch parameters", () => updateBatch(b))
     }
   }
 
@@ -80,9 +108,8 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
   import java.util.HashSet
 
-  def getBatches(dataset: String): Array[Batch] = {
-    val useDataset = Option(dataset)
-
+  def getBatches(@Nullable dss: Array[String]): Array[Batch] = {
+    val useDatasets = Option(dss).toSet.flatten
     val bs = new Batches(baseConfig.triplestore)
     val ns = bs.numSamples
     val comments = bs.comments
@@ -95,10 +122,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
         new HashSet(setAsJavaSet(bs.listAccess(b).toSet)),
         datasets.getOrElse(b, ""))
     }).toArray
-    useDataset match {
-      case None     => r
-      case Some(ds) => r.filter(_.getDataset == ds)
-    }
+    r.filter(b => useDatasets.isEmpty || useDatasets.contains(b.getDataset))
   }
 
   def deleteBatchAsync(id: String): Unit = {
@@ -107,7 +131,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     cleanMaintenance {
       TaskRunner.start()
       setLastTask("Delete batch")
-      TaskRunner ++= bm.deleteBatch(id, baseConfig.seriesBuilder, false,
+      TaskRunner ++= bm.delete(id, baseConfig.seriesBuilder, false,
         exprAsFold)
     }
   }
@@ -135,7 +159,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     bs.setComment(b.getTitle, TRDF.escape(b.getComment))
   }
 
-  protected def overviewParameters: Seq[t.db.SampleParameter] =
+  protected def overviewParameters: Seq[SampleParameter] =
     context.config.sampleParameters.required.toSeq
 
   def batchParameterSummary(batch: Batch): Array[Array[String]] = {
@@ -183,10 +207,11 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   }
 
   protected def updateDataset(d: Dataset): Unit = {
+    //TODO security check
+
     val ds = new Datasets(baseConfig.triplestore)
     ds.setComment(d.getTitle, TRDF.escape(d.getComment))
     ds.setDescription(d.getTitle, TRDF.escape(d.getDescription))
     ds.setPublicComment(d.getTitle, TRDF.escape(d.getPublicComment))
   }
-
 }

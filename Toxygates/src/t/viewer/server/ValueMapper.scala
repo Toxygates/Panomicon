@@ -18,9 +18,8 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.common.shared.probe
+package t.viewer.server
 
-import t.common.shared.sample.ExpressionValue
 import t.db.ExprValue
 
 /**
@@ -29,16 +28,16 @@ import t.db.ExprValue
  * Example: combine multiple gene values into a single protein value.
  * Example: combine multiple transcript values into a single gene value.
  */
-
 trait ValueMapper {
-
   /**
    * @return the domain value.
    */
   def convert(rangeProbe: String, domainVs: Iterable[ExprValue]): ExprValue
-
 }
 
+/**
+ * A mapper that picks/computes the median value.
+ */
 object MedianValueMapper extends ValueMapper {
   def format(x: Double) = ExprValue.nf.format(x)
 

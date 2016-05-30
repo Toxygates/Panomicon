@@ -115,6 +115,10 @@ public class AppInfo implements Serializable {
     return datasets;
   }
   
+  public void setDatasets(Dataset[] ds) {
+    this.datasets = ds;
+  }
+  
   public Platform[] platforms() {
     return platforms;
   }

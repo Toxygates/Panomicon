@@ -17,7 +17,7 @@
  */
 package t.common.server.userclustering
 
-import otgviewer.server.R
+import t.viewer.server.R
 import org.rosuda.REngine.Rserve.RserveException
 import t.common.shared.userclustering.Algorithm
 import java.util.logging.Logger
@@ -26,7 +26,9 @@ class RClustering(userDir: String) {
   val logger = Logger.getLogger("RClustering")
 
   @throws(classOf[RserveException])
-  def clustering(data: Seq[Double], rowName: Seq[String], colName: Seq[String], geneSyms: Seq[String], algorithm: Algorithm = new Algorithm()) = {
+  def clustering(data: Seq[Double], rowName: Seq[String],
+      colName: Seq[String], geneSyms: Seq[String],
+      algorithm: Algorithm = new Algorithm()): String = {
     assert(data.length == rowName.length * colName.length)
 
     val r = new R
@@ -38,7 +40,8 @@ class RClustering(userDir: String) {
     r.addCommand("rowDistance <- \"" + algorithm.getRowDistance.asParam() + "\"")
     r.addCommand("colMethod <- \"" + algorithm.getColMethod.asParam() + "\"")
     r.addCommand("colDistance <- \"" + algorithm.getColDistance.asParam() + "\"")
-    r.addCommand("appendixes <- list(" + (rowName zip geneSyms).map{ x => s""""${x._1}"="${x._2}"""" }.mkString(",")   + ")")
+    r.addCommand("appendixes <- list(" + (rowName zip geneSyms).map{ x =>
+      s""""${x._1}"="${x._2}"""" }.mkString(",")   + ")")
 
     r.addCommand("getClusterAsJSON(data, r, c, rowMethod, rowDistance, colMethod, colDistance, appendixes)")
 

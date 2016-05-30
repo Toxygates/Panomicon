@@ -28,7 +28,6 @@ import java.util.logging.Logger;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.shared.FullMatrix;
 import otgviewer.shared.Series;
 import t.common.shared.DataSchema;
 import t.common.shared.HasClass;
@@ -42,6 +41,7 @@ import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
 import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.shared.FullMatrix;
 
 /**
  * This class brings series and row data into a unified interface for the purposes of chart drawing.
@@ -203,7 +203,7 @@ abstract public class DataSource {
       Group g = new Group(schema, "temporary", useSamples.toArray(new Sample[0]));
       List<Group> gs = new ArrayList<Group>();
       gs.add(g);
-      matrixService.getFullData(gs, probes, true, false, type,
+      matrixService.getFullData(gs, probes, false, type,
           new PendingAsyncCallback<FullMatrix>(screen, "Unable to obtain chart data.") {
 
             @Override
@@ -257,7 +257,7 @@ abstract public class DataSource {
       }
 
       chartSamples.clear();
-      matrixService.getFullData(groups, probes, true, false, type,
+      matrixService.getFullData(groups, probes, false, type,
           new PendingAsyncCallback<FullMatrix>(screen, "Unable to obtain chart data") {
 
             @Override

@@ -33,7 +33,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 
 public class DataFilterEditor extends DataListenerWidget {
-  List<SampleClass> sampleClasses;
+  List<SampleClass> sampleClasses = new ArrayList<SampleClass>();
   final SCListBox[] selectors;
   private final SparqlServiceAsync sparqlService;
   private final String[] parameters;

@@ -124,7 +124,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   protected SortKey sortKey;
   protected boolean sortAsc;
 
-  private boolean pValueOption;
+  private boolean withPValueOption;
 
   /**
    * For selecting sample groups to apply t-test/u-test to
@@ -153,9 +153,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   
   private CheckBox pcb;
 
-  public ExpressionTable(Screen _screen, boolean pValueOption) {
+  public ExpressionTable(Screen _screen, boolean withPValueOption) {
     super(_screen);
-    this.pValueOption = pValueOption;
+    this.withPValueOption = withPValueOption;
     this.matrixService = _screen.matrixService();
     this.resources = _screen.resources();
     screen = _screen;
@@ -238,13 +238,20 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     pager.setStylePrimaryName("slightlySpaced");
     horizontalPanel.add(pager);
 
-    if (pValueOption) {
+    if (withPValueOption) {
       pcb = new CheckBox("p-value columns");
       horizontalPanel.add(pcb);
       pcb.setValue(true);
       pcb.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
+          if (pcb.getValue() && ! hasPValueColumns()) {
+            Window.alert("Precomputed p-values are only available for sample groups "
+                + "consisting of a single time and dose.\n"
+                + "If you wish to compare two columns, use "
+                + "\"Compare two sample groups\" in the tools menu.");
+            return;
+          }
           setDisplayPColumns(pcb.getValue());
           setupColumns();
         }
@@ -255,7 +262,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   }
 
   public void setDisplayPColumns(boolean displayPColumns) {
-    if (pValueOption) {
+    if (withPValueOption) {
       this.displayPColumns = displayPColumns;
       pcb.setValue(displayPColumns);
     }    
@@ -349,6 +356,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         Utils.displayURL("Your download is ready.", "Download", url);
       }
     });
+  }
+  
+  protected boolean hasPValueColumns() {
+    for (int i = 0; i < matrixInfo.numDataColumns(); ++i) {
+      if (matrixInfo.isPValueColumn(i)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   protected void setupColumns() {

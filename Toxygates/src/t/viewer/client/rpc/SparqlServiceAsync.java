@@ -37,7 +37,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface SparqlServiceAsync {
 
-  public void appInfo(AsyncCallback<AppInfo> callback);
+  public void appInfo(String userDataKey, AsyncCallback<AppInfo> callback);
 
   public void chooseDatasets(Dataset[] enabled, AsyncCallback<Void> callback);
 

@@ -36,7 +36,10 @@ import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.Instance;
 import t.viewer.client.rpc.UserDataServiceAsync;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -56,8 +59,11 @@ public class MyDataScreen extends Screen {
   
   private HorizontalPanel cmds = t.viewer.client.Utils.mkHorizontalPanel();
   
-  final String userKey; 
-  final String userDataset;  
+  private String userKey;   
+  private String userDataset;
+  private String userSharedDataset;
+  
+  private Label keyLabel;
   
   public MyDataScreen(ScreenManager man) {
     super("My data", key, false, man);
@@ -68,17 +74,17 @@ public class MyDataScreen extends Screen {
     String key = getParser().getItem("userDataKey");
     if (key == null) {
       key = manager().appInfo().getUserKey();
-      getParser().setItem("userDataKey", key);
     }
-    userKey = key;
-    userDataset = "user-" + key;
-    
-    logger.info("The unique user key is: " + userKey);
+    setUserKey(key);    
   }
   
   public Widget content() {
-    final Set<String> instancesForBatch = new HashSet<String>();
+    //Default instances for new user datasets. If the instance is not listed here,
+    //the user will not be able to see their data.
+    final Set<String> instancesForBatch = new HashSet<String>();    
     instancesForBatch.add("dev");
+    instancesForBatch.add("adjuvant");
+    instancesForBatch.add("toxygates");
     instancesForBatch.add("toxygates-test");
     
     BatchPanel bp = new BatchPanel("Edit batch", userData, resources,
@@ -104,12 +110,23 @@ public class MyDataScreen extends Screen {
           }
           
           @Override
+          protected void onFinish() {
+            db.hide();
+            doRefresh();
+          }
+          
+          @Override
           protected void guiBeforeUploader(VerticalPanel vp, Batch b, boolean addNew) {
             visList = new ListBox();
             vp.add(new Label("Visibility"));
             visList.addItem("Private");
             visList.addItem("Shared");
             vp.add(visList);
+            if (b != null && Dataset.isSharedDataset(b.getDataset())) {
+              visList.setSelectedIndex(1);
+            } else {
+              visList.setSelectedIndex(0);
+            }
           }
           
           @Override
@@ -118,7 +135,7 @@ public class MyDataScreen extends Screen {
             if (vis.equals("Private")) {
               return userDataset;
             } else {              
-              return "adjuvant-shared"; //TODO
+              return userSharedDataset;
             }
           }
           
@@ -145,17 +162,42 @@ public class MyDataScreen extends Screen {
     
     HTML h = new HTML();
     h.setHTML("<a target=_blank href=\"Toxygates user data example.zip\"> Download example files</a>");
-    cmds.add(h);
-
-    cmds.add(new Label("Your access key is: " + userKey));
-    
-    refreshBatches();
-    
+    cmds.add(h); 
+    keyLabel = new Label("Access key: " + userKey);
+    cmds.add(keyLabel);
+    Button b = new Button("Change ...");
+    b.addClickHandler(new ClickHandler() {      
+      @Override
+      public void onClick(ClickEvent event) {   
+        if (Window.confirm("If you have uploaded any data, please save your existing key first.\n" +
+              "Without it, you will lose access to your data. Proceed?")) {
+          String newKey = Window.prompt("Please input your user data key.", "");
+          if (newKey != null && !newKey.equals("")) {
+            setUserKey(newKey);
+            refreshBatches();
+          }
+        }
+      }
+    });
+    cmds.add(b);    
+    refreshBatches();    
     return bp.table();
+  }
+  
+  private void setUserKey(String key) {
+    getParser().setItem("userDataKey", key);    
+    userKey = key;
+    userDataset = Dataset.userDatasetTitle(key);
+    userSharedDataset = Dataset.userSharedDatasetTitle(key);        
+    logger.info("The unique user key is: " + key);
+    if (keyLabel != null) {
+      keyLabel.setText("Your access key is: " + userKey);
+    }
   }
 
   private void refreshBatches() {
-    userData.getBatches(userDataset, new ListDataCallback<Batch>(batchData, "batch list"));
+    String[] dss = { userDataset, userSharedDataset };
+    userData.getBatches(dss, new ListDataCallback<Batch>(batchData, "batch list"));
   }
   
   private void deleteBatch(Batch b) {

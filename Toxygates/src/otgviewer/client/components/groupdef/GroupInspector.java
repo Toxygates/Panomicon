@@ -246,10 +246,13 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
    */
   @Override
   public void unitsChanged(DataListenerWidget sender, List<Unit> selectedUnits) {
-    if (txtbxGroup.getText().equals("") || nameIsAutoGen) {
+    if (selectedUnits.isEmpty() && nameIsAutoGen) {
+      //retract the previous suggestion
+      txtbxGroup.setText("");
+    } else if (txtbxGroup.getText().equals("") || nameIsAutoGen) {
       txtbxGroup.setText(suggestGroupName(selectedUnits));
       nameIsAutoGen = true;
-    }
+    } 
   }
 
   @Override
@@ -401,6 +404,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
       }
     }
     if (disableCount > 0) {
+      reflectGroupChanges(true);
       Window
           .alert(disableCount + " group(s) were deactivated " + "because of your dataset choice.");
     }

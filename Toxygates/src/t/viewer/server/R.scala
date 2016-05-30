@@ -18,10 +18,9 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.server
+package t.viewer.server
 
 import java.util.logging.Logger
-import t.viewer.server.Configuration
 import scala.sys.process._
 import org.rosuda.REngine.Rserve.RserveException
 import org.rosuda.REngine.Rserve.RConnection

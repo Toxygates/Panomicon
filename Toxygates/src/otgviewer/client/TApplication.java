@@ -32,6 +32,7 @@ import javax.annotation.Nullable;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
+import otgviewer.client.components.StorageParser;
 import otgviewer.client.dialog.FeedbackForm;
 import otgviewer.client.targetmine.TargetMineData;
 import t.common.shared.SharedUtils;
@@ -68,6 +69,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
@@ -143,6 +145,26 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     return appInfo;
   }
 
+  public void reloadAppInfo(final AsyncCallback<AppInfo> handler) {
+    final Logger l = SharedUtils.getLogger();
+    final DialogBox wait = Utils.waitDialog();
+
+    @Nullable String existingKey = getParser().getItem("userDataKey");
+    sparqlService.appInfo(existingKey, new AsyncCallback<AppInfo>() {
+      public void onSuccess(AppInfo result) {
+        l.info("Got appInfo");
+        wait.hide();
+        appInfo = result;
+        handler.onSuccess(result);
+      }
+      public void onFailure(Throwable caught) {
+        wait.hide();
+        l.log(Level.WARNING, "Failed to obtain appInfo", caught);
+        handler.onFailure(caught);
+      }      
+    });
+  }
+  
   /**
    * This is the entry point method.
    */
@@ -181,26 +203,19 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     navOuter.add(navPanel);
     mainDockPanel.addNorth(navOuter, 35);
 
-    final Logger l = SharedUtils.getLogger();
-    final DialogBox wait = Utils.waitDialog();
-
-    sparqlService.appInfo(new AsyncCallback<AppInfo>() {
+    reloadAppInfo(new AsyncCallback<AppInfo>() {
       @Override
       public void onSuccess(AppInfo result) {
-        l.info("Got appInfo");
-        appInfo = result;
-        wait.hide();
         prepareScreens();
       }
 
       @Override
       public void onFailure(Throwable caught) {
-        wait.hide();
-        Window.alert("Failed to obtain application information.");
-        l.log(Level.WARNING, "Failed to obtain appInfo", caught);
+        Window.alert("Failed to obtain application information.");        
       }
     });
 
+    Logger l = SharedUtils.getLogger();
     l.info("onModuleLoad() finished");
   }
 
@@ -211,8 +226,28 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     deconfigureAll(pickScreen(History.getToken()));
   }
 
-  public String storagePrefix() {
+  protected static Storage tryGetStorage() {
+    Storage r = Storage.getLocalStorageIfSupported();
+    // TODO concurrency an issue for GWT here?
+    if (r == null) {
+      Window
+          .alert("Local storage must be supported in the web browser. The application cannot continue.");
+    }
+    return r;
+  }
+
+  private StorageParser parser;
+  
+  protected String storageParserPrefix() {
     return instanceName();
+  }
+  
+  public StorageParser getParser() {
+    if (parser != null) {
+      return parser;
+    }
+    parser = new StorageParser(tryGetStorage(), storageParserPrefix());
+    return parser;
   }
 
   private @Nullable String getMeta(String key) {

@@ -18,15 +18,10 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.server
+package t.viewer.server
 
-import t.viewer.shared.ManagedMatrixInfo
-import t.common.shared.probe.ProbeMapper
-import t.common.shared.probe.ValueMapper
-import t.viewer.server.FullAnnotation
-import t.viewer.server.ExprMatrix
 import t.db.ExprValue
-import t.viewer.server.ManagedMatrix
+import t.viewer.shared.ManagedMatrixInfo
 
 /**
  * A matrix mapper converts a whole matrix from one domain into
@@ -36,16 +31,16 @@ import t.viewer.server.ManagedMatrix
  *
  * This process changes the number and index keys of the rows, but
  * preserves columns.
- *
- * TODO move to t.viewer.server
  */
 class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
 
   private def padToSize(vs: Iterable[ExprValue], n: Int): Iterable[ExprValue] = {
     val diff = n - vs.size
-    val empty = (0 until diff).map(x => ExprValue(0, 'A'))
+    val empty = (0 until diff).map(x => ExprValue(Double.NaN, 'A'))
     vs ++ empty
   }
+
+  case class MappedValue(post: ExprValue, prior: Seq[ExprValue])
 
   /**
    * Converts grouped into (grouped, ungrouped)
@@ -64,7 +59,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
         val nr = (0 until from.columns).map(c => {
           val xs = domainRows.map(dr => dr(c)).filter(_.present)
           val v = vm.convert(rng, xs)
-          (v, xs)
+          MappedValue(v, xs)
         })
         Some((nr, FullAnnotation(rng, domProbes)))
       } else {
@@ -75,13 +70,13 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
     val cols = from.sortedColumnMap.map(_._1)
 
     val annots = nrows.map(_._2)
-    val groupedVals = nrows.map(_._1.map(_._1))
+    val groupedVals = nrows.map(_._1.map(_.post))
 
     //the max. size of each ungrouped column
-    val ungroupedSizes = (0 until from.columns).map(c => nrows.map(_._1(c)._2.size).max)
+    val ungroupedSizes = (0 until from.columns).map(c => nrows.map(_._1(c).prior.size).max)
     //pad to size to get a matrix
     val ungroupedVals = for (r <- nrows)
-      yield (0 until from.columns).flatMap(c => padToSize(r._1(c)._2, ungroupedSizes(c)))
+      yield (0 until from.columns).flatMap(c => padToSize(r._1(c).prior, ungroupedSizes(c)))
 
     //The base map will be used for generating tooltips from the ungrouped matrix
     //that we constructed above
@@ -101,7 +96,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
 
   def convert(from: ManagedMatrix): ManagedMatrix = {
 //    val ungr = convert(from.rawUngroupedMat)
-    val (gr, ungr, bm) = convert(from.rawGroupedMat)
+    val (gr, ungr, bm) = convert(from.rawGrouped)
     val rks = (0 until ungr.rows).map(ungr.rowAt)
 
     //Note, we re-fix initProbes for the new matrix

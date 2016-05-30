@@ -37,12 +37,14 @@ public abstract class ManagedItem implements Serializable, DataRecord {
 		this.date = date;
 	}
 
+	//TODO rename
 	public String getTitle() { return title; }
 	
 	public String getComment() { return comment; }
 	public void setComment(String c) { comment = c; }
 	public Date getDate() { return date; }
 	
+	//TODO rename
 	public String getUserTitle() { return title; }
 	
 	@Override

@@ -92,7 +92,7 @@ object TaskRunner {
   private var tasks: Vector[Tasklet] = Vector()
   @volatile private var _shouldStop = false
   private var _logMessages: Vector[String] = Vector()
-  @volatile private var _resultMessages: Vector[String] = Vector()
+  private var _resultMessages: Vector[String] = Vector()
   @volatile private var _errorCause: Option[Throwable] = None
 
   def queueSize(): Int = synchronized {
@@ -113,8 +113,7 @@ object TaskRunner {
   def shouldStop = _shouldStop
 
   /**
-   * Obtain log messages in time order
-   * (and remove them from the log)
+   * Obtain log messages in time order and remove them from the log
    */
   def logMessages: Iterable[String] = synchronized {
     val r = _logMessages
@@ -122,7 +121,14 @@ object TaskRunner {
     r
   }
 
-  def resultMessages: Iterable[String] = _resultMessages
+  /**
+   * Obtain result messages in time order and remove them from the log
+   */
+  def resultMessages: Iterable[String] = synchronized {
+    val r = _resultMessages
+    _resultMessages = Vector()
+    r
+  }
 
   def +=(task: Tasklet) = synchronized {
     tasks :+= task
@@ -180,7 +186,7 @@ object TaskRunner {
       }
       //Received the stop signal
       println("TaskRunner stopping")
-      for (r <- resultMessages) {
+      for (r <- _resultMessages) {
         println(r)
       }
     }

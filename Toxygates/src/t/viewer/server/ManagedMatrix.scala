@@ -92,7 +92,6 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
 
     val cols = requestColumns.par.map(g => {
         println(g.getUnits()(0).toString())
-        //TODO avoid EVArray building
         columnsFor(g, sortedSamples, data)
     }).seq
 
@@ -109,9 +108,8 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     val ungrouped = ExprMatrix.withRows(data,
         sortedProbes, sortedSamples.map(_.sampleId))
 
-    val bmap = Map() ++ (0 until requestColumns.size).map(i => {
-      val cg = info.columnGroup(i)
-      val sampleIds = cg.samples.map(_.id).toSeq
+    val baseColumns = Map() ++ (0 until info.numDataColumns()).map(i => {
+      val sampleIds = info.samples(i).map(_.id).toSeq
       val sampleIdxs = sampleIds.map(i => ungrouped.columnMap.get(i)).flatten
       (i -> sampleIdxs)
     })
@@ -119,11 +117,11 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     new ManagedMatrix(sortedProbes, info,
       ungrouped.copyWithAnnotations(annotations),
       grouped.copyWithAnnotations(annotations),
-      bmap,
-      log2tooltips)
+      baseColumns,
+      log2transform)
   }
 
-  protected def log2tooltips: Boolean = false
+  protected def log2transform: Boolean = false
 
   protected def mean(data: Iterable[ExprValue], presentOnly: Boolean = true) = {
     if (presentOnly) {
@@ -135,12 +133,8 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
 
   final protected def selectIdx[E <: ExprValue](data: Seq[E], is: Seq[Int]) = is.map(data(_))
   final protected def javaMean[E <: ExprValue](data: Iterable[E], presentOnly: Boolean = true) = {
-    val mean = presentOnly match {
-      case true => ExprValue.presentMean(data, "")
-      case _    => ExprValue.allMean(data, "")
-    }
-
-    new ExpressionValue(mean.value, mean.call, null) // makeTooltip(data))
+    val m = mean(data, presentOnly)
+    new ExpressionValue(m.value, m.call, null)
   }
 
   protected def unitIdxs(us: Iterable[t.common.shared.sample.Unit], samples: Seq[Sample]): Seq[Int] = {
@@ -157,18 +151,6 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
   //TODO use schema
   protected def treatedAndControl(g: Group) =
     g.getUnits().partition(_.get("dose_level") != "Control")
-}
-
-/**
- * No extra columns. Simple averaged fold values.
- */
-class FoldBuilder(reader: MatrixDBReader[ExprValue], probes: Seq[String])
-    extends ManagedMatrixBuilder[ExprValue](reader, probes) {
-
-  protected def columnsFor(g: Group, sortedBarcodes: Seq[Sample],
-    data: Seq[Seq[ExprValue]]): (Seq[Seq[ExprValue]], ManagedMatrixInfo) =
-    defaultColumns(g, sortedBarcodes, data)
-
 }
 
 trait TreatedControlBuilder[E >: Null <: ExprValue] {
@@ -255,11 +237,6 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
 
   import ManagedMatrix._
 
-  //TODO this log2 hack (if we keep it) also applies to the FoldBuilder above.
-  //However, FoldBuilder is not currently being used. We should re-evaluate whether it
-  //is needed. (Actually, I'd like to unify the two different ExtFold/Fold formats and only
-  //use simple Fold. - Johan
-
   protected def buildRow(raw: Seq[PExprValue],
     treatedIdx: Seq[Int], controlIdx: Seq[Int]): Seq[ExprValue] = {
     val treatedVs = selectIdx(raw, treatedIdx)
@@ -268,7 +245,7 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
     Seq(fold, new BasicExprValue(first.p, fold.call))
   }
 
-  override protected def log2tooltips = true
+  override protected def log2transform = true
 
   override protected def columnInfo(g: Group): ManagedMatrixInfo = {
     val tus = treatedAndControl(g)._1
@@ -300,15 +277,10 @@ object ManagedMatrix {
     ExprValue.apply(Math.log(value.value) / l2, value.call, value.probe)
   }
 
-  def makeTooltip[E <: ExprValue](data: Iterable[E], log2tfm: Boolean): String = {
-    val d = if (log2tfm) data.map(log2) else data
-
-    val r = d.filter(_.present).take(10).map(_.toString).mkString(" ")
-    if (d.size > 10) {
-      r + ", ..."
-    } else {
-      r
-    }
+  import java.lang.{Double => JDouble}
+  def makeTooltip[E <: ExprValue](data: Iterable[E]): String = {
+    data.toSeq.filter(v => !JDouble.isNaN(v.value)).
+      sortWith(ExprValue.isBefore).map(_.toString).mkString(" ")
   }
 }
 
@@ -329,13 +301,14 @@ object ManagedMatrix {
  */
 
 class ManagedMatrix(val initProbes: Seq[String],
-    //TODO visibility of these 3 vars
-    val currentInfo: ManagedMatrixInfo, val rawUngroupedMat: ExprMatrix,
-    var rawGroupedMat: ExprMatrix,
+    //TODO visibility of these members
+    val currentInfo: ManagedMatrixInfo,
+    val rawUngrouped: ExprMatrix,
+    var rawGrouped: ExprMatrix,
     val baseColumnMap: Map[Int, Seq[Int]],
-    val log2Tooltips: Boolean = false) {
+    val log2Transform: Boolean = false) {
 
-  protected var currentMat: ExprMatrix = rawGroupedMat
+  var current: ExprMatrix = rawGrouped
 
   protected var _synthetics: Vector[Synthetic] = Vector()
   protected var _sortColumn: Option[Int] = None
@@ -381,7 +354,7 @@ class ManagedMatrix(val initProbes: Seq[String],
     filterAndSort()
   }
 
-  def probesForAuxTable: Seq[String] = rawGroupedMat.orderedRowKeys
+  def probesForAuxTable: Seq[String] = rawGrouped.orderedRowKeys
 
   protected def filterAndSort(): Unit = {
     def f(r: Seq[ExprValue]): Boolean = {
@@ -402,7 +375,7 @@ class ManagedMatrix(val initProbes: Seq[String],
     println(s"Filter: ${currentInfo.numDataColumns} data ${currentInfo.numSynthetics} synthetic")
 
     //TODO avoid selecting here
-    currentMat = currentMat.selectNamedRows(requestProbes).filterRows(f)
+    current = current.selectNamedRows(requestProbes).filterRows(f)
     (_sortColumn, _sortAuxTable) match {
       case (Some(sc), _) => sort(sc, _sortAscending)
       case (_, Some(sat)) =>
@@ -433,7 +406,7 @@ class ManagedMatrix(val initProbes: Seq[String],
   def sort(col: Int, ascending: Boolean): Unit = {
     _sortColumn = Some(col)
     _sortAscending = ascending
-    currentMat = currentMat.sortRows(sortData(col, ascending))
+    current = current.sortRows(sortData(col, ascending))
     updateRowInfo()
   }
 
@@ -445,18 +418,18 @@ class ManagedMatrix(val initProbes: Seq[String],
     _sortColumn = None
     _sortAscending = ascending
     _sortAuxTable = Some(adj)
-    val col = currentMat.columns
-    val sortMat = adj.selectNamedRows(currentMat.orderedRowKeys)
-    currentMat =
-      currentMat.modifyJointly(sortMat, _.sortRows(sortData(col, ascending)))._1
+    val col = current.columns
+    val sortMat = adj.selectNamedRows(current.orderedRowKeys)
+    current =
+      current.modifyJointly(sortMat, _.sortRows(sortData(col, ascending)))._1
     updateRowInfo()
   }
 
   def removeSynthetics(): Unit = {
     _synthetics = Vector()
     val dataColumns = 0 until currentInfo.numDataColumns()
-    currentMat = currentMat.selectColumns(dataColumns)
-    rawGroupedMat = rawGroupedMat.selectColumns(dataColumns)
+    current = current.selectColumns(dataColumns)
+    rawGrouped = rawGrouped.selectColumns(dataColumns)
     currentInfo.removeSynthetics()
   }
 
@@ -476,15 +449,15 @@ class ManagedMatrix(val initProbes: Seq[String],
         val g2s = test.getGroup2.getSamples.filter(_.get("dose_level") != "Control").map(_.id)
         var upper = true
 
-        val currentRows = (0 until currentMat.rows).map(i => currentMat.rowAt(i))
+        val currentRows = (0 until current.rows).map(i => current.rowAt(i))
         //Need this to take into account sorting and filtering of currentMat
-        val rawData = rawUngroupedMat.selectNamedRows(currentRows)
+        val rawData = rawUngrouped.selectNamedRows(currentRows)
 
-        currentMat = test match {
+        current = test match {
           case ut: Synthetic.UTest =>
-            currentMat.appendUTest(rawData, g1s, g2s, ut.getShortTitle(null)) //TODO don't pass null
+            current.appendUTest(rawData, g1s, g2s, ut.getShortTitle(null)) //TODO don't pass null
           case tt: Synthetic.TTest =>
-            currentMat.appendTTest(rawData, g1s, g2s, tt.getShortTitle(null)) //TODO
+            current.appendTTest(rawData, g1s, g2s, tt.getShortTitle(null)) //TODO
           case _ => throw new Exception("Unexpected test type!")
         }
         val name = test.getShortTitle(null);
@@ -509,15 +482,15 @@ class ManagedMatrix(val initProbes: Seq[String],
    */
   def resetSortAndFilter(): Unit = {
     //drops synthetic columns
-    currentMat = rawGroupedMat
+    current = rawGrouped
     //note - we keep the synthetic column info (such as filters) in the currentInfo
     updateRowInfo()
     reapplySynthetics()
   }
 
   private def updateRowInfo() {
-    currentInfo.setNumRows(currentMat.rows)
-    currentInfo.setAtomicProbes(currentMat.annotations.flatMap(_.atomics).toArray)
+    currentInfo.setNumRows(current.rows)
+    currentInfo.setAtomicProbes(current.annotations.flatMap(_.atomics).toArray)
   }
 
   /**
@@ -529,10 +502,15 @@ class ManagedMatrix(val initProbes: Seq[String],
   def info: ManagedMatrixInfo = currentInfo
 
   /**
-   * Obtain the current view of this matrix, with all modifications
-   * applied.
+   * Obtain a view of a matrix with the log-2 transform
+   * potentially applied.
    */
-  def current: ExprMatrix = currentMat
+  def finalTransform(m: ExprMatrix): ExprMatrix = {
+    if (log2Transform) {
+      m.map(ManagedMatrix.log2)
+    } else {
+      m
+    }
+  }
 
-  def rawData: ExprMatrix = rawUngroupedMat
 }
