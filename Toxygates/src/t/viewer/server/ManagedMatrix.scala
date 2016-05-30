@@ -447,17 +447,18 @@ class ManagedMatrix(val initProbes: Seq[String],
         //TODO
         val g1s = test.getGroup1.getSamples.filter(_.get("dose_level") != "Control").map(_.id)
         val g2s = test.getGroup2.getSamples.filter(_.get("dose_level") != "Control").map(_.id)
-        var upper = true
 
         val currentRows = (0 until current.rows).map(i => current.rowAt(i))
         //Need this to take into account sorting and filtering of currentMat
-        val rawData = rawUngrouped.selectNamedRows(currentRows)
+        val rawData = finalTransform(rawUngrouped).selectNamedRows(currentRows)
 
         current = test match {
           case ut: Synthetic.UTest =>
             current.appendUTest(rawData, g1s, g2s, ut.getShortTitle(null)) //TODO don't pass null
           case tt: Synthetic.TTest =>
             current.appendTTest(rawData, g1s, g2s, tt.getShortTitle(null)) //TODO
+          case md: Synthetic.MeanDifference =>
+          current.appendDiffTest(rawData, g1s, g2s, md.getShortTitle(null)) //TODO
           case _ => throw new Exception("Unexpected test type!")
         }
         val name = test.getShortTitle(null);
