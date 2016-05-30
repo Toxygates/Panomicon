@@ -153,8 +153,9 @@ object OTGParameterSet extends ParameterSet {
   val all =
     (numericalKeys ++ nonNumericalKeys).map(x => t.db.SampleParameter(x._2, x._1))
 
-  def isNumerical(x: String) = numericalKeys.values.toSet.contains(x)
-
+  def isNumerical(p: t.db.SampleParameter) =  
+    numericalKeys.values.toSet.contains(p.identifier)
+    
   val highLevel = List("organism", "test_type", "sin_rep_type", "organ_id").map(byId)
 
   val required = highLevel ++ List("sample_id",

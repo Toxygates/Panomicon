@@ -351,7 +351,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
      val params = ps.map(x => {
       var p = (x._1.humanReadable, x._2.getOrElse("N/A"))
       p = (p._1, OTGParameterSet.postReadAdjustment(p))
-      new Annotation.Entry(p._1, p._2, OTGParameterSet.isNumerical(p._1))
+      new Annotation.Entry(p._1, p._2, OTGParameterSet.isNumerical(x._1))
     }).toSeq
     new Annotation(barcode.id, new java.util.ArrayList(params))
   }
