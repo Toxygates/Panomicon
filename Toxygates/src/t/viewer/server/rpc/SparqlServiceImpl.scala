@@ -189,8 +189,10 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     ai.setDatasets(sDatasets(userKey))
 
     if (getSessionData().sampleFilter.datasetURIs.isEmpty) {
-      //Initialise the selected datasets by selecting all.
-      chooseDatasets(ai.datasets)
+      //Initialise the selected datasets by selecting all, except shared user data.
+      val defaultVisible = ai.datasets.filter(ds =>
+        ! Dataset.isSharedDataset(ds.getTitle))
+      chooseDatasets(defaultVisible)
     }
    ai
   }
