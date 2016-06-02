@@ -66,14 +66,15 @@ public class OTGSchema extends DataSchema {
       super.sort(parameter, values);
     }
   }
-  
+
   public void sortDoses(String[] doses) throws Exception {
     sort("dose_level", doses);
   }
-  
-  //TODO validity check units and exposure times before we subject 
-  //them to this parsing (and report errors)
-  private final String[] unitOrdering = { "min", "hr", "day", "week" };
+
+  // TODO validity check units and exposure times before we subject
+  // them to this parsing (and report errors)
+  private final String[] unitOrdering = {"min", "hr", "day", "week"};
+
   private int toMinutes(int n, String unit) {
     if (unit.equals("min")) {
       return n;
@@ -81,27 +82,27 @@ public class OTGSchema extends DataSchema {
       return n * 60;
     } else if (unit.equals("day")) {
       return n * 24 * 60;
-    }  else if (unit.equals("week")) {  
+    } else if (unit.equals("week")) {
       return n * 7 * 24 * 60;
     } else {
       throw new IllegalArgumentException("Unknown time unit " + unit);
     }
   }
-  
-  @Override 
-  public void sortTimes(String[] times) throws Exception {    
+
+  @Override
+  public void sortTimes(String[] times) throws Exception {
     Arrays.sort(times, new Comparator<String>() {
       @Override
       public int compare(String o1, String o2) {
-        //Examples: "9 day" and "10 hr";
-        
+        // Examples: "9 day" and "10 hr";
+
         String[] s1 = o1.split("\\s+"), s2 = o2.split("\\s");
         if (s1.length < 2 || s2.length < 2) {
-          throw new IllegalArgumentException("Format error: unable to discover time " +
-              "unit in strings " + s1 + " and " + s2);
+          throw new IllegalArgumentException("Format error: unable to discover time "
+              + "unit in strings " + s1 + " and " + s2);
         }
         String u1 = s1[1], u2 = s2[1];
-        int v1 = Integer.valueOf(s1[0]), v2 = Integer.valueOf(s2[0]);        
+        int v1 = Integer.valueOf(s1[0]), v2 = Integer.valueOf(s2[0]);
         int n1 = toMinutes(v1, u1), n2 = toMinutes(v2, u2);
         if (n1 < n2) {
           return -1;
@@ -109,8 +110,8 @@ public class OTGSchema extends DataSchema {
           return 0;
         } else {
           return 1;
-        }        
-      }      
+        }
+      }
     });
   }
 
@@ -176,15 +177,14 @@ public class OTGSchema extends DataSchema {
   // }
 
   private static AType[] associations = new AType[] {AType.Chembl, AType.Drugbank,
-//      AType.Enzymes,
+      // AType.Enzymes,
       AType.GOBP, AType.GOCC, AType.GOMF,
-      //needs repair
-      //AType.Homologene, 
+      // needs repair
+      // AType.Homologene,
       AType.KEGG,
-      //needs repair
-      //AType.OrthProts,
-      AType.Uniprot,
-      AType.RefseqTrn, AType.RefseqProt, AType.EC, AType.Ensembl, AType.Unigene};
+      // needs repair
+      // AType.OrthProts,
+      AType.Uniprot, AType.RefseqTrn, AType.RefseqProt, AType.EC, AType.Ensembl, AType.Unigene};
 
   public AType[] associations() {
     return associations;
