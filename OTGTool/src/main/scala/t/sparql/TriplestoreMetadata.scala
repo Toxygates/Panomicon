@@ -48,4 +48,6 @@ class TriplestoreMetadata(os: Samples)(implicit sf: SampleFilter) extends Metada
 
   def parameterValues(identifier: String): Set[String] =
     os.allValuesForSampleAttribute(identifier).toSet
+
+  def mapParameter(key: String, f: String => String) = ???
 }

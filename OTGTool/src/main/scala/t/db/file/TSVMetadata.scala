@@ -25,8 +25,12 @@ import t.db.ParameterSet
 import t.db.Sample
 import t.db.Metadata
 
-class TSVMetadata(file: String, parameters: ParameterSet) extends Metadata {
-  protected val raw: Map[String, Array[String]] = {
+/**
+ * Metadata that is read from a TSV file.
+ */
+class TSVMetadata(file: String, parameters: ParameterSet)
+extends MapMetadata(parameters) {
+  protected val metadata: Map[String, Seq[String]] = {
     val columns = TSVFile.readMap("", file)
     columns.flatMap(x => {
       val lc = x._1.toLowerCase()
@@ -34,11 +38,8 @@ class TSVMetadata(file: String, parameters: ParameterSet) extends Metadata {
       parameters.byIdLowercase.get(lc).map(sp => sp.identifier -> x._2)
     })
   }
-  val requiredColumns = parameters.required.map(_.identifier.toLowerCase)
 
-  protected def metadata = raw
-
-  val neColumns = requiredColumns.filter(!raw.keySet.contains(_))
+  val neColumns = requiredColumns.filter(!metadata.keySet.contains(_))
   if (!neColumns.isEmpty) {
     println(s"The following columns are missing in $file: $neColumns")
     throw new Exception("Missing columns in metadata")
@@ -52,6 +53,15 @@ class TSVMetadata(file: String, parameters: ParameterSet) extends Metadata {
     }
     uniqueIds += id
   }
+}
+
+/**
+ * Metadata based on a map indexed by column.
+ */
+abstract class MapMetadata(parameters: ParameterSet) extends Metadata {
+  protected def metadata: Map[String, Seq[String]]
+
+  val requiredColumns = parameters.required.map(_.identifier.toLowerCase)
 
   def samples: Iterable[Sample] = {
     val ids = metadata("sample_id")
@@ -79,5 +89,12 @@ class TSVMetadata(file: String, parameters: ParameterSet) extends Metadata {
   override def parameter(s: Sample, identifier: String): String = {
     val idx = getIdx(s)
     metadata(identifier)(idx)
+  }
+
+  def mapParameter(key: String, f: String => String): MapMetadata = {
+    val nm = metadata + (key -> metadata(key).map(f))
+    new MapMetadata(parameters) {
+      protected val metadata = nm
+    }
   }
 }

@@ -10,33 +10,33 @@ import java.io._
  * Reads files with tab-separated columns.
  * Result stored in column-major format.
  */
-object TSVFile extends FileReadable[Array[Array[String]]] {
+object TSVFile extends FileReadable[Seq[Seq[String]]] {
   def read(prefix: String = ".", name: String) = {
     val r = new BufferedReader(new FileReader(prefix + name))
     val l1 = r.readLine()
     val cs = l1.split("\t")
 
-    //obtained the number of columns
-    val result = new Array[Vector[String]](cs.size)
-    for (i <- 0 until cs.size) {
-      result(i) = Vector(cs(i))
-    }
+    val headers = cs.toVector
+    var data = Vector[Array[String]]()
 
+    var split = List
     while (r.ready()) {
       val l = r.readLine
       val cs = l.split("\t")
-      var i = 0
-      while (i < cs.size) {
-        result(i) :+= cs(i)
-        i += 1
-      }
+      data :+= cs
     }
-    result.map(_.toArray)
+
+    val result = Vector.tabulate(cs.length, data.length)((col, row) =>
+      data(row)(col))
+    headers +: result
   }
 
-  def readMap(prefix: String = ".", name: String) = {
+  /**
+   * A map indexed by column.
+   */
+  def readMap(prefix: String = ".", name: String): Map[String, Seq[String]] = {
     val cs = read(prefix, name)
-    var r = Map[String, Array[String]]()
+    var r = Map[String, Seq[String]]()
     for (c <- cs) {
       r += (c(0) -> c.drop(1))
     }

@@ -61,4 +61,10 @@ trait Metadata {
    * Retrieve the set of control samples corresponding to a given sample.
    */
   def controlSamples(s: Sample): Iterable[Sample] = List()
+
+    /**
+   * Obtain a new metadata set after applying a mapping function to one
+   * of the parameters.
+   */
+  def mapParameter(key: String, f: String => String): Metadata
 }

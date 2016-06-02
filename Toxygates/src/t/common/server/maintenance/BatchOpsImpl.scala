@@ -81,9 +81,10 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       val dataFile = getAsTempFile(tempFiles, dataPrefix, dataPrefix, "csv")
       val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv")
 
-      val md = factory.tsvMetadata(metaFile.getAbsolutePath())
+      var md: Metadata = factory.tsvMetadata(metaFile.getAbsolutePath())
 
       checkMetadata(md)
+      md = alterMetadataPriorToInsert(md)
 
       TaskRunner += bm.addRecord(b.getTitle, b.getComment, context.config.triplestore)
       //Set the parameters immediately, so that the batch is in the right dataset
@@ -97,6 +98,8 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
         simpleLog2)
     }
   }
+
+  def alterMetadataPriorToInsert(md: Metadata): Metadata = md
 
   /**
    * Check the validity of the sample parameters and throw an exception if there's a problem.

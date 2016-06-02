@@ -27,6 +27,7 @@ import t.common.shared.maintenance.Batch
 import t.common.shared.Dataset
 import t.global.KCDBRegistry
 import t.common.shared.maintenance.MaintenanceException
+import t.db.Metadata
 
 /**
  * A servlet for managing user data (as batches).
@@ -68,6 +69,13 @@ abstract class UserDataServiceImpl extends TServiceServlet
 
     //TODO security check
     super.addBatchAsync(b)
+  }
+
+  override def alterMetadataPriorToInsert(md: Metadata): Metadata = {
+    //Enforce a special suffix for user data
+    md.mapParameter("compound_name", n => {
+      if (n.endsWith("[user]")) { n } else { s"$n [user]" }
+    })
   }
 
   //Public entry point

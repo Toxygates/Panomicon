@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -54,6 +54,8 @@ object TestData {
 
   def metadata: Metadata = new Metadata {
     def samples = t.db.testing.TestData.samples
+
+    def mapParameter(key: String, f: String => String) = ???
 
     def parameterValues(identifier: String): Set[String] =
       enumMaps(identifier).keySet
