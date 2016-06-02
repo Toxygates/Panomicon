@@ -19,6 +19,8 @@
 package otgviewer.shared;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import t.common.shared.AType;
 import t.common.shared.DataSchema;
@@ -56,8 +58,60 @@ public class OTGSchema extends DataSchema {
     }
   }
 
+  @Override
+  public void sort(String parameter, String[] values) throws Exception {
+    if (parameter.equals("exposure_time")) {
+      sortTimes(values);
+    } else {
+      super.sort(parameter, values);
+    }
+  }
+  
   public void sortDoses(String[] doses) throws Exception {
     sort("dose_level", doses);
+  }
+  
+  //TODO validity check units and exposure times before we subject 
+  //them to this parsing (and report errors)
+  private final String[] unitOrdering = { "min", "hr", "day", "week" };
+  private int toMinutes(int n, String unit) {
+    if (unit.equals("min")) {
+      return n;
+    } else if (unit.equals("hr")) {
+      return n * 60;
+    } else if (unit.equals("day")) {
+      return n * 24 * 60;
+    }  else if (unit.equals("week")) {  
+      return n * 7 * 24 * 60;
+    } else {
+      throw new IllegalArgumentException("Unknown time unit " + unit);
+    }
+  }
+  
+  @Override 
+  public void sortTimes(String[] times) throws Exception {    
+    Arrays.sort(times, new Comparator<String>() {
+      @Override
+      public int compare(String o1, String o2) {
+        //Examples: "9 day" and "10 hr";
+        
+        String[] s1 = o1.split("\\s+"), s2 = o2.split("\\s");
+        if (s1.length < 2 || s2.length < 2) {
+          throw new IllegalArgumentException("Format error: unable to discover time " +
+              "unit in strings " + s1 + " and " + s2);
+        }
+        String u1 = s1[1], u2 = s2[1];
+        int v1 = Integer.valueOf(s1[0]), v2 = Integer.valueOf(s2[0]);        
+        int n1 = toMinutes(v1, u1), n2 = toMinutes(v2, u2);
+        if (n1 < n2) {
+          return -1;
+        } else if (n1 == n2) {
+          return 0;
+        } else {
+          return 1;
+        }        
+      }      
+    });
   }
 
   @Override
