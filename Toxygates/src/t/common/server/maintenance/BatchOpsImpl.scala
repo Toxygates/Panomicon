@@ -46,8 +46,6 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     with t.common.client.rpc.BatchOperations {
   this: TServiceServlet =>
 
-  @deprecated("To be removed", "April 13 2016")
-  protected def exprAsFold: Boolean = true
   protected def simpleLog2: Boolean = false
 
   protected def mayAppendBatch: Boolean = true
@@ -96,7 +94,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
         dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
         true, baseConfig.seriesBuilder,
-        exprAsFold, simpleLog2)
+        simpleLog2)
     }
   }
 
@@ -131,8 +129,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     cleanMaintenance {
       TaskRunner.start()
       setLastTask("Delete batch")
-      TaskRunner ++= bm.delete(id, baseConfig.seriesBuilder, false,
-        exprAsFold)
+      TaskRunner ++= bm.delete(id, baseConfig.seriesBuilder, false)
     }
   }
 

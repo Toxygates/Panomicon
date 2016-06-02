@@ -255,7 +255,6 @@ class BatchManager(context: Context) {
   def add[S <: Series[S]](title: String, comment: String, metadata: Metadata,
     dataFile: String, callFile: Option[String],
     append: Boolean, sbuilder: SeriesBuilder[S],
-    @deprecated("To be removed", "April 12 2016") exprAsFold: Boolean = false,
     simpleLog2: Boolean = false): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
     val ts = config.triplestore.get
@@ -275,7 +274,7 @@ class BatchManager(context: Context) {
     r :+= addEnums(metadata, sbuilder)
 
     //TODO logging directly to TaskRunner is controversial
-    r :+= addExprData(metadata, dataFile, callFile, exprAsFold,
+    r :+= addExprData(metadata, dataFile, callFile, true,
         m => TaskRunner.log(s"Warning: $m"))
     r :+= addFoldsData(metadata, dataFile, callFile, simpleLog2,
         m => TaskRunner.log(s"Warning: $m"))
@@ -285,8 +284,7 @@ class BatchManager(context: Context) {
   }
 
   def delete[S <: Series[S]](title: String,
-    sbuilder: SeriesBuilder[S], rdfOnly: Boolean = false,
-    @deprecated("To be removed", "April 13 2016") exprAsFold: Boolean = false): Iterable[Tasklet] = {
+    sbuilder: SeriesBuilder[S], rdfOnly: Boolean = false): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
     implicit val mc = matrixContext()
 
@@ -294,7 +292,7 @@ class BatchManager(context: Context) {
     if (!rdfOnly) {
       r :+= deleteSeriesData(title, sbuilder)
       r :+= deleteFoldData(title)
-      r :+= deleteExprData(title, exprAsFold)
+      r :+= deleteExprData(title, true)
       r :+= deleteSampleIDs(title)
     } else {
       println("RDF ONLY mode - not deleting series, fold, expr, sample ID data")
