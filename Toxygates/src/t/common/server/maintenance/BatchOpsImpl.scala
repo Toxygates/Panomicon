@@ -99,7 +99,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     }
   }
 
-  def alterMetadataPriorToInsert(md: Metadata): Metadata = md
+  protected def alterMetadataPriorToInsert(md: Metadata): Metadata = md
 
   /**
    * Check the validity of the sample parameters and throw an exception if there's a problem.
@@ -126,13 +126,13 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     r.filter(b => useDatasets.isEmpty || useDatasets.contains(b.getDataset))
   }
 
-  def deleteBatchAsync(id: String): Unit = {
+  def deleteBatchAsync(b: Batch): Unit = {
 
     val bm = new BatchManager(context) //TODO configuration parsing
     cleanMaintenance {
       TaskRunner.start()
       setLastTask("Delete batch")
-      TaskRunner ++= bm.delete(id, baseConfig.seriesBuilder, false)
+      TaskRunner ++= bm.delete(b.getTitle, baseConfig.seriesBuilder, false)
     }
   }
 

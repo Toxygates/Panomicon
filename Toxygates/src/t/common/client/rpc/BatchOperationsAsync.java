@@ -34,6 +34,6 @@ public interface BatchOperationsAsync extends MaintenanceOperationsAsync {
 
   void batchParameterSummary(Batch b, AsyncCallback<String[][]> callback);
 
-  void deleteBatchAsync(String id, AsyncCallback<Void> callback);
+  void deleteBatchAsync(Batch b, AsyncCallback<Void> callback);
 
 }
