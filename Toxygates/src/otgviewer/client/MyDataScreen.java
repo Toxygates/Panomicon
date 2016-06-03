@@ -167,9 +167,12 @@ public class MyDataScreen extends Screen {
         if (Window.confirm("If you have uploaded any data, please save your existing key first.\n" +
               "Without it, you will lose access to your data. Proceed?")) {
           String newKey = Window.prompt("Please input your user data key.", "");
-          if (newKey != null && !newKey.equals("")) {
+          if (newKey != null && validateKey(newKey)) {
             setUserKey(newKey);
             refreshBatches();
+          } else {
+            Window.alert("The string you entered is not a valid user key. "
+                + " Please contact us if you need assistance.");
           }
         }
       }
@@ -177,6 +180,13 @@ public class MyDataScreen extends Screen {
     cmds.add(b);    
     refreshBatches();    
     return bp.table();
+  }
+  
+  private boolean validateKey(String key) {    
+    // example: 153f36236251fcea601
+    // min size 19 hex chars, max theoretical size 24 chars
+    // last 8 chars are random, first 11-16 chars are a timestamp
+    return key.matches("[0-9a-f]+") && key.length() >= 19;
   }
   
   private void setUserKey(String key) {
