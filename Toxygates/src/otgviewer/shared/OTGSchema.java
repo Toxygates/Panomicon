@@ -73,7 +73,6 @@ public class OTGSchema extends DataSchema {
 
   // TODO validity check units and exposure times before we subject
   // them to this parsing (and report errors)
-  private final String[] unitOrdering = {"min", "hr", "day", "week"};
 
   private int toMinutes(int n, String unit) {
     if (unit.equals("min")) {
