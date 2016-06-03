@@ -85,6 +85,27 @@ public class MyDataScreen extends Screen {
     BatchPanel bp = new BatchPanel("Edit batch", userData, resources,
         true, true) {
       
+      final static String HAS_SEEN_WARNING = "hasSeenMyDataWarning";
+      
+      @Override
+      protected boolean confirmAddNew() {
+        String hasSeen = MyDataScreen.this.getParser().getItem(HAS_SEEN_WARNING);
+        if (hasSeen.equals("true")) {
+          return true;
+        }
+        final String message = "NIBIOHN will take reasonable precautions to protect " +
+            "your data, but we are not responsible for any data loss, theft or corruption " +
+            "that occurs as a result of using this service. " +
+            "By proceeding, you confirm that you upload data at your own risk. " +
+            "For more details, see the README file provided in the example data above.";
+        boolean confirm = Window.confirm(message);
+        if (confirm) {
+          MyDataScreen.this.getParser().setItem(HAS_SEEN_WARNING, "true");
+          return true;
+        }
+        return false;
+      }
+      
       @Override
       protected void onDelete(Batch object) {
         if (Window.confirm("Are you sure?")) {
