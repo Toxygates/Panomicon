@@ -54,7 +54,9 @@ abstract public class ManagerPanel<T extends ManagedItem> {
     this.resources = resources;
     cmds.add(new Command("Add new...") {
       public void run() {
-        showEditor(null, true);
+        if (confirmAddNew()) {
+          showEditor(null, true);
+        }
       }
     });
 
@@ -78,6 +80,8 @@ abstract public class ManagerPanel<T extends ManagedItem> {
     dlp.add(scrolled ? t.common.client.Utils.makeScrolled(table) : table);
   }
 
+  protected boolean confirmAddNew() { return true; }
+  
   public CellTable<T> table() { return table; }
   
   protected void showEditor(@Nullable T obj, boolean addNew) {
