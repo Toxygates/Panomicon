@@ -75,8 +75,7 @@ public class TargetMineData {
   public void doImport(final String user, final String pass, final boolean asProbes,
       final boolean replace) {
     tmService.importTargetmineLists(user, pass, asProbes, new PendingAsyncCallback<StringList[]>(
-        parent, "Unable to import lists from TargetMine. Check your username and password. "
-            + "There may also be a server error.") {
+        parent, "Unable to import lists from TargetMine") {
       public void handleSuccess(StringList[] data) {
         parent.itemListsChanged(mergeLists(parent.chosenItemLists, Arrays.asList(data), replace));
         parent.storeItemLists(parent.getParser());
@@ -103,8 +102,7 @@ public class TargetMineData {
       final boolean replace) {
     tmService.exportTargetmineLists(user, pass, lists.toArray(new StringList[0]), replace,
         new PendingAsyncCallback<Void>(parent,
-            "Unable to export lists to TargetMine. Check your username and password. "
-                + "There may also be a server error.") {
+            "Unable to export lists to TargetMine") {
           public void handleSuccess(Void v) {
             Window.alert("The lists were successfully exported.");
           }
@@ -129,8 +127,7 @@ public class TargetMineData {
   public void doEnrich(StringList list,
       EnrichmentParams params) {
     tmService.enrichment(list, params, new PendingAsyncCallback<String[][]>(parent,
-        "Unable to perform enrichment analysis. Check your username and password. "
-            + "There may also be a server error.") {
+        "Unable to perform enrichment analysis") {
       public void handleSuccess(String[][] result) {
         StringArrayTable.displayDialog(result, "Enrichment results", 800, 600);            
       }
@@ -163,8 +160,7 @@ public class TargetMineData {
       EnrichmentParams params) {
     tmService.multiEnrichment(lists, params,
          new PendingAsyncCallback<String[][][]>(parent,
-        "Unable to perform enrichment analysis. Check your username and password. "
-            + "There may also be a server error.") {
+        "Unable to perform enrichment analysis") {
       public void handleSuccess(String[][][] result) {
         List<String[]> best = new ArrayList<String[]>();
         best.add(append(new String[] {"Cluster", "Size"}, result[0][0])); //Headers
