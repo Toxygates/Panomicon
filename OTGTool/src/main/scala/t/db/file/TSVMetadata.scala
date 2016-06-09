@@ -33,9 +33,10 @@ extends MapMetadata(parameters) {
   protected val metadata: Map[String, Seq[String]] = {
     val columns = TSVFile.readMap("", file)
     columns.flatMap(x => {
-      val lc = x._1.toLowerCase()
+      val lc = x._1.toLowerCase().trim
       //Normalise the upper/lowercase-ness and remove unknown columns
-      parameters.byIdLowercase.get(lc).map(sp => sp.identifier -> x._2)
+      val trimmed = x._2.map(_.trim)
+      parameters.byIdLowercase.get(lc).map(_.identifier -> trimmed)
     })
   }
 

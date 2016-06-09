@@ -18,8 +18,15 @@
 
 package otgviewer.client;
 
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
+
+import otgviewer.client.targetmine.TargetMineData;
 import otgviewer.shared.OTGSchema;
 import t.common.shared.DataSchema;
+import t.viewer.client.Utils;
 
 public class OTGViewer extends TApplication {
 
@@ -64,4 +71,42 @@ public class OTGViewer extends TApplication {
   public UIFactory factory() {    
     return factory;
   }
+
+  protected void setupToolsMenu(MenuBar toolsMenuBar) {
+    MenuBar targetmineMenu = new MenuBar(true);
+    MenuItem mi = new MenuItem("TargetMine data", targetmineMenu);
+
+    targetmineMenu.addItem(new MenuItem("Import gene sets from TargetMine...", new Command() {
+      public void execute() {
+        new TargetMineData(currentScreen).importLists(true);
+      }
+    }));
+
+    targetmineMenu.addItem(new MenuItem("Export gene sets to TargetMine...", new Command() {
+      public void execute() {
+        new TargetMineData(currentScreen).exportLists();
+      }
+    }));
+
+    targetmineMenu.addItem(new MenuItem("Enrichment...", new Command() {
+      public void execute() {
+        //TODO this should be disabled if we are not on the data screen.
+        //The menu item is only here in order to be logically grouped with other 
+        //TargetMine items, but it is a duplicate and may be removed.
+        if (currentScreen instanceof DataScreen) {
+          ((DataScreen) currentScreen).runEnrichment();
+        } else {
+          Window.alert("Please go to the data screen to use this function.");
+        }
+      }
+    }));
+
+    targetmineMenu.addItem(new MenuItem("Go to TargetMine", new Command() {
+      public void execute() {
+        Utils.displayURL("Go to TargetMine in a new window?", "Go", appInfo.targetmineURL());
+      }
+    }));
+    toolsMenuBar.addItem(mi);
+  }
+  
 }
