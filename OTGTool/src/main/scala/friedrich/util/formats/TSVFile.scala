@@ -11,24 +11,25 @@ import java.io._
  * Result stored in column-major format.
  */
 object TSVFile extends FileReadable[Seq[Seq[String]]] {
-  def read(prefix: String = ".", name: String) = {
+  protected def read(prefix: String = ".", name: String) = {
     val r = new BufferedReader(new FileReader(prefix + name))
-    val l1 = r.readLine()
-    val cs = l1.split("\t")
+    try {
+      var data = Vector[Array[String]]()
+      while (r.ready()) {
+        val l = r.readLine
+        val cs = l.split("\t")
+        data :+= cs
+      }
 
-    val headers = cs.toVector
-    var data = Vector[Array[String]]()
-
-    var split = List
-    while (r.ready()) {
-      val l = r.readLine
-      val cs = l.split("\t")
-      data :+= cs
+      if (data.isEmpty) {
+        Vector()
+      } else {
+        Vector.tabulate(data(0).length, data.length)((col, row) =>
+          data(row)(col))
+      }
+    } finally {
+      r.close
     }
-
-    val result = Vector.tabulate(cs.length, data.length)((col, row) =>
-      data(row)(col))
-    headers +: result
   }
 
   /**
@@ -36,10 +37,6 @@ object TSVFile extends FileReadable[Seq[Seq[String]]] {
    */
   def readMap(prefix: String = ".", name: String): Map[String, Seq[String]] = {
     val cs = read(prefix, name)
-    var r = Map[String, Seq[String]]()
-    for (c <- cs) {
-      r += (c(0) -> c.drop(1))
-    }
-    r
+    Map() ++ cs.map(col => col.head -> col.tail)
   }
 }

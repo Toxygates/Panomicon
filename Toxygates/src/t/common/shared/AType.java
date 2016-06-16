@@ -90,12 +90,15 @@ public enum AType {
   },
   Ensembl("Ensembl gene") {
     public String formLink(String value) {
-      // TODO generalise to multi-species
-      // return "http://ensembl.org/Rattus_norvegicus/Transcript/Summary?db=core;t=" + value;
-      return null;
+      return "http://ensembl.org/Gene/Summary?db=core;g=" + value;
     }
   },
-  EC("EC enzymes"), // TODO link
+  EC("EC enzymes") {
+    public String formLink(String value) {
+      //example: 5.3.9.4
+      return "http://enzyme.expasy.org/EC/" + value;
+    }
+  },
   Homologene("Homologene entries") {
     public String formLink(String value) {
       return formGeneLink(value);
