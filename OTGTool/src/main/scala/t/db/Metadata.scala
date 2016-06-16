@@ -21,6 +21,7 @@
 package t.db
 
 import friedrich.util.formats.TSVFile
+import t.Factory
 
 case class SampleParameter(identifier: String, humanReadable: String)
 
@@ -31,10 +32,17 @@ trait ParameterSet {
   def previewDisplay: Iterable[SampleParameter] = required
   lazy val byId = Map() ++ all.map(x => x.identifier -> x)
   lazy val byIdLowercase = byId.map(x => x._1.toLowerCase() -> x._2)
+
+  /**
+   * Retrieve the set of control samples corresponding to a given sample.
+   */
+  def controlSamples(metadata: Metadata, s: Sample): Iterable[Sample] = Seq()
 }
 
 trait Metadata {
   def samples: Iterable[Sample]
+
+  def parameters: ParameterSet
 
   def parameters(s: Sample): Iterable[(SampleParameter, String)]
 
@@ -57,14 +65,9 @@ trait Metadata {
 
   def isControl(s: Sample): Boolean = false
 
-  /**
-   * Retrieve the set of control samples corresponding to a given sample.
-   */
-  def controlSamples(s: Sample): Iterable[Sample] = List()
-
     /**
    * Obtain a new metadata set after applying a mapping function to one
    * of the parameters.
    */
-  def mapParameter(key: String, f: String => String): Metadata
+  def mapParameter(fact: Factory, key: String, f: String => String): Metadata
 }

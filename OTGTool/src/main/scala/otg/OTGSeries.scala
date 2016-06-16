@@ -24,7 +24,6 @@ import scala.annotation.tailrec
 import friedrich.util.CmdLineOptions
 import t.db.MatrixDB
 import t.db.SeriesDB
-import otg.db.file.TSVMetadata
 import t.db.kyotocabinet.KCMatrixDB
 import otg.sparql.OTGSamples
 import otg.Species._

@@ -23,6 +23,8 @@ import t.sparql._
 import t.db.file.TSVMetadata
 import t.db.ParameterSet
 import t.db.kyotocabinet.chunk.KCChunkMatrixDB
+import t.db.file.MapMetadata
+import t.db.Metadata
 
 //TODO consider making ts, data constructor parameters
 //then store them and the resulting context, baseconfig
@@ -31,7 +33,11 @@ abstract class Factory {
 
   def probes(config: TriplestoreConfig): Probes
 
-  def tsvMetadata(file: String): TSVMetadata
+  def tsvMetadata(file: String, sp: ParameterSet): Metadata =
+    TSVMetadata(this, file, sp)
+
+  def metadata(data: Map[String, Seq[String]], sp: ParameterSet): Metadata =
+    new MapMetadata(data, sp)
 
   def context(ts: TriplestoreConfig, data: DataConfig): Context
 

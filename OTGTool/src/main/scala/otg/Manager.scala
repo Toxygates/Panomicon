@@ -25,7 +25,6 @@ import otg.platform.SSOrthTTL
 import friedrich.util.CmdLineOptions
 import t.DataConfig
 import t.TriplestoreConfig
-import otg.db.file.TSVMetadata
 
 object Manager extends t.Manager[Context, OTGBConfig] with CmdLineOptions {
   override protected def handleArgs(args: Array[String])(implicit context: Context) {

@@ -42,7 +42,7 @@ abstract class FoldValueBuilder[E <: ExprValue](md: Metadata, input: RawExpressi
   lazy val values: Iterable[(Sample, String, E)] = {
     println("Compute control values")
     val treatedSamples = input.data.keys.filter(x => !md.isControl(x))
-    val groups = treatedSamples.groupBy(md.controlSamples(_))
+    val groups = treatedSamples.groupBy(md.parameters.controlSamples(md, _))
     var r = Vector[(Sample, String, E)]()
 
     for ((cxs, xs) <- groups) {
@@ -159,7 +159,7 @@ object FoldBuilder extends CmdLineOptions {
 
     val factory = new otg.Factory //TODO
 
-    val md = factory.tsvMetadata(input)
+    val md = factory.tsvMetadata(mdfile, otg.db.OTGParameterSet)
     val data = new CSVRawExpressionData(List(input), Some(List(calls)),
         Some(md.samples.size), println)
     val builder = new PFoldValueBuilder(md, data)

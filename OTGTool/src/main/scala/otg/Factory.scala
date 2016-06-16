@@ -25,8 +25,11 @@ import t.sparql.Samples
 import otg.sparql.OTGSamples
 import otg.sparql.Probes
 import t.BaseConfig
-import otg.db.file.TSVMetadata
+import t.db.file.TSVMetadata
 import t.DataConfig
+import t.db.ParameterSet
+import t.db.file.MapMetadata
+import otg.db.Metadata
 
 class Factory extends t.Factory {
   override def samples(config: BaseConfig): OTGSamples =
@@ -35,11 +38,12 @@ class Factory extends t.Factory {
   override def probes(config: TriplestoreConfig): Probes =
     new Probes(config)
 
-  override def tsvMetadata(file: String) = new TSVMetadata(file)
-
   override def context(ts: TriplestoreConfig, data: DataConfig) = {
     val bc = new OTGBConfig(ts, data)
     otg.Context(bc)
   }
+
+  override def metadata(data: Map[String, Seq[String]], sp: ParameterSet): Metadata =
+    new MapMetadata(data, sp) with otg.db.Metadata
 
 }

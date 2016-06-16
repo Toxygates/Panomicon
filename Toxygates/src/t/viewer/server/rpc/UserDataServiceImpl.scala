@@ -73,7 +73,7 @@ abstract class UserDataServiceImpl extends TServiceServlet
 
   override protected def alterMetadataPriorToInsert(md: Metadata): Metadata = {
     //Enforce a special suffix for user data
-    md.mapParameter("compound_name", n => {
+    md.mapParameter(factory, "compound_name", n => {
       if (n.endsWith("[user]")) { n } else { s"$n [user]" }
     })
   }

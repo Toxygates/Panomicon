@@ -20,13 +20,17 @@
 
 package otg.testing
 
-import t.db.SeriesPoint
 import otg.OTGSeries
-import t.db.BasicExprValue
 import otg.db.Metadata
-import t.db.SampleParameter
-import t.db.Sample
 import otg.db.OTGParameterSet
+import t.Factory
+import t.db.BasicExprValue
+import t.db.ParameterSet
+import t.db.Sample
+import t.db.SampleParameter
+import t.db.SeriesPoint
+import t.db.testing.TestData
+import t.db.testing.TestData.enumMaps
 
 object TestData {
   import t.db.testing.TestData._
@@ -55,10 +59,12 @@ object TestData {
   def metadata: Metadata = new Metadata {
     def samples = t.db.testing.TestData.samples
 
-    def mapParameter(key: String, f: String => String) = ???
+    def mapParameter(fact: Factory, key: String, f: String => String) = ???
 
     def parameterValues(identifier: String): Set[String] =
       enumMaps(identifier).keySet
+
+    def parameters: ParameterSet = ???
 
     def parameters(s: Sample): Iterable[(SampleParameter, String)] = {
       samples.find(_ == s).get.sampleClass.constraints.map(x =>  {
