@@ -33,9 +33,11 @@ object MatrixInsert {
     }
 }
 
+//TODO possibly deprecate this. Currently used only in tests
 abstract class BasicValueInsert[E <: ExprValue](val db: MatrixDBWriter[E],
     raw: RawExpressionData)(implicit mc: MatrixContext) extends MatrixInsert[E](raw)
 
+//TODO possibly deprecate this. Currently used only in tests
 class AbsoluteValueInsert(dbfile: String, raw: RawExpressionData)
 (implicit mc: MatrixContext) extends MatrixInsert[BasicExprValue](raw) {
   lazy val db = KCMatrixDB.get(dbfile, true)

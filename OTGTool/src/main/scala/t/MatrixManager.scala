@@ -25,7 +25,6 @@ import t.db.MatrixInsert
 import t.db.kyotocabinet.KCMatrixDB
 import t.db.RawExpressionData
 import t.db.SimplePFoldValueInsert
-import t.db.AbsoluteValueInsert
 import t.global.KCDBRegistry
 import t.db.Sample
 import t.db.MatrixDBReader

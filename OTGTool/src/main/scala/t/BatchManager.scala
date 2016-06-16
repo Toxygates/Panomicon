@@ -23,7 +23,6 @@ package t
 import scala.Vector
 
 import otg.sparql.OTGSamples
-import t.db.AbsoluteValueInsert
 import t.db.ExprValue
 import t.db.Log2Data
 import t.db.LookupFailedException
@@ -274,7 +273,7 @@ class BatchManager(context: Context) {
     r :+= addEnums(metadata, sbuilder)
 
     //TODO logging directly to TaskRunner is controversial
-    r :+= addExprData(metadata, dataFile, callFile, true,
+    r :+= addExprData(metadata, dataFile, callFile,
         m => TaskRunner.log(s"Warning: $m"))
     r :+= addFoldsData(metadata, dataFile, callFile, simpleLog2,
         m => TaskRunner.log(s"Warning: $m"))
@@ -425,16 +424,15 @@ class BatchManager(context: Context) {
 
   //TODO: remove treatAsFold parameter when possible
   def addExprData(md: Metadata, niFile: String, callFile: Option[String],
-    treatAsFold: Boolean,
     warningHandler: (String) => Unit)(implicit mc: MatrixContext) = {
     val data = new CSVRawExpressionData(List(niFile), callFile.map(List(_)),
         Some(md.samples.size), warningHandler)
-    if (treatAsFold) {
+//    if (treatAsFold) {
       val db = () => config.data.extWriter(config.data.exprDb)
       new SimplePFoldValueInsert(db, data).insert("Insert expr value data (quasi-fold format)")
-    } else {
-      new AbsoluteValueInsert(config.data.exprDb, data).insert("Insert normalised intensity data")
-    }
+//    } else {
+//      new AbsoluteValueInsert(config.data.exprDb, data).insert("Insert normalised intensity data")
+//    }
   }
 
   def addFoldsData(md: Metadata, foldFile: String, callFile: Option[String],
