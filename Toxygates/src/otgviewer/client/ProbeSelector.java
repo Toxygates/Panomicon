@@ -176,24 +176,6 @@ abstract public class ProbeSelector extends DataListenerWidget implements
   }
 
   /**
-   * This callback should be supplied to the RPC method that retrieves high level objects for a
-   * partial name.
-   * 
-   * @return
-   */
-  // public AsyncCallback<String[]> retrieveMatchesCallback() {
-  // return itemHandler.retrieveCallback(this, true);
-  // }
-
-  /**
-   * This method should obtain the high level objects that correspond to the partial name. It will
-   * be invoked after the user types a partial name and presses enter.
-   * 
-   * @param key
-   */
-  // abstract protected void getMatches(String key);
-
-  /**
    * This callback should be supplied to the RPC methd that retrieves probes for a selection.
    * 
    * @return
@@ -209,8 +191,8 @@ abstract public class ProbeSelector extends DataListenerWidget implements
       public void handleSuccess(String[] probes) {
         if (!withButton) {
           probesChanged(probes);
-        } else if (probes.length > 0) {
-          addButton.setEnabled(true);
+        } else {        
+          addButton.setEnabled(probes.length > 0); 
           loadedProbes = probes;
           probesLoaded(loadedProbes);
         }
@@ -223,13 +205,10 @@ abstract public class ProbeSelector extends DataListenerWidget implements
       Arrays.sort(probes);
       // TODO reduce the number of ajax calls done by this screen by
       // collapsing them
-      sparqlService.geneSyms(probes, new AsyncCallback<String[][]>() {
-        public void onSuccess(String[][] syms) {
+      sparqlService.geneSyms(probes, new PendingAsyncCallback<String[][]>(this, 
+          "Unable to get gene symbols for probes") {
+        public void handleSuccess(String[][] syms) {
           deferredAddProbes(probes, syms);
-        }
-
-        public void onFailure(Throwable caught) {
-          Window.alert("Unable to get gene symbols for probes.");
         }
       });
     }
