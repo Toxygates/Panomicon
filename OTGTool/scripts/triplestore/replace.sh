@@ -19,6 +19,8 @@ shift
 #e.g. "Updated 2016-01-28 from geneontology.org"
 COMMENT=$1
 
+NAMED=no
+
 #Useful reference:
 # http://librdf.org/raptor/api/raptor-formats-types-by-parser.html
 case $INPUT in
@@ -26,10 +28,14 @@ case $INPUT in
     MIME="application/rdf+xml"
     NAMED=yes
     ;;
-  *ttl|*nt)
+  *ttl)
     MIME="application/x-turtle"
     NAMED=yes
     ;;
+  *nt)
+  	MIME="application/n-triples"
+  	NAMED=yes
+  	;;
   *trig)
     MIME="application/x-trig"
     ;;
