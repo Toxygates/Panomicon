@@ -29,7 +29,6 @@ import t.db.ParameterSet
 import t.db.Sample
 import t.db.SampleParameter
 import t.db.SeriesPoint
-import t.db.testing.TestData
 import t.db.testing.TestData.enumMaps
 
 object TestData {
