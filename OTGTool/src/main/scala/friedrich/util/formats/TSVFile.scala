@@ -18,7 +18,10 @@ object TSVFile extends FileReadable[Seq[Seq[String]]] {
       while (r.ready()) {
         val l = r.readLine
         val cs = l.split("\t")
-        data :+= cs
+        if (cs.length > 0 && l.length > 0) {
+          //ignore empty lines
+          data :+= cs
+        }
       }
 
       if (data.isEmpty) {

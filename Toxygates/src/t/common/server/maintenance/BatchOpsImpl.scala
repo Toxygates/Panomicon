@@ -81,8 +81,15 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       val dataFile = getAsTempFile(tempFiles, dataPrefix, dataPrefix, "csv")
       val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv")
 
-      var md: Metadata = factory.tsvMetadata(metaFile.getAbsolutePath(),
+      var md: Metadata = null
+      try {
+        md = factory.tsvMetadata(metaFile.getAbsolutePath(),
           context.config.sampleParameters)
+      } catch {
+        case e: Exception =>
+          e.printStackTrace()
+          throw new MaintenanceException("Error while parsing metadata. Please check the file.")
+      }
 
       checkMetadata(md)
       md = alterMetadataPriorToInsert(md)
