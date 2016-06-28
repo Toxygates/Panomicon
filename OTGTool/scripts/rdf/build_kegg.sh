@@ -36,8 +36,8 @@ php runparser.php parser=kegg files=pathway,genes indir=$OUTDIR outdir=$RDFDIR o
 #Un-escape single quotes (due to Bio2RDF bug).
 #Filter the generated files to reduce size. Keep only the parts we need
 cd $RDFDIR
-cat kegg-pathway.nt | grep "kegg:map" > kegg-pathway.f.nt
-cat kegg-genes.nt  | egrep "vocabulary:pathway|ncbigene" > kegg-genes.f.nt
+cat kegg-pathway.nt | sed "s/\\\'/'/g" | grep "kegg:map" > kegg-pathway.f.nt
+cat kegg-genes.nt  | sed "s/\\\'/'/g" | egrep "vocabulary:pathway|ncbigene" > kegg-genes.f.nt
 
 cat kegg-pathway.f.nt kegg-genes.f.nt > kegg-pathways-genes.f.nt
 

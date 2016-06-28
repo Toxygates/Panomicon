@@ -33,7 +33,10 @@ case $INPUT in
     NAMED=yes
     ;;
   *nt)
-  	MIME="application/n-triples"
+  	#MIME="application/n-triples"
+  	#This is controversial - MIME type of n-triples used to be text/plain
+  	#and OWLIM won't accept application/n-triples
+  	MIME="text/plain"
   	NAMED=yes
   	;;
   *trig)
