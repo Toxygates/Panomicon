@@ -21,12 +21,12 @@
 package t.sparql
 
 import scala.collection.{ Map => CMap }
+import t.db.SampleClassLike
 
-object SampleClass {
-  def constraint(key: String, x: Option[String]) = x.map(key -> _)
-}
-
-case class SampleClass(constraints: CMap[String, String] = Map()) {
+/**
+ * A sample class with sparql methods.
+ */
+case class SampleClass(constraints: CMap[String, String] = Map()) extends SampleClassLike {
 
   def filterAll: Filter = {
     if (constraints.isEmpty) {
@@ -39,9 +39,10 @@ case class SampleClass(constraints: CMap[String, String] = Map()) {
       Filter(ptn, cnst)
     }
   }
-  
+
   def filterAllExcludeControl: Filter = {
-    Filter(filterAll.queryPattern.replace(".", ";t:dose_level ?dose_level .") , filterAll.queryFilter.replace(").", " && ?dose_level NOT IN (\"Control\") )."))
+    Filter(filterAll.queryPattern.replace(".", ";t:dose_level ?dose_level .") ,
+        filterAll.queryFilter.replace(").", " && ?dose_level NOT IN (\"Control\") )."))
   }
 
   def filter(key: String): Filter = {
@@ -51,10 +52,4 @@ case class SampleClass(constraints: CMap[String, String] = Map()) {
       Filter(s"?x t:$key ?$key.", "FILTER(?" + key + " = \"" + constraints(key) + "\").")
     }
   }
-
-  def apply(key: String) = constraints(key)
-
-  def get(key: String) = constraints.get(key)
-  
-  def ++(other: SampleClass) = SampleClass(constraints ++ other.constraints)
 }
