@@ -128,10 +128,6 @@
     	<url-pattern>/toxygates/targetmine</url-pattern>
   	</servlet-mapping>
 		
-	<context-param>
-		<param-name>targetmineApiKey</param-name>
-		<param-value>L1k5z1W35866se78S6Y1</param-value>
-	</context-param>
 	
   <!-- Default page to serve -->
   <welcome-file-list>
