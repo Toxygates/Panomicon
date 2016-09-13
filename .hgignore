@@ -3,8 +3,10 @@ Toxygates/gwt-unitCache/*
 Toxygates/lib/*
 Toxygates/extract-deploy/*
 OTGTool/lib/*
-OTGTool/bin/*
 Toxygates/extract-v2*
 Toxygates/extras/*
-Toxygates/test-classes/*
-OTGTool/test-classes/*
+OTGTool/target/*
+Toxygates/target/*
+
+syntax:glob
+*.class
