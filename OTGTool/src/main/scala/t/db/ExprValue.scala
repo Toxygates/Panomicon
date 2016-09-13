@@ -94,4 +94,7 @@ case class BasicExprValue(value: Double, call: Char = 'P', probe: String = null)
  * sample group that the sample belongs to (all samples with identical
  * experimental conditions).
  */
-case class PExprValue(value: Double, p: Double, call: Char = 'P', probe: String = null) extends ExprValue
+case class PExprValue(value: Double, p: Double, call: Char = 'P', probe: String = null) extends ExprValue {
+    override def toString(): String =
+      s"(${ExprValue.nf.format(value)}:$call:${ExprValue.nf.format(p)})"
+}
