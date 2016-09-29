@@ -41,14 +41,13 @@ abstract class FoldValueBuilder[E <: ExprValue](md: Metadata, input: RawExpressi
 
   lazy val values: Iterable[(Sample, String, E)] = {
     println("Compute control values")
-    val treatedSamples = input.data.keys.filter(x => !md.isControl(x))
-    val groups = treatedSamples.groupBy(md.parameters.controlSamples(md, _))
+    val groups = md.parameters.treatedControlGroups(md, input.samples)
     var r = Vector[(Sample, String, E)]()
 
-    for ((cxs, xs) <- groups) {
-      println("Control barcodes: " + cxs)
-      println("Non-control: " + (xs.toSet -- cxs))
-      r ++= makeFolds(cxs, xs.toSet -- cxs)
+    for ((ts, cs) <- groups) {
+      println("Control barcodes: " + cs)
+      println("Treated: " + ts)
+      r ++= makeFolds(cs, ts)
     }
     r
   }

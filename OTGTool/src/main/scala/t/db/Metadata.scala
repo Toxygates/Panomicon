@@ -37,6 +37,19 @@ trait ParameterSet {
    * Retrieve the set of control samples corresponding to a given sample.
    */
   def controlSamples(metadata: Metadata, s: Sample): Iterable[Sample] = Seq()
+
+  /**
+   * Compute groups of treated and control samples for p-value computation.
+   * This is a naive implementation which needs to be overridden if control samples are
+   * shared between multiple treated groups.
+   */
+  def treatedControlGroups(metadata: Metadata, ss: Iterable[Sample]):
+    Iterable[(Iterable[Sample], Iterable[Sample])] = {
+    ss.groupBy(controlSamples(metadata, _)).toSeq.map(sg => {
+      sg._2.partition(!metadata.isControl(_))
+    })
+  }
+
 }
 
 trait Metadata {
