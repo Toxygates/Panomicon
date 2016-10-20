@@ -40,14 +40,14 @@ public class ClassicOTGFactory extends OTGFactory {
     return new GeneSetEditor(screen) {
       @Override
       protected boolean hasClustering() {
-        return false;
+        return true;
       }
     };
   }
 
   @Override
   public boolean hasHeatMapMenu() {
-    return false;
+    return true;
   }
   
   @Override
@@ -55,7 +55,7 @@ public class ClassicOTGFactory extends OTGFactory {
     return new GeneSetsMenuItem(screen) {
       @Override
       protected boolean hasUserClustering() {
-        return false;
+        return true;
       }
       @Override
       protected boolean hasPredefinedClustering() {
@@ -66,6 +66,6 @@ public class ClassicOTGFactory extends OTGFactory {
   
   @Override
   public boolean hasMyData() {
-    return false;
+    return true;
   }
 }
