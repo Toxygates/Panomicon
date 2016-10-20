@@ -179,10 +179,18 @@ object OTGParameterSet extends ParameterSet {
 
     println(expTime + " " + cgroup)
     metadata.samples.filter(s => {
+      val params = metadata.parameterMap(s)
       params("exposure_time") == expTime &&
       params("control_group") == cgroup &&
       metadata.isControl(s)
     })
   }
 
+  override def treatedControlGroups(metadata: t.db.Metadata, ss: Iterable[Sample]):
+    Iterable[(Iterable[Sample], Iterable[Sample])] = {
+    for (
+      (cs, ts) <- ss.groupBy(controlSamples(metadata, _));
+      (d, dts) <- ts.groupBy(metadata.parameter(_, "dose_level"))
+    ) yield ((dts, cs))
+  }
 }

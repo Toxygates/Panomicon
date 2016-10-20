@@ -179,6 +179,7 @@ object BatchManager extends ManagerTool {
     }
 
     try {
+      Thread.sleep(2000)
       waitForTasklets()
     } finally {
       KCDBRegistry.closeWriters

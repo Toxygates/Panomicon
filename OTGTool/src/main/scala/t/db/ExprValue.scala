@@ -95,6 +95,11 @@ case class BasicExprValue(value: Double, call: Char = 'P', probe: String = null)
  * experimental conditions).
  */
 case class PExprValue(value: Double, p: Double, call: Char = 'P', probe: String = null) extends ExprValue {
-    override def toString(): String =
-      s"(${ExprValue.nf.format(value)}:$call:${ExprValue.nf.format(p)})"
+    override def toString(): String = {
+      if (!java.lang.Double.isNaN(p)) {
+        s"(${ExprValue.nf.format(value)}:$call:${ExprValue.nf.format(p)})"
+      } else {
+        super.toString()
+      }
+    }
 }

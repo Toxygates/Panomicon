@@ -137,7 +137,7 @@ trait ManagerTool extends CmdLineOptions {
   }
 
   def waitForTasklets() {
-    while (TaskRunner.currentTask != None) {
+    while (TaskRunner.waitingForTask || TaskRunner.queueSize() > 0) {
       Thread.sleep(1000)
     }
   }
