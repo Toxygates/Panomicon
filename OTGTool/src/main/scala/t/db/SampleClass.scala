@@ -18,29 +18,25 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t
-import t.sparql._
-import t.db.file.TSVMetadata
-import t.db.ParameterSet
-import t.db.kyotocabinet.chunk.KCChunkMatrixDB
-import t.db.file.MapMetadata
-import t.db.Metadata
+package t.db
 
-//TODO consider making ts, data constructor parameters
-//then store them and the resulting context, baseconfig
-abstract class Factory {
-  def samples(config: BaseConfig): Samples
+import scala.collection.{ Map => CMap }
 
-  def probes(config: TriplestoreConfig): Probes
+object SampleClass {
+  def constraint(key: String, x: Option[String]) = x.map(key -> _)
+}
 
-  def tsvMetadata(file: String, sp: ParameterSet): Metadata =
-    TSVMetadata(this, file, sp)
+/**
+ * A set of constraints on a sample.
+ */
+case class SampleClass(constraints: CMap[String, String] = Map()) extends SampleClassLike
 
-  def metadata(data: Map[String, Seq[String]], sp: ParameterSet): Metadata =
-    new MapMetadata(data, sp)
+trait SampleClassLike {
+  def constraints: CMap[String, String]
 
-  def context(ts: TriplestoreConfig, data: DataConfig): Context
+  def apply(key: String) = constraints(key)
 
-  def dataConfig(dir: String, matrixDbOptions: String): DataConfig =
-    DataConfig.apply(dir, matrixDbOptions)
+  def get(key: String) = constraints.get(key)
+
+  def ++(other: SampleClassLike) = SampleClass(constraints ++ other.constraints)
 }

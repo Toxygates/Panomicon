@@ -34,7 +34,6 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.dialog.FeedbackForm;
-import otgviewer.client.targetmine.TargetMineData;
 import t.common.shared.SharedUtils;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
@@ -105,7 +104,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
   private RootLayoutPanel rootPanel;
   private DockLayoutPanel mainDockPanel;
-  protected MenuBar menuBar, analysisMenuBar;
+  protected MenuBar menuBar, toolsMenuBar;
 
   // Menu items to be shown to the left of menu items belonging to the current screen.
   protected List<MenuItem> preMenuItems = new LinkedList<MenuItem>();
@@ -287,44 +286,11 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     MenuBar menuBar = new MenuBar(false);
     menuBar.setWidth("100%");
 
-    analysisMenuBar = new MenuBar(true);
-    MenuItem mi = new MenuItem("Tools", analysisMenuBar);
+    toolsMenuBar = new MenuBar(true);
+    MenuItem mi = new MenuItem("Tools", toolsMenuBar);
     postMenuItems.add(mi);
-
-    MenuBar targetmineMenu = new MenuBar(true);
-    mi = new MenuItem("TargetMine data", targetmineMenu);
-
-    targetmineMenu.addItem(new MenuItem("Import gene lists from TargetMine...", new Command() {
-      public void execute() {
-        new TargetMineData(currentScreen).importLists(true);
-      }
-    }));
-
-    targetmineMenu.addItem(new MenuItem("Export gene lists to TargetMine...", new Command() {
-      public void execute() {
-        new TargetMineData(currentScreen).exportLists();
-      }
-    }));
-
-    targetmineMenu.addItem(new MenuItem("Enrichment...", new Command() {
-      public void execute() {
-        //TODO this should be disabled if we are not on the data screen.
-        //The menu item is only here in order to be logically grouped with other 
-        //TargetMine items, but it is a duplicate and may be removed.
-        if (currentScreen instanceof DataScreen) {
-          ((DataScreen) currentScreen).runEnrichment();
-        } else {
-          Window.alert("Please go to the data screen to use this function.");
-        }
-      }
-    }));
-
-    targetmineMenu.addItem(new MenuItem("Go to TargetMine", new Command() {
-      public void execute() {
-        Utils.displayURL("Go to TargetMine in a new window?", "Go", appInfo.targetmineURL());
-      }
-    }));
-    analysisMenuBar.addItem(mi);
+    
+    setupToolsMenu(toolsMenuBar);
 
     MenuBar hm = new MenuBar(true);
     mi = new MenuItem("Help / feedback", hm);
@@ -378,6 +344,10 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     }));
 
     return menuBar;
+  }
+  
+  protected void setupToolsMenu(MenuBar toolsMenuBar) {
+    
   }
   
   protected void showDataSources() {
@@ -457,7 +427,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       mainDockPanel.remove(currentScreen);
       currentScreen.hide();
       for (MenuItem mi : s.analysisMenuItems()) {
-        analysisMenuBar.removeItem(mi);
+        toolsMenuBar.removeItem(mi);
       }
     }
     currentScreen = s;
@@ -471,7 +441,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     }
 
     for (MenuItem mi : s.analysisMenuItems()) {
-      analysisMenuBar.addItem(mi);
+      toolsMenuBar.addItem(mi);
     }
 
     addWorkflowLinks(currentScreen);

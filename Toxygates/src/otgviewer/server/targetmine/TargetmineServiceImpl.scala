@@ -42,6 +42,7 @@ import org.intermine.webservice.client.results.JSONResult
 import org.intermine.webservice.client.results.TabTableResult
 import otgviewer.shared.targetmine.EnrichmentWidget
 import otgviewer.shared.targetmine.EnrichmentParams
+import otgviewer.shared.targetmine.TargetmineException
 
 class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
   var affyProbes: Probes = _
@@ -70,25 +71,37 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
   // TODO: pass in a preferred species, get status info back
   def importTargetmineLists(user: String, pass: String,
     asProbes: Boolean): Array[t.common.shared.StringList] = {
-    val ls = TargetMine.getListService(serviceUri, Some(user), Some(pass))
-    val tmLists = ls.getAccessibleLists()
-    tmLists.filter(_.getType == "Gene").map(
-      l => {
-        val tglist = TargetMine.asTGList(l, affyProbes, platforms.filterProbesAllPlatforms(_))
-        if (tglist.items.size > 0) {
-          val probesForCurrent = platforms.filterProbes(tglist.items, List())
-          tglist.setComment(probesForCurrent.size + "");
-        } else {
-          tglist.setComment("0")
-        }
-        tglist
-      }).toArray
+    try {
+      val ls = TargetMine.getListService(serviceUri, Some(user), Some(pass))
+      val tmLists = ls.getAccessibleLists()
+      tmLists.filter(_.getType == "Gene").map(
+        l => {
+          val tglist = TargetMine.asTGList(l, affyProbes, platforms.filterProbesAllPlatforms(_))
+          if (tglist.items.size > 0) {
+            val probesForCurrent = platforms.filterProbes(tglist.items, List())
+            tglist.setComment(probesForCurrent.size + "");
+          } else {
+            tglist.setComment("0")
+          }
+          tglist
+        }).toArray
+    } catch {
+      case e: Exception =>
+        e.printStackTrace()
+        throw new TargetmineException(e.getMessage)
+    }
   }
 
   def exportTargetmineLists(user: String, pass: String,
       lists: Array[StringList], replace: Boolean): Unit = {
-    val ls = TargetMine.getListService(serviceUri, Some(user), Some(pass))
-    TargetMine.addLists(affyProbes, ls, lists.toList, replace)
+    try {
+      val ls = TargetMine.getListService(serviceUri, Some(user), Some(pass))
+      TargetMine.addLists(affyProbes, ls, lists.toList, replace)
+    } catch {
+      case e: Exception =>
+        e.printStackTrace()
+        throw new TargetmineException(e.getMessage)
+    }
   }
 
   // This is mainly to adjust the formatting of the p-value

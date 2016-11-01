@@ -127,6 +127,7 @@
 		<servlet-name>targetmineServlet</servlet-name>
     	<url-pattern>/toxygates/targetmine</url-pattern>
   	</servlet-mapping>
+		
 	
   <!-- Default page to serve -->
   <welcome-file-list>

@@ -31,6 +31,7 @@ import otgviewer.server.rpc.Conversions
 import otg.sparql.Probes
 import t.platform.Probe
 import org.intermine.webservice.client.lists.ItemList
+import otgviewer.shared.targetmine.TargetmineException
 
 object TargetMine {
   import Conversions._
@@ -84,11 +85,11 @@ object TargetMine {
     tags: Seq[String] = Seq()): ItemList = {
 
     var serverList = name.map(ls.getList(_))
-    if (serverList != None && replace) {
+    if (serverList != None && serverList.get != null && replace) {
       ls.deleteList(serverList.get)
     }
 
-    if (serverList == None || replace) {
+    if (serverList == None || serverList.get == null || replace) {
       val ci = new ls.ListCreationInfo("Gene", name.getOrElse(""))
       val probes = input.map(Probe(_)).toSeq
       //TODO we have the option of doing a fuzzy (e.g. symbol-based) export here
@@ -97,7 +98,8 @@ object TargetMine {
       ci.addTags(seqAsJavaList(tags))
       ls.createList(ci)
     } else {
-      throw new Exception(s"Unable to add list, $name already existed and replace not requested")
+      throw new TargetmineException(
+          s"Unable to add list, ${name.get} already existed and replacement not requested")
     }
   }
 

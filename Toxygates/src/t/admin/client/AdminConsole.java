@@ -212,7 +212,7 @@ public class AdminConsole implements EntryPoint {
     if (!Window.confirm("Are you sure you want to delete the batch " + title + "?")) {
       return;
     }
-    maintenanceService.deleteBatchAsync(object.getTitle(), 
+    maintenanceService.deleteBatchAsync(object, 
         new TaskCallback("Delete batch", maintenanceService) {
       @Override
       protected void onCompletion() {

@@ -45,7 +45,7 @@ class EVABuilder(_values: Seq[Double] = Seq(),
     tooltips.clear()
   }
 
-  def += (x: ExpressionValue): this.type = {
+  def +=(x: ExpressionValue): this.type = {
     values += x.getValue
     calls += x.getCall
     tooltips += x.getTooltip
@@ -69,8 +69,8 @@ object EVArray {
 //TODO For scalability, think about avoiding the tooltips
 //since they are not shared, and not primitives
 class EVArray(values: Array[Double],
-  calls: Array[Char],
-  tooltips: Array[String]) extends Seq[ExpressionValue] {
+    calls: Array[Char],
+    tooltips: Array[String]) extends Seq[ExpressionValue] {
 
   def apply(i: Int): ExpressionValue =
     new ExpressionValue(values(i), calls(i), tooltips(i))

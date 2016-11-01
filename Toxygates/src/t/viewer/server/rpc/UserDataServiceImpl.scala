@@ -27,6 +27,7 @@ import t.common.shared.maintenance.Batch
 import t.common.shared.Dataset
 import t.global.KCDBRegistry
 import t.common.shared.maintenance.MaintenanceException
+import t.db.Metadata
 
 /**
  * A servlet for managing user data (as batches).
@@ -59,6 +60,7 @@ abstract class UserDataServiceImpl extends TServiceServlet
 
   //Public entry point
   override def addBatchAsync(b: Batch): Unit = {
+    checkAccess(b)
     //Here, we must first ensure existence of the dataset.
     //For user data, the unique user id will here be supplied from the client side.
     //(e.g. user-a1f8032011c0f...)
@@ -66,38 +68,49 @@ abstract class UserDataServiceImpl extends TServiceServlet
 
     ensureDataset(b.getDataset)
 
-    //TODO security check
     super.addBatchAsync(b)
   }
 
+  override protected def alterMetadataPriorToInsert(md: Metadata): Metadata = {
+    //Enforce a special suffix for user data
+    md.mapParameter(factory, "compound_name", n => {
+      if (n.endsWith("[user]")) { n } else { s"$n [user]" }
+    })
+  }
+
   //Public entry point
-  override def deleteBatchAsync(id: String): Unit = {
-    //TODO security check
-    super.deleteBatchAsync(id)
+  override def deleteBatchAsync(b: Batch): Unit = {
+    checkAccess(b)
+    super.deleteBatchAsync(b)
   }
 
   //Public entry point
   override def getBatches(datasets: Array[String]): Array[Batch] = {
     if (datasets == null || datasets.isEmpty) {
       //Security check - don't list batches unless they have the keys
-      throw new MaintenanceException("In the user data service, datasets must be specified explicitly")
+      throw new MaintenanceException(
+          "In the user data service, datasets must be specified explicitly.")
     }
     super.getBatches(datasets)
   }
 
   //Indirectly called by update(ManagedItem) which is public
   override protected def updateBatch(b: Batch): Unit = {
-    //TODO security check
-
-    //Ensure the dataset exists
+    checkAccess(b)
     ensureDataset(b.getDataset)
     super.updateBatch(b)
   }
 
   //Public entry point
-  override def batchParameterSummary(batch: Batch): Array[Array[String]] = {
-    //TODO security check
-    super.batchParameterSummary(batch)
+  override def batchParameterSummary(b: Batch): Array[Array[String]] = {
+    checkAccess(b)
+    super.batchParameterSummary(b)
+  }
+
+  private def checkAccess(b: Batch) {
+    if (!Dataset.isUserDataset(b.getDataset)) {
+      throw new MaintenanceException("Access not permitted.")
+    }
   }
 
   private def ensureDataset(ds: String): Unit = {

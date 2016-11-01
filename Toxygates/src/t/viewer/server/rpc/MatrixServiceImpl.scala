@@ -348,6 +348,10 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
     val mm = cont.managedMatrix
     var mat = mm.current
+    if (chosenProbes != null && chosenProbes.length > 0) {
+      mat = mat.selectNamedRows(chosenProbes)
+    }
+
     var info = mm.info
 
     val allRows = mat.asRows
@@ -357,7 +361,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     val allAtomics = allRows.flatMap(_.getAtomicProbes.map(p => Probe(p)))
     val aaLookup = Map() ++ probes.withAttributes(allAtomics).map(a => a.identifier -> a)
 
-    val geneSyms = mat.asRows.map(r => {
+    val geneSyms = allRows.map(r => {
       val atrs = r.getAtomicProbes.map(aaLookup(_))
       joinedAbbreviated(atrs.flatMap(_.symbols.map(_.symbol)), 20)
     })

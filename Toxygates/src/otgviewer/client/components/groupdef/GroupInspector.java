@@ -535,8 +535,8 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
       }
     }
 
-    // Conservatively estimate that we load 4 samples per second
-    int loadTime = (int) (totalSize / 4);
+    // Conservatively estimate that we load 10 samples per second
+    int loadTime = (int) (totalSize / 10);
 
     if (loadTime > 20) {
       Window.alert("Warning: You have requested data for " + totalSize + " samples.\n"

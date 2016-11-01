@@ -174,6 +174,13 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     setEnabled(false);
   }
 
+  protected boolean isMergeMode() {
+    if (displayedProbes == null || displayedAtomicProbes == null) {
+      return false;
+    }
+    return displayedProbes.length != displayedAtomicProbes.length;
+  }
+  
   public ValueType getValueType() {
     String vt = tableList.getItemText(tableList.getSelectedIndex());
     return ValueType.unpack(vt);
@@ -235,7 +242,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     Resources r = GWT.create(Resources.class);
 
     SimplePager sp = new SimplePager(TextLocation.CENTER, r, true, 500, true);
-    sp.setStylePrimaryName("slightlySpaced");
+    sp.setStylePrimaryName("slightlySpaced"); 
     horizontalPanel.add(sp);
     sp.setDisplay(grid);
 
@@ -293,14 +300,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   }
 
   private void removeTests() {    
-    matrixService.removeTwoGroupTests(new AsyncCallback<ManagedMatrixInfo>() {
-      @Override
-      public void onFailure(Throwable caught) {
-        Window.alert("There was an error removing the test columns.");
-      }
+    matrixService.removeTwoGroupTests(new PendingAsyncCallback<ManagedMatrixInfo>(this, 
+        "There was an error removing the test columns.") {
 
       @Override
-      public void onSuccess(ManagedMatrixInfo result) {
+      public void handleSuccess(ManagedMatrixInfo result) {
         matrixInfo = result; // no need to do the full setMatrix
         setupColumns();
       }
@@ -370,6 +374,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   }
 
   public void downloadCSV(boolean individualSamples) {
+    if (individualSamples && isMergeMode()) {
+      Window.alert("Individual samples cannot be downloaded in orthologous mode.\n" +
+          "Please inspect one group at a time.");
+      return;
+    }
+    
     matrixService.prepareCSVDownload(individualSamples, new PendingAsyncCallback<String>(this,
         "Unable to prepare the requested data for download.") {
 

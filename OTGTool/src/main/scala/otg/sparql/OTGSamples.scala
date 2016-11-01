@@ -46,6 +46,8 @@ import t.db.SampleParameter
 
 class OTGSamples(bc: BaseConfig) extends Samples(bc) {
 
+  import t.sparql.scToSparql
+
   val prefixes = commonPrefixes + """
     PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>
 """

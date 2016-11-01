@@ -28,7 +28,7 @@ import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 
 /**
- * A group of barcodes. 
+ * A group of barcodes.
  */
 @SuppressWarnings("serial")
 public class Group extends SampleGroup<Sample> implements SampleColumn {

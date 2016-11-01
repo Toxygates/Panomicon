@@ -89,13 +89,13 @@ object TaskRunner {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   @volatile private var _currentTask: Option[Tasklet] = None
-  private var tasks: Vector[Tasklet] = Vector()
+  @volatile private var tasks: Vector[Tasklet] = Vector()
   @volatile private var _shouldStop = false
   private var _logMessages: Vector[String] = Vector()
   private var _resultMessages: Vector[String] = Vector()
   @volatile private var _errorCause: Option[Throwable] = None
 
-  def queueSize(): Int = synchronized {
+  def queueSize(): Int = {
     tasks.size
   }
 
@@ -151,14 +151,14 @@ object TaskRunner {
 
   def errorCause: Option[Throwable] = _errorCause
 
-  def start(): Unit = {
+  def start(): Unit = synchronized {
     _resultMessages = Vector()
     _shouldStop = false
     _errorCause = None
     Future {
       println("TaskRunner starting")
       while (!shouldStop) {
-        synchronized {
+        TaskRunner.synchronized {
           if (!tasks.isEmpty) {
             println(tasks.size + " tasks in queue")
             _currentTask = tasks.headOption
@@ -198,6 +198,7 @@ object TaskRunner {
    * Clients should check waitingForTask to verify the state.
    */
   def shutdown(): Unit = synchronized {
+    println("TaskRunner shutdown requested")
     _shouldStop = true
     tasks = Vector()
   }

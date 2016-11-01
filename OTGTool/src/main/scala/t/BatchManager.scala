@@ -23,7 +23,6 @@ package t
 import scala.Vector
 
 import otg.sparql.OTGSamples
-import t.db.AbsoluteValueInsert
 import t.db.ExprValue
 import t.db.Log2Data
 import t.db.LookupFailedException
@@ -90,7 +89,7 @@ object BatchManager extends ManagerTool {
           case Some(ml) =>
             KCDBRegistry.setMaintenance(true)
             for (mf <- ml) {
-              val md = factory.tsvMetadata(mf)
+              val md = factory.tsvMetadata(mf, config.sampleParameters)
               val dataFile = mf.replace(".meta.tsv", ".data.csv")
 
               val f = new java.io.File(mf.replace(".meta.tsv", ".call.csv"))
@@ -107,7 +106,7 @@ object BatchManager extends ManagerTool {
                 "Please specify a data file with -data")
             val callFile = stringOption(args, "-calls")
 
-            val md = factory.tsvMetadata(metaFile)
+            val md = factory.tsvMetadata(metaFile, config.sampleParameters)
             addTasklets(bm.add(title, comment,
               md, dataFile, callFile,
               append, config.seriesBuilder))
@@ -180,6 +179,7 @@ object BatchManager extends ManagerTool {
     }
 
     try {
+      Thread.sleep(2000)
       waitForTasklets()
     } finally {
       KCDBRegistry.closeWriters
@@ -255,7 +255,6 @@ class BatchManager(context: Context) {
   def add[S <: Series[S]](title: String, comment: String, metadata: Metadata,
     dataFile: String, callFile: Option[String],
     append: Boolean, sbuilder: SeriesBuilder[S],
-    @deprecated("To be removed", "April 12 2016") exprAsFold: Boolean = false,
     simpleLog2: Boolean = false): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
     val ts = config.triplestore.get
@@ -275,7 +274,7 @@ class BatchManager(context: Context) {
     r :+= addEnums(metadata, sbuilder)
 
     //TODO logging directly to TaskRunner is controversial
-    r :+= addExprData(metadata, dataFile, callFile, exprAsFold,
+    r :+= addExprData(metadata, dataFile, callFile,
         m => TaskRunner.log(s"Warning: $m"))
     r :+= addFoldsData(metadata, dataFile, callFile, simpleLog2,
         m => TaskRunner.log(s"Warning: $m"))
@@ -285,8 +284,7 @@ class BatchManager(context: Context) {
   }
 
   def delete[S <: Series[S]](title: String,
-    sbuilder: SeriesBuilder[S], rdfOnly: Boolean = false,
-    @deprecated("To be removed", "April 13 2016") exprAsFold: Boolean = false): Iterable[Tasklet] = {
+    sbuilder: SeriesBuilder[S], rdfOnly: Boolean = false): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
     implicit val mc = matrixContext()
 
@@ -294,7 +292,7 @@ class BatchManager(context: Context) {
     if (!rdfOnly) {
       r :+= deleteSeriesData(title, sbuilder)
       r :+= deleteFoldData(title)
-      r :+= deleteExprData(title, exprAsFold)
+      r :+= deleteExprData(title, true)
       r :+= deleteSampleIDs(title)
     } else {
       println("RDF ONLY mode - not deleting series, fold, expr, sample ID data")
@@ -427,16 +425,15 @@ class BatchManager(context: Context) {
 
   //TODO: remove treatAsFold parameter when possible
   def addExprData(md: Metadata, niFile: String, callFile: Option[String],
-    treatAsFold: Boolean,
     warningHandler: (String) => Unit)(implicit mc: MatrixContext) = {
     val data = new CSVRawExpressionData(List(niFile), callFile.map(List(_)),
         Some(md.samples.size), warningHandler)
-    if (treatAsFold) {
+//    if (treatAsFold) {
       val db = () => config.data.extWriter(config.data.exprDb)
       new SimplePFoldValueInsert(db, data).insert("Insert expr value data (quasi-fold format)")
-    } else {
-      new AbsoluteValueInsert(config.data.exprDb, data).insert("Insert normalised intensity data")
-    }
+//    } else {
+//      new AbsoluteValueInsert(config.data.exprDb, data).insert("Insert normalised intensity data")
+//    }
   }
 
   def addFoldsData(md: Metadata, foldFile: String, callFile: Option[String],
@@ -563,7 +560,7 @@ class BatchManager(context: Context) {
       val batchURI = Batches.defaultPrefix + "/" + batch
 
       val sf = SampleFilter(batchURI = Some(batchURI))
-      val tsmd = new TriplestoreMetadata(samples)(sf)
+      val tsmd = new TriplestoreMetadata(samples, config.sampleParameters)(sf)
 
       //Note, strictly speaking we don't need the source data here.
       //This dependency could be removed by having the builder make points

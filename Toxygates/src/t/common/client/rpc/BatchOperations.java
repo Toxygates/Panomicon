@@ -50,8 +50,8 @@ public interface BatchOperations extends MaintenanceOperations {
 
   /**
    * Delete a batch.
-   * @param id
+   * @param b
    * @throws MaintenanceException
    */
-  void deleteBatchAsync(String id) throws MaintenanceException;
+  void deleteBatchAsync(Batch b) throws MaintenanceException;
 }

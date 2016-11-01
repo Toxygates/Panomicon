@@ -46,8 +46,6 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     with t.common.client.rpc.BatchOperations {
   this: TServiceServlet =>
 
-  @deprecated("To be removed", "April 13 2016")
-  protected def exprAsFold: Boolean = true
   protected def simpleLog2: Boolean = false
 
   protected def mayAppendBatch: Boolean = true
@@ -83,9 +81,18 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       val dataFile = getAsTempFile(tempFiles, dataPrefix, dataPrefix, "csv")
       val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv")
 
-      val md = factory.tsvMetadata(metaFile.getAbsolutePath())
+      var md: Metadata = null
+      try {
+        md = factory.tsvMetadata(metaFile.getAbsolutePath(),
+          context.config.sampleParameters)
+      } catch {
+        case e: Exception =>
+          e.printStackTrace()
+          throw new MaintenanceException("Error while parsing metadata. Please check the file.")
+      }
 
       checkMetadata(md)
+      md = alterMetadataPriorToInsert(md)
 
       TaskRunner += bm.addRecord(b.getTitle, b.getComment, context.config.triplestore)
       //Set the parameters immediately, so that the batch is in the right dataset
@@ -96,9 +103,11 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
         dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
         true, baseConfig.seriesBuilder,
-        exprAsFold, simpleLog2)
+        simpleLog2)
     }
   }
+
+  protected def alterMetadataPriorToInsert(md: Metadata): Metadata = md
 
   /**
    * Check the validity of the sample parameters and throw an exception if there's a problem.
@@ -125,14 +134,13 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     r.filter(b => useDatasets.isEmpty || useDatasets.contains(b.getDataset))
   }
 
-  def deleteBatchAsync(id: String): Unit = {
+  def deleteBatchAsync(b: Batch): Unit = {
 
     val bm = new BatchManager(context) //TODO configuration parsing
     cleanMaintenance {
       TaskRunner.start()
       setLastTask("Delete batch")
-      TaskRunner ++= bm.delete(id, baseConfig.seriesBuilder, false,
-        exprAsFold)
+      TaskRunner ++= bm.delete(b.getTitle, baseConfig.seriesBuilder, false)
     }
   }
 

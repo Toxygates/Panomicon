@@ -85,6 +85,27 @@ public class MyDataScreen extends Screen {
     BatchPanel bp = new BatchPanel("Edit batch", userData, resources,
         true, true) {
       
+      final static String HAS_SEEN_WARNING = "hasSeenMyDataWarning";
+      
+      @Override
+      protected boolean confirmAddNew() {
+        String hasSeen = MyDataScreen.this.getParser().getItem(HAS_SEEN_WARNING);
+        if (hasSeen.equals("true")) {
+          return true;
+        }
+        final String message = "NIBIOHN will take reasonable precautions to protect " +
+            "your data, but we are not responsible for any data loss, theft or corruption " +
+            "that occurs as a result of using this service. " +
+            "By proceeding, you confirm that you upload data at your own risk. " +
+            "For more details, see the README file provided in the example data above.";
+        boolean confirm = Window.confirm(message);
+        if (confirm) {
+          MyDataScreen.this.getParser().setItem(HAS_SEEN_WARNING, "true");
+          return true;
+        }
+        return false;
+      }
+      
       @Override
       protected void onDelete(Batch object) {
         if (Window.confirm("Are you sure?")) {
@@ -167,9 +188,12 @@ public class MyDataScreen extends Screen {
         if (Window.confirm("If you have uploaded any data, please save your existing key first.\n" +
               "Without it, you will lose access to your data. Proceed?")) {
           String newKey = Window.prompt("Please input your user data key.", "");
-          if (newKey != null && !newKey.equals("")) {
+          if (newKey != null && validateKey(newKey)) {
             setUserKey(newKey);
             refreshBatches();
+          } else {
+            Window.alert("The string you entered is not a valid user key. "
+                + " Please contact us if you need assistance.");
           }
         }
       }
@@ -177,6 +201,13 @@ public class MyDataScreen extends Screen {
     cmds.add(b);    
     refreshBatches();    
     return bp.table();
+  }
+  
+  private boolean validateKey(String key) {    
+    // example: 153f36236251fcea601
+    // min size 19 hex chars, max theoretical size 24 chars
+    // last 8 chars are random, first 11-16 chars are a timestamp
+    return key.matches("[0-9a-f]+") && key.length() >= 19;
   }
   
   private void setUserKey(String key) {
@@ -196,7 +227,7 @@ public class MyDataScreen extends Screen {
   }
   
   private void deleteBatch(Batch b) {
-    userData.deleteBatchAsync(b.getTitle(), new TaskCallback("Delete batch", userData) {      
+    userData.deleteBatchAsync(b, new TaskCallback("Delete batch", userData) {      
       public void onCompletion() {
         refreshBatches();
       }          

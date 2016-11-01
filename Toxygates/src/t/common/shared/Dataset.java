@@ -100,6 +100,11 @@ public class Dataset extends ManagedItem {
   public static boolean isSharedDataset(String title) {
     return title.startsWith("user-shared-");
   }
+  
+  //TODO this also matches user shared datasets.
+  public static boolean isUserDataset(String title) {
+    return title.startsWith("user-");
+  }
 
   public static boolean isDataVisible(String datasetTitle, String userKey) {
     return datasetTitle.equals(userDatasetTitle(userKey)) || isSharedDataset(datasetTitle)

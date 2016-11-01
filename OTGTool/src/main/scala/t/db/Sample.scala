@@ -20,8 +20,6 @@
 
 package t.db
 
-import t.sparql.SampleClass
-
 /**
  * A sample.
  */

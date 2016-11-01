@@ -179,6 +179,8 @@ public class SampleDetailScreen extends Screen {
 	private void setDisplayColumn(SampleColumn c) {
 		experimentTable.loadFrom(c, false, 0, 23);
 		biologicalTable.loadFrom(c, false, 23, -1);
+		SampleClass sc = c.getSamples()[0].sampleClass().asMacroClass(manager.schema());
+		atd.sampleClassChanged(sc);
 	}
 	
 	private void displayWith(String column) {
