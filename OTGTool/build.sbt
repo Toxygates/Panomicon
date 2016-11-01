@@ -1,4 +1,8 @@
+import AssemblyKeys._ // put this at the top of the file
+
 scalaVersion := "2.11.7"
+
+assemblySettings
 
 libraryDependencies += "org.apache.commons" % "commons-math3" % "latest.integration"
 
@@ -16,3 +20,8 @@ libraryDependencies += "com.fallabs" % "kyotocabinet-java" % "latest.integration
 //Download source attachments
 
 //EclipseKeys.withSource := true
+
+test in assembly := {}
+
+assemblyJarName in assembly := "otgtool.jar"
+
