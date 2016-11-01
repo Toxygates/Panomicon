@@ -23,9 +23,6 @@ import java.text.NumberFormat
 import t.platform.Probe
 import t.platform.SimpleProbe
 
-/**
- * TODO: ExprValue should move to some subpackage of t
- */
 object ExprValue {
   def presentMean(vs: Iterable[ExprValue], probe: String): ExprValue = {
     val nps = vs.filter(_.call != 'A')
