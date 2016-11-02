@@ -51,6 +51,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   protected def mayAppendBatch: Boolean = true
 
   def addBatchAsync(b: Batch): Unit = {
+    ensureNotMaintenance()
     showUploadedFiles()
     grabRunner()
 
@@ -183,6 +184,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
   }
 
   def update(i: ManagedItem): Unit = {
+    ensureNotMaintenance()
     i match {
       case b: Batch => updateBatch(b)
       case _        => throw new Exception(s"Unexpected item type $i")

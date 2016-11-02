@@ -82,6 +82,19 @@ class DataConfig(val dir: String, val matrixDbOptions: String) {
   protected def exprFile: String = "expr.kct" + matrixDbOptions
   protected def foldFile: String = "fold.kct" + matrixDbOptions
 
+  /**
+   * Is the data store in maintenance mode? If it is, updates are not allowed.
+   */
+  def isMaintenanceMode: Boolean = {
+    val f = new java.io.File(s"$dir/MAINTENANCE_MODE")
+    if (f.exists()) {
+      println(s"$f exists")
+      true
+    } else {
+      false
+    }
+  }
+
   def exprDb: String = s"$dir/$exprFile"
   def foldDb: String = s"$dir/$foldFile"
 

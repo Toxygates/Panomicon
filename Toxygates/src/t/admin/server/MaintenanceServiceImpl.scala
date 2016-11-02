@@ -74,6 +74,7 @@ with BatchOpsImpl with MaintenanceService {
   override protected def request = getThreadLocalRequest
 
   def addPlatformAsync(p: Platform, affymetrixFormat: Boolean): Unit = {
+    ensureNotMaintenance()
     showUploadedFiles()
     grabRunner()
     val pm = new PlatformManager(context) //TODO configuration parsing
@@ -104,6 +105,7 @@ with BatchOpsImpl with MaintenanceService {
   }
 
   def add(i: ManagedItem): Unit = {
+    ensureNotMaintenance()
     i match {
       case d: Dataset => addDataset(d, true)
       case i: Instance => addInstance(i)
@@ -143,6 +145,7 @@ with BatchOpsImpl with MaintenanceService {
   }
 
   def deletePlatformAsync(id: String): Unit = {
+    ensureNotMaintenance()
     grabRunner()
     val pm = new PlatformManager(context)
     cleanMaintenance {
@@ -153,6 +156,7 @@ with BatchOpsImpl with MaintenanceService {
   }
 
   def delete(i: ManagedItem): Unit = {
+    ensureNotMaintenance()
     i match {
       case i: Instance => deleteInstance(i.getTitle)
       case d: Dataset => deleteDataset(d.getTitle)
@@ -219,6 +223,7 @@ with BatchOpsImpl with MaintenanceService {
   }
 
   override def update(i: ManagedItem): Unit = {
+    ensureNotMaintenance()
     i match {
       case i: Instance => updateInstance(i)
       case p: Platform => updatePlatform(p)
