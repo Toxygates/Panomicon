@@ -329,17 +329,14 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   }
 
   def goTerms(pattern: String, maxSize: Int): Iterable[GOTerm] = {
+    //oboInOwl:id is a trick to distinguish GO terms from KEGG pathways, mostly
+
     val query = tPrefixes +
+    "PREFIX oboInOwl: <http://www.geneontology.org/formats/oboInOwl#> " +
     "SELECT DISTINCT ?got ?gotn WHERE { GRAPH ?g { " + """
-     ?got rdfs:label ?gotn . } """ +
-    "FILTER regex(STR(?gotn), \"" + pattern + ".*\", \"i\")" +
+     ?got rdfs:label ?gotn ; oboInOwl:id ?id } """ +
+    "FILTER regex(STR(?gotn), \".*" + pattern + ".*\", \"i\")" +
     s"""
-      GRAPH ?g2 {
-          { ?probe t:gomf ?got . }
-          UNION { ?probe t:gocc ?got . }
-          UNION { ?probe t:gobp ?got . }
-          UNION { ?probe t:go ?got . }
-      }
       } LIMIT ${maxSize}"""
     ts.mapQuery(query).map(x => GOTerm(unpackGoterm(x("got")), x("gotn")))
   }
@@ -349,7 +346,6 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   def forGoTerm(term: GOTerm): Iterable[Probe] = {
     val query = tPrefixes +
     s"""
-
     SELECT DISTINCT ?probe WHERE {
         GRAPH ?g {
         ?got rdfs:label ?label.

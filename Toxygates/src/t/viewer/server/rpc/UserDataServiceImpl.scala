@@ -60,6 +60,7 @@ abstract class UserDataServiceImpl extends TServiceServlet
 
   //Public entry point
   override def addBatchAsync(b: Batch): Unit = {
+    ensureNotMaintenance()
     checkAccess(b)
     //Here, we must first ensure existence of the dataset.
     //For user data, the unique user id will here be supplied from the client side.
@@ -80,6 +81,7 @@ abstract class UserDataServiceImpl extends TServiceServlet
 
   //Public entry point
   override def deleteBatchAsync(b: Batch): Unit = {
+    ensureNotMaintenance()
     checkAccess(b)
     super.deleteBatchAsync(b)
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -49,6 +49,16 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
   protected def lastTask: String = getAttribute("lastTask")
   protected def setLastResults(results: OperationResults) = setAttribute("lastResults", results)
   protected def lastResults: OperationResults = getAttribute("lastResults")
+
+  protected def isMaintenanceMode: Boolean =
+    context.config.data.isMaintenanceMode
+
+  protected def ensureNotMaintenance(): Unit = {
+    if (isMaintenanceMode) {
+      throw new MaintenanceException("The system is currently in maintenance mode.\n" +
+          "Please try again later.")
+    }
+  }
 
   protected def afterTaskCleanup() {
     val tc: TempFiles = getAttribute("tempFiles")
