@@ -91,8 +91,8 @@ object TaskRunner {
   @volatile private var _currentTask: Option[Tasklet] = None
   @volatile private var tasks: Vector[Tasklet] = Vector()
   @volatile private var _shouldStop = false
-  private var _logMessages: Vector[String] = Vector()
-  private var _resultMessages: Vector[String] = Vector()
+  @volatile private var _logMessages: Vector[String] = Vector()
+  @volatile private var _resultMessages: Vector[String] = Vector()
   @volatile private var _errorCause: Option[Throwable] = None
 
   def queueSize(): Int = {
