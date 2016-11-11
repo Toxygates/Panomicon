@@ -66,6 +66,8 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortList;
@@ -262,7 +264,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     if (withPValueOption) {
       pcb = new CheckBox("p-value columns");
       horizontalPanel.add(pcb);
-      pcb.setValue(true);
+      pcb.setValue(false);      
       pcb.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
@@ -271,10 +273,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
                 + " in fold-change mode, consisting of a single time and dose.\n"
                 + "If you wish to compare two columns, use "
                 + "\"Compare two sample groups\" in the tools menu.");
-            return;
+            
+            setDisplayPColumns(false);                        
+          } else {
+            setDisplayPColumns(pcb.getValue());
+            setupColumns();
           }
-          setDisplayPColumns(pcb.getValue());
-          setupColumns();
         }
       });
     }
