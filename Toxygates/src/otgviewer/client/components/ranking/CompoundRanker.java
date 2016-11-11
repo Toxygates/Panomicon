@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import otgviewer.client.GeneOracle;
-import otgviewer.client.OTGClientUtils;
 import otgviewer.client.Resources;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ListChooser;
@@ -151,12 +150,6 @@ abstract public class CompoundRanker extends DataListenerWidget {
         performRanking();
       }
     }));
-
-
-    Widget i =
-        OTGClientUtils.mkHelpButton(resources.compoundRankingHTML(),
-            resources.compoundRankingHelp());
-    hp.add(i);
   }
 
   protected abstract int gridColumns();
