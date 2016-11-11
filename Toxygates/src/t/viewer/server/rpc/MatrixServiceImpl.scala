@@ -349,7 +349,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     val mm = cont.managedMatrix
     var mat = mm.current
     if (chosenProbes != null && chosenProbes.length > 0) {
-      mat = mat.selectNamedRows(chosenProbes)
+      mat = mat.selectRowsFromAtomics(chosenProbes)
     }
 
     var info = mm.info

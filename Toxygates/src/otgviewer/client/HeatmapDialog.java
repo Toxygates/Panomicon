@@ -141,7 +141,7 @@ public class HeatmapDialog extends DataListenerWidget {
       return;
     }
     
-    // all check passed
+    // all checks passed
     dialog.initWindow(defaultType);
   }
 
