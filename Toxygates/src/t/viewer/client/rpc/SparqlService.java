@@ -87,6 +87,15 @@ public interface SparqlService extends RemoteService {
   public Sample[] samplesById(String[] ids) throws TimeoutException;
 
   /**
+   * Obtain samples, fully populated with metadata, from given IDs.
+   * Convenience function that keeps samples grouped.
+   * @param ids
+   * @return
+   * @throws TimeoutException
+   */
+  public List<Sample[]> samplesById(List<String[]> ids) throws TimeoutException;
+  
+  /**
    * Obtain samples for a given sample class.
    * 
    * @param sc

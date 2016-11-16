@@ -263,6 +263,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
         ids).map(asJavaSample(_)).toArray
   }
 
+  def samplesById(ids: JList[Array[String]]): JList[Array[Sample]] =
+    new java.util.ArrayList(ids.map(samplesById(_)))
+
   @throws[TimeoutException]
   def samples(sc: SampleClass): Array[Sample] = {
     val ss = sampleStore.sampleQuery(scAsScala(sc))(sf)()

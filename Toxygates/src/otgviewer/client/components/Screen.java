@@ -393,6 +393,14 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
       p.setItem("OTG.showGuide", "no");
     }
   }
+  
+  @Override
+  protected void changeColumns(List<Group> columns) {
+    super.changeColumns(columns);
+    if (visible) {
+      updateStatusPanel();
+    }
+  }
 
   /**
    * The standard status panel contains a label that indicates the current data set, and

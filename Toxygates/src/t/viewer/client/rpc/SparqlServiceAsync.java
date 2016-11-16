@@ -53,6 +53,8 @@ public interface SparqlServiceAsync {
 
   public void samplesById(String[] ids, AsyncCallback<Sample[]> callback);
 
+  public void samplesById(List<String[]> ids, AsyncCallback<List<Sample[]>> callback);
+  
   public void samples(SampleClass sc, AsyncCallback<Sample[]> callback);
 
   public void samples(SampleClass sc, String param, String[] paramValues,
@@ -102,4 +104,5 @@ public interface SparqlServiceAsync {
 
   public void keywordSuggestions(String partialName, int maxSize,
       AsyncCallback<Pair<String, AType>[]> asyncCallback);
+
 }
