@@ -30,6 +30,8 @@ import otgviewer.client.components.ranking.CompoundRanker;
 import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
 
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -112,4 +114,15 @@ public class RankingScreen extends Screen {
     return "Specify at least one gene symbol to rank compounds according to their effect.";
   }
 
+  @Override
+  protected TextResource getHelpHTML() {
+    return resources.compoundRankingHTML();
+  }
+
+  @Override
+  protected ImageResource getHelpImage() {
+    return resources.compoundRankingHelp();
+  }
+
+  
 }

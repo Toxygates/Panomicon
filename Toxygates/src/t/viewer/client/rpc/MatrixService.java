@@ -153,6 +153,17 @@ public interface MatrixService extends RemoteService {
    */
   public void sendFeedback(String name, String email, String feedback);
 
-  public String prepareHeatmap(List<Group> chosenColumns, String[] chosenProbes,
+  /**
+   * Perform a clustering that can be used to display a heat map.
+   * 
+   * @param chosenColumns
+   * @param chosenProbes The atomic probes (even for orthologous display) to cluster.
+   * @param valueType
+   * @param algorithm
+   * @return The clusters in JSON format.
+   * @throws ServerError
+   */
+  public String prepareHeatmap(List<Group> chosenColumns, 
+      @Nullable String[] chosenProbes,
       ValueType valueType, Algorithm algorithm) throws ServerError;
 }

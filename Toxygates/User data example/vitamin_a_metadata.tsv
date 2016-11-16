@@ -1,25 +1,25 @@
-sample_id	platform_id	exp_id	group_id	individual_id	organ_id	material_id	compound_name	compound_abbr	compound_no	organism	test_type	sin_rep_type	sex_type	strain_type	adm_route_type	animal_age_week	exposure_time	dose	dose_unit	dose_level	terminal_bw	liver_wt	kidney_total_wt	kidney_wt_right	kidney_wt_left	RBC	Hb	Ht	MCV	MCH	MCHC	Ret	Plat	WBC	Neu	Eos	Bas	Mono	Lym	PT	APTT	Fbg	ALP	TC	TG	PL	TBIL	DBIL	GLC	BUN	CRE	Na	K	Cl	Ca	IP	TP	RALB	AGratio	AST	ALT	LDH	GTP	DNA	LDH_percent	control_group
-x003017169007	Rat230_2	5065	01	1	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	2 hr	0	Å M	Control	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	96.6	100	5065
-x003017169008	Rat230_2	5065	01	2	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	2 hr	0	Å M	Control	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	103.4	100	5065
-x003017169015	Rat230_2	5065	02	1	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	8 hr	0	Å M	Control	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	98.5	99.7	5065
-x003017169016	Rat230_2	5065	02	2	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	8 hr	0	Å M	Control	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	101.5	100.3	5065
-x003017169023	Rat230_2	5065	03	1	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	24 hr	0	Å M	Control	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	99.6	100.9	5065
-x003017169024	Rat230_2	5065	03	2	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	24 hr	0	Å M	Control	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	100.4	99.1	5065
-x003017169009	Rat230_2	5065	04	1	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	2 hr	0.3	Å M	Low	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	95.8	99.8	5065
-x003017169010	Rat230_2	5065	04	2	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	2 hr	0.3	Å M	Low	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	101.9	99.7	5065
-x003017169017	Rat230_2	5065	05	1	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	8 hr	0.3	Å M	Low	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	96.7	99.9	5065
-x003017169018	Rat230_2	5065	05	2	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	8 hr	0.3	Å M	Low	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	104.3	99.5	5065
-x003017169025	Rat230_2	5065	06	1	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	24 hr	0.3	Å M	Low	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	101.1	101.5	5065
-x003017169026	Rat230_2	5065	06	2	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	24 hr	0.3	Å M	Low	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	98.9	101.2	5065
-x003017169011	Rat230_2	5065	07	1	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	2 hr	1.5	Å M	Middle	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	92.6	99.9	5065
-x003017169012	Rat230_2	5065	07	2	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	2 hr	1.5	Å M	Middle	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	95	100	5065
-x003017169019	Rat230_2	5065	08	1	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	8 hr	1.5	Å M	Middle	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	102.8	98.8	5065
-x003017169020	Rat230_2	5065	08	2	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	8 hr	1.5	Å M	Middle	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	102.5	100.1	5065
-x003017169027	Rat230_2	5065	09	1	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	24 hr	1.5	Å M	Middle	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	98.8	101.6	5065
-x003017169028	Rat230_2	5065	09	2	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	24 hr	1.5	Å M	Middle	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	97.7	100.8	5065
-x003017169013	Rat230_2	5065	10	1	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	2 hr	7.5	Å M	High	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	93.3	99.6	5065
-x003017169014	Rat230_2	5065	10	2	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	2 hr	7.5	Å M	High	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	90.7	99.2	5065
-x003017169021	Rat230_2	5065	11	1	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	8 hr	7.5	Å M	High	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	101.5	98.7	5065
-x003017169022	Rat230_2	5065	11	2	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	8 hr	7.5	Å M	High	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	99.4	99.1	5065
-x003017169029	Rat230_2	5065	12	1	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	24 hr	7.5	Å M	High	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	91.2	102.8	5065
-x003017169030	Rat230_2	5065	12	2	Liver	A	vitamin A	VA	00059	Rat	in vitro	Single	Male	not specified	not specified	NA	24 hr	7.5	Å M	High	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	96.4	100.5	5065
+sample_id	platform_id	organ_id	compound_name	organism	test_type	sin_rep_type	exposure_time	dose_level	control_group
+x003017169007	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	2 hr	Control	1
+x003017169008	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	2 hr	Control	1
+x003017169015	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	8 hr	Control	1
+x003017169016	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	8 hr	Control	1
+x003017169023	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	24 hr	Control	1
+x003017169024	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	24 hr	Control	1
+x003017169009	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	2 hr	Low	1
+x003017169010	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	2 hr	Low	1
+x003017169017	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	8 hr	Low	1
+x003017169018	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	8 hr	Low	1
+x003017169025	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	24 hr	Low	1
+x003017169026	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	24 hr	Low	1
+x003017169011	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	2 hr	Middle	1
+x003017169012	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	2 hr	Middle	1
+x003017169019	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	8 hr	Middle	1
+x003017169020	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	8 hr	Middle	1
+x003017169027	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	24 hr	Middle	1
+x003017169028	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	24 hr	Middle	1
+x003017169013	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	2 hr	High	1
+x003017169014	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	2 hr	High	1
+x003017169021	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	8 hr	High	1
+x003017169022	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	8 hr	High	1
+x003017169029	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	24 hr	High	1
+x003017169030	Rat230_2	Liver	vitamin A	Rat	in vitro	Single	24 hr	High	1
