@@ -24,7 +24,6 @@ import scala.annotation.tailrec
 import friedrich.util.CmdLineOptions
 import t.db.MatrixDB
 import t.db.SeriesDB
-import otg.db.file.TSVMetadata
 import t.db.kyotocabinet.KCMatrixDB
 import otg.sparql.OTGSamples
 import otg.Species._
@@ -130,17 +129,24 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
     for ((s, xs) <- grouped) {
       //Construct the series s for all probes, using the samples xs
 
-      val data = xs.map(x => {
-        //TODO getting too many probes here - limit somehow based on platform
-        val expr = from.valuesInSample(x, List()).filter(_.present)
-        (md.parameter(x, "exposure_time"), x, expr)
-      })
+      val data = for (
+        x <- xs;
+        exprs = from.valuesInSample(x, Seq());
+        presentExprs = exprs.filter(_.present);
+        time = md.parameter(x, "exposure_time")
+      ) yield (time, x, presentExprs)
 
-      val byTime = data.groupBy(_._1).map(x => {
-        val tc = timeMap(x._1)
-        presentMeanByProbe(x._2.flatMap(x => x._3)).map(v => SeriesPoint(tc, v))
-      })
-      val byProbe = byTime.flatten.groupBy(_.value.probe)
+
+      val byTime = for (
+        (time, data) <- data.groupBy(_._1);
+        tc = timeMap(time);
+        meanValues = presentMeanByProbe(data.flatMap(_._3));
+        m <- meanValues;
+        point = SeriesPoint(tc, m)
+      ) yield point
+
+
+      val byProbe = byTime.groupBy(_.value.probe)
       r ++= byProbe.map(x => {
         s.copy(probe = mc.probeMap.pack(x._1), points = x._2.toSeq)
       })

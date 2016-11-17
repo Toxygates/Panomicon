@@ -74,7 +74,7 @@ public class HeatmapDialog extends DataListenerWidget {
   protected final Screen screen;
 
   private DialogBox dialog;
-  private Button saveButton;
+  private Button saveButton, enrichButton;
   private final ListBox valType;
 
   private CheckBox chkLogAxis;
@@ -141,7 +141,7 @@ public class HeatmapDialog extends DataListenerWidget {
       return;
     }
     
-    // all check passed
+    // all checks passed
     dialog.initWindow(defaultType);
   }
 
@@ -368,14 +368,15 @@ public class HeatmapDialog extends DataListenerWidget {
     bottomContent.setWidth("100%");
     bottomContent.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 
-    Button btnEnrich = new Button("Enrichment...");
-    btnEnrich.addClickHandler(new ClickHandler() {
+    enrichButton = new Button("Enrichment...");
+    enrichButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         HeatmapDialog.this.doEnrichment();
       }
     });
-    buttonGroup.add(btnEnrich);
+    buttonGroup.add(enrichButton);
+    enrichButton.setEnabled(false);
 
     Button btnClose = new Button("Close");
     btnClose.addClickHandler(new ClickHandler() {
@@ -527,6 +528,7 @@ public class HeatmapDialog extends DataListenerWidget {
       }
     }
 
+    enrichButton.setEnabled(enabled);
     saveButton.setEnabled(enabled);
   }
 

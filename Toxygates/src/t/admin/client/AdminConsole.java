@@ -125,6 +125,15 @@ public class AdminConsole implements EntryPoint {
 
         table.addColumn(textColumn, "Description");
         table.setColumnWidth(textColumn, "12.5em");
+        
+        textColumn = new TextColumn<Dataset>() {
+          public String getValue(Dataset object) {
+            return "" + object.getNumBatches();
+          }
+        };
+        
+        table.addColumn(textColumn, "Batches");
+        table.setColumnWidth(textColumn, "8em");                
       }
     };
     datasetData.addDataDisplay(dp.table());
@@ -203,7 +212,7 @@ public class AdminConsole implements EntryPoint {
     if (!Window.confirm("Are you sure you want to delete the batch " + title + "?")) {
       return;
     }
-    maintenanceService.deleteBatchAsync(object.getTitle(), 
+    maintenanceService.deleteBatchAsync(object, 
         new TaskCallback("Delete batch", maintenanceService) {
       @Override
       protected void onCompletion() {

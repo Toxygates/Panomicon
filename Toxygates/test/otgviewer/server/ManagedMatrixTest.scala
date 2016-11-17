@@ -28,6 +28,8 @@ import t.db.testing.TestData._
 import org.scalatest.FunSuite
 import otgviewer.server.rpc.Conversions._
 import t.TTestSuite
+import t.viewer.server.NormalizedBuilder
+import t.viewer.server.ExtFoldBuilder
 
 @RunWith(classOf[JUnitRunner])
 class ManagedMatrixTest extends TTestSuite {
@@ -58,12 +60,12 @@ class ManagedMatrixTest extends TTestSuite {
     val colNames = (0 until info.numColumns()).map(info.columnName)
     colNames should equal(groups.map(_.getName))
 
-    val raw = m.rawUngroupedMat
+    val raw = m.rawUngrouped
     raw.columns should equal(10)
     raw.rows should equal(probes.size)
     raw.sortedRowMap.map(_._1) should equal(sortedProbes)
 
-    val gr = m.rawGroupedMat
+    val gr = m.rawGrouped
     gr.rows should equal(probes.size)
     gr.sortedRowMap.map(_._1) should equal(sortedProbes)
   }
@@ -81,15 +83,15 @@ class ManagedMatrixTest extends TTestSuite {
     mat.rows should equal(ps.size)
     val srm = mat.sortedRowMap
 
-    mat = m.rawGroupedMat
+    mat = m.rawGrouped
     mat.rows should equal(probes.size)
 
-    mat = m.rawUngroupedMat
+    mat = m.rawUngrouped
     mat.rows should equal(probes.size)
 
     for (p <- ps) {
       preSort.row(p) should equal(m.current.row(p))
-      preSort.row(p) should equal(m.rawGroupedMat.row(p))
+      preSort.row(p) should equal(m.rawGrouped.row(p))
     }
   }
 

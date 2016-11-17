@@ -82,14 +82,31 @@ class DataConfig(val dir: String, val matrixDbOptions: String) {
   protected def exprFile: String = "expr.kct" + matrixDbOptions
   protected def foldFile: String = "fold.kct" + matrixDbOptions
 
+  /**
+   * Is the data store in maintenance mode? If it is, updates are not allowed.
+   */
+  def isMaintenanceMode: Boolean = {
+    val f = new java.io.File(s"$dir/MAINTENANCE_MODE")
+    if (f.exists()) {
+      println(s"$f exists")
+      true
+    } else {
+      false
+    }
+  }
+
   def exprDb: String = s"$dir/$exprFile"
   def foldDb: String = s"$dir/$foldFile"
 
   def seriesDb: String = s"$dir/series.kct" + KCSeriesDB.options
 
-  def sampleIndex: String = s"$dir/sample_index.kct" + KCIndexDB.options
-  def probeIndex: String = s"$dir/probe_index.kct" + KCIndexDB.options
-  def enumIndex: String = s"$dir/enum_index.kct" + KCIndexDB.options
+  def sampleDb: String = s"$dir/sample_index.kct"
+  def probeDb: String = s"$dir/probe_index.kct"
+  def enumDb: String = s"$dir/enum_index.kct"
+
+  def sampleIndex: String = sampleDb + KCIndexDB.options
+  def probeIndex: String = probeDb + KCIndexDB.options
+  def enumIndex: String = enumDb + KCIndexDB.options
 
   //TODO remove the fold wrap when possible
   def foldWrap(db: MatrixDBReader[PExprValue]): MatrixDBReader[PExprValue] =
@@ -106,6 +123,10 @@ class DataConfig(val dir: String, val matrixDbOptions: String) {
 
   def extWriter(file: String)(implicit c: MatrixContext): MatrixDB[PExprValue, PExprValue] =
     KCMatrixDB.getExt(file, true)
+
+  @deprecated("Ext format will be used for all data soon", "13 April 2016")
+  def writer(file: String)(implicit c: MatrixContext): KCMatrixDB =
+    KCMatrixDB.get(file, true)
 }
 
 class HashDataConfig(dir: String, matrixDbOptions: String)
@@ -128,6 +149,6 @@ class ChunkDataConfig(dir: String, matrixDbOptions: String) extends
   override def extWriter(file: String)(implicit c: MatrixContext): MatrixDB[PExprValue, PExprValue] =
     KCChunkMatrixDB.apply(file, true)
 
-  override def seriesDb: String =
-    KCChunkMatrixDB.removePrefix(super.seriesDb)
+  override def writer(file: String)(implicit c: MatrixContext): KCMatrixDB =
+    throw new Exception("Unsupported operation - chunk DB must use ext format")
 }

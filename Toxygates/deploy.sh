@@ -13,7 +13,8 @@ function makeWar {
     rm $OUTPUT
     rm WEB-INF/web.xml
     [ ! -d csv ] && mkdir csv
-    jar cf $OUTPUT toxygates csv *.pdf *.css images *.html.template
+    rm csv/*.csv
+    jar cf $OUTPUT toxygates csv *.pdf *.css images *.html.template *.zip
     #Exclude classes in t/admin and t/global
     jar uf $OUTPUT $(find WEB-INF \( -path WEB-INF/classes/t/admin -o \
       -path WEB-INF/classes/t/global \) -prune -o \( -type f -print \) )
@@ -70,3 +71,4 @@ cp mlib/gwt-user.jar $DEST/lib
 cp mlib/scala-library.jar $DEST/lib
 zip -r $DEST.zip $DEST
 
+echo Did you remember to set the TargetMine API key in web.xml.template?

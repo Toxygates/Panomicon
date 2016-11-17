@@ -24,34 +24,49 @@ import friedrich.util.formats.TSVFile
 import t.db.ParameterSet
 import t.db.Sample
 import t.db.Metadata
+import t.Factory
 
-class TSVMetadata(file: String, parameters: ParameterSet) extends Metadata {
-  protected val raw: Map[String, Array[String]] = {
-    val columns = TSVFile.readMap("", file)
-    columns.flatMap(x => {
-      val lc = x._1.toLowerCase()
-      //Normalise the upper/lowercase-ness and remove unknown columns
-      parameters.byIdLowercase.get(lc).map(sp => sp.identifier -> x._2)
-    })
-  }
-  val requiredColumns = parameters.required.map(_.identifier.toLowerCase)
-
-  protected def metadata = raw
-
-  val neColumns = requiredColumns.filter(!raw.keySet.contains(_))
-  if (!neColumns.isEmpty) {
-    println(s"The following columns are missing in $file: $neColumns")
-    throw new Exception("Missing columns in metadata")
-  }
-
-  var uniqueIds = Set[String]()
-  //sanity check
-  for (id <- metadata("sample_id")) {
-    if (uniqueIds.contains(id)) {
-      throw new Exception(s"Metadata error in $file. The sample '${id}' is defined twice.")
+/**
+ * Metadata that is read from a TSV file.
+ */
+object TSVMetadata {
+  def apply(fact: Factory, file: String, parameters: ParameterSet): Metadata = {
+    val metadata: Map[String, Seq[String]] = {
+      val columns = TSVFile.readMap("", file)
+      columns.flatMap(x => {
+        val lc = x._1.toLowerCase().trim
+        //Normalise the upper/lowercase-ness and remove unknown columns
+        val trimmed = x._2.map(_.trim)
+        parameters.byIdLowercase.get(lc).map(_.identifier -> trimmed)
+      })
     }
-    uniqueIds += id
+
+    val req = parameters.required.map(_.identifier).map(_.toLowerCase)
+    val neColumns = req.filter(!metadata.keySet.contains(_))
+    if (!neColumns.isEmpty) {
+      println(s"The following columns are missing in $file: $neColumns")
+      throw new Exception("Missing columns in metadata")
+    }
+
+    var uniqueIds = Set[String]()
+    //sanity check
+    for (id <- metadata("sample_id")) {
+      if (uniqueIds.contains(id)) {
+        throw new Exception(s"Metadata error in $file. The sample '${id}' is defined twice.")
+      }
+      uniqueIds += id
+    }
+    fact.metadata(metadata, parameters)
   }
+}
+
+/**
+ * Metadata based on a map indexed by column.
+ */
+class MapMetadata(val metadata: Map[String, Seq[String]],
+    val parameters: ParameterSet) extends Metadata {
+
+  val requiredColumns = parameters.required.map(_.identifier.toLowerCase)
 
   def samples: Iterable[Sample] = {
     val ids = metadata("sample_id")
@@ -79,5 +94,10 @@ class TSVMetadata(file: String, parameters: ParameterSet) extends Metadata {
   override def parameter(s: Sample, identifier: String): String = {
     val idx = getIdx(s)
     metadata(identifier)(idx)
+  }
+
+  def mapParameter(fact: Factory, key: String, f: String => String): Metadata = {
+    val nm = metadata + (key -> metadata(key).map(f))
+    fact.metadata(nm, parameters)
   }
 }

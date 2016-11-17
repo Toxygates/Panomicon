@@ -1,12 +1,35 @@
+/*
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * (NIBIOHN), Japan.
+ *
+ * This file is part of Toxygates.
+ *
+ * Toxygates is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Toxygates is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package otg.testing
 
-import t.db.SeriesPoint
 import otg.OTGSeries
-import t.db.BasicExprValue
 import otg.db.Metadata
-import t.db.SampleParameter
-import t.db.Sample
 import otg.db.OTGParameterSet
+import t.Factory
+import t.db.BasicExprValue
+import t.db.ParameterSet
+import t.db.Sample
+import t.db.SampleParameter
+import t.db.SeriesPoint
+import t.db.testing.TestData.enumMaps
 
 object TestData {
   import t.db.testing.TestData._
@@ -35,8 +58,12 @@ object TestData {
   def metadata: Metadata = new Metadata {
     def samples = t.db.testing.TestData.samples
 
+    def mapParameter(fact: Factory, key: String, f: String => String) = ???
+
     def parameterValues(identifier: String): Set[String] =
       enumMaps(identifier).keySet
+
+    def parameters: ParameterSet = ???
 
     def parameters(s: Sample): Iterable[(SampleParameter, String)] = {
       samples.find(_ == s).get.sampleClass.constraints.map(x =>  {

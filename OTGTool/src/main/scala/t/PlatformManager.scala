@@ -23,7 +23,7 @@ package t
 import t.sparql.Platforms
 import t.platform.PlatformDefFile
 import t.util.TempFiles
-import t.platform.AffymetrixConverter
+import t.platform.affy.AffymetrixConverter
 import t.db.kyotocabinet.KCIndexDB
 import t.sparql.Probes
 import t.sparql.TRDF
@@ -72,7 +72,7 @@ class PlatformManager(context: Context) {
   import TRDF._
   def config = context.config
 
-  def addPlatform(title: String, comment: String,
+  def add(title: String, comment: String,
     inputFile: String, affymetrixFormat: Boolean): Iterable[Tasklet] = {
     val pf = new Platforms(config.triplestore)
     var r = Vector[Tasklet]()
@@ -158,15 +158,15 @@ class PlatformManager(context: Context) {
       }
     }
 
-  def deletePlatform(title: String): Iterable[Tasklet] = {
+  def delete(title: String): Iterable[Tasklet] = {
     Vector[Tasklet](
       //Do not delete the probe IDs - keep them so they can be reused if we
       //redefine the platform
       //deleteProbeIDs(title),
-      deletePlatformRDF(title))
+      deleteRDF(title))
   }
 
-  def deletePlatformRDF(title: String): Tasklet = new Tasklet("Delete platform") {
+  def deleteRDF(title: String): Tasklet = new Tasklet("Delete platform") {
     def run() {
       val platforms = new Platforms(config.triplestore)
       platforms.delete(title)

@@ -1,4 +1,28 @@
+/*
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * (NIBIOHN), Japan.
+ *
+ * This file is part of Toxygates.
+ *
+ * Toxygates is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Toxygates is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package t.common.client.maintenance;
+
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 import t.common.client.ImageClickCell;
 import t.common.client.Resources;
@@ -32,6 +56,17 @@ abstract public class BatchPanel extends ManagerPanel<Batch> {
     return true;
   }
   
+  @Nullable
+  protected Batch batchForTitle(String title) {
+    List<Batch> batches = table().getVisibleItems();    
+    for (Batch b: batches) {
+      if (b.getTitle().equals(title)) {
+        return b;
+      }
+    }
+    return null;    
+  }
+  
   @Override 
   protected void addMidColumns(CellTable<Batch> table) {
     TextColumn<Batch> samplesColumn = new TextColumn<Batch>() {
@@ -49,12 +84,18 @@ abstract public class BatchPanel extends ManagerPanel<Batch> {
         new ImageClickCell.StringImageClickCell(resources.magnify(), false) {
 
       @Override
-      public void onClick(final String value) {
-        batchOps.batchParameterSummary(new Batch(value, ""), 
+      public void onClick(final String value) {       
+        Batch useBatch = batchForTitle(value);
+        if (useBatch == null) {
+          Window.alert("Error - unable to find batch in table");
+          return;
+        }
+        
+        batchOps.batchParameterSummary(useBatch, 
             new AsyncCallback<String[][]>() {
               @Override
               public void onFailure(Throwable caught) {
-                Window.alert("Unable to obtain batch data");                    
+                Window.alert("Unable to obtain batch data: " + caught.getMessage());                    
               }
 
               @Override

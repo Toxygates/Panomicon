@@ -21,11 +21,11 @@
 package otgviewer.client.components.compoundsel;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import t.common.client.Resources;
 import otgviewer.client.charts.ChartGrid;
 import otgviewer.client.charts.Charts;
 import otgviewer.client.components.DataListenerWidget;
@@ -35,7 +35,9 @@ import otgviewer.shared.MatchResult;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;
 import t.common.client.ImageClickCell;
+import t.common.client.Resources;
 import t.common.shared.SampleClass;
+import t.common.shared.SharedUtils;
 import t.viewer.client.CodeDownload;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
@@ -121,6 +123,8 @@ public class RankingCompoundSelector extends CompoundSelector {
   public void performRanking(List<String> rankProbes, List<RankRule> rules) {
     this.rankProbes = rankProbes;
     addRankColumns();
+    logger.info("Ranking compounds for datasets: " + 
+        SharedUtils.mkString(Arrays.asList(chosenDatasets), " "));
 
     if (rules.size() > 0) { // do we have at least 1 rule?
       seriesService.rankedCompounds(chosenDatasets, chosenSampleClass,

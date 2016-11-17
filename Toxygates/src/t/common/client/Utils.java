@@ -85,8 +85,8 @@ public class Utils {
     return sp;
   }
   
-  public static <T extends ManagedItem> CellTable<T> makeTable() {
-    CellTable<T> table = new CellTable<T>();
+  public static <T extends ManagedItem> CellTable<T> makeTable(int pageSize) {
+    CellTable<T> table = new CellTable<T>(pageSize);
     table.setSelectionModel(new NoSelectionModel<T>());
     table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
     return table;

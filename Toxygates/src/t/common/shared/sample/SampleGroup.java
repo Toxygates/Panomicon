@@ -29,6 +29,7 @@ import t.common.shared.SharedUtils;
 
 /**
  * A way of grouping microarray samples. Unique colors for each group can be generated.
+ * 
  * @param <S>
  */
 @SuppressWarnings("serial")
@@ -38,15 +39,9 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
   /**
    * This list was generated using the service at http://tools.medialab.sciences-po.fr/iwanthue/
    */
-  public static final String[] groupColors = new String[] { 
-   "#8582B5",
-   "#7AC653",
-   "#C3534D",
-   "#90C1AB",
-   "#504239",
-   "#C1A54A",
-   "#B354B3" };
-    
+  public static final String[] groupColors = new String[] {"#8582B5", "#7AC653", "#C3534D",
+      "#90C1AB", "#504239", "#C1A54A", "#B354B3"};
+
   private static int nextColor = 0;
 
 
@@ -107,7 +102,7 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
   public static int colorIndexOf(String color) {
     return SharedUtils.indexOf(groupColors, color);
   }
-  
+
   private int getColorIndex() {
     return colorIndexOf(color);
   }
@@ -153,8 +148,8 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
     return SampleClass.collectInner(Arrays.asList(_samples), parameter);
   }
 
-  public static <S extends Sample, G extends SampleGroup<S>> 
-  Set<String> collectAll(Iterable<G> from, String parameter) {
+  public static <S extends Sample, G extends SampleGroup<S>> Set<String> collectAll(
+      Iterable<G> from, String parameter) {
     Set<String> r = new HashSet<String>();
     for (G g : from) {
       r.addAll(g.collect(parameter));

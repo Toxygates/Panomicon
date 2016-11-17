@@ -153,7 +153,8 @@ object OTGParameterSet extends ParameterSet {
   val all =
     (numericalKeys ++ nonNumericalKeys).map(x => t.db.SampleParameter(x._2, x._1))
 
-  def isNumerical(x: String) = numericalKeys.values.toSet.contains(x)
+  def isNumerical(p: t.db.SampleParameter) =
+    numericalKeys.values.toSet.contains(p.identifier)
 
   val highLevel = List("organism", "test_type", "sin_rep_type", "organ_id").map(byId)
 
@@ -164,4 +165,32 @@ object OTGParameterSet extends ParameterSet {
   override val previewDisplay = List("dose", "dose_unit", "dose_level",
     "exposure_time", "adm_route_type").map(byId)
 
+  /**
+   * Find the files that are control samples in the collection that a given barcode
+   * belongs to.
+   *
+   * TODO think about ways to generalise this without depending on the
+   * key/value of dose_level = Control. Possibly depend on DataSchema
+   */
+  override def controlSamples(metadata: t.db.Metadata, s: Sample): Iterable[Sample] = {
+    val params = metadata.parameterMap(s)
+    val expTime = params("exposure_time")
+    val cgroup = params("control_group")
+
+    println(expTime + " " + cgroup)
+    metadata.samples.filter(s => {
+      val params = metadata.parameterMap(s)
+      params("exposure_time") == expTime &&
+      params("control_group") == cgroup &&
+      metadata.isControl(s)
+    })
+  }
+
+  override def treatedControlGroups(metadata: t.db.Metadata, ss: Iterable[Sample]):
+    Iterable[(Iterable[Sample], Iterable[Sample])] = {
+    for (
+      (cs, ts) <- ss.groupBy(controlSamples(metadata, _));
+      (d, dts) <- ts.groupBy(metadata.parameter(_, "dose_level"))
+    ) yield ((dts, cs))
+  }
 }

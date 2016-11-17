@@ -72,7 +72,7 @@ abstract public class Synthetic implements DataColumn<Sample>, Serializable {
 
     @Override
     public String getTooltip() {
-      return "p-value";
+      return "T-test (" + g1.getShortTitle() + ", " + g2.getShortTitle() + ")";
     }
   }
 
@@ -98,7 +98,7 @@ abstract public class Synthetic implements DataColumn<Sample>, Serializable {
 
     @Override
     public String getTooltip() {
-      return "p-value (nonparametric)";
+      return "U-test (" + g1.getShortTitle() + ", " + g2.getShortTitle() + ")";
     }
   }
 
@@ -124,7 +124,7 @@ abstract public class Synthetic implements DataColumn<Sample>, Serializable {
 
     @Override
     public String getTooltip() {
-      return "Fold change difference";
+      return "Fold change difference (" + g1.getShortTitle() + ", " + g2.getShortTitle() + ")";
     }
 
     @Override

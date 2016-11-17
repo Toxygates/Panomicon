@@ -23,9 +23,6 @@ import java.text.NumberFormat
 import t.platform.Probe
 import t.platform.SimpleProbe
 
-/**
- * TODO: ExprValue should move to some subpackage of t
- */
 object ExprValue {
   def presentMean(vs: Iterable[ExprValue], probe: String): ExprValue = {
     val nps = vs.filter(_.call != 'A')
@@ -56,6 +53,18 @@ object ExprValue {
   def apply(v: Double, call: Char = 'P', probe: String = null) = BasicExprValue(v, call, probe)
 
   val nf = NumberFormat.getNumberInstance()
+
+  def isBefore(v1: ExprValue, v2: ExprValue): Boolean =
+    (v1.call, v2.call) match {
+      case ('A', 'M') => true
+      case ('A', 'P') => true
+      case ('M', 'A') => false
+      case ('M', 'P') => true
+      case ('P', 'A') => false
+      case ('P', 'M') => true
+      case _ => v1.value < v2.value
+    }
+
 }
 
 trait ExprValue {
@@ -82,4 +91,12 @@ case class BasicExprValue(value: Double, call: Char = 'P', probe: String = null)
  * sample group that the sample belongs to (all samples with identical
  * experimental conditions).
  */
-case class PExprValue(value: Double, p: Double, call: Char = 'P', probe: String = null) extends ExprValue
+case class PExprValue(value: Double, p: Double, call: Char = 'P', probe: String = null) extends ExprValue {
+    override def toString(): String = {
+      if (!java.lang.Double.isNaN(p)) {
+        s"(${ExprValue.nf.format(value)}:$call:${ExprValue.nf.format(p)})"
+      } else {
+        super.toString()
+      }
+    }
+}

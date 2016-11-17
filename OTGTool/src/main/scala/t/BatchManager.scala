@@ -23,7 +23,6 @@ package t
 import scala.Vector
 
 import otg.sparql.OTGSamples
-import t.db.AbsoluteValueInsert
 import t.db.ExprValue
 import t.db.Log2Data
 import t.db.LookupFailedException
@@ -90,13 +89,13 @@ object BatchManager extends ManagerTool {
           case Some(ml) =>
             KCDBRegistry.setMaintenance(true)
             for (mf <- ml) {
-              val md = factory.tsvMetadata(mf)
+              val md = factory.tsvMetadata(mf, config.sampleParameters)
               val dataFile = mf.replace(".meta.tsv", ".data.csv")
 
               val f = new java.io.File(mf.replace(".meta.tsv", ".call.csv"))
               val callFile = if (f.exists()) Some(f.getPath) else None
               println(s"Insert $dataFile")
-              addTasklets(bm.addBatch(title, comment,
+              addTasklets(bm.add(title, comment,
                 md, dataFile, callFile,
                 append, config.seriesBuilder))
             }
@@ -107,8 +106,8 @@ object BatchManager extends ManagerTool {
                 "Please specify a data file with -data")
             val callFile = stringOption(args, "-calls")
 
-            val md = factory.tsvMetadata(metaFile)
-            addTasklets(bm.addBatch(title, comment,
+            val md = factory.tsvMetadata(metaFile, config.sampleParameters)
+            addTasklets(bm.add(title, comment,
               md, dataFile, callFile,
               append, config.seriesBuilder))
         }
@@ -120,7 +119,7 @@ object BatchManager extends ManagerTool {
         // TODO move verification into the batches API
         verifyExists(batches, title)
         val bm = new BatchManager(context)
-        addTasklets(bm.deleteBatch(title, config.seriesBuilder, rdfOnly))
+        addTasklets(bm.delete(title, config.seriesBuilder, rdfOnly))
       case "list" =>
         println("Batch list")
         for (b <- batches.list) {
@@ -180,6 +179,7 @@ object BatchManager extends ManagerTool {
     }
 
     try {
+      Thread.sleep(2000)
       waitForTasklets()
     } finally {
       KCDBRegistry.closeWriters
@@ -252,18 +252,17 @@ class BatchManager(context: Context) {
   val requiredParameters = config.sampleParameters.required.map(_.identifier)
   val hlParameters = config.sampleParameters.highLevel.map(_.identifier)
 
-  def addBatch[S <: Series[S]](title: String, comment: String, metadata: Metadata,
+  def add[S <: Series[S]](title: String, comment: String, metadata: Metadata,
     dataFile: String, callFile: Option[String],
     append: Boolean, sbuilder: SeriesBuilder[S],
-    exprAsFold: Boolean = false, simpleLog2: Boolean = false,
-    withSeries: Boolean = true): Iterable[Tasklet] = {
+    simpleLog2: Boolean = false): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
     val ts = config.triplestore.get
 
     r :+= consistencyCheck(title, metadata, config)
 
     if (!append) {
-      r :+= addBatchRecord(title, comment, config.triplestore)
+      r :+= addRecord(title, comment, config.triplestore)
     }
     r :+= addSampleIDs(metadata)
     r :+= addRDF(title, metadata, sbuilder, ts)
@@ -274,27 +273,26 @@ class BatchManager(context: Context) {
     implicit val mc = matrixContext()
     r :+= addEnums(metadata, sbuilder)
 
-    r :+= addExprData(dataFile, callFile, exprAsFold)
-    r :+= addFoldsData(metadata, dataFile, callFile, simpleLog2)
-    if (withSeries) {
-      r :+= addSeriesData(metadata, sbuilder)
-    }
+    //TODO logging directly to TaskRunner is controversial
+    r :+= addExprData(metadata, dataFile, callFile,
+        m => TaskRunner.log(s"Warning: $m"))
+    r :+= addFoldsData(metadata, dataFile, callFile, simpleLog2,
+        m => TaskRunner.log(s"Warning: $m"))
+    r :+= addSeriesData(metadata, sbuilder)
+
     r
   }
 
-  def deleteBatch[S <: Series[S]](title: String,
-    sbuilder: SeriesBuilder[S], rdfOnly: Boolean = false,
-    withSeries: Boolean = true): Iterable[Tasklet] = {
+  def delete[S <: Series[S]](title: String,
+    sbuilder: SeriesBuilder[S], rdfOnly: Boolean = false): Iterable[Tasklet] = {
     var r: Vector[Tasklet] = Vector()
     implicit val mc = matrixContext()
 
     //Enums can not yet be deleted.
     if (!rdfOnly) {
-      if (withSeries) {
-        r :+= deleteSeriesData(title, sbuilder)
-      }
+      r :+= deleteSeriesData(title, sbuilder)
       r :+= deleteFoldData(title)
-      r :+= deleteExprData(title)
+      r :+= deleteExprData(title, true)
       r :+= deleteSampleIDs(title)
     } else {
       println("RDF ONLY mode - not deleting series, fold, expr, sample ID data")
@@ -325,14 +323,26 @@ class BatchManager(context: Context) {
         if (bsamples.contains(s.identifier)) {
           log(s"Replacing sample ${s.identifier}")
         } else if (existingSamples.contains(s.identifier)) {
-          throw new Exception(s"The sample ${s.identifier} has already been defined in a different batch")
+          val suggestion = suggestSampleId(existingSamples, s.identifier)
+          throw new Exception(s"The sample ${s.identifier} has " +
+              s" already been defined in a different batch. Consider using: $suggestion")
         }
         checkValidIdentifier(s.identifier, "sample ID")
       }
     }
   }
 
-  def addBatchRecord(title: String, comment: String, ts: TriplestoreConfig) =
+  private def suggestSampleId(existing: Set[String], candidate: String): String = {
+    var n = 1
+    var cand = candidate
+    while(existing.contains(cand)) {
+      cand = s"${candidate}_$n"
+      n += 1
+    }
+    cand
+  }
+
+  def addRecord(title: String, comment: String, ts: TriplestoreConfig) =
     new Tasklet("Add batch record") {
       def run() {
         val bs = new Batches(ts)
@@ -414,21 +424,23 @@ class BatchManager(context: Context) {
   }
 
   //TODO: remove treatAsFold parameter when possible
-  def addExprData(niFile: String, callFile: Option[String],
-    treatAsFold: Boolean)(implicit mc: MatrixContext) = {
-    val data = new CSVRawExpressionData(List(niFile), callFile.map(List(_)))
-    if (treatAsFold) {
+  def addExprData(md: Metadata, niFile: String, callFile: Option[String],
+    warningHandler: (String) => Unit)(implicit mc: MatrixContext) = {
+    val data = new CSVRawExpressionData(List(niFile), callFile.map(List(_)),
+        Some(md.samples.size), warningHandler)
+//    if (treatAsFold) {
       val db = () => config.data.extWriter(config.data.exprDb)
-      new SimplePFoldValueInsert(db, data).insert("Insert fold value data")
-    } else {
-      new AbsoluteValueInsert(config.data.exprDb, data).insert("Insert normalised intensity data")
-    }
+      new SimplePFoldValueInsert(db, data).insert("Insert expr value data (quasi-fold format)")
+//    } else {
+//      new AbsoluteValueInsert(config.data.exprDb, data).insert("Insert normalised intensity data")
+//    }
   }
 
   def addFoldsData(md: Metadata, foldFile: String, callFile: Option[String],
-      simpleLog2: Boolean)
+      simpleLog2: Boolean, warningHandler: (String) => Unit)
   (implicit mc: MatrixContext) = {
-    val data = new CSVRawExpressionData(List(foldFile), callFile.map(List(_)))
+    val data = new CSVRawExpressionData(List(foldFile), callFile.map(List(_)),
+        Some(md.samples.size), warningHandler)
     val fvs = if (simpleLog2) {
       new Log2Data(data)
     } else {
@@ -439,14 +451,13 @@ class BatchManager(context: Context) {
   }
 
   private def deleteFromDB(db: MatrixDBWriter[_], samples: Iterable[Sample]) {
-    for (s <- samples) {
-      try {
-        db.deleteSample(s)
-      } catch {
-        case lf: LookupFailedException =>
-          println(s"Lookup failed for sample $s, ignoring (possible reason: interrupted data insertion)")
-        case t: Throwable => throw t
-      }
+    try {
+      db.deleteSamples(samples)
+    } catch {
+      case lf: LookupFailedException =>
+        println(s"Lookup failed for sample, ignoring (possible reason: interrupted data insertion)")
+        println("Please investigate manually!")
+      case t: Throwable => throw t
     }
   }
 
@@ -455,7 +466,11 @@ class BatchManager(context: Context) {
       def run() {
         val bs = new Batches(config.triplestore)
         val ss = bs.samples(title).map(Sample(_))
-        val db = MatrixInsert.matrixDB(true, config.data.foldDb)
+        if (ss.isEmpty) {
+          log("Nothing to do, batch has no samples")
+          return
+        }
+        val db = config.data.extWriter(config.data.foldDb)
         try {
           deleteFromDB(db, ss)
         } finally {
@@ -464,12 +479,21 @@ class BatchManager(context: Context) {
       }
     }
 
-  def deleteExprData(title: String)(implicit mc: MatrixContext) =
+  //TODO unify with deleteFoldData above once DB formats are unified
+  def deleteExprData(title: String, treatAsFold: Boolean)(implicit mc: MatrixContext) =
     new Tasklet("Delete normalized intensity data") {
       def run() {
         val bs = new Batches(config.triplestore)
         val ss = bs.samples(title).map(Sample(_))
-        val db = MatrixInsert.matrixDB(false, config.data.exprDb)
+         if (ss.isEmpty) {
+          log("Nothing to do, batch has no samples")
+          return
+        }
+        val db = if (treatAsFold) {
+          config.data.extWriter(config.data.exprDb)
+        } else {
+          config.data.writer(config.data.exprDb)
+        }
         try {
           deleteFromDB(db, ss)
         } finally {
@@ -536,7 +560,7 @@ class BatchManager(context: Context) {
       val batchURI = Batches.defaultPrefix + "/" + batch
 
       val sf = SampleFilter(batchURI = Some(batchURI))
-      val tsmd = new TriplestoreMetadata(samples)(sf)
+      val tsmd = new TriplestoreMetadata(samples, config.sampleParameters)(sf)
 
       //Note, strictly speaking we don't need the source data here.
       //This dependency could be removed by having the builder make points

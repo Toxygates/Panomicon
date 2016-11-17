@@ -71,7 +71,7 @@ class B2RKegg(val con: RepositoryConnection) extends Triplestore with Store[Path
 
   override def withAttributes(pw: Pathway): Pathway = {
     val (prefixes, q) = attributes(pw)
-    val genes = simpleQuery(s"$prefixes\n + SELECT DISTINCT ?g { $q }").map(g => Gene.unpackKegg(g)).toSet
+    val genes = simpleQuery(s"$prefixes\n + SELECT DISTINCT ?gene { $q }").map(g => Gene.unpackKegg(g)).toSet
     pw.copy(genes = genes)
   }
 
@@ -83,8 +83,10 @@ class B2RKegg(val con: RepositoryConnection) extends Triplestore with Store[Path
     } else {
       ("bv:uri " + bracket(pw.identifier), "")
     }
-    val q = s" GRAPH ?pwGraph { ?pw $constraint . " +
-      s"?ko kv:pathway ?pw; kv:gene ?kgene; t:entrez ?gene } $endFilter "
+    val q = s""" GRAPH ?pwGraph {
+      ?pw $constraint .
+      ?g2 kv:pathway ?pw;
+      kv:x-ncbigene ?gene. } $endFilter """
 
     (prefixes, q)
   }
@@ -111,20 +113,22 @@ class B2RKegg(val con: RepositoryConnection) extends Triplestore with Store[Path
    * Obtain all enzymes associated with each of a set of genes.
    * TODO: remove or upgrade
    */
-  def enzymes(genes: Iterable[Gene], species: Species): MMap[Gene, DefaultBio] = {
-    val r = multiQuery(prefixes +
-      """SELECT DISTINCT ?g ?ident ?url where {
-    	?pw kv:xReaction/kv:xEnzyme ?en;
-           rdf:type kv:Pathway ;
-    	   kv:xTaxon <http://bio2rdf.org/kegg_taxon:""" + species.shortCode + "> . " +
-      " ?en kv:xGene ?g ; rdfs:label ?ident ; bio2rdf:url ?url . " +
-      multiFilter("?g", genes.map(g => bracket(g.packKegg))) + " . }" //TODO
-      ).map(x => Gene.unpackKegg(unbracket(x(2))) -> DefaultBio(x(0), x(1)))
-    makeMultiMap(r)
-  }
+//  def enzymes(genes: Iterable[Gene], species: Species): MMap[Gene, DefaultBio] = {
+//    val r = multiQuery(prefixes +
+//      """SELECT DISTINCT ?g ?ident ?url where {
+//    	?pw kv:xReaction/kv:xEnzyme ?en;
+//           rdf:type kv:Pathway ;
+//    	   kv:xTaxon <http://bio2rdf.org/kegg_taxon:""" + species.shortCode + "> . " +
+//      " ?en kv:xGene ?g ; rdfs:label ?ident ; bio2rdf:url ?url . " +
+//      multiFilter("?g", genes.map(g => bracket(g.packKegg))) + " . }" //TODO
+//      ).map(x => Gene.unpackKegg(unbracket(x(2))) -> DefaultBio(x(0), x(1)))
+//    makeMultiMap(r)
+//  }
 
   /**
    * Obtain all pathways associated with each of a set of genes.
+   * TODO: simplify these queries, when it is operationally easy to do so,
+   * to use the kv:x-ncbigene predicate of the probes directly
    */
   def forGenes(genes: Iterable[Gene]): MMap[Gene, Pathway] = {
     def convert(uri: String, g: Gene): String = {
@@ -134,14 +138,14 @@ class B2RKegg(val con: RepositoryConnection) extends Triplestore with Store[Path
     }
 
     val r = mapQuery(prefixes +
-      """SELECT DISTINCT ?g ?title ?uri where { graph ?pwGraph {
-        ?ko kv:gene ?g; kv:pathway ?pw.
+      """SELECT DISTINCT ?g2 ?title ?uri where { graph ?pwGraph {
+        ?g2 kv:x-ncbigene ?g; kv:pathway ?pw.
         ?pw bv:uri ?uri; dc:title ?title . """ +
-      multiFilter("?g", genes.map(g => bracket(g.packKegg))) +
+      multiFilter("?g", genes.map(g => bracket(g.packKeggNCBI))) +
       " } } ")
 
     makeMultiMap(r.map(x => {
-      val g = Gene.unpackKegg(x("g"))
+      val g = Gene.unpackKegg(x("g2"))
       g -> Pathway(convert(x("uri"), g), x("title"))
     }))
   }

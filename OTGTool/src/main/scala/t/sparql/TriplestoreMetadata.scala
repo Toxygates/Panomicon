@@ -23,20 +23,16 @@ package t.sparql
 import t.db.Sample
 import t.db.SampleParameter
 import t.db.Metadata
+import t.db.ParameterSet
+import t.Factory
 
 /**
  * Metadata from a triplestore.
  * The graph to be queried can be influenced by setting
  * os.batchURI.
  */
-class TriplestoreMetadata(os: Samples)(implicit sf: SampleFilter) extends Metadata {
-
-  /**
-   * Retrieve the set of control samples corresponding to a given sample.
-   */
-  override def controlSamples(s: Sample): Iterable[Sample] = {
-    throw new Exception("Implement me")
-  }
+class TriplestoreMetadata(os: Samples, val parameters: ParameterSet)
+(implicit sf: SampleFilter) extends Metadata {
 
   def samples: Iterable[Sample] = os.samples(SampleClass())
 
@@ -48,4 +44,6 @@ class TriplestoreMetadata(os: Samples)(implicit sf: SampleFilter) extends Metada
 
   def parameterValues(identifier: String): Set[String] =
     os.allValuesForSampleAttribute(identifier).toSet
+
+  def mapParameter(fact: Factory, key: String, f: String => String) = ???
 }

@@ -118,8 +118,7 @@ public abstract class ManagedItemEditor extends Composite {
       @Override
       public void onFailure(Throwable caught) {
         Window.alert("Operation failed: " + caught.getMessage());
-        onFinishOrAbort();
-        onAbort();
+        onError();
       }
     };
   }
@@ -135,7 +134,12 @@ public abstract class ManagedItemEditor extends Composite {
   protected void onFinish() {}
 
   /**
-   * Called when the edit operation was cancelled (by the user or due to an error)
+   * Called when the edit operation was cancelled
    */
   protected void onAbort() {}
+  
+  /**
+   * Called when there was an error
+   */
+  protected void onError() {}
 }

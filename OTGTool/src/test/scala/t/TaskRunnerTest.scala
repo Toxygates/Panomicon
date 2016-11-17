@@ -26,11 +26,40 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class TaskRunnerTest extends TTestSuite {
 
-  test("basic") {
+  test("runAndStop") {
     var hasRun = false
     val t = Tasklet.simple("simple", () => { hasRun = true })
     TaskRunner.runAndStop(t)
     hasRun should equal(true)
+    TaskRunner.currentTask should equal(None)
+    TaskRunner.waitingForTask should equal(false)
+  }
+
+  test("basic with no shutdown") {
+    var hasRun = false
+    val t = Tasklet.simple("simple", () => { hasRun = true })
+    TaskRunner.start()
+    TaskRunner += t
+    while (!hasRun) {
+      Thread.sleep(1000)
+    }
+    TaskRunner.currentTask should equal(None)
+    TaskRunner.waitingForTask should equal(false)
+  }
+
+  //TODO it would be better if the tests don't depend on timings like this
+  test("basic with shutdown") {
+    var hasRun = false
+    val t = Tasklet.simple("simple", () => { hasRun = true })
+    TaskRunner += t
+    TaskRunner.start()
+    while (!hasRun) {
+      Thread.sleep(100)
+    }
+    TaskRunner.shutdown
+    Thread.sleep(3000)
+    TaskRunner.currentTask should equal(None)
+    TaskRunner.waitingForTask should equal(false)
   }
 
   test("logging and progress") {
@@ -54,6 +83,7 @@ class TaskRunnerTest extends TTestSuite {
     Thread.sleep(2000)
     TaskRunner.logMessages should contain("logged")
     TaskRunner.currentTask should equal(None)
+    TaskRunner.waitingForTask should equal(false)
   }
 
   test("Exception") {

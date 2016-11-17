@@ -55,8 +55,16 @@ trait AbstractMatrix[Self <: AbstractMatrix[Self, T, V], T, V <: Seq[T]]
    * in a new matrix
    */
   def selectColumns(cols: Seq[Int]): Self
-  def filterRows(f: V => Boolean): Self
+  def filterRows(f: V => Boolean): Self =
+    copyWith(toRowVectors.filter(f))
+
   def sortRows(f: (V, V) => Boolean): Self
+
+  def mapRows(f: V => V): Self =
+    copyWith(toRowVectors.map(f))
+
+  def map(f: T => T): Self =
+    mapRows(r => fromSeq(r.map(f)))
 }
 
 //TODO are both DataMatrix and AbstractMatrix needed as separate classes?
@@ -103,9 +111,6 @@ abstract class DataMatrix[Self <: DataMatrix[Self, T, V], T, V <: Seq[T]](val da
     val sortedIdx = sorted.map(_._1)
     selectRows(sortedIdx)
   }
-
-  def filterRows(f: V => Boolean): Self =
-    copyWith(toRowVectors.filter(f))
 
 }
 

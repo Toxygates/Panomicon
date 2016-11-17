@@ -39,7 +39,7 @@ object Conversions {
 	implicit def asSpecies(sc: SampleClass): otg.Species.Species =
 	  otg.Species.withName(sc.get("organism"))
 
-	implicit def scAsJava(sc: t.sparql.SampleClass): SampleClass =
+	implicit def scAsJava(sc: t.db.SampleClassLike): SampleClass =
 	  new SampleClass(new java.util.HashMap(mapAsJavaMap(sc.constraints)))
 
 	def asJavaSample(s: t.db.Sample): Sample = {

@@ -19,6 +19,7 @@
 package otgviewer.client.targetmine;
 
 import otgviewer.shared.targetmine.EnrichmentParams;
+import otgviewer.shared.targetmine.TargetmineException;
 import t.common.shared.StringList;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -35,13 +36,15 @@ public interface TargetmineService extends RemoteService {
    * @param asProbes if true, the items will be imported as affymetrix probes. If false, as genes.
    * @return
    */
-  public StringList[] importTargetmineLists(String user, String pass, boolean asProbes);
+  public StringList[] importTargetmineLists(String user, String pass, boolean asProbes)
+      throws TargetmineException;
 
-  public void exportTargetmineLists(String user, String pass, 
-      StringList[] lists, boolean replace);
+  public void exportTargetmineLists(String user, String pass, StringList[] lists, boolean replace)
+      throws TargetmineException;
 
-  public String[][] enrichment(StringList list, EnrichmentParams params);
-  
-  public String[][][] multiEnrichment(StringList[] lists, EnrichmentParams params);
+  public String[][] enrichment(StringList list, EnrichmentParams params) throws TargetmineException;
+
+  public String[][][] multiEnrichment(StringList[] lists, EnrichmentParams params)
+      throws TargetmineException;
 
 }

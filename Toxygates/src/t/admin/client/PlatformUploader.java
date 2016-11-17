@@ -22,8 +22,6 @@ import static t.common.shared.maintenance.MaintenanceConstants.platformPrefix;
 import t.common.client.maintenance.ItemUploader;
 import t.common.client.maintenance.UploadWrapper;
 
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -45,19 +43,10 @@ public class PlatformUploader extends ItemUploader {
     vp.add(affyRadio);
     tRadio = makeRadio("type", "T platform TSV");
     vp.add(tRadio);
-
-    updateStatus();
   }
 
   private RadioButton makeRadio(String group, String label) {
-    RadioButton r = new RadioButton(group, label);
-    r.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
-      @Override
-      public void onValueChange(ValueChangeEvent<Boolean> event) {
-        updateStatus();
-
-      }
-    });
+    RadioButton r = new RadioButton(group, label);    
     return r;
   }
 

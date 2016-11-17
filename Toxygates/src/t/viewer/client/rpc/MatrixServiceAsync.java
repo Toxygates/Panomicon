@@ -22,13 +22,13 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import otgviewer.shared.FullMatrix;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.common.shared.userclustering.Algorithm;
 import t.viewer.shared.ColumnFilter;
+import t.viewer.shared.FullMatrix;
 import t.viewer.shared.ManagedMatrixInfo;
 import t.viewer.shared.Synthetic;
 import t.viewer.shared.table.SortKey;
@@ -51,14 +51,14 @@ public interface MatrixServiceAsync {
   public void setColumnFilter(int column, @Nullable ColumnFilter filter,
       AsyncCallback<ManagedMatrixInfo> callback);
 
-  public void getFullData(List<Group> g, String[] probes, boolean sparseRead, boolean withSymbols,
+  public void getFullData(List<Group> g, String[] probes, boolean withSymbols,
       ValueType typ, AsyncCallback<FullMatrix> callback);
 
   public void prepareCSVDownload(boolean individualSamples, AsyncCallback<String> callback);
 
-  public void addTwoGroupTest(Synthetic.TwoGroupSynthetic test, AsyncCallback<Void> callback);
+  public void addTwoGroupTest(Synthetic.TwoGroupSynthetic test, AsyncCallback<ManagedMatrixInfo> callback);
 
-  public void removeTwoGroupTests(AsyncCallback<Void> callback);
+  public void removeTwoGroupTests(AsyncCallback<ManagedMatrixInfo> callback);
 
   public void sendFeedback(String name, String email, String feedback, AsyncCallback<Void> callback);
 

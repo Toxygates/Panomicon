@@ -23,20 +23,41 @@ package t.platform
 import scala.io.Source
 import t.db.kyotocabinet.KCIndexDB
 
+//TODO extract standard columns and move outside affy package
+import t.platform.affy.{GOMF, GOBP, GOCC, Entrez}
+
 object ProbeRecord {
-  //Note that we must use double quote for the value.
-  //Affymetrix definitions contain strings with single quotes.
-  def asRdfTerm(key: String, value: String) = {
+  /**
+   * Generate RDF predicates for each probe.
+   * Note that we must use double quotes for the value:
+   * Affymetrix definitions contain strings with single quotes.
+   */
+
+  def asRdfTerms(key: String, value: String): Seq[(String, String)] = {
     key match {
       //example value: 0050839
-      case "go" | "gomf" | "gobp" | "gocc" =>
-        s"<http://purl.obolibrary.org/obo/GO_$value>"
-      case _                               => "\"" + value + "\""
+
+      case "go" | GOMF.key | GOBP.key | GOCC.key =>
+        Seq((s"t:$key", s"<http://purl.obolibrary.org/obo/GO_$value>"))
+      case Entrez.key =>
+        Seq((s"t:$key", "\"" + value + "\""),
+            ("<http://bio2rdf.org/kegg_vocabulary:x-ncbigene>",
+                s"<http://bio2rdf.org/ncbigene:$value>"))
+      case _ =>
+        Seq((s"t:$key", "\"" + value + "\""))
     }
   }
 }
 
-case class ProbeRecord(id: String, annotations: Map[String, Iterable[String]])
+case class ProbeRecord(id: String, annotations: Map[String, Iterable[String]]) {
+  def annotationRDF: String =
+    (for (
+      (k, vs) <- annotations;
+      v <- vs;
+      (predicate, objct) <- ProbeRecord.asRdfTerms(k, v);
+      item = s"$predicate $objct"
+    ) yield item).mkString("; ")
+}
 
 class PlatformDefFile(file: String) {
 
@@ -79,7 +100,7 @@ object PlatformDefFile {
         }
       case None =>
         for (r <- new PlatformDefFile(args(0)).records) {
-          println(s"${r.id} ${r.annotations("refseq")}")
+          println(s"tprobe:${r.id} ${r.annotationRDF}.")
         }
     }
   }

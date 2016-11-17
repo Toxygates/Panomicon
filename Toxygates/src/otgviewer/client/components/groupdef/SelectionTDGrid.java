@@ -385,7 +385,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
       return; //wait
     }
     logger.info("Samples available: " + availableUnits.size() + " units.");
-    if (availableUnits.get(0) != null) {
+    if (availableUnits.size() > 0 && availableUnits.get(0) != null) {
       logger.info("1st: " + availableUnits.get(0));
     }
     

@@ -21,6 +21,7 @@
 package t.db
 
 import friedrich.util.formats.TSVFile
+import t.Factory
 
 case class SampleParameter(identifier: String, humanReadable: String)
 
@@ -31,10 +32,30 @@ trait ParameterSet {
   def previewDisplay: Iterable[SampleParameter] = required
   lazy val byId = Map() ++ all.map(x => x.identifier -> x)
   lazy val byIdLowercase = byId.map(x => x._1.toLowerCase() -> x._2)
+
+  /**
+   * Retrieve the set of control samples corresponding to a given sample.
+   */
+  def controlSamples(metadata: Metadata, s: Sample): Iterable[Sample] = Seq()
+
+  /**
+   * Compute groups of treated and control samples for p-value computation.
+   * This is a naive implementation which needs to be overridden if control samples are
+   * shared between multiple treated groups.
+   */
+  def treatedControlGroups(metadata: Metadata, ss: Iterable[Sample]):
+    Iterable[(Iterable[Sample], Iterable[Sample])] = {
+    ss.groupBy(controlSamples(metadata, _)).toSeq.map(sg => {
+      sg._2.partition(!metadata.isControl(_))
+    })
+  }
+
 }
 
 trait Metadata {
   def samples: Iterable[Sample]
+
+  def parameters: ParameterSet
 
   def parameters(s: Sample): Iterable[(SampleParameter, String)]
 
@@ -57,8 +78,9 @@ trait Metadata {
 
   def isControl(s: Sample): Boolean = false
 
-  /**
-   * Retrieve the set of control samples corresponding to a given sample.
+    /**
+   * Obtain a new metadata set after applying a mapping function to one
+   * of the parameters.
    */
-  def controlSamples(s: Sample): Iterable[Sample] = List()
+  def mapParameter(fact: Factory, key: String, f: String => String): Metadata
 }

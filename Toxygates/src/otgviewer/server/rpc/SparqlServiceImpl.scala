@@ -29,7 +29,6 @@ import otg.sparql._
 import otg.sparql.Probes
 import otgviewer.shared.OTGSchema
 import otgviewer.shared.Pathology
-import otgviewer.shared.TimeoutException
 import t.BaseConfig
 import t.DataConfig
 import t.common.server.ScalaUtils.gracefully
@@ -43,6 +42,8 @@ import t.sparql.secondary._
 import t.viewer.server.Configuration
 import t.viewer.server.Conversions._
 import t.viewer.shared.Association
+import t.viewer.shared.TimeoutException
+import t.viewer.shared.AppInfo
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -62,8 +63,12 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
     chembl = new ChEMBL()
     drugBank = new DrugBank()
     homologene = new B2RHomologene()
+  }
 
-    _appInfo.setPredefinedGroups(predefinedGroups)
+  override protected def refreshAppInfo(): AppInfo = {
+    val r = super.refreshAppInfo()
+    r.setPredefinedGroups(predefinedGroups)
+    r
   }
 
   @throws[TimeoutException]
@@ -119,6 +124,19 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
     _probes: Array[String]): Array[Association] =
     new AnnotationResolver(sc, types, _probes).resolve
 
+  override def staticAnnotationInfo: Seq[(String, String)] = {
+     /*
+     * Note: the only data sources hardcoded here should be the ones
+     * whose provisioning is independent of SPARQL data that we
+     * control. For example, the ones obtained solely from remote
+     * sources.
+     */
+    Seq(
+      ("ChEMBL", "Dynamically obtained from https://www.ebi.ac.uk/rdf/services/chembl/sparql"),
+      ("DrugBank", "Dynamically obtained from http://drugbank.bio2rdf.org/sparql")
+      )
+  }
+
   protected class AnnotationResolver(sc: SampleClass, types: Array[AType],
      _probes: Iterable[String]) extends super.AnnotationResolver(sc, types, _probes) {
 
@@ -158,16 +176,20 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
       })
     }
 
-    override def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe])
-      (implicit sf: SampleFilter): BBMap = {
+    override def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe])(implicit sf: SampleFilter): BBMap = {
       at match {
-        case _: AType.GOMF.type      => probeStore.mfGoTerms(probes)
-        case _: AType.GOBP.type      => probeStore.bpGoTerms(probes)
-        case _: AType.GOCC.type      => probeStore.ccGoTerms(probes)
-        case _: AType.OrthProts.type => oproteins
-        case _: AType.Chembl.type    => getTargeting(sc, chembl)
-        case _: AType.Drugbank.type  => getTargeting(sc, drugBank)
-        case _                       => super.associationLookup(at, sc, probes)
+        case _: AType.GOMF.type       => probeStore.mfGoTerms(probes)
+        case _: AType.GOBP.type       => probeStore.bpGoTerms(probes)
+        case _: AType.GOCC.type       => probeStore.ccGoTerms(probes)
+        case _: AType.OrthProts.type  => oproteins
+        case _: AType.Chembl.type     => getTargeting(sc, chembl)
+        case _: AType.Drugbank.type   => getTargeting(sc, drugBank)
+        case _: AType.RefseqTrn.type  => probeStore.refseqTrnLookup(probes)
+        case _: AType.RefseqProt.type => probeStore.refseqProtLookup(probes)
+        case _: AType.Ensembl.type    => probeStore.ensemblLookup(probes)
+        case _: AType.EC.type         => probeStore.ecLookup(probes)
+        case _: AType.Unigene.type    => probeStore.unigeneLookup(probes)
+        case _                        => super.associationLookup(at, sc, probes)
       }
     }
   }

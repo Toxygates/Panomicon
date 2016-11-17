@@ -1,3 +1,23 @@
+/*
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * (NIBIOHN), Japan.
+ *
+ * This file is part of Toxygates.
+ *
+ * Toxygates is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Toxygates is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package t.common.server.maintenance
 
 import t.viewer.server.rpc.TServiceServlet
@@ -15,27 +35,38 @@ import scala.collection.JavaConversions._
 import t.common.shared.ManagedItem
 import t.sparql.TRDF
 import t.common.shared.Dataset
+import t.db.Metadata
+import javax.annotation.Nullable
+import t.db.SampleParameter
 
 /**
  * Routines for servlets that support the management of batches.
  */
 trait BatchOpsImpl extends MaintenanceOpsImpl
-  with t.common.client.rpc.BatchOperations {
+    with t.common.client.rpc.BatchOperations {
   this: TServiceServlet =>
 
-  protected def exprAsFold: Boolean = false
   protected def simpleLog2: Boolean = false
-  protected def withSeries: Boolean = true
+
+  protected def mayAppendBatch: Boolean = true
 
   def addBatchAsync(b: Batch): Unit = {
-	  showUploadedFiles()
-	  grabRunner()
+    ensureNotMaintenance()
+    showUploadedFiles()
+    grabRunner()
 
-	  val bm = new BatchManager(context) //TODO configuration parsing
+    val bm = new BatchManager(context) //TODO configuration parsing
 
     cleanMaintenance {
       TaskRunner.start()
       setLastTask("Add batch")
+
+      val exbs = new Batches(context.config.triplestore).list
+      if (exbs.contains(b.getTitle) && !mayAppendBatch) {
+        throw new MaintenanceException(
+            s"The batch ${b.getTitle} already exists and appending is not allowed. " +
+            "Please choose a different name.")
+      }
 
       val tempFiles = new TempFiles()
       setAttribute("tempFiles", tempFiles)
@@ -51,21 +82,44 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       val dataFile = getAsTempFile(tempFiles, dataPrefix, dataPrefix, "csv")
       val callsFile = getAsTempFile(tempFiles, callPrefix, callPrefix, "csv")
 
-      val md = factory.tsvMetadata(metaFile.getAbsolutePath())
-      TaskRunner ++= bm.addBatch(b.getTitle, b.getComment, md,
+      var md: Metadata = null
+      try {
+        md = factory.tsvMetadata(metaFile.getAbsolutePath(),
+          context.config.sampleParameters)
+      } catch {
+        case e: Exception =>
+          e.printStackTrace()
+          throw new MaintenanceException("Error while parsing metadata. Please check the file.")
+      }
+
+      checkMetadata(md)
+      md = alterMetadataPriorToInsert(md)
+
+      TaskRunner += bm.addRecord(b.getTitle, b.getComment, context.config.triplestore)
+      //Set the parameters immediately, so that the batch is in the right dataset
+      // -> can be seen and deleted, in the case of e.g. user data
+      TaskRunner += Tasklet.simple("Set batch parameters", () => updateBatch(b))
+
+      TaskRunner ++= bm.add(b.getTitle, b.getComment, md,
         dataFile.get.getAbsolutePath(),
         callsFile.map(_.getAbsolutePath()),
-        false, baseConfig.seriesBuilder,
-        exprAsFold, simpleLog2, withSeries)
-      TaskRunner += Tasklet.simple("Set batch parameters", () => updateBatch(b))
+        true, baseConfig.seriesBuilder,
+        simpleLog2)
     }
   }
 
-import java.util.HashSet
+  protected def alterMetadataPriorToInsert(md: Metadata): Metadata = md
 
-  def getBatches(dataset: String): Array[Batch] = {
-    val useDataset = Option(dataset)
+  /**
+   * Check the validity of the sample parameters and throw an exception if there's a problem.
+   */
+  @throws(classOf[MaintenanceException])
+  protected def checkMetadata(md: Metadata): Unit = {}
 
+  import java.util.HashSet
+
+  def getBatches(@Nullable dss: Array[String]): Array[Batch] = {
+    val useDatasets = Option(dss).toSet.flatten
     val bs = new Batches(baseConfig.triplestore)
     val ns = bs.numSamples
     val comments = bs.comments
@@ -74,23 +128,20 @@ import java.util.HashSet
     val r = bs.list.map(b => {
       val samples = ns.getOrElse(b, 0)
       new Batch(b, samples, comments.getOrElse(b, ""),
-          dates.getOrElse(b, null),
-          new HashSet(setAsJavaSet(bs.listAccess(b).toSet)),
-          datasets.getOrElse(b, ""))
+        dates.getOrElse(b, null),
+        new HashSet(setAsJavaSet(bs.listAccess(b).toSet)),
+        datasets.getOrElse(b, ""))
     }).toArray
-    useDataset match {
-      case None => r
-      case Some(ds) => r.filter(_.getDataset == ds)
-    }
+    r.filter(b => useDatasets.isEmpty || useDatasets.contains(b.getDataset))
   }
 
-  def deleteBatchAsync(id: String): Unit = {
+  def deleteBatchAsync(b: Batch): Unit = {
 
     val bm = new BatchManager(context) //TODO configuration parsing
     cleanMaintenance {
       TaskRunner.start()
       setLastTask("Delete batch")
-      TaskRunner ++= bm.deleteBatch(id, baseConfig.seriesBuilder, false, withSeries)
+      TaskRunner ++= bm.delete(b.getTitle, baseConfig.seriesBuilder, false)
     }
   }
 
@@ -117,7 +168,7 @@ import java.util.HashSet
     bs.setComment(b.getTitle, TRDF.escape(b.getComment))
   }
 
-  protected def overviewParameters: Seq[t.db.SampleParameter] =
+  protected def overviewParameters: Seq[SampleParameter] =
     context.config.sampleParameters.required.toSeq
 
   def batchParameterSummary(batch: Batch): Array[Array[String]] = {
@@ -133,9 +184,10 @@ import java.util.HashSet
   }
 
   def update(i: ManagedItem): Unit = {
+    ensureNotMaintenance()
     i match {
       case b: Batch => updateBatch(b)
-      case _ => throw new Exception(s"Unexpected item type $i")
+      case _        => throw new Exception(s"Unexpected item type $i")
     }
   }
 
@@ -165,10 +217,11 @@ import java.util.HashSet
   }
 
   protected def updateDataset(d: Dataset): Unit = {
+    //TODO security check
+
     val ds = new Datasets(baseConfig.triplestore)
     ds.setComment(d.getTitle, TRDF.escape(d.getComment))
     ds.setDescription(d.getTitle, TRDF.escape(d.getDescription))
     ds.setPublicComment(d.getTitle, TRDF.escape(d.getPublicComment))
   }
-
 }

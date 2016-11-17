@@ -66,6 +66,8 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortList;
@@ -122,16 +124,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   private final MatrixServiceAsync matrixService;
   private final otgviewer.client.Resources resources;
 
-  /**
-   * "Synthetic" columns are tests columns such as t-test and u-test.
-   */
-  private List<Synthetic> synthetics = new ArrayList<Synthetic>();
-  private List<Column<ExpressionRow, ?>> synthColumns = new ArrayList<Column<ExpressionRow, ?>>();
   protected boolean displayPColumns = true;
   protected SortKey sortKey;
   protected boolean sortAsc;
 
-  private boolean pValueOption;
+  private boolean withPValueOption;
 
   /**
    * For selecting sample groups to apply t-test/u-test to
@@ -160,9 +157,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   
   private CheckBox pcb;
 
-  public ExpressionTable(Screen _screen, boolean pValueOption) {
+  public ExpressionTable(Screen _screen, boolean withPValueOption) {
     super(_screen);
-    this.pValueOption = pValueOption;
+    this.withPValueOption = withPValueOption;
     this.matrixService = _screen.matrixService();
     this.resources = _screen.resources();
     screen = _screen;
@@ -179,6 +176,13 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     setEnabled(false);
   }
 
+  protected boolean isMergeMode() {
+    if (displayedProbes == null || displayedAtomicProbes == null) {
+      return false;
+    }
+    return displayedProbes.length != displayedAtomicProbes.length;
+  }
+  
   public ValueType getValueType() {
     String vt = tableList.getItemText(tableList.getSelectedIndex());
     return ValueType.unpack(vt);
@@ -240,7 +244,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     Resources r = GWT.create(Resources.class);
 
     SimplePager sp = new SimplePager(TextLocation.CENTER, r, true, 500, true);
-    sp.setStylePrimaryName("slightlySpaced");
+    sp.setStylePrimaryName("slightlySpaced"); 
     horizontalPanel.add(sp);
     sp.setDisplay(grid);
 
@@ -257,15 +261,24 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     pager.setStylePrimaryName("slightlySpaced");
     horizontalPanel.add(pager);
 
-    if (pValueOption) {
+    if (withPValueOption) {
       pcb = new CheckBox("p-value columns");
       horizontalPanel.add(pcb);
-      pcb.setValue(true);
+      pcb.setValue(false);      
       pcb.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          setDisplayPColumns(pcb.getValue());
-          setupColumns();
+          if (pcb.getValue() && ! hasPValueColumns()) {
+            Window.alert("Precomputed p-values are only available for sample groups "
+                + " in fold-change mode, consisting of a single time and dose.\n"
+                + "If you wish to compare two columns, use "
+                + "\"Compare two sample groups\" in the tools menu.");
+            
+            setDisplayPColumns(false);                        
+          } else {
+            setDisplayPColumns(pcb.getValue());
+            setupColumns();
+          }
         }
       });
     }
@@ -274,7 +287,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   }
 
   public void setDisplayPColumns(boolean displayPColumns) {
-    if (pValueOption) {
+    if (withPValueOption) {
       this.displayPColumns = displayPColumns;
       pcb.setValue(displayPColumns);
     }    
@@ -290,19 +303,16 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     return analysisTools;
   }
 
-  private void removeTests() {
-    if (!synthetics.isEmpty()) {
-      removeSyntheticColumnsLocal();
-      matrixService.removeTwoGroupTests(new AsyncCallback<Void>() {
-        @Override
-        public void onFailure(Throwable caught) {
-          Window.alert("There was an error removing the test columns.");
-        }
+  private void removeTests() {    
+    matrixService.removeTwoGroupTests(new PendingAsyncCallback<ManagedMatrixInfo>(this, 
+        "There was an error removing the test columns.") {
 
-        @Override
-        public void onSuccess(Void result) {}
-      });
-    }
+      @Override
+      public void handleSuccess(ManagedMatrixInfo result) {
+        matrixInfo = result; // no need to do the full setMatrix
+        setupColumns();
+      }
+    });    
   }
 
   /**
@@ -357,18 +367,23 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       final Group g1 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel1));
       final Group g2 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel2));
       synth.setGroups(g1, g2);
-      matrixService.addTwoGroupTest(synth, new PendingAsyncCallback<Void>(this,
+      matrixService.addTwoGroupTest(synth, new PendingAsyncCallback<ManagedMatrixInfo>(this,
           "Adding test column failed") {
-        public void handleSuccess(Void v) {
-          addSynthColumn(synth, synth.getShortTitle(schema), synth.getTooltip());
-          // force reload
-          grid.setVisibleRangeAndClearData(grid.getVisibleRange(), true);
+        public void handleSuccess(ManagedMatrixInfo r) {
+          setMatrix(r);
+          setupColumns();
         }
       });
     }
   }
 
   public void downloadCSV(boolean individualSamples) {
+    if (individualSamples && isMergeMode()) {
+      Window.alert("Individual samples cannot be downloaded in orthologous mode.\n" +
+          "Please inspect one group at a time.");
+      return;
+    }
+    
     matrixService.prepareCSVDownload(individualSamples, new PendingAsyncCallback<String>(this,
         "Unable to prepare the requested data for download.") {
 
@@ -376,6 +391,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         Utils.displayURL("Your download is ready.", "Download", url);
       }
     });
+  }
+  
+  protected boolean hasPValueColumns() {
+    for (int i = 0; i < matrixInfo.numDataColumns(); ++i) {
+      if (matrixInfo.isPValueColumn(i)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   protected void setupColumns() {
@@ -399,12 +423,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         }
       }
     }
-
-    int i = matrixInfo.numDataColumns();
-    for (Synthetic s : synthetics) {
-      addSynthColumn(s, matrixInfo.columnName(i), matrixInfo.columnHint(i));
-      i++;
-    }
+    
+    for (int i = matrixInfo.numDataColumns(); i < matrixInfo.numColumns(); i++) {
+      addSynthColumn(matrixInfo.columnName(i), matrixInfo.columnHint(i), i);
+    }    
   }
 
   @Override
@@ -425,27 +447,13 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     return new ToolCell(this);
   }
 
-  // TODO remove synthetic bookkeeping from this class, now done on server
-  // side
-  private void addSynthColumn(Synthetic s, String title, String tooltip) {
-    TextCell tc = new TextCell();
-    synthetics.add(s);
-    int dcs = sectionCount("data") + sectionCount("synthetic");
-    Column<ExpressionRow, String> synCol = new ExpressionColumn(tc, dcs);
-    synthColumns.add(synCol);
+  private void addSynthColumn(String title, String tooltip, int matIndex) {
+    TextCell tc = new TextCell();    
+    Column<ExpressionRow, String> synCol = new ExpressionColumn(tc, matIndex);    
     ColumnInfo info = new ColumnInfo(title, tooltip, true, false, true, false);
     info.setCellStyleNames("extraColumn");
-    info.setDefaultSortAsc(s.isDefaultSortAscending());
+    info.setDefaultSortAsc(true);
     addColumn(synCol, "synthetic", info);
-  }
-
-  private void removeSyntheticColumnsLocal() {
-    for (int i = 0; i < synthColumns.size(); ++i) {
-      Column<ExpressionRow, ?> c = synthColumns.get(i);
-      removeColumn(c);
-    }
-    synthColumns.clear();
-    synthetics.clear();
   }
 
   @Override
@@ -714,9 +722,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     }
 
     super.columnsChanged(columns);
-    // invalidate synthetic columns, since they depend on
-    // normal columns
-    removeSyntheticColumnsLocal();
 
     // we set chosenSampleClass to the intersection of all the samples
     // in the groups here. Needed later for e.g. the associations() call.
@@ -772,7 +777,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
 
       public void onSuccess(ManagedMatrixInfo result) {
-        setMatrix(result);
+        setMatrix(result);        
       }
     };
   }

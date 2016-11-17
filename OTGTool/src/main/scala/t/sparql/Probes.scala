@@ -54,7 +54,7 @@ object Probes extends RDFClass {
         val probe = s"<$defaultPrefix/${p.id}>"
         fout.write(s"$probe a $itemClass ; rdfs:label " + "\"" + p.id + "\" \n")
         if (p.annotations.size > 0) {
-          fout.write("; " + annotationRDF(p))
+          fout.write("; " + p.annotationRDF)
         }
         fout.write(". \n")
       }
@@ -62,13 +62,6 @@ object Probes extends RDFClass {
       fout.close()
     }
     f
-  }
-
-  def annotationRDF(record: ProbeRecord): String = {
-    record.annotations.map(a => {
-      val k = a._1
-      a._2.map(v => s"t:$k ${ProbeRecord.asRdfTerm(k, v)}").mkString("; ")
-    }).mkString(";\n ")
   }
 
   var _platformsAndProbes: Map[String, Iterable[String]] = null
@@ -230,13 +223,14 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     (resolver.all.filter(map.isToken).toSeq).map(Probe(_))
   }
 
-  private[sparql] def probeToGene: (String, String) = {
-    val q = "GRAPH ?probeGraph { ?p a t:probe; t:entrez ?gene }"
+  private[this] def probeToGene: (String, String) = {
+    val q = "GRAPH ?probeGraph { ?p a t:probe; kv:x-ncbigene ?gene }"
     (tPrefixes, q)
   }
 
   import t.sparql.secondary.B2RKegg
   //TODO best location for this?
+  //Think about how to combine query fragments from different domains like this
   def forPathway(kegg: B2RKegg, pw: t.sparql.secondary.Pathway): Iterable[Probe] = {
     val (p1, q1) = probeToGene
     val (p2, q2) = kegg.attributes(pw)
@@ -335,17 +329,14 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   }
 
   def goTerms(pattern: String, maxSize: Int): Iterable[GOTerm] = {
+    //oboInOwl:id is a trick to distinguish GO terms from KEGG pathways, mostly
+
     val query = tPrefixes +
+    "PREFIX oboInOwl: <http://www.geneontology.org/formats/oboInOwl#> " +
     "SELECT DISTINCT ?got ?gotn WHERE { GRAPH ?g { " + """
-     ?got rdfs:label ?gotn . } """ +
-    "FILTER regex(STR(?gotn), \"" + pattern + ".*\", \"i\")" +
+     ?got rdfs:label ?gotn ; oboInOwl:id ?id } """ +
+    "FILTER regex(STR(?gotn), \".*" + pattern + ".*\", \"i\")" +
     s"""
-      GRAPH ?g2 {
-          { ?probe t:gomf ?got . }
-          UNION { ?probe t:gocc ?got . }
-          UNION { ?probe t:gobp ?got . }
-          UNION { ?probe t:go ?got . }
-      }
       } LIMIT ${maxSize}"""
     ts.mapQuery(query).map(x => GOTerm(unpackGoterm(x("got")), x("gotn")))
   }
@@ -355,7 +346,6 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   def forGoTerm(term: GOTerm): Iterable[Probe] = {
     val query = tPrefixes +
     s"""
-
     SELECT DISTINCT ?probe WHERE {
         GRAPH ?g {
         ?got rdfs:label ?label.

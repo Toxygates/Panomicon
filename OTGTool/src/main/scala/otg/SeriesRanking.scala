@@ -62,7 +62,7 @@ class SeriesRanking(override val db: SeriesDB[OTGSeries], override val key: OTGS
       //TODO efficiency of this
       val allCorresponding = allScores.map(_.find(x =>
         x._1.dose == dc._1 && x._1.compound == dc._2))
-      val product = safeProduct(allCorresponding.map(_.map(_._2).getOrElse(1.0)))
+      val product = safeProduct(allCorresponding.map(_.map(_._2).getOrElse(Double.NaN)))
       (dc._2, dc._1, product)
     })
     val byCompound = products.groupBy(_._1)

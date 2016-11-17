@@ -169,6 +169,7 @@ object SeriesRanking {
     if (s1.size == s2.size) {
       if (s1.size < 2) {
         // Don't even try in this case.
+        println("Too few values - unable to rank")
         Double.NaN
       } else {
         pearsonCorrelation(0.0 +: s1, 0.0 +: s2)

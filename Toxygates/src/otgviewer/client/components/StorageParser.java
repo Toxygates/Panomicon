@@ -50,7 +50,7 @@ public class StorageParser {
 
   protected static final Logger logger = SharedUtils.getLogger("storage");
 
-  StorageParser(Storage storage, String prefix) {
+  public StorageParser(Storage storage, String prefix) {
     this.prefix = prefix;
     this.storage = storage;
   }

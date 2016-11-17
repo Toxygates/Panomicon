@@ -43,8 +43,6 @@ import t.common.shared.sample.Sample;
 import t.common.shared.sample.SampleColumn;
 import t.viewer.client.Utils;
 
-import com.google.gwt.storage.client.Storage;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
 
@@ -72,7 +70,6 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   public List<ItemList> chosenClusteringList = new ArrayList<ItemList>();
 
   protected final Logger logger = SharedUtils.getLogger("dlwidget");
-  private StorageParser parser;
 
   public Logger getLogger() {
     return logger;
@@ -249,27 +246,23 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     other.clusteringListsChanged(chosenClusteringList);
   }
 
-  protected Storage tryGetStorage() {
-    Storage r = Storage.getLocalStorageIfSupported();
-    // TODO concurrency an issue for GWT here?
-    if (r == null) {
-      Window
-          .alert("Local storage must be supported in the web browser. The application cannot continue.");
-    }
-    return r;
-  }
+//  protected static Storage tryGetStorage() {
+//    Storage r = Storage.getLocalStorageIfSupported();
+//    // TODO concurrency an issue for GWT here?
+//    if (r == null) {
+//      Window
+//          .alert("Local storage must be supported in the web browser. The application cannot continue.");
+//    }
+//    return r;
+//  }
 
-  protected String keyPrefix(Screen s) {
-    // TODO use instance name
-    return s.manager.storagePrefix();
-  }
+//  protected String keyPrefix(Screen s) {
+//    // TODO use instance name
+//    return s.manager.storagePrefix();
+//  }
 
   public StorageParser getParser(Screen s) {
-    if (parser != null) {
-      return parser;
-    }
-    parser = new StorageParser(tryGetStorage(), keyPrefix(s));
-    return parser;
+    return s.manager().getParser();    
   }
 
   /**
@@ -409,7 +402,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     }
     List<Dataset> r = new ArrayList<Dataset>();
     for (String ds: v.split("###")) {
-      r.add(new Dataset(ds, "", "", null, ds));
+      r.add(new Dataset(ds, "", "", null, ds, 0));
     }
     changeDatasets(r.toArray(new Dataset[0]));
   }

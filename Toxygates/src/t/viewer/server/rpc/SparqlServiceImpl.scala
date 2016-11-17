@@ -26,9 +26,7 @@ import scala.collection.{Set => CSet}
 import java.util.{List => JList}
 import otg.Species.Human
 import otg.db.OTGParameterSet
-
 import otgviewer.shared.Pathology
-import otgviewer.shared.TimeoutException
 import t.BaseConfig
 import t.TriplestoreConfig
 import t.common.server.ScalaUtils
@@ -61,6 +59,10 @@ import t.common.shared.Platform
 import t.viewer.server.SharedPlatforms
 import t.common.shared.clustering.ProbeClustering
 import t.common.shared.clustering.HierarchicalClustering
+import javax.annotation.Nullable
+import t.viewer.shared.TimeoutException
+import t.util.PeriodicRefresh
+import t.util.Refreshable
 
 object SparqlServiceImpl {
   var inited = false
@@ -92,7 +94,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   private def sampleStore: Samples = context.samples
 
   protected var uniprot: Uniprot = _
-  protected var _appInfo: AppInfo = _
+  protected var configuration: Configuration = _
 
   override def localInit(conf: Configuration) {
     super.localInit(conf)
@@ -100,19 +102,30 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     //fail on startup in Toxygates (probably due to a race condition).
     //Figure out why.
     staticInit(context)
+    this.configuration = conf
 
     val ts = baseConfig.triplestore.triplestore
     uniprot = new LocalUniprot(ts)
 
-    if (conf.instanceName == null || conf.instanceName == "") {
-      instanceURI = None
-    } else {
-      instanceURI = Some(Instances.defaultPrefix + "/" + conf.instanceName)
+    this.instanceURI = conf.instanceURI
+    //Preload appInfo
+    appInfoLoader.latest
+  }
+
+  //AppInfo refreshes at most once per day.
+  //This is to allow updates such as clusterings, annotation info etc to feed through.
+  protected val appInfoLoader: Refreshable[AppInfo] =
+    new PeriodicRefresh[AppInfo]("AppInfo", 3600 * 24) {
+    def reload(): AppInfo = {
+      refreshAppInfo()
     }
+  }
 
-    this.instanceURI = instanceURI
-
-    _appInfo = new AppInfo(conf.instanceName, sDatasets(),
+  /**
+   * Called when AppInfo needs a full refresh.
+   */
+  protected def refreshAppInfo(): AppInfo = {
+    new AppInfo(configuration.instanceName, Array(),
         sPlatforms(), predefProbeLists(), probeClusterings(), appName,
         makeUserKey(), getAnnotationInfo)
   }
@@ -142,22 +155,18 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   protected def setSessionData(m: SparqlState) =
     getThreadLocalRequest().getSession().setAttribute("sparql", m)
 
+    /**
+     * Obtain data sources information for AppInfo
+     */
   protected def getAnnotationInfo: Array[Array[String]] = {
     val dynamic = probeStore.annotationsAndComments.toArray
-    /*
-     * Note: the only data sources hardcoded here should be the ones
-     * whose provisioning is independent of SPARQL data that we
-     * control. For example, the ones obtained solely from remote
-     * sources.
-     */
+    val static = staticAnnotationInfo
     Array(
-      dynamic.map(_._1) ++
-        Array("ChEMBL", "DrugBank"),
-      dynamic.map(_._2) ++
-        Array(
-        "Dynamically obtained from https://www.ebi.ac.uk/rdf/services/chembl/sparql",
-        "Dynamically obtained from http://drugbank.bio2rdf.org/sparql"))
+      (dynamic ++ static).map(_._1),
+      (dynamic ++ static).map(_._2))
   }
+
+  protected def staticAnnotationInfo: Seq[(String, String)] = Seq()
 
   /**
    * Generate a new user key, to be used when the client does not already have one.
@@ -168,11 +177,24 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     "%x%x".format(time, random)
   }
 
-  def appInfo: AppInfo = {
+  //TODO filter datasets by key
+  def appInfo(@Nullable userKey: String): AppInfo = {
     getSessionData() //initialise this if needed
-     //Initialise the selected datasets by selecting all.
-    chooseDatasets(_appInfo.datasets)
-   _appInfo
+
+    val ai = appInfoLoader.latest
+
+    /* Reload the datasets since they can change often (with user data, admin
+     * operations etc.)
+     */
+    ai.setDatasets(sDatasets(userKey))
+
+    if (getSessionData().sampleFilter.datasetURIs.isEmpty) {
+      //Initialise the selected datasets by selecting all, except shared user data.
+      val defaultVisible = ai.datasets.filter(ds =>
+        ! Dataset.isSharedDataset(ds.getTitle))
+      chooseDatasets(defaultVisible)
+    }
+   ai
   }
 
   private def predefProbeLists() = {
@@ -189,12 +211,15 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     new java.util.LinkedList(seqAsJavaList(cls))
   }
 
-  private def sDatasets(): Array[Dataset] = {
+  private def sDatasets(userKey: String): Array[Dataset] = {
     val ds = new Datasets(baseConfig.triplestore) with SharedDatasets
-    (instanceURI match {
+    var r = (instanceURI match {
       case Some(u) => ds.sharedListForInstance(u)
       case None => ds.sharedList
-    }).toArray
+    })
+
+    r = r.filter(ds => Dataset.isDataVisible(ds.getTitle, userKey))
+    r.toArray
   }
 
   private def sPlatforms(): Array[Platform] = {
@@ -237,6 +262,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     sampleStore.samples(t.sparql.SampleClass(), "id",
         ids).map(asJavaSample(_)).toArray
   }
+
+  def samplesById(ids: JList[Array[String]]): JList[Array[Sample]] =
+    new java.util.ArrayList(ids.map(samplesById(_)))
 
   @throws[TimeoutException]
   def samples(sc: SampleClass): Array[Sample] = {
@@ -312,7 +340,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   @throws[TimeoutException]
   def probes(columns: Array[SampleColumn]): Array[String] = {
     val samples = columns.flatMap(_.getSamples)
-    val metadata = new TriplestoreMetadata(sampleStore)
+    val metadata = new TriplestoreMetadata(sampleStore, context.config.sampleParameters)
     val usePlatforms = samples.map(s => metadata.parameter(
         t.db.Sample(s.id), "platform_id")
         ).distinct
@@ -328,7 +356,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
      val params = ps.map(x => {
       var p = (x._1.humanReadable, x._2.getOrElse("N/A"))
       p = (p._1, OTGParameterSet.postReadAdjustment(p))
-      new Annotation.Entry(p._1, p._2, OTGParameterSet.isNumerical(p._1))
+      new Annotation.Entry(p._1, p._2, OTGParameterSet.isNumerical(x._1))
     }).toSeq
     new Annotation(barcode.id, new java.util.ArrayList(params))
   }
@@ -384,10 +412,14 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val pw = Pathway(null, pathway)
     val prs = probeStore.forPathway(b2rKegg, pw)
     val pmap = context.matrix.probeMap //TODO
-    val result = prs.map(_.identifier).filter(pmap.isToken).toArray
 
+    val result = prs.map(_.identifier).filter(pmap.isToken)
+    filterByGroup(result, samples).toArray
+  }
+
+  private def filterByGroup(result: Iterable[String], samples: Iterable[Sample]) = {
     Option(samples) match {
-      case Some(_) => filterProbesByGroup(result, samples)
+      case Some(_) => filterProbesByGroupInner(result, samples)
       case None => result
     }
   }
@@ -414,12 +446,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val pmap = context.matrix.probeMap
     val got = GOTerm("", goTerm)
 
-    val result = probeStore.forGoTerm(got).map(_.identifier).filter(pmap.isToken).toArray
-
-    Option(samples) match {
-      case Some(_) => filterProbesByGroup(result, samples)
-      case None => result
-    }
+    val result = probeStore.forGoTerm(got).map(_.identifier).filter(pmap.isToken)
+    filterByGroup(result, samples).toArray
   }
 
   import scala.collection.{ Map => CMap, Set => CSet }
@@ -452,9 +480,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
         case _: AType.KEGG.type =>
           toBioMap(probes, (_: Probe).genes) combine
             b2rKegg.forGenes(probes.flatMap(_.genes))
-        case _: AType.Enzymes.type =>
-          val sp = asSpecies(sc)
-          b2rKegg.enzymes(probes.flatMap(_.genes), sp)
+//        case _: AType.Enzymes.type =>
+//          val sp = asSpecies(sc)
+//          b2rKegg.enzymes(probes.flatMap(_.genes), sp)
         case _ => throw new Exception("Unexpected annotation type")
       }
 
@@ -487,12 +515,15 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       probeStore.probesForPartialSymbol(plat, partialName).map(_.identifier).toArray
   }
 
-  def filterProbesByGroup(probes: Array[String], samples: JList[Sample]): Array[String] = {
-    val platforms: Set[String] = samples.map(x => x.get("platform_id")).toSet
+  private def filterProbesByGroupInner(probes: Iterable[String], group: Iterable[Sample])  = {
+    val platforms: Set[String] = group.map(x => x.get("platform_id")).toSet
     val lookup = probeStore.platformsAndProbes
-    val acceptProbes = platforms.flatMap(p => lookup(p))
+    val acceptable = platforms.flatMap(p => lookup(p))
+    probes.filter(acceptable.contains)
+  }
 
-    probes.filter(x => acceptProbes.contains(x))
+  def filterProbesByGroup(probes: Array[String], samples: JList[Sample]): Array[String] = {
+    filterProbesByGroupInner(probes, samples).toArray
   }
 
   def keywordSuggestions(partialName: String, maxSize: Int): Array[Pair[String, AType]] = {

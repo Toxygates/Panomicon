@@ -117,6 +117,16 @@ class ExprMatrix(data: Seq[Seq[ExprValue]], rows: Int, columns: Int,
   override def selectRows(rows: Seq[Int]): ExprMatrix =
     super.selectRows(rows).copyWithAnnotations(rows.map(annotations(_)))
 
+  def selectRowsFromAtomics(atomics: Seq[String]): ExprMatrix = {
+    val useProbes = atomics.toSet
+    val is = for (
+      (r, i) <- asRows.zipWithIndex;
+      ats = r.getAtomicProbes.toSet;
+      if (!useProbes.intersect(ats).isEmpty)
+    ) yield i
+    selectRows(is)
+  }
+
   /**
    * Append a two column test, which is based on the data in "sourceData".
    * sourceData must have the same number of rows as this matrix.

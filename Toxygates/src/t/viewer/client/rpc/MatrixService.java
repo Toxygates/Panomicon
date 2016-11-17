@@ -23,15 +23,15 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import otgviewer.shared.FullMatrix;
-import otgviewer.shared.ServerError;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.common.shared.userclustering.Algorithm;
 import t.viewer.shared.ColumnFilter;
+import t.viewer.shared.FullMatrix;
 import t.viewer.shared.ManagedMatrixInfo;
+import t.viewer.shared.ServerError;
 import t.viewer.shared.Synthetic;
 import t.viewer.shared.table.SortKey;
 
@@ -103,13 +103,13 @@ public interface MatrixService extends RemoteService {
    * @param g1
    * @param g2
    */
-  public void addTwoGroupTest(Synthetic.TwoGroupSynthetic test);
+  public ManagedMatrixInfo addTwoGroupTest(Synthetic.TwoGroupSynthetic test) throws ServerError;
 
   /**
    * Remove all test columns. The result will be reflected in subsequent calls to datasetItems or
    * getFullData.
    */
-  public void removeTwoGroupTests();
+  public ManagedMatrixInfo removeTwoGroupTests() throws ServerError;
 
   /**
    * Get one page. Requires that loadMatrix was first used to load items.
@@ -121,7 +121,8 @@ public interface MatrixService extends RemoteService {
    * @param ascending Whether to use ascending sort. Applies if sortColumn is not -1.
    * @return
    */
-  public List<ExpressionRow> matrixRows(int offset, int size, SortKey sortKey, boolean ascending);
+  public List<ExpressionRow> matrixRows(int offset, int size, SortKey sortKey, boolean ascending)
+      throws ServerError;
 
   /**
    * Get all data immediately, on the level of individual values (not averaged).
@@ -130,13 +131,11 @@ public interface MatrixService extends RemoteService {
    *        appear as a column.
    * @param probes
    * @param type
-   * @param sparseRead If true, we optimise for the case of reading a single probe from multiple
-   *        arrays. If false, we optimise for reading full arrays.
    * @param withSymbols If true, gene IDs and gene symbols will also be loaded into the rows (may be
    *        slightly slower)
    * @return
    */
-  public FullMatrix getFullData(List<Group> gs, String[] probes, boolean sparseRead,
+  public FullMatrix getFullData(List<Group> gs, String[] probes, 
       boolean withSymbols, ValueType type) throws ServerError;
 
   /**
@@ -147,13 +146,24 @@ public interface MatrixService extends RemoteService {
    *        (only). If false, groups are used.
    * @return A downloadable URL.
    */
-  public String prepareCSVDownload(boolean individualSamples);
+  public String prepareCSVDownload(boolean individualSamples) throws ServerError;
 
   /**
    * Send a feedback email from a user. This should not necessarily be in MatrixService.
    */
   public void sendFeedback(String name, String email, String feedback);
 
-  public String prepareHeatmap(List<Group> chosenColumns, String[] chosenProbes,
-      ValueType valueType, Algorithm algorithm);
+  /**
+   * Perform a clustering that can be used to display a heat map.
+   * 
+   * @param chosenColumns
+   * @param chosenProbes The atomic probes (even for orthologous display) to cluster.
+   * @param valueType
+   * @param algorithm
+   * @return The clusters in JSON format.
+   * @throws ServerError
+   */
+  public String prepareHeatmap(List<Group> chosenColumns, 
+      @Nullable String[] chosenProbes,
+      ValueType valueType, Algorithm algorithm) throws ServerError;
 }

@@ -23,7 +23,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import otgviewer.shared.Pathology;
-import otgviewer.shared.TimeoutException;
 import t.common.shared.AType;
 import t.common.shared.Dataset;
 import t.common.shared.Pair;
@@ -35,6 +34,7 @@ import t.common.shared.sample.SampleColumn;
 import t.common.shared.sample.Unit;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.Association;
+import t.viewer.shared.TimeoutException;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -52,13 +52,14 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface SparqlService extends RemoteService {
 
   /**
-   * Obtain general application info. TODO migrate one-time mandatory data retrival to this object
+   * Obtain general application info. 
+   * TODO migrate one-time mandatory data retrival to this object
    * to make the API smaller and reduce the number of calls
    * 
    * @return
    * @throws TimeoutException
    */
-  public AppInfo appInfo() throws TimeoutException;
+  public AppInfo appInfo(@Nullable String userDataKey) throws TimeoutException;
 
   /**
    * Choose the subset of datasets to work with. This must be a subset of the datasets previously
@@ -85,6 +86,15 @@ public interface SparqlService extends RemoteService {
    */
   public Sample[] samplesById(String[] ids) throws TimeoutException;
 
+  /**
+   * Obtain samples, fully populated with metadata, from given IDs.
+   * Convenience function that keeps samples grouped.
+   * @param ids
+   * @return
+   * @throws TimeoutException
+   */
+  public List<Sample[]> samplesById(List<String[]> ids) throws TimeoutException;
+  
   /**
    * Obtain samples for a given sample class.
    * 

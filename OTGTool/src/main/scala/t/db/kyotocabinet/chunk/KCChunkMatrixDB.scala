@@ -104,6 +104,9 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
     r.array()
   }
 
+  /**
+   * @return (sample, probe)
+   */
   protected def extractKey(data: Array[Byte]): (Int, Int) = {
     val b = ByteBuffer.wrap(data)
     (b.getInt, b.getInt)
@@ -140,15 +143,19 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
   /**
    * Read all chunk keys as sample,probe-pairs
    */
-  private def allChunks: Iterable[(Int, Int)] = {
+  private def allChunks(forSample: Iterable[Sample] = List()): Iterable[(Int, Int)] = {
     val cur = db.cursor()
     var continue = cur.jump()
     var r = Vector[(Int, Int)]()
+    val dbcodes = forSample.map(_.dbCode).toSet
     while (continue) {
       val key = cur.get_key(true)
       if (key != null) {
         val ex = extractKey(key)
-        r :+= (ex._1, ex._2)
+        if (dbcodes.isEmpty ||
+            dbcodes.contains(ex._1)) {
+          r :+= (ex._1, ex._2)
+        }
       } else {
         continue = false
       }
@@ -201,8 +208,12 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
     updateChunk(key)
   }
 
+  /**
+   * TODO this operation is slow for the chunk database.
+   * Forces a full traversal
+   */
   def allSamples: Iterable[Sample] =
-    allChunks.map(x => Sample(x._1))
+    allChunks(List()).map(x => Sample(x._1))
 
   implicit val probeMap = mc.probeMap
 
@@ -255,11 +266,34 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
     r
   }
 
-  def deleteSample(s: Sample): Unit = {
-    val x = s.dbCode
-    val ds = allChunks.filter(_._1 == x)
-    for (d <- ds) {
+  override def deleteSample(s: Sample): Unit = {
+    deleteSamples(List(s))
+  }
+
+  override def deleteSamples(ss: Iterable[Sample]): Unit = {
+    if (ss.isEmpty) {
+      throw new Exception("Samples must be specified explicitly")
+      //If we proceeded here, we would actually delete all samples (!)
+    }
+    println(s"Delete samples $ss")
+    for (d <- allChunks(ss)) {
       deleteChunk(d._1, d._2)
+    }
+  }
+
+  override def writeMany(vs: Iterable[(Sample, Int, PExprValue)]): Unit = {
+    val bySample = vs.groupBy(_._1)
+    for ((s, svs) <- bySample) {
+      val byChunk = svs.groupBy(v => chunkStartFor(v._2))
+      for ((c, vs) <- byChunk) {
+       synchronized {
+          var ch = findOrCreateChunk(s.dbCode, vs.head._2)
+          for (v <- vs) {
+            ch = ch.insert(v._2, v._3)
+          }
+          updateChunk(ch)
+        }
+      }
     }
   }
 

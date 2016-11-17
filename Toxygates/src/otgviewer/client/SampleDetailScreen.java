@@ -147,7 +147,7 @@ public class SampleDetailScreen extends Screen {
 
 		hp.add(columnList);
 		
-		hp.add(new Button("Heatmap...", new ClickHandler() {			
+		hp.add(new Button("Mini-heatmap...", new ClickHandler() {			
 			@Override
 			public void onClick(ClickEvent event) {
 				Set<String> compounds = new HashSet<String>();
@@ -179,6 +179,8 @@ public class SampleDetailScreen extends Screen {
 	private void setDisplayColumn(SampleColumn c) {
 		experimentTable.loadFrom(c, false, 0, 23);
 		biologicalTable.loadFrom(c, false, 23, -1);
+		SampleClass sc = c.getSamples()[0].sampleClass().asMacroClass(manager.schema());
+		atd.sampleClassChanged(sc);
 	}
 	
 	private void displayWith(String column) {

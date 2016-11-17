@@ -208,10 +208,19 @@ public class DataScreen extends Screen {
     return manager.isConfigured(ColumnScreen.key);
   }
 
+  /**
+   * Trigger a data reload, if necessary.
+   */
   public void updateProbes() {
     logger.info("chosenProbes: " + chosenProbes.length + " lastProbes: "
         + (lastProbes == null ? "null" : "" + lastProbes.length));
 
+    if (chosenColumns.size() == 0) {
+      Window.alert("Please define sample groups to see data.");
+      manager().attemptProceed(ColumnScreen.key);
+      return;
+    }
+    
     // Attempt to avoid reloading the data
     if (lastColumns == null || !chosenColumns.equals(lastColumns)) {
       logger.info("Data reloading needed");

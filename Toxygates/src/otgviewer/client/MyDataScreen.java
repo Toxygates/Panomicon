@@ -36,8 +36,12 @@ import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.Instance;
 import t.viewer.client.rpc.UserDataServiceAsync;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -55,8 +59,11 @@ public class MyDataScreen extends Screen {
   
   private HorizontalPanel cmds = t.viewer.client.Utils.mkHorizontalPanel();
   
-  final String userKey; 
-  final String userDataset;  
+  private String userKey;   
+  private String userDataset;
+  private String userSharedDataset;
+  
+  private Label keyLabel;
   
   public MyDataScreen(ScreenManager man) {
     super("My data", key, false, man);
@@ -67,21 +74,37 @@ public class MyDataScreen extends Screen {
     String key = getParser().getItem("userDataKey");
     if (key == null) {
       key = manager().appInfo().getUserKey();
-      getParser().setItem("userDataKey", key);
     }
-    userKey = key;
-    userDataset = "user-" + key;
-    
-    logger.info("The unique user key is: " + userKey);
+    setUserKey(key);    
   }
   
   public Widget content() {
-    final Set<String> instancesForBatch = new HashSet<String>();
-    instancesForBatch.add("dev");
-    instancesForBatch.add("toxygates-test");
+    final Set<String> instancesForBatch = new HashSet<String>();       
+    instancesForBatch.add(appInfo().instanceName());
     
     BatchPanel bp = new BatchPanel("Edit batch", userData, resources,
         true, true) {
+      
+      final static String HAS_SEEN_WARNING = "hasSeenMyDataWarning";
+      
+      @Override
+      protected boolean confirmAddNew() {
+        String hasSeen = MyDataScreen.this.getParser().getItem(HAS_SEEN_WARNING);
+        if (hasSeen.equals("true")) {
+          return true;
+        }
+        final String message = "NIBIOHN will take reasonable precautions to protect " +
+            "your data, but we are not responsible for any data loss, theft or corruption " +
+            "that occurs as a result of using this service. " +
+            "By proceeding, you confirm that you upload data at your own risk. " +
+            "For more details, see the README file provided in the example data above.";
+        boolean confirm = Window.confirm(message);
+        if (confirm) {
+          MyDataScreen.this.getParser().setItem(HAS_SEEN_WARNING, "true");
+          return true;
+        }
+        return false;
+      }
       
       @Override
       protected void onDelete(Batch object) {
@@ -103,12 +126,23 @@ public class MyDataScreen extends Screen {
           }
           
           @Override
+          protected void onFinish() {
+            db.hide();
+            doRefresh();
+          }
+          
+          @Override
           protected void guiBeforeUploader(VerticalPanel vp, Batch b, boolean addNew) {
             visList = new ListBox();
             vp.add(new Label("Visibility"));
             visList.addItem("Private");
-            visList.addItem("Shared");
+            visList.addItem("Public");
             vp.add(visList);
+            if (b != null && Dataset.isSharedDataset(b.getDataset())) {
+              visList.setSelectedIndex(1);
+            } else {
+              visList.setSelectedIndex(0);
+            }
           }
           
           @Override
@@ -117,7 +151,7 @@ public class MyDataScreen extends Screen {
             if (vis.equals("Private")) {
               return userDataset;
             } else {              
-              return "adjuvant-shared"; //TODO
+              return userSharedDataset;
             }
           }
           
@@ -141,20 +175,59 @@ public class MyDataScreen extends Screen {
     batchData.addDataDisplay(bp.table());
     cmds.setSpacing(10);
     cmds.add(Utils.makeButtons(bp.commands()));
-    cmds.add(new Label("(Click here to download example files)"));
-    cmds.add(new Label("Your access key is: " + userKey));
     
-    refreshBatches();
-    
+    HTML h = new HTML();
+    h.setHTML("<a target=_blank href=\"Toxygates user data example.zip\"> Download example files</a>");
+    cmds.add(h); 
+    keyLabel = new Label("Access key: " + userKey);
+    cmds.add(keyLabel);
+    Button b = new Button("Change ...");
+    b.addClickHandler(new ClickHandler() {      
+      @Override
+      public void onClick(ClickEvent event) {   
+        if (Window.confirm("If you have uploaded any data, please save your existing key first.\n" +
+              "Without it, you will lose access to your data. Proceed?")) {
+          String newKey = Window.prompt("Please input your user data key.", "");
+          if (newKey != null && validateKey(newKey)) {
+            setUserKey(newKey);
+            refreshBatches();
+          } else {
+            Window.alert("The string you entered is not a valid user key. "
+                + " Please contact us if you need assistance.");
+          }
+        }
+      }
+    });
+    cmds.add(b);    
+    refreshBatches();    
     return bp.table();
+  }
+  
+  private boolean validateKey(String key) {    
+    // example: 153f36236251fcea601
+    // min size 19 hex chars, max theoretical size 24 chars
+    // last 8 chars are random, first 11-16 chars are a timestamp
+    return key.matches("[0-9a-f]+") && key.length() >= 19;
+  }
+  
+  private void setUserKey(String key) {
+    getParser().setItem("userDataKey", key);    
+    userKey = key;
+    userDataset = Dataset.userDatasetTitle(key);
+    userSharedDataset = Dataset.userSharedDatasetTitle(key);        
+    logger.info("The unique user key is: " + key);
+    if (keyLabel != null) {
+      keyLabel.setText("Your access key is: " + userKey);
+    }
   }
 
   private void refreshBatches() {
-    userData.getBatches(userDataset, new ListDataCallback<Batch>(batchData, "batch list"));
+    String[] dss = { userDataset, userSharedDataset };
+    userData.getBatches(dss, new ListDataCallback<Batch>(batchData, "batch list"));
   }
   
   private void deleteBatch(Batch b) {
-    userData.deleteBatchAsync(b.getTitle(), new TaskCallback("Delete batch", userData) {      
+    userData.deleteBatchAsync(b, new TaskCallback("Delete batch", userData) {      
       public void onCompletion() {
         refreshBatches();
       }          
