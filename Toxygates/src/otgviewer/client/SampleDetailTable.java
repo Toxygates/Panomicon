@@ -74,7 +74,7 @@ public class SampleDetailTable extends Composite {
 		Utils.makeColumn(table, 0, title, "15em");
 		for (int i = 1; i < barcodes.length + 1; ++i) {
 			// TODO
-			String name = barcodes[i - 1].id().substring(2); //remove leading 00					
+			String name = barcodes[i - 1].id();					
 			Utils.makeColumn(table, i, name, "9em");
 		}
 		table.setWidth((15 + 9 * barcodes.length) + "em", true);
