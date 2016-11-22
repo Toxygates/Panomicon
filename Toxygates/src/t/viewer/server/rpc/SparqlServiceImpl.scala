@@ -63,6 +63,8 @@ import javax.annotation.Nullable
 import t.viewer.shared.TimeoutException
 import t.util.PeriodicRefresh
 import t.util.Refreshable
+import otgviewer.shared.NumericalBioParamValue
+import otgviewer.shared.StringBioParamValue
 
 object SparqlServiceImpl {
   var inited = false
@@ -355,8 +357,13 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       ps: Iterable[(t.db.SampleParameter, Option[String])]): Annotation = {
      val params = ps.map(x => {
       var p = (x._1.humanReadable, x._2.getOrElse("N/A"))
-      p = (p._1, OTGParameterSet.postReadAdjustment(p))
-      new Annotation.Entry(p._1, p._2, OTGParameterSet.isNumerical(x._1))
+      val dispVal = OTGParameterSet.postReadAdjustment(p)
+      if (OTGParameterSet.isNumerical(x._1)) {
+        new NumericalBioParamValue(x._1.identifier, x._1.humanReadable, null, null,
+            dispVal)
+      } else {
+        new StringBioParamValue(x._1.identifier, x._1.humanReadable, dispVal)
+      }
     }).toSeq
     new Annotation(barcode.id, new java.util.ArrayList(params))
   }
@@ -459,11 +466,11 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   @throws[TimeoutException]
   def associations(sc: SampleClass, types: Array[AType],
     _probes: Array[String]): Array[Association] =
-    new AnnotationResolver(sc, types, _probes).resolve
+    new AssociationResolver(sc, types, _probes).resolve
 
   import Association._
 
-  protected class AnnotationResolver(sc: SampleClass, types: Array[AType],
+  protected class AssociationResolver(sc: SampleClass, types: Array[AType],
       _probes: Iterable[String]) {
     val aprobes = probeStore.withAttributes(_probes.map(Probe(_)))
 

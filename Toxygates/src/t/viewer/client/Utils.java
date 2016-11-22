@@ -68,6 +68,9 @@ public class Utils {
   private static NumberFormat sf = NumberFormat.getScientificFormat();
 
   public static String formatNumber(double v) {
+    if (v == 0.0) {
+      return "0";
+    }
     if (Math.abs(v) > 0.001) {
       return df.format(v);
     } else {

@@ -97,12 +97,12 @@ public class SampleDetailTable extends Composite {
 
 	private String[] makeAnnotItem(int i, Annotation[] as) {
 		String[] item = new String[barcodes.length + 1];
-		item[0] = as[0].getEntries().get(i).description;
+		item[0] = as[0].getAnnotations().get(i).label();
 		
 		// TODO why is as.length sometimes > barcodes.length?
 		
 		for (int j = 0; j < as.length && j < barcodes.length; ++j) {					
-			item[j + 1] = as[j].getEntries().get(i).value;						
+			item[j + 1] = as[j].getAnnotations().get(i).displayValue();						
 		}
 		return item;
 	}
@@ -113,7 +113,7 @@ public class SampleDetailTable extends Composite {
 	void setData(Annotation[] annotations, int rangeStart, int rangeEnd) {
 		if (annotations.length > 0) {
 			List<String[]> processed = new ArrayList<String[]>();
-			final int numEntries = annotations[0].getEntries().size();
+			final int numEntries = annotations[0].getAnnotations().size();
 			for (int i = rangeStart; i < numEntries && (rangeEnd == -1 || i < rangeEnd); ++i) {
 				processed.add(makeAnnotItem(i, annotations));
 			}

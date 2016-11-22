@@ -22,6 +22,8 @@ import java.util.List;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
+import otgviewer.shared.BioParamValue;
+import otgviewer.shared.NumericalBioParamValue;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.Group;
@@ -86,9 +88,9 @@ public class AnnotationTDGrid extends TimeDoseGrid {
           sparqlService.annotations(bcs[0], new PendingAsyncCallback<Annotation>(
               AnnotationTDGrid.this, "Unable to get annotations.") {
             public void handleSuccess(Annotation a) {
-              for (Annotation.Entry e : a.getEntries()) {
-                if (e.numerical) {
-                  annotationSelector.addItem(e.description);
+              for (BioParamValue e : a.getAnnotations()) {
+                if (e instanceof NumericalBioParamValue) {
+                  annotationSelector.addItem(e.label());
                 }
               }
             }

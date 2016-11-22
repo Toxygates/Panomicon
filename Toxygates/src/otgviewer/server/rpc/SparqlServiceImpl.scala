@@ -122,7 +122,7 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
 
   override def associations(sc: SampleClass, types: Array[AType],
     _probes: Array[String]): Array[Association] =
-    new AnnotationResolver(sc, types, _probes).resolve
+    new AssociationResolver(sc, types, _probes).resolve
 
   override def staticAnnotationInfo: Seq[(String, String)] = {
      /*
@@ -137,8 +137,8 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
       )
   }
 
-  protected class AnnotationResolver(sc: SampleClass, types: Array[AType],
-     _probes: Iterable[String]) extends super.AnnotationResolver(sc, types, _probes) {
+  protected class AssociationResolver(sc: SampleClass, types: Array[AType],
+     _probes: Iterable[String]) extends super.AssociationResolver(sc, types, _probes) {
 
       //    val sp = asSpecies(sc)
     //orthologous proteins if needed
