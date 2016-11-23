@@ -54,6 +54,7 @@ import t.viewer.server.Configuration
 import t.viewer.server.SharedDatasets
 import t.viewer.server.rpc.TServiceServlet
 import t.common.server.maintenance.BatchOpsImpl
+import t.admin.shared.PlatformType
 
 abstract class MaintenanceServiceImpl extends TServiceServlet
 with BatchOpsImpl with MaintenanceService {
@@ -73,7 +74,7 @@ with BatchOpsImpl with MaintenanceService {
 
   override protected def request = getThreadLocalRequest
 
-  def addPlatformAsync(p: Platform, affymetrixFormat: Boolean): Unit = {
+  def addPlatformAsync(p: Platform, pt: PlatformType): Unit = {
     ensureNotMaintenance()
     showUploadedFiles()
     grabRunner()
@@ -97,9 +98,12 @@ with BatchOpsImpl with MaintenanceService {
           s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
       }
 
+      val affymetrixFormat = (pt == PlatformType.Affymetrix)
+      val bioFormat = (pt == PlatformType.Biological)
+
       val metaFile = getAsTempFile(tempFiles, platformPrefix, platformPrefix, "dat").get
       TaskRunner ++= pm.add(id, TRDF.escape(comment),
-          metaFile.getAbsolutePath(), affymetrixFormat)
+          metaFile.getAbsolutePath(), affymetrixFormat, bioFormat)
       TaskRunner += Tasklet.simple("Set platform parameters", () => updatePlatform(p))
     }
   }

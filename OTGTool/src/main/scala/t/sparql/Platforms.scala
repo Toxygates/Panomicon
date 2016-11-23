@@ -28,6 +28,9 @@ object Platforms extends RDFClass {
   def itemClass: String = "t:platform"
   def defaultPrefix: String = s"$tRoot/platform"
 
+  val platformType = "t:platformType"
+  val biologicalPlatform = "t:biological"
+
   def context(name: String) = defaultPrefix + "/" + name
 }
 
@@ -38,9 +41,15 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
   def itemClass = Platforms.itemClass
   def defaultPrefix = Platforms.defaultPrefix
 
-  def redefine(name: String, comment: String, definitions: Iterable[ProbeRecord]): Unit = {
+  def redefine(name: String, comment: String, biological: Boolean,
+      definitions: Iterable[ProbeRecord]): Unit = {
     delete(name) //ensure probes are removed
     addWithTimestamp(name, comment)
+
+    if (biological) {
+      ts.update(s"$tPrefixes\n insert data { <$defaultPrefix/$name> $platformType $biologicalPlatform. }")
+    }
+
     val probes = new Probes(config)
 
     val tempFiles = new TempFiles()
@@ -52,6 +61,20 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
     } finally {
       tempFiles.dropAll
     }
+  }
+
+  //TODO test
+  def isBiological(name: String): Boolean =
+    platformTypes.get(name) == Some(biologicalPlatform)
+
+  /**
+   * Note, the map may only be partially populated
+   */
+  def platformTypes: Map[String, String] = {
+    Map() ++ ts.mapQuery(s"$tPrefixes select ?l ?type where { ?item a $itemClass; rdfs:label ?l ; " +
+      s"$platformType ?type } ").map(x => {
+      x("l") -> x("type")
+    })
   }
 
   override def delete(name: String): Unit = {
