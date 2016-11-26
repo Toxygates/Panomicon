@@ -105,4 +105,7 @@ public interface SparqlServiceAsync {
   public void keywordSuggestions(String partialName, int maxSize,
       AsyncCallback<Pair<String, AType>[]> asyncCallback);
 
+  void identifiersToProbes(String[] identifiers, boolean precise, boolean quick,
+      boolean titlePatternMatch, List<Sample> samples, AsyncCallback<String[]> callback);
+
 }

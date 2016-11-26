@@ -424,6 +424,21 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     filterByGroup(result, samples).toArray
   }
 
+  //TODO less boolean parameters, use an enum instead
+  def identifiersToProbes(identifiers: Array[String], precise: Boolean,
+      quick: Boolean, titlePatternMatch: Boolean,
+      samples: JList[Sample]): Array[String] = {
+    val ps = if (titlePatternMatch) {
+      probeStore.forTitlePatterns(identifiers)
+    } else {
+      probeStore.identifiersToProbes(context.matrix.probeMap,
+        identifiers, precise, quick)
+    }
+    val result = ps.map(_.identifier).toArray
+
+    filterByGroup(result, samples).toArray
+  }
+
   private def filterByGroup(result: Iterable[String], samples: Iterable[Sample]) = {
     Option(samples) match {
       case Some(_) => filterProbesByGroupInner(result, samples)

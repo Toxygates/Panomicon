@@ -167,6 +167,20 @@ public interface SparqlService extends RemoteService {
       throws TimeoutException;
 
   /**
+   * Convert identifiers such as genes, probe IDs and proteins into a list of probes.
+   * 
+   * @param filter
+   * @param identifiers
+   * @param precise If true, names must be an exact match, otherwise partial name matching is used.
+   * @param titlePatternMatch If true, the query is assumed to be a partial pattern match on probe
+   *        titles.
+   * @param samples If null, all probes will be obtained.
+   * @return
+   */
+  public String[] identifiersToProbes(String[] identifiers, boolean precise,
+      boolean quick, boolean titlePatternMatch, @Nullable List<Sample> samples);
+
+  /**
    * Obtain pathway names matching the pattern (partial name)
    * 
    * @param pattern

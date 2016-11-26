@@ -43,9 +43,6 @@ public interface MatrixServiceAsync {
   public void matrixRows(int offset, int size, SortKey sortKey, boolean ascending,
       AsyncCallback<List<ExpressionRow>> callback);
 
-  public void identifiersToProbes(String[] identifiers, boolean precise, boolean titlePatternMatch,
-      @Nullable List<Sample> samples, AsyncCallback<String[]> callback);
-
   public void selectProbes(String[] probes, AsyncCallback<ManagedMatrixInfo> callback);
 
   public void setColumnFilter(int column, @Nullable ColumnFilter filter,

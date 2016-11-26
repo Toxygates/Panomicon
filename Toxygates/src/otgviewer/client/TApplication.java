@@ -244,7 +244,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       scr.enqueue(new QueuedAction("Set probes from URL") {        
         @Override
         public void run() {
-          matrixService.identifiersToProbes(pr, true, false, null,
+          sparqlService.identifiersToProbes(pr, true, true, false, null,
               new PendingAsyncCallback<String[]>(scr, "Failed to resolve gene identifiers") {
                 public void handleSuccess(String[] probes) {
                   if (Arrays.equals(probes, scr.chosenProbes)) {
