@@ -26,7 +26,6 @@ import javax.annotation.Nullable;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
 import t.common.shared.userclustering.Algorithm;
 import t.viewer.shared.ColumnFilter;
 import t.viewer.shared.FullMatrix;

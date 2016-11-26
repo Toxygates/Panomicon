@@ -65,6 +65,7 @@ import t.util.PeriodicRefresh
 import t.util.Refreshable
 import otgviewer.shared.NumericalBioParamValue
 import otgviewer.shared.StringBioParamValue
+import scala.collection.convert.Wrappers.JListWrapper
 
 object SparqlServiceImpl {
   var inited = false
@@ -436,14 +437,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     }
     val result = ps.map(_.identifier).toArray
 
-    filterByGroup(result, samples).toArray
-  }
-
-  private def filterByGroup(result: Iterable[String], samples: Iterable[Sample]) = {
-    Option(samples) match {
-      case Some(_) => filterProbesByGroupInner(result, samples)
-      case None => result
-    }
+    filterByGroup(result, samples)
   }
 
   //TODO move to OTG
@@ -469,7 +463,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val got = GOTerm("", goTerm)
 
     val result = probeStore.forGoTerm(got).map(_.identifier).filter(pmap.isToken)
-    filterByGroup(result, samples).toArray
+    filterByGroup(result, samples)
   }
 
   import scala.collection.{ Map => CMap, Set => CSet }
@@ -537,12 +531,18 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       probeStore.probesForPartialSymbol(plat, partialName).map(_.identifier).toArray
   }
 
-  private def filterProbesByGroupInner(probes: Iterable[String], group: Iterable[Sample])  = {
+  private def filterProbesByGroupInner(probes: Iterable[String], group: Iterable[Sample]) = {
     val platforms: Set[String] = group.map(x => x.get("platform_id")).toSet
     val lookup = probeStore.platformsAndProbes
     val acceptable = platforms.flatMap(p => lookup(p))
     probes.filter(acceptable.contains)
   }
+
+  private def filterByGroup(result: Iterable[String], samples: JList[Sample]) =
+    Option(samples) match {
+      case Some(ss) => filterProbesByGroupInner(result, ss).toArray
+      case None => result.toArray
+    }
 
   def filterProbesByGroup(probes: Array[String], samples: JList[Sample]): Array[String] = {
     filterProbesByGroupInner(probes, samples).toArray
