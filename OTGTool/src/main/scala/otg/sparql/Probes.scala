@@ -173,7 +173,7 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
   }
 
   override protected def slowProbeResolution(rs: GradualProbeResolver, precise: Boolean): Unit = {
-    val ups = forUniprots(rs.unresolved.map(p => Protein("uniprot:" + p.toUpperCase))).map(_.identifier)
+    val ups = forUniprots(rs.unresolved.map(p => Protein(p.toUpperCase))).map(_.identifier)
     rs.resolve(ups)
   }
 
