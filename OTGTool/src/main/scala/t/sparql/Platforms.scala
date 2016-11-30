@@ -23,8 +23,6 @@ package t.sparql
 import t.TriplestoreConfig
 import t.platform.ProbeRecord
 import t.util.TempFiles
-import t.platform.BioParameters
-import t.platform.BioParameters
 import t.platform.BioParameter
 import t.platform.BioParameters
 
