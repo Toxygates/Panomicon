@@ -41,12 +41,13 @@ object Triplestore {
   val executionContext = ExecutionContext.fromExecutor(executor)
 
   val tPrefixes: String = """
-    PREFIX purl:<http://purl.org/dc/elements/1.1/>
-    PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-    PREFIX owl:<http://www.w3.org/2002/07/owl#>
-    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-    PREFIX t:<http://level-five.jp/t/>"""
+    |PREFIX purl:<http://purl.org/dc/elements/1.1/>
+    |PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    |PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    |PREFIX owl:<http://www.w3.org/2002/07/owl#>
+    |PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    |PREFIX t:<http://level-five.jp/t/>
+    |""".stripMargin
 
   /*
    * TODO: Currently we use connectRemoteRepository for Owlim-SE connections, and
