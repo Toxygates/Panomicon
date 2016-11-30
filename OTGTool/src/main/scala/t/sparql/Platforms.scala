@@ -23,6 +23,10 @@ package t.sparql
 import t.TriplestoreConfig
 import t.platform.ProbeRecord
 import t.util.TempFiles
+import t.platform.BioParameters
+import t.platform.BioParameters
+import t.platform.BioParameter
+import t.platform.BioParameters
 
 object Platforms extends RDFClass {
   def itemClass: String = "t:platform"
@@ -75,6 +79,19 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
       s"$platformType ?type } ").map(x => {
       x("l") -> x("type")
     })
+  }
+
+  /**
+   * Obtain the bio-parameters in all bio platforms
+   */
+  def bioParameters: BioParameters = {
+    val bps = ts.mapQuery(s"$tPrefixes SELECT ?id ?desc ?type ?lower ?upper WHERE {" +
+        s"?p $platformType $biologicalPlatform. graph ?p {" +
+        """?probe rdfs:label ?id; t:label ?desc; t:type ?type.
+          OPTIONAL { ?probe t:lowerBound ?lower; t:upperBound ?upper. }
+        } }""").map(x => BioParameter(x("id"), x("desc"), x("type"),
+            x.get("lower").map(_.toDouble), x.get("upper").map(_.toDouble)))
+    new BioParameters(Map() ++ bps.map(b => b.key -> b))
   }
 
   override def delete(name: String): Unit = {

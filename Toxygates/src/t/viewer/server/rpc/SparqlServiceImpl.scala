@@ -66,6 +66,7 @@ import t.util.Refreshable
 import otgviewer.shared.NumericalBioParamValue
 import otgviewer.shared.StringBioParamValue
 import scala.collection.convert.Wrappers.JListWrapper
+import t.platform.BioParameter
 
 object SparqlServiceImpl {
   var inited = false
@@ -355,18 +356,35 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   def pathologies(column: SampleColumn): Array[Pathology] = Array()
 
   private def parametersToAnnotation(barcode: Sample,
-      ps: Iterable[(t.db.SampleParameter, Option[String])]): Annotation = {
-     val params = ps.map(x => {
-      var p = (x._1.humanReadable, x._2.getOrElse("N/A"))
-      val dispVal = OTGParameterSet.postReadAdjustment(p)
-      if (OTGParameterSet.isNumerical(x._1)) {
-        new NumericalBioParamValue(x._1.identifier, x._1.humanReadable, null, null,
-            dispVal)
-      } else {
-        new StringBioParamValue(x._1.identifier, x._1.humanReadable, dispVal)
+    ps: Iterable[(t.db.SampleParameter, Option[String])]): Annotation = {
+
+    def asJDouble(d: Option[Double]) =
+      d.map(new java.lang.Double(_)).getOrElse(null)
+
+    def bioParamValue(bp: BioParameter, dispVal: String) = {
+      bp.kind match {
+        case "numerical" => new NumericalBioParamValue(bp.key, bp.label,
+          asJDouble(bp.lowThreshold), asJDouble(bp.highThreshold),
+          dispVal)
+        case _ => new StringBioParamValue(bp.key, bp.label, dispVal)
       }
-    }).toSeq
+    }
+
+    val params = for (
+      x <- ps.toSeq;
+      bp <- bioParameters.get(x._1.identifier);
+      p = (bp.label, x._2.getOrElse("N/A"));
+      dispVal = OTGParameterSet.postReadAdjustment(p);
+      bpv = bioParamValue(bp, dispVal)
+    ) yield bpv
+
     new Annotation(barcode.id, new java.util.ArrayList(params))
+  }
+
+  //TODO this needs to update sometimes, ideally without restart
+  lazy private val bioParameters = {
+    val pfs = new Platforms(baseConfig.triplestore)
+    pfs.bioParameters
   }
 
   @throws[TimeoutException]
@@ -381,7 +399,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val keys = if (importantOnly) {
       baseConfig.sampleParameters.previewDisplay
     } else {
-      List()
+      bioParameters.sampleParameters
     }
 
     column.getSamples.map(x => {

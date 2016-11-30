@@ -129,12 +129,12 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
 
   def parameterQuery(sample: String,
     querySet: Iterable[SampleParameter] = Set()): Iterable[(SampleParameter, Option[String])] = {
-    val allParams = bc.sampleParameters.all
+
     val queryParams = if (querySet.isEmpty) {
-      allParams
+      bc.sampleParameters.all
     } else {
-      allParams.filter(querySet.toSet.contains(_))
-    }
+      querySet
+    }.toSeq
 
     val withIndex = queryParams.zipWithIndex
     val triples = withIndex.map(x => " OPTIONAL { ?x t:" + x._1.identifier + " ?k" + x._2 + ". } ")
