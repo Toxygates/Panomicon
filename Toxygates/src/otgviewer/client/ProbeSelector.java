@@ -56,9 +56,6 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * Probe selection is a two-step process. First the user enters a partial name. A RPC call will then
  * search for items matching that name (for example pathways). The hits will be displayed. Next,
  * when the user selects one such object, the corresponding probes will be obtained.
- * 
- * @author johan
- *
  */
 abstract public class ProbeSelector extends DataListenerWidget implements
     RequiresResize {

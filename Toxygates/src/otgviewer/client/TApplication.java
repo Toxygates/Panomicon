@@ -91,9 +91,6 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * The main entry point for Toxygates. The main task of this class is to manage the history
  * mechanism and ensure that the correct screen is being displayed at any given time, as well as
  * provide a facility for inter-screen communication.
- * 
- * @author johan
- *
  */
 abstract public class TApplication implements ScreenManager, EntryPoint {
   private static Resources resources = GWT.create(Resources.class);
