@@ -7,8 +7,8 @@ public class StringBioParamValue extends BioParamValue {
   
   public StringBioParamValue() { }
 
-  public StringBioParamValue(String id, String label, String value) {
-    super(id, label);
+  public StringBioParamValue(String id, String label, String section, String value) {
+    super(id, label, section);
     this.value = value;
   }
 

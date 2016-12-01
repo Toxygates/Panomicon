@@ -19,20 +19,28 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
+import otgviewer.shared.BioParamValue;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
+import t.common.shared.sample.Annotation;
 import t.common.shared.sample.DataColumn;
 import t.common.shared.sample.Group;
+import t.common.shared.sample.HasSamples;
+import t.common.shared.sample.Sample;
 import t.common.shared.sample.SampleColumn;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.rpc.SparqlServiceAsync;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -52,26 +60,27 @@ import com.google.gwt.user.client.ui.Widget;
  * currently configured groups. In addition, a single custom group of samples can be passed to this
  * screen (the "custom column") to make it display samples that are not in the configured groups.
  */
+
 public class SampleDetailScreen extends Screen {
+  private SparqlServiceAsync sparqlService;
 
   public static final String key = "ad";
 
-  private SampleDetailTable experimentTable = new SampleDetailTable(this, "Experiment detail");
-  private SampleDetailTable biologicalTable = new SampleDetailTable(this, "Biological detail");
-
+  VerticalPanel sectionsPanel;
+  private Map<String, SampleDetailTable> sections = new HashMap<String, SampleDetailTable>();
+  
   private ListBox columnList = new ListBox();
 
   AnnotationTDGrid atd = new AnnotationTDGrid(this);
 
-  private SampleClass lastClass;
   private List<Group> lastColumns;
-  private SampleColumn lastCustomColumn;
 
   private HorizontalPanel tools;
 
   public SampleDetailScreen(ScreenManager man) {
     super("Sample details", key, true, man);
     this.addListener(atd);
+    sparqlService = man.sparqlService();
     mkTools();
   }
 
@@ -81,6 +90,52 @@ public class SampleDetailScreen extends Screen {
     if (visible && !columns.equals(lastColumns)) {
       updateColumnList();
     }
+  }
+
+  @Override
+  protected void addToolbars() {
+    super.addToolbars();
+    addToolbar(tools, 30);
+  }
+
+  @Override
+  public String getGuideText() {
+    return "Here you can view experimental information and biological details for each sample in the groups you have defined.";
+  }
+  
+  private SampleDetailTable addSection(String section, Annotation[] annotations, 
+      HasSamples<Sample> c, boolean isSection) {
+    SampleDetailTable sdt = new SampleDetailTable(SampleDetailScreen.this, section, isSection);
+    sections.put(section, sdt); 
+    sectionsPanel.add(sdt);
+    sdt.setData(c, annotations);
+    return sdt;
+  }
+
+  public void loadSections(final HasSamples<Sample> c, boolean importantOnly) {
+
+    sparqlService.annotations(c, importantOnly, new PendingAsyncCallback<Annotation[]>(
+        SampleDetailScreen.this) {
+      public void handleFailure(Throwable caught) {
+        Window.alert("Unable to get array annotations.");
+      }
+
+      public void handleSuccess(Annotation[] as) {
+        sections.clear();
+        sectionsPanel.clear();
+        if (as.length < 1) {
+          return;
+        }
+        addSection(null, as, c, false);
+        
+        for (BioParamValue bp: as[0].getAnnotations()) {
+          if (bp.section() != null &&
+              !sections.containsKey(bp.section())) {
+            addSection(bp.section(), as, c, true);            
+          }
+        }        
+      }
+    });
   }
 
   private void updateColumnList() {
@@ -102,17 +157,10 @@ public class SampleDetailScreen extends Screen {
   @Override
   public void show() {
     super.show();
-    if (visible
-        && (lastClass == null || !lastClass.equals(chosenSampleClass) || lastColumns == null
-            || !chosenColumns.equals(lastColumns) || chosenCustomColumn != null)
-        || chosenCustomColumn != null
-        && (lastCustomColumn == null || !lastCustomColumn.equals(chosenCustomColumn))) {
+    if (visible) {        
       updateColumnList();
       displayWith(columnList.getItemText(columnList.getSelectedIndex()));
-
-      lastClass = chosenSampleClass;
       lastColumns = chosenColumns;
-      lastCustomColumn = chosenCustomColumn;
     }
   }
 
@@ -162,17 +210,16 @@ public class SampleDetailScreen extends Screen {
   }
 
   public Widget content() {
-    VerticalPanel vp = Utils.mkVerticalPanel(false, experimentTable, biologicalTable);
+    sectionsPanel = Utils.mkVerticalPanel();
 
     HorizontalPanel hp = Utils.mkWidePanel(); // to make it centered
-    hp.add(vp);
+    hp.add(sectionsPanel);
     return new ScrollPanel(hp);
   }
 
 
   private void setDisplayColumn(SampleColumn c) {
-    experimentTable.loadFrom(c, false, 0, 23);
-    biologicalTable.loadFrom(c, false, 23, -1);
+    loadSections(c, false);    
     SampleClass sc = c.getSamples()[0].sampleClass().asMacroClass(manager.schema());
     atd.sampleClassChanged(sc);
   }
@@ -191,16 +238,5 @@ public class SampleDetailScreen extends Screen {
       }
     }
     Window.alert("Error: no display column selected.");
-  }
-
-  @Override
-  protected void addToolbars() {
-    super.addToolbars();
-    addToolbar(tools, 30);
-  }
-
-  @Override
-  public String getGuideText() {
-    return "Here you can view experimental information and biological details for each sample in the groups you have defined.";
   }
 }

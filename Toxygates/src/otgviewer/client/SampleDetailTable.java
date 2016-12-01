@@ -19,7 +19,6 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import otgviewer.client.components.DataListenerWidget;
@@ -40,16 +39,21 @@ import com.google.gwt.view.client.NoSelectionModel;
 /**
  * A table that displays sample annotations for a small set of samples.
  */
+
 public class SampleDetailTable extends Composite {
   private CellTable<String[]> table;
   private Sample[] barcodes;
   private HasSamples<Sample> displayColumn;
   private SparqlServiceAsync sparqlService;
   private final String title;
+  private final boolean isSection;
   private final DataListenerWidget waitListener;
 
-  public SampleDetailTable(Screen screen, String title) {
-    this.title = title;
+  public static final String DEFAULT_SECTION_TITLE = "Sample details";
+  
+  public SampleDetailTable(Screen screen, String title, boolean isSection) {
+    this.title = title != null ? title : DEFAULT_SECTION_TITLE;
+    this.isSection = isSection;
     this.waitListener = screen;
     sparqlService = screen.sparqlService();
     table = new CellTable<String[]>();
@@ -59,11 +63,20 @@ public class SampleDetailTable extends Composite {
     table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
   }
 
-  public void loadFrom(HasSamples<Sample> c, boolean importantOnly, final int rangeStart,
-      final int rangeEnd) {
-    if (Arrays.equals(barcodes, c.getSamples())) {
-      return;
-    }
+  public void loadFrom(final HasSamples<Sample> c, boolean importantOnly) {        
+    sparqlService.annotations(displayColumn, importantOnly, new PendingAsyncCallback<Annotation[]>(
+        waitListener) {
+      public void handleFailure(Throwable caught) {
+        Window.alert("Unable to get array annotations.");
+      }
+
+      public void handleSuccess(Annotation[] as) {
+        setData(c, as);
+      }
+    });
+  }
+  
+  private void setupColumns(HasSamples<Sample> c) {
     barcodes = c.getSamples();
     displayColumn = c;
     while (table.getColumnCount() > 0) {
@@ -77,43 +90,30 @@ public class SampleDetailTable extends Composite {
     }
     table.setWidth((15 + 9 * barcodes.length) + "em", true);
 
-    sparqlService.annotations(displayColumn, importantOnly, new PendingAsyncCallback<Annotation[]>(
-        waitListener) {
-      public void handleFailure(Throwable caught) {
-        Window.alert("Unable to get array annotations.");
-      }
-
-      public void handleSuccess(Annotation[] as) {
-        List<Annotation> useAnnots = new ArrayList<Annotation>();
-        for (int i = 0; i < as.length; ++i) {
-          useAnnots.add(as[i]);
-        }
-        setData(useAnnots.toArray(new Annotation[0]), rangeStart, rangeEnd);
-      }
-    });
   }
 
   private String[] makeAnnotItem(int i, Annotation[] as) {
     String[] item = new String[barcodes.length + 1];
     item[0] = as[0].getAnnotations().get(i).label();
 
-    // TODO why is as.length sometimes > barcodes.length?
-
     for (int j = 0; j < as.length && j < barcodes.length; ++j) {
       item[j + 1] = as[j].getAnnotations().get(i).displayValue();
     }
     return item;
   }
-
-  /**
-   * Set row-major data to display.
-   */
-  void setData(Annotation[] annotations, int rangeStart, int rangeEnd) {
+  
+  void setData(HasSamples<Sample> c, Annotation[] annotations) {
+    setupColumns(c);
     if (annotations.length > 0) {
       List<String[]> processed = new ArrayList<String[]>();
-      final int numEntries = annotations[0].getAnnotations().size();
-      for (int i = rangeStart; i < numEntries && (rangeEnd == -1 || i < rangeEnd); ++i) {
-        processed.add(makeAnnotItem(i, annotations));
+      Annotation a = annotations[0];
+      final int numEntries = a.getAnnotations().size();
+      for (int i = 0; i < numEntries; i++) {
+        String sec = a.getAnnotations().get(i).section();
+        if (!isSection || (sec == null && title.equals(DEFAULT_SECTION_TITLE))
+            || (sec != null && sec.equals(title))) {
+          processed.add(makeAnnotItem(i, annotations));
+        }
       }
       table.setRowData(processed);
     }

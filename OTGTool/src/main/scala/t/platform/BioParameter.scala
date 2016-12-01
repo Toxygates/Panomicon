@@ -3,6 +3,7 @@ package t.platform
 import t.db.SampleParameter
 
 case class BioParameter(key: String, label: String, kind: String,
+    section: Option[String],
     lowThreshold: Option[Double], highThreshold: Option[Double]) {
 
   /**

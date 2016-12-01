@@ -83,11 +83,15 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
    * Obtain the bio-parameters in all bio platforms
    */
   def bioParameters: BioParameters = {
-    val bps = ts.mapQuery(s"$tPrefixes SELECT ?id ?desc ?type ?lower ?upper WHERE {" +
-        s"?p $platformType $biologicalPlatform. graph ?p {" +
-        """?probe rdfs:label ?id; t:label ?desc; t:type ?type.
-          OPTIONAL { ?probe t:lowerBound ?lower; t:upperBound ?upper. }
-        } }""").map(x => BioParameter(x("id"), x("desc"), x("type"),
+    val bps = ts.mapQuery(s"""$tPrefixes
+      |SELECT ?id ?desc ?sec ?type ?lower ?upper WHERE {
+      |  ?p $platformType $biologicalPlatform. graph ?p {
+      |  ?probe rdfs:label ?id; t:label ?desc; t:type ?type.
+      |  OPTIONAL { ?probe t:lowerBound ?lower; t:upperBound ?upper. }
+      |  OPTIONAL { ?probe t:section ?sec. }
+      | }
+      |}""".stripMargin).map(x => BioParameter(x("id"), x("desc"), x("type"),
+            x.get("sec"),
             x.get("lower").map(_.toDouble), x.get("upper").map(_.toDouble)))
     new BioParameters(Map() ++ bps.map(b => b.key -> b))
   }

@@ -22,18 +22,20 @@ public class NumericalBioParamValue extends BioParamValue {
    * @param upperBound Upper bound on the healthy range, if any
    * @param value Observed value
    */
-  public NumericalBioParamValue(String id, String label, @Nullable Double lowerBound,
+  public NumericalBioParamValue(String id, String label, @Nullable String section,
+      @Nullable Double lowerBound,
       @Nullable Double upperBound, double value) {
-    super(id, label);
+    super(id, label, section);
     this.lowerBound = lowerBound;
     this.upperBound = upperBound;
     this.value = value;
   }
 
-  public NumericalBioParamValue(String id, String label, 
+  public NumericalBioParamValue(String id, String label,
+      @Nullable String section,
       @Nullable Double lowerBound, @Nullable Double upperBound, 
       String value) {
-    super(id, label);
+    super(id, label, section);
     this.lowerBound = lowerBound;
     this.upperBound = upperBound;
     try {
