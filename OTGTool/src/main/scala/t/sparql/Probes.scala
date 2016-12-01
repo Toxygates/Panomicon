@@ -162,7 +162,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   def probeQuery(identifiers: Iterable[String], relation: String,
     timeout: Int = 10000): Query[Seq[String]] =
     Query(tPrefixes +
-      s""".stripMargin|SELECT DISTINCT ?p WHERE {
+      s"""|SELECT DISTINCT ?p WHERE {
           |  GRAPH ?g {
           |   ?p a t:probe.
           |   ?p $relation ?filt.""".stripMargin +
