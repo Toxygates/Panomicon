@@ -48,10 +48,18 @@ public class NumericalBioParamValue extends BioParamValue {
   public double value() {
     return value;
   }
+  
+  public boolean isAbove() {
+    return value > upperBound;
+  }
+  
+  public boolean isBelow() {
+    return value < lowerBound;
+  }
 
   @Override
   public boolean isPathological() {
-    return value < lowerBound || value > upperBound;
+    return isAbove() || isBelow();
   }
 
   @Override

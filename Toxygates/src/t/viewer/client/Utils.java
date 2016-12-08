@@ -323,6 +323,12 @@ public class Utils {
 
     @Template("</div>")
     SafeHtml endToolTip();
+    
+    @Template("<div class=\"{0}\">")
+    SafeHtml startStyled(String style);
+    
+    @Template("</div>")
+    SafeHtml endStyled();    
   }
 
   public static DialogBox waitDialog() {

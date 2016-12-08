@@ -29,6 +29,7 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.BioParamValue;
+import otgviewer.shared.NumericalBioParamValue;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
 import t.common.shared.sample.Sample;
@@ -37,6 +38,7 @@ import t.viewer.client.table.TooltipColumn;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
@@ -75,7 +77,34 @@ public class SampleDetailTable extends Composite {
     @Override
     protected String getTooltip(BioParamValue[] item) {
       return item[i].tooltip();
-    }    
+    }
+
+    @Override
+    protected void htmlBeforeContent(SafeHtmlBuilder sb, BioParamValue[] object) {
+      super.htmlBeforeContent(sb, object);
+      BioParamValue bpv = object[i];
+      if (bpv instanceof NumericalBioParamValue) {
+        NumericalBioParamValue nbpv = (NumericalBioParamValue) bpv;
+        if (nbpv.isAbove()) {
+          sb.append(TEMPLATES.startStyled("numericalParameterAbove"));                  
+        } else if (nbpv.isBelow()) {
+          sb.append(TEMPLATES.startStyled("numericalParameterBelow"));
+        } else if (nbpv.isPathological()) {
+          sb.append(TEMPLATES.startStyled("numericalParameterPathological"));
+        } else {
+          sb.append(TEMPLATES.startStyled("numericalParameterHealthy"));
+        }
+      }        
+    }
+
+    @Override
+    protected void htmlAfterContent(SafeHtmlBuilder sb, BioParamValue[] object) {
+      super.htmlAfterContent(sb, object);
+      BioParamValue bpv = object[i];
+      if (bpv instanceof NumericalBioParamValue) {
+        sb.append(TEMPLATES.endStyled());
+      }
+    }        
   };
   
   public SampleDetailTable(Screen screen, @Nullable String title, boolean isSection) {

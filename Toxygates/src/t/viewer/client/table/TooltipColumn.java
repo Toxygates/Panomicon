@@ -29,15 +29,24 @@ public abstract class TooltipColumn<R> extends Column<R, String> {
   @Override
   public void render(final Context context, final R object, final SafeHtmlBuilder sb) {
     if (object != null) {
-      final String tooltip = getTooltip(object);
-      if (tooltip != null) {
-        sb.append(TEMPLATES.startToolTip(tooltip));
-        super.render(context, object, sb);
-        sb.append(TEMPLATES.endToolTip());
-        return;
-      }
+      htmlBeforeContent(sb, object);
+      super.render(context, object, sb);
+      htmlAfterContent(sb, object);
+    } else {
+      super.render(context, object, sb);
     }
-    super.render(context, object, sb);    
+  }
+
+  protected void htmlBeforeContent(SafeHtmlBuilder sb, R object) {
+    String tooltip = getTooltip(object);
+    sb.append(TEMPLATES.startToolTip(tooltip));
+  }
+  
+  protected void htmlAfterContent(SafeHtmlBuilder sb, R object) {
+    String tooltip = getTooltip(object);
+    if (tooltip != null) {
+      sb.append(TEMPLATES.endToolTip());
+    }
   }
   
 }
