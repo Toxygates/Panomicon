@@ -28,13 +28,17 @@ import javax.annotation.Nullable;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import t.common.client.Utils;
+import otgviewer.shared.BioParamValue;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
 import t.common.shared.sample.Sample;
 import t.viewer.client.rpc.SparqlServiceAsync;
+import t.viewer.client.table.TooltipColumn;
 
+import com.google.gwt.cell.client.Cell;
+import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
@@ -45,7 +49,7 @@ import com.google.gwt.view.client.NoSelectionModel;
  */
 
 public class SampleDetailTable extends Composite {
-  private CellTable<String[]> table;
+  private CellTable<BioParamValue[]> table;
   private Sample[] barcodes;
   private HasSamples<Sample> displayColumn;
   private SparqlServiceAsync sparqlService;
@@ -55,15 +59,34 @@ public class SampleDetailTable extends Composite {
 
   public static final String DEFAULT_SECTION_TITLE = "Sample details";
   
+  protected static class BioParamColumn extends TooltipColumn<BioParamValue[]> {
+
+    private final int i;
+    public BioParamColumn(Cell<String> cell, int column) {
+      super(cell);
+      i = column;
+    }
+
+    @Override
+    public String getValue(BioParamValue[] object) {
+      return object[i].displayValue();
+    }
+
+    @Override
+    protected String getTooltip(BioParamValue[] item) {
+      return item[i].tooltip();
+    }    
+  };
+  
   public SampleDetailTable(Screen screen, @Nullable String title, boolean isSection) {
     this.title = title != null ? title : DEFAULT_SECTION_TITLE;
     this.isSection = isSection;
     this.waitListener = screen;
     sparqlService = screen.sparqlService();
-    table = new CellTable<String[]>();
+    table = new CellTable<BioParamValue[]>();
     initWidget(table);
     table.setWidth("100%", true); // use fixed layout so we can control column width explicitly
-    table.setSelectionModel(new NoSelectionModel<String[]>());
+    table.setSelectionModel(new NoSelectionModel<BioParamValue[]>());
     table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
   }
 
@@ -88,22 +111,32 @@ public class SampleDetailTable extends Composite {
     while (table.getColumnCount() > 0) {
       table.removeColumn(0);
     }
-    Utils.makeColumn(table, 0, title, "15em");
+    
+    TextColumn<BioParamValue[]> labelCol = new TextColumn<BioParamValue[]>() {
+      @Override
+      public String getValue(BioParamValue[] object) {
+        return object[0].label();
+      }      
+    };
+    table.addColumn(labelCol, title);
+    table.setColumnWidth(labelCol, "15em");
+    
+    TextCell tc = new TextCell();
     for (int i = 1; i < barcodes.length + 1; ++i) {
-      // TODO
       String name = barcodes[i - 1].id();
-      Utils.makeColumn(table, i, name, "9em");
+      BioParamColumn bpc = new BioParamColumn(tc, i - 1);
+      table.addColumn(bpc, name);
+      table.setColumnWidth(bpc, "10em");
     }
     table.setWidth((15 + 9 * barcodes.length) + "em", true);
 
   }
 
-  private String[] makeAnnotItem(int i, Annotation[] as) {
-    String[] item = new String[barcodes.length + 1];
-    item[0] = as[0].getAnnotations().get(i).label();
+  private BioParamValue[] makeAnnotItem(int i, Annotation[] as) {
+    BioParamValue[] item = new BioParamValue[barcodes.length];
 
     for (int j = 0; j < as.length && j < barcodes.length; ++j) {
-      item[j + 1] = as[j].getAnnotations().get(i).displayValue();
+      item[j] = as[j].getAnnotations().get(i);
     }
     return item;
   }
@@ -111,7 +144,7 @@ public class SampleDetailTable extends Composite {
   void setData(HasSamples<Sample> c, Annotation[] annotations) {
     setupColumns(c);
     if (annotations.length > 0) {
-      List<String[]> processed = new ArrayList<String[]>();
+      List<BioParamValue[]> processed = new ArrayList<BioParamValue[]>();
       Annotation a = annotations[0];
       final int numEntries = a.getAnnotations().size();
       for (int i = 0; i < numEntries; i++) {
@@ -121,12 +154,14 @@ public class SampleDetailTable extends Composite {
           processed.add(makeAnnotItem(i, annotations));
         }
       }
-      Collections.sort(processed, new Comparator<String[]>() {
+      Collections.sort(processed, new Comparator<BioParamValue[]>() {
         @Override
-        public int compare(String[] o1, String[] o2) {
-          return o1[0].compareTo(o2[0]);
-        }
-        
+        public int compare(BioParamValue[] o1, BioParamValue[] o2) {
+          if (o1 == null || o2 == null || o1.length < 1 || o2.length < 1) {
+            return 0;
+          }
+          return o1[0].label().compareTo(o2[0].label());
+        }        
       });
       table.setRowData(processed);
     }

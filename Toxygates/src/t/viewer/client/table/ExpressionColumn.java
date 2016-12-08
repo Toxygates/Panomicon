@@ -29,10 +29,8 @@ import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.Column;
 
 
-public class ExpressionColumn extends Column<ExpressionRow, String> implements MatrixSortable {
+public class ExpressionColumn extends TooltipColumn<ExpressionRow> implements MatrixSortable {
   final int i;
-
-  private static Utils.Templates TEMPLATES = GWT.create(Utils.Templates.class);
 
   /**
    * @param tc
@@ -63,15 +61,7 @@ public class ExpressionColumn extends Column<ExpressionRow, String> implements M
     }
   }
 
-  @Override
-  public void render(final Context context, final ExpressionRow object, final SafeHtmlBuilder sb) {
-    if (object != null) {
-      final String tooltip = object.getValue(i).getTooltip();
-      sb.append(TEMPLATES.startToolTip(tooltip));
-      super.render(context, object, sb);
-      sb.append(TEMPLATES.endToolTip());
-    } else {
-      super.render(context, object, sb);
-    }
+  @Override protected String getTooltip(ExpressionRow er) {
+    return er.getValue(i).getTooltip();
   }
 }
