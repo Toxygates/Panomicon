@@ -19,8 +19,11 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -107,13 +110,11 @@ public class SampleDetailScreen extends Screen {
       HasSamples<Sample> c, boolean isSection) {
     SampleDetailTable sdt = new SampleDetailTable(SampleDetailScreen.this, section, isSection);
     sections.put(section, sdt); 
-    sectionsPanel.add(sdt);
     sdt.setData(c, annotations);
     return sdt;
   }
 
   public void loadSections(final HasSamples<Sample> c, boolean importantOnly) {
-
     sparqlService.annotations(c, importantOnly, new PendingAsyncCallback<Annotation[]>(
         SampleDetailScreen.this) {
       public void handleFailure(Throwable caught) {
@@ -126,14 +127,27 @@ public class SampleDetailScreen extends Screen {
         if (as.length < 1) {
           return;
         }
-        addSection(null, as, c, false);
+        SampleDetailTable sec = addSection(null, as, c, true);
+        sectionsPanel.add(sec);
         
+        LinkedList<SampleDetailTable> secList =
+            new LinkedList<SampleDetailTable>();
         for (BioParamValue bp: as[0].getAnnotations()) {
           if (bp.section() != null &&
               !sections.containsKey(bp.section())) {
-            addSection(bp.section(), as, c, true);            
+            secList.add(addSection(bp.section(), as, c, true));                     
           }
-        }        
+        }  
+        
+        Collections.sort(secList, new Comparator<SampleDetailTable>() {
+          @Override
+          public int compare(SampleDetailTable o1, SampleDetailTable o2) {
+            return o1.sectionTitle().compareTo(o2.sectionTitle());
+          }         
+        });
+        for (SampleDetailTable sdt: secList) {
+          sectionsPanel.add(sdt);
+        }
       }
     });
   }
@@ -216,7 +230,6 @@ public class SampleDetailScreen extends Screen {
     hp.add(sectionsPanel);
     return new ScrollPanel(hp);
   }
-
 
   private void setDisplayColumn(SampleColumn c) {
     loadSections(c, false);    

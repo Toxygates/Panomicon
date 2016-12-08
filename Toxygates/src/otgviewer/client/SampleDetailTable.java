@@ -19,7 +19,11 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.PendingAsyncCallback;
@@ -45,13 +49,13 @@ public class SampleDetailTable extends Composite {
   private Sample[] barcodes;
   private HasSamples<Sample> displayColumn;
   private SparqlServiceAsync sparqlService;
-  private final String title;
+  private final @Nullable String title;
   private final boolean isSection;
   private final DataListenerWidget waitListener;
 
   public static final String DEFAULT_SECTION_TITLE = "Sample details";
   
-  public SampleDetailTable(Screen screen, String title, boolean isSection) {
+  public SampleDetailTable(Screen screen, @Nullable String title, boolean isSection) {
     this.title = title != null ? title : DEFAULT_SECTION_TITLE;
     this.isSection = isSection;
     this.waitListener = screen;
@@ -63,6 +67,8 @@ public class SampleDetailTable extends Composite {
     table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
   }
 
+  public @Nullable String sectionTitle() { return title; }
+  
   public void loadFrom(final HasSamples<Sample> c, boolean importantOnly) {        
     sparqlService.annotations(displayColumn, importantOnly, new PendingAsyncCallback<Annotation[]>(
         waitListener) {
@@ -115,6 +121,13 @@ public class SampleDetailTable extends Composite {
           processed.add(makeAnnotItem(i, annotations));
         }
       }
+      Collections.sort(processed, new Comparator<String[]>() {
+        @Override
+        public int compare(String[] o1, String[] o2) {
+          return o1[0].compareTo(o2[0]);
+        }
+        
+      });
       table.setRowData(processed);
     }
   }
