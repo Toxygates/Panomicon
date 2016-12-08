@@ -22,11 +22,7 @@ import t.common.shared.sample.ExpressionRow;
 import t.viewer.client.Utils;
 import t.viewer.shared.table.SortKey;
 
-import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.cell.client.TextCell;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.user.cellview.client.Column;
 
 
 public class ExpressionColumn extends TooltipColumn<ExpressionRow> implements MatrixSortable {
