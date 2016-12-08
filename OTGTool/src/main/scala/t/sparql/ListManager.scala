@@ -46,7 +46,7 @@ abstract class ListManager(config: TriplestoreConfig) extends Closeable {
   }
 
   def list(): Seq[String] = {
-    ts.simpleQuery(s"$tPrefixes\n select ?l { ?x a $itemClass ; rdfs:label ?l }")
+    ts.simpleQuery(s"$tPrefixes\n SELECT ?l { ?x a $itemClass ; rdfs:label ?l }")
   }
 
   val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -57,54 +57,49 @@ abstract class ListManager(config: TriplestoreConfig) extends Closeable {
     }
     val encodedDate = dateFormat.format(new Date())
 
-    ts.update(s"$tPrefixes\n insert data { <$defaultPrefix/$name> a $itemClass ; " +
+    ts.update(s"$tPrefixes\n INSERT DATA { <$defaultPrefix/$name> a $itemClass ; " +
       " rdfs:label \"" + name + "\"; t:comment \"" + comment + "\"; " +
       " t:timestamp \"" + encodedDate + "\". " +
       " }")
   }
 
   def add(name: String): Unit = {
-    ts.update(s"$tPrefixes\n insert data { <$defaultPrefix/$name> a $itemClass ; " +
+    ts.update(s"$tPrefixes\n INSERT DATA { <$defaultPrefix/$name> a $itemClass ; " +
       " rdfs:label \"" + name + "\" }")
   }
 
-  def timestamps: Map[String, Date] = {
-    Map() ++ ts.mapQuery(s"$tPrefixes select ?l ?time where { ?item a $itemClass; rdfs:label ?l ; " +
-      "t:timestamp ?time } ").map(x => {
-      x("l") -> dateFormat.parse(x("time"))
+  private def attributeQuery[T](attr: String, decode: String => T): Map[String, T] = {
+    Map() ++ ts.mapQuery(s"$tPrefixes SELECT ?l ?att WHERE { ?item a $itemClass; rdfs:label ?l ; " +
+      s"$attr ?att } ").map(x => {
+      x("l") -> decode(x("att"))
     })
   }
 
-  def comments: Map[String, String] = {
-    Map() ++ ts.mapQuery(s"$tPrefixes select ?l ?com where { ?item a $itemClass; rdfs:label ?l ; " +
-      "t:comment ?com } ").map(x => {
-      x("l") -> x("com")
-    })
-  }
+  def timestamps: Map[String, Date] =
+    attributeQuery("t:timestamp", dateFormat.parse)
 
-  def publicComments: Map[String, String] = {
-      Map() ++ ts.mapQuery(s"$tPrefixes select ?l ?com where { ?item a $itemClass; rdfs:label ?l ; " +
-      "t:publicComment ?com } ").map(x => {
-      x("l") -> x("com")
-    })
-  }
+  def comments: Map[String, String] =
+    attributeQuery("t:comment", x => x)
+
+  def publicComments: Map[String, String] =
+    attributeQuery("publicComment", x => x)
 
   def delete(name: String): Unit = {
     ts.update(s"$tPrefixes\n " +
-      s"delete { <$defaultPrefix/$name> ?p ?o. } \n" +
-      s"where { <$defaultPrefix/$name> ?p ?o. } ")
+      s"DELETE { <$defaultPrefix/$name> ?p ?o. } \n" +
+      s"WHERE { <$defaultPrefix/$name> ?p ?o. } ")
 
     ts.update(s"$tPrefixes\n " +
-      s"delete { ?s ?p <$defaultPrefix/$name> . } \n" +
-      s"where { ?s ?p <$defaultPrefix/$name> . } ")
+      s"DELETE { ?s ?p <$defaultPrefix/$name> . } \n" +
+      s"WHERE { ?s ?p <$defaultPrefix/$name> . } ")
   }
 
   def updateSinglePredicate(name: String, key: String, value: String): Unit = {
        ts.update(s"$tPrefixes\n " +
-        s"delete { <$defaultPrefix/$name> $key ?o. } \n" +
-        s"where { <$defaultPrefix/$name> $key ?o. } ")
+        s"DELETE { <$defaultPrefix/$name> $key ?o. } \n" +
+        s"WHERE { <$defaultPrefix/$name> $key ?o. } ")
     ts.update(s"$tPrefixes\n " +
-        s"insert data { <$defaultPrefix/$name> $key $value }")
+        s"INSERT DATA { <$defaultPrefix/$name> $key $value }")
   }
 
   def setComment(name: String, comment: String): Unit = {

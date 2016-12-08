@@ -68,15 +68,18 @@ abstract class BatchGroups(config: TriplestoreConfig) extends ListManager(config
     s"<$batchPrefix/$name> $memberRelation <$groupPrefix/$group>"
 
   def addMember(name: String, instance: String): Unit =
-    ts.update(s"$tPrefixes\n insert data { ${memberRelation(name, instance)} . } ")
+    ts.update(s"$tPrefixes\n INSERT DATA { ${memberRelation(name, instance)} . } ")
 
   //TODO verify that this works
   def removeMember(name: String, instance: String): Unit =
-    ts.update(s"$tPrefixes\n delete data { ${memberRelation(name, instance)} . } ")
+    ts.update(s"$tPrefixes\n DELETE DATA { ${memberRelation(name, instance)} . } ")
 
   def listGroups(name: String): Seq[String] =
-    ts.simpleQuery(s"$tPrefixes\n select ?gl where { <$batchPrefix/$name> $memberRelation ?gr . " +
-      s"?gr rdfs:label ?gl; a $groupClass .}")
+    ts.simpleQuery(s"""$tPrefixes
+        |SELECT ?gl WHERE {
+        |  <$batchPrefix/$name> $memberRelation ?gr .
+        |  ?gr rdfs:label ?gl; a $groupClass .
+        |}""".stripMargin)
 }
 
 /**
@@ -106,8 +109,12 @@ class Batches(config: TriplestoreConfig) extends BatchGroups(config) {
   def listAccess(name: String): Seq[String] = listGroups(name)
 
   def numSamples: Map[String, Int] = {
-    val r = ts.mapQuery(s"$tPrefixes select (count(distinct ?s) as ?n) ?l where " +
-      s"{ graph ?x { ?s a t:sample . } ?x rdfs:label ?l ; a $itemClass. } group by ?l")
+    val r = ts.mapQuery(s"""$tPrefixes
+      |SELECT (count(distinct ?s) as ?n) ?l WHERE {
+      |  GRAPH ?x {
+      |    ?s a t:sample .
+      |  } ?x rdfs:label ?l ; a $itemClass.
+      |} GROUP BY ?l""".stripMargin)
     if (r(0).keySet.contains("l")) {
       Map() ++ r.map(x => x("l") -> x("n").toInt)
     } else {
@@ -117,22 +124,25 @@ class Batches(config: TriplestoreConfig) extends BatchGroups(config) {
   }
 
   def datasets: Map[String, String] = {
-    Map() ++ ts.mapQuery(s"$tPrefixes select ?l ?dataset where { ?item a $itemClass; rdfs:label ?l ; " +
-      Datasets.memberRelation + " ?ds. ?ds a " + Datasets.itemClass + "; rdfs:label ?dataset .} ").map(x => {
+    Map() ++ ts.mapQuery(s"""$tPrefixes
+        |SELECT ?l ?dataset WHERE {
+        |  ?item a $itemClass; rdfs:label ?l ;
+        |  ${Datasets.memberRelation} ?ds. ?ds a ${Datasets.itemClass}; rdfs:label ?dataset .
+        |} """.stripMargin).map(x => {
       x("l") -> x("dataset")
     })
   }
 
   def samples(batch: String): Iterable[String] = {
     val prefix = Samples.defaultPrefix
-    ts.simpleQuery(s"$tPrefixes select ?l where " +
+    ts.simpleQuery(s"$tPrefixes SELECT ?l WHERE " +
       s"{ graph <$defaultPrefix/$batch> { ?x a t:sample ; rdfs:label ?l } }")
   }
 
   override def delete(name: String): Unit = {
     super.delete(name)
     ts.update(s"$tPrefixes\n " +
-      s"drop graph <$defaultPrefix/$name>")
+      s"DROP GRAPH <$defaultPrefix/$name>")
   }
 
 }
