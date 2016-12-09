@@ -275,6 +275,23 @@ exprGrid {
 	width: 200px;
 }
 
+.numericalParameterAbove {
+	color: red;
+	width: 10em;
+}
+
+.numericalParameterBelow {
+	color: blue;
+	width: 10em;
+}
+
+.numericalParameterPathological {
+	color: red;
+	width: 10em;
+}
+
+.numericalParameterHealthy {
+}
 /*
  Fix "Ghost scrollbar" issue in Safari with trackpads.
  See https://groups.google.com/forum/#!topic/google-web-toolkit/xxeS6LETdBs

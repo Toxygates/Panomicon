@@ -31,9 +31,9 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.Screen.QueuedAction;
-import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.dialog.FeedbackForm;
@@ -45,6 +45,10 @@ import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.MetadataInfo;
 import t.viewer.client.rpc.MatrixService;
 import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.client.rpc.ProbeService;
+import t.viewer.client.rpc.ProbeServiceAsync;
+import t.viewer.client.rpc.SampleService;
+import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.rpc.SeriesService;
 import t.viewer.client.rpc.SeriesServiceAsync;
 import t.viewer.client.rpc.SparqlService;
@@ -91,15 +95,16 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * The main entry point for Toxygates. The main task of this class is to manage the history
  * mechanism and ensure that the correct screen is being displayed at any given time, as well as
  * provide a facility for inter-screen communication.
- * 
- * @author johan
- *
  */
 abstract public class TApplication implements ScreenManager, EntryPoint {
   private static Resources resources = GWT.create(Resources.class);
 
   private static SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
       .create(SparqlService.class);
+
+  private static SampleServiceAsync sampleService = sparqlService;
+  private static ProbeServiceAsync probeService = sparqlService;
+  
   private static MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
       .create(MatrixService.class);
   private static SeriesServiceAsync seriesService = (SeriesServiceAsync) GWT
@@ -651,6 +656,14 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     return sparqlService;
   }
 
+  public SampleServiceAsync sampleService() {
+    return sampleService;
+  }
+  
+  public ProbeServiceAsync probeService() {
+    return probeService;
+  }
+  
   public SeriesServiceAsync seriesService() {
     return seriesService;
   }

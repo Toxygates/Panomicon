@@ -364,9 +364,11 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     def bioParamValue(bp: BioParameter, dispVal: String) = {
       bp.kind match {
         case "numerical" => new NumericalBioParamValue(bp.key, bp.label,
+          bp.section.getOrElse(null),
           asJDouble(bp.lowThreshold), asJDouble(bp.highThreshold),
           dispVal)
-        case _ => new StringBioParamValue(bp.key, bp.label, dispVal)
+        case _ => new StringBioParamValue(bp.key, bp.label,
+            bp.section.getOrElse(null), dispVal)
       }
     }
 

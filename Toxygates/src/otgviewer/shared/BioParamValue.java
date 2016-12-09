@@ -2,13 +2,15 @@ package otgviewer.shared;
 
 import java.io.Serializable;
 
+import javax.annotation.Nullable;
+
 /**
  * A measured value of a biological parameter, such as the total kidney weight.
  */
 @SuppressWarnings("serial")
 abstract public class BioParamValue implements Serializable {
 
-  protected String id, label;
+  protected String id, label, section;
   
   public BioParamValue() {}
   
@@ -16,9 +18,10 @@ abstract public class BioParamValue implements Serializable {
    * @param id ID string of the parameter
    * @param label Human-readable label of the parameter
    */
-  public BioParamValue(String id, String label) {
+  public BioParamValue(String id, String label, @Nullable String section) {
     this.id = id;
     this.label = label;
+    this.section = section;
   }
   
   public String label() { return label; }
@@ -33,4 +36,6 @@ abstract public class BioParamValue implements Serializable {
   public String tooltip() { return displayValue(); } 
 
   public boolean isPathological() { return false; }
+  
+  public @Nullable String section() { return section; }
 }
