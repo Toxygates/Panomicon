@@ -64,7 +64,7 @@ public class GeneOracle extends SuggestOracle {
   }
 
   public GeneOracle(Screen screen) {
-    sparqlService = screen.sparqlService();
+    sparqlService = screen.manager().sparqlService();
   }
 
   private final SparqlServiceAsync sparqlService;

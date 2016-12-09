@@ -111,7 +111,7 @@ public class SampleDetailTable extends Composite {
     this.title = title != null ? title : DEFAULT_SECTION_TITLE;
     this.isSection = isSection;
     this.waitListener = screen;
-    sampleService = screen.sparqlService();
+    sampleService = screen.manager().sampleService();
     table = new CellTable<BioParamValue[]>();
     initWidget(table);
     table.setWidth("100%", true); // use fixed layout so we can control column width explicitly

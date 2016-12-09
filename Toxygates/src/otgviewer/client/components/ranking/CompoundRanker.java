@@ -80,7 +80,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
     oracle = new GeneOracle(screen);
     schema = screen.schema();
     resources = screen.resources();
-    sparqlService = _screen.sparqlService();
+    sparqlService = _screen.manager().sparqlService();
 
     selector.addListener(this);
     listChooser = new ListChooser(screen.appInfo().predefinedProbeLists(), "probes") {
