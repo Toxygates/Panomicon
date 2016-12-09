@@ -34,7 +34,7 @@ import t.common.shared.SharedUtils;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
 import t.viewer.client.Utils;
-import t.viewer.client.rpc.SparqlServiceAsync;
+import t.viewer.client.rpc.SampleServiceAsync;
 
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -55,7 +55,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 
   protected final boolean hasDoseTimeGUIs;
 
-  protected final SparqlServiceAsync sparqlService;
+  protected final SampleServiceAsync sampleService;
 
   protected Screen screen;
   protected final String majorParameter, mediumParameter, minorParameter, timeParameter;
@@ -80,7 +80,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
   public TimeDoseGrid(Screen screen, boolean hasDoseTimeGUIs) {
     rootPanel = Utils.mkVerticalPanel();
     this.screen = screen;
-    this.sparqlService = screen.sparqlService();
+    this.sampleService = screen.manager().sampleService();
     initWidget(rootPanel);
     rootPanel.setWidth("730px");
     mainPanel = new VerticalPanel();
@@ -173,7 +173,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
   private void fetchMinor() {
     fetchingMinor = true;
     logger.info("Fetch minor");
-    sparqlService.parameterValues(chosenSampleClass, minorParameter,
+    sampleService.parameterValues(chosenSampleClass, minorParameter,
         new PendingAsyncCallback<String[]>(this, "Unable to fetch minor parameter for samples") {
           public void handleSuccess(String[] times) {
             try {
@@ -212,7 +212,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
     availableUnits = new ArrayList<Pair<Unit, Unit>>();
     String[] compounds = chosenCompounds.toArray(new String[0]);
     final String[] fetchingForCompounds = compounds;
-    sparqlService.units(chosenSampleClass, majorParameter, compounds,
+    sampleService.units(chosenSampleClass, majorParameter, compounds,
         new PendingAsyncCallback<Pair<Unit, Unit>[]>(this, "Unable to obtain samples.") {
 
           @Override
