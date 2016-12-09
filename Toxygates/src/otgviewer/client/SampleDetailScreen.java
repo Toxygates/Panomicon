@@ -43,7 +43,7 @@ import t.common.shared.sample.Sample;
 import t.common.shared.sample.SampleColumn;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.rpc.SparqlServiceAsync;
+import t.viewer.client.rpc.SampleServiceAsync;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -65,7 +65,7 @@ import com.google.gwt.user.client.ui.Widget;
  */
 
 public class SampleDetailScreen extends Screen {
-  private SparqlServiceAsync sparqlService;
+  private SampleServiceAsync sampleService;
 
   public static final String key = "ad";
 
@@ -83,7 +83,7 @@ public class SampleDetailScreen extends Screen {
   public SampleDetailScreen(ScreenManager man) {
     super("Sample details", key, true, man);
     this.addListener(atd);
-    sparqlService = man.sparqlService();
+    sampleService = man.sampleService();
     mkTools();
   }
 
@@ -115,7 +115,7 @@ public class SampleDetailScreen extends Screen {
   }
 
   public void loadSections(final HasSamples<Sample> c, boolean importantOnly) {
-    sparqlService.annotations(c, importantOnly, new PendingAsyncCallback<Annotation[]>(
+    sampleService.annotations(c, importantOnly, new PendingAsyncCallback<Annotation[]>(
         SampleDetailScreen.this) {
       public void handleFailure(Throwable caught) {
         Window.alert("Unable to get array annotations.");

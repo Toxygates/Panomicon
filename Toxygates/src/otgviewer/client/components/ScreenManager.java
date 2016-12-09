@@ -22,6 +22,8 @@ import otgviewer.client.Resources;
 import otgviewer.client.UIFactory;
 import t.common.shared.DataSchema;
 import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.client.rpc.ProbeServiceAsync;
+import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.rpc.SeriesServiceAsync;
 import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.client.rpc.UserDataServiceAsync;
@@ -84,6 +86,10 @@ public interface ScreenManager extends ProvidesResize {
   void reloadAppInfo(final AsyncCallback<AppInfo> handler);
 
   SparqlServiceAsync sparqlService();
+  
+  SampleServiceAsync sampleService();
+  
+  ProbeServiceAsync probeService();
 
   MatrixServiceAsync matrixService();
 
