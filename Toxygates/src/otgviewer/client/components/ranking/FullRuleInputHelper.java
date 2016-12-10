@@ -89,14 +89,12 @@ public class FullRuleInputHelper extends RuleInputHelper {
 
       @Override
       public void handleSuccess(String[] result) {
-
         for (String i : result) {
           if (!i.equals("Control")) {
             refDose.addItem(i);
           }
         }
       }
-
     });
   }
 
