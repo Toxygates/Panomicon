@@ -25,7 +25,7 @@ import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.rpc.SeriesServiceAsync;
-import t.viewer.client.rpc.SparqlServiceAsync;
+import otgviewer.client.rpc.SparqlServiceAsync;
 import t.viewer.client.rpc.UserDataServiceAsync;
 import t.viewer.shared.AppInfo;
 

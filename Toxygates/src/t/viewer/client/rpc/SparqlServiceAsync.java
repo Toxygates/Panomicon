@@ -20,11 +20,9 @@ package t.viewer.client.rpc;
 
 import java.util.List;
 
-import otgviewer.shared.Pathology;
 import t.common.shared.AType;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleColumn;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.Association;
 
@@ -34,16 +32,10 @@ public interface SparqlServiceAsync extends SampleServiceAsync, ProbeServiceAsyn
 
   public void appInfo(String userDataKey, AsyncCallback<AppInfo> callback);
 
-  // TODO this is OTG-specific
-  public void pathologies(SampleColumn column, AsyncCallback<Pathology[]> callback);
-
   public void pathways(SampleClass sc, String pattern, AsyncCallback<String[]> callback);
 
   public void probesForPathway(SampleClass sc, String pathway, List<Sample> samples,
       AsyncCallback<String[]> callback);
-
-  public void probesTargetedByCompound(SampleClass sc, String compound, String service,
-      boolean homologous, AsyncCallback<String[]> callback);
 
   public void geneSyms(String[] probes, AsyncCallback<String[][]> callback);
 

@@ -22,11 +22,9 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import otgviewer.shared.Pathology;
 import t.common.shared.AType;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleColumn;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.Association;
 import t.viewer.shared.TimeoutException;
@@ -56,14 +54,7 @@ public interface SparqlService extends RemoteService, SampleService, ProbeServic
    */
   public AppInfo appInfo(@Nullable String userDataKey) throws TimeoutException;
 
-  /**
-   * Obtain pathologies for a set of samples
-   * 
-   * @param column
-   * @return
-   */
-  public Pathology[] pathologies(SampleColumn column) throws TimeoutException;
-
+ 
   /**
    * Obtain pathway names matching the pattern (partial name)
    * 
@@ -81,18 +72,6 @@ public interface SparqlService extends RemoteService, SampleService, ProbeServic
    */
   public String[] probesForPathway(SampleClass sc, String pathway, @Nullable List<Sample> samples)
       throws TimeoutException;
-
-  /**
-   * Obtain probes that correspond to proteins targeted by the named compound.
-   * 
-   * @param compound
-   * @param service Service to use for lookup (currently DrugBank or CHEMBL) (TODO it might be
-   *        better to use an enum)
-   * @param homologous Whether to use homologous genes (if not, only direct targets are returned)
-   * @return
-   */
-  public String[] probesTargetedByCompound(SampleClass sc, String compound, String service,
-      boolean homologous) throws TimeoutException;
 
   /**
    * Obtain GO terms matching the given pattern (partial name)
