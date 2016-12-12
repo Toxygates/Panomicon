@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,15 +20,12 @@
 
 package t.common.shared
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
 class StringListTest extends FunSuite {
-  
+
   val items = List("a", "b", "c")
-  
+
   test("basic") {
     val l = new StringList("probes", "test.name", items.toArray)
     assert(l.size() === items.size)

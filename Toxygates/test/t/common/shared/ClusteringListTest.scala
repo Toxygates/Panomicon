@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,19 +20,16 @@
 
 package t.common.shared
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
 import t.common.shared.userclustering.Algorithm
 import t.common.shared.userclustering.Methods
 import t.common.shared.userclustering.Distances
 
-@RunWith(classOf[JUnitRunner])
 class ClusteringListTest extends FunSuite {
-  
+
   val items = List(new StringList("type", "list1", Array("a", "b", "c")), new StringList("type", "list2", Array("d", "e", "f")))
   val algorithm = new Algorithm(Methods.WARD_D, Distances.COERRELATION, Methods.WARD_D2, Distances.EUCLIDIAN)
-  
+
   test("basic") {
     val l = new ClusteringList("userclustering", "test.name", algorithm, items.toArray)
     l.addParam("cutoff", "1.0")
@@ -46,5 +43,5 @@ class ClusteringListTest extends FunSuite {
     assert(up.asInstanceOf[ClusteringList].params().size == 1)
     assert(up.asInstanceOf[ClusteringList].params().get("cutoff") == "1.0")
   }
-  
+
 }

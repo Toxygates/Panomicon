@@ -20,7 +20,6 @@
 
 package otg.sparql
 
-import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 import otg._
@@ -31,7 +30,6 @@ import t.sparql.secondary._
 import t.testing.TestConfig
 import t.platform.Probe
 
-@RunWith(classOf[JUnitRunner])
 class AffyProbesTest extends TTestSuite {
 
   val config = TestConfig.config

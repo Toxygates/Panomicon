@@ -20,7 +20,6 @@
 
 package otg
 
-import org.junit.runner.RunWith
 import t.db.SeriesDB
 import t.db.kyotocabinet.KCSeriesDB
 import org.scalatest.junit.JUnitRunner
@@ -32,7 +31,6 @@ import t.db.BasicExprValue
 import t.db.SeriesPoint
 import t.db.kyotocabinet.KCExtMatrixDB
 
-@RunWith(classOf[JUnitRunner])
 class SeriesTest extends TTestSuite {
 
   import otg.testing.{TestData => OData}

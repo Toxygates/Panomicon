@@ -20,53 +20,66 @@
 
 package t.viewer.server.rpc
 
+import java.util.{ List => JList }
+
 import scala.Array.canBuildFrom
-import scala.collection.JavaConversions._
-import scala.collection.{Set => CSet}
-import java.util.{List => JList}
-import otg.Species.Human
+import scala.Vector
+import scala.collection.JavaConversions.asScalaBuffer
+import scala.collection.JavaConversions.bufferAsJavaList
+import scala.collection.JavaConversions.mapAsJavaMap
+import scala.collection.JavaConversions.seqAsJavaList
+import scala.collection.{ Set => CSet }
+
+import SparqlServiceImpl.platforms
+import javax.annotation.Nullable
 import otg.db.OTGParameterSet
+import otgviewer.shared.Annotation
+import otgviewer.shared.NumericalBioParamValue
 import otgviewer.shared.Pathology
-import t.BaseConfig
-import t.TriplestoreConfig
+import otgviewer.shared.StringBioParamValue
 import t.common.server.ScalaUtils
-import t.common.server.ScalaUtils.gracefully
 import t.common.shared.AType
 import t.common.shared.Dataset
 import t.common.shared.Pair
+import t.common.shared.Platform
 import t.common.shared.SampleClass
-import t.common.shared.sample.Annotation
+import t.common.shared.StringList
+import t.common.shared.clustering.ProbeClustering
 import t.common.shared.sample.HasSamples
 import t.common.shared.sample.Sample
-import t.db.DefaultBio
-import t.platform.Probe
-import t.sparql._
-import t.sparql.Instances
-import t.sparql.Probes
-import t.sparql.TriplestoreMetadata
-import t.sparql.secondary._
-import t.viewer.client.rpc.SparqlService
-import t.viewer.server.Configuration
-import t.viewer.server.Conversions._
-import t.viewer.shared.AppInfo
-import t.viewer.shared.Association
-import t.common.shared.StringList
-import t.common.shared.sample.Sample
-import t.viewer.server.SharedDatasets
-import t.common.shared.sample.Unit
 import t.common.shared.sample.SampleColumn
-import t.common.shared.Platform
-import t.viewer.server.SharedPlatforms
-import t.common.shared.clustering.ProbeClustering
-import t.common.shared.clustering.HierarchicalClustering
-import javax.annotation.Nullable
-import t.viewer.shared.TimeoutException
+import t.common.shared.sample.Unit
+import t.db.DefaultBio
+import t.platform.BioParameter
+import t.platform.Probe
+import t.sparql.BBMap
+import t.sparql.Datasets
+import t.sparql.MMap
+import t.sparql.Platforms
+import t.sparql.Probes
+import t.sparql.SampleFilter
+import t.sparql.Samples
+import t.sparql.TriplestoreMetadata
+import t.sparql.makeRich
+import t.sparql.secondary.B2RKegg
+import t.sparql.secondary.GOTerm
+import t.sparql.secondary.LocalUniprot
+import t.sparql.secondary.Pathway
+import t.sparql.secondary.Uniprot
+import t.sparql.toBioMap
 import t.util.PeriodicRefresh
 import t.util.Refreshable
-import otgviewer.shared.NumericalBioParamValue
-import otgviewer.shared.StringBioParamValue
-import scala.collection.convert.Wrappers.JListWrapper
-import t.platform.BioParameter
+import t.viewer.client.rpc.SparqlService
+import t.viewer.server.Configuration
+import t.viewer.server.Conversions.asJavaSample
+import t.viewer.server.Conversions.convertPairs
+import t.viewer.server.Conversions.scAsJava
+import t.viewer.server.Conversions.scAsScala
+import t.viewer.server.SharedDatasets
+import t.viewer.server.SharedPlatforms
+import t.viewer.shared.AppInfo
+import t.viewer.shared.Association
+import t.viewer.shared.TimeoutException
 
 object SparqlServiceImpl {
   var inited = false

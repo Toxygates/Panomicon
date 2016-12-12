@@ -16,13 +16,10 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.common.shared.sample;
+package otgviewer.shared;
 
 import java.io.Serializable;
 import java.util.List;
-
-import otgviewer.shared.BioParamValue;
-import otgviewer.shared.NumericalBioParamValue;
 
 /**
  * A set of annotations (such as chemical data and morphological data) corresponding to a
@@ -52,14 +49,5 @@ public class Annotation implements Serializable {
 
   public List<BioParamValue> getAnnotations() {
     return _values;
-  }
-
-  public double doubleValueFor(String entryName) throws Exception {
-    for (BioParamValue e : getAnnotations()) {
-      if (e.label().equals(entryName) && e instanceof NumericalBioParamValue) {
-        return ((NumericalBioParamValue) e).value();        
-      }
-    }
-    throw new Exception("Value not available");
   }
 }

@@ -20,17 +20,14 @@
 
 package t.db.kyotocabinet
 
-import org.junit.runner.RunWith
 import t.db.ExprValue
 import otg.OTGContext
 import t.TTestSuite
 import t.db.MatrixDBReader
-import org.scalatest.junit.JUnitRunner
 import otg.Species._
 import t.testing.TestConfig
 import t.db.Sample
 
-@RunWith(classOf[JUnitRunner])
 class KCTest extends TTestSuite {
   var db: MatrixDBReader[ExprValue] = _
 
