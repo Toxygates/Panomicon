@@ -24,7 +24,7 @@ public interface ProbeService extends RemoteService {
    * @param probes
    * @return
    */
-  public String[][] geneSyms(String[] probes) throws TimeoutException;
+  String[][] geneSyms(String[] probes) throws TimeoutException;
 
   /*
    * Obtain gene suggestions from a partial gene symbol
@@ -34,7 +34,7 @@ public interface ProbeService extends RemoteService {
    * @return An array of pairs, where the first item is the precise gene symbol and the second is
    * the full gene name.
    */
-  public String[] geneSuggestions(SampleClass sc, String partialName) throws TimeoutException;
+  String[] geneSuggestions(SampleClass sc, String partialName) throws TimeoutException;
   
   /**
    * Convert identifiers such as genes, probe IDs and proteins into a list of probes.
@@ -47,7 +47,7 @@ public interface ProbeService extends RemoteService {
    * @param samples If null, all probes will be obtained.
    * @return
    */
-  public String[] identifiersToProbes(String[] identifiers, boolean precise,
+  String[] identifiersToProbes(String[] identifiers, boolean precise,
       boolean quick, boolean titlePatternMatch, @Nullable List<Sample> samples);
 
   /**
@@ -57,7 +57,7 @@ public interface ProbeService extends RemoteService {
    * @param samples
    * @return
    */
-  public String[] filterProbesByGroup(String[] probes, List<Sample> samples);
+  String[] filterProbesByGroup(String[] probes, List<Sample> samples);
 
   /**
    * Obtain suggestions from a partial gene symbol
@@ -67,5 +67,5 @@ public interface ProbeService extends RemoteService {
    * @return An array of pairs, where the first item is the precise gene symbol and the second is
    *         the full gene name.
    */
-  public Pair<String, AType>[] keywordSuggestions(String partialName, int maxSize);
+  Pair<String, AType>[] keywordSuggestions(String partialName, int maxSize);
 }

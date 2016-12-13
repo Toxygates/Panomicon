@@ -44,7 +44,7 @@ public interface SampleServiceAsync {
   public void units(SampleClass[] sc, String param, String[] paramValues,
       AsyncCallback<Pair<Unit, Unit>[]> callback);
 
-  void annotations(Sample barcode, AsyncCallback<Annotation> callback);
+  public void annotations(Sample barcode, AsyncCallback<Annotation> callback);
 
   void annotations(HasSamples<Sample> column, boolean importantOnly,
       AsyncCallback<Annotation[]> callback);
