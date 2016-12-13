@@ -28,7 +28,7 @@ import t.common.client.components.ResizingListBox;
 import t.common.shared.SharedUtils;
 import t.common.shared.Term;
 import t.viewer.client.Utils;
-import t.viewer.client.rpc.SparqlServiceAsync;
+import t.viewer.client.rpc.ProbeServiceAsync;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -70,12 +70,12 @@ abstract public class ProbeSelector extends DataListenerWidget implements
   private ListBox itemList;
   private Button addButton;
 
-  private final SparqlServiceAsync sparqlService;
+  private final ProbeServiceAsync probeService;
 
   private final static String CHILD_WIDTH = "100%";
 
   public ProbeSelector(Screen screen, String label, boolean wb) {
-    this.sparqlService = screen.sparqlService();
+    this.probeService = screen.manager().probeService();
     this.withButton = wb;
     this.dp = new DockLayoutPanel(Unit.PX);
     initWidget(dp);
@@ -202,7 +202,7 @@ abstract public class ProbeSelector extends DataListenerWidget implements
       Arrays.sort(probes);
       // TODO reduce the number of ajax calls done by this screen by
       // collapsing them
-      sparqlService.geneSyms(probes, new PendingAsyncCallback<String[][]>(this, 
+      probeService.geneSyms(probes, new PendingAsyncCallback<String[][]>(this, 
           "Unable to get gene symbols for probes") {
         public void handleSuccess(String[][] syms) {
           deferredAddProbes(probes, syms);

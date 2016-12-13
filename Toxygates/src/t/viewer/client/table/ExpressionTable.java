@@ -158,7 +158,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   public ExpressionTable(Screen _screen, boolean withPValueOption) {
     super(_screen);
     this.withPValueOption = withPValueOption;
-    this.matrixService = _screen.matrixService();
+    this.matrixService = _screen.manager().matrixService();
     this.resources = _screen.resources();
     screen = _screen;
 

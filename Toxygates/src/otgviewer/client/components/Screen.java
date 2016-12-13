@@ -210,14 +210,20 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
     return manager.appInfo();
   }
 
+  //Should go through the manager in the future
+  @Deprecated
   public SparqlServiceAsync sparqlService() {
     return manager.sparqlService();
   }
 
+  //Should go through the manager in the future
+  @Deprecated
   public MatrixServiceAsync matrixService() {
     return manager.matrixService();
   }
 
+  //Should go through the manager in the future
+  @Deprecated
   public SeriesServiceAsync seriesService() {
     return manager.seriesService();
   }

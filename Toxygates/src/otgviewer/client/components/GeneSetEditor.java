@@ -58,7 +58,7 @@ import t.common.shared.SharedUtils;
 import t.common.shared.Term;
 import t.common.shared.sample.Group;
 import t.viewer.client.Utils;
-import t.viewer.client.rpc.SparqlServiceAsync;
+import otgviewer.client.rpc.SparqlServiceAsync;
 
 public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHandler {
 

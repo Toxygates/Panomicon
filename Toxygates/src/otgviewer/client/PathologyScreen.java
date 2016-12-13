@@ -34,7 +34,7 @@ import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.SampleColumn;
 import t.viewer.client.Utils;
-import t.viewer.client.rpc.SparqlServiceAsync;
+import otgviewer.client.rpc.SparqlServiceAsync;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.safehtml.shared.SafeHtml;

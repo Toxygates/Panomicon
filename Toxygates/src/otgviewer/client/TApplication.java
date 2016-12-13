@@ -31,9 +31,9 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.Screen.QueuedAction;
-import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.dialog.FeedbackForm;
@@ -45,10 +45,12 @@ import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.MetadataInfo;
 import t.viewer.client.rpc.MatrixService;
 import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.client.rpc.ProbeServiceAsync;
+import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.rpc.SeriesService;
 import t.viewer.client.rpc.SeriesServiceAsync;
-import t.viewer.client.rpc.SparqlService;
-import t.viewer.client.rpc.SparqlServiceAsync;
+import otgviewer.client.rpc.SparqlService;
+import otgviewer.client.rpc.SparqlServiceAsync;
 import t.viewer.client.rpc.UserDataService;
 import t.viewer.client.rpc.UserDataServiceAsync;
 import t.viewer.shared.AppInfo;
@@ -97,6 +99,10 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
   private static SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
       .create(SparqlService.class);
+
+  private static SampleServiceAsync sampleService = sparqlService;
+  private static ProbeServiceAsync probeService = sparqlService;
+  
   private static MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
       .create(MatrixService.class);
   private static SeriesServiceAsync seriesService = (SeriesServiceAsync) GWT
@@ -648,6 +654,14 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     return sparqlService;
   }
 
+  public SampleServiceAsync sampleService() {
+    return sampleService;
+  }
+  
+  public ProbeServiceAsync probeService() {
+    return probeService;
+  }
+  
   public SeriesServiceAsync seriesService() {
     return seriesService;
   }

@@ -81,11 +81,11 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
       SampleClass sc = chosenSampleClass.copy();
       sc.put("compound_name", compounds.get(0));
-      sparqlService.samples(sc, new PendingAsyncCallback<Sample[]>(
+      sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(
           this, "Unable to get samples") {
         public void handleSuccess(Sample[] bcs) {
 
-          sparqlService.annotations(bcs[0], new PendingAsyncCallback<Annotation>(
+          sampleService.annotations(bcs[0], new PendingAsyncCallback<Annotation>(
               AnnotationTDGrid.this, "Unable to get annotations.") {
             public void handleSuccess(Annotation a) {
               for (BioParamValue e : a.getAnnotations()) {
@@ -117,7 +117,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     sc.put("exposure_time", time);
     sc.put("compound_name", compound);
 
-    sparqlService.samples(sc, new PendingAsyncCallback<Sample[]>(this,
+    sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(this,
         "Unable to retrieve barcodes for the group definition.") {
       public void handleSuccess(Sample[] barcodes) {
         processAnnotationBarcodes(annotation, row, col, time, barcodes);
@@ -129,7 +129,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
       final String time, final Sample[] barcodes) {
     final NumberFormat fmt = NumberFormat.getFormat("#0.00");
     Group g = new Group(schema, "temporary", barcodes, null);
-    sparqlService.annotations(g, false, new PendingAsyncCallback<Annotation[]>(this,
+    sampleService.annotations(g, false, new PendingAsyncCallback<Annotation[]>(this,
         "Unable to get annotations.") {
       public void handleSuccess(Annotation[] as) {
         double sum = 0;

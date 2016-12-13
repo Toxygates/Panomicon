@@ -42,8 +42,8 @@ import t.common.shared.ValueType;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
+import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.rpc.SeriesServiceAsync;
-import t.viewer.client.rpc.SparqlServiceAsync;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -62,7 +62,7 @@ public class Charts {
 
   private final Logger logger = SharedUtils.getLogger("cgf");
 
-  protected final SparqlServiceAsync sparqlService;
+  protected final SampleServiceAsync sampleService;
   protected final SeriesServiceAsync seriesService;
 
 
@@ -74,7 +74,7 @@ public class Charts {
 
   private Charts(Screen screen) {
     this.schema = screen.schema();
-    this.sparqlService = screen.sparqlService();
+    this.sampleService = screen.manager().sampleService();
     this.seriesService = screen.seriesService();
   }
 
@@ -158,7 +158,7 @@ public class Charts {
     String[] majorVals = GroupUtils.collect(groups, schema.majorParameter()).toArray(new String[0]);
 
     if (organisms.size() > 1) {
-      sparqlService.units(sampleClasses, schema.majorParameter(), majorVals,
+      sampleService.units(sampleClasses, schema.majorParameter(), majorVals,
           new AsyncCallback<Pair<Unit, Unit>[]>() {
 
             @Override
@@ -173,7 +173,7 @@ public class Charts {
             }
           });
     } else if (barcodes == null) {
-      sparqlService.samples(sampleClasses, schema.majorParameter(), majorVals,
+      sampleService.samples(sampleClasses, schema.majorParameter(), majorVals,
           new AsyncCallback<Sample[]>() {
 
             @Override
