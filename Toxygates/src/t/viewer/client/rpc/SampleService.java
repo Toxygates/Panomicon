@@ -112,5 +112,12 @@ public interface SampleService extends RemoteService {
   Annotation[] annotations(HasSamples<Sample> column, boolean importantOnly)
       throws TimeoutException;
 
+  /**
+   * Prepare a CSV file with annotation information for download.
+   * @param column
+   * @return The URL of the downloadable file.
+   * @throws TimeoutException
+   */
+  String prepareAnnotationCSVDownload(HasSamples<Sample> column) throws TimeoutException;
 
 }

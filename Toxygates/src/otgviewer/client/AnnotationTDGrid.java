@@ -22,11 +22,11 @@ import java.util.List;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.shared.BioParamValue;
-import otgviewer.shared.NumericalBioParamValue;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.Annotation;
+import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.Group;
+import t.common.shared.sample.NumericalBioParamValue;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
 
@@ -125,6 +125,15 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     });
   }
 
+  private double doubleValueFor(Annotation a, String key) throws IllegalArgumentException {
+    for (BioParamValue e : a.getAnnotations()) {
+      if (e.label().equals(key) && e instanceof NumericalBioParamValue) {
+        return ((NumericalBioParamValue) e).value();
+      }
+    }
+    throw new IllegalArgumentException("Value not available");
+  }
+  
   private void processAnnotationBarcodes(final String annotation, final int row, final int col,
       final String time, final Sample[] barcodes) {
     final NumberFormat fmt = NumberFormat.getFormat("#0.00");
@@ -136,7 +145,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
         int n = 0;
         for (Annotation a : as) {
           try {
-            double val = a.doubleValueFor(annotation);
+            double val = doubleValueFor(a, annotation);
             if (!Double.isNaN(val)) {
               n += 1;
               sum += val;

@@ -1,6 +1,6 @@
-package otgviewer.shared;
+package t.common.shared.sample;
 
-import static t.viewer.client.Utils.formatNumber;
+import static t.common.shared.SharedUtils.formatNumber;
 
 import javax.annotation.Nullable;
 

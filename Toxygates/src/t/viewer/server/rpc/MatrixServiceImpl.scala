@@ -272,7 +272,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     CSVHelper.writeCSV(config.csvDirectory, config.csvUrlBase,
       aux ++ csvAuxColumns(mat),
       rowNames, colNames,
-      mat.data.map(_.map(asScala(_))))
+      mat.data.map(_.map(_.getValue)))
   }
 
   protected def csvAuxColumns(mat: ExprMatrix): Seq[(String, Seq[String])] = Seq()

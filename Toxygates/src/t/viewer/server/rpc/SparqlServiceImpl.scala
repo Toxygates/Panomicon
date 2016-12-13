@@ -35,7 +35,6 @@ import t.common.shared.AType
 import t.common.shared.Dataset
 import t.common.shared.Pair
 import t.common.shared.SampleClass
-import t.common.shared.sample.Annotation
 import t.common.shared.sample.HasSamples
 import t.common.shared.sample.Sample
 import t.db.DefaultBio
@@ -63,10 +62,12 @@ import javax.annotation.Nullable
 import t.viewer.shared.TimeoutException
 import t.util.PeriodicRefresh
 import t.util.Refreshable
-import otgviewer.shared.NumericalBioParamValue
-import otgviewer.shared.StringBioParamValue
 import scala.collection.convert.Wrappers.JListWrapper
 import t.platform.BioParameter
+import t.viewer.server.CSVHelper
+import t.common.shared.sample.NumericalBioParamValue
+import t.common.shared.sample.StringBioParamValue
+import t.common.shared.sample.Annotation
 
 object SparqlServiceImpl {
   var inited = false
@@ -408,6 +409,22 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       val ps = sampleStore.parameterQuery(x.id, keys)
       parametersToAnnotation(x, ps)
     })
+  }
+
+  @throws[TimeoutException]
+  def prepareAnnotationCSVDownload(column: HasSamples[Sample]): String = {
+    val ss = column.getSamples
+    val raw = ss.map(x => {
+      sampleStore.parameterQuery(x.id, bioParameters.sampleParameters).toSeq
+    })
+
+    val colNames = raw.head.map(_._1.humanReadable).toSeq
+    val data = Vector.tabulate(ss.size, colNames.size)((row, col) => raw(col)(row))
+
+    CSVHelper.writeCSV(configuration.csvDirectory, configuration.csvUrlBase,
+      Seq(), ss.map(_.id),
+      colNames,
+      data)
   }
 
   //TODO remove sc

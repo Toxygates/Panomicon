@@ -24,6 +24,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.google.gwt.i18n.client.NumberFormat;
+
 public class SharedUtils {
   public static <T> int indexOf(T[] haystack, T needle) {
     for (int i = 0; i < haystack.length; ++i) {
@@ -94,5 +96,19 @@ public class SharedUtils {
       sb.append(separator);
     }
     return sb.toString();
+  }
+  
+  private static NumberFormat df = NumberFormat.getDecimalFormat();
+  private static NumberFormat sf = NumberFormat.getScientificFormat();
+
+  public static String formatNumber(double v) {
+    if (v == 0.0) {
+      return "0";
+    }
+    if (Math.abs(v) > 0.001) {
+      return df.format(v);
+    } else {
+      return sf.format(v);
+    }
   }
 }
