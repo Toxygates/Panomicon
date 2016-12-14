@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.shared;
+package t.common.shared.sample;
 
 import java.io.Serializable;
 import java.util.List;

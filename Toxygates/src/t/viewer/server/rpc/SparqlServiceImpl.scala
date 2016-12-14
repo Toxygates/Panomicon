@@ -33,7 +33,6 @@ import scala.collection.{ Set => CSet }
 import SparqlServiceImpl.platforms
 import javax.annotation.Nullable
 import otg.db.OTGParameterSet
-import otgviewer.shared.Annotation
 import otgviewer.shared.Pathology
 import t.common.server.ScalaUtils
 import t.common.shared.AType
@@ -81,6 +80,7 @@ import t.viewer.server.SharedPlatforms
 import t.viewer.shared.AppInfo
 import t.viewer.shared.Association
 import t.viewer.shared.TimeoutException
+import t.common.shared.sample.Annotation
 
 object SparqlServiceImpl {
   var inited = false
