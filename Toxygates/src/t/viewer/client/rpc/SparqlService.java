@@ -52,7 +52,7 @@ public interface SparqlService extends RemoteService, SampleService, ProbeServic
    * @return
    * @throws TimeoutException
    */
-  public AppInfo appInfo(@Nullable String userDataKey) throws TimeoutException;
+  AppInfo appInfo(@Nullable String userDataKey) throws TimeoutException;
 
  
   /**
@@ -61,7 +61,7 @@ public interface SparqlService extends RemoteService, SampleService, ProbeServic
    * @param pattern
    * @return
    */
-  public String[] pathways(SampleClass sc, String pattern) throws TimeoutException;
+  String[] pathways(SampleClass sc, String pattern) throws TimeoutException;
 
   /**
    * Obtain filtered probes that belong to the named pathway.
@@ -70,7 +70,7 @@ public interface SparqlService extends RemoteService, SampleService, ProbeServic
    * @param samples If null, all probes will be obtained.
    * @return
    */
-  public String[] probesForPathway(SampleClass sc, String pathway, @Nullable List<Sample> samples)
+  String[] probesForPathway(SampleClass sc, String pathway, @Nullable List<Sample> samples)
       throws TimeoutException;
 
   /**
@@ -79,7 +79,7 @@ public interface SparqlService extends RemoteService, SampleService, ProbeServic
    * @param pattern
    * @return
    */
-  public String[] goTerms(String pattern) throws TimeoutException;
+  String[] goTerms(String pattern) throws TimeoutException;
 
   /**
    * Obtain probes for a given GO term (fully named)
@@ -87,7 +87,7 @@ public interface SparqlService extends RemoteService, SampleService, ProbeServic
    * @param goTerm
    * @return
    */
-  public String[] probesForGoTerm(String goTerm) throws TimeoutException;
+  String[] probesForGoTerm(String goTerm) throws TimeoutException;
 
   /**
    * Obtain filtered probes for a given GO term (fully named)
@@ -95,7 +95,7 @@ public interface SparqlService extends RemoteService, SampleService, ProbeServic
    * @param goTerm
    * @return
    */
-  public String[] probesForGoTerm(String goTerm, @Nullable List<Sample> samples)
+  String[] probesForGoTerm(String goTerm, @Nullable List<Sample> samples)
       throws TimeoutException;
 
  
@@ -108,7 +108,7 @@ public interface SparqlService extends RemoteService, SampleService, ProbeServic
    * @param probes
    * @return
    */
-  public Association[] associations(SampleClass sc, AType[] types, String[] probes)
+  Association[] associations(SampleClass sc, AType[] types, String[] probes)
       throws TimeoutException;
 
 }

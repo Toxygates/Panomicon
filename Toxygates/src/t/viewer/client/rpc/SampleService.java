@@ -21,7 +21,7 @@ import com.google.gwt.user.client.rpc.RemoteService;
  */
 public interface SampleService extends RemoteService {
   
-  public void chooseDatasets(Dataset[] enabled) throws TimeoutException;
+  void chooseDatasets(Dataset[] enabled) throws TimeoutException;
   
   /**
    * Obtain all sample classes in the triple store
@@ -29,14 +29,14 @@ public interface SampleService extends RemoteService {
    * @return
    */
   @Deprecated
-  public SampleClass[] sampleClasses() throws TimeoutException;
+  SampleClass[] sampleClasses() throws TimeoutException;
   
-  public String[] parameterValues(Dataset[] ds, SampleClass sc, String parameter)
+  String[] parameterValues(Dataset[] ds, SampleClass sc, String parameter)
       throws TimeoutException;
 
-  public String[] parameterValues(SampleClass sc, String parameter) throws TimeoutException;
+  String[] parameterValues(SampleClass sc, String parameter) throws TimeoutException;
 
-  public String[] parameterValues(SampleClass[] scs, String parameter) throws TimeoutException;
+  String[] parameterValues(SampleClass[] scs, String parameter) throws TimeoutException;
   
   /**
    * Obtain samples (fully populated with metadata) from given IDs
@@ -45,7 +45,7 @@ public interface SampleService extends RemoteService {
    * @return
    * @throws TimeoutException
    */
-  public Sample[] samplesById(String[] ids) throws TimeoutException;
+  Sample[] samplesById(String[] ids) throws TimeoutException;
 
   /**
    * Obtain samples, fully populated with metadata, from given IDs.
@@ -54,7 +54,7 @@ public interface SampleService extends RemoteService {
    * @return
    * @throws TimeoutException
    */
-  public List<Sample[]> samplesById(List<String[]> ids) throws TimeoutException;
+  List<Sample[]> samplesById(List<String[]> ids) throws TimeoutException;
   
   /**
    * Obtain samples for a given sample class.
@@ -62,7 +62,7 @@ public interface SampleService extends RemoteService {
    * @param sc
    * @return
    */
-  public Sample[] samples(SampleClass sc) throws TimeoutException;
+  Sample[] samples(SampleClass sc) throws TimeoutException;
 
   /**
    * Obtain samples with a filter on one parameter.
@@ -70,10 +70,10 @@ public interface SampleService extends RemoteService {
    * @param sc
    * @return
    */
-  public Sample[] samples(SampleClass sc, String param, String[] paramValues)
+  Sample[] samples(SampleClass sc, String param, String[] paramValues)
       throws TimeoutException;
 
-  public Sample[] samples(SampleClass[] scs, String param, String[] paramValues)
+  Sample[] samples(SampleClass[] scs, String param, String[] paramValues)
       throws TimeoutException;
   
   /**
@@ -85,10 +85,10 @@ public interface SampleService extends RemoteService {
    * @return Pairs of units, where the first is treated samples and the second the corresponding
    *         control samples, or null if there are none.
    */
-  public Pair<Unit, Unit>[] units(SampleClass sc, String param, @Nullable String[] paramValues)
+  Pair<Unit, Unit>[] units(SampleClass sc, String param, @Nullable String[] paramValues)
       throws TimeoutException;
 
-  public Pair<Unit, Unit>[] units(SampleClass[] scs, String param, @Nullable String[] paramValues)
+  Pair<Unit, Unit>[] units(SampleClass[] scs, String param, @Nullable String[] paramValues)
       throws TimeoutException;
 
 
@@ -99,7 +99,7 @@ public interface SampleService extends RemoteService {
    * @param barcode
    * @return
    */
-  public Annotation annotations(Sample barcode) throws TimeoutException;
+  Annotation annotations(Sample barcode) throws TimeoutException;
 
   /**
    * Obtain annotations for a set of samples
@@ -109,8 +109,15 @@ public interface SampleService extends RemoteService {
    *        annotations will be obtained.
    * @return
    */
-  public Annotation[] annotations(HasSamples<Sample> column, boolean importantOnly)
+  Annotation[] annotations(HasSamples<Sample> column, boolean importantOnly)
       throws TimeoutException;
 
+  /**
+   * Prepare a CSV file with annotation information for download.
+   * @param column
+   * @return The URL of the downloadable file.
+   * @throws TimeoutException
+   */
+  String prepareAnnotationCSVDownload(HasSamples<Sample> column) throws TimeoutException;
 
 }

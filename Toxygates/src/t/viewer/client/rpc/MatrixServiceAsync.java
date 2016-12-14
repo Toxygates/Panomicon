@@ -36,29 +36,29 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface MatrixServiceAsync {
 
-  public void loadMatrix(List<Group> columns, String[] probes, ValueType type,
+  void loadMatrix(List<Group> columns, String[] probes, ValueType type,
       AsyncCallback<ManagedMatrixInfo> callback);
 
-  public void matrixRows(int offset, int size, SortKey sortKey, boolean ascending,
+  void matrixRows(int offset, int size, SortKey sortKey, boolean ascending,
       AsyncCallback<List<ExpressionRow>> callback);
 
-  public void selectProbes(String[] probes, AsyncCallback<ManagedMatrixInfo> callback);
+  void selectProbes(String[] probes, AsyncCallback<ManagedMatrixInfo> callback);
 
-  public void setColumnFilter(int column, @Nullable ColumnFilter filter,
+  void setColumnFilter(int column, @Nullable ColumnFilter filter,
       AsyncCallback<ManagedMatrixInfo> callback);
 
-  public void getFullData(List<Group> g, String[] probes, boolean withSymbols,
+  void getFullData(List<Group> g, String[] probes, boolean withSymbols,
       ValueType typ, AsyncCallback<FullMatrix> callback);
 
-  public void prepareCSVDownload(boolean individualSamples, AsyncCallback<String> callback);
+  void prepareCSVDownload(boolean individualSamples, AsyncCallback<String> callback);
 
-  public void addTwoGroupTest(Synthetic.TwoGroupSynthetic test, AsyncCallback<ManagedMatrixInfo> callback);
+  void addTwoGroupTest(Synthetic.TwoGroupSynthetic test, AsyncCallback<ManagedMatrixInfo> callback);
 
-  public void removeTwoGroupTests(AsyncCallback<ManagedMatrixInfo> callback);
+  void removeTwoGroupTests(AsyncCallback<ManagedMatrixInfo> callback);
 
-  public void sendFeedback(String name, String email, String feedback, AsyncCallback<Void> callback);
+  void sendFeedback(String name, String email, String feedback, AsyncCallback<Void> callback);
 
-  public void prepareHeatmap(List<Group> chosenColumns, String[] chosenProbes, ValueType valueType,
+  void prepareHeatmap(List<Group> chosenColumns, String[] chosenProbes, ValueType valueType,
       Algorithm algorithm, AsyncCallback<String> prepareHeatmapCallback);
 
 }

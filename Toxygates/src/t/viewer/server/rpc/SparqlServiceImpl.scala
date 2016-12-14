@@ -34,9 +34,7 @@ import SparqlServiceImpl.platforms
 import javax.annotation.Nullable
 import otg.db.OTGParameterSet
 import otgviewer.shared.Annotation
-import otgviewer.shared.NumericalBioParamValue
 import otgviewer.shared.Pathology
-import otgviewer.shared.StringBioParamValue
 import t.common.server.ScalaUtils
 import t.common.shared.AType
 import t.common.shared.Dataset
@@ -46,8 +44,10 @@ import t.common.shared.SampleClass
 import t.common.shared.StringList
 import t.common.shared.clustering.ProbeClustering
 import t.common.shared.sample.HasSamples
+import t.common.shared.sample.NumericalBioParamValue
 import t.common.shared.sample.Sample
 import t.common.shared.sample.SampleColumn
+import t.common.shared.sample.StringBioParamValue
 import t.common.shared.sample.Unit
 import t.db.DefaultBio
 import t.platform.BioParameter
@@ -70,6 +70,7 @@ import t.sparql.toBioMap
 import t.util.PeriodicRefresh
 import t.util.Refreshable
 import t.viewer.client.rpc.SparqlService
+import t.viewer.server.CSVHelper
 import t.viewer.server.Configuration
 import t.viewer.server.Conversions.asJavaSample
 import t.viewer.server.Conversions.convertPairs
@@ -421,6 +422,24 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       val ps = sampleStore.parameterQuery(x.id, keys)
       parametersToAnnotation(x, ps)
     })
+  }
+
+  @throws[TimeoutException]
+  def prepareAnnotationCSVDownload(column: HasSamples[Sample]): String = {
+    val ss = column.getSamples
+    val raw = ss.map(x => {
+      sampleStore.parameterQuery(x.id, bioParameters.sampleParameters).toSeq
+    })
+
+    //TODO sort columns by section and name
+    val colNames = raw.head.map(_._1.humanReadable).toSeq
+    val data = Vector.tabulate(raw.size, colNames.size)((s, a) =>
+      raw(s)(a)._2.getOrElse(""))
+
+    CSVHelper.writeCSV(configuration.csvDirectory, configuration.csvUrlBase,
+      Seq(), ss.map(_.id),
+      colNames,
+      data)
   }
 
   //TODO remove sc

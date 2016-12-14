@@ -22,11 +22,11 @@ import java.util.List;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.shared.Annotation;
-import otgviewer.shared.BioParamValue;
-import otgviewer.shared.NumericalBioParamValue;
 import t.common.shared.SampleClass;
+import t.common.shared.sample.BioParamValue;
+import t.common.shared.sample.Annotation;
 import t.common.shared.sample.Group;
+import t.common.shared.sample.NumericalBioParamValue;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
 

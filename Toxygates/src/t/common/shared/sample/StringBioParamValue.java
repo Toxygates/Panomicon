@@ -1,4 +1,4 @@
-package otgviewer.shared;
+package t.common.shared.sample;
 
 @SuppressWarnings("serial")
 public class StringBioParamValue extends BioParamValue {

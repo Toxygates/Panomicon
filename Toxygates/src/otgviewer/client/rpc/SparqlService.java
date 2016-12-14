@@ -1,10 +1,13 @@
 package otgviewer.client.rpc;
 
+import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+
 import otgviewer.shared.Pathology;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.SampleColumn;
 import t.viewer.shared.TimeoutException;
 
+@RemoteServiceRelativePath("sparql")
 public interface SparqlService extends t.viewer.client.rpc.SparqlService {
   /**
    * Obtain pathologies for a set of samples
@@ -12,7 +15,7 @@ public interface SparqlService extends t.viewer.client.rpc.SparqlService {
    * @param column
    * @return
    */
-  public Pathology[] pathologies(SampleColumn column) throws TimeoutException;
+  Pathology[] pathologies(SampleColumn column) throws TimeoutException;
 
   /**
    * Obtain probes that correspond to proteins targeted by the named compound.
@@ -23,7 +26,7 @@ public interface SparqlService extends t.viewer.client.rpc.SparqlService {
    * @param homologous Whether to use homologous genes (if not, only direct targets are returned)
    * @return
    */
-  public String[] probesTargetedByCompound(SampleClass sc, String compound, String service,
+  String[] probesTargetedByCompound(SampleClass sc, String compound, String service,
       boolean homologous) throws TimeoutException;
 
 }

@@ -30,24 +30,24 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface SparqlServiceAsync extends SampleServiceAsync, ProbeServiceAsync {
 
-  public void appInfo(String userDataKey, AsyncCallback<AppInfo> callback);
+  void appInfo(String userDataKey, AsyncCallback<AppInfo> callback);
 
-  public void pathways(SampleClass sc, String pattern, AsyncCallback<String[]> callback);
+  void pathways(SampleClass sc, String pattern, AsyncCallback<String[]> callback);
 
-  public void probesForPathway(SampleClass sc, String pathway, List<Sample> samples,
+  void probesForPathway(SampleClass sc, String pathway, List<Sample> samples,
       AsyncCallback<String[]> callback);
 
-  public void geneSyms(String[] probes, AsyncCallback<String[][]> callback);
+  void geneSyms(String[] probes, AsyncCallback<String[][]> callback);
 
-  public void geneSuggestions(SampleClass sc, String partialName, AsyncCallback<String[]> callback);
+  void geneSuggestions(SampleClass sc, String partialName, AsyncCallback<String[]> callback);
 
-  public void goTerms(String pattern, AsyncCallback<String[]> callback);
+  void goTerms(String pattern, AsyncCallback<String[]> callback);
 
   @Deprecated
-  public void probesForGoTerm(String term, AsyncCallback<String[]> callback);
+  void probesForGoTerm(String term, AsyncCallback<String[]> callback);
 
-  public void probesForGoTerm(String pattern, List<Sample> samples, AsyncCallback<String[]> callback);
+  void probesForGoTerm(String pattern, List<Sample> samples, AsyncCallback<String[]> callback);
 
-  public void associations(SampleClass sc, AType[] types, String[] probes,
+  void associations(SampleClass sc, AType[] types, String[] probes,
       AsyncCallback<Association[]> callback);
 }
