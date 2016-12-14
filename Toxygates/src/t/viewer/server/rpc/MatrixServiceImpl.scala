@@ -269,7 +269,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       row.flatMap(at => gis.getOrElse(Probe(at), Seq.empty))).map(_.distinct.mkString(" "))
 
     val aux = List((("Gene"), geneIds))
-    CSVHelper.writeCSV(config.csvDirectory, config.csvUrlBase,
+    CSVHelper.writeCSV("toxygates", config.csvDirectory, config.csvUrlBase,
       aux ++ csvAuxColumns(mat),
       rowNames, colNames,
       mat.data.map(_.map(_.getValue)))

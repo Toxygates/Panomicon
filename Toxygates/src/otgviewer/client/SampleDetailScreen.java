@@ -81,7 +81,6 @@ public class SampleDetailScreen extends Screen {
   private List<Group> lastColumns;
   private @Nullable SampleColumn currentColumn;
   
-  //TODO enable/disable
   private Button downloadButton;
   private HorizontalPanel tools;
 
@@ -120,6 +119,7 @@ public class SampleDetailScreen extends Screen {
   }
 
   public void loadSections(final HasSamples<Sample> c, boolean importantOnly) {
+    downloadButton.setEnabled(false);
     sampleService.annotations(c, importantOnly, new PendingAsyncCallback<Annotation[]>(
         SampleDetailScreen.this) {
       public void handleFailure(Throwable caught) {
@@ -230,6 +230,9 @@ public class SampleDetailScreen extends Screen {
     downloadButton = new Button("Download CSV...", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
+        if (currentColumn == null) {
+          return;
+        }
         sampleService.prepareAnnotationCSVDownload(currentColumn, 
             new PendingAsyncCallback<String>(SampleDetailScreen.this,
             "Unable to prepare the data for download,") {
@@ -254,6 +257,7 @@ public class SampleDetailScreen extends Screen {
   private void setDisplayColumn(SampleColumn c) {
     loadSections(c, false);    
     currentColumn = c;
+    downloadButton.setEnabled(true);
     SampleClass sc = c.getSamples()[0].sampleClass().asMacroClass(manager.schema());
     atd.sampleClassChanged(sc);
   }
