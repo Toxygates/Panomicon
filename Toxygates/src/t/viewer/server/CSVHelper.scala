@@ -20,6 +20,8 @@
 
 package t.viewer.server
 
+import java.util.Calendar
+
 object CSVHelper {
 
   /**
@@ -74,12 +76,21 @@ object CSVHelper {
 
   }
 
+  def writeCSV(namePrefix: String, dir: String, urlbase: String,
+    rowTitles: Seq[String], colTitles: Seq[String],
+    data: Seq[Seq[Any]]): String =
+    writeCSV(namePrefix, dir, urlbase, Seq(), rowTitles, colTitles,
+      data)
+
   /**
    * Write expression values to a CSV files.
    * The given probes and geneIds only will be written.
    * The generated url will be returned.
+   *
+   * @param textCols Extra columns to be inserted to the left
+   * @param expr Row-major data
    */
-  def writeCSV(dir: String, urlbase: String,
+  def writeCSV(namePrefix: String, dir: String, urlbase: String,
       textCols: Seq[(String, Seq[String])],
       rowTitles: Seq[String], colTitles: Seq[String],
       expr: Seq[Seq[Any]]): String = {
@@ -88,8 +99,11 @@ object CSVHelper {
       throw new Exception("No data supplied")
     }
 
+    val cal = Calendar.getInstance
+    val dfmt = s"${cal.get(Calendar.YEAR)}-${cal.get(Calendar.MONTH) + 1}-${cal.get(Calendar.DAY_OF_MONTH)}"
+
     //TODO pass the file prefix in from outside
-    val file = "otg" + System.currentTimeMillis + ".csv"
+    val file = s"$namePrefix-${dfmt}-${System.currentTimeMillis % 10000}.csv"
     val fullName = dir + "/" + file
 
     new CSVFile {

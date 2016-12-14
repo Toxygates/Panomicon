@@ -418,15 +418,28 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       sampleStore.parameterQuery(x.id, bioParameters.sampleParameters).toSeq
     })
 
+    val params = raw.head.map(_._1).toSeq
+
     //TODO sort columns by section and name
-    val colNames = raw.head.map(_._1.humanReadable).toSeq
+    val colNames = params.map(_.humanReadable)
     val data = Vector.tabulate(raw.size, colNames.size)((s, a) =>
       raw(s)(a)._2.getOrElse(""))
 
-    CSVHelper.writeCSV(configuration.csvDirectory, configuration.csvUrlBase,
-      Seq(), ss.map(_.id),
-      colNames,
-      data)
+    val bps = params.map(p => bioParameters.get(p.identifier))
+    def extracts(b: Option[BioParameter], f: BioParameter => Option[String]): String =
+      b.map(f).flatten.getOrElse("")
+
+    def extractd(b: Option[BioParameter], f: BioParameter => Option[Double]): String =
+      b.map(f).flatten.map(_.toString).getOrElse("")
+
+    val preRows = Seq(
+        bps.map(extracts(_, _.section)),
+        bps.map(extractd(_, _.lowThreshold)),
+        bps.map(extractd(_, _.highThreshold))
+        )
+
+    CSVHelper.writeCSV("toxygates", configuration.csvDirectory, configuration.csvUrlBase,
+      Seq("Section", "Healthy min.", "Healthy max.") ++ ss.map(_.id), colNames, preRows ++ data)
   }
 
   //TODO remove sc
