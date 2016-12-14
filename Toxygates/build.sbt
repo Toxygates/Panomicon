@@ -49,6 +49,8 @@ libraryDependencies += "org.antlr" % "antlr" % "latest.integration"
 
 gwtVersion := "2.7.0"
 
+gwtWebappPath := baseDirectory.value / "war"
+
 //gwtModules := Seq("toxygates", "otgadmin")
 
 javaOptions in Gwt ++= Seq("-Xmx2g")
