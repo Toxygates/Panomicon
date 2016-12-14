@@ -82,7 +82,7 @@ abstract class ListManager(config: TriplestoreConfig) extends Closeable {
     attributeQuery("t:comment", x => x)
 
   def publicComments: Map[String, String] =
-    attributeQuery("publicComment", x => x)
+    attributeQuery("t:publicComment", x => x)
 
   def delete(name: String): Unit = {
     ts.update(s"$tPrefixes\n " +

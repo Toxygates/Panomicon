@@ -1,6 +1,6 @@
 package t.common.shared.sample;
 
-import static t.common.shared.SharedUtils.formatNumber;
+import static t.common.client.Utils.formatNumber;
 
 import javax.annotation.Nullable;
 

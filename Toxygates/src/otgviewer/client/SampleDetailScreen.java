@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
@@ -77,7 +79,10 @@ public class SampleDetailScreen extends Screen {
   AnnotationTDGrid atd = new AnnotationTDGrid(this);
 
   private List<Group> lastColumns;
-
+  private @Nullable SampleColumn currentColumn;
+  
+  //TODO enable/disable
+  private Button downloadButton;
   private HorizontalPanel tools;
 
   public SampleDetailScreen(ScreenManager man) {
@@ -222,19 +227,20 @@ public class SampleDetailScreen extends Screen {
       }
     });
     
-    hp.add(new Button("Download CSV...", new ClickHandler() {
+    downloadButton = new Button("Download CSV...", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        sampleService.prepareAnnotationCSVDownload(chosenCustomColumn, 
+        sampleService.prepareAnnotationCSVDownload(currentColumn, 
             new PendingAsyncCallback<String>(SampleDetailScreen.this,
             "Unable to prepare the data for download,") {
           public void handleSuccess(String url) {
             Utils.displayURL("Your download is ready.", "Download", url);
           }
-        });
-        
-      }      
-    }));
+        });        
+      }  
+    });
+    
+    hp.add(downloadButton);
   }
 
   public Widget content() {
@@ -247,6 +253,7 @@ public class SampleDetailScreen extends Screen {
 
   private void setDisplayColumn(SampleColumn c) {
     loadSections(c, false);    
+    currentColumn = c;
     SampleClass sc = c.getSamples()[0].sampleClass().asMacroClass(manager.schema());
     atd.sampleClassChanged(sc);
   }

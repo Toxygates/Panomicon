@@ -418,8 +418,10 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       sampleStore.parameterQuery(x.id, bioParameters.sampleParameters).toSeq
     })
 
+    //TODO sort columns by section and name
     val colNames = raw.head.map(_._1.humanReadable).toSeq
-    val data = Vector.tabulate(ss.size, colNames.size)((row, col) => raw(col)(row))
+    val data = Vector.tabulate(raw.size, colNames.size)((s, a) =>
+      raw(s)(a)._2.getOrElse(""))
 
     CSVHelper.writeCSV(configuration.csvDirectory, configuration.csvUrlBase,
       Seq(), ss.map(_.id),

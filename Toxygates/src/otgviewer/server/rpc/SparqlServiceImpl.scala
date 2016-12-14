@@ -49,7 +49,8 @@ import t.viewer.shared.AppInfo
  * This servlet is reponsible for making queries to RDF stores, including our
  * local Owlim-lite store.
  */
-class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGServiceServlet {
+class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGServiceServlet
+  with otgviewer.client.rpc.SparqlService {
 
   private def probeStore: otg.sparql.Probes = context.probes
   private def sampleStore: otg.sparql.OTGSamples = context.samples

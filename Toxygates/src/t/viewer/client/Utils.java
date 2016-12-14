@@ -19,7 +19,6 @@
 package t.viewer.client;
 
 import static t.common.client.Utils.makeScrolled;
-import t.common.shared.SharedUtils;
 import t.viewer.client.dialog.DialogPosition;
 
 import com.google.gwt.dom.client.Style.Float;
@@ -65,7 +64,7 @@ import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
  */
 public class Utils {
   public static String formatNumber(double v) {
-    return SharedUtils.formatNumber(v);    
+    return t.common.client.Utils.formatNumber(v);    
   }
 
   public static HorizontalPanel mkHorizontalPanel() {
