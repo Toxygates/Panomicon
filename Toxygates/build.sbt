@@ -51,11 +51,13 @@ gwtVersion := "2.7.0"
 
 gwtWebappPath := baseDirectory.value / "war"
 
-//gwtModules := Seq("toxygates", "otgadmin")
+gwtModules := Seq("otgviewer.toxygates", "otgviewer.admin.OTGAdmin")
 
 javaOptions in Gwt ++= Seq("-Xmx2g")
 
 fork := true
 
 javaOptions += "-Djava.library.path=/usr/local/lib"
+
+webappResources in Compile += baseDirectory.value / "WebContent"
 
