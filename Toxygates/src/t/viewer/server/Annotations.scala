@@ -70,11 +70,13 @@ class Annotations(baseConfig: BaseConfig) {
     new Annotation(barcode.id, new java.util.ArrayList(params))
   }
 
-  def prepareCSVDownload(samples: Samples, column: HasSamples[Sample],
+  def prepareCSVDownload(sampleStore: Samples, column: HasSamples[Sample],
       csvDir: String, csvUrlBase: String): String = {
     val ss = column.getSamples
+    val timepoints = ss.toSeq.flatMap(s => Option(s.get("exposure_time"))).distinct
+
     val raw = ss.map(x => {
-      samples.parameterQuery(x.id, bioParameters.sampleParameters).toSeq
+      sampleStore.parameterQuery(x.id, bioParameters.sampleParameters).toSeq
     })
 
     val params = raw.head.map(_._1).toSeq
@@ -91,12 +93,21 @@ class Annotations(baseConfig: BaseConfig) {
     def extractd(b: Option[BioParameter], f: BioParameter => Option[Double]): String =
       b.map(f).flatten.map(_.toString).getOrElse("")
 
-    val preRows = Seq(
-      bps.map(extracts(_, _.section)),
-      bps.map(extractd(_, _.lowerBound)),
-      bps.map(extractd(_, _.upperBound)))
+//    val preRows = Seq(
+//      bps.map(extracts(_, _.section)),
+//      bps.map(extractd(_, _.lowerBound)),
+//      bps.map(extractd(_, _.upperBound)))
+
+    val rr = timepoints.map(t => {
+      val bpt = bioParameters.forTimePoint(t)
+      val bps = params.map(p => bpt.get(p.identifier))
+      (Seq(s"Healthy min. $t", "Healthy max. $t"),
+          Seq(bps.map(extractd(_, _.lowerBound)), bps.map(extractd(_, _.upperBound))))
+    })
+    val helpRowTitles = Seq("Section") ++ rr.flatMap(_._1)
+    val helpRowData = Seq(bps.map(extracts(_, _.section))) ++ rr.flatMap(_._2)
 
     CSVHelper.writeCSV("toxygates", csvDir: String, csvUrlBase: String,
-      Seq("Section", "Healthy min.", "Healthy max.") ++ ss.map(_.id), colNames, preRows ++ data)
+      helpRowTitles ++ ss.map(_.id), colNames, helpRowData ++ data)
   }
 }
