@@ -277,11 +277,13 @@ exprGrid {
 
 .numericalParameterAbove {
 	color: red;
+	font-weight: bold;
 	width: 10em;
 }
 
 .numericalParameterBelow {
 	color: blue;
+	font-weight: bold;
 	width: 10em;
 }
 
