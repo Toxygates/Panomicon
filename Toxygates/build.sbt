@@ -8,6 +8,9 @@ scalaSource in Compile := baseDirectory.value / "src"
 
 javaSource in Compile := baseDirectory.value / "src"
 
+//For gwt-devmode to set classpath correctly
+dependencyClasspath in Gwt += baseDirectory.value / "target/scala-2.11/classes"
+
 scalaSource in Test := baseDirectory.value / "test"
 
 javaSource in Test := baseDirectory.value / "test"
@@ -24,7 +27,7 @@ libraryDependencies += "org.openrdf.sesame" % "sesame-repository-sparql" % "2.7.
 
 libraryDependencies += "commons-fileupload" % "commons-fileupload" % "latest.integration"
 
-libraryDependencies += "commons-io" % "commons-io" % "latest.integration"
+libraryDependencies += "commons-io" % "commons-io" % "2.5"
 
 libraryDependencies += "javax.mail" % "mail" % "latest.integration"
 
