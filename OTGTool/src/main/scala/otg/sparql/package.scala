@@ -35,4 +35,6 @@ package object sparql extends t.sparql.QueryUtils {
 
   def infixStringMatch(q: String) = " luc:myIndex \"*" + q + "*\". "
   def prefixStringMatch(q: String) = " luc:myIndex \"" + q + "*\". "
+
+  implicit def withQueries(p: Pathology) = new PathologySparql(p)
 }

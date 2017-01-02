@@ -101,7 +101,7 @@ class Annotations(baseConfig: BaseConfig) {
     val rr = timepoints.map(t => {
       val bpt = bioParameters.forTimePoint(t)
       val bps = params.map(p => bpt.get(p.identifier))
-      (Seq(s"Healthy min. $t", "Healthy max. $t"),
+      (Seq(s"Healthy min. $t", s"Healthy max. $t"),
           Seq(bps.map(extractd(_, _.lowerBound)), bps.map(extractd(_, _.upperBound))))
     })
     val helpRowTitles = Seq("Section") ++ rr.flatMap(_._1)

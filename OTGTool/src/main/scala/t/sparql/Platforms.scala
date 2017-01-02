@@ -79,6 +79,13 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
     })
   }
 
+  private def removeProbeAttribPrefix(x: String) =
+    if (x.startsWith(Probes.probeAttributePrefix + "/")) {
+      x.drop(Probes.probeAttributePrefix.size + 1)
+    } else {
+      x
+    }
+
   /**
    * Obtain the bio-parameters in all bio platforms
    */
@@ -88,9 +95,10 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
         |SELECT ?id ?key ?value WHERE {
         |  ?p $platformType $biologicalPlatform.
         |  GRAPH ?p {
-        |    ?probe rdfs:label ?id; ?key ?value.
+        |    ?probe a t:probe; rdfs:label ?id; ?key ?value.
         |  }
-        |}""".stripMargin).map(x => (x("id"), x("key") -> x("value"))).groupBy(_._1)
+        |}""".stripMargin).map(x => (x("id"),
+            removeProbeAttribPrefix(x("key")) -> x("value"))).groupBy(_._1)
 
     val attribMaps = for (
       (id, values) <- attribs;
@@ -101,7 +109,7 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
       |SELECT ?id ?desc ?sec ?type ?lower ?upper WHERE {
       |  ?p $platformType $biologicalPlatform.
       |  GRAPH ?p {
-      |    ?probe rdfs:label ?id; t:label ?desc; t:type ?type.
+      |    ?probe a t:probe; rdfs:label ?id; t:label ?desc; t:type ?type.
       |    OPTIONAL { ?probe t:lowerBound ?lower; t:upperBound ?upper. }
       |    OPTIONAL { ?probe t:section ?sec. }
       |   }

@@ -40,6 +40,8 @@ object Probes extends RDFClass {
   val itemClass: String = "t:probe"
   val hasProbeRelation = "t:hasProbe"
 
+  def probeAttributePrefix = tRoot
+
   def recordsToTTL(tempFiles: TempFiles, platformName: String,
     records: Iterable[ProbeRecord]): File = {
     val f = tempFiles.makeNew("probes", "ttl")
