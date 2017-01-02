@@ -81,6 +81,8 @@ import t.viewer.shared.AppInfo
 import t.viewer.shared.Association
 import t.viewer.shared.TimeoutException
 import t.common.shared.sample.Annotation
+import t.platform.BioParameters
+import t.viewer.server.Annotations
 
 object SparqlServiceImpl {
   var inited = false
@@ -113,6 +115,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   protected var uniprot: Uniprot = _
   protected var configuration: Configuration = _
+
+  lazy val annotations = new Annotations(baseConfig)
 
   override def localInit(conf: Configuration) {
     super.localInit(conf)
@@ -369,90 +373,22 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   @throws[TimeoutException]
   def pathologies(column: SampleColumn): Array[Pathology] = Array()
 
-  private def parametersToAnnotation(barcode: Sample,
-    ps: Iterable[(t.db.SampleParameter, Option[String])]): Annotation = {
-
-    def asJDouble(d: Option[Double]) =
-      d.map(new java.lang.Double(_)).getOrElse(null)
-
-    def bioParamValue(bp: BioParameter, dispVal: String) = {
-      bp.kind match {
-        case "numerical" => new NumericalBioParamValue(bp.key, bp.label,
-          bp.section.getOrElse(null),
-          asJDouble(bp.lowThreshold), asJDouble(bp.highThreshold),
-          dispVal)
-        case _ => new StringBioParamValue(bp.key, bp.label,
-            bp.section.getOrElse(null), dispVal)
-      }
-    }
-
-    val params = for (
-      x <- ps.toSeq;
-      bp <- bioParameters.get(x._1.identifier);
-      p = (bp.label, x._2.getOrElse("N/A"));
-      dispVal = OTGParameterSet.postReadAdjustment(p);
-      bpv = bioParamValue(bp, dispVal)
-    ) yield bpv
-
-    new Annotation(barcode.id, new java.util.ArrayList(params))
-  }
-
-  //TODO this needs to update sometimes, ideally without restart
-  lazy private val bioParameters = {
-    val pfs = new Platforms(baseConfig.triplestore)
-    pfs.bioParameters
-  }
-
   @throws[TimeoutException]
   def annotations(barcode: Sample): Annotation = {
     val params = sampleStore.parameterQuery(barcode.id)
-    parametersToAnnotation(barcode, params)
+    annotations.fromParameters(barcode, params)
   }
 
-  //TODO get these from schema, etc.
   @throws[TimeoutException]
   def annotations(column: HasSamples[Sample], importantOnly: Boolean = false): Array[Annotation] = {
-    val keys = if (importantOnly) {
-      baseConfig.sampleParameters.previewDisplay
-    } else {
-      bioParameters.sampleParameters
-    }
-
-    column.getSamples.map(x => {
-      val ps = sampleStore.parameterQuery(x.id, keys)
-      parametersToAnnotation(x, ps)
-    })
+    annotations.forSamples(sampleStore, column, importantOnly)
   }
 
+  //TODO bio-param timepoint handling
   @throws[TimeoutException]
   def prepareAnnotationCSVDownload(column: HasSamples[Sample]): String = {
-    val ss = column.getSamples
-    val raw = ss.map(x => {
-      sampleStore.parameterQuery(x.id, bioParameters.sampleParameters).toSeq
-    })
-
-    val params = raw.head.map(_._1).toSeq
-
-    //TODO sort columns by section and name
-    val colNames = params.map(_.humanReadable)
-    val data = Vector.tabulate(raw.size, colNames.size)((s, a) =>
-      raw(s)(a)._2.getOrElse(""))
-
-    val bps = params.map(p => bioParameters.get(p.identifier))
-    def extracts(b: Option[BioParameter], f: BioParameter => Option[String]): String =
-      b.map(f).flatten.getOrElse("")
-
-    def extractd(b: Option[BioParameter], f: BioParameter => Option[Double]): String =
-      b.map(f).flatten.map(_.toString).getOrElse("")
-
-    val preRows = Seq(
-        bps.map(extracts(_, _.section)),
-        bps.map(extractd(_, _.lowThreshold)),
-        bps.map(extractd(_, _.highThreshold))
-        )
-
-    CSVHelper.writeCSV("toxygates", configuration.csvDirectory, configuration.csvUrlBase,
-      Seq("Section", "Healthy min.", "Healthy max.") ++ ss.map(_.id), colNames, preRows ++ data)
+    annotations.prepareCSVDownload(sampleStore, column,
+        configuration.csvDirectory, configuration.csvUrlBase)
   }
 
   //TODO remove sc

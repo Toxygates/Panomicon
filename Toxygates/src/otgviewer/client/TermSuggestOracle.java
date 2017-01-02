@@ -46,7 +46,7 @@ public class TermSuggestOracle extends SuggestOracle implements
       new ArrayList<ExactMatchHandler<Term>>();
 
   public TermSuggestOracle(Screen screen) {
-    sparqlService = screen.sparqlService();
+    sparqlService = screen.manager().sparqlService();
   }
 
   @Override

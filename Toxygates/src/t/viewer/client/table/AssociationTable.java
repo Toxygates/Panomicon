@@ -53,7 +53,7 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 	
 	public AssociationTable(Screen screen) {
 		super(screen.schema());
-		sparqlService = screen.sparqlService();
+		sparqlService = screen.manager().sparqlService();
 	}
 	
 	protected List<HideableColumn<T, ?>> initHideableColumns(DataSchema schema) {

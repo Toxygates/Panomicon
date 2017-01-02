@@ -75,7 +75,7 @@ public class Charts {
   private Charts(Screen screen) {
     this.schema = screen.schema();
     this.sampleService = screen.manager().sampleService();
-    this.seriesService = screen.seriesService();
+    this.seriesService = screen.manager().seriesService();
   }
 
   public Charts(Screen screen, List<Group> groups) {
