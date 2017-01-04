@@ -15,8 +15,6 @@ scalaSource in Test := baseDirectory.value / "test"
 
 javaSource in Test := baseDirectory.value / "test"
 
-unmanagedBase := baseDirectory.value / "minlib"
-
 libraryDependencies += "org.mortbay.jetty" % "jetty" % "latest.integration" % "container"
 
 libraryDependencies += "org.apache.commons" % "commons-math3" % "latest.integration"
@@ -62,6 +60,9 @@ fork := true
 
 javaOptions += "-Djava.library.path=/usr/local/lib"
 
+//webappResources in Compile += baseDirectory.value / "war"
 webappResources in Compile += baseDirectory.value / "WebContent"
 
 EclipseKeys.relativizeLibs := false
+
+artifactName in packageWar := { (scalaVersion, module, artifact) => artifact.name + "." + artifact.extension }
