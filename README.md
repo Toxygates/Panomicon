@@ -4,6 +4,8 @@
 
 ## Building
 
+Toxygates depends on Java 8 or later.
+
 1. Install Scala 2.11.8 or later (http://scala-lang.org)
 2. Install SBT (http://scala-sbt.org)
 3. To use Kyoto Cabinet databases, install Kyoto Cabinet (http://fallabs.com/kyotocabinet/). Currently, this is the only matrix database backend, though in the future, other backends may be available. Note that it is necessary to install the native libraries (libkyotocabinet and libjkyotocabinet).
@@ -49,19 +51,21 @@ SBT can automatically generate Eclipse projects with dependencies configured pro
 
 1. Install Eclipse and the Scala plugin (but it may be easier to install the Scala IDE, which is Eclipse pre-bundled with Scala: http://scala-ide.org/)
 1. Inside Eclipse, install the GWT plugin from Google: http://www.gwtproject.org/usingeclipse.html
+1. (Optional): Uncomment the line EclipseKeys.withSource := true in Toxygates/build.sbt to get source code for all referenced libraries.
 1. Run `sbt eclipse`
 1. Inside Eclipse, import existing projects. First import the OTGTool project, then the Toxygates one (since the latter depends on the former).
-1. Set the output directory for compiled java classes to war/WEB-INF/classes (accessible from the build path settings, source directory).
-1. After having run sbt compile, copy the jar dependencies into war/WEB-INF/lib, e.g. 
+//1. Set the output directory for compiled java classes to war/WEB-INF/classes (accessible from the build path settings, source directory).
+//1. After having run sbt compile, copy the jar dependencies into war/WEB-INF/lib, e.g. 
 
     find lib_managed -name "*.jar" -exec cp \{\} Toxygates/war/WEB-INF/lib \;
 
 Unfortunately, you will need to remove the old jars and repeat this step if the dependencies change.
 
-1. Right click on the Toxygates project, access the GWT settings, and enable the GWT plugin for that project. The Google App Engine does not need to be enabled.
+1. Right click on the Toxygates project, access the GWT settings, and enable the GWT plugin for that project (version 2.7.0 or later). The Google App Engine does not need to be enabled.
+1. You will get an error message saying "The GWT SDK JAR gwt-servlet.jar is missing". Choose "quick fix" and select "Do not use the WAR directory for toxygates launching and deploying."
+1. Copy your desired web.xml into Toxygates/war/WEB-INF/web.xml.
 1. Test your setup by invoking GWT compile on the Toxygates project.
-1. To run the development mode, use the "GWT application - super dev mode" configuration tenplate. You will need to set the JVM arguments, e.g. -Djava.library.path, as above.
+1. To run the development mode, use the "GWT application - super dev mode" configuration tenplate. You will need to set the JVM arguments, e.g. -Djava.library.path, as above. The startup file should be toxygates.html for the main application, or admin.html for the admin interface.
 
 From now on, you can develop and compile entirely inside Eclipse, but you probably still want to use sbt for deployment.
-
 

@@ -52,6 +52,7 @@ gwtModules := Seq("otgviewer.toxygates", "otgviewer.admin.OTGAdmin")
 
 javaOptions in Gwt ++= Seq("-Xmx2g")
 
+//Testing, running etc will be in a separate JVM
 fork := true
 
 javaOptions += "-Djava.library.path=/usr/local/lib"
@@ -60,6 +61,8 @@ webappResources in Compile += baseDirectory.value / "WebContent"
 
 EclipseKeys.relativizeLibs := false
 
+//For downloading source attachments for Eclipse projects.
+//Disable to speed up dependency retrieval.
 EclipseKeys.withSource := true
 
 //For renaming the packaged war to simply toxygates.war
