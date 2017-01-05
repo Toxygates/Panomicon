@@ -60,7 +60,6 @@ fork := true
 
 javaOptions += "-Djava.library.path=/usr/local/lib"
 
-//webappResources in Compile += baseDirectory.value / "war"
 webappResources in Compile += baseDirectory.value / "WebContent"
 
 EclipseKeys.relativizeLibs := false
