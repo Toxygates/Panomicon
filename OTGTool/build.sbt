@@ -10,9 +10,11 @@ libraryDependencies += "org.apache.commons" % "commons-math3" % "latest.integrat
 
 libraryDependencies += "org.apache.httpcomponents" % "httpclient" % "latest.integration"
 
-libraryDependencies += "org.openrdf.sesame" % "sesame-repository-manager" % "2.7.16"
+libraryDependencies += "org.eclipse.rdf4j" % "rdf4j-repository-sparql" % "latest.integration"
 
-libraryDependencies += "org.openrdf.sesame" % "sesame-repository-sparql" % "2.7.16"
+libraryDependencies += "org.eclipse.rdf4j" % "rdf4j-repository-manager" % "latest.integration"
+
+libraryDependencies += "org.eclipse.rdf4j" % "rdf4j-repository-http" % "latest.integration"
 
 libraryDependencies += "com.fallabs" % "kyotocabinet-java" % "latest.integration"
 
@@ -22,8 +24,7 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 //libraryDependencies += "org.slf4j" % "slf4j-nop" % "latest.integration"
 
 //Download source attachments
-
-//EclipseKeys.withSource := true
+EclipseKeys.withSource := true
 
 test in assembly := {}
 

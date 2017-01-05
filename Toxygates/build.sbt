@@ -17,11 +17,7 @@ javaSource in Test := baseDirectory.value / "test"
 
 libraryDependencies += "org.mortbay.jetty" % "jetty" % "latest.integration" % "container"
 
-libraryDependencies += "org.apache.commons" % "commons-math3" % "latest.integration"
-
-libraryDependencies += "org.openrdf.sesame" % "sesame-repository-manager" % "2.7.16"
-
-libraryDependencies += "org.openrdf.sesame" % "sesame-repository-sparql" % "2.7.16"
+//libraryDependencies += "org.apache.commons" % "commons-math3" % "latest.integration"
 
 libraryDependencies += "commons-fileupload" % "commons-fileupload" % "latest.integration"
 
@@ -38,7 +34,7 @@ libraryDependencies += "org.rosuda.REngine" % "Rserve" % "latest.integration"
 //Dependencies for intermine.
 //Can change json to latest.integration when we have JRE 8
 
-libraryDependencies += "org.json" % "json" % "20090211"
+libraryDependencies += "org.json" % "json" % "latest.integration"
 
 libraryDependencies += "commons-lang" % "commons-lang" % "2.6"
 
@@ -63,6 +59,8 @@ javaOptions += "-Djava.library.path=/usr/local/lib"
 webappResources in Compile += baseDirectory.value / "WebContent"
 
 EclipseKeys.relativizeLibs := false
+
+EclipseKeys.withSource := true
 
 //For renaming the packaged war to simply toxygates.war
 artifactName in packageWar := { (scalaVersion, module, artifact) => artifact.name + "." + artifact.extension }

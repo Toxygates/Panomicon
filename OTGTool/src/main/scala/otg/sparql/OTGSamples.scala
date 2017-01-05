@@ -20,29 +20,14 @@
 
 package otg.sparql
 
-import otg._
-import org.openrdf._
-import org.openrdf.repository._
-import org.openrdf.repository.manager._
-import org.openrdf.query._
-import org.openrdf.model._
-import org.openrdf.rio._
-import scala.collection.JavaConversions._
-import t.TriplestoreConfig
-import t.sparql.Triplestore
-import t.sparql.{ Filter => TFilter }
-import t.sparql.SampleClass
-import t.db.Sample
-import t.sparql.Samples
-import t.sparql.SimpleTriplestore
-import t.sparql.Query
+import otg.Pathology
 import t.BaseConfig
-import t.sparql.secondary.GOTerm
-import t.sparql.SampleGroups
-import t.sparql.Instances
-import t.sparql.Datasets
+import t.db.Sample
+import t.sparql.{ Filter => TFilter }
+import t.sparql.Query
+import t.sparql.SampleClass
 import t.sparql.SampleFilter
-import t.db.SampleParameter
+import t.sparql.Samples
 
 class OTGSamples(bc: BaseConfig) extends Samples(bc) {
 

@@ -21,23 +21,21 @@
 package t.sparql
 
 import t.TriplestoreConfig
-import org.openrdf.repository.RepositoryConnection
-import org.openrdf.query.QueryLanguage
 import scala.concurrent.Await
 import scala.concurrent._
 import scala.concurrent.duration.Duration
 import scala.collection.JavaConversions._
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.Executors
-import org.openrdf.repository.sparql.SPARQLRepository
 import java.net.ProxySelector
-import org.openrdf.repository.manager.RemoteRepositoryManager
 import t.Closeable
-import org.openrdf.rio.RDFFormat
-import org.openrdf.model.Resource
-import org.openrdf.model.impl.URIImpl
-import info.aduna.iteration.Iteration
-import org.openrdf.query.TupleQueryResult
+import org.eclipse.rdf4j.repository.manager.RemoteRepositoryManager
+import org.eclipse.rdf4j.repository.RepositoryConnection
+import org.eclipse.rdf4j.repository.sparql.SPARQLRepository
+import org.eclipse.rdf4j.common.iteration.Iteration
+import org.eclipse.rdf4j.rio.RDFFormat
+import org.eclipse.rdf4j.query.QueryLanguage
+import org.eclipse.rdf4j.model.impl.URIImpl
 
 object Triplestore {
   val executor = Executors.newCachedThreadPool()
@@ -59,6 +57,7 @@ object Triplestore {
    * Aim to use only SPARQLRepository in the future.
    */
 
+  @deprecated("Being replaced with SPARQL", "Jan 2017")
   def connectRemoteRepository(config: TriplestoreConfig): RepositoryConnection = {
     println("Initialize remote repository connection for " + config.url)
     val repMan = RemoteRepositoryManager.getInstance(config.url, config.user, config.pass)
@@ -125,9 +124,9 @@ abstract class Triplestore extends Closeable {
     println(query)
     val pq = con.prepareTupleQuery(QueryLanguage.SPARQL, query)
     // for sesame 2.7
-    pq.setMaxQueryTime(timeoutMillis / 1000)
+//    pq.setMaxQueryTime(timeoutMillis / 1000)
     // for sesame 2.8
-//    pq.setMaxExecutionTime(timeoutMillis / 1000)
+    pq.setMaxExecutionTime(timeoutMillis / 1000)
     pq.evaluate()
   }
 

@@ -26,7 +26,6 @@ import scala.annotation.tailrec
 import otg.Context
 import t.TriplestoreConfig
 import t.sparql.QueryUtils
-import org.openrdf.repository.RepositoryConnection
 import t.sparql.Triplestore
 import t.db.ProbeMap
 import t.db.DefaultBio
