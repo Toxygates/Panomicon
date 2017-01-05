@@ -50,7 +50,7 @@ libraryDependencies += "org.antlr" % "antlr" % "latest.integration"
 
 gwtVersion := "2.7.0"
 
-gwtWebappPath := baseDirectory.value / "war"
+//gwtWebappPath := baseDirectory.value / "war"
 
 gwtModules := Seq("otgviewer.toxygates", "otgviewer.admin.OTGAdmin")
 
@@ -64,4 +64,7 @@ webappResources in Compile += baseDirectory.value / "WebContent"
 
 EclipseKeys.relativizeLibs := false
 
+//For renaming the packaged war to simply toxygates.war
 artifactName in packageWar := { (scalaVersion, module, artifact) => artifact.name + "." + artifact.extension }
+
+//retrieveManaged := true

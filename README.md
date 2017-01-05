@@ -31,6 +31,8 @@ Run `sbt gwt-devmode`. A GUI will open, from which you can launch the web applic
 
 For the application to work, the various settings in war/WEB-INF/web.xml must be properly configured. In particular, you must set repositoryURL, updateURL and dataDir correctly.
 
+To be written: instructions for deploying R and Rserve
+
 ## Deploying
 
 Run `sbt packageWar`. This will generate a file such as Toxygates/target/scala-2.11/toxygates.war.
@@ -39,18 +41,26 @@ Copy it to a suitable location (e.g. your Tomcat webapps/ directory) to deploy.
 Note that if you are using the kyoto cabinet database, libkyotocabinet and libjkyotocabinet must be accessible, as above.
 This can be achieved by supplying a JVM option such as `-Djava.library.path=/usr/local/lib` to the JVM running the application server.
 
+To be written: instructions for deploying R and Rserve
+
 ## Creating an Eclipse project
 
 SBT can automatically generate Eclipse projects with dependencies configured properly.
 
 1. Install Eclipse and the Scala plugin (but it may be easier to install the Scala IDE, which is Eclipse pre-bundled with Scala: http://scala-ide.org/)
-2. Inside Eclipse, install the GWT plugin from Google: http://www.gwtproject.org/usingeclipse.html
-3. Run `sbt eclipse`
-4. Inside Eclipse, import existing projects. First import the OTGTool, then the Toxygates one (since the latter depends on the former).
-5. Set the output directory for compiled java classes to war/WEB-INF/classes (accessible from the build path settings, source directory).
-6. Right click on the Toxygates project, access the GWT settings, and enable the GWT plugin for that project. The Google App Engine does not need to be enabled.
-7. Test your setup by invoking GWT compile on the Toxygates project.
-8. To run the development mode, use the "GWT application - super dev mode" configuration tenplate. You will need to set the JVM arguments, e.g. -Djava.library.path, as above.
+1. Inside Eclipse, install the GWT plugin from Google: http://www.gwtproject.org/usingeclipse.html
+1. Run `sbt eclipse`
+1. Inside Eclipse, import existing projects. First import the OTGTool project, then the Toxygates one (since the latter depends on the former).
+1. Set the output directory for compiled java classes to war/WEB-INF/classes (accessible from the build path settings, source directory).
+1. After having run sbt compile, copy the jar dependencies into war/WEB-INF/lib, e.g. 
+
+    find lib_managed -name "*.jar" -exec cp \{\} Toxygates/war/WEB-INF/lib \;
+
+Unfortunately, you will need to remove the old jars and repeat this step if the dependencies change.
+
+1. Right click on the Toxygates project, access the GWT settings, and enable the GWT plugin for that project. The Google App Engine does not need to be enabled.
+1. Test your setup by invoking GWT compile on the Toxygates project.
+1. To run the development mode, use the "GWT application - super dev mode" configuration tenplate. You will need to set the JVM arguments, e.g. -Djava.library.path, as above.
 
 From now on, you can develop and compile entirely inside Eclipse, but you probably still want to use sbt for deployment.
 
