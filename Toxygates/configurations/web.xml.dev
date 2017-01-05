@@ -7,15 +7,11 @@
 	<context-param>
 		<param-name>repositoryURL</param-name>
 		 <param-value>http://127.0.0.1:3030/data/sparql</param-value>  
-		<!-- <param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1</param-value> -->
+                 <!-- <param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/repositories/ttest</param-value> -->
 	</context-param>
 	
-	<!-- The following 3 parameters are necessary for working with Owlim-SE at NIBIO -->
+	<!-- The following 2 parameters are necessary for working with Owlim-SE at NIBIO -->
 	<!--
-	<context-param>
-		<param-name>repositoryName</param-name>
-		<param-value>ttest</param-value>
-	</context-param>
 	<context-param>
 		<param-name>repositoryUser</param-name>
 		<param-value>ttest</param-value>

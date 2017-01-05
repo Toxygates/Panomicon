@@ -7,17 +7,11 @@
 
 	<context-param>
 		<param-name>repositoryURL</param-name>
-		<param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1</param-value>
+                <param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/repositories/ttest</param-value>
 	</context-param>
 	<context-param>
 		<param-name>webappHomeDir</param-name>
 		<param-value>/var/lib/tomcat/webapps</param-value>
-	</context-param>
-	<context-param>
-		<param-name>repositoryName</param-name>
-		<param-value>ttest</param-value>
-	</context-param>
-	
 	<context-param>
 		<param-name>repositoryUser</param-name>
 		<param-value>ttest</param-value>
