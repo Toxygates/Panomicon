@@ -1,19 +1,18 @@
-import AssemblyKeys._ // put this at the top of the file
+import AssemblyKeys._ 
 
 scalaVersion := "2.11.8"
-
-sbtVersion := "0.13.13"
 
 assemblySettings
 
 libraryDependencies += "org.apache.commons" % "commons-math3" % "latest.integration"
 
-libraryDependencies += "org.apache.httpcomponents" % "httpclient" % "latest.integration"
+//libraryDependencies += "org.apache.httpcomponents" % "httpclient" % "latest.integration"
 
 libraryDependencies += "org.eclipse.rdf4j" % "rdf4j-repository-sparql" % "latest.integration"
 
 libraryDependencies += "org.eclipse.rdf4j" % "rdf4j-repository-manager" % "latest.integration"
 
+//TODO deprecated dependency, remove
 libraryDependencies += "org.eclipse.rdf4j" % "rdf4j-repository-http" % "latest.integration"
 
 libraryDependencies += "com.fallabs" % "kyotocabinet-java" % "latest.integration"
