@@ -135,8 +135,17 @@ public abstract class DataSchema implements Serializable {
   }
 
   public boolean isMajorParamSharedControl(String value) {
-    return false;
-  }
+	String[] mpvs = majorParamSharedControl();
+	if (mpvs == null) {
+			return false;
+		}
+		for (String v : mpvs) {
+			if (v.equals(value)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
   public @Nullable String[] majorParamSharedControl() {
     return new String[] {};

@@ -33,11 +33,14 @@ class Annotations(baseConfig: BaseConfig) {
     } else {
       bioParameters.sampleParameters
     }
-
-    column.getSamples.map(x => {
-      val ps = samples.parameterQuery(x.id, keys)
-      fromParameters(x, ps)
-    })
+    Option(column.getSamples) match {
+      case None => Array()
+      case Some(ss) =>    
+      ss.map(x => {
+        val ps = samples.parameterQuery(x.id, keys)
+        fromParameters(x, ps)
+      })
+    }
   }
 
   def fromParameters(barcode: Sample,
