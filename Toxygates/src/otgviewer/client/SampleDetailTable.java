@@ -122,7 +122,7 @@ public class SampleDetailTable extends Composite {
   public @Nullable String sectionTitle() { return title; }
   
   public void loadFrom(final HasSamples<Sample> c, boolean importantOnly) {        
-    sampleService.annotations(displayColumn, importantOnly, new PendingAsyncCallback<Annotation[]>(
+    sampleService.annotations(c, importantOnly, new PendingAsyncCallback<Annotation[]>(
         waitListener) {
       public void handleFailure(Throwable caught) {
         Window.alert("Unable to get array annotations.");
