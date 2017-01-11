@@ -34,9 +34,6 @@ import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.viewer.client.Utils;
-import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.client.rpc.SeriesServiceAsync;
-import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.AppInfo;
 
 import com.google.gwt.core.client.GWT;
@@ -65,9 +62,6 @@ import com.google.gwt.user.client.ui.Widget;
  * hidden/visible and configured/deconfigured. A configured screen has been completely configured by
  * the user, for example by making certain selections. This is a useful concept when late screens
  * depend on data that is selected in earlier screens.
- * 
- * @author johan
- *
  */
 public class Screen extends DataListenerWidget implements RequiresResize, ProvidesResize {
   protected static Resources resources = GWT.create(Resources.class);
@@ -208,18 +202,6 @@ public class Screen extends DataListenerWidget implements RequiresResize, Provid
 
   public AppInfo appInfo() {
     return manager.appInfo();
-  }
-
-  public SparqlServiceAsync sparqlService() {
-    return manager.sparqlService();
-  }
-
-  public MatrixServiceAsync matrixService() {
-    return manager.matrixService();
-  }
-
-  public SeriesServiceAsync seriesService() {
-    return manager.seriesService();
   }
 
   public UIFactory factory() {

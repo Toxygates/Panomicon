@@ -88,7 +88,7 @@ public class HeatmapDialog extends DataListenerWidget {
   private Algorithm lastClusteringAlgorithm = new Algorithm();
 
   public HeatmapDialog(Screen screen) {
-    matrixService = screen.matrixService();
+    matrixService = screen.manager().matrixService();
     this.screen = screen;
     dialog = new DialogBox();
     valType = new ListBox();

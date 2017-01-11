@@ -175,7 +175,12 @@ public class OTGSchema extends DataSchema {
   // return u2;
   // }
 
-  private static AType[] associations = new AType[] {AType.Chembl, AType.Drugbank,
+  @Override
+	public String[] majorParamSharedControl() {
+		return new String[] { "Shared_control" };
+	}
+
+private static AType[] associations = new AType[] {AType.Chembl, AType.Drugbank,
       // AType.Enzymes,
       AType.GOBP, AType.GOCC, AType.GOMF,
       // needs repair

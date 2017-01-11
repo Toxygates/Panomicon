@@ -47,7 +47,7 @@ object PlatformManager extends ManagerTool {
             "Please specify a definition file with -input")
           val defns = new PlatformDefFile(inputFile).records
           val comment = stringOption(args, "-comment").getOrElse("")
-          platforms.redefine(title, comment, defns) //TODO
+          platforms.redefine(title, comment, false, defns) //TODO
         case "delete" =>
           val title = require(stringOption(args, "-title"),
             "Please specify a title with -title")
@@ -72,8 +72,10 @@ class PlatformManager(context: Context) {
   import TRDF._
   def config = context.config
 
+  //TODO consider representing affymetrixFormat and bioFormat
+  //as a different type, since they are mutually exclusive
   def add(title: String, comment: String,
-    inputFile: String, affymetrixFormat: Boolean): Iterable[Tasklet] = {
+    inputFile: String, affymetrixFormat: Boolean, bioFormat: Boolean): Iterable[Tasklet] = {
     val pf = new Platforms(config.triplestore)
     var r = Vector[Tasklet]()
     r :+= consistencyCheck(title)
@@ -84,7 +86,7 @@ class PlatformManager(context: Context) {
       r :+= addProbeIDs(title)
     } else {
       //assume T format
-      r :+= addStandard(title, comment, inputFile)
+      r :+= addStandard(title, comment, inputFile, bioFormat)
       r :+= addProbeIDs(title)
     }
 
@@ -114,7 +116,7 @@ class PlatformManager(context: Context) {
           val g = 1000
 
           val (start, rest) = defns.splitAt(g)
-          platforms.redefine(title, comment, start)
+          platforms.redefine(title, comment, false, start)
           var pcomp = 0d
           val groups = rest.grouped(g)
           while (groups.hasNext && shouldContinue(pcomp)) {
@@ -129,12 +131,18 @@ class PlatformManager(context: Context) {
       }
     }
 
-  def addStandard(title: String, comment: String, file: String) =
+  /**
+   * Add a platform from the "standard" T platform format (tsv).
+   * @param biological Is this platform a "biological" parameter platform, with e.g. blood data,
+   * and not an 'omics platform?
+   */
+  def addStandard(title: String, comment: String, file: String,
+      biological: Boolean) =
     new Tasklet("Add platform (RDF)") {
       def run() {
         val defns = new PlatformDefFile(file).records
         val platforms = new Platforms(config.triplestore)
-        platforms.redefine(title, TRDF.escape(comment), defns)
+        platforms.redefine(title, TRDF.escape(comment), biological, defns)
       }
     }
 

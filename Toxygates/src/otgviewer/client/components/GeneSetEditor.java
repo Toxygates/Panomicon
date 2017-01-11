@@ -58,8 +58,7 @@ import t.common.shared.SharedUtils;
 import t.common.shared.Term;
 import t.common.shared.sample.Group;
 import t.viewer.client.Utils;
-import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.client.rpc.SparqlServiceAsync;
+import otgviewer.client.rpc.SparqlServiceAsync;
 
 public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHandler {
 
@@ -73,7 +72,6 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
   private final Screen screen;
 
   private final SparqlServiceAsync sparqlService;
-  private final MatrixServiceAsync matrixService;
 
   private final GeneOracle oracle;
 
@@ -106,7 +104,6 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     dialog = new DialogBox();
     oracle = new GeneOracle(screen);
     sparqlService = screen.manager.sparqlService();
-    matrixService = screen.manager.matrixService();
 
     initWindow();
   }
@@ -454,7 +451,8 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     // change the identifiers (which can be mixed format, for example genes
     // and proteins etc) into a
     // homogenous format (probes only)
-    matrixService.identifiersToProbes(probes, true, titleMatch, screen.getAllSamples(),
+    sparqlService.identifiersToProbes(probes, true, false, titleMatch, 
+        screen.getAllSamples(),
         new PendingAsyncCallback<String[]>(screen,
             "Unable to obtain manual probes (technical error).") {
           public void handleSuccess(String[] probes) {

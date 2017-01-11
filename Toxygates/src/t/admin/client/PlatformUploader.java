@@ -19,6 +19,10 @@
 package t.admin.client;
 
 import static t.common.shared.maintenance.MaintenanceConstants.platformPrefix;
+
+import javax.annotation.Nullable;
+
+import t.admin.shared.PlatformType;
 import t.common.client.maintenance.ItemUploader;
 import t.common.client.maintenance.UploadWrapper;
 
@@ -29,7 +33,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class PlatformUploader extends ItemUploader {
 
   UploadWrapper platform;
-  RadioButton affyRadio, tRadio;
+  RadioButton affyRadio, tRadio, bioRadio;
 
   protected void makeGUI(VerticalPanel vp) {
     platform =
@@ -42,15 +46,29 @@ public class PlatformUploader extends ItemUploader {
     affyRadio = makeRadio("type", "Affymetrix CSV");
     vp.add(affyRadio);
     tRadio = makeRadio("type", "T platform TSV");
-    vp.add(tRadio);
+    vp.add(tRadio);    
+    bioRadio = makeRadio("type", "Biological data TSV");
+    vp.add(bioRadio);
   }
 
+  @Nullable PlatformType platformType() {
+    if (affyRadio.getValue()) {
+      return PlatformType.Affymetrix;      
+    } else if (tRadio.getValue()) {
+      return PlatformType.Standard;
+    } else if (bioRadio.getValue()) {
+      return PlatformType.Biological;
+    } else {
+      return null;
+    }    
+  }
+  
   private RadioButton makeRadio(String group, String label) {
     RadioButton r = new RadioButton(group, label);    
     return r;
   }
 
   protected boolean canProceed() {
-    return (platform.hasFile() && (affyRadio.getValue() || tRadio.getValue()));
+    return (platform.hasFile() && platformType() != null);
   }
 }

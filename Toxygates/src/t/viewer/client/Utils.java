@@ -18,6 +18,7 @@
 
 package t.viewer.client;
 
+import static t.common.client.Utils.makeScrolled;
 import t.viewer.client.dialog.DialogPosition;
 
 import com.google.gwt.dom.client.Style.Float;
@@ -30,7 +31,6 @@ import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.http.client.URL;
-import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
@@ -55,7 +55,6 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
-import static t.common.client.Utils.makeScrolled;
 
 /**
  * GUI/GWT utility methods.
@@ -64,15 +63,8 @@ import static t.common.client.Utils.makeScrolled;
  *
  */
 public class Utils {
-  private static NumberFormat df = NumberFormat.getDecimalFormat();
-  private static NumberFormat sf = NumberFormat.getScientificFormat();
-
   public static String formatNumber(double v) {
-    if (Math.abs(v) > 0.001) {
-      return df.format(v);
-    } else {
-      return sf.format(v);
-    }
+    return t.common.client.Utils.formatNumber(v);    
   }
 
   public static HorizontalPanel mkHorizontalPanel() {
@@ -320,6 +312,12 @@ public class Utils {
 
     @Template("</div>")
     SafeHtml endToolTip();
+    
+    @Template("<div class=\"{0}\">")
+    SafeHtml startStyled(String style);
+    
+    @Template("</div>")
+    SafeHtml endStyled();    
   }
 
   public static DialogBox waitDialog() {

@@ -66,8 +66,6 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortList;
@@ -160,7 +158,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   public ExpressionTable(Screen _screen, boolean withPValueOption) {
     super(_screen);
     this.withPValueOption = withPValueOption;
-    this.matrixService = _screen.matrixService();
+    this.matrixService = _screen.manager().matrixService();
     this.resources = _screen.resources();
     screen = _screen;
 

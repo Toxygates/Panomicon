@@ -29,14 +29,14 @@ import t.common.shared.SampleClass;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface SeriesServiceAsync {
-  public void rankedCompounds(Dataset[] ds, SampleClass sc, RankRule[] rules,
+  void rankedCompounds(Dataset[] ds, SampleClass sc, RankRule[] rules,
       AsyncCallback<MatchResult[]> callback);
 
-  public void getSingleSeries(SampleClass sc, String probe, String timeDose, String compound,
+  void getSingleSeries(SampleClass sc, String probe, String timeDose, String compound,
       AsyncCallback<Series> callback);
 
-  public void getSeries(SampleClass sc, String[] probes, String timeDose, String[] compounds,
+  void getSeries(SampleClass sc, String[] probes, String timeDose, String[] compounds,
       AsyncCallback<List<Series>> callback);
 
-  public void expectedTimes(Series s, AsyncCallback<String[]> callback);
+  void expectedTimes(Series s, AsyncCallback<String[]> callback);
 }

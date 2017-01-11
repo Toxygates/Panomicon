@@ -59,6 +59,11 @@ case class ProbeRecord(id: String, annotations: Map[String, Iterable[String]]) {
     ) yield item).mkString("; ")
 }
 
+/**
+ * A platform definition file contains a set of probe records.
+ * Each probe record has an ID string and some number of, possibly repeated,
+ * annotation fields.
+ */
 class PlatformDefFile(file: String) {
 
   val records: Iterable[ProbeRecord] =

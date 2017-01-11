@@ -18,6 +18,7 @@
 
 package t.admin.client;
 
+import t.admin.shared.PlatformType;
 import t.common.client.rpc.BatchOperations;
 import t.common.shared.Dataset;
 import t.common.shared.ManagedItem;
@@ -41,7 +42,7 @@ public interface MaintenanceService extends BatchOperations, RemoteService {
    * Try to add a platform, based on files that were previously uploaded. The results can be
    * obtained after completion by using getOperationResults. Only title and comment are read from p.
    */
-  void addPlatformAsync(Platform p, boolean affymetrixFormat) throws MaintenanceException;
+  void addPlatformAsync(Platform p, PlatformType pt) throws MaintenanceException;
 
   // Add other ManagedItems
   void add(ManagedItem i) throws MaintenanceException;

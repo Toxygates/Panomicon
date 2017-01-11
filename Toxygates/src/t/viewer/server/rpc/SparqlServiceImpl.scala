@@ -35,7 +35,6 @@ import t.common.shared.AType
 import t.common.shared.Dataset
 import t.common.shared.Pair
 import t.common.shared.SampleClass
-import t.common.shared.sample.Annotation
 import t.common.shared.sample.HasSamples
 import t.common.shared.sample.Sample
 import t.db.DefaultBio
@@ -63,6 +62,14 @@ import javax.annotation.Nullable
 import t.viewer.shared.TimeoutException
 import t.util.PeriodicRefresh
 import t.util.Refreshable
+import scala.collection.convert.Wrappers.JListWrapper
+import t.platform.BioParameter
+import t.viewer.server.CSVHelper
+import t.common.shared.sample.NumericalBioParamValue
+import t.common.shared.sample.StringBioParamValue
+import t.common.shared.sample.Annotation
+import t.platform.BioParameters
+import t.viewer.server.Annotations
 
 object SparqlServiceImpl {
   var inited = false
@@ -95,6 +102,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   protected var uniprot: Uniprot = _
   protected var configuration: Configuration = _
+
+  lazy val annotations = new Annotations(baseConfig)
 
   override def localInit(conf: Configuration) {
     super.localInit(conf)
@@ -351,35 +360,22 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   @throws[TimeoutException]
   def pathologies(column: SampleColumn): Array[Pathology] = Array()
 
-  private def parametersToAnnotation(barcode: Sample,
-      ps: Iterable[(t.db.SampleParameter, Option[String])]): Annotation = {
-     val params = ps.map(x => {
-      var p = (x._1.humanReadable, x._2.getOrElse("N/A"))
-      p = (p._1, OTGParameterSet.postReadAdjustment(p))
-      new Annotation.Entry(p._1, p._2, OTGParameterSet.isNumerical(x._1))
-    }).toSeq
-    new Annotation(barcode.id, new java.util.ArrayList(params))
-  }
-
   @throws[TimeoutException]
   def annotations(barcode: Sample): Annotation = {
     val params = sampleStore.parameterQuery(barcode.id)
-    parametersToAnnotation(barcode, params)
+    annotations.fromParameters(barcode, params)
   }
 
-  //TODO get these from schema, etc.
   @throws[TimeoutException]
   def annotations(column: HasSamples[Sample], importantOnly: Boolean = false): Array[Annotation] = {
-    val keys = if (importantOnly) {
-      baseConfig.sampleParameters.previewDisplay
-    } else {
-      List()
-    }
+    annotations.forSamples(sampleStore, column, importantOnly)
+  }
 
-    column.getSamples.map(x => {
-      val ps = sampleStore.parameterQuery(x.id, keys)
-      parametersToAnnotation(x, ps)
-    })
+  //TODO bio-param timepoint handling
+  @throws[TimeoutException]
+  def prepareAnnotationCSVDownload(column: HasSamples[Sample]): String = {
+    annotations.prepareCSVDownload(sampleStore, column,
+        configuration.csvDirectory, configuration.csvUrlBase)
   }
 
   //TODO remove sc
@@ -417,11 +413,19 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     filterByGroup(result, samples).toArray
   }
 
-  private def filterByGroup(result: Iterable[String], samples: Iterable[Sample]) = {
-    Option(samples) match {
-      case Some(_) => filterProbesByGroupInner(result, samples)
-      case None => result
+  //TODO less boolean parameters, use an enum instead
+  def identifiersToProbes(identifiers: Array[String], precise: Boolean,
+      quick: Boolean, titlePatternMatch: Boolean,
+      samples: JList[Sample]): Array[String] = {
+    val ps = if (titlePatternMatch) {
+      probeStore.forTitlePatterns(identifiers)
+    } else {
+      probeStore.identifiersToProbes(context.matrix.probeMap,
+        identifiers, precise, quick)
     }
+    val result = ps.map(_.identifier).toArray
+
+    filterByGroup(result, samples)
   }
 
   //TODO move to OTG
@@ -447,7 +451,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val got = GOTerm("", goTerm)
 
     val result = probeStore.forGoTerm(got).map(_.identifier).filter(pmap.isToken)
-    filterByGroup(result, samples).toArray
+    filterByGroup(result, samples)
   }
 
   import scala.collection.{ Map => CMap, Set => CSet }
@@ -459,11 +463,11 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   @throws[TimeoutException]
   def associations(sc: SampleClass, types: Array[AType],
     _probes: Array[String]): Array[Association] =
-    new AnnotationResolver(sc, types, _probes).resolve
+    new AssociationResolver(sc, types, _probes).resolve
 
   import Association._
 
-  protected class AnnotationResolver(sc: SampleClass, types: Array[AType],
+  protected class AssociationResolver(sc: SampleClass, types: Array[AType],
       _probes: Iterable[String]) {
     val aprobes = probeStore.withAttributes(_probes.map(Probe(_)))
 
@@ -515,12 +519,18 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       probeStore.probesForPartialSymbol(plat, partialName).map(_.identifier).toArray
   }
 
-  private def filterProbesByGroupInner(probes: Iterable[String], group: Iterable[Sample])  = {
+  private def filterProbesByGroupInner(probes: Iterable[String], group: Iterable[Sample]) = {
     val platforms: Set[String] = group.map(x => x.get("platform_id")).toSet
     val lookup = probeStore.platformsAndProbes
     val acceptable = platforms.flatMap(p => lookup(p))
     probes.filter(acceptable.contains)
   }
+
+  private def filterByGroup(result: Iterable[String], samples: JList[Sample]) =
+    Option(samples) match {
+      case Some(ss) => filterProbesByGroupInner(result, ss).toArray
+      case None => result.toArray
+    }
 
   def filterProbesByGroup(probes: Array[String], samples: JList[Sample]): Array[String] = {
     filterProbesByGroupInner(probes, samples).toArray

@@ -34,7 +34,6 @@ import t.common.shared.DataSchema;
 import t.common.shared.ItemList;
 import t.common.shared.SampleClass;
 import t.viewer.client.Utils;
-import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -46,7 +45,6 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 /**
  * This widget is an UI for defining compound ranking rules. The actual ranking is requested by a
@@ -62,7 +60,6 @@ abstract public class CompoundRanker extends DataListenerWidget {
   List<String> availableCompounds = chosenCompounds;
 
   protected final SparqlServiceAsync sparqlService;
-  protected final MatrixServiceAsync matrixService;
 
   protected VerticalPanel csVerticalPanel = new VerticalPanel();
   protected List<String> rankProbes = new ArrayList<String>();
@@ -83,8 +80,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
     oracle = new GeneOracle(screen);
     schema = screen.schema();
     resources = screen.resources();
-    sparqlService = _screen.sparqlService();
-    matrixService = _screen.matrixService();
+    sparqlService = _screen.manager().sparqlService();
 
     selector.addListener(this);
     listChooser = new ListChooser(screen.appInfo().predefinedProbeLists(), "probes") {
@@ -94,7 +90,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
         // We override this to pull in the probes, because they
         // may need to be converted from gene symbols.
 
-        matrixService.identifiersToProbes(probes, true, false, null,
+        sparqlService.identifiersToProbes(probes, true, false, false, null,
             new PendingAsyncCallback<String[]>(this) {
               public void handleSuccess(String[] resolved) {
                 setItems(Arrays.asList(resolved));
@@ -105,7 +101,8 @@ abstract public class CompoundRanker extends DataListenerWidget {
 
       @Override
       protected void itemsChanged(List<String> items) {
-        matrixService.identifiersToProbes(items.toArray(new String[0]), true, false, null,
+        sparqlService.identifiersToProbes(items.toArray(new String[0]), true, 
+            false, false, null,
             new PendingAsyncCallback<String[]>(this) {
               public void handleSuccess(String[] resolved) {
                 setProbeList(Arrays.asList(resolved));

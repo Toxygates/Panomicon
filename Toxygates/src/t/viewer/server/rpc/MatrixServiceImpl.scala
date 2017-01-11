@@ -120,31 +120,6 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   def setSessionData(m: MatrixState) =
     getThreadLocalRequest().getSession().setAttribute("matrix", m)
 
-  def identifiersToProbes(identifiers: Array[String], precise: Boolean,
-    titlePatternMatch: Boolean, samples: JList[Sample]): Array[String] = {
-    val ps = if (titlePatternMatch) {
-      probes.forTitlePatterns(identifiers)
-    } else {
-      probes.identifiersToProbes(mcontext.probeMap,
-        identifiers, precise)
-    }
-    val result = ps.map(_.identifier).toArray
-
-    Option(samples) match {
-      case Some(_) => filterProbesByGroup(result, samples)
-      case None    => result
-    }
-  }
-
-  // TODO Shared logic with SparqlService
-  def filterProbesByGroup(ps: Array[String], samples: JList[Sample]): Array[String] = {
-    val platforms: Set[String] = samples.map(x => x.get("platform_id")).toSet
-    val lookup = probes.platformsAndProbes
-    val acceptProbes = platforms.flatMap(p => lookup(p))
-
-    ps.filter(x => acceptProbes.contains(x))
-  }
-
   def loadMatrix(groups: JList[Group], probes: Array[String],
     typ: ValueType): ManagedMatrixInfo = {
     getSessionData._controller =
@@ -294,10 +269,10 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       row.flatMap(at => gis.getOrElse(Probe(at), Seq.empty))).map(_.distinct.mkString(" "))
 
     val aux = List((("Gene"), geneIds))
-    CSVHelper.writeCSV(config.csvDirectory, config.csvUrlBase,
+    CSVHelper.writeCSV("toxygates", config.csvDirectory, config.csvUrlBase,
       aux ++ csvAuxColumns(mat),
       rowNames, colNames,
-      mat.data.map(_.map(asScala(_))))
+      mat.data.map(_.map(_.getValue)))
   }
 
   protected def csvAuxColumns(mat: ExprMatrix): Seq[(String, Seq[String])] = Seq()

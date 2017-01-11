@@ -292,7 +292,7 @@ class BatchManager(context: Context) {
     if (!rdfOnly) {
       r :+= deleteSeriesData(title, sbuilder)
       r :+= deleteFoldData(title)
-      r :+= deleteExprData(title, true)
+      r :+= deleteExprData(title)
       r :+= deleteSampleIDs(title)
     } else {
       println("RDF ONLY mode - not deleting series, fold, expr, sample ID data")
@@ -423,17 +423,12 @@ class BatchManager(context: Context) {
     }
   }
 
-  //TODO: remove treatAsFold parameter when possible
   def addExprData(md: Metadata, niFile: String, callFile: Option[String],
     warningHandler: (String) => Unit)(implicit mc: MatrixContext) = {
     val data = new CSVRawExpressionData(List(niFile), callFile.map(List(_)),
-        Some(md.samples.size), warningHandler)
-//    if (treatAsFold) {
-      val db = () => config.data.extWriter(config.data.exprDb)
-      new SimplePFoldValueInsert(db, data).insert("Insert expr value data (quasi-fold format)")
-//    } else {
-//      new AbsoluteValueInsert(config.data.exprDb, data).insert("Insert normalised intensity data")
-//    }
+      Some(md.samples.size), warningHandler)
+    val db = () => config.data.extWriter(config.data.exprDb)
+    new SimplePFoldValueInsert(db, data).insert("Insert expr value data (quasi-fold format)")
   }
 
   def addFoldsData(md: Metadata, foldFile: String, callFile: Option[String],
@@ -480,7 +475,7 @@ class BatchManager(context: Context) {
     }
 
   //TODO unify with deleteFoldData above once DB formats are unified
-  def deleteExprData(title: String, treatAsFold: Boolean)(implicit mc: MatrixContext) =
+  def deleteExprData(title: String)(implicit mc: MatrixContext) =
     new Tasklet("Delete normalized intensity data") {
       def run() {
         val bs = new Batches(config.triplestore)
@@ -489,11 +484,7 @@ class BatchManager(context: Context) {
           log("Nothing to do, batch has no samples")
           return
         }
-        val db = if (treatAsFold) {
-          config.data.extWriter(config.data.exprDb)
-        } else {
-          config.data.writer(config.data.exprDb)
-        }
+        val db = config.data.extWriter(config.data.exprDb)
         try {
           deleteFromDB(db, ss)
         } finally {
