@@ -52,7 +52,8 @@ webappResources in Compile += baseDirectory.value / "WebContent"
 
 gwtVersion := "2.7.0"
 
-gwtModules := Seq("otgviewer.toxygates", "otgviewer.admin.OTGAdmin")
+//gwtModules := Seq("otgviewer.toxygates", "otgviewer.admin.OTGAdmin")
+gwtModules := Seq("otgviewer.toxygates")
 
 javaOptions in Gwt ++= Seq("-Xmx2g")
 
@@ -66,12 +67,10 @@ warPostProcess in Compile <<= (target) map {
         val webInf = webapp / "WEB-INF"
         val classes = webInf / "classes"
         val lib = webInf / "lib"
-
         //For admin interface only
         IO.delete(classes / "t" / "admin")
-
         //These go in the "tglobal" jar
-        IO.delete(classes / "t" / "common")
+        IO.delete(classes / "t" / "global")
         IO.delete(lib / "kyotocabinet-java-1.24.jar")
         IO.delete(lib / "scala-library-2.11.8.jar")
     }
