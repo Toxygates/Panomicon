@@ -8,16 +8,18 @@ scalaSource in Compile := baseDirectory.value / "src"
 
 javaSource in Compile := baseDirectory.value / "src"
 
-//For gwt-devmode to set classpath correctly
-dependencyClasspath in Gwt += baseDirectory.value / "target/scala-2.11/classes"
-
 scalaSource in Test := baseDirectory.value / "test"
 
 javaSource in Test := baseDirectory.value / "test"
 
-libraryDependencies += "org.mortbay.jetty" % "jetty" % "latest.integration" % "container"
+//Testing, running etc will be in a separate JVM. Necessary to pick up the -D arguments.
+fork := true
 
-//libraryDependencies += "org.apache.commons" % "commons-math3" % "latest.integration"
+javaOptions += "-Djava.library.path=/usr/local/lib"
+
+//* * DEPENDENCIES
+
+libraryDependencies += "org.mortbay.jetty" % "jetty" % "latest.integration" % "container"
 
 libraryDependencies += "commons-fileupload" % "commons-fileupload" % "latest.integration"
 
@@ -27,12 +29,9 @@ libraryDependencies += "javax.mail" % "mail" % "latest.integration"
 
 libraryDependencies += "com.googlecode.gwtupload" % "gwtupload" % "latest.integration"
 
-//libraryDependencies += "com.google.gwt.google-apis" % "gwt-visualization" % "latest.integration"
-
 libraryDependencies += "org.rosuda.REngine" % "Rserve" % "latest.integration"
 
 //Dependencies for intermine.
-//Can change json to latest.integration when we have JRE 8
 
 libraryDependencies += "org.json" % "json" % "latest.integration"
 
@@ -44,20 +43,41 @@ libraryDependencies += "log4j" % "log4j" % "latest.integration"
 
 libraryDependencies += "org.antlr" % "antlr" % "latest.integration" 
 
-gwtVersion := "2.7.0"
+//** GWT SETTINGS
 
-//gwtWebappPath := baseDirectory.value / "war"
+//For gwt-devmode to set classpath correctly
+dependencyClasspath in Gwt += baseDirectory.value / "target/scala-2.11/classes"
+
+webappResources in Compile += baseDirectory.value / "WebContent"
+
+gwtVersion := "2.7.0"
 
 gwtModules := Seq("otgviewer.toxygates", "otgviewer.admin.OTGAdmin")
 
 javaOptions in Gwt ++= Seq("-Xmx2g")
 
-//Testing, running etc will be in a separate JVM
-fork := true
+//For renaming the packaged war to simply toxygates.war
+artifactName in packageWar := { (scalaVersion, module, artifact) => artifact.name + "." + artifact.extension }
 
-javaOptions += "-Djava.library.path=/usr/local/lib"
+warPostProcess in Compile <<= (target) map {
+    (target) => {
+      () =>
+        val webapp = target / "webapp"
+        val webInf = webapp / "WEB-INF"
+        val classes = webInf / "classes"
+        val lib = webInf / "lib"
 
-webappResources in Compile += baseDirectory.value / "WebContent"
+        //For admin interface only
+        IO.delete(classes / "t" / "admin")
+
+        //These go in the "tglobal" jar
+        IO.delete(classes / "t" / "common")
+        IO.delete(lib / "kyotocabinet-java-1.24.jar")
+        IO.delete(lib / "scala-library-2.11.8.jar")
+    }
+}
+
+//** ECLIPSE SETTINGS
 
 EclipseKeys.relativizeLibs := false
 
@@ -65,7 +85,3 @@ EclipseKeys.relativizeLibs := false
 //Disable to speed up dependency retrieval.
 EclipseKeys.withSource := true
 
-//For renaming the packaged war to simply toxygates.war
-artifactName in packageWar := { (scalaVersion, module, artifact) => artifact.name + "." + artifact.extension }
-
-//retrieveManaged := true

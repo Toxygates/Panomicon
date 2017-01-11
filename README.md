@@ -39,7 +39,7 @@ If using Kyoto cabinet, see the note in the Testing section above. That also app
 
 Run `sbt gwt-devmode`. A GUI will open, from which you can launch the web application in a browser.
 
-For the application to work, the various settings in war/WEB-INF/web.xml must be properly configured. In particular, you must set repositoryURL, updateURL and dataDir correctly.
+For the application to work, the various settings in Toxygates/target/webapp/WEB-INF/web.xml must be properly configured. In particular, you must set repositoryURL, updateURL and dataDir correctly.
 
 To be written: instructions for deploying R and Rserve
 
@@ -63,7 +63,7 @@ SBT can automatically generate Eclipse projects with dependencies configured pro
 1. (Optional): Uncomment the line EclipseKeys.withSource := true in Toxygates/build.sbt to get source code for all referenced libraries.
 1. Run `sbt eclipse` inside the Toxygates root directory.
 1. Inside Eclipse, import existing projects (from the File menu). First import the OTGTool project, then the Toxygates one (since the latter depends on the former).
-1. Set the output directory for compiled java classes to war/WEB-INF/classes (accessible from the build path settings, source directory).
+1. Set the output directory for compiled java classes to toxygates/war/WEB-INF/classes (accessible from the build path settings, source directory).
 1. Run `sbt package-war` as above. This will collect all the necessary jars in Toxygates/target/webapp/WEB-INF/lib. As we will run the Eclipse project off a separate war directory, 
 link or copy these jar files, e.g. 
 
