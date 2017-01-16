@@ -54,7 +54,7 @@ trait BaseConfig {
 }
 
 case class TriplestoreConfig(url: String, updateUrl: String,
-  user: String, pass: String, repository: String) {
+  user: String, pass: String, repository: String, readOnly: Boolean = false) {
   lazy val triplestore: RepositoryConnection = {
     if (repository != null && repository != "") {
       println("RemoteRepository connect to " + url)
@@ -65,7 +65,7 @@ case class TriplestoreConfig(url: String, updateUrl: String,
     }
   }
 
-  def get = new t.sparql.SimpleTriplestore(triplestore, updateUrl == null)
+  def get = new t.sparql.SimpleTriplestore(triplestore, readOnly)
 }
 
 object DataConfig {
