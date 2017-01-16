@@ -62,11 +62,6 @@
 		<param-name>maxFileSize</param-name>
 		<param-value>268435456</param-value>
 	</context-param>
-	<context-param>
-		<param-name>updateURL</param-name>
-		<param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/update</param-value>  
-	</context-param>
-	
 	
   <!-- Servlets -->
   
