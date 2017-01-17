@@ -11,10 +11,12 @@ import t.BaseConfig
 import scala.collection.JavaConversions._
 import t.common.shared.sample.HasSamples
 import t.sparql.Samples
+import t.common.shared.DataSchema
 
-class Annotations(baseConfig: BaseConfig) {
+class Annotations(schema: DataSchema, baseConfig: BaseConfig) {
+
   def bioParamsForSample(s: Sample): BioParameters =
-    Option(s.get("exposure_time")) match {
+    Option(s.get(schema.timeParameter())) match {
       case Some(t) => bioParameters.forTimePoint(t)
       case _       => bioParameters
     }
@@ -25,7 +27,6 @@ class Annotations(baseConfig: BaseConfig) {
     pfs.bioParameters
   }
 
-   //TODO get these from schema, etc.
   def forSamples(samples: Samples, column: HasSamples[Sample],
       importantOnly: Boolean = false): Array[Annotation] = {
     val keys = if (importantOnly) {
@@ -35,7 +36,7 @@ class Annotations(baseConfig: BaseConfig) {
     }
     Option(column.getSamples) match {
       case None => Array()
-      case Some(ss) =>    
+      case Some(ss) =>
       ss.map(x => {
         val ps = samples.parameterQuery(x.id, keys)
         fromParameters(x, ps)
@@ -76,16 +77,16 @@ class Annotations(baseConfig: BaseConfig) {
   def prepareCSVDownload(sampleStore: Samples, column: HasSamples[Sample],
       csvDir: String, csvUrlBase: String): String = {
     val ss = column.getSamples
-    val timepoints = ss.toSeq.flatMap(s => Option(s.get("exposure_time"))).distinct
+    val timepoints = ss.toSeq.flatMap(s =>
+      Option(s.get(schema.timeParameter()))).distinct
 
+    val params = bioParameters.sampleParameters
     val raw = ss.map(x => {
-      sampleStore.parameterQuery(x.id, bioParameters.sampleParameters).toSeq
+      sampleStore.parameterQuery(x.id, params).toSeq
     })
 
-    val params = raw.head.map(_._1).toSeq
-
-    //TODO sort columns by section and name
     val colNames = params.map(_.humanReadable)
+
     val data = Vector.tabulate(raw.size, colNames.size)((s, a) =>
       raw(s)(a)._2.getOrElse(""))
 
@@ -95,11 +96,6 @@ class Annotations(baseConfig: BaseConfig) {
 
     def extractd(b: Option[BioParameter], f: BioParameter => Option[Double]): String =
       b.map(f).flatten.map(_.toString).getOrElse("")
-
-//    val preRows = Seq(
-//      bps.map(extracts(_, _.section)),
-//      bps.map(extractd(_, _.lowerBound)),
-//      bps.map(extractd(_, _.upperBound)))
 
     val rr = timepoints.map(t => {
       val bpt = bioParameters.forTimePoint(t)
