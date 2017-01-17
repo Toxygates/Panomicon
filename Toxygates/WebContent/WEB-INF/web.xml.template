@@ -7,11 +7,11 @@
 
 	<context-param>
 		<param-name>repositoryURL</param-name>
-		<param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1</param-value>
+                <param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/repositories/ttest</param-value>
 	</context-param>
 	<context-param>
-		<param-name>repositoryName</param-name>
-		<param-value>ttest</param-value>
+		<param-name>updateURL</param-name>
+                <param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/repositories/ttest/statements</param-value>
 	</context-param>
 	<context-param>		
 		<param-name>instanceName</param-name>
