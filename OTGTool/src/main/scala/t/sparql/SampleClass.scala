@@ -40,11 +40,6 @@ case class SampleClass(constraints: CMap[String, String] = Map()) extends Sample
     }
   }
 
-  def filterAllExcludeControl: Filter = {
-    Filter(filterAll.queryPattern.replace(".", ";t:dose_level ?dose_level .") ,
-        filterAll.queryFilter.replace(").", " && ?dose_level NOT IN (\"Control\") )."))
-  }
-
   def filter(key: String): Filter = {
     if (!constraints.contains(key)) {
       Filter("", "")
