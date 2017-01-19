@@ -19,7 +19,11 @@ class BioParameters(lookup: Map[String, BioParameter]) {
   def apply(key: String) = lookup(key)
   def get(key: String) = lookup.get(key)
 
-  def sampleParameters = lookup.values.map(_.sampleParameter)
+  /**
+   * Obtain the set as sample parameters, sorted by section and label.
+   */
+  def sampleParameters = lookup.values.toSeq.
+    sortBy(p => (p.section, p.label)).map(_.sampleParameter)
 
   /**
    * Extract bio parameters with accurate low and high threshold for a given
