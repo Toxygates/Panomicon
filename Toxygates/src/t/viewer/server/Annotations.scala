@@ -11,15 +11,20 @@ import t.BaseConfig
 import scala.collection.JavaConversions._
 import t.common.shared.sample.HasSamples
 import t.sparql.Samples
+import t.platform.ControlGroup
 import t.common.shared.DataSchema
+import t.sparql.TriplestoreMetadata
+import t.sparql.SampleFilter
+import t.db.Metadata
+import t.viewer.server.Conversions._
 
-class Annotations(schema: DataSchema, baseConfig: BaseConfig) {
+class Annotations(sampleStore: Samples, schema: DataSchema, baseConfig: BaseConfig) {
 
-  def bioParamsForSample(s: Sample): BioParameters =
-    Option(s.get(schema.timeParameter())) match {
-      case Some(t) => bioParameters.forTimePoint(t)
-      case _       => bioParameters
-    }
+//  private def bioParamsForSample(s: Sample): BioParameters =
+//    Option(s.get(schema.timeParameter())) match {
+//      case Some(t) => bioParameters.forTimePoint(t)
+//      case _       => bioParameters
+//    }
 
   //TODO this needs to update sometimes, ideally without restart
   lazy val bioParameters = {
@@ -27,24 +32,59 @@ class Annotations(schema: DataSchema, baseConfig: BaseConfig) {
     pfs.bioParameters
   }
 
+  lazy val tsMeta = new TriplestoreMetadata(sampleStore, baseConfig.sampleParameters)(SampleFilter())
+
+   //TODO get these from schema, etc.
   def forSamples(samples: Samples, column: HasSamples[Sample],
       importantOnly: Boolean = false): Array[Annotation] = {
-    val keys = if (importantOnly) {
-      baseConfig.sampleParameters.previewDisplay
+
+    val cgs = column.getSamples.groupBy(_.get("control_group"))
+
+    val rs = for (
+      (cgroup, ss) <- cgs;
+      results = forSamples(samples, ss, importantOnly)
+    ) yield results
+
+    rs.flatten.toArray
+  }
+
+  /**
+   * All samples part of the same control group
+   */
+  private def forSamples(sampleStore: Samples,
+      samples: Iterable[Sample], importantOnly: Boolean) = {
+
+    val (cg, keys) = if (importantOnly) {
+      (None,
+        baseConfig.sampleParameters.previewDisplay)
     } else {
-      bioParameters.sampleParameters
+      val mp = schema.mediumParameter()
+      val controls = samples.filter(s => schema.isControlValue(s.get(mp)))
+      if (controls.isEmpty) {
+        (None,
+          baseConfig.sampleParameters.previewDisplay)
+      } else {
+        (Some(new ControlGroup(bioParameters, tsMeta, controls.map(asScalaSample))),
+          bioParameters.sampleParameters)
+      }
     }
-    Option(column.getSamples) match {
-      case None => Array()
-      case Some(ss) =>
-      ss.map(x => {
-        val ps = samples.parameterQuery(x.id, keys)
-        fromParameters(x, ps)
-      })
-    }
+    samples.map(x => {
+      val ps = sampleStore.parameterQuery(x.id, keys)
+      fromParameters(cg, x, ps)
+    })
   }
 
   def fromParameters(barcode: Sample,
+    ps: Iterable[(t.db.SampleParameter, Option[String])]): Annotation = {
+
+//    val controls = baseConfig.sampleParameters.controlSamples(tsMeta, asScalaSample(barcode))
+//
+//    val cg = if (controls.isEmpty) None else
+//      Some(new ControlGroup(bioParameters, tsMeta, controls))
+    fromParameters(None, barcode, ps)
+  }
+
+  private def fromParameters(cg: Option[ControlGroup], barcode: Sample,
     ps: Iterable[(t.db.SampleParameter, Option[String])]): Annotation = {
 
     def asJDouble(d: Option[Double]) =
@@ -52,20 +92,25 @@ class Annotations(schema: DataSchema, baseConfig: BaseConfig) {
 
     def bioParamValue(bp: BioParameter, dispVal: String) = {
       bp.kind match {
-        case "numerical" => new NumericalBioParamValue(bp.key, bp.label,
+        case "numerical" =>
+          val t = barcode.get(schema.timeParameter())
+          val lb = cg.flatMap(_.lowerBound(bp.sampleParameter.identifier, t))
+          val ub = cg.flatMap(_.upperBound(bp.sampleParameter.identifier, t))
+
+          new NumericalBioParamValue(bp.key, bp.label,
           bp.section.getOrElse(null),
-          asJDouble(bp.lowerBound), asJDouble(bp.upperBound),
+          asJDouble(lb), asJDouble(ub),
           dispVal)
         case _ => new StringBioParamValue(bp.key, bp.label,
           bp.section.getOrElse(null), dispVal)
       }
     }
 
-    val useBps = bioParamsForSample(barcode)
+//    val useBps = bioParamsForSample(barcode)
 
     val params = for (
       x <- ps.toSeq;
-      bp <- useBps.get(x._1.identifier);
+      bp <- bioParameters.get(x._1.identifier);
       p = (bp.label, x._2.getOrElse("N/A"));
       dispVal = OTGParameterSet.postReadAdjustment(p);
       bpv = bioParamValue(bp, dispVal)
@@ -74,6 +119,7 @@ class Annotations(schema: DataSchema, baseConfig: BaseConfig) {
     new Annotation(barcode.id, new java.util.ArrayList(params))
   }
 
+  //TODO use ControlGroup to calculate bounds here too
   def prepareCSVDownload(sampleStore: Samples, column: HasSamples[Sample],
       csvDir: String, csvUrlBase: String): String = {
     val ss = column.getSamples
