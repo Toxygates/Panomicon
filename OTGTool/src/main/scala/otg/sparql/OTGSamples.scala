@@ -42,7 +42,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
     val filterString = if(filter.constraints.isEmpty) "" else
         s"""|  FILTER(      
         |    ${standardAttributes.map(a => filter.get(a).map(f =>
-              s"?$a == \" + f + "\"")).flatten.mkString(" && ")}
+              s"?$a = " + "\"" + f + "\"")).flatten.mkString(" && ")}
         |  )""".stripMargin   
     
     Query(prefixes,

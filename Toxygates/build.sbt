@@ -39,7 +39,9 @@ libraryDependencies += "commons-lang" % "commons-lang" % "2.6"
 
 libraryDependencies += "org.apache.httpcomponents" % "fluent-hc" % "latest.integration"
 
-libraryDependencies += "log4j" % "log4j" % "latest.integration" 
+//libraryDependencies += "log4j" % "log4j" % "latest.integration" 
+
+libraryDependencies += "org.slf4j" % "slf4j-simple" % "latest.integration"
 
 libraryDependencies += "org.antlr" % "antlr" % "latest.integration" 
 
