@@ -90,6 +90,8 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
    * Obtain the bio-parameters in all bio platforms
    */
   def bioParameters: BioParameters = {
+    implicit val timeout: Int = 60000
+
     //TODO test this
     val attribs = ts.mapQuery(s"""$tPrefixes
         |SELECT ?id ?key ?value WHERE {

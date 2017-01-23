@@ -53,7 +53,6 @@ import com.google.gwt.view.client.NoSelectionModel;
 public class SampleDetailTable extends Composite {
   private CellTable<BioParamValue[]> table;
   private Sample[] barcodes;
-  private HasSamples<Sample> displayColumn;
   private SampleServiceAsync sampleService;
   private final @Nullable String title;
   private final boolean isSection;
@@ -135,8 +134,7 @@ public class SampleDetailTable extends Composite {
   }
   
   private void setupColumns(HasSamples<Sample> c) {
-    barcodes = c.getSamples();
-    displayColumn = c;
+    barcodes = c.getSamples();    
     while (table.getColumnCount() > 0) {
       table.removeColumn(0);
     }
