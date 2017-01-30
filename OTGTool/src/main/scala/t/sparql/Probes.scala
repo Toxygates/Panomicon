@@ -141,7 +141,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
        |    ?p a t:probe; rdfs:label ?pl.
        |   } . ?g rdfs:label ?gl .
        |}""".stripMargin
-    val r = ts.mapQuery(query)(30000).map(x => (x("gl"), x("pl"))).groupBy(_._1)
+    val r = ts.mapQuery(query, 30000).map(x => (x("gl"), x("pl"))).groupBy(_._1)
     Map() ++ r.map(x => x._1 -> x._2.map(_._2))
   }
 
@@ -171,7 +171,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
         multiFilter("?filt", identifiers),
       //multiUnionObj("?p ", relation, identifiers),
           "   } ",
-      eval = ts.simpleQuery(_)(timeout))
+      eval = ts.simpleQuery(_, false, timeout))
 
   protected def emptyCheck[T, U](in: Iterable[T])(f: => Iterable[U]): Iterable[U] = {
     if (in.isEmpty) {
@@ -316,7 +316,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
          |    OPTIONAL { ?pr t:swissprot ?prot. }
          |    ?pr a t:probe . """.stripMargin +
       multiFilter("?pr", probes.map(p => bracket(p.pack))) + " } ?g rdfs:label ?plat } "
-    val r = ts.mapQuery(q)(20000)
+    val r = ts.mapQuery(q, 20000)
 
     r.groupBy(_("pr")).map(_._2).map(g => {
       val p = Probe(g(0)("l"))
@@ -420,7 +420,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
       "}"
 
    //May be slow
-    val mq = ts.mapQuery(q)(20000)
+    val mq = ts.mapQuery(q, 20000)
     makeMultiMap(mq.map(x => x("list") -> Probe(x("probeLabel"))))
   }
 
