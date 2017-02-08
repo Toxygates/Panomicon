@@ -175,7 +175,7 @@ abstract class Triplestore extends Closeable {
   /**
    * Query for some number of records, each containing a single field.
    */
-  def simpleQuery(query: String, quiet: Boolean = false)(implicit timeoutMillis: Int = 10000): Vector[String] = {
+  def simpleQuery(query: String, quiet: Boolean = false, timeoutMillis: Int = 10000): Vector[String] = {
     val rs = evaluate(query, timeoutMillis)
     val recs = for (
       tuple <- rs;
@@ -192,7 +192,7 @@ abstract class Triplestore extends Closeable {
   /**
    * Query for some number of records, each containing some number of fields.
    */
-  def multiQuery(query: String)(implicit timeoutMillis: Int = 10000): Vector[Vector[String]] = {
+  def multiQuery(query: String, timeoutMillis: Int = 10000): Vector[Vector[String]] = {
     val start = System.currentTimeMillis()
     val rs = evaluate(query, timeoutMillis)
     val recs = for (
@@ -209,7 +209,7 @@ abstract class Triplestore extends Closeable {
   /**
    * Query for some number of records, each containing named fields.
    */
-  def mapQuery(query: String)(implicit timeoutMillis: Int = 10000): Vector[Map[String, String]] = {
+  def mapQuery(query: String, timeoutMillis: Int = 10000): Vector[Map[String, String]] = {
     val rs = evaluate(query, timeoutMillis)
     val recs = for (
       tuple <- rs;

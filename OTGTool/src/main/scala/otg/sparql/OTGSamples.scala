@@ -56,7 +56,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
         |  $filterString         
         |  }""".stripMargin,      
         
-      eval = ts.mapQuery(_)(20000).map(x => {
+      eval = ts.mapQuery(_, 20000).map(x => {
         val sc = SampleClass(adjustSample(x)) ++ filter
         Sample(x("id"), sc, Some(x("control_group")))
        })

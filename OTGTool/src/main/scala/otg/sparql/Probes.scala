@@ -74,7 +74,7 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
       |  } 
       |  ?g rdfs:label ?plat.
       |} """.stripMargin
-	  val r = ts.mapQuery(q)(20000)
+	  val r = ts.mapQuery(q, 20000)
 
 	  r.groupBy(_("pr")).map(_._2).map(g => {
 	    val p = Probe(g(0)("l"))

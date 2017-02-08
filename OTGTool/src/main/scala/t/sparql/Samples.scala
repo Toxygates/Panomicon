@@ -172,7 +172,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
         "?x " +
           attribute.map(x => s"t:$x ?$x").mkString("; "),
       s"} ${sf.standardSampleFilters} } ",
-      ts.mapQuery)
+      ts.mapQuery(_, 10000))
   }
 
   def attributeValues(filter: TFilter, attribute: String)(implicit sf: SampleFilter) =
