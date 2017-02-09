@@ -73,6 +73,8 @@ public class ClusteringList extends ItemList {
     this.clusters = clusters;
   }
   
+  public StringList[] asStringLists() { return clusters; }
+  
   public Algorithm algorithm() { return algorithm; }
   // return cloned map
   public Map<String, String> params() { return new TreeMap<String, String>(params); }

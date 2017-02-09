@@ -445,8 +445,8 @@ public class GeneSetsMenuItem extends DataListenerWidget {
 
   /**
    * Refresh menu items on clusteringListsChanged fired. Note the events would be also fired when
-   * the DataScreen is activated. [DataScreen#show -> Screen#show -> Screen#lodaState ->
-   * DataListenerWidget#lodaState]
+   * the DataScreen is activated. [DataScreen#show -> Screen#show -> Screen#loadState ->
+   * DataListenerWidget#loadState]
    * 
    * @see otgviewer.client.DataScreen#show()
    */

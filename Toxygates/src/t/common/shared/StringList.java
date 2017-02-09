@@ -41,6 +41,10 @@ public class StringList extends ItemList {
     this.items = items;
   }
 
+  public StringList copyWithName(String name) {
+    return new StringList(type, name, items);
+  }
+  
   public Collection<String> packedItems() {
     return Arrays.asList(items);
   }

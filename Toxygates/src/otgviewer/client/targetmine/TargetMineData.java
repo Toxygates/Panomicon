@@ -31,6 +31,7 @@ import otgviewer.client.dialog.TargetMineEnrichDialog;
 import otgviewer.client.dialog.TargetMineSyncDialog;
 import otgviewer.shared.targetmine.EnrichmentParams;
 import t.common.client.components.StringArrayTable;
+import t.common.shared.ClusteringList;
 import t.common.shared.ItemList;
 import t.common.shared.SharedUtils;
 import t.common.shared.StringList;
@@ -82,14 +83,30 @@ public class TargetMineData {
       }
     });
   }
+  
+  private List<StringList> compileLists() {
+    List<StringList> normal = StringList.pickProbeLists(parent.chosenItemLists, null);
+    List<StringList> r = new ArrayList<StringList>();
+    
+    for (StringList l : normal) {
+      r.add((StringList) l.copyWithName("Set:" + l.name()));
+    }
+    
+    for (ItemList cl: parent.chosenClusteringList) {
+      for (StringList l: ((ClusteringList) cl).asStringLists()) {
+        r.add((StringList) l.copyWithName("Clust:" + l.name()));
+      }
+    }
+    
+    return r;
+  }
 
   public void exportLists() {
     InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Export", true, true) {
       @Override
       protected void userProceed(String user, String pass, boolean replace) {
         super.userProceed();
-        doExport(user, pass, 
-            StringList.pickProbeLists(parent.chosenItemLists, null), replace);
+        doExport(user, pass, compileLists(), replace);   
       }
 
     };
