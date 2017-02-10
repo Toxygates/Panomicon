@@ -327,7 +327,7 @@ public class ListChooser extends DataListenerWidget {
    * 
    * @param itemLists
    */
-  public void setLists(List<ItemList> itemLists) {
+  public void setLists(List<? extends ItemList> itemLists) {
     lists.clear();
     otherTypeLists.clear();
 

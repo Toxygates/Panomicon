@@ -38,6 +38,8 @@ import t.common.shared.userclustering.Methods;
 @SuppressWarnings("serial")
 public class ClusteringList extends ItemList {
 
+  public static final String USER_CLUSTERING_TYPE = "userclustering";
+  
   @Nullable
   private Algorithm algorithm;
   private Map<String, String> params; // optional
@@ -64,7 +66,8 @@ public class ClusteringList extends ItemList {
     this.clusters = clusters.toArray(new StringList[0]);
   }
 
-  public ClusteringList(String type, String name, Algorithm algorithm, StringList[] clusters) {
+  public ClusteringList(String type, String name, 
+      @Nullable Algorithm algorithm, StringList[] clusters) {
     super(type, name);
 
     this.algorithm = algorithm;
@@ -75,6 +78,7 @@ public class ClusteringList extends ItemList {
   
   public StringList[] asStringLists() { return clusters; }
   
+  @Nullable
   public Algorithm algorithm() { return algorithm; }
   // return cloned map
   public Map<String, String> params() { return new TreeMap<String, String>(params); }

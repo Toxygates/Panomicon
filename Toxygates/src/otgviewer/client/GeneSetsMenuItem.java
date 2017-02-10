@@ -302,7 +302,8 @@ public class GeneSetsMenuItem extends DataListenerWidget {
           return;
         }
 
-        StringListsStoreHelper helper = new StringListsStoreHelper("probes", screen);
+        StringListsStoreHelper helper = 
+            new StringListsStoreHelper(StringList.PROBES_LIST_TYPE, screen);
         helper.delete(sl.name());
         // If the user deletes chosen gene set, switch to "All probes" automatically.
         if (screen.chosenGeneSet != null && sl.type().equals(screen.chosenGeneSet.type())
@@ -320,7 +321,8 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     return new Command() {
       public void execute() {
         screen.geneSetChanged(
-            new ClusteringList("userclustering", cl.name(), cl.algorithm(), new StringList[] {sl}));
+            new ClusteringList(ClusteringList.USER_CLUSTERING_TYPE, 
+                cl.name(), cl.algorithm(), new StringList[] {sl}));
         screen.probesChanged(sl.items());
         screen.updateProbes();
       }
@@ -337,7 +339,8 @@ public class GeneSetsMenuItem extends DataListenerWidget {
         }
 
         ClusteringListsStoreHelper helper =
-            new ClusteringListsStoreHelper("userclustering", screen);
+            new ClusteringListsStoreHelper(
+                ClusteringList.USER_CLUSTERING_TYPE, screen);
         helper.delete(cl.name());
         // If the user deletes chosen gene set, switch to "All probes" automatically.
         if (screen.chosenGeneSet != null && cl.type().equals(screen.chosenGeneSet.type())

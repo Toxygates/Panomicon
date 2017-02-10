@@ -28,7 +28,7 @@ import java.util.Collection;
  * be gene identifiers (entrez).
  */
 @SuppressWarnings("serial")
-abstract public class ItemList implements Packable, Serializable {
+abstract public class ItemList implements Packable, Serializable, Comparable<ItemList> {
 
   protected String type;
   protected String name;
@@ -87,5 +87,11 @@ abstract public class ItemList implements Packable, Serializable {
       return null;
     }
   }
+
+  @Override
+  public int compareTo(ItemList o) {
+    return name().compareTo(o.name());
+  }
+
 
 }

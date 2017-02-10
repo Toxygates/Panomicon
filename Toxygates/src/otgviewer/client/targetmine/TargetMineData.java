@@ -20,11 +20,13 @@ package otgviewer.client.targetmine;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import otgviewer.client.StringListsStoreHelper;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.dialog.TargetMineEnrichDialog;
@@ -78,27 +80,20 @@ public class TargetMineData {
     tmService.importTargetmineLists(user, pass, asProbes, new PendingAsyncCallback<StringList[]>(
         parent, "Unable to import lists from TargetMine") {
       public void handleSuccess(StringList[] data) {
-        parent.itemListsChanged(mergeLists(parent.chosenItemLists, Arrays.asList(data), replace));
+        Collection<ItemList> rebuild = 
+            StringListsStoreHelper.rebuildLists(parent, Arrays.asList(data));
+        List<StringList> normal = StringList.pickProbeLists(rebuild, null);
+        List<ClusteringList> clustering = ClusteringList.pickUserClusteringLists(rebuild, null);
+        
+        //TODO revise pop-up message handling for this process
+        parent.itemListsChanged(
+            mergeLists(parent.chosenItemLists, normal, replace));        
         parent.storeItemLists(parent.getParser());
+        parent.clusteringListsChanged(
+            mergeLists(parent.chosenClusteringList, clustering, replace));
+        parent.storeClusteringLists(parent.getParser());
       }
     });
-  }
-  
-  private List<StringList> compileLists() {
-    List<StringList> normal = StringList.pickProbeLists(parent.chosenItemLists, null);
-    List<StringList> r = new ArrayList<StringList>();
-    
-    for (StringList l : normal) {
-      r.add((StringList) l.copyWithName("Set:" + l.name()));
-    }
-    
-    for (ItemList cl: parent.chosenClusteringList) {
-      for (StringList l: ((ClusteringList) cl).asStringLists()) {
-        r.add((StringList) l.copyWithName("Clust:" + l.name()));
-      }
-    }
-    
-    return r;
   }
 
   public void exportLists() {
@@ -106,7 +101,7 @@ public class TargetMineData {
       @Override
       protected void userProceed(String user, String pass, boolean replace) {
         super.userProceed();
-        doExport(user, pass, compileLists(), replace);   
+        doExport(user, pass, StringListsStoreHelper.compileLists(parent), replace);   
       }
 
     };
@@ -240,6 +235,7 @@ public class TargetMineData {
     if (nonImported > 0) {
       msg = msg + "\n" + nonImported + " lists with identical names were not imported.";
     }
+    
     Window.alert(msg);
     return new ArrayList<ItemList>(allLists.values());
   }

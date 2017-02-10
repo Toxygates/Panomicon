@@ -33,6 +33,7 @@ import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
+import t.viewer.client.HasLogger;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.client.rpc.SeriesServiceAsync;
@@ -69,7 +70,8 @@ import com.google.gwt.user.client.ui.Widget;
  * @author johan
  *
  */
-public class Screen extends DataListenerWidget implements RequiresResize, ProvidesResize {
+public class Screen extends DataListenerWidget implements 
+  RequiresResize, ProvidesResize, HasLogger {
   protected static Resources resources = GWT.create(Resources.class);
 
   protected DockLayoutPanel rootPanel;

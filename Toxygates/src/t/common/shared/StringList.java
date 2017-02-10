@@ -25,8 +25,12 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import otgviewer.client.StringListsStoreHelper;
+
 @SuppressWarnings("serial")
 public class StringList extends ItemList {
+
+  public final static String PROBES_LIST_TYPE = "probes";
 
   private String[] items;
   private String comment;
@@ -73,10 +77,35 @@ public class StringList extends ItemList {
       @Nullable String title) {
     List<StringList> r = new LinkedList<StringList>();
     for (ItemList l : from) {
-      if (l.type().equals("probes") && (title == null || l.name().equals(title))) {
+      if (l.type().equals(StringList.PROBES_LIST_TYPE) && (title == null || l.name().equals(title))) {
         r.add((StringList) l);
       }
     }
     return r;
+  }
+  
+  @Override
+  public String toString() {
+    return "StringList:" + pack();
+   }
+  
+  @Override
+  public int hashCode() {
+    return name.hashCode() + 41 * (
+        type.hashCode() + 41 * (
+            Arrays.hashCode(items())
+            ));
+  }
+  
+  @Override
+  public boolean equals(Object other) {
+    if (! (other instanceof StringList) || other == null) {
+      return false;
+    }
+    StringList sol = (StringList) other;
+    return sol.name().equals(name()) &&
+        sol.type().equals(type()) &&
+        Arrays.equals(items(), sol.items());
+        
   }
 }

@@ -17,16 +17,25 @@
  */
 package otgviewer.client;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
+import t.common.shared.ClusteringList;
+import t.common.shared.ItemList;
 import t.common.shared.StringList;
+import t.viewer.client.HasLogger;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InputDialog;
 
 public class StringListsStoreHelper extends ItemListsStoreHelper {
-
+  
   // private final Logger logger = SharedUtils.getLogger("ItemListsStoreHelper");
 
   public StringListsStoreHelper(String type, Screen screen) {
@@ -93,6 +102,116 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
   private void storeItemLists() {
     screen.itemListsChanged(buildItemLists());
     screen.storeItemLists(screen.getParser());
+  }
+  
+  private final static String SET_PREFIX = "Set";
+  private final static String CLUSTER_PREFIX = "Clust:";
+  
+  /**
+   * Given a mixed collection, extract both clusters and normal lists
+   * into a unified StringList format.
+   * @param parent
+   * @return
+   */
+  public static List<StringList> compileLists(Collection<ItemList> ils) {    
+    List<StringList> r = new ArrayList<StringList>();
+    
+    for (StringList l : StringList.pickProbeLists(ils, null)) {
+      r.add((StringList) l.copyWithName(SET_PREFIX + l.name()));
+    }
+    
+    for (ItemList cl: ClusteringList.pickUserClusteringLists(ils, null)) {
+      for (StringList l: ((ClusteringList) cl).asStringLists()) {
+        r.add((StringList) l.copyWithName(CLUSTER_PREFIX + l.name()));
+      }
+    }
+    
+    return r;
+  }
+  
+  /**
+   * Given a DataListenerWidget, extract both clusters and normal lists
+   * into a unified StringList format.
+   * @param parent
+   * @return
+   */
+  public static List<StringList> compileLists(DataListenerWidget parent) {    
+    List<ItemList> r = new ArrayList<ItemList>();
+    r.addAll(parent.chosenItemLists);
+    r.addAll(parent.chosenClusteringList);
+    return compileLists(r);    
+  }
+  
+  private static class ClusterBuilder {
+    String baseName;
+    ClusterBuilder(String baseName) {
+      this.baseName = baseName;
+    }
+    
+    List<StringList> lists = new ArrayList<StringList>();
+   
+    void addCluster(StringList cluster) {
+      lists.add(cluster);
+    }
+    
+    ClusteringList build() {
+      Collections.sort(lists);
+      return new ClusteringList(ClusteringList.USER_CLUSTERING_TYPE, 
+          baseName, null, lists.toArray(new StringList[0]));
+    }
+  }
+  
+  /**
+   * Given a collection of StringLists, group them into ClusteringList
+   * and StringList. This is approximately the inverse operation of 
+   * compileLists (algorithm details etc for ClusteringList are not preserved)
+   * @param items
+   * @return
+   */
+  public static List<ItemList> rebuildLists(HasLogger log,
+      Collection<StringList> items) {
+    List<ItemList> r = new ArrayList<ItemList>();
+    Map<String, ClusterBuilder> clusterBuilders = new HashMap<String, ClusterBuilder>();
+    
+    for (StringList sl: items) {
+      if (sl.name().startsWith(CLUSTER_PREFIX)) {
+        String[] spl = sl.name().split(":");
+        if (spl.length != 2) {                     
+          log.getLogger().warning("Unable to reconstruct cluster with name: " + sl.name());          
+          continue;
+        }         
+        String nameWithIdx = spl[1]; //e.g. "MyCluster 2"
+        
+        String[] spl2 = spl[1].split("\\s+");
+        if (spl2.length < 2) {
+          log.getLogger().warning("Unable to reconstruct cluster with name: " + sl.name());
+          continue;
+        }
+        String baseName = spl2[0]; //e.g. "MyCluster"
+        
+        if (!clusterBuilders.containsKey(baseName)) {
+          clusterBuilders.put(baseName, new ClusterBuilder(baseName));
+        }
+        ClusterBuilder cb = clusterBuilders.get(baseName);
+        cb.addCluster(sl.copyWithName(nameWithIdx));        
+      } else {
+        String useName = "";
+        if (sl.name().startsWith(SET_PREFIX)) {
+          useName = sl.name().substring(SET_PREFIX.length());
+        } else {
+          //Assue it is a normal set
+          useName = sl.name();
+        }
+        r.add(sl.copyWithName(useName));
+      
+      }
+    }
+    
+    for (ClusterBuilder cb: clusterBuilders.values()) {
+      r.add(cb.build());
+    }
+    
+    return r;
   }
 
 }

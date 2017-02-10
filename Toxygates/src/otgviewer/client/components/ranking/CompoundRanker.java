@@ -24,6 +24,7 @@ import java.util.List;
 
 import otgviewer.client.GeneOracle;
 import otgviewer.client.Resources;
+import otgviewer.client.StringListsStoreHelper;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ListChooser;
 import otgviewer.client.components.PendingAsyncCallback;
@@ -258,6 +259,14 @@ abstract public class CompoundRanker extends DataListenerWidget {
   @Override
   public void itemListsChanged(List<ItemList> lists) {
     super.itemListsChanged(lists);
-    listChooser.setLists(lists);
+    listChooser.setLists(StringListsStoreHelper.compileLists(this));
   }
+
+  @Override
+  public void clusteringListsChanged(List<ItemList> lists) {
+    super.clusteringListsChanged(lists);
+    listChooser.setLists(StringListsStoreHelper.compileLists(this));
+  }
+  
+  
 }
