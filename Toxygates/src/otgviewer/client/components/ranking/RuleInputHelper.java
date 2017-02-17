@@ -40,8 +40,6 @@ import com.google.gwt.user.client.ui.SuggestBox;
 abstract class RuleInputHelper {
   private boolean isLastRule;
 
-  final RankRule rule;
-
   final SuggestBox probeText;
 
   final CheckBox enabled = new CheckBox();
@@ -54,8 +52,7 @@ abstract class RuleInputHelper {
 
   abstract protected RuleType[] ruleTypes();
 
-  RuleInputHelper(CompoundRanker _ranker, RankRule r, boolean lastRule) {
-    rule = r;
+  RuleInputHelper(CompoundRanker _ranker, boolean lastRule) {
     this.isLastRule = lastRule;
     this.ranker = _ranker;
     probeText = new SuggestBox(ranker.oracle);
@@ -82,6 +79,16 @@ abstract class RuleInputHelper {
     };
   }
 
+  /**
+   * Copy all parameters except probe
+   * @param other
+   * @throws RankRuleException
+   */
+  void copyFrom(RuleInputHelper other) throws RankRuleException {
+    RankRule otherRule = other.getRule();
+    rankType.setSelected(otherRule.type());
+  }
+  
   protected void rankTypeChanged() {
 
   }

@@ -25,8 +25,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.StringListsStoreHelper;
-
 @SuppressWarnings("serial")
 public class StringList extends ItemList {
 

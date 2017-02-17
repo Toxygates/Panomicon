@@ -131,9 +131,19 @@ abstract public class CompoundRanker extends DataListenerWidget {
         clearRules();
       }
     });
+    
+    Button setAllBtn = new Button("Set all... ", new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        if (Window.confirm("Overwrite all rule parameters by copying the first rule?")) {
+          setAllRules();
+        }        
+      }
+      
+    });
 
     HorizontalPanel hp =
-        Utils.mkHorizontalPanel(true, new Label("Gene set: "), listChooser, clearBtn);
+        Utils.mkHorizontalPanel(true, new Label("Gene set: "), listChooser, setAllBtn, clearBtn);
     csVerticalPanel.add(hp);
 
     grid = new Grid(1, gridColumns()); // Initially space for 1 rule
@@ -156,19 +166,29 @@ abstract public class CompoundRanker extends DataListenerWidget {
 
   protected abstract void addHeaderWidgets();
 
-  protected abstract RuleInputHelper makeInputHelper(RankRule r, boolean isLast);
+  protected abstract RuleInputHelper makeInputHelper(boolean isLast);
 
   void addRule(boolean isLast) {
     int ruleIdx = inputHelpers.size();
     grid.resize(ruleIdx + 2, gridColumns());
-    RankRule r = new RankRule();
-    RuleInputHelper rih = makeInputHelper(r, isLast);
+    RuleInputHelper rih = makeInputHelper(isLast);
     inputHelpers.add(rih);
     rih.populate(grid, ruleIdx);
   }
 
   private void clearRules() {
     setProbeList(new ArrayList<String>());
+  }
+  
+  private void setAllRules() {
+    RuleInputHelper top = inputHelpers.get(0);
+    try {
+      for (int i = 1; i < inputHelpers.size(); i++) {    
+        inputHelpers.get(i).copyFrom(top);
+      }
+    } catch (RankRuleException rre) {
+      Window.alert(rre.getMessage());
+    }
   }
 
   /**
@@ -264,7 +284,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
 
   @Override
   public void clusteringListsChanged(List<ItemList> lists) {
-    super.clusteringListsChanged(lists);
+    super.clusteringListsChanged(lists);     
     listChooser.setLists(StringListsStoreHelper.compileLists(this));
   }
   

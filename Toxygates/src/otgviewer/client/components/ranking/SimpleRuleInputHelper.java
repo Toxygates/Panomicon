@@ -18,13 +18,12 @@
 
 package otgviewer.client.components.ranking;
 
-import otgviewer.shared.RankRule;
 import otgviewer.shared.RuleType;
 
 public class SimpleRuleInputHelper extends RuleInputHelper {
 
-  public SimpleRuleInputHelper(CompoundRanker _ranker, RankRule r, boolean lastRule) {
-    super(_ranker, r, lastRule);
+  public SimpleRuleInputHelper(CompoundRanker _ranker, boolean lastRule) {
+    super(_ranker, lastRule);
   }
 
   final static int REQUIRED_COLUMNS = 3;
