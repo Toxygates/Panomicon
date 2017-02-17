@@ -202,8 +202,7 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
           //Assue it is a normal set
           useName = sl.name();
         }
-        r.add(sl.copyWithName(useName));
-      
+        r.add(sl.copyWithName(useName));      
       }
     }
     

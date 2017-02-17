@@ -199,7 +199,6 @@ public class TargetMineData {
     int addedLists = 0;
     int addedItems = 0;
     int nonImported = 0;
-    int hadGenesForSpecies = 0;
 
     for (ItemList l : into) {
       allLists.put(l.name(), l);
@@ -209,14 +208,9 @@ public class TargetMineData {
       if (replace || !allLists.containsKey(l.name())) {
         allLists.put(l.name(), l);
         addedLists++;
-        addedItems += l.size();
-        String comment = ((StringList) l).getComment();
-        Integer genesForSpecies = Integer.parseInt(comment);
+        addedItems += l.size();        
 
-        logger.info("Import list " + l.name() + " size " + l.size() + " comment " + comment);
-        if (genesForSpecies > 0) {
-          hadGenesForSpecies++;
-        }
+        logger.info("Import list " + l.name() + " size " + l.size());
       } else if (allLists.containsKey(l.name())) {
         logger.info("Do not import list " + l.name());
         nonImported += 1;
@@ -224,13 +218,8 @@ public class TargetMineData {
     }
 
     String msg =
-        addedLists + " lists with " + addedItems + " items were successfully imported.\nOf these, ";
-    if (hadGenesForSpecies == 0) {
-      msg += "no list ";
-    } else {
-      msg += hadGenesForSpecies + " list(s) ";
-    }
-    msg += " contained genes for " + parent.chosenSampleClass.get("organism") + ".";
+        addedLists + " lists with " + addedItems + " items were successfully imported.";
+    
 
     if (nonImported > 0) {
       msg = msg + "\n" + nonImported + " lists with identical names were not imported.";

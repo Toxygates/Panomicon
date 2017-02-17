@@ -162,7 +162,12 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     root.addSeparator(new MenuItemSeparator());
   }
 
-  private String clusteringCaption(Algorithm algorithm) {
+  private String clusteringCaption(@Nullable 
+      Algorithm algorithm) {
+    if (algorithm == null) {
+      return "Unknown algorithm";
+    }
+    
     StringBuffer sb = new StringBuffer();
     sb.append("Row : ");
     sb.append(algorithm.getRowMethod().asParam());

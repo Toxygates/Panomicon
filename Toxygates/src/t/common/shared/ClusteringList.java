@@ -31,6 +31,8 @@ import java.util.TreeMap;
 
 import javax.annotation.Nullable;
 
+import org.omg.CORBA.UNKNOWN;
+
 import t.common.shared.userclustering.Algorithm;
 import t.common.shared.userclustering.Distances;
 import t.common.shared.userclustering.Methods;
@@ -94,6 +96,8 @@ public class ClusteringList extends ItemList {
     params.put(name, value);
   }
   
+  public static final String UNKNOWN_TOKEN = "Unknown";
+  
   // pack informations for algorithm and other parameters.
   // (e.g.) If algorithm = { Row(ward.D, correlation), Col(ward.D2, euclidean) }
   // and params = { "cutoff" -> "1.0", "some" -> "value" },
@@ -101,7 +105,11 @@ public class ClusteringList extends ItemList {
   private String packedHeader() {
     List<String> items = new ArrayList<String>();
 
-    items.add(algorithm.toString());
+    if (algorithm == null) {
+      items.add(UNKNOWN_TOKEN);
+    } else {
+      items.add(algorithm.toString());
+    }
     for (Entry<String, String> e : params.entrySet()) {
       items.add(e.getKey() + "=" + e.getValue());
     }
@@ -109,12 +117,16 @@ public class ClusteringList extends ItemList {
     return SharedUtils.packList(items, "$$$");
   }
 
+  @Nullable
   private Algorithm extractAlgorithm(String header) {
     // the algorithm should be the first element of splitted items
     String[] spl = header.split("\\$\\$\\$");
     if (spl.length < 1) {
       // return default algorithm
       return new Algorithm();
+    }
+    if (spl[0].equals(UNKNOWN_TOKEN)) {
+      return null;
     }
 
     // splitting with comma is dependent on the implementation of
