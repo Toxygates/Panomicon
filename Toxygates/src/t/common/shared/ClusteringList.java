@@ -60,7 +60,8 @@ public class ClusteringList extends ItemList {
     List<StringList> clusters = new ArrayList<StringList>();
     for (String s : Arrays.copyOfRange(items, 1, items.length)) {
       String[] spl = s.split("\\$\\$\\$");
-      clusters.add(new StringList("probes", spl[0], Arrays.copyOfRange(spl, 1, spl.length)));
+      clusters.add(new StringList(StringList.PROBES_LIST_TYPE, 
+          spl[0], Arrays.copyOfRange(spl, 1, spl.length)));
     }
 
     this.clusters = clusters.toArray(new StringList[0]);

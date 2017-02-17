@@ -32,6 +32,8 @@ import t.common.shared.StringList;
 @SuppressWarnings("serial")
 public class ProbeClustering implements Serializable {
 
+  public final static String PROBE_CLUSTERING_TYPE = "probeclustering";
+  
   private Clusterings clustering;
   private StringList list;
 
@@ -72,7 +74,7 @@ public class ProbeClustering implements Serializable {
     }
     path.add(cl.cluster);
 
-    return new ProbeClustering(cl, new StringList("probeclustering", SharedUtils.packList(path, "###"), list.items()));
+    return new ProbeClustering(cl, new StringList(PROBE_CLUSTERING_TYPE, SharedUtils.packList(path, "###"), list.items()));
   }
 
   public static Collection<ProbeClustering> filterByAlgorithm(Collection<ProbeClustering> from,

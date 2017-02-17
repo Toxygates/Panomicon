@@ -31,6 +31,7 @@ import otgviewer.client.StringListsStoreHelper;
 public class StringList extends ItemList {
 
   public final static String PROBES_LIST_TYPE = "probes";
+  public final static String COMPOUND_LIST_TYPE = "compounds";
 
   private String[] items;
   private String comment;

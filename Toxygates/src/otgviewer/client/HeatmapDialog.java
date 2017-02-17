@@ -556,7 +556,8 @@ public class HeatmapDialog extends DataListenerWidget {
     List<StringList> clusterLists = new ArrayList<StringList>();
     int i = 0;
     for (Collection<String> clust : clusters) {
-      StringList sl = new StringList("probes", "Cluster " + i, clust.toArray(new String[0]));
+      StringList sl = new StringList(StringList.PROBES_LIST_TYPE, 
+          "Cluster " + i, clust.toArray(new String[0]));
       clusterLists.add(sl);
       i++;
     }

@@ -420,7 +420,8 @@ public class GeneSetsMenuItem extends DataListenerWidget {
       @Override
       public void onSaved(String title, List<String> items) {
         String[] itemsArray = items.toArray(new String[0]);
-        screen.geneSetChanged(new StringList("probes", title, itemsArray));
+        screen.geneSetChanged(new StringList(StringList.PROBES_LIST_TYPE, 
+            title, itemsArray));
         screen.probesChanged(itemsArray);
         screen.updateProbes();
       }

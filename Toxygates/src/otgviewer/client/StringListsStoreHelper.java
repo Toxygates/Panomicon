@@ -104,7 +104,7 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
     screen.storeItemLists(screen.getParser());
   }
   
-  private final static String SET_PREFIX = "Set";
+  private final static String SET_PREFIX = "Set:";
   private final static String CLUSTER_PREFIX = "Clust:";
   
   /**

@@ -21,6 +21,8 @@ package t.common.shared;
 import java.io.Serializable;
 import java.util.Collection;
 
+import t.common.shared.clustering.ProbeClustering;
+
 /**
  * A typed, named list of items.
  * 
@@ -77,8 +79,10 @@ abstract public class ItemList implements Packable, Serializable, Comparable<Ite
     String[] items = spl[2].split("\\^\\^\\^");
 
     // TODO would be good to avoid having this kind of central registry
-    // of list types here. Use enum?
-    if (type.equals("probes") || type.equals("compounds") || type.equals("probeclustering")) {
+    // of list types here.
+    if (type.equals(StringList.PROBES_LIST_TYPE) ||
+        type.equals(StringList.COMPOUND_LIST_TYPE) ||
+        type.equals(ProbeClustering.PROBE_CLUSTERING_TYPE)) {
       return new StringList(type, name, items);
     } else if (type.equals("userclustering")) {
       return new ClusteringList(type, name, items);
