@@ -37,8 +37,8 @@ public class FullRuleInputHelper extends RuleInputHelper {
   final TextBox syntheticCurveText = new TextBox();
   final ListBox refCompound = new ListBox();
 
-  public FullRuleInputHelper(CompoundRanker _ranker, RankRule r, boolean lastRule) {
-    super(_ranker, r, lastRule);
+  public FullRuleInputHelper(CompoundRanker _ranker, boolean lastRule) {
+    super(_ranker, lastRule);
 
     syntheticCurveText.setWidth("5em");
     syntheticCurveText.setEnabled(false);
@@ -120,6 +120,19 @@ public class FullRuleInputHelper extends RuleInputHelper {
         refCompound.setEnabled(false);
         refDose.setEnabled(false);
         break;
+    }
+  }
+
+  @Override
+  void copyFrom(RuleInputHelper other) throws RankRuleException {
+    super.copyFrom(other);
+    if (other instanceof FullRuleInputHelper) {
+      FullRuleInputHelper otherInput = (FullRuleInputHelper) other;
+      syntheticCurveText.setText(otherInput.syntheticCurveText.getText());
+      refDose.setSelectedIndex(otherInput.refDose.getSelectedIndex());
+      refCompound.setSelectedIndex(otherInput.refCompound.getSelectedIndex());
+    } else {
+      throw new IllegalArgumentException("Expected FullRuleInputHelper");
     }
   }
 

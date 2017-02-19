@@ -162,7 +162,12 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     root.addSeparator(new MenuItemSeparator());
   }
 
-  private String clusteringCaption(Algorithm algorithm) {
+  private String clusteringCaption(@Nullable 
+      Algorithm algorithm) {
+    if (algorithm == null) {
+      return "Unknown algorithm";
+    }
+    
     StringBuffer sb = new StringBuffer();
     sb.append("Row : ");
     sb.append(algorithm.getRowMethod().asParam());
@@ -302,7 +307,8 @@ public class GeneSetsMenuItem extends DataListenerWidget {
           return;
         }
 
-        StringListsStoreHelper helper = new StringListsStoreHelper("probes", screen);
+        StringListsStoreHelper helper = 
+            new StringListsStoreHelper(StringList.PROBES_LIST_TYPE, screen);
         helper.delete(sl.name());
         // If the user deletes chosen gene set, switch to "All probes" automatically.
         if (screen.chosenGeneSet != null && sl.type().equals(screen.chosenGeneSet.type())
@@ -320,7 +326,8 @@ public class GeneSetsMenuItem extends DataListenerWidget {
     return new Command() {
       public void execute() {
         screen.geneSetChanged(
-            new ClusteringList("userclustering", cl.name(), cl.algorithm(), new StringList[] {sl}));
+            new ClusteringList(ClusteringList.USER_CLUSTERING_TYPE, 
+                cl.name(), cl.algorithm(), new StringList[] {sl}));
         screen.probesChanged(sl.items());
         screen.updateProbes();
       }
@@ -337,7 +344,8 @@ public class GeneSetsMenuItem extends DataListenerWidget {
         }
 
         ClusteringListsStoreHelper helper =
-            new ClusteringListsStoreHelper("userclustering", screen);
+            new ClusteringListsStoreHelper(
+                ClusteringList.USER_CLUSTERING_TYPE, screen);
         helper.delete(cl.name());
         // If the user deletes chosen gene set, switch to "All probes" automatically.
         if (screen.chosenGeneSet != null && cl.type().equals(screen.chosenGeneSet.type())
@@ -417,7 +425,8 @@ public class GeneSetsMenuItem extends DataListenerWidget {
       @Override
       public void onSaved(String title, List<String> items) {
         String[] itemsArray = items.toArray(new String[0]);
-        screen.geneSetChanged(new StringList("probes", title, itemsArray));
+        screen.geneSetChanged(new StringList(StringList.PROBES_LIST_TYPE, 
+            title, itemsArray));
         screen.probesChanged(itemsArray);
         screen.updateProbes();
       }
@@ -445,8 +454,8 @@ public class GeneSetsMenuItem extends DataListenerWidget {
 
   /**
    * Refresh menu items on clusteringListsChanged fired. Note the events would be also fired when
-   * the DataScreen is activated. [DataScreen#show -> Screen#show -> Screen#lodaState ->
-   * DataListenerWidget#lodaState]
+   * the DataScreen is activated. [DataScreen#show -> Screen#show -> Screen#loadState ->
+   * DataListenerWidget#loadState]
    * 
    * @see otgviewer.client.DataScreen#show()
    */

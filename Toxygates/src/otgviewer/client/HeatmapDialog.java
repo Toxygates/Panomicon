@@ -392,7 +392,8 @@ public class HeatmapDialog extends DataListenerWidget {
       public void onClick(ClickEvent event) {
         List<Collection<String>> objectIds = parse2dJsArray(getCurrentObjectIds());
 
-        ClusteringListsStoreHelper helper = new ClusteringListsStoreHelper("userclustering", screen) {
+        ClusteringListsStoreHelper helper = 
+            new ClusteringListsStoreHelper(ClusteringList.USER_CLUSTERING_TYPE, screen) {
           @Override
           protected void onSaveSuccess(String name, ClusteringList items) {
             Window.alert("Clusters are successfully saved.");
@@ -555,7 +556,8 @@ public class HeatmapDialog extends DataListenerWidget {
     List<StringList> clusterLists = new ArrayList<StringList>();
     int i = 0;
     for (Collection<String> clust : clusters) {
-      StringList sl = new StringList("probes", "Cluster " + i, clust.toArray(new String[0]));
+      StringList sl = new StringList(StringList.PROBES_LIST_TYPE, 
+          "Cluster " + i, clust.toArray(new String[0]));
       clusterLists.add(sl);
       i++;
     }

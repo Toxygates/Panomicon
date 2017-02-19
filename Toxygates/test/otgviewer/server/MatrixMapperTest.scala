@@ -54,7 +54,7 @@ class MatrixMapperTest extends TTestSuite {
     val d = makeTestData(false)
     for (m <- os.mappings; s <- d.samples;
       ms = m.toSet) {
-      val data = d.data.mapValues(vs => vs.filter(p => ms.contains(p._1)))
+      val data = d.dataMap.mapValues(vs => vs.filter(p => ms.contains(p._1)))
       val vs = data(s).map(r => ExprValue(r._2._1, r._2._2, r._1))
       for (p <- m) {
         val filt = vs.filter(_.present)

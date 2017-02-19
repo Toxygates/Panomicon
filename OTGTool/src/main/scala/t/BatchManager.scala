@@ -425,16 +425,20 @@ class BatchManager(context: Context) {
 
   def addExprData(md: Metadata, niFile: String, callFile: Option[String],
     warningHandler: (String) => Unit)(implicit mc: MatrixContext) = {
-    val data = new CSVRawExpressionData(List(niFile), callFile.map(List(_)),
-      Some(md.samples.size), warningHandler)
-    val db = () => config.data.extWriter(config.data.exprDb)
-    new SimplePFoldValueInsert(db, data).insert("Insert expr value data (quasi-fold format)")
+    val data = new CSVRawExpressionData(List(niFile), callFile.toList,
+        Some(md.samples.size), warningHandler)
+//    if (treatAsFold) {
+      val db = () => config.data.extWriter(config.data.exprDb)
+      new SimplePFoldValueInsert(db, data).insert("Insert expr value data (quasi-fold format)")
+//    } else {
+//      new AbsoluteValueInsert(config.data.exprDb, data).insert("Insert normalised intensity data")
+//    }
   }
 
   def addFoldsData(md: Metadata, foldFile: String, callFile: Option[String],
       simpleLog2: Boolean, warningHandler: (String) => Unit)
   (implicit mc: MatrixContext) = {
-    val data = new CSVRawExpressionData(List(foldFile), callFile.map(List(_)),
+    val data = new CSVRawExpressionData(List(foldFile), callFile.toList,
         Some(md.samples.size), warningHandler)
     val fvs = if (simpleLog2) {
       new Log2Data(data)

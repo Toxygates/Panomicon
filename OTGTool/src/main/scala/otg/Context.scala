@@ -48,7 +48,7 @@ object Context {
   def apply(bc: OTGBConfig) =
     new otg.Context(bc, factory,
       factory.probes(bc.triplestore), factory.samples(bc),
-      new OTGContext(bc, None))
+      new OTGContext(bc))
 }
 
 //TODO consider adding a sparql subcontext with lazy val endpoints
@@ -62,12 +62,7 @@ class Context(override val config: OTGBConfig,
 /**
  * TODO: split up properly/rename
  */
-class OTGContext(baseConfig: BaseConfig,
-  /**
-   * Metadata for samples. Not always available.
-   * Only intended for use during maintenance operations.
-   */
-  val metadata: Option[Metadata] = None) extends MatrixContext {
+class OTGContext(baseConfig: BaseConfig) extends MatrixContext {
 
   private val data = baseConfig.data
   private val maps = new TRefresher(baseConfig)

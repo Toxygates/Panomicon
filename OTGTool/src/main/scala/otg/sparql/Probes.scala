@@ -70,7 +70,7 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
 	     optional { ?pr t:title ?title. }
 	     ?pr a t:probe . """ +
 	  multiFilter("?pr", probes.map(p => bracket(p.pack))) + " } ?g rdfs:label ?plat} "
-	  val r = ts.mapQuery(q)(20000)
+	  val r = ts.mapQuery(q, 20000)
 
 	  r.groupBy(_("pr")).map(_._2).map(g => {
 	    val p = Probe(g(0)("l"))

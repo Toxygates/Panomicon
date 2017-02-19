@@ -116,7 +116,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   protected var uniprot: Uniprot = _
   protected var configuration: Configuration = _
 
-  lazy val annotations = new Annotations(baseConfig)
+  lazy val annotations = new Annotations(sampleStore, schema, baseConfig)
 
   override def localInit(conf: Configuration) {
     super.localInit(conf)

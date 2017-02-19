@@ -22,6 +22,7 @@ package otg
 
 import t.sparql.Triplestore
 import t.sparql.QueryUtils
+import scala.language.implicitConversions
 
 //TODO code duplication with t.sparql.secondary
 package object sparql extends t.sparql.QueryUtils {

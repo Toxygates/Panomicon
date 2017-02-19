@@ -90,6 +90,8 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
    * Obtain the bio-parameters in all bio platforms
    */
   def bioParameters: BioParameters = {
+    val timeout: Int = 60000
+
     //TODO test this
     val attribs = ts.mapQuery(s"""$tPrefixes
         |SELECT ?id ?key ?value WHERE {
@@ -97,7 +99,7 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
         |  GRAPH ?p {
         |    ?probe a t:probe; rdfs:label ?id; ?key ?value.
         |  }
-        |}""".stripMargin).map(x => (x("id"),
+        |}""".stripMargin, timeout).map(x => (x("id"),
             removeProbeAttribPrefix(x("key")) -> x("value"))).groupBy(_._1)
 
     val attribMaps = for (
@@ -113,7 +115,7 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
       |    OPTIONAL { ?probe t:lowerBound ?lower; t:upperBound ?upper. }
       |    OPTIONAL { ?probe t:section ?sec. }
       |   }
-      |}""".stripMargin)
+      |}""".stripMargin, timeout)
 
     val bpcons = bps.map(x => BioParameter(x("id"), x("desc"), x("type"),
       x.get("sec"),

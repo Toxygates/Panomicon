@@ -42,7 +42,7 @@ trait Uniprot extends Triplestore {
     ?p rdfs:seeAlso ?ko.
     ?p up:organism ?org.
     FILTER (?org IN (taxo:9606, taxo:10090, taxo:10116)) """ +
-      "?p rdfs:seeAlso ?ko. } ")(60000).map(p => Protein.unpackUniprot(unbracket(p)))
+      "?p rdfs:seeAlso ?ko. } ", false, 60000).map(p => Protein.unpackUniprot(unbracket(p)))
   }
 
   import scala.collection.{ Map => CMap, Set => CSet }
@@ -74,7 +74,7 @@ trait Uniprot extends Triplestore {
       "?orth up:organism taxo:" + species.taxon + " ; " +
       "rdfs:seeAlso ?ogroup . " +
       multiFilter("?p", proteins.map(p => bracket(p.packUniprot))) +
-      " } ")(60000).map(x =>
+      " } ", 60000).map(x =>
       (Protein.unpackUniprot(unbracket(x("p"))) ->
         Protein.unpackUniprot(unbracket(x("orth")))))
     makeMultiMap(r)

@@ -24,6 +24,7 @@ import otgviewer.client.DataScreen;
 import t.common.shared.ClusteringList;
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
+import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.CodeDownload;
 import t.viewer.client.Utils;
 
@@ -103,7 +104,8 @@ public class GeneSetToolbar extends DataListenerWidget {
       @Override
       public void onSaved(String title, List<String> items) {
         String[] itemsArray = items.toArray(new String[0]);
-        screen.geneSetChanged(new StringList("probes", title, itemsArray));
+        screen.geneSetChanged(new StringList(StringList.PROBES_LIST_TYPE, 
+            title, itemsArray));
         screen.probesChanged(itemsArray);
         screen.updateProbes();
       }
@@ -139,10 +141,10 @@ public class GeneSetToolbar extends DataListenerWidget {
     if (geneSet.type().equals("probes")) {
       path = geneSet.name();
       btnEdit.setEnabled(true);
-    } else if (geneSet.type().equals("userclustering")) {
+    } else if (geneSet.type().equals(ClusteringList.USER_CLUSTERING_TYPE)) {
       ClusteringList cl = (ClusteringList) geneSet;
       path = geneSet.name() + PATH_SEPARATOR + cl.items()[0].name();
-    } else if (geneSet.type().equals("probeclustering")) {
+    } else if (geneSet.type().equals(ProbeClustering.PROBE_CLUSTERING_TYPE)) {
       path = geneSet.name().replaceAll("\\#\\#\\#", PATH_SEPARATOR);
       if (path.endsWith(PATH_SEPARATOR)) {
         path = path.substring(0, path.lastIndexOf(PATH_SEPARATOR));

@@ -106,7 +106,9 @@ object TestData {
       testData += (s -> thisProbe)
     }
     new RawExpressionData {
-      val data = testData
+      val d = testData
+      def samples = d.keys
+      def data(s: Sample) = d(s)
     }
   }
 

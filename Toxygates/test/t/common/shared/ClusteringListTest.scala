@@ -30,8 +30,11 @@ class ClusteringListTest extends FunSuite {
   val items = List(new StringList("type", "list1", Array("a", "b", "c")), new StringList("type", "list2", Array("d", "e", "f")))
   val algorithm = new Algorithm(Methods.WARD_D, Distances.COERRELATION, Methods.WARD_D2, Distances.EUCLIDIAN)
 
+  import ClusteringList._
+
   test("basic") {
-    val l = new ClusteringList("userclustering", "test.name", algorithm, items.toArray)
+    val l = new ClusteringList(USER_CLUSTERING_TYPE,
+        "test.name", algorithm, items.toArray)
     l.addParam("cutoff", "1.0")
     assert(l.size() === items.size)
     assert(l.items() === items.toArray)

@@ -28,27 +28,54 @@ import scala.collection.{ Map => CMap }
 trait RawExpressionData {
 
   lazy val asExtValues: CMap[Sample, CMap[String, PExprValue]] =
-    data.mapValues(_.map(p => p._1 -> PExprValue(p._2._1, p._2._3, p._2._2, p._1)))
+    dataMap.mapValues(_.map(p => p._1 -> PExprValue(p._2._1, p._2._3, p._2._2, p._1)))
 
   /**
    * Map samples to (probe -> (expr value, call, p))
    */
-  def data: CMap[Sample, CMap[String, FoldPExpr]]
+  def dataMap: CMap[Sample, CMap[String, FoldPExpr]] =
+    Map() ++ samples.map(s => s -> data(s))
+
+  def data(s: Sample): CMap[String, FoldPExpr]
+
+  def data(ss: Iterable[Sample]): CMap[Sample, CMap[String, FoldPExpr]] =
+    Map() ++ ss.map(s => s -> data(s))
 
   def call(x: Sample, probe: String) = data(x)(probe)._2
   def expr(x: Sample, probe: String) = data(x)(probe)._1
   def p(x: Sample, probe: String) = data(x)(probe)._3
 
-  lazy val probes: Iterable[String] =
-    data.toSeq.flatMap(_._2.keys).distinct
+  def probes: Iterable[String] = probesInSamples
 
-  def samples: Iterable[Sample] = data.keys
+  lazy val probesInSamples =
+    samples.map(data(_)).toSeq.flatMap(_.keys).distinct
 
+  def samples: Iterable[Sample]
+
+  /**
+   * An in-memory snapshot of this data.
+   */
+  def cached: CachedRawData = new CachedRawData(dataMap)
+
+  /**
+   * An in-memory snapshot of this data for a set of samples.
+   */
+  def cached(samples: Iterable[Sample]): CachedRawData = {
+    new CachedRawData(data(samples))
+  }
 }
 
 class Log2Data(raw: RawExpressionData) extends RawExpressionData {
   private val log2 = Math.log(2)
   private def l2(x: Double) = Math.log(x) / log2
 
-  def data = raw.data.mapValues(_.mapValues(x => (l2(x._1), x._2, x._3)))
+  override def data(s: Sample) = raw.data(s).mapValues(x => (l2(x._1), x._2, x._3))
+
+  def samples = raw.samples
+}
+
+class CachedRawData(raw: CMap[Sample, CMap[String, FoldPExpr]]) extends RawExpressionData {
+  override def dataMap = raw
+  override def data(s: Sample) = raw(s)
+  override def samples = raw.keys
 }

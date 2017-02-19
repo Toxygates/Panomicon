@@ -3,6 +3,11 @@ package t.platform
 import t.db.SampleParameter
 import t.db.file.TSVMetadata
 import t.db.file.MapMetadata
+import t.db.Metadata
+import t.db.Sample
+import t.BaseConfig
+import org.apache.commons.math3.stat.StatUtils.variance
+import org.apache.commons.math3.stat.StatUtils.mean
 
 case class BioParameter(key: String, label: String, kind: String,
     section: Option[String],
@@ -19,7 +24,11 @@ class BioParameters(lookup: Map[String, BioParameter]) {
   def apply(key: String) = lookup(key)
   def get(key: String) = lookup.get(key)
 
-  def sampleParameters = lookup.values.map(_.sampleParameter)
+  /**
+   * Obtain the set as sample parameters, sorted by section and label.
+   */
+  def sampleParameters: Seq[SampleParameter] = lookup.values.toSeq.
+    sortBy(p => (p.section, p.label)).map(_.sampleParameter)
 
   /**
    * Extract bio parameters with accurate low and high threshold for a given
@@ -43,9 +52,40 @@ class BioParameters(lookup: Map[String, BioParameter]) {
   }
 }
 
+class ControlGroup(bps: BioParameters, md: Metadata, controlSamples: Iterable[Sample]) {
+  println(s"Control group for $controlSamples")
+  val byTime = controlSamples.groupBy(s => md.parameter(s, "exposure_time")) //TODO schema
+
+  val allParamVals = byTime.map(ss => ss._1 -> ss._2.map(Map() ++ md.parameters(_)))
+
+  private def varAndMean(param: String, time: String): Option[(Double, Double)] = {
+    val p = bps(param)
+    val vs = allParamVals(time).flatMap(_.get(p.sampleParameter))
+    val nvs = vs.flatMap(BioParameter.convert)
+
+    if (nvs.size < 2) {
+      None
+    } else {
+      Some((variance(nvs.toArray), mean(nvs.toArray)))
+    }
+  }
+
+  def lowerBound(param: String, time: String): Option[Double] =
+    varAndMean(param, time).map {
+      case (v, m) =>
+        val sd = Math.sqrt(v)
+        m - 2 * sd
+    }
+
+  def upperBound(param: String, time: String): Option[Double] =
+    varAndMean(param, time).map {
+      case (v, m) =>
+        val sd = Math.sqrt(v)
+        m + 2 * sd
+    }
+}
+
 object BioParameter {
-  import org.apache.commons.math3.stat.StatUtils.variance
-  import org.apache.commons.math3.stat.StatUtils.mean
 
   def convert(x: String) = x match {
       case "NA" => None

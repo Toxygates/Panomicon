@@ -47,6 +47,11 @@ object Conversions {
     new Sample(s.sampleId, sc)
   }
 
+	def asScalaSample(s: Sample) = {
+	  val sc = scAsScala(s.sampleClass())
+	  new t.db.Sample(s.id, t.db.SampleClass(sc.constraints), None)
+	}
+
   implicit def asJava(ev: TExprValue): ExpressionValue = new ExpressionValue(ev.value, ev.call)
   //Loses probe information!
   implicit def asScala(ev: ExpressionValue): TExprValue = TExprValue(ev.getValue, ev.getCall, "")
