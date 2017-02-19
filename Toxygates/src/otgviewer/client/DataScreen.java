@@ -193,7 +193,8 @@ public class DataScreen extends Screen {
   public void runEnrichment() {
     logger.info("Enrich " + DataScreen.this.displayedAtomicProbes().length + " ps");
     StringList genes = 
-        new StringList("probes", "temp", DataScreen.this.displayedAtomicProbes());
+        new StringList(StringList.PROBES_LIST_TYPE, 
+            "temp", DataScreen.this.displayedAtomicProbes());
     DataScreen.this.factory().enrichment(DataScreen.this, genes);
   }
   

@@ -20,7 +20,6 @@ package otgviewer.client.components.ranking;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
-import otgviewer.shared.RankRule;
 import t.viewer.client.Utils;
 
 public class FullCompoundRanker extends CompoundRanker {
@@ -41,7 +40,7 @@ public class FullCompoundRanker extends CompoundRanker {
     return FullRuleInputHelper.REQUIRED_COLUMNS;
   }
 
-  protected RuleInputHelper makeInputHelper(RankRule r, boolean isLast) {
-    return new FullRuleInputHelper(this, r, isLast);
+  protected RuleInputHelper makeInputHelper(boolean isLast) {
+    return new FullRuleInputHelper(this, isLast);
   }
 }

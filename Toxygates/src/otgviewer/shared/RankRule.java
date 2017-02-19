@@ -85,5 +85,4 @@ public class RankRule implements Serializable {
   public void setDose(String dose) {
     _dose = dose;
   }
-
 }
