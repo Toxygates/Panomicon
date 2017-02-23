@@ -7,6 +7,12 @@ mkdir -p $AHOME
 cd $AHOME
 
 MAINTENANCE_FILE=/opt/toxygates-chunk/MAINTENANCE_MODE
+
+(ssh toxygates test -f $MAINTENANCE_FILE) && {
+  echo Maintenance already in progress. Quitting.
+  exit 1
+}
+
 ssh toxygates touch $MAINTENANCE_FILE
 
 curl -O http://geneontology.org/ontology/go.owl
