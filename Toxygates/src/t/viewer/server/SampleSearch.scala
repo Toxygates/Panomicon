@@ -4,21 +4,42 @@ import t.common.shared.sample.search._
 import t.common.shared.sample.Sample
 
 import scala.collection.JavaConversions._
+import t.platform.ControlGroup
+import t.common.shared.DataSchema
 
-class SampleSearch(condition: MatchCondition,
-    allSamples: Iterable[Sample]) {
+class SampleSearch(schema: DataSchema, condition: MatchCondition,
+    samples: Iterable[Sample]) {
   val neededParams = condition.neededParameters()
 
   //Gather all the parameters for all samples.
+
+  val controlGroups: Map[Sample, ControlGroup] = ???
 
   //Evaluate the search.
   lazy val results: Set[Sample] = results(condition)
 
   private def sampleParamValue(s: Sample, param: String): Option[Double] = ???
 
-  private def paramIsHigh(s: Sample, param: String): Boolean = ???
+  def timePoints: Iterable[String] = ???
+  def time(s: Sample): String = ???
 
-  private def paramIsLow(s: Sample, param: String): Boolean = ???
+  private def paramIsHigh(s: Sample, param: String): Boolean = {
+    val pv = sampleParamValue(s, param)
+    val ub = controlGroups(s).upperBound(param, time(s))
+    (pv, ub) match {
+      case (Some(p), Some(u)) => p > u
+      case _ => false
+    }
+  }
+
+  private def paramIsLow(s: Sample, param: String): Boolean = {
+    val pv = sampleParamValue(s, param)
+    val lb = controlGroups(s).lowerBound(param, time(s))
+    (pv, lb) match {
+      case (Some(p), Some(l)) => p < l
+      case _ => false
+    }
+  }
 
   private def results(condition: MatchCondition): Set[Sample] =
     condition match {
@@ -31,7 +52,7 @@ class SampleSearch(condition: MatchCondition,
     }
 
   private def results(condition: AtomicMatch): Set[Sample] =
-    allSamples.filter(matches(_, condition.matchType, condition.paramId,
+    samples.filter(matches(_, condition.matchType, condition.paramId,
       Option(condition.param1))).toSet
 
   private def matches(s: Sample, mt: MatchType, paramId: String,

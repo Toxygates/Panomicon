@@ -34,6 +34,21 @@ class Annotations(sampleStore: Samples, schema: DataSchema, baseConfig: BaseConf
 
   lazy val tsMeta = new TriplestoreMetadata(sampleStore, baseConfig.sampleParameters)(SampleFilter())
 
+  def controlGroups(samples: Samples,
+      ss: Iterable[Sample]): Map[Sample, ControlGroup] = {
+     val cgs = ss.groupBy(_.get("control_group"))
+    val mp = schema.mediumParameter()
+    Map() ++ cgs.flatMap { case (cgroup, ss) =>
+      val controls = ss.filter(s => schema.isControlValue(s.get(mp)))
+      if (!controls.isEmpty) {
+        val cg = new ControlGroup(bioParameters, tsMeta, controls.map(asScalaSample))
+        ss.map(s => s -> cg)
+      } else {
+        Seq()
+      }
+    }
+  }
+
    //TODO get these from schema, etc.
   def forSamples(samples: Samples, column: HasSamples[Sample],
       importantOnly: Boolean = false): Array[Annotation] = {
