@@ -30,14 +30,16 @@ import t.Factory
  * Metadata from a triplestore.
  * The graph to be queried can be influenced by setting
  * os.batchURI.
+ * @param querySet the parameters to be obtained. The default case returns all parameters.
  */
-class TriplestoreMetadata(os: Samples, val parameters: ParameterSet)
+class TriplestoreMetadata(os: Samples, val parameters: ParameterSet,
+    querySet: Iterable[SampleParameter] = Seq())
 (implicit sf: SampleFilter) extends Metadata {
 
   override def samples: Iterable[Sample] = os.samples(SampleClass())
 
   override def parameters(s: Sample): Iterable[(SampleParameter, String)] = {
-    os.parameterQuery(s.identifier).collect( {
+    os.parameterQuery(s.identifier, querySet).collect( {
       case (sp, Some(s)) => (sp, s)
     })
   }

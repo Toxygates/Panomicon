@@ -18,7 +18,7 @@ import t.sparql.SampleFilter
 import t.db.Metadata
 import t.viewer.server.Conversions._
 
-class Annotations(sampleStore: Samples, schema: DataSchema, baseConfig: BaseConfig) {
+class Annotations(val sampleStore: Samples, val schema: DataSchema, val baseConfig: BaseConfig) {
 
 //  private def bioParamsForSample(s: Sample): BioParameters =
 //    Option(s.get(schema.timeParameter())) match {
@@ -34,14 +34,14 @@ class Annotations(sampleStore: Samples, schema: DataSchema, baseConfig: BaseConf
 
   lazy val tsMeta = new TriplestoreMetadata(sampleStore, baseConfig.sampleParameters)(SampleFilter())
 
-  def controlGroups(samples: Samples,
-      ss: Iterable[Sample]): Map[Sample, ControlGroup] = {
+  def controlGroups(ss: Iterable[Sample],
+      metadata: Metadata): Map[Sample, ControlGroup] = {
      val cgs = ss.groupBy(_.get("control_group"))
     val mp = schema.mediumParameter()
     Map() ++ cgs.flatMap { case (cgroup, ss) =>
       val controls = ss.filter(s => schema.isControlValue(s.get(mp)))
       if (!controls.isEmpty) {
-        val cg = new ControlGroup(bioParameters, tsMeta, controls.map(asScalaSample))
+        val cg = new ControlGroup(bioParameters, metadata, controls.map(asScalaSample))
         ss.map(s => s -> cg)
       } else {
         Seq()

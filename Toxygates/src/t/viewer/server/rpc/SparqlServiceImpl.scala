@@ -70,6 +70,7 @@ import t.common.shared.sample.StringBioParamValue
 import t.common.shared.sample.Annotation
 import t.platform.BioParameters
 import t.viewer.server.Annotations
+import t.common.shared.sample.search.MatchCondition
 
 object SparqlServiceImpl {
   var inited = false
@@ -541,6 +542,18 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       b2rKegg.forPattern(partialName, maxSize).map(new Pair(_, AType.KEGG)) ++
       probeStore.goTerms(partialName, maxSize).map(x => new Pair(x.name, AType.GO))
     }.toArray
+  }
+
+  def sampleSearch(sc: SampleClass, cond: MatchCondition) {
+     val searchSpace = sampleStore.sampleQuery(scAsScala(sc))(sf)()
+
+    val ss = t.viewer.server.SampleSearch(cond, annotations,
+        searchSpace.map(asJavaSample))
+    val rs = ss.results
+    println("Search results:")
+    for (s <- rs) {
+      println(s)
+    }
   }
 
 }

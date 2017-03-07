@@ -52,6 +52,10 @@ class BioParameters(lookup: Map[String, BioParameter]) {
   }
 }
 
+/**
+ * Helper to compute statistical values for samples belonging to the same treated/control group.
+ * Will eagerly retrieve and process all parameters for the samples upon construction.
+ */
 class ControlGroup(bps: BioParameters, md: Metadata, controlSamples: Iterable[Sample]) {
   println(s"Control group for $controlSamples")
   val byTime = controlSamples.groupBy(s => md.parameter(s, "exposure_time")) //TODO schema

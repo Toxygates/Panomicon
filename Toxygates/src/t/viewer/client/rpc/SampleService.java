@@ -11,6 +11,7 @@ import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
+import t.common.shared.sample.search.MatchCondition;
 import t.viewer.shared.TimeoutException;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -119,5 +120,7 @@ public interface SampleService extends RemoteService {
    * @throws TimeoutException
    */
   String prepareAnnotationCSVDownload(HasSamples<Sample> column) throws TimeoutException;
+  
+  void sampleSearch(SampleClass sampleClass, MatchCondition condition) throws TimeoutException;
 
 }

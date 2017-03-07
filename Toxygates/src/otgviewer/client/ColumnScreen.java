@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.logging.Level;
 
 import otgviewer.client.components.FilterTools;
+import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
@@ -32,7 +33,11 @@ import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.SampleColumn;
+import t.common.shared.sample.search.AtomicMatch;
+import t.common.shared.sample.search.MatchCondition;
+import t.common.shared.sample.search.MatchType;
 import t.viewer.client.Utils;
+import t.viewer.client.rpc.SampleServiceAsync;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -50,10 +55,13 @@ public class ColumnScreen extends Screen {
   private GroupInspector gi;
   private CompoundSelector cs;
   private FilterTools filterTools;
+  private SampleServiceAsync sampleService;
 
   public ColumnScreen(ScreenManager man) {
     super("Sample groups", key, false, man, resources.groupDefinitionHTML(), resources
         .groupDefinitionHelp());
+    
+    this.sampleService = man.sampleService();
 
     String majorParam = man.schema().majorParameter();
     cs = new CompoundSelector(this, man.schema().title(majorParam), true, true) {
@@ -74,7 +82,15 @@ public class ColumnScreen extends Screen {
   @Override
   protected void addToolbars() {
     super.addToolbars();
-    addToolbar(filterTools, 45);
+    Button searchButton = new Button("Search...");
+    searchButton.addClickHandler(new ClickHandler() {      
+      @Override
+      public void onClick(ClickEvent arg0) {
+        search();        
+      }
+    });
+    HorizontalPanel hp = Utils.mkHorizontalPanel(true, filterTools, searchButton);    
+    addToolbar(hp, 45);
     addLeftbar(cs, 350);
   }
 
@@ -138,6 +154,13 @@ public class ColumnScreen extends Screen {
         Window.alert("Unable to load inactive columns.");
       }
     }
+  }
+  
+  protected void search() {
+    MatchCondition condition = new AtomicMatch("kidney_wt_right", 
+        MatchType.High, null);
+    sampleService.sampleSearch(chosenSampleClass, condition,  
+        new PendingAsyncCallback<Void>(this));
   }
 
   @Override

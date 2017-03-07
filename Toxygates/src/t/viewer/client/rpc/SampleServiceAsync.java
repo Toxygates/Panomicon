@@ -9,6 +9,7 @@ import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
+import t.common.shared.sample.search.MatchCondition;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -50,4 +51,6 @@ public interface SampleServiceAsync {
   
   void prepareAnnotationCSVDownload(HasSamples<Sample> column, 
       AsyncCallback<String> callback);
+
+  void sampleSearch(SampleClass sampleClass, MatchCondition condition, AsyncCallback<Void> callback);
 }

@@ -69,6 +69,9 @@ trait Metadata {
   def parameter(s: Sample, identifier: String): String =
     parameterMap(s)(identifier)
 
+  def getParameter(s: Sample, identifier: String): Option[String] =
+    parameterMap(s).get(identifier)
+
   /**
    * Does this metadata set have information about the given sample?
    */
