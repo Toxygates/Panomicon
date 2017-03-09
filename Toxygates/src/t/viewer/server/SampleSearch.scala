@@ -10,6 +10,8 @@ import Conversions._
 import t.common.shared.sample.Sample
 import t.sparql.TriplestoreMetadata
 import t.sparql.SampleFilter
+import t.sparql.SampleClass
+import t.sparql.CachingTriplestoreMetadata
 
 object SampleSearch {
   def apply(condition: MatchCondition, annotations: Annotations,
@@ -21,7 +23,7 @@ object SampleSearch {
     val neededParams =
       (Seq("control_group", "exposure_time", "sample_id") ++ condition.neededParameters()).distinct
     val sampleParams = annotations.baseConfig.sampleParameters
-    val metadata = new TriplestoreMetadata(annotations.sampleStore,
+    val metadata = new CachingTriplestoreMetadata(annotations.sampleStore,
         sampleParams, neededParams.map(sampleParams.byId))(SampleFilter())
     val controlGroups = annotations.controlGroups(samples, metadata)
     new SampleSearch(annotations.schema, metadata, condition, controlGroups, samples)
@@ -50,7 +52,7 @@ class SampleSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondi
 
   private def paramIsHigh(s: Sample, param: String): Boolean = {
     val pv = sampleParamValue(s, param)
-    val ub = controlGroups(s).upperBound(param, time(s))
+    val ub = controlGroups.get(s).flatMap(_.upperBound(param, time(s)))
     (pv, ub) match {
       case (Some(p), Some(u)) => p > u
       case _ => false
@@ -59,7 +61,7 @@ class SampleSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondi
 
   private def paramIsLow(s: Sample, param: String): Boolean = {
     val pv = sampleParamValue(s, param)
-    val lb = controlGroups(s).lowerBound(param, time(s))
+    val lb = controlGroups.get(s).flatMap(_.lowerBound(param, time(s)))
     (pv, lb) match {
       case (Some(p), Some(l)) => p < l
       case _ => false

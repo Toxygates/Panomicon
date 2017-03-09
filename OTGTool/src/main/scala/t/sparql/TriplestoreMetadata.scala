@@ -52,3 +52,30 @@ class TriplestoreMetadata(os: Samples, val parameters: ParameterSet,
   //TODO
   override def isControl(s: Sample) = ???
 }
+
+/**
+ * Caching triplestore metadata that reads all the data once and stores it.
+ */
+class CachingTriplestoreMetadata(os: Samples, parameters: ParameterSet,
+    querySet: Iterable[SampleParameter] = Seq())(implicit sf: SampleFilter)
+    extends TriplestoreMetadata(os, parameters, querySet) {
+
+  lazy val rawData = {
+    val raw = os.sampleAttributeQuery(
+      querySet.toSeq.map(_.identifier) :+ "sampleId")(sf)()
+
+    Map() ++
+      raw.map(r => r("sampleId") -> r)
+  }
+
+  lazy val data =
+    rawData.map(r => r._1 -> r._2.map  { case (k,v) => parameters.byId(k) -> v })
+
+  override def parameters(s: Sample) = data.getOrElse(s.sampleId, Seq())
+
+  override def parameterMap(s: Sample) =
+    Map() ++ parameters(s).map(x => x._1.identifier -> x._2)
+
+  override def parameterValues(identifier: String): Set[String] =
+    data.map(_._2(parameters.byId(identifier))).toSet
+}
