@@ -7,12 +7,12 @@ import java.util.Set;
 
 @SuppressWarnings("serial")
 public class AndMatch implements MatchCondition, Serializable {
-  Collection<MatchCondition> conditions;
+  Collection<? extends MatchCondition> conditions;
   
   //GWT constructor
   public AndMatch() {}
   
-  public AndMatch(Collection<MatchCondition> conditions) {
+  public AndMatch(Collection<? extends MatchCondition> conditions) {
     this.conditions = conditions;
   }
 
@@ -25,5 +25,5 @@ public class AndMatch implements MatchCondition, Serializable {
     return r;
   }
   
-  public Collection<MatchCondition> subConditions() { return conditions; }
+  public Collection<? extends MatchCondition> subConditions() { return conditions; }
 }
