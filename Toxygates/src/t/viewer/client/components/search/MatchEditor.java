@@ -5,6 +5,7 @@ import java.util.Collection;
 import javax.annotation.Nullable;
 
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Label;
 
 abstract public class MatchEditor extends Composite {
 
@@ -12,7 +13,7 @@ abstract public class MatchEditor extends Composite {
   
   protected @Nullable MatchEditor parent;
   
-  private boolean expanded = false;
+  private boolean signalled = false;
   
   public MatchEditor(@Nullable MatchEditor parent, Collection<String> parameters) {
     super();
@@ -22,24 +23,38 @@ abstract public class MatchEditor extends Composite {
   
   void signalEdit() {
     if (parent != null) {
-      parent.childEdited();
+      if (!signalled) {
+        signalled = true;
+        parent.childFirstEdit();        
+      }
+      parent.childEdit();
     }
+  }
+  
+  /**
+   * Invoked by child editors when they are edited for the first time.
+   */
+  void childFirstEdit() {
+    expand();
+    signalEdit();
   }
   
   /**
    * Invoked by child editors when they are edited.
    */
-  void childEdited() {
-    if (!expanded) {
-      expanded = true;
-      expand();
-      signalEdit();
-    }
+  void childEdit() {
+    signalEdit();
   }
   
   /**
    * Expand this editor by adding more children.
    */
   protected void expand() { }
+  
+  protected Label mkLabel(String string) {
+    Label l = new Label(string);
+    l.addStyleName("samplesearch-label");
+    return l;
+  }
 
 }

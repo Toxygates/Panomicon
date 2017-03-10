@@ -294,6 +294,31 @@ exprGrid {
 
 .numericalParameterHealthy {
 }
+
+.samplesearch-label {
+	color: grey;
+}
+
+.samplesearch-rootpanel {
+	
+}
+
+.samplesearch-andpanel {
+	margin:5px;
+}
+
+.samplesearch-orpanel {
+	margin:5px;
+	border-top: solid grey 1px;
+	border-bottom: solid grey 1px;
+}
+
+.samplesearch-atomicpanel {
+	margin:5px;
+	padding: 1px;
+	background: silver;
+}
+
 /*
  Fix "Ghost scrollbar" issue in Safari with trackpads.
  See https://groups.google.com/forum/#!topic/google-web-toolkit/xxeS6LETdBs

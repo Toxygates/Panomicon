@@ -17,6 +17,7 @@ import t.sparql.TriplestoreMetadata
 import t.sparql.SampleFilter
 import t.db.Metadata
 import t.viewer.server.Conversions._
+import java.lang.{Double => JDouble}
 
 class Annotations(val sampleStore: Samples, val schema: DataSchema, val baseConfig: BaseConfig) {
 
@@ -89,6 +90,26 @@ class Annotations(val sampleStore: Samples, val schema: DataSchema, val baseConf
     })
   }
 
+  private def numericalAsShared(bp: BioParameter, lower: JDouble,
+      upper: JDouble, value: String) =
+    new NumericalBioParamValue(bp.key, bp.label, bp.section.getOrElse(null),
+        lower, upper, "")
+
+  private def stringAsShared(bp: BioParameter, value: String) =
+    new StringBioParamValue(bp.key, bp.label, bp.section.getOrElse(null),
+        "")
+
+  def allParamsAsShared = {
+    bioParameters.all.map(p => {
+      p.kind match {
+      case "numerical" =>
+        numericalAsShared(p, null, null, null)
+      case _ =>
+        stringAsShared(p, null)
+      }
+    })
+  }
+
   def fromParameters(barcode: Sample,
     ps: Iterable[(t.db.SampleParameter, Option[String])]): Annotation = {
 
@@ -112,12 +133,8 @@ class Annotations(val sampleStore: Samples, val schema: DataSchema, val baseConf
           val lb = cg.flatMap(_.lowerBound(bp.sampleParameter.identifier, t))
           val ub = cg.flatMap(_.upperBound(bp.sampleParameter.identifier, t))
 
-          new NumericalBioParamValue(bp.key, bp.label,
-          bp.section.getOrElse(null),
-          asJDouble(lb), asJDouble(ub),
-          dispVal)
-        case _ => new StringBioParamValue(bp.key, bp.label,
-          bp.section.getOrElse(null), dispVal)
+          numericalAsShared(bp, asJDouble(lb), asJDouble(ub), dispVal)
+        case _ => stringAsShared(bp, dispVal)
       }
     }
 

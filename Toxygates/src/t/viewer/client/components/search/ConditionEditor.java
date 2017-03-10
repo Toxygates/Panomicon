@@ -2,6 +2,8 @@ package t.viewer.client.components.search;
 
 import java.util.Collection;
 
+import com.google.gwt.user.client.ui.SimplePanel;
+
 import t.common.shared.sample.search.AndMatch;
 import t.common.shared.sample.search.MatchCondition;
 
@@ -12,12 +14,14 @@ import t.common.shared.sample.search.MatchCondition;
  */
 public class ConditionEditor extends MatchEditor {
 
+  private SimplePanel panel = new SimplePanel();
   private AndEditor root;
   
   public ConditionEditor(Collection<String> parameters) {
     super(null, parameters);
-    root = newAnd();
-    initWidget(root);
+    clear();   
+    initWidget(panel);
+    panel.addStyleName("samplesearch-rootpanel");
   }
   
   /**
@@ -28,16 +32,29 @@ public class ConditionEditor extends MatchEditor {
     return root.getCondition();
   }
   
-  /**
-   * Set the editor's current condition
-   * @param cond
-   */
-  public void setCondition(AndMatch cond) {
-    
-  }
-  
   AndEditor newAnd() {
     return new AndEditor(this, parameters);
   }
+  
+  /**
+   * Reset the condition.
+   */
+  public void clear() {
+    panel.clear();
+    root = newAnd();
+    panel.add(root);
+  }
 
+  @Override
+  void signalEdit() {
+    super.signalEdit();
+    conditionChanged();
+  }
+  
+  /**
+   * Invoked when the condition has changed.
+   */
+  public void conditionChanged() {
+    
+  }
 }

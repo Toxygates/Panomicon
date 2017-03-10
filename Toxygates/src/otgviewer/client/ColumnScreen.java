@@ -19,11 +19,11 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 
 import otgviewer.client.components.FilterTools;
-import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
@@ -31,12 +31,13 @@ import otgviewer.client.components.compoundsel.CompoundSelector;
 import otgviewer.client.components.groupdef.GroupInspector;
 import t.common.shared.DataSchema;
 import t.common.shared.SampleClass;
+import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.Group;
+import t.common.shared.sample.NumericalBioParamValue;
 import t.common.shared.sample.SampleColumn;
-import t.common.shared.sample.search.AtomicMatch;
-import t.common.shared.sample.search.MatchCondition;
-import t.common.shared.sample.search.MatchType;
 import t.viewer.client.Utils;
+import t.viewer.client.components.search.ConditionEditor;
+import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SampleServiceAsync;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -44,6 +45,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -156,11 +158,29 @@ public class ColumnScreen extends Screen {
     }
   }
   
+  private Collection<String> sampleParameters() {
+    BioParamValue[] params = appInfo().bioParameters();
+    List<String> r = new ArrayList<String>();
+    for (BioParamValue bp: params) {
+      if (bp instanceof NumericalBioParamValue) {
+        r.add(bp.label());
+      }
+    }
+    return r;
+  }
+  
   protected void search() {
-    MatchCondition condition = new AtomicMatch("kidney_wt_right", 
-        MatchType.High, null);
-    sampleService.sampleSearch(chosenSampleClass, condition,  
-        new PendingAsyncCallback<Void>(this));
+    ScrollPanel searchPanel = new ScrollPanel();
+    searchPanel.setSize("800px", "800px");
+    ConditionEditor conditionEditor = new ConditionEditor(sampleParameters());
+    searchPanel.add(conditionEditor);
+    Utils.displayInPopup("Sample search conditions", 
+        searchPanel, DialogPosition.Center);
+    
+//    MatchCondition condition = new AtomicMatch("kidney_wt_right", 
+//        MatchType.High, null);
+//    sampleService.sampleSearch(chosenSampleClass, condition,  
+//        new PendingAsyncCallback<Void>(this));
   }
 
   @Override

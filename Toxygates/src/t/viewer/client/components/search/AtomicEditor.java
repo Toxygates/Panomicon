@@ -25,6 +25,7 @@ public class AtomicEditor extends MatchEditor {
     
     HorizontalPanel hp = new HorizontalPanel();
     initWidget(hp);
+    hp.addStyleName("samplesearch-atomicpanel");
     
     paramSel = new ListBox();
     paramSel.addItem(UNDEFINED_ITEM);
@@ -35,6 +36,11 @@ public class AtomicEditor extends MatchEditor {
     paramSel.addChangeHandler(new ChangeHandler() {      
       @Override
       public void onChange(ChangeEvent arg0) {
+        if (paramSel.getSelectedItemText().equals(UNDEFINED_ITEM)) {
+          disable();
+        } else {
+          enable();
+        }
         signalEdit();        
       }
     });
@@ -46,7 +52,16 @@ public class AtomicEditor extends MatchEditor {
         return MatchType.values();
       }
     };    
-    hp.add(typeSel);    
+    hp.add(typeSel);
+    disable();
+  }
+  
+  void disable() {
+    typeSel.listBox().setEnabled(false);
+  }
+  
+  void enable() {
+    typeSel.listBox().setEnabled(true);
   }
   
   public @Nullable AtomicMatch getCondition() {

@@ -27,6 +27,7 @@ import t.common.shared.Dataset;
 import t.common.shared.Platform;
 import t.common.shared.StringList;
 import t.common.shared.clustering.ProbeClustering;
+import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.Group;
 
 /**
@@ -47,6 +48,8 @@ public class AppInfo implements Serializable {
 
   private String[] annotationTitles;
   private String[] annotationComments;
+  
+  private BioParamValue[] bioParameters;
   
   private String userKey;
   
@@ -74,11 +77,13 @@ public class AppInfo implements Serializable {
   public AppInfo(String instanceName_, Dataset[] datasets, Platform[] platforms,
       List<StringList> probeLists, List<ProbeClustering> probeClusterings, String appName,
       String userKey,
-      String[][] annotationInfo) {
+      String[][] annotationInfo,
+      BioParamValue[] bioParameters) {
     this(instanceName_, datasets, platforms, probeLists, appName, userKey);
     this.probeClusterings = probeClusterings;
     this.annotationTitles = annotationInfo[0];
     this.annotationComments = annotationInfo[1];
+    this.bioParameters = bioParameters;
   }
 
   public String welcomeHtmlURL() {
@@ -137,6 +142,10 @@ public class AppInfo implements Serializable {
   
   public String[] getAnnotationComments() {
     return annotationComments;
+  }
+  
+  public BioParamValue[] bioParameters() {
+    return bioParameters;
   }
   
   public String getUserKey() {

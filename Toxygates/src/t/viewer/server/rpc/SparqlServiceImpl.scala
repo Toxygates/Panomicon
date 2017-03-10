@@ -71,6 +71,7 @@ import t.common.shared.sample.Annotation
 import t.platform.BioParameters
 import t.viewer.server.Annotations
 import t.common.shared.sample.search.MatchCondition
+import t.common.shared.sample.BioParamValue
 
 object SparqlServiceImpl {
   var inited = false
@@ -137,7 +138,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   protected def refreshAppInfo(): AppInfo = {
     new AppInfo(configuration.instanceName, Array(),
         sPlatforms(), predefProbeLists(), probeClusterings(), appName,
-        makeUserKey(), getAnnotationInfo)
+        makeUserKey(), getAnnotationInfo,
+        annotations.allParamsAsShared.toArray)
   }
 
   protected lazy val b2rKegg: B2RKegg =
