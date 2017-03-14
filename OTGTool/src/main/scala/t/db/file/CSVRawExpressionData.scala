@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -28,9 +28,36 @@ import t.db.FoldPExpr
 
 class ParseException(msg: String) extends Exception
 
+/**
+ * Raw data in CSV files.
+ * Will be read one sample at a time.
+ * Call files may be absent (by passing in an empty list), in which case
+ * all values are treated as present.
+ */
 class CSVRawExpressionData(exprFiles: Iterable[String],
-    callFiles: Option[Iterable[String]], expectedSamples: Option[Int],
+    callFiles: Iterable[String], expectedSamples: Option[Int],
     parseWarningHandler: (String) => Unit) extends RawExpressionData {
+
+  private def samplesInFile(file: String) = {
+    val line = Source.fromFile(file).getLines.next
+    val columns = line.split(",", -1).map(_.trim)
+    columns.drop(1).toVector.map(s => Sample(unquote(s)))
+  }
+
+  override lazy val samples: Iterable[Sample] =
+    exprFiles.toVector.flatMap(f => samplesInFile(f)).distinct
+
+  override lazy val probes: Iterable[String] =
+    exprFiles.toVector.flatMap(f => probesInFile(f)).distinct
+
+  private def probesInFile(file: String) = {
+    val lines = Source.fromFile(file).getLines
+    lines.next
+    for (line <- lines;
+      columns = line.split(",", -1).map(_.trim);
+      probe = columns.head
+    ) yield probe
+  }
 
   private val expectedColumns = expectedSamples.map(_ + 1)
 
@@ -55,7 +82,7 @@ class CSVRawExpressionData(exprFiles: Iterable[String],
     columns
   }
 
-  private[this] def readValuesFromTable[T](file: String,
+  private[this] def readValuesFromTable[T](file: String, ss: Set[Sample],
     extract: String => T): CMap[Sample, CMap[String, T]] = {
 
     var raw: Vector[Array[String]] = Vector.empty
@@ -70,11 +97,12 @@ class CSVRawExpressionData(exprFiles: Iterable[String],
       }
     })
 
-    var data = scala.collection.mutable.Map[Sample, CMap[String, T]]()
-
-    for (c <- 1 until columns.size) {
-      val sampleId = Sample(unquote(columns(c)))
-      var col = scala.collection.mutable.Map[String, T]()
+    var r = Map[Sample, CMap[String, T]]()
+    var col = scala.collection.mutable.Map[String, T]()
+    for (c <- 1 until columns.size;
+      sampleId = unquote(columns(c));
+      sample = Sample(sampleId);
+      if ss.contains(sample)) {
 
       val pr =
         col ++= raw.map(r => {
@@ -89,55 +117,53 @@ class CSVRawExpressionData(exprFiles: Iterable[String],
               throw nfe
           }
         })
-      data += (sampleId -> col)
+        r += sample -> col
     }
-    data
+
+    r
   }
 
   private[this] def unquote(x: String) = x.replace("\"", "")
 
-  private[this] def readCalls(file: String): CMap[Sample, CMap[String, Char]] = {
+  private[this] def readCalls(file: String, ss: Set[Sample]): CMap[Sample, CMap[String, Char]] = {
     //take the second char in a string like "A" or "P"
-    readValuesFromTable(file, x => x(1))
+    readValuesFromTable(file, ss, x => x(1))
   }
 
   /**
    * Read expression values from a file.
    * The result is a map that maps samples to probe IDs and values.
    */
-  private[this] def readExprValues(file: String): CMap[Sample, CMap[String, Double]] = {
+  private[this] def readExprValues(file: String, ss: Set[Sample]): CMap[Sample, CMap[String, Double]] = {
     import java.lang.{Double => JDouble}
-    readValuesFromTable(file, _.toDouble).mapValues(_.filter(v => !JDouble.isNaN(v._2)))
+    readValuesFromTable(file, ss, _.toDouble).mapValues(_.filter(v => !JDouble.isNaN(v._2)))
   }
 
-  import scala.collection.mutable.{Map => MuMap}  //more efficient to build
-  lazy val data: CMap[Sample, CMap[String, FoldPExpr]] = {
-    val expr = Map() ++ exprFiles.map(readExprValues(_)).flatten
+  override def data(ss: Iterable[Sample]): CMap[Sample, CMap[String, FoldPExpr]] = {
+    val expr = exprFiles.map(readExprValues(_, ss.toSet))
+    val call = callFiles.map(readCalls(_, ss.toSet))
 
-    val call = callFiles.map(fs => Map() ++ fs.map(readCalls(_)).flatten)
+    //NB, samples must not be repeated across files - we should check this
+    val allExpr = Map() ++ expr.flatten
+    val allCall = Map() ++ call.flatten
 
-    var r = MuMap[Sample, CMap[String, FoldPExpr]]()
-
-    for ((s, pv) <- expr) {
-      for (calls <- call; if !calls.contains(s)) {
-        throw new Exception(s"No calls available for sample $s")
-      }
-
-      val cm = call.map(_(s))
-
-      var out = MuMap[String, FoldPExpr]()
-      for ((p, v) <- pv) {
-        if (cm != None && !cm.get.contains(p)) {
-          throw new Exception(s"No call available for probe $p in sample $s")
+    allExpr.map {
+      case (s, col) => {
+        val call = allCall.get(s)
+        s -> col.map {
+          case (p, v) => {
+            if (call != None && !call.get.contains(p)) {
+              throw new Exception(s"No call available for probe $p in sample $s")
+            }
+            val usec = call.map(_(p)).getOrElse('P')
+            (p -> (v, usec, Double.NaN))
+          }
         }
-        val usec = cm.map(_(p)).getOrElse('P')
-
-        //TODO p-value handling
-        out += (p -> (v, usec, Double.NaN))
       }
-      r += (s -> out)
-      println(s"Finished reading data for sample $s")
     }
-    r
+  }
+
+  def data(s: Sample): CMap[String, FoldPExpr] = {
+    data(Set(s)).head._2
   }
 }

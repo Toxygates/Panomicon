@@ -141,7 +141,8 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
   }
 
   /**
-   * Read all chunk keys as sample,probe-pairs
+   * Read all chunk keys as sample,probe-pairs.
+   * Forces database traversal. Slow.
    */
   private def allChunks(forSample: Iterable[Sample] = List()): Iterable[(Int, Int)] = {
     val cur = db.cursor()
@@ -227,6 +228,14 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
       yield (Sample(c.sample), x._2.copy(probe = probeName))
   }
 
+  private def potentialChunks(x: Sample): Iterable[V] =
+    potentialChunks(x, mc.probeMap.keys.toSeq)
+
+  private def potentialChunks(x: Sample, probes: Iterable[Int]): Iterable[V] = {
+    val keys = probes.map(p => chunkStartFor(p)).toSeq.distinct
+    keys.map(k => findOrCreateChunk(x.dbCode, k))
+  }
+
   //probes must be sorted in an order consistent with the chunkDB.
   def valuesInSample(x: Sample, probes: Iterable[Int]): Iterable[PExprValue] = {
     //The chunk system guarantees that values will be read in order.
@@ -234,8 +243,7 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
 
 //    assert(probes.toSeq.sorted == probes.toSeq)
 
-    val keys = probes.map(p => chunkStartFor(p)).toSeq.distinct
-    val chunks = keys.map(k => findOrCreateChunk(x.dbCode, k))
+    val chunks = potentialChunks(x, probes)
 
 //    assert(chunks.sortBy(_.start) == chunks)
 //    for (c <- chunks) {
@@ -271,13 +279,13 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
   }
 
   override def deleteSamples(ss: Iterable[Sample]): Unit = {
-    if (ss.isEmpty) {
-      throw new Exception("Samples must be specified explicitly")
-      //If we proceeded here, we would actually delete all samples (!)
-    }
     println(s"Delete samples $ss")
-    for (d <- allChunks(ss)) {
-      deleteChunk(d._1, d._2)
+
+    //NB this will not delete chunks if probes/platforms are deleted prior to
+    //deleting them, as we only delete probes that are present in the probe map
+
+    for (s <- ss; d <- potentialChunks(s)) {
+      deleteChunk(d.sample, d.start)
     }
   }
 

@@ -33,6 +33,7 @@ import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
+import t.viewer.client.HasLogger;
 import t.viewer.client.Utils;
 import t.viewer.shared.AppInfo;
 
@@ -63,7 +64,8 @@ import com.google.gwt.user.client.ui.Widget;
  * the user, for example by making certain selections. This is a useful concept when late screens
  * depend on data that is selected in earlier screens.
  */
-public class Screen extends DataListenerWidget implements RequiresResize, ProvidesResize {
+public class Screen extends DataListenerWidget implements 
+  RequiresResize, ProvidesResize, HasLogger {
   protected static Resources resources = GWT.create(Resources.class);
 
   protected DockLayoutPanel rootPanel;

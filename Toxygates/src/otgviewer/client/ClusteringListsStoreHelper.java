@@ -32,7 +32,6 @@ import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InputDialog;
 
 public class ClusteringListsStoreHelper extends ItemListsStoreHelper {
-
   // private final Logger logger = SharedUtils.getLogger("ClusteringListsStoreHelper");
 
   public ClusteringListsStoreHelper(String type, Screen screen) {
@@ -75,7 +74,8 @@ public class ClusteringListsStoreHelper extends ItemListsStoreHelper {
         List<String> names = generateNameList(value, lists.size());
         List<StringList> clusters = new ArrayList<StringList>();
         for (int i = 0; i < lists.size(); ++i) {
-          clusters.add(new StringList("probes", names.get(i), lists.get(i).toArray(new String[0])));
+          clusters.add(new StringList(StringList.PROBES_LIST_TYPE, 
+              names.get(i), lists.get(i).toArray(new String[0])));
         }
 
         ClusteringList cl =

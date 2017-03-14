@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import t.common.shared.StringList;
+import static t.common.shared.StringList.COMPOUND_LIST_TYPE;
 
 public class TemporaryCompoundLists {
 
@@ -57,7 +58,7 @@ public class TemporaryCompoundLists {
 				"allyl_alcohol",
 				"perhexiline"		
 		};
-		r.add(new StringList("compounds", "Negative elevation bilirubin", 
+		r.add(new StringList(COMPOUND_LIST_TYPE, "Negative elevation bilirubin", 
 				negElBilib)
 		);
 				
@@ -75,7 +76,7 @@ public class TemporaryCompoundLists {
 				"methapyrilene",
 				"bromobenzene"
 		};
-		r.add(new StringList("compounds", "Glutathione depletion",
+		r.add(new StringList(COMPOUND_LIST_TYPE, "Glutathione depletion",
 				glutDepl)
 		);
 				
@@ -107,7 +108,7 @@ public class TemporaryCompoundLists {
 				"hexachlorobenzene",
 				"bromobenzene"
 		};
-		r.add(new StringList("compounds", "Peroxisome proliferator",
+		r.add(new StringList(COMPOUND_LIST_TYPE, "Peroxisome proliferator",
 				peroxiProl)
 		);
 		

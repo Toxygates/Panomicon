@@ -76,8 +76,7 @@ abstract class MatrixInsert[E <: ExprValue](raw: RawExpressionData)
     new Tasklet(name) {
       def run() {
         try {
-          val data = raw.data
-          val ns = data.keySet.size
+          val ns = raw.samples.size
           log(s"$ns samples")
           log(raw.probes.size + " probes")
 
@@ -93,7 +92,8 @@ abstract class MatrixInsert[E <: ExprValue](raw: RawExpressionData)
           val pmap = context.probeMap
           var pcomp = 0d
           var nvalues = 0
-          val it = raw.data.keys.iterator
+
+          val it = raw.samples.iterator
           while (it.hasNext && shouldContinue(pcomp)) {
             val sample = it.next
             val vs = values(sample)
