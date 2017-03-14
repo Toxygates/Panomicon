@@ -16,14 +16,14 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.targetmine;
+package otgviewer.client.intermine;
 
-import otgviewer.shared.targetmine.EnrichmentParams;
+import otgviewer.shared.intermine.EnrichmentParams;
 import t.common.shared.StringList;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public interface TargetmineServiceAsync {
+public interface IntermineServiceAsync {
 
   public void importTargetmineLists(String user, String pass, boolean asProbes,
       AsyncCallback<StringList[]> callback);

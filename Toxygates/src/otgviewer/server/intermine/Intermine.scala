@@ -18,33 +18,35 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.server
+package otgviewer.server.intermine
 
 import scala.collection.JavaConversions._
+
 import org.intermine.webservice.client.core.ServiceFactory
+import org.intermine.webservice.client.lists.ItemList
 import org.intermine.webservice.client.services.ListService
 import t.sparql.secondary._
 import t.sparql._
 import otg.sparql._
+import otg.sparql.Probes
+import otgviewer.shared.intermine.IntermineException
 import t.common.shared.StringList
 import otgviewer.server.rpc.Conversions
-import otg.sparql.Probes
 import t.platform.Probe
-import org.intermine.webservice.client.lists.ItemList
-import otgviewer.shared.targetmine.TargetmineException
+import scala.Vector
 
-object TargetMine {
-  import Conversions._
+class IntermineInstance(val title: String, appName: String) {
+import Conversions._
   def getListService(serviceUri: String, user: Option[String] = None,
       pass: Option[String] = None): ListService = {
-       println("Connect to TargetMine")
+       println(s"Connect to $title")
     // TODO this is insecure - ideally, auth tokens should be used.
     val sf = (user, pass) match {
       case (Some(u), Some(p)) => new ServiceFactory(serviceUri, u, p)
       case _                  => new ServiceFactory(serviceUri)
     }
 
-    sf.setApplicationName("targetmine")
+    sf.setApplicationName(appName)
     sf.getListService()
   }
 
@@ -98,9 +100,18 @@ object TargetMine {
       ci.addTags(seqAsJavaList(tags))
       ls.createList(ci)
     } else {
-      throw new TargetmineException(
+      throw new IntermineException(
           s"Unable to add list, ${name.get} already existed and replacement not requested")
     }
   }
+}
 
+object Intermines {
+  lazy val targetmine = new IntermineInstance("Targetmine", "targetmine")
+
+  lazy val humanmine = new IntermineInstance("Humanmine", "humanmine")
+
+  lazy val all = Seq(targetmine, humanmine)
+
+  lazy val byTitle = Map() ++ all.map(m => m.title -> m)
 }

@@ -18,27 +18,21 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.shared.targetmine;
+package otgviewer.shared.intermine;
 
-import java.io.Serializable;
-
-@SuppressWarnings("serial")
-public class EnrichmentParams implements Serializable {
-
-  public EnrichmentWidget widget;
-  public String filter; //parameter for the widget
-  public double cutoff;
-  public Correction correction;
+public enum Correction {
+  HolmBonferroni("Holm-Bonferroni"), 
+  BenjaminiHochberg("Benjamini Hochberg"), 
+  Bonferroni("Bonferroni"), 
+  None("None");
   
-  //GWT constructor
-  public EnrichmentParams() {}
+  String repr;
   
-  public EnrichmentParams(EnrichmentWidget widget, String filter,
-      double cutoff, Correction correction) {
-    this.widget = widget;
-    this.filter = filter;
-    this.cutoff = cutoff;
-    this.correction = correction;
+  Correction(String repr) {
+    this.repr = repr;
   }
   
+  public String getKey() {
+    return repr;
+  }
 }

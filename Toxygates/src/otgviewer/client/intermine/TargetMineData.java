@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.targetmine;
+package otgviewer.client.intermine;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,7 +29,7 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.dialog.TargetMineEnrichDialog;
 import otgviewer.client.dialog.TargetMineSyncDialog;
-import otgviewer.shared.targetmine.EnrichmentParams;
+import otgviewer.shared.intermine.EnrichmentParams;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.ItemList;
 import t.common.shared.SharedUtils;
@@ -47,8 +47,8 @@ import com.google.gwt.user.client.ui.DialogBox;
 public class TargetMineData {
 
   final Screen parent;
-  final TargetmineServiceAsync tmService = (TargetmineServiceAsync) GWT
-      .create(TargetmineService.class);
+  final IntermineServiceAsync tmService = (IntermineServiceAsync) GWT
+      .create(IntermineService.class);
   final String url;
 
   private Logger logger = SharedUtils.getLogger("targetmine");

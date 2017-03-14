@@ -16,17 +16,17 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.targetmine;
+package otgviewer.client.intermine;
 
-import otgviewer.shared.targetmine.EnrichmentParams;
-import otgviewer.shared.targetmine.TargetmineException;
+import otgviewer.shared.intermine.EnrichmentParams;
+import otgviewer.shared.intermine.IntermineException;
 import t.common.shared.StringList;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
-@RemoteServiceRelativePath("targetmine")
-public interface TargetmineService extends RemoteService {
+@RemoteServiceRelativePath("intermine")
+public interface IntermineService extends RemoteService {
 
   /**
    * Import gene lists from a targetmine user account.
@@ -37,14 +37,14 @@ public interface TargetmineService extends RemoteService {
    * @return
    */
   public StringList[] importTargetmineLists(String user, String pass, boolean asProbes)
-      throws TargetmineException;
+      throws IntermineException;
 
   public void exportTargetmineLists(String user, String pass, StringList[] lists, boolean replace)
-      throws TargetmineException;
+      throws IntermineException;
 
-  public String[][] enrichment(StringList list, EnrichmentParams params) throws TargetmineException;
+  public String[][] enrichment(StringList list, EnrichmentParams params) throws IntermineException;
 
   public String[][][] multiEnrichment(StringList[] lists, EnrichmentParams params)
-      throws TargetmineException;
+      throws IntermineException;
 
 }

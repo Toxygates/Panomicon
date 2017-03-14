@@ -120,12 +120,12 @@
 	</servlet-mapping>
 		
   	<servlet>
-		<servlet-name>targetmineServlet</servlet-name>
-		<servlet-class>otgviewer.server.targetmine.TargetmineServiceImpl</servlet-class>
+		<servlet-name>intermineServlet</servlet-name>
+		<servlet-class>otgviewer.server.intermine.IntermineServiceImpl</servlet-class>
 	</servlet>
     <servlet-mapping>
-		<servlet-name>targetmineServlet</servlet-name>
-    	<url-pattern>/toxygates/targetmine</url-pattern>
+		<servlet-name>intermineServlet</servlet-name>
+    	<url-pattern>/toxygates/intermine</url-pattern>
   	</servlet-mapping>
 		
 	

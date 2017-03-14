@@ -23,7 +23,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 
-import otgviewer.client.targetmine.TargetMineData;
+import otgviewer.client.intermine.TargetMineData;
 import otgviewer.shared.OTGSchema;
 import t.common.shared.DataSchema;
 import t.viewer.client.Utils;

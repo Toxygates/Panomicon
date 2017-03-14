@@ -18,21 +18,8 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.shared.targetmine;
+package otgviewer.shared.intermine;
 
-public enum Correction {
-  HolmBonferroni("Holm-Bonferroni"), 
-  BenjaminiHochberg("Benjamini Hochberg"), 
-  Bonferroni("Bonferroni"), 
-  None("None");
-  
-  String repr;
-  
-  Correction(String repr) {
-    this.repr = repr;
-  }
-  
-  public String getKey() {
-    return repr;
-  }
+public class Filter {
+
 }

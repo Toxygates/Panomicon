@@ -21,9 +21,9 @@
 package otgviewer.client.dialog;
 
 import otgviewer.client.components.DataListenerWidget;
-import otgviewer.shared.targetmine.Correction;
-import otgviewer.shared.targetmine.EnrichmentParams;
-import otgviewer.shared.targetmine.EnrichmentWidget;
+import otgviewer.shared.intermine.Correction;
+import otgviewer.shared.intermine.EnrichmentParams;
+import otgviewer.shared.intermine.EnrichmentWidget;
 import t.common.client.components.EnumSelector;
 
 import com.google.gwt.user.client.ui.Grid;

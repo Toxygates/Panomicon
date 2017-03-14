@@ -18,13 +18,13 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.server.targetmine
+package otgviewer.server.intermine
 
 import scala.collection.JavaConversions._
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-import otgviewer.server.TargetMine
+import otgviewer.server.intermine.Intermines
 import t.common.shared.StringList
-import otgviewer.client.targetmine.TargetmineService
+import otgviewer.client.intermine.IntermineService
 import otg.sparql.Probes
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
@@ -40,11 +40,11 @@ import java.util.Arrays
 import org.intermine.webservice.client.core.ContentType
 import org.intermine.webservice.client.results.JSONResult
 import org.intermine.webservice.client.results.TabTableResult
-import otgviewer.shared.targetmine.EnrichmentWidget
-import otgviewer.shared.targetmine.EnrichmentParams
-import otgviewer.shared.targetmine.TargetmineException
+import otgviewer.shared.intermine.EnrichmentWidget
+import otgviewer.shared.intermine.EnrichmentParams
+import otgviewer.shared.intermine.IntermineException
 
-class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
+class IntermineServiceImpl extends OTGServiceServlet with IntermineService {
   var affyProbes: Probes = _
   var platforms: Platforms = _
   var apiKey: String = _
@@ -68,15 +68,17 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
     super.destroy()
   }
 
+  def targetmine = Intermines.targetmine
+
   // TODO: pass in a preferred species, get status info back
   def importTargetmineLists(user: String, pass: String,
     asProbes: Boolean): Array[t.common.shared.StringList] = {
     try {
-      val ls = TargetMine.getListService(serviceUri, Some(user), Some(pass))
+      val ls = targetmine.getListService(serviceUri, Some(user), Some(pass))
       val tmLists = ls.getAccessibleLists()
       tmLists.filter(_.getType == "Gene").map(
         l => {
-          val tglist = TargetMine.asTGList(l, affyProbes, platforms.filterProbesAllPlatforms(_))
+          val tglist = targetmine.asTGList(l, affyProbes, platforms.filterProbesAllPlatforms(_))
           if (tglist.items.size > 0) {
             val probesForCurrent = platforms.filterProbes(tglist.items, List())
             tglist.setComment(probesForCurrent.size + "");
@@ -88,19 +90,19 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
     } catch {
       case e: Exception =>
         e.printStackTrace()
-        throw new TargetmineException(e.getMessage)
+        throw new IntermineException(e.getMessage)
     }
   }
 
   def exportTargetmineLists(user: String, pass: String,
       lists: Array[StringList], replace: Boolean): Unit = {
     try {
-      val ls = TargetMine.getListService(serviceUri, Some(user), Some(pass))
-      TargetMine.addLists(affyProbes, ls, lists.toList, replace)
+      val ls = targetmine.getListService(serviceUri, Some(user), Some(pass))
+      targetmine.addLists(affyProbes, ls, lists.toList, replace)
     } catch {
       case e: Exception =>
         e.printStackTrace()
-        throw new TargetmineException(e.getMessage)
+        throw new IntermineException(e.getMessage)
     }
   }
 
@@ -115,11 +117,11 @@ class TargetmineServiceImpl extends OTGServiceServlet with TargetmineService {
     lists.map(enrichment(_, params)).toArray
 
   def enrichment(list: StringList, params: EnrichmentParams): Array[Array[String]] = {
-      val ls = TargetMine.getListService(serviceUri, None, None)
+      val ls = targetmine.getListService(serviceUri, None, None)
       ls.setAuthentication(apiKey)
       val tags = List("H. sapiens") //!!
 
-      val tempList = TargetMine.addList(affyProbes, ls, list.items(),
+      val tempList = targetmine.addList(affyProbes, ls, list.items(),
           None, false, tags)
 
       val listName = tempList.getName
