@@ -26,12 +26,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.annotation.Nullable;
+
 import otgviewer.client.StringListsStoreHelper;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.dialog.TargetMineEnrichDialog;
 import otgviewer.client.dialog.TargetMineSyncDialog;
 import otgviewer.shared.intermine.EnrichmentParams;
+import otgviewer.shared.intermine.IntermineInstance;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.ClusteringList;
 import t.common.shared.ItemList;
@@ -52,32 +55,37 @@ public class TargetMineData {
   final Screen parent;
   final IntermineServiceAsync tmService = (IntermineServiceAsync) GWT
       .create(IntermineService.class);
-  final String url;
 
-  private Logger logger = SharedUtils.getLogger("targetmine");
-
-  public TargetMineData(Screen parent) {
+  private Logger logger = SharedUtils.getLogger("intermine");
+  private @Nullable IntermineInstance preferredInstance;
+  
+  public TargetMineData(Screen parent, @Nullable IntermineInstance preferredInstance) {
     this.parent = parent;
-    url = parent.appInfo().targetmineURL();
+    this.preferredInstance = preferredInstance;
   }
 
   DialogBox dialog;
 
+  /**
+   * PreferredInstance must not be null
+   * @param asProbes
+   */
   public void importLists(final boolean asProbes) {
-    InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Import", true, true) {
+    InteractionDialog ui = new TargetMineSyncDialog(parent, "Import", true, true, preferredInstance) {
       @Override
-      protected void userProceed(String user, String pass, boolean replace) {
+      protected void userProceed(IntermineInstance instance, String user, String pass, boolean replace) {
         super.userProceed();
-        doImport(user, pass, asProbes, replace);
+        doImport(instance, user, pass, asProbes, replace);
       }
 
     };
     ui.display("TargetMine import details", DialogPosition.Center);
   }
 
-  public void doImport(final String user, final String pass, final boolean asProbes,
+  private void doImport(final IntermineInstance instance, 
+      final String user, final String pass, final boolean asProbes,
       final boolean replace) {
-    tmService.importTargetmineLists(user, pass, asProbes, new PendingAsyncCallback<StringList[]>(
+    tmService.importLists(instance, user, pass, asProbes, new PendingAsyncCallback<StringList[]>(
         parent, "Unable to import lists from TargetMine") {
       public void handleSuccess(StringList[] data) {
         Collection<ItemList> rebuild = 
@@ -96,12 +104,16 @@ public class TargetMineData {
     });
   }
 
+  /**
+   * PreferredInstance must not be null
+   * @param asProbes
+   */
   public void exportLists() {
-    InteractionDialog ui = new TargetMineSyncDialog(parent, url, "Export", true, true) {
+    InteractionDialog ui = new TargetMineSyncDialog(parent, "Export", true, true, preferredInstance) {
       @Override
-      protected void userProceed(String user, String pass, boolean replace) {
+      protected void userProceed(IntermineInstance instance, String user, String pass, boolean replace) {
         super.userProceed();
-        doExport(user, pass, StringListsStoreHelper.compileLists(parent), replace);   
+        doExport(instance, user, pass, StringListsStoreHelper.compileLists(parent), replace);   
       }
 
     };
@@ -110,9 +122,10 @@ public class TargetMineData {
 
   // Could factor out code that is shared with doImport, but the two dialogs may diverge
   // further in the future.
-  public void doExport(final String user, final String pass, final List<StringList> lists,
+  private void doExport(final IntermineInstance instance, final String user, final String pass, 
+      final List<StringList> lists,
       final boolean replace) {
-    tmService.exportTargetmineLists(user, pass, lists.toArray(new StringList[0]), replace,
+    tmService.exportLists(instance, user, pass, lists.toArray(new StringList[0]), replace,
         new PendingAsyncCallback<Void>(parent,
             "Unable to export lists to TargetMine") {
           public void handleSuccess(Void v) {
@@ -122,23 +135,23 @@ public class TargetMineData {
   }
 
   public void enrich(final StringList probes) {
-    InteractionDialog ui = new TargetMineEnrichDialog(parent, url, "Enrich") {
+    InteractionDialog ui = new TargetMineEnrichDialog(parent, "Enrich", preferredInstance) {
       @Override
-      protected void userProceed(String user, String pass, boolean replace) {
+      protected void userProceed(IntermineInstance instance, String user, String pass, boolean replace) {
         super.userProceed();
         if (probes.items() != null && probes.items().length > 0) {        
-          doEnrich(probes, getParams());
+          doEnrich(instance, probes, getParams());
         } else {
           Window.alert("Please define and select a gene set first.");
         }        
       }
     };
-    ui.display("TargetMine enrichment", DialogPosition.Center);
+    ui.display("Enrichment", DialogPosition.Center);
   }
 
-  public void doEnrich(StringList list,
+  public void doEnrich(final IntermineInstance instance, StringList list,
       EnrichmentParams params) {
-    tmService.enrichment(list, params, new PendingAsyncCallback<String[][]>(parent,
+    tmService.enrichment(instance, list, params, new PendingAsyncCallback<String[][]>(parent,
         "Unable to perform enrichment analysis") {
       public void handleSuccess(String[][] result) {
         StringArrayTable.displayDialog(result, "Enrichment results", 800, 600);            
@@ -147,14 +160,14 @@ public class TargetMineData {
   }
   
   public void multiEnrich(final StringList[] lists) {
-    InteractionDialog ui = new TargetMineEnrichDialog(parent, url, "Cluster enrichment") {
+    InteractionDialog ui = new TargetMineEnrichDialog(parent, "Cluster enrichment", preferredInstance) {
       @Override
-      protected void userProceed(String user, String pass, boolean replace) {
+      protected void userProceed(IntermineInstance instance, String user, String pass, boolean replace) {
         super.userProceed();
-        doEnrich(lists, getParams());
+        doEnrich(instance, lists, getParams());
       }
     };
-    ui.display("TargetMine cluster enrichment", DialogPosition.Center);
+    ui.display("Cluster enrichment", DialogPosition.Center);
   }
   
   private static String[] append(String[] first, String[] last) {    
@@ -168,9 +181,9 @@ public class TargetMineData {
     return r;    
   }
   
-  public void doEnrich(final StringList[] lists,
+  public void doEnrich(IntermineInstance instance, final StringList[] lists,
       EnrichmentParams params) {
-    tmService.multiEnrichment(lists, params,
+    tmService.multiEnrichment(instance, lists, params,
          new PendingAsyncCallback<String[][][]>(parent,
         "Unable to perform enrichment analysis") {
       public void handleSuccess(String[][][] result) {

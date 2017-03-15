@@ -22,7 +22,6 @@ package otgviewer.server.intermine
 
 import scala.collection.JavaConversions._
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
-import otgviewer.server.intermine.Intermines
 import t.common.shared.StringList
 import otgviewer.client.intermine.IntermineService
 import otg.sparql.Probes
@@ -37,27 +36,23 @@ import t.viewer.server.Platforms
 import otgviewer.server.rpc.OTGServiceServlet
 import org.intermine.webservice.client.services.ListService
 import java.util.Arrays
-import org.intermine.webservice.client.core.ContentType
-import org.intermine.webservice.client.results.JSONResult
+
 import org.intermine.webservice.client.results.TabTableResult
-import otgviewer.shared.intermine.EnrichmentWidget
-import otgviewer.shared.intermine.EnrichmentParams
-import otgviewer.shared.intermine.IntermineException
+import otgviewer.shared.intermine._
 
 class IntermineServiceImpl extends OTGServiceServlet with IntermineService {
   var affyProbes: Probes = _
   var platforms: Platforms = _
   var apiKey: String = _
-
-  //TODO how to best initialise this?
-  val serviceUri = "http://targetmine.mizuguchilab.org/targetmine/service"
+  var mines: Intermines = _
 
   // Useful for testing
   override def localInit(config: Configuration) {
     super.localInit(config)
     affyProbes = context.probes
     platforms = Platforms(affyProbes)
-    apiKey = config.targetmineApiKey
+    apiKey = config.intermineInstances.head.apiKey()
+    mines = new Intermines(config.intermineInstances)
   }
 
   def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig =
@@ -68,13 +63,13 @@ class IntermineServiceImpl extends OTGServiceServlet with IntermineService {
     super.destroy()
   }
 
-  def targetmine = Intermines.targetmine
+  def targetmine = mines.targetmine
 
   // TODO: pass in a preferred species, get status info back
-  def importTargetmineLists(user: String, pass: String,
+  def importLists(inst: IntermineInstance, user: String, pass: String,
     asProbes: Boolean): Array[t.common.shared.StringList] = {
     try {
-      val ls = targetmine.getListService(serviceUri, Some(user), Some(pass))
+      val ls = targetmine.getListService(Some(user), Some(pass))
       val tmLists = ls.getAccessibleLists()
       tmLists.filter(_.getType == "Gene").map(
         l => {
@@ -94,10 +89,10 @@ class IntermineServiceImpl extends OTGServiceServlet with IntermineService {
     }
   }
 
-  def exportTargetmineLists(user: String, pass: String,
+  def exportLists(inst: IntermineInstance, user: String, pass: String,
       lists: Array[StringList], replace: Boolean): Unit = {
     try {
-      val ls = targetmine.getListService(serviceUri, Some(user), Some(pass))
+      val ls = targetmine.getListService(Some(user), Some(pass))
       targetmine.addLists(affyProbes, ls, lists.toList, replace)
     } catch {
       case e: Exception =>
@@ -113,11 +108,11 @@ class IntermineServiceImpl extends OTGServiceServlet with IntermineService {
         res(3))
   }
 
-  def multiEnrichment(lists: Array[StringList], params: EnrichmentParams): Array[Array[Array[String]]] =
-    lists.map(enrichment(_, params)).toArray
+  def multiEnrichment(inst: IntermineInstance, lists: Array[StringList], params: EnrichmentParams): Array[Array[Array[String]]] =
+    lists.map(enrichment(inst, _, params)).toArray
 
-  def enrichment(list: StringList, params: EnrichmentParams): Array[Array[String]] = {
-      val ls = targetmine.getListService(serviceUri, None, None)
+  def enrichment(inst: IntermineInstance, list: StringList, params: EnrichmentParams): Array[Array[String]] = {
+      val ls = targetmine.getListService(None, None)
       ls.setAuthentication(apiKey)
       val tags = List("H. sapiens") //!!
 
@@ -127,7 +122,7 @@ class IntermineServiceImpl extends OTGServiceServlet with IntermineService {
       val listName = tempList.getName
       println(s"Created temporary list $listName")
 
-      val request = ls.createGetRequest(serviceUri + "/list/enrichment", ContentType.TEXT_TAB)
+      val request = targetmine.enrichmentRequest(ls)
       request.setAuthToken(apiKey)
 //      request.addParameter("token", apiKey)
       request.addParameter("list", listName)

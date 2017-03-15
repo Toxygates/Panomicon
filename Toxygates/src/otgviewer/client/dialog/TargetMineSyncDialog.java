@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.InputGrid;
+import otgviewer.shared.intermine.IntermineInstance;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.InteractionDialog;
 
@@ -39,19 +40,30 @@ import com.google.gwt.user.client.ui.Widget;
 
 abstract public class TargetMineSyncDialog extends InteractionDialog {
 
-  CheckBox replaceCheck = new CheckBox("Replace lists with identical names");
-  InputGrid ig;
-  String action;
-  String url;
+  private CheckBox replaceCheck = new CheckBox("Replace lists with identical names");
+  private InputGrid ig;
+  private String action;
 
-  boolean withPassword, withReplace;
-  static String account, password;
-
-  public TargetMineSyncDialog(DataListenerWidget parent, String url, String action,
-      boolean withPassword, boolean withReplace) {
+  private boolean withPassword, withReplace;
+  
+  //TODO
+  private static String account, password;
+  private @Nullable IntermineInstance instance;
+  
+  /**
+   * 
+   * @param parent
+   * @param action
+   * @param withPassword
+   * @param withReplace
+   * @param instance must not be null if withPassword is true
+   */
+  public TargetMineSyncDialog(DataListenerWidget parent, String action,
+      boolean withPassword, boolean withReplace,
+      @Nullable IntermineInstance instance) {
     super(parent);
     this.action = action;
-    this.url = url;
+    this.instance = instance;
     this.withPassword = withPassword;
     this.withReplace = withReplace;
   }
@@ -67,8 +79,9 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
 
     if (withPassword) {
       Label l =
-          new Label("You must have a TargetMine account in order to use "
-              + "this function. If you do not have one, you may create one " + "at " + url + ".");
+          new Label("You must have a " + instance.title() + " account in order to use "
+              + "this function. If you do not have one, you may create one at " + 
+              instance.webURL() + ".");
       l.setWordWrap(true);
       vp.add(l);
       
@@ -103,9 +116,9 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
         } else if (withPassword) {
           account = ig.getValue(0);
           password = ig.getValue(1);
-          userProceed(ig.getValue(0), ig.getValue(1), replaceCheck.getValue());
+          userProceed(instance, ig.getValue(0), ig.getValue(1), replaceCheck.getValue());
         } else {
-          userProceed(null, null, replaceCheck.getValue());
+          userProceed(instance, null, null, replaceCheck.getValue());
         }
       }
     });
@@ -121,6 +134,7 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
     return null;
   }
 
-  abstract protected void userProceed(String user, String pass, boolean replace);
+  abstract protected void userProceed(IntermineInstance instance, 
+      String user, String pass, boolean replace);
 
 }

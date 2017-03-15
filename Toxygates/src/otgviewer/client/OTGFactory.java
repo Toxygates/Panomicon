@@ -36,6 +36,7 @@ import otgviewer.client.components.groupdef.TreatedControlSelTDGrid;
 import otgviewer.client.components.ranking.CompoundRanker;
 import otgviewer.client.components.ranking.SimpleCompoundRanker;
 import otgviewer.client.intermine.TargetMineData;
+import otgviewer.shared.intermine.IntermineInstance;
 import t.common.shared.DataSchema;
 import t.common.shared.StringList;
 import t.common.shared.sample.Group;
@@ -82,14 +83,16 @@ public class OTGFactory implements UIFactory {
   }
 
   @Override
-  public void enrichment(Screen screen, StringList probes) {
-    TargetMineData tm = new TargetMineData(screen);
+  public void enrichment(Screen screen, StringList probes, 
+      @Nullable IntermineInstance preferredInst) {
+    TargetMineData tm = new TargetMineData(screen, preferredInst);
     tm.enrich(probes);
   }
 
   @Override
-  public void multiEnrichment(Screen screen, StringList[] lists) {
-    TargetMineData tm = new TargetMineData(screen);
+  public void multiEnrichment(Screen screen, StringList[] lists, 
+      @Nullable IntermineInstance preferredInst) {
+    TargetMineData tm = new TargetMineData(screen, preferredInst);
     tm.multiEnrich(lists);    
   }
   

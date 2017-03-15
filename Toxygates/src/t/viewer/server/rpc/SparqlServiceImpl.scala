@@ -135,7 +135,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
    */
   protected def refreshAppInfo(): AppInfo = {
     new AppInfo(configuration.instanceName, Array(),
-        sPlatforms(), predefProbeLists(), probeClusterings(), appName,
+        sPlatforms(), predefProbeLists(),
+        configuration.intermineInstances.toArray,
+        probeClusterings(), appName,
         makeUserKey(), getAnnotationInfo)
   }
 

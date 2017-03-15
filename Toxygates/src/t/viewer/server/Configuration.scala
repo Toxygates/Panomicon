@@ -29,6 +29,7 @@ import t.db.MatrixContext
 import t.Factory
 import t.Context
 import t.sparql.Instances
+import otgviewer.shared.intermine.IntermineInstance
 
 object Configuration {
   /**
@@ -38,6 +39,19 @@ object Configuration {
     val servletContext = config.getServletContext()
 
     def p(x: String) = servletContext.getInitParameter(x)
+
+    def readIntermineInstance(id: String) =
+      new IntermineInstance(p(s"intermine.$id.title"),
+          p(s"intermine.$id.appname"),
+          p(s"intermine.$id.apikey"),
+          p(s"intermine.$id.userurl"))
+
+    def readIntermineInstances() = {
+      Option(p("intermine.instances")) match {
+        case Some(s) => s.split(",").map(readIntermineInstance).toSeq
+        case None => Seq()
+      }
+    }
 
     /**
      * These parameters are read from <context-param> tags in WEB-INF/web.xml.
@@ -55,7 +69,7 @@ object Configuration {
       p("matrixDbOptions"),
       p("feedbackReceivers"),
       p("feedbackFromAddress"),
-      p("targetmineApiKey"))
+      readIntermineInstances)
   }
 }
 
@@ -74,9 +88,14 @@ class Configuration(val repositoryName: String,
     val matrixDbOptions: String = null,
     val feedbackReceivers: String = null,
     val feedbackFromAddress: String = null,
-    val targetmineApiKey: String = null) {
+    val intermineInstances: Iterable[IntermineInstance] = Seq()) {
 
-  def this(owlimRepository: String, toxygatesHome: String, foldsDBVersion: Int) =
+  println(s"Created configuration with ${intermineInstances.size} intermine instances")
+
+  /**
+   * Mainly for test purposes
+   */
+  def this(owlimRepository: String, toxygatesHome: String) =
     this(owlimRepository, toxygatesHome, System.getProperty("otg.csvDir"),
       System.getProperty("otg.csvUrlBase"))
 

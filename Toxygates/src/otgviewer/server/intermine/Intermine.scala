@@ -22,6 +22,7 @@ package otgviewer.server.intermine
 
 import scala.collection.JavaConversions._
 
+import org.intermine.webservice.client.core.ContentType
 import org.intermine.webservice.client.core.ServiceFactory
 import org.intermine.webservice.client.lists.ItemList
 import org.intermine.webservice.client.services.ListService
@@ -29,50 +30,58 @@ import t.sparql.secondary._
 import t.sparql._
 import otg.sparql._
 import otg.sparql.Probes
-import otgviewer.shared.intermine.IntermineException
+import otgviewer.shared.intermine._
 import t.common.shared.StringList
 import otgviewer.server.rpc.Conversions
 import t.platform.Probe
 import scala.Vector
 
-class IntermineInstance(val title: String, appName: String) {
-import Conversions._
-  def getListService(serviceUri: String, user: Option[String] = None,
-      pass: Option[String] = None): ListService = {
-       println(s"Connect to $title")
+class IntermineConnector(instance: IntermineInstance) {
+  import Conversions._
+
+  def title = instance.title()
+  def appName = instance.appName()
+  def serviceUrl = instance.serviceURL
+
+  def getListService(user: Option[String] = None,
+    pass: Option[String] = None): ListService = {
+    println(s"Connect to $title")
     // TODO this is insecure - ideally, auth tokens should be used.
     val sf = (user, pass) match {
-      case (Some(u), Some(p)) => new ServiceFactory(serviceUri, u, p)
-      case _                  => new ServiceFactory(serviceUri)
+      case (Some(u), Some(p)) => new ServiceFactory(serviceUrl, u, p)
+      case _                  => new ServiceFactory(serviceUrl)
     }
 
     sf.setApplicationName(appName)
     sf.getListService()
   }
 
-  def asTGList(l: org.intermine.webservice.client.lists.ItemList,
-      ap: Probes,
-      filterProbes: (Seq[String]) => Seq[String]): StringList = {
-      var items: Vector[Gene] = Vector()
-      for (i <- 0 until l.getSize()) {
-        val it = l.get(i)
-        items :+= Gene(it.getString("Gene.primaryIdentifier"))
-      }
-      //we will have obtained the genes as ENTREZ identifiers
-      println(items)
-      val probes = ap.forGenes(items).map(_.identifier).toSeq
-      println(probes)
-      val filtered = filterProbes(probes)
-      println(filtered)
+  def enrichmentRequest(ls: ListService) =
+    ls.createGetRequest(serviceUrl + "/list/enrichment", ContentType.TEXT_TAB)
 
-      new StringList("probes", l.getName(), filtered.toArray);
+  def asTGList(l: org.intermine.webservice.client.lists.ItemList,
+    ap: Probes,
+    filterProbes: (Seq[String]) => Seq[String]): StringList = {
+    var items: Vector[Gene] = Vector()
+    for (i <- 0 until l.getSize()) {
+      val it = l.get(i)
+      items :+= Gene(it.getString("Gene.primaryIdentifier"))
+    }
+    //we will have obtained the genes as ENTREZ identifiers
+    println(items)
+    val probes = ap.forGenes(items).map(_.identifier).toSeq
+    println(probes)
+    val filtered = filterProbes(probes)
+    println(filtered)
+
+    new StringList("probes", l.getName(), filtered.toArray);
   }
 
   /**
    * Add a set of probe lists by first mapping them to genes
    */
   def addLists(ap: Probes, ls: ListService,
-      lists: Iterable[StringList], replace: Boolean): Unit = {
+    lists: Iterable[StringList], replace: Boolean): Unit = {
 
     for (l <- lists) {
       addList(ap, ls, l.items(), Some(l.name()), replace)
@@ -101,17 +110,23 @@ import Conversions._
       ls.createList(ci)
     } else {
       throw new IntermineException(
-          s"Unable to add list, ${name.get} already existed and replacement not requested")
+        s"Unable to add list, ${name.get} already existed and replacement not requested")
     }
   }
 }
 
-object Intermines {
-  lazy val targetmine = new IntermineInstance("Targetmine", "targetmine")
+class Intermines(instances: Iterable[IntermineInstance]) {
 
-  lazy val humanmine = new IntermineInstance("Humanmine", "humanmine")
+  //TODO avoid referring to name explicitly
+  lazy val targetmine = connector(byTitle("TargetMine"))
 
-  lazy val all = Seq(targetmine, humanmine)
+  //TODO avoid referring to name explicitly
+  lazy val humanmine = connector(byTitle("HumanMine"))
+
+  def connector(inst: IntermineInstance) =
+    new IntermineConnector(inst)
+
+  lazy val all = instances
 
   lazy val byTitle = Map() ++ all.map(m => m.title -> m)
 }

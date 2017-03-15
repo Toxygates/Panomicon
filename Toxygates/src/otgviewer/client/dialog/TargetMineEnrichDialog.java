@@ -20,10 +20,13 @@
 
 package otgviewer.client.dialog;
 
+import javax.annotation.Nullable;
+
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.shared.intermine.Correction;
 import otgviewer.shared.intermine.EnrichmentParams;
 import otgviewer.shared.intermine.EnrichmentWidget;
+import otgviewer.shared.intermine.IntermineInstance;
 import t.common.client.components.EnumSelector;
 
 import com.google.gwt.user.client.ui.Grid;
@@ -35,12 +38,13 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class TargetMineEnrichDialog extends TargetMineSyncDialog {
 
-  public TargetMineEnrichDialog(DataListenerWidget parent, String url, String action) {
-    super(parent, url, action, false, false);
+  public TargetMineEnrichDialog(DataListenerWidget parent, String action, 
+      @Nullable IntermineInstance preferredInstance) {
+    super(parent, action, false, false, preferredInstance);
   }
 
   @Override
-  protected void userProceed(String user, String pass, boolean replace) {
+  protected void userProceed(IntermineInstance instance, String user, String pass, boolean replace) {
 
   }
 

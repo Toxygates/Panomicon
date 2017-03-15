@@ -20,6 +20,7 @@ package otgviewer.client.intermine;
 
 import otgviewer.shared.intermine.EnrichmentParams;
 import otgviewer.shared.intermine.IntermineException;
+import otgviewer.shared.intermine.IntermineInstance;
 import t.common.shared.StringList;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -29,22 +30,51 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface IntermineService extends RemoteService {
 
   /**
-   * Import gene lists from a targetmine user account.
+   * Import gene lists from an intermine user account.
    * 
    * @param user
    * @param pass
    * @param asProbes if true, the items will be imported as affymetrix probes. If false, as genes.
    * @return
    */
-  public StringList[] importTargetmineLists(String user, String pass, boolean asProbes)
+  public StringList[] importLists(IntermineInstance instance,
+      String user, String pass, boolean asProbes)
       throws IntermineException;
 
-  public void exportTargetmineLists(String user, String pass, StringList[] lists, boolean replace)
+  /**
+   * Export gene lists to an intermine user account
+   * @param instance
+   * @param user
+   * @param pass
+   * @param lists
+   * @param replace
+   * @throws IntermineException
+   */
+  public void exportLists(IntermineInstance instance,
+      String user, String pass, StringList[] lists, boolean replace)
       throws IntermineException;
 
-  public String[][] enrichment(StringList list, EnrichmentParams params) throws IntermineException;
+  /**
+   * Enrich one gene list, returning all the results
+   * @param instance
+   * @param list
+   * @param params
+   * @return
+   * @throws IntermineException
+   */
+  public String[][] enrichment(IntermineInstance instance,
+      StringList list, EnrichmentParams params) throws IntermineException;
 
-  public String[][][] multiEnrichment(StringList[] lists, EnrichmentParams params)
+  /**
+   * Enrich multiple gene lists simultaneously, returning only the top result for each
+   * @param instance
+   * @param lists
+   * @param params
+   * @return
+   * @throws IntermineException
+   */
+  public String[][][] multiEnrichment(IntermineInstance instance,
+      StringList[] lists, EnrichmentParams params)
       throws IntermineException;
 
 }

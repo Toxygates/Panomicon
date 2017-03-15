@@ -28,6 +28,7 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.components.TickMenuItem;
+import otgviewer.shared.intermine.IntermineInstance;
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
 import t.common.shared.sample.ExpressionRow;
@@ -176,7 +177,7 @@ public class DataScreen extends Screen {
 
     addAnalysisMenuItem(new MenuItem("Enrichment...", new Command() {
       public void execute() {
-        runEnrichment();              
+        runEnrichment(null);
       }
     }));
     
@@ -190,12 +191,12 @@ public class DataScreen extends Screen {
     }
   }
   
-  public void runEnrichment() {
+  public void runEnrichment(@Nullable IntermineInstance preferredInstance) {
     logger.info("Enrich " + DataScreen.this.displayedAtomicProbes().length + " ps");
     StringList genes = 
         new StringList(StringList.PROBES_LIST_TYPE, 
             "temp", DataScreen.this.displayedAtomicProbes());
-    DataScreen.this.factory().enrichment(DataScreen.this, genes);
+    DataScreen.this.factory().enrichment(DataScreen.this, genes, preferredInstance);
   }
   
   protected void makeHeatMap() {

@@ -25,8 +25,10 @@ import com.google.gwt.user.client.ui.MenuItem;
 
 import otgviewer.client.intermine.TargetMineData;
 import otgviewer.shared.OTGSchema;
+import otgviewer.shared.intermine.IntermineInstance;
 import t.common.shared.DataSchema;
 import t.viewer.client.Utils;
+import t.viewer.shared.AppInfo;
 
 public class OTGViewer extends TApplication {
 
@@ -72,41 +74,48 @@ public class OTGViewer extends TApplication {
     return factory;
   }
 
+  @Override
   protected void setupToolsMenu(MenuBar toolsMenuBar) {
-    MenuBar targetmineMenu = new MenuBar(true);
-    MenuItem mi = new MenuItem("TargetMine data", targetmineMenu);
+    for (IntermineInstance ii: appInfo.intermineInstances()) {
+      toolsMenuBar.addItem(intermineMenu(ii));
+    }  
+  }
+  
+  protected MenuItem intermineMenu(final IntermineInstance inst) {
+    MenuBar mb = new MenuBar(true);
+    final String title = inst.title();
+    MenuItem mi = new MenuItem(title + " data", mb);
 
-    targetmineMenu.addItem(new MenuItem("Import gene sets from TargetMine...", new Command() {
+    mb.addItem(new MenuItem("Import gene sets from " + title + "...", new Command() {
       public void execute() {
-        new TargetMineData(currentScreen).importLists(true);
+        new TargetMineData(currentScreen, inst).importLists(true);
       }
     }));
 
-    targetmineMenu.addItem(new MenuItem("Export gene sets to TargetMine...", new Command() {
+    mb.addItem(new MenuItem("Export gene sets to " + title + "...", new Command() {
       public void execute() {
-        new TargetMineData(currentScreen).exportLists();
+        new TargetMineData(currentScreen, inst).exportLists();
       }
     }));
 
-    targetmineMenu.addItem(new MenuItem("Enrichment...", new Command() {
+    mb.addItem(new MenuItem("Enrichment...", new Command() {
       public void execute() {
         //TODO this should be disabled if we are not on the data screen.
         //The menu item is only here in order to be logically grouped with other 
         //TargetMine items, but it is a duplicate and may be removed.
         if (currentScreen instanceof DataScreen) {
-          ((DataScreen) currentScreen).runEnrichment();
+          ((DataScreen) currentScreen).runEnrichment(inst);
         } else {
           Window.alert("Please go to the data screen to use this function.");
         }
       }
     }));
 
-    targetmineMenu.addItem(new MenuItem("Go to TargetMine", new Command() {
+    mb.addItem(new MenuItem("Go to " + title, new Command() {
       public void execute() {
-        Utils.displayURL("Go to TargetMine in a new window?", "Go", appInfo.targetmineURL());
+        Utils.displayURL("Go to " + title + " in a new window?", "Go", inst.webURL());
       }
     }));
-    toolsMenuBar.addItem(mi);
+    return mi;
   }
-  
 }

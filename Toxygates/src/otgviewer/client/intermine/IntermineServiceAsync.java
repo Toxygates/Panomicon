@@ -19,22 +19,23 @@
 package otgviewer.client.intermine;
 
 import otgviewer.shared.intermine.EnrichmentParams;
+import otgviewer.shared.intermine.IntermineInstance;
 import t.common.shared.StringList;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface IntermineServiceAsync {
 
-  public void importTargetmineLists(String user, String pass, boolean asProbes,
+  public void importLists(IntermineInstance instance, String user, String pass, boolean asProbes,
       AsyncCallback<StringList[]> callback);
 
-  public void exportTargetmineLists(String user, String pass, StringList[] lists, boolean replace,
+  public void exportLists(IntermineInstance instance, String user, String pass, StringList[] lists, boolean replace,
       AsyncCallback<Void> callback);
 
-  void enrichment(StringList list, EnrichmentParams params,
+  void enrichment(IntermineInstance instance, StringList list, EnrichmentParams params,
       AsyncCallback<String[][]> callback);
 
-  void multiEnrichment(StringList[] list,
+  void multiEnrichment(IntermineInstance instance, StringList[] list,
       EnrichmentParams params,
       AsyncCallback<String[][][]> callback);
 }

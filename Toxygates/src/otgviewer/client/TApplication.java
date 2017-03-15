@@ -176,8 +176,26 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * This is the entry point method.
    */
   public void onModuleLoad() {
-    menuBar = setupMenu();
 
+    reloadAppInfo(new AsyncCallback<AppInfo>() {
+      @Override
+      public void onSuccess(AppInfo result) {
+        setupUIBase();
+        prepareScreens();
+      }
+
+      @Override
+      public void onFailure(Throwable caught) {
+        Window.alert("Failed to obtain application information.");        
+      }
+    });
+
+    Logger l = SharedUtils.getLogger();
+    l.info("onModuleLoad() finished");
+  } 
+  
+  protected void setupUIBase() {
+    menuBar = setupMenu();
     History.addValueChangeHandler(new ValueChangeHandler<String>() {
       public void onValueChange(ValueChangeEvent<String> vce) {
         showScreenForToken(vce.getValue(), false);
@@ -209,22 +227,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     navPanel.setStylePrimaryName("navPanel");
     navOuter.add(navPanel);
     mainDockPanel.addNorth(navOuter, 35);
-
-    reloadAppInfo(new AsyncCallback<AppInfo>() {
-      @Override
-      public void onSuccess(AppInfo result) {
-        prepareScreens();
-      }
-
-      @Override
-      public void onFailure(Throwable caught) {
-        Window.alert("Failed to obtain application information.");        
-      }
-    });
-
-    Logger l = SharedUtils.getLogger();
-    l.info("onModuleLoad() finished");
-  } 
+  }
   
   protected void readURLParameters(Screen scr) {
     readProbesURLparameter(scr);

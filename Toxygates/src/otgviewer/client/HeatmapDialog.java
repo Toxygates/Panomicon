@@ -561,7 +561,7 @@ public class HeatmapDialog extends DataListenerWidget {
       clusterLists.add(sl);
       i++;
     }
-    screen.factory().multiEnrichment(screen, clusterLists.toArray(new StringList[0]));
+    screen.factory().multiEnrichment(screen, clusterLists.toArray(new StringList[0]), null);
   }
 
 }

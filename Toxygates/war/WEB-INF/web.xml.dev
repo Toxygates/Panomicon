@@ -61,6 +61,47 @@
 <!--		<param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/update</param-value> -->
 	 		<param-value>http://127.0.0.1:3030/data/update</param-value> 
 	</context-param>
+	
+	<context-param>
+		<param-name>intermine.instances</param-name>
+		<param-value>targetmine,humanmine</param-value>
+	</context-param>
+	
+	<context-param>
+		<param-name>intermine.targetmine.apikey</param-name>
+		<param-value>xyz</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.targetmine.appname</param-name>
+		<param-value>targetmine</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.targetmine.title</param-name>
+		<param-value>TargetMine</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.targetmine.userurl</param-name>
+		<param-value>http://targetmine.mizuguchilab.org</param-value>
+	</context-param>
+	
+	<context-param>
+		<param-name>intermine.humanmine.apikey</param-name>
+		<param-value>xyz</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.humanmine.appname</param-name>
+		<param-value>humanmine</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.humanmine.title</param-name>
+		<param-value>HumanMine</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.humanmine.userurl</param-name>
+		<param-value>http://www.humanmine.org</param-value>
+	</context-param>
+	
+	
 
 	<!-- Servlets -->
 
@@ -107,7 +148,7 @@
 
   	<servlet>
 		<servlet-name>intermineServlet</servlet-name>
-		<servlet-class>otgviewer.server.targetmine.IntermineServiceImpl</servlet-class>
+		<servlet-class>otgviewer.server.intermine.IntermineServiceImpl</servlet-class>
 	</servlet>
 	
    	<servlet-mapping>
