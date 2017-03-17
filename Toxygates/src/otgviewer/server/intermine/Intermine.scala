@@ -116,17 +116,19 @@ class IntermineConnector(instance: IntermineInstance) {
 }
 
 class Intermines(instances: Iterable[IntermineInstance]) {
+  def connector(inst: IntermineInstance) = {
+    //Simple security/sanity check - refuse to connect to a URL that
+    //we didn't know about from before. This is because instance objects
+    //may be passed from the client side.
 
-  //TODO avoid referring to name explicitly
-  lazy val targetmine = connector(byTitle("TargetMine"))
-
-  //TODO avoid referring to name explicitly
-  lazy val humanmine = connector(byTitle("HumanMine"))
-
-  def connector(inst: IntermineInstance) =
+    if(!allURLs.contains(inst.serviceURL())) {
+      throw new Exception("Invalid instance")
+    }
     new IntermineConnector(inst)
+  }
 
-  lazy val all = instances
-
-  lazy val byTitle = Map() ++ all.map(m => m.title -> m)
+  lazy val allURLs = instances.map(_.serviceURL()).toSet
+  lazy val all = instances.toSet
+//
+//  lazy val byTitle = Map() ++ all.map(m => m.title -> m)
 }

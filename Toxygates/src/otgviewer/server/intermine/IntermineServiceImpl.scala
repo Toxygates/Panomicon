@@ -63,17 +63,16 @@ class IntermineServiceImpl extends OTGServiceServlet with IntermineService {
     super.destroy()
   }
 
-  def targetmine = mines.targetmine
-
   // TODO: pass in a preferred species, get status info back
   def importLists(inst: IntermineInstance, user: String, pass: String,
     asProbes: Boolean): Array[t.common.shared.StringList] = {
+    val conn = mines.connector(inst)
     try {
-      val ls = targetmine.getListService(Some(user), Some(pass))
+      val ls = conn.getListService(Some(user), Some(pass))
       val tmLists = ls.getAccessibleLists()
       tmLists.filter(_.getType == "Gene").map(
         l => {
-          val tglist = targetmine.asTGList(l, affyProbes, platforms.filterProbesAllPlatforms(_))
+          val tglist = conn.asTGList(l, affyProbes, platforms.filterProbesAllPlatforms(_))
           if (tglist.items.size > 0) {
             val probesForCurrent = platforms.filterProbes(tglist.items, List())
             tglist.setComment(probesForCurrent.size + "");
@@ -91,9 +90,10 @@ class IntermineServiceImpl extends OTGServiceServlet with IntermineService {
 
   def exportLists(inst: IntermineInstance, user: String, pass: String,
       lists: Array[StringList], replace: Boolean): Unit = {
+    val conn = mines.connector(inst)
     try {
-      val ls = targetmine.getListService(Some(user), Some(pass))
-      targetmine.addLists(affyProbes, ls, lists.toList, replace)
+      val ls = conn.getListService(Some(user), Some(pass))
+      conn.addLists(affyProbes, ls, lists.toList, replace)
     } catch {
       case e: Exception =>
         e.printStackTrace()
@@ -108,21 +108,24 @@ class IntermineServiceImpl extends OTGServiceServlet with IntermineService {
         res(3))
   }
 
-  def multiEnrichment(inst: IntermineInstance, lists: Array[StringList], params: EnrichmentParams): Array[Array[Array[String]]] =
+  def multiEnrichment(inst: IntermineInstance, lists: Array[StringList],
+      params: EnrichmentParams): Array[Array[Array[String]]] =
     lists.map(enrichment(inst, _, params)).toArray
 
-  def enrichment(inst: IntermineInstance, list: StringList, params: EnrichmentParams): Array[Array[String]] = {
-      val ls = targetmine.getListService(None, None)
+  def enrichment(inst: IntermineInstance, list: StringList,
+      params: EnrichmentParams): Array[Array[String]] = {
+    val conn = mines.connector(inst)
+      val ls = conn.getListService(None, None)
       ls.setAuthentication(apiKey)
       val tags = List("H. sapiens") //!!
 
-      val tempList = targetmine.addList(affyProbes, ls, list.items(),
+      val tempList = conn.addList(affyProbes, ls, list.items(),
           None, false, tags)
 
       val listName = tempList.getName
       println(s"Created temporary list $listName")
 
-      val request = targetmine.enrichmentRequest(ls)
+      val request = conn.enrichmentRequest(ls)
       request.setAuthToken(apiKey)
 //      request.addParameter("token", apiKey)
       request.addParameter("list", listName)
