@@ -22,12 +22,12 @@ package otgviewer.client.dialog;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.Screen;
 import otgviewer.shared.intermine.Correction;
 import otgviewer.shared.intermine.EnrichmentParams;
 import otgviewer.shared.intermine.EnrichmentWidget;
 import otgviewer.shared.intermine.IntermineInstance;
-import t.common.client.components.EnumSelector;
+import t.common.client.components.ItemSelector;
 
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.Label;
@@ -38,7 +38,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class TargetMineEnrichDialog extends TargetMineSyncDialog {
 
-  public TargetMineEnrichDialog(DataListenerWidget parent, String action, 
+  public TargetMineEnrichDialog(Screen parent, String action, 
       @Nullable IntermineInstance preferredInstance) {
     super(parent, action, false, false, preferredInstance);
   }
@@ -55,7 +55,7 @@ public class TargetMineEnrichDialog extends TargetMineSyncDialog {
   
   VerticalPanel vp = new VerticalPanel();
   
-  EnumSelector<EnrichmentWidget> widget = new EnumSelector<EnrichmentWidget>() {
+  ItemSelector<EnrichmentWidget> widget = new ItemSelector<EnrichmentWidget>() {
     @Override
     protected EnrichmentWidget[] values() {
       return EnrichmentWidget.values();
@@ -67,7 +67,7 @@ public class TargetMineEnrichDialog extends TargetMineSyncDialog {
     }
   };
   
-  EnumSelector<Correction> corr = new EnumSelector<Correction>() {
+  ItemSelector<Correction> corr = new ItemSelector<Correction>() {
     @Override
     protected Correction[] values() {
       return Correction.values();

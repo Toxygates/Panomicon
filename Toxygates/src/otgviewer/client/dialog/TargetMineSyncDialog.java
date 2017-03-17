@@ -22,10 +22,14 @@ import javax.annotation.Nullable;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.InputGrid;
+import otgviewer.client.components.Screen;
+import otgviewer.client.intermine.InstanceSelector;
 import otgviewer.shared.intermine.IntermineInstance;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.InteractionDialog;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
@@ -49,6 +53,7 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
   //TODO
   private static String account, password;
   private @Nullable IntermineInstance instance;
+  private @Nullable InstanceSelector selector;
   
   /**
    * 
@@ -60,17 +65,48 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
    */
   public TargetMineSyncDialog(DataListenerWidget parent, String action,
       boolean withPassword, boolean withReplace,
+      @Nullable InstanceSelector selector,
       @Nullable IntermineInstance instance) {
     super(parent);
     this.action = action;
     this.instance = instance;
     this.withPassword = withPassword;
     this.withReplace = withReplace;
+    this.selector = selector;
+    setup();
+  }
+  
+  public TargetMineSyncDialog(Screen parent, String action,
+      boolean withPassword, boolean withReplace,
+      @Nullable IntermineInstance preferredInstance) {
+    this(parent, action, withPassword, withReplace, null,
+        preferredInstance);
+    this.selector = new InstanceSelector(parent.appInfo());
+    if (preferredInstance != null) {
+      selector.setSelected(preferredInstance);
+    }        
+    setup();
+  }
+  
+  private void setup() {
+    if (selector != null) {
+      selector.listBox().addChangeHandler(new ChangeHandler() {        
+        @Override
+        public void onChange(ChangeEvent event) {
+          instanceChanged(selector.value());
+        }
+      });
+    }
   }
 
   protected Widget content() {
     VerticalPanel vp = new VerticalPanel();
     vp.setWidth("400px");
+    
+    if (selector != null) {
+      vp.add(new Label("Data warehouse:"));
+      vp.add(selector);
+    }
 
     Widget custom = customUI();
     if (custom != null) {
@@ -78,27 +114,7 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
     }
 
     if (withPassword) {
-      Label l =
-          new Label("You must have a " + instance.title() + " account in order to use "
-              + "this function. If you do not have one, you may create one at " + 
-              instance.webURL() + ".");
-      l.setWordWrap(true);
-      vp.add(l);
-      
-      ig = new InputGrid("Account name (e-mail address)", "Password") {
-        @Override
-        protected TextBox initTextBox(int i) {
-          if (i == 1) {
-            return new PasswordTextBox();
-          } else {
-            return super.initTextBox(i);
-          }
-        }
-      };
-      ig.setValue(0, account);
-      ig.setValue(1, password);
-
-      vp.add(ig);
+      addPasswordUI(vp);    
     }
 
     if (withReplace) {
@@ -109,6 +125,9 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
     b.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
+        IntermineInstance instance = 
+            selector != null ? selector.value() : TargetMineSyncDialog.this.instance;
+            
         if (withPassword && 
             (ig.getValue(0).trim().equals("") || ig.getValue(1).trim().equals(""))
             ) {
@@ -128,6 +147,34 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
     HorizontalPanel hp = Utils.mkHorizontalPanel(true, b, b2);
     vp.add(hp);
     return vp;
+  }
+  
+  protected void instanceChanged(IntermineInstance instance) {
+    
+  }
+  
+  protected void addPasswordUI(VerticalPanel vp) {
+    Label l =
+        new Label("You must have a " + instance.title() + " account in order to use "
+            + "this function. If you do not have one, you may create one at " + 
+            instance.webURL() + ".");
+    l.setWordWrap(true);
+    vp.add(l);
+    
+    ig = new InputGrid("Account name (e-mail address)", "Password") {
+      @Override
+      protected TextBox initTextBox(int i) {
+        if (i == 1) {
+          return new PasswordTextBox();
+        } else {
+          return super.initTextBox(i);
+        }
+      }
+    };
+    ig.setValue(0, account);
+    ig.setValue(1, password);
+
+    vp.add(ig);
   }
   
   protected @Nullable Widget customUI() {
