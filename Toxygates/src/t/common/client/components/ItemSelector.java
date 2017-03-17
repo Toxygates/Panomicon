@@ -18,8 +18,6 @@
 
 package t.common.client.components;
 
-import java.util.Arrays;
-
 import javax.annotation.Nullable;
 
 import com.google.gwt.event.dom.client.ChangeEvent;

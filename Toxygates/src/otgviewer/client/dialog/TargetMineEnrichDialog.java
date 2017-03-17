@@ -92,6 +92,12 @@ public class TargetMineEnrichDialog extends TargetMineSyncDialog {
     return vp;
   }
   
+  @Override
+  protected void instanceChanged(IntermineInstance instance) {
+    // TODO
+    super.instanceChanged(instance);
+  }
+
   private void setFilterItems(String[] items) {
     filter.clear();
     for (String i: items) {

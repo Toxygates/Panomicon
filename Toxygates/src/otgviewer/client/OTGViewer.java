@@ -18,17 +18,16 @@
 
 package otgviewer.client;
 
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
-
 import otgviewer.client.intermine.TargetMineData;
 import otgviewer.shared.OTGSchema;
 import otgviewer.shared.intermine.IntermineInstance;
 import t.common.shared.DataSchema;
 import t.viewer.client.Utils;
-import t.viewer.shared.AppInfo;
+
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
 
 public class OTGViewer extends TApplication {
 

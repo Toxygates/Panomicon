@@ -150,16 +150,19 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
   }
   
   protected void instanceChanged(IntermineInstance instance) {
-    
-  }
-  
-  protected void addPasswordUI(VerticalPanel vp) {
-    Label l =
-        new Label("You must have a " + instance.title() + " account in order to use "
+    passwordLabel.setText(
+            "You must have a " + instance.title() + " account in order to use "
             + "this function. If you do not have one, you may create one at " + 
             instance.webURL() + ".");
-    l.setWordWrap(true);
-    vp.add(l);
+  }
+  
+  Label passwordLabel;
+  
+  protected void addPasswordUI(VerticalPanel vp) {
+    passwordLabel = new Label();
+    passwordLabel.setWordWrap(true);
+    instanceChanged(instance);    
+    vp.add(passwordLabel);
     
     ig = new InputGrid("Account name (e-mail address)", "Password") {
       @Override
