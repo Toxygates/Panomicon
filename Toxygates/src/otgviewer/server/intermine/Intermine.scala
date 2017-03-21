@@ -61,8 +61,15 @@ class IntermineConnector(instance: IntermineInstance) {
 
   def asTGList(l: org.intermine.webservice.client.lists.ItemList,
     ap: Probes,
-    filterProbes: (Seq[String]) => Seq[String]): StringList = {
-    var items: Vector[Gene] = Vector()
+    filterProbes: (Seq[String]) => Seq[String]): Option[StringList] = {
+    var items: Vector[Gene] = Vector()    
+    println(s"Importing ${l.getName}")
+    
+    if (l.getSize > 1000) {
+      println("List too big - not importing")
+      return None
+    }
+    
     for (i <- 0 until l.getSize()) {
       val it = l.get(i)
       items :+= Gene(it.getString("Gene.primaryIdentifier"))
@@ -71,10 +78,17 @@ class IntermineConnector(instance: IntermineInstance) {
     println(items)
     val probes = ap.forGenes(items).map(_.identifier).toSeq
     println(probes)
-    val filtered = filterProbes(probes)
+    val filtered = if (!probes.isEmpty) {
+      filterProbes(probes) 
+    } else {
+      println(s"Warning: the following imported list had no corresponding probes in the system: ${l.getName}")
+      println(s"The original size was ${l.getSize}")
+      Seq()
+    }
     println(filtered)
 
-    new StringList("probes", l.getName(), filtered.toArray);
+    Some(new StringList(StringList.PROBES_LIST_TYPE, 
+        l.getName(), filtered.toArray))
   }
 
   /**
@@ -93,24 +107,40 @@ class IntermineConnector(instance: IntermineInstance) {
    */
   def addList(probeStore: Probes, ls: ListService,
     input: Seq[String], name: Option[String], replace: Boolean,
-    tags: Seq[String] = Seq()): ItemList = {
+    tags: Seq[String] = Seq()): Option[ItemList] = {
 
-    var serverList = name.map(ls.getList(_))
-    if (serverList != None && serverList.get != null && replace) {
+    var serverList = name.map(n => Option(ls.getList(n))).flatten
+    if (serverList != None && replace) {      
+      ls.deleteList(serverList.get)
+    }
+    
+    //the Set: prefix gets appended by the GUI
+    if (serverList == None && name != None) {
+      val altName = name.get.split("Set:")
+      if (altName.size > 1) {
+        serverList = Option(ls.getList(altName(1)))        
+      }
+    }
+    
+    if (serverList != None && replace) {
+      println(s"Delete list $serverList for replacement")
       ls.deleteList(serverList.get)
     }
 
-    if (serverList == None || serverList.get == null || replace) {
+    if (serverList == None || replace) {
       val ci = new ls.ListCreationInfo("Gene", name.getOrElse(""))
       val probes = input.map(Probe(_)).toSeq
       //TODO we have the option of doing a fuzzy (e.g. symbol-based) export here
       val genes = probeStore.withAttributes(probes).flatMap(_.genes.map(_.identifier))
       ci.setContent(seqAsJavaList(genes.toList))
       ci.addTags(seqAsJavaList(tags))
-      ls.createList(ci)
+      Some(ls.createList(ci))
     } else {
-      throw new IntermineException(
-        s"Unable to add list, ${name.get} already existed and replacement not requested")
+      //Could report this message to the user somehow
+      println(s"Not exporting list ${name.get} since it already existed (replacement not requested)")
+//      throw new IntermineException(
+//        s"Unable to add list, ${name.get} already existed and replacement not requested")
+      None
     }
   }
 }

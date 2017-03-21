@@ -69,18 +69,30 @@ class IntermineServiceImpl extends OTGServiceServlet with IntermineService {
     val conn = mines.connector(inst)
     try {
       val ls = conn.getListService(Some(user), Some(pass))
-      val tmLists = ls.getAccessibleLists()
-      tmLists.filter(_.getType == "Gene").map(
-        l => {
-          val tglist = conn.asTGList(l, affyProbes, platforms.filterProbesAllPlatforms(_))
-          if (tglist.items.size > 0) {
-            val probesForCurrent = platforms.filterProbes(tglist.items, List())
-            tglist.setComment(probesForCurrent.size + "");
-          } else {
-            tglist.setComment("0")
-          }
-          tglist
-        }).toArray
+      val imLists = ls.getAccessibleLists()      
+      
+      println("Accessible lists: ")      
+      
+      for (iml <- imLists) {
+        println(s"${iml.getName} ${iml.getType} ${iml.getSize}")
+      }
+      
+      val tglists = for (iml <- imLists;
+        if iml.getType == "Gene";
+        tglist = conn.asTGList(iml, affyProbes, platforms.filterProbesAllPlatforms)
+        ) yield tglist
+
+      for (l <- tglists.flatten) {
+        if (l.items.size > 0) {
+//          val probesForCurrent = platforms.filterProbes(l.items, List())
+//          l.setComment(probesForCurrent.size + "");
+          l.setComment(l.items.size + "")
+        } else {
+          l.setComment("0")
+        }
+      }
+      tglists.flatten.toArray
+          
     } catch {
       case e: Exception =>
         e.printStackTrace()
@@ -113,32 +125,38 @@ class IntermineServiceImpl extends OTGServiceServlet with IntermineService {
     lists.map(enrichment(inst, _, params)).toArray
 
   def enrichment(inst: IntermineInstance, list: StringList,
-      params: EnrichmentParams): Array[Array[String]] = {
+                 params: EnrichmentParams): Array[Array[String]] = {
     val conn = mines.connector(inst)
-      val ls = conn.getListService(None, None)
-      ls.setAuthentication(apiKey)
-      val tags = List("H. sapiens") //!!
+    val ls = conn.getListService(None, None)
+    ls.setAuthentication(apiKey)
+    val tags = List("H. sapiens") //!!
 
-      val tempList = conn.addList(affyProbes, ls, list.items(),
-          None, false, tags)
+    val tempList = conn.addList(affyProbes, ls, list.items(),
+      None, false, tags)
 
-      val listName = tempList.getName
-      println(s"Created temporary list $listName")
+    tempList match {
+      case Some(tl) =>
+        val listName = tl.getName
+        println(s"Created temporary list $listName")
 
-      val request = conn.enrichmentRequest(ls)
-      request.setAuthToken(apiKey)
-//      request.addParameter("token", apiKey)
-      request.addParameter("list", listName)
-      request.addParameter("widget", params.widget.getKey)
-      request.addParameter("maxp", params.cutoff.toString())
-      request.addParameter("correction", params.correction.getKey())
-      request.addParameter("filter", params.filter)
+        val request = conn.enrichmentRequest(ls)
+        request.setAuthToken(apiKey)
+        //      request.addParameter("token", apiKey)
+        request.addParameter("list", listName)
+        request.addParameter("widget", params.widget.getKey)
+        request.addParameter("maxp", params.cutoff.toString())
+        request.addParameter("correction", params.correction.getKey())
+        request.addParameter("filter", params.filter)
 
-      val con = ls.executeRequest(request)
-      println("Response code: " + con.getResponseCode)
-      val res = new TabTableResult(con)
-      ls.deleteList(tempList)
-      val headers = Array("ID", "Description", "p-value", "Matches")
-      headers +: res.getIterator.toArray.map(adjustEnrichResult(_).toArray)
+        val con = ls.executeRequest(request)
+        println("Response code: " + con.getResponseCode)
+        val res = new TabTableResult(con)
+        ls.deleteList(tl)
+        val headers = Array("ID", "Description", "p-value", "Matches")
+        headers +: res.getIterator.toArray.map(adjustEnrichResult(_).toArray)
+
+      case None => throw new IntermineException("Unable to create temporary list for enrichment")
+    }
+
   }
 }
