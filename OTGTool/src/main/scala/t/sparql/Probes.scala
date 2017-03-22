@@ -66,10 +66,10 @@ object Probes extends RDFClass {
     f
   }
 
-  var _platformsAndProbes: Map[String, Iterable[String]] = null
+  var _platformsAndProbes: Map[String, Iterable[Probe]] = null
 
   //This lookup takes time, so we keep it here as a static resource
-  def platformsAndProbes(p: Probes): Map[String, Iterable[String]] = synchronized {
+  def platformsAndProbes(p: Probes): Map[String, Iterable[Probe]] = synchronized {
     if (_platformsAndProbes == null) {
       _platformsAndProbes = p.platformsAndProbesLookup
     }
@@ -128,21 +128,33 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
             |}""".stripMargin)
   }
 
-  def platformsAndProbes: Map[String, Iterable[String]] =
+  def platformsAndProbes: Map[String, Iterable[Probe]] =
     Probes.platformsAndProbes(this)
 
   /**
    * Read all platforms. Slow.
    */
-  private def platformsAndProbesLookup: Map[String, Iterable[String]] = {
+  private def platformsAndProbesLookup: Map[String, Iterable[Probe]] = {
     val query = tPrefixes +
-    """|SELECT DISTINCT ?gl ?pl WHERE {
+    """|SELECT DISTINCT ?gl ?pl ?ent WHERE {
        |  GRAPH ?g {
        |    ?p a t:probe; rdfs:label ?pl.
+       |    OPTIONAL {
+       |      ?p t:entrez ?ent.
+       |    }
        |   } . ?g rdfs:label ?gl .
        |}""".stripMargin
-    val r = ts.mapQuery(query, 30000).map(x => (x("gl"), x("pl"))).groupBy(_._1)
-    Map() ++ r.map(x => x._1 -> x._2.map(_._2))
+       
+    val r = ts.mapQuery(query, 30000).map(x => (x("gl"), x("pl"), x.get("ent")))
+    
+    //Note that probes might have multiple entrez records
+    val all = for ((pf, probes) <- r.groupBy(_._1).toSeq;
+      (probeId, probes) <- probes.groupBy(_._2);
+      entrez = Seq() ++ probes.map(_._3).flatten.map(Gene(_));
+      pr = Probe(probeId, genes = entrez, platform = pf))
+      yield (pf, pr)
+
+    Map() ++ all.groupBy(_._1).mapValues(_.map(_._2))
   }
 
   def numProbes(): Map[String, Int] = {

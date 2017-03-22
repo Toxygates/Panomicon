@@ -66,7 +66,7 @@ class IntermineServiceImpl extends OTGServiceServlet with IntermineService {
   // TODO: pass in a preferred species, get status info back
   def importLists(inst: IntermineInstance, user: String, pass: String,
     asProbes: Boolean): Array[t.common.shared.StringList] = {
-    val conn = mines.connector(inst)
+    val conn = mines.connector(inst, platforms)
     try {
       val ls = conn.getListService(Some(user), Some(pass))
       val imLists = ls.getAccessibleLists()      
@@ -102,7 +102,7 @@ class IntermineServiceImpl extends OTGServiceServlet with IntermineService {
 
   def exportLists(inst: IntermineInstance, user: String, pass: String,
       lists: Array[StringList], replace: Boolean): Unit = {
-    val conn = mines.connector(inst)
+    val conn = mines.connector(inst, platforms)
     try {
       val ls = conn.getListService(Some(user), Some(pass))
       conn.addLists(affyProbes, ls, lists.toList, replace)
@@ -126,7 +126,7 @@ class IntermineServiceImpl extends OTGServiceServlet with IntermineService {
 
   def enrichment(inst: IntermineInstance, list: StringList,
                  params: EnrichmentParams): Array[Array[String]] = {
-    val conn = mines.connector(inst)
+    val conn = mines.connector(inst, platforms)
     val ls = conn.getListService(None, None)
     ls.setAuthentication(apiKey)
     val tags = List("H. sapiens") //!!

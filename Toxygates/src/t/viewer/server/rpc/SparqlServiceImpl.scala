@@ -75,7 +75,7 @@ object SparqlServiceImpl {
   var inited = false
 
   //TODO update mechanism for this
-  var platforms: Map[String, Iterable[String]] = _
+  var platforms: Map[String, Iterable[Probe]] = _
 
   def staticInit(c: t.Context) = synchronized {
     if (!inited) {
@@ -355,7 +355,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val usePlatforms = samples.map(s => metadata.parameter(
         t.db.Sample(s.id), "platform_id")
         ).distinct
-    usePlatforms.toVector.flatMap(x => platforms(x)).toArray
+    usePlatforms.toVector.flatMap(x => platforms(x)).map(_.identifier).toArray
   }
 
   //TODO move to OTG
@@ -524,7 +524,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   private def filterProbesByGroupInner(probes: Iterable[String], group: Iterable[Sample]) = {
     val platforms: Set[String] = group.map(x => x.get("platform_id")).toSet
     val lookup = probeStore.platformsAndProbes
-    val acceptable = platforms.flatMap(p => lookup(p))
+    val acceptable = platforms.flatMap(p => lookup(p)).map(_.identifier)
     probes.filter(acceptable.contains)
   }
 

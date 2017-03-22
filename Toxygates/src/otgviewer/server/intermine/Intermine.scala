@@ -27,7 +27,6 @@ import org.intermine.webservice.client.core.ServiceFactory
 import org.intermine.webservice.client.lists.ItemList
 import org.intermine.webservice.client.services.ListService
 import t.sparql.secondary._
-import t.sparql._
 import otg.sparql._
 import otg.sparql.Probes
 import otgviewer.shared.intermine._
@@ -35,8 +34,10 @@ import t.common.shared.StringList
 import otgviewer.server.rpc.Conversions
 import t.platform.Probe
 import scala.Vector
+import t.viewer.server.Platforms
 
-class IntermineConnector(instance: IntermineInstance) {
+class IntermineConnector(instance: IntermineInstance,
+    platforms: Platforms) {
   import Conversions._
 
   def title = instance.title()
@@ -75,9 +76,10 @@ class IntermineConnector(instance: IntermineInstance) {
       items :+= Gene(it.getString("Gene.primaryIdentifier"))
     }
     //we will have obtained the genes as ENTREZ identifiers
-    println(items)
-    val probes = ap.forGenes(items).map(_.identifier).toSeq
-    println(probes)
+    println(s"${items take 100} ...")
+    val probes = items.flatMap(g => platforms.geneLookup.get(g)).
+      flatten.map(_.identifier)
+    
     val filtered = if (!probes.isEmpty) {
       filterProbes(probes) 
     } else {
@@ -85,7 +87,7 @@ class IntermineConnector(instance: IntermineInstance) {
       println(s"The original size was ${l.getSize}")
       Seq()
     }
-    println(filtered)
+    println(s"${filtered take 100} ...")
 
     Some(new StringList(StringList.PROBES_LIST_TYPE, 
         l.getName(), filtered.toArray))
@@ -114,11 +116,14 @@ class IntermineConnector(instance: IntermineInstance) {
       ls.deleteList(serverList.get)
     }
     
-    //the Set: prefix gets appended by the GUI
+    //the Set: prefix gets appended by the front-end
     if (serverList == None && name != None) {
       val altName = name.get.split("Set:")
       if (altName.size > 1) {
-        serverList = Option(ls.getList(altName(1)))        
+        serverList = Option(ls.getList(altName(1)))
+        if (serverList != None) {
+          println(s"Assume list ${name.get} corresponds to ${altName(1)} on server")
+        }
       }
     }
     
@@ -129,11 +134,12 @@ class IntermineConnector(instance: IntermineInstance) {
 
     if (serverList == None || replace) {
       val ci = new ls.ListCreationInfo("Gene", name.getOrElse(""))
-      val probes = input.map(Probe(_)).toSeq
+      
       //TODO we have the option of doing a fuzzy (e.g. symbol-based) export here
-      val genes = probeStore.withAttributes(probes).flatMap(_.genes.map(_.identifier))
+      val genes = platforms.resolve(input.toSeq).flatMap(_.genes.map(_.identifier))
       ci.setContent(seqAsJavaList(genes.toList))
       ci.addTags(seqAsJavaList(tags))
+      println(s"Exporting list ${name.get}")
       Some(ls.createList(ci))
     } else {
       //Could report this message to the user somehow
@@ -146,7 +152,7 @@ class IntermineConnector(instance: IntermineInstance) {
 }
 
 class Intermines(instances: Iterable[IntermineInstance]) {
-  def connector(inst: IntermineInstance) = {
+  def connector(inst: IntermineInstance, platforms: Platforms) = {
     //Simple security/sanity check - refuse to connect to a URL that
     //we didn't know about from before. This is because instance objects
     //may be passed from the client side.
@@ -154,7 +160,7 @@ class Intermines(instances: Iterable[IntermineInstance]) {
     if(!allURLs.contains(inst.serviceURL())) {
       throw new Exception("Invalid instance")
     }
-    new IntermineConnector(inst)
+    new IntermineConnector(inst, platforms)
   }
 
   lazy val allURLs = instances.map(_.serviceURL()).toSet
