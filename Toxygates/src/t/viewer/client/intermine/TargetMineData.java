@@ -31,14 +31,14 @@ import javax.annotation.Nullable;
 import otgviewer.client.StringListsStoreHelper;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import otgviewer.client.dialog.TargetMineEnrichDialog;
-import otgviewer.client.dialog.TargetMineSyncDialog;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.ClusteringList;
 import t.common.shared.ItemList;
 import t.common.shared.SharedUtils;
 import t.common.shared.StringList;
 import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.dialog.InterMineEnrichDialog;
+import t.viewer.client.dialog.InterMineSyncDialog;
 import t.viewer.client.dialog.InteractionDialog;
 import t.viewer.shared.intermine.EnrichmentParams;
 import t.viewer.shared.intermine.IntermineInstance;
@@ -71,7 +71,7 @@ public class TargetMineData {
    * @param asProbes
    */
   public void importLists(final boolean asProbes) {
-    InteractionDialog ui = new TargetMineSyncDialog(parent, "Import", true, true, preferredInstance) {
+    InteractionDialog ui = new InterMineSyncDialog(parent, "Import", true, true, preferredInstance) {
       @Override
       protected void userProceed(IntermineInstance instance, String user, String pass, boolean replace) {
         super.userProceed();
@@ -109,7 +109,7 @@ public class TargetMineData {
    * @param asProbes
    */
   public void exportLists() {
-    InteractionDialog ui = new TargetMineSyncDialog(parent, "Export", true, true, preferredInstance) {
+    InteractionDialog ui = new InterMineSyncDialog(parent, "Export", true, true, preferredInstance) {
       @Override
       protected void userProceed(IntermineInstance instance, String user, String pass, boolean replace) {
         super.userProceed();
@@ -135,7 +135,7 @@ public class TargetMineData {
   }
 
   public void enrich(final StringList probes) {
-    InteractionDialog ui = new TargetMineEnrichDialog(parent, "Enrich", preferredInstance) {
+    InteractionDialog ui = new InterMineEnrichDialog(parent, "Enrich", preferredInstance) {
       @Override
       protected void userProceed(IntermineInstance instance, String user, String pass, boolean replace) {
         super.userProceed();
@@ -160,7 +160,7 @@ public class TargetMineData {
   }
   
   public void multiEnrich(final StringList[] lists) {
-    InteractionDialog ui = new TargetMineEnrichDialog(parent, "Cluster enrichment", preferredInstance) {
+    InteractionDialog ui = new InterMineEnrichDialog(parent, "Cluster enrichment", preferredInstance) {
       @Override
       protected void userProceed(IntermineInstance instance, String user, String pass, boolean replace) {
         super.userProceed();
