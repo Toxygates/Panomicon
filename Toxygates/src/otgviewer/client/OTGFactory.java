@@ -35,11 +35,11 @@ import otgviewer.client.components.groupdef.TreatedControlGroupInspector;
 import otgviewer.client.components.groupdef.TreatedControlSelTDGrid;
 import otgviewer.client.components.ranking.CompoundRanker;
 import otgviewer.client.components.ranking.SimpleCompoundRanker;
-import otgviewer.client.intermine.TargetMineData;
-import otgviewer.shared.intermine.IntermineInstance;
 import t.common.shared.DataSchema;
 import t.common.shared.StringList;
 import t.common.shared.sample.Group;
+import t.viewer.client.intermine.TargetMineData;
+import t.viewer.shared.intermine.IntermineInstance;
 
 
 /**

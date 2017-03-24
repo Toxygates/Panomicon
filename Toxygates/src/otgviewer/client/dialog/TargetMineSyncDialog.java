@@ -23,10 +23,10 @@ import javax.annotation.Nullable;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.InputGrid;
 import otgviewer.client.components.Screen;
-import otgviewer.client.intermine.InstanceSelector;
-import otgviewer.shared.intermine.IntermineInstance;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.InteractionDialog;
+import t.viewer.client.intermine.InstanceSelector;
+import t.viewer.shared.intermine.IntermineInstance;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;

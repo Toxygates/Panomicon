@@ -29,7 +29,9 @@ import t.db.MatrixContext
 import t.Factory
 import t.Context
 import t.sparql.Instances
-import otgviewer.shared.intermine.IntermineInstance
+import t.viewer.shared.intermine.IntermineInstance
+
+//TODO fix up package dependencies here, break t -> otg dependency
 
 object Configuration {
   /**

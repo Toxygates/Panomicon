@@ -23,11 +23,11 @@ package otgviewer.client.dialog;
 import javax.annotation.Nullable;
 
 import otgviewer.client.components.Screen;
-import otgviewer.shared.intermine.Correction;
-import otgviewer.shared.intermine.EnrichmentParams;
-import otgviewer.shared.intermine.EnrichmentWidget;
-import otgviewer.shared.intermine.IntermineInstance;
 import t.common.client.components.ItemSelector;
+import t.viewer.shared.intermine.Correction;
+import t.viewer.shared.intermine.EnrichmentParams;
+import t.viewer.shared.intermine.EnrichmentWidget;
+import t.viewer.shared.intermine.IntermineInstance;
 
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.Label;

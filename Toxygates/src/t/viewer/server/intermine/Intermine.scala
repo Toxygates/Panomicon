@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.server.intermine
+package t.viewer.server.intermine
 
 import scala.collection.JavaConversions._
 
@@ -27,18 +27,16 @@ import org.intermine.webservice.client.core.ServiceFactory
 import org.intermine.webservice.client.lists.ItemList
 import org.intermine.webservice.client.services.ListService
 import t.sparql.secondary._
-import otg.sparql._
-import otg.sparql.Probes
-import otgviewer.shared.intermine._
+import t.sparql._
+import t.sparql.Probes
+import t.viewer.shared.intermine._
 import t.common.shared.StringList
-import otgviewer.server.rpc.Conversions
 import t.platform.Probe
 import scala.Vector
 import t.viewer.server.Platforms
 
 class IntermineConnector(instance: IntermineInstance,
     platforms: Platforms) {
-  import Conversions._
 
   def title = instance.title()
   def appName = instance.appName()

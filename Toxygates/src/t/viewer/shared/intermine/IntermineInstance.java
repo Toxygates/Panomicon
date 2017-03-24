@@ -1,4 +1,4 @@
-package otgviewer.shared.intermine;
+package t.viewer.shared.intermine;
 
 import java.io.Serializable;
 

@@ -18,8 +18,27 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.shared.intermine;
+package t.viewer.shared.intermine;
 
-public class Filter {
+import java.io.Serializable;
 
+@SuppressWarnings("serial")
+public class EnrichmentParams implements Serializable {
+
+  public EnrichmentWidget widget;
+  public String filter; //parameter for the widget
+  public double cutoff;
+  public Correction correction;
+  
+  //GWT constructor
+  public EnrichmentParams() {}
+  
+  public EnrichmentParams(EnrichmentWidget widget, String filter,
+      double cutoff, Correction correction) {
+    this.widget = widget;
+    this.filter = filter;
+    this.cutoff = cutoff;
+    this.correction = correction;
+  }
+  
 }

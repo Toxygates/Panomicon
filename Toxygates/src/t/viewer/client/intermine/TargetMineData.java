@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.intermine;
+package t.viewer.client.intermine;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,8 +33,6 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.dialog.TargetMineEnrichDialog;
 import otgviewer.client.dialog.TargetMineSyncDialog;
-import otgviewer.shared.intermine.EnrichmentParams;
-import otgviewer.shared.intermine.IntermineInstance;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.ClusteringList;
 import t.common.shared.ItemList;
@@ -42,6 +40,8 @@ import t.common.shared.SharedUtils;
 import t.common.shared.StringList;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InteractionDialog;
+import t.viewer.shared.intermine.EnrichmentParams;
+import t.viewer.shared.intermine.IntermineInstance;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;

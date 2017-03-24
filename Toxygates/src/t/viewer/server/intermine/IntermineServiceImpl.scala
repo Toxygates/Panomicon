@@ -18,29 +18,28 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.server.intermine
+package t.viewer.server.intermine
 
 import scala.collection.JavaConversions._
 import com.google.gwt.user.server.rpc.RemoteServiceServlet
 import t.common.shared.StringList
-import otgviewer.client.intermine.IntermineService
-import otg.sparql.Probes
+import t.viewer.client.intermine.IntermineService
+import t.sparql.Probes
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 import t.viewer.server.Configuration
-import otg.OTGBConfig
+import t.BaseConfig
 import t.DataConfig
 import t.TriplestoreConfig
-import t.BaseConfig
 import t.viewer.server.Platforms
-import otgviewer.server.rpc.OTGServiceServlet
+import t.viewer.server.rpc.TServiceServlet
 import org.intermine.webservice.client.services.ListService
 import java.util.Arrays
 
 import org.intermine.webservice.client.results.TabTableResult
-import otgviewer.shared.intermine._
+import t.viewer.shared.intermine._
 
-class IntermineServiceImpl extends OTGServiceServlet with IntermineService {
+abstract class IntermineServiceImpl extends TServiceServlet with IntermineService {
   var affyProbes: Probes = _
   var platforms: Platforms = _
   var apiKey: String = _
@@ -55,9 +54,6 @@ class IntermineServiceImpl extends OTGServiceServlet with IntermineService {
     mines = new Intermines(config.intermineInstances)
   }
 
-  def baseConfig(ts: TriplestoreConfig, data: DataConfig): BaseConfig =
-    OTGBConfig(ts, data)
-
   override def destroy() {
     affyProbes.close()
     super.destroy()
@@ -69,14 +65,14 @@ class IntermineServiceImpl extends OTGServiceServlet with IntermineService {
     val conn = mines.connector(inst, platforms)
     try {
       val ls = conn.getListService(Some(user), Some(pass))
-      val imLists = ls.getAccessibleLists()      
-      
-      println("Accessible lists: ")      
-      
+      val imLists = ls.getAccessibleLists()
+
+      println("Accessible lists: ")
+
       for (iml <- imLists) {
         println(s"${iml.getName} ${iml.getType} ${iml.getSize}")
       }
-      
+
       val tglists = for (iml <- imLists;
         if iml.getType == "Gene";
         tglist = conn.asTGList(iml, affyProbes, platforms.filterProbesAllPlatforms)
@@ -92,7 +88,7 @@ class IntermineServiceImpl extends OTGServiceServlet with IntermineService {
         }
       }
       tglists.flatten.toArray
-          
+
     } catch {
       case e: Exception =>
         e.printStackTrace()

@@ -16,11 +16,11 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.intermine;
+package t.viewer.client.intermine;
 
-import otgviewer.shared.intermine.EnrichmentParams;
-import otgviewer.shared.intermine.IntermineInstance;
 import t.common.shared.StringList;
+import t.viewer.shared.intermine.EnrichmentParams;
+import t.viewer.shared.intermine.IntermineInstance;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 

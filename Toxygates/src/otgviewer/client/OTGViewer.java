@@ -18,11 +18,11 @@
 
 package otgviewer.client;
 
-import otgviewer.client.intermine.TargetMineData;
 import otgviewer.shared.OTGSchema;
-import otgviewer.shared.intermine.IntermineInstance;
 import t.common.shared.DataSchema;
 import t.viewer.client.Utils;
+import t.viewer.client.intermine.TargetMineData;
+import t.viewer.shared.intermine.IntermineInstance;
 
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;

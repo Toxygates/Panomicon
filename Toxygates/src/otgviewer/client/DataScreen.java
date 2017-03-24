@@ -28,13 +28,13 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.components.TickMenuItem;
-import otgviewer.shared.intermine.IntermineInstance;
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.RichTable.HideableColumn;
+import t.viewer.shared.intermine.IntermineInstance;
 
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;

@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.shared.intermine;
+package t.viewer.shared.intermine;
 
 public enum EnrichmentWidget {
   GenePathway("gene_pathway_enrichment", "Pathway",

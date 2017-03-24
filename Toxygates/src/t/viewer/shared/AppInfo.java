@@ -23,12 +23,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import otgviewer.shared.intermine.IntermineInstance;
 import t.common.shared.Dataset;
 import t.common.shared.Platform;
 import t.common.shared.StringList;
 import t.common.shared.clustering.ProbeClustering;
 import t.common.shared.sample.Group;
+import t.viewer.shared.intermine.IntermineInstance;
 
 /**
  * Container for various client side application parameters.

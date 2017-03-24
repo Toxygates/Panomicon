@@ -182,7 +182,7 @@
 
   	<servlet>
 		<servlet-name>intermineServlet</servlet-name>
-		<servlet-class>otgviewer.server.intermine.IntermineServiceImpl</servlet-class>
+		<servlet-class>otgviewer.server.IntermineServiceImpl</servlet-class>
 	</servlet>
 	
    	<servlet-mapping>

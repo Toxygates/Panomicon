@@ -1,4 +1,4 @@
-package otgviewer.shared.intermine;
+package t.viewer.shared.intermine;
 
 @SuppressWarnings("serial")
 public class IntermineException extends Exception {
