@@ -82,7 +82,7 @@ class Platforms(val data: Map[String, Set[Probe]]) {
     if (probes.size == 0) {
       data(platform).toSeq.map(_.identifier)
     } else {
-      println(s"Filter ${probes}")
+      println(s"Filter ${probes take 100} ...")
       val r = probes.filter(p => identifierMaps(platform).contains(p))
       println(s"Result ${r take 100} ...")
       r
