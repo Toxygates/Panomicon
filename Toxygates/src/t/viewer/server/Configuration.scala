@@ -45,7 +45,6 @@ object Configuration {
     def readIntermineInstance(id: String) =
       new IntermineInstance(p(s"intermine.$id.title"),
           p(s"intermine.$id.appname"),
-          p(s"intermine.$id.apikey"),
           p(s"intermine.$id.userurl"))
 
     def readIntermineInstances() = {

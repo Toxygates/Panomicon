@@ -24,7 +24,6 @@ import javax.annotation.Nullable;
 
 import otgviewer.client.components.Screen;
 import t.common.client.components.ItemSelector;
-import t.viewer.client.intermine.InstanceSelector;
 import t.viewer.shared.intermine.Correction;
 import t.viewer.shared.intermine.EnrichmentParams;
 import t.viewer.shared.intermine.EnrichmentWidget;

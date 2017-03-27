@@ -68,10 +68,6 @@
 	</context-param>
 	
 	<context-param>
-		<param-name>intermine.target.apikey</param-name>
-		<param-value>xyz</param-value>
-	</context-param>
-	<context-param>
 		<param-name>intermine.target.appname</param-name>
 		<param-value>targetmine</param-value>
 	</context-param>
@@ -84,10 +80,6 @@
 		<param-value>http://targetmine.mizuguchilab.org</param-value>
 	</context-param>
 	
-	<context-param>
-		<param-name>intermine.human.apikey</param-name>
-		<param-value>xyz</param-value>
-	</context-param>
 	<context-param>
 		<param-name>intermine.human.appname</param-name>
 		<param-value>humanmine</param-value>
@@ -102,10 +94,6 @@
 	</context-param>
 	
 	<context-param>
-		<param-name>intermine.rat.apikey</param-name>
-		<param-value>xyz</param-value>
-	</context-param>
-	<context-param>
 		<param-name>intermine.rat.appname</param-name>
 		<param-value>ratmine</param-value>
 	</context-param>
@@ -119,10 +107,6 @@
 	</context-param>
 	
 	<context-param>
-		<param-name>intermine.mouse.apikey</param-name>
-		<param-value>xyz</param-value>
-	</context-param>
-	<context-param>
 		<param-name>intermine.mouse.appname</param-name>
 		<param-value>mousemine</param-value>
 	</context-param>
@@ -135,7 +119,6 @@
 		<param-value>http://www.mousemine.org</param-value>
 	</context-param>		
 
-		
 
 	<!-- Servlets -->
 

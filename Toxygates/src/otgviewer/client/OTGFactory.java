@@ -38,7 +38,7 @@ import otgviewer.client.components.ranking.SimpleCompoundRanker;
 import t.common.shared.DataSchema;
 import t.common.shared.StringList;
 import t.common.shared.sample.Group;
-import t.viewer.client.intermine.TargetMineData;
+import t.viewer.client.intermine.InterMineData;
 import t.viewer.shared.intermine.IntermineInstance;
 
 
@@ -85,14 +85,14 @@ public class OTGFactory implements UIFactory {
   @Override
   public void enrichment(Screen screen, StringList probes, 
       @Nullable IntermineInstance preferredInst) {
-    TargetMineData tm = new TargetMineData(screen, preferredInst);
+    InterMineData tm = new InterMineData(screen, preferredInst);
     tm.enrich(probes);
   }
 
   @Override
   public void multiEnrichment(Screen screen, StringList[] lists, 
       @Nullable IntermineInstance preferredInst) {
-    TargetMineData tm = new TargetMineData(screen, preferredInst);
+    InterMineData tm = new InterMineData(screen, preferredInst);
     tm.multiEnrich(lists);    
   }
   

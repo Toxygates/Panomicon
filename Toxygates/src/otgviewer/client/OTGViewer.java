@@ -21,7 +21,7 @@ package otgviewer.client;
 import otgviewer.shared.OTGSchema;
 import t.common.shared.DataSchema;
 import t.viewer.client.Utils;
-import t.viewer.client.intermine.TargetMineData;
+import t.viewer.client.intermine.InterMineData;
 import t.viewer.shared.intermine.IntermineInstance;
 
 import com.google.gwt.user.client.Command;
@@ -87,13 +87,13 @@ public class OTGViewer extends TApplication {
 
     mb.addItem(new MenuItem("Import gene sets from " + title + "...", new Command() {
       public void execute() {
-        new TargetMineData(currentScreen, inst).importLists(true);
+        new InterMineData(currentScreen, inst).importLists(true);
       }
     }));
 
     mb.addItem(new MenuItem("Export gene sets to " + title + "...", new Command() {
       public void execute() {
-        new TargetMineData(currentScreen, inst).exportLists();
+        new InterMineData(currentScreen, inst).exportLists();
       }
     }));
 
