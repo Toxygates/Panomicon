@@ -36,8 +36,10 @@ object Platforms {
  * A probe and platform registry. Caches data to avoid heavy sparql queries.
  */
 class Platforms(val data: Map[String, Set[Probe]]) {
-  lazy val identifierMaps = data.mapValues(_.map(_.identifier))
+  //map platform to probe sets
+  lazy val platformSets = data.mapValues(_.map(_.identifier))
   
+  //map ID to probe
   lazy val identifierLookup =
     Map() ++ data.toSeq.flatMap(_._2.toSeq).map(x => x.identifier -> x)
   
@@ -73,7 +75,7 @@ class Platforms(val data: Map[String, Set[Probe]]) {
     probes.filter(identifierLookup.keySet.contains)    
 
   def platformForProbe(p: String): Option[String] =
-    identifierMaps.find(_._2.contains(p)).map(_._1)
+    platformSets.find(_._2.contains(p)).map(_._1)
 
   /**
    * Filter probes for one platform.
@@ -82,9 +84,9 @@ class Platforms(val data: Map[String, Set[Probe]]) {
     if (probes.size == 0) {
       data(platform).toSeq.map(_.identifier)
     } else {
-      println(s"Filter ${probes take 100} ...")
-      val r = probes.filter(p => identifierMaps(platform).contains(p))
-      println(s"Result ${r take 100} ...")
+      println(s"Filter (${probes.size}) (${probes.distinct.size}) ${probes take 20} ...")
+      val r = probes.filter(p => platformSets(platform).contains(p))
+      println(s"Result (${probes.size}) (${probes.distinct.size}) ${r take 20} ...")
       r
     }
   }

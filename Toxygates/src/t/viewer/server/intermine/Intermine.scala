@@ -90,7 +90,7 @@ class IntermineConnector(instance: IntermineInstance,
     //we will have obtained the genes as ENTREZ identifiers
     println(s"${items take 100} ...")
     val probes = items.flatMap(g => platforms.geneLookup.get(g)).
-      flatten.map(_.identifier)
+      flatten.map(_.identifier).distinct
     
     val filtered = if (!probes.isEmpty) {
       filterProbes(probes) 
