@@ -71,4 +71,3 @@ cp mlib/gwt-user.jar $DEST/lib
 cp mlib/scala-library.jar $DEST/lib
 zip -r $DEST.zip $DEST
 
-echo Did you remember to set the TargetMine API key in web.xml.template?
