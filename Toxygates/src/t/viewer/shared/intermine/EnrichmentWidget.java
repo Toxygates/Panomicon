@@ -37,12 +37,10 @@ public enum EnrichmentWidget {
   GeneGO2("go_enrichment_for_gene", "GO term",
       new String[] {"biological_process", "cellular_component", "molecular_function"}),
       
-  //From the flymine beta documentation
-  MiRNA("miranda_enrichment", "MiRNA (Miranda)"),
   GenePathwayMouse("pathway_enrichment_for_gene", "Pathway (Reactome)"),
   
   //From the flymine beta documentation
-  GenePathwayHuman("pathway_enrichment_for_gene", "Pathway",
+  GenePathwayHuman("pathway_enrichment", "Pathway",
       new String[] {"All", "KEGG pathways data set", "Reactome data set"});
   
   
@@ -93,7 +91,7 @@ public enum EnrichmentWidget {
       };
     } else if (title.equals("HumanMine")) {
       return new EnrichmentWidget[] {
-          Publication, ProteinDomain, GeneGO2, MiRNA, GenePathwayHuman
+          Publication, ProteinDomain, GeneGO2, GenePathwayHuman
       };
     } else {
       return new EnrichmentWidget[] {};

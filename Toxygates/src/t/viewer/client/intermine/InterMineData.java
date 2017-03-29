@@ -96,9 +96,11 @@ public class InterMineData {
         List<ClusteringList> clustering = ClusteringList.pickUserClusteringLists(rebuild, null);
 
         // TODO revise pop-up message handling for this process
-        parent.itemListsChanged(mergeLists(parent.chosenItemLists, normal, replace));
+        parent.itemListsChanged(mergeLists(parent.chosenItemLists, normal, replace,
+          "lists"));
         parent.storeItemLists(parent.getParser());
-        parent.clusteringListsChanged(mergeLists(parent.chosenClusteringList, clustering, replace));
+        parent.clusteringListsChanged(mergeLists(parent.chosenClusteringList, clustering, 
+          replace, "clusters"));
         parent.storeClusteringLists(parent.getParser());
       }
     });
@@ -250,7 +252,7 @@ public class InterMineData {
   }
 
   List<ItemList> mergeLists(List<? extends ItemList> into, List<? extends ItemList> from,
-      boolean replace) {
+      boolean replace, String kind) {
     Map<String, ItemList> allLists = new HashMap<String, ItemList>();
     int addedLists = 0;
     int addedItems = 0;
@@ -273,11 +275,13 @@ public class InterMineData {
       }
     }
 
-    String msg = addedLists + " lists with " + addedItems + " items were successfully imported.";
+    String msg = addedLists + " " + kind + " with " + addedItems + 
+        " items were successfully imported.";
 
 
     if (nonImported > 0) {
-      msg = msg + "\n" + nonImported + " lists with identical names were not imported.";
+      msg = msg + "\n" + nonImported + " " + kind + 
+          " with identical names were not imported.";
     }
 
     Window.alert(msg);

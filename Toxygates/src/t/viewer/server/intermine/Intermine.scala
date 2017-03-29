@@ -87,11 +87,18 @@ class IntermineConnector(instance: IntermineInstance,
       val it = l.get(i)
       items :+= Gene(it.getString("Gene.primaryIdentifier"))
     }
+  
     //we will have obtained the genes as ENTREZ identifiers
     println(s"${items take 100} ...")
-    val probes = items.flatMap(g => platforms.geneLookup.get(g)).
+    var probes = items.flatMap(g => platforms.geneLookup.get(g)).
       flatten.map(_.identifier).distinct
-    
+  
+    //TODO handle large lists 
+    if (probes.size > 1000) {
+      println(s"Warning: truncating list ${l.getName} from ${probes.size} to 1000 items")
+      probes = (probes take 1000)
+    }
+      
     val filtered = if (!probes.isEmpty) {
       filterProbes(probes) 
     } else {

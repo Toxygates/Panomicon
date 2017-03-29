@@ -118,6 +118,7 @@ public class InterMineEnrichDialog extends InterMineSyncDialog {
     widgetSel = widgetSelector(widgets);
     if (widgets.length > 0) {
       widgetSel.setSelected(widgets[0]);
+      setFilterItems(widgets[0].filterValues());
     }
     widgetSelHolder.clear();
     widgetSelHolder.add(widgetSel);
