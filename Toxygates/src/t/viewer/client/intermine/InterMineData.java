@@ -82,13 +82,13 @@ public class InterMineData {
           }
 
         };
-    ui.display("TargetMine import details", DialogPosition.Center);
+    ui.display("InterMine import details", DialogPosition.Center);
   }
 
   private void doImport(final IntermineInstance instance, final String user, final String pass,
       final boolean asProbes, final boolean replace) {
     tmService.importLists(instance, user, pass, asProbes, new PendingAsyncCallback<StringList[]>(
-        parent, "Unable to import lists from TargetMine") {
+        parent, "Unable to import lists from " + instance.title()) {
       public void handleSuccess(StringList[] data) {
         Collection<ItemList> rebuild =
             StringListsStoreHelper.rebuildLists(parent, Arrays.asList(data));
@@ -122,7 +122,7 @@ public class InterMineData {
           }
 
         };
-    ui.display("TargetMine export details", DialogPosition.Center);
+    ui.display("InterMine export details", DialogPosition.Center);
   }
 
   // Could factor out code that is shared with doImport, but the two dialogs may diverge
@@ -130,7 +130,7 @@ public class InterMineData {
   private void doExport(final IntermineInstance instance, final String user, final String pass,
       final List<StringList> lists, final boolean replace) {
     tmService.exportLists(instance, user, pass, lists.toArray(new StringList[0]), replace,
-        new PendingAsyncCallback<Void>(parent, "Unable to export lists to TargetMine") {
+        new PendingAsyncCallback<Void>(parent, "Unable to export lists to " + instance.title()) {
           public void handleSuccess(Void v) {
             Window.alert("The lists were successfully exported.");
           }
