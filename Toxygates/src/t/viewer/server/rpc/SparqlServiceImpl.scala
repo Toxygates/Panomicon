@@ -103,6 +103,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   protected var uniprot: Uniprot = _
   protected var configuration: Configuration = _
 
+  lazy val platformsCache = t.viewer.server.Platforms(probeStore)
+
   lazy val annotations = new Annotations(sampleStore, schema, baseConfig)
 
   override def localInit(conf: Configuration) {
@@ -419,11 +421,29 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   def identifiersToProbes(identifiers: Array[String], precise: Boolean,
       quick: Boolean, titlePatternMatch: Boolean,
       samples: JList[Sample]): Array[String] = {
+
+    def geneLookup(gene: String): Option[Iterable[Probe]] =
+      platformsCache.geneLookup.get(Gene(gene))
+
     val ps = if (titlePatternMatch) {
       probeStore.forTitlePatterns(identifiers)
     } else {
-      probeStore.identifiersToProbes(context.matrix.probeMap,
-        identifiers, precise, quick)
+      //Try to do a gene identifier based lookup first
+
+      var geneMatch = Set[String]()
+      var matchingGenes = Seq[Probe]()
+      for (
+        i <- identifiers; ps <- geneLookup(i)
+      ) {
+        geneMatch += i
+        matchingGenes ++= ps
+      }
+
+      val nonGeneMatch = (identifiers.toSet -- geneMatch).toArray
+
+      //Resolve remaining identifiers
+      matchingGenes ++ probeStore.identifiersToProbes(context.matrix.probeMap,
+        nonGeneMatch, precise, quick)
     }
     val result = ps.map(_.identifier).toArray
 
