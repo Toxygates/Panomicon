@@ -200,7 +200,7 @@ public class DataScreen extends Screen {
   }
   
   protected void makeHeatMap() {
-    HeatmapDialog.show(DataScreen.this, et.getValueType());
+    HeatmapViewer.show(DataScreen.this, et.getValueType());
   }
 
   @Override

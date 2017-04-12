@@ -27,12 +27,12 @@ import org.apache.commons.lang.StringUtils
 import javax.annotation.Nullable
 import t.Context
 import t.common.server.ScalaUtils
-import t.common.server.userclustering.RClustering
+import t.clustering.server.RClustering
 import t.common.shared.ValueType
 import t.common.shared.sample.ExpressionRow
 import t.common.shared.sample.Group
 import t.common.shared.sample.Sample
-import t.common.shared.userclustering.Algorithm
+import t.clustering.shared.Algorithm
 import t.db.MatrixContext
 import t.platform.OrthologMapping
 import t.platform.Probe
@@ -50,6 +50,7 @@ import t.viewer.shared.Synthetic
 import t.viewer.shared.table.SortKey
 import t.viewer.shared.NoDataLoadedException
 import t.viewer.shared.FullMatrix
+import t.clustering.client.ClusteringService
 
 object MatrixServiceImpl {
 
@@ -303,13 +304,14 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     Feedback.send(name, email, feedback, state, config.feedbackReceivers,
       config.feedbackFromAddress, context.config.appName)
   }
-
-  private def joinedAbbreviated(items: Iterable[String], n: Int): String = {
-    StringUtils.abbreviate(items.toSeq.distinct.mkString("/"), 30)
-  }
+  
+  @throws(classOf[NoDataLoadedException])
+  def prepareHeatmap(groups: JList[Group], chosenProbes: JList[String],
+    algorithm: Algorithm): String = 
+    prepareHeatmap(groups, chosenProbes, ValueType.Folds, algorithm)  
 
   @throws(classOf[NoDataLoadedException])
-  def prepareHeatmap(groups: JList[Group], chosenProbes: Array[String],
+  def prepareHeatmap(groups: JList[Group], chosenProbes: JList[String],
     valueType: ValueType, algorithm: Algorithm): String = {
 
     //Reload data in a temporary controller if groups do not correspond to
@@ -321,37 +323,14 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       getSessionData.controller
     }
 
-    val mm = cont.managedMatrix
-    var mat = mm.current
-    if (chosenProbes != null && chosenProbes.length > 0) {
-      mat = mat.selectRowsFromAtomics(chosenProbes)
-    }
-
-    var info = mm.info
-
-    val allRows = mat.asRows
-    //TODO move into RowLabels if possible
-    //TODO extract the aaLookup pattern
-    val rowNames = allRows.map(r => joinedAbbreviated(r.getAtomicProbes, 20))
-    val allAtomics = allRows.flatMap(_.getAtomicProbes.map(p => Probe(p)))
-    val aaLookup = Map() ++ probes.withAttributes(allAtomics).map(a => a.identifier -> a)
-
-    val geneSyms = allRows.map(r => {
-      val atrs = r.getAtomicProbes.map(aaLookup(_))
-      joinedAbbreviated(atrs.flatMap(_.symbols.map(_.symbol)), 20)
-    })
-
-    val columns = mat.sortedColumnMap.filter(x => !info.isPValueColumn(x._2))
-    val colNames = columns.map(_._1)
-    val values = mat.selectColumns(columns.map(_._2)).data.
-      map(_.map(_.value))
+   val data = new ClusteringData(cont, probes, chosenProbes, valueType)
 
     val clust = new RClustering(userDir)
-    clust.clustering(values.flatten, rowNamesForHeatmap(rowNames),
-        colNames, geneSyms, algorithm)
+    clust.clustering(data.data.flatten, rowNamesForHeatmap(data.rowNames),
+        data.colNames, data.geneSymbols, algorithm)
   }
 
-  protected def rowNamesForHeatmap(names: Seq[String]): Seq[String] =
+  protected def rowNamesForHeatmap(names: Array[String]): Array[String] =
     names
 
 }

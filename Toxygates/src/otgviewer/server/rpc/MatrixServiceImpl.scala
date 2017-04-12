@@ -20,5 +20,10 @@
 
 package otgviewer.server.rpc
 
+import t.clustering.shared.Algorithm
+import t.common.shared.sample.Group
+
 class MatrixServiceImpl extends t.viewer.server.rpc.MatrixServiceImpl
-    with OTGServiceServlet
+    with OTGServiceServlet {
+  
+}

@@ -15,32 +15,44 @@
  * You should have received a copy of the GNU General Public License along with Toxygates. If not,
  * see <http://www.gnu.org/licenses/>.
  */
-package t.common.server.userclustering
+package t.clustering.server
 
 import t.viewer.server.R
 import org.rosuda.REngine.Rserve.RserveException
-import t.common.shared.userclustering.Algorithm
+import t.clustering.shared.Algorithm
 import java.util.logging.Logger
+import org.rosuda.REngine.Rserve.RserveException
 
 class RClustering(userDir: String) {
   val logger = Logger.getLogger("RClustering")
 
+  //Types are Array rather than Seq for easy interop with Java
+  
+  /**
+   * Perform the clustering and return the clusters as JSON data.
+   * 
+   * @param data Column-major data (as a single sequence)
+   * @param rowNames Row names (such as affymetrix probes)
+   * @param colNames Column names
+   * @param geneSyms Gene symbols for each row
+   * @param algorithm The clustering algorithm to use
+   */
   @throws(classOf[RserveException])
-  def clustering(data: Seq[Double], rowName: Seq[String],
-      colName: Seq[String], geneSyms: Seq[String],
+  def clustering(data: Array[Double], rowNames: Array[String],
+      colNames: Array[String], geneSyms: Array[String],
       algorithm: Algorithm = new Algorithm()): String = {
-    assert(data.length == rowName.length * colName.length)
+    assert(data.length == rowNames.length * colNames.length)
 
     val r = new R
     r.addCommand(s"source('$userDir/R/InCHlibUtils.R')")
     r.addCommand(s"data <- c(${data.mkString(", ")})")
-    r.addCommand(s"r <- c(${rowName.map { "\"" + _ + "\"" }.mkString(", ")})")
-    r.addCommand(s"c <- c(${colName.map { "\"" + _ + "\"" }.mkString(", ")})")
+    r.addCommand(s"r <- c(${rowNames.map { "\"" + _ + "\"" }.mkString(", ")})")
+    r.addCommand(s"c <- c(${colNames.map { "\"" + _ + "\"" }.mkString(", ")})")
     r.addCommand("rowMethod <- \"" + algorithm.getRowMethod.asParam() + "\"")
     r.addCommand("rowDistance <- \"" + algorithm.getRowDistance.asParam() + "\"")
     r.addCommand("colMethod <- \"" + algorithm.getColMethod.asParam() + "\"")
     r.addCommand("colDistance <- \"" + algorithm.getColDistance.asParam() + "\"")
-    r.addCommand("appendixes <- list(" + (rowName zip geneSyms).map{ x =>
+    r.addCommand("appendixes <- list(" + (rowNames zip geneSyms).map{ x =>
       s""""${x._1}"="${x._2}"""" }.mkString(",")   + ")")
 
     r.addCommand("getClusterAsJSON(data, r, c, rowMethod, rowDistance, colMethod, colDistance, appendixes)")

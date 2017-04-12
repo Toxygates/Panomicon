@@ -8,9 +8,7 @@
 
 <module rename-to="t.common.Common">
 	<inherits name="com.google.gwt.user.User" />
-	<inherits name='gwtupload.GWTUpload' />
-		
-	<!-- TODO remove dependency when code has been reorganised -->
+	<inherits name='gwtupload.GWTUpload' />		
 	<source path="client"/>
 	<source path='shared' />
 </module>

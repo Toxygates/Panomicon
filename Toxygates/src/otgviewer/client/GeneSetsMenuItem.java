@@ -31,12 +31,12 @@ import javax.annotation.Nullable;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.GeneSetEditor;
 import otgviewer.client.components.SaveActionHandler;
+import t.clustering.shared.Algorithm;
 import t.common.shared.ClusteringList;
 import t.common.shared.ItemList;
 import t.common.shared.SharedUtils;
 import t.common.shared.StringList;
 import t.common.shared.clustering.ProbeClustering;
-import t.common.shared.userclustering.Algorithm;
 import t.viewer.client.CodeDownload;
 
 import com.google.gwt.core.client.GWT;
@@ -359,7 +359,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   private ScheduledCommand addNewClustering() {
     return new Command() {
       public void execute() {
-        HeatmapDialog.show(screen, screen.et.getValueType());
+        HeatmapViewer.show(screen, screen.et.getValueType());
       }
     };
   }

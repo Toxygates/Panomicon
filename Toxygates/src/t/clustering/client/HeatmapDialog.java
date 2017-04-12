@@ -17,26 +17,18 @@
  * You should have received a copy of the GNU General Public License
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
-package otgviewer.client;
+package t.clustering.client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import t.common.shared.ClusteringList;
-import t.common.shared.StringList;
-import t.common.shared.ValueType;
-import t.common.shared.sample.Group;
-import t.common.shared.userclustering.Algorithm;
-import t.common.shared.userclustering.Distances;
-import t.common.shared.userclustering.Methods;
-import t.viewer.client.CodeDownload;
-import t.viewer.client.rpc.MatrixServiceAsync;
+import t.clustering.shared.Algorithm;
+import t.clustering.shared.Distances;
+import t.clustering.shared.Methods;
 
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.GWT;
@@ -45,8 +37,6 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.core.client.ScriptInjector;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
@@ -66,16 +56,18 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-public class HeatmapDialog extends DataListenerWidget {
+/**
+ * GUI for configuring, requesting, and displaying a heatmap.
+ * Users should subclass this and implement the necessary abstract methods.
+ * The GUI is displayed by calling initWindow.
+ */
+abstract public class HeatmapDialog<C, R> {
   private static final String[] injectList =
       {"kinetic-v5.1.0.min.js", "jquery-2.0.3.min.js", "inchlib-1.2.0.min.js", "inchlib-extended-1.0.0.min.js"};
 
-  private final MatrixServiceAsync matrixService;
-  protected final Screen screen;
+  protected final ClusteringServiceAsync<C, R> clusteringService;
 
-  private DialogBox dialog;
-  private Button saveButton, enrichButton;
-  private final ListBox valType;
+  protected DialogBox dialog;
 
   private CheckBox chkLogAxis;
   private CheckBox chkDendrogram;
@@ -85,17 +77,26 @@ public class HeatmapDialog extends DataListenerWidget {
   private ListBox cDist;
   private ListBox cMethod;
 
-  private Algorithm lastClusteringAlgorithm = new Algorithm();
+  protected Logger logger;
+  
+  protected Algorithm lastClusteringAlgorithm = new Algorithm();
 
-  public HeatmapDialog(Screen screen) {
-    matrixService = screen.manager().matrixService();
-    this.screen = screen;
+  public HeatmapDialog(Logger logger, ClusteringServiceAsync<C, R> service) {
+    clusteringService = service;
     dialog = new DialogBox();
-    valType = new ListBox();
+    this.logger = logger;
   }
+  
+  /**
+   * Obtain the dialog that is displayed.
+   * @return
+   */
+//  public DialogBox dialog() {
+//    return dialog;
+//  }
 
-  private void initWindow(ValueType defaultType) {
-    createPanel(defaultType);
+  public void initWindow() {
+    createPanel();
     inject(new ArrayList<String>(Arrays.asList(injectList)));
 
     // call DialogBox#show here in order to generate <div> container used by
@@ -105,45 +106,6 @@ public class HeatmapDialog extends DataListenerWidget {
     dialog.setVisible(false);
   }
   
-  public static void show(final DataScreen screen, final ValueType defaultType) {
-    GWT.runAsync(new CodeDownload(screen.getLogger()) {
-      public void onSuccess() {
-        asyncShowHeatMap(screen, defaultType);
-      }
-    });
-  }
-  
-  private static void asyncShowHeatMap(DataScreen screen, ValueType defaultType) {
-    HeatmapDialog dialog = new HeatmapDialog(screen);
-    show(dialog, screen, defaultType);
-  }
-  
-  public static void show(HeatmapDialog dialog, DataScreen screen, ValueType defaultType) {    
-    screen.propagateTo(dialog);
-    dialog.probesChanged(screen.displayedAtomicProbes());
-    
-    int probesCount = (dialog.chosenProbes != null ? dialog.chosenProbes.length : 0);
-    if (probesCount == 0 || probesCount > 1000) {
-      Window.alert("Please choose at most 1,000 probes.");
-      return;
-    } 
-    if (probesCount < 2) {
-      Window.alert("Please choose at least 2 probes.");
-      return;
-    } 
-    int columnsCount = dialog.chosenColumns.size();
-    if (columnsCount < 2) {
-      Window.alert("Please define at least 2 columns.");
-      return;
-    } 
-    if (columnsCount > 1000) {
-      Window.alert("Please define at most 1,000 columns.");
-      return;
-    }
-    
-    // all checks passed
-    dialog.initWindow(defaultType);
-  }
 
   private void inject(final List<String> p_jsList) {
     final String js = GWT.getModuleBaseForStaticFiles() + p_jsList.remove(0);
@@ -175,40 +137,49 @@ public class HeatmapDialog extends DataListenerWidget {
     dialog.setVisible(true);
   }
   
-  private void executeClustering(Algorithm algo) {
-    logger.info("Execute clustering with " + getValueType().name() + " " + algo.toString());
+  protected void executeClustering(Algorithm algo) {
+    logger.info("Execute clustering with " + algo.toString());
     this.lastClusteringAlgorithm = algo;
-    matrixService.prepareHeatmap(columnsForClustering(chosenColumns), 
-        chosenProbes, getValueType(), algo,
-        prepareHeatmapCallback());
+    doClustering(algo);
   }
   
-  protected List<Group> columnsForClustering(List<Group> inputs) {
-    return chosenColumns;
+  protected void doClustering(Algorithm algo) {
+    clusteringService.prepareHeatmap(columnsForClustering(), 
+      rowsForClustering(), algo,
+      prepareHeatmapCallback());
   }
   
-  private AsyncCallback<String> prepareHeatmapCallback() {
-    return new PendingAsyncCallback<String>(this) {
-      public void handleSuccess(String result) {
+  /**
+   * Subclasses should implement this to supply the rows that should be included in the clustering.
+   * @return
+   */
+  abstract protected List<R> rowsForClustering(); 
+
+  /**
+   * Subclasses should implement this to supply the columns that should be included in the 
+   * clustering.
+   * @return
+   */
+  abstract protected List<C> columnsForClustering();
+
+  protected AsyncCallback<String> prepareHeatmapCallback() {    
+    return new AsyncCallback<String>() {
+      @Override
+      public void onFailure(Throwable caught) {
+        logger.severe(caught.getMessage());
+        Window.alert("Failed to generate heat map data.");        
+      }
+
+      @Override
+      public void onSuccess(String result) {
         try {
           draw(JsonUtils.safeEval(result));
           updateUI();
         } catch (Exception e) {
-          handleFailure(e);
-          return;
+          onFailure(e);         
         }
       }
-
-      public void handleFailure(Throwable caught) {
-        logger.severe(caught.getMessage());
-        Window.alert("Failed to generate heat map data.");
-      }
     };
-  }
-
-  private ValueType getValueType() {
-    String vt = valType.getItemText(valType.getSelectedIndex());
-    return ValueType.unpack(vt);
   }
 
   private void updateUI() {
@@ -237,7 +208,7 @@ public class HeatmapDialog extends DataListenerWidget {
     return Window.getClientHeight() - 120;
   }
   
-  private void createPanel(ValueType defaultType) {
+  private void createPanel() {
     final ScrollPanel mainContent = new ScrollPanel(); 
     mainContent.setPixelSize(mainWidth(), mainHeight());
     mainContent.setWidget(new HTML("<div id=\"inchlib\"></div>"));
@@ -332,11 +303,7 @@ public class HeatmapDialog extends DataListenerWidget {
     updateButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        Algorithm algo = new Algorithm(Methods.lookup(rMethod.getSelectedValue()),
-            Distances.lookup(rDist.getSelectedValue()), Methods.lookup(cMethod.getSelectedValue()),
-            Distances.lookup(cDist.getSelectedValue()));
-
-        executeClustering(algo);
+        recluster();        
       }
     });
 
@@ -345,64 +312,14 @@ public class HeatmapDialog extends DataListenerWidget {
 
     HorizontalPanel topContent = new HorizontalPanel();
     topContent.setSpacing(4);
-    topContent.add(new Label("Value:"));
-
-    for (ValueType v : ValueType.values()) {
-      valType.addItem(v.toString());
-    }
-    valType.setSelectedIndex(defaultType.ordinal());
-    valType.addChangeHandler(new ChangeHandler() {
-      @Override
-      public void onChange(ChangeEvent event) {
-        Algorithm algo = new Algorithm(Methods.lookup(rMethod.getSelectedValue()),
-            Distances.lookup(rDist.getSelectedValue()), Methods.lookup(cMethod.getSelectedValue()),
-            Distances.lookup(cDist.getSelectedValue()));
-
-        executeClustering(algo);
-      }
-    });
-    topContent.add(valType);
+    addTopContent(topContent);
 
     FlowPanel buttonGroup = new FlowPanel();
+    addButtons(buttonGroup);
     HorizontalPanel bottomContent = new HorizontalPanel();
     bottomContent.setWidth("100%");
     bottomContent.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 
-    enrichButton = new Button("Enrichment...");
-    enrichButton.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        HeatmapDialog.this.doEnrichment();
-      }
-    });
-    buttonGroup.add(enrichButton);
-    enrichButton.setEnabled(false);
-
-    Button btnClose = new Button("Close");
-    btnClose.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        HeatmapDialog.this.dialog.hide();
-      }
-    });
-    buttonGroup.add(btnClose);
-
-    saveButton = new Button("Save as gene set...", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        List<Collection<String>> objectIds = parse2dJsArray(getCurrentObjectIds());
-
-        ClusteringListsStoreHelper helper = 
-            new ClusteringListsStoreHelper(ClusteringList.USER_CLUSTERING_TYPE, screen) {
-          @Override
-          protected void onSaveSuccess(String name, ClusteringList items) {
-            Window.alert("Clusters are successfully saved.");
-          }
-        };
-        helper.save(objectIds, lastClusteringAlgorithm);
-      }
-    });
-    buttonGroup.add(saveButton);
     bottomContent.add(buttonGroup);
 
     HorizontalPanel hp = new HorizontalPanel();
@@ -424,6 +341,31 @@ public class HeatmapDialog extends DataListenerWidget {
     dialog.setWidget(vp);
   }
 
+  protected void recluster() {
+    Algorithm algo = new Algorithm(Methods.lookup(rMethod.getSelectedValue()),
+      Distances.lookup(rDist.getSelectedValue()), Methods.lookup(cMethod.getSelectedValue()),
+      Distances.lookup(cDist.getSelectedValue()));
+
+    executeClustering(algo);
+  }
+  
+  protected void addTopContent(HorizontalPanel topContent) { }
+  
+  protected void addButtons(FlowPanel buttonGroup) {    
+    Button btnClose = new Button("Close");
+    btnClose.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        HeatmapDialog.this.dialog.hide();
+      }
+    });
+    buttonGroup.add(btnClose);    
+  }
+  
+  protected List<Collection<String>> getCurrent2DArray() {
+    return parse2dJsArray(getCurrentObjectIds());  
+  }
+  
   private native JsArray<JsArrayString> getCurrentObjectIds() /*-{
     return $wnd.inchlib.get_current_object_ids();
   }-*/;
@@ -497,7 +439,7 @@ public class HeatmapDialog extends DataListenerWidget {
     });
 
     $wnd.inchlib.selection_state_changed = function(state) {
-      $wnd.widget.@otgviewer.client.HeatmapDialog::selectionStateChanged(Ljava/lang/String;)(state);
+      $wnd.widget.@t.clustering.client.HeatmapDialog::selectionStateChanged(Ljava/lang/String;)(state);
     }
 
     $wnd.inchlib.get_current_object_ids = function() {
@@ -514,7 +456,7 @@ public class HeatmapDialog extends DataListenerWidget {
     }
   }-*/;
 
-  private void selectionStateChanged(String state) {
+  protected void selectionStateChanged(String state) {
     boolean enabled = false;
 
     if (state != null) {
@@ -529,9 +471,10 @@ public class HeatmapDialog extends DataListenerWidget {
       }
     }
 
-    enrichButton.setEnabled(enabled);
-    saveButton.setEnabled(enabled);
+    guiStateChanged(enabled);
   }
+  
+  protected void guiStateChanged(boolean enabled) { }
 
   private List<Collection<String>> parse2dJsArray(JsArray<JsArrayString> array) {
     List<Collection<String>> result = new LinkedList<Collection<String>>();
@@ -549,19 +492,6 @@ public class HeatmapDialog extends DataListenerWidget {
       result.add(array.get(i));
     }
     return result;
-  }
-
-  private void doEnrichment() {  
-    List<Collection<String>> clusters = parse2dJsArray(getCurrentObjectIds());
-    List<StringList> clusterLists = new ArrayList<StringList>();
-    int i = 0;
-    for (Collection<String> clust : clusters) {
-      StringList sl = new StringList(StringList.PROBES_LIST_TYPE, 
-          "Cluster " + i, clust.toArray(new String[0]));
-      clusterLists.add(sl);
-      i++;
-    }
-    screen.factory().multiEnrichment(screen, clusterLists.toArray(new StringList[0]), null);
   }
 
 }

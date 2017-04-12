@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License along with Toxygates. If not,
  * see <http://www.gnu.org/licenses/>.
  */
-package t.common.shared.userclustering;
+package t.clustering.shared;
 
 public enum Methods {
   WARD_D("ward.D"), WARD_D2("ward.D2"), SINGLE("single"), COMPLETE("complete"), AVERAGE(
