@@ -24,9 +24,9 @@ import org.rosuda.REngine.Rserve.RserveException
 
 /**
  * Connects to Rserve to perform a clustering.
- * @param userDir the root directory where R/InCHlibUtils.R is available.
+ * @param codeDir the root directory where R/InCHlibUtils.R is available.
  */
-class RClustering(userDir: String) {
+class RClustering(codeDir: String) {
   val logger = Logger.getLogger("RClustering")
 
   //Types are Array rather than Seq for easy interop with Java
@@ -47,7 +47,7 @@ class RClustering(userDir: String) {
     assert(data.length == rowNames.length * colNames.length)
 
     val r = new R
-    r.addCommand(s"source('$userDir/R/InCHlibUtils.R')")
+    r.addCommand(s"source('$codeDir/R/InCHlibUtils.R')")
     r.addCommand(s"data <- c(${data.mkString(", ")})")
     r.addCommand(s"r <- c(${rowNames.map { "\"" + _ + "\"" }.mkString(", ")})")
     r.addCommand(s"c <- c(${colNames.map { "\"" + _ + "\"" }.mkString(", ")})")

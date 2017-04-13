@@ -79,13 +79,13 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   private def probes = context.probes
   private var config: Configuration = _
   private val logger = Logger.getLogger("MatrixService")
-  private var userDir: String = null
+  private var codeDir: String = null
 
   // Useful for testing
   override def localInit(config: Configuration) {
     super.localInit(config)
     this.config = config
-    this.userDir = this.getServletContext.getRealPath("/WEB-INF/")
+    this.codeDir = this.getServletContext.getRealPath("/WEB-INF/")
     mcontext = context.matrix
   }
 
@@ -309,16 +309,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   @throws(classOf[NoDataLoadedException])
   def prepareHeatmap(groups: JList[Group], chosenProbes: JList[String],
     algorithm: Algorithm): String = {
-    val data = new RandomData(userDir, 
-      Array() ++ groups.map(_.getShortTitle), Array() ++ chosenProbes)
-    
-      val clust = new RClustering(data.userDir)
-    
-    clust.clustering(data.data.flatten, Array() ++ data.rowNames,
-        Array() ++ data.colNames, 
-        Array() ++ data.geneSymbols, algorithm)
-    
-//    prepareHeatmap(groups, chosenProbes, ValueType.Folds, algorithm)
+    prepareHeatmap(groups, chosenProbes, ValueType.Folds, algorithm)
   }
 
   @throws(classOf[NoDataLoadedException])
@@ -336,7 +327,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
    val data = new ClusteringData(cont, probes, chosenProbes, valueType)
 
-    val clust = new RClustering(userDir)
+    val clust = new RClustering(codeDir)
     clust.clustering(data.data.flatten, rowNamesForHeatmap(data.rowNames),
         data.colNames, data.geneSymbols, algorithm)
   }

@@ -87,14 +87,6 @@ abstract public class HeatmapDialog<C, R> {
     this.logger = logger;
   }
   
-  /**
-   * Obtain the dialog that is displayed.
-   * @return
-   */
-//  public DialogBox dialog() {
-//    return dialog;
-//  }
-
   public void initWindow() {
     createPanel();
     inject(new ArrayList<String>(Arrays.asList(injectList)));
@@ -474,6 +466,10 @@ abstract public class HeatmapDialog<C, R> {
     guiStateChanged(enabled);
   }
   
+  /**
+   * Hook for enabling/disabling buttons and controls while the clustering is in progress
+   * @param enabled
+   */
   protected void guiStateChanged(boolean enabled) { }
 
   private List<Collection<String>> parse2dJsArray(JsArray<JsArrayString> array) {

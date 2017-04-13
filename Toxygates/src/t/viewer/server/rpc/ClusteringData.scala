@@ -36,10 +36,7 @@ class ClusteringData(controller: MatrixController,
 
   def colNames: Array[String] = columns.map(_._1).toArray
 
-  /**
-   * A directory where temporary data can be stored
-   */
-  def userDir: String = ???
+  def codeDir: String = ???
 
   /**
    * Obtain column-major data for the specified rows and columns
