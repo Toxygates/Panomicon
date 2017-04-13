@@ -143,12 +143,15 @@ public class HeatmapViewer extends DataListenerWidget {
     }
   }
 
-  public static void show(final DataScreen screen, final ValueType defaultType) {
+  public static void show(DataScreen screen, ValueType defaultType) {
     HeatmapViewer viewer = new HeatmapViewer(screen);
     show(viewer, screen, defaultType);    
   }
 
   public static void show(HeatmapViewer viewer, DataScreen screen, ValueType defaultType) {        
+    screen.propagateTo(viewer);
+    viewer.probesChanged(screen.displayedAtomicProbes());
+    
     int probesCount = (viewer.chosenProbes != null ? viewer.chosenProbes.length : 0);
     if (probesCount == 0 || probesCount > 1000) {
       Window.alert("Please choose at most 1,000 probes.");
@@ -167,15 +170,9 @@ public class HeatmapViewer extends DataListenerWidget {
       Window.alert("Please define at most 1,000 columns.");
       return;
     }
-    
-    screen.propagateTo(viewer);
-    viewer.probesChanged(screen.displayedAtomicProbes());
-    
+
     // all checks passed
     HeatmapDialog dialog = viewer.dialog(defaultType);
     dialog.initWindow();
   }
-  
-  
-
 }

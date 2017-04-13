@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.viewer.server
+package t.clustering.server
 
 import java.util.logging.Logger
 import scala.sys.process._

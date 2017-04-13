@@ -51,6 +51,7 @@ import t.viewer.shared.table.SortKey
 import t.viewer.shared.NoDataLoadedException
 import t.viewer.shared.FullMatrix
 import t.clustering.client.ClusteringService
+import t.clustering.server.RandomData
 
 object MatrixServiceImpl {
 
@@ -307,8 +308,18 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   
   @throws(classOf[NoDataLoadedException])
   def prepareHeatmap(groups: JList[Group], chosenProbes: JList[String],
-    algorithm: Algorithm): String = 
-    prepareHeatmap(groups, chosenProbes, ValueType.Folds, algorithm)  
+    algorithm: Algorithm): String = {
+    val data = new RandomData(userDir, 
+      Array() ++ groups.map(_.getShortTitle), Array() ++ chosenProbes)
+    
+      val clust = new RClustering(data.userDir)
+    
+    clust.clustering(data.data.flatten, Array() ++ data.rowNames,
+        Array() ++ data.colNames, 
+        Array() ++ data.geneSymbols, algorithm)
+    
+//    prepareHeatmap(groups, chosenProbes, ValueType.Folds, algorithm)
+  }
 
   @throws(classOf[NoDataLoadedException])
   def prepareHeatmap(groups: JList[Group], chosenProbes: JList[String],
