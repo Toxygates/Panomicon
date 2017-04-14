@@ -38,11 +38,11 @@ object Platforms {
 class Platforms(val data: Map[String, Set[Probe]]) {
   //map platform to probe sets
   lazy val platformSets = data.mapValues(_.map(_.identifier))
-  
+
   //map ID to probe
   lazy val identifierLookup =
     Map() ++ data.toSeq.flatMap(_._2.toSeq).map(x => x.identifier -> x)
-  
+
   lazy val geneLookup = {
     val raw = (for (
         (pf, probes) <- data.toSeq;
@@ -51,28 +51,31 @@ class Platforms(val data: Map[String, Set[Probe]]) {
       ) yield (gene, pr))
     Map() ++ raw.groupBy(_._1).mapValues(_.map(_._2))
   }
-  
+
 //TODO: update mechanism
 
-//  println("Platforms: ")
-//  for (p <- data) {
-//    println(s"\t${p._1}: ${p._2.size}")
-//  }
-
-  def resolve(identifiers: Seq[String]): Seq[Probe] = 
+  def resolve(identifiers: Seq[String]): Seq[Probe] =
     identifiers.flatMap(identifierLookup.get(_))
-      
+
   /**
    * Filter probes for a number of platforms.
    */
-  def filterProbes(probes: Seq[String], platforms: Iterable[String]): Seq[String] =
-    platforms.toSeq.flatMap(pf => filterProbes(probes, pf))
+  def filterProbes(probes: Iterable[String],
+      platforms: Iterable[String]): Iterable[String] = {
+    var rem = Set() ++ probes
+    var r = Set[String]()
+    for (p <- platforms; valid = filterProbes(rem, p)) {
+      rem --= valid
+      r ++= valid
+    }
+    r.toSeq
+  }
 
   /**
    * Filter probes for all platforms.
    */
-  def filterProbesAllPlatforms(probes: Seq[String]): Seq[String] = 
-    probes.filter(identifierLookup.keySet.contains)    
+  def filterProbesAllPlatforms(probes: Seq[String]): Seq[String] =
+    probes.filter(identifierLookup.keySet.contains)
 
   def platformForProbe(p: String): Option[String] =
     platformSets.find(_._2.contains(p)).map(_._1)
@@ -80,14 +83,15 @@ class Platforms(val data: Map[String, Set[Probe]]) {
   /**
    * Filter probes for one platform.
    */
-  def filterProbes(probes: Seq[String], platform: String): Iterable[String] = {    
+  def filterProbes(probes: Iterable[String], platform: String): Iterable[String] = {
     if (probes.size == 0) {
       data(platform).toSeq.map(_.identifier)
     } else {
-      println(s"Filter (${probes.size}) (${probes.distinct.size}) ${probes take 20} ...")
-      val r = probes.filter(p => platformSets(platform).contains(p))
-      println(s"Result (${probes.size}) (${probes.distinct.size}) ${r take 20} ...")
-      r
+      val pset = probes.toSet
+      println(s"Filter (${pset.size}) ${pset take 20} ...")
+      val r = pset.intersect(platformSets(platform))
+      println(s"Result (${r.size}) ${r take 20} ...")
+      r.toSeq
     }
   }
 }

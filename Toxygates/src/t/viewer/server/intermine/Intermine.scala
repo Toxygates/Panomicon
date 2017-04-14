@@ -56,7 +56,7 @@ class IntermineConnector(instance: IntermineInstance,
     sf.setApplicationName(appName)
     sf.getListService()
   }
-  
+
   def getSessionToken(): String = {
     println(s"Connect to $title")
     val sf = new ServiceFactory(serviceUrl)
@@ -80,27 +80,27 @@ class IntermineConnector(instance: IntermineInstance,
   def asTGList(l: org.intermine.webservice.client.lists.ItemList,
     ap: Probes,
     filterProbes: (Seq[String]) => Seq[String]): Option[StringList] = {
-    var items: Vector[Gene] = Vector()    
+    var items: Vector[Gene] = Vector()
     println(s"Importing ${l.getName}")
-    
+
     for (i <- 0 until l.getSize()) {
       val it = l.get(i)
       items :+= Gene(it.getString("Gene.primaryIdentifier"))
     }
-  
+
     //we will have obtained the genes as ENTREZ identifiers
     println(s"${items take 100} ...")
     var probes = items.flatMap(g => platforms.geneLookup.get(g)).
       flatten.map(_.identifier).distinct
-  
-    //TODO handle large lists 
-    if (probes.size > 1000) {
-      println(s"Warning: truncating list ${l.getName} from ${probes.size} to 1000 items")
-      probes = (probes take 1000)
-    }
-      
+
+    //TODO handle large lists
+//    if (probes.size > 1000) {
+//      println(s"Warning: truncating list ${l.getName} from ${probes.size} to 1000 items")
+//      probes = (probes take 1000)
+//    }
+
     val filtered = if (!probes.isEmpty) {
-      filterProbes(probes) 
+      filterProbes(probes)
     } else {
       println(s"Warning: the following imported list had no corresponding probes in the system: ${l.getName}")
       println(s"The original size was ${l.getSize}")
@@ -108,7 +108,7 @@ class IntermineConnector(instance: IntermineInstance,
     }
     println(s"${filtered take 100} ...")
 
-    Some(new StringList(StringList.PROBES_LIST_TYPE, 
+    Some(new StringList(StringList.PROBES_LIST_TYPE,
         l.getName(), filtered.toArray))
   }
 
@@ -131,10 +131,10 @@ class IntermineConnector(instance: IntermineInstance,
     tags: Seq[String] = Seq("toxygates")): Option[ItemList] = {
 
     var serverList = name.map(n => Option(ls.getList(n))).flatten
-    if (serverList != None && replace) {      
+    if (serverList != None && replace) {
       ls.deleteList(serverList.get)
     }
-    
+
     //the Set: prefix gets appended by the front-end
     if (serverList == None && name != None) {
       val altName = name.get.split("Set:")
@@ -145,7 +145,7 @@ class IntermineConnector(instance: IntermineInstance,
         }
       }
     }
-    
+
     if (serverList != None && replace) {
       println(s"Delete list $serverList for replacement")
       ls.deleteList(serverList.get)
