@@ -106,9 +106,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
   /**
    * Initial number of items to show per page at a time (but note that this number can be adjusted
-   * by the user in the 0-100 range)
+   * by the user in the 0-250 range)
    */
-  private final int PAGE_SIZE = 25;
+  private final int INIT_PAGE_SIZE = 50;
+  private final int MAX_PAGE_SIZE = 250;
+  private final int PAGE_SIZE_INCREMENT = 50;
 
   private Screen screen;
   private KCAsyncProvider asyncProvider = new KCAsyncProvider();
@@ -163,7 +165,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     screen = _screen;
 
     grid.setStylePrimaryName("exprGrid");
-    grid.setPageSize(PAGE_SIZE);
+    grid.setPageSize(INIT_PAGE_SIZE);
 
     grid.setSelectionModel(new NoSelectionModel<ExpressionRow>());
     grid.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
@@ -246,12 +248,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     horizontalPanel.add(sp);
     sp.setDisplay(grid);
 
-    PageSizePager pager = new PageSizePager(25) {
+    PageSizePager pager = new PageSizePager(PAGE_SIZE_INCREMENT) {
       @Override
       protected void onRangeOrRowCountChanged() {
         super.onRangeOrRowCountChanged();
-        if (getPageSize() > 100) {
-          setPageSize(100);
+        if (getPageSize() > MAX_PAGE_SIZE) {
+          setPageSize(MAX_PAGE_SIZE);
         }
       }
     };
@@ -783,7 +785,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   protected void setMatrix(ManagedMatrixInfo matrix) {
     matrixInfo = matrix;
     asyncProvider.updateRowCount(matrix.numRows(), true);
-    int displayRows = (matrix.numRows() > PAGE_SIZE) ? PAGE_SIZE : matrix.numRows();
+    int displayRows = (matrix.numRows() > INIT_PAGE_SIZE) ? INIT_PAGE_SIZE : matrix.numRows();
     grid.setVisibleRangeAndClearData(new Range(0, displayRows), true);
     setEnabled(true);
   }
