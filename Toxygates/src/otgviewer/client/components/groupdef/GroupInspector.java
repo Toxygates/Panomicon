@@ -18,6 +18,8 @@
 
 package otgviewer.client.components.groupdef;
 
+import static t.common.client.Utils.makeScrolled;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -38,7 +40,6 @@ import t.common.client.components.SelectionTable;
 import t.common.shared.DataSchema;
 import t.common.shared.Dataset;
 import t.common.shared.Pair;
-import static t.common.client.Utils.makeScrolled;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
@@ -46,7 +47,7 @@ import t.common.shared.sample.Sample;
 import t.common.shared.sample.SampleColumn;
 import t.common.shared.sample.Unit;
 import t.viewer.client.Utils;
-import t.viewer.client.rpc.SparqlServiceAsync;
+import t.viewer.client.rpc.SampleServiceAsync;
 
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.TextButtonCell;
@@ -92,13 +93,13 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
   private List<Pair<Unit, Unit>> availableUnits;
 
   protected final Logger logger = SharedUtils.getLogger("group");
-  private final SparqlServiceAsync sparqlService;
+  private final SampleServiceAsync sampleService;
 
   public GroupInspector(CompoundSelector cs, Screen scr) {
     compoundSel = cs;
     this.screen = scr;
     schema = scr.schema();
-    sparqlService = scr.sparqlService();
+    sampleService = scr.manager().sampleService();
     sp = new SplitLayoutPanel();
     initWidget(sp);
 
@@ -432,7 +433,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
       }
       Dataset[] enAr = newEnabled.toArray(new Dataset[0]);
       screen.datasetsChanged(enAr);
-      sparqlService.chooseDatasets(enAr, new PendingAsyncCallback<Void>(screen));
+      sampleService.chooseDatasets(enAr, new PendingAsyncCallback<Void>(screen));
       Window
           .alert(missing.size() + " dataset(s) were activated " + "because of your group choice.");
     }

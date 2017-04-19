@@ -22,11 +22,11 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import t.clustering.client.ClusteringServiceAsync;
+import t.clustering.shared.Algorithm;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
-import t.common.shared.userclustering.Algorithm;
 import t.viewer.shared.ColumnFilter;
 import t.viewer.shared.FullMatrix;
 import t.viewer.shared.ManagedMatrixInfo;
@@ -35,34 +35,31 @@ import t.viewer.shared.table.SortKey;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public interface MatrixServiceAsync {
+public interface MatrixServiceAsync extends ClusteringServiceAsync<Group,String> {
 
-  public void loadMatrix(List<Group> columns, String[] probes, ValueType type,
+  void loadMatrix(List<Group> columns, String[] probes, ValueType type,
       AsyncCallback<ManagedMatrixInfo> callback);
 
-  public void matrixRows(int offset, int size, SortKey sortKey, boolean ascending,
+  void matrixRows(int offset, int size, SortKey sortKey, boolean ascending,
       AsyncCallback<List<ExpressionRow>> callback);
 
-  public void identifiersToProbes(String[] identifiers, boolean precise, boolean titlePatternMatch,
-      @Nullable List<Sample> samples, AsyncCallback<String[]> callback);
+  void selectProbes(String[] probes, AsyncCallback<ManagedMatrixInfo> callback);
 
-  public void selectProbes(String[] probes, AsyncCallback<ManagedMatrixInfo> callback);
-
-  public void setColumnFilter(int column, @Nullable ColumnFilter filter,
+  void setColumnFilter(int column, @Nullable ColumnFilter filter,
       AsyncCallback<ManagedMatrixInfo> callback);
 
-  public void getFullData(List<Group> g, String[] probes, boolean withSymbols,
+  void getFullData(List<Group> g, String[] probes, boolean withSymbols,
       ValueType typ, AsyncCallback<FullMatrix> callback);
 
-  public void prepareCSVDownload(boolean individualSamples, AsyncCallback<String> callback);
+  void prepareCSVDownload(boolean individualSamples, AsyncCallback<String> callback);
 
-  public void addTwoGroupTest(Synthetic.TwoGroupSynthetic test, AsyncCallback<ManagedMatrixInfo> callback);
+  void addTwoGroupTest(Synthetic.TwoGroupSynthetic test, AsyncCallback<ManagedMatrixInfo> callback);
 
-  public void removeTwoGroupTests(AsyncCallback<ManagedMatrixInfo> callback);
+  void removeTwoGroupTests(AsyncCallback<ManagedMatrixInfo> callback);
 
-  public void sendFeedback(String name, String email, String feedback, AsyncCallback<Void> callback);
+  void sendFeedback(String name, String email, String feedback, AsyncCallback<Void> callback);
 
-  public void prepareHeatmap(List<Group> chosenColumns, String[] chosenProbes, ValueType valueType,
-      Algorithm algorithm, AsyncCallback<String> prepareHeatmapCallback);
+  void prepareHeatmap(List<Group> chosenColumns, List<String> chosenProbes, ValueType valueType,
+      Algorithm algorithm, AsyncCallback<String> callback);
 
 }

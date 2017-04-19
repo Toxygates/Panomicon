@@ -185,7 +185,7 @@ abstract public class DataSource {
       this.probes = probes;
       this.type = vt;
       this.screen = screen;
-      this.matrixService = screen.matrixService();
+      this.matrixService = screen.manager().matrixService();
     }
 
     void loadData(final SampleMultiFilter smf, final ColorPolicy policy,

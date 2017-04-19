@@ -33,9 +33,9 @@ package t.sparql
  * } ... ['suffix']
  */
 
-case class Query[+T](prefix: String, pattern: String,
-  suffix: String = "\n}", eval: (String) => T = null) {
-  def queryText: String = s"$prefix\n$pattern\n$suffix\n"
+case class Query[+T](initPart: String, pattern: String,
+  suffix: String = "\n}", eval: (String) => T) {
+  def queryText: String = s"$initPart\n$pattern\n$suffix\n"
 
   def constrain(constraint: String): Query[T] = copy(pattern = pattern + "\n " + constraint)
   def constrain(filter: t.sparql.Filter): Query[T] =

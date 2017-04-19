@@ -36,7 +36,7 @@ public interface BatchOperations extends MaintenanceOperations {
    * @return Batches in the datasets
    * @throws MaintenanceException
    */
-  public Batch[] getBatches(@Nullable String[] datasets) throws MaintenanceException;
+  Batch[] getBatches(@Nullable String[] datasets) throws MaintenanceException;
   
   void addBatchAsync(Batch b) throws MaintenanceException;
 

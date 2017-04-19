@@ -61,6 +61,64 @@
 <!--		<param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/update</param-value> -->
 	 		<param-value>http://127.0.0.1:3030/data/update</param-value> 
 	</context-param>
+	
+	<context-param>
+		<param-name>intermine.instances</param-name>
+		<param-value>target,rat,human,mouse</param-value>
+	</context-param>
+	
+	<context-param>
+		<param-name>intermine.target.appname</param-name>
+		<param-value>targetmine</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.target.title</param-name>
+		<param-value>TargetMine</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.target.userurl</param-name>
+		<param-value>http://targetmine.mizuguchilab.org</param-value>
+	</context-param>
+	
+	<context-param>
+		<param-name>intermine.human.appname</param-name>
+		<param-value>humanmine</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.human.title</param-name>
+		<param-value>HumanMine</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.human.userurl</param-name>
+		<param-value>http://www.humanmine.org</param-value>
+	</context-param>
+	
+	<context-param>
+		<param-name>intermine.rat.appname</param-name>
+		<param-value>ratmine</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.rat.title</param-name>
+		<param-value>RatMine</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.rat.userurl</param-name>
+		<param-value>http://www.ratmine.org</param-value>
+	</context-param>
+	
+	<context-param>
+		<param-name>intermine.mouse.appname</param-name>
+		<param-value>mousemine</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.mouse.title</param-name>
+		<param-value>MouseMine</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.mouse.userurl</param-name>
+		<param-value>http://www.mousemine.org</param-value>
+	</context-param>		
+
 
 	<!-- Servlets -->
 
@@ -104,14 +162,17 @@
 		<url-pattern>/toxygates/userData</url-pattern>
 	</servlet-mapping>
 		
-	<servlet>
-		<servlet-name>targetmineServlet</servlet-name>
-		<servlet-class>otgviewer.server.targetmine.TargetmineServiceImpl</servlet-class>
+
+  	<servlet>
+		<servlet-name>intermineServlet</servlet-name>
+		<servlet-class>otgviewer.server.rpc.IntermineServiceImpl</servlet-class>
 	</servlet>
-    <servlet-mapping>
-		<servlet-name>targetmineServlet</servlet-name>
-    	<url-pattern>/toxygates/targetmine</url-pattern>
+	
+   	<servlet-mapping>
+		<servlet-name>intermineServlet</servlet-name>
+    	<url-pattern>/toxygates/intermine</url-pattern>
   	</servlet-mapping>
+  	
 
 	<servlet>
 		<servlet-name>uploadServlet</servlet-name>

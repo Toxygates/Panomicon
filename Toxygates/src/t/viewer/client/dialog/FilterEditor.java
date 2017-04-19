@@ -20,7 +20,7 @@ package t.viewer.client.dialog;
 
 import javax.annotation.Nullable;
 
-import t.common.client.components.EnumSelector;
+import t.common.client.components.ItemSelector;
 import t.viewer.client.Utils;
 import t.viewer.shared.ColumnFilter;
 import t.viewer.shared.FilterType;
@@ -47,7 +47,7 @@ public class FilterEditor extends Composite {
 
   private TextBox input = new TextBox();
   protected int editColumn;
-  private EnumSelector<FilterType> filterType;
+  private ItemSelector<FilterType> filterType;
 
   public FilterEditor(String columnTitle, int column,
       final ColumnFilter initValue) {
@@ -66,12 +66,12 @@ public class FilterEditor extends Composite {
       input.setValue(formatNumber(initValue.threshold));
     }
     
-    filterType = new EnumSelector<FilterType>() {
+    filterType = new ItemSelector<FilterType>() {
       @Override
       public FilterType[] values() { return FilterType.values(); }
       
       @Override
-      protected FilterType parse(String s) {
+      protected FilterType valueForTitle(String s) {
         return FilterType.parse(s);
       }
     };

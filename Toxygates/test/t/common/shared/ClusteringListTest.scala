@@ -23,9 +23,9 @@ package t.common.shared
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import t.common.shared.userclustering.Algorithm
-import t.common.shared.userclustering.Methods
-import t.common.shared.userclustering.Distances
+import t.clustering.shared.Algorithm
+import t.clustering.shared.Methods
+import t.clustering.shared.Distances
 
 @RunWith(classOf[JUnitRunner])
 class ClusteringListTest extends FunSuite {

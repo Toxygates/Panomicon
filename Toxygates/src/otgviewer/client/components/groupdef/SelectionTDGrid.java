@@ -312,14 +312,14 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
   }
 
   private void displaySampleTable(Unit unit) {
-    SampleDetailTable st = new SampleDetailTable(screen, "Experiment detail");
+    SampleDetailTable st = new SampleDetailTable(screen, "Experiment detail", false);
     Unit finalUnit = getFinalUnit(unit);
     if (finalUnit.getSamples() != null && finalUnit.getSamples().length > 0) {
       Unit controlUnit = controlUnits.get(finalUnit);
       Unit[] units =
           (controlUnit != null ? new Unit[] {finalUnit, controlUnit} : new Unit[] {finalUnit});
       Group g = new Group(schema, "data", units);
-      st.loadFrom(g, true, 0, -1);
+      st.loadFrom(g, true);
       Utils.displayInPopup("Unit details", st, DialogPosition.Center);
     } else {
       Window.alert("No samples available for " + unit.toString());

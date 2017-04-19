@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -32,14 +32,14 @@ class DrugBank extends Triplestore with CompoundTargets {
 
   def targetsFor(c: Compound): Vector[Protein] = {
     simpleQuery(prefixes + " SELECT DISTINCT ?r WHERE {" +
-      """?s rdfs:label ?l ;  
+      """?s rdfs:label ?l ;
 		  		a drugbank:Drug ;
 		  		drugbank:target ?t .
 		  		?t drugbank:xref ?r .
 		  		filter regex(?r, "uniprot", "i")""" +
       "filter regex(?l, \"^" + c.name + "\", \"i\") " +
-      //"filter (lcase(?l) = \"" + drug.toLowerCase() + "\" )" + 
-      //filter regex(?l, """" + drug + "\", \"i\") 
+      //"filter (lcase(?l) = \"" + drug.toLowerCase() + "\" )" +
+      //filter regex(?l, """" + drug + "\", \"i\")
       " }").map(Protein.unpackB2R(_))
   }
 
@@ -48,14 +48,14 @@ class DrugBank extends Triplestore with CompoundTargets {
     val r = multiQuery(prefixes + " SELECT DISTINCT ?r ?sa " +
       """ (lcase(replace(?l, " \\[drugbank:.*\\]", "")) as ?lc) """ +
       " WHERE { " +
-      """?s rdfs:label ?l ; 
+      """?s rdfs:label ?l ;
           rdfs:seeAlso ?sa ;
           a drugbank:Drug ;
           drugbank:target ?t .
           ?t drugbank:xref ?r . """ +
       " FILTER REGEX(?sa, \"drugbank\") \n" +
       multiFilter("?r", ps.map(p => bracket(p.packB2R)).toSet) +
-      "}")(20000)
+      "}", 20000)
     val rr = r.map(x => (Protein.unpackB2R(x(1)) -> Compound.make(x(2)).copy(identifier = x(0))))
     makeMultiMap(rr).mapValues(_.intersect(cmps))
   }

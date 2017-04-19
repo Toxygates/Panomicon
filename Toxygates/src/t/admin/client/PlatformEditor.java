@@ -50,14 +50,14 @@ public class PlatformEditor extends ManagedItemEditor {
       vp.add(uploader);
     }
     addCommands();
-  }
+  }  
 
   @Override
   protected void triggerEdit() {
     Platform p = new Platform(idText.getValue(), 0, commentArea.getValue(), 
         new Date(), publicComments.getValue());
     if (addNew) {
-      maintenanceService.addPlatformAsync(p, uploader.affyRadio.getValue(), new TaskCallback(
+      maintenanceService.addPlatformAsync(p, uploader.platformType(), new TaskCallback(
           "Add platform", maintenanceService) {
         @Override
         protected void onCompletion() {
