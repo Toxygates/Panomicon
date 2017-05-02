@@ -159,8 +159,13 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
   def ensemblLookup(probes: Iterable[Probe]): MMap[Probe, DefaultBio] =
     simpleRelationQuery(probes, "t:" + t.platform.affy.Ensembl.key)
 
-  def ecLookup(probes: Iterable[Probe]): MMap[Probe, DefaultBio] =
-    simpleRelationQuery(probes, "t:" + t.platform.affy.EC.key)
+  def ecLookup(probes: Iterable[Probe]): MMap[Probe, DefaultBio] = {
+    //convert e.g. EC:3.6.3.1 into 3.6.3.1
+    simpleRelationQuery(probes, "t:" + t.platform.affy.EC.key).
+      mapValues(
+        _.map(x => x.copy(identifier = x.identifier.replace("EC:", "")))
+        )
+  }
 
   def unigeneLookup(probes: Iterable[Probe]): MMap[Probe, DefaultBio] =
     simpleRelationQuery(probes, "t:" + t.platform.affy.Unigene.key)

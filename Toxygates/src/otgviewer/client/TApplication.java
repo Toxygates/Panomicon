@@ -230,24 +230,32 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   }
   
   protected void readURLParameters(Screen scr) {
-    readProbesURLparameter(scr);
+    readImportedProbes(scr);
     readGroupURLparameters(scr);
   }
   
-  protected void readProbesURLparameter(final Screen scr) {
-    Logger l = SharedUtils.getLogger();    
-    Map<String, List<String>> params = Window.Location.getParameterMap();
+  protected void readImportedProbes(final Screen scr) {
+    Logger l = SharedUtils.getLogger();
     String[] useProbes = null;
-    if (params.containsKey("probes")) {
+    
+    if (appInfo.importedGenes() != null) {
+      String[] igs = appInfo.importedGenes();
+      l.info("Probes from appInfo/POST request size: " + igs.length);
+      useProbes = igs;
+    }
+    
+    //appInfo.importedGenes overrides GET parameters    
+    Map<String, List<String>> params = Window.Location.getParameterMap();
+    if (useProbes == null && params.containsKey("probes")) {
       List<String> pl = params.get("probes");
       if (!pl.isEmpty()) {
-        l.info("probes from URL: " + pl.get(0));
         useProbes = pl.get(0).split(",");
+        l.info("probes from URL size: " + useProbes.length);
       }
     }
     if (useProbes != null && useProbes.length > 0) {
       final String[] pr = useProbes;      
-      scr.enqueue(new QueuedAction("Set probes from URL") {        
+      scr.enqueue(new QueuedAction("Set probes from URL/POST") {        
         @Override
         public void run() {
           sparqlService.identifiersToProbes(pr, true, true, false, null,

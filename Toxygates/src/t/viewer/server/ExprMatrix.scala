@@ -80,7 +80,9 @@ class ExprMatrix(data: Seq[Seq[ExprValue]], rows: Int, columns: Int,
   import ExprMatrix._
   import t.util.SafeMath._
 
-  println(rows + " x " + columns)
+  println(this)
+
+  override def toString:String = s"ExprMatrix $rows x $columns"
 
   def fromSeq(s: Seq[ExprValue]) = s
 

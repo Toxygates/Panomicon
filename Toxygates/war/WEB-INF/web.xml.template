@@ -119,6 +119,15 @@
 		<url-pattern>/toxygates/userData</url-pattern>
 	</servlet-mapping>
 
+	<servlet>
+		<servlet-name>geneSetServlet</servlet-name>
+		<servlet-class>t.viewer.server.rpc.GeneSetServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>geneSetServlet</servlet-name>
+		<url-pattern>/geneSet/*</url-pattern>
+	</servlet-mapping>
+
   	<servlet>
 		<servlet-name>intermineServlet</servlet-name>
 		<servlet-class>otgviewer.server.rpc.IntermineServiceImpl</servlet-class>

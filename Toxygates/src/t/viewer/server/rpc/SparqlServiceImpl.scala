@@ -190,17 +190,33 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     "%x%x".format(time, random)
   }
 
-  //TODO filter datasets by key
   def appInfo(@Nullable userKey: String): AppInfo = {
     getSessionData() //initialise this if needed
 
     val ai = appInfoLoader.latest
 
-    /* Reload the datasets since they can change often (with user data, admin
+    /* 
+     * Reload the datasets since they can change often (with user data, admin
      * operations etc.)
      */
     ai.setDatasets(sDatasets(userKey))
-
+    
+    val sess = getThreadLocalRequest.getSession
+    import GeneSetServlet._
+    
+    /*
+     * From GeneSetServlet
+     */
+    val importGenes = sess.getAttribute(IMPORT_SESSION_KEY)
+    if (importGenes != null) {
+      val igs = importGenes.asInstanceOf[Array[String]]
+      ai.setImportedGenes(igs)
+      //Import only once
+      sess.removeAttribute(IMPORT_SESSION_KEY)
+    } else {
+      ai.setImportedGenes(null)
+    }
+    
     if (getSessionData().sampleFilter.datasetURIs.isEmpty) {
       //Initialise the selected datasets by selecting all, except shared user data.
       val defaultVisible = ai.datasets.filter(ds =>

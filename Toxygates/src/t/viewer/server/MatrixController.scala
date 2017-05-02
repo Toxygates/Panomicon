@@ -229,7 +229,9 @@ class MergedMatrixController(context: Context,
 
   override protected def enhancedCols = false
 
-  lazy val orth = orthologs().head
+  lazy val orth = orthologs().filter(! _.mappings.isEmpty).head
+
+  println(s"Using orthologs from ${orth.name} for mapping")
 
   override lazy val filteredProbes = {
     //Use orthologs to expand the probe set if this request is
