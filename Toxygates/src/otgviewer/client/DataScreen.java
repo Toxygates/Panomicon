@@ -34,6 +34,7 @@ import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.RichTable.HideableColumn;
+import t.viewer.shared.intermine.IntermineInstance;
 
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
@@ -176,7 +177,7 @@ public class DataScreen extends Screen {
 
     addAnalysisMenuItem(new MenuItem("Enrichment...", new Command() {
       public void execute() {
-        runEnrichment();              
+        runEnrichment(null);
       }
     }));
     
@@ -190,16 +191,16 @@ public class DataScreen extends Screen {
     }
   }
   
-  public void runEnrichment() {
+  public void runEnrichment(@Nullable IntermineInstance preferredInstance) {
     logger.info("Enrich " + DataScreen.this.displayedAtomicProbes().length + " ps");
     StringList genes = 
         new StringList(StringList.PROBES_LIST_TYPE, 
             "temp", DataScreen.this.displayedAtomicProbes());
-    DataScreen.this.factory().enrichment(DataScreen.this, genes);
+    DataScreen.this.factory().enrichment(DataScreen.this, genes, preferredInstance);
   }
   
   protected void makeHeatMap() {
-    HeatmapDialog.show(DataScreen.this, et.getValueType());
+    HeatmapViewer.show(DataScreen.this, et.getValueType());
   }
 
   @Override
@@ -209,10 +210,19 @@ public class DataScreen extends Screen {
     return manager.isConfigured(ColumnScreen.key);
   }
 
+  /**
+   * Trigger a data reload, if necessary.
+   */
   public void updateProbes() {
     logger.info("chosenProbes: " + chosenProbes.length + " lastProbes: "
         + (lastProbes == null ? "null" : "" + lastProbes.length));
 
+    if (chosenColumns.size() == 0) {
+      Window.alert("Please define sample groups to see data.");
+      manager().attemptProceed(ColumnScreen.key);
+      return;
+    }
+    
     // Attempt to avoid reloading the data
     if (lastColumns == null || !chosenColumns.equals(lastColumns)) {
       logger.info("Data reloading needed");

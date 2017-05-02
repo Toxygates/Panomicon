@@ -48,7 +48,7 @@ public interface SeriesService extends RemoteService {
    * @return
    * @throws NoSuchProbeException
    */
-  public MatchResult[] rankedCompounds(Dataset[] ds, SampleClass sc, RankRule[] rules)
+  MatchResult[] rankedCompounds(Dataset[] ds, SampleClass sc, RankRule[] rules)
       throws ServerError;
 
   /**
@@ -60,7 +60,7 @@ public interface SeriesService extends RemoteService {
    * @param compound
    * @return
    */
-  public Series getSingleSeries(SampleClass sc, String probe, String timeDose, String compound)
+  Series getSingleSeries(SampleClass sc, String probe, String timeDose, String compound)
       throws ServerError;
 
   /**
@@ -72,7 +72,7 @@ public interface SeriesService extends RemoteService {
    * @param compound Can optionally be null (no constraint). If this is null, timeDose must be null.
    * @return
    */
-  public List<Series> getSeries(SampleClass sc, String[] probes, String timeDose, String[] compounds)
+  List<Series> getSeries(SampleClass sc, String[] probes, String timeDose, String[] compounds)
       throws ServerError;
 
   /**
@@ -81,6 +81,6 @@ public interface SeriesService extends RemoteService {
    * 
    * @return
    */
-  public String[] expectedTimes(Series s) throws ServerError;
+  String[] expectedTimes(Series s) throws ServerError;
 
 }

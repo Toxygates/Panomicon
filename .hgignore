@@ -7,6 +7,9 @@ Toxygates/extract-v2*
 Toxygates/extras/*
 OTGTool/target/*
 Toxygates/target/*
+target/*
+Toxygates/bin/*
+OTGTool/bin/*
 
 syntax:glob
 *.class

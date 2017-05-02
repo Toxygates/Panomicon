@@ -35,7 +35,6 @@ import t.common.shared.AType
 import t.common.shared.Dataset
 import t.common.shared.Pair
 import t.common.shared.SampleClass
-import t.common.shared.sample.Annotation
 import t.common.shared.sample.HasSamples
 import t.common.shared.sample.Sample
 import t.db.DefaultBio
@@ -63,12 +62,20 @@ import javax.annotation.Nullable
 import t.viewer.shared.TimeoutException
 import t.util.PeriodicRefresh
 import t.util.Refreshable
+import scala.collection.convert.Wrappers.JListWrapper
+import t.platform.BioParameter
+import t.viewer.server.CSVHelper
+import t.common.shared.sample.NumericalBioParamValue
+import t.common.shared.sample.StringBioParamValue
+import t.common.shared.sample.Annotation
+import t.platform.BioParameters
+import t.viewer.server.Annotations
 
 object SparqlServiceImpl {
   var inited = false
 
   //TODO update mechanism for this
-  var platforms: Map[String, Iterable[String]] = _
+  var platforms: Map[String, Iterable[Probe]] = _
 
   def staticInit(c: t.Context) = synchronized {
     if (!inited) {
@@ -95,6 +102,10 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   protected var uniprot: Uniprot = _
   protected var configuration: Configuration = _
+
+  lazy val platformsCache = t.viewer.server.Platforms(probeStore)
+
+  lazy val annotations = new Annotations(sampleStore, schema, baseConfig)
 
   override def localInit(conf: Configuration) {
     super.localInit(conf)
@@ -126,7 +137,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
    */
   protected def refreshAppInfo(): AppInfo = {
     new AppInfo(configuration.instanceName, Array(),
-        sPlatforms(), predefProbeLists(), probeClusterings(), appName,
+        sPlatforms(), predefProbeLists(),
+        configuration.intermineInstances.toArray,
+        probeClusterings(), appName,
         makeUserKey(), getAnnotationInfo)
   }
 
@@ -177,17 +190,33 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     "%x%x".format(time, random)
   }
 
-  //TODO filter datasets by key
   def appInfo(@Nullable userKey: String): AppInfo = {
     getSessionData() //initialise this if needed
 
     val ai = appInfoLoader.latest
 
-    /* Reload the datasets since they can change often (with user data, admin
+    /* 
+     * Reload the datasets since they can change often (with user data, admin
      * operations etc.)
      */
     ai.setDatasets(sDatasets(userKey))
-
+    
+    val sess = getThreadLocalRequest.getSession
+    import GeneSetServlet._
+    
+    /*
+     * From GeneSetServlet
+     */
+    val importGenes = sess.getAttribute(IMPORT_SESSION_KEY)
+    if (importGenes != null) {
+      val igs = importGenes.asInstanceOf[Array[String]]
+      ai.setImportedGenes(igs)
+      //Import only once
+      sess.removeAttribute(IMPORT_SESSION_KEY)
+    } else {
+      ai.setImportedGenes(null)
+    }
+    
     if (getSessionData().sampleFilter.datasetURIs.isEmpty) {
       //Initialise the selected datasets by selecting all, except shared user data.
       val defaultVisible = ai.datasets.filter(ds =>
@@ -262,6 +291,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     sampleStore.samples(t.sparql.SampleClass(), "id",
         ids).map(asJavaSample(_)).toArray
   }
+
+  def samplesById(ids: JList[Array[String]]): JList[Array[Sample]] =
+    new java.util.ArrayList(ids.map(samplesById(_)))
 
   @throws[TimeoutException]
   def samples(sc: SampleClass): Array[Sample] = {
@@ -341,42 +373,29 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val usePlatforms = samples.map(s => metadata.parameter(
         t.db.Sample(s.id), "platform_id")
         ).distinct
-    usePlatforms.toVector.flatMap(x => platforms(x)).toArray
+    usePlatforms.toVector.flatMap(x => platforms(x)).map(_.identifier).toArray
   }
 
   //TODO move to OTG
   @throws[TimeoutException]
   def pathologies(column: SampleColumn): Array[Pathology] = Array()
 
-  private def parametersToAnnotation(barcode: Sample,
-      ps: Iterable[(t.db.SampleParameter, Option[String])]): Annotation = {
-     val params = ps.map(x => {
-      var p = (x._1.humanReadable, x._2.getOrElse("N/A"))
-      p = (p._1, OTGParameterSet.postReadAdjustment(p))
-      new Annotation.Entry(p._1, p._2, OTGParameterSet.isNumerical(x._1))
-    }).toSeq
-    new Annotation(barcode.id, new java.util.ArrayList(params))
-  }
-
   @throws[TimeoutException]
   def annotations(barcode: Sample): Annotation = {
     val params = sampleStore.parameterQuery(barcode.id)
-    parametersToAnnotation(barcode, params)
+    annotations.fromParameters(barcode, params)
   }
 
-  //TODO get these from schema, etc.
   @throws[TimeoutException]
   def annotations(column: HasSamples[Sample], importantOnly: Boolean = false): Array[Annotation] = {
-    val keys = if (importantOnly) {
-      baseConfig.sampleParameters.previewDisplay
-    } else {
-      List()
-    }
+    annotations.forSamples(sampleStore, column, importantOnly)
+  }
 
-    column.getSamples.map(x => {
-      val ps = sampleStore.parameterQuery(x.id, keys)
-      parametersToAnnotation(x, ps)
-    })
+  //TODO bio-param timepoint handling
+  @throws[TimeoutException]
+  def prepareAnnotationCSVDownload(column: HasSamples[Sample]): String = {
+    annotations.prepareCSVDownload(sampleStore, column,
+        configuration.csvDirectory, configuration.csvUrlBase)
   }
 
   //TODO remove sc
@@ -414,11 +433,37 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     filterByGroup(result, samples).toArray
   }
 
-  private def filterByGroup(result: Iterable[String], samples: Iterable[Sample]) = {
-    Option(samples) match {
-      case Some(_) => filterProbesByGroupInner(result, samples)
-      case None => result
+  //TODO less boolean parameters, use an enum instead
+  def identifiersToProbes(identifiers: Array[String], precise: Boolean,
+      quick: Boolean, titlePatternMatch: Boolean,
+      samples: JList[Sample]): Array[String] = {
+
+    def geneLookup(gene: String): Option[Iterable[Probe]] =
+      platformsCache.geneLookup.get(Gene(gene))
+
+    val ps = if (titlePatternMatch) {
+      probeStore.forTitlePatterns(identifiers)
+    } else {
+      //Try to do a gene identifier based lookup first
+
+      var geneMatch = Set[String]()
+      var matchingGenes = Seq[Probe]()
+      for (
+        i <- identifiers; ps <- geneLookup(i)
+      ) {
+        geneMatch += i
+        matchingGenes ++= ps
+      }
+
+      val nonGeneMatch = (identifiers.toSet -- geneMatch).toArray
+
+      //Resolve remaining identifiers
+      matchingGenes ++ probeStore.identifiersToProbes(context.matrix.probeMap,
+        nonGeneMatch, precise, quick)
     }
+    val result = ps.map(_.identifier).toArray
+
+    filterByGroup(result, samples)
   }
 
   //TODO move to OTG
@@ -444,7 +489,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val got = GOTerm("", goTerm)
 
     val result = probeStore.forGoTerm(got).map(_.identifier).filter(pmap.isToken)
-    filterByGroup(result, samples).toArray
+    filterByGroup(result, samples)
   }
 
   import scala.collection.{ Map => CMap, Set => CSet }
@@ -456,11 +501,11 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   @throws[TimeoutException]
   def associations(sc: SampleClass, types: Array[AType],
     _probes: Array[String]): Array[Association] =
-    new AnnotationResolver(sc, types, _probes).resolve
+    new AssociationResolver(sc, types, _probes).resolve
 
   import Association._
 
-  protected class AnnotationResolver(sc: SampleClass, types: Array[AType],
+  protected class AssociationResolver(sc: SampleClass, types: Array[AType],
       _probes: Iterable[String]) {
     val aprobes = probeStore.withAttributes(_probes.map(Probe(_)))
 
@@ -512,12 +557,18 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       probeStore.probesForPartialSymbol(plat, partialName).map(_.identifier).toArray
   }
 
-  private def filterProbesByGroupInner(probes: Iterable[String], group: Iterable[Sample])  = {
+  private def filterProbesByGroupInner(probes: Iterable[String], group: Iterable[Sample]) = {
     val platforms: Set[String] = group.map(x => x.get("platform_id")).toSet
     val lookup = probeStore.platformsAndProbes
-    val acceptable = platforms.flatMap(p => lookup(p))
+    val acceptable = platforms.flatMap(p => lookup(p)).map(_.identifier)
     probes.filter(acceptable.contains)
   }
+
+  private def filterByGroup(result: Iterable[String], samples: JList[Sample]) =
+    Option(samples) match {
+      case Some(ss) => filterProbesByGroupInner(result, ss).toArray
+      case None => result.toArray
+    }
 
   def filterProbesByGroup(probes: Array[String], samples: JList[Sample]): Array[String] = {
     filterProbesByGroupInner(probes, samples).toArray

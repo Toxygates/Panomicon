@@ -142,7 +142,7 @@ class MatrixController(context: Context,
     val pt = new PerfTimer(Logger.getLogger("matrixController.loadMatrix"))
 
     val mm = if (filteredProbes.size > 0) {
-      makeMatrix(filteredProbes, typ, fullLoad)
+      makeMatrix(filteredProbes.toSeq, typ, fullLoad)
     } else {
       val emptyMatrix = new ExprMatrix(List(), 0, 0, Map(), Map(), List())
       new ManagedMatrix(List(), new ManagedMatrixInfo(), emptyMatrix, emptyMatrix, Map())
@@ -168,7 +168,7 @@ class MatrixController(context: Context,
       //all probes
       platforms.filterProbes(List(), groupPlatforms)
     })
-    managedMatrix.selectProbes(useProbes)
+    managedMatrix.selectProbes(useProbes.toSeq)
     managedMatrix
   }
 
@@ -229,7 +229,9 @@ class MergedMatrixController(context: Context,
 
   override protected def enhancedCols = false
 
-  lazy val orth = orthologs().head
+  lazy val orth = orthologs().filter(! _.mappings.isEmpty).head
+
+  println(s"Using orthologs from ${orth.name} for mapping")
 
   override lazy val filteredProbes = {
     //Use orthologs to expand the probe set if this request is

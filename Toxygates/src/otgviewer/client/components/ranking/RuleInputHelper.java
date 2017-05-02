@@ -22,7 +22,7 @@ import java.util.List;
 
 import otgviewer.shared.RankRule;
 import otgviewer.shared.RuleType;
-import t.common.client.components.EnumSelector;
+import t.common.client.components.ItemSelector;
 import t.common.shared.SampleClass;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -43,7 +43,7 @@ abstract class RuleInputHelper {
   final SuggestBox probeText;
 
   final CheckBox enabled = new CheckBox();
-  final EnumSelector<RuleType> rankType = new EnumSelector<RuleType>() {
+  final ItemSelector<RuleType> rankType = new ItemSelector<RuleType>() {
     protected RuleType[] values() {
       return ruleTypes();
     }
