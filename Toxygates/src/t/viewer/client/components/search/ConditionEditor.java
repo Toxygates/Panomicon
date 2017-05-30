@@ -2,10 +2,9 @@ package t.viewer.client.components.search;
 
 import java.util.Collection;
 
-import com.google.gwt.user.client.ui.SimplePanel;
-
-import t.common.shared.sample.search.AndMatch;
 import t.common.shared.sample.search.MatchCondition;
+
+import com.google.gwt.user.client.ui.SimplePanel;
 
 /**
  * Visual editor for sample match conditions.

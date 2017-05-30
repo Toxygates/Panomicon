@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -80,7 +80,9 @@ class ExprMatrix(data: Seq[Seq[ExprValue]], rows: Int, columns: Int,
   import ExprMatrix._
   import t.util.SafeMath._
 
-  println(rows + " x " + columns)
+  println(this)
+
+  override def toString:String = s"ExprMatrix $rows x $columns"
 
   def fromSeq(s: Seq[ExprValue]) = s
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -176,8 +176,26 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * This is the entry point method.
    */
   public void onModuleLoad() {
-    menuBar = setupMenu();
 
+    reloadAppInfo(new AsyncCallback<AppInfo>() {
+      @Override
+      public void onSuccess(AppInfo result) {
+        setupUIBase();
+        prepareScreens();
+      }
+
+      @Override
+      public void onFailure(Throwable caught) {
+        Window.alert("Failed to obtain application information.");        
+      }
+    });
+
+    Logger l = SharedUtils.getLogger();
+    l.info("onModuleLoad() finished");
+  } 
+  
+  protected void setupUIBase() {
+    menuBar = setupMenu();
     History.addValueChangeHandler(new ValueChangeHandler<String>() {
       public void onValueChange(ValueChangeEvent<String> vce) {
         showScreenForToken(vce.getValue(), false);
@@ -209,42 +227,35 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     navPanel.setStylePrimaryName("navPanel");
     navOuter.add(navPanel);
     mainDockPanel.addNorth(navOuter, 35);
-
-    reloadAppInfo(new AsyncCallback<AppInfo>() {
-      @Override
-      public void onSuccess(AppInfo result) {
-        prepareScreens();
-      }
-
-      @Override
-      public void onFailure(Throwable caught) {
-        Window.alert("Failed to obtain application information.");        
-      }
-    });
-
-    Logger l = SharedUtils.getLogger();
-    l.info("onModuleLoad() finished");
-  } 
+  }
   
   protected void readURLParameters(Screen scr) {
-    readProbesURLparameter(scr);
+    readImportedProbes(scr);
     readGroupURLparameters(scr);
   }
   
-  protected void readProbesURLparameter(final Screen scr) {
-    Logger l = SharedUtils.getLogger();    
-    Map<String, List<String>> params = Window.Location.getParameterMap();
+  protected void readImportedProbes(final Screen scr) {
+    Logger l = SharedUtils.getLogger();
     String[] useProbes = null;
-    if (params.containsKey("probes")) {
+    
+    if (appInfo.importedGenes() != null) {
+      String[] igs = appInfo.importedGenes();
+      l.info("Probes from appInfo/POST request size: " + igs.length);
+      useProbes = igs;
+    }
+    
+    //appInfo.importedGenes overrides GET parameters    
+    Map<String, List<String>> params = Window.Location.getParameterMap();
+    if (useProbes == null && params.containsKey("probes")) {
       List<String> pl = params.get("probes");
       if (!pl.isEmpty()) {
-        l.info("probes from URL: " + pl.get(0));
         useProbes = pl.get(0).split(",");
+        l.info("probes from URL size: " + useProbes.length);
       }
     }
     if (useProbes != null && useProbes.length > 0) {
       final String[] pr = useProbes;      
-      scr.enqueue(new QueuedAction("Set probes from URL") {        
+      scr.enqueue(new QueuedAction("Set probes from URL/POST") {        
         @Override
         public void run() {
           sparqlService.identifiersToProbes(pr, true, true, false, null,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -35,10 +35,11 @@ import otgviewer.client.components.groupdef.TreatedControlGroupInspector;
 import otgviewer.client.components.groupdef.TreatedControlSelTDGrid;
 import otgviewer.client.components.ranking.CompoundRanker;
 import otgviewer.client.components.ranking.SimpleCompoundRanker;
-import otgviewer.client.targetmine.TargetMineData;
 import t.common.shared.DataSchema;
 import t.common.shared.StringList;
 import t.common.shared.sample.Group;
+import t.viewer.client.intermine.InterMineData;
+import t.viewer.shared.intermine.IntermineInstance;
 
 
 /**
@@ -82,14 +83,16 @@ public class OTGFactory implements UIFactory {
   }
 
   @Override
-  public void enrichment(Screen screen, StringList probes) {
-    TargetMineData tm = new TargetMineData(screen);
+  public void enrichment(Screen screen, StringList probes, 
+      @Nullable IntermineInstance preferredInst) {
+    InterMineData tm = new InterMineData(screen, preferredInst);
     tm.enrich(probes);
   }
 
   @Override
-  public void multiEnrichment(Screen screen, StringList[] lists) {
-    TargetMineData tm = new TargetMineData(screen);
+  public void multiEnrichment(Screen screen, StringList[] lists, 
+      @Nullable IntermineInstance preferredInst) {
+    InterMineData tm = new InterMineData(screen, preferredInst);
     tm.multiEnrich(lists);    
   }
   

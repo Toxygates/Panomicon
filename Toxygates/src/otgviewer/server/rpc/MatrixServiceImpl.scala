@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,5 +20,10 @@
 
 package otgviewer.server.rpc
 
+import t.clustering.shared.Algorithm
+import t.common.shared.sample.Group
+
 class MatrixServiceImpl extends t.viewer.server.rpc.MatrixServiceImpl
-    with OTGServiceServlet
+    with OTGServiceServlet {
+  
+}

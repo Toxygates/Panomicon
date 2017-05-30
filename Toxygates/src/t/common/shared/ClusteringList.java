@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -31,9 +31,9 @@ import java.util.TreeMap;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.userclustering.Algorithm;
-import t.common.shared.userclustering.Distances;
-import t.common.shared.userclustering.Methods;
+import t.clustering.shared.Algorithm;
+import t.clustering.shared.Distances;
+import t.clustering.shared.Methods;
 
 @SuppressWarnings("serial")
 public class ClusteringList extends ItemList {

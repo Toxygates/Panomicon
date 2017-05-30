@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -46,6 +46,8 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
    * Converts grouped into (grouped, ungrouped)
    */
   private def convert(from: ExprMatrix): (ExprMatrix, ExprMatrix, Map[Int, Seq[Int]]) = {
+    println(s"Convert $from")
+
     val rangeProbes = pm.range.toSeq
     val fromRowSet = from.rowKeys.toSet
 
@@ -73,7 +75,12 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
     val groupedVals = nrows.map(_._1.map(_.post))
 
     //the max. size of each ungrouped column
-    val ungroupedSizes = (0 until from.columns).map(c => nrows.map(_._1(c).prior.size).max)
+    val ungroupedSizes = (
+      for (
+        c <- 0 until from.columns;
+        ss = nrows.map(_._1(c).prior.size)
+      ) yield ss.max)
+
     //pad to size to get a matrix
     val ungroupedVals = for (r <- nrows)
       yield (0 until from.columns).flatMap(c => padToSize(r._1(c).prior, ungroupedSizes(c)))
@@ -96,6 +103,7 @@ class MatrixMapper(val pm: ProbeMapper, val vm: ValueMapper) {
 
   def convert(from: ManagedMatrix): ManagedMatrix = {
 //    val ungr = convert(from.rawUngroupedMat)
+
     val (gr, ungr, bm) = convert(from.rawGrouped)
     val rks = (0 until ungr.rows).map(ungr.rowAt)
 

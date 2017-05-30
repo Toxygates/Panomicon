@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -22,7 +22,7 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
-import t.common.client.components.EnumSelector;
+import t.common.client.components.ItemSelector;
 import t.common.client.maintenance.AccessPolicy;
 import t.common.client.maintenance.ManagedItemEditor;
 import t.common.shared.maintenance.Instance;
@@ -34,7 +34,7 @@ import com.google.gwt.user.client.ui.TextBox;
 public class InstanceEditor extends ManagedItemEditor {
 
   private final TextBox roleText;
-  private final EnumSelector<AccessPolicy> policySelector;
+  private final ItemSelector<AccessPolicy> policySelector;
 
   protected final MaintenanceServiceAsync maintenanceService = GWT.create(MaintenanceService.class);
   
@@ -45,7 +45,7 @@ public class InstanceEditor extends ManagedItemEditor {
     vp.add(l);
 
     //TODO set values for these fields and keep them in sync
-    policySelector = new EnumSelector<AccessPolicy>() {
+    policySelector = new ItemSelector<AccessPolicy>() {
       @Override
       protected AccessPolicy[] values() {
         return AccessPolicy.values();

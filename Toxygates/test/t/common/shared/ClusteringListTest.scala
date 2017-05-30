@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -23,9 +23,9 @@ package t.common.shared
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import t.common.shared.userclustering.Algorithm
-import t.common.shared.userclustering.Methods
-import t.common.shared.userclustering.Distances
+import t.clustering.shared.Algorithm
+import t.clustering.shared.Methods
+import t.clustering.shared.Distances
 
 @RunWith(classOf[JUnitRunner])
 class ClusteringListTest extends FunSuite {

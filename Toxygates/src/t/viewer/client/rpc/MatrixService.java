@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -23,10 +23,11 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import t.clustering.client.ClusteringService;
+import t.clustering.shared.Algorithm;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
-import t.common.shared.userclustering.Algorithm;
 import t.viewer.shared.ColumnFilter;
 import t.viewer.shared.FullMatrix;
 import t.viewer.shared.ManagedMatrixInfo;
@@ -44,7 +45,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  *
  */
 @RemoteServiceRelativePath("matrix")
-public interface MatrixService extends RemoteService {
+public interface MatrixService extends ClusteringService<Group, String>, RemoteService {
 
   /**
    * Load data into the user's session. Also perform an initial filtering.
@@ -146,6 +147,7 @@ public interface MatrixService extends RemoteService {
    * @throws ServerError
    */
   String prepareHeatmap(List<Group> chosenColumns, 
-      @Nullable String[] chosenProbes,
+      @Nullable List<String> chosenProbes,
       ValueType valueType, Algorithm algorithm) throws ServerError;
+  
 }

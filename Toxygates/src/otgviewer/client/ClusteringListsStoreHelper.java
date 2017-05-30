@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -23,10 +23,10 @@ import java.util.Collection;
 import java.util.List;
 
 import otgviewer.client.components.Screen;
+import t.clustering.shared.Algorithm;
 import t.common.shared.ClusteringList;
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
-import t.common.shared.userclustering.Algorithm;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InputDialog;

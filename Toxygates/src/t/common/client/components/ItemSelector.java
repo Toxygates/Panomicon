@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -18,7 +18,7 @@
 
 package t.common.client.components;
 
-import java.util.Arrays;
+import javax.annotation.Nullable;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -26,20 +26,31 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.ListBox;
 
 /**
- * A convenience widget for selecting among the values of an enum. NB this assumes that the toString
- * values of each enum member are unique.
+ * A convenience widget for selecting among some values of type T.
+ * Values of T must be uniquely mapped to strings.
+ * By default, toString is used to establish this mapping.
  * 
  * @param <T>
  */
-public abstract class EnumSelector<T extends Enum<T>> extends Composite {
+public abstract class ItemSelector<T> extends Composite {
 
   private ListBox lb = new ListBox();
-
-  public EnumSelector() {
+ 
+  public ItemSelector(T[] values) {
     initWidget(lb);
+    setup(values);
+  }
+  
+  public ItemSelector() {
+    initWidget(lb);
+    setup(values());
+  }
+  
+  private void setup(T[] values) {
+    lb.clear();
     lb.setVisibleItemCount(1);
-    for (T t : values()) {
-      lb.addItem(t.toString());
+    for (T t : values) {
+      lb.addItem(titleForValue(t));
     }
     lb.addChangeHandler(new ChangeHandler() {
       @Override
@@ -53,20 +64,11 @@ public abstract class EnumSelector<T extends Enum<T>> extends Composite {
     return lb;
   }
 
-  protected T parse(String s) {
-    for (T t : values()) {
-      if (s.equals(t.toString())) {
-        return t;
-      }
-    }
-    return null;
-  }
-
-  public T value() {
+  public @Nullable T value() {
     if (lb.getSelectedIndex() == -1) {
       return null;
     }
-    return parse(lb.getItemText(lb.getSelectedIndex()));
+    return valueForTitle(lb.getItemText(lb.getSelectedIndex()));
   }
 
   public void reset() {
@@ -75,11 +77,38 @@ public abstract class EnumSelector<T extends Enum<T>> extends Composite {
 
   protected abstract T[] values();
 
-  public void setSelected(T t) {
-    int idx = Arrays.binarySearch(values(), t);
-    if (idx != -1) {
-      lb.setSelectedIndex(idx);
+  /**
+   * T to String mapping
+   * @param t
+   * @return
+   */
+  protected String titleForValue(T t) {
+    return t.toString();
+  }
+  
+  /**
+   * String to T mapping - must be the reverse of the above.
+   * By default all the forward mappings are searched (suitable only
+   * for a smaller number of values)
+   * @param title
+   * @return
+   */
+  protected @Nullable T valueForTitle(String title) {
+    for (T t : values()) {
+      if (title.equals(titleForValue(t))) {
+        return t;
+      }
     }
+    return null;
+  }
+  
+  public void setSelected(T t) {
+    for (int i = 0; i < values().length; i++) {
+      if (values()[i].equals(t)) {
+        lb.setSelectedIndex(i);
+        return;
+      }
+    }    
   }
 
   protected void onValueChange(T selected) {}

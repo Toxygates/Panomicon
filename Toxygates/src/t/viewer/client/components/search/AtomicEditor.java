@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import javax.annotation.Nullable;
 
-import t.common.client.components.EnumSelector;
+import t.common.client.components.ItemSelector;
 import t.common.shared.sample.search.AtomicMatch;
 import t.common.shared.sample.search.MatchType;
 
@@ -16,7 +16,7 @@ import com.google.gwt.user.client.ui.ListBox;
 public class AtomicEditor extends MatchEditor {
 
   private ListBox paramSel;
-  private EnumSelector<MatchType> typeSel;
+  private ItemSelector<MatchType> typeSel;
   
   final static String UNDEFINED_ITEM = "Undefined";
   
@@ -47,7 +47,7 @@ public class AtomicEditor extends MatchEditor {
     
     hp.add(paramSel);
     
-    typeSel = new EnumSelector<MatchType>() {
+    typeSel = new ItemSelector<MatchType>() {
       protected MatchType[] values() {
         return MatchType.values();
       }

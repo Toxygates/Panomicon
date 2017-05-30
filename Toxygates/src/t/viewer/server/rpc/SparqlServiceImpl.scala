@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -77,7 +77,7 @@ object SparqlServiceImpl {
   var inited = false
 
   //TODO update mechanism for this
-  var platforms: Map[String, Iterable[String]] = _
+  var platforms: Map[String, Iterable[Probe]] = _
 
   def staticInit(c: t.Context) = synchronized {
     if (!inited) {
@@ -104,6 +104,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   protected var uniprot: Uniprot = _
   protected var configuration: Configuration = _
+
+  lazy val platformsCache = t.viewer.server.Platforms(probeStore)
 
   lazy val annotations = new Annotations(sampleStore, schema, baseConfig)
 
@@ -137,7 +139,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
    */
   protected def refreshAppInfo(): AppInfo = {
     new AppInfo(configuration.instanceName, Array(),
-        sPlatforms(), predefProbeLists(), probeClusterings(), appName,
+        sPlatforms(), predefProbeLists(),
+        configuration.intermineInstances.toArray,
+        probeClusterings(), appName,
         makeUserKey(), getAnnotationInfo,
         annotations.allParamsAsShared.toArray)
   }
@@ -189,17 +193,33 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     "%x%x".format(time, random)
   }
 
-  //TODO filter datasets by key
   def appInfo(@Nullable userKey: String): AppInfo = {
     getSessionData() //initialise this if needed
 
     val ai = appInfoLoader.latest
 
-    /* Reload the datasets since they can change often (with user data, admin
+    /* 
+     * Reload the datasets since they can change often (with user data, admin
      * operations etc.)
      */
     ai.setDatasets(sDatasets(userKey))
-
+    
+    val sess = getThreadLocalRequest.getSession
+    import GeneSetServlet._
+    
+    /*
+     * From GeneSetServlet
+     */
+    val importGenes = sess.getAttribute(IMPORT_SESSION_KEY)
+    if (importGenes != null) {
+      val igs = importGenes.asInstanceOf[Array[String]]
+      ai.setImportedGenes(igs)
+      //Import only once
+      sess.removeAttribute(IMPORT_SESSION_KEY)
+    } else {
+      ai.setImportedGenes(null)
+    }
+    
     if (getSessionData().sampleFilter.datasetURIs.isEmpty) {
       //Initialise the selected datasets by selecting all, except shared user data.
       val defaultVisible = ai.datasets.filter(ds =>
@@ -356,7 +376,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val usePlatforms = samples.map(s => metadata.parameter(
         t.db.Sample(s.id), "platform_id")
         ).distinct
-    usePlatforms.toVector.flatMap(x => platforms(x)).toArray
+    usePlatforms.toVector.flatMap(x => platforms(x)).map(_.identifier).toArray
   }
 
   //TODO move to OTG
@@ -420,11 +440,29 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   def identifiersToProbes(identifiers: Array[String], precise: Boolean,
       quick: Boolean, titlePatternMatch: Boolean,
       samples: JList[Sample]): Array[String] = {
+
+    def geneLookup(gene: String): Option[Iterable[Probe]] =
+      platformsCache.geneLookup.get(Gene(gene))
+
     val ps = if (titlePatternMatch) {
       probeStore.forTitlePatterns(identifiers)
     } else {
-      probeStore.identifiersToProbes(context.matrix.probeMap,
-        identifiers, precise, quick)
+      //Try to do a gene identifier based lookup first
+
+      var geneMatch = Set[String]()
+      var matchingGenes = Seq[Probe]()
+      for (
+        i <- identifiers; ps <- geneLookup(i)
+      ) {
+        geneMatch += i
+        matchingGenes ++= ps
+      }
+
+      val nonGeneMatch = (identifiers.toSet -- geneMatch).toArray
+
+      //Resolve remaining identifiers
+      matchingGenes ++ probeStore.identifiersToProbes(context.matrix.probeMap,
+        nonGeneMatch, precise, quick)
     }
     val result = ps.map(_.identifier).toArray
 
@@ -525,7 +563,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   private def filterProbesByGroupInner(probes: Iterable[String], group: Iterable[Sample]) = {
     val platforms: Set[String] = group.map(x => x.get("platform_id")).toSet
     val lookup = probeStore.platformsAndProbes
-    val acceptable = platforms.flatMap(p => lookup(p))
+    val acceptable = platforms.flatMap(p => lookup(p)).map(_.identifier)
     probes.filter(acceptable.contains)
   }
 
