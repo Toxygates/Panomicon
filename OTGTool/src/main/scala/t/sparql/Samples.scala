@@ -86,12 +86,18 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
 
   //TODO is this the best way to handle URI/title conversion?
   //Is such conversion needed?
-  protected def adjustSample(m: Map[String, String]): Map[String, String] = {
-    if (m.contains("dataset")) {
+  protected def adjustSample(m: Map[String, String],
+                             overrideBatch: Option[String] = None): Map[String, String] = {
+    var r = if (m.contains("dataset")) {
       m + ("dataset" -> Datasets.unpackURI(m("dataset")))
     } else {
       m
     }
+    overrideBatch match {
+      case Some(ob) => r + ("batchGraph" -> ob)
+      case _ => r
+    }
+    r
   }
 
   protected def graphCon(g: Option[String]) = g.map("<" + _ + ">").getOrElse("?g")
