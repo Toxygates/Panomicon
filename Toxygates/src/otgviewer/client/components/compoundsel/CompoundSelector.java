@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -32,7 +32,7 @@ import t.common.shared.ItemList;
 import t.common.shared.SampleClass;
 import t.common.shared.StringList;
 import t.viewer.client.components.StackedListEditor;
-import t.viewer.client.rpc.SparqlServiceAsync;
+import t.viewer.client.rpc.SampleServiceAsync;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
@@ -48,7 +48,7 @@ import com.google.gwt.view.client.NoSelectionModel;
  */
 public class CompoundSelector extends DataListenerWidget implements RequiresResize {
 
-  protected final SparqlServiceAsync sparqlService;
+  protected final SampleServiceAsync sampleService;
 
   protected StackedListEditor compoundEditor;
   private DockLayoutPanel dp;
@@ -62,7 +62,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
   public CompoundSelector(final Screen screen, String heading, boolean withListSelector,
       boolean withFreeEdit) {
     this.screen = screen;
-    this.sparqlService = screen.sparqlService();
+    this.sampleService = screen.manager().sampleService();
     dp = new DockLayoutPanel(Unit.PX);
     this.majorParameter = screen.schema().majorParameter();
 
@@ -127,7 +127,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
   }
 
   void loadMajors() {
-    sparqlService.parameterValues(chosenSampleClass, majorParameter,
+    sampleService.parameterValues(chosenSampleClass, majorParameter,
         new PendingAsyncCallback<String[]>(this, "Unable to retrieve values for parameter: "
             + majorParameter) {
 

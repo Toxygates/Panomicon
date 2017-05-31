@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -22,14 +22,19 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * A set of annotations (such as chemical data and morphological data) corresponding to a microarray
+ * A set of annotations (such as chemical data and morphological data) corresponding to a
  * sample.
  */
 @SuppressWarnings("serial")
 public class Annotation implements Serializable {
-  public Annotation(String id, List<Entry> annotations) {
+  
+  /**
+   * @param id The sample ID.
+   * @param annotations
+   */
+  public Annotation(String id, List<BioParamValue> values) {
     _id = id;
-    _entries = annotations;
+    _values = values;
   }
 
   public Annotation() {}
@@ -40,36 +45,9 @@ public class Annotation implements Serializable {
     return _id;
   }
 
-  private List<Entry> _entries;
+  private List<BioParamValue> _values;
 
-  /**
-   * An entry has a string value and/or a numerical value. The user needs to track which value has
-   * been set in some external way.
-   */
-  public static class Entry implements Serializable {
-    public String description;
-    public String value;
-    public boolean numerical;
-
-    public Entry() {}
-
-    public Entry(String description, String value, boolean numerical) {
-      this.description = description;
-      this.value = value;
-      this.numerical = numerical;
-    }
-  }
-
-  public List<Entry> getEntries() {
-    return _entries;
-  }
-
-  public double doubleValueFor(String entryName) throws Exception {
-    for (Annotation.Entry e : getEntries()) {
-      if (e.description.equals(entryName)) {
-        return Double.valueOf(e.value);
-      }
-    }
-    throw new Exception("Value not available");
+  public List<BioParamValue> getAnnotations() {
+    return _values;
   }
 }

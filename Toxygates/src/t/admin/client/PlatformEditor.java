@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -50,14 +50,14 @@ public class PlatformEditor extends ManagedItemEditor {
       vp.add(uploader);
     }
     addCommands();
-  }
+  }  
 
   @Override
   protected void triggerEdit() {
     Platform p = new Platform(idText.getValue(), 0, commentArea.getValue(), 
         new Date(), publicComments.getValue());
     if (addNew) {
-      maintenanceService.addPlatformAsync(p, uploader.affyRadio.getValue(), new TaskCallback(
+      maintenanceService.addPlatformAsync(p, uploader.platformType(), new TaskCallback(
           "Add platform", maintenanceService) {
         @Override
         protected void onCompletion() {

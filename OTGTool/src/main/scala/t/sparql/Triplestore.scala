@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -26,6 +26,7 @@ import org.openrdf.query.QueryLanguage
 import scala.concurrent.Await
 import scala.concurrent._
 import scala.concurrent.duration.Duration
+import scala.collection.JavaConversions._
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.Executors
 import org.openrdf.repository.sparql.SPARQLRepository
@@ -35,18 +36,21 @@ import t.Closeable
 import org.openrdf.rio.RDFFormat
 import org.openrdf.model.Resource
 import org.openrdf.model.impl.URIImpl
+import info.aduna.iteration.Iteration
+import org.openrdf.query.TupleQueryResult
 
 object Triplestore {
   val executor = Executors.newCachedThreadPool()
   val executionContext = ExecutionContext.fromExecutor(executor)
 
   val tPrefixes: String = """
-    PREFIX purl:<http://purl.org/dc/elements/1.1/>
-    PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-    PREFIX owl:<http://www.w3.org/2002/07/owl#>
-    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-    PREFIX t:<http://level-five.jp/t/>"""
+    |PREFIX purl:<http://purl.org/dc/elements/1.1/>
+    |PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    |PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    |PREFIX owl:<http://www.w3.org/2002/07/owl#>
+    |PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    |PREFIX t:<http://level-five.jp/t/>
+    |""".stripMargin
 
   /*
    * TODO: Currently we use connectRemoteRepository for Owlim-SE connections, and
@@ -124,7 +128,7 @@ abstract class Triplestore extends Closeable {
     pq.setMaxQueryTime(timeoutMillis / 1000)
     // for sesame 2.8
 //    pq.setMaxExecutionTime(timeoutMillis / 1000)
-    Some(pq.evaluate())
+    pq.evaluate()
   }
 
   /**
@@ -162,76 +166,61 @@ abstract class Triplestore extends Closeable {
 
   def simpleQueryNonQuiet(query: String): Vector[String] = simpleQuery(query, true)
 
-  /**
-   * Query for some number of records, each containing a single field.
-   */
-  def simpleQuery(query: String, quiet: Boolean = false)(implicit timeoutMillis: Int = 10000): Vector[String] = {
-    var r: Vector[String] = Vector.empty
-    evaluate(query, timeoutMillis).foreach(rs => {
-      while (rs.hasNext) {
-        val tuple = rs.next
-        val it = tuple.iterator
-        while (it.hasNext) {
-          val v = it.next.getValue
-          r +:= v.stringValue
-        }
-      }
-      rs.close
-    })
-    if (!quiet) {
-      println(if (r.size > 10) { "[" + r.size + "] " + r.take(5) + " ... " } else { r })
+  import scala.language.implicitConversions
+  private implicit def resultToSeq[T, U <: Exception](i: Iteration[T,U]) = {
+    var r: Vector[T] = Vector()
+    while (i.hasNext) {
+      r :+= i.next
     }
     r
   }
 
   /**
+   * Query for some number of records, each containing a single field.
+   */
+  def simpleQuery(query: String, quiet: Boolean = false, timeoutMillis: Int = 10000): Vector[String] = {
+    val rs = evaluate(query, timeoutMillis)
+    val recs = for (
+      tuple <- rs;
+      v <- tuple;
+      s = v.getValue.stringValue()
+    ) yield s
+    rs.close
+    if (!quiet) {
+      println(if (recs.size > 10) { "[" + recs.size + "] " + recs.take(5) + " ... " } else { recs })
+    }
+    recs
+  }
+
+  /**
    * Query for some number of records, each containing some number of fields.
    */
-  def multiQuery(query: String)(implicit timeoutMillis: Int = 10000): Vector[Vector[String]] = {
+  def multiQuery(query: String, timeoutMillis: Int = 10000): Vector[Vector[String]] = {
     val start = System.currentTimeMillis()
-    var r: Vector[Vector[String]] = Vector.empty
-    evaluate(query, timeoutMillis).foreach(rs => {
-      while (rs.hasNext) {
-        val tuple = rs.next
-        val it = tuple.iterator
-        var current: Vector[String] = Vector.empty
-        while (it.hasNext) {
-          val v = it.next.getValue
-          current +:= v.stringValue
-        }
-        r +:= current
-      }
-      rs.close
-    })
-    println("Took " + (System.currentTimeMillis() - start) / 1000.0 + " s")
+    val rs = evaluate(query, timeoutMillis)
+    val recs = for (
+      tuple <- rs;
+      rec = tuple.map(n => n.getValue.stringValue)
+    ) yield rec.toVector
+    rs.close
 
-    println(if (r.size > 10) { r.take(10) + " ... " } else { r })
-    r
+    println("Took " + (System.currentTimeMillis() - start) / 1000.0 + " s")
+    println(if (recs.size > 10) { recs.take(10) + " ... " } else { recs })
+    recs
   }
 
   /**
    * Query for some number of records, each containing named fields.
-   * TODO this could be optimised, no need to construct the map each time if
-   * some value handler is passed in
    */
-  def mapQuery(query: String)(implicit timeoutMillis: Int = 10000): Vector[Map[String, String]] = {
-    var r: Vector[Map[String, String]] = Vector.empty
-    evaluate(query, timeoutMillis).foreach(rs => {
-      while (rs.hasNext) {
-        val tuple = rs.next
-        val it = tuple.iterator
-        var current: Map[String, String] = Map()
-        while (it.hasNext) {
-          val n = it.next
-          current += (n.getName -> n.getValue.stringValue)
-        }
-        r +:= current
-      }
-
-      rs.close
-    })
-    println(if (r.size > 10) { r.take(10) + " ... " } else { r })
-    r
+  def mapQuery(query: String, timeoutMillis: Int = 10000): Vector[Map[String, String]] = {
+    val rs = evaluate(query, timeoutMillis)
+    val recs = for (
+      tuple <- rs;
+      rec = Map() ++ tuple.map(n => n.getName -> n.getValue.stringValue())
+    ) yield rec
+    rs.close
+    println(if (recs.size > 10) { recs.take(10) + " ... " } else { recs })
+    recs
   }
 }
 

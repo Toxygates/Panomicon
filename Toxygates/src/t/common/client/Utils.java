@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -24,6 +24,7 @@ import t.common.shared.ManagedItem;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.cellview.client.CellTable;
@@ -90,5 +91,19 @@ public class Utils {
     table.setSelectionModel(new NoSelectionModel<T>());
     table.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
     return table;
+  }  
+  
+  private static NumberFormat df = NumberFormat.getDecimalFormat();
+  private static NumberFormat sf = NumberFormat.getScientificFormat();
+
+  public static String formatNumber(double v) {
+    if (v == 0.0) {
+      return "0";
+    }
+    if (Math.abs(v) > 0.001) {
+      return df.format(v);
+    } else {
+      return sf.format(v);
+    }
   }
 }

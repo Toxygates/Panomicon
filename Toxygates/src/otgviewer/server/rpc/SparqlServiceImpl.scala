@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -49,7 +49,8 @@ import t.viewer.shared.AppInfo
  * This servlet is reponsible for making queries to RDF stores, including our
  * local Owlim-lite store.
  */
-class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGServiceServlet {
+class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGServiceServlet
+  with otgviewer.client.rpc.SparqlService {
 
   private def probeStore: otg.sparql.Probes = context.probes
   private def sampleStore: otg.sparql.OTGSamples = context.samples
@@ -122,7 +123,7 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
 
   override def associations(sc: SampleClass, types: Array[AType],
     _probes: Array[String]): Array[Association] =
-    new AnnotationResolver(sc, types, _probes).resolve
+    new AssociationResolver(sc, types, _probes).resolve
 
   override def staticAnnotationInfo: Seq[(String, String)] = {
      /*
@@ -137,8 +138,8 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
       )
   }
 
-  protected class AnnotationResolver(sc: SampleClass, types: Array[AType],
-     _probes: Iterable[String]) extends super.AnnotationResolver(sc, types, _probes) {
+  protected class AssociationResolver(sc: SampleClass, types: Array[AType],
+     _probes: Iterable[String]) extends super.AssociationResolver(sc, types, _probes) {
 
       //    val sp = asSpecies(sc)
     //orthologous proteins if needed

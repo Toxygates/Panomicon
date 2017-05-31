@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -21,6 +21,7 @@
 package t.viewer.server
 
 import t.sparql.Probes
+import t.platform.Probe
 
 object Platforms {
   def apply(probes: Probes): Platforms = {
@@ -32,9 +33,23 @@ object Platforms {
 }
 
 /**
- * A probe and platform registry.
+ * A probe and platform registry. Caches data to avoid heavy sparql queries.
  */
-class Platforms(val data: Map[String, Set[String]]) {
+class Platforms(val data: Map[String, Set[Probe]]) {
+  lazy val identifierMaps = data.mapValues(_.map(_.identifier))
+  
+  lazy val identifierLookup =
+    Map() ++ data.toSeq.flatMap(_._2.toSeq).map(x => x.identifier -> x)
+  
+  lazy val geneLookup = {
+    val raw = (for (
+        (pf, probes) <- data.toSeq;
+        pr <- probes;
+        gene <- pr.genes
+      ) yield (gene, pr))
+    Map() ++ raw.groupBy(_._1).mapValues(_.map(_._2))
+  }
+  
 //TODO: update mechanism
 
 //  println("Platforms: ")
@@ -42,6 +57,9 @@ class Platforms(val data: Map[String, Set[String]]) {
 //    println(s"\t${p._1}: ${p._2.size}")
 //  }
 
+  def resolve(identifiers: Seq[String]): Seq[Probe] = 
+    identifiers.flatMap(identifierLookup.get(_))
+      
   /**
    * Filter probes for a number of platforms.
    */
@@ -51,24 +69,22 @@ class Platforms(val data: Map[String, Set[String]]) {
   /**
    * Filter probes for all platforms.
    */
-  def filterProbesAllPlatforms(probes: Seq[String]): Seq[String] = {
-    val pfs = data.keys
-    filterProbes(probes, pfs)
-  }
+  def filterProbesAllPlatforms(probes: Seq[String]): Seq[String] = 
+    probes.filter(identifierLookup.keySet.contains)    
 
   def platformForProbe(p: String): Option[String] =
-    data.find(_._2.contains(p)).map(_._1)
+    identifierMaps.find(_._2.contains(p)).map(_._1)
 
   /**
    * Filter probes for one platform.
    */
-  def filterProbes(probes: Seq[String], platform: String): Iterable[String] = {
+  def filterProbes(probes: Seq[String], platform: String): Iterable[String] = {    
     if (probes.size == 0) {
-      data(platform).toSeq
+      data(platform).toSeq.map(_.identifier)
     } else {
       println(s"Filter ${probes}")
-      val r = probes.filter(p => data(platform).contains(p))
-      println(s"Result $r")
+      val r = probes.filter(p => identifierMaps(platform).contains(p))
+      println(s"Result ${r take 100} ...")
       r
     }
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -89,14 +89,12 @@ public class FullRuleInputHelper extends RuleInputHelper {
 
       @Override
       public void handleSuccess(String[] result) {
-
         for (String i : result) {
           if (!i.equals("Control")) {
             refDose.addItem(i);
           }
         }
       }
-
     });
   }
 

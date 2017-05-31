@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -158,7 +158,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   public ExpressionTable(Screen _screen, boolean withPValueOption) {
     super(_screen);
     this.withPValueOption = withPValueOption;
-    this.matrixService = _screen.matrixService();
+    this.matrixService = _screen.manager().matrixService();
     this.resources = _screen.resources();
     screen = _screen;
 

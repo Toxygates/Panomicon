@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -63,7 +63,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
 
       "?x rdfs:label ?id. OPTIONAL { ?x t:control_group ?control_group . } ",
     s" } ${sf.standardSampleFilters} }",
-    eval = (q => ts.mapQuery(q)(20000).map(x => {
+    eval = (q => ts.mapQuery(q, 20000).map(x => {
       val sc = SampleClass(adjustSample(x)) ++ filter
       Sample(x("id"), sc, x.get("control_group"))
     })))

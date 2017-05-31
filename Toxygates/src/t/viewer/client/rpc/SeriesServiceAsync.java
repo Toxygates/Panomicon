@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -29,14 +29,14 @@ import t.common.shared.SampleClass;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface SeriesServiceAsync {
-  public void rankedCompounds(Dataset[] ds, SampleClass sc, RankRule[] rules,
+  void rankedCompounds(Dataset[] ds, SampleClass sc, RankRule[] rules,
       AsyncCallback<MatchResult[]> callback);
 
-  public void getSingleSeries(SampleClass sc, String probe, String timeDose, String compound,
+  void getSingleSeries(SampleClass sc, String probe, String timeDose, String compound,
       AsyncCallback<Series> callback);
 
-  public void getSeries(SampleClass sc, String[] probes, String timeDose, String[] compounds,
+  void getSeries(SampleClass sc, String[] probes, String timeDose, String[] compounds,
       AsyncCallback<List<Series>> callback);
 
-  public void expectedTimes(Series s, AsyncCallback<String[]> callback);
+  void expectedTimes(Series s, AsyncCallback<String[]> callback);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -18,6 +18,7 @@
 
 package t.admin.client;
 
+import t.admin.shared.PlatformType;
 import t.common.client.rpc.BatchOperationsAsync;
 import t.common.shared.Dataset;
 import t.common.shared.ManagedItem;
@@ -37,7 +38,7 @@ public interface MaintenanceServiceAsync extends BatchOperationsAsync {
 
   void addBatchAsync(Batch b, AsyncCallback<Void> callback);
 
-  void addPlatformAsync(Platform p, boolean affymetrixFormat, AsyncCallback<Void> callback);
+  void addPlatformAsync(Platform p, PlatformType pt, AsyncCallback<Void> callback);
 
   void add(ManagedItem i, AsyncCallback<Void> callback);
 

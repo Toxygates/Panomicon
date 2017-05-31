@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -22,8 +22,10 @@ import otgviewer.client.Resources;
 import otgviewer.client.UIFactory;
 import t.common.shared.DataSchema;
 import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.client.rpc.ProbeServiceAsync;
+import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.rpc.SeriesServiceAsync;
-import t.viewer.client.rpc.SparqlServiceAsync;
+import otgviewer.client.rpc.SparqlServiceAsync;
 import t.viewer.client.rpc.UserDataServiceAsync;
 import t.viewer.shared.AppInfo;
 
@@ -84,6 +86,10 @@ public interface ScreenManager extends ProvidesResize {
   void reloadAppInfo(final AsyncCallback<AppInfo> handler);
 
   SparqlServiceAsync sparqlService();
+  
+  SampleServiceAsync sampleService();
+  
+  ProbeServiceAsync probeService();
 
   MatrixServiceAsync matrixService();
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -22,7 +22,7 @@ import java.util.Arrays;
 
 import t.common.shared.Dataset;
 import t.common.shared.SampleClass;
-import t.viewer.client.rpc.SparqlServiceAsync;
+import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.shared.AppInfo;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -38,11 +38,11 @@ public class FilterTools extends DataListenerWidget {
   private HorizontalPanel filterTools;
   private DataFilterEditor dfe;
   final Screen screen;
-  final SparqlServiceAsync sparqlService;
+  final SampleServiceAsync sampleService;
 
   public FilterTools(final Screen screen) {
     this.screen = screen;
-    sparqlService = screen.sparqlService();
+    sampleService = screen.manager().sampleService();
 
     filterTools = new HorizontalPanel();
     initWidget(filterTools);
@@ -102,7 +102,7 @@ public class FilterTools extends DataListenerWidget {
           @Override
           public void onOK() {
             datasetsChanged(getSelected().toArray(new Dataset[0]));
-            sparqlService.chooseDatasets(chosenDatasets, new PendingAsyncCallback<Void>(screen,
+            sampleService.chooseDatasets(chosenDatasets, new PendingAsyncCallback<Void>(screen,
                 "Unable to choose datasets") {
               public void handleSuccess(Void v) {
                 dfe.update();

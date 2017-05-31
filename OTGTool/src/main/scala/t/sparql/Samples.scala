@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -127,14 +127,17 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
 
   def sampleClasses(implicit sf: SampleFilter): Seq[Map[String, String]]
 
+  /**
+   * If the querySet is ordered, we preserve the ordering in the result
+   */
   def parameterQuery(sample: String,
-    querySet: Iterable[SampleParameter] = Set()): Iterable[(SampleParameter, Option[String])] = {
-    val allParams = bc.sampleParameters.all
-    val queryParams = if (querySet.isEmpty) {
-      allParams
+    querySet: Iterable[SampleParameter] = Seq()): Seq[(SampleParameter, Option[String])] = {
+
+    val queryParams = (if (querySet.isEmpty) {
+      bc.sampleParameters.all
     } else {
-      allParams.filter(querySet.toSet.contains(_))
-    }
+      querySet
+    }).toSeq
 
     val withIndex = queryParams.zipWithIndex
     val triples = withIndex.map(x => " OPTIONAL { ?x t:" + x._1.identifier + " ?k" + x._2 + ". } ")
@@ -169,7 +172,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
         "?x " +
           attribute.map(x => s"t:$x ?$x").mkString("; "),
       s"} ${sf.standardSampleFilters} } ",
-      ts.mapQuery)
+      ts.mapQuery(_, 10000))
   }
 
   def attributeValues(filter: TFilter, attribute: String)(implicit sf: SampleFilter) =

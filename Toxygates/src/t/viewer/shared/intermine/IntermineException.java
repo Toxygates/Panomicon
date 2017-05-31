@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -18,8 +18,17 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.shared.targetmine;
+package t.viewer.shared.intermine;
 
-public class Filter {
-
+@SuppressWarnings("serial")
+public class IntermineException extends Exception {
+  
+  //GWT constructor
+  public IntermineException() {
+    super();
+  }
+  
+  public IntermineException(String message) {
+    super(message);
+  }
 }

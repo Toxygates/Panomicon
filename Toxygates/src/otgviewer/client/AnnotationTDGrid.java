@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -24,7 +24,9 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.Annotation;
+import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.Group;
+import t.common.shared.sample.NumericalBioParamValue;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
 
@@ -79,16 +81,16 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
       SampleClass sc = chosenSampleClass.copy();
       sc.put("compound_name", compounds.get(0));
-      sparqlService.samples(sc, new PendingAsyncCallback<Sample[]>(
+      sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(
           this, "Unable to get samples") {
         public void handleSuccess(Sample[] bcs) {
 
-          sparqlService.annotations(bcs[0], new PendingAsyncCallback<Annotation>(
+          sampleService.annotations(bcs[0], new PendingAsyncCallback<Annotation>(
               AnnotationTDGrid.this, "Unable to get annotations.") {
             public void handleSuccess(Annotation a) {
-              for (Annotation.Entry e : a.getEntries()) {
-                if (e.numerical) {
-                  annotationSelector.addItem(e.description);
+              for (BioParamValue e : a.getAnnotations()) {
+                if (e instanceof NumericalBioParamValue) {
+                  annotationSelector.addItem(e.label());
                 }
               }
             }
@@ -115,7 +117,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     sc.put("exposure_time", time);
     sc.put("compound_name", compound);
 
-    sparqlService.samples(sc, new PendingAsyncCallback<Sample[]>(this,
+    sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(this,
         "Unable to retrieve barcodes for the group definition.") {
       public void handleSuccess(Sample[] barcodes) {
         processAnnotationBarcodes(annotation, row, col, time, barcodes);
@@ -123,18 +125,27 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     });
   }
 
+  private double doubleValueFor(Annotation a, String key) throws IllegalArgumentException {
+    for (BioParamValue e : a.getAnnotations()) {
+      if (e.label().equals(key) && e instanceof NumericalBioParamValue) {
+        return ((NumericalBioParamValue) e).value();
+      }
+    }
+    throw new IllegalArgumentException("Value not available");
+  }
+  
   private void processAnnotationBarcodes(final String annotation, final int row, final int col,
       final String time, final Sample[] barcodes) {
     final NumberFormat fmt = NumberFormat.getFormat("#0.00");
     Group g = new Group(schema, "temporary", barcodes, null);
-    sparqlService.annotations(g, false, new PendingAsyncCallback<Annotation[]>(this,
+    sampleService.annotations(g, false, new PendingAsyncCallback<Annotation[]>(this,
         "Unable to get annotations.") {
       public void handleSuccess(Annotation[] as) {
         double sum = 0;
         int n = 0;
         for (Annotation a : as) {
           try {
-            double val = a.doubleValueFor(annotation);
+            double val = doubleValueFor(a, annotation);
             if (!Double.isNaN(val)) {
               n += 1;
               sum += val;

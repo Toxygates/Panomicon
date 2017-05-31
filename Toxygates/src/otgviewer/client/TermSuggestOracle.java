@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -46,7 +46,7 @@ public class TermSuggestOracle extends SuggestOracle implements
       new ArrayList<ExactMatchHandler<Term>>();
 
   public TermSuggestOracle(Screen screen) {
-    sparqlService = screen.sparqlService();
+    sparqlService = screen.manager().sparqlService();
   }
 
   @Override

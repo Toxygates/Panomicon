@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -34,16 +34,19 @@ import t.Factory
 class TriplestoreMetadata(os: Samples, val parameters: ParameterSet)
 (implicit sf: SampleFilter) extends Metadata {
 
-  def samples: Iterable[Sample] = os.samples(SampleClass())
+  override def samples: Iterable[Sample] = os.samples(SampleClass())
 
-  def parameters(s: Sample): Iterable[(SampleParameter, String)] = {
+  override def parameters(s: Sample): Iterable[(SampleParameter, String)] = {
     os.parameterQuery(s.identifier).collect( {
       case (sp, Some(s)) => (sp, s)
     })
   }
 
-  def parameterValues(identifier: String): Set[String] =
+  override def parameterValues(identifier: String): Set[String] =
     os.allValuesForSampleAttribute(identifier).toSet
 
-  def mapParameter(fact: Factory, key: String, f: String => String) = ???
+  override def mapParameter(fact: Factory, key: String, f: String => String) = ???
+
+  //TODO
+  override def isControl(s: Sample) = ???
 }

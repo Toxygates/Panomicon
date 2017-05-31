@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -46,6 +46,11 @@ object Conversions {
     val sc = scAsJava(s.sampleClass)
     new Sample(s.sampleId, sc)
   }
+
+	def asScalaSample(s: Sample) = {
+	  val sc = scAsScala(s.sampleClass())
+	  new t.db.Sample(s.id, t.db.SampleClass(sc.constraints), None)
+	}
 
   implicit def asJava(ev: TExprValue): ExpressionValue = new ExpressionValue(ev.value, ev.call)
   //Loses probe information!

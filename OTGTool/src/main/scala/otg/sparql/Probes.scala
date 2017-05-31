@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -71,7 +71,7 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
 	     optional { ?pr t:title ?title. }
 	     ?pr a t:probe . """ +
 	  multiFilter("?pr", probes.map(p => bracket(p.pack))) + " } ?g rdfs:label ?plat} "
-	  val r = ts.mapQuery(q)(20000)
+	  val r = ts.mapQuery(q, 20000)
 
 	  r.groupBy(_("pr")).map(_._2).map(g => {
 	    val p = Probe(g(0)("l"))

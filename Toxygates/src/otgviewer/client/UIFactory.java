@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -35,6 +35,7 @@ import otgviewer.client.components.ranking.CompoundRanker;
 import t.common.shared.DataSchema;
 import t.common.shared.StringList;
 import t.common.shared.sample.Group;
+import t.viewer.shared.intermine.IntermineInstance;
 
 public interface UIFactory {
 
@@ -56,14 +57,14 @@ public interface UIFactory {
    * Enrichment for a gene set
    * @param screen
    */
-  void enrichment(Screen screen, StringList list);
+  void enrichment(Screen screen, StringList list, @Nullable IntermineInstance preferredInstance);
 
   /**
    * Enrichment for multiple gene sets
    * @param screen
    * @param lists
    */
-  void multiEnrichment(Screen screen, StringList[] lists);
+  void multiEnrichment(Screen screen, StringList[] lists, @Nullable IntermineInstance preferredInstance);
   
   boolean hasMyData();
   

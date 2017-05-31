@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
-import t.viewer.client.rpc.SparqlServiceAsync;
+import t.viewer.client.rpc.SampleServiceAsync;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -35,7 +35,7 @@ import com.google.gwt.user.client.ui.ListBox;
 public class DataFilterEditor extends DataListenerWidget {
   List<SampleClass> sampleClasses = new ArrayList<SampleClass>();
   final SCListBox[] selectors;
-  private final SparqlServiceAsync sparqlService;
+  private final SampleServiceAsync sampleService;
   private final String[] parameters;
   protected final Logger logger;
 
@@ -123,7 +123,7 @@ public class DataFilterEditor extends DataListenerWidget {
     HorizontalPanel hp = new HorizontalPanel();
     initWidget(hp);
     logger = SharedUtils.getLogger("dfeditor");
-    sparqlService = screen.sparqlService();
+    sampleService = screen.manager.sampleService();
 
     update();
 
@@ -144,7 +144,7 @@ public class DataFilterEditor extends DataListenerWidget {
   }
 
   public void update() {
-    sparqlService.sampleClasses(new PendingAsyncCallback<SampleClass[]>(this,
+    sampleService.sampleClasses(new PendingAsyncCallback<SampleClass[]>(this,
         "Unable to obtain sample classes from server") {
       @Override
       public void handleSuccess(SampleClass[] result) {

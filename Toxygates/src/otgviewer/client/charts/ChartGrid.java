@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -28,7 +28,7 @@ import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.rpc.SparqlServiceAsync;
+import t.viewer.client.rpc.ProbeServiceAsync;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -44,7 +44,7 @@ import com.google.gwt.user.client.ui.Widget;
  */
 abstract public class ChartGrid<D extends Data> extends Composite {
 
-  protected final SparqlServiceAsync sparqlService;
+  protected final ProbeServiceAsync probeService;
 
   Grid g;
 
@@ -82,7 +82,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     this.dataset = dataset;
     this.totalWidth = totalWidth;
     this.screen = screen;
-    sparqlService = screen.sparqlService();
+    probeService = screen.manager().probeService();
 
     if (organisms.size() == 0) {
       organisms.add(""); // TODO
@@ -120,7 +120,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     }
 
     if (!rowsAreMajors) {
-      sparqlService.geneSyms(rowFilters.toArray(new String[0]),
+      probeService.geneSyms(rowFilters.toArray(new String[0]),
           new PendingAsyncCallback<String[][]>(screen) {
             public void handleSuccess(String[][] results) {
               for (int i = 0; i < results.length; ++i) {

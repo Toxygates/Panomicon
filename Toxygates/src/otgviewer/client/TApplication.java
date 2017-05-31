@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -19,6 +19,7 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -30,20 +31,26 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
+import otgviewer.client.components.Screen.QueuedAction;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.StorageParser;
 import otgviewer.client.dialog.FeedbackForm;
 import t.common.shared.SharedUtils;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.Sample;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.MetadataInfo;
 import t.viewer.client.rpc.MatrixService;
 import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.client.rpc.ProbeServiceAsync;
+import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.rpc.SeriesService;
 import t.viewer.client.rpc.SeriesServiceAsync;
-import t.viewer.client.rpc.SparqlService;
-import t.viewer.client.rpc.SparqlServiceAsync;
+import otgviewer.client.rpc.SparqlService;
+import otgviewer.client.rpc.SparqlServiceAsync;
 import t.viewer.client.rpc.UserDataService;
 import t.viewer.client.rpc.UserDataServiceAsync;
 import t.viewer.shared.AppInfo;
@@ -86,15 +93,16 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * The main entry point for Toxygates. The main task of this class is to manage the history
  * mechanism and ensure that the correct screen is being displayed at any given time, as well as
  * provide a facility for inter-screen communication.
- * 
- * @author johan
- *
  */
 abstract public class TApplication implements ScreenManager, EntryPoint {
   private static Resources resources = GWT.create(Resources.class);
 
   private static SparqlServiceAsync sparqlService = (SparqlServiceAsync) GWT
       .create(SparqlService.class);
+
+  private static SampleServiceAsync sampleService = sparqlService;
+  private static ProbeServiceAsync probeService = sparqlService;
+  
   private static MatrixServiceAsync matrixService = (MatrixServiceAsync) GWT
       .create(MatrixService.class);
   private static SeriesServiceAsync seriesService = (SeriesServiceAsync) GWT
@@ -168,11 +176,29 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * This is the entry point method.
    */
   public void onModuleLoad() {
-    menuBar = setupMenu();
 
+    reloadAppInfo(new AsyncCallback<AppInfo>() {
+      @Override
+      public void onSuccess(AppInfo result) {
+        setupUIBase();
+        prepareScreens();
+      }
+
+      @Override
+      public void onFailure(Throwable caught) {
+        Window.alert("Failed to obtain application information.");        
+      }
+    });
+
+    Logger l = SharedUtils.getLogger();
+    l.info("onModuleLoad() finished");
+  } 
+  
+  protected void setupUIBase() {
+    menuBar = setupMenu();
     History.addValueChangeHandler(new ValueChangeHandler<String>() {
       public void onValueChange(ValueChangeEvent<String> vce) {
-        setScreenForToken(vce.getValue());
+        showScreenForToken(vce.getValue(), false);
       }
     });
 
@@ -201,27 +227,99 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     navPanel.setStylePrimaryName("navPanel");
     navOuter.add(navPanel);
     mainDockPanel.addNorth(navOuter, 35);
-
-    reloadAppInfo(new AsyncCallback<AppInfo>() {
-      @Override
-      public void onSuccess(AppInfo result) {
-        prepareScreens();
+  }
+  
+  protected void readURLParameters(Screen scr) {
+    readProbesURLparameter(scr);
+    readGroupURLparameters(scr);
+  }
+  
+  protected void readProbesURLparameter(final Screen scr) {
+    Logger l = SharedUtils.getLogger();    
+    Map<String, List<String>> params = Window.Location.getParameterMap();
+    String[] useProbes = null;
+    if (params.containsKey("probes")) {
+      List<String> pl = params.get("probes");
+      if (!pl.isEmpty()) {
+        l.info("probes from URL: " + pl.get(0));
+        useProbes = pl.get(0).split(",");
       }
+    }
+    if (useProbes != null && useProbes.length > 0) {
+      final String[] pr = useProbes;      
+      scr.enqueue(new QueuedAction("Set probes from URL") {        
+        @Override
+        public void run() {
+          sparqlService.identifiersToProbes(pr, true, true, false, null,
+              new PendingAsyncCallback<String[]>(scr, "Failed to resolve gene identifiers") {
+                public void handleSuccess(String[] probes) {
+                  if (Arrays.equals(probes, scr.chosenProbes)) {
+                    return;
+                  }
+                  scr.probesChanged(probes);
+                  scr.storeState(scr);
+                  if (scr instanceof DataScreen) {
+                    //Force a data reload
+                    ((DataScreen) scr).updateProbes();
+                  }
+                }
+              });        
+        }
+      });
+    }
+    
+  }
+  
+  protected void readGroupURLparameters(final Screen scr) {
+    Logger l = SharedUtils.getLogger();    
+    Map<String, List<String>> params = Window.Location.getParameterMap();
 
-      @Override
-      public void onFailure(Throwable caught) {
-        Window.alert("Failed to obtain application information.");        
-      }
-    });
-
-    Logger l = SharedUtils.getLogger();
-    l.info("onModuleLoad() finished");
+    final List<String[]> useGroups = new ArrayList<String[]>();
+    final List<String> groupNames = new ArrayList<String>();
+    if (params.containsKey("group")) {      
+      for (String g: params.get("group")) {
+        l.info("Group from URL: " + g);
+        String[] spl = g.split(",");
+        if (spl.length >= 2) {
+          groupNames.add(spl[0]);
+          useGroups.add(Arrays.copyOfRange(spl, 1, spl.length));
+        }
+      }      
+    }
+   
+    if (useGroups.size() > 0) {
+      scr.enqueue(new QueuedAction("Set columns from URL") {        
+        @Override
+        public void run() {
+          sparqlService.samplesById(useGroups, new PendingAsyncCallback<List<Sample[]>>(scr, 
+              "Failed to look up samples") {
+            public void handleSuccess(List<Sample[]> samples) {
+              int i = 0;
+              List<Group> finalGroups = new ArrayList<Group>();
+              for (Sample[] ss: samples) {                
+                Group g = new Group(schema(), groupNames.get(i), ss);
+                i += 1;
+                finalGroups.add(g);
+              }
+              if (finalGroups.size() > 0 && !
+                  finalGroups.equals(scr.chosenColumns())) {
+                scr.columnsChanged(finalGroups);
+                scr.storeState(scr);
+                if (scr instanceof DataScreen) {
+                  //Force a data reload
+                  ((DataScreen) scr).updateProbes();
+                }
+              }
+            }
+          });
+        }
+      });
+    }     
   }
 
-  private void prepareScreens() {
+  private void prepareScreens() {       
     initScreens(); // Need access to the nav. panel
-
-    setScreenForToken(History.getToken());
+    showScreenForToken(History.getToken(), true);    
     deconfigureAll(pickScreen(History.getToken()));
   }
 
@@ -412,8 +510,11 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * 
    * @param token
    */
-  private void setScreenForToken(String token) {
+  private void showScreenForToken(String token, boolean firstLoad) {
     Screen s = pickScreen(token);
+    if (firstLoad) {
+      readURLParameters(s);
+    }
     showScreen(s);
   }
 
@@ -430,7 +531,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
         toolsMenuBar.removeItem(mi);
       }
     }
-    currentScreen = s;
+    currentScreen = s;    
     menuBar.clearItems();
     List<MenuItem> allItems = new LinkedList<MenuItem>(preMenuItems);
     allItems.addAll(s.menuItems());
@@ -556,6 +657,14 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     return sparqlService;
   }
 
+  public SampleServiceAsync sampleService() {
+    return sampleService;
+  }
+  
+  public ProbeServiceAsync probeService() {
+    return probeService;
+  }
+  
   public SeriesServiceAsync seriesService() {
     return seriesService;
   }

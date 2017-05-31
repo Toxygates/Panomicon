@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -26,7 +26,6 @@ import javax.annotation.Nullable;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
 import t.common.shared.userclustering.Algorithm;
 import t.viewer.shared.ColumnFilter;
 import t.viewer.shared.FullMatrix;
@@ -47,23 +46,6 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 @RemoteServiceRelativePath("matrix")
 public interface MatrixService extends RemoteService {
 
-
-  /**
-   * Convert identifiers such as genes, probe IDs and proteins into a list of probes.
-   * 
-   * TODO not clear that this should be in MatrixService
-   * 
-   * @param filter
-   * @param identifiers
-   * @param precise If true, names must be an exact match, otherwise partial name matching is used.
-   * @param titlePatternMatch If true, the query is assumed to be a partial pattern match on probe
-   *        titles.
-   * @param samples If null, all probes will be obtained.
-   * @return
-   */
-  public String[] identifiersToProbes(String[] identifiers, boolean precise,
-      boolean titlePatternMatch, @Nullable List<Sample> samples);
-
   /**
    * Load data into the user's session. Also perform an initial filtering.
    * 
@@ -75,7 +57,7 @@ public interface MatrixService extends RemoteService {
    * @param type
    * @return The number of rows that remain after filtering.
    */
-  public ManagedMatrixInfo loadMatrix(List<Group> columns, String[] probes, ValueType type)
+  ManagedMatrixInfo loadMatrix(List<Group> columns, String[] probes, ValueType type)
       throws ServerError;
 
   /**
@@ -84,7 +66,7 @@ public interface MatrixService extends RemoteService {
    * @param probes Probes to keep
    * @return
    */
-  public ManagedMatrixInfo selectProbes(String[] probes);
+  ManagedMatrixInfo selectProbes(String[] probes);
 
   /**
    * Set the filtering threshold for a single column.
@@ -93,7 +75,7 @@ public interface MatrixService extends RemoteService {
    * @param filter the filter, or null to reset.
    * @return
    */
-  public ManagedMatrixInfo setColumnFilter(int column, @Nullable ColumnFilter filter);
+  ManagedMatrixInfo setColumnFilter(int column, @Nullable ColumnFilter filter);
 
   /**
    * Add a T-test/U-test/fold change difference column. Requires that loadDataset was first used to
@@ -103,13 +85,13 @@ public interface MatrixService extends RemoteService {
    * @param g1
    * @param g2
    */
-  public ManagedMatrixInfo addTwoGroupTest(Synthetic.TwoGroupSynthetic test) throws ServerError;
+  ManagedMatrixInfo addTwoGroupTest(Synthetic.TwoGroupSynthetic test) throws ServerError;
 
   /**
    * Remove all test columns. The result will be reflected in subsequent calls to datasetItems or
    * getFullData.
    */
-  public ManagedMatrixInfo removeTwoGroupTests() throws ServerError;
+  ManagedMatrixInfo removeTwoGroupTests() throws ServerError;
 
   /**
    * Get one page. Requires that loadMatrix was first used to load items.
@@ -121,7 +103,7 @@ public interface MatrixService extends RemoteService {
    * @param ascending Whether to use ascending sort. Applies if sortColumn is not -1.
    * @return
    */
-  public List<ExpressionRow> matrixRows(int offset, int size, SortKey sortKey, boolean ascending)
+  List<ExpressionRow> matrixRows(int offset, int size, SortKey sortKey, boolean ascending)
       throws ServerError;
 
   /**
@@ -135,7 +117,7 @@ public interface MatrixService extends RemoteService {
    *        slightly slower)
    * @return
    */
-  public FullMatrix getFullData(List<Group> gs, String[] probes, 
+  FullMatrix getFullData(List<Group> gs, String[] probes, 
       boolean withSymbols, ValueType type) throws ServerError;
 
   /**
@@ -146,12 +128,12 @@ public interface MatrixService extends RemoteService {
    *        (only). If false, groups are used.
    * @return A downloadable URL.
    */
-  public String prepareCSVDownload(boolean individualSamples) throws ServerError;
+  String prepareCSVDownload(boolean individualSamples) throws ServerError;
 
   /**
    * Send a feedback email from a user. This should not necessarily be in MatrixService.
    */
-  public void sendFeedback(String name, String email, String feedback);
+  void sendFeedback(String name, String email, String feedback);
 
   /**
    * Perform a clustering that can be used to display a heat map.
@@ -163,7 +145,7 @@ public interface MatrixService extends RemoteService {
    * @return The clusters in JSON format.
    * @throws ServerError
    */
-  public String prepareHeatmap(List<Group> chosenColumns, 
+  String prepareHeatmap(List<Group> chosenColumns, 
       @Nullable String[] chosenProbes,
       ValueType valueType, Algorithm algorithm) throws ServerError;
 }

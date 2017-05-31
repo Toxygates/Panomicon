@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -35,9 +35,6 @@ import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.viewer.client.HasLogger;
 import t.viewer.client.Utils;
-import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.client.rpc.SeriesServiceAsync;
-import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.AppInfo;
 
 import com.google.gwt.core.client.GWT;
@@ -66,9 +63,6 @@ import com.google.gwt.user.client.ui.Widget;
  * hidden/visible and configured/deconfigured. A configured screen has been completely configured by
  * the user, for example by making certain selections. This is a useful concept when late screens
  * depend on data that is selected in earlier screens.
- * 
- * @author johan
- *
  */
 public class Screen extends DataListenerWidget implements 
   RequiresResize, ProvidesResize, HasLogger {
@@ -210,18 +204,6 @@ public class Screen extends DataListenerWidget implements
 
   public AppInfo appInfo() {
     return manager.appInfo();
-  }
-
-  public SparqlServiceAsync sparqlService() {
-    return manager.sparqlService();
-  }
-
-  public MatrixServiceAsync matrixService() {
-    return manager.matrixService();
-  }
-
-  public SeriesServiceAsync seriesService() {
-    return manager.seriesService();
   }
 
   public UIFactory factory() {
@@ -393,6 +375,14 @@ public class Screen extends DataListenerWidget implements
       p.setItem("OTG.showGuide", "yes");
     } else {
       p.setItem("OTG.showGuide", "no");
+    }
+  }
+  
+  @Override
+  protected void changeColumns(List<Group> columns) {
+    super.changeColumns(columns);
+    if (visible) {
+      updateStatusPanel();
     }
   }
 

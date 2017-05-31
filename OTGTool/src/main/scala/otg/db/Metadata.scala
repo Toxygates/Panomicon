@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -51,6 +51,7 @@ object OTGParameterSet extends ParameterSet {
    * The RDF predicates are of the form <http://127.0.0.1:3333/(key)>.
    */
 
+  @deprecated("Being replaced with BioParameters", "Nov 2016")
   private val nonNumericalKeys = ListMap(
     "Sample ID" -> "sample_id",
     "Platform ID" -> "platform_id",
@@ -85,6 +86,8 @@ object OTGParameterSet extends ParameterSet {
    * These are the annotations that it makes sense to consider in a
    * statistical, numerical way.
    */
+
+  @deprecated("Being replaced with BioParameters", "Nov 2016")
   private val numericalKeys = ListMap("Terminal body weight (g)" -> "terminal_bw",
     "Liver weight (g)" -> "liver_wt",
     "Kidney weight total (g)" -> "kidney_total_wt",
@@ -153,6 +156,7 @@ object OTGParameterSet extends ParameterSet {
   val all =
     (numericalKeys ++ nonNumericalKeys).map(x => t.db.SampleParameter(x._2, x._1))
 
+  @deprecated("Being replaced with BioParameters", "Nov 2016")
   def isNumerical(p: t.db.SampleParameter) =
     numericalKeys.values.toSet.contains(p.identifier)
 

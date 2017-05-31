@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -30,8 +30,6 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import javax.annotation.Nullable;
-
-import org.omg.CORBA.UNKNOWN;
 
 import t.common.shared.userclustering.Algorithm;
 import t.common.shared.userclustering.Distances;

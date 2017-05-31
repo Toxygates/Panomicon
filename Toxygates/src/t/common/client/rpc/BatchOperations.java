@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -36,7 +36,7 @@ public interface BatchOperations extends MaintenanceOperations {
    * @return Batches in the datasets
    * @throws MaintenanceException
    */
-  public Batch[] getBatches(@Nullable String[] datasets) throws MaintenanceException;
+  Batch[] getBatches(@Nullable String[] datasets) throws MaintenanceException;
   
   void addBatchAsync(Batch b) throws MaintenanceException;
 

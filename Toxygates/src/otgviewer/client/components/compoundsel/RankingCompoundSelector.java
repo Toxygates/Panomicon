@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -63,7 +63,7 @@ public class RankingCompoundSelector extends CompoundSelector {
   
   public RankingCompoundSelector(Screen screen, String heading) {
     super(screen, heading, false, false);
-    this.seriesService = screen.seriesService();
+    this.seriesService = screen.manager().seriesService();
     this.resources = screen.resources();    
   }
 

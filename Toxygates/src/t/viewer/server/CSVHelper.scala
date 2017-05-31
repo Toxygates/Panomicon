@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,8 +20,7 @@
 
 package t.viewer.server
 
-import t.db.ExprValue
-
+import java.util.Calendar
 
 object CSVHelper {
 
@@ -58,7 +57,7 @@ object CSVHelper {
           x match {
             case d: Double => format(d)
             case _ => ""
-          }          
+          }
         }
         case None => ""
         case d: Double => d.toString
@@ -77,42 +76,54 @@ object CSVHelper {
 
   }
 
+  def writeCSV(namePrefix: String, dir: String, urlbase: String,
+    rowTitles: Seq[String], colTitles: Seq[String],
+    data: Seq[Seq[Any]]): String =
+    writeCSV(namePrefix, dir, urlbase, Seq(), rowTitles, colTitles,
+      data)
+
   /**
    * Write expression values to a CSV files.
    * The given probes and geneIds only will be written.
    * The generated url will be returned.
+   *
+   * @param textCols Extra columns to be inserted to the left
+   * @param expr Row-major data
    */
-  def writeCSV(dir: String, urlbase: String, 
+  def writeCSV(namePrefix: String, dir: String, urlbase: String,
       textCols: Seq[(String, Seq[String])],
-      rowTitles: Seq[String], colTitles: Seq[String], 
-      expr: Seq[Seq[ExprValue]]): String = {
+      rowTitles: Seq[String], colTitles: Seq[String],
+      expr: Seq[Seq[Any]]): String = {
 
     if (expr.size == 0) {
       throw new Exception("No data supplied")
     }
-    
+
+    val cal = Calendar.getInstance
+    val dfmt = s"${cal.get(Calendar.YEAR)}-${cal.get(Calendar.MONTH) + 1}-${cal.get(Calendar.DAY_OF_MONTH)}"
+
     //TODO pass the file prefix in from outside
-    val file = "otg" + System.currentTimeMillis + ".csv"
+    val file = s"$namePrefix-${dfmt}-${System.currentTimeMillis % 10000}.csv"
     val fullName = dir + "/" + file
-    
+
     new CSVFile {
     	def columns = textCols.size + colTitles.size + 1
     	def rows = expr.size + 1
       def apply(x: Int, y: Int) = if (y == 0) {
         if (x == 0) {
           ""
-        } else if (x < textCols.size + 1) {        
+        } else if (x < textCols.size + 1) {
           textCols(x - 1)._1
         } else {
           colTitles(x - textCols.size - 1)
-        } 
-      } else {  //y > 0      
+        }
+      } else {  //y > 0
         if (x == 0) {
           rowTitles(y - 1)
         } else if (x < textCols.size + 1) {
         	textCols(x - 1)._2(y - 1)
         } else {
-          expr(y - 1)(x - textCols.size - 1).value        
+          expr(y - 1)(x - textCols.size - 1)
         }
       }
     }.write(fullName)

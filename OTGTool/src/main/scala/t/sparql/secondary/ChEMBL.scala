@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -56,7 +56,7 @@ class ChEMBL extends Triplestore with CompoundTargets {
       	?uniprot a cco:UniprotRef .
       	FILTER (?t IN("Inhibition", "Ki", "IC50")) """ +
       multiFilter("?orgName", Species.supportedSpecies.map("\"" + _.longName + "\"")) +
-      "}")(60000)
+      "}", false, 60000)
     r.map(p => Protein.unpackUniprot(unbracket(p))).toSet
   }
 
@@ -79,7 +79,7 @@ class ChEMBL extends Triplestore with CompoundTargets {
       multiFilter("?uniprot", ps.map(p => "up:" + p.identifier).toSet) +
       multiFilter("?compound", expected.map(e => "\"" + e.name.toUpperCase + "\"")) +
       multiFilter("?orgName", Species.supportedSpecies.map("\"" + _.longName + "\"")) +
-      "}")(60000)
+      "}", 60000)
 
     makeMultiMap(r.map(x => (Protein.unpackUniprot(unbracket(x("uniprot"))) ->
       Compound.unpackChEMBL(unbracket(x("mol"))).copy(name = capitalise(x("compound"))))))

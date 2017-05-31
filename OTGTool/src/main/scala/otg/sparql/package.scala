@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -22,6 +22,7 @@ package otg
 
 import t.sparql.Triplestore
 import t.sparql.QueryUtils
+import scala.language.implicitConversions
 
 //TODO code duplication with t.sparql.secondary
 package object sparql extends t.sparql.QueryUtils {
@@ -35,4 +36,6 @@ package object sparql extends t.sparql.QueryUtils {
 
   def infixStringMatch(q: String) = " luc:myIndex \"*" + q + "*\". "
   def prefixStringMatch(q: String) = " luc:myIndex \"" + q + "*\". "
+
+  implicit def withQueries(p: Pathology) = new PathologySparql(p)
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -175,7 +175,12 @@ public class OTGSchema extends DataSchema {
   // return u2;
   // }
 
-  private static AType[] associations = new AType[] {AType.Chembl, AType.Drugbank,
+  @Override
+	public String[] majorParamSharedControl() {
+		return new String[] { "Shared_control" };
+	}
+
+private static AType[] associations = new AType[] {AType.Chembl, AType.Drugbank,
       // AType.Enzymes,
       AType.GOBP, AType.GOCC, AType.GOMF,
       // needs repair

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -185,7 +185,7 @@ abstract public class DataSource {
       this.probes = probes;
       this.type = vt;
       this.screen = screen;
-      this.matrixService = screen.matrixService();
+      this.matrixService = screen.manager().matrixService();
     }
 
     void loadData(final SampleMultiFilter smf, final ColorPolicy policy,

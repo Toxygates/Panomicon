@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -46,7 +46,7 @@ public class FeedbackForm extends InteractionDialog {
   public FeedbackForm(final DataListenerWidget parent, Screen screen, String emailAddresses) {
     super(parent);
     this.emailAddresses = emailAddresses;
-    matrixService = screen.matrixService();
+    matrixService = screen.manager().matrixService();
   }
 
   protected Widget content() {
