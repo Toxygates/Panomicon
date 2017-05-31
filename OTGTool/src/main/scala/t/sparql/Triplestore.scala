@@ -36,6 +36,7 @@ import org.eclipse.rdf4j.common.iteration.Iteration
 import org.eclipse.rdf4j.rio.RDFFormat
 import org.eclipse.rdf4j.query.QueryLanguage
 import org.eclipse.rdf4j.model.impl.URIImpl
+import org.apache.http.params.HttpConnectionParams
 
 object Triplestore {
   val executor = Executors.newCachedThreadPool()
@@ -83,11 +84,10 @@ object Triplestore {
       new SPARQLRepository(queryUrl, updateUrl)
     } else {
       new SPARQLRepository(queryUrl)
-    }
+    }    
     if (user != null && pass != null) {
       rep.setUsernameAndPassword(user, pass)
-    }
-
+    }    
     rep.initialize()
     if (rep == null) {
       throw new Exception("Unable to access repository ")
@@ -126,6 +126,7 @@ abstract class Triplestore extends Closeable {
     // for sesame 2.7
 //    pq.setMaxQueryTime(timeoutMillis / 1000)
     // for sesame 2.8
+
     pq.setMaxExecutionTime(timeoutMillis / 1000)
     pq.evaluate()
   }
@@ -140,8 +141,9 @@ abstract class Triplestore extends Closeable {
     if (isReadonly) {
       println("Triplestore is read-only, ignoring update query")
     } else {
-      try {
+      try {        
         val pq = con.prepareUpdate(QueryLanguage.SPARQL, query)
+        pq.setMaxExecutionTime(0)
         pq.execute()
       } catch {
         case e: Exception =>

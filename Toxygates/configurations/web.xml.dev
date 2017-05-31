@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
               http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-	version="2.5" xmlns="http://java.sun.com/xml/ns/javaee">
+         version="2.5"
+         xmlns="http://java.sun.com/xml/ns/javaee">
 
 	<context-param>
 		<param-name>repositoryURL</param-name>
-		 <param-value>http://127.0.0.1:3030/data/sparql</param-value>  
-                 <!-- <param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/repositories/ttest</param-value> -->
+                <param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/repositories/ttest</param-value>
+	</context-param>
+	<context-param>
+		<param-name>webappHomeDir</param-name>
+		<param-value>/var/lib/tomcat/webapps</param-value>
 	</context-param>
 	
-	<!-- The following 2 parameters are necessary for working with Owlim-SE at NIBIO -->
-	<!--
 	<context-param>
 		<param-name>repositoryUser</param-name>
 		<param-value>ttest</param-value>
@@ -20,28 +22,25 @@
 		<param-name>repositoryPassword</param-name>
 		<param-value>ttest</param-value>
 	</context-param>	
-	-->
-	
-	<context-param>
-		<param-name>instanceName</param-name>
-		<param-value>toxygates-test</param-value>
-	</context-param>
-	
 	<context-param>
 		<param-name>dataDir</param-name>
-		<param-value>/Users/johan/otg/data_dev</param-value>
+		<param-value>kcchunk:/shiba/scratch/toxygates/rebuild_test</param-value>
 	</context-param>
 	<context-param>
 		<param-name>matrixDbOptions</param-name>
-		<param-value>#bnum=6250000#pccap=1073741824#msiz=4294967296</param-value>
+		<param-value>#pccap=1073741824#msiz=4294967296</param-value>
+	</context-param>
+ 
+ 	<context-param>
+		<param-name>csvDir</param-name>
+		<param-value>/shiba/scratch/toxygates/csv/</param-value>
 	</context-param>
 	<context-param>
-		<param-name>csvDir</param-name>
-		<param-value>/shiba/toxygates/data_dev/csv</param-value>
+		<param-name>csvUrlBase</param-name>
+		<param-value>http://toxygates.nibiohn.go.jp/toxygates/csv</param-value>
 	</context-param>	
-
-
-	<!-- For AdminGUI -->
+	
+	
 	<context-param>
 		<!-- 256 MB -->
 		<param-name>maxSize</param-name>
@@ -54,11 +53,10 @@
 	</context-param>
 	<context-param>
 		<param-name>updateURL</param-name>
-<!--		<param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/update</param-value> -->
-	 		<param-value>http://127.0.0.1:3030/data/update</param-value> 
+                <param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/repositories/ttest/statements</param-value>  
 	</context-param>
-
-	<!-- Servlets -->
+	
+  <!-- Servlets -->
 
 	<servlet>
 		<servlet-name>sparqlServlet</servlet-name>
@@ -75,7 +73,6 @@
 		<servlet-class>otgviewer.server.rpc.MatrixServiceImpl</servlet-class>
 	</servlet>
 
-
 	<servlet-mapping>
 		<servlet-name>sparqlServlet</servlet-name>
 		<url-pattern>/toxygates/sparql</url-pattern>
@@ -88,39 +85,25 @@
 
 	<servlet-mapping>
 		<servlet-name>matrixServlet</servlet-name>
-		<url-pattern>/toxygates/matrix</url-pattern>
-	</servlet-mapping>
-
-	<servlet>
-		<servlet-name>userDataServlet</servlet-name>
-		<servlet-class>otgviewer.server.rpc.UserDataServiceImpl</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>userDataServlet</servlet-name>
-		<url-pattern>/toxygates/userData</url-pattern>
-	</servlet-mapping>
-		
-	<servlet>
+    	<url-pattern>/toxygates/matrix</url-pattern>
+  	</servlet-mapping>
+  	
+  	<servlet>
 		<servlet-name>targetmineServlet</servlet-name>
 		<servlet-class>otgviewer.server.targetmine.TargetmineServiceImpl</servlet-class>
 	</servlet>
-    <servlet-mapping>
-		<servlet-name>targetmineServlet</servlet-name>
-    	<url-pattern>/toxygates/targetmine</url-pattern>
-  	</servlet-mapping>
 
+  
+  	<!-- For AdminGUI -->
 	<servlet>
 		<servlet-name>uploadServlet</servlet-name>
 		<!-- This is the default servlet, it puts files in session -->
 		<servlet-class>gwtupload.server.UploadServlet</servlet-class>
 	</servlet>
-	
 	<servlet-mapping>
 		<servlet-name>uploadServlet</servlet-name>
 		<url-pattern>*.gupld</url-pattern>
-	</servlet-mapping>
-	
-	<!-- For AdminGUI -->
+	</servlet-mapping>	
 
 	<servlet>
 		<servlet-name>maintenanceServlet</servlet-name>
@@ -129,11 +112,24 @@
 	<servlet-mapping>
 		<servlet-name>maintenanceServlet</servlet-name>
 		<url-pattern>/OTGAdmin/maintenance</url-pattern>
-	</servlet-mapping>
+              </servlet-mapping>
+
+        <servlet>
+               <servlet-name>userDataServlet</servlet-name>
+               <servlet-class>otgviewer.server.rpc.UserDataServiceImpl</servlet-class>
+        </servlet>
+        <servlet-mapping>
+              <servlet-name>userDataServlet</servlet-name>
+              <url-pattern>/toxygates/userData</url-pattern>
+        </servlet-mapping>
+                                                                                                                                  
+
+  
+  
+  <!-- Default page to serve -->
+  <welcome-file-list>
+    <welcome-file>admin.html</welcome-file>
+  </welcome-file-list>
 
 
-	<!-- Default page to serve -->
-	<welcome-file-list>
-		<welcome-file>toxygates.html</welcome-file>
-	</welcome-file-list>
 </web-app>

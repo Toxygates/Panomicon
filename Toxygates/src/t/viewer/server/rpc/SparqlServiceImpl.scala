@@ -264,9 +264,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       parameter: String): Array[String] = {
     //Get the parameters without changing the persistent datasets in getSessionData
     val filter = sampleFilterFor(ds)
-    val r = sampleStore.attributeValues(scAsScala(sc).filterAllExcludeControl, parameter)(filter).
-      filter(x => !schema.isMajorParamSharedControl(x)).toArray
-    r
+    sampleStore.attributeValues(scAsScala(sc).filterAll, parameter)(filter).
+      filter(x => !schema.isControlValue(parameter, x)).toArray            
   }
 
   @throws[TimeoutException]
@@ -276,8 +275,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   @throws[TimeoutException]
   def parameterValues(sc: SampleClass, parameter: String): Array[String] = {
-    sampleStore.attributeValues(scAsScala(sc).filterAllExcludeControl, parameter).
-      filter(x => !schema.isMajorParamSharedControl(x)).toArray
+    sampleStore.attributeValues(scAsScala(sc).filterAll, parameter).
+      filter(x => !schema.isControlValue(parameter, x)).toArray
   }
 
   def samplesById(ids: Array[String]): Array[Sample] = {
