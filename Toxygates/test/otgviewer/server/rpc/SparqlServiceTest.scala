@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -41,9 +41,8 @@ object SparqlServiceTest {
 class SparqlServiceTest extends FunSuite with BeforeAndAfter {
 
   var s: SparqlServiceImpl = _
-
   before {
-    val conf = new Configuration("otg", "/shiba/toxygates", 2)
+    val conf = new Configuration("otg", "/shiba/toxygates")
     s = new SparqlServiceImpl()
     s.localInit(conf)
   }

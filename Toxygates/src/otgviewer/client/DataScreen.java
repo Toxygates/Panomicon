@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -34,6 +34,7 @@ import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.RichTable.HideableColumn;
+import t.viewer.shared.intermine.IntermineInstance;
 
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
@@ -176,7 +177,7 @@ public class DataScreen extends Screen {
 
     addAnalysisMenuItem(new MenuItem("Enrichment...", new Command() {
       public void execute() {
-        runEnrichment();              
+        runEnrichment(null);
       }
     }));
     
@@ -190,12 +191,12 @@ public class DataScreen extends Screen {
     }
   }
   
-  public void runEnrichment() {
+  public void runEnrichment(@Nullable IntermineInstance preferredInstance) {
     logger.info("Enrich " + DataScreen.this.displayedAtomicProbes().length + " ps");
     StringList genes = 
         new StringList(StringList.PROBES_LIST_TYPE, 
             "temp", DataScreen.this.displayedAtomicProbes());
-    DataScreen.this.factory().enrichment(DataScreen.this, genes);
+    DataScreen.this.factory().enrichment(DataScreen.this, genes, preferredInstance);
   }
   
   protected void makeHeatMap() {

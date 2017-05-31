@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -18,21 +18,27 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.shared.targetmine;
+package t.viewer.shared.intermine;
 
-public enum Correction {
-  HolmBonferroni("Holm-Bonferroni"), 
-  BenjaminiHochberg("Benjamini Hochberg"), 
-  Bonferroni("Bonferroni"), 
-  None("None");
+import java.io.Serializable;
+
+@SuppressWarnings("serial")
+public class EnrichmentParams implements Serializable {
+
+  public EnrichmentWidget widget;
+  public String filter; //parameter for the widget
+  public double cutoff;
+  public Correction correction;
   
-  String repr;
+  //GWT constructor
+  public EnrichmentParams() {}
   
-  Correction(String repr) {
-    this.repr = repr;
+  public EnrichmentParams(EnrichmentWidget widget, String filter,
+      double cutoff, Correction correction) {
+    this.widget = widget;
+    this.filter = filter;
+    this.cutoff = cutoff;
+    this.correction = correction;
   }
   
-  public String getKey() {
-    return repr;
-  }
 }

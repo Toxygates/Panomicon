@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,11 +20,14 @@
 
 package otgviewer.client.dialog;
 
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.shared.targetmine.Correction;
-import otgviewer.shared.targetmine.EnrichmentParams;
-import otgviewer.shared.targetmine.EnrichmentWidget;
-import t.common.client.components.EnumSelector;
+import javax.annotation.Nullable;
+
+import otgviewer.client.components.Screen;
+import t.common.client.components.ItemSelector;
+import t.viewer.shared.intermine.Correction;
+import t.viewer.shared.intermine.EnrichmentParams;
+import t.viewer.shared.intermine.EnrichmentWidget;
+import t.viewer.shared.intermine.IntermineInstance;
 
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.Label;
@@ -35,12 +38,13 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class TargetMineEnrichDialog extends TargetMineSyncDialog {
 
-  public TargetMineEnrichDialog(DataListenerWidget parent, String url, String action) {
-    super(parent, url, action, false, false);
+  public TargetMineEnrichDialog(Screen parent, String action, 
+      @Nullable IntermineInstance preferredInstance) {
+    super(parent, action, false, false, preferredInstance);
   }
 
   @Override
-  protected void userProceed(String user, String pass, boolean replace) {
+  protected void userProceed(IntermineInstance instance, String user, String pass, boolean replace) {
 
   }
 
@@ -51,7 +55,7 @@ public class TargetMineEnrichDialog extends TargetMineSyncDialog {
   
   VerticalPanel vp = new VerticalPanel();
   
-  EnumSelector<EnrichmentWidget> widget = new EnumSelector<EnrichmentWidget>() {
+  ItemSelector<EnrichmentWidget> widget = new ItemSelector<EnrichmentWidget>() {
     @Override
     protected EnrichmentWidget[] values() {
       return EnrichmentWidget.values();
@@ -63,7 +67,7 @@ public class TargetMineEnrichDialog extends TargetMineSyncDialog {
     }
   };
   
-  EnumSelector<Correction> corr = new EnumSelector<Correction>() {
+  ItemSelector<Correction> corr = new ItemSelector<Correction>() {
     @Override
     protected Correction[] values() {
       return Correction.values();
@@ -88,6 +92,12 @@ public class TargetMineEnrichDialog extends TargetMineSyncDialog {
     return vp;
   }
   
+  @Override
+  protected void instanceChanged(IntermineInstance instance) {
+    // TODO
+    super.instanceChanged(instance);
+  }
+
   private void setFilterItems(String[] items) {
     filter.clear();
     for (String i: items) {

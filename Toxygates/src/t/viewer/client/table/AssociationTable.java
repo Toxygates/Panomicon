@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
- * (NIBIOHN), Japan.
- *
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * and Nutrition (NIBIOHN), Japan.
+ * 
  * This file is part of Toxygates.
  *
  * Toxygates is free software: you can redistribute it and/or modify

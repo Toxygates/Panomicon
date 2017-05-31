@@ -55,8 +55,81 @@
 		<param-name>updateURL</param-name>
                 <param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/repositories/ttest/statements</param-value>  
 	</context-param>
+
+	<context-param>
+		<param-name>intermine.instances</param-name>
+		<param-value>target,rat,human,mouse</param-value>
+	</context-param>
 	
-  <!-- Servlets -->
+	<context-param>
+		<param-name>intermine.target.apikey</param-name>
+		<param-value>xyz</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.target.appname</param-name>
+		<param-value>targetmine</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.target.title</param-name>
+		<param-value>TargetMine</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.target.userurl</param-name>
+		<param-value>http://targetmine.mizuguchilab.org</param-value>
+	</context-param>
+	
+	<context-param>
+		<param-name>intermine.human.apikey</param-name>
+		<param-value>xyz</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.human.appname</param-name>
+		<param-value>humanmine</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.human.title</param-name>
+		<param-value>HumanMine</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.human.userurl</param-name>
+		<param-value>http://www.humanmine.org</param-value>
+	</context-param>
+	
+	<context-param>
+		<param-name>intermine.rat.apikey</param-name>
+		<param-value>xyz</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.rat.appname</param-name>
+		<param-value>ratmine</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.rat.title</param-name>
+		<param-value>RatMine</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.rat.userurl</param-name>
+		<param-value>http://www.ratmine.org</param-value>
+	</context-param>
+	
+	<context-param>
+		<param-name>intermine.mouse.apikey</param-name>
+		<param-value>xyz</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.mouse.appname</param-name>
+		<param-value>mousemine</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.mouse.title</param-name>
+		<param-value>MouseMine</param-value>
+	</context-param>
+	<context-param>
+		<param-name>intermine.mouse.userurl</param-name>
+		<param-value>http://www.mousemine.org</param-value>
+	</context-param>		
+
+	<!-- Servlets -->
 
 	<servlet>
 		<servlet-name>sparqlServlet</servlet-name>
@@ -85,14 +158,27 @@
 
 	<servlet-mapping>
 		<servlet-name>matrixServlet</servlet-name>
-    	<url-pattern>/toxygates/matrix</url-pattern>
+		<url-pattern>/toxygates/matrix</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>userDataServlet</servlet-name>
+		<servlet-class>otgviewer.server.rpc.UserDataServiceImpl</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>userDataServlet</servlet-name>
+		<url-pattern>/toxygates/userData</url-pattern>
+	</servlet-mapping>
+
+  	<servlet>
+		<servlet-name>intermineServlet</servlet-name>
+		<servlet-class>otgviewer.server.IntermineServiceImpl</servlet-class>
+	</servlet>	
+   	<servlet-mapping>
+		<servlet-name>intermineServlet</servlet-name>
+    	<url-pattern>/toxygates/intermine</url-pattern>
   	</servlet-mapping>
   	
-  	<servlet>
-		<servlet-name>targetmineServlet</servlet-name>
-		<servlet-class>otgviewer.server.targetmine.TargetmineServiceImpl</servlet-class>
-	</servlet>
-
   
   	<!-- For AdminGUI -->
 	<servlet>
@@ -122,8 +208,6 @@
               <servlet-name>userDataServlet</servlet-name>
               <url-pattern>/toxygates/userData</url-pattern>
         </servlet-mapping>
-                                                                                                                                  
-
   
   
   <!-- Default page to serve -->

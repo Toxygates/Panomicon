@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Toxygates authors, National Institutes of Biomedical Innovation, Health
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health
  * and Nutrition (NIBIOHN), Japan.
  * 
  * This file is part of Toxygates.
@@ -16,25 +16,26 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.targetmine;
+package t.viewer.client.intermine;
 
-import otgviewer.shared.targetmine.EnrichmentParams;
 import t.common.shared.StringList;
+import t.viewer.shared.intermine.EnrichmentParams;
+import t.viewer.shared.intermine.IntermineInstance;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public interface TargetmineServiceAsync {
+public interface IntermineServiceAsync {
 
-  public void importTargetmineLists(String user, String pass, boolean asProbes,
+  public void importLists(IntermineInstance instance, String user, String pass, boolean asProbes,
       AsyncCallback<StringList[]> callback);
 
-  public void exportTargetmineLists(String user, String pass, StringList[] lists, boolean replace,
+  public void exportLists(IntermineInstance instance, String user, String pass, StringList[] lists, boolean replace,
       AsyncCallback<Void> callback);
 
-  void enrichment(StringList list, EnrichmentParams params,
+  void enrichment(IntermineInstance instance, StringList list, EnrichmentParams params,
       AsyncCallback<String[][]> callback);
 
-  void multiEnrichment(StringList[] list,
+  void multiEnrichment(IntermineInstance instance, StringList[] list,
       EnrichmentParams params,
       AsyncCallback<String[][][]> callback);
 }
