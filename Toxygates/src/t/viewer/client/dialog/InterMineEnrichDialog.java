@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.dialog;
+package t.viewer.client.dialog;
 
 import javax.annotation.Nullable;
 
@@ -32,13 +32,14 @@ import t.viewer.shared.intermine.IntermineInstance;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-public class TargetMineEnrichDialog extends TargetMineSyncDialog {
+public class InterMineEnrichDialog extends InterMineSyncDialog {
 
-  public TargetMineEnrichDialog(Screen parent, String action, 
+  public InterMineEnrichDialog(Screen parent, String action, 
       @Nullable IntermineInstance preferredInstance) {
     super(parent, action, false, false, preferredInstance);
   }
@@ -55,17 +56,9 @@ public class TargetMineEnrichDialog extends TargetMineSyncDialog {
   
   VerticalPanel vp = new VerticalPanel();
   
-  ItemSelector<EnrichmentWidget> widget = new ItemSelector<EnrichmentWidget>() {
-    @Override
-    protected EnrichmentWidget[] values() {
-      return EnrichmentWidget.values();
-    }      
+  SimplePanel widgetSelHolder = new SimplePanel();
+  ItemSelector<EnrichmentWidget> widgetSel = widgetSelector(new EnrichmentWidget[] {});
     
-    @Override
-    protected void onValueChange(EnrichmentWidget selected) {
-      setFilterItems(selected.filterValues());
-    }
-  };
   
   ItemSelector<Correction> corr = new ItemSelector<Correction>() {
     @Override
@@ -78,10 +71,21 @@ public class TargetMineEnrichDialog extends TargetMineSyncDialog {
   ListBox filter = new ListBox();
   
   @Override
+  protected Widget content() {
+    Widget r = super.content();
+    IntermineInstance inst = selector.value();
+    if (inst != null) {
+      instanceChanged(selector.value());
+    }
+    return r;
+  }
+  
+  @Override
   protected Widget customUI() {
+    widgetSelHolder.add(widgetSel);
     Grid g = new Grid(4, 2);
     vp.add(g);
-    addWithLabel(g, 0, "Enrichment: ", widget);      
+    addWithLabel(g, 0, "Enrichment: ", widgetSelHolder);      
     addWithLabel(g, 1, "Filter: ", filter);
     pValueCutoff.setValue("0.05");
     addWithLabel(g, 2, "p-value cutoff: ", pValueCutoff);
@@ -92,10 +96,32 @@ public class TargetMineEnrichDialog extends TargetMineSyncDialog {
     return vp;
   }
   
+  protected ItemSelector<EnrichmentWidget> widgetSelector(final EnrichmentWidget[] values) {
+    return new ItemSelector<EnrichmentWidget>() {
+      @Override
+      protected EnrichmentWidget[] values() {
+        return values;
+      }      
+      
+      @Override
+      protected void onValueChange(EnrichmentWidget selected) {
+        setFilterItems(selected.filterValues());
+      }
+    };
+  }
+  
   @Override
   protected void instanceChanged(IntermineInstance instance) {
-    // TODO
     super.instanceChanged(instance);
+    setFilterItems(new String[]{});
+    final EnrichmentWidget[] widgets = EnrichmentWidget.widgetsFor(instance);
+    widgetSel = widgetSelector(widgets);
+    if (widgets.length > 0) {
+      widgetSel.setSelected(widgets[0]);
+      setFilterItems(widgets[0].filterValues());
+    }
+    widgetSelHolder.clear();
+    widgetSelHolder.add(widgetSel);
   }
 
   private void setFilterItems(String[] items) {
@@ -108,7 +134,7 @@ public class TargetMineEnrichDialog extends TargetMineSyncDialog {
   //TODO check format
   public double getCutoff() { return Double.parseDouble(pValueCutoff.getValue()); }
   
-  public EnrichmentWidget getWidget() { return widget.value(); }
+  public EnrichmentWidget getWidget() { return widgetSel.value(); }
   
   public Correction getCorrection() { return corr.value(); }
   

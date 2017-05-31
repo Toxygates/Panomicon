@@ -22,10 +22,11 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import t.clustering.client.ClusteringServiceAsync;
+import t.clustering.shared.Algorithm;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
-import t.common.shared.userclustering.Algorithm;
 import t.viewer.shared.ColumnFilter;
 import t.viewer.shared.FullMatrix;
 import t.viewer.shared.ManagedMatrixInfo;
@@ -34,7 +35,7 @@ import t.viewer.shared.table.SortKey;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public interface MatrixServiceAsync {
+public interface MatrixServiceAsync extends ClusteringServiceAsync<Group,String> {
 
   void loadMatrix(List<Group> columns, String[] probes, ValueType type,
       AsyncCallback<ManagedMatrixInfo> callback);
@@ -58,7 +59,7 @@ public interface MatrixServiceAsync {
 
   void sendFeedback(String name, String email, String feedback, AsyncCallback<Void> callback);
 
-  void prepareHeatmap(List<Group> chosenColumns, String[] chosenProbes, ValueType valueType,
-      Algorithm algorithm, AsyncCallback<String> prepareHeatmapCallback);
+  void prepareHeatmap(List<Group> chosenColumns, List<String> chosenProbes, ValueType valueType,
+      Algorithm algorithm, AsyncCallback<String> callback);
 
 }

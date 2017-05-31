@@ -21,22 +21,39 @@
 package t.viewer.shared.intermine;
 
 public enum EnrichmentWidget {
+  //TargetMine widgets
   GenePathway("gene_pathway_enrichment", "Pathway",
       new String[] { "All", "KEGG Pathway", "Reactome", "NCI Pathway Interaction Database"}),
   GeneIPC("gene_ipc_enrichment", "Integrated pathway cluster"), 
   GeneGO("gene_go_enrichment", "GO term",
       new String[] {"biological_process", "cellular_component", "molecular_function"}),
   GeneGOAGOS("gene_goagos_enrichment", "GOSlim term",
-      new String[] {"biological_process", "cellular_component", "molecular_function"});
+      new String[] {"biological_process", "cellular_component", "molecular_function"}),
+      
+  //Information on the following widgets may be looked up from the corresponding intermine
+  //APIs. A useful gateway is http://iodocs.apps.intermine.org
+  Publication("publication_enrichment", "Publication"),
+  ProteinDomain("prot_dom_enrichment_for_gene", "Protein domains"),
+  GeneGO2("go_enrichment_for_gene", "GO term",
+      new String[] {"biological_process", "cellular_component", "molecular_function"}),
+      
+  GenePathwayMouse("pathway_enrichment_for_gene", "Pathway (Reactome)"),
+  
+  //From the flymine beta documentation
+  GenePathwayHuman("pathway_enrichment", "Pathway",
+      new String[] {"All", "KEGG pathways data set", "Reactome data set"});
+  
   
   private String key, label;
   private String[] filterValues;
   
-  EnrichmentWidget(String key, String label) {
+  EnrichmentWidget(String key,
+      String label) {
     this(key, label, new String[] { "" });
   }
   
-  EnrichmentWidget(String key, String label, String[] filterValues) {
+  EnrichmentWidget(String key,
+      String label, String[] filterValues) {
     this.key = key;
     this.label = label;
     this.filterValues = filterValues;
@@ -49,4 +66,35 @@ public enum EnrichmentWidget {
   public String getLabel() { return label; }
  
   public String[] filterValues() { return filterValues; }
+  
+  /**
+   * Get appropriate widgets for the instance.
+   * In the future, we may obtain these using API lookups from the instance directly.
+   * @param instance
+   * @return
+   */
+  public static EnrichmentWidget[] widgetsFor(IntermineInstance instance) {
+    String title = instance.title();
+    if (title.equals("TargetMine")) {
+      return new EnrichmentWidget[] {
+          GenePathway, GeneIPC, GeneGO, GeneGOAGOS
+      };
+    } else if (title.equals("RatMine")) {
+      /**
+       * RatMine has no enrichment widgets for genes available at the moment - see 
+       * http://iodocs.apps.intermine.org/rgd/docs#/ws-available-widgets/GET/widgets
+       */
+      return new EnrichmentWidget[] {};
+    } else if (title.equals("MouseMine")) {
+      return new EnrichmentWidget[] { 
+          GenePathwayMouse, GeneGO2, ProteinDomain
+      };
+    } else if (title.equals("HumanMine")) {
+      return new EnrichmentWidget[] {
+          Publication, ProteinDomain, GeneGO2, GenePathwayHuman
+      };
+    } else {
+      return new EnrichmentWidget[] {};
+    }
+  }
 }

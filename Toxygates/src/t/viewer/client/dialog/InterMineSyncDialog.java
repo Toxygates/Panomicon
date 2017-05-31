@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.dialog;
+package t.viewer.client.dialog;
 
 import javax.annotation.Nullable;
 
@@ -24,7 +24,6 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.InputGrid;
 import otgviewer.client.components.Screen;
 import t.viewer.client.Utils;
-import t.viewer.client.dialog.InteractionDialog;
 import t.viewer.client.intermine.InstanceSelector;
 import t.viewer.shared.intermine.IntermineInstance;
 
@@ -42,7 +41,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-abstract public class TargetMineSyncDialog extends InteractionDialog {
+abstract public class InterMineSyncDialog extends InteractionDialog {
 
   private CheckBox replaceCheck = new CheckBox("Replace lists with identical names");
   private InputGrid ig;
@@ -53,7 +52,7 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
   //TODO
   private static String account, password;
   private @Nullable IntermineInstance instance;
-  private @Nullable InstanceSelector selector;
+  protected @Nullable InstanceSelector selector;
   
   /**
    * 
@@ -63,7 +62,7 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
    * @param withReplace
    * @param instance must not be null if withPassword is true
    */
-  public TargetMineSyncDialog(DataListenerWidget parent, String action,
+  public InterMineSyncDialog(DataListenerWidget parent, String action,
       boolean withPassword, boolean withReplace,
       @Nullable InstanceSelector selector,
       @Nullable IntermineInstance instance) {
@@ -76,7 +75,7 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
     setup();
   }
   
-  public TargetMineSyncDialog(Screen parent, String action,
+  public InterMineSyncDialog(Screen parent, String action,
       boolean withPassword, boolean withReplace,
       @Nullable IntermineInstance preferredInstance) {
     this(parent, action, withPassword, withReplace, null,
@@ -126,7 +125,7 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
       @Override
       public void onClick(ClickEvent event) {
         IntermineInstance instance = 
-            selector != null ? selector.value() : TargetMineSyncDialog.this.instance;
+            selector != null ? selector.value() : InterMineSyncDialog.this.instance;
             
         if (withPassword && 
             (ig.getValue(0).trim().equals("") || ig.getValue(1).trim().equals(""))
@@ -150,10 +149,11 @@ abstract public class TargetMineSyncDialog extends InteractionDialog {
   }
   
   protected void instanceChanged(IntermineInstance instance) {
-    passwordLabel.setText(
-            "You must have a " + instance.title() + " account in order to use "
-            + "this function. If you do not have one, you may create one at " + 
-            instance.webURL() + ".");
+    if (passwordLabel != null) {
+      passwordLabel.setText("You must have a " + instance.title() + " account in order to use "
+          + "this function. If you do not have one, you may create one at " + instance.webURL()
+          + ".");
+    }
   }
   
   Label passwordLabel;

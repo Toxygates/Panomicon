@@ -34,6 +34,8 @@ import t.common.shared.StringList
 import t.platform.Probe
 import scala.Vector
 import t.viewer.server.Platforms
+import org.intermine.webservice.client.core.Service
+import org.json.JSONObject
 
 class IntermineConnector(instance: IntermineInstance,
     platforms: Platforms) {
@@ -55,6 +57,23 @@ class IntermineConnector(instance: IntermineInstance,
     sf.getListService()
   }
 
+  def getSessionToken(): String = {
+    println(s"Connect to $title")
+    val sf = new ServiceFactory(serviceUrl)
+    val s = sf.getService("session", instance.appName)
+    val r = s.createGetRequest(s.getUrl, ContentType.APPLICATION_JSON)
+    val con = s.executeRequest(r)
+    val rs = con.getResponseBodyAsString
+    val obj = new JSONObject(rs)
+    if (!obj.getBoolean("wasSuccessful")) {
+      throw new IntermineException(s"Unable to get a session token from the Intermine server $serviceUrl")
+    }
+    val token = obj.getString("token")
+    println(s"Opened intermine session: $token")
+    con.close()
+    token
+  }
+
   def enrichmentRequest(ls: ListService) =
     ls.createGetRequest(serviceUrl + "/list/enrichment", ContentType.TEXT_TAB)
 
@@ -64,26 +83,28 @@ class IntermineConnector(instance: IntermineInstance,
     var items: Vector[Gene] = Vector()
     println(s"Importing ${l.getName}")
 
-    if (l.getSize > 1000) {
-      println("List too big - not importing")
-      return None
-    }
-
     for (i <- 0 until l.getSize()) {
       val it = l.get(i)
       items :+= Gene(it.getString("Gene.primaryIdentifier"))
     }
+
     //we will have obtained the genes as ENTREZ identifiers
     println(s"${items take 100} ...")
-    val probes = items.flatMap(g => platforms.geneLookup.get(g)).
-      flatten.map(_.identifier)
+    var probes = items.flatMap(g => platforms.geneLookup.get(g)).
+      flatten.map(_.identifier).distinct
+
+    //TODO handle large lists
+//    if (probes.size > 1000) {
+//      println(s"Warning: truncating list ${l.getName} from ${probes.size} to 1000 items")
+//      probes = (probes take 1000)
+//    }
 
     val filtered = if (!probes.isEmpty) {
       filterProbes(probes)
     } else {
       println(s"Warning: the following imported list had no corresponding probes in the system: ${l.getName}")
       println(s"The original size was ${l.getSize}")
-      Seq()
+      return None
     }
     println(s"${filtered take 100} ...")
 
@@ -107,7 +128,7 @@ class IntermineConnector(instance: IntermineInstance,
    */
   def addList(probeStore: Probes, ls: ListService,
     input: Seq[String], name: Option[String], replace: Boolean,
-    tags: Seq[String] = Seq()): Option[ItemList] = {
+    tags: Seq[String] = Seq("toxygates")): Option[ItemList] = {
 
     var serverList = name.map(n => Option(ls.getList(n))).flatten
     if (serverList != None && replace) {

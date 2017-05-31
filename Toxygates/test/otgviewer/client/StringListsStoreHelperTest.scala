@@ -20,7 +20,6 @@
 
 package otgviewer.client
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import t.common.shared.StringList
@@ -32,7 +31,6 @@ import t.viewer.client.HasLogger
 import java.util.logging.Logger
 import org.scalatest.Matchers
 
-@RunWith(classOf[JUnitRunner])
 class StringListsStoreHelperTest extends FunSuite with Matchers {
 
   import java.util.{ ArrayList => JList }

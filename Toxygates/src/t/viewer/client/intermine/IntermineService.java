@@ -59,22 +59,32 @@ public interface IntermineService extends RemoteService {
    * @param instance
    * @param list
    * @param params
+   * @param session the intermine session key, previously obtained from the getSession request
    * @return
    * @throws IntermineException
    */
   public String[][] enrichment(IntermineInstance instance,
-      StringList list, EnrichmentParams params) throws IntermineException;
+      StringList list, EnrichmentParams params, String session) throws IntermineException;
 
   /**
    * Enrich multiple gene lists simultaneously, returning only the top result for each
    * @param instance
    * @param lists
    * @param params
+   * @param session the intermine session key, previously obtained from the getSession request
    * @return
    * @throws IntermineException
    */
   public String[][][] multiEnrichment(IntermineInstance instance,
-      StringList[] lists, EnrichmentParams params)
+      StringList[] lists, EnrichmentParams params, String session)
       throws IntermineException;
 
+  /**
+   * Obtain a temporary session from the given intermine server.
+   * @param instance
+   * @return A session key
+   * @throws IntermineException
+   */
+  public String getSession(IntermineInstance instance) 
+		  throws IntermineException;
 }

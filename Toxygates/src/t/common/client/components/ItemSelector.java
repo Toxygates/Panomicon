@@ -47,6 +47,7 @@ public abstract class ItemSelector<T> extends Composite {
   }
   
   private void setup(T[] values) {
+    lb.clear();
     lb.setVisibleItemCount(1);
     for (T t : values) {
       lb.addItem(titleForValue(t));

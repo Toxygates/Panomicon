@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import t.common.shared.Dataset;
 import t.common.shared.Platform;
 import t.common.shared.StringList;
@@ -51,6 +53,8 @@ public class AppInfo implements Serializable {
   private IntermineInstance[] intermineInstances;
   
   private String userKey;
+  
+  @Nullable private String[] importedGenes;
   
   public AppInfo() {}
 
@@ -145,5 +149,18 @@ public class AppInfo implements Serializable {
   
   public IntermineInstance[] intermineInstances() { 
     return intermineInstances; 
+  }
+  
+  /**
+   * One-time gene import that may be done by POST request.
+   * The gene set is passed to the client here.
+   * @return
+   */
+  @Nullable public String[] importedGenes() {
+    return importedGenes;
+  }
+  
+  public void setImportedGenes(String[] genes) {
+    importedGenes = genes;
   }
 }

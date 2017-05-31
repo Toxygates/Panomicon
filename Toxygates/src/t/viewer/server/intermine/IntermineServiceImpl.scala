@@ -42,7 +42,6 @@ import t.viewer.shared.intermine._
 abstract class IntermineServiceImpl extends TServiceServlet with IntermineService {
   var affyProbes: Probes = _
   var platforms: Platforms = _
-  var apiKey: String = _
   var mines: Intermines = _
 
   // Useful for testing
@@ -50,7 +49,6 @@ abstract class IntermineServiceImpl extends TServiceServlet with IntermineServic
     super.localInit(config)
     affyProbes = context.probes
     platforms = Platforms(affyProbes)
-    apiKey = config.intermineInstances.head.apiKey()
     mines = new Intermines(config.intermineInstances)
   }
 
@@ -117,15 +115,18 @@ abstract class IntermineServiceImpl extends TServiceServlet with IntermineServic
   }
 
   def multiEnrichment(inst: IntermineInstance, lists: Array[StringList],
-      params: EnrichmentParams): Array[Array[Array[String]]] =
-    lists.map(enrichment(inst, _, params)).toArray
+      params: EnrichmentParams, session: String): Array[Array[Array[String]]] =
+    lists.map(enrichment(inst, _, params, session)).toArray
 
   def enrichment(inst: IntermineInstance, list: StringList,
-                 params: EnrichmentParams): Array[Array[String]] = {
+                 params: EnrichmentParams, session: String): Array[Array[String]] = {
+    println(s"Enrichment in session $session")
+    
     val conn = mines.connector(inst, platforms)
     val ls = conn.getListService(None, None)
-    ls.setAuthentication(apiKey)
-    val tags = List("H. sapiens") //!!
+    ls.setAuthentication(session)
+    val tags = List()
+//    val tags = List("H. sapiens") //!!
 
     val tempList = conn.addList(affyProbes, ls, list.items(),
       None, false, tags)
@@ -136,7 +137,7 @@ abstract class IntermineServiceImpl extends TServiceServlet with IntermineServic
         println(s"Created temporary list $listName")
 
         val request = conn.enrichmentRequest(ls)
-        request.setAuthToken(apiKey)
+        request.setAuthToken(session)
         //      request.addParameter("token", apiKey)
         request.addParameter("list", listName)
         request.addParameter("widget", params.widget.getKey)
@@ -154,5 +155,10 @@ abstract class IntermineServiceImpl extends TServiceServlet with IntermineServic
       case None => throw new IntermineException("Unable to create temporary list for enrichment")
     }
 
+  }
+  
+  def getSession(inst: IntermineInstance): String = {
+    val conn = mines.connector(inst, platforms)
+    conn.getSessionToken()
   }
 }

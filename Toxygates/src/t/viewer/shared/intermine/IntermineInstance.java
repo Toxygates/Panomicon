@@ -8,16 +8,15 @@ import java.io.Serializable;
 @SuppressWarnings("serial")
 public class IntermineInstance implements Serializable {
 
-  private String title, appName, apiKey, userURL;
+  private String title, appName, userURL;
   
   //GWT constructor
   public IntermineInstance() {}
   
   public IntermineInstance(String title, String appName,
-      String apiKey, String userURL) {
+      String userURL) {
     this.title = title;
     this.appName = appName;
-    this.apiKey = apiKey;
     this.userURL = userURL;
   }
 
@@ -36,14 +35,6 @@ public class IntermineInstance implements Serializable {
   public String title() {
     return title;
   }
-  
-  /**
-   * API key for login-free shared account
-   * @return
-   */
-  public String apiKey() {
-    return apiKey;
-  }
  
   /**
    * An URL that the user can visit in a web browser.
@@ -55,6 +46,19 @@ public class IntermineInstance implements Serializable {
   public String serviceURL() {
     //TODO is this correct?
     return userURL + "/" + appName + "/service";
+  }
+  
+  @Override
+  public boolean equals(Object other) {
+    if (other != null && other instanceof IntermineInstance) {
+      return userURL.equals(((IntermineInstance) other).webURL());
+    }
+    return false;
+  }
+  
+  @Override
+  public int hashCode() {
+    return userURL.hashCode();
   }
  
 }

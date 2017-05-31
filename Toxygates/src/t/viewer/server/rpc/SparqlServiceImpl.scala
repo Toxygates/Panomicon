@@ -61,6 +61,7 @@ import t.sparql.Samples
 import t.sparql.TriplestoreMetadata
 import t.sparql.makeRich
 import t.sparql.secondary.B2RKegg
+import t.sparql.secondary.Gene
 import t.sparql.secondary.GOTerm
 import t.sparql.secondary.LocalUniprot
 import t.sparql.secondary.Pathway
@@ -115,6 +116,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   protected var uniprot: Uniprot = _
   protected var configuration: Configuration = _
+
+  lazy val platformsCache = t.viewer.server.Platforms(probeStore)
 
   lazy val annotations = new Annotations(sampleStore, schema, baseConfig)
 
@@ -201,17 +204,33 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     "%x%x".format(time, random)
   }
 
-  //TODO filter datasets by key
   def appInfo(@Nullable userKey: String): AppInfo = {
     getSessionData() //initialise this if needed
 
     val ai = appInfoLoader.latest
 
-    /* Reload the datasets since they can change often (with user data, admin
+    /* 
+     * Reload the datasets since they can change often (with user data, admin
      * operations etc.)
      */
     ai.setDatasets(sDatasets(userKey))
-
+    
+    val sess = getThreadLocalRequest.getSession
+    import GeneSetServlet._
+    
+    /*
+     * From GeneSetServlet
+     */
+    val importGenes = sess.getAttribute(IMPORT_SESSION_KEY)
+    if (importGenes != null) {
+      val igs = importGenes.asInstanceOf[Array[String]]
+      ai.setImportedGenes(igs)
+      //Import only once
+      sess.removeAttribute(IMPORT_SESSION_KEY)
+    } else {
+      ai.setImportedGenes(null)
+    }
+    
     if (getSessionData().sampleFilter.datasetURIs.isEmpty) {
       //Initialise the selected datasets by selecting all, except shared user data.
       val defaultVisible = ai.datasets.filter(ds =>
@@ -431,11 +450,29 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   def identifiersToProbes(identifiers: Array[String], precise: Boolean,
       quick: Boolean, titlePatternMatch: Boolean,
       samples: JList[Sample]): Array[String] = {
+
+    def geneLookup(gene: String): Option[Iterable[Probe]] =
+      platformsCache.geneLookup.get(Gene(gene))
+
     val ps = if (titlePatternMatch) {
       probeStore.forTitlePatterns(identifiers)
     } else {
-      probeStore.identifiersToProbes(context.matrix.probeMap,
-        identifiers, precise, quick)
+      //Try to do a gene identifier based lookup first
+
+      var geneMatch = Set[String]()
+      var matchingGenes = Seq[Probe]()
+      for (
+        i <- identifiers; ps <- geneLookup(i)
+      ) {
+        geneMatch += i
+        matchingGenes ++= ps
+      }
+
+      val nonGeneMatch = (identifiers.toSet -- geneMatch).toArray
+
+      //Resolve remaining identifiers
+      matchingGenes ++ probeStore.identifiersToProbes(context.matrix.probeMap,
+        nonGeneMatch, precise, quick)
     }
     val result = ps.map(_.identifier).toArray
 

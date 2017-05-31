@@ -21,9 +21,9 @@
 package t.common.shared
 
 import org.scalatest.FunSuite
-import t.common.shared.userclustering.Algorithm
-import t.common.shared.userclustering.Methods
-import t.common.shared.userclustering.Distances
+import t.clustering.shared.Algorithm
+import t.clustering.shared.Methods
+import t.clustering.shared.Distances
 
 class ClusteringListTest extends FunSuite {
 
