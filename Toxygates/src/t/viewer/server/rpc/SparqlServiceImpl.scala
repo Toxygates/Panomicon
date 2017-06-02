@@ -318,44 +318,81 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     ).toArray
   }
 
+  /**
+   * Generates units containing treated samples and their associated control samples.
+   * TODO: sensitive algorithm, should simplify and possibly factor out, move to OTGTool.
+   */
   @throws[TimeoutException]
   def units(sc: SampleClass,
       param: String, paramValues: Array[String]): Array[Pair[Unit, Unit]] = {
 
-    val majorParam = schema.majorParameter()
-    //Ensure shared control is always included, if possible
-    val useParamValues = if (param == majorParam && schema.majorParamSharedControl != null) {
-      paramValues.toSeq ++ schema.majorParamSharedControl
-    } else {
-      paramValues.toSeq
-    }
+    def isControl(s: t.db.Sample) = schema.isSelectionControl(s.sampleClass)
+    
+    def unit(s: Sample) = s.sampleClass.asUnit(schema)
+    
+    //TODO the copying may be costly - consider optimising in the future
+    def unitWithoutMajorMedium(s: Sample) = unit(s).
+      copyWithout(schema.majorParameter).copyWithout(schema.mediumParameter())
+      
+    def asUnit(ss: Iterable[Sample]) = new Unit(unit(ss.head), ss.toArray)
 
-    val ss = sampleStore.samples(scAsScala(sc), param, useParamValues).
-        groupBy(x =>(
-            x.sampleClass(schema.timeParameter()),
-            x.sampleClass.get("control_group")))
+    //This will filter by the chosen parameter - usually compound name
+    
+    val rs = sampleStore.samples(sc, param, paramValues.toSeq)
+    val ss = rs.groupBy(x =>(
+            x.sampleClass("batchGraph"),
+            x.sampleClass("control_group")))
 
-    //For each unit of treated samples inside a control group, all
-    //control samples in that group are assigned as control.
+    val cgs = ss.keys.toSeq.map(_._2).distinct
+    val potentialControls = sampleStore.samples(sc, "control_group", cgs).
+      filter(isControl).map(asJavaSample)
+      
+      /*
+       * For each unit of treated samples inside a control group, all
+       * control samples in that group are assigned as control,
+       * assuming that other parameters are also compatible. 
+       */
+
     var r = Vector[Pair[Unit, Unit]]()
-    for (((t, cg), samples) <- ss;
-        treatedControl = samples.partition(s => !schema.isSelectionControl(s.sampleClass) )) {
-      val treatedUnits = treatedControl._1.map(asJavaSample).
-          groupBy(_.sampleClass.asUnit(schema))
+    for (((batch, cg), samples) <- ss;
+        treated = samples.filter(!isControl(_)).map(asJavaSample)) {
+        
+      /*
+       * Remove major parameter (compound in OTG case) as we now allow treated-control samples
+       * to have different compound names. 
+       */
 
-      val cus = treatedControl._2.map(asJavaSample)
-      val cu = if (!cus.isEmpty) {
-        new Unit(cus.head.sampleClass().asUnit(schema),
-          cus.toArray)
-      } else {
-        new Unit(sc.asUnit(schema), Array())
-      }
+      val byUnit = treated.groupBy(unit(_))
+          
+      val treatedControl = byUnit.map(tt => {
+        val repSample = tt._2.head
+        val repUnit = unitWithoutMajorMedium(repSample)
+        
+        val fcs = potentialControls.filter(s => 
+          unitWithoutMajorMedium(s) == repUnit
+          && s.get("control_group") == repSample.get("control_group")
+          && s.get("batchGraph") == repSample.get("batchGraph")
+          )
+          
+        val cu = if (fcs.isEmpty) 
+          new Unit(sc.asUnit(schema), Array())
+        else 
+          asUnit(fcs)
+        
+        val tu = asUnit(tt._2)
+        
+        new Pair(tu, cu)        
+      })
+      
+      r ++= treatedControl
 
-      r ++= treatedUnits.map(u => new Pair(
-          new Unit(u._1, u._2.toArray), cu))
-      if (!cu.getSamples().isEmpty) {
-        r :+= new Pair(cu, null: Unit) //add this as a pseudo-treated unit by itself
-      }
+      r ++= treatedControl.flatMap(tc =>
+        if (!tc.second().getSamples.isEmpty)
+          //add this as a pseudo-treated unit by itself
+          Some(new Pair(tc.second(), null: Unit))
+        else
+          None
+          )
     }
     r.toArray
   }
