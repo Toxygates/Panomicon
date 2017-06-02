@@ -35,6 +35,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -325,5 +326,9 @@ public class Utils {
     waitDialog.setWidget(Utils.mkEmphLabel("Please wait..."));
     waitDialog.setPopupPositionAndShow(Utils.displayInCenter(waitDialog));
     return waitDialog;
+  }
+  
+  public static SafeHtml tooltipSpan(String tooltip, String text) {
+      return SafeHtmlUtils.fromSafeConstant("<span title=\"" + tooltip + "\">" + text + "</span>");
   }
 }

@@ -20,6 +20,8 @@ package t.viewer.client.table;
 
 import javax.annotation.Nullable;
 
+import t.viewer.client.Utils;
+
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 
@@ -62,7 +64,7 @@ public class ColumnInfo {
   }
 
   public SafeHtml headerHtml() {
-    return SafeHtmlUtils.fromSafeConstant("<span title=\"" + tooltip + "\">" + title + "</span>");
+    return Utils.tooltipSpan(tooltip, title);
   }
 
   /**
