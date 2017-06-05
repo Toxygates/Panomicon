@@ -23,7 +23,6 @@ import javax.annotation.Nullable;
 import t.viewer.client.Utils;
 
 import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 
 public class ColumnInfo {
 
