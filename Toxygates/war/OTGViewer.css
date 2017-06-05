@@ -294,6 +294,15 @@ exprGrid {
 
 .numericalParameterHealthy {
 }
+
+.sampleDetailTitleColumn {
+	width: 15em;
+}
+
+.sampleDetailDataColumn {
+	width: 10em;
+}
+
 /*
  Fix "Ghost scrollbar" issue in Safari with trackpads.
  See https://groups.google.com/forum/#!topic/google-web-toolkit/xxeS6LETdBs
