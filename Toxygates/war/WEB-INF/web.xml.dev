@@ -28,12 +28,12 @@
 	
 	<context-param>
 		<param-name>instanceName</param-name>
-		<param-value>toxygates-test</param-value>
+		<param-value>dev</param-value>
 	</context-param>
 	
 	<context-param>
 		<param-name>dataDir</param-name>
-		<param-value>/Users/johan/otg/data_dev</param-value>
+		<param-value>kcchunk:/Users/johan/otg/data_dev</param-value>
 	</context-param>
 	<context-param>
 		<param-name>matrixDbOptions</param-name>
