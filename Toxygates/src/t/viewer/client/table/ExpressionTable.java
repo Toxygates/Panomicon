@@ -57,6 +57,7 @@ import t.viewer.shared.ColumnFilter;
 import t.viewer.shared.ManagedMatrixInfo;
 import t.viewer.shared.Synthetic;
 import t.viewer.shared.table.SortKey;
+import static t.viewer.client.Analytics.*;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.SafeHtmlCell;
@@ -689,6 +690,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
           displayedProbes = dispPs.toArray(new String[0]);
           highlightedRow = -1;
           getAssociations();
+          
+          trackEvent(CATEGORY_TABLE, ACTION_PAGE_CHANGE);
         } else {
           Window.alert(errMsg());
         }
@@ -841,6 +844,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
             chartBarcodes = bcs;
           }
         });
+        trackEvent(CATEGORY_VISUALIZATION, ACTION_DISPLAY_CHARTS);
       }      
     });
   }

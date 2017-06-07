@@ -31,30 +31,6 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import otgviewer.client.components.Screen.QueuedAction;
-import otgviewer.client.components.ScreenManager;
-import otgviewer.client.components.StorageParser;
-import otgviewer.client.dialog.FeedbackForm;
-import t.common.shared.SharedUtils;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
-import t.viewer.client.Utils;
-import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.dialog.MetadataInfo;
-import t.viewer.client.rpc.MatrixService;
-import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.client.rpc.ProbeServiceAsync;
-import t.viewer.client.rpc.SampleServiceAsync;
-import t.viewer.client.rpc.SeriesService;
-import t.viewer.client.rpc.SeriesServiceAsync;
-import otgviewer.client.rpc.SparqlService;
-import otgviewer.client.rpc.SparqlServiceAsync;
-import t.viewer.client.rpc.UserDataService;
-import t.viewer.client.rpc.UserDataServiceAsync;
-import t.viewer.shared.AppInfo;
-
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -88,6 +64,31 @@ import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
+
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
+import otgviewer.client.components.Screen.QueuedAction;
+import otgviewer.client.components.ScreenManager;
+import otgviewer.client.components.StorageParser;
+import otgviewer.client.dialog.FeedbackForm;
+import otgviewer.client.rpc.SparqlService;
+import otgviewer.client.rpc.SparqlServiceAsync;
+import t.common.shared.SharedUtils;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.Sample;
+import t.viewer.client.Analytics;
+import t.viewer.client.Utils;
+import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.dialog.MetadataInfo;
+import t.viewer.client.rpc.MatrixService;
+import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.client.rpc.ProbeServiceAsync;
+import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.client.rpc.SeriesService;
+import t.viewer.client.rpc.SeriesServiceAsync;
+import t.viewer.client.rpc.UserDataService;
+import t.viewer.client.rpc.UserDataServiceAsync;
+import t.viewer.shared.AppInfo;
 
 /**
  * The main entry point for Toxygates. The main task of this class is to manage the history
@@ -524,7 +525,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       readURLParameters(s);
     }
     showScreen(s);
-    Utils.googleAnalyticsTrackPageView("/toxygates.html#" + token);
+    Analytics.trackPageView(Analytics.URL_PREFIX + token);
   }
 
   /**

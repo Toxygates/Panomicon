@@ -26,6 +26,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.IdentityColumn;
+import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+
 import otgviewer.client.charts.ChartGrid;
 import otgviewer.client.charts.Charts;
 import otgviewer.client.components.DataListenerWidget;
@@ -38,17 +45,11 @@ import t.common.client.ImageClickCell;
 import t.common.client.Resources;
 import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
+import t.viewer.client.Analytics;
 import t.viewer.client.CodeDownload;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SeriesServiceAsync;
-
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.IdentityColumn;
-import com.google.gwt.user.cellview.client.TextColumn;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class RankingCompoundSelector extends CompoundSelector {
 
@@ -167,6 +168,7 @@ public class RankingCompoundSelector extends CompoundSelector {
         seriesService.getSeries(chosenSampleClass, rankProbes.toArray(new String[0]), null,
             new String[] {value}, getSeriesCallback(value));
       }
+      Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_COMPOUND_RANKING_CHARTS);
     }
 
     private AsyncCallback<List<Series>> getSeriesCallback(final String value) {
