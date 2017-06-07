@@ -53,23 +53,26 @@ class MatrixMapperTest extends TTestSuite {
         (test.size == 2 && test.map(_.value).sum / 2 == x.value))
   }
 
-//  test("values") {
-//    val d = makeTestData(false)
-//    for (m <- os.mappings; s <- d.samples;
-//      ms = m.toSet) {
-//      val data = d.dataMap.mapValues(vs => vs.filter(p => ms.contains(p._1)))
-//      val vs = data(s).map(r => ExprValue(r._2._1, r._2._2, r._1))
-//      for (p <- m) {
-//        val filt = vs.filter(_.present)
-//        if (filt.size > 0) {
-//          val c = vm.convert(p, filt)
-//          //for size 2 we use mean rather than median.
-//          //call may change
-//          medianCompatible(c, filt)
-//        }
-//      }
-//    }
-//  }
+  test("values") {
+    val d = makeTestData(false)
+    for (
+      m <- os.mappings;
+      ms = m.toSet;
+      s <- d.samples
+    ) {
+      val data = d.dataMap.mapValues(vs => vs.filter(p => ms.contains(p._1)))
+      val vs = data(s).toSeq.map(r => ExprValue(r._2._1, r._2._2, r._1))
+      for (p <- m) {
+        val filt = vs.filter(_.present)
+        if (filt.size > 0) {
+          val c = vm.convert(p, filt)
+          //for size 2 we use mean rather than median.
+          //call may change
+          medianCompatible(c, filt)
+        }
+      }
+    }
+  }
 
   //TODO quite a lot of code here is shared with ManagedMatrixTest
   test("managedMatrix") {
