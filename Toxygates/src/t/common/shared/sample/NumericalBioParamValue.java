@@ -50,10 +50,16 @@ public class NumericalBioParamValue extends BioParamValue {
   }
   
   public boolean isAbove() {
-    return value > upperBound;
+    if (upperBound == null) {
+      return false;
+    } 
+    return value > upperBound;    
   }
   
   public boolean isBelow() {
+    if (lowerBound == null) {
+      return false;
+    }
     return value < lowerBound;
   }
 
@@ -80,6 +86,4 @@ public class NumericalBioParamValue extends BioParamValue {
     }
     return displayValue();
   }
-
-
 }
