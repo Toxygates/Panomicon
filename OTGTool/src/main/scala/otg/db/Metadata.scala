@@ -48,7 +48,6 @@ object OTGParameterSet extends ParameterSet {
 
   /**
    * Map human-readable descriptions to the keys we expect to find in the RDF data.
-   * The RDF predicates are of the form <http://127.0.0.1:3333/(key)>.
    */
 
   @deprecated("Being replaced with BioParameters", "Nov 2016")

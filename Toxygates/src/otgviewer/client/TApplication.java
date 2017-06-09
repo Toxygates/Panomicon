@@ -524,6 +524,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       readURLParameters(s);
     }
     showScreen(s);
+    Utils.googleAnalyticsTrackPageView("/toxygates.html#" + token);
   }
 
   /**

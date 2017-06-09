@@ -295,12 +295,19 @@ exprGrid {
 .numericalParameterHealthy {
 }
 
+.sampleDetailTitleColumn {
+	width: 15em;
+}
+
+.sampleDetailDataColumn {
+	width: 10em;
+}
+
 .samplesearch-label {
 	color: grey;
 }
 
 .samplesearch-rootpanel {
-	
 }
 
 .samplesearch-andpanel {

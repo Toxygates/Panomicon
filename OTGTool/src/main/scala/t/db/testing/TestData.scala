@@ -107,7 +107,7 @@ object TestData {
     }
     new RawExpressionData {
       val d = testData
-      def samples = d.keys
+      def samples = d.keys.toSeq
       def data(s: Sample) = d(s)
     }
   }

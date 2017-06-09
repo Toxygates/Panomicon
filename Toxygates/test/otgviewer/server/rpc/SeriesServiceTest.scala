@@ -34,13 +34,13 @@ class SeriesServiceTest extends FunSuite with BeforeAndAfter {
   var s: SeriesServiceImpl = _
 
   before {
-    val conf = new Configuration("otg", "/shiba/toxygates")
+    val conf = t.viewer.testing.TestConfiguration.config
     s = new SeriesServiceImpl()
     s.localInit(conf)
   }
 
   after {
-	s.destroy
+	  s.destroy
   }
 
   test("Ranking") {

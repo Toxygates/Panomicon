@@ -27,13 +27,13 @@ import otg.OTGBConfig
 
 object TestConfig {
   //Not in use
-  val dataConfig = new DataConfig("/shiba/toxygates/data_dev",
-    "#bnum=6250000#pccap=1073741824#apow=8")
+  val dataConfig = new DataConfig("kcchunk:/Users/johan/otg/data_chunk",
+    "#bnum=6250000#pccap=1073741824#msiz=4294967296")
   //	val tsConfig = new TriplestoreConfig("http://localhost:3030/data/sparql",
   //	    "http://localhost:3030/data/update", null, null, null)
 
   //TODO replace with in-memory triplestore or similar
-  val tsConfig = new TriplestoreConfig("http://sontaran:8081/owlim-workbench-webapp-5.3.1",
-    null, "ttest", "ttest", "ttest")
+  val tsConfig = new TriplestoreConfig("http://monomorphic.org:3030/Toxygates/query",
+    null, "x", "y", "")
   val config = new OTGBConfig(tsConfig, dataConfig)
 }

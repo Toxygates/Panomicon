@@ -33,6 +33,7 @@ import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.HasSamples;
 import t.common.shared.sample.NumericalBioParamValue;
 import t.common.shared.sample.Sample;
+import t.viewer.client.Utils;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.table.TooltipColumn;
 
@@ -40,6 +41,7 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.SafeHtmlHeader;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
@@ -144,19 +146,31 @@ public class SampleDetailTable extends Composite {
       public String getValue(BioParamValue[] object) {
         return object[0].label();
       }      
-    };
+    };   
     table.addColumn(labelCol, title);
-    table.setColumnWidth(labelCol, "15em");
+    table.addColumnStyleName(0, "sampleDetailTitleColumn");
     
     TextCell tc = new TextCell();
     for (int i = 1; i < barcodes.length + 1; ++i) {
       String name = barcodes[i - 1].id();
       BioParamColumn bpc = new BioParamColumn(tc, i - 1);
-      table.addColumn(bpc, name);
-      table.setColumnWidth(bpc, "10em");
+      
+      String displayTitle = abbreviate(name);      
+      SafeHtmlHeader header = new SafeHtmlHeader(Utils.tooltipSpan(name, displayTitle));
+      table.addColumn(bpc, header);
+      table.addColumnStyleName(i, "sampleDetailDataColumn");
     }
     table.setWidth((15 + 9 * barcodes.length) + "em", true);
 
+  }
+  
+  private static String abbreviate(String sampleId) {
+    if (sampleId.length() <= 14) {
+      return sampleId;
+    } else {
+      int l = sampleId.length();
+      return sampleId.substring(0, 5) + "..." + sampleId.substring(l - 5, l);
+    }
   }
 
   private BioParamValue[] makeAnnotItem(int i, Annotation[] as) {

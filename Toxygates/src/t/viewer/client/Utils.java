@@ -35,6 +35,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -183,7 +184,7 @@ public class Utils {
    * @param trackLocation Whether to remember the location of this dialog box. Only one dialog box
    *        location can be remembered as we use static variables for this purpose. (TODO: fix by
    *        having a DialogContext or similar)
-   * @pos The position to display the dialog at.
+   * @param pos The position to display the dialog at.
    */
   public static DialogBox displayInPopup(String caption, final Widget w,
       final boolean trackLocation, final DialogPosition pos) {
@@ -326,4 +327,20 @@ public class Utils {
     waitDialog.setPopupPositionAndShow(Utils.displayInCenter(waitDialog));
     return waitDialog;
   }
+  
+  public static SafeHtml tooltipSpan(String tooltip, String text) {
+      return SafeHtmlUtils.fromSafeConstant("<span title=\"" + tooltip + "\">" + text + "</span>");
+  }
+  
+  /**
+   * Tracks a pageview with Google Analytics if the google analytics script has been loaded. 
+   * 
+   * @param url the url to be tracked
+   */
+  public static native void googleAnalyticsTrackPageView(String url) /*-{
+    if ($wnd.ga) {
+    	$wnd.ga('send', 'pageview', url);
+    };
+}-*/;
+
 }

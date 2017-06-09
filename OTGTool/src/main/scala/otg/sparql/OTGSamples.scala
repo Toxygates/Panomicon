@@ -55,8 +55,11 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
   //TODO case with no attributes won't work
   //TODO consider lifting up
   def sampleQuery(filter: SampleClass)(implicit sf: SampleFilter): Query[Vector[Sample]] = {
+    val batchFilter = filter.get("batchGraph")
+    val batchFilterQ = batchFilter.map("<" + _ + ">").getOrElse("?batchGraph")
+    
     Query(prefixes,
-    "SELECT * WHERE { GRAPH ?batchGraph { ?x a t:sample; " +
+    s"SELECT * WHERE { GRAPH $batchFilterQ { ?x a t:sample; " +
 
       standardAttributes.map(a => s"t:$a " +
           filter.get(a).map("\"" + _ + "\"").getOrElse(s"?$a")).mkString("; ") + "." +
@@ -64,7 +67,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
       "?x rdfs:label ?id. OPTIONAL { ?x t:control_group ?control_group . } ",
     s" } ${sf.standardSampleFilters} }",
     eval = (q => ts.mapQuery(q, 20000).map(x => {
-      val sc = SampleClass(adjustSample(x)) ++ filter
+      val sc = SampleClass(adjustSample(x, batchFilter)) ++ filter
       Sample(x("id"), sc, x.get("control_group"))
     })))
   }
