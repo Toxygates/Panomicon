@@ -20,16 +20,6 @@ package otgviewer.client.charts;
 
 import java.util.List;
 
-import otgviewer.client.charts.google.GVizChartGrid;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import t.common.shared.DataSchema;
-import t.common.shared.SampleClass;
-import t.common.shared.SharedUtils;
-import t.viewer.client.Utils;
-import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.rpc.ProbeServiceAsync;
-
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Anchor;
@@ -38,6 +28,17 @@ import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+
+import otgviewer.client.charts.google.GVizChartGrid;
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
+import t.common.shared.DataSchema;
+import t.common.shared.SampleClass;
+import t.common.shared.SharedUtils;
+import t.viewer.client.Analytics;
+import t.viewer.client.Utils;
+import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.rpc.ProbeServiceAsync;
 
 /**
  * A grid to display time (or dose) series charts for a number of probes and doses (or times).
@@ -205,6 +206,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
         vp.add(w);
         vp.add(downloadLink);
         Utils.displayInPopup("Large chart", vp, DialogPosition.Center);
+        Analytics.trackEvent(Analytics.CATEGORY_VISUALIZATION, Analytics.ACTION_MAGNIFY_CHART);
       }
     });
     vp.add(a);
