@@ -16,6 +16,8 @@ public class Analytics {
 	public static final String ACTION_COMPOUND_RANKING_CHARTS = "Compound ranking charts";
 	public static final String ACTION_SAVE_SAMPLE_GROUP = "Save sample group";
 	public static final String ACTION_DISPLAY_OPTIONAL_COLUMN = "Display optional column";
+	public static final String ACTION_PERFORM_ENRICHMENT = "Perform enrichment";  
+	public static final String ACTION_PERFORM_CLUSTERING = "Perform clustering";  
 	
 	/*
 	 * Tracks a pageview with Google Analytics if the google analytics script
