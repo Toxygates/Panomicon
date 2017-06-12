@@ -117,6 +117,9 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
   protected def maintenance[T](task: => T): T = try {
     task
   } catch {
+    case m: MaintenanceException =>
+      m.printStackTrace()
+      throw m
     case e: Exception =>
       e.printStackTrace()
       throw new MaintenanceException(e)
@@ -125,11 +128,15 @@ trait MaintenanceOpsImpl extends t.common.client.rpc.MaintenanceOperations {
   protected def cleanMaintenance[T](task: => T): T = try {
     task
   } catch {
+    case m: MaintenanceException =>
+      m.printStackTrace()
+      throw m
     case e: Exception =>
       e.printStackTrace()
-      afterTaskCleanup()
-      TaskRunner.reset()
       throw new MaintenanceException(e)
+  } finally {
+    afterTaskCleanup()
+    TaskRunner.reset()
   }
 
   /**

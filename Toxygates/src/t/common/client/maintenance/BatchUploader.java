@@ -28,7 +28,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class BatchUploader extends ItemUploader {
-  private UploadWrapper metadata, data, calls;
+  UploadWrapper metadata, data, calls;
 
   protected void makeGUI(VerticalPanel vp) {
     metadata = new UploadWrapper(this, "Metadata file (TSV)", metaPrefix, "tsv");

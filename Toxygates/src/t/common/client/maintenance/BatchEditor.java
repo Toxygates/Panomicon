@@ -26,13 +26,14 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.VerticalPanel;
+
 import t.common.client.rpc.BatchOperationsAsync;
 import t.common.shared.Dataset;
 import t.common.shared.maintenance.Batch;
+import t.common.shared.maintenance.BatchUploadException;
 import t.common.shared.maintenance.Instance;
-
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.VerticalPanel;
 
 abstract public class BatchEditor extends ManagedItemEditor {
   @Nullable protected BatchUploader uploader;
@@ -90,8 +91,26 @@ abstract public class BatchEditor extends ManagedItemEditor {
         }
         
         @Override
-        protected void onFailure() {
+        protected void onCancelled() {
           onError();
+        }
+
+        @Override
+        protected void handleFailure(Throwable caught) {
+          if (caught instanceof BatchUploadException) {
+            BatchUploadException exception = (BatchUploadException) caught;
+            if (exception.idWasBad) {
+              idText.setText("");
+            }
+            if (exception.metadataWasBad) {
+              uploader.metadata.setFailure();
+            }
+            if (exception.normalizedDataWasBad) {
+              uploader.data.setFailure();
+            }
+          } else {
+            onError();
+          }
         }
       });
     } else {

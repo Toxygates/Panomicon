@@ -18,11 +18,11 @@
 
 package t.common.client.maintenance;
 
-import t.common.client.rpc.MaintenanceOperationsAsync;
-
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.DialogBox;
+
+import t.common.client.rpc.MaintenanceOperationsAsync;
 
 public class TaskCallback implements AsyncCallback<Void> {
   final String title;
@@ -45,7 +45,7 @@ public class TaskCallback implements AsyncCallback<Void> {
 
       @Override
       protected void onCancelled() {
-        onFailure();
+        TaskCallback.this.onCancelled();
       }
     };
     db.setWidget(pd);
@@ -56,14 +56,18 @@ public class TaskCallback implements AsyncCallback<Void> {
   @Override
   public void onFailure(Throwable caught) {
     Window.alert("Failure: " + caught.getMessage());
-    onFailure();
+    handleFailure(caught);
   }
 
   protected void onCompletion() {
 
   }
 
-  protected void onFailure() {
+  protected void onCancelled() {
+
+  }
+
+  protected void handleFailure(Throwable caught) {
 
   }
 
