@@ -24,8 +24,9 @@
     
     <!--                                           -->
     <!-- Google Analytics tracking code. Replace   -->
-    <!-- the Google Analytics ID with another  if  -->
-    <!-- appropriate.                              -->
+    <!-- the Google Analytics ID with another if   -->
+    <!-- appropriate, or comment out if not using  -->
+    <!-- Google Analytics.                         -->
     <!--                                           -->
 
     <script>

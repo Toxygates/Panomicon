@@ -30,25 +30,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.GroupMaker;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import otgviewer.client.components.StorageParser;
-import otgviewer.client.components.compoundsel.CompoundSelector;
-import t.common.client.components.SelectionTable;
-import t.common.shared.DataSchema;
-import t.common.shared.Dataset;
-import t.common.shared.Pair;
-import t.common.shared.SampleClass;
-import t.common.shared.SharedUtils;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleColumn;
-import t.common.shared.sample.Unit;
-import t.viewer.client.Utils;
-import t.viewer.client.rpc.SampleServiceAsync;
-
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.TextButtonCell;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -67,6 +48,26 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+
+import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.GroupMaker;
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
+import otgviewer.client.components.StorageParser;
+import otgviewer.client.components.compoundsel.CompoundSelector;
+import t.common.client.components.SelectionTable;
+import t.common.shared.DataSchema;
+import t.common.shared.Dataset;
+import t.common.shared.Pair;
+import t.common.shared.SampleClass;
+import t.common.shared.SharedUtils;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.Sample;
+import t.common.shared.sample.SampleColumn;
+import t.common.shared.sample.Unit;
+import t.viewer.client.Analytics;
+import t.viewer.client.Utils;
+import t.viewer.client.rpc.SampleServiceAsync;
 
 /**
  * This widget is intended to help visually define and modify groups of samples. The main dose/time
@@ -134,6 +135,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     saveButton = new Button("Save", new ClickHandler() {
       public void onClick(ClickEvent ce) {
         makeGroup(txtbxGroup.getValue());
+        Analytics.trackEvent(Analytics.CATEGORY_GENERAL, Analytics.ACTION_SAVE_SAMPLE_GROUP);
       }
     });
     toolPanel.add(saveButton);

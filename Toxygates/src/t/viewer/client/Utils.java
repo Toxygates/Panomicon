@@ -331,16 +331,5 @@ public class Utils {
   public static SafeHtml tooltipSpan(String tooltip, String text) {
       return SafeHtmlUtils.fromSafeConstant("<span title=\"" + tooltip + "\">" + text + "</span>");
   }
-  
-  /**
-   * Tracks a pageview with Google Analytics if the google analytics script has been loaded. 
-   * 
-   * @param url the url to be tracked
-   */
-  public static native void googleAnalyticsTrackPageView(String url) /*-{
-    if ($wnd.ga) {
-    	$wnd.ga('send', 'pageview', url);
-    };
-}-*/;
 
 }
