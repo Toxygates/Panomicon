@@ -45,9 +45,13 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
               s"?$a = " + "\"" + f + "\"")).flatten.mkString(" && ")}
         |  )""".stripMargin   
     
+
+    val batchFilter = filter.get("batchGraph")
+    val batchFilterQ = batchFilter.map("<" + _ + ">").getOrElse("?batchGraph")
+    
     Query(prefixes,
       s"""SELECT * WHERE { 
-        |  GRAPH ?batchGraph {
+        |  GRAPH $batchFilterQ {
         |    ?x a t:sample; rdfs:label ?id; 
         |    ${standardAttributes.map(a => s"t:$a ?$a").mkString("; ")} .
         |""".stripMargin,           
@@ -57,7 +61,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
         |  }""".stripMargin,      
         
       eval = ts.mapQuery(_, 20000).map(x => {
-        val sc = SampleClass(adjustSample(x)) ++ filter
+        val sc = SampleClass(adjustSample(x, batchFilter)) ++ filter
         Sample(x("id"), sc, Some(x("control_group")))
        })
      )

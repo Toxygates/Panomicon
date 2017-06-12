@@ -32,6 +32,7 @@ import t.common.shared.ItemList;
 import t.common.shared.StringList;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
+import t.viewer.client.Analytics;
 import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.RichTable.HideableColumn;
 import t.viewer.shared.intermine.IntermineInstance;
@@ -139,10 +140,15 @@ public class DataScreen extends Screen {
 
     mb = new MenuBar(true);
     for (final HideableColumn<ExpressionRow, ?> c : et.getHideableColumns()) {
-      new TickMenuItem(mb, c.columnInfo().title(), c.visible()) {
+    	final String title = c.columnInfo().title();
+      new TickMenuItem(mb, title, c.visible()) {
         @Override
         public void stateChange(boolean newState) {
           et.setVisible(c, newState);
+          if (newState) {
+        	  Analytics.trackEvent(Analytics.CATEGORY_TABLE, 
+        			  Analytics.ACTION_DISPLAY_OPTIONAL_COLUMN, title);
+          }
         }
       };
     }

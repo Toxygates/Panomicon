@@ -62,6 +62,10 @@ public class SampleClass implements Serializable, Packable, HasClass {
   public void put(String key, String value) {
     data.put(key, value);
   }
+  
+  public void remove(String key) {
+    data.remove(key);
+  }
 
   public SampleClass copy() {
     return new SampleClass(getMap());
@@ -80,11 +84,23 @@ public class SampleClass implements Serializable, Packable, HasClass {
     sc.put(key, value);
     return sc;
   }
+  
+  public SampleClass copyWithout(String key) {
+    SampleClass sc = copy();
+    if (sc.contains(key)) {
+      sc.remove(key);
+    }
+    return sc;
+  }
 
   public boolean contains(String key) {
     return data.containsKey(key);
   }
 
+  /**
+   * Merge only keys that are not already present
+   * @param from
+   */
   public void mergeDeferred(SampleClass from) {
     for (String k : from.getMap().keySet()) {
       if (!data.containsKey(k)) {

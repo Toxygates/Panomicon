@@ -7,7 +7,7 @@
 
 	<context-param>
 		<param-name>repositoryURL</param-name>
-                <param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/repositories/ttest</param-value>
+        <param-value>http://sontaran:8081/owlim-workbench-webapp-5.3.1/repositories/ttest</param-value>
 	</context-param>
 	<context-param>
 		<param-name>webappHomeDir</param-name>
@@ -22,6 +22,12 @@
 		<param-name>repositoryPassword</param-name>
 		<param-value>ttest</param-value>
 	</context-param>	
+	
+	<context-param>
+		<param-name>instanceName</param-name>
+		<param-value>dev</param-value>
+	</context-param>
+	
 	<context-param>
 		<param-name>dataDir</param-name>
 		<param-value>kcchunk:/shiba/scratch/toxygates/rebuild_test</param-value>

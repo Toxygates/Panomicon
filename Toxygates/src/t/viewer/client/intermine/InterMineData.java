@@ -36,6 +36,7 @@ import t.common.shared.ClusteringList;
 import t.common.shared.ItemList;
 import t.common.shared.SharedUtils;
 import t.common.shared.StringList;
+import t.viewer.client.Analytics;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InterMineEnrichDialog;
 import t.viewer.client.dialog.InterMineSyncDialog;
@@ -145,6 +146,7 @@ public class InterMineData {
         super.userProceed();
         if (probes.items() != null && probes.items().length > 0) {
           doEnrich(instance, probes, getParams());
+          Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_PERFORM_ENRICHMENT, instance.title());
         } else {
           Window.alert("Please define and select a gene set first.");
         }

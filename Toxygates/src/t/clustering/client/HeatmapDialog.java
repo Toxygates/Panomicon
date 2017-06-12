@@ -87,17 +87,32 @@ abstract public class HeatmapDialog<C, R> {
     this.logger = logger;
   }
   
+  private static boolean injected = false;
+  
   public void initWindow() {
     createPanel();
-    inject(new ArrayList<String>(Arrays.asList(injectList)));
-
+    
     // call DialogBox#show here in order to generate <div> container used by
     // InCHlib.js
     // but keep the dialog invisible until drawing heat map is finished
     dialog.show();
     dialog.setVisible(false);
+    injectOnce();
+  }
+
+  private void injectOnce() {
+    if (!injected) {
+      inject(new ArrayList<String>(Arrays.asList(injectList)));
+      injected = true;
+    } else {
+      beginClustering();
+    }
   }
   
+  private void beginClustering() {
+    initializeHeatmap();
+    executeClustering(lastClusteringAlgorithm);
+  }
 
   private void inject(final List<String> p_jsList) {
     final String js = GWT.getModuleBaseForStaticFiles() + p_jsList.remove(0);
@@ -110,11 +125,11 @@ abstract public class HeatmapDialog<C, R> {
 
       @Override
       public void onSuccess(Void ok) {
+        //Injected all scripts
         if (!p_jsList.isEmpty()) {
           inject(p_jsList);
         } else {
-          initializeHeatmap();
-          executeClustering(lastClusteringAlgorithm);
+          beginClustering();
         }
       }
     }).setWindow(ScriptInjector.TOP_WINDOW).inject();

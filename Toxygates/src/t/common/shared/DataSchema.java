@@ -145,6 +145,7 @@ public abstract class DataSchema implements Serializable {
     return false;
   }
 
+  @Deprecated
   public boolean isMajorParamSharedControl(String value) {
     String[] mpvs = majorParamSharedControl();
     if (mpvs == null) {
@@ -158,6 +159,7 @@ public abstract class DataSchema implements Serializable {
     return false;
   }
 
+  @Deprecated
   public @Nullable String[] majorParamSharedControl() {
     return new String[] {};
   }

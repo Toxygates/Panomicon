@@ -34,6 +34,7 @@ import otgviewer.shared.RankRule;
 import t.common.shared.DataSchema;
 import t.common.shared.ItemList;
 import t.common.shared.SampleClass;
+import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
@@ -253,6 +254,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
     }
 
     selector.performRanking(rankProbes, rules);
+    Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_COMPOUND_RANKING);
   }
 
 
