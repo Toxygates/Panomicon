@@ -136,10 +136,12 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
    * Called when AppInfo needs a full refresh.
    */
   protected def refreshAppInfo(): AppInfo = {
+    val probeLists = predefProbeLists()
+
     new AppInfo(configuration.instanceName, Array(),
-        sPlatforms(), predefProbeLists(),
+        sPlatforms(), probeLists,
         configuration.intermineInstances.toArray,
-        probeClusterings(), appName,
+        probeClusterings(probeLists), appName,
         makeUserKey(), getAnnotationInfo)
   }
 
@@ -195,15 +197,15 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     val ai = appInfoLoader.latest
 
-    /* 
+    /*
      * Reload the datasets since they can change often (with user data, admin
      * operations etc.)
      */
     ai.setDatasets(sDatasets(userKey))
-    
+
     val sess = getThreadLocalRequest.getSession
     import GeneSetServlet._
-    
+
     /*
      * From GeneSetServlet
      */
@@ -216,7 +218,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     } else {
       ai.setImportedGenes(null)
     }
-    
+
     if (getSessionData().sampleFilter.datasetURIs.isEmpty) {
       //Initialise the selected datasets by selecting all, except shared user data.
       val defaultVisible = ai.datasets.filter(ds =>
@@ -228,16 +230,15 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   private def predefProbeLists() = {
     val ls = probeStore.probeLists(instanceURI).mapInnerValues(p => p.identifier)
-    val sls = ls.map(x => new StringList("probes", x._1, x._2.toArray)).toList
+    val sls = ls.map(x => new StringList(
+        StringList.PROBES_LIST_TYPE, x._1, x._2.toArray)).toList
     new java.util.LinkedList(seqAsJavaList(sls.sortBy(_.name)))
   }
 
-  private def probeClusterings() = {
-    val ls = probeStore.probeLists(instanceURI).mapInnerValues(p => p.identifier)
-    val sls = ls.map(x => new StringList("probes", x._1, x._2.toArray)).toList
-    val cls = sls.map { x => ProbeClustering.buildFrom(x) }
-
-    new java.util.LinkedList(seqAsJavaList(cls))
+  //Currently identical to predef probe lists
+  private def probeClusterings(probeLists: Iterable[StringList]) = {
+    val cls = probeLists.map(x => ProbeClustering.buildFrom(x))
+    new java.util.LinkedList(seqAsJavaList(cls.toSeq))
   }
 
   private def sDatasets(userKey: String): Array[Dataset] = {
@@ -327,17 +328,17 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       param: String, paramValues: Array[String]): Array[Pair[Unit, Unit]] = {
 
     def isControl(s: t.db.Sample) = schema.isSelectionControl(s.sampleClass)
-    
+
     def unit(s: Sample) = s.sampleClass.asUnit(schema)
-    
+
     //TODO the copying may be costly - consider optimising in the future
     def unitWithoutMajorMedium(s: Sample) = unit(s).
       copyWithout(schema.majorParameter).copyWithout(schema.mediumParameter())
-      
+
     def asUnit(ss: Iterable[Sample]) = new Unit(unit(ss.head), ss.toArray)
 
     //This will filter by the chosen parameter - usually compound name
-    
+
     val rs = sampleStore.samples(sc, param, paramValues.toSeq)
     val ss = rs.groupBy(x =>(
             x.sampleClass("batchGraph"),
@@ -346,44 +347,44 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val cgs = ss.keys.toSeq.map(_._2).distinct
     val potentialControls = sampleStore.samples(sc, "control_group", cgs).
       filter(isControl).map(asJavaSample)
-      
+
       /*
        * For each unit of treated samples inside a control group, all
        * control samples in that group are assigned as control,
-       * assuming that other parameters are also compatible. 
+       * assuming that other parameters are also compatible.
        */
 
     var r = Vector[Pair[Unit, Unit]]()
     for (((batch, cg), samples) <- ss;
         treated = samples.filter(!isControl(_)).map(asJavaSample)) {
-        
+
       /*
        * Remove major parameter (compound in OTG case) as we now allow treated-control samples
-       * to have different compound names. 
+       * to have different compound names.
        */
 
       val byUnit = treated.groupBy(unit(_))
-          
+
       val treatedControl = byUnit.map(tt => {
         val repSample = tt._2.head
         val repUnit = unitWithoutMajorMedium(repSample)
-        
-        val fcs = potentialControls.filter(s => 
+
+        val fcs = potentialControls.filter(s =>
           unitWithoutMajorMedium(s) == repUnit
           && s.get("control_group") == repSample.get("control_group")
           && s.get("batchGraph") == repSample.get("batchGraph")
           )
-          
-        val cu = if (fcs.isEmpty) 
+
+        val cu = if (fcs.isEmpty)
           new Unit(sc.asUnit(schema), Array())
-        else 
+        else
           asUnit(fcs)
-        
+
         val tu = asUnit(tt._2)
-        
-        new Pair(tu, cu)        
+
+        new Pair(tu, cu)
       })
-      
+
       r ++= treatedControl
 
       r ++= treatedControl.flatMap(tc =>
