@@ -14,17 +14,29 @@ import t.sparql.SampleClass
 import t.sparql.CachingTriplestoreMetadata
 
 object SampleSearch {
+  /**
+   * Construct a SampleSearch instance.
+   * @param condition the criteria to search for
+   * @param samples the space of samples to search in
+   * @param annotations source of information about the samples
+   */
   def apply(condition: MatchCondition, annotations: Annotations,
       samples: Iterable[Sample]): SampleSearch = {
 
     //Attempt to speed up the search by only querying the parameters needed from the
     //metadata store.
     //TODO other parameters needed later?
-    val neededParams =
-      (Seq("control_group", "exposure_time", "sample_id") ++ condition.neededParameters()).distinct
+
     val sampleParams = annotations.baseConfig.sampleParameters
+    val paramsByTitle = Map() ++
+      sampleParams.all.map(p => p.humanReadable -> p)
+    val conditionParams = condition.neededParameters().map(paramsByTitle)
+    val coreParams = Seq("control_group", "exposure_time", "sample_id").map(
+        sampleParams.byId)
+    val neededParams = (coreParams ++ conditionParams).toSeq.distinct
+
     val metadata = new CachingTriplestoreMetadata(annotations.sampleStore,
-        sampleParams, neededParams.map(sampleParams.byId))(SampleFilter())
+        sampleParams, neededParams)(SampleFilter())
     val controlGroups = annotations.controlGroups(samples, metadata)
     new SampleSearch(annotations.schema, metadata, condition, controlGroups, samples)
   }

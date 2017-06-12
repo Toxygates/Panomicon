@@ -16,6 +16,11 @@ public class AtomicMatch implements MatchCondition, Serializable {
   //GWT constructor
   public AtomicMatch() {}
   
+  /**
+   * @param paramId parameter identified by human-readable string
+   * @param matchType
+   * @param param1
+   */
   public AtomicMatch(String paramId, MatchType matchType,
       @Nullable Double param1) {
     this.matchType = matchType;
@@ -34,5 +39,8 @@ public class AtomicMatch implements MatchCondition, Serializable {
   
   public @Nullable Double param1() { return param1; }
   
+  /**
+   * @return parameter identified by human-readable string
+   */
   public String paramId() { return paramId; }
 }
