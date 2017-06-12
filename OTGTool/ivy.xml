@@ -8,9 +8,10 @@
         />
         
   <dependencies>
+  
   <dependency org="org.apache.commons" name="commons-math3" rev="latest.integration"/>
   <dependency org="org.apache.httpcomponents" name="httpclient" rev="latest.integration"/>  
-    
+
   <dependency org="org.eclipse.rdf4j" name="rdf4j-repository-sparql" rev="latest.integration"/>
   <dependency org="org.eclipse.rdf4j" name="rdf4j-repository-manager" rev="latest.integration"/>
   <!-- deprecated dependency -->
@@ -18,7 +19,11 @@
   
   <dependency org="com.fallabs" name="kyotocabinet-java" rev="latest.integration"/>
   
-  <dependency org="org.scalatest" name="scalatest_2.11" rev="3.0.1"/>
+  <!-- Scalatest pulls in a lot of dependencies that we don't want in production,
+  	so it's simpler to manage the jar manually -->
+  <!--
+  <dependency org="org.scalatest" name="scalatest_2.11" rev="3.0.3"/>
+  -->
   
   </dependencies>
 </ivy-module>
