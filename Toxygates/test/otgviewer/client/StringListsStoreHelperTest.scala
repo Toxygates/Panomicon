@@ -28,7 +28,7 @@ import t.common.shared.ClusteringList
 
 import scala.collection.JavaConversions._
 import otgviewer.client.components.Screen
-import t.viewer.client.HasLogger
+import t.common.client.HasLogger
 import java.util.logging.Logger
 import org.scalatest.Matchers
 

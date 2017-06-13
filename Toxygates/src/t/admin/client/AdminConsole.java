@@ -18,16 +18,7 @@
 
 package t.admin.client;
 
-import t.common.client.Resources;
-import t.common.client.maintenance.ListDataCallback;
-import t.common.client.maintenance.ManagerPanel;
-import t.common.client.maintenance.BatchPanel;
-import t.common.client.maintenance.ManagedItemEditor;
-import t.common.client.maintenance.TaskCallback;
-import t.common.shared.Dataset;
-import t.common.shared.Platform;
-import t.common.shared.maintenance.Batch;
-import t.common.shared.maintenance.Instance;
+import java.util.logging.Logger;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -42,10 +33,22 @@ import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 
+import t.common.client.HasLogger;
+import t.common.client.Resources;
+import t.common.client.maintenance.BatchPanel;
+import t.common.client.maintenance.ListDataCallback;
+import t.common.client.maintenance.ManagedItemEditor;
+import t.common.client.maintenance.ManagerPanel;
+import t.common.client.maintenance.TaskCallback;
+import t.common.shared.Dataset;
+import t.common.shared.Platform;
+import t.common.shared.maintenance.Batch;
+import t.common.shared.maintenance.Instance;
+
 /**
  * Entry point for the data and instance management tool.
  */
-public class AdminConsole implements EntryPoint {
+public class AdminConsole implements EntryPoint, HasLogger {
 
   private RootLayoutPanel rootPanel;
   protected MaintenanceServiceAsync maintenanceService = (MaintenanceServiceAsync) GWT
@@ -213,7 +216,7 @@ public class AdminConsole implements EntryPoint {
       return;
     }
     maintenanceService.deleteBatchAsync(object, 
-        new TaskCallback("Delete batch", maintenanceService) {
+        new TaskCallback(this, "Delete batch", maintenanceService) {
       @Override
       protected void onCompletion() {
         refreshBatches();
@@ -227,7 +230,7 @@ public class AdminConsole implements EntryPoint {
       return;
     }
     maintenanceService.deletePlatformAsync(object.getTitle(), 
-        new TaskCallback("Delete platform", maintenanceService) {
+        new TaskCallback(this, "Delete platform", maintenanceService) {
       @Override
       protected void onCompletion() {
         refreshPlatforms();
@@ -292,4 +295,10 @@ public class AdminConsole implements EntryPoint {
     maintenanceService.getDatasets(new ListDataCallback<Dataset>(datasetData, "platform list"));
   }
 
+  final Logger logger = Logger.getLogger("AdminConsole");
+
+  @Override
+  public Logger getLogger() {
+    return logger;
+  }
 }

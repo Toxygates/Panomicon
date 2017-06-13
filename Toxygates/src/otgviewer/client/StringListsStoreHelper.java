@@ -26,10 +26,10 @@ import java.util.Map;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
+import t.common.client.HasLogger;
 import t.common.shared.ClusteringList;
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
-import t.viewer.client.HasLogger;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InputDialog;
