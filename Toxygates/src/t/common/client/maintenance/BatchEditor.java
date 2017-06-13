@@ -80,39 +80,42 @@ abstract public class BatchEditor extends ManagedItemEditor {
         new Batch(idText.getValue(), 0, commentArea.getValue(), new Date(), 
             instancesForBatch(), datasetForBatch());
 
-    if (addNew && uploader.canProceed()) {
-      batchOps.addBatchAsync(b, new TaskCallback(
-          "Upload batch", batchOps) {
+    if (addNew) {
+      if (uploader.canProceed()) {
+        batchOps.addBatchAsync(b, new TaskCallback("Upload batch", batchOps) {
 
-        @Override
-        protected void onCompletion() {          
-          onFinish();
-          onFinishOrAbort();
-        }
-        
-        @Override
-        protected void onCancelled() {
-          onError();
-        }
+          @Override
+          protected void onCompletion() {
+            onFinish();
+            onFinishOrAbort();
+          }
 
-        @Override
-        protected void handleFailure(Throwable caught) {
-          if (caught instanceof BatchUploadException) {
-            BatchUploadException exception = (BatchUploadException) caught;
-            if (exception.idWasBad) {
-              idText.setText("");
-            }
-            if (exception.metadataWasBad) {
-              uploader.metadata.setFailure();
-            }
-            if (exception.normalizedDataWasBad) {
-              uploader.data.setFailure();
-            }
-          } else {
+          @Override
+          protected void onCancelled() {
             onError();
           }
-        }
-      });
+
+          @Override
+          protected void handleFailure(Throwable caught) {
+            if (caught instanceof BatchUploadException) {
+              BatchUploadException exception = (BatchUploadException) caught;
+              if (exception.idWasBad) {
+                idText.setText("");
+              }
+              if (exception.metadataWasBad) {
+                uploader.metadata.setFailure();
+              }
+              if (exception.normalizedDataWasBad) {
+                uploader.data.setFailure();
+              }
+            } else {
+              onError();
+            }
+          }
+        });
+      } else {
+        Window.alert("Unable to proceed. Please make sure all required files have been uploaded.");
+      }
     } else {
       batchOps.update(b, editCallback());
     }
