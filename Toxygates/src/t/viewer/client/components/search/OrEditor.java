@@ -7,6 +7,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import t.common.shared.sample.search.AtomicMatch;
+import t.common.shared.sample.search.MatchCondition;
 import t.common.shared.sample.search.OrMatch;
 import t.viewer.client.Utils;
 
@@ -28,7 +29,7 @@ public class OrEditor extends MatchEditor {
     panel.addStyleName("samplesearch-orpanel");
   }
 
-  public OrMatch getCondition() {
+  public @Nullable MatchCondition getCondition() {
     List<AtomicMatch> atomics = new ArrayList<AtomicMatch>();
     for (AtomicEditor ac: atomicEditors) {
       AtomicMatch match = ac.getCondition();
@@ -36,7 +37,13 @@ public class OrEditor extends MatchEditor {
         atomics.add(match);
       }
     }
-    return new OrMatch(atomics);
+    if (atomics.size() > 1) {
+      return new OrMatch(atomics);
+    } else if (atomics.size() == 1) {
+      return atomics.get(0);
+    } else {
+      return null;
+    }
   }
   
   AtomicEditor newAtomic() {

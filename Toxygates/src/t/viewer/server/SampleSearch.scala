@@ -12,8 +12,10 @@ import t.sparql.TriplestoreMetadata
 import t.sparql.SampleFilter
 import t.sparql.SampleClass
 import t.sparql.CachingTriplestoreMetadata
+import t.db.SampleParameter
 
 object SampleSearch {
+
   /**
    * Construct a SampleSearch instance.
    * @param condition the criteria to search for
@@ -38,7 +40,8 @@ object SampleSearch {
     val metadata = new CachingTriplestoreMetadata(annotations.sampleStore,
         sampleParams, neededParams)(SampleFilter())
     val controlGroups = annotations.controlGroups(samples, metadata)
-    new SampleSearch(annotations.schema, metadata, condition, controlGroups, samples)
+    new SampleSearch(annotations.schema, metadata, condition, controlGroups, samples,
+        conditionParams)
   }
 }
 
@@ -47,18 +50,44 @@ object SampleSearch {
  */
 class SampleSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
     controlGroups: Map[Sample, ControlGroup],
-    samples: Iterable[Sample]) {
+    samples: Iterable[Sample],
+    searchParams: Iterable[SampleParameter]) {
 
-  private val neededParams = Seq() ++ condition.neededParameters() :+ "control_group"
+  private val searchParamIds = searchParams.map(_.identifier)
+  val humanReadableToParamId = Map() ++ metadata.parameters.all.map(p =>
+    p.humanReadable -> p.identifier)
 
   /**
    * Results of the search.
    */
-  lazy val results: Set[Sample] = results(condition)
+  lazy val results: Iterable[Sample] =
+    results(condition).toSeq.map(postMatchAdjust)
+
+  /**
+   * Insert additional parameter information in the sample (the parameters
+   * that were used in the match condition).
+   * The mutable sample class is modified in place.
+   */
+  private def postMatchAdjust(s: Sample): Sample = {
+    val ss = asScalaSample(s)
+    for (p <- searchParamIds;
+      v <- metadata.getParameter(ss, p)) {
+      s.sampleClass().put(p, v)
+    }
+    s
+  }
 
   //TODO
   private def sampleParamValue(s: Sample, param: String): Option[Double] =
-    metadata.getParameter(asScalaSample(s), param).map(_.toDouble)
+    try {
+      metadata.getParameter(asScalaSample(s), param) match {
+        case Some("NA") => None
+        case Some(s) => Some(s.toDouble)
+        case None => None
+      }
+    } catch {
+      case nf: NumberFormatException => None
+    }
 
   def time(s: Sample): String = s.get(schema.timeParameter())
 
@@ -95,7 +124,8 @@ class SampleSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondi
     if (d == null) None else Some(d)
 
   private def results(condition: AtomicMatch): Set[Sample] =
-    samples.filter(matches(_, condition.matchType, condition.paramId,
+    samples.filter(matches(_, condition.matchType,
+        humanReadableToParamId(condition.paramId),
       doubleOption(condition.param1))).toSet
 
   private def matches(s: Sample, mt: MatchType, paramId: String,

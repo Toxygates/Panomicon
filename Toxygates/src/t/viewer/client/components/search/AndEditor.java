@@ -7,6 +7,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import t.common.shared.sample.search.AndMatch;
+import t.common.shared.sample.search.MatchCondition;
 import t.common.shared.sample.search.OrMatch;
 import t.viewer.client.Utils;
 
@@ -31,12 +32,20 @@ public class AndEditor extends MatchEditor {
     panel.addStyleName("samplesearch-andpanel");
   }
   
-  public AndMatch getCondition() {
-    List<OrMatch> or = new ArrayList<OrMatch>();
+  public @Nullable MatchCondition getCondition() {
+    List<MatchCondition> or = new ArrayList<MatchCondition>();
     for (OrEditor oc: orEditors) {
-      or.add(oc.getCondition());
+      if (oc.getCondition() != null) {
+        or.add(oc.getCondition());
+      }
     }
-    return new AndMatch(or);
+    if (or.size() > 1) {
+      return new AndMatch(or);
+    } else if (or.size() == 1) {
+      return or.get(0);
+    } else {
+      return null;
+    }
   }
   
   OrEditor newOr() {

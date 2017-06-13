@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import t.common.shared.SampleClass;
 import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.NumericalBioParamValue;
@@ -14,6 +16,7 @@ import t.viewer.shared.AppInfo;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
@@ -65,7 +68,11 @@ public class SearchDialog extends Composite {
     initWidget(searchPanel);    
   }
   
-  private void performSearch(MatchCondition condition) {
+  private void performSearch(@Nullable MatchCondition condition) {
+    if (condition == null) {
+      Window.alert("Please define the search condition.");
+      return;
+    }
     sampleService.sampleSearch(sampleClass, condition,  
         new AsyncCallback<Void>() {
           

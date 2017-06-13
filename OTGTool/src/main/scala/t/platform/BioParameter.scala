@@ -50,7 +50,7 @@ class BioParameters(lookup: Map[String, BioParameter]) {
           param.attributes)
       ) yield (id -> edited)))
   }
-  
+
   def all = lookup.values
 }
 

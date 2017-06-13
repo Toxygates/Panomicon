@@ -60,21 +60,21 @@ class CachingTriplestoreMetadata(os: Samples, parameters: ParameterSet,
     querySet: Iterable[SampleParameter] = Seq())(implicit sf: SampleFilter)
     extends TriplestoreMetadata(os, parameters, querySet) {
 
-  lazy val rawData = {
-    val raw = os.sampleAttributeQuery(
-      querySet.toSeq.map(_.identifier) :+ "sample_id")(sf)()
+  val useQuerySet = (querySet.map(_.identifier).toSeq :+ "sample_id").distinct
 
-    Map() ++
-      raw.map(r => r("sample_id") -> r)
+  lazy val rawData = {
+    val raw = os.sampleAttributeQuery(useQuerySet)(sf)()
+    Map() ++ raw.map(r => r("sample_id") -> r)
   }
 
+  println(rawData take 10)
+
   lazy val data =
-    rawData.map(r => r._1 -> r._2.map  { case (k,v) => parameters.byId(k) -> v })
+    rawData.map(r => (r._1 -> r._2.map { case (k,v) => parameters.byId(k) -> v }))
 
-  override def parameters(s: Sample) = data.getOrElse(s.sampleId, Seq())
+  println(data take 10)
 
-  override def parameterMap(s: Sample) =
-    Map() ++ parameters(s).map(x => x._1.identifier -> x._2)
+  override def parameters(s: Sample) = data(s.sampleId)
 
   override def parameterValues(identifier: String): Set[String] =
     data.map(_._2(parameters.byId(identifier))).toSet
