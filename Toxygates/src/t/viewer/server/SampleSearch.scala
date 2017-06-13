@@ -23,22 +23,24 @@ object SampleSearch {
    * @param annotations source of information about the samples
    */
   def apply(condition: MatchCondition, annotations: Annotations,
-      samples: Iterable[Sample]): SampleSearch = {
+      samples: Iterable[Sample])(implicit sf: SampleFilter): SampleSearch = {
 
     //Attempt to speed up the search by only querying the parameters needed from the
     //metadata store.
     //TODO other parameters needed later?
 
     val sampleParams = annotations.baseConfig.sampleParameters
+
     val paramsByTitle = Map() ++
       sampleParams.all.map(p => p.humanReadable -> p)
+
     val conditionParams = condition.neededParameters().map(paramsByTitle)
     val coreParams = Seq("control_group", "exposure_time", "sample_id").map(
         sampleParams.byId)
     val neededParams = (coreParams ++ conditionParams).toSeq.distinct
 
     val metadata = new CachingTriplestoreMetadata(annotations.sampleStore,
-        sampleParams, neededParams)(SampleFilter())
+        sampleParams, neededParams)
     val controlGroups = annotations.controlGroups(samples, metadata)
     new SampleSearch(annotations.schema, metadata, condition, controlGroups, samples,
         conditionParams)

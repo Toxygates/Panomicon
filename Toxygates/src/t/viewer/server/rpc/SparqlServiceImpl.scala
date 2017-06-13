@@ -626,7 +626,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
      val searchSpace = sampleStore.sampleQuery(scAsScala(sc))(sf)()
 
     val ss = t.viewer.server.SampleSearch(cond, annotations,
-        searchSpace.map(asJavaSample))
+        searchSpace.map(asJavaSample))(sf)
     val rs = ss.results
     println("Search results:")
     for (s <- rs) {
