@@ -93,11 +93,11 @@ class Annotations(val sampleStore: Samples, val schema: DataSchema, val baseConf
   private def numericalAsShared(bp: BioParameter, lower: JDouble,
       upper: JDouble, value: String) =
     new NumericalBioParamValue(bp.key, bp.label, bp.section.getOrElse(null),
-        lower, upper, "")
+        lower, upper, value)
 
   private def stringAsShared(bp: BioParameter, value: String) =
     new StringBioParamValue(bp.key, bp.label, bp.section.getOrElse(null),
-        "")
+        value)
 
   def allParamsAsShared = {
     bioParameters.all.map(p => {

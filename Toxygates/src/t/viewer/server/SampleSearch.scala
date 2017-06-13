@@ -111,6 +111,7 @@ class SampleSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondi
             mt match {
               case MatchType.AboveLimit => v >= threshold.get
               case MatchType.BelowLimit => v <= threshold.get
+              case _ => throw new Exception("Unexpected match type")
             }
           case None => false
         }

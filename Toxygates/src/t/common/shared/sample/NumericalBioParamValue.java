@@ -38,9 +38,13 @@ public class NumericalBioParamValue extends BioParamValue {
     super(id, label, section);
     this.lowerBound = lowerBound;
     this.upperBound = upperBound;
-    try {
-      this.value = Double.parseDouble(value);
-    } catch (NumberFormatException e) {
+    if (value != null) {
+      try {
+        this.value = Double.parseDouble(value);
+      } catch (NumberFormatException e) {
+        this.value = Double.NaN;
+      }      
+    } else {
       this.value = Double.NaN;
     }
   }
