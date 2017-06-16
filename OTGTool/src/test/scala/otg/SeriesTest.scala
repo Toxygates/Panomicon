@@ -68,7 +68,7 @@ class SeriesTest extends TTestSuite {
         if (ev.present)
       ) yield s
 
-       val expectedTimes = present.map(x => meta.parameter(x, "exposure_time"))
+       val expectedTimes = present.flatMap(x => meta.parameter(x, "exposure_time"))
       s.points.map(_.code) should contain theSameElementsAs(expectedTimes.map(timeMap(_)))
     }
 

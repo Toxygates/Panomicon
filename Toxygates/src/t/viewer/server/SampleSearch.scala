@@ -13,6 +13,9 @@ import t.sparql.SampleFilter
 import t.sparql.SampleClass
 import t.sparql.CachingTriplestoreMetadata
 import t.db.SampleParameter
+import t.sparql.Samples
+import t.sample.SampleSet
+import t.db.ParameterSet
 
 object SampleSearch {
 
@@ -22,28 +25,29 @@ object SampleSearch {
    * @param samples the space of samples to search in
    * @param annotations source of information about the samples
    */
-  def apply(condition: MatchCondition, annotations: Annotations,
+  def apply(data: Samples, condition: MatchCondition, annotations: Annotations,
       samples: Iterable[Sample])(implicit sf: SampleFilter): SampleSearch = {
 
-    //Attempt to speed up the search by only querying the parameters needed from the
-    //metadata store.
-    //TODO other parameters needed later?
+    val schema = annotations.schema
 
     val sampleParams = annotations.baseConfig.sampleParameters
 
-    val paramsByTitle = Map() ++
-      sampleParams.all.map(p => p.humanReadable -> p)
-
-    val conditionParams = condition.neededParameters().map(paramsByTitle)
-    val coreParams = Seq("control_group", "exposure_time", "sample_id").map(
+    val usedParams = conditionParams(sampleParams, condition)
+    val coreParams = Seq("control_group", schema.timeParameter(), "sample_id").map(
         sampleParams.byId)
-    val neededParams = (coreParams ++ conditionParams).toSeq.distinct
+    val neededParams = (coreParams ++ usedParams).toSeq.distinct
 
-    val metadata = new CachingTriplestoreMetadata(annotations.sampleStore,
-        sampleParams, neededParams)
+    val metadata = new CachingTriplestoreMetadata(data, sampleParams, neededParams)
     val controlGroups = annotations.controlGroups(samples, metadata)
     new SampleSearch(annotations.schema, metadata, condition, controlGroups, samples,
-        conditionParams)
+        usedParams)
+  }
+
+  def conditionParams(paramSet: ParameterSet, cond: MatchCondition):
+    Iterable[SampleParameter] = {
+    val paramsByTitle = Map() ++
+      paramSet.all.map(p => p.humanReadable -> p)
+    cond.neededParameters().map(paramsByTitle)
   }
 }
 
@@ -56,8 +60,8 @@ class SampleSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondi
     searchParams: Iterable[SampleParameter]) {
 
   private val searchParamIds = searchParams.map(_.identifier)
-  val humanReadableToParamId = Map() ++ metadata.parameters.all.map(p =>
-    p.humanReadable -> p.identifier)
+  val humanReadableToParam = Map() ++ metadata.parameterSet.all.map(p =>
+    p.humanReadable -> p)
 
   /**
    * Results of the search.
@@ -73,16 +77,16 @@ class SampleSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondi
   private def postMatchAdjust(s: Sample): Sample = {
     val ss = asScalaSample(s)
     for (p <- searchParamIds;
-      v <- metadata.getParameter(ss, p)) {
+      v <- metadata.parameter(ss, p)) {
       s.sampleClass().put(p, v)
     }
     s
   }
 
   //TODO
-  private def sampleParamValue(s: Sample, param: String): Option[Double] =
+  private def sampleParamValue(s: Sample, param: SampleParameter): Option[Double] =
     try {
-      metadata.getParameter(asScalaSample(s), param) match {
+      metadata.parameter(asScalaSample(s), param.identifier) match {
         case Some("NA") => None
         case Some(s) => Some(s.toDouble)
         case None => None
@@ -93,7 +97,7 @@ class SampleSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondi
 
   def time(s: Sample): String = s.get(schema.timeParameter())
 
-  private def paramIsHigh(s: Sample, param: String): Boolean = {
+  private def paramIsHigh(s: Sample, param: SampleParameter): Boolean = {
     val pv = sampleParamValue(s, param)
     val ub = controlGroups.get(s).flatMap(_.upperBound(param, time(s)))
     (pv, ub) match {
@@ -102,7 +106,7 @@ class SampleSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondi
     }
   }
 
-  private def paramIsLow(s: Sample, param: String): Boolean = {
+  private def paramIsLow(s: Sample, param: SampleParameter): Boolean = {
     val pv = sampleParamValue(s, param)
     val lb = controlGroups.get(s).flatMap(_.lowerBound(param, time(s)))
     (pv, lb) match {
@@ -127,18 +131,18 @@ class SampleSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondi
 
   private def results(condition: AtomicMatch): Set[Sample] =
     samples.filter(matches(_, condition.matchType,
-        humanReadableToParamId(condition.paramId),
+        humanReadableToParam(condition.paramId),
       doubleOption(condition.param1))).toSet
 
-  private def matches(s: Sample, mt: MatchType, paramId: String,
+  private def matches(s: Sample, mt: MatchType, param: SampleParameter,
     threshold: Option[Double]): Boolean =
     mt match {
-      case MatchType.High => paramIsHigh(s, paramId)
-      case MatchType.Low  => paramIsLow(s, paramId)
+      case MatchType.High => paramIsHigh(s, param)
+      case MatchType.Low  => paramIsLow(s, param)
       case MatchType.NormalRange =>
-        !paramIsHigh(s, paramId) && !paramIsLow(s, paramId)
+        !paramIsHigh(s, param) && !paramIsLow(s, param)
       case _ =>
-        sampleParamValue(s, paramId) match {
+        sampleParamValue(s, param) match {
           case Some(v) =>
             mt match {
               case MatchType.AboveLimit => v >= threshold.get

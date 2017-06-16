@@ -8,6 +8,7 @@ import t.db.Sample
 import t.BaseConfig
 import org.apache.commons.math3.stat.StatUtils.variance
 import org.apache.commons.math3.stat.StatUtils.mean
+import t.sample.SampleSet
 
 case class BioParameter(key: String, label: String, kind: String,
     section: Option[String],
@@ -58,15 +59,15 @@ class BioParameters(lookup: Map[String, BioParameter]) {
  * Helper to compute statistical values for samples belonging to the same treated/control group.
  * Will eagerly retrieve and process all parameters for the samples upon construction.
  */
-class ControlGroup(bps: BioParameters, md: Metadata, controlSamples: Iterable[Sample]) {
+class ControlGroup(bps: BioParameters, samples: SampleSet,
+    val controlSamples: Iterable[Sample]) {
   println(s"Control group for $controlSamples")
-  val byTime = controlSamples.groupBy(s => md.parameter(s, "exposure_time")) //TODO schema
+  val byTime = controlSamples.groupBy(s => samples.parameter(s, "exposure_time").get)
 
-  val allParamVals = byTime.map(ss => ss._1 -> ss._2.map(Map() ++ md.parameters(_)))
+  val allParamVals = byTime.map(ss => ss._1 -> ss._2.map(Map() ++ samples.parameters(_)))
 
-  private def varAndMean(param: String, time: String): Option[(Double, Double)] = {
-    val p = bps(param)
-    val vs = allParamVals(time).flatMap(_.get(p.sampleParameter))
+  private def varAndMean(param: SampleParameter, time: String): Option[(Double, Double)] = {
+    val vs = allParamVals(time).flatMap(_.get(param))
     val nvs = vs.flatMap(BioParameter.convert)
 
     if (nvs.size < 2) {
@@ -76,14 +77,14 @@ class ControlGroup(bps: BioParameters, md: Metadata, controlSamples: Iterable[Sa
     }
   }
 
-  def lowerBound(param: String, time: String): Option[Double] =
+  def lowerBound(param: SampleParameter, time: String): Option[Double] =
     varAndMean(param, time).map {
       case (v, m) =>
         val sd = Math.sqrt(v)
         m - 2 * sd
     }
 
-  def upperBound(param: String, time: String): Option[Double] =
+  def upperBound(param: SampleParameter, time: String): Option[Double] =
     varAndMean(param, time).map {
       case (v, m) =>
         val sd = Math.sqrt(v)

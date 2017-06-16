@@ -133,9 +133,8 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
         x <- xs;
         exprs = from.valuesInSample(x, Seq());
         presentExprs = exprs.filter(_.present);
-        time = md.parameter(x, "exposure_time")
+        time = md.parameter(x, "exposure_time").get
       ) yield (time, x, presentExprs)
-
 
       val byTime = for (
         (time, data) <- data.groupBy(_._1);
@@ -144,7 +143,6 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
         m <- meanValues;
         point = SeriesPoint(tc, m)
       ) yield point
-
 
       val byProbe = byTime.groupBy(_.value.probe)
       r ++= byProbe.map(x => {

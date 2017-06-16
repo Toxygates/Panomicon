@@ -424,7 +424,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   def probes(columns: Array[SampleColumn]): Array[String] = {
     val samples = columns.flatMap(_.getSamples)
     val metadata = new TriplestoreMetadata(sampleStore, context.config.sampleParameters)
-    val usePlatforms = samples.map(s => metadata.parameter(
+    val usePlatforms = samples.flatMap(s => metadata.parameter(
         t.db.Sample(s.id), "platform_id")
         ).distinct
     usePlatforms.toVector.flatMap(x => platforms(x)).map(_.identifier).toArray
@@ -638,7 +638,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   def sampleSearch(sc: SampleClass, cond: MatchCondition) {
      val searchSpace = sampleStore.sampleQuery(scAsScala(sc))(sf)()
 
-    val ss = t.viewer.server.SampleSearch(cond, annotations,
+    val ss = t.viewer.server.SampleSearch(sampleStore, cond, annotations,
         searchSpace.map(asJavaSample))(sf)
     val rs = ss.results
     println("Search results:")

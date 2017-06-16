@@ -19,7 +19,7 @@ import t.db.Metadata
 import t.viewer.server.Conversions._
 import java.lang.{Double => JDouble}
 
-class Annotations(val sampleStore: Samples, val schema: DataSchema, val baseConfig: BaseConfig) {
+class Annotations(val sampleSet: t.sample.SampleSet, val schema: DataSchema, val baseConfig: BaseConfig) {
 
 //  private def bioParamsForSample(s: Sample): BioParameters =
 //    Option(s.get(schema.timeParameter())) match {
@@ -32,8 +32,8 @@ class Annotations(val sampleStore: Samples, val schema: DataSchema, val baseConf
     val pfs = new t.sparql.Platforms(baseConfig.triplestore)
     pfs.bioParameters
   }
-
-  lazy val tsMeta = new TriplestoreMetadata(sampleStore, baseConfig.sampleParameters)(SampleFilter())
+//
+//  lazy val tsMeta = new TriplestoreMetadata(sampleStore, baseConfig.sampleParameters)(SampleFilter())
 
   def controlGroups(ss: Iterable[Sample],
       metadata: Metadata): Map[Sample, ControlGroup] = {
@@ -42,7 +42,7 @@ class Annotations(val sampleStore: Samples, val schema: DataSchema, val baseConf
     Map() ++ cgs.flatMap { case (cgroup, ss) =>
       val controls = ss.filter(s => schema.isControlValue(s.get(mp)))
       if (!controls.isEmpty) {
-        val cg = new ControlGroup(bioParameters, metadata, controls.map(asScalaSample))
+        val cg = new ControlGroup(bioParameters, sampleSet, controls.map(asScalaSample))
         ss.map(s => s -> cg)
       } else {
         Seq()
@@ -80,7 +80,7 @@ class Annotations(val sampleStore: Samples, val schema: DataSchema, val baseConf
         (None,
           baseConfig.sampleParameters.previewDisplay)
       } else {
-        (Some(new ControlGroup(bioParameters, tsMeta, controls.map(asScalaSample))),
+        (Some(new ControlGroup(bioParameters, sampleStore, controls.map(asScalaSample))),
           bioParameters.sampleParameters)
       }
     }
@@ -130,8 +130,8 @@ class Annotations(val sampleStore: Samples, val schema: DataSchema, val baseConf
       bp.kind match {
         case "numerical" =>
           val t = barcode.get(schema.timeParameter())
-          val lb = cg.flatMap(_.lowerBound(bp.sampleParameter.identifier, t))
-          val ub = cg.flatMap(_.upperBound(bp.sampleParameter.identifier, t))
+          val lb = cg.flatMap(_.lowerBound(bp.sampleParameter, t))
+          val ub = cg.flatMap(_.upperBound(bp.sampleParameter, t))
 
           numericalAsShared(bp, asJDouble(lb), asJDouble(ub), dispVal)
         case _ => stringAsShared(bp, dispVal)

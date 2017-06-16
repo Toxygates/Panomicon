@@ -57,7 +57,13 @@ object TestData {
 
   def calls = List('A', 'P', 'M')
 
-  val ids = (0 until (5 * 4 * 4 * 3)).toStream.iterator
+  private def cgroup(time: String, compound: String) = {
+    val c = (enumMaps("exposure_time")(time)) * 100 +
+      enumMaps("compound_name")(compound)
+    "" + c
+  }
+
+  val ids = (0 until (5 * 4 * 3 * 4)).toStream.iterator
   val samples = for (
     dose <- em("dose_level"); time <- em("exposure_time");
     ind <- Set("1", "2", "3"); compound <- em("compound_name");
@@ -65,7 +71,8 @@ object TestData {
         Map("dose_level" -> dose, "individual_id" -> ind,
           "exposure_time" -> time, "compound_name" -> compound,
           "sin_rep_type" -> "Single", "organ_id" -> "Liver",
-          "test_type" -> "Vivo", "organism" -> "Rat")
+          "test_type" -> "Vivo", "organism" -> "Rat",
+          "control_group" -> cgroup(time, compound))
         )
   ) yield s
 

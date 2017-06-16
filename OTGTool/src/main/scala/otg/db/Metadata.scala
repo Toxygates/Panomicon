@@ -30,7 +30,7 @@ import t.db.Sample
  */
 trait Metadata extends t.db.Metadata {
 
-  override def isControl(s: Sample): Boolean = parameter(s, "dose_level") == "Control"
+  override def isControl(s: Sample): Boolean = parameter(s, "dose_level").get == "Control"
 
   /**
    * Retrieve the set of compounds that exist in this metadata set.
@@ -40,7 +40,7 @@ trait Metadata extends t.db.Metadata {
   /**
    * Retrieve the compound associated with a particular sample.
    */
-  def compound(s: Sample): String = parameter(s, "compound_name")
+  def compound(s: Sample): String = parameter(s, "compound_name").get
 
 }
 

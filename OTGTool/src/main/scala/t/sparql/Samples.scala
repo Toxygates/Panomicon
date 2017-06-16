@@ -61,7 +61,8 @@ case class SampleFilter(instanceURI: Option[String] = None,
     s"$datasetFilter $batchFilter\n"
 }
 
-abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
+abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
+  with t.sample.SampleSet {
   import Triplestore._
   import QueryUtils._
 
@@ -107,6 +108,8 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
    */
   def sampleQuery(sc: SampleClass)(implicit sf: SampleFilter): Query[Vector[Sample]]
 
+  def samples() = ???
+
   def samples(sc: SampleClass)(implicit sf: SampleFilter): Seq[Sample] =
     sampleQuery(sc)(sf)()
 
@@ -132,6 +135,15 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
   }
 
   def sampleClasses(implicit sf: SampleFilter): Seq[Map[String, String]]
+
+  def parameters(sample: Sample): Seq[(SampleParameter, String)] =
+    parameters(sample, Seq())
+
+  override def parameters(sample: Sample,
+    querySet: Iterable[SampleParameter]): Seq[(SampleParameter, String)] =
+    parameterQuery(sample.sampleId, querySet).collect {
+      case (sp, Some(v)) => (sp, v)
+    }
 
   /**
    * If the querySet is ordered, we preserve the ordering in the result

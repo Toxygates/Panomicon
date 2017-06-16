@@ -22,6 +22,7 @@ package t.db
 
 import friedrich.util.formats.TSVFile
 import t.Factory
+import t.sample.SampleSet
 
 case class SampleParameter(identifier: String, humanReadable: String)
 
@@ -52,12 +53,10 @@ trait ParameterSet {
 
 }
 
-trait Metadata {
+trait Metadata extends SampleSet {
   def samples: Iterable[Sample]
 
-  def parameters: ParameterSet
-
-  def parameters(s: Sample): Iterable[(SampleParameter, String)]
+  def parameterSet: ParameterSet
 
   def parameterMap(s: Sample): Map[String, String] =
     Map() ++ parameters(s).map(x => x._1.identifier -> x._2)
@@ -66,10 +65,7 @@ trait Metadata {
    */
   def parameterValues(identifier: String): Set[String]
 
-  def parameter(s: Sample, identifier: String): String =
-    parameterMap(s)(identifier)
-
-  def getParameter(s: Sample, identifier: String): Option[String] =
+  override def parameter(s: Sample, identifier: String): Option[String] =
     parameterMap(s).get(identifier)
 
   /**
@@ -77,7 +73,7 @@ trait Metadata {
    */
   def contains(s: Sample): Boolean = !parameters(s).isEmpty
 
-  def platform(s: Sample): String = parameter(s, "platform_id")
+  def platform(s: Sample): String = parameter(s, "platform_id").get
 
   def isControl(s: Sample): Boolean = false
 
