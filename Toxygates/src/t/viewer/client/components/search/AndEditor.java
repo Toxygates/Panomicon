@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 
 import t.common.shared.sample.search.AndMatch;
 import t.common.shared.sample.search.MatchCondition;
-import t.common.shared.sample.search.OrMatch;
 import t.viewer.client.Utils;
 
 import com.google.gwt.user.client.ui.Label;
