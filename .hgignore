@@ -10,6 +10,15 @@ target/*
 project/target/*
 Toxygates/bin/*
 OTGTool/bin/*
+OTGTool/lib/*
+Toxygates/lib/*
+
+.DS_Store
+(OTGTool|Toxygates)/.cache-main
+(OTGTool|Toxygates)/.cache-tests
+(OTGTool|Toxygates)/.classpath
+(OTGTool|Toxygates)/.project
+(OTGTool|Toxygates)/.settings
 
 syntax:glob
 *.class

@@ -38,6 +38,7 @@ import t.common.shared.Dataset
 import t.db.Metadata
 import javax.annotation.Nullable
 import t.db.SampleParameter
+import t.common.shared.maintenance.BatchUploadException
 
 /**
  * Routines for servlets that support the management of batches.
@@ -63,7 +64,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
       val exbs = new Batches(context.config.triplestore).list
       if (exbs.contains(b.getTitle) && !mayAppendBatch) {
-        throw new MaintenanceException(
+        throw BatchUploadException.badID(
             s"The batch ${b.getTitle} already exists and appending is not allowed. " +
             "Please choose a different name.")
       }
@@ -72,10 +73,10 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       setAttribute("tempFiles", tempFiles)
 
       if (getFile(metaPrefix) == None) {
-        throw new MaintenanceException("The metadata file has not been uploaded yet.")
+        throw BatchUploadException.badMetaData("The metadata file has not been uploaded yet.")
       }
       if (getFile(dataPrefix) == None) {
-        throw new MaintenanceException("The normalized intensity file has not been uploaded yet.")
+        throw BatchUploadException.badNormalizedData("The normalized intensity file has not been uploaded yet.")
       }
 
       val metaFile = getAsTempFile(tempFiles, metaPrefix, metaPrefix, "tsv").get
@@ -89,7 +90,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       } catch {
         case e: Exception =>
           e.printStackTrace()
-          throw new MaintenanceException("Error while parsing metadata. Please check the file.")
+          throw BatchUploadException.badMetaData("Error while parsing metadata. Please check the file.")
       }
 
       checkMetadata(md)
@@ -200,13 +201,13 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
 
     val id = d.getTitle()
     if (!TRDF.isValidIdentifier(id)) {
-      throw new MaintenanceException(
+      throw BatchUploadException.badID(
         s"Invalid name: $id (quotation marks and spaces, etc., are not allowed)")
     }
 
     if (dm.list.contains(id)) {
       if (mustNotExist) {
-        throw new MaintenanceException(s"The dataset $id already exists, please choose a different name")
+        throw BatchUploadException.badID(s"The dataset $id already exists, please choose a different name")
       }
     } else {
       maintenance {
