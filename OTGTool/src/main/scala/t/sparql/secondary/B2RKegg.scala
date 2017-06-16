@@ -21,12 +21,12 @@
 package t.sparql.secondary
 
 import otg.Species._
-import org.openrdf.repository.RepositoryConnection
 import t.sparql._
 import t.db.DefaultBio
 import t.db.GenBioObject
 import t.db.Store
 import t.db.StoredBioObject
+import org.eclipse.rdf4j.repository.RepositoryConnection
 
 /**
  * The identifier is a URI

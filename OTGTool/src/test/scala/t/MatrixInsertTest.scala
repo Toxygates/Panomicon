@@ -21,8 +21,6 @@
 package t
 
 import t.db.FoldPExpr
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 import t.db.testing.FakeBasicMatrixDB
 import t.testing.FakeContext
 import t.db.SampleIndex
@@ -32,7 +30,6 @@ import t.db.BasicExprValue
 import t.db.BasicValueInsert
 import t.db.testing.TestData
 
-@RunWith(classOf[JUnitRunner])
 class MatrixInsertTest extends TTestSuite {
 
   import TestData._

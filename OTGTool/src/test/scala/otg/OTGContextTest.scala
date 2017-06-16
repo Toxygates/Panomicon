@@ -20,14 +20,12 @@
 
 package otg
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import otg.Species._
 import t.testing.TestConfig
 import t.TTestSuite
 
-@RunWith(classOf[JUnitRunner])
 class OTGContextTest extends TTestSuite {
 
   val context = new otg.testing.FakeContext

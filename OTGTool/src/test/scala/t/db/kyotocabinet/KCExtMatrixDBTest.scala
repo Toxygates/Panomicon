@@ -20,12 +20,10 @@
 
 package t.db.kyotocabinet
 
-import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import t.TTestSuite
 import t.db.testing.TestData
 
-@RunWith(classOf[JUnitRunner])
 class KCExtMatrixDBTest extends TTestSuite {
   import KCDBTest._
   import TestData._

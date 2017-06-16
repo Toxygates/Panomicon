@@ -20,15 +20,11 @@ package t.viewer.client.dialog;
 
 import javax.annotation.Nullable;
 
-import t.common.client.components.ItemSelector;
-import t.viewer.client.Utils;
-import t.viewer.shared.ColumnFilter;
-import t.viewer.shared.FilterType;
-
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
@@ -37,6 +33,12 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+
+import t.common.client.components.ItemSelector;
+import t.viewer.client.Analytics;
+import t.viewer.client.Utils;
+import t.viewer.shared.ColumnFilter;
+import t.viewer.shared.FilterType;
 
 /**
  * A dialog for displaying and modifying a column filter.
@@ -89,16 +91,19 @@ public class FilterEditor extends Composite {
           Double newVal = parseNumber(input.getText());
           ColumnFilter newFilt = new ColumnFilter(newVal, filterType.value());
           onChange(newFilt);
+          Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_FILTER_COLUMN);
         } catch (NumberFormatException e) {
           Window.alert("Invalid number format.");
         }
       }
     });
 
-    input.addValueChangeHandler(new ValueChangeHandler<String>() {
+    input.addKeyDownHandler(new KeyDownHandler() {
       @Override
-      public void onValueChange(ValueChangeEvent<String> event) {
-        setButton.click();
+      public void onKeyDown(KeyDownEvent event) {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+          setButton.click();
+        }
       }
     });
 

@@ -40,6 +40,8 @@ rm $WARLIB/*jar
 cp lib/jar/* $WARLIB
 cp lib/bundle/*.jar $WARLIB
 cp mlib/*jar $WARLIB
+cp ../OTGTool/lib/jar/* $WARLIB
+
 
 #These should be in the shared tomcat lib dir (tglobal.jar)
 rm $WARLIB/kyotocabinet*jar

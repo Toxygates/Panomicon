@@ -23,7 +23,7 @@ package t.sparql.secondary
 import otg.Species._
 import t.sparql.Triplestore
 import t.sparql._
-import org.openrdf.repository.RepositoryConnection
+import org.eclipse.rdf4j.repository.RepositoryConnection
 
 trait Uniprot extends Triplestore {
 

@@ -20,7 +20,6 @@
 
 package otg
 
-import org.junit.runner.RunWith
 import t.SeriesRanking.safePCorrelation
 import friedrich.data.Statistics.pearsonCorrelation
 import org.scalatest.junit.JUnitRunner
@@ -31,7 +30,6 @@ import t.db.testing.TestData
 import t.db.ExprValue
 import t.db.SeriesPoint
 
-@RunWith(classOf[JUnitRunner])
 class SeriesMatchingTest extends TTestSuite {
   import friedrich.data.Statistics._
 

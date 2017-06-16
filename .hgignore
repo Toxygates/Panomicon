@@ -1,13 +1,13 @@
 Toxygates/war/*
 Toxygates/gwt-unitCache/*
-Toxygates/lib/*
 Toxygates/extract-deploy/*
-OTGTool/lib/*
 Toxygates/extract-v2*
 Toxygates/extras/*
 OTGTool/target/*
 Toxygates/target/*
+Toxygates/project/target/*
 target/*
+project/target/*
 Toxygates/bin/*
 OTGTool/bin/*
 
