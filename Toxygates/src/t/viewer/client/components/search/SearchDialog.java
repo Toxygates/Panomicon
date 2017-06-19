@@ -42,6 +42,7 @@ public class SearchDialog extends Composite {
         r.add(bp.label());
       }
     }
+    java.util.Collections.sort(r);
     return r;
   }
   
