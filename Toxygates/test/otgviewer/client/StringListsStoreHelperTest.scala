@@ -25,13 +25,18 @@ import java.util.logging.Logger
 import scala.collection.JavaConversions.asScalaBuffer
 import scala.collection.JavaConversions.bufferAsJavaList
 import scala.collection.JavaConversions.seqAsJavaList
+import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
+import t.common.shared.StringList
+import t.common.shared.ClusteringList
+import java.util.logging.Logger
 
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 
 import t.common.client.HasLogger
-import t.common.shared.ClusteringList
-import t.common.shared.StringList
+import t.TTestSuite
+import org.scalatest.Matchers
+
 import t.TTestSuite
 
 @RunWith(classOf[JUnitRunner])
