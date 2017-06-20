@@ -22,8 +22,6 @@ package otg.sparql
 
 import t.TTestSuite
 import scala.collection.JavaConversions._
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 import otg.Species._
 import t.platform.Probe
 import t.sparql._
@@ -31,7 +29,6 @@ import t.sparql.Triplestore
 import t.sparql.secondary._
 import t.testing.TestConfig
 
-@RunWith(classOf[JUnitRunner])
 class SPARQLTest extends TTestSuite {
 
   val config = TestConfig.config

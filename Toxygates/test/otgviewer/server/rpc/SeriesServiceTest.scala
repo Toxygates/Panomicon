@@ -20,19 +20,15 @@
 
 package otgviewer.server.rpc
 
-import org.junit.runner.RunWith
 import org.scalatest.BeforeAndAfter
 import org.scalatest.FunSuite
 import t.viewer.server.Configuration
 import otgviewer.shared.RankRule
 import otgviewer.shared.RuleType
-import org.scalatest.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
 class SeriesServiceTest extends FunSuite with BeforeAndAfter {
 
   var s: SeriesServiceImpl = _
-
   before {
     val conf = t.viewer.testing.TestConfiguration.config
     s = new SeriesServiceImpl()

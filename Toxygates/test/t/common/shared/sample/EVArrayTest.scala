@@ -20,12 +20,8 @@
 
 package t.common.shared.sample
 
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-
 import t.TTestSuite
 
-@RunWith(classOf[JUnitRunner])
 class EVArrayTest extends TTestSuite {
 
   test("basic") {

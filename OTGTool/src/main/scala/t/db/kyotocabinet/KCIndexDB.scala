@@ -32,9 +32,9 @@ object KCIndexDB {
   val c1g = 1l * 1204 * 1204 * 1024
   val c20g = 20l * c1g
 
-  //100k buckets (approx 10% of size, assuming 1 million entries), 1 GB page cache
+  //100k buckets (approx 10% of size, assuming 1 million entries)
   //default alignment (8 bytes)
-  val options = s"#msiz=$c1g#bnum=100000#pccap=$c1g"
+  val options = s"#msiz=$c1g#bnum=100000"
 
   /**
    * Test program, takes DB file and input key file to store

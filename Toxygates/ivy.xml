@@ -7,19 +7,14 @@
         
   <dependencies>
 
-  <dependency org="org.apache.commons" name="commons-math3" rev="latest.integration"/>
-  
-  <!-- rev latest.integration -->
-  <dependency org="org.openrdf.sesame" name="sesame-repository-manager" rev="2.7.16"/>
-  <dependency org="org.openrdf.sesame" name="sesame-repository-sparql" rev="2.7.16"/>
-  <dependency org="com.fallabs" name="kyotocabinet-java" rev="latest.integration"/>
-  
   <!-- for GWT upload -->
   <!-- This fails to resolve some of its dependencies as of 15/1/27.
   In addition, pulls in all of GWT -->
   <!-- r 1.0.3 is compatible with GWT 2.7 -->
-  <!-- <dependency org="com.googlecode.gwtupload" name="gwtupload" rev="1.0.3"/> -->  
+  <!-- <dependency org="com.googlecode.gwtupload" name="gwtupload" rev="1.0.3"/> -->
+    
   <dependency org="commons-fileupload" name="commons-fileupload" rev="latest.integration"/>
+  
   <dependency org="commons-io" name="commons-io" rev="latest.integration"/>   
   
   <dependency org="javax.mail" name="mail" rev="latest.integration"/>
@@ -34,19 +29,16 @@
   <dependency org="stax" name="stax" rev="1.2.0"/>
     -->
   
-  <!-- for intermine. json latest.integration requires JRE 1.8 -->
-  <dependency org="org.json" name="json" rev="20090211"/>
+  <!-- for intermine.  -->
+  <dependency org="org.json" name="json" rev="latest.integration"/>
   <dependency org="commons-lang" name="commons-lang" rev="latest.integration"/>
   <dependency org="org.apache.httpcomponents" name="fluent-hc" rev="latest.integration"/>
   
   <!-- for intermine. -->
   <dependency org="log4j" name="log4j" rev="latest.integration" />
+
   <dependency org="org.antlr" name="antlr" rev="latest.integration" />
-  
-  <!-- This pulls in all of the scala libraries and could be included in a dev
-  configuration but not in production -->
-  <!-- <dependency org="org.scalatest" name="scalatest_2.10" rev="2.2.3"/> -->
-  
+
   <!-- for R -->
   <!-- r 1.8.1 is known to work -->  
   <dependency org="org.rosuda.REngine" name="Rserve" rev="latest.integration"/>

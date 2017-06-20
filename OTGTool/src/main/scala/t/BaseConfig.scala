@@ -22,7 +22,6 @@ package t
 
 import scala.language.existentials
 import t.sparql.Triplestore
-import org.openrdf.repository.RepositoryConnection
 import t.db.Series
 import t.db.SeriesBuilder
 import t.db.Metadata
@@ -39,6 +38,7 @@ import t.db.MatrixContext
 import t.db.ExprValue
 import t.db.TransformingWrapper
 import t.db.MatrixDB
+import org.eclipse.rdf4j.repository.RepositoryConnection
 
 //TODO should BaseConfig be invariant between applications?
 trait BaseConfig {

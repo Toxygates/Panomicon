@@ -29,11 +29,11 @@ import javax.annotation.Nullable;
 import otgviewer.client.Resources;
 import otgviewer.client.SampleDetailScreen;
 import otgviewer.client.UIFactory;
+import t.common.client.HasLogger;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
-import t.viewer.client.HasLogger;
 import t.viewer.client.Utils;
 import t.viewer.shared.AppInfo;
 

@@ -130,23 +130,34 @@ public abstract class DataSchema implements Serializable {
     return false;
   }
 
+  public boolean isControlValue(String parameter, String value) {
+    return (parameter.equals(mediumParameter()) && isControlValue(value))
+        || (parameter.equals(majorParameter()) && isMajorParamSharedControl(value));
+  }
+
+  /**
+   * Is the value a control value for the medium parameter?
+   * 
+   * @param value
+   * @return
+   */
   public boolean isControlValue(String value) {
     return false;
   }
 
   @Deprecated
   public boolean isMajorParamSharedControl(String value) {
-	String[] mpvs = majorParamSharedControl();
-	if (mpvs == null) {
-			return false;
-		}
-		for (String v : mpvs) {
-			if (v.equals(value)) {
-				return true;
-			}
-		}
-		return false;
-	}
+    String[] mpvs = majorParamSharedControl();
+    if (mpvs == null) {
+      return false;
+    }
+    for (String v : mpvs) {
+      if (v.equals(value)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   @Deprecated
   public @Nullable String[] majorParamSharedControl() {

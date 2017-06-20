@@ -18,17 +18,23 @@
 
 package t.common.client.maintenance;
 
-import t.common.client.rpc.MaintenanceOperationsAsync;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.DialogBox;
 
+import t.common.client.HasLogger;
+import t.common.client.rpc.MaintenanceOperationsAsync;
+
 public class TaskCallback implements AsyncCallback<Void> {
   final String title;
   final MaintenanceOperationsAsync maintenanceOps;
+  final HasLogger hl;
   
-  public TaskCallback(String title, MaintenanceOperationsAsync maintenanceOps) {
+  public TaskCallback(HasLogger hl, String title, MaintenanceOperationsAsync maintenanceOps) {
+    this.hl = hl;
     this.title = title;
     this.maintenanceOps = maintenanceOps;
   }
@@ -45,7 +51,7 @@ public class TaskCallback implements AsyncCallback<Void> {
 
       @Override
       protected void onCancelled() {
-        onFailure();
+        TaskCallback.this.onCancelled();
       }
     };
     db.setWidget(pd);
@@ -56,14 +62,25 @@ public class TaskCallback implements AsyncCallback<Void> {
   @Override
   public void onFailure(Throwable caught) {
     Window.alert("Failure: " + caught.getMessage());
-    onFailure();
+
+    Logger l = hl.getLogger();
+    l.log(Level.SEVERE, "TaskCallback error", caught);
+    if (caught.getCause() != null) {
+      l.log(Level.SEVERE, "TaskCallback cause", caught.getCause());
+    }
+
+    handleFailure(caught);
   }
 
   protected void onCompletion() {
 
   }
 
-  protected void onFailure() {
+  protected void onCancelled() {
+
+  }
+
+  protected void handleFailure(Throwable caught) {
 
   }
 

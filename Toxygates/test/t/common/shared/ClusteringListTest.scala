@@ -20,14 +20,11 @@
 
 package t.common.shared
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
 import t.clustering.shared.Algorithm
 import t.clustering.shared.Methods
 import t.clustering.shared.Distances
 
-@RunWith(classOf[JUnitRunner])
 class ClusteringListTest extends FunSuite {
 
   val items = List(new StringList("type", "list1", Array("a", "b", "c")), new StringList("type", "list2", Array("d", "e", "f")))
