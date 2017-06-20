@@ -8,14 +8,22 @@
         />
         
   <dependencies>
+  
   <dependency org="org.apache.commons" name="commons-math3" rev="latest.integration"/>
   <dependency org="org.apache.httpcomponents" name="httpclient" rev="latest.integration"/>  
-    
-  <dependency org="org.openrdf.sesame" name="sesame-repository-manager" rev="2.7.16"/>
-  <dependency org="org.openrdf.sesame" name="sesame-repository-sparql" rev="2.7.16"/>
+
+  <dependency org="org.eclipse.rdf4j" name="rdf4j-repository-sparql" rev="latest.integration"/>
+  <dependency org="org.eclipse.rdf4j" name="rdf4j-repository-manager" rev="latest.integration"/>
+  <!-- deprecated dependency -->
+  <dependency org="org.eclipse.rdf4j" name="rdf4j-repository-http" rev="latest.integration"/>
+  
   <dependency org="com.fallabs" name="kyotocabinet-java" rev="latest.integration"/>
   
-  <!-- <dependency org="org.scalatest" name="scalatest_2.10" rev="2.2.3"/> -->
+  <!-- Scalatest pulls in a lot of dependencies that we don't want in production,
+  	so it's simpler to manage the jar manually -->
+  <!--
+  <dependency org="org.scalatest" name="scalatest_2.11" rev="3.0.3"/>
+  -->
   
   </dependencies>
 </ivy-module>

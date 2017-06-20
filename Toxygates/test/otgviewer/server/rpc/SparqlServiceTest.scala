@@ -22,10 +22,8 @@ package otgviewer.server.rpc
 
 import scala.collection.JavaConversions._
 
-import org.junit.runner.RunWith
 import org.scalatest.BeforeAndAfter
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
 
 import t.common.shared.SampleClass
 import t.viewer.server.Configuration
@@ -40,11 +38,9 @@ object SparqlServiceTest {
   def testSampleClass = new SampleClass(mapAsJavaMap(testClass))
 }
 
-@RunWith(classOf[JUnitRunner])
 class SparqlServiceTest extends FunSuite with BeforeAndAfter {
 
   var s: SparqlServiceImpl = _
-
   before {
     val conf = t.viewer.testing.TestConfiguration.config
     s = new SparqlServiceImpl()

@@ -20,8 +20,6 @@
 
 package otgviewer.server
 
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 import t.common.shared.sample._
 import t.db.testing._
 import t.db.testing.TestData._
@@ -31,7 +29,6 @@ import t.TTestSuite
 import t.viewer.server.NormalizedBuilder
 import t.viewer.server.ExtFoldBuilder
 
-@RunWith(classOf[JUnitRunner])
 class ManagedMatrixTest extends TTestSuite {
   import TestData._
   import t.common.testing.TestData.groups

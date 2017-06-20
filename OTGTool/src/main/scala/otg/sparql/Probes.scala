@@ -26,7 +26,6 @@ import scala.annotation.tailrec
 import otg.Context
 import t.TriplestoreConfig
 import t.sparql.QueryUtils
-import org.openrdf.repository.RepositoryConnection
 import t.sparql.Triplestore
 import t.db.ProbeMap
 import t.db.DefaultBio
@@ -43,17 +42,19 @@ import t.sparql.secondary.B2RKegg
 class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Store[Probe] {
   import Probes._
 
-  val prefixes = commonPrefixes + """
-    PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>
-"""
+  val prefixes = s"""$commonPrefixes
+    |PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>""".stripMargin
 
   def proteins(pr: Probe): Iterable[Protein] = withAttributes(List(pr)).flatMap(_.proteins)
   def genes(pr: Probe): Iterable[Gene] = withAttributes(List(pr)).flatMap(_.genes)
 
   override def allGeneIds(): MMap[Probe, Gene] = {
-    val query = prefixes + "SELECT DISTINCT ?p ?x WHERE { GRAPH ?g { " +
-     "?p a t:probe ;" +
-     " t:entrez ?x . } } "
+    val query = s"""$prefixes
+      |SELECT DISTINCT ?p ?x WHERE {
+      |  GRAPH ?g {
+      |    ?p a t:probe ; t:entrez ?x .
+      |  }
+      |}""".stripMargin
      makeMultiMap(ts.mapQuery(query).map(x => (Probe.unpack(x("p")), Gene(x("x")))))
   }
 
@@ -61,16 +62,18 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
   override def withAttributes(probes: Iterable[Probe]): Iterable[Probe] = {
       def obtain(m: Map[String, String], key: String) = m.getOrElse(key, "")
 
-	  val q = prefixes +
-	  """
-	     SELECT * WHERE { GRAPH ?g {
-	  	 ?pr rdfs:label ?l .
-	     optional { ?pr t:symbol ?symbol. }
-	     optional { ?pr t:swissprot ?prot. }
-	     optional { ?pr t:entrez ?gene. }
-	     optional { ?pr t:title ?title. }
-	     ?pr a t:probe . """ +
-	  multiFilter("?pr", probes.map(p => bracket(p.pack))) + " } ?g rdfs:label ?plat} "
+	  val q = s"""$prefixes
+	    |SELECT * WHERE {
+	    |  GRAPH ?g {
+	  	|    ?pr rdfs:label ?l; a t:probe.
+	    |    OPTIONAL { ?pr t:symbol ?symbol. }
+	    |    OPTIONAL { ?pr t:swissprot ?prot. }
+	    |    OPTIONAL { ?pr t:entrez ?gene. }
+	    |    OPTIONAL { ?pr t:title ?title. }
+	    |    ${multiFilter("?pr", probes.map(p => bracket(p.pack)))}
+      |  }
+      |  ?g rdfs:label ?plat.
+      |} """.stripMargin
 	  val r = ts.mapQuery(q, 20000)
 
 	  r.groupBy(_("pr")).map(_._2).map(g => {
@@ -92,13 +95,14 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
 
   //TODO the platform constraint will only work on Owlim, not Fuseki (with RDF1.1 strings)
   override def probesForPartialSymbol(platform: Option[String], title: String): Vector[Probe] = {
-    val query = prefixes + "SELECT DISTINCT ?s WHERE { GRAPH ?g { " +
-    s"?p a $itemClass . " +
-    "?p t:symbol ?s . " +
-    "?s " + prefixStringMatch(title + "*") +
-    "} " +
-    platform.map(x => "?g rdfs:label \"" + x + "\"").getOrElse("") +
-    " } limit 10"
+    val query = s"""$prefixes
+      |SELECT DISTINCT ?s WHERE {
+      |  GRAPH ?g {
+      |    ?p a $itemClass; t:symbol ?s.
+      |    ?s ${prefixStringMatch(title + "*")}
+      |  }
+      |  ${platform.map(x => "?g rdfs:label \"" + x + "\"").getOrElse("")}
+      |} LIMIT 10""".stripMargin
     ts.mapQuery(query).map(x => Probe(x("s")))
   }
 
@@ -108,45 +112,40 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
    * TODO: constrain by platform
    */
   def forGeneSyms(symbols: Iterable[String], precise: Boolean): MMap[String, Probe] = {
-      val query = prefixes +
-        "SELECT DISTINCT ?p ?gene WHERE { GRAPH ?g { " +
-        "?p a t:probe . " +
-        "?p t:symbol ?gene . " +
-        caseInsensitiveMultiFilter("?gene",
-          if (precise) {
-            symbols.map("\"^" + _ + "$\"")
-          } else {
-            symbols.map("\"" + _ + "\"")
-          }) +
-          " } ?g rdfs:label ?plat }"
+    val query = s"""$prefixes
+      |SELECT DISTINCT ?p ?gene WHERE {
+      |  GRAPH ?g {
+      |    ?p a t:probe ; t:symbol ?gene .
+      |    ${caseInsensitiveMultiFilter("?gene",
+             if (precise) symbols.map("\"^" + _ + "$\"") else symbols.map("\"" + _ + "\"")
+           )}
+      |  }
+      |  ?g rdfs:label ?plat }""".stripMargin
 
-        val r = ts.mapQuery(query).map(
-          x => (symbols.find(s =>
-            s.toLowerCase == x("gene").toLowerCase)
-            .getOrElse(null) -> Probe.unpack(x("p"))))
-      makeMultiMap(r.filter(_._1 != null))
+    val r = ts.mapQuery(query).map(
+      x => (symbols.find(s =>
+        s.toLowerCase == x("gene").toLowerCase)
+        .getOrElse(null) -> Probe.unpack(x("p"))))
+    makeMultiMap(r.filter(_._1 != null))
   }
 
-  def mfGoTerms(probes: Iterable[Probe]): MMap[Probe, GOTerm] = {
+  def mfGoTerms(probes: Iterable[Probe]): MMap[Probe, GOTerm] =
     goTerms("?probe t:gomf ?got . ", probes)
-  }
 
-  def ccGoTerms(probes: Iterable[Probe]): MMap[Probe, GOTerm] = {
+  def ccGoTerms(probes: Iterable[Probe]): MMap[Probe, GOTerm] =
     goTerms("?probe t:gocc ?got . ", probes)
-  }
 
-  def bpGoTerms(probes: Iterable[Probe]): MMap[Probe, GOTerm] = {
+  def bpGoTerms(probes: Iterable[Probe]): MMap[Probe, GOTerm] =
    goTerms("?probe t:gobp ?got . ", probes)
-  }
 
   def simpleRelationQuery(probes: Iterable[Probe], relation: String): MMap[Probe, DefaultBio] = {
-    val query = prefixes +
-    s"""
-    SELECT DISTINCT ?probe ?result WHERE {
-      GRAPH ?g { ?probe $relation ?result. }
-     """ +
-    multiFilter("?probe", probes.map(p => bracket(p.pack))) +
-    " } "
+    val query = s"""$prefixes
+      |SELECT DISTINCT ?probe ?result WHERE {
+      |  GRAPH ?g {
+      |    ?probe $relation ?result.
+      |  }
+      |  ${multiFilter("?probe", probes.map(p => bracket(p.pack)))}
+      |}""".stripMargin
     simpleMapQuery(probes, query)
   }
 
@@ -181,5 +180,4 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
     val ups = forUniprots(rs.unresolved.map(p => Protein(p.toUpperCase))).map(_.identifier)
     rs.resolve(ups)
   }
-
 }
