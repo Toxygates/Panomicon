@@ -2,6 +2,8 @@ package t.viewer.client.rpc;
 
 import java.util.List;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
+
 import t.common.shared.Dataset;
 import t.common.shared.Pair;
 import t.common.shared.SampleClass;
@@ -10,8 +12,6 @@ import t.common.shared.sample.HasSamples;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
 import t.common.shared.sample.search.MatchCondition;
-
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface SampleServiceAsync {
 
@@ -53,4 +53,6 @@ public interface SampleServiceAsync {
       AsyncCallback<String> callback);
 
   void sampleSearch(SampleClass sampleClass, MatchCondition condition, AsyncCallback<Void> callback);
+
+  void classSearch(SampleClass sampleClass, MatchCondition condition, AsyncCallback<Void> callback);
 }

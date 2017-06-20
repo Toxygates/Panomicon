@@ -19,8 +19,11 @@
 package t.common.shared.sample;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -48,9 +51,57 @@ public class Unit extends SampleClass {
     return samples;
   }
 
-  public static Unit[] formUnits(DataSchema schema, Sample[] samples) {
-    if (samples.length == 0) {
-      return new Unit[] {};
+  public void averageAttributes(NumericalBioParamValue[] params) {
+    Sample first = samples[0];
+    for (NumericalBioParamValue p : params) {
+      if (first.sampleClass().get(p.id) != null) {
+        double sum = 0.0;
+        for (Sample sample : samples) {
+          sum += Double.parseDouble(sample.sampleClass().get(p.id));
+        }
+        put(p.id, Double.toString(sum));
+      }
+    }
+    // TODO: maybe some exception checking for when conversion to double fails, or when
+    // some of the later samples are missing a parameter that the first sample had
+  }
+
+  public void concatenateAttributes(StringBioParamValue[] params) {
+    String separator = "/";
+
+    Sample firstSample = samples[0];
+    for (StringBioParamValue p : params) {
+      if (firstSample.sampleClass().get(p.id) != null) {
+        HashSet<String> values = new HashSet<String>();
+        String concatenation = "";
+
+        Boolean firstIteration = true;
+        for (Sample sample : samples) {
+          String newValue = sample.sampleClass().get(p.id);
+          if (!values.contains(newValue)) {
+            values.add(newValue);
+            if (!firstIteration) {
+              concatenation += separator;
+            } else {
+              firstIteration = false;
+            }
+            concatenation += newValue;
+          }
+        }
+        put(p.id, concatenation);
+      }
+    }
+    // TODO: maybe more robust handling of when only some of the samples have a value for
+    // a given parameter. Or maybe we can assume that won't happen.
+  }
+
+  public static Unit[] formUnits(DataSchema schema, Sample[] samples) { 
+    return formUnits(schema, Arrays.asList(samples)).toArray(new Unit[] {});
+  }
+
+  public static List<Unit> formUnits(DataSchema schema, Collection<Sample> samples) {
+    if (samples.size() == 0) {
+      return new ArrayList<Unit>();
     }
     Map<SampleClass, List<Sample>> groups = new HashMap<SampleClass, List<Sample>>();
     for (Sample os : samples) {
@@ -61,12 +112,12 @@ public class Unit extends SampleClass {
       groups.get(unit).add(os);
     }
 
-    List<Unit> r = new ArrayList<Unit>();
+    List<Unit> r = new ArrayList<Unit>(groups.keySet().size());
     for (SampleClass u : groups.keySet()) {
       Unit uu = new Unit(u, groups.get(u).toArray(new Sample[] {}));
       r.add(uu);
     }
-    return r.toArray(new Unit[] {});
+    return r;
   }
 
   public static Sample[] collectBarcodes(Unit[] units) {

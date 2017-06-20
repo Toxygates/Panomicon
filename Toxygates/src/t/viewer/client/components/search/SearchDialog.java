@@ -6,14 +6,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.SampleClass;
-import t.common.shared.sample.BioParamValue;
-import t.common.shared.sample.NumericalBioParamValue;
-import t.common.shared.sample.search.MatchCondition;
-import t.viewer.client.Utils;
-import t.viewer.client.rpc.SampleServiceAsync;
-import t.viewer.shared.AppInfo;
-
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
@@ -23,6 +15,14 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
+
+import t.common.shared.SampleClass;
+import t.common.shared.sample.BioParamValue;
+import t.common.shared.sample.NumericalBioParamValue;
+import t.common.shared.sample.search.MatchCondition;
+import t.viewer.client.Utils;
+import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.shared.AppInfo;
 
 /**
  * Sample search interface that allows the user to edit search conditions,
@@ -37,7 +37,7 @@ public class SearchDialog extends Composite {
   private Collection<String> sampleParameters() {
     BioParamValue[] params = appInfo.bioParameters();
     List<String> r = new ArrayList<String>();
-    for (BioParamValue bp: params) {
+    for (BioParamValue bp : params) {
       if (bp instanceof NumericalBioParamValue) {
         r.add(bp.label());
       }
@@ -59,13 +59,22 @@ public class SearchDialog extends Composite {
     searchButton.addClickHandler(new ClickHandler() {      
       @Override
       public void onClick(ClickEvent event) {
-       performSearch(conditionEditor.getCondition()); 
+        performSearch(conditionEditor.getCondition());
       }
     });
-    HorizontalPanel tools = Utils.mkHorizontalPanel(true, searchButton);    
+
+    Button classSearchButton = new Button("Class Search");
+    classSearchButton.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        performClassSearch(conditionEditor.getCondition());
+      }
+    });
+
+    HorizontalPanel tools = Utils.mkHorizontalPanel(true, searchButton, classSearchButton);
     VerticalPanel vp = Utils.mkVerticalPanel(true, conditionEditor, tools);
     searchPanel.add(vp);
-    
+
     initWidget(searchPanel);    
   }
   
@@ -89,4 +98,23 @@ public class SearchDialog extends Composite {
         });
   }
   
+  private void performClassSearch(@Nullable MatchCondition condition) {
+    if (condition == null) {
+      Window.alert("Please define the search condition.");
+      return;
+    }
+    sampleService.classSearch(sampleClass, condition, new AsyncCallback<Void>() {
+
+      @Override
+      public void onSuccess(Void result) {
+
+      }
+
+      @Override
+      public void onFailure(Throwable caught) {
+
+      }
+    });
+  }
+
 }

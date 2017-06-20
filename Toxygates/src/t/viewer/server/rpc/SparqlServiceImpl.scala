@@ -28,6 +28,8 @@ import scala.collection.JavaConversions.asScalaBuffer
 import scala.collection.JavaConversions.bufferAsJavaList
 import scala.collection.JavaConversions.mapAsJavaMap
 import scala.collection.JavaConversions.seqAsJavaList
+import scala.collection.JavaConversions.asJavaCollection
+import scala.collection.JavaConversions.asScalaSet
 import scala.collection.{ Set => CSet }
 
 import SparqlServiceImpl.platforms
@@ -636,13 +638,27 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   }
 
   def sampleSearch(sc: SampleClass, cond: MatchCondition) {
-     val searchSpace = sampleStore.sampleQuery(scAsScala(sc))(sf)()
+    val searchSpace = sampleStore.sampleQuery(scAsScala(sc))(sf)()
 
     val ss = t.viewer.server.SampleSearch(sampleStore, cond, annotations,
         searchSpace.map(asJavaSample))(sf)
     val rs = ss.results
     println("Search results:")
     for (s <- rs) {
+      println(s)
+    }
+  }
+  
+  def classSearch(sc: SampleClass, cond: MatchCondition) {
+    val searchSpace = sampleStore.sampleQuery(scAsScala(sc))(sf)()
+    
+    val javaSamples: java.util.Collection[Sample] = searchSpace.map(asJavaSample) 
+    val units = Unit.formUnits(schema, javaSamples)  
+    
+    println("First 10 units in search space:")
+    for (s <- units take 10) {
+      s.averageAttributes(appInfoLoader.latest.numericalParameters())
+      s.concatenateAttributes(appInfoLoader.latest.stringParameters())
       println(s)
     }
   }

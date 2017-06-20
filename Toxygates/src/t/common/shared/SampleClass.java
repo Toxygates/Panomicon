@@ -67,6 +67,10 @@ public class SampleClass implements Serializable, Packable, HasClass {
     data.remove(key);
   }
 
+  public Set<String> keys() {
+    return data.keySet();
+  }
+
   public SampleClass copy() {
     return new SampleClass(getMap());
   }
