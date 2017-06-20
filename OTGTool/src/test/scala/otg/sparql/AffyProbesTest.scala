@@ -29,7 +29,9 @@ import t.sparql._
 import t.sparql.secondary._
 import t.testing.TestConfig
 import t.platform.Probe
+import org.junit.runner.RunWith
 
+@RunWith(classOf[JUnitRunner])
 class AffyProbesTest extends TTestSuite {
 
   val config = TestConfig.config

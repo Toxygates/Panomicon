@@ -29,7 +29,10 @@ import t.db.ProbeMap
 import t.db.BasicExprValue
 import t.db.BasicValueInsert
 import t.db.testing.TestData
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class MatrixInsertTest extends TTestSuite {
 
   import TestData._

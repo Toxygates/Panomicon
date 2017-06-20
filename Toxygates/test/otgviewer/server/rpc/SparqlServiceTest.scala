@@ -22,12 +22,12 @@ package otgviewer.server.rpc
 
 import scala.collection.JavaConversions._
 
-import org.scalatest.BeforeAndAfter
-import org.scalatest.FunSuite
-
 import t.common.shared.SampleClass
 import t.viewer.server.Configuration
 import t.common.shared.AType
+import org.junit.runner.RunWith
+import t.TTestSuite
+import org.scalatest.junit.JUnitRunner
 
 object SparqlServiceTest {
   val testClass = Map("sin_rep_type" -> "Single",
@@ -38,7 +38,8 @@ object SparqlServiceTest {
   def testSampleClass = new SampleClass(mapAsJavaMap(testClass))
 }
 
-class SparqlServiceTest extends FunSuite with BeforeAndAfter {
+@RunWith(classOf[JUnitRunner])
+class SparqlServiceTest extends TTestSuite {
 
   var s: SparqlServiceImpl = _
   before {

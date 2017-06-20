@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,11 +20,15 @@
 
 package t.common.shared
 
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
-import scala.collection.JavaConversions._
+import scala.collection.JavaConversions.mapAsJavaMap
 
-class SampleMultiFilterTest extends FunSuite {
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+
+import t.TTestSuite
+
+@RunWith(classOf[JUnitRunner])
+class SampleMultiFilterTest extends TTestSuite {
 
   def jset(x: String) = {
     val r = new java.util.HashSet[String]

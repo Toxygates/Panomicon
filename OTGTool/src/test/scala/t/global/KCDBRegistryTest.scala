@@ -21,7 +21,10 @@
 package t.global
 
 import t.TTestSuite
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class KCDBRegistryTest extends TTestSuite {
   val testFile = "test.kct#bnum=1000"
   val testFileShort ="test.kct"

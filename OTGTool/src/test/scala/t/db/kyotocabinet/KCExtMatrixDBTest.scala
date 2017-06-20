@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -23,7 +23,9 @@ package t.db.kyotocabinet
 import org.scalatest.junit.JUnitRunner
 import t.TTestSuite
 import t.db.testing.TestData
+import org.junit.runner.RunWith
 
+@RunWith(classOf[JUnitRunner])
 class KCExtMatrixDBTest extends TTestSuite {
   import KCDBTest._
   import TestData._

@@ -24,7 +24,10 @@ import t.TTestSuite
 import t.db.kyotocabinet.KCDBTest
 import t.db.testing.TestData
 import t.db.PExprValue
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class KCChunkMatrixDBTest extends TTestSuite {
   import KCDBTest._
   import TestData._

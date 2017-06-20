@@ -13,7 +13,10 @@ import t.common.shared.sample.search.OrMatch
 import t.platform.ControlGroup
 import otg.testing.TestData
 import t.viewer.server.Conversions._
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class SampleSearchTest extends TTestSuite {
   def atomic(param: String, mt: MatchType) =
     new AtomicMatch(param, mt, null)

@@ -28,7 +28,10 @@ import otgviewer.server.rpc.Conversions._
 import t.TTestSuite
 import t.viewer.server.NormalizedBuilder
 import t.viewer.server.ExtFoldBuilder
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class ManagedMatrixTest extends TTestSuite {
   import TestData._
   import t.common.testing.TestData.groups

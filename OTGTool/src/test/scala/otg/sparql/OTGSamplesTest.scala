@@ -26,7 +26,9 @@ import t.testing.TestConfig
 import org.scalatest.junit.JUnitRunner
 import t.sparql._
 import t.TTestSuite
+import org.junit.runner.RunWith
 
+@RunWith(classOf[JUnitRunner])
 class OTGSamplesTest extends TTestSuite {
 
   val config = TestConfig.config

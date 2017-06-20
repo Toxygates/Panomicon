@@ -29,7 +29,9 @@ import t.testing.TestConfig
 import t.db.testing.TestData
 import t.db.ExprValue
 import t.db.SeriesPoint
+import org.junit.runner.RunWith
 
+@RunWith(classOf[JUnitRunner])
 class SeriesMatchingTest extends TTestSuite {
   import friedrich.data.Statistics._
 

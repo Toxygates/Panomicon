@@ -30,7 +30,9 @@ import t.TTestSuite
 import t.db.BasicExprValue
 import t.db.SeriesPoint
 import t.db.kyotocabinet.KCExtMatrixDB
+import org.junit.runner.RunWith
 
+@RunWith(classOf[JUnitRunner])
 class SeriesTest extends TTestSuite {
 
   import otg.testing.{TestData => OData}

@@ -2,7 +2,10 @@ package t.platform
 
 import t.TTestSuite
 import otg.testing.TestData
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class ControlGroupTest extends TTestSuite {
   val metadata = TestData.metadata
   import t.db.testing.TestData.enumValues

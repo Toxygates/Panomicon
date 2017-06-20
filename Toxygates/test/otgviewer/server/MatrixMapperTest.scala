@@ -30,7 +30,10 @@ import t.common.shared.sample.Group
 import t.viewer.server.Conversions._
 import t.viewer.server.ExtFoldBuilder
 import t.viewer.server.MatrixMapper
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class MatrixMapperTest extends TTestSuite {
   import TestData._
 

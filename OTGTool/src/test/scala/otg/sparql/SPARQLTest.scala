@@ -28,7 +28,10 @@ import t.sparql._
 import t.sparql.Triplestore
 import t.sparql.secondary._
 import t.testing.TestConfig
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class SPARQLTest extends TTestSuite {
 
   val config = TestConfig.config

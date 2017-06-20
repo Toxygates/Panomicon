@@ -20,12 +20,14 @@
 
 package t.viewer.server
 
-import org.scalatest.FunSuite
-
 import t.common.shared.sample.EVABuilder
 import t.db.ExprValue
+import org.junit.runner.RunWith
+import t.TTestSuite
+import org.scalatest.junit.JUnitRunner
 
-class ExprMatrixTest extends FunSuite {
+@RunWith(classOf[JUnitRunner])
+class ExprMatrixTest extends TTestSuite {
 
   /**
    * Test data
