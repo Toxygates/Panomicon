@@ -53,10 +53,10 @@ class SampleSearchTest extends TTestSuite {
       println(cg.upperBound(_liverParam, s.sampleClass.get("exposure_time")))
 
       println(cg.controlSamples.map(TestData.metadata.parameter(_, _liverParam)))
-      s.sampleClass().get("individual_id") should equal("1")
+      s.sampleClass().get("individual_id") should (equal ("1") or (equal ("3")))
     }
-    // 4/5 dose levels, only individual_id 1
-    r.size should equal(samples.size / 3 * 4 / 5)
+    // 4/5 dose levels, individuals 1, 3
+    r.size should equal(2 * samples.size / 3 * 4 / 5)
   }
 
   test("and") {
@@ -67,7 +67,7 @@ class SampleSearchTest extends TTestSuite {
             )
         )
     for (s <- r) {
-      s.sampleClass().get("individual_id") should equal("1")
+      s.sampleClass().get("individual_id") should equal("3")
     }
     r.size should equal(samples.size / 3 * 4 / 5)
   }
@@ -79,10 +79,7 @@ class SampleSearchTest extends TTestSuite {
             atomic(kidneyParam, MatchType.Low)
             )
          )
-    for (s <- r) {
-      s.sampleClass().get("individual_id") should equal("1")
-    }
-    r.size should equal(samples.size / 3 * 4 / 5)
+    r.size should equal(3 * samples.size / 3 * 4 / 5)
   }
 
 }

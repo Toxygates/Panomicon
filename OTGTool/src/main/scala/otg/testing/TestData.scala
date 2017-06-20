@@ -34,6 +34,8 @@ import t.platform.ControlGroup
 import t.platform.BioParameter
 import t.platform.BioParameters
 import t.platform.ControlGroup
+import org.apache.commons.math3.random.GaussianRandomGenerator
+import org.apache.commons.math3.random.JDKRandomGenerator
 
 object TestData {
   import t.db.testing.TestData._
@@ -81,21 +83,23 @@ object TestData {
   val bioParameters = new BioParameters(Map() ++ bioParams.map(p => p.key -> p))
 
   def randomNumber(mean: Double, range: Double) =
-    Math.random() * range + mean - range/2
+    Math.random * range + (mean - range/2)
 
   def liverWt(s: Sample) =
     if (s.sampleClass("dose_level") == "Control" ||
-        s.sampleClass("individual_id") != "1")
-      3 //TODO find a better way to generate values with predictable s.d.
+        s.sampleClass("individual_id") == "2")
+      //TODO find a better way to generate values with predictable s.d.
+      3 //healthy
     else
-      randomNumber(5, 0.5) //abnormal individual_id 1
+      randomNumber(5, 0.2) //abnormal individual_id 1, 3
 
   def kidneyWt(s: Sample) =
     if (s.sampleClass("dose_level") == "Control" ||
-        s.sampleClass("individual_id") != "1")
-      5 //TODO find a better way to generate values with predictable s.d.
+        s.sampleClass("individual_id") == "1")
+      //TODO find a better way to generate values with predictable s.d.
+      5 //healthy
     else
-      randomNumber(1, 0.5) //abnormal individual_id 1
+      randomNumber(1, 0.2) //abnormal individual_id 2, 3
 
   def metadata: Metadata = new Metadata {
     def samples = t.db.testing.TestData.samples

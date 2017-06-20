@@ -31,12 +31,14 @@ class ControlGroupTest extends TTestSuite {
       cg = TestData.controlGroups(s)) {
       val isControl = cg.controlSamples.toSet.contains(s)
 
-      if (!isControl) {
+      if (isControl || s.sampleClass("individual_id") == "2") {
+         //healthy
         metadata.parameter(s, "liver_wt").get.toDouble should
-          (be >= 4.9 and be <= 5.1)
+          be (3.0 +- 0.1)
       } else {
+        //unhealthy
         metadata.parameter(s, "liver_wt").get.toDouble should
-          (be >= 2.9 and be <= 3.1)
+          be (5.0 +- 0.1)
       }
 
       val time = metadata.parameter(s, "exposure_time").get
@@ -44,9 +46,9 @@ class ControlGroupTest extends TTestSuite {
 
       //TODO might need to adjust these limits
       cg.lowerBound(liverParam, time).get should
-        (be >= 2.7 and be <= 3.1)
+        be (2.9 +- 0.2)
       cg.upperBound(liverParam, time).get should
-        (be >= 2.9 and be <= 3.3)
+        be (3.1 +- 0.2)
     }
   }
 }
