@@ -88,14 +88,14 @@ object TestData {
     Math.random * range + (mean - range/2)
 
   def liverWt(s: Sample) =
-    if (s(DoseLevel) == "Control" || s("individual_id") == "2")
+    if (s(DoseLevel) == "Control" || s(Individual) == "2")
       //TODO find a better way to generate values with predictable s.d.
       3 //healthy
     else
       randomNumber(5, 0.2) //abnormal individual_id 1, 3
 
   def kidneyWt(s: Sample) =
-    if (s(DoseLevel) == "Control" || s("individual_id") == "1")
+    if (s(DoseLevel) == "Control" || s(Individual) == "1")
       //TODO find a better way to generate values with predictable s.d.
       5 //healthy
     else

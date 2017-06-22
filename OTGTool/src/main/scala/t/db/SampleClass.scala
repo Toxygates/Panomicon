@@ -28,14 +28,18 @@ object SampleClass {
 
 /**
  * A set of constraints on a sample.
+ *
+ * TODO consider deprecating this class entirely and using a simple map
  */
 case class SampleClass(constraints: CMap[String, String] = Map()) extends SampleClassLike
 
 trait SampleClassLike {
   def constraints: CMap[String, String]
 
+  @deprecated("Query by SampleParameter instead.", "June 2017")
   def apply(key: String): String = constraints(key)
 
+  @deprecated("Query by SampleParameter instead.", "June 2017")
   def get(key: String): Option[String] = constraints.get(key)
 
   def apply(key: SampleParameter): String = apply(key.id)

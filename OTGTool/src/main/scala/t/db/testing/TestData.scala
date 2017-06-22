@@ -70,7 +70,7 @@ object TestData {
     dose <- em(DoseLevel); time <- em(ExposureTime);
     ind <- Set("1", "2", "3"); compound <- em("compound_name");
     s = Sample("s" + ids.next,
-        Map(DoseLevel.id -> dose, "individual_id" -> ind,
+        Map(DoseLevel.id -> dose, Individual.id -> ind,
           ExposureTime.id -> time, "compound_name" -> compound,
           "sin_rep_type" -> "Single", "organ_id" -> "Liver",
           "test_type" -> "Vivo", "organism" -> "Rat",

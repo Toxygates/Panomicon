@@ -21,7 +21,7 @@ class ControlGroupTest extends TTestSuite {
       val cg = TestData.controlGroups(s)
       cg.controlSamples.size should equal(3)
 
-      val remove = Set("dose_level", "individual_id")
+      val remove = Set(DoseLevel.id, Individual.id)
 
       for (cs <- cg.controlSamples) {
         cs.sampleClass.constraints.filter(c => ! remove.contains(c._1)) should
@@ -35,7 +35,7 @@ class ControlGroupTest extends TTestSuite {
       cg = TestData.controlGroups(s)) {
       val isControl = cg.controlSamples.toSet.contains(s)
 
-      if (isControl || s.sampleClass("individual_id") == "2") {
+      if (isControl || s.sampleClass(Individual) == "2") {
          //healthy
         metadata.parameter(s, "liver_wt").get.toDouble should
           be (3.0 +- 0.1)

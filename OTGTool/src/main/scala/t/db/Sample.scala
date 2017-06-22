@@ -44,15 +44,11 @@ case class Sample(sampleId: String, sampleClass: SampleClass, cgroup: Option[Str
   /**
    * Convenience method to obtain a parameter from the sample class.
    */
-  def get(key: String): Option[String] = sampleClass.get(key)
-
   def get(key: SampleParameter): Option[String] = sampleClass.get(key)
 
   /**
    * Convenience method to obtain a parameter from the sample class.
    */
-  def apply(key: String): String = sampleClass(key)
-
   def apply(key: SampleParameter): String = sampleClass(key)
 }
 

@@ -12,4 +12,5 @@ object SampleParameters {
   val ExposureTime = SampleParameter("exposure_time", "Exposure time")
   val DoseLevel = SampleParameter("dose_level", "Dose level")
   val BatchGraph = SampleParameter("batchGraph", "Batch")
+  val Individual = SampleParameter("individual_id", "Individual ID")
 }

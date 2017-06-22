@@ -15,6 +15,7 @@ import otg.testing.TestData
 import t.viewer.server.Conversions._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import t.db.SampleParameters._
 
 @RunWith(classOf[JUnitRunner])
 class SampleSearchTest extends TTestSuite {
@@ -53,10 +54,10 @@ class SampleSearchTest extends TTestSuite {
     for (s <- r) {
       println(s.sampleClass())
       val cg = TestData.controlGroups(asScalaSample(s))
-      println(cg.upperBound(_liverParam, s.sampleClass.get("exposure_time")))
+      println(cg.upperBound(_liverParam, s.get(ExposureTime.id)))
 
       println(cg.controlSamples.map(TestData.metadata.parameter(_, _liverParam)))
-      s.sampleClass().get("individual_id") should (equal ("1") or (equal ("3")))
+      s.get(Individual.id) should (equal ("1") or (equal ("3")))
     }
     // 4/5 dose levels, individuals 1, 3
     r.size should equal(2 * samples.size / 3 * 4 / 5)
@@ -70,7 +71,7 @@ class SampleSearchTest extends TTestSuite {
             )
         )
     for (s <- r) {
-      s.sampleClass().get("individual_id") should equal("3")
+      s.get(Individual.id) should equal("3")
     }
     r.size should equal(samples.size / 3 * 4 / 5)
   }
