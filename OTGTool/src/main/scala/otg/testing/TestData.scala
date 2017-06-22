@@ -34,8 +34,6 @@ import t.platform.ControlGroup
 import t.platform.BioParameter
 import t.platform.BioParameters
 import t.platform.ControlGroup
-import org.apache.commons.math3.random.GaussianRandomGenerator
-import org.apache.commons.math3.random.JDKRandomGenerator
 import t.db.SampleParameters._
 
 object TestData {
