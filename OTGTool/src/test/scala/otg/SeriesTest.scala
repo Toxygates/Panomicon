@@ -31,6 +31,7 @@ import t.db.BasicExprValue
 import t.db.SeriesPoint
 import t.db.kyotocabinet.KCExtMatrixDB
 import org.junit.runner.RunWith
+import t.db.SampleParameters._
 
 @RunWith(classOf[JUnitRunner])
 class SeriesTest extends TTestSuite {
@@ -55,7 +56,7 @@ class SeriesTest extends TTestSuite {
   test("makeNew") {
     context.populate()
     val meta = OData.metadata
-    val timeMap = context.enumMaps("exposure_time")
+    val timeMap = context.enumMaps(ExposureTime.id)
 
     val ss = OTGSeries.makeNew(context.foldsDBReader, meta)
     val data = context.testData
@@ -70,7 +71,7 @@ class SeriesTest extends TTestSuite {
         if (ev.present)
       ) yield s
 
-       val expectedTimes = present.flatMap(x => meta.parameter(x, "exposure_time"))
+       val expectedTimes = present.flatMap(x => meta.parameter(x, ExposureTime.id))
       s.points.map(_.code) should contain theSameElementsAs(expectedTimes.map(timeMap(_)))
     }
 

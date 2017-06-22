@@ -9,6 +9,7 @@ import t.BaseConfig
 import org.apache.commons.math3.stat.StatUtils.variance
 import org.apache.commons.math3.stat.StatUtils.mean
 import t.sample.SampleSet
+import t.db.SampleParameters._
 
 case class BioParameter(key: String, label: String, kind: String,
     section: Option[String],
@@ -62,7 +63,7 @@ class BioParameters(lookup: Map[String, BioParameter]) {
 class ControlGroup(bps: BioParameters, samples: SampleSet,
     val controlSamples: Iterable[Sample]) {
   println(s"Control group for $controlSamples")
-  val byTime = controlSamples.groupBy(s => samples.parameter(s, "exposure_time").get)
+  val byTime = controlSamples.groupBy(s => samples.parameter(s, ExposureTime).get)
 
   val allParamVals = byTime.map(ss => ss._1 -> ss._2.map(Map() ++ samples.parameters(_)))
 
@@ -105,12 +106,12 @@ object BioParameter {
      val data = TSVMetadata(f, args(0), params)
      var out = Map[SampleParameter, Seq[String]]()
 
-     for (time <- data.parameterValues("exposure_time")) {
+     for (time <- data.parameterValues(ExposureTime.id)) {
        val ftime = time.replaceAll("\\s+", "")
        var samples = data.samples
        samples = samples.filter(s => {
          val m = data.parameterMap(s)
-         m("exposure_time") == time && m("dose_level") == "Control" && m("test_type") == "in vivo"
+         m(ExposureTime.id) == time && m(DoseLevel.id) == "Control" && m("test_type") == "in vivo"
        })
        val rawValues = samples.map(s => data.parameters(s))
        for (param <- params.all; if params.isNumerical(param)) {

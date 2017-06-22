@@ -34,9 +34,13 @@ case class SampleClass(constraints: CMap[String, String] = Map()) extends Sample
 trait SampleClassLike {
   def constraints: CMap[String, String]
 
-  def apply(key: String) = constraints(key)
+  def apply(key: String): String = constraints(key)
 
-  def get(key: String) = constraints.get(key)
+  def get(key: String): Option[String] = constraints.get(key)
+
+  def apply(key: SampleParameter): String = apply(key.id)
+
+  def get(key: SampleParameter): Option[String] = get(key.id)
 
   def ++(other: SampleClassLike) = SampleClass(constraints ++ other.constraints)
 }

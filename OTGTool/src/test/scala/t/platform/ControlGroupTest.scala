@@ -4,6 +4,7 @@ import t.TTestSuite
 import otg.testing.TestData
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import t.db.SampleParameters._
 
 @RunWith(classOf[JUnitRunner])
 class ControlGroupTest extends TTestSuite {
@@ -44,7 +45,7 @@ class ControlGroupTest extends TTestSuite {
           be (5.0 +- 0.1)
       }
 
-      val time = metadata.parameter(s, "exposure_time").get
+      val time = metadata.parameter(s, ExposureTime).get
       println(cg.allParamVals(time))
 
       //TODO might need to adjust these limits

@@ -36,6 +36,7 @@ import t.platform.BioParameters
 import t.platform.ControlGroup
 import org.apache.commons.math3.random.GaussianRandomGenerator
 import org.apache.commons.math3.random.JDKRandomGenerator
+import t.db.SampleParameters._
 
 object TestData {
   import t.db.testing.TestData._
@@ -46,12 +47,12 @@ object TestData {
   }
 
   def mkPoints(pr: String): Seq[SeriesPoint] = {
-    val indepPoints = enumMaps("exposure_time").filter(_._1 != "9 hr").map(_._2)
+    val indepPoints = enumMaps(ExposureTime.id).filter(_._1 != "9 hr").map(_._2)
     indepPoints.map(t => mkPoint(pr, t)).toSeq
   }
 
   lazy val series = for (compound <- enumValues("compound_name");
-    doseLevel <- enumValues("dose_level");
+    doseLevel <- enumValues(DoseLevel.id);
     repeat <- enumValues("sin_rep_type");
     organ <- enumValues("organ_id");
     organism <- enumValues("organism");
@@ -63,14 +64,17 @@ object TestData {
 
   private def controlGroup(s: Sample) = ???
 
+  import t.db.SampleParameters.{ControlGroup => CGParam}
+  import t.db.SampleParameters.DoseLevel
+
   lazy val controlGroups: Map[Sample, ControlGroup] = {
-    val gr = samples.groupBy(_.sampleClass("control_group"))
+    val gr = samples.groupBy(_(CGParam))
     val controls = gr.mapValues(vs =>
       new ControlGroup(bioParameters, metadata,
-          vs.toSeq.filter(_.sampleClass("dose_level") == "Control"))
+          vs.toSeq.filter(_(DoseLevel) == "Control"))
       )
 
-    Map() ++ samples.map(s => s -> controls(s.sampleClass("control_group")))
+    Map() ++ samples.map(s => s -> controls(s(CGParam)))
   }
 
   val bioParams = Seq(
@@ -86,16 +90,14 @@ object TestData {
     Math.random * range + (mean - range/2)
 
   def liverWt(s: Sample) =
-    if (s.sampleClass("dose_level") == "Control" ||
-        s.sampleClass("individual_id") == "2")
+    if (s(DoseLevel) == "Control" || s("individual_id") == "2")
       //TODO find a better way to generate values with predictable s.d.
       3 //healthy
     else
       randomNumber(5, 0.2) //abnormal individual_id 1, 3
 
   def kidneyWt(s: Sample) =
-    if (s.sampleClass("dose_level") == "Control" ||
-        s.sampleClass("individual_id") == "1")
+    if (s(DoseLevel) == "Control" || s("individual_id") == "1")
       //TODO find a better way to generate values with predictable s.d.
       5 //healthy
     else

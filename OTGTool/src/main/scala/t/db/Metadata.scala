@@ -24,8 +24,6 @@ import friedrich.util.formats.TSVFile
 import t.Factory
 import t.sample.SampleSet
 
-case class SampleParameter(identifier: String, humanReadable: String)
-
 trait ParameterSet {
   def all: Iterable[SampleParameter]
   def required: Iterable[SampleParameter]

@@ -292,7 +292,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     //Get the parameters without changing the persistent datasets in getSessionData
     val filter = sampleFilterFor(ds)
     sampleStore.attributeValues(scAsScala(sc).filterAll, parameter)(filter).
-      filter(x => !schema.isControlValue(parameter, x)).toArray            
+      filter(x => !schema.isControlValue(parameter, x)).toArray
   }
 
   @throws[TimeoutException]
@@ -357,13 +357,13 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     //This will filter by the chosen parameter - usually compound name
 
+    import t.db.SampleParameters._
+
     val rs = sampleStore.samples(sc, param, paramValues.toSeq)
-    val ss = rs.groupBy(x =>(
-            x.sampleClass("batchGraph"),
-            x.sampleClass("control_group")))
+    val ss = rs.groupBy(x =>(x(BatchGraph), x(ControlGroup)))
 
     val cgs = ss.keys.toSeq.map(_._2).distinct
-    val potentialControls = sampleStore.samples(sc, "control_group", cgs).
+    val potentialControls = sampleStore.samples(sc, ControlGroup.id, cgs).
       filter(isControl).map(asJavaSample)
 
       /*
@@ -389,8 +389,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
         val fcs = potentialControls.filter(s =>
           unitWithoutMajorMedium(s) == repUnit
-          && s.get("control_group") == repSample.get("control_group")
-          && s.get("batchGraph") == repSample.get("batchGraph")
+          && s.get(ControlGroup.id) == repSample.get(ControlGroup.id)
+          && s.get(BatchGraph.id) == repSample.get(BatchGraph.id)
           )
 
         val cu = if (fcs.isEmpty)
@@ -648,13 +648,13 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       println(s)
     }
   }
-  
+
   def classSearch(sc: SampleClass, cond: MatchCondition) {
     val searchSpace = sampleStore.sampleQuery(scAsScala(sc))(sf)()
-    
-    val javaSamples: java.util.Collection[Sample] = searchSpace.map(asJavaSample) 
-    val units = Unit.formUnits(schema, javaSamples)  
-    
+
+    val javaSamples: java.util.Collection[Sample] = searchSpace.map(asJavaSample)
+    val units = Unit.formUnits(schema, javaSamples)
+
     println("First 10 units in search space:")
     for (s <- units take 10) {
       s.averageAttributes(appInfoLoader.latest.numericalParameters())

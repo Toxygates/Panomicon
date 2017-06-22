@@ -24,23 +24,14 @@ import scala.collection.immutable.ListMap
 
 import t.db.ParameterSet
 import t.db.Sample
+import t.db.SampleParameters._
 
 /**
  * Information about a set of samples.
  */
 trait Metadata extends t.db.Metadata {
 
-  override def isControl(s: Sample): Boolean = parameter(s, "dose_level").get == "Control"
-
-  /**
-   * Retrieve the set of compounds that exist in this metadata set.
-   */
-  def compounds: Set[String] = parameterValues("compound_name")
-
-  /**
-   * Retrieve the compound associated with a particular sample.
-   */
-  def compound(s: Sample): String = parameter(s, "compound_name").get
+  override def isControl(s: Sample): Boolean = parameter(s, DoseLevel).get == "Control"
 
 }
 
@@ -55,6 +46,7 @@ object OTGParameterSet extends ParameterSet {
     "Sample ID" -> "sample_id",
     "Platform ID" -> "platform_id",
     "Experiment ID" -> "exp_id",
+    ControlGroup.humanReadable -> ControlGroup.identifier,
     "Control group" -> "control_group",
     "Group ID" -> "group_id",
     "Individual ID" -> "individual_id",
@@ -73,10 +65,10 @@ object OTGParameterSet extends ParameterSet {
     "Strain" -> "strain_type",
     "Administration route" -> "adm_route_type",
     "Animal age (weeks)" -> "animal_age_week",
-    "Exposure time" -> "exposure_time",
+    ExposureTime.humanReadable -> ExposureTime.id,
     "Dose" -> "dose",
     "Dose unit" -> "dose_unit",
-    "Dose level" -> "dose_level",
+    DoseLevel.humanReadable -> DoseLevel.id,
     "Medium type" -> "medium_type",
     "Product information" -> "product_information",
     "CRO type" -> "cro_type")
@@ -162,29 +154,26 @@ object OTGParameterSet extends ParameterSet {
   val highLevel = List("organism", "test_type", "sin_rep_type", "organ_id").map(byId)
 
   val required = highLevel ++ List("sample_id",
-    "compound_name", "dose_level", "exposure_time",
+    "compound_name", DoseLevel.id, ExposureTime.id,
     "platform_id", "control_group").map(byId)
 
-  override val previewDisplay = List("dose", "dose_unit", "dose_level",
-    "exposure_time", "adm_route_type").map(byId)
+  override val previewDisplay = List("dose", "dose_unit", DoseLevel.id,
+    ExposureTime.id, "adm_route_type").map(byId)
 
   /**
    * Find the files that are control samples in the collection that a given barcode
    * belongs to.
    *
-   * TODO think about ways to generalise this without depending on the
-   * key/value of dose_level = Control. Possibly depend on DataSchema
+   * TODO factor out commonalities with SparqlServiceImpl
    */
   override def controlSamples(metadata: t.db.Metadata, s: Sample): Iterable[Sample] = {
-    val params = metadata.parameterMap(s)
-    val expTime = params("exposure_time")
-    val cgroup = params("control_group")
+    val expTime = metadata.parameter(s, ExposureTime)
+    val cgroup = metadata.parameter(s, ControlGroup)
 
     println(expTime + " " + cgroup)
     metadata.samples.filter(s => {
-      val params = metadata.parameterMap(s)
-      params("exposure_time") == expTime &&
-      params("control_group") == cgroup &&
+      metadata.parameter(s, ExposureTime) == expTime &&
+      metadata.parameter(s, ControlGroup) == cgroup &&
       metadata.isControl(s)
     })
   }
@@ -193,7 +182,7 @@ object OTGParameterSet extends ParameterSet {
     Iterable[(Iterable[Sample], Iterable[Sample])] = {
     for (
       (cs, ts) <- ss.groupBy(controlSamples(metadata, _));
-      (d, dts) <- ts.groupBy(metadata.parameter(_, "dose_level"))
+      (d, dts) <- ts.groupBy(metadata.parameter(_, DoseLevel))
     ) yield ((dts, cs))
   }
 }

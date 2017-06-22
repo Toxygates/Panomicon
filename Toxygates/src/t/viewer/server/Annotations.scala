@@ -18,6 +18,7 @@ import t.sparql.SampleFilter
 import t.db.Metadata
 import t.viewer.server.Conversions._
 import java.lang.{Double => JDouble}
+import scala.language.implicitConversions
 
 class Annotations(val sampleSet: t.sample.SampleSet, val schema: DataSchema, val baseConfig: BaseConfig) {
 
@@ -35,9 +36,13 @@ class Annotations(val sampleSet: t.sample.SampleSet, val schema: DataSchema, val
 //
 //  lazy val tsMeta = new TriplestoreMetadata(sampleStore, baseConfig.sampleParameters)(SampleFilter())
 
+  import t.db.SampleParameters.{ControlGroup => CGParam}
+
+  implicit def asScala(x: Sample) = asScalaSample(x)
+
   def controlGroups(ss: Iterable[Sample],
       metadata: Metadata): Map[Sample, ControlGroup] = {
-     val cgs = ss.groupBy(_.get("control_group"))
+     val cgs = ss.groupBy(_(CGParam))
     val mp = schema.mediumParameter()
     Map() ++ cgs.flatMap { case (cgroup, ss) =>
       val controls = ss.filter(s => schema.isControlValue(s.get(mp)))
@@ -54,7 +59,7 @@ class Annotations(val sampleSet: t.sample.SampleSet, val schema: DataSchema, val
   def forSamples(samples: Samples, column: HasSamples[Sample],
       importantOnly: Boolean = false): Array[Annotation] = {
 
-    val cgs = column.getSamples.groupBy(_.get("control_group"))
+    val cgs = column.getSamples.groupBy(_(CGParam))
 
     val rs = for (
       (cgroup, ss) <- cgs;
