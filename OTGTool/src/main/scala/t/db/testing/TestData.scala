@@ -104,8 +104,12 @@ object TestData {
   }
 
   def makeTestData(sparse: Boolean): RawExpressionData = {
+    makeTestData(sparse, samples)
+  }
+
+  def makeTestData(sparse: Boolean, useSamples: Iterable[Sample]): RawExpressionData = {
     var testData = Map[Sample, Map[String, (Double, Char, Double)]]()
-    for (s <- samples) {
+    for (s <- useSamples) {
       var thisProbe = Map[String, (Double, Char, Double)]()
       for (p <- probeMap.tokens) {
         if (!sparse || Math.random > 0.5) {

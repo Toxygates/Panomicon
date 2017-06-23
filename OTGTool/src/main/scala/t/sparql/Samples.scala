@@ -176,7 +176,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     Query(tPrefixes,
       "SELECT DISTINCT ?q " +
         s"WHERE { GRAPH ?batchGraph { " +
-        "?x " + attribute + " ?q . ",
+        "?x t:" + attribute + " ?q . ",
       s"} ${sf.standardSampleFilters} } ",
       ts.simpleQueryNonQuiet)
   }
@@ -194,7 +194,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
   }
 
   def attributeValues(filter: TFilter, attribute: String)(implicit sf: SampleFilter) =
-    sampleAttributeQuery("t:" + attribute).constrain(filter)()
+    sampleAttributeQuery(attribute).constrain(filter)()
 
   def sampleGroups(sf: SampleFilter): Iterable[(String, Iterable[Sample])] = {
     val q = tPrefixes +

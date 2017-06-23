@@ -84,7 +84,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
   }
 
   def compounds(filter: TFilter)(implicit sf: SampleFilter) =
-    sampleAttributeQuery("t:compound_name").constrain(filter)()
+    sampleAttributeQuery("compound_name").constrain(filter)()
 
   def pathologyQuery(constraints: String): Vector[Pathology] = {
     val r = ts.mapQuery(s"""$prefixes
