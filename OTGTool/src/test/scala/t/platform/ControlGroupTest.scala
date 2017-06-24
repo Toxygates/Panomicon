@@ -49,9 +49,9 @@ class ControlGroupTest extends TTestSuite {
       println(cg.allParamVals(time))
 
       //TODO might need to adjust these limits
-      cg.lowerBound(liverParam, time).get should
+      cg.lowerBound(liverParam, time, 1).get should
         be (2.9 +- 0.2)
-      cg.upperBound(liverParam, time).get should
+      cg.upperBound(liverParam, time, 1).get should
         be (3.1 +- 0.2)
     }
   }

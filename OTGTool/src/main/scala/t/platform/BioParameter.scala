@@ -78,18 +78,18 @@ class ControlGroup(bps: BioParameters, samples: SampleSet,
     }
   }
 
-  def lowerBound(param: SampleParameter, time: String): Option[Double] =
+  def lowerBound(param: SampleParameter, time: String, testSampleSize: Int): Option[Double] =
     varAndMean(param, time).map {
       case (v, m) =>
         val sd = Math.sqrt(v)
-        m - 2 * sd
+        m - 2 / Math.sqrt(testSampleSize) * sd
     }
 
-  def upperBound(param: SampleParameter, time: String): Option[Double] =
+  def upperBound(param: SampleParameter, time: String, testSampleSize: Int): Option[Double] =
     varAndMean(param, time).map {
       case (v, m) =>
         val sd = Math.sqrt(v)
-        m + 2 * sd
+        m + 2 / Math.sqrt(testSampleSize) * sd
     }
 }
 
