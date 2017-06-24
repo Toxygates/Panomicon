@@ -123,6 +123,6 @@ public interface SampleService extends RemoteService {
   
   void sampleSearch(SampleClass sampleClass, MatchCondition condition) throws TimeoutException;
 
-  void classSearch(SampleClass sampleClass, MatchCondition condition) throws TimeoutException;
+  void unitSearch(SampleClass sampleClass, MatchCondition condition) throws TimeoutException;
 
 }
