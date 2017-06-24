@@ -24,12 +24,7 @@ import java.util.{ List => JList }
 
 import scala.Array.canBuildFrom
 import scala.Vector
-import scala.collection.JavaConversions.asScalaBuffer
-import scala.collection.JavaConversions.bufferAsJavaList
-import scala.collection.JavaConversions.mapAsJavaMap
-import scala.collection.JavaConversions.seqAsJavaList
-import scala.collection.JavaConversions.asJavaCollection
-import scala.collection.JavaConversions.asScalaSet
+import scala.collection.JavaConversions._
 import scala.collection.{ Set => CSet }
 
 import SparqlServiceImpl.platforms
