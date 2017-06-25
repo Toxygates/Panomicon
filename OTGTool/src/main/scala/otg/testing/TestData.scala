@@ -35,6 +35,7 @@ import t.platform.BioParameter
 import t.platform.BioParameters
 import t.platform.ControlGroup
 import t.db.SampleParameters._
+import otg.OTGBConfig
 
 object TestData {
   import t.db.testing.TestData._

@@ -27,6 +27,7 @@ import otgviewer.shared.RuleType
 import org.junit.runner.RunWith
 import t.TTestSuite
 import org.scalatest.junit.JUnitRunner
+import otgviewer.server.AssociationResolverTest
 
 @RunWith(classOf[JUnitRunner])
 class SeriesServiceTest extends TTestSuite {
@@ -43,7 +44,7 @@ class SeriesServiceTest extends TTestSuite {
   }
 
   test("Ranking") {
-    val sc = SparqlServiceTest.testSampleClass
+    val sc = AssociationResolverTest.testSampleClass
     val r = new RankRule(RuleType.MaximalFold, "1370365_at") //GSS gene
 
     //TODO needs a valid dataset for the first argument

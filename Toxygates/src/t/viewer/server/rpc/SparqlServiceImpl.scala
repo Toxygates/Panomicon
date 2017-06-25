@@ -24,12 +24,7 @@ import java.util.{ List => JList }
 
 import scala.Array.canBuildFrom
 import scala.Vector
-import scala.collection.JavaConversions.asScalaBuffer
-import scala.collection.JavaConversions.bufferAsJavaList
-import scala.collection.JavaConversions.mapAsJavaMap
-import scala.collection.JavaConversions.seqAsJavaList
-import scala.collection.JavaConversions.asJavaCollection
-import scala.collection.JavaConversions.asScalaSet
+import scala.collection.JavaConversions._
 import scala.collection.{ Set => CSet }
 
 import SparqlServiceImpl.platforms
@@ -72,12 +67,10 @@ import t.sparql.toBioMap
 import t.util.PeriodicRefresh
 import t.util.Refreshable
 import t.viewer.client.rpc.SparqlService
+import t.viewer.server.AssociationResolver
 import t.viewer.server.CSVHelper
 import t.viewer.server.Configuration
-import t.viewer.server.Conversions.asJavaSample
-import t.viewer.server.Conversions.convertPairs
-import t.viewer.server.Conversions.scAsJava
-import t.viewer.server.Conversions.scAsScala
+import t.viewer.server.Conversions._
 import t.viewer.server.SharedDatasets
 import t.viewer.server.SharedPlatforms
 import t.viewer.shared.AppInfo
@@ -557,52 +550,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   @throws[TimeoutException]
   def associations(sc: SampleClass, types: Array[AType],
     _probes: Array[String]): Array[Association] =
-    new AssociationResolver(sc, types, _probes).resolve
-
-  import Association._
-
-  protected class AssociationResolver(sc: SampleClass, types: Array[AType],
-      _probes: Iterable[String]) {
-    val aprobes = probeStore.withAttributes(_probes.map(Probe(_)))
-
-    lazy val proteins = toBioMap(aprobes, (_: Probe).proteins)
-
-    def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe])
-      (implicit sf: SampleFilter): BBMap =
-      at match {
-        // The type annotation :BBMap is needed on at least one (!) match pattern
-        // to make the match statement compile. TODO: research this
-        case _: AType.Uniprot.type   => proteins: BBMap
-        case _: AType.GO.type        => probeStore.goTerms(probes)
-
-        case _: AType.KEGG.type =>
-          toBioMap(probes, (_: Probe).genes) combine
-            b2rKegg.forGenes(probes.flatMap(_.genes))
-//        case _: AType.Enzymes.type =>
-//          val sp = asSpecies(sc)
-//          b2rKegg.enzymes(probes.flatMap(_.genes), sp)
-        case _ => throw new Exception("Unexpected annotation type")
-      }
-
-    val emptyVal = CSet(DefaultBio("error", "(Timeout or error)"))
-    val errorVals = Map() ++ aprobes.map(p => (Probe(p.identifier) -> emptyVal))
-
-    def queryOrEmpty[T](f: () => BBMap): BBMap = {
-      gracefully(f, errorVals)
-    }
-
-    private def lookupFunction(t: AType)(implicit sf: SampleFilter): BBMap =
-      queryOrEmpty(() => associationLookup(t, sc, aprobes))
-
-    def standardMapping(m: BBMap): MMap[String, (String, String)] =
-      m.mapKeys(_.identifier).mapInnerValues(p => (p.name, p.identifier))
-
-    def resolve(): Array[Association] = {
-      implicit val filt = sf
-      val m1 = types.par.map(x => (x, standardMapping(lookupFunction(x)(filt)))).seq
-      m1.map(p => new Association(p._1, convertPairs(p._2))).toArray
-    }
-  }
+    new AssociationResolver(probeStore, b2rKegg, sc, types, _probes).resolve
 
   @throws[TimeoutException]
   def geneSuggestions(sc: SampleClass, partialName: String): Array[String] = {

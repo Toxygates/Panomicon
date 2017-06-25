@@ -18,46 +18,66 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.server.rpc
+package otgviewer.server
 
 import scala.collection.JavaConversions._
-
 import t.common.shared.SampleClass
-import t.viewer.server.Configuration
 import t.common.shared.AType
 import org.junit.runner.RunWith
 import t.TTestSuite
 import org.scalatest.junit.JUnitRunner
+import otgviewer.server.rpc.SparqlServiceImpl
+import t.viewer.shared.TimeoutException
+import t.sparql.secondary.ChEMBL
+import t.sparql.secondary.DrugBank
+import t.sparql.secondary.Uniprot
+import t.sparql.secondary.B2RKegg
+import t.sparql.secondary.LocalUniprot
+import t.sparql.SampleFilter
+import otg.OTGBConfig
 
-object SparqlServiceTest {
+object AssociationResolverTest {
   val testClass = Map("sin_rep_type" -> "Single",
-      "organism" -> "Rat",
-      "organ_id" -> "Liver",
-      "test_type" -> "in vivo")
+    "organism" -> "Rat",
+    "organ_id" -> "Liver",
+    "test_type" -> "in vivo")
 
   def testSampleClass = new SampleClass(mapAsJavaMap(testClass))
 }
 
 @RunWith(classOf[JUnitRunner])
-class SparqlServiceTest extends TTestSuite {
+class AssociationResolverTest extends TTestSuite {
 
-  var s: SparqlServiceImpl = _
-  before {
-    val conf = t.viewer.testing.TestConfiguration.config
-    s = new SparqlServiceImpl()
-    s.localInit(conf)
-  }
+  import t.viewer.testing.TestConfiguration
+  def conf = TestConfiguration.config
+  def baseConf = new OTGBConfig(TestConfiguration.tc.tsConfig,
+      TestConfiguration.tc.dataConfig)
 
-  after {
-    s.destroy
-  }
-
-  val sc = SparqlServiceTest.testSampleClass
+  def sc = AssociationResolverTest.testSampleClass
 
   val probes = Array("1387936_at", "1391544_at")
 //  val geneIds = Array("361510", "362972")
 
-  private def testAssociation(typ: AType) = s.associations(sc, Array(typ), probes)
+  val tsc = conf.tsConfig
+  val probeStore = new otg.sparql.Probes(tsc)
+  val sampleStore = new otg.sparql.OTGSamples(baseConf)
+  val b2rKegg = new B2RKegg(tsc.triplestore)
+  val uniprot = new LocalUniprot(tsc.triplestore)
+  val chembl = new ChEMBL()
+  val drugBank = new DrugBank()
+
+  def ar(types: Array[AType]) = new AssociationResolver(probeStore,
+      sampleStore,
+      b2rKegg, uniprot, chembl, drugBank,
+      sc, types, probes
+      )
+
+  private def testAssociation(typ: AType) = {
+    val as = ar(Array(typ)).resolve(SampleFilter())
+    assert (as.size == 1)
+    assert(as(0).`type`() == typ)
+    assert(as(0).data.size > 0)
+  }
 
   test("BP GO terms") {
     testAssociation(AType.GOBP)
@@ -78,10 +98,10 @@ class SparqlServiceTest extends TTestSuite {
   test ("UniProt") {
     testAssociation(AType.Uniprot)
   }
-
-  test ("OrthProts") {
-    testAssociation(AType.OrthProts)
-  }
+//
+//  test ("OrthProts") {
+//    testAssociation(AType.OrthProts)
+//  }
 
   test ("CHEMBL") {
     testAssociation(AType.Chembl)
@@ -89,11 +109,5 @@ class SparqlServiceTest extends TTestSuite {
 
   test ("DrugBank") {
     testAssociation(AType.Drugbank)
-  }
-
-  test ("Genes for pathway") {
-    val ps = s.probesForPathway(sc, "Glutathione metabolism")
-    println(ps.size + " probes")
-    assert(ps.size === 42)
   }
 }
