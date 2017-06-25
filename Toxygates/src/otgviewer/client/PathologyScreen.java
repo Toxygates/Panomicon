@@ -57,7 +57,7 @@ public class PathologyScreen extends Screen {
   public static final String key = "path";
 
   private CellTable<Pathology> pathologyTable = new CellTable<Pathology>();
-  private ScrollPanel sp = new ScrollPanel();
+  private ScrollPanel scrollPanel = new ScrollPanel();
   private Set<Pathology> pathologies = new HashSet<Pathology>();
   private final Resources resources;
 
@@ -97,7 +97,7 @@ public class PathologyScreen extends Screen {
 
   public Widget content() {
 
-    sp.setWidget(pathologyTable);
+    scrollPanel.setWidget(pathologyTable);
     pathologyTable.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
     pathologyTable.setWidth("100%");
 
@@ -174,7 +174,7 @@ public class PathologyScreen extends Screen {
     };
     pathologyTable.addColumn(lcol, "Digital viewer");
 
-    return sp;
+    return scrollPanel;
   }
 
   @Override

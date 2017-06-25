@@ -645,7 +645,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     println("Found " + rs.size + " matches.")
   }
 
-  def unitSearch(sc: SampleClass, cond: MatchCondition) {
+  def unitSearch(sc: SampleClass, cond: MatchCondition): Array[Unit] = {
     val searchSpace = sampleStore.sampleQuery(scAsScala(sc))(sf)()
    
     val javaSamples: java.util.Collection[Sample] = searchSpace.map(asJavaSample) 
@@ -661,6 +661,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       println(s)
     }
     println("Found " + rs.size + " matches.")
+    rs.toArray
   }
 
 }

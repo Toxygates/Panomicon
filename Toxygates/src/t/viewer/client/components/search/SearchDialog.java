@@ -19,6 +19,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.NumericalBioParamValue;
+import t.common.shared.sample.Unit;
 import t.common.shared.sample.search.MatchCondition;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SampleServiceAsync;
@@ -83,19 +84,18 @@ public class SearchDialog extends Composite {
       Window.alert("Please define the search condition.");
       return;
     }
-    sampleService.sampleSearch(sampleClass, condition,  
-        new AsyncCallback<Void>() {
-          
-          @Override
-          public void onSuccess(Void result) {
-            
-          }
-          
-          @Override
-          public void onFailure(Throwable caught) {
-                 
-          }
-        });
+    sampleService.sampleSearch(sampleClass, condition, new AsyncCallback<Void>() {
+
+      @Override
+      public void onSuccess(Void result) {
+
+      }
+
+      @Override
+      public void onFailure(Throwable caught) {
+
+      }
+    });
   }
   
   private void performUnitSearch(@Nullable MatchCondition condition) {
@@ -103,11 +103,15 @@ public class SearchDialog extends Composite {
       Window.alert("Please define the search condition.");
       return;
     }
-    sampleService.unitSearch(sampleClass, condition, new AsyncCallback<Void>() {
+    sampleService.unitSearch(sampleClass, condition, new AsyncCallback<Unit[]>() {
 
       @Override
-      public void onSuccess(Void result) {
-
+      public void onSuccess(Unit[] result) {
+        String text = "";
+        for (Unit unit : result) {
+          text += unit.toString() + "\n";
+        }
+        Window.alert("Found " + result.length + " results:\n" + text);
       }
 
       @Override
