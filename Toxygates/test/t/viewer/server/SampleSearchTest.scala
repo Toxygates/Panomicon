@@ -38,9 +38,8 @@ class SampleSearchTest extends TTestSuite {
   def search(cond: MatchCondition) = {
     val searchParams = SampleSearch.conditionParams(paramSet,
         cond)
-    val ss: SampleSearch = new SampleSearch(schema, TestData.metadata,
-        cond, cgroups, samples.toSeq.map(asJavaSample),
-        searchParams)
+    val ss: SampleSearch[Sample] = SampleSearch.ForSample(TestData.metadata,
+        cond, schema, cgroups, searchParams, samples.toSeq.map(asJavaSample))
     ss.results
   }
 
@@ -54,7 +53,7 @@ class SampleSearchTest extends TTestSuite {
     for (s <- r) {
       println(s.sampleClass())
       val cg = TestData.controlGroups(asScalaSample(s))
-      println(cg.upperBound(_liverParam, s.get(ExposureTime.id)))
+      println(cg.upperBound(_liverParam, s.get(ExposureTime.id), 1))
 
       println(cg.controlSamples.map(TestData.metadata.parameter(_, _liverParam)))
       s.get(Individual.id) should (equal ("1") or (equal ("3")))

@@ -54,5 +54,6 @@ public interface SampleServiceAsync {
 
   void sampleSearch(SampleClass sampleClass, MatchCondition condition, AsyncCallback<Void> callback);
 
-  void classSearch(SampleClass sampleClass, MatchCondition condition, AsyncCallback<Void> callback);
+  void unitSearch(SampleClass sampleClass, MatchCondition condition,
+      AsyncCallback<Unit[]> callback);
 }

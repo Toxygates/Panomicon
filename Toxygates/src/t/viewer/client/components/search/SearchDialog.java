@@ -19,6 +19,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.NumericalBioParamValue;
+import t.common.shared.sample.Unit;
 import t.common.shared.sample.search.MatchCondition;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SampleServiceAsync;
@@ -55,7 +56,7 @@ public class SearchDialog extends Composite {
     searchPanel.setSize("800px", "800px");    
     conditionEditor = new ConditionEditor(sampleParameters());
     
-    Button searchButton = new Button("Search");
+    Button searchButton = new Button("Sample Search");
     searchButton.addClickHandler(new ClickHandler() {      
       @Override
       public void onClick(ClickEvent event) {
@@ -63,15 +64,15 @@ public class SearchDialog extends Composite {
       }
     });
 
-    Button classSearchButton = new Button("Class Search");
-    classSearchButton.addClickHandler(new ClickHandler() {
+    Button unitSearchButton = new Button("Unit Search");
+    unitSearchButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        performClassSearch(conditionEditor.getCondition());
+        performUnitSearch(conditionEditor.getCondition());
       }
     });
 
-    HorizontalPanel tools = Utils.mkHorizontalPanel(true, searchButton, classSearchButton);
+    HorizontalPanel tools = Utils.mkHorizontalPanel(true, searchButton, unitSearchButton);
     VerticalPanel vp = Utils.mkVerticalPanel(true, conditionEditor, tools);
     searchPanel.add(vp);
 
@@ -83,31 +84,34 @@ public class SearchDialog extends Composite {
       Window.alert("Please define the search condition.");
       return;
     }
-    sampleService.sampleSearch(sampleClass, condition,  
-        new AsyncCallback<Void>() {
-          
-          @Override
-          public void onSuccess(Void result) {
-            
-          }
-          
-          @Override
-          public void onFailure(Throwable caught) {
-                 
-          }
-        });
-  }
-  
-  private void performClassSearch(@Nullable MatchCondition condition) {
-    if (condition == null) {
-      Window.alert("Please define the search condition.");
-      return;
-    }
-    sampleService.classSearch(sampleClass, condition, new AsyncCallback<Void>() {
+    sampleService.sampleSearch(sampleClass, condition, new AsyncCallback<Void>() {
 
       @Override
       public void onSuccess(Void result) {
 
+      }
+
+      @Override
+      public void onFailure(Throwable caught) {
+
+      }
+    });
+  }
+  
+  private void performUnitSearch(@Nullable MatchCondition condition) {
+    if (condition == null) {
+      Window.alert("Please define the search condition.");
+      return;
+    }
+    sampleService.unitSearch(sampleClass, condition, new AsyncCallback<Unit[]>() {
+
+      @Override
+      public void onSuccess(Unit[] result) {
+        String text = "";
+        for (Unit unit : result) {
+          text += unit.toString() + "\n";
+        }
+        Window.alert("Found " + result.length + " results:\n" + text);
       }
 
       @Override

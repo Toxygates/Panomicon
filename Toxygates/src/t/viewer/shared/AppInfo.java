@@ -108,8 +108,8 @@ public class AppInfo implements Serializable {
       }
     }
     numericalParameters =
-        numericalParams.toArray(new NumericalBioParamValue[numericalParams.size()]);
-    stringParameters = stringParams.toArray(new StringBioParamValue[stringParams.size()]);
+        numericalParams.toArray(new NumericalBioParamValue[0]);
+    stringParameters = stringParams.toArray(new StringBioParamValue[0]);
   }
 
   public String welcomeHtmlURL() {

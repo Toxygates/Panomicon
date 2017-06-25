@@ -588,27 +588,33 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   def sampleSearch(sc: SampleClass, cond: MatchCondition) {
     val searchSpace = sampleStore.sampleQuery(scAsScala(sc))(sf)()
 
-    val ss = t.viewer.server.SampleSearch(sampleStore, cond, annotations,
-        searchSpace.map(asJavaSample))(sf)
+    val ss = t.viewer.server.SampleSearch.ForSample(sampleStore, cond, annotations,
+        searchSpace.map(asJavaSample))
     val rs = ss.results
     println("Search results:")
     for (s <- rs) {
       println(s)
     }
+    println("Found " + rs.size + " matches.")
   }
 
-  def classSearch(sc: SampleClass, cond: MatchCondition) {
+  def unitSearch(sc: SampleClass, cond: MatchCondition): Array[Unit] = {
     val searchSpace = sampleStore.sampleQuery(scAsScala(sc))(sf)()
-
-    val javaSamples: java.util.Collection[Sample] = searchSpace.map(asJavaSample)
-    val units = Unit.formUnits(schema, javaSamples)
-
-    println("First 10 units in search space:")
-    for (s <- units take 10) {
+   
+    val javaSamples: java.util.Collection[Sample] = searchSpace.map(asJavaSample) 
+    val units = Unit.formUnits(schema, javaSamples)  
+    
+    val ss = t.viewer.server.SampleSearch.ForUnit(sampleStore, cond, annotations,
+        units)
+    val rs = ss.results
+    println("Search results:")
+    for (s <- rs) {
       s.averageAttributes(appInfoLoader.latest.numericalParameters())
       s.concatenateAttributes(appInfoLoader.latest.stringParameters())
       println(s)
     }
+    println("Found " + rs.size + " matches.")
+    rs.toArray
   }
 
 }

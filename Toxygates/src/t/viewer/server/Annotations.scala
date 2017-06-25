@@ -135,8 +135,8 @@ class Annotations(val sampleSet: t.sample.SampleSet, val schema: DataSchema, val
       bp.kind match {
         case "numerical" =>
           val t = barcode.get(schema.timeParameter())
-          val lb = cg.flatMap(_.lowerBound(bp.sampleParameter, t))
-          val ub = cg.flatMap(_.upperBound(bp.sampleParameter, t))
+          val lb = cg.flatMap(_.lowerBound(bp.sampleParameter, t, 1))
+          val ub = cg.flatMap(_.upperBound(bp.sampleParameter, t, 1))
 
           numericalAsShared(bp, asJDouble(lb), asJDouble(ub), dispVal)
         case _ => stringAsShared(bp, dispVal)
