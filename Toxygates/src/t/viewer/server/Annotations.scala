@@ -20,7 +20,7 @@ import t.viewer.server.Conversions._
 import java.lang.{Double => JDouble}
 import scala.language.implicitConversions
 
-class Annotations(val sampleSet: t.sample.SampleSet, val schema: DataSchema, val baseConfig: BaseConfig) {
+class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
 
 //  private def bioParamsForSample(s: Sample): BioParameters =
 //    Option(s.get(schema.timeParameter())) match {
@@ -33,15 +33,12 @@ class Annotations(val sampleSet: t.sample.SampleSet, val schema: DataSchema, val
     val pfs = new t.sparql.Platforms(baseConfig.triplestore)
     pfs.bioParameters
   }
-//
-//  lazy val tsMeta = new TriplestoreMetadata(sampleStore, baseConfig.sampleParameters)(SampleFilter())
 
   import t.db.SampleParameters.{ControlGroup => CGParam}
 
   implicit def asScala(x: Sample) = asScalaSample(x)
 
-  def controlGroups(ss: Iterable[Sample],
-      metadata: Metadata): Map[Sample, ControlGroup] = {
+  def controlGroups(ss: Iterable[Sample], sampleSet: t.sample.SampleSet): Map[Sample, ControlGroup] = {
      val cgs = ss.groupBy(_(CGParam))
     val mp = schema.mediumParameter()
     Map() ++ cgs.flatMap { case (cgroup, ss) =>

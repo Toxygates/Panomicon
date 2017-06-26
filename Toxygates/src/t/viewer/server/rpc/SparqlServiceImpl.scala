@@ -116,7 +116,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   lazy val platformsCache = t.viewer.server.Platforms(probeStore)
 
-  lazy val annotations = new Annotations(sampleStore, schema, baseConfig)
+  lazy val annotations = new Annotations(schema, baseConfig)
 
   override def localInit(conf: Configuration) {
     super.localInit(conf)
@@ -588,7 +588,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   def sampleSearch(sc: SampleClass, cond: MatchCondition) {
     val searchSpace = sampleStore.sampleQuery(scAsScala(sc))(sf)()
 
-    val ss = t.viewer.server.SampleSearch.ForSample(sampleStore, cond, annotations,
+    val ss = t.viewer.server.SampleSearch.forSample(sampleStore, cond, annotations,
         searchSpace.map(asJavaSample))
     val rs = ss.results
     println("Search results:")
@@ -600,11 +600,11 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   def unitSearch(sc: SampleClass, cond: MatchCondition): Array[Unit] = {
     val searchSpace = sampleStore.sampleQuery(scAsScala(sc))(sf)()
-   
-    val javaSamples: java.util.Collection[Sample] = searchSpace.map(asJavaSample) 
-    val units = Unit.formUnits(schema, javaSamples)  
-    
-    val ss = t.viewer.server.SampleSearch.ForUnit(sampleStore, cond, annotations,
+
+    val javaSamples: java.util.Collection[Sample] = searchSpace.map(asJavaSample)
+    val units = Unit.formUnits(schema, javaSamples)
+
+    val ss = t.viewer.server.SampleSearch.forUnit(sampleStore, cond, annotations,
         units)
     val rs = ss.results
     println("Search results:")
