@@ -43,7 +43,7 @@ object SampleSearch {
       controlGroups: Map[Sample, ControlGroup],
       searchParams: Iterable[SampleParameter],
       samples: Iterable[Sample]): SampleSearch[Sample] = {
-    create[Sample](metadata, condition, schema, controlGroups, searchParams, samples, 1)
+    createWithMetadata[Sample](metadata, condition, schema, controlGroups, searchParams, samples, 1)
         .apply(sampleParamValueForSample(metadata), timeForSample(schema),
             postMatchAdjustForSample(metadata, searchParams))
   }
@@ -61,11 +61,7 @@ object SampleSearch {
    * Creates a SampleSearch instance for a given SampleType (either Unit or Sample).
    */
   private def create[SampleType](data: Samples, condition: MatchCondition, annotations: Annotations,
-      samples: Iterable[SampleType], zTestSampleSize: Int)(implicit sf: SampleFilter):
-      (Metadata => (SampleType, SampleParameter) => Option[Double], DataSchema => (SampleType => String),
-            (Metadata, Iterable[SampleParameter]) => SampleType => SampleType,
-            (Metadata, Annotations) => Iterable[SampleType] => Map[SampleType, ControlGroup],
-            (Metadata, Iterable[SampleParameter]) => (SampleType => SampleType)) => SampleSearch[SampleType] =
+      samples: Iterable[SampleType], zTestSampleSize: Int)(implicit sf: SampleFilter) =
       (sampleParamValue: Metadata => (SampleType, SampleParameter) => Option[Double], time: DataSchema => (SampleType => String),
             postMatchAdjust: (Metadata, Iterable[SampleParameter]) => SampleType => SampleType,
             controlGroups: (Metadata, Annotations) => Iterable[SampleType] => Map[SampleType, ControlGroup],
@@ -85,7 +81,7 @@ object SampleSearch {
 
     val fetchedControlGroups: Map[SampleType, ControlGroup] = controlGroups(metadata, annotations).apply(processedSamples)
 
-    create[SampleType](metadata, condition, schema, fetchedControlGroups, usedParams, processedSamples, zTestSampleSize).apply(sampleParamValue(metadata),
+    createWithMetadata[SampleType](metadata, condition, schema, fetchedControlGroups, usedParams, processedSamples, zTestSampleSize).apply(sampleParamValue(metadata),
         time(schema), postMatchAdjust(metadata, usedParams))
   }
 
@@ -93,7 +89,7 @@ object SampleSearch {
    * Creates a SampleSearch instance for a given SampleType (either Unit or Sample).
    * Meant for when we already have metadata, control groups, etc.
    */
-  private def create[SampleType](metadata: Metadata, condition: MatchCondition,
+  private def createWithMetadata[SampleType](metadata: Metadata, condition: MatchCondition,
       schema: DataSchema, controlGroups: Map[SampleType, ControlGroup],
       searchParams: Iterable[SampleParameter], samples: Iterable[SampleType],
       zTestSampleSize: Int) =
@@ -155,11 +151,11 @@ object SampleSearch {
    * that were used in the match condition).
    * The mutable sample class is modified in place.
    */
-  private def postMatchAdjustForSample(metadata: Metadata, searchParamIds: Iterable[SampleParameter]) =
+  private def postMatchAdjustForSample(metadata: Metadata, searchParams: Iterable[SampleParameter]) =
     (s: Sample) => {
       val ss = asScalaSample(s)
       for (
-        p <- searchParamIds;
+        p <- searchParams;
         v <- metadata.parameter(ss, p.identifier)
       ) {
         s.sampleClass().put(p.identifier, v)
@@ -171,10 +167,6 @@ object SampleSearch {
    * Preprocess a Unit to prepare it for searching. For each search parameter,
    * computes the average value for samples in the unit, and stores it as the
    * parameter value for the unit.
-   *
-   * TODO: maybe simplify this method by assuming three samples in a unit? If
-   * that assumption fails we're doing the wrong Z-test anyway (since we assume
-   * 3 samples there
    */
   //
   private def preprocessUnit(metadata: Metadata, searchParams: Iterable[SampleParameter]) =
