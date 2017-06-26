@@ -2,6 +2,7 @@ package t.viewer.client.rpc;
 
 import java.util.List;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import t.common.shared.Dataset;
 import t.common.shared.Pair;
