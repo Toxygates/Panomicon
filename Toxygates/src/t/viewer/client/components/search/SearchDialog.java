@@ -17,6 +17,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -41,6 +42,7 @@ public class SearchDialog extends Composite {
   private SampleClass sampleClass;
   private CellTable<Unit> unitTable = new CellTable<Unit>();
   private List<TextColumn<Unit>> columns = new LinkedList<TextColumn<Unit>>();
+  private DialogBox waitDialog;
   
   private Collection<String> sampleParameters() {
     BioParamValue[] params = appInfo.bioParameters();
@@ -140,22 +142,24 @@ public class SearchDialog extends Composite {
       Window.alert("Please define the search condition.");
       return;
     }
+
+    if (waitDialog == null) {
+      waitDialog = Utils.waitDialog();
+    } else {
+      waitDialog.show();
+    }
+
     sampleService.unitSearch(sampleClass, condition, new AsyncCallback<Unit[]>() {
 
       @Override
       public void onSuccess(Unit[] result) {
+        waitDialog.hide();
         setUnitTableData(result);
-
-        String text = "";
-        for (Unit unit : result) {
-          text += unit.toString() + "\n";
-        }
-        Window.alert("Found " + result.length + " results:\n" + text);
       }
 
       @Override
       public void onFailure(Throwable caught) {
-
+        Window.alert("Failure: " + caught);
       }
     });
   }
