@@ -27,6 +27,7 @@ import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.NumericalBioParamValue;
 import t.common.shared.sample.Unit;
 import t.common.shared.sample.search.MatchCondition;
+import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.shared.AppInfo;
@@ -132,7 +133,7 @@ public class SearchDialog extends Composite {
 
       @Override
       public void onFailure(Throwable caught) {
-
+        Window.alert("Failure: " + caught);
       }
     });
   }
@@ -148,6 +149,8 @@ public class SearchDialog extends Composite {
     } else {
       waitDialog.show();
     }
+
+    Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_PERFORM_UNIT_SEARCH);
 
     sampleService.unitSearch(sampleClass, condition, new AsyncCallback<Unit[]>() {
 

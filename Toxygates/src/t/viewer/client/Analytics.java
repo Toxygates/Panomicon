@@ -20,6 +20,7 @@ public class Analytics {
   public static final String ACTION_PERFORM_CLUSTERING = "Perform clustering";
   public static final String ACTION_MAGNIFY_CHART = "Magnify chart";
   public static final String ACTION_FILTER_COLUMN = "Enable/modify column filter";
+  public static final String ACTION_PERFORM_UNIT_SEARCH = "Perform unit search";
 
   /*
    * Tracks a pageview with Google Analytics if the google analytics script has been loaded.
