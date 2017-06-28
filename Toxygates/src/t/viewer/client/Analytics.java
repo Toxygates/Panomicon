@@ -18,6 +18,7 @@ public class Analytics {
   public static final String CATEGORY_VISUALIZATION = "Visualization";
   public static final String ACTION_DISPLAY_CHARTS = "Display charts";
   public static final String ACTION_MAGNIFY_CHART = "Magnify chart";
+  public static final String ACTION_DISPLAY_MINI_HEATMAP = "Display mini heatmap";
 
   public static final String CATEGORY_GENE_SET = "Gene set";
   public static final String ACTION_CREATE_NEW_GENE_SET = "Create new gene set";
@@ -26,6 +27,9 @@ public class Analytics {
 
   public static final String CATEGORY_GENERAL = "General";
   public static final String ACTION_SAVE_SAMPLE_GROUP = "Save sample group";
+
+  public static final String CATEGORY_IMPORT_EXPORT = "Import/Export";
+  public static final String ACTION_DOWNLOAD_SAMPLE_DETAILS = "Download sample details";
 
 
   public static final String ACTION_PERFORM_CLUSTERING = "Perform clustering"; // Not tracked yet
