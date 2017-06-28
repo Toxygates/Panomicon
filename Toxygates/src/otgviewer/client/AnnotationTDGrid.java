@@ -20,16 +20,6 @@ package otgviewer.client;
 
 import java.util.List;
 
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import t.common.shared.SampleClass;
-import t.common.shared.sample.BioParamValue;
-import t.common.shared.sample.Annotation;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.NumericalBioParamValue;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.Unit;
-
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
@@ -40,6 +30,17 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
+
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
+import t.common.shared.SampleClass;
+import t.common.shared.sample.Annotation;
+import t.common.shared.sample.BioParamValue;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.NumericalBioParamValue;
+import t.common.shared.sample.Sample;
+import t.common.shared.sample.Unit;
+import t.viewer.client.Analytics;
 
 /**
  * A time and dose grid that can show some variable as a heat map. The variable is supplied as a
@@ -69,6 +70,8 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     annotationButton.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent ce) {
         reloadAnnotations();
+        Analytics.trackEvent(Analytics.CATEGORY_VISUALIZATION,
+            Analytics.ACTION_DISPLAY_MINI_HEATMAP);
       }
     });
     toolPanel.add(annotationButton);
