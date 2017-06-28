@@ -20,6 +20,9 @@ public class Analytics {
   public static final String ACTION_MAGNIFY_CHART = "Magnify chart";
 
   public static final String CATEGORY_GENE_SET = "Gene set";
+  public static final String ACTION_CREATE_NEW_GENE_SET = "Create new gene set";
+  public static final String ACTION_MODIFY_EXISTING_GENE_SET = "Modify existing gene set";
+  public static final String ACTION_DELETE_GENE_SET = "Delete gene set";
 
   public static final String CATEGORY_GENERAL = "General";
   public static final String ACTION_SAVE_SAMPLE_GROUP = "Save sample group";

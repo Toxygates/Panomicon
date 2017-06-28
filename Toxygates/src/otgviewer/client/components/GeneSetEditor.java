@@ -50,6 +50,7 @@ import otgviewer.client.ClusteringSelector;
 import otgviewer.client.GeneOracle;
 import otgviewer.client.ProbeSelector;
 import otgviewer.client.StringListsStoreHelper;
+import otgviewer.client.rpc.SparqlServiceAsync;
 import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
 import t.common.shared.ItemList;
@@ -57,8 +58,8 @@ import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.Term;
 import t.common.shared.sample.Group;
+import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
-import otgviewer.client.rpc.SparqlServiceAsync;
 
 public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHandler {
 
@@ -293,7 +294,18 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
       overwrite = true;
     }
 
-    return helper.saveAs(new ArrayList<String>(listedProbes), name, overwrite);
+    if (helper.saveAs(new ArrayList<String>(listedProbes), name, overwrite)) {
+      if (overwrite) {
+        Analytics.trackEvent(Analytics.CATEGORY_GENE_SET,
+            Analytics.ACTION_MODIFY_EXISTING_GENE_SET);
+
+      } else {
+        Analytics.trackEvent(Analytics.CATEGORY_GENE_SET, Analytics.ACTION_CREATE_NEW_GENE_SET);
+      }
+      return true;
+    } else {
+      return false;
+    }
   }
 
   private ProbeSelector probeSelector() {
