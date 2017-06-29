@@ -9,6 +9,10 @@ public class Analytics {
   public static final String ACTION_COMPOUND_RANKING_CHARTS = "Compound ranking charts";
   public static final String ACTION_PERFORM_ENRICHMENT = "Perform enrichment";
   public static final String ACTION_PERFORM_UNIT_SEARCH = "Perform unit search";
+  public static final String ACTION_ADD_COMPARISON_COLUMN = "Add two-group comparison column";
+  public static final String LABEL_T_TEST = "T-test";
+  public static final String LABEL_U_TEST = "U-test";
+  public static final String LABEL_FOLD_CHANGE_DIFFERENCE = "Fold-change difference";
 
   public static final String CATEGORY_TABLE = "Table";
   public static final String ACTION_PAGE_CHANGE = "Render/change page";
