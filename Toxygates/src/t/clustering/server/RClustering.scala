@@ -30,20 +30,22 @@ class RClustering(codeDir: String) {
   val logger = Logger.getLogger("RClustering")
 
   //Types are Array rather than Seq for easy interop with Java
-  
+
   /**
    * Perform the clustering and return the clusters as JSON data.
-   * 
+   *
    * @param data Column-major data (as a single sequence)
    * @param rowNames Row names (such as affymetrix probes)
    * @param colNames Column names
    * @param geneSyms Gene symbols for each row
    * @param algorithm The clustering algorithm to use
+   * @param featureDecimalDigits the number of digits after the decimal point to retain in features
    */
   @throws(classOf[RserveException])
   def clustering(data: Array[Double], rowNames: Array[String],
       colNames: Array[String], geneSyms: Array[String],
-      algorithm: Algorithm = new Algorithm()): String = {
+      algorithm: Algorithm = new Algorithm(),
+      featureDecimalDigits: Int = -1): String = {
     assert(data.length == rowNames.length * colNames.length)
 
     val r = new R
@@ -58,7 +60,7 @@ class RClustering(codeDir: String) {
     r.addCommand("appendixes <- list(" + (rowNames zip geneSyms).map{ x =>
       s""""${x._1}"="${x._2}"""" }.mkString(",")   + ")")
 
-    r.addCommand("getClusterAsJSON(data, r, c, rowMethod, rowDistance, colMethod, colDistance, appendixes)")
+    r.addCommand(s"getClusterAsJSON(data, r, c, rowMethod, rowDistance, colMethod, colDistance, appendixes, $featureDecimalDigits)")
 
     r.exec() match {
       case Some(x) => x.asString()

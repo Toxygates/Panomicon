@@ -49,7 +49,7 @@ getCount <- function(i, cluster) {
 #' #hc.col <- hclust(dist(t(USArrests)), "ave")
 #' #getDendro(hc, rownames(USArrests), USArrests)
 #' #getDendro(hc.col, colnames(USArrests))
-getDendro <- function(cluster, leafNames, values=NA, appendixes=list()) {
+getDendro <- function(cluster, leafNames, values=NA, appendixes=list(), featDigits=-1) {
 
   getName <- function(id, leafNames) {
     if (length(id) == 1 && id < 0) {
@@ -104,7 +104,11 @@ getDendro <- function(cluster, leafNames, values=NA, appendixes=list()) {
           "appendix"=getAppendix(leaf)
         )
         if (isRow) {
-          nodes[[leaf]][['features']] <- unname(as.numeric(values[leaf, ]))
+          if (featDigits >= 0) {
+            nodes[[leaf]][['features']] <- unname(round(as.numeric(values[leaf, ]),featDigits))
+          } else {
+            nodes[[leaf]][['features']] <- unname(as.numeric(values[leaf, ]))
+          }
         }
       }
     }
@@ -133,16 +137,16 @@ getMetadata <- function(meta) {
 #' inch <- InCHlib(hc, hc.col, USArrests)
 #' library(rjson)
 #' writeLines(toJSON(inch), "heatmap.json")
-InCHlib <- function(hclustRow, hclustCol, valDf, metaDf=NA, appendixes=list()) {
+InCHlib <- function(hclustRow, hclustCol, valDf, metaDf=NA, appendixes=list(), featDigits=-1) {
   # reorder cols
   valDf <- valDf[, hclustCol[['order']]]
   inch <- list(
     'data'=list(
-      'nodes'=getDendro(hclustRow, rownames(valDf), valDf, appendixes),
+      'nodes'=getDendro(hclustRow, rownames(valDf), valDf, appendixes, featDigits=featDigits),
       'feature_names'=colnames(valDf)
     ),
     'column_dendrogram'=list(
-      'nodes'=getDendro(hclustCol, colnames(valDf))
+      'nodes'=getDendro(hclustCol, colnames(valDf), featDigits=featDigits)
     )
   )
 
@@ -186,13 +190,16 @@ toMatrix <- function(data, rowNames, colNames, byrow=F) {
 #'                                          "abscorrelation", "spearman" or "kendall".
 #' @param colMethod   a string object that gives which method to be used for column clustering.
 #' @param colDistance a string object that gives which distance to be used for column clustering.
+#' @param featDigits  an integer that determines the number of digits after the decimal point to
+#'                    be kept in feature results. If a negative number is given, then no rounding
+#'                    will occur
 #'
-getClusterAsJSON <- function(data, rowNames, colNames, rowMethod, rowDistance, colMethod, colDistance, appendixes=list()) {
+getClusterAsJSON <- function(data, rowNames, colNames, rowMethod, rowDistance, colMethod, colDistance, appendixes=list(), featDigits=-1) {
   mat <- toMatrix(data, rowNames, colNames, TRUE)
   d <- Dist(mat, method=rowDistance)
   d.col <- Dist(t(mat), method=colDistance)
   hc <- hclust(d, method=rowMethod)
   hc.col <- hclust(d.col, method=colMethod)
-  inch <- InCHlib(hc, hc.col, data.frame(mat), appendixes=appendixes)
+  inch <- InCHlib(hc, hc.col, data.frame(mat), appendixes=appendixes, featDigits=featDigits)
   return (toJSON(inch))
 }
