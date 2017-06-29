@@ -23,6 +23,9 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.rpc.RemoteService;
+import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+
 import t.clustering.client.ClusteringService;
 import t.clustering.shared.Algorithm;
 import t.common.shared.ValueType;
@@ -34,9 +37,6 @@ import t.viewer.shared.ManagedMatrixInfo;
 import t.viewer.shared.ServerError;
 import t.viewer.shared.Synthetic;
 import t.viewer.shared.table.SortKey;
-
-import com.google.gwt.user.client.rpc.RemoteService;
-import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 /**
  * This service obtains expression data from the underlying data store.
@@ -143,11 +143,12 @@ public interface MatrixService extends ClusteringService<Group, String>, RemoteS
    * @param chosenProbes The atomic probes (even for orthologous display) to cluster.
    * @param valueType
    * @param algorithm
+   * @param featureDecimalDigits
    * @return The clusters in JSON format.
    * @throws ServerError
    */
   String prepareHeatmap(List<Group> chosenColumns, 
       @Nullable List<String> chosenProbes,
-      ValueType valueType, Algorithm algorithm) throws ServerError;
+      ValueType valueType, Algorithm algorithm, int featureDecimalDigits) throws ServerError;
   
 }

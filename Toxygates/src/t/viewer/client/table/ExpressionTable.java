@@ -328,21 +328,27 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     analysisTools.add(groupsel2);
     groupsel2.setVisibleItemCount(1);
 
-    analysisTools.add(new Button("Add T-Test", new ClickHandler() {
+    analysisTools.add(new Button("Add T-test", new ClickHandler() {
       public void onClick(ClickEvent e) {
-        addTwoGroupSynthetic(new Synthetic.TTest(null, null), "T-Test");
+        addTwoGroupSynthetic(new Synthetic.TTest(null, null), "T-test");
+        Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
+            Analytics.LABEL_T_TEST);
       }
     }));
 
-    analysisTools.add(new Button("Add U-Test", new ClickHandler() {
+    analysisTools.add(new Button("Add U-test", new ClickHandler() {
       public void onClick(ClickEvent e) {
-        addTwoGroupSynthetic(new Synthetic.UTest(null, null), "U-Test");
+        addTwoGroupSynthetic(new Synthetic.UTest(null, null), "U-test");
+        Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
+            Analytics.LABEL_U_TEST);
       }
     }));
 
     foldChangeBtn.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent e) {
         addTwoGroupSynthetic(new Synthetic.MeanDifference(null, null), "Fold-change difference");
+        Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
+            Analytics.LABEL_FOLD_CHANGE_DIFFERENCE);
       }
     });
     analysisTools.add(foldChangeBtn);
