@@ -1,17 +1,17 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
- * 
+ *
  * Toxygates is free software: you can redistribute it and/or modify it under the terms of the GNU
  * General Public License as published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Toxygates is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
  * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with Toxygates. If not,
  * see <http://www.gnu.org/licenses/>.
  */
@@ -74,14 +74,14 @@ public class SampleDetailScreen extends Screen {
 
   VerticalPanel sectionsPanel;
   private Map<String, SampleDetailTable> sections = new HashMap<String, SampleDetailTable>();
-  
+
   private ListBox columnList = new ListBox();
 
   AnnotationTDGrid atd = new AnnotationTDGrid(this);
 
   private List<Group> lastColumns;
   private @Nullable SampleColumn currentColumn;
-  
+
   private Button downloadButton;
   private HorizontalPanel tools;
 
@@ -110,46 +110,48 @@ public class SampleDetailScreen extends Screen {
   public String getGuideText() {
     return "Here you can view experimental information and biological details for each sample in the groups you have defined.";
   }
-  
-  private SampleDetailTable addSection(String section, Annotation[] annotations, 
+
+  private SampleDetailTable addSection(String section, Annotation[] annotations,
       HasSamples<Sample> c, boolean isSection) {
     SampleDetailTable sdt = new SampleDetailTable(SampleDetailScreen.this, section, isSection);
-    sections.put(section, sdt); 
+    sections.put(section, sdt);
     sdt.setData(c, annotations);
     return sdt;
   }
 
-  public void loadSections(final HasSamples<Sample> c, boolean importantOnly) {
+  public void loadSections(final HasSamples<Sample> hasSamples, boolean importantOnly) {
     downloadButton.setEnabled(false);
-    sampleService.annotations(c, importantOnly, new PendingAsyncCallback<Annotation[]>(
+    sampleService.annotations(hasSamples, importantOnly, new PendingAsyncCallback<Annotation[]>(
         SampleDetailScreen.this) {
+      @Override
       public void handleFailure(Throwable caught) {
         Window.alert("Unable to get array annotations.");
       }
 
-      public void handleSuccess(Annotation[] as) {
+      @Override
+      public void handleSuccess(Annotation[] annotations) {
         sections.clear();
         sectionsPanel.clear();
-        if (as.length < 1) {
+        if (annotations.length < 1) {
           return;
         }
-        SampleDetailTable sec = addSection(null, as, c, true);
+        SampleDetailTable sec = addSection(null, annotations, hasSamples, true);
         sectionsPanel.add(sec);
-        
+
         LinkedList<SampleDetailTable> secList =
             new LinkedList<SampleDetailTable>();
-        for (BioParamValue bp: as[0].getAnnotations()) {
+        for (BioParamValue bp: annotations[0].getAnnotations()) {
           if (bp.section() != null &&
               !sections.containsKey(bp.section())) {
-            secList.add(addSection(bp.section(), as, c, true));                     
+            secList.add(addSection(bp.section(), annotations, hasSamples, true));
           }
-        }  
-        
+        }
+
         Collections.sort(secList, new Comparator<SampleDetailTable>() {
           @Override
           public int compare(SampleDetailTable o1, SampleDetailTable o2) {
             return o1.sectionTitle().compareTo(o2.sectionTitle());
-          }         
+          }
         });
         for (SampleDetailTable sdt: secList) {
           sectionsPanel.add(sdt);
@@ -177,7 +179,7 @@ public class SampleDetailScreen extends Screen {
   @Override
   public void show() {
     super.show();
-    if (visible) {        
+    if (visible) {
       updateColumnList();
       displayWith(columnList.getItemText(columnList.getSelectedIndex()));
       lastColumns = chosenColumns;
@@ -223,32 +225,35 @@ public class SampleDetailScreen extends Screen {
     }));
 
     columnList.addChangeHandler(new ChangeHandler() {
+      @Override
       public void onChange(ChangeEvent ce) {
         displayWith(columnList.getItemText(columnList.getSelectedIndex()));
       }
     });
-    
+
     downloadButton = new Button("Download CSV...", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         if (currentColumn == null) {
           return;
         }
-        sampleService.prepareAnnotationCSVDownload(currentColumn, 
+        sampleService.prepareAnnotationCSVDownload(currentColumn,
             new PendingAsyncCallback<String>(SampleDetailScreen.this,
             "Unable to prepare the data for download,") {
+          @Override
           public void handleSuccess(String url) {
                 Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT,
                     Analytics.ACTION_DOWNLOAD_SAMPLE_DETAILS);
             Utils.displayURL("Your download is ready.", "Download", url);
           }
-        });        
-      }  
+        });
+      }
     });
-    
+
     hp.add(downloadButton);
   }
 
+  @Override
   public Widget content() {
     sectionsPanel = Utils.mkVerticalPanel();
 
@@ -258,7 +263,7 @@ public class SampleDetailScreen extends Screen {
   }
 
   private void setDisplayColumn(SampleColumn c) {
-    loadSections(c, false);    
+    loadSections(c, false);
     currentColumn = c;
     downloadButton.setEnabled(true);
     SampleClass sc = c.getSamples()[0].sampleClass().asMacroClass(manager.schema());
