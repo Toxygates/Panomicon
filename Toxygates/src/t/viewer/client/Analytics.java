@@ -13,6 +13,9 @@ public class Analytics {
   public static final String LABEL_T_TEST = "T-test";
   public static final String LABEL_U_TEST = "U-test";
   public static final String LABEL_FOLD_CHANGE_DIFFERENCE = "Fold-change difference";
+  public static final String ACTION_SHOW_HEAT_MAP = "Show heat map";
+  public static final String ACTION_ENRICH_CLUSTERS = "Enrich clusters";
+  public static final String ACTION_SAVE_CLUSTERS = "Save clusters as gene set";
 
   public static final String CATEGORY_TABLE = "Table";
   public static final String ACTION_PAGE_CHANGE = "Render/change page";

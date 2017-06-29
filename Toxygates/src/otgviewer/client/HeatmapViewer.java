@@ -5,15 +5,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.Screen;
-import t.clustering.shared.Algorithm;
-import t.common.shared.ClusteringList;
-import t.common.shared.StringList;
-import t.common.shared.ValueType;
-import t.common.shared.sample.Group;
-import t.viewer.client.rpc.MatrixServiceAsync;
-
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -24,6 +15,16 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+
+import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.Screen;
+import t.clustering.shared.Algorithm;
+import t.common.shared.ClusteringList;
+import t.common.shared.StringList;
+import t.common.shared.ValueType;
+import t.common.shared.sample.Group;
+import t.viewer.client.Analytics;
+import t.viewer.client.rpc.MatrixServiceAsync;
 
 /**
  * Adapts the HeatmapDialog for use inside otgviewer.
@@ -105,6 +106,7 @@ public class HeatmapViewer extends DataListenerWidget {
           new ClusteringListsStoreHelper(ClusteringList.USER_CLUSTERING_TYPE, screen) {
         @Override
         protected void onSaveSuccess(String name, ClusteringList items) {
+              Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_SAVE_CLUSTERS);
           Window.alert("Clusters are successfully saved.");
         }
       };
@@ -174,5 +176,6 @@ public class HeatmapViewer extends DataListenerWidget {
     // all checks passed
     HeatmapDialog dialog = viewer.dialog(defaultType);
     dialog.initWindow();
+    Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_SHOW_HEAT_MAP);
   }
 }
