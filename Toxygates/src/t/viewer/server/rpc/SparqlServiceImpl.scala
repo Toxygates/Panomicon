@@ -588,7 +588,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   def sampleSearch(sc: SampleClass, cond: MatchCondition) {
     val searchSpace = sampleStore.sampleQuery(scAsScala(sc))(sf)()
 
-    val ss = t.viewer.server.SampleSearch.forSample(sampleStore, cond, annotations,
+    val ss = t.viewer.server.IndividualSearch(sampleStore, cond, annotations,
         searchSpace.map(asJavaSample))
     val rs = ss.results
     println("Search results:")
@@ -604,8 +604,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val javaSamples: java.util.Collection[Sample] = searchSpace.map(asJavaSample)
     val units = Unit.formUnits(schema, javaSamples)
 
-    val ss = t.viewer.server.SampleSearch.forUnit(sampleStore, cond, annotations,
-        units)
+    val ss = t.viewer.server.UnitSearch(sampleStore, cond, annotations, units)
     val rs = ss.results
     println("Search results:")
     for (s <- rs) {

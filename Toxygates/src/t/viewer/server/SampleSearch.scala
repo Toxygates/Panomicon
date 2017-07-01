@@ -19,6 +19,7 @@ import t.sample.SampleSet
 import t.db.ParameterSet
 import t.db.SampleParameters._
 
+@deprecated("refactored", "1 July 2017")
 object SampleSearch {
 
   /**
@@ -212,13 +213,14 @@ object SampleSearch {
 /**
  * Evaluates sample searches for a match condition.
  */
-class SampleSearch[SampleType](schema: DataSchema, metadata: Metadata, condition: MatchCondition,
-    controlGroups: Map[SampleType, ControlGroup],
-    samples: Iterable[SampleType],
+@deprecated("refactored", "1 July 2017")
+class SampleSearch[ST](schema: DataSchema, metadata: Metadata, condition: MatchCondition,
+    controlGroups: Map[ST, ControlGroup],
+    samples: Iterable[ST],
     searchParams: Iterable[SampleParameter],
-    sampleParamValue: (SampleType, SampleParameter) => Option[Double],
-    time: SampleType => String,
-    postMatchAdjust: SampleType => SampleType,
+    sampleParamValue: (ST, SampleParameter) => Option[Double],
+    time: ST => String,
+    postMatchAdjust: ST => ST,
     zTestSampleSize: Int) {
 
   val humanReadableToParam = Map() ++ metadata.parameterSet.all.map(p =>
@@ -227,12 +229,12 @@ class SampleSearch[SampleType](schema: DataSchema, metadata: Metadata, condition
   /**
    * Results of the search.
    */
-  lazy val results: Iterable[SampleType] =
+  lazy val results: Iterable[ST] =
     results(condition).toSeq.map(postMatchAdjust)
 
-  private def paramComparison(s: SampleType, param: SampleParameter,
-      paramGetter: SampleType => Option[Double],
-      controlGroupValue: SampleType => Option[Double],
+  private def paramComparison(s: ST, param: SampleParameter,
+      paramGetter: ST => Option[Double],
+      controlGroupValue: ST => Option[Double],
       comparator: (Double, Double) => Boolean): Boolean = {
     val pv = paramGetter(s)
     val ub = controlGroupValue(s)
@@ -244,21 +246,21 @@ class SampleSearch[SampleType](schema: DataSchema, metadata: Metadata, condition
     }
   }
 
-  private def paramIsHigh(s: SampleType, param: SampleParameter): Boolean = {
+  private def paramIsHigh(s: ST, param: SampleParameter): Boolean = {
     paramComparison(s, param,
       (x => sampleParamValue(x, param)),
       (x => controlGroups.get(x).flatMap(_.upperBound(param, time(x), zTestSampleSize))),
       ((x: Double, y: Double) => x > y))
   }
 
-  private def paramIsLow(s: SampleType, param: SampleParameter): Boolean = {
+  private def paramIsLow(s: ST, param: SampleParameter): Boolean = {
     paramComparison(s, param,
       (x => sampleParamValue(x, param)),
       (x => controlGroups.get(x).flatMap(_.lowerBound(param, time(x), zTestSampleSize))),
       ((x: Double, y: Double) => x < y))
   }
 
-  private def results(condition: MatchCondition): Set[SampleType] =
+  private def results(condition: MatchCondition): Set[ST] =
     condition match {
       //TODO optimise and-evaluation by not evaluating unnecessary conditions?
       case and: AndMatch =>
@@ -272,12 +274,12 @@ class SampleSearch[SampleType](schema: DataSchema, metadata: Metadata, condition
   private def doubleOption(d: java.lang.Double): Option[Double] =
     if (d == null) None else Some(d)
 
-  private def results(condition: AtomicMatch): Set[SampleType] =
+  private def results(condition: AtomicMatch): Set[ST] =
     samples.filter(matches(_, condition.matchType,
         humanReadableToParam(condition.paramId),
       doubleOption(condition.param1))).toSet
 
-  private def matches(s: SampleType, mt: MatchType, param: SampleParameter,
+  private def matches(s: ST, mt: MatchType, param: SampleParameter,
     threshold: Option[Double]): Boolean =
     mt match {
       case MatchType.High => paramIsHigh(s, param)
