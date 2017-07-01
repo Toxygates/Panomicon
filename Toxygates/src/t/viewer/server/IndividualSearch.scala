@@ -61,5 +61,5 @@ class IndividualSearch(schema: DataSchema, metadata: Metadata, condition: MatchC
       sample
     }
 
-  val zTestSampleSize = 1
+  def zTestSampleSize(s: Sample): Int = 1
 }

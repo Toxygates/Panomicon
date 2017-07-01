@@ -90,5 +90,7 @@ class UnitSearch(schema: DataSchema, metadata: Metadata, condition: MatchConditi
     unit
   }
 
-  val zTestSampleSize = 3
+  def zTestSampleSize(unit: Unit): Int = {
+    unit.getSamples().length
+  }
 }

@@ -75,7 +75,7 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata, 
   def time(s: ST): String
   def sampleParamValue(s: ST, sp: SampleParameter): Option[Double]
   def postMatchAdjust(s: ST): ST
-  val zTestSampleSize: Int
+  def zTestSampleSize(s: ST): Int
 
   val humanReadableToParam = Map() ++ metadata.parameterSet.all.map(p =>
     p.humanReadable -> p)
@@ -103,14 +103,14 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata, 
   private def paramIsHigh(s: ST, param: SampleParameter): Boolean = {
     paramComparison(s, param,
       (x => sampleParamValue(x, param)),
-      (x => controlGroups.get(x).flatMap(_.upperBound(param, time(x), zTestSampleSize))),
+      (x => controlGroups.get(x).flatMap(_.upperBound(param, time(x), zTestSampleSize(s)))),
       ((x: Double, y: Double) => x > y))
   }
 
   private def paramIsLow(s: ST, param: SampleParameter): Boolean = {
     paramComparison(s, param,
       (x => sampleParamValue(x, param)),
-      (x => controlGroups.get(x).flatMap(_.lowerBound(param, time(x), zTestSampleSize))),
+      (x => controlGroups.get(x).flatMap(_.lowerBound(param, time(x), zTestSampleSize(s)))),
       ((x: Double, y: Double) => x < y))
   }
 
