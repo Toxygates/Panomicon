@@ -52,7 +52,8 @@ public interface SampleServiceAsync {
   void prepareAnnotationCSVDownload(HasSamples<Sample> column, 
       AsyncCallback<String> callback);
 
-  void sampleSearch(SampleClass sampleClass, MatchCondition condition, AsyncCallback<Void> callback);
+  void sampleSearch(SampleClass sampleClass, MatchCondition condition,
+      AsyncCallback<Sample[]> callback);
 
   void unitSearch(SampleClass sampleClass, MatchCondition condition,
       AsyncCallback<Unit[]> callback);

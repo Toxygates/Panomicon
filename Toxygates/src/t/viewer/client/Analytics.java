@@ -9,6 +9,7 @@ public class Analytics {
   public static final String ACTION_COMPOUND_RANKING_CHARTS = "Compound ranking charts";
   public static final String ACTION_PERFORM_ENRICHMENT = "Perform enrichment";
   public static final String ACTION_PERFORM_UNIT_SEARCH = "Perform unit search";
+  public static final String ACTION_PERFORM_SAMPLE_SEARCH = "Perform individual sample search";
   public static final String ACTION_ADD_COMPARISON_COLUMN = "Add two-group comparison column";
   public static final String LABEL_T_TEST = "T-test";
   public static final String LABEL_U_TEST = "U-test";
@@ -47,11 +48,11 @@ public class Analytics {
    * @param url the url to be tracked
    */
   public static native void trackPageView(String url) /*-{
-		if ($wnd.ga) {
-			$wnd.ga('set', 'page', url);
-			$wnd.ga('send', 'pageview');
-		}
-		;
+    if ($wnd.ga) {
+      $wnd.ga('set', 'page', url);
+      $wnd.ga('send', 'pageview');
+    }
+    ;
   }-*/;
 
   /*
@@ -65,16 +66,16 @@ public class Analytics {
    */
   public static native void trackEvent(String eventCategory, String eventAction,
       String eventLabel) /*-{
-		if ($wnd.ga) {
-			$wnd.ga('send', 'event', eventCategory, eventAction, eventLabel)
-		}
-		;
+    if ($wnd.ga) {
+      $wnd.ga('send', 'event', eventCategory, eventAction, eventLabel)
+    }
+    ;
   }-*/;
 
   public static native void trackEvent(String eventCategory, String eventAction) /*-{
-		if ($wnd.ga) {
-			$wnd.ga('send', 'event', eventCategory, eventAction)
-		}
-		;
+    if ($wnd.ga) {
+      $wnd.ga('send', 'event', eventCategory, eventAction)
+    }
+    ;
   }-*/;
 }

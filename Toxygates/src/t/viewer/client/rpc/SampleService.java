@@ -121,7 +121,7 @@ public interface SampleService extends RemoteService {
    */
   String prepareAnnotationCSVDownload(HasSamples<Sample> column) throws TimeoutException;
   
-  void sampleSearch(SampleClass sampleClass, MatchCondition condition) throws TimeoutException;
+  Sample[] sampleSearch(SampleClass sampleClass, MatchCondition condition) throws TimeoutException;
 
   Unit[] unitSearch(SampleClass sampleClass, MatchCondition condition)
       throws TimeoutException;

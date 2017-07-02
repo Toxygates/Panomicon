@@ -25,6 +25,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import t.common.shared.SampleClass;
 import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.NumericalBioParamValue;
+import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
 import t.common.shared.sample.search.MatchCondition;
 import t.viewer.client.Analytics;
@@ -41,8 +42,9 @@ public class SearchDialog extends Composite {
   private ConditionEditor conditionEditor;
   private SampleServiceAsync sampleService;
   private SampleClass sampleClass;
-  private CellTable<Unit> unitTable = new CellTable<Unit>();
-  private List<TextColumn<Unit>> columns = new LinkedList<TextColumn<Unit>>();
+  private TableHelper<Sample> sampleTableHelper = new SampleTableHelper();
+  private TableHelper<Unit> unitTableHelper = new UnitTableHelper();
+
   private DialogBox waitDialog;
   
   private Collection<String> sampleParameters() {
@@ -70,7 +72,7 @@ public class SearchDialog extends Composite {
     searchButton.addClickHandler(new ClickHandler() {      
       @Override
       public void onClick(ClickEvent event) {
-        performSearch(conditionEditor.getCondition());
+        sampleTableHelper.performSearch(conditionEditor.getCondition());
       }
     });
 
@@ -78,93 +80,149 @@ public class SearchDialog extends Composite {
     unitSearchButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        performUnitSearch(conditionEditor.getCondition());
+        unitTableHelper.performSearch(conditionEditor.getCondition());
       }
     });
 
     HorizontalPanel tools = Utils.mkHorizontalPanel(true, searchButton, unitSearchButton);
-    VerticalPanel vp = Utils.mkVerticalPanel(true, conditionEditor, tools, unitTable);
+    VerticalPanel vp = Utils.mkVerticalPanel(true, conditionEditor, tools, unitTableHelper.table,
+        sampleTableHelper.table);
     searchPanel.add(vp);
 
     initWidget(searchPanel);    
   }
   
-  private void setUnitTableData(Unit[] units) {
-    Set<String> unitKeys = units[0].keys();
+  protected void hideTables() {
+    sampleTableHelper.clear();
+    unitTableHelper.clear();
+  }
 
-    for (TextColumn<Unit> column : columns) {
-      unitTable.removeColumn(column);
+  private abstract class TableHelper<T> {
+    private CellTable<T> table = new CellTable<T>();
+    private List<TextColumn<T>> columns = new LinkedList<TextColumn<T>>();
+
+    protected abstract Set<String> getKeys(T[] entries);
+    protected abstract TextColumn<T> makeColumn(String key);
+    protected abstract void trackAnalytics();
+    protected abstract void asyncSearch(SampleClass sc, MatchCondition cond,
+        AsyncCallback<T[]> callback);
+
+    protected void addColumn(String key) {
+      TextColumn<T> column = makeColumn(key);
+      columns.add(column);
+      table.addColumn(column, key);
     }
-    columns.clear();
 
-    for (int i = 0; i < unitTable.getColumnCount(); i++) {
-      unitTable.removeColumn(0);
+    public void setupTable(T[] entries) {
+      Set<String> keys = getKeys(entries);
+
+      for (String key : keys) {
+        addColumn(key);
+      }
+
+      table.setRowData(Arrays.asList(entries));
     }
 
-    for (String key : unitKeys) {
-      TextColumn<Unit> column = new TextColumn<Unit>() {
-        private String keyName;
+    public void clear() {
+      for (TextColumn<T> column : columns) {
+        table.removeColumn(column);
+      }
+      columns.clear();
+    }
+
+    public void performSearch(@Nullable MatchCondition condition) {
+      if (condition == null) {
+        Window.alert("Please define the search condition.");
+        return;
+      }
+
+      if (waitDialog == null) {
+        waitDialog = Utils.waitDialog();
+      } else {
+        waitDialog.show();
+      }
+
+      trackAnalytics();
+
+      asyncSearch(sampleClass, condition, new AsyncCallback<T[]>() {
+
+        @Override
+        public void onSuccess(T[] result) {
+          waitDialog.hide();
+          hideTables();
+          setupTable(result);
+        }
+
+        @Override
+        public void onFailure(Throwable caught) {
+          Window.alert("Failure: " + caught);
+        }
+      });
+    }
+
+    protected abstract class KeyColumn<S> extends TextColumn<S> {
+      protected String keyName;
+
+      public KeyColumn<S> init(String key) {
+        keyName = key;
+        return this;
+      }
+    }
+  }
+
+  private class UnitTableHelper extends TableHelper<Unit> {
+    @Override
+    public Set<String> getKeys(Unit[] entries) {
+      return entries[0].keys();
+    }
+
+    @Override
+    public TextColumn<Unit> makeColumn(String key) {
+      return new KeyColumn<Unit>() {
+        @Override
         public String getValue(Unit unit) {
           return unit.get(keyName);
         }
-        public TextColumn<Unit> init (String key) {
-          keyName = key;
-          return this;
+      }.init(key);
+    }
+
+    @Override
+    protected void trackAnalytics() {
+      Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_PERFORM_UNIT_SEARCH);
+    }
+
+    @Override
+    protected void asyncSearch(SampleClass sampleClass, MatchCondition condition,
+        AsyncCallback<Unit[]> callback) {
+      sampleService.unitSearch(sampleClass, condition, callback);
+    }
+  }
+
+  private class SampleTableHelper extends TableHelper<Sample> {
+    @Override
+    public Set<String> getKeys(Sample[] entries) {
+      return entries[0].sampleClass().keys();
+    }
+
+    @Override
+    public TextColumn<Sample> makeColumn(String key) {
+      return new KeyColumn<Sample>() {
+        @Override
+        public String getValue(Sample sample) {
+          return sample.get(keyName);
         }
       }.init(key);
-      columns.add(column);
-      unitTable.addColumn(column, key);
     }
 
-    unitTable.setRowData(Arrays.asList(units));
+    @Override
+    protected void trackAnalytics() {
+      Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_PERFORM_SAMPLE_SEARCH);
+    }
+
+    @Override
+    protected void asyncSearch(SampleClass sampleClass, MatchCondition condition,
+        AsyncCallback<Sample[]> callback) {
+      sampleService.sampleSearch(sampleClass, condition, callback);
+    }
   }
-
-  private void performSearch(@Nullable MatchCondition condition) {
-    if (condition == null) {
-      Window.alert("Please define the search condition.");
-      return;
-    }
-    sampleService.sampleSearch(sampleClass, condition, new AsyncCallback<Void>() {
-
-      @Override
-      public void onSuccess(Void result) {
-
-      }
-
-      @Override
-      public void onFailure(Throwable caught) {
-        Window.alert("Failure: " + caught);
-      }
-    });
-  }
-  
-  private void performUnitSearch(@Nullable MatchCondition condition) {
-    if (condition == null) {
-      Window.alert("Please define the search condition.");
-      return;
-    }
-
-    if (waitDialog == null) {
-      waitDialog = Utils.waitDialog();
-    } else {
-      waitDialog.show();
-    }
-
-    Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_PERFORM_UNIT_SEARCH);
-
-    sampleService.unitSearch(sampleClass, condition, new AsyncCallback<Unit[]>() {
-
-      @Override
-      public void onSuccess(Unit[] result) {
-        waitDialog.hide();
-        setUnitTableData(result);
-      }
-
-      @Override
-      public void onFailure(Throwable caught) {
-        Window.alert("Failure: " + caught);
-      }
-    });
-  }
-
 }
