@@ -6,18 +6,21 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.TextBox;
+
 import t.common.client.components.ItemSelector;
 import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.StringBioParamValue;
 import t.common.shared.sample.search.AtomicMatch;
 import t.common.shared.sample.search.MatchType;
 
-import com.google.gwt.user.client.ui.HorizontalPanel;
-
 public class AtomicEditor extends MatchEditor {
 
   private ItemSelector<BioParamValue> paramSel;
   private ItemSelector<MatchType> typeSel;
+  private TextBox textBox = new TextBox();
   
   final static BioParamValue UNDEFINED_ITEM = 
       new StringBioParamValue("undefined", "Undefined", "", "");
@@ -26,9 +29,9 @@ public class AtomicEditor extends MatchEditor {
       final Collection<BioParamValue> parameters) {
     super(parent, parameters);
     
-    HorizontalPanel hp = new HorizontalPanel();
-    initWidget(hp);
-    hp.addStyleName("samplesearch-atomicpanel");
+    HorizontalPanel hPanel = new HorizontalPanel();
+    initWidget(hPanel);
+    hPanel.addStyleName("samplesearch-atomicpanel");
     
     paramSel = new ItemSelector<BioParamValue>() {
       @Override
@@ -55,14 +58,23 @@ public class AtomicEditor extends MatchEditor {
       }
     };
     
-    hp.add(paramSel);
+    hPanel.add(paramSel);
     
     typeSel = new ItemSelector<MatchType>() {
+      @Override
       protected MatchType[] values() {
         return MatchType.values();
       }
+
+      @Override
+      protected void onValueChange(MatchType selected) {
+        textBox.setVisible(selected.requiresValue());
+      }
     };    
-    hp.add(typeSel);
+    hPanel.add(typeSel);
+
+    hPanel.add(textBox);
+    textBox.setVisible(typeSel.value().requiresValue());
     disable();
   }
   
@@ -78,7 +90,18 @@ public class AtomicEditor extends MatchEditor {
     if (paramSel.value().equals(UNDEFINED_ITEM)) {
       return null;
     }
-    return new AtomicMatch(paramSel.value(), typeSel.value(), null);
+
+    if (typeSel.value().requiresValue()) {
+      try {
+        Double doubleValue = Double.parseDouble(textBox.getValue());
+        return new AtomicMatch(paramSel.value(), typeSel.value(), doubleValue);
+      } catch (NumberFormatException e) {
+        Window.alert("Invalid number entered in search condition.");
+        return null;
+      }
+    } else {
+      return new AtomicMatch(paramSel.value(), typeSel.value(), null);
+    }
   }
 
 }

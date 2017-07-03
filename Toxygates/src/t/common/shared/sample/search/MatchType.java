@@ -7,5 +7,9 @@ public enum MatchType implements Serializable {
   BelowLimit,
   Low,
   NormalRange,
-  High,  
+  High;
+
+  public boolean requiresValue() {
+    return ((this == AboveLimit) || (this == BelowLimit));
+  }
 }
