@@ -67,10 +67,10 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
   }
 }
 
-abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata, condition: MatchCondition,
-                                        controlGroups: Map[ST, ControlGroup],
-                                        samples: Iterable[ST],
-                                        searchParams: Iterable[SampleParameter]) {
+abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
+    condition: MatchCondition,
+    controlGroups: Map[ST, ControlGroup], samples: Iterable[ST],
+    searchParams: Iterable[SampleParameter]) {
 
   def time(s: ST): String
   def sampleParamValue(s: ST, sp: SampleParameter): Option[Double]
@@ -94,24 +94,22 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata, 
     val ub = controlGroupValue(s)
     (pv, ub) match {
       case (Some(p), Some(u)) => comparator(p, u)
-      case (Some(p), None)    => false
-      case (None, Some(u))    => false
       case _                  => false
     }
   }
 
   private def paramIsHigh(s: ST, param: SampleParameter): Boolean = {
     paramComparison(s, param,
-      (x => sampleParamValue(x, param)),
-      (x => controlGroups.get(x).flatMap(_.upperBound(param, time(x), zTestSampleSize(s)))),
-      ((x: Double, y: Double) => x > y))
+      sampleParamValue(_, param),
+      x => controlGroups.get(x).flatMap(_.upperBound(param, time(x), zTestSampleSize(s))),
+      _ > _)
   }
 
   private def paramIsLow(s: ST, param: SampleParameter): Boolean = {
     paramComparison(s, param,
-      (x => sampleParamValue(x, param)),
-      (x => controlGroups.get(x).flatMap(_.lowerBound(param, time(x), zTestSampleSize(s)))),
-      ((x: Double, y: Double) => x < y))
+      sampleParamValue(_, param),
+      x => controlGroups.get(x).flatMap(_.lowerBound(param, time(x), zTestSampleSize(s))),
+      _ < _)
   }
 
   private def results(condition: MatchCondition): Set[ST] =

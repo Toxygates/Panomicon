@@ -75,10 +75,12 @@ class UnitSearch(schema: DataSchema, metadata: Metadata, condition: MatchConditi
 
   def sampleParamValue(unit: Unit, param: SampleParameter): Option[Double] = {
     try {
-      Some(unit.get(param.identifier).toDouble)
+      Option(unit.get(param.identifier)) match {
+        case Some(v) => Some(v.toDouble)
+        case None    => None
+      }
     } catch {
       case nf: NumberFormatException => None
-      case np: NullPointerException => None
     }
   }
 
