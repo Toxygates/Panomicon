@@ -59,7 +59,7 @@ public class SearchDialog extends Composite {
         r.add(bp);
       }
     }
-//    java.util.Collections.sort(r);
+    java.util.Collections.sort(r);
     return r;
   }
   
@@ -106,12 +106,24 @@ public class SearchDialog extends Composite {
     private CellTable<T> table = new CellTable<T>();
     private List<TextColumn<T>> columns = new LinkedList<TextColumn<T>>();
 
-    protected abstract List<String> getKeys(T[] entries, MatchCondition cond);
     protected abstract TextColumn<T> makeColumn(String key);
     protected abstract void trackAnalytics();
     protected abstract void asyncSearch(SampleClass sc, MatchCondition cond,
         AsyncCallback<T[]> callback);
 
+    //Could also have macro parameters here, such as organism, tissue etc
+    //but currently the search is always constrained on those parameters
+    final String[] keys = { "compound_name", "exposure_time", "sample_id",
+        "individual_id" };
+    
+    public List<String> getKeys(MatchCondition condition) {
+      List<String> r = new ArrayList<String>(Arrays.asList(keys));
+      for (BioParamValue bp: condition.neededParameters()) {
+        r.add(bp.id());
+      }      
+      return r;
+    }
+    
     protected void addColumn(String key) {
       TextColumn<T> column = makeColumn(key);
       columns.add(column);
@@ -119,7 +131,7 @@ public class SearchDialog extends Composite {
     }
 
     public void setupTable(T[] entries, MatchCondition cond) {
-      List<String> keys = getKeys(entries, cond);
+      List<String> keys = getKeys(cond);
 
       for (String key : keys) {
         addColumn(key);
@@ -177,11 +189,6 @@ public class SearchDialog extends Composite {
 
   private class UnitTableHelper extends TableHelper<Unit> {
     @Override
-    public List<String> getKeys(Unit[] entries, MatchCondition cond) {
-      return new ArrayList<String>(entries[0].keys());
-    }
-
-    @Override
     public TextColumn<Unit> makeColumn(String key) {
       return new KeyColumn<Unit>() {
         @Override
@@ -204,16 +211,6 @@ public class SearchDialog extends Composite {
   }
 
   private class SampleTableHelper extends TableHelper<Sample> {
-    final String[] keys = { "compound_name", "exposure_time", "sample_id" };
-    
-    @Override
-    public List<String> getKeys(Sample[] entries, MatchCondition condition) {
-      List<String> r = new ArrayList<String>(Arrays.asList(keys));
-      for (BioParamValue bp: condition.neededParameters()) {
-        r.add(bp.id());
-      }      
-      return r;
-    }
 
     @Override
     public TextColumn<Sample> makeColumn(String key) {

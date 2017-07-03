@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
  * A measured value of a biological parameter, such as the total kidney weight.
  */
 @SuppressWarnings("serial")
-abstract public class BioParamValue implements Serializable {
+abstract public class BioParamValue implements Serializable, Comparable<BioParamValue> {
 
   protected String id, label, section;
   
@@ -38,4 +38,8 @@ abstract public class BioParamValue implements Serializable {
   public boolean isPathological() { return false; }
   
   public @Nullable String section() { return section; }
+  
+  public int compareTo(BioParamValue other) {
+    return label().compareTo(other.label());
+  }
 }
