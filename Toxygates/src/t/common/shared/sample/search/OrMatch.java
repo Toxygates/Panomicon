@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import t.common.shared.sample.BioParamValue;
+
 @SuppressWarnings("serial")
 public class OrMatch implements MatchCondition, Serializable {
   Collection<? extends MatchCondition> conditions;
@@ -17,8 +19,8 @@ public class OrMatch implements MatchCondition, Serializable {
   }
   
   @Override
-  public Collection<String> neededParameters() {
-    Set<String> r = new HashSet<String>();
+  public Collection<BioParamValue> neededParameters() {
+    Set<BioParamValue> r = new HashSet<BioParamValue>();
     for (MatchCondition mc: conditions) {
       r.addAll(mc.neededParameters());
     }

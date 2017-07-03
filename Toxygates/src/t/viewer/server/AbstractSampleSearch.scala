@@ -41,9 +41,7 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
 
   // Extracts the sample parameters used in a MatchCondition
   private def conditionParams(paramSet: ParameterSet, cond: MatchCondition): Iterable[SampleParameter] = {
-    val paramsByTitle = Map() ++
-      paramSet.all.map(p => p.humanReadable -> p)
-    cond.neededParameters().map(paramsByTitle)
+    cond.neededParameters().map(p => paramSet.byId(p.id))
   }
 
   def apply(data: Samples, condition: MatchCondition, annotations: Annotations,
@@ -76,9 +74,6 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
   def sampleParamValue(s: ST, sp: SampleParameter): Option[Double]
   def postMatchAdjust(s: ST): ST
   def zTestSampleSize(s: ST): Int
-
-  val humanReadableToParam = Map() ++ metadata.parameterSet.all.map(p =>
-    p.humanReadable -> p)
 
   /**
    * Results of the search.
@@ -128,7 +123,7 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
 
   private def results(condition: AtomicMatch): Set[ST] =
     samples.filter(matches(_, condition.matchType,
-      humanReadableToParam(condition.paramId),
+        metadata.parameterSet.byId(condition.parameter.id),
       doubleOption(condition.param1))).toSet
 
   private def matches(s: ST, mt: MatchType, param: SampleParameter,

@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.search.AtomicMatch;
 import t.common.shared.sample.search.MatchCondition;
 import t.common.shared.sample.search.OrMatch;
@@ -20,7 +21,7 @@ public class OrEditor extends MatchEditor {
   
   private HorizontalPanel panel = Utils.mkHorizontalPanel(true);
   
-  public OrEditor(@Nullable MatchEditor parent, Collection<String> parameters) {
+  public OrEditor(@Nullable MatchEditor parent, Collection<BioParamValue> parameters) {
     super(parent, parameters);
     initWidget(panel);    
     AtomicEditor a = newAtomic();

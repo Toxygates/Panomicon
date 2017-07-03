@@ -7,21 +7,23 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import t.common.shared.sample.BioParamValue;
+
 @SuppressWarnings("serial")
 public class AtomicMatch implements MatchCondition, Serializable {
   @Nullable Double param1;
-  String paramId;
+  BioParamValue paramId;
   MatchType matchType;
   
   //GWT constructor
   public AtomicMatch() {}
   
   /**
-   * @param paramId parameter identified by human-readable string
+   * @param paramId parameter (the value of the parameter is irrelevant)
    * @param matchType
    * @param param1
    */
-  public AtomicMatch(String paramId, MatchType matchType,
+  public AtomicMatch(BioParamValue paramId, MatchType matchType,
       @Nullable Double param1) {
     this.matchType = matchType;
     this.paramId = paramId;
@@ -29,8 +31,8 @@ public class AtomicMatch implements MatchCondition, Serializable {
   }
   
   @Override
-  public Collection<String> neededParameters() {
-    List<String> r = new ArrayList<String>();
+  public Collection<BioParamValue> neededParameters() {
+    List<BioParamValue> r = new ArrayList<BioParamValue>();
     r.add(paramId);        
     return r;
   }
@@ -42,5 +44,5 @@ public class AtomicMatch implements MatchCondition, Serializable {
   /**
    * @return parameter identified by human-readable string
    */
-  public String paramId() { return paramId; }
+  public BioParamValue parameter() { return paramId; }
 }

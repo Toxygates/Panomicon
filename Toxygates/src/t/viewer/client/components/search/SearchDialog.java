@@ -5,9 +5,19 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.Nullable;
+
+import t.common.shared.SampleClass;
+import t.common.shared.sample.BioParamValue;
+import t.common.shared.sample.NumericalBioParamValue;
+import t.common.shared.sample.Sample;
+import t.common.shared.sample.Unit;
+import t.common.shared.sample.search.MatchCondition;
+import t.viewer.client.Analytics;
+import t.viewer.client.Utils;
+import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.shared.AppInfo;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -21,17 +31,6 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
-
-import t.common.shared.SampleClass;
-import t.common.shared.sample.BioParamValue;
-import t.common.shared.sample.NumericalBioParamValue;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.Unit;
-import t.common.shared.sample.search.MatchCondition;
-import t.viewer.client.Analytics;
-import t.viewer.client.Utils;
-import t.viewer.client.rpc.SampleServiceAsync;
-import t.viewer.shared.AppInfo;
 
 /**
  * Sample search interface that allows the user to edit search conditions,
@@ -47,15 +46,20 @@ public class SearchDialog extends Composite {
 
   private DialogBox waitDialog;
   
-  private Collection<String> sampleParameters() {
+  /**
+   * Available search parameters. BioParamValue is here used to identify
+   * parameters in general, and not specific values.
+   * @return
+   */
+  private Collection<BioParamValue> sampleParameters() {
     BioParamValue[] params = appInfo.bioParameters();
-    List<String> r = new ArrayList<String>();
+    List<BioParamValue> r = new ArrayList<BioParamValue>();
     for (BioParamValue bp : params) {
       if (bp instanceof NumericalBioParamValue) {
-        r.add(bp.label());
+        r.add(bp);
       }
     }
-    java.util.Collections.sort(r);
+//    java.util.Collections.sort(r);
     return r;
   }
   
@@ -64,6 +68,7 @@ public class SearchDialog extends Composite {
     this.appInfo = appInfo;
     this.sampleService = sampleService;
     this.sampleClass = sampleClass;
+    
     ScrollPanel searchPanel = new ScrollPanel();
     searchPanel.setSize("800px", "800px");    
     conditionEditor = new ConditionEditor(sampleParameters());
@@ -101,7 +106,7 @@ public class SearchDialog extends Composite {
     private CellTable<T> table = new CellTable<T>();
     private List<TextColumn<T>> columns = new LinkedList<TextColumn<T>>();
 
-    protected abstract Set<String> getKeys(T[] entries);
+    protected abstract List<String> getKeys(T[] entries, MatchCondition cond);
     protected abstract TextColumn<T> makeColumn(String key);
     protected abstract void trackAnalytics();
     protected abstract void asyncSearch(SampleClass sc, MatchCondition cond,
@@ -113,8 +118,8 @@ public class SearchDialog extends Composite {
       table.addColumn(column, key);
     }
 
-    public void setupTable(T[] entries) {
-      Set<String> keys = getKeys(entries);
+    public void setupTable(T[] entries, MatchCondition cond) {
+      List<String> keys = getKeys(entries, cond);
 
       for (String key : keys) {
         addColumn(key);
@@ -130,7 +135,7 @@ public class SearchDialog extends Composite {
       columns.clear();
     }
 
-    public void performSearch(@Nullable MatchCondition condition) {
+    public void performSearch(final @Nullable MatchCondition condition) {
       if (condition == null) {
         Window.alert("Please define the search condition.");
         return;
@@ -150,7 +155,7 @@ public class SearchDialog extends Composite {
         public void onSuccess(T[] result) {
           waitDialog.hide();
           hideTables();
-          setupTable(result);
+          setupTable(result, condition);
         }
 
         @Override
@@ -172,8 +177,8 @@ public class SearchDialog extends Composite {
 
   private class UnitTableHelper extends TableHelper<Unit> {
     @Override
-    public Set<String> getKeys(Unit[] entries) {
-      return entries[0].keys();
+    public List<String> getKeys(Unit[] entries, MatchCondition cond) {
+      return new ArrayList<String>(entries[0].keys());
     }
 
     @Override
@@ -199,9 +204,15 @@ public class SearchDialog extends Composite {
   }
 
   private class SampleTableHelper extends TableHelper<Sample> {
+    final String[] keys = { "compound_name", "exposure_time", "sample_id" };
+    
     @Override
-    public Set<String> getKeys(Sample[] entries) {
-      return entries[0].sampleClass().keys();
+    public List<String> getKeys(Sample[] entries, MatchCondition condition) {
+      List<String> r = new ArrayList<String>(Arrays.asList(keys));
+      for (BioParamValue bp: condition.neededParameters()) {
+        r.add(bp.id());
+      }      
+      return r;
     }
 
     @Override

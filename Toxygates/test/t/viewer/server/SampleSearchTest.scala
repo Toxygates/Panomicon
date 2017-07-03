@@ -16,11 +16,14 @@ import t.viewer.server.Conversions._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import t.db.SampleParameters._
+import t.common.shared.sample.StringBioParamValue
 
 @RunWith(classOf[JUnitRunner])
 class SampleSearchTest extends TTestSuite {
   def atomic(param: String, mt: MatchType) =
-    new AtomicMatch(param, mt, null)
+    new AtomicMatch(
+        new StringBioParamValue(param, param, "", ""),
+        mt, null)
 
   def or(mc1: MatchCondition, mc2: MatchCondition) =
     new OrMatch(seqAsJavaList(Seq(mc1, mc2)))

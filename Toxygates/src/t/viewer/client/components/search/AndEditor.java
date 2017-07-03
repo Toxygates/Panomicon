@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.search.AndMatch;
 import t.common.shared.sample.search.MatchCondition;
 import t.viewer.client.Utils;
@@ -22,7 +23,7 @@ public class AndEditor extends MatchEditor {
   
   VerticalPanel panel = Utils.mkVerticalPanel(true);
   
-  public AndEditor(@Nullable MatchEditor parent, Collection<String> parameters) {
+  public AndEditor(@Nullable MatchEditor parent, Collection<BioParamValue> parameters) {
     super(parent, parameters);
     initWidget(panel);
     OrEditor o = newOr();

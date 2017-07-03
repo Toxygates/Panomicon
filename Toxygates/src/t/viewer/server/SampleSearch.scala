@@ -18,6 +18,7 @@ import t.sparql.Samples
 import t.sample.SampleSet
 import t.db.ParameterSet
 import t.db.SampleParameters._
+import t.common.shared.sample.BioParamValue
 
 @deprecated("refactored", "1 July 2017")
 object SampleSearch {
@@ -101,9 +102,7 @@ object SampleSearch {
 
   def conditionParams(paramSet: ParameterSet, cond: MatchCondition):
     Iterable[SampleParameter] = {
-    val paramsByTitle = Map() ++
-      paramSet.all.map(p => p.humanReadable -> p)
-    cond.neededParameters().map(paramsByTitle)
+    cond.neededParameters().map(p => paramSet.byId(p.id))
   }
 
   /**
@@ -274,9 +273,12 @@ class SampleSearch[ST](schema: DataSchema, metadata: Metadata, condition: MatchC
   private def doubleOption(d: java.lang.Double): Option[Double] =
     if (d == null) None else Some(d)
 
+  private def paramLookup(p: BioParamValue) =
+    metadata.parameterSet.byId(p.id)
+
   private def results(condition: AtomicMatch): Set[ST] =
     samples.filter(matches(_, condition.matchType,
-        humanReadableToParam(condition.paramId),
+      paramLookup(condition.parameter),
       doubleOption(condition.param1))).toSet
 
   private def matches(s: ST, mt: MatchType, param: SampleParameter,
