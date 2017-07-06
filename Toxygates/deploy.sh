@@ -1,7 +1,7 @@
 #!/bin/bash
 
 TGCP=war/WEB-INF/classes
-TOOLCP=../OTGTool/bin
+TOOLCP=../OTGTool/classes
 
 function makeWar {
     VERSION=$1
