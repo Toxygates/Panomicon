@@ -28,6 +28,10 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.DialogBox;
+
 import otgviewer.client.StringListsStoreHelper;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
@@ -43,10 +47,6 @@ import t.viewer.client.dialog.InterMineSyncDialog;
 import t.viewer.client.dialog.InteractionDialog;
 import t.viewer.shared.intermine.EnrichmentParams;
 import t.viewer.shared.intermine.IntermineInstance;
-
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.DialogBox;
 
 /**
  * Client side helper for InterMine data import/export.
@@ -203,6 +203,8 @@ public class InterMineData {
               boolean replace) {
             super.userProceed();
             doEnrich(instance, lists, getParams());
+            Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ENRICH_CLUSTERS,
+                instance.title());
           }
         };
     ui.display("Cluster enrichment", DialogPosition.Center);

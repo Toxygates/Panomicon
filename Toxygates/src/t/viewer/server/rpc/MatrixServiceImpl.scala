@@ -305,16 +305,17 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     Feedback.send(name, email, feedback, state, config.feedbackReceivers,
       config.feedbackFromAddress, context.config.appName)
   }
-  
+
   @throws(classOf[NoDataLoadedException])
   def prepareHeatmap(groups: JList[Group], chosenProbes: JList[String],
-    algorithm: Algorithm): String = {
-    prepareHeatmap(groups, chosenProbes, ValueType.Folds, algorithm)
+    algorithm: Algorithm, featureDecimalDigits: Int): String = {
+    prepareHeatmap(groups, chosenProbes, ValueType.Folds, algorithm,
+        featureDecimalDigits)
   }
 
   @throws(classOf[NoDataLoadedException])
   def prepareHeatmap(groups: JList[Group], chosenProbes: JList[String],
-    valueType: ValueType, algorithm: Algorithm): String = {
+    valueType: ValueType, algorithm: Algorithm, featureDecimalDigits: Int): String = {
 
     //Reload data in a temporary controller if groups do not correspond to
     //the ones in the current session
@@ -325,11 +326,11 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
       getSessionData.controller
     }
 
-   val data = new ClusteringData(cont, probes, chosenProbes, valueType)
+    val data = new ClusteringData(cont, probes, chosenProbes, valueType)
 
     val clust = new RClustering(codeDir)
     clust.clustering(data.data.flatten, rowNamesForHeatmap(data.rowNames),
-        data.colNames, data.geneSymbols, algorithm)
+        data.colNames, data.geneSymbols, algorithm, featureDecimalDigits)
   }
 
   protected def rowNamesForHeatmap(names: Array[String]): Array[String] =

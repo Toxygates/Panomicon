@@ -10,6 +10,7 @@
   <dependencies>
   
   <dependency org="org.apache.commons" name="commons-math3" rev="latest.integration"/>
+  <dependency org="commons-io" name="commons-io" rev="latest.integration"/>
   <dependency org="org.apache.httpcomponents" name="httpclient" rev="latest.integration"/>  
 
   <dependency org="org.eclipse.rdf4j" name="rdf4j-repository-sparql" rev="latest.integration"/>

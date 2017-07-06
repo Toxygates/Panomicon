@@ -63,12 +63,12 @@ class AffyProbesTest extends TTestSuite {
   }
 
   test("probe uniprots") {
-    val p1 = Protein("D3ZXI9")
-    val p2 = Protein("D3ZA91")
+    val p1 = Protein("D3ZCV5")
+    val p2 = Protein("D4A3D4")
     val probes = affyProbes.forUniprots(Set(p1, p2))
     println(probes)
-    val pr1 = Probe("1367453_at")
-    val pr2 = Probe("1367456_at")
+    val pr1 = Probe("1368718_at")
+    val pr2 = Probe("1382137_at")
     assert(Set(pr1, pr2) subsetOf probes.toSet)
 
     val reverse = affyProbes.withAttributes(Set(pr1, pr2))
@@ -87,11 +87,11 @@ class AffyProbesTest extends TTestSuite {
     implicit val context = new OTGContext(config)
     val idents = Array("g6pd", "1388833_at", "mgst2")
     val res = affyProbes.identifiersToProbes(context.probeMap, idents, true, false)
-    assert(res.size === 5)
+    assert(res.size >= 5)
 
     val idents2 = Array("gss", "gclc")
     val res2 = affyProbes.identifiersToProbes(context.probeMap, idents, true, false)
-    assert(res2.size === 5)
+    assert(res2.size >= 5)
   }
 
   test("GO terms") {
@@ -102,7 +102,7 @@ class AffyProbesTest extends TTestSuite {
 
   test("Probes for GO term") {
     val pbs = affyProbes.forGoTerm(GOTerm("", "aromatic compound catabolic process"))
-    pbs.size should equal(17)
+    assert(pbs.size >= 28)
     println(pbs)
   }
 }

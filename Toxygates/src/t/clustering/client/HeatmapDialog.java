@@ -26,10 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import t.clustering.shared.Algorithm;
-import t.clustering.shared.Distances;
-import t.clustering.shared.Methods;
-
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -56,6 +52,10 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+import t.clustering.shared.Algorithm;
+import t.clustering.shared.Distances;
+import t.clustering.shared.Methods;
+
 /**
  * GUI for configuring, requesting, and displaying a heatmap.
  * Users should subclass this and implement the necessary abstract methods.
@@ -66,6 +66,9 @@ abstract public class HeatmapDialog<C, R> {
       {"kinetic-v5.1.0.min.js", "jquery-2.0.3.min.js", "inchlib-1.2.0.min.js", "inchlib-extended-1.0.0.min.js"};
 
   protected final ClusteringServiceAsync<C, R> clusteringService;
+
+  // Determines the number of digits after the decimal point to show in heatmap tooltips
+  public static final int HEATMAP_TOOLTIP_DECIMAL_DIGITS = 5;
 
   protected DialogBox dialog;
 
@@ -78,7 +81,7 @@ abstract public class HeatmapDialog<C, R> {
   private ListBox cMethod;
 
   protected Logger logger;
-  
+
   protected Algorithm lastClusteringAlgorithm = new Algorithm();
 
   public HeatmapDialog(Logger logger, ClusteringServiceAsync<C, R> service) {
@@ -86,12 +89,12 @@ abstract public class HeatmapDialog<C, R> {
     dialog = new DialogBox();
     this.logger = logger;
   }
-  
+
   private static boolean injected = false;
-  
+
   public void initWindow() {
     createPanel();
-    
+
     // call DialogBox#show here in order to generate <div> container used by
     // InCHlib.js
     // but keep the dialog invisible until drawing heat map is finished
@@ -108,7 +111,7 @@ abstract public class HeatmapDialog<C, R> {
       beginClustering();
     }
   }
-  
+
   private void beginClustering() {
     initializeHeatmap();
     executeClustering(lastClusteringAlgorithm);
@@ -143,38 +146,38 @@ abstract public class HeatmapDialog<C, R> {
     dialog.center();
     dialog.setVisible(true);
   }
-  
+
   protected void executeClustering(Algorithm algo) {
     logger.info("Execute clustering with " + algo.toString());
     this.lastClusteringAlgorithm = algo;
     doClustering(algo);
   }
-  
+
   protected void doClustering(Algorithm algo) {
-    clusteringService.prepareHeatmap(columnsForClustering(), 
+    clusteringService.prepareHeatmap(columnsForClustering(),
       rowsForClustering(), algo,
-      prepareHeatmapCallback());
+        HEATMAP_TOOLTIP_DECIMAL_DIGITS, prepareHeatmapCallback());
   }
-  
+
   /**
    * Subclasses should implement this to supply the rows that should be included in the clustering.
    * @return
    */
-  abstract protected List<R> rowsForClustering(); 
+  abstract protected List<R> rowsForClustering();
 
   /**
-   * Subclasses should implement this to supply the columns that should be included in the 
+   * Subclasses should implement this to supply the columns that should be included in the
    * clustering.
    * @return
    */
   abstract protected List<C> columnsForClustering();
 
-  protected AsyncCallback<String> prepareHeatmapCallback() {    
+  protected AsyncCallback<String> prepareHeatmapCallback() {
     return new AsyncCallback<String>() {
       @Override
       public void onFailure(Throwable caught) {
         logger.severe(caught.getMessage());
-        Window.alert("Failed to generate heat map data.");        
+        Window.alert("Failed to generate heat map data.");
       }
 
       @Override
@@ -183,7 +186,7 @@ abstract public class HeatmapDialog<C, R> {
           draw(JsonUtils.safeEval(result));
           updateUI();
         } catch (Exception e) {
-          onFailure(e);         
+          onFailure(e);
         }
       }
     };
@@ -200,7 +203,7 @@ abstract public class HeatmapDialog<C, R> {
     rDist.setEnabled(b);
     cMethod.setEnabled(b);
     cDist.setEnabled(b);
-    
+
     rMethod.setSelectedIndex(lastClusteringAlgorithm.getRowMethod().ordinal());
     rDist.setSelectedIndex(lastClusteringAlgorithm.getRowDistance().ordinal());
     cMethod.setSelectedIndex(lastClusteringAlgorithm.getColMethod().ordinal());
@@ -210,13 +213,13 @@ abstract public class HeatmapDialog<C, R> {
   protected int mainWidth() {
     return Window.getClientWidth() - 160;
   }
-  
+
   protected int mainHeight() {
     return Window.getClientHeight() - 120;
   }
-  
+
   private void createPanel() {
-    final ScrollPanel mainContent = new ScrollPanel(); 
+    final ScrollPanel mainContent = new ScrollPanel();
     mainContent.setPixelSize(mainWidth(), mainHeight());
     mainContent.setWidget(new HTML("<div id=\"inchlib\"></div>"));
     Window.addResizeHandler(new ResizeHandler() {
@@ -310,7 +313,7 @@ abstract public class HeatmapDialog<C, R> {
     updateButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        recluster();        
+        recluster();
       }
     });
 
@@ -355,10 +358,10 @@ abstract public class HeatmapDialog<C, R> {
 
     executeClustering(algo);
   }
-  
+
   protected void addTopContent(HorizontalPanel topContent) { }
-  
-  protected void addButtons(FlowPanel buttonGroup) {    
+
+  protected void addButtons(FlowPanel buttonGroup) {
     Button btnClose = new Button("Close");
     btnClose.addClickHandler(new ClickHandler() {
       @Override
@@ -366,13 +369,13 @@ abstract public class HeatmapDialog<C, R> {
         HeatmapDialog.this.dialog.hide();
       }
     });
-    buttonGroup.add(btnClose);    
+    buttonGroup.add(btnClose);
   }
-  
+
   protected List<Collection<String>> getCurrent2DArray() {
-    return parse2dJsArray(getCurrentObjectIds());  
+    return parse2dJsArray(getCurrentObjectIds());
   }
-  
+
   private native JsArray<JsArrayString> getCurrentObjectIds() /*-{
     return $wnd.inchlib.get_current_object_ids();
   }-*/;
@@ -480,7 +483,7 @@ abstract public class HeatmapDialog<C, R> {
 
     guiStateChanged(enabled);
   }
-  
+
   /**
    * Hook for enabling/disabling buttons and controls while the clustering is in progress
    * @param enabled

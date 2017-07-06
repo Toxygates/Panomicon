@@ -21,9 +21,9 @@ package t.clustering.client;
 
 import java.util.List;
 
-import t.clustering.shared.Algorithm;
-
 import com.google.gwt.user.client.rpc.RemoteService;
+
+import t.clustering.shared.Algorithm;
 
 /**
  * A clustering service to generate heatmaps.
@@ -42,5 +42,6 @@ public interface ClusteringService<C, R> extends RemoteService {
    * @param algorithm
    * @return
    */
-  String prepareHeatmap(List<C> columns, List<R> rows, Algorithm algorithm);
+  String prepareHeatmap(List<C> columns, List<R> rows, Algorithm algorithm,
+      int featureDecimalDigits);
 }
