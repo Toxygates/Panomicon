@@ -63,18 +63,23 @@ class BioParameters(lookup: Map[String, BioParameter]) {
 class ControlGroup(bps: BioParameters, samples: SampleSet,
     val controlSamples: Iterable[Sample]) {
   println(s"Control group for $controlSamples")
-  val byTime = controlSamples.groupBy(s => samples.parameter(s, ExposureTime).get)
+  val byTime = controlSamples.groupBy(s => samples.parameter(s, ExposureTime))
 
-  val allParamVals = byTime.map(ss => ss._1 -> ss._2.map(Map() ++ samples.parameters(_)))
+  val allParamVals = byTime.filter(_._1 != None).
+    map(ss => ss._1.get -> ss._2.map(Map() ++ samples.parameters(_)))
 
   private def varAndMean(param: SampleParameter, time: String): Option[(Double, Double)] = {
-    val vs = allParamVals(time).flatMap(_.get(param))
-    val nvs = vs.flatMap(BioParameter.convert)
+    allParamVals.get(time) match {
+      case None => None
+      case Some(pvs) =>
+        val vs = pvs.flatMap(_.get(param))
+        val nvs = vs.flatMap(BioParameter.convert)
 
-    if (nvs.size < 2) {
-      None
-    } else {
-      Some((variance(nvs.toArray), mean(nvs.toArray)))
+        if (nvs.size < 2) {
+          None
+        } else {
+          Some((variance(nvs.toArray), mean(nvs.toArray)))
+        }
     }
   }
 

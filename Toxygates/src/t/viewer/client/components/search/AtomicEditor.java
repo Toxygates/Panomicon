@@ -15,6 +15,7 @@ import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.StringBioParamValue;
 import t.common.shared.sample.search.AtomicMatch;
 import t.common.shared.sample.search.MatchType;
+import t.viewer.client.Utils;
 
 public class AtomicEditor extends MatchEditor {
 
@@ -29,7 +30,7 @@ public class AtomicEditor extends MatchEditor {
       final Collection<BioParamValue> parameters) {
     super(parent, parameters);
     
-    HorizontalPanel hPanel = new HorizontalPanel();
+    HorizontalPanel hPanel = Utils.mkHorizontalPanel(true);
     initWidget(hPanel);
     hPanel.addStyleName("samplesearch-atomicpanel");
     

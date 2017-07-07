@@ -39,12 +39,14 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
   implicit def asScala(x: Sample) = asScalaSample(x)
 
   def controlGroups(ss: Iterable[Sample], sampleSet: t.sample.SampleSet): Map[Sample, ControlGroup] = {
-     val cgs = ss.groupBy(_(CGParam))
+    val cgs = ss.groupBy(_(CGParam))
     val mp = schema.mediumParameter()
+    val knownSamples = sampleSet.samples.toSet
     Map() ++ cgs.flatMap { case (cgroup, ss) =>
-      val controls = ss.filter(s => schema.isControlValue(s.get(mp)))
+      var controls = ss.filter(s => schema.isControlValue(s.get(mp))).map(asScalaSample)
+      controls = (controls.toSet intersect (knownSamples)).toSeq
       if (!controls.isEmpty) {
-        val cg = new ControlGroup(bioParameters, sampleSet, controls.map(asScalaSample))
+        val cg = new ControlGroup(bioParameters, sampleSet, controls)
         ss.map(s => s -> cg)
       } else {
         Seq()

@@ -74,7 +74,7 @@ class CachingTriplestoreMetadata(os: Samples, parameterSet: ParameterSet,
 
   println(data take 10)
 
-  override def parameters(s: Sample) = data(s.sampleId).toSeq
+  override def parameters(s: Sample) = data.getOrElse(s.sampleId, Map()).toSeq
 
   override def parameterValues(identifier: String): Set[String] =
     data.map(_._2(parameterSet.byId(identifier))).toSet
