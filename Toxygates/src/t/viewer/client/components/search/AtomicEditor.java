@@ -71,7 +71,9 @@ public class AtomicEditor extends MatchEditor {
       protected void onValueChange(MatchType selected) {
         textBox.setVisible(selected.requiresValue());
       }
-    };    
+    };
+
+    typeSel.setSelected(MatchType.Low);
     hPanel.add(typeSel);
 
     hPanel.add(textBox);
