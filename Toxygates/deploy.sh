@@ -1,7 +1,7 @@
 #!/bin/bash
 
 TGCP=war/WEB-INF/classes
-TOOLCP=../OTGTool/bin
+TOOLCP=../OTGTool/classes
 
 function makeWar {
     VERSION=$1
@@ -58,18 +58,4 @@ makeWar
 makeAdminWar
 
 mv war/WEB-INF/web.xml.bak war/WEB-INF/web.xml
-
-#Set up extract tool
-DEST=extract-v2
-rm -rf $DEST
-mkdir $DEST 
-cp -r $TGCP $DEST
-cp src/otg/*.sh $DEST
-mkdir $DEST/lib
-cp lib/jar/httpclient* $DEST/lib
-cp lib/jar/httpcore* $DEST/lib
-cp mlib/SyncProxy* $DEST/lib
-cp mlib/gwt-user.jar $DEST/lib
-cp mlib/scala-library.jar $DEST/lib
-zip -r $DEST.zip $DEST
 

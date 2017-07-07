@@ -133,14 +133,15 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     toolPanel.add(txtbxGroup);
 
     saveButton = new Button("Save", new ClickHandler() {
+      @Override
       public void onClick(ClickEvent ce) {
         makeGroup(txtbxGroup.getValue());
-        Analytics.trackEvent(Analytics.CATEGORY_GENERAL, Analytics.ACTION_SAVE_SAMPLE_GROUP);
       }
     });
     toolPanel.add(saveButton);
 
     autoGroupsButton = new Button("Automatic groups", new ClickHandler() {
+      @Override
       public void onClick(ClickEvent ce) {
         makeAutoGroups();
       }
@@ -150,6 +151,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     setEditing(false);
 
     existingGroupsTable = new SelectionTable<Group>("Active", false) {
+      @Override
       protected void initTable(CellTable<Group> table) {
         TextColumn<Group> textColumn = new TextColumn<Group>() {
           @Override
@@ -165,6 +167,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
         final TextButtonCell editCell = new TextButtonCell();
 
         Column<Group, String> editColumn = new Column<Group, String>(editCell) {
+          @Override
           public String getValue(Group g) {
             editCell.setEnabled(!isStatic(g));
             return "Edit";
@@ -180,6 +183,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
 
         final TextButtonCell deleteCell = new TextButtonCell();
         Column<Group, String> deleteColumn = new Column<Group, String>(deleteCell) {
+          @Override
           public String getValue(Group g) {
             deleteCell.setEnabled(!isStatic(g));
             return "Delete";
@@ -199,6 +203,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
 
       }
 
+      @Override
       protected void selectionChanged(Set<Group> selected) {
         chosenColumns = new ArrayList<Group>(selected);
         StorageParser p = getParser(screen);
@@ -523,6 +528,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     } else {
       setGroup(name, units);
       newGroup();
+      Analytics.trackEvent(Analytics.CATEGORY_GENERAL, Analytics.ACTION_SAVE_SAMPLE_GROUP);
     }
 
     loadTimeWarningIfNeeded();
@@ -539,7 +545,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     }
 
     // Conservatively estimate that we load 10 samples per second
-    int loadTime = (int) (totalSize / 10);
+    int loadTime = totalSize / 10;
 
     if (loadTime > 20) {
       Window.alert("Warning: You have requested data for " + totalSize + " samples.\n"
