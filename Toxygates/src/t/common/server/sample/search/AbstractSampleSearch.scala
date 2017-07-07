@@ -1,4 +1,4 @@
-package t.viewer.server
+package t.common.server.sample.search
 
 import scala.collection.JavaConversions._
 import t.db.SampleParameter
@@ -16,8 +16,9 @@ import t.sparql.CachingTriplestoreMetadata
 import t.sparql.SampleFilter
 import t.platform.ControlGroup
 import t.db.SampleParameters
-import scala.reflect.ClassTag
 import t.db.ParameterSet
+import scala.collection.Seq
+import t.viewer.server.Annotations
 
   /**
    * Companion object to create sample search objects; meant to encapsulate

@@ -1,6 +1,8 @@
-package t.viewer.server
+package t.common.server.sample.search
 
-import Conversions._
+import t.viewer.server
+import t.viewer.server.Conversions._
+import t.viewer.server.Annotations
 import t.db.SampleParameter
 import t.platform.ControlGroup
 import t.common.shared.DataSchema
