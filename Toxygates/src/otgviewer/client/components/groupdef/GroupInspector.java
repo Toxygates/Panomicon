@@ -528,7 +528,6 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     } else {
       setGroup(name, units);
       newGroup();
-      Analytics.trackEvent(Analytics.CATEGORY_GENERAL, Analytics.ACTION_SAVE_SAMPLE_GROUP);
     }
 
     loadTimeWarningIfNeeded();
@@ -556,6 +555,12 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
   private void setGroup(String pendingGroupName, List<Unit> units) {
     logger.info("Set group with " + SharedUtils.mkString(units, ","));
     Group pendingGroup = groups.get(pendingGroupName);
+    if (pendingGroup == null) {
+      Analytics.trackEvent(Analytics.CATEGORY_GENERAL, Analytics.ACTION_CREATE_NEW_SAMPLE_GROUP);
+    } else {
+      Analytics.trackEvent(Analytics.CATEGORY_GENERAL,
+          Analytics.ACTION_MODIFY_EXISTING_SAMPLE_GROUP);
+    }
     existingGroupsTable.removeItem(pendingGroup);
     pendingGroup = new Group(schema, pendingGroupName, units.toArray(new Unit[0]));
     addGroup(pendingGroup, true);
