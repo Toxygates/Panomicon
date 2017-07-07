@@ -329,6 +329,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     groupsel2.setVisibleItemCount(1);
 
     analysisTools.add(new Button("Add T-test", new ClickHandler() {
+      @Override
       public void onClick(ClickEvent e) {
         addTwoGroupSynthetic(new Synthetic.TTest(null, null), "T-test");
         Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
@@ -337,6 +338,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     }));
 
     analysisTools.add(new Button("Add U-test", new ClickHandler() {
+      @Override
       public void onClick(ClickEvent e) {
         addTwoGroupSynthetic(new Synthetic.UTest(null, null), "U-test");
         Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
@@ -345,6 +347,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     }));
 
     foldChangeBtn.addClickHandler(new ClickHandler() {
+      @Override
       public void onClick(ClickEvent e) {
         addTwoGroupSynthetic(new Synthetic.MeanDifference(null, null), "Fold-change difference");
         Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_ADD_COMPARISON_COLUMN,
@@ -354,6 +357,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     analysisTools.add(foldChangeBtn);
 
     analysisTools.add(new Button("Remove tests", new ClickHandler() {
+      @Override
       public void onClick(ClickEvent ce) {
         removeTests();
       }
@@ -376,6 +380,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       synth.setGroups(g1, g2);
       matrixService.addTwoGroupTest(synth, new PendingAsyncCallback<ManagedMatrixInfo>(this,
           "Adding test column failed") {
+        @Override
         public void handleSuccess(ManagedMatrixInfo r) {
           setMatrix(r);
           setupColumns();
@@ -394,6 +399,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     matrixService.prepareCSVDownload(individualSamples, new PendingAsyncCallback<String>(this,
         "Unable to prepare the requested data for download.") {
 
+      @Override
       public void handleSuccess(String url) {
         Utils.displayURL("Your download is ready.", "Download", url);
       }
@@ -409,6 +415,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     return false;
   }
 
+  @Override
   protected void setupColumns() {
     super.setupColumns();
     ensureSection("synthetic");
@@ -439,6 +446,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   @Override
   protected Column<ExpressionRow, String> toolColumn(Cell<String> cell) {
     return new Column<ExpressionRow, String>(cell) {
+      @Override
       public String getValue(ExpressionRow er) {
         if (er != null) {
           return er.getProbe();
@@ -560,6 +568,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     return SharedUtils.mkString("<div class=\"associationValue\">", values, "</div> ");
   }
 
+  @Override
   protected List<HideableColumn<ExpressionRow, ?>> initHideableColumns(DataSchema schema) {
     SafeHtmlCell shc = new SafeHtmlCell();
     List<HideableColumn<ExpressionRow, ?>> r = new ArrayList<HideableColumn<ExpressionRow, ?>>();
@@ -585,6 +594,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
     r.add(new HTMLHideableColumn<ExpressionRow>(shc, "Gene Symbol",
         initVisibility(StandardColumns.GeneSym), initWidth(StandardColumns.GeneSym)) {
+      @Override
       protected String getHtml(ExpressionRow er) {
         return mkAssociationList(er.getGeneSyms());
       }
@@ -593,6 +603,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
     r.add(new HTMLHideableColumn<ExpressionRow>(shc, "Probe Title",
         initVisibility(StandardColumns.ProbeTitle), initWidth(StandardColumns.ProbeTitle)) {
+      @Override
       protected String getHtml(ExpressionRow er) {
         return mkAssociationList(er.getAtomicProbeTitles());
       }
@@ -642,18 +653,22 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   /**
    * The list of atomic probes currently on screen.
    */
+  @Override
   public String[] displayedAtomicProbes() {
     return displayedAtomicProbes;
   }
 
+  @Override
   protected String probeForRow(ExpressionRow row) {
     return row.getProbe();
   }
 
+  @Override
   protected String[] atomicProbesForRow(ExpressionRow row) {
     return row.getAtomicProbes();
   }
 
+  @Override
   protected String[] geneIdsForRow(ExpressionRow row) {
     return row.getGeneIds();
   }
@@ -673,11 +688,13 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         String appName = screen.appInfo().applicationName();
         return "Unable to obtain data. If you have not used " + appName + " in a while, try reloading the page.";
       }
+      @Override
       public void onFailure(Throwable caught) {        
         loadedData = false;
         Window.alert(errMsg());
       }
 
+      @Override
       public void onSuccess(List<ExpressionRow> result) {
         if (result.size() > 0) {
           updateRowData(range.getStart(), result);
@@ -704,6 +721,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
     };
 
+    @Override
     protected void onRangeChanged(HasData<ExpressionRow> display) {
       if (loadedData) {
         range = display.getVisibleRange();
@@ -779,12 +797,14 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
   private AsyncCallback<ManagedMatrixInfo> dataUpdateCallback() {
     return new AsyncCallback<ManagedMatrixInfo>() {
+      @Override
       public void onFailure(Throwable caught) {
         logger.log(Level.WARNING, "Exception in data update callback", caught);
         getExpressions(); // the user probably let the session
         // expire
       }
 
+      @Override
       public void onSuccess(ManagedMatrixInfo result) {
         setMatrix(result);        
       }
@@ -800,6 +820,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   }
 
   /**
+   * Called when data is successfully loaded for the first time
+   */
+  private void onFirstLoad() {
+    if (matrixInfo.isOrthologous()) {
+      Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_VIEW_ORTHOLOGOUS_DATA);
+    }
+  }
+
+  /**
    * Load data (when there is nothing stored in our server side session)
    */
   public void getExpressions() {
@@ -811,15 +840,20 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     // load data
     matrixService.loadMatrix(chosenColumns, chosenProbes, chosenValueType,
         new AsyncCallback<ManagedMatrixInfo>() {
+          @Override
           public void onFailure(Throwable caught) {
             Window.alert("Unable to load dataset");
             logger.log(Level.SEVERE, "Unable to load dataset", caught);
           }
 
+          @Override
           public void onSuccess(ManagedMatrixInfo result) {
             if (result.numRows() > 0) {
               matrixInfo = result;
-              loadedData = true;
+              if (!loadedData) {
+                loadedData = true;
+                onFirstLoad();
+              }
               setupColumns();
               setMatrix(result);
 
@@ -837,15 +871,18 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
   private void asyncDisplayCharts() {
     GWT.runAsync(new CodeDownload(logger) {      
+      @Override
       public void onSuccess() {
         final Charts cgf = new Charts(screen, chosenColumns);
         ExpressionRow dispRow = grid.getVisibleItem(highlightedRow);
         final String[] probes = dispRow.getAtomicProbes();
         cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, probes, new AChartAcceptor() {
+          @Override
           public void acceptCharts(final AdjustableGrid<?, ?> cg) {
             Utils.displayInPopup("Charts", cg, true, DialogPosition.Side);
           }
 
+          @Override
           public void acceptBarcodes(Sample[] bcs) {
             chartBarcodes = bcs;
           }
@@ -864,10 +901,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       super(resources.chart(), false);
     }
 
+    @Override
     public void onClick(final String value) {
       highlightedRow = SharedUtils.indexOf(displayedProbes, value);
       grid.redraw();
       Utils.ensureVisualisationAndThen(new Runnable() {
+        @Override
         public void run() {
           asyncDisplayCharts();
         }
