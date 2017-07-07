@@ -37,6 +37,11 @@ public class Analytics {
 
   public static final String CATEGORY_IMPORT_EXPORT = "Import/Export";
   public static final String ACTION_DOWNLOAD_SAMPLE_DETAILS = "Download sample details";
+  public static final String ACTION_DOWNLOAD_EXPRESSION_DATA = "Download expression data";
+  public static final String LABEL_GROUPED_SAMPLES = "Grouped samples";
+  public static final String LABEL_INDIVIDUAL_SAMPLES = "Individual samples";
+  public static final String ACTION_IMPORT_GENE_SETS = "Import gene sets";
+  public static final String ACTION_EXPORT_GENE_SETS = "Export gene sets";
 
 
   public static final String ACTION_PERFORM_CLUSTERING = "Perform clustering"; // Not tracked yet

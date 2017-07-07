@@ -23,6 +23,15 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.ResizeLayoutPanel;
+import com.google.gwt.user.client.ui.Widget;
+
 import otgviewer.client.components.GeneSetToolbar;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
@@ -36,15 +45,6 @@ import t.viewer.client.Analytics;
 import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.RichTable.HideableColumn;
 import t.viewer.shared.intermine.IntermineInstance;
-
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.ResizeLayoutPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 /**
  * The main data display screen. Data is displayed in the ExpressionTable widget.
@@ -107,6 +107,7 @@ public class DataScreen extends Screen {
     addToolbar(et.analysisTools(), STANDARD_TOOL_HEIGHT);
   }
 
+  @Override
   public Widget content() {
     setupMenuItems();
 
@@ -122,16 +123,20 @@ public class DataScreen extends Screen {
     MenuItem mActions = new MenuItem("File", false, mb);
     MenuItem mntmDownloadCsv =
         new MenuItem("Download CSV (grouped samples)...", false, new Command() {
+          @Override
           public void execute() {
             et.downloadCSV(false);
-
+            Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT,
+                Analytics.ACTION_DOWNLOAD_EXPRESSION_DATA, Analytics.LABEL_GROUPED_SAMPLES);
           }
         });
     mb.addItem(mntmDownloadCsv);
     mntmDownloadCsv = new MenuItem("Download CSV (individual samples)...", false, new Command() {
+      @Override
       public void execute() {
         et.downloadCSV(true);
-
+        Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT,
+            Analytics.ACTION_DOWNLOAD_EXPRESSION_DATA, Analytics.LABEL_INDIVIDUAL_SAMPLES);
       }
     });
     mb.addItem(mntmDownloadCsv);
@@ -164,6 +169,7 @@ public class DataScreen extends Screen {
     // It would be nice to display the tick graphic, but then the textual alignment
     // of the other items on the menu becomes odd.
     addAnalysisMenuItem(new TickMenuItem("Compare two sample groups", false, false) {
+      @Override
       public void stateChange(boolean newState) {
         if (!visible) {
           // Trigger screen
@@ -182,6 +188,7 @@ public class DataScreen extends Screen {
     }.menuItem());
 
     addAnalysisMenuItem(new MenuItem("Enrichment...", new Command() {
+      @Override
       public void execute() {
         runEnrichment(null);
       }
@@ -189,6 +196,7 @@ public class DataScreen extends Screen {
     
     if (factory().hasHeatMapMenu()) {
       heatMapMenu = new MenuItem("Show heat map", new Command() {
+        @Override
         public void execute() {
           makeHeatMap();          
         }
@@ -242,6 +250,7 @@ public class DataScreen extends Screen {
     lastColumns = chosenColumns;
   }
 
+  @Override
   public void show() {
     super.show();
     updateProbes();
