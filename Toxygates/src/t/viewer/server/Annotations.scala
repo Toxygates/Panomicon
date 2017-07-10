@@ -62,7 +62,7 @@ class Annotations(sampleStore: Samples, schema: DataSchema, baseConfig: BaseConf
       val controls = samples.filter(s => schema.isControlValue(s.get(mp)))
       if (controls.isEmpty) {
         (None,
-          baseConfig.sampleParameters.previewDisplay)
+          bioParameters.sampleParameters)
       } else {
         (Some(new ControlGroup(bioParameters, tsMeta, controls.map(asScalaSample))),
           bioParameters.sampleParameters)
