@@ -45,6 +45,7 @@ public class Analytics {
   public static final String LABEL_INDIVIDUAL_SAMPLES = "Individual samples";
   public static final String ACTION_IMPORT_GENE_SETS = "Import gene sets";
   public static final String ACTION_EXPORT_GENE_SETS = "Export gene sets";
+  public static final String ACTION_BEGIN_DATA_UPLOAD = "Begin data upload";
 
   /*
    * Tracks a pageview with Google Analytics if the google analytics script has been loaded.
