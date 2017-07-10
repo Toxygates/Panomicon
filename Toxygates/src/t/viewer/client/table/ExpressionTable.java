@@ -244,7 +244,19 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
     Resources r = GWT.create(Resources.class);
 
-    SimplePager sp = new SimplePager(TextLocation.CENTER, r, true, 500, true);
+    SimplePager sp = new SimplePager(TextLocation.CENTER, r, true, 500, true) {
+      @Override
+      public void nextPage() {
+        super.nextPage();
+        Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
+      }
+
+      @Override
+      public void setPage(int index) {
+        super.setPage(index);
+        Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
+      }
+    };
     sp.setStylePrimaryName("slightlySpaced"); 
     horizontalPanel.add(sp);
     sp.setDisplay(grid);
@@ -713,8 +725,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
           displayedProbes = dispPs.toArray(new String[0]);
           highlightedRow = -1;
           getAssociations();
-          
-          Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
         } else {
           Window.alert(errMsg());
         }

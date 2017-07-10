@@ -18,7 +18,7 @@ public class Analytics {
   public static final String ACTION_SAVE_CLUSTERS = "Save clusters as gene set";
 
   public static final String CATEGORY_TABLE = "Table";
-  public static final String ACTION_PAGE_CHANGE = "Render/change page";
+  public static final String ACTION_PAGE_CHANGE = "Page forward/backward";
   public static final String ACTION_DISPLAY_OPTIONAL_COLUMN = "Display optional column";
   public static final String ACTION_FILTER_COLUMN = "Enable/modify column filter";
   public static final String ACTION_VIEW_ORTHOLOGOUS_DATA = "View orthologous data";
