@@ -439,7 +439,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
   }
   
   @Override
-  protected void onMinorsDone() {
+  protected void onMinorsDone() {    
     if (samplesWaiting) {
       samplesAvailable();
       samplesWaiting = false;
