@@ -131,6 +131,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
   private boolean withPValueOption;
 
+  // For Analytics: we count every matrix load other than the first as a gene set change
+  private boolean firstMatrixLoad = true;
+
   /**
    * For selecting sample groups to apply t-test/u-test to
    */
@@ -866,6 +869,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
               }
               setupColumns();
               setMatrix(result);
+
+              if (firstMatrixLoad) {
+                firstMatrixLoad = false;
+              } else {
+                Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_CHANGE_GENE_SET);
+              }
 
               logger.info("Data successfully loaded");
             } else {
