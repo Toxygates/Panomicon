@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export PATH=$PATH:/usr/local/bin
+
 KEGGBASE=/home/nibioadmin/toxygates/kegg_rdf
 OUTDIR=$KEGGBASE/download
 RDFDIR=$KEGGBASE/rdf
