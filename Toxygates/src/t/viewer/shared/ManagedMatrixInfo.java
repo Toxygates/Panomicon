@@ -213,6 +213,10 @@ public class ManagedMatrixInfo implements Serializable {
     return platforms.toArray(new String[0]);
   }
 
+  public boolean isOrthologous() {
+    return platforms.size() > 1;
+  }
+
   public void setAtomicProbes(String[] probes) {
     atomicProbes =
         (probes.length > ATOMICS_MAX_LENGTH ? Arrays.copyOf(probes, ATOMICS_MAX_LENGTH) : probes);

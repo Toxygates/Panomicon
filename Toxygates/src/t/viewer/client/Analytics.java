@@ -19,9 +19,11 @@ public class Analytics {
   public static final String ACTION_SAVE_CLUSTERS = "Save clusters as gene set";
 
   public static final String CATEGORY_TABLE = "Table";
-  public static final String ACTION_PAGE_CHANGE = "Render/change page";
+  public static final String ACTION_PAGE_CHANGE = "Page forward/backward";
   public static final String ACTION_DISPLAY_OPTIONAL_COLUMN = "Display optional column";
   public static final String ACTION_FILTER_COLUMN = "Enable/modify column filter";
+  public static final String ACTION_VIEW_ORTHOLOGOUS_DATA = "View orthologous data";
+  public static final String ACTION_CHANGE_GENE_SET = "Change gene set";
 
   public static final String CATEGORY_VISUALIZATION = "Visualization";
   public static final String ACTION_DISPLAY_CHARTS = "Display charts";
@@ -34,7 +36,8 @@ public class Analytics {
   public static final String ACTION_DELETE_GENE_SET = "Delete gene set";
 
   public static final String CATEGORY_GENERAL = "General";
-  public static final String ACTION_SAVE_SAMPLE_GROUP = "Save sample group";
+  public static final String ACTION_CREATE_NEW_SAMPLE_GROUP = "Create new sample group";
+  public static final String ACTION_MODIFY_EXISTING_SAMPLE_GROUP = "Modify existing sample group";
 
   public static final String CATEGORY_IMPORT_EXPORT = "Import/Export";
   public static final String ACTION_DOWNLOAD_SAMPLE_DETAILS = "Download sample details";
@@ -43,9 +46,7 @@ public class Analytics {
   public static final String LABEL_INDIVIDUAL_SAMPLES = "Individual samples";
   public static final String ACTION_IMPORT_GENE_SETS = "Import gene sets";
   public static final String ACTION_EXPORT_GENE_SETS = "Export gene sets";
-
-
-  public static final String ACTION_PERFORM_CLUSTERING = "Perform clustering"; // Not tracked yet
+  public static final String ACTION_BEGIN_DATA_UPLOAD = "Begin data upload";
 
   /*
    * Tracks a pageview with Google Analytics if the google analytics script has been loaded.
