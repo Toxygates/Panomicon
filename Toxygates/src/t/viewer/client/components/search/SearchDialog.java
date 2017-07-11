@@ -8,6 +8,20 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.cell.client.Cell;
+import com.google.gwt.cell.client.TextCell;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
+
 import t.common.shared.SampleClass;
 import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.NumericalBioParamValue;
@@ -17,20 +31,8 @@ import t.common.shared.sample.search.MatchCondition;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.client.table.TooltipColumn;
 import t.viewer.shared.AppInfo;
-
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.TextColumn;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  * Sample search interface that allows the user to edit search conditions,
@@ -104,9 +106,9 @@ public class SearchDialog extends Composite {
 
   private abstract class TableHelper<T> {
     private CellTable<T> table = new CellTable<T>();
-    private List<TextColumn<T>> columns = new LinkedList<TextColumn<T>>();
+    private List<TooltipColumn<T>> columns = new LinkedList<TooltipColumn<T>>();
 
-    protected abstract TextColumn<T> makeColumn(String key);
+    protected abstract TooltipColumn<T> makeColumn(String key, Cell<String> cell);
     protected abstract void trackAnalytics();
     protected abstract void asyncSearch(SampleClass sc, MatchCondition cond,
         AsyncCallback<T[]> callback);
@@ -124,24 +126,25 @@ public class SearchDialog extends Composite {
       return r;
     }
     
-    protected void addColumn(String key) {
-      TextColumn<T> column = makeColumn(key);
+    protected void addColumn(String key, Cell<String> cell) {
+      TooltipColumn<T> column = makeColumn(key, cell);
       columns.add(column);
       table.addColumn(column, key);
     }
 
     public void setupTable(T[] entries, MatchCondition cond) {
       List<String> keys = getKeys(cond);
+      TextCell textCell = new TextCell();
 
       for (String key : keys) {
-        addColumn(key);
+        addColumn(key, textCell);
       }
 
       table.setRowData(Arrays.asList(entries));
     }
 
     public void clear() {
-      for (TextColumn<T> column : columns) {
+      for (TooltipColumn<T> column : columns) {
         table.removeColumn(column);
       }
       columns.clear();
@@ -177,8 +180,12 @@ public class SearchDialog extends Composite {
       });
     }
 
-    protected abstract class KeyColumn<S> extends TextColumn<S> {
+    protected abstract class KeyColumn<S> extends TooltipColumn<S> {
       protected String keyName;
+      
+      public KeyColumn(Cell<String> cell) {
+        super(cell);
+      }
 
       public KeyColumn<S> init(String key) {
         keyName = key;
@@ -189,8 +196,8 @@ public class SearchDialog extends Composite {
 
   private class UnitTableHelper extends TableHelper<Unit> {
     @Override
-    public TextColumn<Unit> makeColumn(String key) {
-      return new KeyColumn<Unit>() {
+    public TooltipColumn<Unit> makeColumn(String key, Cell<String> cell) {
+      return new KeyColumn<Unit>(cell) {
         @Override
         public String getValue(Unit unit) {
           return unit.get(keyName);
@@ -211,10 +218,9 @@ public class SearchDialog extends Composite {
   }
 
   private class SampleTableHelper extends TableHelper<Sample> {
-
     @Override
-    public TextColumn<Sample> makeColumn(String key) {
-      return new KeyColumn<Sample>() {
+    public TooltipColumn<Sample> makeColumn(String key, Cell<String> cell) {
+      return new KeyColumn<Sample>(cell) {
         @Override
         public String getValue(Sample sample) {
           return sample.get(keyName);
