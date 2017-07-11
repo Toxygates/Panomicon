@@ -121,14 +121,12 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 
   @Override
   public void sampleClassChanged(SampleClass sc) {
+    super.sampleClassChanged(sc);
     if (!sc.equals(chosenSampleClass)) {
-      super.sampleClassChanged(sc);
       minorValues = new ArrayList<String>();
       logger.info("SC change trigger minor " + sc);
       lazyFetchMinor();
-    } else {
-      super.sampleClassChanged(sc);
-    }
+    } 
   }
 
   @Override
@@ -160,14 +158,9 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 
   private void lazyFetchMinor() {
     if (fetchingMinor) {
-      return;
+      return;   
     }
-    if (minorValues != null && minorValues.size() > 0) {
-      logger.info("Reuse cached minor values");
-      drawGridInner(grid);
-    } else {
-      fetchMinor();
-    }
+    fetchMinor();    
   }
 
   private void fetchMinor() {
@@ -339,7 +332,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
       }
       r++;
     }
-    if (availableUnits.size() == 0) {
+    if (availableUnits.size() == 0 && allUnits.size() > 0) {
       availableUnits = allUnits;
     }
   }

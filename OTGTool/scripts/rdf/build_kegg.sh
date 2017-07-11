@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export PATH=$PATH:/usr/local/bin
+
 KEGGBASE=/home/nibioadmin/toxygates/kegg_rdf
 OUTDIR=$KEGGBASE/download
 RDFDIR=$KEGGBASE/rdf
@@ -42,6 +44,6 @@ cat kegg-genes.nt  | sed "s/\\\'/'/g" | egrep "vocabulary:pathway|ncbigene" > ke
 cat kegg-pathway.f.nt kegg-genes.f.nt > kegg-pathways-genes.f.nt
 
 #This directory will have too many files for a single rm command
-find $OUTDIR -print0 | xargs -0 rm
+find $OUTDIR -type f -print0 | xargs -0 rm
 
 

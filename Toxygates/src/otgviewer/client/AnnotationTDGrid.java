@@ -19,6 +19,7 @@
 package otgviewer.client;
 
 import java.util.List;
+import java.util.logging.Level;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -129,7 +130,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
   }
 
   private double doubleValueFor(Annotation a, String key) throws IllegalArgumentException {
-    for (BioParamValue e : a.getAnnotations()) {
+    for (BioParamValue e : a.getAnnotations()) {      
       if (e.label().equals(key) && e instanceof NumericalBioParamValue) {
         return ((NumericalBioParamValue) e).value();
       }
@@ -154,7 +155,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
               sum += val;
             }
           } catch (Exception e) {
-            logger.warning("Number format error or unavailable data for " + annotation);
+            logger.log(Level.WARNING, "Annotation barcode processing error", e);            
           }
         }
 
