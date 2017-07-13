@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import t.common.shared.DataSchema;
-import t.common.shared.SampleClass;
+import t.model.SampleClass;
 
 /**
  * A sample class with associated samples.
@@ -54,7 +54,7 @@ public class Unit extends SampleClass {
     }
     Map<SampleClass, List<Sample>> groups = new HashMap<SampleClass, List<Sample>>();
     for (Sample os : samples) {
-      SampleClass unit = os.sampleClass().asUnit(schema);
+      SampleClass unit = SampleClassUtils.asUnit(os.sampleClass(), schema);
       if (!groups.containsKey(unit)) {
         groups.put(unit, new ArrayList<Sample>());
       }

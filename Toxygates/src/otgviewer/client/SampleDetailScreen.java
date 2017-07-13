@@ -30,6 +30,25 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
+import otgviewer.client.components.ScreenManager;
+import otgviewer.client.components.StorageParser;
+import t.common.shared.DataSchema;
+import t.common.shared.sample.Annotation;
+import t.common.shared.sample.BioParamValue;
+import t.common.shared.sample.DataColumn;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.HasSamples;
+import t.common.shared.sample.Sample;
+import t.common.shared.sample.SampleClassUtils;
+import t.common.shared.sample.SampleColumn;
+import t.model.SampleClass;
+import t.viewer.client.Analytics;
+import t.viewer.client.Utils;
+import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.rpc.SampleServiceAsync;
+
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -41,24 +60,6 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
-
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import otgviewer.client.components.ScreenManager;
-import otgviewer.client.components.StorageParser;
-import t.common.shared.DataSchema;
-import t.common.shared.SampleClass;
-import t.common.shared.sample.Annotation;
-import t.common.shared.sample.BioParamValue;
-import t.common.shared.sample.DataColumn;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.HasSamples;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleColumn;
-import t.viewer.client.Analytics;
-import t.viewer.client.Utils;
-import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.rpc.SampleServiceAsync;
 
 /**
  * This screen displays detailed information about a sample or a set of samples, i.e. experimental
@@ -216,7 +217,7 @@ public class SampleDetailScreen extends Screen {
       public void onClick(ClickEvent event) {
         Set<String> compounds = new HashSet<String>();
         for (SampleColumn d : chosenColumns) {
-          compounds.addAll(SampleClass.getMajors(schema(), d));
+          compounds.addAll(SampleClassUtils.getMajors(schema(), d));
         }
         List<String> compounds_ = new ArrayList<String>(compounds);
         atd.compoundsChanged(compounds_);
@@ -266,7 +267,8 @@ public class SampleDetailScreen extends Screen {
     loadSections(c, false);
     currentColumn = c;
     downloadButton.setEnabled(true);
-    SampleClass sc = c.getSamples()[0].sampleClass().asMacroClass(manager.schema());
+    SampleClass sc = SampleClassUtils.asMacroClass(c.getSamples()[0].sampleClass(),
+        manager.schema());
     atd.sampleClassChanged(sc);
   }
 

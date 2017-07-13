@@ -6,11 +6,11 @@ import javax.annotation.Nullable;
 
 import t.common.shared.Dataset;
 import t.common.shared.Pair;
-import t.common.shared.SampleClass;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
+import t.model.SampleClass;
 import t.viewer.shared.TimeoutException;
 
 import com.google.gwt.user.client.rpc.RemoteService;

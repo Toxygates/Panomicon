@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import t.model.SampleClass;
+
 /**
  * A SampleMultiFilter is a filter for SampleClass and HasClass. For each key, several permitted
  * values may be specified.

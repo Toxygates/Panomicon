@@ -34,7 +34,7 @@ import t.Factory
 class TriplestoreMetadata(os: Samples, val parameters: ParameterSet)
 (implicit sf: SampleFilter) extends Metadata {
 
-  override def samples: Iterable[Sample] = os.samples(SampleClass())
+  override def samples: Iterable[Sample] = os.samples(SampleClassFilter())
 
   override def parameters(s: Sample): Iterable[(SampleParameter, String)] = {
     os.parameterQuery(s.identifier).collect( {

@@ -79,5 +79,5 @@ package object sparql {
   def bracket(url: String) = "<" + url + ">"
   def unbracket(url: String) = url.replace("<", "").replace(">", "")
 
-  implicit def scToSparql(sc: t.db.SampleClassLike): SampleClass = SampleClass(sc.constraints)
+  implicit def scToSparql(sc: t.db.SampleClassLike): SampleClassFilter = SampleClassFilter(sc.constraints)
 }

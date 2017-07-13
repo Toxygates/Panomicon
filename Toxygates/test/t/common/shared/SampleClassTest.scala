@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -22,6 +22,7 @@ package t.common.shared
 
 import org.scalatest.FunSuite
 import scala.collection.JavaConversions._
+import t.model.SampleClass
 
 class SampleClassTest extends FunSuite {
 

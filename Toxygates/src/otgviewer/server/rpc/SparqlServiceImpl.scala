@@ -33,7 +33,7 @@ import t.BaseConfig
 import t.DataConfig
 import t.common.server.ScalaUtils.gracefully
 import t.common.shared.AType
-import t.common.shared.SampleClass
+import t.model.SampleClass
 import t.common.shared.sample._
 import t.platform.Probe
 import t.sparql._
@@ -44,6 +44,7 @@ import t.viewer.server.Conversions._
 import t.viewer.shared.Association
 import t.viewer.shared.TimeoutException
 import t.viewer.shared.AppInfo
+import t.model.SampleClass
 
 /**
  * This servlet is reponsible for making queries to RDF stores, including our
@@ -163,7 +164,7 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
 
     def getTargeting(sc: SampleClass, from: CompoundTargets)
       (implicit sf: SampleFilter): MMap[Probe, Compound] = {
-      val expected = sampleStore.compounds(scAsScala(sc).filterAll).map(Compound.make(_))
+      val expected = sampleStore.compounds(SampleClassFilter(sc).filterAll).map(Compound.make(_))
 
       //strictly orthologous
       val oproteinVs = oproteins.allValues.toSet -- proteins.allValues.toSet

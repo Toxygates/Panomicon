@@ -39,7 +39,7 @@ import t.common.shared.AType
 import t.common.shared.Dataset
 import t.common.shared.Pair
 import t.common.shared.Platform
-import t.common.shared.SampleClass
+import t.model.SampleClass
 import t.common.shared.StringList
 import t.common.shared.clustering.ProbeClustering
 import t.common.shared.sample.HasSamples
@@ -74,8 +74,6 @@ import t.viewer.server.CSVHelper
 import t.viewer.server.Configuration
 import t.viewer.server.Conversions.asJavaSample
 import t.viewer.server.Conversions.convertPairs
-import t.viewer.server.Conversions.scAsJava
-import t.viewer.server.Conversions.scAsScala
 import t.viewer.server.SharedDatasets
 import t.viewer.server.SharedPlatforms
 import t.viewer.shared.AppInfo
@@ -84,6 +82,10 @@ import t.viewer.shared.TimeoutException
 import t.common.shared.sample.Annotation
 import t.platform.BioParameters
 import t.viewer.server.Annotations
+import t.sparql.SampleClassFilter
+import t.model.shared.SampleClassHelper
+import t.common.shared.sample.SampleClassUtils
+import t.model.SampleClass
 
 object SparqlServiceImpl {
   var inited = false
@@ -286,8 +288,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       parameter: String): Array[String] = {
     //Get the parameters without changing the persistent datasets in getSessionData
     val filter = sampleFilterFor(ds)
-    sampleStore.attributeValues(scAsScala(sc).filterAll, parameter)(filter).
-      filter(x => !schema.isControlValue(parameter, x)).toArray            
+    sampleStore.attributeValues(SampleClassFilter(sc).filterAll, parameter)(filter).
+      filter(x => !schema.isControlValue(parameter, x)).toArray
   }
 
   @throws[TimeoutException]
@@ -297,12 +299,12 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   @throws[TimeoutException]
   def parameterValues(sc: SampleClass, parameter: String): Array[String] = {
-    sampleStore.attributeValues(scAsScala(sc).filterAll, parameter).
+    sampleStore.attributeValues(SampleClassFilter(sc).filterAll, parameter).
       filter(x => !schema.isControlValue(parameter, x)).toArray
   }
 
   def samplesById(ids: Array[String]): Array[Sample] = {
-    sampleStore.samples(t.sparql.SampleClass(), "id",
+    sampleStore.samples(SampleClassFilter(), "id",
         ids).map(asJavaSample(_)).toArray
   }
 
@@ -311,14 +313,14 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   @throws[TimeoutException]
   def samples(sc: SampleClass): Array[Sample] = {
-    val ss = sampleStore.sampleQuery(scAsScala(sc))(sf)()
+    val ss = sampleStore.sampleQuery(SampleClassFilter(sc))(sf)()
     ss.map(asJavaSample).toArray
   }
 
   @throws[TimeoutException]
   def samples(sc: SampleClass, param: String,
       paramValues: Array[String]): Array[Sample] =
-    sampleStore.samples(scAsScala(sc), param, paramValues).map(asJavaSample(_)).toArray
+    sampleStore.samples(SampleClassFilter(sc), param, paramValues).map(asJavaSample(_)).toArray
 
   @throws[TimeoutException]
   def samples(scs: Array[SampleClass], param: String,
@@ -326,9 +328,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
         scs.flatMap(x => samples(x, param, paramValues)).distinct.toArray
 
   @throws[TimeoutException]
-  def sampleClasses(): Array[SampleClass] = {
+  def sampleClasses(): Array[t.model.SampleClass] = {
   sampleStore.sampleClasses.map(x =>
-    new SampleClass(new java.util.HashMap(mapAsJavaMap(x)))
+    new SampleClass(new java.util.HashMap(x))
     ).toArray
   }
 
@@ -342,7 +344,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     def isControl(s: t.db.Sample) = schema.isSelectionControl(s.sampleClass)
 
-    def unit(s: Sample) = s.sampleClass.asUnit(schema)
+    def unit(s: Sample) = SampleClassUtils.asUnit(s.sampleClass, schema)
 
     //TODO the copying may be costly - consider optimising in the future
     def unitWithoutMajorMedium(s: Sample) = unit(s).
@@ -352,13 +354,13 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     //This will filter by the chosen parameter - usually compound name
 
-    val rs = sampleStore.samples(sc, param, paramValues.toSeq)
+    val rs = sampleStore.samples(SampleClassFilter(sc), param, paramValues.toSeq)
     val ss = rs.groupBy(x =>(
             x.sampleClass("batchGraph"),
             x.sampleClass("control_group")))
 
     val cgs = ss.keys.toSeq.map(_._2).distinct
-    val potentialControls = sampleStore.samples(sc, "control_group", cgs).
+    val potentialControls = sampleStore.samples(SampleClassFilter(sc), "control_group", cgs).
       filter(isControl).map(asJavaSample)
 
       /*
@@ -389,7 +391,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
           )
 
         val cu = if (fcs.isEmpty)
-          new Unit(sc.asUnit(schema), Array())
+          new Unit(SampleClassUtils.asUnit(sc, schema), Array())
         else
           asUnit(fcs)
 

@@ -24,9 +24,9 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 import t.common.shared.DataSchema;
-import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.Sample;
+import t.model.SampleClass;
 
 /**
  * A Dataset can construct Data objects based on SampleClass filters. Each Data object can support

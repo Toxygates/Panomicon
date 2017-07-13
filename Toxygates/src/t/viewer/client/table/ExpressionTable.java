@@ -29,6 +29,37 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import otgviewer.client.StandardColumns;
+import otgviewer.client.charts.AdjustableGrid;
+import otgviewer.client.charts.Charts;
+import otgviewer.client.charts.Charts.AChartAcceptor;
+import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
+import t.common.client.ImageClickCell;
+import t.common.shared.AType;
+import t.common.shared.DataSchema;
+import t.common.shared.GroupUtils;
+import t.common.shared.Pair;
+import t.common.shared.SharedUtils;
+import t.common.shared.ValueType;
+import t.common.shared.sample.DataColumn;
+import t.common.shared.sample.ExpressionRow;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.Sample;
+import t.common.shared.sample.SampleClassUtils;
+import t.model.SampleClass;
+import t.viewer.client.Analytics;
+import t.viewer.client.CodeDownload;
+import t.viewer.client.Utils;
+import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.dialog.FilterEditor;
+import t.viewer.client.rpc.MatrixServiceAsync;
+import t.viewer.shared.ColumnFilter;
+import t.viewer.shared.ManagedMatrixInfo;
+import t.viewer.shared.Synthetic;
+import t.viewer.shared.table.SortKey;
+
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.cell.client.TextCell;
@@ -58,36 +89,6 @@ import com.google.gwt.view.client.AsyncDataProvider;
 import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.NoSelectionModel;
 import com.google.gwt.view.client.Range;
-
-import otgviewer.client.StandardColumns;
-import otgviewer.client.charts.AdjustableGrid;
-import otgviewer.client.charts.Charts;
-import otgviewer.client.charts.Charts.AChartAcceptor;
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import t.common.client.ImageClickCell;
-import t.common.shared.AType;
-import t.common.shared.DataSchema;
-import t.common.shared.GroupUtils;
-import t.common.shared.Pair;
-import t.common.shared.SampleClass;
-import t.common.shared.SharedUtils;
-import t.common.shared.ValueType;
-import t.common.shared.sample.DataColumn;
-import t.common.shared.sample.ExpressionRow;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
-import t.viewer.client.Analytics;
-import t.viewer.client.CodeDownload;
-import t.viewer.client.Utils;
-import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.dialog.FilterEditor;
-import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.shared.ColumnFilter;
-import t.viewer.shared.ManagedMatrixInfo;
-import t.viewer.shared.Synthetic;
-import t.viewer.shared.table.SortKey;
 
 /**
  * The main data display table. This class has many different functionalities. (too many, should be
@@ -769,7 +770,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     // TODO: efficiency of this operation for 100's of samples
     List<SampleClass> allCs = new LinkedList<SampleClass>();
     for (Group g : columns) {
-      allCs.addAll(SampleClass.classes(Arrays.asList(g.getSamples())));
+      allCs.addAll(SampleClassUtils.classes(Arrays.asList(g.getSamples())));
     }
     changeSampleClass(SampleClass.intersection(allCs));
     logger.info("Set SC to: " + chosenSampleClass.toString());

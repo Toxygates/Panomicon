@@ -26,15 +26,15 @@ import java.util.Set;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
+import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.Pathology;
 import t.common.client.ImageClickCell;
 import t.common.shared.GroupUtils;
-import t.common.shared.SampleClass;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.SampleColumn;
+import t.model.SampleClass;
 import t.viewer.client.Utils;
-import otgviewer.client.rpc.SparqlServiceAsync;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.safehtml.shared.SafeHtml;

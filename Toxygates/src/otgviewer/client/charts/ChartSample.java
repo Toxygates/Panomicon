@@ -24,9 +24,9 @@ import javax.annotation.Nullable;
 
 import t.common.shared.DataSchema;
 import t.common.shared.HasClass;
-import t.common.shared.SampleClass;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
+import t.model.SampleClass;
 import t.viewer.client.Utils;
 
 public class ChartSample implements HasClass {

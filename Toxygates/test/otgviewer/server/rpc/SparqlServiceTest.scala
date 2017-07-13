@@ -25,9 +25,9 @@ import scala.collection.JavaConversions._
 import org.scalatest.BeforeAndAfter
 import org.scalatest.FunSuite
 
-import t.common.shared.SampleClass
 import t.viewer.server.Configuration
 import t.common.shared.AType
+import t.model.SampleClass
 
 object SparqlServiceTest {
   val testClass = Map("sin_rep_type" -> "Single",
@@ -35,7 +35,7 @@ object SparqlServiceTest {
       "organ_id" -> "Liver",
       "test_type" -> "in vivo")
 
-  def testSampleClass = new SampleClass(mapAsJavaMap(testClass))
+  def testSampleClass = new SampleClass(testClass)
 }
 
 class SparqlServiceTest extends FunSuite with BeforeAndAfter {

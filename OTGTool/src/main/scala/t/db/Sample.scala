@@ -20,6 +20,9 @@
 
 package t.db
 
+import t.model.SampleClass
+import t.model.shared.SampleClassHelper
+
 /**
  * A sample.
  */
@@ -54,10 +57,10 @@ object Sample {
   }
 
   def apply(code: Int)(implicit context: MatrixContext): Sample = {
-    new Sample(identifierFor(code), SampleClass(), None)
+    new Sample(identifierFor(code), SampleClassHelper(), None)
   }
 
-  def apply(id: String) = new Sample(id, SampleClass(), None)
+  def apply(id: String) = new Sample(id, SampleClassHelper(), None)
 
-  def apply(id: String, map: Map[String, String]) = new Sample(id, SampleClass(map), None)
+  def apply(id: String, map: Map[String, String]) = new Sample(id, SampleClassHelper(map), None)
 }

@@ -34,9 +34,10 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
 import t.common.shared.DataSchema;
 import t.common.shared.Pair;
-import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
+import t.common.shared.sample.SampleClassUtils;
 import t.common.shared.sample.Unit;
+import t.model.SampleClass;
 
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -72,7 +73,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
       if (!noCompounds) {
         g.compoundsChanged(chosenCompounds);
       }
-      Label l = new Label(sc.label(scr.schema()));
+      Label l = new Label(SampleClassUtils.label(sc, scr.schema()));
       l.setStylePrimaryName("heavyEmphasized");
       vp.add(l);
       vp.add(g);
@@ -160,7 +161,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
     final String majorParam = scr.schema().majorParameter();
     Map<SampleClass, Set<String>> lcompounds = new HashMap<SampleClass, Set<String>>();
     for (Unit u : selection) {
-      SampleClass sc = u.asMacroClass(schema);
+      SampleClass sc = SampleClassUtils.asMacroClass(u, schema);
       if (!lcompounds.containsKey(sc)) {
         lcompounds.put(sc, new HashSet<String>());
       }

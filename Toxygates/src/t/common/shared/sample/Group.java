@@ -109,7 +109,7 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
         continue;
       }
       if (triples.size() < limit || limit == -1) {
-        triples.add(u.tripleString(schema));
+        triples.add(SampleClassUtils.tripleString(u, schema));
       } else {
         stopped = true;
         break;

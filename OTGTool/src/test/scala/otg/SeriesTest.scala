@@ -31,6 +31,8 @@ import t.db.BasicExprValue
 import t.db.SeriesPoint
 import t.db.kyotocabinet.KCExtMatrixDB
 
+import scala.collection.JavaConversions._
+
 class SeriesTest extends TTestSuite {
 
   import otg.testing.{TestData => OData}

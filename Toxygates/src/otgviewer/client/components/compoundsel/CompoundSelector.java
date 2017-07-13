@@ -29,7 +29,7 @@ import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import t.common.shared.ItemList;
-import t.common.shared.SampleClass;
+import t.model.SampleClass;
 import t.common.shared.StringList;
 import t.viewer.client.components.StackedListEditor;
 import t.viewer.client.rpc.SampleServiceAsync;

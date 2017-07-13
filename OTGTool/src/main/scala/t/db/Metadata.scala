@@ -23,8 +23,6 @@ package t.db
 import friedrich.util.formats.TSVFile
 import t.Factory
 
-case class SampleParameter(identifier: String, humanReadable: String)
-
 trait ParameterSet {
   def all: Iterable[SampleParameter]
   def required: Iterable[SampleParameter]

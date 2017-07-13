@@ -31,6 +31,8 @@ import t.db.SampleParameter
 import t.db.SeriesPoint
 import t.db.testing.TestData.enumMaps
 
+import scala.collection.JavaConversions._
+
 object TestData {
   import t.db.testing.TestData._
 
@@ -66,7 +68,7 @@ object TestData {
     def parameters: ParameterSet = ???
 
     def parameters(s: Sample): Iterable[(SampleParameter, String)] = {
-      samples.find(_ == s).get.sampleClass.constraints.map(x =>  {
+      samples.find(_ == s).get.sampleClass.constraints.toSeq.map(x =>  {
          val k = OTGParameterSet.byId(x._1)
          (k, x._2)
       })

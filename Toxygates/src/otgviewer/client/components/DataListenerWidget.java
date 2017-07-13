@@ -35,12 +35,12 @@ import java.util.logging.Logger;
 import t.common.shared.DataSchema;
 import t.common.shared.Dataset;
 import t.common.shared.ItemList;
-import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.DataColumn;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.SampleColumn;
+import t.model.SampleClass;
 import t.viewer.client.Utils;
 
 import com.google.gwt.user.client.ui.Composite;

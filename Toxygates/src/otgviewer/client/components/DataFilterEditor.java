@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
-import t.common.shared.SampleClass;
+import t.model.SampleClass;
 import t.common.shared.SharedUtils;
 import t.viewer.client.rpc.SampleServiceAsync;
 
