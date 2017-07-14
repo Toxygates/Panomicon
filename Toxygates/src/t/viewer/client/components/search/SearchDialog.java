@@ -81,8 +81,8 @@ public class SearchDialog extends Composite {
     searchPanel.setSize("800px", "800px");    
     conditionEditor = new ConditionEditor(sampleParameters());
     
-    Button searchButton = new Button("Sample Search");
-    searchButton.addClickHandler(new ClickHandler() {      
+    Button sampleSearchButton = new Button("Sample Search");
+    sampleSearchButton.addClickHandler(new ClickHandler() {      
       @Override
       public void onClick(ClickEvent event) {
         sampleTableHelper.performSearch(conditionEditor.getCondition());
@@ -100,7 +100,7 @@ public class SearchDialog extends Composite {
     resultCountLabel = new Label();
 
     HorizontalPanel tools =
-        Utils.mkHorizontalPanel(true, searchButton, unitSearchButton, resultCountLabel);
+        Utils.mkHorizontalPanel(true, unitSearchButton, sampleSearchButton, resultCountLabel);
     VerticalPanel vp = Utils.mkVerticalPanel(true, conditionEditor, tools, unitTableHelper.table,
         sampleTableHelper.table);
     searchPanel.add(vp);
