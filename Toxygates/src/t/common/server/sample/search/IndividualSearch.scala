@@ -63,4 +63,9 @@ class IndividualSearch(schema: DataSchema, metadata: Metadata, condition: MatchC
     }
 
   def zTestSampleSize(s: Sample): Int = 1
+
+  def sortObject(sample: Sample): (String, Int, Int) = {
+    (sample.get("compound_name"), doseLevelMap(sample.get("dose_level")),
+        exposureTimeMap(sample.get("exposure_time")))
+  }
 }

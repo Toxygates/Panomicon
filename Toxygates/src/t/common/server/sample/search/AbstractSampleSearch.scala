@@ -19,6 +19,7 @@ import t.db.SampleParameters
 import t.db.ParameterSet
 import scala.collection.Seq
 import t.viewer.server.Annotations
+import otgviewer.shared.OTGSchema
 
   /**
    * Companion object to create sample search objects; meant to encapsulate
@@ -75,12 +76,13 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
   def sampleParamValue(s: ST, sp: SampleParameter): Option[Double]
   def postMatchAdjust(s: ST): ST
   def zTestSampleSize(s: ST): Int
+  def sortObject(s: ST): (String, Int, Int)
 
   /**
    * Results of the search.
    */
   lazy val results: Iterable[ST] =
-    results(condition).toSeq.map(postMatchAdjust)
+    results(condition).toSeq.map(postMatchAdjust).sortBy(sortObject(_))
 
   private def paramComparison(s: ST, param: SampleParameter,
                               paramGetter: ST => Option[Double],
@@ -145,4 +147,10 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
           case None => false
         }
     }
+
+  protected def doseLevelMap: Map[String, Int] =
+    Map() ++ OTGSchema.allDoses.zipWithIndex
+
+  protected def exposureTimeMap: Map[String, Int] =
+    Map() ++ OTGSchema.allTimes.zipWithIndex
 }
