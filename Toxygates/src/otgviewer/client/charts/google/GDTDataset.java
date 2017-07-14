@@ -25,8 +25,9 @@ import javax.annotation.Nullable;
 
 import otgviewer.client.charts.ChartSample;
 import otgviewer.client.charts.Dataset;
-import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
+import t.common.shared.sample.SampleClassUtils;
+import t.model.SampleClass;
 
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
@@ -50,7 +51,8 @@ public class GDTDataset extends Dataset<GDTData> {
 
     List<ChartSample> fsamples = new ArrayList<ChartSample>();
     for (ChartSample s : samples) {
-      if ((probe == null || s.probe().equals(probe)) && filter.strictCompatible(s)) {
+      if ((probe == null || s.probe().equals(probe)) && 
+          SampleClassUtils.strictCompatible(filter, s)) {
         fsamples.add(s);
       }
     }

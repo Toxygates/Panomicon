@@ -9,7 +9,9 @@ case class SampleParameter(identifier: String, humanReadable: String) {
  */
 object SampleParameters {
   val ControlGroup = SampleParameter("control_group", "Control group")
-  val ExposureTime = SampleParameter("exposure_time", "Exposure time")
+  val ExposureTime =
+    SampleParameter(t.model.SampleParameter.ExposureTime.id,
+        t.model.SampleParameter.ExposureTime.title())
   val DoseLevel = SampleParameter("dose_level", "Dose level")
   val BatchGraph = SampleParameter("batchGraph", "Batch")
   val Individual = SampleParameter("individual_id", "Individual ID")

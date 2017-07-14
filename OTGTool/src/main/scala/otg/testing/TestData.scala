@@ -37,6 +37,8 @@ import t.platform.ControlGroup
 import t.db.SampleParameters._
 import otg.OTGBConfig
 
+import scala.collection.JavaConversions._
+
 object TestData {
   import t.db.testing.TestData._
 

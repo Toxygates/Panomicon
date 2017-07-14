@@ -33,6 +33,8 @@ import t.db.kyotocabinet.KCExtMatrixDB
 import org.junit.runner.RunWith
 import t.db.SampleParameters._
 
+import scala.collection.JavaConversions._
+
 @RunWith(classOf[JUnitRunner])
 class SeriesTest extends TTestSuite {
 

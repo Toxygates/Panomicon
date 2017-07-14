@@ -23,7 +23,7 @@ import java.io.Serializable;
 import t.common.shared.DataSchema;
 import t.common.shared.HasClass;
 import t.common.shared.Packable;
-import t.common.shared.SampleClass;
+import t.model.SampleClass;
 
 @SuppressWarnings("serial")
 public class Sample implements Packable, Serializable, HasClass {

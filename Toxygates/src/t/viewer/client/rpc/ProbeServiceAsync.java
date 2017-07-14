@@ -4,8 +4,8 @@ import java.util.List;
 
 import t.common.shared.AType;
 import t.common.shared.Pair;
-import t.common.shared.SampleClass;
 import t.common.shared.sample.Sample;
+import t.model.SampleClass;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 

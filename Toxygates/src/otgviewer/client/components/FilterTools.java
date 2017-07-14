@@ -21,7 +21,7 @@ package otgviewer.client.components;
 import java.util.Arrays;
 
 import t.common.shared.Dataset;
-import t.common.shared.SampleClass;
+import t.model.SampleClass;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.shared.AppInfo;
 

@@ -5,6 +5,7 @@ import otg.testing.TestData
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import t.db.SampleParameters._
+import scala.collection.JavaConversions._
 
 @RunWith(classOf[JUnitRunner])
 class ControlGroupTest extends TTestSuite {
@@ -35,7 +36,7 @@ class ControlGroupTest extends TTestSuite {
       cg = TestData.controlGroups(s)) {
       val isControl = cg.controlSamples.toSet.contains(s)
 
-      if (isControl || s.sampleClass(Individual) == "2") {
+      if (isControl || s.sampleClass(Individual.id) == "2") {
          //healthy
         metadata.parameter(s, "liver_wt").get.toDouble should
           be (3.0 +- 0.1)

@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package t.common.shared;
+package t.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -28,33 +28,30 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
-import t.common.shared.sample.HasSamples;
-import t.common.shared.sample.Sample;
 
 /**
  * A sample class identifies a group of samples.
  * 
- * Standard keys for OTG: time, dose, organism, organ_id, test_type, sin_rep_type Optional keys:
- * compound_name, exposure_time, dose_level DataSchema should be used to identify keys, rather than
- * hardcoding strings.
+ * Standard keys for OTG: time, dose, organism, organ_id, test_type, sin_rep_type 
+ * Optional keys:
+ * compound_name, exposure_time, dose_level 
  */
 @SuppressWarnings("serial")
-public class SampleClass implements Serializable, Packable, HasClass {
-
-  /*
-   * TODO: carry reference to schema?
-   */
+public class SampleClass implements Serializable {
 
   public SampleClass() {}
 
   private Map<String, String> data = new HashMap<String, String>();
 
   public SampleClass(Map<String, String> data) {
-    this.data = data;
+    //Copy to a new java.util.HashMap to ensure GWT serialisation is possible
+    this.data = new HashMap<String, String>(data);
   }
 
+  public String apply(String key) {
+    return get(key);
+  }
+  
   public String get(String key) {
     return data.get(key);
   }
@@ -65,10 +62,6 @@ public class SampleClass implements Serializable, Packable, HasClass {
   
   public void remove(String key) {
     data.remove(key);
-  }
-
-  public Set<String> keys() {
-    return data.keySet();
   }
 
   public SampleClass copy() {
@@ -113,29 +106,14 @@ public class SampleClass implements Serializable, Packable, HasClass {
     }
   }
 
-  public SampleClass asMacroClass(DataSchema schema) {
-    List<String> keys = new ArrayList<String>();
-    for (String s : schema.macroParameters()) {
-      keys.add(s);
-    }
-    return copyOnly(keys);
-  }
-
-  public SampleClass asUnit(DataSchema schema) {
-    List<String> keys = new ArrayList<String>();
-    for (String s : schema.macroParameters()) {
-      keys.add(s);
-    }
-    keys.add(schema.majorParameter());
-    keys.add(schema.mediumParameter());
-    keys.add(schema.minorParameter());
-    return copyOnly(keys);
-  }
-
   public SampleClass sampleClass() {
     return this;
   }
 
+  public Map<String, String> constraints() {
+    return getMap();
+  }
+  
   /**
    * Returns a copy of this sample class' constraint map.
    * 
@@ -143,16 +121,6 @@ public class SampleClass implements Serializable, Packable, HasClass {
    */
   public Map<String, String> getMap() {
     return new HashMap<String, String>(data);
-  }
-
-  /**
-   * Does the HasClass match the constraints specified in this SampleClass?
-   * 
-   * @param hc
-   * @return
-   */
-  public boolean compatible(HasClass hc) {
-    return compatible(hc.sampleClass());
   }
 
   /**
@@ -171,10 +139,6 @@ public class SampleClass implements Serializable, Packable, HasClass {
     return true;
   }
 
-  public boolean strictCompatible(HasClass hc) {
-    return strictCompatible(hc.sampleClass());
-  }
-
   /**
    * Returns true iff the tested sample class contains all the keys of this one and they have the
    * same values. Non-commutative.
@@ -191,17 +155,6 @@ public class SampleClass implements Serializable, Packable, HasClass {
     return true;
   }
 
-  public static Set<String> collectInner(List<? extends HasClass> from, String key) {
-    Set<String> r = new HashSet<String>();
-    for (HasClass hc : from) {
-      String x = hc.sampleClass().get(key);
-      if (x != null) {
-        r.add(x);
-      }
-    }
-    return r;
-  }
-
   public static Set<String> collect(List<? extends SampleClass> from, String key) {
     Set<String> r = new HashSet<String>();
     for (SampleClass sc : from) {
@@ -209,18 +162,6 @@ public class SampleClass implements Serializable, Packable, HasClass {
       if (x != null) {
         r.add(x);
       }
-    }
-    return r;
-  }
-
-  public static <HC extends HasClass> Map<String, List<HC>> groupBy(List<HC> from, String key) {
-    Map<String, List<HC>> r = new HashMap<String, List<HC>>();
-    for (HC h : from) {
-      String k = h.sampleClass().get(key);
-      if (!r.containsKey(k)) {
-        r.put(k, new ArrayList<HC>());
-      }
-      r.get(k).add(h);
     }
     return r;
   }
@@ -261,26 +202,6 @@ public class SampleClass implements Serializable, Packable, HasClass {
     return r;
   }
 
-  public static List<SampleClass> classes(List<? extends HasClass> from) {
-    List<SampleClass> r = new ArrayList<SampleClass>();
-    for (HasClass hc : from) {
-      r.add(hc.sampleClass());
-    }
-    return r;
-  }
-
-  public static <S extends Sample, HS extends HasSamples<S>> Set<String> getMajors(
-      DataSchema schema, HS hasSamples) {
-    return getMajors(schema, hasSamples, (SampleClass) null);
-  }
-
-  public static <S extends Sample, HS extends HasSamples<S>> Set<String> getMajors(
-      DataSchema schema, HS hasSamples, @Nullable SampleClass sc) {
-    List<S> sList = Arrays.asList(hasSamples.getSamples());
-    List<S> filtered = (sc != null) ? sc.filter(sList) : sList;
-    return collectInner(filtered, schema.majorParameter());
-  }
-
   public static <T extends SampleClass> List<T> filter(T[] from, String key, String constraint) {
     List<T> ff = Arrays.asList(from);
     return filter(ff, key, constraint);
@@ -296,52 +217,6 @@ public class SampleClass implements Serializable, Packable, HasClass {
     return r;
   }
 
-  public static class Comparator implements java.util.Comparator<HasClass> {
-    DataSchema schema;
-
-    public Comparator(DataSchema schema) {
-      this.schema = schema;
-    }
-
-    // negative iff x1 is before x2,
-    // positive iff x2 is before x1.
-    public int compare(String[] ref, String x1, String x2) {
-      return SharedUtils.indexOf(ref, x1) - SharedUtils.indexOf(ref, x2);
-    }
-
-    public int compare(HasClass sc1, HasClass sc2) {
-      String maj1 = schema.getMajor(sc1), maj2 = schema.getMajor(sc2);
-      String med1 = schema.getMedium(sc1), med2 = schema.getMedium(sc2);
-      String min1 = schema.getMinor(sc1), min2 = schema.getMinor(sc2);
-      try {
-        String[] smaj = schema.sortedValues(schema.majorParameter());
-        String[] smed = schema.sortedValues(schema.mediumParameter());
-        String[] smin = schema.sortedValues(schema.minorParameter());
-
-        int c1 = compare(smaj, maj1, maj2);
-        if (c1 == 0) {
-          int c2 = compare(smed, med1, med2);
-          if (c2 == 0) {
-            return compare(smin, min1, min2);
-          }
-          return c2;
-        }
-        return c1;
-      } catch (Exception e) {
-        return 1;
-      }
-    }
-  }
-
-  public <T extends HasClass> List<T> filter(List<T> from) {
-    List<T> r = new ArrayList<T>();
-    for (T t : from) {
-      if (compatible(t)) {
-        r.add(t);
-      }
-    }
-    return r;
-  }
 
   @Override
   public boolean equals(Object other) {
@@ -366,21 +241,6 @@ public class SampleClass implements Serializable, Packable, HasClass {
     }
     sb.append(")");
     return sb.toString();
-  }
-
-  public String label(DataSchema schema) {
-    StringBuilder sb = new StringBuilder();
-    for (String p : schema.macroParameters()) {
-      sb.append(get(p)).append("/");
-    }
-    return sb.toString();
-  }
-
-  public String tripleString(DataSchema sc) {
-    String maj = get(sc.majorParameter());
-    String med = get(sc.mediumParameter());
-    String min = get(sc.minorParameter());
-    return maj + "/" + med + "/" + min;
   }
 
   public String pack() {

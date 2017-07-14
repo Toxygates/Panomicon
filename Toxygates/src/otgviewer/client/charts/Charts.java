@@ -35,13 +35,14 @@ import otgviewer.shared.Series;
 import t.common.shared.DataSchema;
 import t.common.shared.GroupUtils;
 import t.common.shared.Pair;
-import t.common.shared.SampleClass;
 import t.common.shared.SampleMultiFilter;
 import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
+import t.common.shared.sample.SampleClassUtils;
 import t.common.shared.sample.Unit;
+import t.model.SampleClass;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.rpc.SeriesServiceAsync;
 
@@ -84,7 +85,8 @@ public class Charts {
 
     List<SampleClass> scs = new ArrayList<SampleClass>();
     for (Group g : groups) {
-      SampleClass sc = g.getSamples()[0].sampleClass().asMacroClass(schema);
+      SampleClass sc = SampleClassUtils.asMacroClass(g.getSamples()[0].sampleClass(),
+          schema);
       scs.add(sc);
     }
 

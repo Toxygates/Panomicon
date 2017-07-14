@@ -31,7 +31,6 @@ import otgviewer.client.components.Screen;
 import otgviewer.shared.Series;
 import t.common.shared.DataSchema;
 import t.common.shared.HasClass;
-import t.common.shared.SampleClass;
 import t.common.shared.SampleMultiFilter;
 import t.common.shared.SharedUtils;
 import t.common.shared.ValueType;
@@ -39,7 +38,9 @@ import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.ExpressionValue;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
+import t.common.shared.sample.SampleClassUtils;
 import t.common.shared.sample.Unit;
+import t.model.SampleClass;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.FullMatrix;
 
@@ -79,7 +80,7 @@ abstract public class DataSource {
     try {
       String minorParam = schema.minorParameter();
       String medParam = schema.mediumParameter();
-      Set<String> minorVals = SampleClass.collectInner(from, minorParam);
+      Set<String> minorVals = SampleClassUtils.collectInner(from, minorParam);
       _minorVals = minorVals.toArray(new String[0]);
       schema.sort(minorParam, _minorVals);
 

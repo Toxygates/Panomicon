@@ -34,7 +34,7 @@ import otgviewer.shared.RankRule
 import otgviewer.shared.{Series => SSeries}
 import t.BaseConfig
 import t.viewer.client.rpc.SeriesService
-import t.common.shared.SampleClass
+import t.model.SampleClass
 import t.db.MatrixContext
 import t.db.SeriesDB
 import t.db.Series
@@ -46,6 +46,8 @@ import t.sparql.Datasets
 import t.sparql.SampleFilter
 import t.viewer.server.Configuration
 import t.viewer.shared.NoSuchProbeException
+import t.sparql.SampleClassFilter
+import t.model.SampleClass
 
 abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with SeriesService {
   import java.lang.{ Double => JDouble }
@@ -69,7 +71,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     val dsTitles = ds.map(_.getTitle).distinct.toList
     implicit val sf = SampleFilter(instanceURI = config.instanceURI,
         datasetURIs = dsTitles.map(Datasets.packURI(_)))
-    context.samples.attributeValues(scAsScala(sc).filterAll,
+    context.samples.attributeValues(SampleClassFilter(sc).filterAll,
       schema.majorParameter()).toSet
   }
 

@@ -29,10 +29,11 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import t.common.shared.DataSchema;
 import t.common.shared.Pair;
-import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.Sample;
+import t.common.shared.sample.SampleClassUtils;
 import t.common.shared.sample.Unit;
+import t.model.SampleClass;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SampleServiceAsync;
 
@@ -191,8 +192,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
   protected void onMinorsDone() {}
 
   protected String keyFor(Sample b) {
-    // TODO efficiency
-    return b.sampleClass().tripleString(schema);
+    return SampleClassUtils.tripleString(b.sampleClass(), schema);
   }
 
   private boolean fetchingSamples = false;

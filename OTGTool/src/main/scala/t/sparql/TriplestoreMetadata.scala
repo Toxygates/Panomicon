@@ -36,7 +36,7 @@ class TriplestoreMetadata(sampleStore: Samples, val parameterSet: ParameterSet,
     querySet: Iterable[SampleParameter] = Seq())
 (implicit sf: SampleFilter) extends Metadata {
 
-  override def samples: Iterable[Sample] = sampleStore.samples(SampleClass())
+  override def samples: Iterable[Sample] = sampleStore.samples(SampleClassFilter())
 
   override def parameters(s: Sample): Seq[(SampleParameter, String)] = {
     sampleStore.parameterQuery(s.identifier, querySet).collect( {

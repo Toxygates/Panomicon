@@ -54,11 +54,11 @@ import otgviewer.client.rpc.SparqlServiceAsync;
 import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
 import t.common.shared.ItemList;
-import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.Term;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
+import t.model.SampleClass;
 import t.viewer.client.Utils;
 
 public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHandler {

@@ -21,8 +21,8 @@ package t.viewer.client.rpc;
 import java.util.List;
 
 import t.common.shared.AType;
-import t.common.shared.SampleClass;
 import t.common.shared.sample.Sample;
+import t.model.SampleClass;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.Association;
 

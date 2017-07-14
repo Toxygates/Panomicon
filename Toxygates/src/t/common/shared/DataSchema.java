@@ -24,6 +24,9 @@ import java.util.Comparator;
 
 import javax.annotation.Nullable;
 
+import t.model.SampleClass;
+
+
 /**
  * Information about the data schema in a particular T application.
  * 

@@ -106,11 +106,12 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
   /**
    * The sample query must query for ?batchGraph and ?dataset.
    */
-  def sampleQuery(sc: SampleClass)(implicit sf: SampleFilter): Query[Vector[Sample]]
+  def sampleQuery(sc: SampleClassFilter)(implicit sf: SampleFilter): Query[Vector[Sample]]
 
   def samples() = ???
 
-  def samples(sc: SampleClass)(implicit sf: SampleFilter): Seq[Sample] =
+  def samples(sc: SampleClassFilter)(implicit sf: SampleFilter): Seq[Sample] =
+
     sampleQuery(sc)(sf)()
 
   def allValuesForSampleAttribute(attribute: String,
@@ -129,7 +130,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
       " }")
   }
 
-  def samples(sc: SampleClass, fparam: String, fvalues: Iterable[String])(implicit sf: SampleFilter): Seq[Sample] = {
+  def samples(sc: SampleClassFilter, fparam: String, fvalues: Iterable[String])(implicit sf: SampleFilter): Seq[Sample] = {
     sampleQuery(sc).constrain(
       multiFilter(s"?$fparam", fvalues.map("\"" + _ + "\"")))()
   }
@@ -209,7 +210,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     val mq = ts.mapQuery(q)
     val byGroup = mq.groupBy(_("l"))
     val allIds = mq.map(_("sid")).distinct
-    val withAttributes = sampleQuery(SampleClass())(sf).constrain(
+    val withAttributes = sampleQuery(SampleClassFilter())(sf).constrain(
       "FILTER (?id IN (" + allIds.map('"' + _ + '"').mkString(",") + ")).")()
     val lookup = Map() ++ withAttributes.map(x => (x.identifier -> x))
 

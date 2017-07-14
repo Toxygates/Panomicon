@@ -1,11 +1,11 @@
 package otgviewer.client.rpc;
 
-import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
-
 import otgviewer.shared.Pathology;
-import t.common.shared.SampleClass;
 import t.common.shared.sample.SampleColumn;
+import t.model.SampleClass;
 import t.viewer.shared.TimeoutException;
+
+import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 @RemoteServiceRelativePath("sparql")
 public interface SparqlService extends t.viewer.client.rpc.SparqlService {

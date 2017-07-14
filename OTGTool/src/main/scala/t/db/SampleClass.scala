@@ -22,16 +22,7 @@ package t.db
 
 import scala.collection.{ Map => CMap }
 
-object SampleClass {
-  def constraint(key: String, x: Option[String]) = x.map(key -> _)
-}
-
-/**
- * A set of constraints on a sample.
- *
- * TODO consider deprecating this class entirely and using a simple map
- */
-case class SampleClass(constraints: CMap[String, String] = Map()) extends SampleClassLike
+import scala.collection.JavaConversions._
 
 trait SampleClassLike {
   def constraints: CMap[String, String]
@@ -46,5 +37,6 @@ trait SampleClassLike {
 
   def get(key: SampleParameter): Option[String] = get(key.id)
 
-  def ++(other: SampleClassLike) = SampleClass(constraints ++ other.constraints)
+  def ++(other: SampleClassLike) =
+    new t.model.SampleClass(constraints ++ other.constraints)
 }

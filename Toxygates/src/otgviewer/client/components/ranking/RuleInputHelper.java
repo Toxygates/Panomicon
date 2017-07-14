@@ -23,7 +23,7 @@ import java.util.List;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.RuleType;
 import t.common.client.components.ItemSelector;
-import t.common.shared.SampleClass;
+import t.model.SampleClass;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;

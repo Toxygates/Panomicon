@@ -25,7 +25,7 @@ import t.BaseConfig
 import t.db.Sample
 import t.sparql.{ Filter => TFilter }
 import t.sparql.Query
-import t.sparql.SampleClass
+import t.sparql.SampleClassFilter
 import t.sparql.SampleFilter
 import t.sparql.Samples
 import t.db.SampleParameters._
@@ -39,7 +39,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
 
   //TODO case with no attributes won't work
   //TODO consider lifting up
-  def sampleQuery(filter: SampleClass)(implicit sf: SampleFilter): Query[Vector[Sample]] = {
+  def sampleQuery(filter: SampleClassFilter)(implicit sf: SampleFilter): Query[Vector[Sample]] = {
     val filterString = if(filter.constraints.isEmpty) "" else
         s"""|  FILTER(
         |    ${standardAttributes.map(a => filter.get(a).map(f =>
@@ -61,7 +61,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
         |  }""".stripMargin,
 
       eval = ts.mapQuery(_, 20000).map(x => {
-        val sc = SampleClass(adjustSample(x, batchFilter)) ++ filter
+        val sc = SampleClassFilter(adjustSample(x, batchFilter)) ++ filter
         Sample(x("id"), sc, Some(x(ControlGroup.id)))
        })
      )

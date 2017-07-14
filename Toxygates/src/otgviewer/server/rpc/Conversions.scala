@@ -34,7 +34,6 @@ import otg.Context
 import otgviewer.shared.RuleType
 import otg.Species._
 import otg.OTGSeries
-import t.common.shared.SampleClass
 import t.common.shared.Pair
 import t.common.shared.sample.Sample
 
@@ -67,7 +66,7 @@ object Conversions {
   implicit def asJava(series: OTGSeries)(implicit context: Context): Series = {
     implicit val mc = context.matrix
     val name = series.compound + " " + series.dose
-    val sc = new t.common.shared.SampleClass
+    val sc = new t.model.SampleClass
     sc.put("dose_level", series.dose)
     sc.put("compound_name", series.compound)
     sc.put("organism", series.organism)

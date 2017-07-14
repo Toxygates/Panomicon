@@ -36,13 +36,24 @@ import t.sparql.secondary.LocalUniprot
 import t.sparql.SampleFilter
 import otg.OTGBConfig
 
+<<<<<<< local
 object AssociationResolverTest {
+=======
+import org.scalatest.BeforeAndAfter
+import org.scalatest.FunSuite
+
+import t.viewer.server.Configuration
+import t.common.shared.AType
+import t.model.SampleClass
+
+object SparqlServiceTest {
+>>>>>>> other
   val testClass = Map("sin_rep_type" -> "Single",
     "organism" -> "Rat",
     "organ_id" -> "Liver",
     "test_type" -> "in vivo")
 
-  def testSampleClass = new SampleClass(mapAsJavaMap(testClass))
+  def testSampleClass = new SampleClass(testClass)
 }
 
 @RunWith(classOf[JUnitRunner])

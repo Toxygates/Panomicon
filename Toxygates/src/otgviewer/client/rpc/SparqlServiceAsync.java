@@ -1,8 +1,8 @@
 package otgviewer.client.rpc;
 
 import otgviewer.shared.Pathology;
-import t.common.shared.SampleClass;
 import t.common.shared.sample.SampleColumn;
+import t.model.SampleClass;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 

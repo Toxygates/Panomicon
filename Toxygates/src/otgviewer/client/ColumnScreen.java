@@ -29,7 +29,7 @@ import otgviewer.client.components.StorageParser;
 import otgviewer.client.components.compoundsel.CompoundSelector;
 import otgviewer.client.components.groupdef.GroupInspector;
 import t.common.shared.DataSchema;
-import t.common.shared.SampleClass;
+import t.model.SampleClass;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.SampleColumn;
 import t.viewer.client.Utils;

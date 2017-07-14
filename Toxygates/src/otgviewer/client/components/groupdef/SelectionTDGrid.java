@@ -31,10 +31,10 @@ import otgviewer.client.TimeDoseGrid;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import t.common.shared.Pair;
-import t.common.shared.SampleClass;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
+import t.model.SampleClass;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 
