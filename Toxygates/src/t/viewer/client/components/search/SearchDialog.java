@@ -21,6 +21,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -48,6 +49,7 @@ public class SearchDialog extends Composite {
   private TableHelper<Sample> sampleTableHelper = new SampleTableHelper();
   private TableHelper<Unit> unitTableHelper = new UnitTableHelper();
 
+  private Label resultCountLabel;
   private DialogBox waitDialog;
   
   private static String DECIMAL_FORMAT = "#.000";
@@ -95,7 +97,10 @@ public class SearchDialog extends Composite {
       }
     });
 
-    HorizontalPanel tools = Utils.mkHorizontalPanel(true, searchButton, unitSearchButton);
+    resultCountLabel = new Label();
+
+    HorizontalPanel tools =
+        Utils.mkHorizontalPanel(true, searchButton, unitSearchButton, resultCountLabel);
     VerticalPanel vp = Utils.mkVerticalPanel(true, conditionEditor, tools, unitTableHelper.table,
         sampleTableHelper.table);
     searchPanel.add(vp);
@@ -171,6 +176,10 @@ public class SearchDialog extends Composite {
       columns.clear();
     }
 
+    protected String searchEntityName() {
+      return "entities";
+    }
+
     public void performSearch(final @Nullable MatchCondition condition) {
       if (condition == null) {
         Window.alert("Please define the search condition.");
@@ -185,6 +194,8 @@ public class SearchDialog extends Composite {
 
       trackAnalytics();
 
+      resultCountLabel.setText("");
+
       asyncSearch(sampleClass, condition, new AsyncCallback<T[]>() {
 
         @Override
@@ -192,6 +203,7 @@ public class SearchDialog extends Composite {
           waitDialog.hide();
           hideTables();
           setupTable(result, condition);
+          resultCountLabel.setText("Found " + result.length + " " + searchEntityName());
         }
 
         @Override
@@ -276,6 +288,11 @@ public class SearchDialog extends Composite {
         AsyncCallback<Unit[]> callback) {
       sampleService.unitSearch(sampleClass, condition, callback);
     }
+
+    @Override
+    protected String searchEntityName() {
+      return "units";
+    }
   }
 
   private class SampleTableHelper extends TableHelper<Sample> {
@@ -309,6 +326,11 @@ public class SearchDialog extends Composite {
     protected void asyncSearch(SampleClass sampleClass, MatchCondition condition,
         AsyncCallback<Sample[]> callback) {
       sampleService.sampleSearch(sampleClass, condition, callback);
+    }
+
+    @Override
+    protected String searchEntityName() {
+      return "samples";
     }
   }
 }
