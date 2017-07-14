@@ -30,6 +30,27 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.GroupMaker;
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
+import otgviewer.client.components.StorageParser;
+import otgviewer.client.components.compoundsel.CompoundSelector;
+import t.common.client.components.SelectionTable;
+import t.common.shared.DataSchema;
+import t.common.shared.Dataset;
+import t.common.shared.Pair;
+import t.common.shared.SharedUtils;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.Sample;
+import t.common.shared.sample.SampleClassUtils;
+import t.common.shared.sample.SampleColumn;
+import t.common.shared.sample.Unit;
+import t.model.SampleClass;
+import t.viewer.client.Analytics;
+import t.viewer.client.Utils;
+import t.viewer.client.rpc.SampleServiceAsync;
+
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.TextButtonCell;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -48,26 +69,6 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.GroupMaker;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import otgviewer.client.components.StorageParser;
-import otgviewer.client.components.compoundsel.CompoundSelector;
-import t.common.client.components.SelectionTable;
-import t.common.shared.DataSchema;
-import t.common.shared.Dataset;
-import t.common.shared.Pair;
-import t.common.shared.SampleClass;
-import t.common.shared.SharedUtils;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleColumn;
-import t.common.shared.sample.Unit;
-import t.viewer.client.Analytics;
-import t.viewer.client.Utils;
-import t.viewer.client.rpc.SampleServiceAsync;
 
 /**
  * This widget is intended to help visually define and modify groups of samples. The main dose/time
@@ -133,14 +134,15 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     toolPanel.add(txtbxGroup);
 
     saveButton = new Button("Save", new ClickHandler() {
+      @Override
       public void onClick(ClickEvent ce) {
         makeGroup(txtbxGroup.getValue());
-        Analytics.trackEvent(Analytics.CATEGORY_GENERAL, Analytics.ACTION_SAVE_SAMPLE_GROUP);
       }
     });
     toolPanel.add(saveButton);
 
     autoGroupsButton = new Button("Automatic groups", new ClickHandler() {
+      @Override
       public void onClick(ClickEvent ce) {
         makeAutoGroups();
       }
@@ -150,6 +152,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     setEditing(false);
 
     existingGroupsTable = new SelectionTable<Group>("Active", false) {
+      @Override
       protected void initTable(CellTable<Group> table) {
         TextColumn<Group> textColumn = new TextColumn<Group>() {
           @Override
@@ -165,6 +168,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
         final TextButtonCell editCell = new TextButtonCell();
 
         Column<Group, String> editColumn = new Column<Group, String>(editCell) {
+          @Override
           public String getValue(Group g) {
             editCell.setEnabled(!isStatic(g));
             return "Edit";
@@ -180,6 +184,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
 
         final TextButtonCell deleteCell = new TextButtonCell();
         Column<Group, String> deleteColumn = new Column<Group, String>(deleteCell) {
+          @Override
           public String getValue(Group g) {
             deleteCell.setEnabled(!isStatic(g));
             return "Delete";
@@ -199,6 +204,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
 
       }
 
+      @Override
       protected void selectionChanged(Set<Group> selected) {
         chosenColumns = new ArrayList<Group>(selected);
         StorageParser p = getParser(screen);
@@ -539,7 +545,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     }
 
     // Conservatively estimate that we load 10 samples per second
-    int loadTime = (int) (totalSize / 10);
+    int loadTime = totalSize / 10;
 
     if (loadTime > 20) {
       Window.alert("Warning: You have requested data for " + totalSize + " samples.\n"
@@ -550,6 +556,12 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
   private void setGroup(String pendingGroupName, List<Unit> units) {
     logger.info("Set group with " + SharedUtils.mkString(units, ","));
     Group pendingGroup = groups.get(pendingGroupName);
+    if (pendingGroup == null) {
+      Analytics.trackEvent(Analytics.CATEGORY_GENERAL, Analytics.ACTION_CREATE_NEW_SAMPLE_GROUP);
+    } else {
+      Analytics.trackEvent(Analytics.CATEGORY_GENERAL,
+          Analytics.ACTION_MODIFY_EXISTING_SAMPLE_GROUP);
+    }
     existingGroupsTable.removeItem(pendingGroup);
     pendingGroup = new Group(schema, pendingGroupName, units.toArray(new Unit[0]));
     addGroup(pendingGroup, true);
@@ -571,12 +583,13 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
   private void displayGroup(String name) {
     setHeading("editing " + name);
     Group g = groups.get(name);
-    SampleClass macroClass = g.getSamples()[0].sampleClass().asMacroClass(schema);
+    SampleClass macroClass = 
+        SampleClassUtils.asMacroClass(g.getSamples()[0].sampleClass(), schema);
     changeSampleClass(macroClass);
     screen.sampleClassChanged(macroClass);
 
     List<String> compounds =
-        new ArrayList<String>(SampleClass.getMajors(schema, groups.get(name), chosenSampleClass));
+        new ArrayList<String>(SampleClassUtils.getMajors(schema, groups.get(name), chosenSampleClass));
 
     compoundSel.setSelection(compounds);
     txtbxGroup.setValue(name);

@@ -30,23 +30,52 @@ import t.Factory
  * Metadata from a triplestore.
  * The graph to be queried can be influenced by setting
  * os.batchURI.
+ * @param querySet the parameters to be obtained. The default case returns all parameters.
  */
-class TriplestoreMetadata(os: Samples, val parameters: ParameterSet)
+class TriplestoreMetadata(sampleStore: Samples, val parameterSet: ParameterSet,
+    querySet: Iterable[SampleParameter] = Seq())
 (implicit sf: SampleFilter) extends Metadata {
 
-  override def samples: Iterable[Sample] = os.samples(SampleClass())
+  override def samples: Iterable[Sample] = sampleStore.samples(SampleClassFilter())
 
-  override def parameters(s: Sample): Iterable[(SampleParameter, String)] = {
-    os.parameterQuery(s.identifier).collect( {
+  override def parameters(s: Sample): Seq[(SampleParameter, String)] = {
+    sampleStore.parameterQuery(s.identifier, querySet).collect( {
       case (sp, Some(s)) => (sp, s)
     })
   }
 
   override def parameterValues(identifier: String): Set[String] =
-    os.allValuesForSampleAttribute(identifier).toSet
+    sampleStore.allValuesForSampleAttribute(identifier).toSet
 
   override def mapParameter(fact: Factory, key: String, f: String => String) = ???
 
   //TODO
   override def isControl(s: Sample) = ???
+}
+
+/**
+ * Caching triplestore metadata that reads all the data once and stores it.
+ */
+class CachingTriplestoreMetadata(os: Samples, parameterSet: ParameterSet,
+    querySet: Iterable[SampleParameter] = Seq())(implicit sf: SampleFilter)
+    extends TriplestoreMetadata(os, parameterSet, querySet) {
+
+  val useQuerySet = (querySet.map(_.identifier).toSeq :+ "sample_id").distinct
+
+  lazy val rawData = {
+    val raw = os.sampleAttributeQuery(useQuerySet)(sf)()
+    Map() ++ raw.map(r => r("sample_id") -> r)
+  }
+
+  println(rawData take 10)
+
+  lazy val data =
+    rawData.map(r => (r._1 -> r._2.map { case (k,v) => parameterSet.byId(k) -> v }))
+
+  println(data take 10)
+
+  override def parameters(s: Sample) = data.getOrElse(s.sampleId, Map()).toSeq
+
+  override def parameterValues(identifier: String): Set[String] =
+    data.map(_._2(parameterSet.byId(identifier))).toSet
 }

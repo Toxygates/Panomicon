@@ -25,9 +25,10 @@ import t.BaseConfig
 import t.db.Sample
 import t.sparql.{ Filter => TFilter }
 import t.sparql.Query
-import t.sparql.SampleClass
+import t.sparql.SampleClassFilter
 import t.sparql.SampleFilter
 import t.sparql.Samples
+import t.db.SampleParameters._
 
 class OTGSamples(bc: BaseConfig) extends Samples(bc) {
 
@@ -38,31 +39,30 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
 
   //TODO case with no attributes won't work
   //TODO consider lifting up
-  def sampleQuery(filter: SampleClass)(implicit sf: SampleFilter): Query[Vector[Sample]] = {
+  def sampleQuery(filter: SampleClassFilter)(implicit sf: SampleFilter): Query[Vector[Sample]] = {
     val filterString = if(filter.constraints.isEmpty) "" else
-        s"""|  FILTER(      
+        s"""|  FILTER(
         |    ${standardAttributes.map(a => filter.get(a).map(f =>
               s"?$a = " + "\"" + f + "\"")).flatten.mkString(" && ")}
-        |  )""".stripMargin   
-    
+        |  )""".stripMargin
 
     val batchFilter = filter.get("batchGraph")
     val batchFilterQ = batchFilter.map("<" + _ + ">").getOrElse("?batchGraph")
-    
+
     Query(prefixes,
-      s"""SELECT * WHERE { 
+      s"""SELECT * WHERE {
         |  GRAPH $batchFilterQ {
-        |    ?x a t:sample; rdfs:label ?id; 
+        |    ?x a t:sample; rdfs:label ?id;
         |    ${standardAttributes.map(a => s"t:$a ?$a").mkString("; ")} .
-        |""".stripMargin,           
-      
-      s"""|} ${sf.standardSampleFilters} 
-        |  $filterString         
-        |  }""".stripMargin,      
-        
+        |""".stripMargin,
+
+      s"""|} ${sf.standardSampleFilters}
+        |  $filterString
+        |  }""".stripMargin,
+
       eval = ts.mapQuery(_, 20000).map(x => {
-        val sc = SampleClass(adjustSample(x, batchFilter)) ++ filter
-        Sample(x("id"), sc, Some(x("control_group")))
+        val sc = SampleClassFilter(adjustSample(x, batchFilter)) ++ filter
+        Sample(x("id"), sc, Some(x(ControlGroup.id)))
        })
      )
   }
@@ -74,17 +74,17 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
     val vars = hlAttributes.map(a => s"?$a").mkString(" ")
     val r = ts.mapQuery(s"""$prefixes
        |SELECT DISTINCT $vars WHERE {
-       |  GRAPH ?batchGraph { 
-       |    ?x a t:sample; 
-       |    ${hlAttributes.map(a => s"t:$a ?$a").mkString("; ")} . 
+       |  GRAPH ?batchGraph {
+       |    ?x a t:sample;
+       |    ${hlAttributes.map(a => s"t:$a ?$a").mkString("; ")} .
        |  }
-       |  ${sf.standardSampleFilters} 
+       |  ${sf.standardSampleFilters}
        |}""".stripMargin)
     r.map(adjustSample(_))
   }
 
   def compounds(filter: TFilter)(implicit sf: SampleFilter) =
-    sampleAttributeQuery("t:compound_name").constrain(filter)()
+    sampleAttributeQuery("compound_name").constrain(filter)()
 
   def pathologyQuery(constraints: String): Vector[Pathology] = {
     val r = ts.mapQuery(s"""$prefixes
@@ -96,7 +96,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
       |  ?f local:label ?finding .
       |  OPTIONAL { ?x t:pathology_digital_image ?image . }
       |  OPTIONAL { ?t local:label ?topography . }
-      |  ?g local:label ?grade. 
+      |  ?g local:label ?grade.
       |}""".stripMargin)
 
       //TODO clean up the 1> etc

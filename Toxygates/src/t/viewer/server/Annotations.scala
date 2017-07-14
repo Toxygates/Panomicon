@@ -17,8 +17,10 @@ import t.sparql.TriplestoreMetadata
 import t.sparql.SampleFilter
 import t.db.Metadata
 import t.viewer.server.Conversions._
+import java.lang.{Double => JDouble}
+import scala.language.implicitConversions
 
-class Annotations(sampleStore: Samples, schema: DataSchema, baseConfig: BaseConfig) {
+class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
 
 //  private def bioParamsForSample(s: Sample): BioParameters =
 //    Option(s.get(schema.timeParameter())) match {
@@ -32,13 +34,31 @@ class Annotations(sampleStore: Samples, schema: DataSchema, baseConfig: BaseConf
     pfs.bioParameters
   }
 
-  lazy val tsMeta = new TriplestoreMetadata(sampleStore, baseConfig.sampleParameters)(SampleFilter())
+  import t.db.SampleParameters.{ControlGroup => CGParam}
+
+  implicit def asScala(x: Sample) = asScalaSample(x)
+
+  def controlGroups(ss: Iterable[Sample], sampleSet: t.sample.SampleSet): Map[Sample, ControlGroup] = {
+    val cgs = ss.groupBy(_(CGParam))
+    val mp = schema.mediumParameter()
+    val knownSamples = sampleSet.samples.toSet
+    Map() ++ cgs.flatMap { case (cgroup, ss) =>
+      var controls = ss.filter(s => schema.isControlValue(s.get(mp))).map(asScalaSample)
+      controls = (controls.toSet intersect (knownSamples)).toSeq
+      if (!controls.isEmpty) {
+        val cg = new ControlGroup(bioParameters, sampleSet, controls)
+        ss.map(s => s -> cg)
+      } else {
+        Seq()
+      }
+    }
+  }
 
    //TODO get these from schema, etc.
   def forSamples(samples: Samples, column: HasSamples[Sample],
       importantOnly: Boolean = false): Array[Annotation] = {
 
-    val cgs = column.getSamples.groupBy(_.get("control_group"))
+    val cgs = column.getSamples.groupBy(_(CGParam))
 
     val rs = for (
       (cgroup, ss) <- cgs;
@@ -62,15 +82,35 @@ class Annotations(sampleStore: Samples, schema: DataSchema, baseConfig: BaseConf
       val controls = samples.filter(s => schema.isControlValue(s.get(mp)))
       if (controls.isEmpty) {
         (None,
-          baseConfig.sampleParameters.previewDisplay)
+          bioParameters.sampleParameters)
       } else {
-        (Some(new ControlGroup(bioParameters, tsMeta, controls.map(asScalaSample))),
+        (Some(new ControlGroup(bioParameters, sampleStore, controls.map(asScalaSample))),
           bioParameters.sampleParameters)
       }
     }
     samples.map(x => {
       val ps = sampleStore.parameterQuery(x.id, keys)
       fromParameters(cg, x, ps)
+    })
+  }
+
+  private def numericalAsShared(bp: BioParameter, lower: JDouble,
+      upper: JDouble, value: String) =
+    new NumericalBioParamValue(bp.key, bp.label, bp.section.getOrElse(null),
+        lower, upper, value)
+
+  private def stringAsShared(bp: BioParameter, value: String) =
+    new StringBioParamValue(bp.key, bp.label, bp.section.getOrElse(null),
+        value)
+
+  def allParamsAsShared = {
+    bioParameters.all.map(p => {
+      p.kind match {
+      case "numerical" =>
+        numericalAsShared(p, null, null, null)
+      case _ =>
+        stringAsShared(p, null)
+      }
     })
   }
 
@@ -94,15 +134,11 @@ class Annotations(sampleStore: Samples, schema: DataSchema, baseConfig: BaseConf
       bp.kind match {
         case "numerical" =>
           val t = barcode.get(schema.timeParameter())
-          val lb = cg.flatMap(_.lowerBound(bp.sampleParameter.identifier, t))
-          val ub = cg.flatMap(_.upperBound(bp.sampleParameter.identifier, t))
+          val lb = cg.flatMap(_.lowerBound(bp.sampleParameter, t, 1))
+          val ub = cg.flatMap(_.upperBound(bp.sampleParameter, t, 1))
 
-          new NumericalBioParamValue(bp.key, bp.label,
-          bp.section.getOrElse(null),
-          asJDouble(lb), asJDouble(ub),
-          dispVal)
-        case _ => new StringBioParamValue(bp.key, bp.label,
-          bp.section.getOrElse(null), dispVal)
+          numericalAsShared(bp, asJDouble(lb), asJDouble(ub), dispVal)
+        case _ => stringAsShared(bp, dispVal)
       }
     }
 

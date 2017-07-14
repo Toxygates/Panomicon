@@ -30,6 +30,14 @@ import t.db.Sample
 import t.db.SampleParameter
 import t.db.SeriesPoint
 import t.db.testing.TestData.enumMaps
+import t.platform.ControlGroup
+import t.platform.BioParameter
+import t.platform.BioParameters
+import t.platform.ControlGroup
+import t.db.SampleParameters._
+import otg.OTGBConfig
+
+import scala.collection.JavaConversions._
 
 object TestData {
   import t.db.testing.TestData._
@@ -40,12 +48,12 @@ object TestData {
   }
 
   def mkPoints(pr: String): Seq[SeriesPoint] = {
-    val indepPoints = enumMaps("exposure_time").filter(_._1 != "9 hr").map(_._2)
+    val indepPoints = enumMaps(ExposureTime.id).filter(_._1 != "9 hr").map(_._2)
     indepPoints.map(t => mkPoint(pr, t)).toSeq
   }
 
   lazy val series = for (compound <- enumValues("compound_name");
-    doseLevel <- enumValues("dose_level");
+    doseLevel <- enumValues(DoseLevel.id);
     repeat <- enumValues("sin_rep_type");
     organ <- enumValues("organ_id");
     organism <- enumValues("organism");
@@ -55,6 +63,47 @@ object TestData {
     ) yield OTGSeries(repeat, organ, organism, probe,
         compound, doseLevel, testType, points)
 
+  private def controlGroup(s: Sample) = ???
+
+  import t.db.SampleParameters.{ControlGroup => CGParam}
+  import t.db.SampleParameters.DoseLevel
+
+  lazy val controlGroups: Map[Sample, ControlGroup] = {
+    val gr = samples.groupBy(_(CGParam))
+    val controls = gr.mapValues(vs =>
+      new ControlGroup(bioParameters, metadata,
+          vs.toSeq.filter(_(DoseLevel) == "Control"))
+      )
+
+    Map() ++ samples.map(s => s -> controls(s(CGParam)))
+  }
+
+  val bioParams = Seq(
+      BioParameter("liver_wt", "Liver weight", "numerical",
+        None, None, None),
+      BioParameter("kidney_wt", "Kidney weight", "numerical",
+        None, None, None)
+        )
+
+  val bioParameters = new BioParameters(Map() ++ bioParams.map(p => p.key -> p))
+
+  def randomNumber(mean: Double, range: Double) =
+    Math.random * range + (mean - range/2)
+
+  def liverWt(s: Sample) =
+    if (s(DoseLevel) == "Control" || s(Individual) == "2")
+      //TODO find a better way to generate values with predictable s.d.
+      3 //healthy
+    else
+      randomNumber(5, 0.2) //abnormal individual_id 1, 3
+
+  def kidneyWt(s: Sample) =
+    if (s(DoseLevel) == "Control" || s(Individual) == "1")
+      //TODO find a better way to generate values with predictable s.d.
+      5 //healthy
+    else
+      randomNumber(1, 0.2) //abnormal individual_id 2, 3
+
   def metadata: Metadata = new Metadata {
     def samples = t.db.testing.TestData.samples
 
@@ -63,13 +112,16 @@ object TestData {
     def parameterValues(identifier: String): Set[String] =
       enumMaps(identifier).keySet
 
-    def parameters: ParameterSet = ???
+    def parameterSet: ParameterSet = OTGParameterSet
 
-    def parameters(s: Sample): Iterable[(SampleParameter, String)] = {
-      samples.find(_ == s).get.sampleClass.constraints.map(x =>  {
+    def parameters(s: Sample): Seq[(SampleParameter, String)] = {
+      samples.find(_ == s).get.sampleClass.getMap.map(x =>  {
          val k = OTGParameterSet.byId(x._1)
          (k, x._2)
-      })
+      }).toSeq ++ Seq(
+          (OTGParameterSet.byId("liver_wt"), "" + liverWt(s)),
+          (OTGParameterSet.byId("kidney_total_wt"), "" + kidneyWt(s))
+          )
     }
   }
 }

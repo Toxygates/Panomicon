@@ -20,6 +20,9 @@
 
 package t.db
 
+import t.model.SampleClass
+import t.model.shared.SampleClassHelper
+
 /**
  * A sample.
  */
@@ -40,6 +43,16 @@ case class Sample(sampleId: String, sampleClass: SampleClass, cgroup: Option[Str
   }
 
   override def toString = sampleId
+
+  /**
+   * Convenience method to obtain a parameter from the sample class.
+   */
+  def get(key: SampleParameter): Option[String] = Option(sampleClass.get(key.id))
+
+  /**
+   * Convenience method to obtain a parameter from the sample class.
+   */
+  def apply(key: SampleParameter): String = sampleClass(key.id)
 }
 
 object Sample {
@@ -54,10 +67,10 @@ object Sample {
   }
 
   def apply(code: Int)(implicit context: MatrixContext): Sample = {
-    new Sample(identifierFor(code), SampleClass(), None)
+    new Sample(identifierFor(code), SampleClassHelper(), None)
   }
 
-  def apply(id: String) = new Sample(id, SampleClass(), None)
+  def apply(id: String) = new Sample(id, SampleClassHelper(), None)
 
-  def apply(id: String, map: Map[String, String]) = new Sample(id, SampleClass(map), None)
+  def apply(id: String, map: Map[String, String]) = new Sample(id, SampleClassHelper(map), None)
 }

@@ -28,7 +28,7 @@ import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.client.components.ranking.CompoundRanker;
 import t.common.shared.Dataset;
-import t.common.shared.SampleClass;
+import t.model.SampleClass;
 
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -23,7 +23,11 @@ package t.db.kyotocabinet
 import otg._
 import t.TTestSuite
 import t.db.testing.TestData
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+import t.db.SampleParameters._
 
+@RunWith(classOf[JUnitRunner])
 class KCSeriesDBTest extends TTestSuite {
   var db: SDB = _
 
@@ -83,7 +87,7 @@ class KCSeriesDBTest extends TTestSuite {
   test("insert points") {
     val compound = cmap.keys.head
     val probe = context.probeMap.unpack(100)
-    val time = TestData.enumMaps("exposure_time")("9 hr") //nonexistent in default test data
+    val time = TestData.enumMaps(ExposureTime.id)("9 hr") //nonexistent in default test data
 
     val baseSeries = OData.series.filter(s => s.compound == compound && s.probe == 100)
 
@@ -125,7 +129,7 @@ class KCSeriesDBTest extends TTestSuite {
 
   test("delete points") {
     val compound = cmap.keys.head
-    val time = TestData.enumValues("exposure_time").head
+    val time = TestData.enumValues(ExposureTime.id).head
 
     var del = OData.series.filter(s => s.compound == compound && s.probe == 100)
     val w = writer()

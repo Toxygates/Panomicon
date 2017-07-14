@@ -8,6 +8,8 @@ import t.db.Sample
 import t.BaseConfig
 import org.apache.commons.math3.stat.StatUtils.variance
 import org.apache.commons.math3.stat.StatUtils.mean
+import t.sample.SampleSet
+import t.db.SampleParameters._
 
 case class BioParameter(key: String, label: String, kind: String,
     section: Option[String],
@@ -50,38 +52,49 @@ class BioParameters(lookup: Map[String, BioParameter]) {
           param.attributes)
       ) yield (id -> edited)))
   }
+
+  def all = lookup.values
 }
 
-class ControlGroup(bps: BioParameters, md: Metadata, controlSamples: Iterable[Sample]) {
+/**
+ * Helper to compute statistical values for samples belonging to the same treated/control group.
+ * Will eagerly retrieve and process all parameters for the samples upon construction.
+ */
+class ControlGroup(bps: BioParameters, samples: SampleSet,
+    val controlSamples: Iterable[Sample]) {
   println(s"Control group for $controlSamples")
-  val byTime = controlSamples.groupBy(s => md.parameter(s, "exposure_time")) //TODO schema
+  val byTime = controlSamples.groupBy(s => samples.parameter(s, ExposureTime))
 
-  val allParamVals = byTime.map(ss => ss._1 -> ss._2.map(Map() ++ md.parameters(_)))
+  val allParamVals = byTime.filter(_._1 != None).
+    map(ss => ss._1.get -> ss._2.map(Map() ++ samples.parameters(_)))
 
-  private def varAndMean(param: String, time: String): Option[(Double, Double)] = {
-    val p = bps(param)
-    val vs = allParamVals(time).flatMap(_.get(p.sampleParameter))
-    val nvs = vs.flatMap(BioParameter.convert)
+  private def varAndMean(param: SampleParameter, time: String): Option[(Double, Double)] = {
+    allParamVals.get(time) match {
+      case None => None
+      case Some(pvs) =>
+        val vs = pvs.flatMap(_.get(param))
+        val nvs = vs.flatMap(BioParameter.convert)
 
-    if (nvs.size < 2) {
-      None
-    } else {
-      Some((variance(nvs.toArray), mean(nvs.toArray)))
+        if (nvs.size < 2) {
+          None
+        } else {
+          Some((variance(nvs.toArray), mean(nvs.toArray)))
+        }
     }
   }
 
-  def lowerBound(param: String, time: String): Option[Double] =
+  def lowerBound(param: SampleParameter, time: String, testSampleSize: Int): Option[Double] =
     varAndMean(param, time).map {
       case (v, m) =>
         val sd = Math.sqrt(v)
-        m - 2 * sd
+        m - 2 / Math.sqrt(testSampleSize) * sd
     }
 
-  def upperBound(param: String, time: String): Option[Double] =
+  def upperBound(param: SampleParameter, time: String, testSampleSize: Int): Option[Double] =
     varAndMean(param, time).map {
       case (v, m) =>
         val sd = Math.sqrt(v)
-        m + 2 * sd
+        m + 2 / Math.sqrt(testSampleSize) * sd
     }
 }
 
@@ -98,12 +111,12 @@ object BioParameter {
      val data = TSVMetadata(f, args(0), params)
      var out = Map[SampleParameter, Seq[String]]()
 
-     for (time <- data.parameterValues("exposure_time")) {
+     for (time <- data.parameterValues(ExposureTime.id)) {
        val ftime = time.replaceAll("\\s+", "")
        var samples = data.samples
        samples = samples.filter(s => {
          val m = data.parameterMap(s)
-         m("exposure_time") == time && m("dose_level") == "Control" && m("test_type") == "in vivo"
+         m(ExposureTime.id) == time && m(DoseLevel.id) == "Control" && m("test_type") == "in vivo"
        })
        val rawValues = samples.map(s => data.parameters(s))
        for (param <- params.all; if params.isNumerical(param)) {

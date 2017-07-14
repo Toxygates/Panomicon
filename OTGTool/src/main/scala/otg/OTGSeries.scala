@@ -37,6 +37,8 @@ import t.db.Sample
 import t.db.Metadata
 import t.db.ExprValue
 import t.db.BasicExprValue
+import t.db.SampleParameters._
+import t.db.SampleParameter
 
 //TODO all parameters are nullable - use options
 case class OTGSeries(repeat: String, organ: String, organism: String, override val probe: Int,
@@ -53,22 +55,27 @@ case class OTGSeries(repeat: String, organ: String, organism: String, override v
        "organ_id" -> organ,
        "organism" -> organism,
        "compound_name" -> compound,
-       "dose_level" -> dose,
+       DoseLevel.id -> dose,
        "sin_rep_type" -> repeat
        ).filter(_._2 != null)
 }
 
 object OTGSeries extends SeriesBuilder[OTGSeries] {
   val enums = List("sin_rep_type", "organ_id", "organism",
-    "dose_level", "exposure_time", "compound_name", "test_type")
+    DoseLevel.id, ExposureTime.id, "compound_name", "test_type")
+
+  private def rem(mc: MatrixContext, key: String): Map[Int, String] =
+    mc.reverseEnumMaps(key)
+  private def rem(mc: MatrixContext, key: SampleParameter): Map[Int, String] =
+    rem(mc, key.id)
 
   def build(sampleClass: Long, probe: Int)(implicit mc: MatrixContext): OTGSeries = {
-    val compound = mc.reverseEnumMaps("compound_name")(((sampleClass) & 65535).toInt)
-    val dose = mc.reverseEnumMaps("dose_level")(((sampleClass >> 16) & 255).toInt)
-    val organism = mc.reverseEnumMaps("organism")(((sampleClass >> 24) & 255).toInt)
-    val organ = mc.reverseEnumMaps("organ_id")(((sampleClass >> 32) & 255).toInt)
-    val repeat = mc.reverseEnumMaps("sin_rep_type")(((sampleClass >> 40) & 3).toInt)
-    val test = mc.reverseEnumMaps("test_type")(((sampleClass >> 42) & 3).toInt)
+    val compound = rem(mc, "compound_name")(((sampleClass) & 65535).toInt)
+    val dose = rem(mc, DoseLevel)(((sampleClass >> 16) & 255).toInt)
+    val organism = rem(mc, "organism")(((sampleClass >> 24) & 255).toInt)
+    val organ = rem(mc, "organ_id")(((sampleClass >> 32) & 255).toInt)
+    val repeat = rem(mc, "sin_rep_type")(((sampleClass >> 40) & 3).toInt)
+    val test = rem(mc, "test_type")(((sampleClass >> 42) & 3).toInt)
 
     OTGSeries(repeat, organ, organism, probe, compound, dose, test, Vector())
   }
@@ -79,7 +86,7 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
     r |= packWithLimit("sin_rep_type", s.repeat, 3) << 40
     r |= packWithLimit("organ_id", s.organ, 255) << 32
     r |= packWithLimit("organism", s.organism, 255) << 24
-    r |= packWithLimit("dose_level", s.dose, 255) << 16
+    r |= packWithLimit(DoseLevel.id, s.dose, 255) << 16
     r |= packWithLimit("compound_name", s.compound, 65535)
     r
   }
@@ -96,7 +103,7 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
     val os = singleOrKeys(group.organ, "organ_id")
     val ss = singleOrKeys(group.organism, "organism")
     val cs = singleOrKeys(group.compound, "compound_name")
-    val ds = singleOrKeys(group.dose, "dose_level")
+    val ds = singleOrKeys(group.dose, DoseLevel.id)
     val ts = singleOrKeys(group.testType, "test_type")
 
     val empty = Vector()
@@ -110,7 +117,7 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
   def buildEmpty(x: Sample, md: Metadata) = {
     val paramMap = Map() ++ md.parameters(x).map(x => x._1.identifier -> x._2)
         val r = paramMap("sin_rep_type")
-        val d = paramMap("dose_level")
+        val d = paramMap(DoseLevel.id)
         val o = paramMap("organ_id")
         val s = paramMap("organism")
         val c = paramMap("compound_name")
@@ -121,7 +128,7 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
   def makeNew[E >: Null <: ExprValue](from: MatrixDBReader[E], md: Metadata,
       samples: Iterable[Sample])(implicit mc: MatrixContext): Iterable[OTGSeries] = {
 
-    val timeMap = mc.enumMaps("exposure_time")
+    val timeMap = mc.enumMaps(ExposureTime.id)
 
     val grouped = samples.groupBy(buildEmpty(_, md))
     var r = Vector[OTGSeries]()
@@ -133,9 +140,8 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
         x <- xs;
         exprs = from.valuesInSample(x, Seq());
         presentExprs = exprs.filter(_.present);
-        time = md.parameter(x, "exposure_time")
+        time = md.parameter(x, ExposureTime).get
       ) yield (time, x, presentExprs)
-
 
       val byTime = for (
         (time, data) <- data.groupBy(_._1);
@@ -144,7 +150,6 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
         m <- meanValues;
         point = SeriesPoint(tc, m)
       ) yield point
-
 
       val byProbe = byTime.groupBy(_.value.probe)
       r ++= byProbe.map(x => {
@@ -208,7 +213,7 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
 
   def allExpectedTimes = vitroExpected ++ singleVivoExpected ++ repeatVivoExpected
 
-  val standardEnumValues = allExpectedTimes.map(x => ("exposure_time", x))
+  val standardEnumValues = allExpectedTimes.map(x => (ExposureTime.id, x))
 
   /**
    * Normalize time points.
@@ -221,7 +226,7 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
       return data
     }
     val times = expectedTimes(data.head)
-    val timeMap = mc.enumMaps("exposure_time")
+    val timeMap = mc.enumMaps(ExposureTime.id)
     val timeCodes = times.map(timeMap) //sorted
     val absentValue = BasicExprValue(0, 'A')
 

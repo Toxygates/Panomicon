@@ -29,10 +29,13 @@ import otgviewer.client.components.StorageParser;
 import otgviewer.client.components.compoundsel.CompoundSelector;
 import otgviewer.client.components.groupdef.GroupInspector;
 import t.common.shared.DataSchema;
-import t.common.shared.SampleClass;
+import t.model.SampleClass;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.SampleColumn;
 import t.viewer.client.Utils;
+import t.viewer.client.components.search.SearchDialog;
+import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.rpc.SampleServiceAsync;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -50,10 +53,13 @@ public class ColumnScreen extends Screen {
   private GroupInspector gi;
   private CompoundSelector cs;
   private FilterTools filterTools;
+  private SampleServiceAsync sampleService;
 
   public ColumnScreen(ScreenManager man) {
     super("Sample groups", key, false, man, resources.groupDefinitionHTML(), resources
         .groupDefinitionHelp());
+    
+    this.sampleService = man.sampleService();
 
     String majorParam = man.schema().majorParameter();
     cs = new CompoundSelector(this, man.schema().title(majorParam), true, true) {
@@ -72,9 +78,23 @@ public class ColumnScreen extends Screen {
   }
 
   @Override
-  protected void addToolbars() {
-    super.addToolbars();
-    addToolbar(filterTools, 45);
+  protected void addToolbars() {   
+    super.addToolbars();   
+    HorizontalPanel hp = Utils.mkHorizontalPanel(true, filterTools);
+   
+    boolean isDev = manager().appInfo().instanceName().equals("dev");
+    if (isDev) {
+      Button searchButton = new Button("Search...");
+      searchButton.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent arg0) {
+          search();
+        }
+      });
+      hp.add(searchButton);
+    }
+   
+    addToolbar(hp, 45);
     addLeftbar(cs, 350);
   }
 
@@ -138,6 +158,13 @@ public class ColumnScreen extends Screen {
         Window.alert("Unable to load inactive columns.");
       }
     }
+  }
+  
+  protected void search() {
+    SearchDialog sd = new SearchDialog(appInfo(),
+        sampleService, chosenSampleClass);
+    Utils.displayInPopup("Sample search conditions", 
+        sd, DialogPosition.Center);
   }
 
   @Override

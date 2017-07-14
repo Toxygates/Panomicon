@@ -38,9 +38,13 @@ public class NumericalBioParamValue extends BioParamValue {
     super(id, label, section);
     this.lowerBound = lowerBound;
     this.upperBound = upperBound;
-    try {
-      this.value = Double.parseDouble(value);
-    } catch (NumberFormatException e) {
+    if (value != null) {
+      try {
+        this.value = Double.parseDouble(value);
+      } catch (NumberFormatException e) {
+        this.value = Double.NaN;
+      }      
+    } else {
       this.value = Double.NaN;
     }
   }
@@ -50,10 +54,16 @@ public class NumericalBioParamValue extends BioParamValue {
   }
   
   public boolean isAbove() {
-    return value > upperBound;
+    if (upperBound == null) {
+      return false;
+    } 
+    return value > upperBound;    
   }
   
   public boolean isBelow() {
+    if (lowerBound == null) {
+      return false;
+    }
     return value < lowerBound;
   }
 
@@ -80,6 +90,4 @@ public class NumericalBioParamValue extends BioParamValue {
     }
     return displayValue();
   }
-
-
 }

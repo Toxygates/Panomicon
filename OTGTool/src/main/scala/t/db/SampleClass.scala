@@ -22,21 +22,21 @@ package t.db
 
 import scala.collection.{ Map => CMap }
 
-object SampleClass {
-  def constraint(key: String, x: Option[String]) = x.map(key -> _)
-}
-
-/**
- * A set of constraints on a sample.
- */
-case class SampleClass(constraints: CMap[String, String] = Map()) extends SampleClassLike
+import scala.collection.JavaConversions._
 
 trait SampleClassLike {
   def constraints: CMap[String, String]
 
-  def apply(key: String) = constraints(key)
+  @deprecated("Query by SampleParameter instead.", "June 2017")
+  def apply(key: String): String = constraints(key)
 
-  def get(key: String) = constraints.get(key)
+  @deprecated("Query by SampleParameter instead.", "June 2017")
+  def get(key: String): Option[String] = constraints.get(key)
 
-  def ++(other: SampleClassLike) = SampleClass(constraints ++ other.constraints)
+  def apply(key: SampleParameter): String = apply(key.id)
+
+  def get(key: SampleParameter): Option[String] = get(key.id)
+
+  def ++(other: SampleClassLike) =
+    new t.model.SampleClass(constraints ++ other.constraints)
 }

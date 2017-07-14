@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -20,18 +20,27 @@
 
 package otgviewer.client
 
+import java.util.logging.Logger
+
+import scala.collection.JavaConversions.asScalaBuffer
+import scala.collection.JavaConversions.bufferAsJavaList
+import scala.collection.JavaConversions.seqAsJavaList
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import t.common.shared.StringList
 import t.common.shared.ClusteringList
-
-import scala.collection.JavaConversions._
-import otgviewer.client.components.Screen
-import t.common.client.HasLogger
 import java.util.logging.Logger
+
+import org.junit.runner.RunWith
+
+import t.common.client.HasLogger
+import t.TTestSuite
 import org.scalatest.Matchers
 
-class StringListsStoreHelperTest extends FunSuite with Matchers {
+import t.TTestSuite
+
+@RunWith(classOf[JUnitRunner])
+class StringListsStoreHelperTest extends TTestSuite {
 
   import java.util.{ ArrayList => JList }
 

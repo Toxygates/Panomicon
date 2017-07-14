@@ -21,36 +21,23 @@
 package t.viewer.server
 
 import scala.collection.JavaConversions._
-import t.common.shared.SampleClass
 import scala.language.implicitConversions
 import java.util.{ Map => JMap, HashMap => JHMap, Set => JSet, HashSet => JHSet, List => JList }
 import scala.collection.{Map => CMap, Set => CSet}
 import t.db.{ExprValue => TExprValue}
 import t.common.shared.FirstKeyedPair
-import sun.font.CMap
 import t.common.shared.sample.ExpressionValue
 import t.common.shared.sample.Sample
-import sun.font.CMap
 
 object Conversions {
-	implicit def scAsScala(sc: SampleClass): t.sparql.SampleClass =
-	  new t.sparql.SampleClass(mapAsScalaMap(sc.getMap))
-
-	implicit def asSpecies(sc: SampleClass): otg.Species.Species =
+	implicit def asSpecies(sc: t.model.SampleClass): otg.Species.Species =
 	  otg.Species.withName(sc.get("organism"))
 
-	implicit def scAsJava(sc: t.db.SampleClassLike): SampleClass =
-	  new SampleClass(new java.util.HashMap(mapAsJavaMap(sc.constraints)))
+	def asJavaSample(s: t.db.Sample): Sample =
+    new Sample(s.sampleId, s.sampleClass)
 
-	def asJavaSample(s: t.db.Sample): Sample = {
-    val sc = scAsJava(s.sampleClass)
-    new Sample(s.sampleId, sc)
-  }
-
-	def asScalaSample(s: Sample) = {
-	  val sc = scAsScala(s.sampleClass())
-	  new t.db.Sample(s.id, t.db.SampleClass(sc.constraints), None)
-	}
+	def asScalaSample(s: Sample) =
+	  new t.db.Sample(s.id, s.sampleClass, None)
 
   implicit def asJava(ev: TExprValue): ExpressionValue = new ExpressionValue(ev.value, ev.call)
   //Loses probe information!

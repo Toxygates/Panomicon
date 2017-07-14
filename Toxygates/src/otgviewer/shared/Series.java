@@ -21,8 +21,8 @@ package otgviewer.shared;
 import java.io.Serializable;
 
 import t.common.shared.HasClass;
-import t.common.shared.SampleClass;
 import t.common.shared.sample.ExpressionValue;
+import t.model.SampleClass;
 
 /**
  * An expression value series that fixes all parameters except one, which varies on the x-axis.

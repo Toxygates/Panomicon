@@ -29,10 +29,11 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import t.common.shared.DataSchema;
 import t.common.shared.Pair;
-import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.Sample;
+import t.common.shared.sample.SampleClassUtils;
 import t.common.shared.sample.Unit;
+import t.model.SampleClass;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SampleServiceAsync;
 
@@ -121,14 +122,12 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 
   @Override
   public void sampleClassChanged(SampleClass sc) {
+    super.sampleClassChanged(sc);
     if (!sc.equals(chosenSampleClass)) {
-      super.sampleClassChanged(sc);
       minorValues = new ArrayList<String>();
       logger.info("SC change trigger minor " + sc);
       lazyFetchMinor();
-    } else {
-      super.sampleClassChanged(sc);
-    }
+    } 
   }
 
   @Override
@@ -160,14 +159,9 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 
   private void lazyFetchMinor() {
     if (fetchingMinor) {
-      return;
+      return;   
     }
-    if (minorValues != null && minorValues.size() > 0) {
-      logger.info("Reuse cached minor values");
-      drawGridInner(grid);
-    } else {
-      fetchMinor();
-    }
+    fetchMinor();    
   }
 
   private void fetchMinor() {
@@ -198,8 +192,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
   protected void onMinorsDone() {}
 
   protected String keyFor(Sample b) {
-    // TODO efficiency
-    return b.sampleClass().tripleString(schema);
+    return SampleClassUtils.tripleString(b.sampleClass(), schema);
   }
 
   private boolean fetchingSamples = false;
@@ -339,7 +332,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
       }
       r++;
     }
-    if (availableUnits.size() == 0) {
+    if (availableUnits.size() == 0 && allUnits.size() > 0) {
       availableUnits = allUnits;
     }
   }

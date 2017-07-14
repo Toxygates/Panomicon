@@ -26,7 +26,10 @@ import t.db.MatrixDB
 import t.db.testing.TestData
 import org.scalatest.Matchers
 import t.db.RawExpressionData
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 object KCDBTest extends Matchers {
   import TestData._
 

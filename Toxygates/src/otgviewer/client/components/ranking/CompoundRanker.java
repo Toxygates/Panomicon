@@ -33,7 +33,7 @@ import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.shared.RankRule;
 import t.common.shared.DataSchema;
 import t.common.shared.ItemList;
-import t.common.shared.SampleClass;
+import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SparqlServiceAsync;

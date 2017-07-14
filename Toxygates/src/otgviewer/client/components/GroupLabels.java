@@ -22,6 +22,8 @@ import java.util.List;
 
 import t.common.shared.DataSchema;
 import t.common.shared.sample.Group;
+import t.common.shared.sample.SampleClassUtils;
+import t.model.SampleClass;
 import t.viewer.client.Utils;
 
 import com.google.gwt.dom.client.Style.Unit;
@@ -55,13 +57,15 @@ public class GroupLabels extends Composite {
     return ":" + g.getTriples(schema, 2, ", ");
   }
 
+  //TODO move some of the style code to CSS
   private void show(List<Group> groups) {
     fpo.clear();
     for (Group g : groups) {
       FlowPanel fp = new FlowPanel();
       fp.setStylePrimaryName("statusBorder");
+      SampleClass sc = g.getSamples()[0].sampleClass();
       String tip =
-          g.getSamples()[0].sampleClass().label(schema) + ":\n" + g.getTriples(schema, -1, ", ");
+          SampleClassUtils.label(sc, schema) + ":\n" + g.getTriples(schema, -1, ", ");
       Label l = Utils.mkEmphLabel(g.getName());
       l.setWordWrap(false);
       l.getElement().getStyle().setMargin(2, Unit.PX);

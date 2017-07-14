@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import otgviewer.client.components.Screen;
-import t.common.shared.SampleClass;
+import t.model.SampleClass;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
 import com.google.gwt.user.client.Timer;

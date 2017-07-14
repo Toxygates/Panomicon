@@ -24,8 +24,8 @@ import java.util.Comparator;
 
 import t.common.shared.AType;
 import t.common.shared.DataSchema;
-import t.common.shared.SampleClass;
 import t.common.shared.ValueType;
+import t.model.SampleClass;
 
 @SuppressWarnings("serial")
 public class OTGSchema extends DataSchema {

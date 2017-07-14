@@ -61,7 +61,8 @@ case class SampleFilter(instanceURI: Option[String] = None,
     s"$datasetFilter $batchFilter\n"
 }
 
-abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
+abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
+  with t.sample.SampleSet {
   import Triplestore._
   import QueryUtils._
 
@@ -105,9 +106,12 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
   /**
    * The sample query must query for ?batchGraph and ?dataset.
    */
-  def sampleQuery(sc: SampleClass)(implicit sf: SampleFilter): Query[Vector[Sample]]
+  def sampleQuery(sc: SampleClassFilter)(implicit sf: SampleFilter): Query[Vector[Sample]]
 
-  def samples(sc: SampleClass)(implicit sf: SampleFilter): Seq[Sample] =
+  def samples() = ???
+
+  def samples(sc: SampleClassFilter)(implicit sf: SampleFilter): Seq[Sample] =
+
     sampleQuery(sc)(sf)()
 
   def allValuesForSampleAttribute(attribute: String,
@@ -126,12 +130,21 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
       " }")
   }
 
-  def samples(sc: SampleClass, fparam: String, fvalues: Iterable[String])(implicit sf: SampleFilter): Seq[Sample] = {
+  def samples(sc: SampleClassFilter, fparam: String, fvalues: Iterable[String])(implicit sf: SampleFilter): Seq[Sample] = {
     sampleQuery(sc).constrain(
       multiFilter(s"?$fparam", fvalues.map("\"" + _ + "\"")))()
   }
 
   def sampleClasses(implicit sf: SampleFilter): Seq[Map[String, String]]
+
+  def parameters(sample: Sample): Seq[(SampleParameter, String)] =
+    parameters(sample, Seq())
+
+  override def parameters(sample: Sample,
+    querySet: Iterable[SampleParameter]): Seq[(SampleParameter, String)] =
+    parameterQuery(sample.sampleId, querySet).collect {
+      case (sp, Some(v)) => (sp, v)
+    }
 
   /**
    * If the querySet is ordered, we preserve the ordering in the result
@@ -164,7 +177,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
     Query(tPrefixes,
       "SELECT DISTINCT ?q " +
         s"WHERE { GRAPH ?batchGraph { " +
-        "?x " + attribute + " ?q . ",
+        "?x t:" + attribute + " ?q . ",
       s"} ${sf.standardSampleFilters} } ",
       ts.simpleQueryNonQuiet)
   }
@@ -182,7 +195,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
   }
 
   def attributeValues(filter: TFilter, attribute: String)(implicit sf: SampleFilter) =
-    sampleAttributeQuery("t:" + attribute).constrain(filter)()
+    sampleAttributeQuery(attribute).constrain(filter)()
 
   def sampleGroups(sf: SampleFilter): Iterable[(String, Iterable[Sample])] = {
     val q = tPrefixes +
@@ -197,7 +210,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore) {
     val mq = ts.mapQuery(q)
     val byGroup = mq.groupBy(_("l"))
     val allIds = mq.map(_("sid")).distinct
-    val withAttributes = sampleQuery(SampleClass())(sf).constrain(
+    val withAttributes = sampleQuery(SampleClassFilter())(sf).constrain(
       "FILTER (?id IN (" + allIds.map('"' + _ + '"').mkString(",") + ")).")()
     val lookup = Map() ++ withAttributes.map(x => (x.identifier -> x))
 

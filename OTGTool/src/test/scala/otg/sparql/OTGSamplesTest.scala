@@ -20,13 +20,19 @@
 
 package otg.sparql
 
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+
 import otg.OTGContext
 import otg.Species.Rat
-import t.testing.TestConfig
-import org.scalatest.junit.JUnitRunner
-import t.sparql._
 import t.TTestSuite
+import t.db.SampleParameters._
+import t.model.shared.SampleClassHelper
+import t.sparql._
+import t.testing.TestConfig
+import otg.OTGSeries
 
+@RunWith(classOf[JUnitRunner])
 class OTGSamplesTest extends TTestSuite {
 
   val config = TestConfig.config
@@ -37,44 +43,46 @@ class OTGSamplesTest extends TTestSuite {
     samples.close
   }
 
-  //TODO update tests
+  val baseConstraints = Map(
+    "organism" -> "Rat",
+    "test_type" -> "in vivo")
 
-  //  test("organs") {
-  //    val f = Filter(Some(Kidney), Some(Repeat), Some(Rat), Some("in vivo"))
-  //    val os = samples.organs(f, None)
-  //    //NA organs are for those samples that have no arrays
-  //    assert(os.toSet === Set("Liver", "Kidney"))
-  //  }
-  //
-  //  test("dose levels") {
-  //    val f = Filter(Some(Liver), Some(Single), Some(Rat), Some("in vivo"))
-  //    val ds = samples.doseLevels(f, None)
-  //    //TODO use the unified DataSchema instead
-  ////    assert(ds.toSet === TimeDose.doses.toSet)
-  //  }
-  //
-  //  test("times") {
-  //    val f = Filter(Some(Liver), Some(Single), Some(Rat), Some("in vivo"))
-  //    val ts = samples.times(f, None)
-  //   //TODO use the unified DataSchema instead
-  ////    assert(ts.toSet.subsetOf(TimeDose.times.toSet))
-  //  }
-  //
-  //  test("times and doses") {
-  //    val f = Filter(Some(Liver), Some(Single), Some(Rat), Some("in vivo"))
-  //    val compound = "acetaminophen"
-  //    val td = samples.timeDoseCombinations(f)
-  //    assert(td.size === 16)
-  //    val s = td.toSet
-  //    assert(s.contains(("24 hr", "Control")))
-  //    assert(s.contains(("3 hr", "Middle")))
-  //    assert(s.contains(("9 hr", "High")))
-  //  }
+  val fullConstraints = SampleClassHelper(Map(
+      "organ_id" -> "Liver",
+      "sin_rep_type" -> "Single") ++ baseConstraints)
 
-  //  test("barcodes") {
-  //    val bcs = samples.barcodes(Filter(Some(Liver), None, None), Some("adapin"), None, None)
-  //    bcs.size should equal(84)
-  //    println(bcs)
-  //  }
+  implicit val sampleFilter = SampleFilter()
 
+  test("organs") {
+    val sf = SampleClassFilter(
+        SampleClassHelper(Map(
+      "organ_id" -> "Kidney",
+      "sin_rep_type" -> "Repeat") ++ baseConstraints)
+      ).filterAll
+
+    val os = samples.sampleAttributeQuery("organ_id").
+      constrain(sf)()
+
+    os.toSet should (contain("Kidney"))
+  }
+
+  test("dose levels") {
+    val sf = SampleClassFilter(fullConstraints).filterAll
+
+    val ds = samples.sampleAttributeQuery(DoseLevel.id).
+      constrain(sf)()
+
+    //TODO use the unified DataSchema instead
+    assert(ds.toSet === Set("Low", "Middle", "High", "Control"))
+  }
+
+  test("times") {
+    val sf = SampleClassFilter(fullConstraints).filterAll
+
+    val ts = samples.sampleAttributeQuery(ExposureTime.id).
+      constrain(sf)()
+
+    //TODO use the unified DataSchema instead
+    assert(OTGSeries.singleVivoExpected.toSet subsetOf ts.toSet)
+  }
 }

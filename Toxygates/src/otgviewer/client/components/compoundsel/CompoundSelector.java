@@ -25,12 +25,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
+import t.common.client.components.SetEditor;
 import t.common.shared.ItemList;
-import t.common.shared.SampleClass;
+import t.model.SampleClass;
 import t.common.shared.StringList;
+import t.viewer.client.Analytics;
 import t.viewer.client.components.StackedListEditor;
 import t.viewer.client.rpc.SampleServiceAsync;
 
@@ -72,8 +76,9 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
     dp.addNorth(lblCompounds, 40);
     north = lblCompounds;
 
-    // TODO factor out
-    boolean isAdjuvant = screen.manager().getUIType().equals("adjuvant");
+    String instanceName = screen.manager().appInfo().instanceName();
+    boolean isAdjuvant = 
+        instanceName.equals("adjuvant") || instanceName.equals("dev");
 
     final Collection<StringList> predefLists =
         (isAdjuvant ? TemporaryCompoundLists.predefinedLists() : new ArrayList<StringList>());
@@ -94,6 +99,15 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
             screen.itemListsChanged(itemLists);
             screen.storeItemLists(getParser(screen));
           }
+          
+          @Override
+          public void setSelection(Collection<String> items, @Nullable SetEditor<String> fromSelector) {
+            super.setSelection(items, fromSelector);
+            if (fromSelector instanceof FreeEdit) {
+              Analytics.trackEvent(Analytics.CATEGORY_GENERAL, 
+                  Analytics.ACTION_FREE_EDIT_COMPOUNDS);  
+            }
+          }          
         };
 
     compoundEditor.displayPicker();

@@ -6,8 +6,8 @@ import javax.annotation.Nullable;
 
 import t.common.shared.AType;
 import t.common.shared.Pair;
-import t.common.shared.SampleClass;
 import t.common.shared.sample.Sample;
+import t.model.SampleClass;
 import t.viewer.shared.TimeoutException;
 
 import com.google.gwt.user.client.rpc.RemoteService;

@@ -20,6 +20,10 @@
 
 package t
 
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+
+@RunWith(classOf[JUnitRunner])
 class TaskRunnerTest extends TTestSuite {
 
   test("runAndStop") {

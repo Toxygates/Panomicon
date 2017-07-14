@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import t.common.shared.DataSchema;
-import t.common.shared.SampleClass;
 import t.common.shared.SharedUtils;
 
 /**
@@ -145,7 +144,7 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
   }
 
   public Set<String> collect(String parameter) {
-    return SampleClass.collectInner(Arrays.asList(_samples), parameter);
+    return SampleClassUtils.collectInner(Arrays.asList(_samples), parameter);
   }
 
   public static <S extends Sample, G extends SampleGroup<S>> Set<String> collectAll(

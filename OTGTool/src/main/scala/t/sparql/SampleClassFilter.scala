@@ -20,13 +20,20 @@
 
 package t.sparql
 
+import scala.collection.JavaConversions.mapAsScalaMap
 import scala.collection.{ Map => CMap }
+
 import t.db.SampleClassLike
+
+object SampleClassFilter {
+  def apply(cl: t.model.SampleClass): SampleClassFilter =
+    SampleClassFilter(cl.getMap())
+}
 
 /**
  * A sample class with sparql methods.
  */
-case class SampleClass(constraints: CMap[String, String] = Map()) extends SampleClassLike {
+case class SampleClassFilter(constraints: CMap[String, String] = Map()) extends SampleClassLike {
 
   def filterAll: Filter = {
     if (constraints.isEmpty) {

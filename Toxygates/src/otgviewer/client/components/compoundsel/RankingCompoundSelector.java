@@ -43,7 +43,7 @@ import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;
 import t.common.client.ImageClickCell;
 import t.common.client.Resources;
-import t.common.shared.SampleClass;
+import t.model.SampleClass;
 import t.common.shared.SharedUtils;
 import t.viewer.client.Analytics;
 import t.viewer.client.CodeDownload;

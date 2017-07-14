@@ -24,7 +24,7 @@ import otgviewer.shared.MatchResult;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.Series;
 import t.common.shared.Dataset;
-import t.common.shared.SampleClass;
+import t.model.SampleClass;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 

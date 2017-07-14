@@ -368,22 +368,14 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   }
 
   /**
-   * A <meta> tag in the hosting HTML page identifies the kind of UI we want to show in this
-   * application. E.g.: <meta name="uitype" content="toxygates"> . TODO: retire
+   * In the HTML head, e.g.: <meta name="instanceName" content="toxygates"> .
    * 
-   * @return The requested UI type
-   */
-  @Deprecated
-  public String getUIType() {
-    String v = getMeta("uitype");
-    return v != null ? v : "toxygates";
-  }
-
-  /**
-   * E.g.: <meta name="instanceName" content="toxygates"> .
+   * TODO: this information is also available via AppInfo and we should move towards
+   * using only that.
    * 
    * @return
    */
+  @Deprecated
   protected String instanceName() {
     String v = getMeta("instanceName");
     return v != null ? v : "default";

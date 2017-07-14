@@ -21,12 +21,16 @@
 package otgviewer.server.rpc
 
 import org.scalatest.BeforeAndAfter
-import org.scalatest.FunSuite
 import t.viewer.server.Configuration
 import otgviewer.shared.RankRule
 import otgviewer.shared.RuleType
+import org.junit.runner.RunWith
+import t.TTestSuite
+import org.scalatest.junit.JUnitRunner
+import otgviewer.server.AssociationResolverTest
 
-class SeriesServiceTest extends FunSuite with BeforeAndAfter {
+@RunWith(classOf[JUnitRunner])
+class SeriesServiceTest extends TTestSuite {
 
   var s: SeriesServiceImpl = _
   before {
@@ -40,7 +44,7 @@ class SeriesServiceTest extends FunSuite with BeforeAndAfter {
   }
 
   test("Ranking") {
-    val sc = SparqlServiceTest.testSampleClass
+    val sc = AssociationResolverTest.testSampleClass
     val r = new RankRule(RuleType.MaximalFold, "1370365_at") //GSS gene
 
     //TODO needs a valid dataset for the first argument

@@ -49,7 +49,7 @@ abstract class FoldValueBuilder[E <: ExprValue](md: Metadata, input: RawExpressi
    */
   def values(s: Sample): Iterable[(Sample, String, E)] = {
     println("Compute control values")
-    val groups = md.parameters.treatedControlGroups(md, input.samples)
+    val groups = md.parameterSet.treatedControlGroups(md, input.samples)
     var r = Vector[(Sample, String, E)]()
 
     for ((ts, cs) <- groups;

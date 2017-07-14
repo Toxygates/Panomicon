@@ -26,15 +26,15 @@ import java.util.Set;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
+import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.Pathology;
 import t.common.client.ImageClickCell;
 import t.common.shared.GroupUtils;
-import t.common.shared.SampleClass;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.SampleColumn;
+import t.model.SampleClass;
 import t.viewer.client.Utils;
-import otgviewer.client.rpc.SparqlServiceAsync;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.safehtml.shared.SafeHtml;
@@ -57,7 +57,7 @@ public class PathologyScreen extends Screen {
   public static final String key = "path";
 
   private CellTable<Pathology> pathologyTable = new CellTable<Pathology>();
-  private ScrollPanel sp = new ScrollPanel();
+  private ScrollPanel scrollPanel = new ScrollPanel();
   private Set<Pathology> pathologies = new HashSet<Pathology>();
   private final Resources resources;
 
@@ -97,7 +97,7 @@ public class PathologyScreen extends Screen {
 
   public Widget content() {
 
-    sp.setWidget(pathologyTable);
+    scrollPanel.setWidget(pathologyTable);
     pathologyTable.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
     pathologyTable.setWidth("100%");
 
@@ -174,7 +174,7 @@ public class PathologyScreen extends Screen {
     };
     pathologyTable.addColumn(lcol, "Digital viewer");
 
-    return sp;
+    return scrollPanel;
   }
 
   @Override

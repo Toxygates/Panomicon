@@ -24,10 +24,7 @@ import java.util.{ List => JList }
 
 import scala.Array.canBuildFrom
 import scala.Vector
-import scala.collection.JavaConversions.asScalaBuffer
-import scala.collection.JavaConversions.bufferAsJavaList
-import scala.collection.JavaConversions.mapAsJavaMap
-import scala.collection.JavaConversions.seqAsJavaList
+import scala.collection.JavaConversions._
 import scala.collection.{ Set => CSet }
 
 import SparqlServiceImpl.platforms
@@ -39,7 +36,7 @@ import t.common.shared.AType
 import t.common.shared.Dataset
 import t.common.shared.Pair
 import t.common.shared.Platform
-import t.common.shared.SampleClass
+import t.model.SampleClass
 import t.common.shared.StringList
 import t.common.shared.clustering.ProbeClustering
 import t.common.shared.sample.HasSamples
@@ -70,12 +67,12 @@ import t.sparql.toBioMap
 import t.util.PeriodicRefresh
 import t.util.Refreshable
 import t.viewer.client.rpc.SparqlService
+import t.viewer.server.AssociationResolver
 import t.viewer.server.CSVHelper
 import t.viewer.server.Configuration
-import t.viewer.server.Conversions.asJavaSample
-import t.viewer.server.Conversions.convertPairs
-import t.viewer.server.Conversions.scAsJava
-import t.viewer.server.Conversions.scAsScala
+
+import t.viewer.server.Conversions._
+
 import t.viewer.server.SharedDatasets
 import t.viewer.server.SharedPlatforms
 import t.viewer.shared.AppInfo
@@ -84,6 +81,13 @@ import t.viewer.shared.TimeoutException
 import t.common.shared.sample.Annotation
 import t.platform.BioParameters
 import t.viewer.server.Annotations
+
+import t.common.shared.sample.search.MatchCondition
+import t.common.shared.sample.BioParamValue
+import t.sparql.SampleClassFilter
+import t.model.shared.SampleClassHelper
+import t.common.shared.sample.SampleClassUtils
+import t.model.SampleClass
 
 object SparqlServiceImpl {
   var inited = false
@@ -119,7 +123,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   lazy val platformsCache = t.viewer.server.Platforms(probeStore)
 
-  lazy val annotations = new Annotations(sampleStore, schema, baseConfig)
+  lazy val annotations = new Annotations(schema, baseConfig)
 
   override def localInit(conf: Configuration) {
     super.localInit(conf)
@@ -156,7 +160,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
         sPlatforms(), probeLists,
         configuration.intermineInstances.toArray,
         probeClusterings(probeLists), appName,
-        makeUserKey(), getAnnotationInfo)
+        makeUserKey(), getAnnotationInfo,
+        annotations.allParamsAsShared.toArray)
   }
 
   protected lazy val b2rKegg: B2RKegg =
@@ -286,8 +291,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       parameter: String): Array[String] = {
     //Get the parameters without changing the persistent datasets in getSessionData
     val filter = sampleFilterFor(ds)
-    sampleStore.attributeValues(scAsScala(sc).filterAll, parameter)(filter).
-      filter(x => !schema.isControlValue(parameter, x)).toArray            
+    sampleStore.attributeValues(SampleClassFilter(sc).filterAll, parameter)(filter).
+      filter(x => !schema.isControlValue(parameter, x)).toArray
   }
 
   @throws[TimeoutException]
@@ -297,12 +302,12 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   @throws[TimeoutException]
   def parameterValues(sc: SampleClass, parameter: String): Array[String] = {
-    sampleStore.attributeValues(scAsScala(sc).filterAll, parameter).
+    sampleStore.attributeValues(SampleClassFilter(sc).filterAll, parameter).
       filter(x => !schema.isControlValue(parameter, x)).toArray
   }
 
   def samplesById(ids: Array[String]): Array[Sample] = {
-    sampleStore.samples(t.sparql.SampleClass(), "id",
+    sampleStore.samples(SampleClassFilter(), "id",
         ids).map(asJavaSample(_)).toArray
   }
 
@@ -311,14 +316,14 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   @throws[TimeoutException]
   def samples(sc: SampleClass): Array[Sample] = {
-    val ss = sampleStore.sampleQuery(scAsScala(sc))(sf)()
+    val ss = sampleStore.sampleQuery(SampleClassFilter(sc))(sf)()
     ss.map(asJavaSample).toArray
   }
 
   @throws[TimeoutException]
   def samples(sc: SampleClass, param: String,
       paramValues: Array[String]): Array[Sample] =
-    sampleStore.samples(scAsScala(sc), param, paramValues).map(asJavaSample(_)).toArray
+    sampleStore.samples(SampleClassFilter(sc), param, paramValues).map(asJavaSample(_)).toArray
 
   @throws[TimeoutException]
   def samples(scs: Array[SampleClass], param: String,
@@ -326,9 +331,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
         scs.flatMap(x => samples(x, param, paramValues)).distinct.toArray
 
   @throws[TimeoutException]
-  def sampleClasses(): Array[SampleClass] = {
+  def sampleClasses(): Array[t.model.SampleClass] = {
   sampleStore.sampleClasses.map(x =>
-    new SampleClass(new java.util.HashMap(mapAsJavaMap(x)))
+    new SampleClass(new java.util.HashMap(x))
     ).toArray
   }
 
@@ -342,7 +347,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     def isControl(s: t.db.Sample) = schema.isSelectionControl(s.sampleClass)
 
-    def unit(s: Sample) = s.sampleClass.asUnit(schema)
+    def unit(s: Sample) = SampleClassUtils.asUnit(s.sampleClass, schema)
 
     //TODO the copying may be costly - consider optimising in the future
     def unitWithoutMajorMedium(s: Sample) = unit(s).
@@ -352,13 +357,16 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     //This will filter by the chosen parameter - usually compound name
 
-    val rs = sampleStore.samples(sc, param, paramValues.toSeq)
+    import t.db.SampleParameters._
+
+    val rs = sampleStore.samples(SampleClassFilter(sc), param, paramValues.toSeq)
     val ss = rs.groupBy(x =>(
             x.sampleClass("batchGraph"),
-            x.sampleClass("control_group")))
+            x.sampleClass(ControlGroup.id)))
 
     val cgs = ss.keys.toSeq.map(_._2).distinct
-    val potentialControls = sampleStore.samples(sc, "control_group", cgs).
+    val potentialControls = sampleStore.samples(SampleClassFilter(sc), ControlGroup.id, cgs).
+
       filter(isControl).map(asJavaSample)
 
       /*
@@ -384,12 +392,12 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
         val fcs = potentialControls.filter(s =>
           unitWithoutMajorMedium(s) == repUnit
-          && s.get("control_group") == repSample.get("control_group")
-          && s.get("batchGraph") == repSample.get("batchGraph")
+          && s.get(ControlGroup.id) == repSample.get(ControlGroup.id)
+          && s.get(BatchGraph.id) == repSample.get(BatchGraph.id)
           )
 
         val cu = if (fcs.isEmpty)
-          new Unit(sc.asUnit(schema), Array())
+          new Unit(SampleClassUtils.asUnit(sc, schema), Array())
         else
           asUnit(fcs)
 
@@ -421,7 +429,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   def probes(columns: Array[SampleColumn]): Array[String] = {
     val samples = columns.flatMap(_.getSamples)
     val metadata = new TriplestoreMetadata(sampleStore, context.config.sampleParameters)
-    val usePlatforms = samples.map(s => metadata.parameter(
+    val usePlatforms = samples.flatMap(s => metadata.parameter(
         t.db.Sample(s.id), "platform_id")
         ).distinct
     usePlatforms.toVector.flatMap(x => platforms(x)).map(_.identifier).toArray
@@ -552,52 +560,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   @throws[TimeoutException]
   def associations(sc: SampleClass, types: Array[AType],
     _probes: Array[String]): Array[Association] =
-    new AssociationResolver(sc, types, _probes).resolve
-
-  import Association._
-
-  protected class AssociationResolver(sc: SampleClass, types: Array[AType],
-      _probes: Iterable[String]) {
-    val aprobes = probeStore.withAttributes(_probes.map(Probe(_)))
-
-    lazy val proteins = toBioMap(aprobes, (_: Probe).proteins)
-
-    def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe])
-      (implicit sf: SampleFilter): BBMap =
-      at match {
-        // The type annotation :BBMap is needed on at least one (!) match pattern
-        // to make the match statement compile. TODO: research this
-        case _: AType.Uniprot.type   => proteins: BBMap
-        case _: AType.GO.type        => probeStore.goTerms(probes)
-
-        case _: AType.KEGG.type =>
-          toBioMap(probes, (_: Probe).genes) combine
-            b2rKegg.forGenes(probes.flatMap(_.genes))
-//        case _: AType.Enzymes.type =>
-//          val sp = asSpecies(sc)
-//          b2rKegg.enzymes(probes.flatMap(_.genes), sp)
-        case _ => throw new Exception("Unexpected annotation type")
-      }
-
-    val emptyVal = CSet(DefaultBio("error", "(Timeout or error)"))
-    val errorVals = Map() ++ aprobes.map(p => (Probe(p.identifier) -> emptyVal))
-
-    def queryOrEmpty[T](f: () => BBMap): BBMap = {
-      gracefully(f, errorVals)
-    }
-
-    private def lookupFunction(t: AType)(implicit sf: SampleFilter): BBMap =
-      queryOrEmpty(() => associationLookup(t, sc, aprobes))
-
-    def standardMapping(m: BBMap): MMap[String, (String, String)] =
-      m.mapKeys(_.identifier).mapInnerValues(p => (p.name, p.identifier))
-
-    def resolve(): Array[Association] = {
-      implicit val filt = sf
-      val m1 = types.par.map(x => (x, standardMapping(lookupFunction(x)(filt)))).seq
-      m1.map(p => new Association(p._1, convertPairs(p._2))).toArray
-    }
-  }
+    new AssociationResolver(probeStore, b2rKegg, sc, types, _probes).resolve
 
   @throws[TimeoutException]
   def geneSuggestions(sc: SampleClass, partialName: String): Array[String] = {
@@ -630,6 +593,38 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       b2rKegg.forPattern(partialName, maxSize).map(new Pair(_, AType.KEGG)) ++
       probeStore.goTerms(partialName, maxSize).map(x => new Pair(x.name, AType.GO))
     }.toArray
+  }
+
+  def sampleSearch(sc: SampleClass, cond: MatchCondition): Array[Sample] = {
+    val searchSpace = sampleStore.sampleQuery(SampleClassFilter(sc))(sf)()
+
+    val ss = t.common.server.sample.search.IndividualSearch(sampleStore, cond, annotations,
+        searchSpace.map(asJavaSample))
+    val rs = ss.results
+    println("Search results:")
+    for (s <- rs) {
+      println(s)
+    }
+    println("Found " + rs.size + " matches.")
+    rs.toArray
+  }
+
+  def unitSearch(sc: SampleClass, cond: MatchCondition): Array[Unit] = {
+    val searchSpace = sampleStore.sampleQuery(SampleClassFilter(sc))(sf)()
+
+    val javaSamples: java.util.Collection[Sample] = searchSpace.map(asJavaSample)
+    val units = Unit.formUnits(schema, javaSamples)
+
+    val ss = t.common.server.sample.search.UnitSearch(sampleStore, cond, annotations, units)
+    val rs = ss.results
+    println("Search results:")
+    for (s <- rs) {
+      s.averageAttributes(appInfoLoader.latest.numericalParameters())
+      s.concatenateAttributes(appInfoLoader.latest.stringParameters())
+      println(s)
+    }
+    println("Found " + rs.size + " matches.")
+    rs.toArray
   }
 
 }

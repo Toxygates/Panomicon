@@ -21,7 +21,10 @@
 package t.db
 
 import t.TTestSuite
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class ExprValueTest extends TTestSuite {
   test("equality") {
     ExprValue(0, 'A') should equal(ExprValue(0, 'A'))

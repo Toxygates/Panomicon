@@ -20,7 +20,7 @@
 package t.common.testing;
 
 import t.common.shared.DataSchema;
-import t.common.shared.SampleClass;
+import t.model.SampleClass;
 
 @SuppressWarnings("serial")
 public class TestSchema extends DataSchema {

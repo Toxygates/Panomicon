@@ -19,6 +19,19 @@
 package otgviewer.client;
 
 import java.util.List;
+import java.util.logging.Level;
+
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
+import t.common.shared.sample.Annotation;
+import t.common.shared.sample.BioParamValue;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.NumericalBioParamValue;
+import t.common.shared.sample.Sample;
+import t.common.shared.sample.Unit;
+import t.model.SampleClass;
+import t.model.SampleParameter;
+import t.viewer.client.Analytics;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -30,17 +43,6 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
-
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import t.common.shared.SampleClass;
-import t.common.shared.sample.Annotation;
-import t.common.shared.sample.BioParamValue;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.NumericalBioParamValue;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.Unit;
-import t.viewer.client.Analytics;
 
 /**
  * A time and dose grid that can show some variable as a heat map. The variable is supplied as a
@@ -117,7 +119,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 
     SampleClass sc = chosenSampleClass.copy();
     sc.put("dose_level", dose);
-    sc.put("exposure_time", time);
+    sc.put(SampleParameter.ExposureTime.id(), time);
     sc.put("compound_name", compound);
 
     sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(this,
@@ -129,7 +131,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
   }
 
   private double doubleValueFor(Annotation a, String key) throws IllegalArgumentException {
-    for (BioParamValue e : a.getAnnotations()) {
+    for (BioParamValue e : a.getAnnotations()) {      
       if (e.label().equals(key) && e instanceof NumericalBioParamValue) {
         return ((NumericalBioParamValue) e).value();
       }
@@ -154,7 +156,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
               sum += val;
             }
           } catch (Exception e) {
-            logger.warning("Number format error or unavailable data for " + annotation);
+            logger.log(Level.WARNING, "Annotation barcode processing error", e);            
           }
         }
 

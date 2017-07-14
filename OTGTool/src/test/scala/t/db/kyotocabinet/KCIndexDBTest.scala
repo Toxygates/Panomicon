@@ -23,7 +23,9 @@ package t.db.kyotocabinet
 import t.TTestSuite
 import org.scalatest.junit.JUnitRunner
 import t.db.testing.TestData
+import org.junit.runner.RunWith
 
+@RunWith(classOf[JUnitRunner])
 class KCIndexDBTest extends TTestSuite {
   import KCDBTest._
   import TestData._

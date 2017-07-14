@@ -33,6 +33,7 @@ import t.testing.FakeContext
 import t.platform.OrthologMapping
 import t.db.Metadata
 import t.db.SampleParameter
+import t.db.SampleParameters._
 
 object TestData {
   def pickOne[T](xs: Seq[T]): T = {
@@ -45,27 +46,35 @@ object TestData {
 
   val enumMaps = Map(
     "compound_name" -> mm(Seq("acetaminophen", "methapyrilene", "cocoa", "water")),
-    "dose_level" -> mm(Seq("Control", "Low", "Middle", "High", "Really high")),
+    DoseLevel.id -> mm(Seq("Control", "Low", "Middle", "High", "Really high")),
     "organism" -> mm(Seq("Giraffe", "Squirrel", "Rat", "Mouse", "Human")),
-    "exposure_time" -> mm(Seq("3 hr", "6 hr", "9 hr", "24 hr")),
+    ExposureTime.id -> mm(Seq("3 hr", "6 hr", "9 hr", "24 hr")),
     "sin_rep_type" -> mm(Seq("Single", "Repeat")),
     "organ_id" -> mm(Seq("Liver", "Kidney")),
     "test_type" -> mm(Seq("Vitro", "Vivo")))
 
+  private def em(k: SampleParameter) = enumMaps(k.id).keySet
   private def em(k: String) = enumMaps(k).keySet
   def enumValues(key: String) = em(key)
 
   def calls = List('A', 'P', 'M')
 
-  val ids = (0 until (5 * 4 * 4 * 3)).toStream.iterator
+  private def cgroup(time: String, compound: String) = {
+    val c = (enumMaps(ExposureTime.id)(time)) * 100 +
+      enumMaps("compound_name")(compound)
+    "" + c
+  }
+
+  val ids = (0 until (5 * 4 * 3 * 4)).toStream.iterator
   val samples = for (
-    dose <- em("dose_level"); time <- em("exposure_time");
+    dose <- em(DoseLevel); time <- em(ExposureTime);
     ind <- Set("1", "2", "3"); compound <- em("compound_name");
     s = Sample("s" + ids.next,
-        Map("dose_level" -> dose, "individual_id" -> ind,
-          "exposure_time" -> time, "compound_name" -> compound,
+        Map(DoseLevel.id -> dose, Individual.id -> ind,
+          ExposureTime.id -> time, "compound_name" -> compound,
           "sin_rep_type" -> "Single", "organ_id" -> "Liver",
-          "test_type" -> "Vivo", "organism" -> "Rat")
+          "test_type" -> "Vivo", "organism" -> "Rat",
+          ControlGroup.id -> cgroup(time, compound))
         )
   ) yield s
 
@@ -95,8 +104,12 @@ object TestData {
   }
 
   def makeTestData(sparse: Boolean): RawExpressionData = {
+    makeTestData(sparse, samples)
+  }
+
+  def makeTestData(sparse: Boolean, useSamples: Iterable[Sample]): RawExpressionData = {
     var testData = Map[Sample, Map[String, (Double, Char, Double)]]()
-    for (s <- samples) {
+    for (s <- useSamples) {
       var thisProbe = Map[String, (Double, Char, Double)]()
       for (p <- probeMap.tokens) {
         if (!sparse || Math.random > 0.5) {
