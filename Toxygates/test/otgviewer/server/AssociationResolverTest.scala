@@ -21,7 +21,7 @@
 package otgviewer.server
 
 import scala.collection.JavaConversions._
-import t.common.shared.SampleClass
+import t.model.SampleClass
 import t.common.shared.AType
 import org.junit.runner.RunWith
 import t.TTestSuite
@@ -36,18 +36,8 @@ import t.sparql.secondary.LocalUniprot
 import t.sparql.SampleFilter
 import otg.OTGBConfig
 
-<<<<<<< local
 object AssociationResolverTest {
-=======
-import org.scalatest.BeforeAndAfter
-import org.scalatest.FunSuite
 
-import t.viewer.server.Configuration
-import t.common.shared.AType
-import t.model.SampleClass
-
-object SparqlServiceTest {
->>>>>>> other
   val testClass = Map("sin_rep_type" -> "Single",
     "organism" -> "Rat",
     "organ_id" -> "Liver",

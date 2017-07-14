@@ -24,11 +24,8 @@ import scala.collection.JavaConversions.mapAsJavaMap
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-<<<<<<< local
-=======
 import scala.collection.JavaConversions._
 import t.model.SampleClass
->>>>>>> other
 
 import t.TTestSuite
 

@@ -3,7 +3,7 @@ package otgviewer.server
 import otg.Species._
 import otg.sparql.Probes
 import t.common.shared.AType
-import t.common.shared.SampleClass
+import t.model.SampleClass
 import t.platform.Probe
 import t.sparql._
 import t.sparql.SampleFilter
@@ -52,7 +52,7 @@ class AssociationResolver(probeStore: Probes,
 
     def getTargeting(sc: SampleClass, from: CompoundTargets)
       (implicit sf: SampleFilter): MMap[Probe, Compound] = {
-      val expected = sampleStore.compounds(scAsScala(sc).filterAll).map(Compound.make(_))
+      val expected = sampleStore.compounds(SampleClassFilter(sc).filterAll).map(Compound.make(_))
 
       //strictly orthologous
       val oproteinVs = oproteins.allValues.toSet -- proteins.allValues.toSet

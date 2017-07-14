@@ -11,7 +11,6 @@ import t.common.shared.sample.Sample
 import t.common.shared.sample.Unit
 import t.sparql.TriplestoreMetadata
 import t.sparql.SampleFilter
-import t.sparql.SampleClass
 import t.sparql.CachingTriplestoreMetadata
 import t.db.SampleParameter
 import t.sparql.Samples

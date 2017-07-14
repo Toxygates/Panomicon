@@ -21,13 +21,10 @@
 package t.common.shared
 
 import scala.collection.JavaConversions._
-<<<<<<< local
 import org.junit.runner.RunWith
 import t.TTestSuite
 import org.scalatest.junit.JUnitRunner
-=======
 import t.model.SampleClass
->>>>>>> other
 
 @RunWith(classOf[JUnitRunner])
 class SampleClassTest extends TTestSuite {

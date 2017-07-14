@@ -8,7 +8,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.SampleClass;
+import t.model.SampleClass;
 import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.NumericalBioParamValue;
 import t.common.shared.sample.Sample;

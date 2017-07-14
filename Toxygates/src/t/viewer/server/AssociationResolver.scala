@@ -5,7 +5,7 @@ import t.db.DefaultBio
 import t.sparql.SampleFilter
 import t.common.shared.AType
 import t.viewer.shared.Association
-import t.common.shared.SampleClass
+import t.model.SampleClass
 import t.platform.Probe
 import t.sparql.Probes
 import Association._

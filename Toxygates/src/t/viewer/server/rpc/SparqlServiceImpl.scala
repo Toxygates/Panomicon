@@ -291,11 +291,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       parameter: String): Array[String] = {
     //Get the parameters without changing the persistent datasets in getSessionData
     val filter = sampleFilterFor(ds)
-<<<<<<< local
-    sampleStore.attributeValues(scAsScala(sc).filterAll, parameter)(filter).
-=======
     sampleStore.attributeValues(SampleClassFilter(sc).filterAll, parameter)(filter).
->>>>>>> other
       filter(x => !schema.isControlValue(parameter, x)).toArray
   }
 
@@ -361,24 +357,16 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     //This will filter by the chosen parameter - usually compound name
 
-<<<<<<< local
     import t.db.SampleParameters._
 
-    val rs = sampleStore.samples(sc, param, paramValues.toSeq)
-    val ss = rs.groupBy(x =>(x(BatchGraph), x(ControlGroup)))
-=======
     val rs = sampleStore.samples(SampleClassFilter(sc), param, paramValues.toSeq)
     val ss = rs.groupBy(x =>(
             x.sampleClass("batchGraph"),
-            x.sampleClass("control_group")))
->>>>>>> other
+            x.sampleClass(ControlGroup.id)))
 
     val cgs = ss.keys.toSeq.map(_._2).distinct
-<<<<<<< local
-    val potentialControls = sampleStore.samples(sc, ControlGroup.id, cgs).
-=======
-    val potentialControls = sampleStore.samples(SampleClassFilter(sc), "control_group", cgs).
->>>>>>> other
+    val potentialControls = sampleStore.samples(SampleClassFilter(sc), ControlGroup.id, cgs).
+
       filter(isControl).map(asJavaSample)
 
       /*
@@ -608,7 +596,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   }
 
   def sampleSearch(sc: SampleClass, cond: MatchCondition): Array[Sample] = {
-    val searchSpace = sampleStore.sampleQuery(scAsScala(sc))(sf)()
+    val searchSpace = sampleStore.sampleQuery(SampleClassFilter(sc))(sf)()
 
     val ss = t.common.server.sample.search.IndividualSearch(sampleStore, cond, annotations,
         searchSpace.map(asJavaSample))
@@ -622,7 +610,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   }
 
   def unitSearch(sc: SampleClass, cond: MatchCondition): Array[Unit] = {
-    val searchSpace = sampleStore.sampleQuery(scAsScala(sc))(sf)()
+    val searchSpace = sampleStore.sampleQuery(SampleClassFilter(sc))(sf)()
 
     val javaSamples: java.util.Collection[Sample] = searchSpace.map(asJavaSample)
     val units = Unit.formUnits(schema, javaSamples)

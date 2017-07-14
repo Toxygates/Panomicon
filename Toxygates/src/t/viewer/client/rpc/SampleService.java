@@ -12,11 +12,8 @@ import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
-<<<<<<< local
 import t.common.shared.sample.search.MatchCondition;
-=======
 import t.model.SampleClass;
->>>>>>> other
 import t.viewer.shared.TimeoutException;
 
 /**
