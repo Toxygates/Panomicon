@@ -72,8 +72,9 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
     dp.addNorth(lblCompounds, 40);
     north = lblCompounds;
 
-    // TODO factor out
-    boolean isAdjuvant = screen.manager().getUIType().equals("adjuvant");
+    String instanceName = screen.manager().appInfo().instanceName();
+    boolean isAdjuvant = 
+        instanceName.equals("adjuvant") || instanceName.equals("dev");
 
     final Collection<StringList> predefLists =
         (isAdjuvant ? TemporaryCompoundLists.predefinedLists() : new ArrayList<StringList>());

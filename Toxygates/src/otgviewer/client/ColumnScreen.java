@@ -78,16 +78,22 @@ public class ColumnScreen extends Screen {
   }
 
   @Override
-  protected void addToolbars() {
-    super.addToolbars();
-    Button searchButton = new Button("Search...");
-    searchButton.addClickHandler(new ClickHandler() {      
-      @Override
-      public void onClick(ClickEvent arg0) {
-        search();        
-      }
-    });
-    HorizontalPanel hp = Utils.mkHorizontalPanel(true, filterTools, searchButton);    
+  protected void addToolbars() {   
+    super.addToolbars();   
+    HorizontalPanel hp = Utils.mkHorizontalPanel(true, filterTools);
+   
+    boolean isDev = manager().appInfo().instanceName().equals("dev");
+    if (isDev) {
+      Button searchButton = new Button("Search...");
+      searchButton.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent arg0) {
+          search();
+        }
+      });
+      hp.add(searchButton);
+    }
+   
     addToolbar(hp, 45);
     addLeftbar(cs, 350);
   }
