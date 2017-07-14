@@ -65,7 +65,7 @@ class SeriesTest extends TTestSuite {
     for (s <- ss;
         const = s.constraints.filter(_._2 != null).toSet;
         pr = context.probeMap.unpack(s.probe);
-        relSamples = meta.samples.filter(x => const.subsetOf(x.sampleClass.constraints.toSet))) {
+        relSamples = meta.samples.filter(x => const.subsetOf(x.sampleClass.getMap.toSet))) {
 
       val present = for (
         s <- relSamples;

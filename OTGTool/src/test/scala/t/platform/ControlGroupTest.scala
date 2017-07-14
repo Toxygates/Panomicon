@@ -25,8 +25,8 @@ class ControlGroupTest extends TTestSuite {
       val remove = Set(DoseLevel.id, Individual.id)
 
       for (cs <- cg.controlSamples) {
-        cs.sampleClass.constraints.filter(c => ! remove.contains(c._1)) should
-          equal(s.sampleClass.constraints.filter(c => ! remove.contains(c._1)))
+        cs.sampleClass.getMap.filter(c => ! remove.contains(c._1)) should
+          equal(s.sampleClass.getMap.filter(c => ! remove.contains(c._1)))
       }
     }
   }

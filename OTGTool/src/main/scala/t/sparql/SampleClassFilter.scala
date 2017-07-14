@@ -27,7 +27,7 @@ import t.db.SampleClassLike
 
 object SampleClassFilter {
   def apply(cl: t.model.SampleClass): SampleClassFilter =
-    SampleClassFilter(cl.constraints())
+    SampleClassFilter(cl.getMap())
 }
 
 /**

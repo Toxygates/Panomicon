@@ -106,17 +106,8 @@ public class SampleClass implements Serializable {
     }
   }
 
-  public SampleClass sampleClass() {
-    return this;
-  }
-
-  public Map<String, String> constraints() {
-    return getMap();
-  }
-  
   /**
    * Returns a copy of this sample class' constraint map.
-   * 
    * @return
    */
   public Map<String, String> getMap() {
@@ -243,6 +234,7 @@ public class SampleClass implements Serializable {
     return sb.toString();
   }
 
+  //TODO move out of OTGTool
   public String pack() {
     StringBuilder sb = new StringBuilder();
     for (String k : data.keySet()) {
@@ -252,6 +244,7 @@ public class SampleClass implements Serializable {
     return sb.toString();
   }
 
+  //TODO move out of OTGTool
   public static SampleClass unpack(String data) {
     String[] spl = data.split(",,,");
     Map<String, String> d = new HashMap<String, String>();
