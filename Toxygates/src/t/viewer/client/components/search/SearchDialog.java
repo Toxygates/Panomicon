@@ -231,13 +231,19 @@ public class SearchDialog extends Composite {
   private class UnitTableHelper extends TableHelper<Unit> {
     private TextCell textCell = new TextCell();
 
-    public TooltipColumn<Unit> makeColumn(String key) {
-      return new KeyColumn<Unit>(textCell, key) {
-        @Override
-        public String getData(Unit unit) {
-          return unit.get(keyName);
-        }
-      };
+    protected class UnitKeyColumn extends KeyColumn<Unit> {
+      public UnitKeyColumn(Cell<String> cell, String key) {
+        super(cell, key);
+      }
+
+      @Override
+      public String getData(Unit unit) {
+        return unit.get(keyName);
+      }
+    }
+
+    public UnitKeyColumn makeColumn(String key) {
+      return new UnitKeyColumn(textCell, key);
     }
 
     @Override
@@ -248,6 +254,16 @@ public class SearchDialog extends Composite {
     @Override
     public TooltipColumn<Unit> makeNumericColumn(String key) {
       return makeColumn(key);
+    }
+
+    @Override
+    protected void addAdhocColumns() {
+      addColumn(new UnitKeyColumn(textCell, "sample_id") {
+        @Override
+        public String getValue(Unit unit) {
+          return getData(unit).split("\\s*/\\s*")[0];
+        }
+      }, "sample_id");
     }
 
     @Override
