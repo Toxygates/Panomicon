@@ -37,6 +37,7 @@ public class Analytics {
   public static final String CATEGORY_GENERAL = "General";
   public static final String ACTION_CREATE_NEW_SAMPLE_GROUP = "Create new sample group";
   public static final String ACTION_MODIFY_EXISTING_SAMPLE_GROUP = "Modify existing sample group";
+  public static final String ACTION_FREE_EDIT_COMPOUNDS = "Free edit (compounds)";
 
   public static final String CATEGORY_IMPORT_EXPORT = "Import/Export";
   public static final String ACTION_DOWNLOAD_SAMPLE_DETAILS = "Download sample details";
