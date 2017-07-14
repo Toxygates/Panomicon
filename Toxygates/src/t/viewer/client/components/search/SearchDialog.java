@@ -126,7 +126,7 @@ public class SearchDialog extends Composite {
     //Could also have macro parameters here, such as organism, tissue etc
     //but currently the search is always constrained on those parameters
     private final String[] classKeys = {"compound_name", "dose_level", "exposure_time"};
-    private final String[] adhocKeys = {"sample_id", "individual_id"};
+    private final String[] adhocKeys = {"sample_id"};
 
     protected String[] getClassKeys() {
       return classKeys;
