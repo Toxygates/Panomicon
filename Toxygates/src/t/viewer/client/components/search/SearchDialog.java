@@ -12,6 +12,7 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -48,6 +49,8 @@ public class SearchDialog extends Composite {
 
   private DialogBox waitDialog;
   
+  private static String DECIMAL_FORMAT = "#.000";
+
   /**
    * Available search parameters. BioParamValue is here used to identify
    * parameters in general, and not specific values.
@@ -183,13 +186,26 @@ public class SearchDialog extends Composite {
     protected abstract class KeyColumn<S> extends TooltipColumn<S> {
       protected String keyName;
       
-      public KeyColumn(Cell<String> cell) {
+      public KeyColumn(Cell<String> cell, String key) {
         super(cell);
+        keyName = key;
       }
 
-      public KeyColumn<S> init(String key) {
-        keyName = key;
-        return this;
+      protected abstract String getData(S s);
+
+      @Override
+      public String getValue(S s) {
+        String string = getData(s);
+        try {
+          return NumberFormat.getFormat(DECIMAL_FORMAT).format(Double.parseDouble(string));
+        } catch (NumberFormatException e) {
+          return string;
+        }
+      }
+
+      @Override
+      public String getTooltip(S s) {
+        return getData(s);
       }
     }
   }
@@ -197,12 +213,12 @@ public class SearchDialog extends Composite {
   private class UnitTableHelper extends TableHelper<Unit> {
     @Override
     public TooltipColumn<Unit> makeColumn(String key, Cell<String> cell) {
-      return new KeyColumn<Unit>(cell) {
+      return new KeyColumn<Unit>(cell, key) {
         @Override
-        public String getValue(Unit unit) {
+        public String getData(Unit unit) {
           return unit.get(keyName);
         }
-      }.init(key);
+      };
     }
 
     @Override
@@ -220,12 +236,12 @@ public class SearchDialog extends Composite {
   private class SampleTableHelper extends TableHelper<Sample> {
     @Override
     public TooltipColumn<Sample> makeColumn(String key, Cell<String> cell) {
-      return new KeyColumn<Sample>(cell) {
+      return new KeyColumn<Sample>(cell, key) {
         @Override
-        public String getValue(Sample sample) {
+        public String getData(Sample sample) {
           return sample.get(keyName);
         }
-      }.init(key);
+      };
     }
 
     @Override
