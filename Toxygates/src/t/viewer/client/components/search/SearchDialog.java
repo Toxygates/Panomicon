@@ -8,21 +8,13 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import t.model.SampleClass;
-import t.common.shared.sample.BioParamValue;
-import t.common.shared.sample.NumericalBioParamValue;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.Unit;
-import t.common.shared.sample.search.MatchCondition;
-import t.viewer.client.Analytics;
-import t.viewer.client.Utils;
-import t.viewer.client.rpc.SampleServiceAsync;
-import t.viewer.shared.AppInfo;
-
+import com.google.gwt.cell.client.Cell;
+import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -31,6 +23,18 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
+
+import t.common.shared.sample.BioParamValue;
+import t.common.shared.sample.NumericalBioParamValue;
+import t.common.shared.sample.Sample;
+import t.common.shared.sample.Unit;
+import t.common.shared.sample.search.MatchCondition;
+import t.model.SampleClass;
+import t.viewer.client.Analytics;
+import t.viewer.client.Utils;
+import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.client.table.TooltipColumn;
+import t.viewer.shared.AppInfo;
 
 /**
  * Sample search interface that allows the user to edit search conditions,
@@ -46,6 +50,8 @@ public class SearchDialog extends Composite {
 
   private DialogBox waitDialog;
   
+  private static String DECIMAL_FORMAT = "#.000";
+
   /**
    * Available search parameters. BioParamValue is here used to identify
    * parameters in general, and not specific values.
@@ -104,44 +110,62 @@ public class SearchDialog extends Composite {
 
   private abstract class TableHelper<T> {
     private CellTable<T> table = new CellTable<T>();
-    private List<TextColumn<T>> columns = new LinkedList<TextColumn<T>>();
+    private List<Column<T, String>> columns = new LinkedList<Column<T, String>>();
 
-    protected abstract TextColumn<T> makeColumn(String key);
+    protected abstract Column<T, String> makeBasicColumn(String key);
+    protected abstract Column<T, String> makeNumericColumn(String key);
     protected abstract void trackAnalytics();
     protected abstract void asyncSearch(SampleClass sc, MatchCondition cond,
         AsyncCallback<T[]> callback);
 
     //Could also have macro parameters here, such as organism, tissue etc
     //but currently the search is always constrained on those parameters
-    final String[] keys = { "compound_name", "exposure_time", "sample_id",
-        "individual_id" };
+    private final String[] classKeys = {"compound_name", "exposure_time"};
+    private final String[] adhocKeys = {"sample_id", "individual_id"};
+
+    protected String[] getClassKeys() {
+      return classKeys;
+    }
+
+    protected String[] getAdhocKeys() {
+      return adhocKeys;
+    }
     
-    public List<String> getKeys(MatchCondition condition) {
-      List<String> r = new ArrayList<String>(Arrays.asList(keys));
+    private List<String> getKeys(MatchCondition condition) {
+      List<String> r = new ArrayList<String>();
       for (BioParamValue bp: condition.neededParameters()) {
         r.add(bp.id());
       }      
       return r;
     }
-    
-    protected void addColumn(String key) {
-      TextColumn<T> column = makeColumn(key);
+
+    protected void addColumn(Column<T, String> column, String title) {
       columns.add(column);
-      table.addColumn(column, key);
+      table.addColumn(column, title);
     }
 
     public void setupTable(T[] entries, MatchCondition cond) {
-      List<String> keys = getKeys(cond);
+      for (String key : getClassKeys()) {
+        addColumn(makeBasicColumn(key), key);
+      }
+      
+      addAdhocColumns();
 
-      for (String key : keys) {
-        addColumn(key);
+      for (String key : getKeys(cond)) {
+        addColumn(makeNumericColumn(key), key);
       }
 
       table.setRowData(Arrays.asList(entries));
     }
 
+    protected void addAdhocColumns() {
+      for (String key : getAdhocKeys()) {
+        addColumn(makeBasicColumn(key), key);
+      }
+    }
+
     public void clear() {
-      for (TextColumn<T> column : columns) {
+      for (Column<T, String> column : columns) {
         table.removeColumn(column);
       }
       columns.clear();
@@ -177,25 +201,69 @@ public class SearchDialog extends Composite {
       });
     }
 
-    protected abstract class KeyColumn<S> extends TextColumn<S> {
+    protected abstract class KeyColumn<S> extends TooltipColumn<S> {
       protected String keyName;
-
-      public KeyColumn<S> init(String key) {
+      
+      public KeyColumn(Cell<String> cell, String key) {
+        super(cell);
         keyName = key;
-        return this;
+      }
+
+      protected abstract String getData(S s);
+
+      @Override
+      public String getValue(S s) {
+        String string = getData(s);
+        try {
+          return NumberFormat.getFormat(DECIMAL_FORMAT).format(Double.parseDouble(string));
+        } catch (NumberFormatException e) {
+          return string;
+        }
+      }
+
+      @Override
+      public String getTooltip(S s) {
+        return getData(s);
       }
     }
   }
 
   private class UnitTableHelper extends TableHelper<Unit> {
+    private TextCell textCell = new TextCell();
+
+    protected class UnitKeyColumn extends KeyColumn<Unit> {
+      public UnitKeyColumn(Cell<String> cell, String key) {
+        super(cell, key);
+      }
+
+      @Override
+      public String getData(Unit unit) {
+        return unit.get(keyName);
+      }
+    }
+
+    public UnitKeyColumn makeColumn(String key) {
+      return new UnitKeyColumn(textCell, key);
+    }
+
     @Override
-    public TextColumn<Unit> makeColumn(String key) {
-      return new KeyColumn<Unit>() {
+    public TooltipColumn<Unit> makeBasicColumn(String key) {
+      return makeColumn(key);
+    }
+
+    @Override
+    public TooltipColumn<Unit> makeNumericColumn(String key) {
+      return makeColumn(key);
+    }
+
+    @Override
+    protected void addAdhocColumns() {
+      addColumn(new UnitKeyColumn(textCell, "sample_id") {
         @Override
         public String getValue(Unit unit) {
-          return unit.get(keyName);
+          return getData(unit).split("\\s*/\\s*")[0];
         }
-      }.init(key);
+      }, "sample_id");
     }
 
     @Override
@@ -211,15 +279,25 @@ public class SearchDialog extends Composite {
   }
 
   private class SampleTableHelper extends TableHelper<Sample> {
+    private TextCell textCell = new TextCell();
 
-    @Override
-    public TextColumn<Sample> makeColumn(String key) {
-      return new KeyColumn<Sample>() {
+    private TooltipColumn<Sample> makeColumn(String key) {
+      return new KeyColumn<Sample>(textCell, key) {
         @Override
-        public String getValue(Sample sample) {
+        public String getData(Sample sample) {
           return sample.get(keyName);
         }
-      }.init(key);
+      };
+    }
+
+    @Override
+    public TooltipColumn<Sample> makeBasicColumn(String key) {
+      return makeColumn(key);
+    }
+
+    @Override
+    public TooltipColumn<Sample> makeNumericColumn(String key) {
+      return makeColumn(key);
     }
 
     @Override
