@@ -76,12 +76,6 @@ object CSVHelper {
 
   }
 
-  def writeCSV(namePrefix: String, dir: String, urlbase: String,
-    rowTitles: Seq[String], colTitles: Seq[String],
-    data: Seq[Seq[Any]]): String =
-    writeCSV(namePrefix, dir, urlbase, Seq(), rowTitles, colTitles,
-      data)
-
   /**
    * Write expression values to a CSV files.
    * The given probes and geneIds only will be written.
@@ -99,12 +93,8 @@ object CSVHelper {
       throw new Exception("No data supplied")
     }
 
-    val cal = Calendar.getInstance
-    val dfmt = s"${cal.get(Calendar.YEAR)}-${cal.get(Calendar.MONTH) + 1}-${cal.get(Calendar.DAY_OF_MONTH)}"
-
-    //TODO pass the file prefix in from outside
-    val file = s"$namePrefix-${dfmt}-${System.currentTimeMillis % 10000}.csv"
-    val fullName = dir + "/" + file
+    val name = filename(namePrefix, dir, urlbase)
+    val fullName = dir + "/" + name
 
     new CSVFile {
     	def columns = textCols.size + colTitles.size + 1
@@ -128,6 +118,21 @@ object CSVHelper {
       }
     }.write(fullName)
 
-    urlbase + "/" + file
+    urlbase + "/" + name
+  }
+
+  def writeCSV(namePrefix: String, dir: String, urlbase: String,
+    rowTitles: Seq[String], colTitles: Seq[String],
+    data: Seq[Seq[Any]]): String =
+    writeCSV(namePrefix, dir, urlbase, Seq(), rowTitles, colTitles,
+      data)
+
+  private def filename(namePrefix: String, dir: String, urlbase: String):
+    String = {
+    val cal = Calendar.getInstance
+    val dfmt = s"${cal.get(Calendar.YEAR)}-${cal.get(Calendar.MONTH) + 1}-${cal.get(Calendar.DAY_OF_MONTH)}"
+
+    //TODO pass the file prefix in from outside
+    s"$namePrefix-${dfmt}-${System.currentTimeMillis % 10000}.csv"
   }
 }
