@@ -13,8 +13,6 @@ import t.common.shared.sample.Unit;
 import t.common.shared.sample.search.MatchCondition;
 import t.model.SampleClass;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
-
 public interface SampleServiceAsync {
 
   void chooseDatasets(Dataset[] enabled, AsyncCallback<Void> callback);
