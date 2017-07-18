@@ -126,4 +126,5 @@ public interface SampleService extends RemoteService {
   Unit[] unitSearch(SampleClass sampleClass, MatchCondition condition)
       throws TimeoutException;
 
+  String prepareUnitCSVDownload(Unit[] units, String[] parameterNames) throws TimeoutException;
 }

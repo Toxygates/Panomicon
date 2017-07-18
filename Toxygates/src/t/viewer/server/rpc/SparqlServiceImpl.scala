@@ -69,6 +69,7 @@ import t.util.Refreshable
 import t.viewer.client.rpc.SparqlService
 import t.viewer.server.AssociationResolver
 import t.viewer.server.CSVHelper
+import t.viewer.server.CSVHelper.CSVFile
 import t.viewer.server.Configuration
 
 import t.viewer.server.Conversions._
@@ -627,4 +628,21 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     rs.toArray
   }
 
+  def prepareUnitCSVDownload(units: Array[Unit], parameterNames: Array[String]):
+    String = {
+
+    val csvFile = new CSVFile{
+      def colCount = parameterNames.size
+    	def rowCount = units.size + 1
+
+      def apply(x: Int, y: Int) = if (y == 0) {
+        parameterNames(x)
+      } else {  //y > 0
+        units(y - 1).get(parameterNames(x))
+      }
+    }
+
+    CSVHelper.writeCSV("toxygates", configuration.csvDirectory,
+        configuration.csvUrlBase, csvFile)
+  }
 }

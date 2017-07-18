@@ -57,4 +57,7 @@ public interface SampleServiceAsync {
 
   void unitSearch(SampleClass sampleClass, MatchCondition condition,
       AsyncCallback<Unit[]> callback);
+
+  void prepareUnitCSVDownload(Unit[] units, String[] parameterNames,
+      AsyncCallback<String> callback);
 }

@@ -122,6 +122,16 @@ object CSVHelper {
   }
 
   def writeCSV(namePrefix: String, dir: String, urlbase: String,
+    csvFile: CSVFile): String = {
+    val name = filename(namePrefix, dir, urlbase)
+    val fullName = dir + "/" + name
+
+    csvFile.write(fullName)
+
+    urlbase + "/" + name
+  }
+
+  def writeCSV(namePrefix: String, dir: String, urlbase: String,
     rowTitles: Seq[String], colTitles: Seq[String],
     data: Seq[Seq[Any]]): String =
     writeCSV(namePrefix, dir, urlbase, Seq(), rowTitles, colTitles,

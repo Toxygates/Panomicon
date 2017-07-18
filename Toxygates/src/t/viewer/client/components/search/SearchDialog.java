@@ -25,6 +25,8 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.PendingAsyncCallback;
 import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.NumericalBioParamValue;
 import t.common.shared.sample.Sample;
@@ -42,13 +44,16 @@ import t.viewer.shared.AppInfo;
  * trigger a search, and display the results.
  */
 public class SearchDialog extends Composite {
+  private DataListenerWidget widget;
   private AppInfo appInfo;
   private ConditionEditor conditionEditor;
   private SampleServiceAsync sampleService;
   private SampleClass sampleClass;
   private TableHelper<Sample> sampleTableHelper = new SampleTableHelper();
   private TableHelper<Unit> unitTableHelper = new UnitTableHelper();
+  private TableHelper<?> currentTableHelper = null;
 
+  private Button downloadButton;
   private Label resultCountLabel;
   private DialogBox waitDialog;
   
@@ -71,8 +76,9 @@ public class SearchDialog extends Composite {
     return r;
   }
   
-  public SearchDialog(AppInfo appInfo, SampleServiceAsync sampleService,
+  public SearchDialog(DataListenerWidget widget, AppInfo appInfo, SampleServiceAsync sampleService,
       SampleClass sampleClass) {
+    this.widget = widget;
     this.appInfo = appInfo;
     this.sampleService = sampleService;
     this.sampleClass = sampleClass;
@@ -99,8 +105,25 @@ public class SearchDialog extends Composite {
 
     resultCountLabel = new Label();
 
+    downloadButton = new Button("Download CSV...", new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        SearchDialog.this.sampleService.prepareUnitCSVDownload(unitTableHelper.searchResult,
+            unitTableHelper.allKeys(),
+            new PendingAsyncCallback<String>(SearchDialog.this.widget,
+                "Unable to prepare the data for download,") {
+              @Override
+              public void handleSuccess(String url) {
+                Utils.displayURL("Your download is ready.", "Download", url);
+              }
+            });
+      }
+    });
+    downloadButton.setVisible(false);
+
     HorizontalPanel tools =
-        Utils.mkHorizontalPanel(true, unitSearchButton, sampleSearchButton, resultCountLabel);
+        Utils.mkHorizontalPanel(true, unitSearchButton, sampleSearchButton, resultCountLabel,
+            downloadButton);
     VerticalPanel vp = Utils.mkVerticalPanel(true, conditionEditor, tools, unitTableHelper.table,
         sampleTableHelper.table);
     searchPanel.add(vp);
@@ -114,8 +137,10 @@ public class SearchDialog extends Composite {
   }
 
   private abstract class TableHelper<T> {
+    public T[] searchResult = null;
     private CellTable<T> table = new CellTable<T>();
     private List<Column<T, String>> columns = new LinkedList<Column<T, String>>();
+    private MatchCondition condition;
 
     protected abstract Column<T, String> makeBasicColumn(String key);
     protected abstract Column<T, String> makeNumericColumn(String key);
@@ -128,15 +153,24 @@ public class SearchDialog extends Composite {
     private final String[] classKeys = {"compound_name", "dose_level", "exposure_time"};
     private final String[] adhocKeys = {"sample_id"};
 
-    protected String[] getClassKeys() {
+    public String[] allKeys() {
+      List<String> keys = new ArrayList<String>();
+      keys.addAll(Arrays.asList(classKeys()));
+      keys.addAll(Arrays.asList(adhocKeys()));
+      keys.addAll(conditionKeys());
+
+      return keys.toArray(new String[0]);
+    }
+
+    protected String[] classKeys() {
       return classKeys;
     }
 
-    protected String[] getAdhocKeys() {
+    protected String[] adhocKeys() {
       return adhocKeys;
     }
     
-    private List<String> getKeys(MatchCondition condition) {
+    private List<String> conditionKeys() {
       List<String> r = new ArrayList<String>();
       for (BioParamValue bp: condition.neededParameters()) {
         r.add(bp.id());
@@ -149,14 +183,14 @@ public class SearchDialog extends Composite {
       table.addColumn(column, title);
     }
 
-    public void setupTable(T[] entries, MatchCondition cond) {
-      for (String key : getClassKeys()) {
+    public void setupTable(T[] entries) {
+      for (String key : classKeys()) {
         addColumn(makeBasicColumn(key), key);
       }
       
       addAdhocColumns();
 
-      for (String key : getKeys(cond)) {
+      for (String key : conditionKeys()) {
         addColumn(makeNumericColumn(key), key);
       }
 
@@ -164,7 +198,7 @@ public class SearchDialog extends Composite {
     }
 
     protected void addAdhocColumns() {
-      for (String key : getAdhocKeys()) {
+      for (String key : adhocKeys()) {
         addColumn(makeBasicColumn(key), key);
       }
     }
@@ -180,8 +214,8 @@ public class SearchDialog extends Composite {
       return "entities";
     }
 
-    public void performSearch(final @Nullable MatchCondition condition) {
-      if (condition == null) {
+    public void performSearch(final @Nullable MatchCondition newCondition) {
+      if (newCondition == null) {
         Window.alert("Please define the search condition.");
         return;
       }
@@ -196,14 +230,22 @@ public class SearchDialog extends Composite {
 
       resultCountLabel.setText("");
 
-      asyncSearch(sampleClass, condition, new AsyncCallback<T[]>() {
+      asyncSearch(sampleClass, newCondition, new AsyncCallback<T[]>() {
 
         @Override
         public void onSuccess(T[] result) {
+          searchResult = result;
+          condition = newCondition;
+
           waitDialog.hide();
           hideTables();
-          setupTable(result, condition);
+
+          setupTable(result);
+
           resultCountLabel.setText("Found " + result.length + " " + searchEntityName());
+
+          currentTableHelper = TableHelper.this;
+          downloadButton.setVisible((currentTableHelper == unitTableHelper));
         }
 
         @Override

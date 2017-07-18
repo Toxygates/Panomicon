@@ -22,6 +22,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Widget;
+
 import otgviewer.client.components.FilterTools;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
@@ -29,20 +36,13 @@ import otgviewer.client.components.StorageParser;
 import otgviewer.client.components.compoundsel.CompoundSelector;
 import otgviewer.client.components.groupdef.GroupInspector;
 import t.common.shared.DataSchema;
-import t.model.SampleClass;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.SampleColumn;
+import t.model.SampleClass;
 import t.viewer.client.Utils;
 import t.viewer.client.components.search.SearchDialog;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SampleServiceAsync;
-
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 /**
  * This screen allows for column (group) definition as well as compound ranking.
@@ -103,6 +103,7 @@ public class ColumnScreen extends Screen {
     return false;
   }
 
+  @Override
   public Widget content() {
     gi = factory().groupInspector(cs, this);
     this.addListener(gi);
@@ -124,6 +125,7 @@ public class ColumnScreen extends Screen {
     });
 
     Button b2 = new Button("Next: View data", new ClickHandler() {
+      @Override
       public void onClick(ClickEvent event) {
         if (gi.chosenColumns().size() == 0) {
           Window.alert("Please define and activate at least one group.");
@@ -161,7 +163,7 @@ public class ColumnScreen extends Screen {
   }
   
   protected void search() {
-    SearchDialog sd = new SearchDialog(appInfo(),
+    SearchDialog sd = new SearchDialog(this, appInfo(),
         sampleService, chosenSampleClass);
     Utils.displayInPopup("Sample search conditions", 
         sd, DialogPosition.Center);
