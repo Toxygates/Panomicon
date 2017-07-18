@@ -67,7 +67,7 @@ public class Unit extends SampleClass {
   }
 
   public void concatenateAttributes(StringBioParamValue[] params) {
-    String separator = "/";
+    String separator = " / ";
 
     Sample firstSample = samples[0];
     for (StringBioParamValue p : params) {
