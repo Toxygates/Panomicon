@@ -55,15 +55,16 @@ public class Unit extends SampleClass {
     Sample first = samples[0];
     for (NumericalBioParamValue p : params) {
       if (first.sampleClass().get(p.id) != null) {
+        int count = 0;
         double sum = 0.0;
         for (Sample sample : samples) {
+          count++;
           sum += Double.parseDouble(sample.sampleClass().get(p.id));
         }
-        put(p.id, Double.toString(sum));
+        put(p.id, Double.toString(sum / count));
       }
     }
-    // TODO: maybe some exception checking for when conversion to double fails, or when
-    // some of the later samples are missing a parameter that the first sample had
+    // TODO: maybe some exception checking for when conversion to double fails
   }
 
   public void concatenateAttributes(StringBioParamValue[] params) {
