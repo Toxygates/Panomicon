@@ -29,7 +29,7 @@ import otgviewer.shared.OTGSchema
    */
 trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
 
-  // Needs to be overridden to specify how to make an ST
+  // Needs to be overridden to specify how to make an SS
   def create(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
              controlGroups: Map[ST, ControlGroup],
              samples: Iterable[ST],
