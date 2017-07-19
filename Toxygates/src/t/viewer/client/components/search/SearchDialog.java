@@ -1,22 +1,11 @@
 package t.viewer.client.components.search;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
-import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -31,33 +20,32 @@ import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.NumericalBioParamValue;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
-import t.common.shared.sample.search.MatchCondition;
 import t.model.SampleClass;
-import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SampleServiceAsync;
-import t.viewer.client.table.TooltipColumn;
 import t.viewer.shared.AppInfo;
 
 /**
  * Sample search interface that allows the user to edit search conditions,
  * trigger a search, and display the results.
  */
-public class SearchDialog extends Composite {
+public class SearchDialog extends Composite implements SearchDelegate, ResultTableDelegate {
   private DataListenerWidget widget;
   private AppInfo appInfo;
-  private ConditionEditor conditionEditor;
   private SampleServiceAsync sampleService;
-  private SampleClass sampleClass;
-  private TableHelper<Sample> sampleTableHelper = new SampleTableHelper();
-  private TableHelper<Unit> unitTableHelper = new UnitTableHelper();
-  private TableHelper<?> currentTableHelper = null;
+
+  private ConditionEditor conditionEditor;
 
   private Button downloadButton;
   private Label resultCountLabel;
   private DialogBox waitDialog;
-  
-  private static String DECIMAL_FORMAT = "#.000";
+
+  private ResultTable<Sample> sampleTableHelper = new SampleTable(this);
+  private ResultTable<Unit> unitTableHelper = new UnitTable(this);
+
+  private SampleSearch sampleSearch;
+  private UnitSearch unitSearch;
+  private Search<?> currentSearch = null;
 
   /**
    * Available search parameters. BioParamValue is here used to identify
@@ -81,8 +69,10 @@ public class SearchDialog extends Composite {
     this.widget = widget;
     this.appInfo = appInfo;
     this.sampleService = sampleService;
-    this.sampleClass = sampleClass;
     
+    sampleSearch = new SampleSearch(this, sampleTableHelper, sampleService, sampleClass);
+    unitSearch = new UnitSearch(this, unitTableHelper, sampleService, sampleClass);
+
     ScrollPanel searchPanel = new ScrollPanel();
     searchPanel.setSize("800px", "800px");    
     conditionEditor = new ConditionEditor(sampleParameters());
@@ -91,7 +81,7 @@ public class SearchDialog extends Composite {
     sampleSearchButton.addClickHandler(new ClickHandler() {      
       @Override
       public void onClick(ClickEvent event) {
-        sampleTableHelper.performSearch(conditionEditor.getCondition());
+        sampleSearch.attemptSearch(conditionEditor.getCondition());
       }
     });
 
@@ -99,7 +89,7 @@ public class SearchDialog extends Composite {
     unitSearchButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        unitTableHelper.performSearch(conditionEditor.getCondition());
+        unitSearch.attemptSearch(conditionEditor.getCondition());
       }
     });
 
@@ -108,7 +98,7 @@ public class SearchDialog extends Composite {
     downloadButton = new Button("Download CSV...", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        SearchDialog.this.sampleService.prepareUnitCSVDownload(unitTableHelper.searchResult,
+        SearchDialog.this.sampleService.prepareUnitCSVDownload(unitSearch.searchResult,
             unitTableHelper.allKeys(),
             new PendingAsyncCallback<String>(SearchDialog.this.widget,
                 "Unable to prepare the data for download,") {
@@ -136,243 +126,26 @@ public class SearchDialog extends Composite {
     unitTableHelper.clear();
   }
 
-  private abstract class TableHelper<T> {
-    public T[] searchResult = null;
-    private CellTable<T> table = new CellTable<T>();
-    private List<Column<T, String>> columns = new LinkedList<Column<T, String>>();
-    private MatchCondition condition;
-
-    protected abstract Column<T, String> makeBasicColumn(String key);
-    protected abstract Column<T, String> makeNumericColumn(String key);
-    protected abstract void trackAnalytics();
-    protected abstract void asyncSearch(SampleClass sc, MatchCondition cond,
-        AsyncCallback<T[]> callback);
-
-    //Could also have macro parameters here, such as organism, tissue etc
-    //but currently the search is always constrained on those parameters
-    private final String[] classKeys = {"compound_name", "dose_level", "exposure_time"};
-    private final String[] adhocKeys = {"sample_id"};
-
-    public String[] allKeys() {
-      List<String> keys = new ArrayList<String>();
-      keys.addAll(Arrays.asList(classKeys()));
-      keys.addAll(Arrays.asList(adhocKeys()));
-      keys.addAll(conditionKeys());
-
-      return keys.toArray(new String[0]);
+  /*
+   * SearchDelegate methods
+   */
+  @Override
+  public void searchStarted(Search<?> search) {
+    if (waitDialog == null) {
+      waitDialog = Utils.waitDialog();
+    } else {
+      waitDialog.show();
     }
 
-    protected String[] classKeys() {
-      return classKeys;
-    }
-
-    protected String[] adhocKeys() {
-      return adhocKeys;
-    }
-    
-    private List<String> conditionKeys() {
-      List<String> r = new ArrayList<String>();
-      for (BioParamValue bp: condition.neededParameters()) {
-        r.add(bp.id());
-      }      
-      return r;
-    }
-
-    protected void addColumn(Column<T, String> column, String title) {
-      columns.add(column);
-      table.addColumn(column, title);
-    }
-
-    public void setupTable(T[] entries) {
-      for (String key : classKeys()) {
-        addColumn(makeBasicColumn(key), key);
-      }
-      
-      addAdhocColumns();
-
-      for (String key : conditionKeys()) {
-        addColumn(makeNumericColumn(key), key);
-      }
-
-      table.setRowData(Arrays.asList(entries));
-    }
-
-    protected void addAdhocColumns() {
-      for (String key : adhocKeys()) {
-        addColumn(makeBasicColumn(key), key);
-      }
-    }
-
-    public void clear() {
-      for (Column<T, String> column : columns) {
-        table.removeColumn(column);
-      }
-      columns.clear();
-    }
-
-    protected String searchEntityName() {
-      return "entities";
-    }
-
-    public void performSearch(final @Nullable MatchCondition newCondition) {
-      if (newCondition == null) {
-        Window.alert("Please define the search condition.");
-        return;
-      }
-
-      if (waitDialog == null) {
-        waitDialog = Utils.waitDialog();
-      } else {
-        waitDialog.show();
-      }
-
-      trackAnalytics();
-
-      resultCountLabel.setText("");
-
-      asyncSearch(sampleClass, newCondition, new AsyncCallback<T[]>() {
-
-        @Override
-        public void onSuccess(T[] result) {
-          searchResult = result;
-          condition = newCondition;
-
-          waitDialog.hide();
-          hideTables();
-
-          setupTable(result);
-
-          resultCountLabel.setText("Found " + result.length + " " + searchEntityName());
-
-          currentTableHelper = TableHelper.this;
-          downloadButton.setVisible((currentTableHelper == unitTableHelper));
-        }
-
-        @Override
-        public void onFailure(Throwable caught) {
-          Window.alert("Failure: " + caught);
-        }
-      });
-    }
-
-    protected abstract class KeyColumn<S> extends TooltipColumn<S> {
-      protected String keyName;
-      
-      public KeyColumn(Cell<String> cell, String key) {
-        super(cell);
-        keyName = key;
-      }
-
-      protected abstract String getData(S s);
-
-      @Override
-      public String getValue(S s) {
-        String string = getData(s);
-        try {
-          return NumberFormat.getFormat(DECIMAL_FORMAT).format(Double.parseDouble(string));
-        } catch (NumberFormatException e) {
-          return string;
-        }
-      }
-
-      @Override
-      public String getTooltip(S s) {
-        return getData(s);
-      }
-    }
+    resultCountLabel.setText("");
   }
 
-  private class UnitTableHelper extends TableHelper<Unit> {
-    private TextCell textCell = new TextCell();
-
-    protected class UnitKeyColumn extends KeyColumn<Unit> {
-      public UnitKeyColumn(Cell<String> cell, String key) {
-        super(cell, key);
-      }
-
-      @Override
-      public String getData(Unit unit) {
-        return unit.get(keyName);
-      }
-    }
-
-    public UnitKeyColumn makeColumn(String key) {
-      return new UnitKeyColumn(textCell, key);
-    }
-
-    @Override
-    public TooltipColumn<Unit> makeBasicColumn(String key) {
-      return makeColumn(key);
-    }
-
-    @Override
-    public TooltipColumn<Unit> makeNumericColumn(String key) {
-      return makeColumn(key);
-    }
-
-    @Override
-    protected void addAdhocColumns() {
-      addColumn(new UnitKeyColumn(textCell, "sample_id") {
-        @Override
-        public String getValue(Unit unit) {
-          return getData(unit).split("\\s*/\\s*")[0];
-        }
-      }, "sample_id");
-    }
-
-    @Override
-    protected void trackAnalytics() {
-      Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_PERFORM_UNIT_SEARCH);
-    }
-
-    @Override
-    protected void asyncSearch(SampleClass sampleClass, MatchCondition condition,
-        AsyncCallback<Unit[]> callback) {
-      sampleService.unitSearch(sampleClass, condition, callback);
-    }
-
-    @Override
-    protected String searchEntityName() {
-      return "units";
-    }
-  }
-
-  private class SampleTableHelper extends TableHelper<Sample> {
-    private TextCell textCell = new TextCell();
-
-    private TooltipColumn<Sample> makeColumn(String key) {
-      return new KeyColumn<Sample>(textCell, key) {
-        @Override
-        public String getData(Sample sample) {
-          return sample.get(keyName);
-        }
-      };
-    }
-
-    @Override
-    public TooltipColumn<Sample> makeBasicColumn(String key) {
-      return makeColumn(key);
-    }
-
-    @Override
-    public TooltipColumn<Sample> makeNumericColumn(String key) {
-      return makeColumn(key);
-    }
-
-    @Override
-    protected void trackAnalytics() {
-      Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_PERFORM_SAMPLE_SEARCH);
-    }
-
-    @Override
-    protected void asyncSearch(SampleClass sampleClass, MatchCondition condition,
-        AsyncCallback<Sample[]> callback) {
-      sampleService.sampleSearch(sampleClass, condition, callback);
-    }
-
-    @Override
-    protected String searchEntityName() {
-      return "samples";
-    }
+  @Override
+  public void searchEnded(Search<?> search, int numResults) {
+    waitDialog.hide();
+    hideTables();
+    resultCountLabel.setText("Found " + numResults + " results");
+    currentSearch = search;
+    downloadButton.setVisible((currentSearch == unitSearch));
   }
 }
