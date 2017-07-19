@@ -32,7 +32,15 @@ class GeneSetServlet extends HttpServlet {
       case _ =>
         Console.err.println(s"Empty request for GeneSetServlet")
         resp.setStatus(SC_BAD_REQUEST)
-    }            
+    }
+  }
+
+  def getValidGene(g: String): Option[String] = {
+    val GenePattern = """([A-Za-z0-9]+)""".r
+    g match {
+      case GenePattern(x) => Some(x)
+      case _ => None
+    }
   }
   
   def doImport(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
@@ -47,9 +55,11 @@ class GeneSetServlet extends HttpServlet {
     val is = req.getInputStream
     val s = Source.fromInputStream(is)
     val lines = s.getLines
-    val allGenes = 
-      (lines.flatMap(_.split(",").map(_.trim)) take MAX_SIZE).toArray 
-    
+    val allGenes =
+      (lines.flatMap(_.split(",").map(
+          word => getValidGene(word.trim))
+          ) take MAX_SIZE).flatten.toArray
+
     if (lines.hasNext) {
       Console.err.println("Imported gene set is too large")
       resp.setStatus(SC_BAD_REQUEST)
