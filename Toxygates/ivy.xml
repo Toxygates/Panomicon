@@ -32,7 +32,9 @@
   <!-- for intermine.  -->
   <dependency org="org.json" name="json" rev="latest.integration"/>
   <dependency org="commons-lang" name="commons-lang" rev="latest.integration"/>
-  <dependency org="org.apache.httpcomponents" name="fluent-hc" rev="latest.integration"/>
+  <!-- <dependency org="org.apache.httpcomponents" name="fluent-hc" rev="latest.integration"/> -->
+  <dependency org="commons-httpclient" name="commons-httpclient" rev="latest.integration"/> 
+  
   
   <!-- for intermine. -->
   <dependency org="log4j" name="log4j" rev="latest.integration" />
