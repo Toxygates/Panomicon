@@ -7,10 +7,10 @@ import java.util.List;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
-import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 
+import t.common.client.Utils;
 import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
@@ -29,8 +29,6 @@ abstract class ResultTable<T> {
   private List<Column<T, String>> columns = new LinkedList<Column<T, String>>();
   private List<String> conditionKeys;
   private ResultTableDelegate delegate; // we'll need this in the future
-
-  private static String DECIMAL_FORMAT = "#.000";
 
   protected abstract Column<T, String> makeBasicColumn(String key);
   protected abstract Column<T, String> makeNumericColumn(String key);
@@ -120,7 +118,7 @@ abstract class ResultTable<T> {
     public String getValue(S s) {
       String string = getData(s);
       try {
-        return NumberFormat.getFormat(DECIMAL_FORMAT).format(Double.parseDouble(string));
+        return Utils.formatNumber(Double.parseDouble(string));
       } catch (NumberFormatException e) {
         return string;
       }
