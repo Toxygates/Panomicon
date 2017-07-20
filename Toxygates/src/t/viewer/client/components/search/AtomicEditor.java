@@ -77,18 +77,17 @@ public class AtomicEditor extends MatchEditor {
     hPanel.add(typeSel);
 
     hPanel.add(textBox);
-    textBox.setVisible(false);
 
     disable();
   }
   
   void disable() {
-    typeSel.listBox().setEnabled(false);
+    typeSel.setVisible(false);
     textBox.setVisible(false);
   }
   
   void enable() {
-    typeSel.listBox().setEnabled(true);
+    typeSel.setVisible(true);
     textBox.setVisible(typeSel.value().requiresValue());
   }
   
