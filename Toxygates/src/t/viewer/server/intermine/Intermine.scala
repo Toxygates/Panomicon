@@ -44,6 +44,8 @@ class IntermineConnector(instance: IntermineInstance,
   def appName = instance.appName()
   def serviceUrl = instance.serviceURL
 
+  def serviceFactory = new ServiceFactory(serviceUrl)
+
   def getListService(user: Option[String] = None,
     pass: Option[String] = None): ListService = {
     println(s"Connect to $title")
@@ -59,7 +61,7 @@ class IntermineConnector(instance: IntermineInstance,
 
   def getSessionToken(): String = {
     println(s"Connect to $title")
-    val sf = new ServiceFactory(serviceUrl)
+    val sf = serviceFactory
     val s = sf.getService("session", instance.appName)
     val r = s.createGetRequest(s.getUrl, ContentType.APPLICATION_JSON)
     val con = s.executeRequest(r)
@@ -115,20 +117,20 @@ class IntermineConnector(instance: IntermineInstance,
   /**
    * Add a set of probe lists by first mapping them to genes
    */
-  def addLists(ap: Probes, ls: ListService,
+  def addProbeLists(ls: ListService,
     lists: Iterable[StringList], replace: Boolean): Unit = {
 
     for (l <- lists) {
-      addList(ap, ls, l.items(), Some(l.name()), replace)
+      addProbeList(ls, l.items(), Some(l.name()), replace)
     }
   }
 
   /**
-   * Add a probe list by first mapping it into genes
+   * Obtain a valid list name, or None if the export cannot proceed.
+   * This potentially deletes a pre-existing list.
    */
-  def addList(probeStore: Probes, ls: ListService,
-    input: Seq[String], name: Option[String], replace: Boolean,
-    tags: Seq[String] = Seq("toxygates")): Option[ItemList] = {
+  private def validNameForExport(ls: ListService, name: Option[String],
+      replace: Boolean): Option[String] = {
 
     var serverList = name.map(n => Option(ls.getList(n))).flatten
     if (serverList != None && replace) {
@@ -145,7 +147,6 @@ class IntermineConnector(instance: IntermineInstance,
         }
       }
     }
-
     if (serverList != None && replace) {
       println(s"Delete list $serverList for replacement")
       ls.deleteList(serverList.get)
@@ -153,20 +154,44 @@ class IntermineConnector(instance: IntermineInstance,
 
     val useName = name.getOrElse("")
     if (serverList == None || replace) {
-      val ci = new ls.ListCreationInfo("Gene", useName)
-
-      //TODO we have the option of doing a fuzzy (e.g. symbol-based) export here
-      val genes = platforms.resolve(input.toSeq).flatMap(_.genes.map(_.identifier))
-      ci.setContent(seqAsJavaList(genes.toList))
-      ci.addTags(seqAsJavaList(tags))
-      println(s"Exporting list '$useName'")
-      Some(ls.createList(ci))
+      Some(useName)
     } else {
+      val n = name.getOrElse("")
       //Could report this message to the user somehow
-      println(s"Not exporting list '$useName' since it already existed (replacement not requested)")
-//      throw new IntermineException(
-//        s"Unable to add list, ${name.get} already existed and replacement not requested")
+      println(s"Not exporting list '$n' since it already existed (replacement not requested)")
+      //      throw new IntermineException(
+      //        s"Unable to add list, ${name.get} already existed and replacement not requested")
       None
+    }
+  }
+
+  /**
+   * Add a probe list to InterMine by first mapping it into genes (lazily)
+   */
+  def addProbeList(ls: ListService,
+    probes: Iterable[String], name: Option[String], replace: Boolean,
+    tags: Seq[String] = Seq("toxygates")): Option[ItemList] = {
+    addEntrezList(ls,
+        () =>
+          platforms.resolve(probes.toSeq).flatMap(_.genes.map(_.identifier)),
+          name, replace, tags)
+  }
+    /**
+   *  Add a list of NCBI/Entrez genes to InterMine
+   */
+  def addEntrezList(ls: ListService, getGenes: () => Iterable[String],
+    name: Option[String], replace: Boolean,
+    tags: Seq[String] = Seq("toxygates")): Option[ItemList] = {
+    validNameForExport(ls, name, replace) match {
+      case Some(useName) =>
+        val ci = new ls.ListCreationInfo("Gene", useName)
+        //TODO we have the option of doing a fuzzy (e.g. symbol-based) export here
+        ci.setContent(seqAsJavaList(getGenes().toSeq))
+        ci.addTags(seqAsJavaList(tags))
+        println(s"Exporting list '$useName'")
+        Some(ls.createList(ci))
+      case None =>
+        None
     }
   }
 }
@@ -183,8 +208,8 @@ class Intermines(instances: Iterable[IntermineInstance]) {
     new IntermineConnector(inst, platforms)
   }
 
-  lazy val allURLs = instances.map(_.serviceURL()).toSet
-  lazy val all = instances.toSet
+  lazy val allURLs = instances.map(_.serviceURL()).toSeq.distinct
+  lazy val all = instances.toSeq.distinct
 //
-//  lazy val byTitle = Map() ++ all.map(m => m.title -> m)
+  lazy val byTitle = Map() ++ all.map(m => m.title -> m)
 }

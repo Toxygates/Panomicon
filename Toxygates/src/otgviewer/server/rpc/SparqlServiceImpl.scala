@@ -47,6 +47,8 @@ import t.viewer.shared.AppInfo
 import otgviewer.server.AssociationResolver
 
 import t.model.SampleClass
+import t.viewer.server.intermine.Intermines
+import t.viewer.server.intermine.IntermineConnector
 
 /**
  * This servlet is reponsible for making queries to RDF stores.
@@ -61,12 +63,20 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
   var chembl: ChEMBL = _
   var drugBank: DrugBank = _
   var homologene: B2RHomologene = _
+  var targetmine: Option[IntermineConnector] = None
 
   override def localInit(c: Configuration) {
     super.localInit(c)
     chembl = new ChEMBL()
     drugBank = new DrugBank()
     homologene = new B2RHomologene()
+
+    val mines = new Intermines(c.intermineInstances)
+    mines.byTitle.get("TargetMine") match {
+      case Some(tg) =>
+        targetmine = Some(new IntermineConnector(tg, platformsCache))
+      case None =>
+    }
   }
 
   override protected def refreshAppInfo(): AppInfo = {
@@ -128,6 +138,7 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
     _probes: Array[String]): Array[Association] =
     new otgviewer.server.AssociationResolver(probeStore, sampleStore,
         b2rKegg, uniprot, chembl, drugBank,
+        targetmine,
         sc, types, _probes).resolve
 
   override def staticAnnotationInfo: Seq[(String, String)] = {

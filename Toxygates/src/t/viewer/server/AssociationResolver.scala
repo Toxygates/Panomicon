@@ -14,6 +14,9 @@ import t.sparql.secondary._
 import t.viewer.server.Conversions._
 import t.common.server.ScalaUtils.gracefully
 import scala.collection.{Set => CSet}
+import t.viewer.server.intermine.IntermineColumn
+import t.viewer.server.intermine.IntermineColumn
+import t.viewer.server.intermine.TargetmineColumns
 
 /**
  * Helper class to look up probe associations from a variety of sources
