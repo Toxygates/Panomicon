@@ -40,7 +40,6 @@ import t.common.shared.sample.Group;
 import t.common.shared.sample.SampleColumn;
 import t.model.SampleClass;
 import t.viewer.client.Utils;
-import t.viewer.client.rpc.SampleServiceAsync;
 
 /**
  * This screen allows for column (group) definition as well as compound ranking.
@@ -51,13 +50,10 @@ public class ColumnScreen extends Screen {
   private GroupInspector gi;
   private CompoundSelector cs;
   private FilterTools filterTools;
-  private SampleServiceAsync sampleService;
 
   public ColumnScreen(ScreenManager man) {
     super("Sample groups", key, false, man, resources.groupDefinitionHTML(), resources
         .groupDefinitionHelp());
-    
-    this.sampleService = man.sampleService();
 
     String majorParam = man.schema().majorParameter();
     cs = new CompoundSelector(this, man.schema().title(majorParam), true, true) {
