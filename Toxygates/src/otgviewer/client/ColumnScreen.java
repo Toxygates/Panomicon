@@ -40,8 +40,6 @@ import t.common.shared.sample.Group;
 import t.common.shared.sample.SampleColumn;
 import t.model.SampleClass;
 import t.viewer.client.Utils;
-import t.viewer.client.components.search.SearchDialog;
-import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SampleServiceAsync;
 
 /**
@@ -81,18 +79,6 @@ public class ColumnScreen extends Screen {
   protected void addToolbars() {   
     super.addToolbars();   
     HorizontalPanel hp = Utils.mkHorizontalPanel(true, filterTools);
-   
-    boolean isDev = manager().appInfo().instanceName().equals("dev");
-    if (isDev) {
-      Button searchButton = new Button("Search...");
-      searchButton.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent arg0) {
-          search();
-        }
-      });
-      hp.add(searchButton);
-    }
    
     addToolbar(hp, 45);
     addLeftbar(cs, 350);
@@ -160,13 +146,6 @@ public class ColumnScreen extends Screen {
         Window.alert("Unable to load inactive columns.");
       }
     }
-  }
-  
-  protected void search() {
-    SearchDialog sd = new SearchDialog(this, appInfo(),
-        sampleService, chosenSampleClass);
-    Utils.displayInPopup("Sample search conditions", 
-        sd, DialogPosition.Center);
   }
 
   @Override

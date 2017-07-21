@@ -6,29 +6,26 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 
 import t.common.client.Utils;
 import t.common.shared.sample.BioParamValue;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.Unit;
 import t.common.shared.sample.search.MatchCondition;
 import t.viewer.client.table.TooltipColumn;
-
-interface ResultTableDelegate {
-
-}
 
 /**
  * Manages a table for displaying the results of a sample/unit search.
  */
-abstract class ResultTable<T> {
+public abstract class ResultTable<T> {
+  public interface Delegate {
+
+  }
+
   protected CellTable<T> table = new CellTable<T>();
   private List<Column<T, String>> columns = new LinkedList<Column<T, String>>();
   private List<String> conditionKeys;
-  private ResultTableDelegate delegate; // we'll need this in the future
+  private Delegate delegate; // we'll need this in the future
 
   protected abstract Column<T, String> makeBasicColumn(String key);
   protected abstract Column<T, String> makeNumericColumn(String key);
@@ -38,8 +35,12 @@ abstract class ResultTable<T> {
   private final String[] classKeys = {"compound_name", "dose_level", "exposure_time"};
   private final String[] adhocKeys = {"sample_id"};
 
-  public ResultTable(ResultTableDelegate delegate) {
+  public ResultTable(Delegate delegate) {
     this.delegate = delegate;
+  }
+
+  public CellTable<T> table() {
+    return table;
   }
 
   public String[] allKeys() {
@@ -131,72 +132,3 @@ abstract class ResultTable<T> {
   }
 }
 
-class UnitTable extends ResultTable<Unit> {
-  private TextCell textCell = new TextCell();
-
-  public UnitTable(ResultTableDelegate delegate) {
-    super(delegate);
-  }
-
-  protected class UnitKeyColumn extends KeyColumn<Unit> {
-    public UnitKeyColumn(Cell<String> cell, String key) {
-      super(cell, key);
-    }
-
-    @Override
-    public String getData(Unit unit) {
-      return unit.get(keyName);
-    }
-  }
-
-  private UnitKeyColumn makeColumn(String key) {
-    return new UnitKeyColumn(textCell, key);
-  }
-
-  @Override
-  protected TooltipColumn<Unit> makeBasicColumn(String key) {
-    return makeColumn(key);
-  }
-
-  @Override
-  protected TooltipColumn<Unit> makeNumericColumn(String key) {
-    return makeColumn(key);
-  }
-
-  @Override
-  protected void addAdhocColumns() {
-    addColumn(new UnitKeyColumn(textCell, "sample_id") {
-      @Override
-      public String getValue(Unit unit) {
-        return getData(unit).split("\\s*/\\s*")[0];
-      }
-    }, "sample_id");
-  }
-}
-
-class SampleTable extends ResultTable<Sample> {
-  private TextCell textCell = new TextCell();
-
-  public SampleTable(ResultTableDelegate delegate) {
-    super(delegate);
-  }
-
-  private TooltipColumn<Sample> makeColumn(String key) {
-    return new KeyColumn<Sample>(textCell, key) {
-      @Override
-      public String getData(Sample sample) {
-        return sample.get(keyName);
-      }
-    };
-  }
-
-  @Override
-  protected TooltipColumn<Sample> makeBasicColumn(String key) {
-    return makeColumn(key);
-  }
-
-  @Override
-  protected TooltipColumn<Sample> makeNumericColumn(String key) {
-    return makeColumn(key);
-  }
-}

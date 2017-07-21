@@ -41,6 +41,11 @@ public class OTGViewer extends TApplication {
     addScreenSeq(new PathologyScreen(this));
     addScreenSeq(new SampleDetailScreen(this));
     
+    boolean isDev = appInfo.instanceName().equals("dev");
+    if (isDev) {
+      addScreenSeq(new SampleSearchScreen(this));
+    }
+
     if (factory.hasMyData()) {      
       addScreenSeq(new MyDataScreen(this));
     }
