@@ -14,9 +14,7 @@
   <!-- <dependency org="com.googlecode.gwtupload" name="gwtupload" rev="1.0.3"/> -->
     
   <dependency org="commons-fileupload" name="commons-fileupload" rev="latest.integration"/>
-  
   <dependency org="commons-io" name="commons-io" rev="latest.integration"/>   
-  
   <dependency org="javax.mail" name="mail" rev="latest.integration"/>
   
   <!-- intermine is not published on maven central, but the POM is at the URL below. -->
@@ -30,11 +28,14 @@
     -->
   
   <!-- for intermine.  -->
-  <dependency org="org.json" name="json" rev="latest.integration"/>
+  <!-- Note that the latest version of json is not compatible with intermine-client-2.0 
+    (causes parse errors). 20090211 is known to work. -->
+  <dependency org="org.json" name="json" rev="20090211"/>
   <dependency org="commons-lang" name="commons-lang" rev="latest.integration"/>
+  <!-- intermine-client-2.0 needs the old commons-httpclient module
+     (org.apache.httpcomponents will not work) -->
   <!-- <dependency org="org.apache.httpcomponents" name="fluent-hc" rev="latest.integration"/> -->
   <dependency org="commons-httpclient" name="commons-httpclient" rev="latest.integration"/> 
-  
   
   <!-- for intermine. -->
   <dependency org="log4j" name="log4j" rev="latest.integration" />
