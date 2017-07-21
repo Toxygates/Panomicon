@@ -168,27 +168,24 @@ public class OTGSchema extends DataSchema {
     return (value != null) && ("Control".equals(value));
   }
 
-  // @Override
-  // public Unit selectionControlUnitFor(Unit u) {
-  // Unit u2 = new Unit(u, new OTGSample[] {});
-  // u2.put("dose_level", "Control");
-  // return u2;
-  // }
-
   @Override
-	public String[] majorParamSharedControl() {
-		return new String[] { "Shared_control" };
-	}
+  @Deprecated
+  public String[] majorParamSharedControl() {
+    return new String[] {"Shared_control"};
+  }
 
-private static AType[] associations = new AType[] {AType.Chembl, AType.Drugbank,
+  private static AType[] associations = new AType[] {AType.Chembl, AType.Drugbank,
       // AType.Enzymes,
-      AType.GOBP, AType.GOCC, AType.GOMF,
+      AType.GOBP,
+      AType.GOCC,
+      AType.GOMF,
       // needs repair
       // AType.Homologene,
       AType.KEGG,
       // needs repair
       // AType.OrthProts,
-      AType.Uniprot, AType.RefseqTrn, AType.RefseqProt, AType.EC, AType.Ensembl, AType.Unigene};
+      AType.Uniprot, AType.RefseqTrn, AType.RefseqProt, AType.EC, AType.Ensembl, AType.Unigene,
+      AType.MiRNA};
 
   public AType[] associations() {
     return associations;

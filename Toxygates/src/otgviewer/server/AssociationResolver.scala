@@ -16,6 +16,9 @@ import t.sparql.secondary.Protein
 import t.sparql.secondary.Uniprot
 import t.viewer.server.Conversions._
 import otg.sparql.OTGSamples
+import t.viewer.server.intermine.TargetmineColumns
+import t.viewer.server.intermine.IntermineColumn
+import t.viewer.server.intermine.IntermineConnector
 
 /**
  * Association resolver for Open TG-GATEs-specific associations.
@@ -26,6 +29,7 @@ class AssociationResolver(probeStore: Probes,
     uniprot: Uniprot,
     chembl: ChEMBL,
     drugBank: DrugBank,
+    targetmine: Option[IntermineConnector],
     sc: SampleClass, types: Array[AType],
      _probes: Iterable[String]) extends
      t.viewer.server.AssociationResolver(probeStore, b2rKegg, sc, types, _probes) {
@@ -66,6 +70,8 @@ class AssociationResolver(probeStore: Probes,
       })
     }
 
+    lazy val mirnaResolver = TargetmineColumns.miRNA(targetmine.get)
+
     override def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe])(implicit sf: SampleFilter): BBMap = {
       at match {
         case _: AType.GOMF.type       => probeStore.mfGoTerms(probes)
@@ -79,6 +85,9 @@ class AssociationResolver(probeStore: Probes,
         case _: AType.Ensembl.type    => probeStore.ensemblLookup(probes)
         case _: AType.EC.type         => probeStore.ecLookup(probes)
         case _: AType.Unigene.type    => probeStore.unigeneLookup(probes)
+        case _: AType.MiRNA.type      =>
+          toBioMap(probes, (_: Probe).genes) combine
+            mirnaResolver.forGenes(probes.flatMap(_.genes))
         case _                        => super.associationLookup(at, sc, probes)
       }
     }

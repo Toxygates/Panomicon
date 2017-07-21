@@ -109,6 +109,12 @@ public enum AType {
       return formProteinLink(value);
     }
   },
+  MiRNA("MicroRNA") {
+    public String formLink(String value) {
+      //example: MIMAT0000376
+      return "http://www.mirbase.org/cgi-bin/mature.pl?mature_acc=" + value;
+    }
+  },  
   // Enzymes("Kegg Enzymes") {
   // public String formLink(String value) { return value; }
   // },

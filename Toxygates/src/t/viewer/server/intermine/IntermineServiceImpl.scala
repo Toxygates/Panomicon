@@ -99,7 +99,7 @@ abstract class IntermineServiceImpl extends TServiceServlet with IntermineServic
     val conn = mines.connector(inst, platforms)
     try {
       val ls = conn.getListService(Some(user), Some(pass))
-      conn.addLists(affyProbes, ls, lists.toList, replace)
+      conn.addProbeLists(ls, lists.toList, replace)
     } catch {
       case e: Exception =>
         e.printStackTrace()
@@ -121,14 +121,14 @@ abstract class IntermineServiceImpl extends TServiceServlet with IntermineServic
   def enrichment(inst: IntermineInstance, list: StringList,
                  params: EnrichmentParams, session: String): Array[Array[String]] = {
     println(s"Enrichment in session $session")
-    
+
     val conn = mines.connector(inst, platforms)
     val ls = conn.getListService(None, None)
     ls.setAuthentication(session)
     val tags = List()
 //    val tags = List("H. sapiens") //!!
 
-    val tempList = conn.addList(affyProbes, ls, list.items(),
+    val tempList = conn.addProbeList(ls, list.items(),
       None, false, tags)
 
     tempList match {
@@ -156,7 +156,7 @@ abstract class IntermineServiceImpl extends TServiceServlet with IntermineServic
     }
 
   }
-  
+
   def getSession(inst: IntermineInstance): String = {
     val conn = mines.connector(inst, platforms)
     conn.getSessionToken()
