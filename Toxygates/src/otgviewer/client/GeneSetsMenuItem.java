@@ -361,7 +361,7 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   private ScheduledCommand addNewClustering() {
     return new Command() {
       public void execute() {
-        HeatmapViewer.show(screen, screen.et.getValueType());
+        HeatmapViewer.show(screen, screen.expressionTable.getValueType());
       }
     };
   }

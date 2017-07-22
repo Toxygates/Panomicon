@@ -52,8 +52,8 @@ import t.viewer.shared.intermine.IntermineInstance;
 public class DataScreen extends Screen {
 
   public static final String key = "data";
-  protected GeneSetToolbar gs;
-  protected ExpressionTable et;
+  protected GeneSetToolbar geneSetToolbar;
+  protected ExpressionTable expressionTable;
 
   protected String[] lastProbes;
   protected List<Group> lastColumns;
@@ -66,12 +66,12 @@ public class DataScreen extends Screen {
   public DataScreen(ScreenManager man) {
     super("View data", key, true, man, man.resources().dataDisplayHTML(), 
         man.resources().dataDisplayHelp());
-    gs = makeGeneSetSelector();
-    et = makeExpressionTable();
-    et.setDisplayPColumns(false);
-    addListener(et);
+    geneSetToolbar = makeGeneSetSelector();
+    expressionTable = makeExpressionTable();
+    expressionTable.setDisplayPColumns(false);
+    addListener(expressionTable);
     // To ensure that GeneSetToolbar has chosenColumns
-    addListener(gs);
+    addListener(geneSetToolbar);
   }
 
   protected GeneSetToolbar makeGeneSetSelector() {
@@ -102,10 +102,10 @@ public class DataScreen extends Screen {
     super.addToolbars();
     HorizontalPanel mainTools = new HorizontalPanel();
     mainTools.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-    mainTools.add(et.tools());
-    mainTools.add(gs.selector());
+    mainTools.add(expressionTable.tools());
+    mainTools.add(geneSetToolbar.selector());
     addToolbar(mainTools, STANDARD_TOOL_HEIGHT);
-    addToolbar(et.analysisTools(), STANDARD_TOOL_HEIGHT);
+    addToolbar(expressionTable.analysisTools(), STANDARD_TOOL_HEIGHT);
   }
 
   @Override
@@ -115,42 +115,42 @@ public class DataScreen extends Screen {
     ResizeLayoutPanel rlp = new ResizeLayoutPanel();
 
     rlp.setWidth("100%");
-    rlp.add(et);
+    rlp.add(expressionTable);
     return rlp;
   }
 
   private void setupMenuItems() {
-    MenuBar mb = new MenuBar(true);
-    MenuItem mActions = new MenuItem("File", false, mb);
+    MenuBar menuBar = new MenuBar(true);
+    MenuItem mActions = new MenuItem("File", false, menuBar);
     MenuItem mntmDownloadCsv =
         new MenuItem("Download CSV (grouped samples)...", false, new Command() {
           @Override
           public void execute() {
-            et.downloadCSV(false);
+            expressionTable.downloadCSV(false);
             Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT,
                 Analytics.ACTION_DOWNLOAD_EXPRESSION_DATA, Analytics.LABEL_GROUPED_SAMPLES);
           }
         });
-    mb.addItem(mntmDownloadCsv);
+    menuBar.addItem(mntmDownloadCsv);
     mntmDownloadCsv = new MenuItem("Download CSV (individual samples)...", false, new Command() {
       @Override
       public void execute() {
-        et.downloadCSV(true);
+        expressionTable.downloadCSV(true);
         Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT,
             Analytics.ACTION_DOWNLOAD_EXPRESSION_DATA, Analytics.LABEL_INDIVIDUAL_SAMPLES);
       }
     });
-    mb.addItem(mntmDownloadCsv);
+    menuBar.addItem(mntmDownloadCsv);
 
     addMenu(mActions);
 
-    mb = new MenuBar(true);
-    for (final HideableColumn<ExpressionRow, ?> c : et.getHideableColumns()) {
+    menuBar = new MenuBar(true);
+    for (final HideableColumn<ExpressionRow, ?> c : expressionTable.getHideableColumns()) {
     	final String title = c.columnInfo().title();
-      new TickMenuItem(mb, title, c.visible()) {
+      new TickMenuItem(menuBar, title, c.visible()) {
         @Override
         public void stateChange(boolean newState) {
-          et.setVisible(c, newState);
+          expressionTable.setVisible(c, newState);
           if (newState) {
         	  Analytics.trackEvent(Analytics.CATEGORY_TABLE, 
         			  Analytics.ACTION_DISPLAY_OPTIONAL_COLUMN, title);
@@ -163,7 +163,7 @@ public class DataScreen extends Screen {
     addListener(geneSetsMenu);
     addMenu(geneSetsMenu.menuItem());
 
-    MenuItem mColumns = new MenuItem("View", false, mb);
+    MenuItem mColumns = new MenuItem("View", false, menuBar);
     addMenu(mColumns);
 
     // TODO: this is effectively a tick menu item without the tick.
@@ -176,13 +176,13 @@ public class DataScreen extends Screen {
           // Trigger screen
           manager.attemptProceed(DataScreen.key);
           setState(true);
-          showToolbar(et.analysisTools());
+          showToolbar(expressionTable.analysisTools());
         } else {
           // Just toggle
           if (newState) {
-            showToolbar(et.analysisTools());
+            showToolbar(expressionTable.analysisTools());
           } else {
-            hideToolbar(et.analysisTools());
+            hideToolbar(expressionTable.analysisTools());
           }
         }
       }
@@ -215,7 +215,7 @@ public class DataScreen extends Screen {
   }
   
   protected void makeHeatMap() {
-    HeatmapViewer.show(DataScreen.this, et.getValueType());
+    HeatmapViewer.show(DataScreen.this, expressionTable.getValueType());
   }
 
   @Override
@@ -241,10 +241,10 @@ public class DataScreen extends Screen {
     // Attempt to avoid reloading the data
     if (lastColumns == null || !chosenColumns.equals(lastColumns)) {
       logger.info("Data reloading needed");
-      et.getExpressions();
+      expressionTable.getExpressions();
     } else if (!Arrays.equals(chosenProbes, lastProbes)) {
       logger.info("Only refiltering is needed");
-      et.refilterData();
+      expressionTable.refilterData();
     }
 
     lastProbes = chosenProbes;
@@ -284,8 +284,8 @@ public class DataScreen extends Screen {
   }
 
   public String[] displayedAtomicProbes() {
-    String[] r = et.currentMatrixInfo().getAtomicProbes();
-    if (r.length < et.currentMatrixInfo().numRows()) {
+    String[] r = expressionTable.currentMatrixInfo().getAtomicProbes();
+    if (r.length < expressionTable.currentMatrixInfo().numRows()) {
       Window.alert("Too many genes. Only the first " + r.length + " genes will be used.");
     }
     return r;
