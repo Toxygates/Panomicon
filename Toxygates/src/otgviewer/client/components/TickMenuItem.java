@@ -63,6 +63,10 @@ public class TickMenuItem {
     setHTML(withImage);
   }
 
+  public void setEnabled(boolean enabled) {
+    menuItem.setEnabled(enabled);
+  }
+
   protected void setHTML(boolean withImage) {
     if (!withImage) {
       menuItem.setHTML(title);

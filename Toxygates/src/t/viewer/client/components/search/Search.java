@@ -35,6 +35,10 @@ public abstract class Search<T> {
     this.sampleService = sampleService;
   }
 
+  public ResultTable<T> helper() {
+    return helper;
+  }
+
   public T[] searchResult() {
     return searchResult;
   }

@@ -1,7 +1,9 @@
 package otgviewer.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -9,6 +11,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -17,6 +21,7 @@ import otgviewer.client.components.FilterTools;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
+import otgviewer.client.components.TickMenuItem;
 import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.NumericalBioParamValue;
 import t.common.shared.sample.Sample;
@@ -55,40 +60,51 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   private UnitSearch unitSearch;
   private Search<?> currentSearch = null;
 
+  private Collection<BioParamValue> searchParameters;
+  private Collection<BioParamValue> nonSearchParameters;
+
+  private Collection<ParameterTickItem> parameterMenuItems;
+
   /**
    * Available search parameters. BioParamValue is here used to identify parameters in general, and
    * not specific values.
-   * 
-   * @return
    */
-  private Collection<BioParamValue> sampleParameters() {
-    BioParamValue[] params = appInfo.bioParameters();
-    List<BioParamValue> r = new ArrayList<BioParamValue>();
-    for (BioParamValue bp : params) {
+  private void getParameterInfo() {
+    BioParamValue[] allParams = appInfo.bioParameters();
+    List<BioParamValue> searchParams = new ArrayList<BioParamValue>();
+    List<BioParamValue> nonSearchParams = new ArrayList<BioParamValue>();
+    for (BioParamValue bp : allParams) {
       if (bp instanceof NumericalBioParamValue) {
-        r.add(bp);
+        searchParams.add(bp);
+      } else {
+        nonSearchParams.add(bp);
       }
     }
-    java.util.Collections.sort(r);
-    return r;
+    java.util.Collections.sort(searchParams);
+    java.util.Collections.sort(nonSearchParams);
+
+    searchParameters = searchParams;
+    nonSearchParameters = nonSearchParams;
   }
 
   public SampleSearchScreen(ScreenManager man) {
     super("Sample search", key, true, man);
     appInfo = man.appInfo();
+    filterTools = new FilterTools(this);
+    this.addListener(filterTools);
+
     sampleService = man.sampleService();
 
     sampleSearch = new SampleSearch(this, sampleTableHelper, sampleService);
     unitSearch = new UnitSearch(this, unitTableHelper, sampleService);
 
-    filterTools = new FilterTools(this);
-    this.addListener(filterTools);
+    getParameterInfo();
 
     makeTools();
   }
 
   private void makeTools() {
-    conditionEditor = new ConditionEditor(sampleParameters());
+    conditionEditor = new ConditionEditor(searchParameters);
 
     Button sampleSearchButton = new Button("Sample Search");
     sampleSearchButton.addClickHandler(new ClickHandler() {
@@ -129,11 +145,62 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
 
   @Override
   public Widget content() {
+    setupMenuItems();
+
     ScrollPanel searchPanel = new ScrollPanel();
     VerticalPanel vp =
         Utils.mkVerticalPanel(true, tools, unitTableHelper.table(), sampleTableHelper.table());
     searchPanel.add(vp);
     return searchPanel;
+  }
+
+  private class ParameterTickItem extends TickMenuItem {
+    private String parameterId;
+
+    public ParameterTickItem(MenuBar mb, String title, String id, boolean initState,
+        boolean enabled) {
+      super(mb, title, initState);
+      parameterId = id;
+      setEnabled(enabled);
+    }
+
+    @Override
+    public void setState(boolean state) {
+      super.setState(state);
+    }
+
+    @Override
+    public void stateChange(boolean newState) {
+
+    }
+  }
+
+  private void setupMenuItems() {
+    parameterMenuItems = new ArrayList<ParameterTickItem>();
+
+    MenuBar parametersBar = new MenuBar(true);
+    MenuItem parameterItem = new MenuItem("View", false, parametersBar);
+
+    MenuBar numericalParametersBar = new MenuBar(true);
+    MenuItem numericalParametersItem =
+        new MenuItem("Numerical parameters", false, numericalParametersBar);
+    for (BioParamValue parameter : searchParameters) {
+      parameterMenuItems.add(new ParameterTickItem(numericalParametersBar,
+          parameter.label(), parameter.id(), false, false));
+    }
+
+    MenuBar stringParametersBar = new MenuBar(true);
+    MenuItem stringParametersItem =
+        new MenuItem("Non-numerical parameters", false, stringParametersBar);
+    for (BioParamValue parameter : nonSearchParameters) {
+      parameterMenuItems.add(new ParameterTickItem(stringParametersBar,
+          parameter.label(), parameter.id(), false, false));
+    }
+
+    parametersBar.addItem(numericalParametersItem);
+    parametersBar.addItem(stringParametersItem);
+
+    addMenu(parameterItem);
   }
 
   @Override
@@ -189,5 +256,29 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
     resultCountLabel.setText("Found " + numResults + " results");
     currentSearch = search;
     downloadButton.setVisible((currentSearch == unitSearch));
+  }
+
+  /*
+   * ResultTable.Delegate methods
+   */
+  @Override
+  public void finishedSettingUpTable() {
+    HashSet<String> requiredParameterIds =
+        new HashSet<String>(Arrays.asList(currentSearch.helper().requiredKeys()));
+    HashSet<String> nonRequiredParameterIds =
+        new HashSet<String>(Arrays.asList(currentSearch.helper().nonRequiredKeys()));
+
+    for (ParameterTickItem item : parameterMenuItems) {
+      if (requiredParameterIds.contains(item.parameterId)) {
+        item.setState(true);
+        item.setEnabled(false);
+      } else if (nonRequiredParameterIds.contains(item.parameterId)) {
+        item.setState(true);
+        item.setEnabled(true);
+      } else {
+        item.setState(false);
+        item.setEnabled(true);
+      }
+    }
   }
 }

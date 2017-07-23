@@ -19,12 +19,12 @@ import t.viewer.client.table.TooltipColumn;
  */
 public abstract class ResultTable<T> {
   public interface Delegate {
-
+    void finishedSettingUpTable();
   }
 
   protected CellTable<T> table = new CellTable<T>();
   private List<Column<T, String>> columns = new LinkedList<Column<T, String>>();
-  private List<String> conditionKeys;
+  private List<String> conditionKeys = new ArrayList<String>();
   private Delegate delegate; // we'll need this in the future
 
   protected abstract Column<T, String> makeColumn(String key, boolean numeric);
@@ -44,6 +44,17 @@ public abstract class ResultTable<T> {
 
   public String[] allKeys() {
     List<String> keys = new ArrayList<String>();
+    keys.addAll(Arrays.asList(requiredKeys()));
+    keys.addAll(Arrays.asList(nonRequiredKeys()));
+
+    return keys.toArray(new String[0]);
+  }
+
+  /**
+   * Keys that cannot be hidden
+   */
+  public String[] requiredKeys() {
+    List<String> keys = new ArrayList<String>();
     keys.addAll(Arrays.asList(classKeys()));
     keys.addAll(Arrays.asList(adhocKeys()));
     keys.addAll(conditionKeys);
@@ -51,20 +62,33 @@ public abstract class ResultTable<T> {
     return keys.toArray(new String[0]);
   }
 
+  /**
+   * Keys that can be hidden
+   */
+  public String[] nonRequiredKeys() {
+    List<String> keys = new ArrayList<String>();
+    return keys.toArray(new String[0]);
+  }
+
+  /**
+   * Keys that identify the sample class
+   */
   protected String[] classKeys() {
     return classKeys;
   }
 
+  /**
+   * Other required keys
+   */
   protected String[] adhocKeys() {
     return adhocKeys;
   }
 
   private void setConditionKeys(MatchCondition condition) {
-    List<String> r = new ArrayList<String>();
+    assert(conditionKeys.size() == 0);  
     for (BioParamValue bp : condition.neededParameters()) {
-      r.add(bp.id());
+      conditionKeys.add(bp.id()); 
     }
-    conditionKeys = r;
   }
 
   protected void addColumn(Column<T, String> column, String title) {
@@ -86,6 +110,8 @@ public abstract class ResultTable<T> {
     }
 
     table.setRowData(Arrays.asList(entries));
+
+    delegate.finishedSettingUpTable();
   }
 
   protected void addAdhocColumns() {
@@ -99,6 +125,7 @@ public abstract class ResultTable<T> {
       table.removeColumn(column);
     }
     columns.clear();
+    conditionKeys = new ArrayList<String>();
   }
 
   /**
