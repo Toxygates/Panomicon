@@ -145,7 +145,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
        |   } . ?g rdfs:label ?gl .
        |}""".stripMargin
        
-    val r = triplestores.mapQuery(query, 30000).map(x => (x("gl"), x("pl"), x.get("ent")))
+    val r = triplestore.mapQuery(query, 30000).map(x => (x("gl"), x("pl"), x.get("ent")))
     
     //Note that probes might have multiple entrez records
     val all = for ((pf, probes) <- r.groupBy(_._1).toSeq;
