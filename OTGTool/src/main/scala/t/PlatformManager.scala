@@ -123,7 +123,7 @@ class PlatformManager(context: Context) {
             val tg = groups.next
             val ttl = Probes.recordsToTTL(tf, title, tg)
             pcomp += g.toDouble * 100.0 / total
-            platforms.ts.addTTL(ttl, Platforms.context(title))
+            platforms.triplestore.addTTL(ttl, Platforms.context(title))
           }
         } finally {
           tf.dropAll()

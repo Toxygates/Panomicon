@@ -43,28 +43,28 @@ class Datasets(config: TriplestoreConfig) extends BatchGroups(config) {
   def defaultPrefix = Datasets.defaultPrefix
 
   def descriptions: Map[String, String] = {
-    Map() ++ ts.mapQuery(s"$tPrefixes select ?l ?desc where { ?item a $itemClass; rdfs:label ?l ; " +
+    Map() ++ triplestore.mapQuery(s"$tPrefixes select ?l ?desc where { ?item a $itemClass; rdfs:label ?l ; " +
       "t:description ?desc } ").map(x => {
       x("l") -> x("desc")
     })
   }
 
   def numBatches: Map[String, Int] = {
-    Map() ++ ts.mapQuery(s"$tPrefixes select ?l (count(?b) as ?n) { ?b a t:batch; t:visibleIn ?d. " +
+    Map() ++ triplestore.mapQuery(s"$tPrefixes select ?l (count(?b) as ?n) { ?b a t:batch; t:visibleIn ?d. " +
         " ?d a t:dataset; rdfs:label ?l } group by ?l").map(x => {
         x("l") -> x("n").toInt
     })
   }
 
   def setDescription(name: String, desc: String) = {
-    ts.update(s"$tPrefixes delete { <$defaultPrefix/$name> t:description ?desc } " +
+    triplestore.update(s"$tPrefixes delete { <$defaultPrefix/$name> t:description ?desc } " +
       s"where { <$defaultPrefix/$name> t:description ?desc } ")
-    ts.update(s"$tPrefixes insert data { <$defaultPrefix/$name> t:description " +
+    triplestore.update(s"$tPrefixes insert data { <$defaultPrefix/$name> t:description " +
       "\"" + desc + "\" } ")
   }
 
   def withBatchesInInstance(instanceURI: String): Seq[String] = {
-    ts.simpleQuery(s"$tPrefixes select distinct ?l WHERE " +
+    triplestore.simpleQuery(s"$tPrefixes select distinct ?l WHERE " +
       s"{ ?item a $itemClass; rdfs:label ?l. " +
       s"?b a ${Batches.itemClass}; $memberRelation ?item; " +
         s"${Batches.memberRelation} <$instanceURI> }")

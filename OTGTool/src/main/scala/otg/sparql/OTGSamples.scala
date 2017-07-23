@@ -60,7 +60,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
         |  $filterString
         |  }""".stripMargin,
 
-      eval = ts.mapQuery(_, 20000).map(x => {
+      eval = triplestore.mapQuery(_, 20000).map(x => {
         val sc = SampleClassFilter(adjustSample(x, batchFilter)) ++ filter
         Sample(x("id"), sc, Some(x(ControlGroup.id)))
        })
@@ -72,7 +72,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
     //TODO may be able to lift up to superclass and generalise
 
     val vars = hlAttributes.map(a => s"?$a").mkString(" ")
-    val r = ts.mapQuery(s"""$prefixes
+    val r = triplestore.mapQuery(s"""$prefixes
        |SELECT DISTINCT $vars WHERE {
        |  GRAPH ?batchGraph {
        |    ?x a t:sample;
@@ -87,7 +87,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
     sampleAttributeQuery("compound_name").constrain(filter)()
 
   def pathologyQuery(constraints: String): Vector[Pathology] = {
-    val r = ts.mapQuery(s"""$prefixes
+    val r = triplestore.mapQuery(s"""$prefixes
       |SELECT DISTINCT ?spontaneous ?grade ?topography ?finding ?image WHERE {
       |  $constraints
       |  ?x t:pathology ?p .

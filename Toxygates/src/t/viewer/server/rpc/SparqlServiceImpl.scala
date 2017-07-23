@@ -134,8 +134,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     staticInit(context)
     this.configuration = conf
 
-    val ts = baseConfig.triplestore.triplestore
-    uniprot = new LocalUniprot(ts)
+    val triplestore = baseConfig.triplestore.triplestore
+    uniprot = new LocalUniprot(triplestore)
 
     this.instanceURI = conf.instanceURI
     //Preload appInfo
@@ -215,13 +215,13 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   def appInfo(@Nullable userKey: String): AppInfo = {
     getSessionData() //initialise this if needed
 
-    val ai = appInfoLoader.latest
+    val appInfo = appInfoLoader.latest
 
     /*
      * Reload the datasets since they can change often (with user data, admin
      * operations etc.)
      */
-    ai.setDatasets(sDatasets(userKey))
+    appInfo.setDatasets(sDatasets(userKey))
 
     val sess = getThreadLocalRequest.getSession
     import GeneSetServlet._
@@ -232,20 +232,20 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val importGenes = sess.getAttribute(IMPORT_SESSION_KEY)
     if (importGenes != null) {
       val igs = importGenes.asInstanceOf[Array[String]]
-      ai.setImportedGenes(igs)
+      appInfo.setImportedGenes(igs)
       //Import only once
       sess.removeAttribute(IMPORT_SESSION_KEY)
     } else {
-      ai.setImportedGenes(null)
+      appInfo.setImportedGenes(null)
     }
 
     if (getSessionData().sampleFilter.datasetURIs.isEmpty) {
       //Initialise the selected datasets by selecting all, except shared user data.
-      val defaultVisible = ai.datasets.filter(ds =>
+      val defaultVisible = appInfo.datasets.filter(ds =>
         ! Dataset.isSharedDataset(ds.getTitle))
       chooseDatasets(defaultVisible)
     }
-   ai
+   appInfo
   }
 
   private def predefProbeLists() = {
@@ -262,10 +262,10 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   }
 
   private def sDatasets(userKey: String): Array[Dataset] = {
-    val ds = new Datasets(baseConfig.triplestore) with SharedDatasets
+    val datasets = new Datasets(baseConfig.triplestore) with SharedDatasets
     var r = (instanceURI match {
-      case Some(u) => ds.sharedListForInstance(u)
-      case None => ds.sharedList
+      case Some(u) => datasets.sharedListForInstance(u)
+      case None => datasets.sharedList
     })
 
     r = r.filter(ds => Dataset.isDataVisible(ds.getTitle, userKey))
@@ -273,8 +273,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   }
 
   private def sPlatforms(): Array[Platform] = {
-    val pf = new Platforms(baseConfig.triplestore) with SharedPlatforms
-    pf.sharedList.toArray
+    val platforms = new Platforms(baseConfig.triplestore) with SharedPlatforms
+    platforms.sharedList.toArray
   }
 
   private def sampleFilterFor(ds: Array[Dataset]) = {
@@ -317,8 +317,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   @throws[TimeoutException]
   def samples(sc: SampleClass): Array[Sample] = {
-    val ss = sampleStore.sampleQuery(SampleClassFilter(sc))(sf)()
-    ss.map(asJavaSample).toArray
+    val samples = sampleStore.sampleQuery(SampleClassFilter(sc))(sf)()
+    samples.map(asJavaSample).toArray
   }
 
   @throws[TimeoutException]

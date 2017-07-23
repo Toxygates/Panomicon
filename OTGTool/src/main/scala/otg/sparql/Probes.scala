@@ -55,7 +55,7 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
       |    ?p a t:probe ; t:entrez ?x .
       |  }
       |}""".stripMargin
-     makeMultiMap(ts.mapQuery(query).map(x => (Probe.unpack(x("p")), Gene(x("x")))))
+     makeMultiMap(triplestore.mapQuery(query).map(x => (Probe.unpack(x("p")), Gene(x("x")))))
   }
 
   //TODO share query-forming code with superclass instead of totally overriding it
@@ -74,7 +74,7 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
       |  }
       |  ?g rdfs:label ?plat.
       |} """.stripMargin
-	  val r = ts.mapQuery(q, 20000)
+	  val r = triplestore.mapQuery(q, 20000)
 
 	  r.groupBy(_("pr")).map(_._2).map(g => {
 	    val p = Probe(g(0)("l"))
@@ -103,7 +103,7 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
       |  }
       |  ${platform.map(x => "?g rdfs:label \"" + x + "\"").getOrElse("")}
       |} LIMIT 10""".stripMargin
-    ts.mapQuery(query).map(x => Probe(x("s")))
+    triplestore.mapQuery(query).map(x => Probe(x("s")))
   }
 
   /**
@@ -122,7 +122,7 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
       |  }
       |  ?g rdfs:label ?plat }""".stripMargin
 
-    val r = ts.mapQuery(query).map(
+    val r = triplestore.mapQuery(query).map(
       x => (symbols.find(s =>
         s.toLowerCase == x("gene").toLowerCase)
         .getOrElse(null) -> Probe.unpack(x("p"))))

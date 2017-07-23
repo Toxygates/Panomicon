@@ -49,7 +49,7 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
     addWithTimestamp(name, comment)
 
     if (biological) {
-      ts.update(s"$tPrefixes\n insert data { <$defaultPrefix/$name> $platformType $biologicalPlatform. }")
+      triplestore.update(s"$tPrefixes\n insert data { <$defaultPrefix/$name> $platformType $biologicalPlatform. }")
     }
 
     val probes = new Probes(config)
@@ -58,7 +58,7 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
     try {
       for (g <- definitions.par.toList.grouped(1000)) {
         val ttl = Probes.recordsToTTL(tempFiles, name, g)
-        ts.addTTL(ttl, Platforms.context(name))
+        triplestore.addTTL(ttl, Platforms.context(name))
       }
     } finally {
       tempFiles.dropAll
@@ -73,7 +73,7 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
    * Note, the map may only be partially populated
    */
   def platformTypes: Map[String, String] = {
-    Map() ++ ts.mapQuery(s"$tPrefixes select ?l ?type where { ?item a $itemClass; rdfs:label ?l ; " +
+    Map() ++ triplestore.mapQuery(s"$tPrefixes select ?l ?type where { ?item a $itemClass; rdfs:label ?l ; " +
       s"$platformType ?type } ").map(x => {
       x("l") -> x("type")
     })
@@ -93,7 +93,7 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
     val timeout: Int = 60000
 
     //TODO test this
-    val attribs = ts.mapQuery(s"""$tPrefixes
+    val attribs = triplestore.mapQuery(s"""$tPrefixes
         |SELECT ?id ?key ?value WHERE {
         |  ?p $platformType $biologicalPlatform.
         |  GRAPH ?p {
@@ -107,7 +107,7 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
       kvs = Map() ++ values.map(_._2)
     ) yield (id -> kvs)
 
-    val bps = ts.mapQuery(s"""$tPrefixes
+    val bps = triplestore.mapQuery(s"""$tPrefixes
       |SELECT ?id ?desc ?sec ?type ?lower ?upper WHERE {
       |  ?p $platformType $biologicalPlatform.
       |  GRAPH ?p {
@@ -127,7 +127,7 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
 
   override def delete(name: String): Unit = {
     super.delete(name)
-    ts.update(s"$tPrefixes\n " +
+    triplestore.update(s"$tPrefixes\n " +
       s"drop graph <$defaultPrefix/$name>")
   }
 

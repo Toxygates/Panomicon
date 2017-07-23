@@ -78,7 +78,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     s"<${Batches.defaultPrefix}/$batch> $hasRelation <$defaultPrefix/$sample>"
 
   def addSamples(batch: String, samples: Iterable[String]): Unit = {
-    ts.update(tPrefixes + " " +
+    triplestore.update(tPrefixes + " " +
       "insert data { " +
       samples.map(s => hasRelation(batch, s)).mkString(". ") +
       samples.map(s => s"$defaultPrefix/$s a $itemClass.").mkString(" ") +
@@ -87,18 +87,18 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
 
   //TODO is this the best way to handle URI/title conversion?
   //Is such conversion needed?
-  protected def adjustSample(m: Map[String, String],
+  protected def adjustSample(map: Map[String, String],
                              overrideBatch: Option[String] = None): Map[String, String] = {
-    var r = if (m.contains("dataset")) {
-      m + ("dataset" -> Datasets.unpackURI(m("dataset")))
+    var result = if (map.contains("dataset")) {
+      map + ("dataset" -> Datasets.unpackURI(map("dataset")))
     } else {
-      m
+      map
     }
     overrideBatch match {
-      case Some(ob) => r + ("batchGraph" -> ob)
-      case _ => r
+      case Some(ob) => result + ("batchGraph" -> ob)
+      case _ => result
     }
-    r
+    result
   }
 
   protected def graphCon(g: Option[String]) = g.map("<" + _ + ">").getOrElse("?g")
@@ -111,7 +111,6 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
   def samples() = ???
 
   def samples(sc: SampleClassFilter)(implicit sf: SampleFilter): Seq[Sample] =
-
     sampleQuery(sc)(sf)()
 
   def allValuesForSampleAttribute(attribute: String,
@@ -120,11 +119,11 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
 
     val q = tPrefixes +
       s"SELECT DISTINCT ?q WHERE { GRAPH $g { ?x a t:sample; t:$attribute ?q } }"
-    ts.simpleQuery(q)
+    triplestore.simpleQuery(q)
   }
 
   def platforms(samples: Iterable[String]): Iterable[String] = {
-    ts.simpleQuery(tPrefixes + " SELECT distinct ?p WHERE { GRAPH ?batchGraph { " +
+    triplestore.simpleQuery(tPrefixes + " SELECT distinct ?p WHERE { GRAPH ?batchGraph { " +
       "?x a t:sample; rdfs:label ?id; t:platform_id ?p }  " +
       multiFilter("?id", samples.map("\"" + _ + "\"")) +
       " }")
@@ -164,7 +163,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
       "{ { ?x rdfs:label \"" + sample + "\" } UNION" +
       "{ ?x rdfs:label \"" + sample + "\"^^xsd:string } }" +
       triples.mkString + " } } "
-    val r = ts.mapQuery(tPrefixes + query)
+    val r = triplestore.mapQuery(tPrefixes + query)
     if (r.isEmpty) {
       List()
     } else {
@@ -179,7 +178,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
         s"WHERE { GRAPH ?batchGraph { " +
         "?x t:" + attribute + " ?q . ",
       s"} ${sf.standardSampleFilters} } ",
-      ts.simpleQueryNonQuiet)
+      triplestore.simpleQueryNonQuiet)
   }
 
   def sampleAttributeQuery(attribute: Seq[String])
@@ -191,7 +190,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
         "?x " +
           attribute.map(x => s"t:$x ?$x").mkString("; "),
       s"} ${sf.standardSampleFilters} } ",
-      ts.mapQuery(_, 10000))
+      triplestore.mapQuery(_, 10000))
   }
 
   def attributeValues(filter: TFilter, attribute: String)(implicit sf: SampleFilter) =
@@ -207,7 +206,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
 
     //Note that ?sid is the rdfs:label of samples
 
-    val mq = ts.mapQuery(q)
+    val mq = triplestore.mapQuery(q)
     val byGroup = mq.groupBy(_("l"))
     val allIds = mq.map(_("sid")).distinct
     val withAttributes = sampleQuery(SampleClassFilter())(sf).constrain(
