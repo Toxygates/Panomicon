@@ -64,7 +64,8 @@ public class DataScreen extends Screen {
   private MenuItem heatMapMenu;
 
   public DataScreen(ScreenManager man) {
-    super("View data", key, true, man, resources.dataDisplayHTML(), resources.dataDisplayHelp());
+    super("View data", key, true, man, man.resources().dataDisplayHTML(), 
+        man.resources().dataDisplayHelp());
     gs = makeGeneSetSelector();
     et = makeExpressionTable();
     et.setDisplayPColumns(false);

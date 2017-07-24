@@ -124,7 +124,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   protected ListBox tableList = new ListBox();
 
   private final MatrixServiceAsync matrixService;
-  private final otgviewer.client.Resources resources;
+  private final t.common.client.Resources resources;
 
   protected boolean displayPColumns = true;
   protected SortKey sortKey;

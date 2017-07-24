@@ -37,7 +37,6 @@ import t.common.shared.sample.Sample;
 import t.viewer.client.Utils;
 import t.viewer.shared.AppInfo;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -66,7 +65,6 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class Screen extends DataListenerWidget implements 
   RequiresResize, ProvidesResize, HasLogger {
-  protected static Resources resources = GWT.create(Resources.class);
 
   protected DockLayoutPanel rootPanel;
 
@@ -195,7 +193,7 @@ public class Screen extends DataListenerWidget implements
   }
 
   public Screen(String title, String key, boolean showGroups, ScreenManager man) {
-    this(title, key, showGroups, man, resources.defaultHelpHTML(), null);
+    this(title, key, showGroups, man, man.resources().defaultHelpHTML(), null);
   }
 
   public ScreenManager manager() {
@@ -215,7 +213,7 @@ public class Screen extends DataListenerWidget implements
   }
 
   public Resources resources() {
-    return resources;
+    return manager.resources();    
   }
 
   /**
@@ -302,7 +300,7 @@ public class Screen extends DataListenerWidget implements
 
     PushButton i;
     if (helpAvailable()) {
-      i = new PushButton(new Image(resources.help()));
+      i = new PushButton(new Image(resources().help()));
       i.setStylePrimaryName("slightlySpaced");
       i.addClickHandler(new ClickHandler() {
         @Override
@@ -313,7 +311,7 @@ public class Screen extends DataListenerWidget implements
       hpi.add(i);
     }
 
-    i = new PushButton(new Image(resources.close()));
+    i = new PushButton(new Image(resources().close()));
     i.setStylePrimaryName("slightlySpaced");
     final Screen sc = this;
     i.addClickHandler(new ClickHandler() {
@@ -535,7 +533,7 @@ public class Screen extends DataListenerWidget implements
 
   protected TextResource getHelpHTML() {
     if (helpHTML == null) {
-      return resources.defaultHelpHTML();
+      return resources().defaultHelpHTML();
     } else {
       return helpHTML;
     }

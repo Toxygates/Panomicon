@@ -52,8 +52,8 @@ public class ColumnScreen extends Screen {
   private FilterTools filterTools;
 
   public ColumnScreen(ScreenManager man) {
-    super("Sample groups", key, false, man, resources.groupDefinitionHTML(), resources
-        .groupDefinitionHelp());
+    super("Sample groups", key, false, man, man.resources().groupDefinitionHTML(), 
+        man.resources().groupDefinitionHelp());
 
     String majorParam = man.schema().majorParameter();
     cs = new CompoundSelector(this, man.schema().title(majorParam), true, true) {

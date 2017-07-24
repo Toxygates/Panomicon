@@ -30,8 +30,6 @@ import otgviewer.client.components.ranking.CompoundRanker;
 import t.common.shared.Dataset;
 import t.model.SampleClass;
 
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -44,7 +42,9 @@ public class RankingScreen extends Screen {
   private ScrollPanel sp;
 
   public RankingScreen(ScreenManager man) {
-    super("Compound ranking", key, false, man);
+    super("Compound ranking", key, false, man,
+        man.resources().compoundRankingHTML(),
+        man.resources().compoundRankingHelp());
     chosenDatasets = appInfo().datasets();
     filterTools = new FilterTools(this) {
       @Override
@@ -105,24 +105,8 @@ public class RankingScreen extends Screen {
     super.resizeInterface();
   }
 
-  public void show() {
-    super.show();
-  }
-
   @Override
   public String getGuideText() {
     return "Specify at least one gene symbol to rank compounds according to their effect.";
-  }
-
-  @Override
-  protected TextResource getHelpHTML() {
-    return resources.compoundRankingHTML();
-  }
-
-  @Override
-  protected ImageResource getHelpImage() {
-    return resources.compoundRankingHelp();
-  }
-
-  
+  }  
 }
