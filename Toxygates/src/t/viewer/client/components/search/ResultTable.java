@@ -27,8 +27,7 @@ public abstract class ResultTable<T> {
   private List<String> conditionKeys;
   private Delegate delegate; // we'll need this in the future
 
-  protected abstract Column<T, String> makeBasicColumn(String key);
-  protected abstract Column<T, String> makeNumericColumn(String key);
+  protected abstract Column<T, String> makeColumn(String key, boolean numeric);
 
   // Could also have macro parameters here, such as organism, tissue etc
   // but currently the search is always constrained on those parameters
@@ -77,13 +76,13 @@ public abstract class ResultTable<T> {
     setConditionKeys(condition);
 
     for (String key : classKeys()) {
-      addColumn(makeBasicColumn(key), key);
+      addColumn(makeColumn(key, false), key);
     }
 
     addAdhocColumns();
 
     for (String key : conditionKeys) {
-      addColumn(makeNumericColumn(key), key);
+      addColumn(makeColumn(key, true), key);
     }
 
     table.setRowData(Arrays.asList(entries));
@@ -91,7 +90,7 @@ public abstract class ResultTable<T> {
 
   protected void addAdhocColumns() {
     for (String key : adhocKeys()) {
-      addColumn(makeBasicColumn(key), key);
+      addColumn(makeColumn(key, false), key);
     }
   }
 
@@ -107,10 +106,12 @@ public abstract class ResultTable<T> {
    */
   protected abstract class KeyColumn<S> extends TooltipColumn<S> {
     protected String keyName;
+    protected boolean isNumeric;
 
-    public KeyColumn(Cell<String> cell, String key) {
+    public KeyColumn(Cell<String> cell, String key, boolean numeric) {
       super(cell);
       keyName = key;
+      isNumeric = numeric;
     }
 
     protected abstract String getData(S s);
@@ -118,9 +119,13 @@ public abstract class ResultTable<T> {
     @Override
     public String getValue(S s) {
       String string = getData(s);
-      try {
-        return Utils.formatNumber(Double.parseDouble(string));
-      } catch (NumberFormatException e) {
+      if (isNumeric) {
+        try {
+          return Utils.formatNumber(Double.parseDouble(string));
+        } catch (NumberFormatException e) {
+          return "Malformed number: " + string;
+        }
+      } else {
         return string;
       }
     }

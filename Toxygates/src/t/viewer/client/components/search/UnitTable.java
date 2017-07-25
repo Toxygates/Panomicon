@@ -14,8 +14,8 @@ public class UnitTable extends ResultTable<Unit> {
   }
 
   protected class UnitKeyColumn extends KeyColumn<Unit> {
-    public UnitKeyColumn(Cell<String> cell, String key) {
-      super(cell, key);
+    public UnitKeyColumn(Cell<String> cell, String key, boolean numeric) {
+      super(cell, key, numeric);
     }
 
     @Override
@@ -24,23 +24,14 @@ public class UnitTable extends ResultTable<Unit> {
     }
   }
 
-  private UnitKeyColumn makeColumn(String key) {
-    return new UnitKeyColumn(textCell, key);
-  }
-
   @Override
-  protected TooltipColumn<Unit> makeBasicColumn(String key) {
-    return makeColumn(key);
-  }
-
-  @Override
-  protected TooltipColumn<Unit> makeNumericColumn(String key) {
-    return makeColumn(key);
+  protected TooltipColumn<Unit> makeColumn(String key, boolean numeric) {
+    return new UnitKeyColumn(textCell, key, numeric);
   }
 
   @Override
   protected void addAdhocColumns() {
-    addColumn(new UnitKeyColumn(textCell, "sample_id") {
+    addColumn(new UnitKeyColumn(textCell, "sample_id", false) {
       @Override
       public String getValue(Unit unit) {
         return getData(unit).split("\\s*/\\s*")[0];

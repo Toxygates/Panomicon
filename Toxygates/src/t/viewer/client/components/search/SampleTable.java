@@ -12,22 +12,13 @@ public class SampleTable extends ResultTable<Sample> {
     super(delegate);
   }
 
-  private TooltipColumn<Sample> makeColumn(String key) {
-    return new KeyColumn<Sample>(textCell, key) {
+  @Override
+  protected TooltipColumn<Sample> makeColumn(String key, boolean numeric) {
+    return new KeyColumn<Sample>(textCell, key, numeric) {
       @Override
       public String getData(Sample sample) {
         return sample.get(keyName);
       }
     };
-  }
-
-  @Override
-  protected TooltipColumn<Sample> makeBasicColumn(String key) {
-    return makeColumn(key);
-  }
-
-  @Override
-  protected TooltipColumn<Sample> makeNumericColumn(String key) {
-    return makeColumn(key);
   }
 }
