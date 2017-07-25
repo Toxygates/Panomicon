@@ -51,46 +51,42 @@ public class Unit extends SampleClass {
     return samples;
   }
 
-  public void averageAttributes(NumericalBioParamValue[] params) {
+  public void averageAttribute(String paramId) {
     Sample first = samples[0];
-    for (NumericalBioParamValue p : params) {
-      if (first.sampleClass().get(p.id) != null) {
-        int count = 0;
-        double sum = 0.0;
-        for (Sample sample : samples) {
-          count++;
-          sum += Double.parseDouble(sample.sampleClass().get(p.id));
-        }
-        put(p.id, Double.toString(sum / count));
+    if (first.sampleClass().get(paramId) != null) {
+      int count = 0;
+      double sum = 0.0;
+      for (Sample sample : samples) {
+        count++;
+        sum += Double.parseDouble(sample.sampleClass().get(paramId));
       }
+      put(paramId, Double.toString(sum / count));
     }
     // TODO: maybe some exception checking for when conversion to double fails
   }
 
-  public void concatenateAttributes(StringBioParamValue[] params) {
+  public void concatenateAttribute(String paramId) {
     String separator = " / ";
 
     Sample firstSample = samples[0];
-    for (StringBioParamValue p : params) {
-      if (firstSample.sampleClass().get(p.id) != null) {
-        HashSet<String> values = new HashSet<String>();
-        String concatenation = "";
+    if (firstSample.sampleClass().get(paramId) != null) {
+      HashSet<String> values = new HashSet<String>();
+      String concatenation = "";
 
-        Boolean firstIteration = true;
-        for (Sample sample : samples) {
-          String newValue = sample.sampleClass().get(p.id);
-          if (!values.contains(newValue)) {
-            values.add(newValue);
-            if (!firstIteration) {
-              concatenation += separator;
-            } else {
-              firstIteration = false;
-            }
-            concatenation += newValue;
+      Boolean firstIteration = true;
+      for (Sample sample : samples) {
+        String newValue = sample.sampleClass().get(paramId);
+        if (!values.contains(newValue)) {
+          values.add(newValue);
+          if (!firstIteration) {
+            concatenation += separator;
+          } else {
+            firstIteration = false;
           }
+          concatenation += newValue;
         }
-        put(p.id, concatenation);
       }
+      put(paramId, concatenation);
     }
     // TODO: maybe more robust handling of when only some of the samples have a value for
     // a given parameter. Or maybe we can assume that won't happen.

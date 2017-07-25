@@ -620,8 +620,12 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val rs = ss.results
     println("Search results:")
     for (s <- rs) {
-      s.averageAttributes(appInfoLoader.latest.numericalParameters())
-      s.concatenateAttributes(appInfoLoader.latest.stringParameters())
+      for (param <- appInfoLoader.latest.numericalParameters()) {
+        s.averageAttribute(param.id)
+      }
+      for (param <- appInfoLoader.latest.stringParameters()) {
+        s.concatenateAttribute(param.id)
+      }
       println(s)
     }
     println("Found " + rs.size + " matches.")
