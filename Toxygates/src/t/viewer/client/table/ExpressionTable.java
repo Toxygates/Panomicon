@@ -256,8 +256,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
 
       @Override
-      public void lastPage() {
-        super.lastPage();
+      public void previousPage() {
+        super.previousPage();
         Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
       }
 
