@@ -29,6 +29,36 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.cell.client.Cell;
+import com.google.gwt.cell.client.SafeHtmlCell;
+import com.google.gwt.cell.client.TextCell;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.ColumnSortList;
+import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
+import com.google.gwt.user.cellview.client.Header;
+import com.google.gwt.user.cellview.client.PageSizePager;
+import com.google.gwt.user.cellview.client.SimplePager;
+import com.google.gwt.user.cellview.client.SimplePager.Resources;
+import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.view.client.AsyncDataProvider;
+import com.google.gwt.view.client.HasData;
+import com.google.gwt.view.client.NoSelectionModel;
+import com.google.gwt.view.client.Range;
+
 import otgviewer.client.StandardColumns;
 import otgviewer.client.charts.AdjustableGrid;
 import otgviewer.client.charts.Charts;
@@ -59,36 +89,6 @@ import t.viewer.shared.ColumnFilter;
 import t.viewer.shared.ManagedMatrixInfo;
 import t.viewer.shared.Synthetic;
 import t.viewer.shared.table.SortKey;
-
-import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.SafeHtmlCell;
-import com.google.gwt.cell.client.TextCell;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.cellview.client.ColumnSortList;
-import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
-import com.google.gwt.user.cellview.client.Header;
-import com.google.gwt.user.cellview.client.PageSizePager;
-import com.google.gwt.user.cellview.client.SimplePager;
-import com.google.gwt.user.cellview.client.SimplePager.Resources;
-import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.view.client.AsyncDataProvider;
-import com.google.gwt.view.client.HasData;
-import com.google.gwt.view.client.NoSelectionModel;
-import com.google.gwt.view.client.Range;
 
 /**
  * The main data display table. This class has many different functionalities. (too many, should be
@@ -252,6 +252,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       @Override
       public void nextPage() {
         super.nextPage();
+        Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
+      }
+
+      @Override
+      public void previousPage() {
+        super.previousPage();
         Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
       }
 
