@@ -2,12 +2,13 @@ package t.viewer.client.components.search;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.Column;
 
 import t.common.client.Utils;
 import t.common.shared.sample.BioParamValue;
@@ -23,11 +24,12 @@ public abstract class ResultTable<T> {
   }
 
   protected CellTable<T> table = new CellTable<T>();
-  private List<Column<T, String>> columns = new LinkedList<Column<T, String>>();
+  private Map<String, KeyColumn<T>> columns = new HashMap<String, KeyColumn<T>>();
+  private List<String> additionalKeys = new LinkedList<String>();
   private List<String> conditionKeys = new ArrayList<String>();
   private Delegate delegate; // we'll need this in the future
 
-  protected abstract Column<T, String> makeColumn(String key, boolean numeric);
+  protected abstract KeyColumn<T> makeColumn(String key, boolean numeric);
 
   // Could also have macro parameters here, such as organism, tissue etc
   // but currently the search is always constrained on those parameters
@@ -66,8 +68,7 @@ public abstract class ResultTable<T> {
    * Keys that can be hidden
    */
   public String[] nonRequiredKeys() {
-    List<String> keys = new ArrayList<String>();
-    return keys.toArray(new String[0]);
+    return additionalKeys.toArray(new String[0]);
   }
 
   /**
@@ -91,8 +92,21 @@ public abstract class ResultTable<T> {
     }
   }
 
-  protected void addColumn(Column<T, String> column, String title) {
-    columns.add(column);
+  public void addExtraColumn(String key, boolean isNumeric, boolean waitForData) {
+    addNewColumn(key, isNumeric, waitForData);
+    additionalKeys.add(key);
+  }
+
+  private void addNewColumn(String key, boolean isNumeric, boolean waitForData) {
+    KeyColumn<T> column = makeColumn(key, isNumeric);
+    if (waitForData) {
+      column.startWaitingForData();
+    }
+    addColumn(column, key);
+  }
+
+  protected void addColumn(KeyColumn<T> column, String title) {
+    columns.put(title, column);
     table.addColumn(column, title);
   }
 
@@ -100,13 +114,13 @@ public abstract class ResultTable<T> {
     setConditionKeys(condition);
 
     for (String key : classKeys()) {
-      addColumn(makeColumn(key, false), key);
+      addNewColumn(key, false, false);
     }
 
     addAdhocColumns();
 
     for (String key : conditionKeys) {
-      addColumn(makeColumn(key, true), key);
+      addNewColumn(key, true, false);
     }
 
     table.setRowData(Arrays.asList(entries));
@@ -120,12 +134,23 @@ public abstract class ResultTable<T> {
     }
   }
 
+  public void removeColumn(String key) {
+    KeyColumn<T> column = columns.get(key);
+    table.removeColumn(column);
+    columns.remove(key);
+  }
+
+  public void gotDataForKey(String key) {
+    columns.get(key).stopWaitingForData();
+  }
+
   public void clear() {
-    for (Column<T, String> column : columns) {
-      table.removeColumn(column);
+    for (String key : columns.keySet()) {
+      table.removeColumn(columns.get(key));
     }
     columns.clear();
-    conditionKeys = new ArrayList<String>();
+    conditionKeys.clear();
+    additionalKeys.clear();
   }
 
   /**
@@ -135,25 +160,42 @@ public abstract class ResultTable<T> {
     protected String keyName;
     protected boolean isNumeric;
 
+    private boolean waitingForData = false;
+
+    public void startWaitingForData() {
+      waitingForData = true;
+    }
+    public void stopWaitingForData() {
+      waitingForData = false;
+    }
+
     public KeyColumn(Cell<String> cell, String key, boolean numeric) {
       super(cell);
       keyName = key;
       isNumeric = numeric;
     }
 
+    public String key() {
+      return keyName;
+    }
+
     protected abstract String getData(S s);
 
     @Override
     public String getValue(S s) {
-      String string = getData(s);
-      if (isNumeric) {
-        try {
-          return Utils.formatNumber(Double.parseDouble(string));
-        } catch (NumberFormatException e) {
-          return "Malformed number: " + string;
-        }
+      if (waitingForData) {
+        return "Waiting for data...";
       } else {
-        return string;
+        String string = getData(s);
+        if (isNumeric) {
+          try {
+            return Utils.formatNumber(Double.parseDouble(string));
+          } catch (NumberFormatException e) {
+            return "Malformed number: " + string;
+          }
+        } else {
+          return string;
+        }
       }
     }
 

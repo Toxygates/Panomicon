@@ -4,7 +4,6 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
 
 import t.common.shared.sample.Unit;
-import t.viewer.client.table.TooltipColumn;
 
 public class UnitTable extends ResultTable<Unit> {
   private TextCell textCell = new TextCell();
@@ -25,7 +24,7 @@ public class UnitTable extends ResultTable<Unit> {
   }
 
   @Override
-  protected TooltipColumn<Unit> makeColumn(String key, boolean numeric) {
+  protected KeyColumn<Unit> makeColumn(String key, boolean numeric) {
     return new UnitKeyColumn(textCell, key, numeric);
   }
 

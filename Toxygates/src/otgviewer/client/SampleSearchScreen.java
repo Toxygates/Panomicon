@@ -65,10 +65,6 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
 
   private Collection<ParameterTickItem> parameterMenuItems;
 
-  /**
-   * Available search parameters. BioParamValue is here used to identify parameters in general, and
-   * not specific values.
-   */
   private void getParameterInfo() {
     BioParamValue[] allParams = appInfo.bioParameters();
     List<BioParamValue> searchParams = new ArrayList<BioParamValue>();
@@ -156,11 +152,13 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
 
   private class ParameterTickItem extends TickMenuItem {
     private String parameterId;
+    private boolean isNumeric;
 
-    public ParameterTickItem(MenuBar mb, String title, String id, boolean initState,
-        boolean enabled) {
+    public ParameterTickItem(MenuBar mb, String title, String id, boolean numeric,
+        boolean initState, boolean enabled) {
       super(mb, title, initState);
       parameterId = id;
+      isNumeric = numeric;
       setEnabled(enabled);
     }
 
@@ -171,7 +169,16 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
 
     @Override
     public void stateChange(boolean newState) {
-
+      if (newState) {
+        boolean waitForData = false;
+        if (!currentSearch.hasParameter(parameterId)) {
+          currentSearch.fetchParameter(parameterId);
+          waitForData = true;
+        }
+        currentSearch.helper().addExtraColumn(parameterId, isNumeric, waitForData);
+      } else {
+        currentSearch.helper().removeColumn(parameterId);
+      }
     }
   }
 
@@ -186,7 +193,7 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
         new MenuItem("Numerical parameters", false, numericalParametersBar);
     for (BioParamValue parameter : searchParameters) {
       parameterMenuItems.add(new ParameterTickItem(numericalParametersBar,
-          parameter.label(), parameter.id(), false, false));
+          parameter.label(), parameter.id(), true, false, false));
     }
 
     MenuBar stringParametersBar = new MenuBar(true);
@@ -194,7 +201,7 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
         new MenuItem("Non-numerical parameters", false, stringParametersBar);
     for (BioParamValue parameter : nonSearchParameters) {
       parameterMenuItems.add(new ParameterTickItem(stringParametersBar,
-          parameter.label(), parameter.id(), false, false));
+          parameter.label(), parameter.id(), false, false, false));
     }
 
     parametersBar.addItem(numericalParametersItem);
@@ -212,11 +219,6 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   @Override
   public String getGuideText() {
     return "Here you can search for samples and units based on values of biological parameters.";
-  }
-
-  @Override
-  public void show() {
-    super.show();
   }
 
   @Override
@@ -245,8 +247,6 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
     } else {
       waitDialog.show();
     }
-
-    resultCountLabel.setText("");
   }
 
   @Override
