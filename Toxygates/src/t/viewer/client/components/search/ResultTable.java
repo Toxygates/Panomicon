@@ -189,9 +189,9 @@ public abstract class ResultTable<T> {
         String string = getData(s);
         if (isNumeric) {
           try {
-            return Utils.formatNumber(Double.parseDouble(string));
+            return Utils.formatNumber(Double.parseDouble(string.replace(",", "")));
           } catch (NumberFormatException e) {
-            return "Malformed number: " + string;
+            return "Invalid number: " + string;
           }
         } else {
           return string;
