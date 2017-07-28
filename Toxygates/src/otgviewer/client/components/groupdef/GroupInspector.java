@@ -30,6 +30,25 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import com.google.gwt.cell.client.FieldUpdater;
+import com.google.gwt.cell.client.TextButtonCell;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.RowStyles;
+import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.SplitLayoutPanel;
+import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.VerticalPanel;
+
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.GroupMaker;
 import otgviewer.client.components.PendingAsyncCallback;
@@ -50,25 +69,6 @@ import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SampleServiceAsync;
-
-import com.google.gwt.cell.client.FieldUpdater;
-import com.google.gwt.cell.client.TextButtonCell;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.cellview.client.RowStyles;
-import com.google.gwt.user.cellview.client.TextColumn;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.SplitLayoutPanel;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  * This widget is intended to help visually define and modify groups of samples. The main dose/time
@@ -273,7 +273,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     groups.remove(name);
     reflectGroupChanges(true); // stores columns
     if (createNew) {
-      newGroup();
+      prepareForNewGroup();
     }
   }
 
@@ -283,7 +283,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     if (Window.confirm("Delete " + fn + " groups?")) {
       clearNonStaticGroups();
       reflectGroupChanges(true);
-      newGroup();
+      prepareForNewGroup();
     }
   }
 
@@ -301,7 +301,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     titleLabel.setText("Sample group definition - " + title);
   }
 
-  private void newGroup() {
+  private void prepareForNewGroup() {
     txtbxGroup.setText("");
     msg.setAll(false);
     compoundSel.setSelection(new ArrayList<String>());
@@ -460,7 +460,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     existingGroupsTable.setItems(sortedGroupList(groups.values()), true);
     existingGroupsTable.setSelection(chosenColumns);
     existingGroupsTable.setVisible(groups.size() > 0);
-    newGroup();
+    prepareForNewGroup();
   }
 
   @Override
@@ -486,7 +486,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     existingGroupsTable.unselectAll(igs);
     existingGroupsTable.table().redraw();
     existingGroupsTable.setVisible(groups.size() > 0);
-    newGroup();
+    prepareForNewGroup();
   }
 
   @Override
@@ -527,18 +527,31 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     if (units.size() == 0) {
       Window.alert("No samples found.");
     } else {
-      setGroup(name, units);
-      newGroup();
+      Group newGroup = setGroup(name, units);
+      prepareForNewGroup();
+      loadTimeWarningIfNeeded(newGroup);
     }
-
-    loadTimeWarningIfNeeded();
   }
 
-  private void loadTimeWarningIfNeeded() {
+  private void loadTimeWarningIfNeeded(Group newGroup) {
+    int newGroupSize = 0;
     int totalSize = 0;
-    for (Group g : existingGroupsTable.getSelection()) {
-      for (Sample b : g.samples()) {
-        if (!schema.isSelectionControl(b.sampleClass())) {
+
+    HashSet<String> sampleIds = new HashSet<String>();
+
+    for (Sample sample : newGroup.samples()) {
+      if (!schema.isSelectionControl(sample.sampleClass())) {
+        sampleIds.add(sample.id());
+        newGroupSize += 1;
+        totalSize += 1;
+      }
+    }
+
+    for (Group group : existingGroupsTable.getSelection()) {
+      for (Sample sample : group.samples()) {
+        if (!schema.isSelectionControl(sample.sampleClass())
+            && !sampleIds.contains(sample.id())) {
+          sampleIds.add(sample.id());
           totalSize += 1;
         }
       }
@@ -548,12 +561,13 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     int loadTime = totalSize / 10;
 
     if (loadTime > 20) {
-      Window.alert("Warning: You have requested data for " + totalSize + " samples.\n"
+      Window.alert("Warning: Your new group contains " + newGroupSize + " samples.\n"
+          + "You will now be requesting data for " + totalSize + " samples.\n"
           + "The total loading time is expected to be " + loadTime + " seconds.");
     }
   }
 
-  private void setGroup(String pendingGroupName, List<Unit> units) {
+  private Group setGroup(String pendingGroupName, List<Unit> units) {
     logger.info("Set group with " + SharedUtils.mkString(units, ","));
     Group pendingGroup = groups.get(pendingGroupName);
     if (pendingGroup == null) {
@@ -566,6 +580,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     pendingGroup = new Group(schema, pendingGroupName, units.toArray(new Unit[0]));
     addGroup(pendingGroup, true);
     reflectGroupChanges(true);
+    return pendingGroup;
   }
 
   private void addGroup(Group group, boolean active) {
