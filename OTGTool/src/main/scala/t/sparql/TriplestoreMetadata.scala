@@ -25,6 +25,7 @@ import t.db.SampleParameter
 import t.db.Metadata
 import t.db.ParameterSet
 import t.Factory
+import t.model.sample.Attribute
 
 /**
  * Metadata from a triplestore.
@@ -38,7 +39,7 @@ class TriplestoreMetadata(sampleStore: Samples, val parameterSet: ParameterSet,
 
   override def samples: Iterable[Sample] = sampleStore.samples(SampleClassFilter())
 
-  override def parameters(s: Sample): Seq[(SampleParameter, String)] = {
+  override def parameters(s: Sample): Seq[(Attribute, String)] = {
     sampleStore.parameterQuery(s.identifier, querySet).collect( {
       case (sp, Some(s)) => (sp, s)
     })

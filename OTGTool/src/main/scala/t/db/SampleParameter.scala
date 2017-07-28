@@ -1,7 +1,13 @@
 package t.db
 
-case class SampleParameter(identifier: String, humanReadable: String) {
+import t.model.sample.Attribute
+
+case class SampleParameter(identifier: String, humanReadable: String) extends Attribute {
   final def id: String = identifier
+
+  def title = humanReadable
+
+  def isNumerical = false
 }
 
 /**
@@ -10,8 +16,8 @@ case class SampleParameter(identifier: String, humanReadable: String) {
 object SampleParameters {
   val ControlGroup = SampleParameter("control_group", "Control group")
   val ExposureTime =
-    SampleParameter(t.model.SampleParameter.ExposureTime.id,
-        t.model.SampleParameter.ExposureTime.title())
+    SampleParameter(t.model.sample.CoreParameter.ExposureTime.id,
+        t.model.sample.CoreParameter.ExposureTime.title())
   val DoseLevel = SampleParameter("dose_level", "Dose level")
   val BatchGraph = SampleParameter("batchGraph", "Batch")
   val Individual = SampleParameter("individual_id", "Individual ID")

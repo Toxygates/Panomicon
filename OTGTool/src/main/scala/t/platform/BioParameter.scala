@@ -10,27 +10,37 @@ import org.apache.commons.math3.stat.StatUtils.variance
 import org.apache.commons.math3.stat.StatUtils.mean
 import t.sample.SampleSet
 import t.db.SampleParameters._
+import t.model.sample.Attribute
+import t.model.sample.BasicAttribute
 
-case class BioParameter(key: String, label: String, kind: String,
+/**
+ * Construct a BioParameter object.
+ * @param attributes attributes of the bio parameter (not sample attributes) -
+ *  tentative functionality for describing bio parameters in platforms
+ */
+case class BioParameter(attribute: Attribute,
     section: Option[String],
     lowerBound: Option[Double], upperBound: Option[Double],
     attributes: Map[String, String] = Map()) {
 
-  /**
-   * Obtain an equivalent SampleParameter (for lookup purposes)
-   */
-  def sampleParameter = SampleParameter(key, label)
+  def key: String = attribute.id
+
+  def label: String = attribute.title
+
+  def kind: String = {
+    if (attribute.isNumerical()) "numerical" else "string"
+  }
 }
 
-class BioParameters(lookup: Map[String, BioParameter]) {
-  def apply(key: String) = lookup(key)
-  def get(key: String) = lookup.get(key)
+class BioParameters(lookup: Map[Attribute, BioParameter]) {
+  def apply(key: Attribute) = lookup(key)
+  def get(key: Attribute) = lookup.get(key)
 
   /**
-   * Obtain the set as sample parameters, sorted by section and label.
+   * Obtain the set as attributes, sorted by section and label.
    */
-  def sampleParameters: Seq[SampleParameter] = lookup.values.toSeq.
-    sortBy(p => (p.section, p.label)).map(_.sampleParameter)
+  def sampleParameters: Seq[Attribute] = lookup.values.toSeq.
+    sortBy(p => (p.section, p.label)).map(_.attribute)
 
   /**
    * Extract bio parameters with accurate low and high threshold for a given
@@ -41,16 +51,18 @@ class BioParameters(lookup: Map[String, BioParameter]) {
   def forTimePoint(time: String): BioParameters = {
     val normalTime = time.replaceAll("\\s+", "")
 
+    //TODO should not construct BasicAttribute below - should look it up from an attribute set
+
     new BioParameters(Map() ++
       (for (
-        (id, param) <- lookup;
+        (attr, param) <- lookup;
         lb = param.attributes.get(s"lowerBound_$normalTime").
           map(_.toDouble).orElse(param.lowerBound);
         ub = param.attributes.get(s"upperBound_$normalTime").
           map(_.toDouble).orElse(param.upperBound);
-        edited = BioParameter(id, param.label, param.kind, param.section, lb, ub,
+        edited = BioParameter(attr, param.section, lb, ub,
           param.attributes)
-      ) yield (id -> edited)))
+      ) yield (attr -> edited)))
   }
 
   def all = lookup.values
@@ -68,7 +80,7 @@ class ControlGroup(bps: BioParameters, samples: SampleSet,
   val allParamVals = byTime.filter(_._1 != None).
     map(ss => ss._1.get -> ss._2.map(Map() ++ samples.parameters(_)))
 
-  private def varAndMean(param: SampleParameter, time: String): Option[(Double, Double)] = {
+  private def varAndMean(param: Attribute, time: String): Option[(Double, Double)] = {
     allParamVals.get(time) match {
       case None => None
       case Some(pvs) =>
@@ -83,14 +95,14 @@ class ControlGroup(bps: BioParameters, samples: SampleSet,
     }
   }
 
-  def lowerBound(param: SampleParameter, time: String, testSampleSize: Int): Option[Double] =
+  def lowerBound(param: Attribute, time: String, testSampleSize: Int): Option[Double] =
     varAndMean(param, time).map {
       case (v, m) =>
         val sd = Math.sqrt(v)
         m - 2 / Math.sqrt(testSampleSize) * sd
     }
 
-  def upperBound(param: SampleParameter, time: String, testSampleSize: Int): Option[Double] =
+  def upperBound(param: Attribute, time: String, testSampleSize: Int): Option[Double] =
     varAndMean(param, time).map {
       case (v, m) =>
         val sd = Math.sqrt(v)

@@ -25,6 +25,7 @@ import t.TriplestoreConfig
 import t.db.Sample
 import t.db.SampleParameter
 import t.sparql.{ Filter => TFilter }
+import t.model.sample.Attribute
 
 object Samples extends RDFClass {
   val defaultPrefix = s"$tRoot/sample"
@@ -143,11 +144,11 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
 
   def sampleClasses(implicit sf: SampleFilter): Seq[Map[String, String]]
 
-  def parameters(sample: Sample): Seq[(SampleParameter, String)] =
+  def parameters(sample: Sample): Seq[(Attribute, String)] =
     parameters(sample, Seq())
 
   override def parameters(sample: Sample,
-    querySet: Iterable[SampleParameter]): Seq[(SampleParameter, String)] =
+    querySet: Iterable[Attribute]): Seq[(Attribute, String)] =
     parameterQuery(sample.sampleId, querySet).collect {
       case (sp, Some(v)) => (sp, v)
     }
@@ -157,7 +158,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
    * @param querySet the set of parameters to fetch. If ordered, we preserve the ordering in the result
    */
   def parameterQuery(sample: String,
-    querySet: Iterable[SampleParameter] = Seq()): Seq[(SampleParameter, Option[String])] = {
+    querySet: Iterable[Attribute] = Seq()): Seq[(Attribute, Option[String])] = {
 
     val queryParams = (if (querySet.isEmpty) {
       bc.sampleParameters.all
@@ -166,7 +167,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     }).toSeq
 
     val withIndex = queryParams.zipWithIndex
-    val triples = withIndex.map(x => " OPTIONAL { ?x t:" + x._1.identifier + " ?k" + x._2 + ". } ")
+    val triples = withIndex.map(x => " OPTIONAL { ?x t:" + x._1.id + " ?k" + x._2 + ". } ")
     val query = "SELECT * WHERE { GRAPH ?batchGraph { " +
       "{ { ?x rdfs:label \"" + sample + "\" } UNION" +
       "{ ?x rdfs:label \"" + sample + "\"^^xsd:string } }" +

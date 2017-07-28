@@ -25,6 +25,7 @@ import t.platform.ProbeRecord
 import t.util.TempFiles
 import t.platform.BioParameter
 import t.platform.BioParameters
+import t.model.sample.BasicAttribute
 
 object Platforms extends RDFClass {
   def itemClass: String = "t:platform"
@@ -117,12 +118,13 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
       |   }
       |}""".stripMargin, timeout)
 
-    val bpcons = bps.map(x => BioParameter(x("id"), x("desc"), x("type"),
+    val bpcons = bps.map(x => BioParameter(
+        new BasicAttribute(x("id"), x("desc"), x("type")),
       x.get("sec"),
       x.get("lower").map(_.toDouble), x.get("upper").map(_.toDouble),
       attribMaps.get(x("id")).getOrElse(Map())))
 
-    new BioParameters(Map() ++ bpcons.map(b => b.key -> b))
+    new BioParameters(Map() ++ bpcons.map(b => b.attribute -> b))
   }
 
   override def delete(name: String): Unit = {

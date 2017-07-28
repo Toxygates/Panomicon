@@ -115,7 +115,7 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
   }
 
   def buildEmpty(x: Sample, md: Metadata) = {
-    val paramMap = Map() ++ md.parameters(x).map(x => x._1.identifier -> x._2)
+    val paramMap = Map() ++ md.parameters(x).map(x => x._1.id -> x._2)
         val r = paramMap("sin_rep_type")
         val d = paramMap(DoseLevel.id)
         val o = paramMap("organ_id")

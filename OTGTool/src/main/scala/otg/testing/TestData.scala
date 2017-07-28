@@ -38,6 +38,7 @@ import t.db.SampleParameters._
 import otg.OTGBConfig
 
 import scala.collection.JavaConversions._
+import t.model.sample.BasicAttribute
 
 object TestData {
   import t.db.testing.TestData._
@@ -79,13 +80,13 @@ object TestData {
   }
 
   val bioParams = Seq(
-      BioParameter("liver_wt", "Liver weight", "numerical",
+      BioParameter(new BasicAttribute("liver_wt", "Liver weight", "numerical"),
         None, None, None),
-      BioParameter("kidney_wt", "Kidney weight", "numerical",
+      BioParameter(new BasicAttribute("kidney_wt", "Kidney weight", "numerical"),
         None, None, None)
         )
 
-  val bioParameters = new BioParameters(Map() ++ bioParams.map(p => p.key -> p))
+  val bioParameters = new BioParameters(Map() ++ bioParams.map(p => p.attribute -> p))
 
   def randomNumber(mean: Double, range: Double) =
     Math.random * range + (mean - range/2)

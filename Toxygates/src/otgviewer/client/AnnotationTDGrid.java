@@ -30,7 +30,7 @@ import t.common.shared.sample.NumericalBioParamValue;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
 import t.model.SampleClass;
-import t.model.SampleParameter;
+import t.model.sample.CoreParameter;
 import t.viewer.client.Analytics;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -119,7 +119,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 
     SampleClass sc = chosenSampleClass.copy();
     sc.put("dose_level", dose);
-    sc.put(SampleParameter.ExposureTime.id(), time);
+    sc.put(CoreParameter.ExposureTime.id(), time);
     sc.put("compound_name", compound);
 
     sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(this,

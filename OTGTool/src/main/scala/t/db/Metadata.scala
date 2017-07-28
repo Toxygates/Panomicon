@@ -57,7 +57,7 @@ trait Metadata extends SampleSet {
   def parameterSet: ParameterSet
 
   def parameterMap(s: Sample): Map[String, String] =
-    Map() ++ parameters(s).map(x => x._1.identifier -> x._2)
+    Map() ++ parameters(s).map(x => x._1.id -> x._2)
   /**
    * Obtain all available values for a given parameter.
    */

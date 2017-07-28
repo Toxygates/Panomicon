@@ -1,24 +1,23 @@
 package t.viewer.server
 
-import t.common.shared.sample.NumericalBioParamValue
-import t.platform.BioParameters
-import t.platform.BioParameter
-import t.common.shared.sample.StringBioParamValue
-import t.common.shared.sample.Annotation
-import t.common.shared.sample.Sample
+import java.lang.{ Double => JDouble }
+
+import scala.collection.JavaConversions.seqAsJavaList
+import scala.language.implicitConversions
+
 import otg.db.OTGParameterSet
 import t.BaseConfig
-import scala.collection.JavaConversions._
-import t.common.shared.sample.HasSamples
-import t.sparql.Samples
-import t.platform.ControlGroup
 import t.common.shared.DataSchema
-import t.sparql.TriplestoreMetadata
-import t.sparql.SampleFilter
-import t.db.Metadata
-import t.viewer.server.Conversions._
-import java.lang.{Double => JDouble}
-import scala.language.implicitConversions
+import t.common.shared.sample.Annotation
+import t.common.shared.sample.HasSamples
+import t.common.shared.sample.NumericalBioParamValue
+import t.common.shared.sample.Sample
+import t.common.shared.sample.StringBioParamValue
+import t.model.sample.Attribute
+import t.platform.BioParameter
+import t.platform.ControlGroup
+import t.sparql.Samples
+import t.viewer.server.Conversions.asScalaSample
 
 class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
 
@@ -106,7 +105,6 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
     })
   }
 
-
   /**
    * Construct a shared API bio parameter object (numerical)
    */
@@ -139,7 +137,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
    * Construct an Annotation from sample parameters
    */
   def fromParameters(sample: Sample,
-    ps: Iterable[(t.db.SampleParameter, Option[String])]): Annotation = {
+    ps: Iterable[(Attribute, Option[String])]): Annotation = {
     fromParameters(None, sample, ps)
   }
 
@@ -148,7 +146,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
    * @param cg control group; used to compute upper/lower bounds for parameters
    */
   private def fromParameters(cg: Option[ControlGroup], sample: Sample,
-    parameters: Iterable[(t.db.SampleParameter, Option[String])]): Annotation = {
+    attribs: Iterable[(Attribute, Option[String])]): Annotation = {
 
     def asJDouble(d: Option[Double]) =
       d.map(new java.lang.Double(_)).getOrElse(null)
@@ -157,8 +155,8 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
       bp.kind match {
         case "numerical" =>
           val t = sample.get(schema.timeParameter())
-          val lb = cg.flatMap(_.lowerBound(bp.sampleParameter, t, 1))
-          val ub = cg.flatMap(_.upperBound(bp.sampleParameter, t, 1))
+          val lb = cg.flatMap(_.lowerBound(bp.attribute, t, 1))
+          val ub = cg.flatMap(_.upperBound(bp.attribute, t, 1))
 
           numericalAsShared(bp, asJDouble(lb), asJDouble(ub), dispVal)
         case _ => stringAsShared(bp, dispVal)
@@ -168,8 +166,8 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
 //    val useBps = bioParamsForSample(barcode)
 
     val params = for (
-      x <- parameters.toSeq;
-      bp <- bioParameters.get(x._1.identifier);
+      x <- attribs.toSeq;
+      bp <- bioParameters.get(x._1);
       p = (bp.label, x._2.getOrElse("N/A"));
       dispVal = OTGParameterSet.postReadAdjustment(p);
       bpv = bioParamValue(bp, dispVal)
@@ -189,12 +187,12 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
       sampleStore.parameterQuery(x.id, params).toSeq
     })
 
-    val colNames = params.map(_.humanReadable)
+    val colNames = params.map(_.title)
 
     val data = Vector.tabulate(raw.size, colNames.size)((s, a) =>
       raw(s)(a)._2.getOrElse(""))
 
-    val bps = params.map(p => bioParameters.get(p.identifier))
+    val bps = params.map(p => bioParameters.get(p))
     def extracts(b: Option[BioParameter], f: BioParameter => Option[String]): String =
       b.map(f).flatten.getOrElse("")
 
@@ -203,7 +201,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
 
     val rr = timepoints.map(t => {
       val bpt = bioParameters.forTimePoint(t)
-      val bps = params.map(p => bpt.get(p.identifier))
+      val bps = params.map(p => bpt.get(p))
       (Seq(s"Healthy min. $t", s"Healthy max. $t"),
           Seq(bps.map(extractd(_, _.lowerBound)), bps.map(extractd(_, _.upperBound))))
     })

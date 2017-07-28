@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import t.model.sample.Attribute;
+
 
 /**
  * A sample class identifies a group of samples.
@@ -48,16 +50,31 @@ public class SampleClass implements Serializable {
     this.data = new HashMap<String, String>(data);
   }
 
+  public String apply(Attribute key) {
+    return get(key);
+  }
+  
+  @Deprecated
   public String apply(String key) {
     return get(key);
   }
   
+  public String get(Attribute key) {
+    return data.get(key.id());
+  }
+  
+  @Deprecated
   public String get(String key) {
     return data.get(key);
   }
 
+  @Deprecated
   public void put(String key, String value) {
     data.put(key, value);
+  }
+  
+  public void put(Attribute key, String value) {
+    data.put(key.id(), value);
   }
   
   public void remove(String key) {
