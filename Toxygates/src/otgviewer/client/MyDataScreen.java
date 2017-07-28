@@ -47,6 +47,7 @@ import t.common.client.maintenance.TaskCallback;
 import t.common.shared.Dataset;
 import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.Instance;
+import t.viewer.client.Analytics;
 import t.viewer.client.rpc.UserDataServiceAsync;
 
 public class MyDataScreen extends Screen {
@@ -78,6 +79,7 @@ public class MyDataScreen extends Screen {
     setUserKey(key);    
   }
   
+  @Override
   public Widget content() {
     final Set<String> instancesForBatch = new HashSet<String>();       
     instancesForBatch.add(appInfo().instanceName());
@@ -119,6 +121,12 @@ public class MyDataScreen extends Screen {
             new ArrayList<Instance>(), userData) {
           ListBox visList;
           
+          @Override
+          protected void onBatchUploadBegan() {
+            Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT,
+                Analytics.ACTION_BEGIN_DATA_UPLOAD);
+          }
+
           @Override
           protected void onFinishOrAbort() {
             db.hide();
@@ -228,6 +236,7 @@ public class MyDataScreen extends Screen {
   
   private void deleteBatch(Batch b) {
     userData.deleteBatchAsync(b, new TaskCallback(this, "Delete batch", userData) {
+      @Override
       public void onCompletion() {
         refreshBatches();
       }          

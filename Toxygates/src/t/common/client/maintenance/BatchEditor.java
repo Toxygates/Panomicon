@@ -34,7 +34,6 @@ import t.common.shared.Dataset;
 import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.BatchUploadException;
 import t.common.shared.maintenance.Instance;
-//import t.viewer.client.Analytics;
 
 abstract public class BatchEditor extends ManagedItemEditor {
   @Nullable protected BatchUploader uploader;
@@ -70,6 +69,8 @@ abstract public class BatchEditor extends ManagedItemEditor {
   
   abstract protected String datasetForBatch();
   
+  protected void onBatchUploadBegan() {}
+
   @Override
   protected void triggerEdit() {
     if (idText.getValue().equals("")) {
@@ -88,8 +89,7 @@ abstract public class BatchEditor extends ManagedItemEditor {
           @Override
           public void onSuccess(Void result) {
             super.onSuccess(result);
-//            Analytics.trackEvent(Analytics.CATEGORY_IMPORT_EXPORT,
-//                Analytics.ACTION_BEGIN_DATA_UPLOAD);
+            onBatchUploadBegan();
           }
 
           @Override
