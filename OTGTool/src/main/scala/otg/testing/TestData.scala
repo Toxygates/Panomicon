@@ -79,11 +79,13 @@ object TestData {
     Map() ++ samples.map(s => s -> controls(s(CGParam)))
   }
 
+  //temporary
+  val attribSet = otg.model.sample.AttributeSet.getDefault
+  import otg.model.sample.Attribute._
+
   val bioParams = Seq(
-      BioParameter(new BasicAttribute("liver_wt", "Liver weight", "numerical"),
-        None, None, None),
-      BioParameter(new BasicAttribute("kidney_wt", "Kidney weight", "numerical"),
-        None, None, None)
+      BioParameter(LiverWeight, None, None, None),
+      BioParameter(KidneyWeight, None, None, None)
         )
 
   val bioParameters = new BioParameters(Map() ++ bioParams.map(p => p.attribute -> p))

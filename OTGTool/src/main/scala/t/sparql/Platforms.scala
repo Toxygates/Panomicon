@@ -118,8 +118,11 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
       |   }
       |}""".stripMargin, timeout)
 
+      //TODO
+    val attribSet = otg.model.sample.AttributeSet.getDefault
+
     val bpcons = bps.map(x => BioParameter(
-        new BasicAttribute(x("id"), x("desc"), x("type")),
+        attribSet.findOrCreate(x("id"), x("desc"), x("type")),
       x.get("sec"),
       x.get("lower").map(_.toDouble), x.get("upper").map(_.toDouble),
       attribMaps.get(x("id")).getOrElse(Map())))

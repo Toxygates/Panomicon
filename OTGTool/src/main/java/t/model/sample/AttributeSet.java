@@ -58,15 +58,18 @@ public class AttributeSet {
    * @param title
    * @return
    */
-  synchronized public Attribute findOrCreate(String id, @Nullable String title) {
+  synchronized public Attribute findOrCreate(String id, @Nullable String title,
+      @Nullable String kind) {
     if (byId.containsKey(id)) {
       return byId.get(id);
     }
     
-    Attribute a = new BasicAttribute(id, title);
+    Attribute a = new BasicAttribute(id, title, kind);
     attributes.add(a);
     byId.put(id, a);
     byTitle.put(title, a);
     return a;
   }
+  
+  
 }
