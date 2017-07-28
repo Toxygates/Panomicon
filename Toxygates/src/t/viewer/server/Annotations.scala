@@ -101,7 +101,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
     }
     samples.map(x => {
       val ps = sampleStore.parameterQuery(x.id, keys)
-      fromParameters(cg, x, ps)
+      fromAttributes(cg, x, ps)
     })
   }
 
@@ -134,18 +134,18 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
     })
 
   /**
-   * Construct an Annotation from sample parameters
+   * Construct an Annotation from sample attributes
    */
-  def fromParameters(sample: Sample,
+  def fromAttributes(sample: Sample,
     ps: Iterable[(Attribute, Option[String])]): Annotation = {
-    fromParameters(None, sample, ps)
+    fromAttributes(None, sample, ps)
   }
 
   /**
-   * Construct an Annotation from sample parameters
+   * Construct an Annotation from sample attributes
    * @param cg control group; used to compute upper/lower bounds for parameters
    */
-  private def fromParameters(cg: Option[ControlGroup], sample: Sample,
+  private def fromAttributes(cg: Option[ControlGroup], sample: Sample,
     attribs: Iterable[(Attribute, Option[String])]): Annotation = {
 
     def asJDouble(d: Option[Double]) =

@@ -367,7 +367,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   @throws[TimeoutException]
   def annotations(barcode: Sample): Annotation = {
     val params = sampleStore.parameterQuery(barcode.id)
-    annotations.fromParameters(barcode, params)
+    annotations.fromAttributes(barcode, params)
   }
 
   @throws[TimeoutException]

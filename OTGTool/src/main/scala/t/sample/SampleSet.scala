@@ -3,6 +3,7 @@ package t.sample
 import t.db.SampleParameter
 import t.db.Sample
 import t.db.ParameterSet
+import t.model.sample.Attribute
 
 /**
  * Fundamental query operations for a set of samples.
@@ -15,16 +16,18 @@ trait SampleSet {
   def samples: Iterable[Sample]
 
   /**
-   * Obtain all available parameters for a given sample.
+   * Obtain all available attributes for a given sample.
+   * TODO rename method
    */
-  def parameters(sample: Sample): Seq[(SampleParameter, String)]
+  def parameters(sample: Sample): Seq[(Attribute, String)]
 
   /**
-   * Query several sample parameters at once for a given sample.
-   * @param querySet the parameters to query, or all if the set is empty.
+   * Query several sample attributes at once for a given sample.
+   * @param querySet the attributes to query, or all if the set is empty.
+   * TODO rename method
    */
   def parameters(sample: Sample,
-    querySet: Iterable[SampleParameter]): Seq[(SampleParameter, String)] = {
+    querySet: Iterable[Attribute]): Seq[(Attribute, String)] = {
     val qs = querySet.toSet
     val ps = parameters(sample)
     if (querySet.isEmpty)
@@ -34,13 +37,14 @@ trait SampleSet {
   }
 
   /**
-   * Query a specific parameter for a given sample.
+   * Query a specific attribute for a given sample.
+   * TODO rename method
    */
-  def parameter(sample: Sample, parameter: SampleParameter): Option[String] =
-    parameters(sample, Seq()).find(_._1 == parameter).map(_._2)
+  def parameter(sample: Sample, attrib: Attribute): Option[String] =
+    parameters(sample, Seq()).find(_._1 == attrib).map(_._2)
 
-  @deprecated("Query by SampleParameter instead.", "June 2017")
+  @deprecated("Query by Attribute instead.", "June 2017")
   def parameter(sample: Sample, parameter: String): Option[String] =
-    parameters(sample, Seq()).find(_._1.identifier == parameter).map(_._2)
+    parameters(sample, Seq()).find(_._1.id == parameter).map(_._2)
 
 }
