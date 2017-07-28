@@ -31,12 +31,16 @@ object Samples extends RDFClass {
   val itemClass = "t:sample"
 }
 
+/**
+ * Generates SPARQL fragments to filter samples by
+ * instances, batches, and datasets
+ */
 case class SampleFilter(instanceURI: Option[String] = None,
   batchURI: Option[String] = None,
   datasetURIs: List[String] = List()) {
 
-  def visibilityRel(v: String) = instanceURI match {
-    case Some(u) => s"$v ${Batches.memberRelation} <$u> ."
+  def visibilityRel(variable: String) = instanceURI match {
+    case Some(u) => s"$variable ${Batches.memberRelation} <$u> ."
     case None    => ""
   }
 
@@ -104,7 +108,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
   protected def graphCon(g: Option[String]) = g.map("<" + _ + ">").getOrElse("?g")
 
   /**
-   * The sample query must query for ?batchGraph and ?dataset.
+   * Constructs a sample query that respects a SampleClassFilter and normal SampleFilter
    */
   def sampleQuery(sc: SampleClassFilter)(implicit sf: SampleFilter): Query[Vector[Sample]]
 
@@ -122,8 +126,11 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     triplestore.simpleQuery(q)
   }
 
+  /**
+   * Find the platforms represented in a set of samples
+   */
   def platforms(samples: Iterable[String]): Iterable[String] = {
-    triplestore.simpleQuery(tPrefixes + " SELECT distinct ?p WHERE { GRAPH ?batchGraph { " +
+    triplestore.simpleQuery(tPrefixes + " SELECT DISTINCT ?p WHERE { GRAPH ?batchGraph { " +
       "?x a t:sample; rdfs:label ?id; t:platform_id ?p }  " +
       multiFilter("?id", samples.map("\"" + _ + "\"")) +
       " }")
@@ -146,7 +153,8 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     }
 
   /**
-   * If the querySet is ordered, we preserve the ordering in the result
+   * Get parameter values, if present, for a given sample
+   * @param querySet the set of parameters to fetch. If ordered, we preserve the ordering in the result
    */
   def parameterQuery(sample: String,
     querySet: Iterable[SampleParameter] = Seq()): Seq[(SampleParameter, Option[String])] = {
@@ -172,7 +180,10 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     }
   }
 
-   def sampleAttributeQuery(attribute: String)(implicit sf: SampleFilter): Query[Seq[String]] = {
+  /**
+   * Get all distinct values for an attribute inside specified SampleFilter
+   */
+  def sampleAttributeQuery(attribute: String)(implicit sf: SampleFilter): Query[Seq[String]] = {
     Query(tPrefixes,
       "SELECT DISTINCT ?q " +
         s"WHERE { GRAPH ?batchGraph { " +
@@ -181,6 +192,9 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
       triplestore.simpleQueryNonQuiet)
   }
 
+  /**
+   * Get all distinct values for a set of attributes inside specified SampleFilter
+   */
   def sampleAttributeQuery(attribute: Seq[String])
     (implicit sf: SampleFilter): Query[Seq[Map[String, String]]] = {
 

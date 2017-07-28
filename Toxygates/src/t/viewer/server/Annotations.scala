@@ -34,16 +34,22 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
     pfs.bioParameters
   }
 
-  import t.db.SampleParameters.{ControlGroup => CGParam}
+  import t.db.SampleParameters.{ControlGroup => ControlGroupParam}
 
   implicit def asScala(x: Sample) = asScalaSample(x)
 
-  def controlGroups(ss: Iterable[Sample], sampleSet: t.sample.SampleSet): Map[Sample, ControlGroup] = {
-    val cgs = ss.groupBy(_(CGParam))
-    val mp = schema.mediumParameter()
+  /**
+   * Find the control groups in a set of samples and create a map associating
+   * samples with their control group
+   * @param samples samples to partition
+   * @param sampleSet a set that the discovered control samples have to be contained in
+   */
+  def controlGroups(samples: Iterable[Sample], sampleSet: t.sample.SampleSet): Map[Sample, ControlGroup] = {
+    val controlGroups = samples.groupBy(_(ControlGroupParam))
+    val mediumParameter = schema.mediumParameter()
     val knownSamples = sampleSet.samples.toSet
-    Map() ++ cgs.flatMap { case (cgroup, ss) =>
-      var controls = ss.filter(s => schema.isControlValue(s.get(mp))).map(asScalaSample)
+    Map() ++ controlGroups.flatMap { case (cgroup, ss) =>
+      var controls = ss.filter(s => schema.isControlValue(s.get(mediumParameter))).map(asScalaSample)
       controls = (controls.toSet intersect (knownSamples)).toSeq
       if (!controls.isEmpty) {
         val cg = new ControlGroup(bioParameters, sampleSet, controls)
@@ -54,24 +60,30 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
     }
   }
 
+  /**
+   * For given samples, which may be in different control groups, fetch
+   * annotations
+   * @param samples data source
+   * @param column the samples for which we fetch annotations
+   */
    //TODO get these from schema, etc.
-  def forSamples(samples: Samples, column: HasSamples[Sample],
+  def forSamples(samples: Samples, querySet: Iterable[Sample],
       importantOnly: Boolean = false): Array[Annotation] = {
 
-    val cgs = column.getSamples.groupBy(_(CGParam))
+    val cgs = querySet.groupBy(_(ControlGroupParam))
 
     val rs = for (
       (cgroup, ss) <- cgs;
-      results = forSamples(samples, ss, importantOnly)
+      results = forSamplesSingleGroup(samples, ss, importantOnly)
     ) yield results
 
     rs.flatten.toArray
   }
 
   /**
-   * All samples part of the same control group
+   * Fetch annotations for samples from the same control group
    */
-  private def forSamples(sampleStore: Samples,
+  private def forSamplesSingleGroup(sampleStore: Samples,
       samples: Iterable[Sample], importantOnly: Boolean) = {
 
     val (cg, keys) = if (importantOnly) {
@@ -94,16 +106,26 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
     })
   }
 
+
+  /**
+   * Construct a shared API bio parameter object (numerical)
+   */
   private def numericalAsShared(bp: BioParameter, lower: JDouble,
       upper: JDouble, value: String) =
     new NumericalBioParamValue(bp.key, bp.label, bp.section.getOrElse(null),
         lower, upper, value)
 
+  /**
+   * Construct a shared API bio parameter object (string)
+   */
   private def stringAsShared(bp: BioParameter, value: String) =
     new StringBioParamValue(bp.key, bp.label, bp.section.getOrElse(null),
         value)
 
-  def allParamsAsShared = {
+  /**
+   * Convert all parameters to shared API
+   */
+  def allParamsAsShared =
     bioParameters.all.map(p => {
       p.kind match {
       case "numerical" =>
@@ -112,20 +134,21 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
         stringAsShared(p, null)
       }
     })
+
+  /**
+   * Construct an Annotation from sample parameters
+   */
+  def fromParameters(sample: Sample,
+    ps: Iterable[(t.db.SampleParameter, Option[String])]): Annotation = {
+    fromParameters(None, sample, ps)
   }
 
-  def fromParameters(barcode: Sample,
-    ps: Iterable[(t.db.SampleParameter, Option[String])]): Annotation = {
-
-//    val controls = baseConfig.sampleParameters.controlSamples(tsMeta, asScalaSample(barcode))
-//
-//    val cg = if (controls.isEmpty) None else
-//      Some(new ControlGroup(bioParameters, tsMeta, controls))
-    fromParameters(None, barcode, ps)
-  }
-
-  private def fromParameters(cg: Option[ControlGroup], barcode: Sample,
-    ps: Iterable[(t.db.SampleParameter, Option[String])]): Annotation = {
+  /**
+   * Construct an Annotation from sample parameters
+   * @param cg control group; used to compute upper/lower bounds for parameters
+   */
+  private def fromParameters(cg: Option[ControlGroup], sample: Sample,
+    parameters: Iterable[(t.db.SampleParameter, Option[String])]): Annotation = {
 
     def asJDouble(d: Option[Double]) =
       d.map(new java.lang.Double(_)).getOrElse(null)
@@ -133,7 +156,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
     def bioParamValue(bp: BioParameter, dispVal: String) = {
       bp.kind match {
         case "numerical" =>
-          val t = barcode.get(schema.timeParameter())
+          val t = sample.get(schema.timeParameter())
           val lb = cg.flatMap(_.lowerBound(bp.sampleParameter, t, 1))
           val ub = cg.flatMap(_.upperBound(bp.sampleParameter, t, 1))
 
@@ -145,25 +168,24 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
 //    val useBps = bioParamsForSample(barcode)
 
     val params = for (
-      x <- ps.toSeq;
+      x <- parameters.toSeq;
       bp <- bioParameters.get(x._1.identifier);
       p = (bp.label, x._2.getOrElse("N/A"));
       dispVal = OTGParameterSet.postReadAdjustment(p);
       bpv = bioParamValue(bp, dispVal)
     ) yield bpv
 
-    new Annotation(barcode.id, new java.util.ArrayList(params))
+    new Annotation(sample.id, new java.util.ArrayList(params))
   }
 
   //TODO use ControlGroup to calculate bounds here too
-  def prepareCSVDownload(sampleStore: Samples, column: HasSamples[Sample],
+  def prepareCSVDownload(sampleStore: Samples, samples: Seq[Sample],
       csvDir: String, csvUrlBase: String): String = {
-    val ss = column.getSamples
-    val timepoints = ss.toSeq.flatMap(s =>
+    val timepoints = samples.toSeq.flatMap(s =>
       Option(s.get(schema.timeParameter()))).distinct
 
     val params = bioParameters.sampleParameters
-    val raw = ss.map(x => {
+    val raw = samples.map(x => {
       sampleStore.parameterQuery(x.id, params).toSeq
     })
 
@@ -189,6 +211,6 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
     val helpRowData = Seq(bps.map(extracts(_, _.section))) ++ rr.flatMap(_._2)
 
     CSVHelper.writeCSV("toxygates", csvDir: String, csvUrlBase: String,
-      helpRowTitles ++ ss.map(_.id), colNames, helpRowData ++ data)
+      helpRowTitles ++ samples.map(_.id), colNames, helpRowData ++ data)
   }
 }

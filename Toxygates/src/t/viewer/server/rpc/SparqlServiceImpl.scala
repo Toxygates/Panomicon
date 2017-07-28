@@ -341,7 +341,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   @throws[TimeoutException]
   def units(sc: SampleClass,
-      param: String, paramValues: Array[String]): Array[Pair[Unit, Unit]] = 
+      param: String, paramValues: Array[String]): Array[Pair[Unit, Unit]] =
       new Units(schema, sampleStore).units(sc, param, paramValues)
 
   def units(scs: Array[SampleClass], param: String,
@@ -372,13 +372,13 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   @throws[TimeoutException]
   def annotations(column: HasSamples[Sample], importantOnly: Boolean = false): Array[Annotation] = {
-    annotations.forSamples(sampleStore, column, importantOnly)
+    annotations.forSamples(sampleStore, column.getSamples, importantOnly)
   }
 
   //TODO bio-param timepoint handling
   @throws[TimeoutException]
   def prepareAnnotationCSVDownload(column: HasSamples[Sample]): String = {
-    annotations.prepareCSVDownload(sampleStore, column,
+    annotations.prepareCSVDownload(sampleStore, column.getSamples,
         configuration.csvDirectory, configuration.csvUrlBase)
   }
 
