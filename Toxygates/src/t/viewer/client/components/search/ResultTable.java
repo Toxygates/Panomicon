@@ -11,6 +11,7 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.user.cellview.client.CellTable;
 
 import t.common.client.Utils;
+import t.common.client.components.SelectionTable;
 import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.search.MatchCondition;
 import t.viewer.client.table.TooltipColumn;
@@ -23,7 +24,10 @@ public abstract class ResultTable<T> {
     void finishedSettingUpTable();
   }
 
-  protected CellTable<T> table = new CellTable<T>();
+  protected SelectionTable<T> selectionTable = new SelectionTable<T>("selection", false) {
+    @Override
+    protected void initTable(CellTable<T> table) {}
+  };
   private Map<String, KeyColumn<T>> columns = new HashMap<String, KeyColumn<T>>();
   private List<String> additionalKeys = new LinkedList<String>();
   private List<String> conditionKeys = new ArrayList<String>();
@@ -40,8 +44,12 @@ public abstract class ResultTable<T> {
     this.delegate = delegate;
   }
 
-  public CellTable<T> table() {
-    return table;
+  public SelectionTable<T> selectionTable() {
+    return selectionTable;
+  }
+
+  public CellTable<T> cellTable() {
+    return selectionTable.table();
   }
 
   public String[] allKeys() {
@@ -107,7 +115,7 @@ public abstract class ResultTable<T> {
 
   protected void addColumn(KeyColumn<T> column, String title) {
     columns.put(title, column);
-    table.addColumn(column, title);
+    cellTable().addColumn(column, title);
   }
 
   public void setupTable(T[] entries, MatchCondition condition) {
@@ -123,7 +131,7 @@ public abstract class ResultTable<T> {
       addNewColumn(key, true, false);
     }
 
-    table.setRowData(Arrays.asList(entries));
+    cellTable().setRowData(Arrays.asList(entries));
 
     delegate.finishedSettingUpTable();
   }
@@ -136,7 +144,7 @@ public abstract class ResultTable<T> {
 
   public void removeColumn(String key) {
     KeyColumn<T> column = columns.get(key);
-    table.removeColumn(column);
+    cellTable().removeColumn(column);
     columns.remove(key);
   }
 
@@ -146,7 +154,7 @@ public abstract class ResultTable<T> {
 
   public void clear() {
     for (String key : columns.keySet()) {
-      table.removeColumn(columns.get(key));
+      cellTable().removeColumn(columns.get(key));
     }
     columns.clear();
     conditionKeys.clear();

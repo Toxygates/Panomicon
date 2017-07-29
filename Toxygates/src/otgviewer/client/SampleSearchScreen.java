@@ -144,8 +144,11 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
     setupMenuItems();
 
     ScrollPanel searchPanel = new ScrollPanel();
+    unitTableHelper.selectionTable().setVisible(false);
+    sampleTableHelper.selectionTable().setVisible(false);
     VerticalPanel vp =
-        Utils.mkVerticalPanel(true, tools, unitTableHelper.table(), sampleTableHelper.table());
+        Utils.mkVerticalPanel(true, tools, unitTableHelper.selectionTable(),
+            sampleTableHelper.selectionTable());
     searchPanel.add(vp);
     return searchPanel;
   }
@@ -234,7 +237,9 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
 
   protected void hideTables() {
     sampleTableHelper.clear();
+    sampleTableHelper.selectionTable().setVisible(false);
     unitTableHelper.clear();
+    unitTableHelper.selectionTable().setVisible(false);
   }
 
   /*
@@ -263,6 +268,9 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
    */
   @Override
   public void finishedSettingUpTable() {
+    currentSearch.helper().selectionTable().setVisible(true);
+    currentSearch.helper().selectionTable().clearSelection();
+
     HashSet<String> requiredParameterIds =
         new HashSet<String>(Arrays.asList(currentSearch.helper().requiredKeys()));
     HashSet<String> nonRequiredParameterIds =

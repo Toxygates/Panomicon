@@ -100,7 +100,7 @@ public abstract class Search<T> {
         addParameter(parameterId, result);
         fetchedParameters.add(parameterId);
         helper.gotDataForKey(parameterId);
-        helper.table().redraw();
+        helper.cellTable().redraw();
       }
 
       @Override
