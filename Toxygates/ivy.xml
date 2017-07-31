@@ -36,7 +36,11 @@
      (org.apache.httpcomponents will not work) -->
   <!-- <dependency org="org.apache.httpcomponents" name="fluent-hc" rev="latest.integration"/> -->
   <dependency org="commons-httpclient" name="commons-httpclient" rev="latest.integration"/> 
-  
+
+  <!-- To harmonise with OTGTool and avoid pulling in 2 different versions of codec (Toxygates pulls in 1.2
+     if this is not specified --> 
+  <dependency org="commons-codec" name="commons-codec" rev="1.10"/>
+ 
   <!-- for intermine. -->
   <dependency org="log4j" name="log4j" rev="latest.integration" />
 
