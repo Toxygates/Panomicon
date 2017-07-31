@@ -31,6 +31,7 @@ import t.model.shared.SampleClassHelper
 import t.sparql._
 import t.testing.TestConfig
 import otg.OTGSeries
+import otg.model.sample.Attribute.ExposureTime
 
 @RunWith(classOf[JUnitRunner])
 class OTGSamplesTest extends TTestSuite {

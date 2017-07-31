@@ -21,6 +21,7 @@ package otgviewer.client;
 import java.util.List;
 import java.util.logging.Level;
 
+import otg.model.sample.Attribute;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import t.common.shared.sample.Annotation;
@@ -30,7 +31,6 @@ import t.common.shared.sample.NumericalBioParamValue;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
 import t.model.SampleClass;
-import t.model.sample.CoreParameter;
 import t.viewer.client.Analytics;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -119,7 +119,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 
     SampleClass sc = chosenSampleClass.copy();
     sc.put("dose_level", dose);
-    sc.put(CoreParameter.ExposureTime.id(), time);
+    sc.put(Attribute.ExposureTime.id(), time);
     sc.put("compound_name", compound);
 
     sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(this,

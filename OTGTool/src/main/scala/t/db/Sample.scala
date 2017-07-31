@@ -22,6 +22,7 @@ package t.db
 
 import t.model.SampleClass
 import t.model.shared.SampleClassHelper
+import t.model.sample.Attribute
 
 /**
  * A sample.
@@ -47,12 +48,12 @@ case class Sample(sampleId: String, sampleClass: SampleClass, cgroup: Option[Str
   /**
    * Convenience method to obtain a parameter from the sample class.
    */
-  def get(key: SampleParameter): Option[String] = Option(sampleClass.get(key.id))
+  def get(key: Attribute): Option[String] = Option(sampleClass.get(key))
 
   /**
    * Convenience method to obtain a parameter from the sample class.
    */
-  def apply(key: SampleParameter): String = sampleClass(key.id)
+  def apply(key: Attribute): String = sampleClass(key)
 }
 
 object Sample {

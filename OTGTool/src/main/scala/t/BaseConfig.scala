@@ -39,6 +39,7 @@ import t.db.ExprValue
 import t.db.TransformingWrapper
 import t.db.MatrixDB
 import org.eclipse.rdf4j.repository.RepositoryConnection
+import t.model.sample.AttributeSet
 
 //TODO should BaseConfig be invariant between applications?
 trait BaseConfig {
@@ -48,7 +49,10 @@ trait BaseConfig {
   //TODO Should this be in context?
   def seriesBuilder: SeriesBuilder[S] forSome { type S <: Series[S] }
 
+  //TODO deprecate (when the time is right)
   def sampleParameters: ParameterSet
+
+  def attributes: AttributeSet
 
   def appName: String
 }

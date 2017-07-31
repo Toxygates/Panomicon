@@ -39,6 +39,7 @@ import t.db.ExprValue
 import t.db.BasicExprValue
 import t.db.SampleParameters._
 import t.db.SampleParameter
+import otg.model.sample.Attribute.ExposureTime
 
 //TODO all parameters are nullable - use options
 case class OTGSeries(repeat: String, organ: String, organism: String, override val probe: Int,

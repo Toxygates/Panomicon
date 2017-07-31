@@ -25,10 +25,13 @@ import t.Factory
 import t.sample.SampleSet
 
 trait ParameterSet {
+
   def all: Iterable[SampleParameter]
+
   def required: Iterable[SampleParameter]
-  def highLevel: Iterable[SampleParameter]
-  def previewDisplay: Iterable[SampleParameter] = required
+
+//  def highLevel: Iterable[SampleParameter]
+
   lazy val byId = Map() ++ all.map(x => x.identifier -> x)
   lazy val byIdLowercase = byId.map(x => x._1.toLowerCase() -> x._2)
 

@@ -36,6 +36,7 @@ import t.platform.BioParameters
 import t.platform.ControlGroup
 import t.db.SampleParameters._
 import otg.OTGBConfig
+import otg.model.sample.Attribute.ExposureTime
 
 import scala.collection.JavaConversions._
 import t.model.sample.BasicAttribute

@@ -1,5 +1,6 @@
 package t.model.sample;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +10,7 @@ import javax.annotation.Nullable;
 /**
  * A set of sample attributes.
  */
-public class AttributeSet {
+abstract public class AttributeSet {
  
   /**
    * Construct a new attribute set. 
@@ -17,15 +18,13 @@ public class AttributeSet {
    * @param required The subset of attributes that are required to be present in new batches.
    */
   public AttributeSet(Collection<Attribute> attributes, Collection<Attribute> required) {
-    this.attributes = attributes;
     this.required = required;
     for (Attribute a: attributes) {
-      byId.put(a.id(), a);
-      byTitle.put(a.title(), a);
+      add(a);
     }
   }
   
-  protected Collection<Attribute> attributes;
+  protected Collection<Attribute> attributes = new ArrayList<Attribute>();
   protected Collection<Attribute> required;
   
   protected Map<String, Attribute> byId = new HashMap<String, Attribute>();  
@@ -43,12 +42,34 @@ public class AttributeSet {
     return required;
   }
 
+  /**
+   * Get all attributes that are suitable for a preview display (a brief overview of a 
+   * set of samples).
+   * @return
+   */
+  public Collection<Attribute> getPreviewDisplay() {
+    return required;
+  }
+  
+  /**
+   * Get all attributes that are suitable for a high level grouping of samples.
+   * @return
+   */
+  abstract public Collection<Attribute> getHighLevel();
+  
+  
   public @Nullable Attribute byId(String id) {
     return byId.get(id);
   }
   
   public @Nullable Attribute byTitle(String title) {
     return byTitle.get(title);
+  }
+  
+  private void add(Attribute a) {
+    attributes.add(a);
+    byId.put(a.id(), a);
+    byTitle.put(a.title(), a);
   }
   
   /**
@@ -65,11 +86,7 @@ public class AttributeSet {
     }
     
     Attribute a = new BasicAttribute(id, title, kind);
-    attributes.add(a);
-    byId.put(id, a);
-    byTitle.put(title, a);
+    add(a);
     return a;
   }
-  
-  
 }

@@ -1,11 +1,11 @@
 package t.model.sample;
 
 public enum CoreParameter implements Attribute {
+  SampleId("sample_id", "Sample ID"),
   Batch("batchGraph", "Batch"),
-  ControlGroup("control_group", "Control group"),
-  DoseLevel("dose_level", "Dose level"),
-  Individual("individual_id", "Individual"), 
-  ExposureTime("exposure_time", "Exposure Time");
+  ControlGroup("control_group", "Control group");
+  
+  
   
   CoreParameter(String id, String title) {
     this.id = id;

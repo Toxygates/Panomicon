@@ -6,6 +6,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import t.db.SampleParameters._
 import scala.collection.JavaConversions._
+import otg.model.sample.Attribute.ExposureTime
 
 @RunWith(classOf[JUnitRunner])
 class ControlGroupTest extends TTestSuite {

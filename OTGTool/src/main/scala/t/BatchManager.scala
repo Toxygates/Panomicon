@@ -21,6 +21,7 @@
 package t
 
 import scala.Vector
+import scala.collection.JavaConversions._
 
 import otg.sparql.OTGSamples
 import t.db.ExprValue
@@ -250,7 +251,7 @@ class BatchManager(context: Context) {
   }
 
   val requiredParameters = config.sampleParameters.required.map(_.identifier)
-  val hlParameters = config.sampleParameters.highLevel.map(_.identifier)
+  val hlParameters = config.attributes.getHighLevel.map(_.id)
 
   def add[S <: Series[S]](title: String, comment: String, metadata: Metadata,
     dataFile: String, callFile: Option[String],

@@ -18,6 +18,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import t.db.SampleParameters._
 import t.common.shared.sample.StringBioParamValue
+import otg.model.sample.Attribute.ExposureTime
 
 @RunWith(classOf[JUnitRunner])
 class SampleSearchTest extends TTestSuite {

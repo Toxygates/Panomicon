@@ -2,7 +2,7 @@ package t.viewer.server
 
 import java.lang.{ Double => JDouble }
 
-import scala.collection.JavaConversions.seqAsJavaList
+import scala.collection.JavaConversions._
 import scala.language.implicitConversions
 
 import otg.db.OTGParameterSet
@@ -87,7 +87,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
 
     val (cg, keys) = if (importantOnly) {
       (None,
-        baseConfig.sampleParameters.previewDisplay)
+        baseConfig.attributes.getPreviewDisplay.toSeq)
     } else {
       val mp = schema.mediumParameter()
       val controls = samples.filter(s => schema.isControlValue(s.get(mp)))

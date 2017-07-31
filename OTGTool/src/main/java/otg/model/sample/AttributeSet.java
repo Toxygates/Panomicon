@@ -7,10 +7,15 @@ import java.util.List;
 
 import t.model.sample.Attribute;
 import t.model.sample.CoreParameter;
+import static t.model.sample.CoreParameter.*;
+import static otg.model.sample.Attribute.*;
 
 public class AttributeSet extends t.model.sample.AttributeSet {
     public AttributeSet(Collection<Attribute> attributes, Collection<Attribute> required) {
     super(attributes, required);   
+    Collections.addAll(previewDisplay, Dose, DoseUnit, DoseLevel,
+        ExposureTime, AdmRoute);
+    Collections.addAll(highLevel, Organism, Organ, TestType, Repeat);
   }
     
   private static AttributeSet defaultSet;
@@ -28,4 +33,13 @@ public class AttributeSet extends t.model.sample.AttributeSet {
     }
     return defaultSet;
   }
+  
+  private List<Attribute> previewDisplay = new ArrayList<Attribute>();  
+  @Override
+  public Collection<Attribute> getPreviewDisplay() { return previewDisplay; }
+  
+  private List<Attribute> highLevel = new ArrayList<Attribute>();  
+  @Override
+  public Collection<Attribute> getHighLevel() { return highLevel; }
+  
 }

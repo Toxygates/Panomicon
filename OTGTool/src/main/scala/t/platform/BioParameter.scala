@@ -12,6 +12,7 @@ import t.sample.SampleSet
 import t.db.SampleParameters._
 import t.model.sample.Attribute
 import t.model.sample.BasicAttribute
+import otg.model.sample.Attribute.ExposureTime
 
 /**
  * Construct a BioParameter object.
@@ -28,7 +29,7 @@ case class BioParameter(attribute: Attribute,
   def label: String = attribute.title
 
   def kind: String = {
-    if (attribute.isNumerical()) "numerical" else "string"
+    if (attribute.isNumerical()) "numerical" else "text"
   }
 }
 
@@ -50,8 +51,6 @@ class BioParameters(lookup: Map[Attribute, BioParameter]) {
    */
   def forTimePoint(time: String): BioParameters = {
     val normalTime = time.replaceAll("\\s+", "")
-
-    //TODO should not construct BasicAttribute below - should look it up from an attribute set
 
     new BioParameters(Map() ++
       (for (

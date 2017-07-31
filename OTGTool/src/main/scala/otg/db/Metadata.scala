@@ -25,6 +25,7 @@ import scala.collection.immutable.ListMap
 import t.db.ParameterSet
 import t.db.Sample
 import t.db.SampleParameters._
+import otg.model.sample.Attribute.ExposureTime
 
 /**
  * Information about a set of samples.
@@ -40,7 +41,6 @@ object OTGParameterSet extends ParameterSet {
   /**
    * Map human-readable descriptions to the keys we expect to find in the RDF data.
    */
-
   @deprecated("Being replaced with BioParameters", "Nov 2016")
   private val nonNumericalKeys = ListMap(
     "Sample ID" -> "sample_id",
@@ -64,7 +64,7 @@ object OTGParameterSet extends ParameterSet {
     "Strain" -> "strain_type",
     "Administration route" -> "adm_route_type",
     "Animal age (weeks)" -> "animal_age_week",
-    ExposureTime.humanReadable -> ExposureTime.id,
+    ExposureTime.title -> ExposureTime.id,
     "Dose" -> "dose",
     "Dose unit" -> "dose_unit",
     DoseLevel.humanReadable -> DoseLevel.id,
@@ -76,7 +76,6 @@ object OTGParameterSet extends ParameterSet {
    * These are the annotations that it makes sense to consider in a
    * statistical, numerical way.
    */
-
   @deprecated("Being replaced with BioParameters", "Nov 2016")
   private val numericalKeys = ListMap("Terminal body weight (g)" -> "terminal_bw",
     "Liver weight (g)" -> "liver_wt",
@@ -150,14 +149,12 @@ object OTGParameterSet extends ParameterSet {
   def isNumerical(p: t.db.SampleParameter) =
     numericalKeys.values.toSet.contains(p.identifier)
 
-  val highLevel = List("organism", "test_type", "sin_rep_type", "organ_id").map(byId)
+  private val highLevel = List("organism", "test_type", "sin_rep_type", "organ_id").map(byId)
 
+  @deprecated("Being replaced with Attribute", "July 2017")
   val required = highLevel ++ List("sample_id",
     "compound_name", DoseLevel.id, ExposureTime.id,
     "platform_id", "control_group").map(byId)
-
-  override val previewDisplay = List("dose", "dose_unit", DoseLevel.id,
-    ExposureTime.id, "adm_route_type").map(byId)
 
   /**
    * Find the files that are control samples in the collection that a given barcode

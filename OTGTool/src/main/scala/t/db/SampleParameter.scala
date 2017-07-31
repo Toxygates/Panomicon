@@ -15,9 +15,6 @@ case class SampleParameter(identifier: String, humanReadable: String) extends At
  */
 object SampleParameters {
   val ControlGroup = SampleParameter("control_group", "Control group")
-  val ExposureTime =
-    SampleParameter(t.model.sample.CoreParameter.ExposureTime.id,
-        t.model.sample.CoreParameter.ExposureTime.title())
   val DoseLevel = SampleParameter("dose_level", "Dose level")
   val BatchGraph = SampleParameter("batchGraph", "Batch")
   val Individual = SampleParameter("individual_id", "Individual ID")

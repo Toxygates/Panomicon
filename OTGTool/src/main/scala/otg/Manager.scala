@@ -55,4 +55,6 @@ case class OTGBConfig(triplestore: TriplestoreConfig, data: DataConfig) extends 
   def sampleParameters = otg.db.OTGParameterSet
 
   def appName = "Toxygates"
+
+  def attributes = otg.model.sample.AttributeSet.getDefault
 }

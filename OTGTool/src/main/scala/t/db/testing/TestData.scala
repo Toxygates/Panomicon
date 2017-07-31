@@ -34,6 +34,8 @@ import t.platform.OrthologMapping
 import t.db.Metadata
 import t.db.SampleParameter
 import t.db.SampleParameters._
+import otg.model.sample.Attribute.ExposureTime
+import t.model.sample.Attribute
 
 object TestData {
   def pickOne[T](xs: Seq[T]): T = {
@@ -53,7 +55,7 @@ object TestData {
     "organ_id" -> mm(Seq("Liver", "Kidney")),
     "test_type" -> mm(Seq("Vitro", "Vivo")))
 
-  private def em(k: SampleParameter) = enumMaps(k.id).keySet
+  private def em(k: Attribute) = enumMaps(k.id).keySet
   private def em(k: String) = enumMaps(k).keySet
   def enumValues(key: String) = em(key)
 

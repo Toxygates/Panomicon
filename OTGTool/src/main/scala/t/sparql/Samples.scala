@@ -26,6 +26,7 @@ import t.db.Sample
 import t.db.SampleParameter
 import t.sparql.{ Filter => TFilter }
 import t.model.sample.Attribute
+import scala.collection.JavaConversions._
 
 object Samples extends RDFClass {
   val defaultPrefix = s"$tRoot/sample"
@@ -75,7 +76,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
   def defaultPrefix = Samples.defaultPrefix
 
   val standardAttributes = bc.sampleParameters.required.map(_.identifier)
-  val hlAttributes = bc.sampleParameters.highLevel.map(_.identifier)
+  val hlAttributes = bc.attributes.getHighLevel.map(_.id)
   val tsCon: TriplestoreConfig = bc.triplestore
 
   val hasRelation = "t:hasSample"
