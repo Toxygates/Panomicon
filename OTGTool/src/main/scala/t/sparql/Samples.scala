@@ -161,8 +161,14 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
   def parameterQuery(sample: String,
     querySet: Iterable[Attribute] = Seq()): Seq[(Attribute, Option[String])] = {
 
+    val attrs = otg.model.sample.AttributeSet.getDefault
     val queryParams = (if (querySet.isEmpty) {
-      bc.sampleParameters.all
+
+      //TODO this is temporary during refactoring.
+      //future: do not use bc.sampleParameters at all
+      bc.sampleParameters.all.map(p =>
+        attrs.findOrCreate(p.id(), p.title(),
+            if (p.isNumerical()) "numerical" else "text"))
     } else {
       querySet
     }).toSeq

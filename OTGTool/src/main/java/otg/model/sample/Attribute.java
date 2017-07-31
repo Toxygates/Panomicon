@@ -14,8 +14,8 @@ public enum Attribute implements t.model.sample.Attribute {
   
   AdmRoute("adm_route_type", "Administration route"),
   
-  LiverWeight("liver_wt", "Liver weight", true),
-  KidneyWeight("kidney_wt", "Kidney weight", true);
+  LiverWeight("liver_wt", "Liver weight (g)", true),
+  KidneyWeight("kidney_total_wt", "Kidney weight total (g)", true);
 
   private String id, title;
   boolean isNumerical;
