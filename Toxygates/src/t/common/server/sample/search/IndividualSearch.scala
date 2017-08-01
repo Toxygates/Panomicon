@@ -12,16 +12,16 @@ import t.db.Metadata
 
 object IndividualSearch extends SearchCompanion[Sample, IndividualSearch] {
 
-  def create(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
+  protected def create(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
     controlGroups: Map[Sample, ControlGroup],
     samples: Iterable[Sample],
     searchParams: Iterable[SampleParameter]) =
       new IndividualSearch(schema, metadata, condition, controlGroups, samples, searchParams)
 
-  def preprocessSample(metadata: Metadata, searchParams: Iterable[SampleParameter]) =
+  protected def preprocessSample(metadata: Metadata, searchParams: Iterable[SampleParameter]) =
     (sample: Sample) => sample
 
-  def formControlGroups(metadata: Metadata, annotations:Annotations) = (samples: Iterable[Sample]) =>
+  protected def formControlGroups(metadata: Metadata, annotations:Annotations) = (samples: Iterable[Sample]) =>
     annotations.controlGroups(samples, metadata)
 
 }
@@ -31,7 +31,7 @@ class IndividualSearch(schema: DataSchema, metadata: Metadata, condition: MatchC
     extends AbstractSampleSearch[Sample](schema, metadata, condition,
         controlGroups, samples, searchParams)  {
 
-  def sampleParamValue(sample: Sample, param: SampleParameter): Option[Double] = {
+  protected def sampleParamValue(sample: Sample, param: SampleParameter): Option[Double] = {
     try {
       metadata.parameter(asScalaSample(sample), param.identifier) match {
         case Some("NA") => None
@@ -43,7 +43,7 @@ class IndividualSearch(schema: DataSchema, metadata: Metadata, condition: MatchC
     }
   }
 
-  def time(sample: Sample): String =
+  protected def time(sample: Sample): String =
     sample.get(schema.timeParameter())
 
   /**
@@ -51,7 +51,7 @@ class IndividualSearch(schema: DataSchema, metadata: Metadata, condition: MatchC
    * that were used in the match condition).
    * The mutable sample class is modified in place.
    */
-  def postMatchAdjust(sample: Sample): Sample = {
+  protected def postMatchAdjust(sample: Sample): Sample = {
       val ss = asScalaSample(sample)
       for (
         p <- searchParams;
@@ -62,9 +62,9 @@ class IndividualSearch(schema: DataSchema, metadata: Metadata, condition: MatchC
       sample
     }
 
-  def zTestSampleSize(s: Sample): Int = 1
+  protected def zTestSampleSize(s: Sample): Int = 1
 
-  def sortObject(sample: Sample): (String, Int, Int) = {
+  protected def sortObject(sample: Sample): (String, Int, Int) = {
     (sample.get("compound_name"), doseLevelMap(sample.get("dose_level")),
         exposureTimeMap(sample.get("exposure_time")))
   }
