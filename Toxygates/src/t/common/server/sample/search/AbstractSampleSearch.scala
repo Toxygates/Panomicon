@@ -84,7 +84,7 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
   lazy val results: Iterable[ST] =
     results(condition).toSeq.map(postMatchAdjust).sortBy(sortObject(_))
 
-  private def paramComparison(s: ST, param: SampleParameter,
+  private def paramComparison(s: ST,
                               paramGetter: ST => Option[Double],
                               controlGroupValue: ST => Option[Double],
                               comparator: (Double, Double) => Boolean): Boolean = {
@@ -97,14 +97,14 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
   }
 
   private def paramIsHigh(s: ST, param: SampleParameter): Boolean = {
-    paramComparison(s, param,
+    paramComparison(s,
       sampleParamValue(_, param),
       x => controlGroups.get(x).flatMap(_.upperBound(param, time(x), zTestSampleSize(s))),
       _ > _)
   }
 
   private def paramIsLow(s: ST, param: SampleParameter): Boolean = {
-    paramComparison(s, param,
+    paramComparison(s,
       sampleParamValue(_, param),
       x => controlGroups.get(x).flatMap(_.lowerBound(param, time(x), zTestSampleSize(s))),
       _ < _)
