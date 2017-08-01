@@ -12,12 +12,17 @@ import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.rpc.SampleServiceAsync;
 
-public class SampleSearch extends Search<Sample> {
+public class SampleSearch extends Search<Sample, Sample[]> {
   private HashMap<String, Sample> sampleIdHashMap;
 
   public SampleSearch(Delegate delegate, ResultTable<Sample> helper,
       SampleServiceAsync sampleService) {
     super(delegate, helper, sampleService);
+  }
+
+  @Override
+  protected void extractSearchResult(Sample[] result) {
+    searchResult = result;
   }
 
   @Override
