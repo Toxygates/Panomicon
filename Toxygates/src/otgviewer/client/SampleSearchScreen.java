@@ -62,7 +62,7 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
 
   private SampleSearch sampleSearch;
   private UnitSearch unitSearch;
-  private Search<?> currentSearch = null;
+  private Search<?, ?> currentSearch = null;
 
   private Collection<BioParamValue> searchParameters;
   private Collection<BioParamValue> nonSearchParameters;
@@ -292,7 +292,7 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
    * Search.Delegate methods
    */
   @Override
-  public void searchStarted(Search<?> search) {
+  public void searchStarted(Search<?, ?> search) {
     if (waitDialog == null) {
       waitDialog = Utils.waitDialog();
     } else {
@@ -301,7 +301,7 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   }
 
   @Override
-  public void searchEnded(Search<?> search, int numResults) {
+  public void searchEnded(Search<?, ?> search, int numResults) {
     waitDialog.hide();
     hideTables();
     resultCountLabel.setText("Found " + numResults + " results");

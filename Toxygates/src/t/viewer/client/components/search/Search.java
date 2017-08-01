@@ -18,44 +18,56 @@ import t.viewer.client.rpc.SampleServiceAsync;
 /**
  * Makes asynchronous sample/unit search requests to the SampleService and reports back on the
  * results
+ * 
+ * @tparam EntityType the type of objects that are searched for
+ * @tparam ContainerType the type of object (usually some kind of collection of EntityType)
+ *         representing a search result
  */
-public abstract class Search<T> {
+public abstract class Search<EntityType, ContainerType> {
   public interface Delegate {
-    void searchStarted(Search<?> search);
-    void searchEnded(Search<?> search, int numResults);
+    void searchStarted(Search<?, ?> search);
+    void searchEnded(Search<?, ?> search, int numResults);
   }
 
   protected Delegate delegate;
-  protected ResultTable<T> helper;
+  protected ResultTable<EntityType> helper;
   protected SampleServiceAsync sampleService;
 
-  T[] searchResult;
+  EntityType[] searchResult;
   MatchCondition condition;
   private Set<String> fetchedParameters;
 
-  abstract void asyncSearch(SampleClass sampleClass, AsyncCallback<T[]> callback);
-  abstract void trackAnalytics();
-
-  public Search(Delegate delegate, ResultTable<T> helper, SampleServiceAsync sampleService) {
+  public Search(Delegate delegate, ResultTable<EntityType> helper,
+      SampleServiceAsync sampleService) {
     this.delegate = delegate;
     this.helper = helper;
     this.sampleService = sampleService;
   }
 
-  public ResultTable<T> helper() {
+  public ResultTable<EntityType> helper() {
     return helper;
   }
 
-  public T[] searchResult() {
+  public EntityType[] searchResult() {
     return searchResult;
   }
 
-  protected void searchComplete(T[] result) {
-    searchResult = result;
+  /**
+   * Extract an array of EntityType and save it to searchResult
+   * 
+   * @param result the object returned from a search on the backend
+   */
+  abstract void extractSearchResult(ContainerType result);
+
+  protected void searchComplete(ContainerType result) {
+    extractSearchResult(result);
     fetchedParameters = new HashSet<String>();
-    delegate.searchEnded(Search.this, result.length);
-    helper.setupTable(result, condition);
+    delegate.searchEnded(Search.this, searchResult.length);
+    helper.setupTable(searchResult, condition);
   }
+
+  abstract void asyncSearch(SampleClass sampleClass, AsyncCallback<ContainerType> callback);
+  abstract void trackAnalytics();
 
   public void attemptSearch(SampleClass sampleClass, final @Nullable MatchCondition condition) {
     if (condition == null) {
@@ -67,9 +79,9 @@ public abstract class Search<T> {
     delegate.searchStarted(Search.this);
     trackAnalytics();
 
-    asyncSearch(sampleClass, new AsyncCallback<T[]>() {
+    asyncSearch(sampleClass, new AsyncCallback<ContainerType>() {
       @Override
-      public void onSuccess(T[] result) {
+      public void onSuccess(ContainerType result) {
         searchComplete(result);
       }
 
