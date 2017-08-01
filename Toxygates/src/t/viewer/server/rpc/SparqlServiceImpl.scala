@@ -534,11 +534,19 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     rs.toArray
   }
 
-  def unitSearch(sc: SampleClass, cond: MatchCondition): Array[Unit] = {
+  import t.db.SampleParameters.{ControlGroup => ControlGroupParam}
+
+  def unitSearch(sc: SampleClass, cond: MatchCondition): Array[Pair[Unit, Unit]] = {
     val searchSpace = sampleStore.sampleQuery(SampleClassFilter(sc))(sf)()
 
     val javaSamples: java.util.Collection[Sample] = searchSpace.map(asJavaSample)
     val units = Unit.formUnits(schema, javaSamples)
+
+    val mediumParameter = schema.mediumParameter()
+    val groupedUnits = units.groupBy(_.getSamples()(0).get(ControlGroupParam.identifier))
+    val controlGroupMap = Map() ++ groupedUnits.flatMap { case (param, units) =>
+      units.find(unit => schema.isControlValue(unit.get(mediumParameter))).map(param -> _)
+    }
 
     val ss = t.common.server.sample.search.UnitSearch(sampleStore, cond, annotations, units)
     val rs = ss.results
@@ -553,7 +561,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       println(s)
     }
     println("Found " + rs.size + " matches.")
-    rs.toArray
+
+    rs.map(unit => new Pair(unit, controlGroupMap(unit.getSamples()(0).get(ControlGroupParam.identifier)))).toArray
   }
 
   def prepareUnitCSVDownload(units: Array[Unit], parameterNames: Array[String]):

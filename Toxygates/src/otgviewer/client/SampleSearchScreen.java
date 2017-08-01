@@ -143,7 +143,7 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
       @Override
       public void onClick(ClickEvent event) {
         try {
-          Unit[] units = unitTableHelper.selectionTable().getSelection().toArray(new Unit[0]);
+          Unit[] units = unitSearch.sampleGroupFromSelection();
           String name = findAvailableGroupName("Sample search group ");
           Group pendingGroup = new Group(schema(), name, units);
 
