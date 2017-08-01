@@ -5,9 +5,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.Label;
@@ -23,6 +25,7 @@ import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.TickMenuItem;
 import t.common.shared.sample.BioParamValue;
+import t.common.shared.sample.Group;
 import t.common.shared.sample.NumericalBioParamValue;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
@@ -49,6 +52,7 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   private Widget tools;
   private ConditionEditor conditionEditor;
   private Button downloadButton;
+  private Button saveGroupButton;
   private Label resultCountLabel;
 
   private DialogBox waitDialog;
@@ -135,8 +139,50 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
     });
     downloadButton.setVisible(false);
 
+    saveGroupButton = new Button("Save sample group", new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        try {
+          Unit[] units = unitTableHelper.selectionTable().getSelection().toArray(new Unit[0]);
+          String name = findAvailableGroupName("Sample search group ");
+          Group pendingGroup = new Group(schema(), name, units);
+
+          chosenColumns.add(pendingGroup);
+          columnsChanged(chosenColumns);
+          storeColumns(manager().getParser());
+
+          Window.alert("Saved group: " + name);
+        } catch (Exception e) {
+          Window.alert("Saving group failed: " + e);
+        }
+      }
+    });
+    saveGroupButton.setVisible(false);
+
     tools = Utils.mkVerticalPanel(true, conditionEditor, Utils.mkHorizontalPanel(true,
-        unitSearchButton, sampleSearchButton, resultCountLabel, downloadButton));
+        unitSearchButton, sampleSearchButton, resultCountLabel, saveGroupButton, downloadButton));
+  }
+
+  private String findAvailableGroupName(String prefix) throws Exception {
+    List<Group> inactiveGroups =
+        loadColumns(manager().getParser(), schema(), "inactiveColumns", new ArrayList<Group>());
+
+    Set<String> groupNames = new HashSet<String>();
+    for (Group group : chosenColumns) {
+      groupNames.add(group.getName());
+    }
+    if (inactiveGroups != null) {
+      for (Group group : inactiveGroups) {
+        groupNames.add(group.getName());
+      }
+    }
+
+    int n = 1;
+    while (groupNames.contains(prefix + n)) {
+      n++;
+    }
+
+    return prefix + n;
   }
 
   @Override
@@ -261,6 +307,7 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
     resultCountLabel.setText("Found " + numResults + " results");
     currentSearch = search;
     downloadButton.setVisible((currentSearch == unitSearch));
+    saveGroupButton.setVisible((currentSearch == unitSearch));
   }
 
   /*
