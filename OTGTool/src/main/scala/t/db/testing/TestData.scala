@@ -33,9 +33,9 @@ import t.testing.FakeContext
 import t.platform.OrthologMapping
 import t.db.Metadata
 import t.db.SampleParameter
-import t.db.SampleParameters._
-import otg.model.sample.Attribute.ExposureTime
 import t.model.sample.Attribute
+import t.model.sample.CoreParameter._ 
+import otg.model.sample.Attribute._
 
 object TestData {
   def pickOne[T](xs: Seq[T]): T = {
@@ -47,13 +47,13 @@ object TestData {
     Map() ++ ss.zipWithIndex
 
   val enumMaps = Map(
-    "compound_name" -> mm(Seq("acetaminophen", "methapyrilene", "cocoa", "water")),
+    Compound.id -> mm(Seq("acetaminophen", "methapyrilene", "cocoa", "water")),
     DoseLevel.id -> mm(Seq("Control", "Low", "Middle", "High", "Really high")),
-    "organism" -> mm(Seq("Giraffe", "Squirrel", "Rat", "Mouse", "Human")),
+    Organism.id -> mm(Seq("Giraffe", "Squirrel", "Rat", "Mouse", "Human")),
     ExposureTime.id -> mm(Seq("3 hr", "6 hr", "9 hr", "24 hr")),
-    "sin_rep_type" -> mm(Seq("Single", "Repeat")),
-    "organ_id" -> mm(Seq("Liver", "Kidney")),
-    "test_type" -> mm(Seq("Vitro", "Vivo")))
+    Repeat.id -> mm(Seq("Single", "Repeat")),
+    Organ.id -> mm(Seq("Liver", "Kidney")),
+    TestType.id -> mm(Seq("Vitro", "Vivo")))
 
   private def em(k: Attribute) = enumMaps(k.id).keySet
   private def em(k: String) = enumMaps(k).keySet

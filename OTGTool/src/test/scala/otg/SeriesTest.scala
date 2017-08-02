@@ -31,7 +31,6 @@ import t.db.BasicExprValue
 import t.db.SeriesPoint
 import t.db.kyotocabinet.KCExtMatrixDB
 import org.junit.runner.RunWith
-import t.db.SampleParameters._
 import otg.model.sample.Attribute.ExposureTime
 
 import scala.collection.JavaConversions._

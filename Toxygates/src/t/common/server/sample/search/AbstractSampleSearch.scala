@@ -15,11 +15,11 @@ import t.sparql.Samples
 import t.sparql.CachingTriplestoreMetadata
 import t.sparql.SampleFilter
 import t.platform.ControlGroup
-import t.db.SampleParameters
 import t.db.ParameterSet
 import scala.collection.Seq
 import t.viewer.server.Annotations
 import otgviewer.shared.OTGSchema
+import t.model.sample.CoreParameter.{ControlGroup => CGParam}
 
   /**
    * Companion object to create sample search objects; meant to encapsulate
@@ -53,7 +53,7 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
     val sampleParams = annotations.baseConfig.sampleParameters
 
     val usedParams = conditionParams(sampleParams, condition) // here
-    val coreParams = Seq(SampleParameters.ControlGroup.id, annotations.schema.timeParameter(), "sample_id").map(
+    val coreParams = Seq(CGParam.id, annotations.schema.timeParameter(), "sample_id").map(
       sampleParams.byId)
     val neededParams = (coreParams ++ usedParams).toSeq.distinct
 

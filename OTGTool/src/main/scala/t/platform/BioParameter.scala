@@ -9,10 +9,9 @@ import t.BaseConfig
 import org.apache.commons.math3.stat.StatUtils.variance
 import org.apache.commons.math3.stat.StatUtils.mean
 import t.sample.SampleSet
-import t.db.SampleParameters._
 import t.model.sample.Attribute
 import t.model.sample.BasicAttribute
-import otg.model.sample.Attribute.ExposureTime
+import otg.model.sample.Attribute._
 
 /**
  * Construct a BioParameter object.

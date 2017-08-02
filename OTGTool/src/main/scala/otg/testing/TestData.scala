@@ -34,9 +34,8 @@ import t.platform.ControlGroup
 import t.platform.BioParameter
 import t.platform.BioParameters
 import t.platform.ControlGroup
-import t.db.SampleParameters._
 import otg.OTGBConfig
-import otg.model.sample.Attribute.ExposureTime
+import otg.model.sample.Attribute._
 
 import scala.collection.JavaConversions._
 import t.model.sample.BasicAttribute
@@ -54,12 +53,12 @@ object TestData {
     indepPoints.map(t => mkPoint(pr, t)).toSeq
   }
 
-  lazy val series = for (compound <- enumValues("compound_name");
+  lazy val series = for (compound <- enumValues(Compound.id);
     doseLevel <- enumValues(DoseLevel.id);
-    repeat <- enumValues("sin_rep_type");
-    organ <- enumValues("organ_id");
-    organism <- enumValues("organism");
-    testType <- enumValues("test_type");
+    repeat <- enumValues(Repeat.id);
+    organ <- enumValues(Organ.id);
+    organism <- enumValues(Organism.id);
+    testType <- enumValues(TestType.id);
     probe <- probes;
     points = mkPoints(probeMap.unpack(probe))
     ) yield OTGSeries(repeat, organ, organism, probe,
@@ -67,8 +66,7 @@ object TestData {
 
   private def controlGroup(s: Sample) = ???
 
-  import t.db.SampleParameters.{ControlGroup => CGParam}
-  import t.db.SampleParameters.DoseLevel
+  import t.model.sample.CoreParameter.{ControlGroup => CGParam}
 
   lazy val controlGroups: Map[Sample, ControlGroup] = {
     val gr = samples.groupBy(_(CGParam))

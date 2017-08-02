@@ -1,10 +1,12 @@
 package t.model.sample;
 
+/**
+ * Key attributes expected from all samples in a t framework database.
+ */
 public enum CoreParameter implements Attribute {
   SampleId("sample_id", "Sample ID"),
   Batch("batchGraph", "Batch"),
   ControlGroup("control_group", "Control group");
-  
   
   
   CoreParameter(String id, String title) {

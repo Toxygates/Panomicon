@@ -26,12 +26,11 @@ import org.scalatest.junit.JUnitRunner
 import otg.OTGContext
 import otg.Species.Rat
 import t.TTestSuite
-import t.db.SampleParameters._
 import t.model.shared.SampleClassHelper
 import t.sparql._
 import t.testing.TestConfig
 import otg.OTGSeries
-import otg.model.sample.Attribute.ExposureTime
+import otg.model.sample.Attribute._
 
 @RunWith(classOf[JUnitRunner])
 class OTGSamplesTest extends TTestSuite {

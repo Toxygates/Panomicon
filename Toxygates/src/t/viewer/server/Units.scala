@@ -11,6 +11,8 @@ import t.common.shared.sample.Unit
 import t.sparql.Samples
 import t.sparql.SampleFilter
 import t.viewer.server.Conversions._
+import t.model.sample.CoreParameter._
+
 
 class Units(schema: DataSchema, sampleStore: Samples) {
     /**
@@ -33,11 +35,9 @@ class Units(schema: DataSchema, sampleStore: Samples) {
 
     //This will filter by the chosen parameter - usually compound name
 
-    import t.db.SampleParameters._
-
     val rs = sampleStore.samples(SampleClassFilter(sc), param, paramValues.toSeq)
     val ss = rs.groupBy(x =>(
-            x.sampleClass("batchGraph"),
+            x.sampleClass(Batch.id),
             x.sampleClass(ControlGroup.id)))
 
     val cgs = ss.keys.toSeq.map(_._2).distinct
@@ -68,7 +68,7 @@ class Units(schema: DataSchema, sampleStore: Samples) {
         val fcs = potentialControls.filter(s =>
           unitWithoutMajorMedium(s) == repUnit
           && s.get(ControlGroup.id) == repSample.get(ControlGroup.id)
-          && s.get(BatchGraph.id) == repSample.get(BatchGraph.id)
+          && s.get(Batch.id) == repSample.get(Batch.id)
           )
 
         val cu = if (fcs.isEmpty)

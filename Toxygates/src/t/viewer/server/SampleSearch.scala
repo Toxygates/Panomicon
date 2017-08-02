@@ -16,8 +16,8 @@ import t.db.SampleParameter
 import t.sparql.Samples
 import t.sample.SampleSet
 import t.db.ParameterSet
-import t.db.SampleParameters._
 import t.common.shared.sample.BioParamValue
+import t.model.sample.CoreParameter._
 
 @deprecated("refactored", "1 July 2017")
 object SampleSearch {

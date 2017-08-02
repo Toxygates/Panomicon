@@ -25,7 +25,6 @@ import t.TTestSuite
 import t.db.testing.TestData
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import t.db.SampleParameters._
 import otg.model.sample.Attribute.ExposureTime
 
 @RunWith(classOf[JUnitRunner])

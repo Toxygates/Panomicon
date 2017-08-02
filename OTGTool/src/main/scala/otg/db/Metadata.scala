@@ -24,8 +24,8 @@ import scala.collection.immutable.ListMap
 
 import t.db.ParameterSet
 import t.db.Sample
-import t.db.SampleParameters._
-import otg.model.sample.Attribute.ExposureTime
+import otg.model.sample.Attribute._
+import t.model.sample.CoreParameter._
 
 /**
  * Information about a set of samples.
@@ -46,9 +46,9 @@ object OTGParameterSet extends ParameterSet {
     "Sample ID" -> "sample_id",
     "Platform ID" -> "platform_id",
     "Experiment ID" -> "exp_id",
-    ControlGroup.humanReadable -> ControlGroup.identifier,
+    ControlGroup.title -> ControlGroup.id,
     "Group ID" -> "group_id",
-    Individual.humanReadable -> Individual.id,
+    Individual.title -> Individual.id,
     "Organ" -> "organ_id",
     "Material ID" -> "material_id",
     "Compound" -> "compound_name",
@@ -67,7 +67,7 @@ object OTGParameterSet extends ParameterSet {
     ExposureTime.title -> ExposureTime.id,
     "Dose" -> "dose",
     "Dose unit" -> "dose_unit",
-    DoseLevel.humanReadable -> DoseLevel.id,
+    DoseLevel.title -> DoseLevel.id,
     "Medium type" -> "medium_type",
     "Product information" -> "product_information",
     "CRO type" -> "cro_type")

@@ -33,7 +33,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
     pfs.bioParameters
   }
 
-  import t.db.SampleParameters.{ControlGroup => ControlGroupParam}
+  import t.model.sample.CoreParameter.{ControlGroup => ControlGroupParam}
 
   implicit def asScala(x: Sample) = asScalaSample(x)
 

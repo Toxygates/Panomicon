@@ -37,9 +37,9 @@ import t.db.Sample
 import t.db.Metadata
 import t.db.ExprValue
 import t.db.BasicExprValue
-import t.db.SampleParameters._
 import t.db.SampleParameter
-import otg.model.sample.Attribute.ExposureTime
+import otg.model.sample.Attribute._
+import t.model.sample.Attribute
 
 //TODO all parameters are nullable - use options
 case class OTGSeries(repeat: String, organ: String, organism: String, override val probe: Int,
@@ -52,12 +52,12 @@ case class OTGSeries(repeat: String, organ: String, organism: String, override v
   def asSingleProbeKey = copy(probe = probe, compound = null, dose = null)
 
   override def constraints: Map[String, String] = Map(
-       "test_type" -> testType,
-       "organ_id" -> organ,
-       "organism" -> organism,
-       "compound_name" -> compound,
+       TestType.id -> testType,
+       Organ.id -> organ,
+       Organism.id -> organism,
+       Compound.id -> compound,
        DoseLevel.id -> dose,
-       "sin_rep_type" -> repeat
+       Repeat.id -> repeat
        ).filter(_._2 != null)
 }
 
@@ -67,7 +67,7 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
 
   private def rem(mc: MatrixContext, key: String): Map[Int, String] =
     mc.reverseEnumMaps(key)
-  private def rem(mc: MatrixContext, key: SampleParameter): Map[Int, String] =
+  private def rem(mc: MatrixContext, key: Attribute): Map[Int, String] =
     rem(mc, key.id)
 
   def build(sampleClass: Long, probe: Int)(implicit mc: MatrixContext): OTGSeries = {
