@@ -34,7 +34,7 @@ import t.model.sample.Attribute
  * @param querySet the parameters to be obtained. The default case returns all parameters.
  */
 class TriplestoreMetadata(sampleStore: Samples, val parameterSet: ParameterSet,
-    querySet: Iterable[SampleParameter] = Seq())
+    querySet: Iterable[Attribute] = Seq())
 (implicit sf: SampleFilter) extends Metadata {
 
   override def samples: Iterable[Sample] = sampleStore.samples(SampleClassFilter())
@@ -58,10 +58,10 @@ class TriplestoreMetadata(sampleStore: Samples, val parameterSet: ParameterSet,
  * Caching triplestore metadata that reads all the data once and stores it.
  */
 class CachingTriplestoreMetadata(os: Samples, parameterSet: ParameterSet,
-    querySet: Iterable[SampleParameter] = Seq())(implicit sf: SampleFilter)
+    querySet: Iterable[Attribute] = Seq())(implicit sf: SampleFilter)
     extends TriplestoreMetadata(os, parameterSet, querySet) {
 
-  val useQuerySet = (querySet.map(_.identifier).toSeq :+ "sample_id").distinct
+  val useQuerySet = (querySet.map(_.id).toSeq :+ "sample_id").distinct
 
   lazy val rawData = {
     val raw = os.sampleAttributeQuery(useQuerySet)(sf)()

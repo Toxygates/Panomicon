@@ -1,7 +1,6 @@
 package t.common.server.sample.search
 
 import scala.collection.JavaConversions._
-import t.db.SampleParameter
 import t.platform.ControlGroup
 import t.common.shared.DataSchema
 import t.common.shared.sample.search.AndMatch
@@ -10,7 +9,6 @@ import t.common.shared.sample.search.OrMatch
 import t.common.shared.sample.search.MatchCondition
 import t.common.shared.sample.search.MatchType
 import t.db.Metadata
-import t.db.SampleParameter
 import t.sparql.Samples
 import t.sparql.CachingTriplestoreMetadata
 import t.sparql.SampleFilter
@@ -20,6 +18,9 @@ import scala.collection.Seq
 import t.viewer.server.Annotations
 import otgviewer.shared.OTGSchema
 import t.model.sample.CoreParameter.{ControlGroup => CGParam}
+import scala.annotation.meta.param
+import t.model.sample.Attribute
+import scala.annotation.meta.param
 
   /**
    * Companion object to create sample search objects; meant to encapsulate
@@ -33,16 +34,16 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
   protected def create(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
              controlGroups: Map[ST, ControlGroup],
              samples: Iterable[ST],
-             searchParams: Iterable[SampleParameter]): SS
+             searchParams: Iterable[Attribute]): SS
 
   // Called on samples before they are used in computations
-  protected def preprocessSample(m: Metadata, sps: Iterable[SampleParameter]): (ST => ST)
+  protected def preprocessSample(m: Metadata, sps: Iterable[Attribute]): (ST => ST)
 
   // Finds the control groups in a collection of samples and sets up a lookup table
   protected def formControlGroups(m: Metadata, as: Annotations): (Iterable[ST] => Map[ST, ControlGroup])
 
   // Extracts the sample parameters used in a MatchCondition
-  private def conditionParams(paramSet: ParameterSet, cond: MatchCondition): Iterable[SampleParameter] = {
+  private def conditionParams(paramSet: ParameterSet, cond: MatchCondition): Iterable[Attribute] = {
     cond.neededParameters().map(p => paramSet.byId(p.id))
   }
 
@@ -70,10 +71,10 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
 abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
     condition: MatchCondition,
     controlGroups: Map[ST, ControlGroup], samples: Iterable[ST],
-    searchParams: Iterable[SampleParameter]) {
+    searchParams: Iterable[Attribute]) {
 
   protected def time(s: ST): String
-  protected def sampleParamValue(s: ST, sp: SampleParameter): Option[Double]
+  protected def sampleAttributeValue(s: ST, sp: Attribute): Option[Double]
   protected def postMatchAdjust(s: ST): ST
   protected def zTestSampleSize(s: ST): Int
   protected def sortObject(s: ST): (String, Int, Int)
@@ -96,17 +97,17 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
     }
   }
 
-  private def paramIsHigh(s: ST, param: SampleParameter): Boolean = {
+  private def paramIsHigh(s: ST, attr: Attribute): Boolean = {
     paramComparison(s,
-      sampleParamValue(_, param),
-      x => controlGroups.get(x).flatMap(_.upperBound(param, time(x), zTestSampleSize(s))),
+      sampleAttributeValue(_, attr),
+      x => controlGroups.get(x).flatMap(_.upperBound(attr, time(x), zTestSampleSize(s))),
       _ > _)
   }
 
-  private def paramIsLow(s: ST, param: SampleParameter): Boolean = {
+  private def paramIsLow(s: ST, attr: Attribute): Boolean = {
     paramComparison(s,
-      sampleParamValue(_, param),
-      x => controlGroups.get(x).flatMap(_.lowerBound(param, time(x), zTestSampleSize(s))),
+      sampleAttributeValue(_, attr),
+      x => controlGroups.get(x).flatMap(_.lowerBound(attr, time(x), zTestSampleSize(s))),
       _ < _)
   }
 
@@ -129,15 +130,15 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
         metadata.parameterSet.byId(condition.parameter.id),
       doubleOption(condition.param1))).toSet
 
-  private def matches(s: ST, mt: MatchType, param: SampleParameter,
+  private def matches(s: ST, mt: MatchType, attr: Attribute,
                       threshold: Option[Double]): Boolean =
     mt match {
-      case MatchType.High => paramIsHigh(s, param)
-      case MatchType.Low  => paramIsLow(s, param)
+      case MatchType.High => paramIsHigh(s, attr)
+      case MatchType.Low  => paramIsLow(s, attr)
       case MatchType.NormalRange =>
-        !paramIsHigh(s, param) && !paramIsLow(s, param)
+        !paramIsHigh(s, attr) && !paramIsLow(s, attr)
       case _ =>
-        sampleParamValue(s, param) match {
+        sampleAttributeValue(s, attr) match {
           case Some(v) =>
             mt match {
               case MatchType.AboveLimit => v >= threshold.get

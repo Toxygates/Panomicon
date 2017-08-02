@@ -23,6 +23,7 @@ package t.db
 import friedrich.util.formats.TSVFile
 import t.Factory
 import t.sample.SampleSet
+import t.model.sample.Attribute
 
 trait ParameterSet {
 
@@ -66,6 +67,9 @@ trait Metadata extends SampleSet {
    */
   def parameterValues(identifier: String): Set[String]
 
+  def attributeValues(attr: Attribute): Set[String] = 
+    parameterValues(attr.id)
+  
   override def parameter(s: Sample, identifier: String): Option[String] =
     parameterMap(s).get(identifier)
 

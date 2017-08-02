@@ -24,6 +24,7 @@ import t.common.shared.DataSchema;
 import t.common.shared.HasClass;
 import t.common.shared.Packable;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 
 @SuppressWarnings("serial")
 public class Sample implements Packable, Serializable, HasClass {
@@ -61,6 +62,11 @@ public class Sample implements Packable, Serializable, HasClass {
     return sampleClass;
   }
 
+  public String get(Attribute attribute) {
+    return sampleClass.get(attribute);
+  }
+  
+  //TODO deprecate when the time is right
   public String get(String parameter) {
     return sampleClass.get(parameter);
   }

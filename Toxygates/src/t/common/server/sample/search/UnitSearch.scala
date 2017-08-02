@@ -9,13 +9,15 @@ import t.common.shared.DataSchema
 import t.common.shared.sample.Unit
 import t.common.shared.sample.search.MatchCondition
 import t.db.Metadata
+import t.model.sample.Attribute
+import otg.model.sample.Attribute._
 
 object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
 
   protected def create(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
     controlGroups: Map[Unit, ControlGroup],
     samples: Iterable[Unit],
-    searchParams: Iterable[SampleParameter]) =
+    searchParams: Iterable[Attribute]) =
       new UnitSearch(schema, metadata, condition, controlGroups, samples, searchParams)
 
   /**
@@ -24,11 +26,11 @@ object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
    * parameter value for the unit.
    */
   //
-  protected def preprocessSample(metadata: Metadata, searchParams: Iterable[SampleParameter]) =
+  protected def preprocessSample(metadata: Metadata, searchParams: Iterable[Attribute]) =
     (unit: Unit) => {
       val samples = unit.getSamples
       for (param <- searchParams) {
-        val paramId = param.identifier
+        val paramId = param.id
 
         unit.put(paramId, try {
           var sum: Option[Double] = None
@@ -76,13 +78,13 @@ object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
 }
 
 class UnitSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
-    controlGroups: Map[Unit, ControlGroup], samples: Iterable[Unit], searchParams: Iterable[SampleParameter])
+    controlGroups: Map[Unit, ControlGroup], samples: Iterable[Unit], searchParams: Iterable[Attribute])
     extends AbstractSampleSearch[Unit](schema, metadata, condition,
         controlGroups, samples, searchParams)  {
 
-  protected def sampleParamValue(unit: Unit, param: SampleParameter): Option[Double] = {
+  protected def sampleAttributeValue(unit: Unit, param: Attribute): Option[Double] = {
     try {
-      Option(unit.get(param.identifier)) match {
+      Option(unit.get(param)) match {
         case Some(v) => Some(v.toDouble)
         case None    => None
       }
@@ -104,7 +106,7 @@ class UnitSearch(schema: DataSchema, metadata: Metadata, condition: MatchConditi
   }
 
   protected def sortObject(unit: Unit): (String, Int, Int) = {
-    (unit.get("compound_name"), doseLevelMap(unit.get("dose_level")),
-        exposureTimeMap(unit.get("exposure_time")))
+    (unit.get(Compound), doseLevelMap(unit.get(DoseLevel)),
+        exposureTimeMap(unit.get(ExposureTime)))
   }
 }
