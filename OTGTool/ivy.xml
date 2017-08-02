@@ -25,6 +25,9 @@
   <!--
   <dependency org="org.scalatest" name="scalatest_2.11" rev="3.0.3"/>
   -->
+
+  <!-- for javax.annotation.Nullable -->
+  <dependency org="com.google.code.findbugs" name="jsr305" rev="latest.integration"/>
   
   </dependencies>
 </ivy-module>
