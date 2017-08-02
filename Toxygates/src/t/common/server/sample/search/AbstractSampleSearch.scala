@@ -30,16 +30,16 @@ import t.model.sample.CoreParameter.{ControlGroup => CGParam}
 trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
 
   // Needs to be overridden to specify how to make an SS
-  def create(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
+  protected def create(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
              controlGroups: Map[ST, ControlGroup],
              samples: Iterable[ST],
              searchParams: Iterable[SampleParameter]): SS
 
   // Called on samples before they are used in computations
-  def preprocessSample(m: Metadata, sps: Iterable[SampleParameter]): (ST => ST)
+  protected def preprocessSample(m: Metadata, sps: Iterable[SampleParameter]): (ST => ST)
 
   // Finds the control groups in a collection of samples and sets up a lookup table
-  def formControlGroups(m: Metadata, as: Annotations): (Iterable[ST] => Map[ST, ControlGroup])
+  protected def formControlGroups(m: Metadata, as: Annotations): (Iterable[ST] => Map[ST, ControlGroup])
 
   // Extracts the sample parameters used in a MatchCondition
   private def conditionParams(paramSet: ParameterSet, cond: MatchCondition): Iterable[SampleParameter] = {
@@ -72,11 +72,11 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
     controlGroups: Map[ST, ControlGroup], samples: Iterable[ST],
     searchParams: Iterable[SampleParameter]) {
 
-  def time(s: ST): String
-  def sampleParamValue(s: ST, sp: SampleParameter): Option[Double]
-  def postMatchAdjust(s: ST): ST
-  def zTestSampleSize(s: ST): Int
-  def sortObject(s: ST): (String, Int, Int)
+  protected def time(s: ST): String
+  protected def sampleParamValue(s: ST, sp: SampleParameter): Option[Double]
+  protected def postMatchAdjust(s: ST): ST
+  protected def zTestSampleSize(s: ST): Int
+  protected def sortObject(s: ST): (String, Int, Int)
 
   /**
    * Results of the search.
@@ -84,7 +84,7 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
   lazy val results: Iterable[ST] =
     results(condition).toSeq.map(postMatchAdjust).sortBy(sortObject(_))
 
-  private def paramComparison(s: ST, param: SampleParameter,
+  private def paramComparison(s: ST,
                               paramGetter: ST => Option[Double],
                               controlGroupValue: ST => Option[Double],
                               comparator: (Double, Double) => Boolean): Boolean = {
@@ -97,14 +97,14 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
   }
 
   private def paramIsHigh(s: ST, param: SampleParameter): Boolean = {
-    paramComparison(s, param,
+    paramComparison(s,
       sampleParamValue(_, param),
       x => controlGroups.get(x).flatMap(_.upperBound(param, time(x), zTestSampleSize(s))),
       _ > _)
   }
 
   private def paramIsLow(s: ST, param: SampleParameter): Boolean = {
-    paramComparison(s, param,
+    paramComparison(s,
       sampleParamValue(_, param),
       x => controlGroups.get(x).flatMap(_.lowerBound(param, time(x), zTestSampleSize(s))),
       _ < _)

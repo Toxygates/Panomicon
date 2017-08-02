@@ -2,10 +2,13 @@ package t.viewer.client.components.search;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+import t.common.shared.Pair;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.NumericalBioParamValue;
@@ -15,16 +18,28 @@ import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.rpc.SampleServiceAsync;
 
-public class UnitSearch extends Search<Unit> {
+public class UnitSearch extends Search<Unit, Pair<Unit, Unit>[]> {
   private Sample[] samplesInResult;
   private HashMap<String, Sample> sampleIdHashMap;
+  private HashMap<String, Unit> controlUnitsMap;
 
   public UnitSearch(Delegate delegate, ResultTable<Unit> helper, SampleServiceAsync sampleService) {
     super(delegate, helper, sampleService);
   }
 
   @Override
-  protected void asyncSearch(SampleClass sampleClass, AsyncCallback<Unit[]> callback) {
+  protected void extractSearchResult(Pair<Unit, Unit>[] result) {
+    List<Unit> units = new ArrayList<Unit>();
+    controlUnitsMap = new HashMap<String, Unit>();
+    for (Pair<Unit, Unit> pair : result) {
+      units.add(pair.first());
+      controlUnitsMap.put(pair.first().get("sample_id"), pair.second());
+    }
+    searchResult = units.toArray(new Unit[0]);
+  }
+
+  @Override
+  protected void asyncSearch(SampleClass sampleClass, AsyncCallback<Pair<Unit, Unit>[]> callback) {
     sampleService.unitSearch(sampleClass, condition, callback);
   }
 
@@ -34,7 +49,7 @@ public class UnitSearch extends Search<Unit> {
   }
 
   @Override
-  protected void searchComplete(Unit[] result) {
+  protected void searchComplete(Pair<Unit, Unit>[] result) {
     super.searchComplete(result);
     samplesInResult = null;
   }
@@ -91,5 +106,15 @@ public class UnitSearch extends Search<Unit> {
         unit.concatenateAttribute(parameterId);
       }
     }
+  }
+
+  public Unit[] sampleGroupFromSelection() {
+    Set<Unit> treatedUnits = helper.selectionTable().getSelection();
+    List<Unit> allUnits = new ArrayList<Unit>();
+    for (Unit unit : treatedUnits) {
+      allUnits.add(unit);
+      allUnits.add(controlUnitsMap.get(unit.get("sample_id")));
+    }
+    return allUnits.toArray(new Unit[0]);
   }
 }
