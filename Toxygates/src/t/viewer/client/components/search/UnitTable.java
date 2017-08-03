@@ -2,7 +2,10 @@ package t.viewer.client.components.search;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.user.cellview.client.Column;
 
+import t.common.client.ImageClickCell;
 import t.common.shared.sample.Unit;
 
 public class UnitTable extends ResultTable<Unit> {
@@ -36,5 +39,32 @@ public class UnitTable extends ResultTable<Unit> {
         return getData(unit).split("\\s*/\\s*")[0];
       }
     }, "sample_id");
+    
+    addNonKeyColumn(new ToolColumn(new InspectCell()), "");
+  }
+
+  class InspectCell extends ImageClickCell<Unit> {
+    InspectCell() {
+      super(delegate.inspectCellImage(), false);
+    }
+
+    @Override
+    protected void appendText(Unit u, SafeHtmlBuilder sb) {}
+
+    @Override
+    public void onClick(Unit value) {
+      delegate.displayDetailsForEntry(value);
+    }
+  }
+
+  class ToolColumn extends Column<Unit, Unit> {
+    public ToolColumn(InspectCell tc) {
+      super(tc);
+    }
+
+    @Override
+    public Unit getValue(Unit u) {
+      return u;
+    }
   }
 }

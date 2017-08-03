@@ -1,10 +1,10 @@
 package t.viewer.client.components.search;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -108,10 +108,9 @@ public class UnitSearch extends Search<Unit, Pair<Unit, Unit>[]> {
     }
   }
 
-  public Unit[] sampleGroupFromSelection() {
-    Set<Unit> treatedUnits = helper.selectionTable().getSelection();
+  public Unit[] sampleGroupFromUnits(Collection<Unit> units) {
     List<Unit> allUnits = new ArrayList<Unit>();
-    for (Unit unit : treatedUnits) {
+    for (Unit unit : units) {
       allUnits.add(unit);
       allUnits.add(controlUnitsMap.get(unit.get("sample_id")));
     }

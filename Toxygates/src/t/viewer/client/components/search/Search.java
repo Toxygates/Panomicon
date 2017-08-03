@@ -23,32 +23,32 @@ import t.viewer.client.rpc.SampleServiceAsync;
  * @tparam ContainerType the type of object (usually some kind of collection of EntityType)
  *         representing a search result
  */
-public abstract class Search<EntityType, ContainerType> {
+public abstract class Search<Entity, Container> {
   public interface Delegate {
     void searchStarted(Search<?, ?> search);
     void searchEnded(Search<?, ?> search, int numResults);
   }
 
   protected Delegate delegate;
-  protected ResultTable<EntityType> helper;
+  protected ResultTable<Entity> helper;
   protected SampleServiceAsync sampleService;
 
-  EntityType[] searchResult;
+  Entity[] searchResult;
   MatchCondition condition;
   private Set<String> fetchedParameters;
 
-  public Search(Delegate delegate, ResultTable<EntityType> helper,
+  public Search(Delegate delegate, ResultTable<Entity> helper,
       SampleServiceAsync sampleService) {
     this.delegate = delegate;
     this.helper = helper;
     this.sampleService = sampleService;
   }
 
-  public ResultTable<EntityType> helper() {
+  public ResultTable<Entity> helper() {
     return helper;
   }
 
-  public EntityType[] searchResult() {
+  public Entity[] searchResult() {
     return searchResult;
   }
 
@@ -57,16 +57,16 @@ public abstract class Search<EntityType, ContainerType> {
    * 
    * @param result the object returned from a search on the backend
    */
-  abstract void extractSearchResult(ContainerType result);
+  abstract void extractSearchResult(Container result);
 
-  protected void searchComplete(ContainerType result) {
+  protected void searchComplete(Container result) {
     extractSearchResult(result);
     fetchedParameters = new HashSet<String>();
     delegate.searchEnded(Search.this, searchResult.length);
     helper.setupTable(searchResult, condition);
   }
 
-  abstract void asyncSearch(SampleClass sampleClass, AsyncCallback<ContainerType> callback);
+  abstract void asyncSearch(SampleClass sampleClass, AsyncCallback<Container> callback);
   abstract void trackAnalytics();
 
   public void attemptSearch(SampleClass sampleClass, final @Nullable MatchCondition condition) {
@@ -79,9 +79,9 @@ public abstract class Search<EntityType, ContainerType> {
     delegate.searchStarted(Search.this);
     trackAnalytics();
 
-    asyncSearch(sampleClass, new AsyncCallback<ContainerType>() {
+    asyncSearch(sampleClass, new AsyncCallback<Container>() {
       @Override
-      public void onSuccess(ContainerType result) {
+      public void onSuccess(Container result) {
         searchComplete(result);
       }
 
