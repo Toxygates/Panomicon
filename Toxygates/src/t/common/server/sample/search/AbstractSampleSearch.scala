@@ -21,6 +21,7 @@ import t.model.sample.CoreParameter.{ControlGroup => CGParam}
 import scala.annotation.meta.param
 import t.model.sample.Attribute
 import scala.annotation.meta.param
+import t.model.sample.AttributeSet
 
   /**
    * Companion object to create sample search objects; meant to encapsulate
@@ -43,22 +44,22 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
   protected def formControlGroups(m: Metadata, as: Annotations): (Iterable[ST] => Map[ST, ControlGroup])
 
   // Extracts the sample parameters used in a MatchCondition
-  private def conditionParams(paramSet: ParameterSet, cond: MatchCondition): Iterable[Attribute] = {
-    cond.neededParameters().map(p => paramSet.byId(p.id))
+  private def conditionParams(attributes: AttributeSet, cond: MatchCondition): Iterable[Attribute] = {
+    cond.neededParameters().map(p => attributes.byId(p.id))
   }
 
   def apply(data: Samples, condition: MatchCondition, annotations: Annotations,
             samples: Iterable[ST])(implicit sf: SampleFilter): AbstractSampleSearch[ST] = {
     val schema = annotations.schema
 
-    val sampleParams = annotations.baseConfig.sampleParameters
+    val attributes = annotations.baseConfig.attributes
 
-    val usedParams = conditionParams(sampleParams, condition) // here
+    val usedParams = conditionParams(attributes, condition) // here
     val coreParams = Seq(CGParam.id, annotations.schema.timeParameter(), "sample_id").map(
-      sampleParams.byId)
+      attributes.byId)
     val neededParams = (coreParams ++ usedParams).toSeq.distinct
 
-    val metadata = new CachingTriplestoreMetadata(data, sampleParams, neededParams)
+    val metadata = new CachingTriplestoreMetadata(data, attributes, neededParams)
 
     val processedSamples: Iterable[ST] = samples.map(preprocessSample(metadata, usedParams))
 
@@ -127,7 +128,7 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
 
   private def results(condition: AtomicMatch): Set[ST] =
     samples.filter(matches(_, condition.matchType,
-        metadata.parameterSet.byId(condition.parameter.id),
+        metadata.attributes.byId(condition.parameter.id),
       doubleOption(condition.param1))).toSet
 
   private def matches(s: ST, mt: MatchType, attr: Attribute,

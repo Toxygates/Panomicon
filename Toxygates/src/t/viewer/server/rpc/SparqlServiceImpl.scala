@@ -353,7 +353,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   @throws[TimeoutException]
   def probes(columns: Array[SampleColumn]): Array[String] = {
     val samples = columns.flatMap(_.getSamples)
-    val metadata = new TriplestoreMetadata(sampleStore, context.config.sampleParameters)
+    val metadata = new TriplestoreMetadata(sampleStore, context.config.attributes)
     val usePlatforms = samples.flatMap(s => metadata.parameter(
         t.db.Sample(s.id), "platform_id")
         ).distinct

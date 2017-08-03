@@ -24,6 +24,7 @@ import friedrich.util.formats.TSVFile
 import t.Factory
 import t.sample.SampleSet
 import t.model.sample.Attribute
+import t.model.sample.AttributeSet
 
 trait ParameterSet {
 
@@ -52,13 +53,12 @@ trait ParameterSet {
       sg._2.partition(!metadata.isControl(_))
     })
   }
-
 }
 
 trait Metadata extends SampleSet {
   def samples: Iterable[Sample]
 
-  def parameterSet: ParameterSet
+  def attributes: AttributeSet
 
   def parameterMap(s: Sample): Map[String, String] =
     Map() ++ parameters(s).map(x => x._1.id -> x._2)

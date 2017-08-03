@@ -12,6 +12,7 @@ import t.sample.SampleSet
 import t.model.sample.Attribute
 import t.model.sample.BasicAttribute
 import otg.model.sample.Attribute._
+import scala.collection.JavaConversions._
 
 /**
  * Construct a BioParameter object.
@@ -117,9 +118,9 @@ object BioParameter {
 
   def main(args: Array[String]) {
      val f = new otg.Factory
-     val params = otg.db.OTGParameterSet
-     val data = TSVMetadata(f, args(0), params)
-     var out = Map[SampleParameter, Seq[String]]()
+     val attrs = otg.model.sample.AttributeSet.getDefault
+     val data = TSVMetadata(f, args(0), attrs)
+     var out = Map[Attribute, Seq[String]]()
 
      for (time <- data.parameterValues(ExposureTime.id)) {
        val ftime = time.replaceAll("\\s+", "")
@@ -129,25 +130,25 @@ object BioParameter {
          m(ExposureTime.id) == time && m(DoseLevel.id) == "Control" && m("test_type") == "in vivo"
        })
        val rawValues = samples.map(s => data.parameters(s))
-       for (param <- params.all; if params.isNumerical(param)) {
-         if (!out.contains(param)) {
-           out += param -> Seq()
+       for (attr <- attrs.getAll; if attr.isNumerical()) {
+         if (!out.contains(attr)) {
+           out += attr -> Seq()
          }
 
-        val rawdata = rawValues.map(_.find( _._1 == param).get).map(x => convert(x._2))
+        val rawdata = rawValues.map(_.find( _._1 == attr).get).map(x => convert(x._2))
         if (!rawdata.isEmpty) {
           val v = variance(rawdata.flatten.toArray)
           val m = mean(rawdata.flatten.toArray)
           val sd = Math.sqrt(v)
           val upper = m + 2 * sd
           val lower = m - 2 * sd
-          out += param -> (out(param) :+ s"lowerBound_$ftime=$lower")
-          out += param -> (out(param) :+ s"upperBound_$ftime=$upper")
+          out += attr -> (out(attr) :+ s"lowerBound_$ftime=$lower")
+          out += attr -> (out(attr) :+ s"upperBound_$ftime=$upper")
         }
        }
      }
      for ((k, vs) <- out) {
-       println(k.identifier + "\t" + vs.mkString(","))
+       println(k.id + "\t" + vs.mkString(","))
      }
   }
 }

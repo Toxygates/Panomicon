@@ -39,6 +39,7 @@ import otg.model.sample.Attribute._
 
 import scala.collection.JavaConversions._
 import t.model.sample.BasicAttribute
+import t.model.sample.Attribute
 
 object TestData {
   import t.db.testing.TestData._
@@ -114,15 +115,15 @@ object TestData {
     def parameterValues(identifier: String): Set[String] =
       enumMaps(identifier).keySet
 
-    def parameterSet: ParameterSet = OTGParameterSet
+    def attributes = otg.model.sample.AttributeSet.getDefault
 
-    def parameters(s: Sample): Seq[(SampleParameter, String)] = {
+    def parameters(s: Sample): Seq[(Attribute, String)] = {
       samples.find(_ == s).get.sampleClass.getMap.map(x =>  {
          val k = OTGParameterSet.byId(x._1)
          (k, x._2)
       }).toSeq ++ Seq(
-          (OTGParameterSet.byId("liver_wt"), "" + liverWt(s)),
-          (OTGParameterSet.byId("kidney_total_wt"), "" + kidneyWt(s))
+          (LiverWeight, "" + liverWt(s)),
+          (KidneyWeight, "" + kidneyWt(s))
           )
     }
   }

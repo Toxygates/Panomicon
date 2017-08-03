@@ -86,7 +86,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       var md: Metadata = null
       try {
         md = factory.tsvMetadata(metaFile.getAbsolutePath(),
-          context.config.sampleParameters)
+          context.config.attributes)
       } catch {
         case e: Exception =>
           e.printStackTrace()

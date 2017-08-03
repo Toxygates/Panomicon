@@ -90,7 +90,7 @@ object BatchManager extends ManagerTool {
           case Some(ml) =>
             KCDBRegistry.setMaintenance(true)
             for (mf <- ml) {
-              val md = factory.tsvMetadata(mf, config.sampleParameters)
+              val md = factory.tsvMetadata(mf, config.attributes)
               val dataFile = mf.replace(".meta.tsv", ".data.csv")
 
               val f = new java.io.File(mf.replace(".meta.tsv", ".call.csv"))
@@ -107,7 +107,7 @@ object BatchManager extends ManagerTool {
                 "Please specify a data file with -data")
             val callFile = stringOption(args, "-calls")
 
-            val md = factory.tsvMetadata(metaFile, config.sampleParameters)
+            val md = factory.tsvMetadata(metaFile, config.attributes)
             addTasklets(bm.add(title, comment,
               md, dataFile, callFile,
               append, config.seriesBuilder))
@@ -556,7 +556,7 @@ class BatchManager(context: Context) {
       val batchURI = Batches.defaultPrefix + "/" + batch
 
       val sf = SampleFilter(batchURI = Some(batchURI))
-      val tsmd = new TriplestoreMetadata(samples, config.sampleParameters)(sf)
+      val tsmd = new TriplestoreMetadata(samples, config.attributes)(sf)
 
       //Note, strictly speaking we don't need the source data here.
       //This dependency could be removed by having the builder make points

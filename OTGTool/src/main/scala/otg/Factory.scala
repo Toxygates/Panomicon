@@ -30,6 +30,7 @@ import t.DataConfig
 import t.db.ParameterSet
 import t.db.file.MapMetadata
 import otg.db.Metadata
+import t.model.sample.AttributeSet
 
 class Factory extends t.Factory {
   override def samples(config: BaseConfig): OTGSamples =
@@ -43,7 +44,7 @@ class Factory extends t.Factory {
     otg.Context(bc)
   }
 
-  override def metadata(data: Map[String, Seq[String]], sp: ParameterSet): Metadata =
-    new MapMetadata(data, sp) with otg.db.Metadata
+  override def metadata(data: Map[String, Seq[String]], attr: AttributeSet): Metadata =
+    new MapMetadata(data, attr) with otg.db.Metadata
 
 }

@@ -32,6 +32,8 @@ import t.model.sample.CoreParameter._
  */
 trait Metadata extends t.db.Metadata {
 
+  def attributes: t.model.sample.AttributeSet
+  
   override def isControl(s: Sample): Boolean = parameter(s, DoseLevel).get == "Control"
 
 }

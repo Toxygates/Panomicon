@@ -26,6 +26,7 @@ import t.db.Metadata
 import t.db.ParameterSet
 import t.Factory
 import t.model.sample.Attribute
+import t.model.sample.AttributeSet
 
 /**
  * Metadata from a triplestore.
@@ -33,7 +34,7 @@ import t.model.sample.Attribute
  * os.batchURI.
  * @param querySet the parameters to be obtained. The default case returns all parameters.
  */
-class TriplestoreMetadata(sampleStore: Samples, val parameterSet: ParameterSet,
+class TriplestoreMetadata(sampleStore: Samples, val attributes: AttributeSet,
     querySet: Iterable[Attribute] = Seq())
 (implicit sf: SampleFilter) extends Metadata {
 
@@ -57,9 +58,9 @@ class TriplestoreMetadata(sampleStore: Samples, val parameterSet: ParameterSet,
 /**
  * Caching triplestore metadata that reads all the data once and stores it.
  */
-class CachingTriplestoreMetadata(os: Samples, parameterSet: ParameterSet,
+class CachingTriplestoreMetadata(os: Samples, attributes: AttributeSet,
     querySet: Iterable[Attribute] = Seq())(implicit sf: SampleFilter)
-    extends TriplestoreMetadata(os, parameterSet, querySet) {
+    extends TriplestoreMetadata(os, attributes, querySet) {
 
   val useQuerySet = (querySet.map(_.id).toSeq :+ "sample_id").distinct
 
@@ -71,12 +72,12 @@ class CachingTriplestoreMetadata(os: Samples, parameterSet: ParameterSet,
   println(rawData take 10)
 
   lazy val data =
-    rawData.map(r => (r._1 -> r._2.map { case (k,v) => parameterSet.byId(k) -> v }))
+    rawData.map(r => (r._1 -> r._2.map { case (k,v) => attributes.byId(k) -> v }))
 
   println(data take 10)
 
   override def parameters(s: Sample) = data.getOrElse(s.sampleId, Map()).toSeq
 
   override def parameterValues(identifier: String): Set[String] =
-    data.map(_._2(parameterSet.byId(identifier))).toSet
+    data.map(_._2(attributes.byId(identifier))).toSet
 }

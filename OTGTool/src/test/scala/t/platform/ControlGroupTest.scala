@@ -14,8 +14,8 @@ class ControlGroupTest extends TTestSuite {
   val bioParams = TestData.bioParameters
   val samples = t.db.testing.TestData.samples
 
-  val liverParam = metadata.parameterSet.byId("liver_wt")
-  val kidneyParam = metadata.parameterSet.byId("kidney_total_wt")
+  val liverParam = metadata.attributes.byId("liver_wt")
+  val kidneyParam = metadata.attributes.byId("kidney_total_wt")
 
   test("basic") {
     for (s <- samples) {

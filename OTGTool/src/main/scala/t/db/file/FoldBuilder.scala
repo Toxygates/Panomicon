@@ -31,6 +31,7 @@ import t.db.ExprValue
 import otg.Factory
 import scala.Vector
 import t.db.FoldPExpr
+import t.model.sample.Helpers._
 
 /**
  * log-2 fold values constructed from the input data
@@ -49,7 +50,7 @@ abstract class FoldValueBuilder[E <: ExprValue](md: Metadata, input: RawExpressi
    */
   def values(s: Sample): Iterable[(Sample, String, E)] = {
     println("Compute control values")
-    val groups = md.parameterSet.treatedControlGroups(md, input.samples)
+    val groups = md.attributes.treatedControlGroups(md, input.samples)
     var r = Vector[(Sample, String, E)]()
 
     for ((ts, cs) <- groups;
@@ -184,7 +185,7 @@ object FoldBuilder extends CmdLineOptions {
 
     val factory = new otg.Factory //TODO
 
-    val md = factory.tsvMetadata(mdfile, otg.db.OTGParameterSet)
+    val md = factory.tsvMetadata(mdfile, otg.model.sample.AttributeSet.getDefault)
     val data = new CSVRawExpressionData(List(input), List(calls),
         Some(md.samples.size), println)
     val builder = new PFoldValueBuilder(md, data)
