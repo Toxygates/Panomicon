@@ -9,6 +9,7 @@ import java.util.Set;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -38,6 +39,7 @@ import t.viewer.client.components.search.SampleTable;
 import t.viewer.client.components.search.Search;
 import t.viewer.client.components.search.UnitSearch;
 import t.viewer.client.components.search.UnitTable;
+import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.shared.AppInfo;
 
@@ -143,7 +145,8 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
       @Override
       public void onClick(ClickEvent event) {
         try {
-          Unit[] units = unitSearch.sampleGroupFromSelection();
+          Unit[] units =
+              unitSearch.sampleGroupFromUnits(unitTableHelper.selectionTable().getSelection());
           String name = findAvailableGroupName("Sample search group ");
           Group pendingGroup = new Group(schema(), name, units);
 
@@ -314,6 +317,11 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
    * ResultTable.Delegate methods
    */
   @Override
+  public ImageResource inspectCellImage() {
+    return manager.resources().magnify();
+  }
+
+  @Override
   public void finishedSettingUpTable() {
     currentSearch.helper().selectionTable().setVisible(true);
     currentSearch.helper().selectionTable().clearSelection();
@@ -335,5 +343,18 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
         item.setEnabled(true);
       }
     }
+  }
+
+  @Override
+  public void displayDetailsForEntry(Unit unit) {
+    SampleDetailTable table = new SampleDetailTable(this, "Unit details", false);
+    
+    List<Unit> singleUnitList = new ArrayList<Unit>();
+    singleUnitList.add(unit);
+    Unit[] unitsWithControl = unitSearch.sampleGroupFromUnits(singleUnitList);
+    Group g = new Group(schema(), "data", unitsWithControl);
+
+    table.loadFrom(g, false);
+    Utils.displayInPopup("Unit details", table, DialogPosition.Center);
   }
 }

@@ -8,11 +8,14 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.gwt.cell.client.Cell;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.Column;
 
 import t.common.client.Utils;
 import t.common.client.components.SelectionTable;
 import t.common.shared.sample.BioParamValue;
+import t.common.shared.sample.Unit;
 import t.common.shared.sample.search.MatchCondition;
 import t.viewer.client.table.TooltipColumn;
 
@@ -22,16 +25,19 @@ import t.viewer.client.table.TooltipColumn;
 public abstract class ResultTable<T> {
   public interface Delegate {
     void finishedSettingUpTable();
+    ImageResource inspectCellImage();
+    void displayDetailsForEntry(Unit unit);
   }
 
   protected SelectionTable<T> selectionTable = new SelectionTable<T>("selection", false) {
     @Override
     protected void initTable(CellTable<T> table) {}
   };
-  private Map<String, KeyColumn<T>> columns = new HashMap<String, KeyColumn<T>>();
+  private Map<String, KeyColumn<T>> keyColumns = new HashMap<String, KeyColumn<T>>();
+  private List<Column<T, ?>> nonKeyColumns = new ArrayList<Column<T, ?>>();
   private List<String> additionalKeys = new LinkedList<String>();
   private List<String> conditionKeys = new ArrayList<String>();
-  private Delegate delegate; // we'll need this in the future
+  protected Delegate delegate;
 
   protected abstract KeyColumn<T> makeColumn(String key, boolean numeric);
 
@@ -114,7 +120,12 @@ public abstract class ResultTable<T> {
   }
 
   protected void addColumn(KeyColumn<T> column, String title) {
-    columns.put(title, column);
+    keyColumns.put(title, column);
+    cellTable().addColumn(column, title);
+  }
+
+  protected void addNonKeyColumn(Column<T, ?> column, String title) {
+    nonKeyColumns.add(column);
     cellTable().addColumn(column, title);
   }
 
@@ -143,20 +154,24 @@ public abstract class ResultTable<T> {
   }
 
   public void removeColumn(String key) {
-    KeyColumn<T> column = columns.get(key);
+    Column<T, ?> column = keyColumns.get(key);
     cellTable().removeColumn(column);
-    columns.remove(key);
+    keyColumns.remove(key);
   }
 
   public void gotDataForKey(String key) {
-    columns.get(key).stopWaitingForData();
+    keyColumns.get(key).stopWaitingForData();
   }
 
   public void clear() {
-    for (String key : columns.keySet()) {
-      cellTable().removeColumn(columns.get(key));
+    for (String key : keyColumns.keySet()) {
+      cellTable().removeColumn(keyColumns.get(key));
     }
-    columns.clear();
+    keyColumns.clear();
+    for (Column<T, ?> column : nonKeyColumns) {
+      cellTable().removeColumn(column);
+    }
+    nonKeyColumns.clear();
     conditionKeys.clear();
     additionalKeys.clear();
   }
