@@ -146,6 +146,8 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
           columnsChanged(chosenColumns);
           storeColumns(manager().getParser());
 
+          unitTableHelper.selectionTable().clearSelection();
+
           Window.alert("Saved group: " + name);
         } catch (Exception e) {
           Window.alert("Saving group failed: " + e);
