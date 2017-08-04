@@ -229,32 +229,40 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   }
 
   private void setupMenuItems() {
-    parameterMenuItems = new ArrayList<ParameterTickItem>();
-
     MenuBar fileBar = new MenuBar(true);
     MenuItem fileItem = new MenuItem("File", false, fileBar);
-
     saveCVSMenuItem = new MenuItem("Save results to CSV", false, new Command() {
       @Override
       public void execute() {
-        SampleSearchScreen.this.sampleService.prepareUnitCSVDownload(unitSearch.searchResult(),
-            unitTableHelper.allKeys(), new PendingAsyncCallback<String>(SampleSearchScreen.this,
-                "Unable to prepare the data for download,") {
-              @Override
-              public void handleSuccess(String url) {
-                Utils.displayURL("Your download is ready.", "Download", url);
-              }
-            });
+        prepareUnitCVSDownload();
       }
     });
     saveCVSMenuItem.setEnabled(false);
     fileBar.addItem(saveCVSMenuItem);
-
     addMenu(fileItem);
 
+    MenuBar editBar = new MenuBar(true);
+    MenuItem editItem = new MenuItem("Edit", false, editBar);
+    MenuItem clearSearchConditionItem =
+        new MenuItem("Clear search condition", false, new Command() {
+          @Override
+          public void execute() {
+            conditionEditor.clear();
+          }
+        });
+    editBar.addItem(clearSearchConditionItem);
+    MenuItem clearSelectionItem = new MenuItem("Clear selection", false, new Command() {
+      @Override
+      public void execute() {
+        currentSearch.helper().selectionTable().clearSelection();
+      }
+    });
+    editBar.addItem(clearSelectionItem);
+    addMenu(editItem);
+
+    parameterMenuItems = new ArrayList<ParameterTickItem>();
     MenuBar parametersBar = new MenuBar(true);
     MenuItem parameterItem = new MenuItem("View", false, parametersBar);
-
     MenuBar numericalParametersBar = new MenuBar(true);
     MenuItem numericalParametersItem =
         new MenuItem("Numerical parameters", false, numericalParametersBar);
@@ -262,7 +270,6 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
       parameterMenuItems.add(new ParameterTickItem(numericalParametersBar,
           parameter.label(), parameter.id(), true, false, false));
     }
-
     MenuBar stringParametersBar = new MenuBar(true);
     MenuItem stringParametersItem =
         new MenuItem("Non-numerical parameters", false, stringParametersBar);
@@ -270,10 +277,8 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
       parameterMenuItems.add(new ParameterTickItem(stringParametersBar,
           parameter.label(), parameter.id(), false, false, false));
     }
-
     parametersBar.addItem(numericalParametersItem);
     parametersBar.addItem(stringParametersItem);
-
     addMenu(parameterItem);
   }
 
@@ -304,6 +309,17 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
     sampleTableHelper.selectionTable().setVisible(false);
     unitTableHelper.clear();
     unitTableHelper.selectionTable().setVisible(false);
+  }
+
+  private void prepareUnitCVSDownload() {
+    SampleSearchScreen.this.sampleService.prepareUnitCSVDownload(unitSearch.searchResult(),
+        unitTableHelper.allKeys(), new PendingAsyncCallback<String>(SampleSearchScreen.this,
+            "Unable to prepare the data for download,") {
+          @Override
+          public void handleSuccess(String url) {
+            Utils.displayURL("Your download is ready.", "Download", url);
+          }
+        });
   }
 
   /*
