@@ -211,15 +211,15 @@ public abstract class ResultTable<T> {
       if (waitingForData) {
         return "Waiting for data...";
       } else {
-        String string = getData(s);
-        if (isNumeric) {
+        String value = getData(s);
+        if (isNumeric && value != null) {
           try {
-            return Utils.formatNumber(Double.parseDouble(string.replace(",", "")));
+            return Utils.formatNumber(Double.parseDouble(value.replace(",", "")));
           } catch (NumberFormatException e) {
-            return "Invalid number: " + string;
+            return "Invalid number: " + value;
           }
         } else {
-          return string;
+          return value;
         }
       }
     }

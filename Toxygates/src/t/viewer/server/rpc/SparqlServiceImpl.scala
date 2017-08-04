@@ -542,6 +542,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val javaSamples: java.util.Collection[Sample] = searchSpace.map(asJavaSample)
     val units = Unit.formUnits(schema, javaSamples)
 
+    //TODO break out the way that control groups are computed here, share with other locations
+
     val mediumParameter = schema.mediumParameter()
     val groupedUnits = units.groupBy(_.getSamples()(0).get(ControlGroupParam.identifier))
     val controlGroupMap = Map() ++ groupedUnits.flatMap { case (param, units) =>
@@ -562,7 +564,12 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     }
     println("Found " + rs.size + " matches.")
 
-    rs.map(unit => new Pair(unit, controlGroupMap(unit.getSamples()(0).get(ControlGroupParam.identifier)))).toArray
+    (for (unit <- rs;
+      reprSample = unit.getSamples()(0);
+      cgId = reprSample.get(ControlGroupParam.identifier);
+      controlUnit <- controlGroupMap.get(cgId);
+      pair = new Pair(unit, controlUnit)
+      ) yield pair).toArray
   }
 
   def prepareUnitCSVDownload(units: Array[Unit], parameterNames: Array[String]):
