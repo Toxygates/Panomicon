@@ -12,6 +12,7 @@ import java.util.Set;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -55,7 +56,7 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
 
   private Widget tools;
   private ConditionEditor conditionEditor;
-  private Button downloadButton;
+  private MenuItem saveCVSMenuItem;
   private Button saveGroupButton;
   private Label resultCountLabel;
 
@@ -132,21 +133,6 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
 
     resultCountLabel = new Label();
 
-    downloadButton = new Button("Download CSV...", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        SampleSearchScreen.this.sampleService.prepareUnitCSVDownload(unitSearch.searchResult(),
-            unitTableHelper.allKeys(), new PendingAsyncCallback<String>(SampleSearchScreen.this,
-                "Unable to prepare the data for download,") {
-              @Override
-              public void handleSuccess(String url) {
-                Utils.displayURL("Your download is ready.", "Download", url);
-              }
-            });
-      }
-    });
-    downloadButton.setVisible(false);
-
     saveGroupButton = new Button("Save sample group", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -169,7 +155,7 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
     saveGroupButton.setVisible(false);
 
     tools = Utils.mkVerticalPanel(true, conditionEditor, Utils.mkHorizontalPanel(true,
-        unitSearchButton, sampleSearchButton, resultCountLabel, saveGroupButton, downloadButton));
+        unitSearchButton, sampleSearchButton, resultCountLabel, saveGroupButton));
   }
 
   private String findAvailableGroupName(String prefix) throws Exception {
@@ -243,6 +229,27 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   private void setupMenuItems() {
     parameterMenuItems = new ArrayList<ParameterTickItem>();
 
+    MenuBar fileBar = new MenuBar(true);
+    MenuItem fileItem = new MenuItem("File", false, fileBar);
+
+    saveCVSMenuItem = new MenuItem("Save results to CSV", false, new Command() {
+      @Override
+      public void execute() {
+        SampleSearchScreen.this.sampleService.prepareUnitCSVDownload(unitSearch.searchResult(),
+            unitTableHelper.allKeys(), new PendingAsyncCallback<String>(SampleSearchScreen.this,
+                "Unable to prepare the data for download,") {
+              @Override
+              public void handleSuccess(String url) {
+                Utils.displayURL("Your download is ready.", "Download", url);
+              }
+            });
+      }
+    });
+    saveCVSMenuItem.setEnabled(false);
+    fileBar.addItem(saveCVSMenuItem);
+
+    addMenu(fileItem);
+
     MenuBar parametersBar = new MenuBar(true);
     MenuItem parameterItem = new MenuItem("View", false, parametersBar);
 
@@ -315,7 +322,7 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
     hideTables();
     resultCountLabel.setText("Found " + numResults + " results");
     currentSearch = search;
-    downloadButton.setVisible((currentSearch == unitSearch));
+    saveCVSMenuItem.setEnabled(currentSearch == unitSearch);
     saveGroupButton.setVisible((currentSearch == unitSearch));
   }
 
