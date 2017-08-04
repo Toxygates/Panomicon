@@ -33,7 +33,7 @@ public class UnitTable extends ResultTable<Unit> {
 
   @Override
   protected void addAdhocColumns() {
-    addColumn(new UnitKeyColumn(textCell, "sample_id", false) {
+    addKeyColumn(new UnitKeyColumn(textCell, "sample_id", false) {
       @Override
       public String getValue(Unit unit) {
         return getData(unit).split("\\s*/\\s*")[0];

@@ -3,8 +3,10 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -69,18 +71,22 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   private Collection<BioParamValue> searchParameters;
   private Collection<BioParamValue> nonSearchParameters;
 
+  private Map<String, String> humanReadableParamNames;
+
   private Collection<ParameterTickItem> parameterMenuItems;
 
   private void getParameterInfo() {
     BioParamValue[] allParams = appInfo.bioParameters();
     List<BioParamValue> searchParams = new ArrayList<BioParamValue>();
     List<BioParamValue> nonSearchParams = new ArrayList<BioParamValue>();
+    humanReadableParamNames = new HashMap<String, String>();
     for (BioParamValue bp : allParams) {
       if (bp instanceof NumericalBioParamValue) {
         searchParams.add(bp);
       } else {
         nonSearchParams.add(bp);
       }
+      humanReadableParamNames.put(bp.id(), bp.label());
     }
     java.util.Collections.sort(searchParams);
     java.util.Collections.sort(nonSearchParams);
@@ -229,7 +235,7 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
         }
         currentSearch.helper().addExtraColumn(parameterId, isNumeric, waitForData);
       } else {
-        currentSearch.helper().removeColumn(parameterId);
+        currentSearch.helper().removeKeyColumn(parameterId);
       }
     }
   }
@@ -319,6 +325,16 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   @Override
   public ImageResource inspectCellImage() {
     return manager.resources().magnify();
+  }
+
+  @Override
+  public String humanReadableTitleForColumn(String id) {
+    String title = humanReadableParamNames.get(id);
+    if (title == null) {
+      return id;
+    } else {
+      return humanReadableParamNames.get(id);
+    }
   }
 
   @Override
