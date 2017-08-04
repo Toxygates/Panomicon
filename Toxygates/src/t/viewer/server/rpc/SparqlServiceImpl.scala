@@ -125,7 +125,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   lazy val platformsCache = t.viewer.server.Platforms(probeStore)
 
-  lazy val annotations = new Annotations(schema, baseConfig)
+  lazy val annotations = new Annotations(schema, baseConfig,
+      new Units(schema, sampleStore))
 
   override def localInit(conf: Configuration) {
     super.localInit(conf)
@@ -534,26 +535,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     rs.toArray
   }
 
-  import t.db.SampleParameters.{ControlGroup => ControlGroupParam}
-
-  def unitSearch(sc: SampleClass, cond: MatchCondition): Array[Pair[Unit, Unit]] = {
-    val searchSpace = sampleStore.sampleQuery(SampleClassFilter(sc))(sf)()
-
-    val javaSamples: java.util.Collection[Sample] = searchSpace.map(asJavaSample)
-    val units = Unit.formUnits(schema, javaSamples)
-
-    //TODO break out the way that control groups are computed here, share with other locations
-
-    val mediumParameter = schema.mediumParameter()
-    val groupedUnits = units.groupBy(_.getSamples()(0).get(ControlGroupParam.identifier))
-    val controlGroupMap = Map() ++ groupedUnits.flatMap { case (param, units) =>
-      units.find(unit => schema.isControlValue(unit.get(mediumParameter))).map(param -> _)
-    }
-
-    val ss = t.common.server.sample.search.UnitSearch(sampleStore, cond, annotations, units)
-    val rs = ss.results
-    println("Search results:")
-    for (s <- rs) {
+  private def printSearchResults(us: Iterable[Unit]) {
+     println("Search results:")
+    for (s <- us) {
       for (param <- appInfoLoader.latest.numericalParameters()) {
         s.averageAttribute(param.id)
       }
@@ -562,12 +546,32 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       }
       println(s)
     }
-    println("Found " + rs.size + " matches.")
+    println("Found " + us.size + " matches.")
+  }
+
+  def unitSearch(sc: SampleClass, cond: MatchCondition): Array[Pair[Unit, Unit]] = {
+
+    val searchSpace = sampleStore.sampleQuery(SampleClassFilter(sc))(sf)()
+
+    val javaSamples: java.util.Collection[Sample] = searchSpace.map(asJavaSample)
+    val units = Unit.formUnits(schema, javaSamples)
+    val unitHelper = new Units(schema, sampleStore)
+
+    //TODO break out the way that control groups are computed here, share with other locations
+
+    val groupedUnits = unitHelper.byControlGroup(units)
+    val controlGroupMap = Map() ++ groupedUnits.flatMap { case (param, units) =>
+      units.find(unitHelper.isControl(_)).map(param -> _)
+    }
+
+    val ss = t.common.server.sample.search.UnitSearch(sampleStore, cond, annotations,
+        units.filter(!unitHelper.isControl(_)))
+    val rs = ss.results
+    printSearchResults(rs)
 
     (for (unit <- rs;
       reprSample = unit.getSamples()(0);
-      cgId = reprSample.get(ControlGroupParam.identifier);
-      controlUnit <- controlGroupMap.get(cgId);
+      controlUnit <- controlGroupMap.get(unitHelper.controlGroupKey(unit));
       pair = new Pair(unit, controlUnit)
       ) yield pair).toArray
   }

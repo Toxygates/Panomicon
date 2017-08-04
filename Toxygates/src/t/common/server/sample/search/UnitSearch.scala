@@ -68,7 +68,10 @@ object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
     Map() ++
       units.map(unit => {
         unit.getSamples.headOption match {
-          case Some(s) => Some(unit -> sampleControlGroups(s))
+          case Some(s) => sampleControlGroups.get(s) match {
+            case Some(cg) => Some(unit -> cg)
+            case _ => None
+          }
           case _ => None
         }
       }).flatten

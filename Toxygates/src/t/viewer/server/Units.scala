@@ -98,4 +98,28 @@ class Units(schema: DataSchema, sampleStore: Samples) {
     }
     r
   }
+  
+  private val mediumParameter = schema.mediumParameter()
+
+  def isControl(u: Unit) = schema.isControlValue(u.get(mediumParameter))
+    
+  def isControl(s: Sample) = schema.isControlValue(s.get(mediumParameter))
+
+  import t.db.SampleParameters.{ControlGroup => ControlGroupParam}
+  type ControlGroupKey = (String, String)
+
+  //TODO try to simplify, share code with the above
+  def byControlGroup(raw: Iterable[Unit]): Map[ControlGroupKey, Iterable[Unit]] =
+    raw.groupBy(controlGroupKey)
+
+  private val minorParameter = schema.minorParameter()
+
+  def controlGroupKey(u: Unit): ControlGroupKey =
+      controlGroupKey(u.getSamples()(0))
+
+  def samplesByControlGroup(raw: Iterable[Sample]): Map[ControlGroupKey, Iterable[Sample]] =
+    raw.groupBy(controlGroupKey)
+
+  def controlGroupKey(s: Sample): ControlGroupKey =
+      (s.get(ControlGroupParam.identifier), s.get(minorParameter))
 }
