@@ -31,7 +31,7 @@ public abstract class ResultTable<T> {
     void displayDetailsForEntry(Unit unit);
   }
 
-  protected SelectionTable<T> selectionTable = new SelectionTable<T>("selection", false) {
+  protected SelectionTable<T> selectionTable = new SelectionTable<T>("", false) {
     @Override
     protected void initTable(CellTable<T> table) {}
   };

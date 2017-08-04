@@ -135,7 +135,7 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
       case MatchType.High => paramIsHigh(s, param)
       case MatchType.Low  => paramIsLow(s, param)
       case MatchType.NormalRange =>
-        !paramIsHigh(s, param) && !paramIsLow(s, param)
+        !sampleParamValue(s, param).isEmpty && !paramIsHigh(s, param) && !paramIsLow(s, param)
       case _ =>
         sampleParamValue(s, param) match {
           case Some(v) =>

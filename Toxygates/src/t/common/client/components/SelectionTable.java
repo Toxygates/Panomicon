@@ -27,8 +27,6 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.SharedUtils;
-
 import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.user.cellview.client.CellTable;
@@ -38,6 +36,8 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.NoSelectionModel;
+
+import t.common.shared.SharedUtils;
 
 /**
  * A cell table that displays data and includes a column with checkboxes. By using the checkboxes,
@@ -113,6 +113,7 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
     setSelection(new HashSet<T>(selected));
   }
 
+  @Override
   public void setSelection(Collection<T> selection) {
     clearSelection();
     logger.info("Received selection " + selection.size());
@@ -120,6 +121,7 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
     table.redraw();
   }
 
+  @Override
   public Set<T> getSelection() {
     return new HashSet<T>(selected);
   }
@@ -144,18 +146,22 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
     selected.remove(t);
   }
 
+  @Override
   public List<T> availableItems() {
     return provider.getList();
   }
 
+  @Override
   public Set<T> validateItems(List<T> items) {
     return new HashSet<T>(items);
   }
 
+  @Override
   public List<Suggestion> getSuggestions(String request) {
     return new ArrayList<Suggestion>();
   }
 
+  @Override
   public void setSelection(Collection<T> items, @Nullable SetEditor<T> fromSelector) {
     setSelection(items);
   }
@@ -181,6 +187,7 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
     for (T item : provider.getList()) {
       ((CheckboxCell) selectColumn.getCell()).clearViewData(provider.getKey(item));
     }
+    table.redraw();
   }
 
   public void setItems(List<T> data) {
@@ -193,6 +200,7 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
    * @param data
    * @param clearSelection
    */
+  @Override
   public void setItems(List<T> data, boolean clearSelection) {
     logger.info("Set items " + data.size() + " clear: " + clearSelection);
     provider.setList(new ArrayList<T>(data));
