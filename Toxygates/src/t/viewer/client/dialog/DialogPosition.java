@@ -24,10 +24,12 @@ import com.google.gwt.user.client.Window;
 
 public enum DialogPosition {
 	Center {
-		public int computeX(int dialogWidth) {
+		@Override
+    public int computeX(int dialogWidth) {
 			return Window.getClientWidth()/2 - dialogWidth/2;
 		}
-		public int computeY(int dialogHeight) {
+		@Override
+    public int computeY(int dialogHeight) {
 			if (isTallDialog(dialogHeight)) {
 				return 50;
 			} else {
@@ -35,11 +37,23 @@ public enum DialogPosition {
 			}
 		}
 	},
+  Top {
+      @Override
+  public int computeX(int dialogWidth) {
+          return Window.getClientWidth()/2 - dialogWidth/2;
+      }
+      @Override
+  public int computeY(int dialogHeight) {
+              return 50;
+    }
+  },
 	Side {
-		public int computeX(int dialogWidth) {
+		@Override
+    public int computeX(int dialogWidth) {
 			return Window.getClientWidth() - dialogWidth - 50;
 		}
-		public int computeY(int dialogHeight) {
+		@Override
+    public int computeY(int dialogHeight) {
 			return Center.computeY(dialogHeight);
 		}
 	};

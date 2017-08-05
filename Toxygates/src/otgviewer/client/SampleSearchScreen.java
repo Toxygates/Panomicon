@@ -396,6 +396,6 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
     Group g = new Group(schema(), "data", unitsWithControl);
 
     table.loadFrom(g, false);
-    Utils.displayInPopup("Unit details", table, DialogPosition.Center);
+    Utils.displayInPopup("Unit details", table, DialogPosition.Top);
   }
 }
