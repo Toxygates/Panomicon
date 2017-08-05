@@ -9,6 +9,7 @@ import java.util.Map;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import t.common.shared.Pair;
+import t.common.shared.RequestResult;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.NumericalBioParamValue;
@@ -18,7 +19,7 @@ import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.rpc.SampleServiceAsync;
 
-public class UnitSearch extends Search<Unit, Pair<Unit, Unit>[]> {
+public class UnitSearch extends Search<Unit, Pair<Unit, Unit>> {
   private Sample[] samplesInResult;
   private HashMap<String, Sample> sampleIdHashMap;
   private HashMap<String, Unit> controlUnitsMap;
@@ -28,10 +29,10 @@ public class UnitSearch extends Search<Unit, Pair<Unit, Unit>[]> {
   }
 
   @Override
-  protected void extractSearchResult(Pair<Unit, Unit>[] result) {
+  protected void extractSearchResult(RequestResult<Pair<Unit, Unit>> result) {
     List<Unit> units = new ArrayList<Unit>();
     controlUnitsMap = new HashMap<String, Unit>();
-    for (Pair<Unit, Unit> pair : result) {
+    for (Pair<Unit, Unit> pair : result.items()) {
       units.add(pair.first());
       controlUnitsMap.put(pair.first().get("sample_id"), pair.second());
     }
@@ -39,8 +40,9 @@ public class UnitSearch extends Search<Unit, Pair<Unit, Unit>[]> {
   }
 
   @Override
-  protected void asyncSearch(SampleClass sampleClass, AsyncCallback<Pair<Unit, Unit>[]> callback) {
-    sampleService.unitSearch(sampleClass, condition, callback);
+  protected void asyncSearch(SampleClass sampleClass,
+      AsyncCallback<RequestResult<Pair<Unit, Unit>>> callback) {
+    sampleService.unitSearch(sampleClass, condition, MAX_RESULTS, callback);
   }
 
   @Override
@@ -49,7 +51,7 @@ public class UnitSearch extends Search<Unit, Pair<Unit, Unit>[]> {
   }
 
   @Override
-  protected void searchComplete(Pair<Unit, Unit>[] result) {
+  protected void searchComplete(RequestResult<Pair<Unit, Unit>> result) {
     super.searchComplete(result);
     samplesInResult = null;
   }

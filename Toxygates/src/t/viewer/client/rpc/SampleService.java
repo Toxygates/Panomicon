@@ -8,6 +8,7 @@ import com.google.gwt.user.client.rpc.RemoteService;
 
 import t.common.shared.Dataset;
 import t.common.shared.Pair;
+import t.common.shared.RequestResult;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
 import t.common.shared.sample.Sample;
@@ -121,9 +122,11 @@ public interface SampleService extends RemoteService {
    */
   String prepareAnnotationCSVDownload(HasSamples<Sample> column) throws TimeoutException;
   
-  Sample[] sampleSearch(SampleClass sampleClass, MatchCondition condition) throws TimeoutException;
+  RequestResult<Sample> sampleSearch(SampleClass sampleClass, MatchCondition condition,
+      int maxResults) throws TimeoutException;
 
-  Pair<Unit, Unit>[] unitSearch(SampleClass sampleClass, MatchCondition condition)
+  RequestResult<Pair<Unit, Unit>> unitSearch(SampleClass sampleClass, MatchCondition condition,
+      int maxResults)
       throws TimeoutException;
 
   String prepareUnitCSVDownload(Unit[] units, String[] parameterNames) throws TimeoutException;
