@@ -47,15 +47,14 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
    * @param sampleSet a set that the discovered control samples have to be contained in
    */
   def controlGroups(samples: Iterable[Sample], sampleSet: SampleSet): Map[Sample, ControlGroup] = {
-
     val controlGroups = unitHelper.samplesByControlGroup(samples)
-    val knownSamples = sampleSet.samples.toSet
+    val knownSamples = sampleSet.samples.map(_.sampleId).toSet
     Map() ++ controlGroups.flatMap { case (cgroup, ss) =>
-      var (ts, cs) = ss.partition(s => !unitHelper.isControl(s))
-      val controls = (cs.map(asScalaSample).toSet intersect (knownSamples)).toSeq
+      var (cs, ts) = ss.partition(s => unitHelper.isControl(s))
+      val controls = cs.map(asScalaSample).filter(s => knownSamples.contains(s.sampleId))
       if (!controls.isEmpty) {
         val cg = new ControlGroup(bioParameters, sampleSet, controls)
-        ts.map(t => t -> cg)
+        ss.map(s => s -> cg)
       } else {
         Seq()
       }

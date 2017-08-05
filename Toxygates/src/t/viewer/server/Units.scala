@@ -106,7 +106,7 @@ class Units(schema: DataSchema, sampleStore: Samples) {
   def isControl(s: Sample) = schema.isControlValue(s.get(mediumParameter))
 
   import t.db.SampleParameters.{ControlGroup => ControlGroupParam}
-  type ControlGroupKey = (String, String)
+  type ControlGroupKey = (String, String, String)
 
   //TODO try to simplify, share code with the above
   def byControlGroup(raw: Iterable[Unit]): Map[ControlGroupKey, Iterable[Unit]] =
@@ -121,5 +121,6 @@ class Units(schema: DataSchema, sampleStore: Samples) {
     raw.groupBy(controlGroupKey)
 
   def controlGroupKey(s: Sample): ControlGroupKey =
-      (s.get(ControlGroupParam.identifier), s.get(minorParameter))
+      (s.get(ControlGroupParam.identifier), s.get(minorParameter),
+          t.db.SampleParameters.BatchGraph.identifier)
 }

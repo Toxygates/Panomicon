@@ -63,15 +63,16 @@ object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
       unit
     }
 
-  protected def formControlGroups(metadata: Metadata, annotations:Annotations) = (units: Iterable[Unit]) => {
-    val sampleControlGroups = annotations.controlGroups(units.flatMap(_.getSamples()), metadata)
+  protected def formControlGroups(metadata: Metadata, annotations: Annotations) = (units: Iterable[Unit]) => {
+    val sampleControlGroups = annotations.controlGroups(units.flatMap(_.getSamples()), metadata)    
     Map() ++
       units.map(unit => {
         unit.getSamples.headOption match {
-          case Some(s) => sampleControlGroups.get(s) match {
-            case Some(cg) => Some(unit -> cg)
-            case _ => None
-          }
+          case Some(s) =>            
+            sampleControlGroups.get(s) match {
+              case Some(cg) => Some(unit -> cg)
+              case _ => None
+            }
           case _ => None
         }
       }).flatten

@@ -528,27 +528,12 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val ss = t.common.server.sample.search.IndividualSearch(sampleStore, cond, annotations,
         searchSpace.map(asJavaSample))
     val rs = ss.results
-    println("Search results:")
-    for (s <- rs) {
+    println(s"Search results (displaying 20/${rs.size}:")
+    for (s <- rs take 20) {
       println(s)
-    }
-    println("Found " + rs.size + " matches.")
+    }    
 
     new RequestResult((rs take maxResults).toArray, rs.size)
-  }
-
-  private def printSearchResults(us: Iterable[Unit]) {
-     println("Search results:")
-    for (s <- us) {
-      for (param <- appInfoLoader.latest.numericalParameters()) {
-        s.averageAttribute(param.id)
-      }
-      for (param <- appInfoLoader.latest.stringParameters()) {
-        s.concatenateAttribute(param.id)
-      }
-      println(s)
-    }
-    println("Found " + us.size + " matches.")
   }
 
   import t.db.SampleParameters.{ControlGroup => ControlGroupParam}
@@ -560,17 +545,26 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val units = Unit.formUnits(schema, javaSamples)
     val unitHelper = new Units(schema, sampleStore)
 
-    //TODO break out the way that control groups are computed here, share with other locations
-
     val groupedUnits = unitHelper.byControlGroup(units)
     val controlGroupMap = Map() ++ groupedUnits.flatMap { case (param, units) =>
       units.find(unitHelper.isControl(_)).map(param -> _)
     }
 
     val ss = t.common.server.sample.search.UnitSearch(sampleStore, cond, annotations,
-        units.filter(!unitHelper.isControl(_)))
-    val rs = ss.results
-    printSearchResults(rs)
+        units)
+    val rs = ss.results.filter(u => !unitHelper.isControl(u))
+    for (s <- rs) {
+      for (param <- appInfoLoader.latest.numericalParameters()) {
+        s.averageAttribute(param.id)
+      }
+      for (param <- appInfoLoader.latest.stringParameters()) {
+        s.concatenateAttribute(param.id)
+      }      
+    }
+    println(s"Search results (displaying 20/${rs.size}:")
+    for (u <- rs take 20) {      
+      println(u)
+    }    
 
     val pairs = (for (
       unit <- rs take maxResults;
