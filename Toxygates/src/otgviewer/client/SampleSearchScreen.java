@@ -335,10 +335,10 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   }
 
   @Override
-  public void searchEnded(Search<?, ?> search, int numResults) {
+  public void searchEnded(Search<?, ?> search, String resultCountText) {
     waitDialog.hide();
     hideTables();
-    resultCountLabel.setText("Found " + numResults + " results");
+    resultCountLabel.setText(resultCountText);
     currentSearch = search;
     saveCVSMenuItem.setEnabled(currentSearch == unitSearch);
     saveGroupButton.setVisible((currentSearch == unitSearch));

@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+import t.common.shared.RequestResult;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
 import t.common.shared.sample.Sample;
@@ -19,15 +20,18 @@ import t.viewer.client.rpc.SampleServiceAsync;
  * Makes asynchronous sample/unit search requests to the SampleService and reports back on the
  * results
  * 
- * @tparam EntityType the type of objects that are searched for
- * @tparam ContainerType the type of object (usually some kind of collection of EntityType)
+ * @tparam Entity the type of objects that are searched for
+ * @tparam Container the type of object (either Entity or some kind of wrapper around Entity)
  *         representing a search result
  */
 public abstract class Search<Entity, Container> {
   public interface Delegate {
     void searchStarted(Search<?, ?> search);
-    void searchEnded(Search<?, ?> search, int numResults);
+
+    void searchEnded(Search<?, ?> search, String resultCountText);
   }
+
+  final static int MAX_RESULTS = 1000;
 
   protected Delegate delegate;
   protected ResultTable<Entity> helper;
@@ -57,16 +61,24 @@ public abstract class Search<Entity, Container> {
    * 
    * @param result the object returned from a search on the backend
    */
-  abstract void extractSearchResult(Container result);
+  abstract void extractSearchResult(RequestResult<Container> result);
 
-  protected void searchComplete(Container result) {
+  protected void searchComplete(RequestResult<Container> result) {
     extractSearchResult(result);
     fetchedParameters = new HashSet<String>();
-    delegate.searchEnded(Search.this, searchResult.length);
+    if (result.totalCount() <= MAX_RESULTS) {
+      delegate.searchEnded(Search.this, "Found " + result.totalCount() + " results");
+    } else {
+      delegate.searchEnded(Search.this,
+          "Displaying " + MAX_RESULTS + " of " + result.totalCount() + " results");
+      Window.alert(
+          "Too many search results; only the first " + MAX_RESULTS + " results will be displayed.");
+    }
     helper.setupTable(searchResult, condition);
   }
 
-  abstract void asyncSearch(SampleClass sampleClass, AsyncCallback<Container> callback);
+  abstract void asyncSearch(SampleClass sampleClass,
+      AsyncCallback<RequestResult<Container>> callback);
   abstract void trackAnalytics();
 
   public void attemptSearch(SampleClass sampleClass, final @Nullable MatchCondition condition) {
@@ -79,9 +91,9 @@ public abstract class Search<Entity, Container> {
     delegate.searchStarted(Search.this);
     trackAnalytics();
 
-    asyncSearch(sampleClass, new AsyncCallback<Container>() {
+    asyncSearch(sampleClass, new AsyncCallback<RequestResult<Container>>() {
       @Override
-      public void onSuccess(Container result) {
+      public void onSuccess(RequestResult<Container> result) {
         searchComplete(result);
       }
 

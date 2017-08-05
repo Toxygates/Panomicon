@@ -90,6 +90,7 @@ import t.model.shared.SampleClassHelper
 import t.common.shared.sample.SampleClassUtils
 import t.model.SampleClass
 import t.viewer.server.Units
+import t.common.shared.RequestResult
 
 object SparqlServiceImpl {
   var inited = false
@@ -520,7 +521,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     }.toArray
   }
 
-  def sampleSearch(sc: SampleClass, cond: MatchCondition): Array[Sample] = {
+  def sampleSearch(sc: SampleClass, cond: MatchCondition, maxResults: Int): RequestResult[Sample] = {
     val searchSpace = sampleStore.sampleQuery(SampleClassFilter(sc))(sf)()
 
     val ss = t.common.server.sample.search.IndividualSearch(sampleStore, cond, annotations,
@@ -531,12 +532,13 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       println(s)
     }
     println("Found " + rs.size + " matches.")
-    rs.toArray
+
+    new RequestResult((rs take maxResults).toArray, rs.size)
   }
 
   import t.db.SampleParameters.{ControlGroup => ControlGroupParam}
 
-  def unitSearch(sc: SampleClass, cond: MatchCondition): Array[Pair[Unit, Unit]] = {
+  def unitSearch(sc: SampleClass, cond: MatchCondition, maxResults: Int): RequestResult[Pair[Unit, Unit]] = {
     val searchSpace = sampleStore.sampleQuery(SampleClassFilter(sc))(sf)()
 
     val javaSamples: java.util.Collection[Sample] = searchSpace.map(asJavaSample)
@@ -564,12 +566,15 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     }
     println("Found " + rs.size + " matches.")
 
-    (for (unit <- rs;
-      reprSample = unit.getSamples()(0);
-      cgId = reprSample.get(ControlGroupParam.identifier);
-      controlUnit <- controlGroupMap.get(cgId);
-      pair = new Pair(unit, controlUnit)
-      ) yield pair).toArray
+    val pairs = (for (
+        unit <- rs take maxResults;
+        reprSample = unit.getSamples()(0);
+        cgId = reprSample.get(ControlGroupParam.identifier);
+        controlUnit <- controlGroupMap.get(cgId);
+        pair = new Pair(unit, controlUnit)
+        ) yield pair).toArray
+
+    new RequestResult(pairs, rs.size)
   }
 
   def prepareUnitCSVDownload(units: Array[Unit], parameterNames: Array[String]):
