@@ -71,7 +71,7 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
           selected.remove(object);
         }
         selectionChanged(selected);
-        table.redraw();
+        table.redrawRow(index);
       }
     });
 
