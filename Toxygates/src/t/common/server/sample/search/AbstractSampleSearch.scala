@@ -87,23 +87,23 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
   private def paramComparison(s: ST,
                               paramGetter: ST => Option[Double],
                               controlGroupValue: ST => Option[Double],
-                              comparator: (Double, Double) => Boolean): Boolean = {
-    val pv = paramGetter(s)
-    val ub = controlGroupValue(s)
-    (pv, ub) match {
-      case (Some(p), Some(u)) => comparator(p, u)
-      case _                  => false
+                              comparator: (Double, Double) => Boolean): Option[Boolean] = {
+    val testValue = paramGetter(s)
+    val reference = controlGroupValue(s)
+    (testValue, reference) match {
+      case (Some(t), Some(r)) => Some(comparator(t, r))
+      case _                  => None
     }
   }
 
-  private def paramIsHigh(s: ST, param: SampleParameter): Boolean = {
+  private def paramIsHigh(s: ST, param: SampleParameter): Option[Boolean] = {
     paramComparison(s,
       sampleParamValue(_, param),
       x => controlGroups.get(x).flatMap(_.upperBound(param, time(x), zTestSampleSize(s))),
       _ > _)
   }
 
-  private def paramIsLow(s: ST, param: SampleParameter): Boolean = {
+  private def paramIsLow(s: ST, param: SampleParameter): Option[Boolean] = {
     paramComparison(s,
       sampleParamValue(_, param),
       x => controlGroups.get(x).flatMap(_.lowerBound(param, time(x), zTestSampleSize(s))),
@@ -132,10 +132,12 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
   private def matches(s: ST, mt: MatchType, param: SampleParameter,
                       threshold: Option[Double]): Boolean =
     mt match {
-      case MatchType.High => paramIsHigh(s, param)
-      case MatchType.Low  => paramIsLow(s, param)
+      case MatchType.High => paramIsHigh(s, param).getOrElse(false)
+      case MatchType.Low  => paramIsLow(s, param).getOrElse(false)
       case MatchType.NormalRange =>
-        !sampleParamValue(s, param).isEmpty && !paramIsHigh(s, param) && !paramIsLow(s, param)
+        !sampleParamValue(s, param).isEmpty && 
+          paramIsHigh(s, param) == Some(false) && 
+          paramIsLow(s, param) == Some(false)
       case _ =>
         sampleParamValue(s, param) match {
           case Some(v) =>
