@@ -64,11 +64,11 @@ object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
     }
 
   protected def formControlGroups(metadata: Metadata, annotations: Annotations) = (units: Iterable[Unit]) => {
-    val sampleControlGroups = annotations.controlGroups(units.flatMap(_.getSamples()), metadata)    
+    val sampleControlGroups = annotations.controlGroups(units.flatMap(_.getSamples()), metadata)
     Map() ++
       units.map(unit => {
         unit.getSamples.headOption match {
-          case Some(s) =>            
+          case Some(s) =>
             sampleControlGroups.get(s) match {
               case Some(cg) => Some(unit -> cg)
               case _ => None
@@ -108,7 +108,7 @@ class UnitSearch(schema: DataSchema, metadata: Metadata, condition: MatchConditi
   }
 
   protected def sortObject(unit: Unit): (String, Int, Int) = {
-    (unit.get("compound_name"), doseLevelMap(unit.get("dose_level")),
-        exposureTimeMap(unit.get("exposure_time")))
+    (unit.get("compound_name"), doseLevelMap.getOrElse((unit.get("dose_level")), Int.MaxValue),
+        exposureTimeMap.getOrElse((unit.get("exposure_time")), Int.MaxValue))
   }
 }
