@@ -62,7 +62,6 @@ class BioParameters(lookup: Map[String, BioParameter]) {
  */
 class ControlGroup(bps: BioParameters, samples: SampleSet,
     val controlSamples: Iterable[Sample]) {
-  println(s"Control group for $controlSamples")
   val byTime = controlSamples.groupBy(s => samples.parameter(s, ExposureTime))
 
   val allParamVals = byTime.filter(_._1 != None).
