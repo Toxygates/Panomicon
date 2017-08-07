@@ -42,7 +42,7 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
   protected def formControlGroups(m: Metadata, as: Annotations): (Iterable[ST] => Map[ST, ControlGroup])
 
   // Extracts the sample parameters used in a MatchCondition
-  private def conditionParams(paramSet: ParameterSet, cond: MatchCondition): Iterable[SampleParameter] = {
+  def conditionParams(paramSet: ParameterSet, cond: MatchCondition): Iterable[SampleParameter] = {
     cond.neededParameters().map(p => paramSet.byId(p.id))
   }
 
@@ -52,7 +52,7 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
 
     val sampleParams = annotations.baseConfig.sampleParameters
 
-    val usedParams = conditionParams(sampleParams, condition) // here
+    val usedParams = conditionParams(sampleParams, condition)
     val coreParams = Seq(SampleParameters.ControlGroup.id, annotations.schema.timeParameter(), "sample_id").map(
       sampleParams.byId)
     val neededParams = (coreParams ++ usedParams).toSeq.distinct
@@ -135,8 +135,8 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
       case MatchType.High => paramIsHigh(s, param).getOrElse(false)
       case MatchType.Low  => paramIsLow(s, param).getOrElse(false)
       case MatchType.NormalRange =>
-        !sampleParamValue(s, param).isEmpty && 
-          paramIsHigh(s, param) == Some(false) && 
+        !sampleParamValue(s, param).isEmpty &&
+          paramIsHigh(s, param) == Some(false) &&
           paramIsLow(s, param) == Some(false)
       case _ =>
         sampleParamValue(s, param) match {

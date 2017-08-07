@@ -18,6 +18,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import t.db.SampleParameters._
 import t.common.shared.sample.StringBioParamValue
+import t.common.server.sample.search.AbstractSampleSearch
 
 @RunWith(classOf[JUnitRunner])
 class SampleSearchTest extends TTestSuite {
@@ -40,19 +41,17 @@ class SampleSearchTest extends TTestSuite {
   val paramSet = TestData.metadata.parameterSet
 
   def search(cond: MatchCondition) = {
-    val searchParams = SampleSearch.conditionParams(paramSet,
+    val searchParams = IndividualSearch.conditionParams(paramSet,
         cond)
     val ss: IndividualSearch = new IndividualSearch(schema, TestData.metadata,
         cond, cgroups, samples.toSeq.map(asJavaSample), searchParams)
-//    val ss: SampleSearch[Sample] = SampleSearch.forSample(TestData.metadata,
-//        cond, schema, cgroups, searchParams, samples.toSeq.map(asJavaSample))
     ss.results
   }
 
   val _liverParam = paramSet.byId("liver_wt")
-  val liverParam = _liverParam.humanReadable
+  val liverParam = _liverParam.identifier
   val _kidneyParam = paramSet.byId("kidney_total_wt")
-  val kidneyParam = _kidneyParam.humanReadable
+  val kidneyParam = _kidneyParam.identifier
 
   test("atomic") {
     val r = search(atomic(liverParam, MatchType.High))
