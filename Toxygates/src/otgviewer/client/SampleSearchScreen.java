@@ -127,6 +127,7 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
     unitSearchButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
+        logger.info("Search class:" + chosenSampleClass);
         unitSearch.attemptSearch(chosenSampleClass, conditionEditor.getCondition());
       }
     });

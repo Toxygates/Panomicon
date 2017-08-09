@@ -23,8 +23,7 @@ object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
    * computes the average value for samples in the unit, and stores it as the
    * parameter value for the unit.
    */
-  //
-  protected def preprocessSample(metadata: Metadata, searchParams: Iterable[SampleParameter]) =
+  override protected def preprocessSample(metadata: Metadata, searchParams: Iterable[SampleParameter]) =
     (unit: Unit) => {
       val samples = unit.getSamples
       for (param <- searchParams) {
@@ -64,11 +63,11 @@ object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
     }
 
   protected def formControlGroups(metadata: Metadata, annotations: Annotations) = (units: Iterable[Unit]) => {
-    val sampleControlGroups = annotations.controlGroups(units.flatMap(_.getSamples()), metadata)    
+    val sampleControlGroups = annotations.controlGroups(units.flatMap(_.getSamples()), metadata)
     Map() ++
       units.map(unit => {
         unit.getSamples.headOption match {
-          case Some(s) =>            
+          case Some(s) =>
             sampleControlGroups.get(s) match {
               case Some(cg) => Some(unit -> cg)
               case _ => None

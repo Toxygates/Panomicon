@@ -36,7 +36,7 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
              searchParams: Iterable[SampleParameter]): SS
 
   // Called on samples before they are used in computations
-  protected def preprocessSample(m: Metadata, sps: Iterable[SampleParameter]): (ST => ST)
+  protected def preprocessSample(m: Metadata, sps: Iterable[SampleParameter]): (ST => ST) = (x => x)
 
   // Finds the control groups in a collection of samples and sets up a lookup table
   protected def formControlGroups(m: Metadata, as: Annotations): (Iterable[ST] => Map[ST, ControlGroup])

@@ -18,12 +18,8 @@ object IndividualSearch extends SearchCompanion[Sample, IndividualSearch] {
     searchParams: Iterable[SampleParameter]) =
       new IndividualSearch(schema, metadata, condition, controlGroups, samples, searchParams)
 
-  protected def preprocessSample(metadata: Metadata, searchParams: Iterable[SampleParameter]) =
-    (sample: Sample) => sample
-
-  protected def formControlGroups(metadata: Metadata, annotations:Annotations) = (samples: Iterable[Sample]) =>
-    annotations.controlGroups(samples, metadata)
-
+  protected def formControlGroups(metadata: Metadata, annotations:Annotations) =
+    annotations.controlGroups(_, metadata)
 }
 
 class IndividualSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
