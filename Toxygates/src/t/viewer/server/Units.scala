@@ -21,8 +21,15 @@ class Units(schema: DataSchema, sampleStore: Samples) {
    */
   @throws[TimeoutException]
   def units(sc: SampleClass,
-      param: String, paramValues: Array[String])(implicit sf: SampleFilter) : Array[Pair[Unit, Unit]] = {      
-    
+      param: String, paramValues: Array[String])(implicit sf: SampleFilter) : Array[Pair[Unit, Unit]] = {
+
+    //This will filter by the chosen parameter - usually compound name
+    val rs = sampleStore.samples(SampleClassFilter(sc), param, paramValues.toSeq)
+    units(sc, rs).map(x => new Pair(x._1, x._2.getOrElse(null))).toArray
+  }
+
+  def units(sc: SampleClass, samples: Iterable[t.db.Sample])
+  (implicit sf: SampleFilter): Iterable[(Unit, Option[Unit])] = {
     def isControl(s: t.db.Sample) = schema.isSelectionControl(s.sampleClass)
 
     def unit(s: Sample) = SampleClassUtils.asUnit(s.sampleClass, schema)
@@ -33,12 +40,9 @@ class Units(schema: DataSchema, sampleStore: Samples) {
 
     def asUnit(ss: Iterable[Sample]) = new Unit(unit(ss.head), ss.toArray)
 
-    //This will filter by the chosen parameter - usually compound name
-
-    val rs = sampleStore.samples(SampleClassFilter(sc), param, paramValues.toSeq)
-    val ss = rs.groupBy(x =>(
-            x.sampleClass(Batch.id),
-            x.sampleClass(ControlGroup.id)))
+    val ss = samples.groupBy(x =>(
+            x.sampleClass(Batch),
+            x.sampleClass(ControlGroup)))
 
     val cgs = ss.keys.toSeq.map(_._2).distinct
     val potentialControls = sampleStore.samples(SampleClassFilter(sc), ControlGroup.id, cgs).
@@ -50,7 +54,7 @@ class Units(schema: DataSchema, sampleStore: Samples) {
        * assuming that other parameters are also compatible.
        */
 
-    var r = Vector[Pair[Unit, Unit]]()
+    var r = Vector[(Unit, Option[Unit])]()
     for (((batch, cg), samples) <- ss;
         treated = samples.filter(!isControl(_)).map(asJavaSample)) {
 
@@ -61,7 +65,7 @@ class Units(schema: DataSchema, sampleStore: Samples) {
 
       val byUnit = treated.groupBy(unit(_))
 
-      val treatedControl = byUnit.map(tt => {
+      val treatedControl = byUnit.toSeq.map(tt => {
         val repSample = tt._2.head
         val repUnit = unitWithoutMajorMedium(repSample)
 
@@ -78,19 +82,44 @@ class Units(schema: DataSchema, sampleStore: Samples) {
 
         val tu = asUnit(tt._2)
 
-        new Pair(tu, cu)
+        (tu, Some(cu))
       })
 
       r ++= treatedControl
 
-      r ++= treatedControl.flatMap(tc =>
-        if (!tc.second().getSamples.isEmpty)
-          //add this as a pseudo-treated unit by itself
-          Some(new Pair(tc.second(), null: Unit))
-        else
-          None
-          )
+      for (
+        (treat, Some(control)) <- treatedControl;
+        samples = control.getSamples;
+        if (!samples.isEmpty);
+        pseudoUnit = (control, None)
+      ) {
+        r :+= pseudoUnit
+      }
     }
-    r.toArray
+    r
   }
+  
+  private val mediumParameter = schema.mediumParameter()
+
+  def isControl(u: Unit) = schema.isControlValue(u.get(mediumParameter))
+    
+  def isControl(s: Sample) = schema.isControlValue(s.get(mediumParameter))
+
+  import t.model.sample.CoreParameter.{ControlGroup => ControlGroupParam}
+  type ControlGroupKey = (String, String, String)
+
+  //TODO try to simplify, share code with the above
+  def byControlGroup(raw: Iterable[Unit]): Map[ControlGroupKey, Iterable[Unit]] =
+    raw.groupBy(controlGroupKey)
+
+  private val minorParameter = schema.minorParameter()
+
+  def controlGroupKey(u: Unit): ControlGroupKey =
+      controlGroupKey(u.getSamples()(0))
+
+  def samplesByControlGroup(raw: Iterable[Sample]): Map[ControlGroupKey, Iterable[Sample]] =
+    raw.groupBy(controlGroupKey)
+
+  def controlGroupKey(s: Sample): ControlGroupKey =
+      (s.get(ControlGroupParam), s.get(minorParameter), s.get(Batch))
 }

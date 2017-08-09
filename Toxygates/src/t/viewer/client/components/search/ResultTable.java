@@ -26,10 +26,12 @@ public abstract class ResultTable<T> {
   public interface Delegate {
     void finishedSettingUpTable();
     ImageResource inspectCellImage();
+
+    String humanReadableTitleForColumn(String id);
     void displayDetailsForEntry(Unit unit);
   }
 
-  protected SelectionTable<T> selectionTable = new SelectionTable<T>("selection", false) {
+  protected SelectionTable<T> selectionTable = new SelectionTable<T>("", false) {
     @Override
     protected void initTable(CellTable<T> table) {}
   };
@@ -116,12 +118,12 @@ public abstract class ResultTable<T> {
     if (waitForData) {
       column.startWaitingForData();
     }
-    addColumn(column, key);
+    addKeyColumn(column, key);
   }
 
-  protected void addColumn(KeyColumn<T> column, String title) {
-    keyColumns.put(title, column);
-    cellTable().addColumn(column, title);
+  protected void addKeyColumn(KeyColumn<T> column, String id) {
+    keyColumns.put(id, column);
+    cellTable().addColumn(column, delegate.humanReadableTitleForColumn(id));
   }
 
   protected void addNonKeyColumn(Column<T, ?> column, String title) {
@@ -149,14 +151,14 @@ public abstract class ResultTable<T> {
 
   protected void addAdhocColumns() {
     for (String key : adhocKeys()) {
-      addColumn(makeColumn(key, false), key);
+      addKeyColumn(makeColumn(key, false), key);
     }
   }
 
-  public void removeColumn(String key) {
-    Column<T, ?> column = keyColumns.get(key);
+  public void removeKeyColumn(String id) {
+    Column<T, ?> column = keyColumns.get(id);
     cellTable().removeColumn(column);
-    keyColumns.remove(key);
+    keyColumns.remove(id);
   }
 
   public void gotDataForKey(String key) {
@@ -209,15 +211,15 @@ public abstract class ResultTable<T> {
       if (waitingForData) {
         return "Waiting for data...";
       } else {
-        String string = getData(s);
-        if (isNumeric) {
+        String value = getData(s);
+        if (isNumeric && value != null) {
           try {
-            return Utils.formatNumber(Double.parseDouble(string.replace(",", "")));
+            return Utils.formatNumber(Double.parseDouble(value.replace(",", "")));
           } catch (NumberFormatException e) {
-            return "Invalid number: " + string;
+            return "Invalid number: " + value;
           }
         } else {
-          return string;
+          return value;
         }
       }
     }

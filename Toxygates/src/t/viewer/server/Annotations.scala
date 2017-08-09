@@ -18,8 +18,16 @@ import t.platform.BioParameter
 import t.platform.ControlGroup
 import t.sparql.Samples
 import t.viewer.server.Conversions.asScalaSample
+import t.sparql.TriplestoreMetadata
+import t.sparql.SampleFilter
+import t.db.Metadata
+import t.viewer.server.Conversions._
+import java.lang.{Double => JDouble}
+import scala.language.implicitConversions
+import t.sample.SampleSet
 
-class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
+class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
+    unitHelper: Units) {
 
 //  private def bioParamsForSample(s: Sample): BioParameters =
 //    Option(s.get(schema.timeParameter())) match {
@@ -43,13 +51,12 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig) {
    * @param samples samples to partition
    * @param sampleSet a set that the discovered control samples have to be contained in
    */
-  def controlGroups(samples: Iterable[Sample], sampleSet: t.sample.SampleSet): Map[Sample, ControlGroup] = {
-    val controlGroups = samples.groupBy(_(ControlGroupParam))
-    val mediumParameter = schema.mediumParameter()
-    val knownSamples = sampleSet.samples.toSet
+  def controlGroups(samples: Iterable[Sample], sampleSet: SampleSet): Map[Sample, ControlGroup] = {
+    val controlGroups = unitHelper.samplesByControlGroup(samples)
+    val knownSamples = sampleSet.samples.map(_.sampleId).toSet
     Map() ++ controlGroups.flatMap { case (cgroup, ss) =>
-      var controls = ss.filter(s => schema.isControlValue(s.get(mediumParameter))).map(asScalaSample)
-      controls = (controls.toSet intersect (knownSamples)).toSeq
+      var (cs, ts) = ss.partition(s => unitHelper.isControl(s))
+      val controls = cs.map(asScalaSample).filter(s => knownSamples.contains(s.sampleId))
       if (!controls.isEmpty) {
         val cg = new ControlGroup(bioParameters, sampleSet, controls)
         ss.map(s => s -> cg)

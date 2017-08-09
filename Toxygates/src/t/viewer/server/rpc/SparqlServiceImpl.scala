@@ -90,6 +90,7 @@ import t.model.shared.SampleClassHelper
 import t.common.shared.sample.SampleClassUtils
 import t.model.SampleClass
 import t.viewer.server.Units
+import t.common.shared.RequestResult
 
 object SparqlServiceImpl {
   var inited = false
@@ -125,7 +126,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   lazy val platformsCache = t.viewer.server.Platforms(probeStore)
 
-  lazy val annotations = new Annotations(schema, baseConfig)
+  lazy val annotations = new Annotations(schema, baseConfig,
+      new Units(schema, sampleStore))
 
   override def localInit(conf: Configuration) {
     super.localInit(conf)
@@ -520,49 +522,59 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     }.toArray
   }
 
-  def sampleSearch(sc: SampleClass, cond: MatchCondition): Array[Sample] = {
+  def sampleSearch(sc: SampleClass, cond: MatchCondition, maxResults: Int): RequestResult[Sample] = {
     val searchSpace = sampleStore.sampleQuery(SampleClassFilter(sc))(sf)()
 
     val ss = t.common.server.sample.search.IndividualSearch(sampleStore, cond, annotations,
         searchSpace.map(asJavaSample))
     val rs = ss.results
-    println("Search results:")
-    for (s <- rs) {
+    println(s"Search results (displaying 20/${rs.size}:")
+    for (s <- rs take 20) {
       println(s)
-    }
-    println("Found " + rs.size + " matches.")
-    rs.toArray
+    }    
+
+    new RequestResult((rs take maxResults).toArray, rs.size)
   }
 
   import t.model.sample.CoreParameter.{ControlGroup => ControlGroupParam}
 
-  def unitSearch(sc: SampleClass, cond: MatchCondition): Array[Pair[Unit, Unit]] = {
+  def unitSearch(sc: SampleClass, cond: MatchCondition, maxResults: Int): RequestResult[Pair[Unit, Unit]] = {
     val searchSpace = sampleStore.sampleQuery(SampleClassFilter(sc))(sf)()
 
     val javaSamples: java.util.Collection[Sample] = searchSpace.map(asJavaSample)
     val units = Unit.formUnits(schema, javaSamples)
+    val unitHelper = new Units(schema, sampleStore)
 
-    val mediumParameter = schema.mediumParameter()
-    val groupedUnits = units.groupBy(_.getSamples()(0).get(ControlGroupParam.id))
+    val groupedUnits = unitHelper.byControlGroup(units)
+    
     val controlGroupMap = Map() ++ groupedUnits.flatMap { case (param, units) =>
-      units.find(unit => schema.isControlValue(unit.get(mediumParameter))).map(param -> _)
+      units.find(unitHelper.isControl(_)).map(param -> _)
     }
 
-    val ss = t.common.server.sample.search.UnitSearch(sampleStore, cond, annotations, units)
-    val rs = ss.results
-    println("Search results:")
+    val ss = t.common.server.sample.search.UnitSearch(sampleStore, cond, annotations,
+        units)
+    val rs = ss.results.filter(u => !unitHelper.isControl(u))
     for (s <- rs) {
       for (param <- appInfoLoader.latest.numericalParameters()) {
         s.averageAttribute(param.id)
       }
       for (param <- appInfoLoader.latest.stringParameters()) {
         s.concatenateAttribute(param.id)
-      }
-      println(s)
+      }      
     }
-    println("Found " + rs.size + " matches.")
+    println(s"Search results (displaying 20/${rs.size}:")
+    for (u <- rs take 20) {      
+      println(u)
+    }    
 
-    rs.map(unit => new Pair(unit, controlGroupMap(unit.getSamples()(0).get(ControlGroupParam.id)))).toArray
+    val pairs = (for (
+      unit <- rs take maxResults;
+      reprSample = unit.getSamples()(0);
+      controlUnit <- controlGroupMap.get(unitHelper.controlGroupKey(unit));
+      pair = new Pair(unit, controlUnit)
+      ) yield pair).toArray
+    
+    new RequestResult(pairs, rs.size)
   }
 
   def prepareUnitCSVDownload(units: Array[Unit], parameterNames: Array[String]):

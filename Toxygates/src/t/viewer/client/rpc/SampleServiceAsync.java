@@ -6,6 +6,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import t.common.shared.Dataset;
 import t.common.shared.Pair;
+import t.common.shared.RequestResult;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
 import t.common.shared.sample.Sample;
@@ -52,11 +53,11 @@ public interface SampleServiceAsync {
   void prepareAnnotationCSVDownload(HasSamples<Sample> column, 
       AsyncCallback<String> callback);
 
-  void sampleSearch(SampleClass sampleClass, MatchCondition condition,
-      AsyncCallback<Sample[]> callback);
+  void sampleSearch(SampleClass sampleClass, MatchCondition condition, int maxResults,
+      AsyncCallback<RequestResult<Sample>> callback);
 
-  void unitSearch(SampleClass sampleClass, MatchCondition condition,
-      AsyncCallback<Pair<Unit, Unit>[]> callback);
+  void unitSearch(SampleClass sampleClass, MatchCondition condition, int maxResults,
+      AsyncCallback<RequestResult<Pair<Unit, Unit>>> callback);
 
   void prepareUnitCSVDownload(Unit[] units, String[] parameterNames,
       AsyncCallback<String> callback);

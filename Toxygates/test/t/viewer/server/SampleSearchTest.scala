@@ -18,6 +18,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import t.common.shared.sample.StringBioParamValue
 import otg.model.sample.Attribute._
+import t.common.server.sample.search.AbstractSampleSearch
 
 @RunWith(classOf[JUnitRunner])
 class SampleSearchTest extends TTestSuite {
@@ -27,10 +28,10 @@ class SampleSearchTest extends TTestSuite {
         mt, null)
 
   def or(mc1: MatchCondition, mc2: MatchCondition) =
-    new OrMatch(seqAsJavaList(Seq(mc1, mc2)))
+    new OrMatch(Seq(mc1, mc2))
 
   def and(mc1: MatchCondition, mc2: MatchCondition) =
-    new AndMatch(seqAsJavaList(Seq(mc1, mc2)))
+    new AndMatch(Seq(mc1, mc2))
 
   val schema = new OTGSchema
   val cgroups = TestData.controlGroups.map(x =>
@@ -40,12 +41,10 @@ class SampleSearchTest extends TTestSuite {
   val attributes = TestData.attribSet
 
   def search(cond: MatchCondition) = {
-    val searchParams = SampleSearch.conditionParams(attributes,
+    val searchParams = IndividualSearch.conditionParams(attributes,
         cond)
     val ss: IndividualSearch = new IndividualSearch(schema, TestData.metadata,
         cond, cgroups, samples.toSeq.map(asJavaSample), searchParams)
-//    val ss: SampleSearch[Sample] = SampleSearch.forSample(TestData.metadata,
-//        cond, schema, cgroups, searchParams, samples.toSeq.map(asJavaSample))
     ss.results
   }
 

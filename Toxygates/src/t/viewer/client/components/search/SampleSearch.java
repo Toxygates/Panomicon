@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+import t.common.shared.RequestResult;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.Sample;
@@ -12,7 +13,7 @@ import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.rpc.SampleServiceAsync;
 
-public class SampleSearch extends Search<Sample, Sample[]> {
+public class SampleSearch extends Search<Sample, Sample> {
   private HashMap<String, Sample> sampleIdHashMap;
 
   public SampleSearch(Delegate delegate, ResultTable<Sample> helper,
@@ -21,13 +22,14 @@ public class SampleSearch extends Search<Sample, Sample[]> {
   }
 
   @Override
-  protected void extractSearchResult(Sample[] result) {
-    searchResult = result;
+  protected void extractSearchResult(RequestResult<Sample> result) {
+    searchResult = result.items();
   }
 
   @Override
-  protected void asyncSearch(SampleClass sampleClass, AsyncCallback<Sample[]> callback) {
-    sampleService.sampleSearch(sampleClass, condition, callback);
+  protected void asyncSearch(SampleClass sampleClass,
+      AsyncCallback<RequestResult<Sample>> callback) {
+    sampleService.sampleSearch(sampleClass, condition, MAX_RESULTS, callback);
   }
 
   @Override
@@ -36,7 +38,7 @@ public class SampleSearch extends Search<Sample, Sample[]> {
   }
 
   @Override
-  protected void searchComplete(Sample[] result) {
+  protected void searchComplete(RequestResult<Sample> result) {
     super.searchComplete(result);
     sampleIdHashMap = null;
   }

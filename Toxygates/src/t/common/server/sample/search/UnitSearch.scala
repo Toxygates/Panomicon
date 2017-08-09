@@ -2,7 +2,6 @@ package t.common.server.sample.search
 
 import t.viewer.server.Conversions._
 import t.viewer.server.Annotations
-import t.db.SampleParameter
 import t.platform.ControlGroup
 import org.stringtemplate.v4.ST
 import t.common.shared.DataSchema
@@ -25,8 +24,7 @@ object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
    * computes the average value for samples in the unit, and stores it as the
    * parameter value for the unit.
    */
-  //
-  protected def preprocessSample(metadata: Metadata, searchParams: Iterable[Attribute]) =
+  override protected def preprocessSample(metadata: Metadata, searchParams: Iterable[Attribute]) =
     (unit: Unit) => {
       val samples = unit.getSamples
       for (param <- searchParams) {
@@ -65,12 +63,16 @@ object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
       unit
     }
 
-  protected def formControlGroups(metadata: Metadata, annotations:Annotations) = (units: Iterable[Unit]) => {
+  protected def formControlGroups(metadata: Metadata, annotations: Annotations) = (units: Iterable[Unit]) => {
     val sampleControlGroups = annotations.controlGroups(units.flatMap(_.getSamples()), metadata)
     Map() ++
       units.map(unit => {
         unit.getSamples.headOption match {
-          case Some(s) => Some(unit -> sampleControlGroups(s))
+          case Some(s) =>
+            sampleControlGroups.get(s) match {
+              case Some(cg) => Some(unit -> cg)
+              case _ => None
+            }
           case _ => None
         }
       }).flatten
@@ -82,7 +84,7 @@ class UnitSearch(schema: DataSchema, metadata: Metadata, condition: MatchConditi
     extends AbstractSampleSearch[Unit](schema, metadata, condition,
         controlGroups, samples, searchParams)  {
 
-  protected def sampleAttributeValue(unit: Unit, param: Attribute): Option[Double] = {
+  protected def sampleAttributeValue(unit: Unit, param: Attribute): Option[Double] = 
     try {
       Option(unit.get(param)) match {
         case Some(v) => Some(v.toDouble)
@@ -91,22 +93,17 @@ class UnitSearch(schema: DataSchema, metadata: Metadata, condition: MatchConditi
     } catch {
       case nf: NumberFormatException => None
     }
-  }
 
-  protected def time(unit: Unit): String = {
+  protected def time(unit: Unit): String = 
     unit.get(schema.timeParameter())
-  }
 
-  protected def postMatchAdjust(unit: Unit): Unit = {
+  protected def postMatchAdjust(unit: Unit): Unit = 
     unit
-  }
 
-  protected def zTestSampleSize(unit: Unit): Int = {
+  protected def zTestSampleSize(unit: Unit): Int = 
     unit.getSamples().length
-  }
 
-  protected def sortObject(unit: Unit): (String, Int, Int) = {
+  protected def sortObject(unit: Unit): (String, Int, Int) = 
     (unit.get(Compound), doseLevelMap(unit.get(DoseLevel)),
-        exposureTimeMap(unit.get(ExposureTime)))
-  }
+        exposureTimeMap(unit.get(ExposureTime)))  
 }

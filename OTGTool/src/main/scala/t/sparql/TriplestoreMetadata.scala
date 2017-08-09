@@ -71,8 +71,10 @@ class CachingTriplestoreMetadata(os: Samples, attributes: AttributeSet,
 
   println(rawData take 10)
 
-  lazy val data =
-    rawData.map(r => (r._1 -> r._2.map { case (k,v) => attributes.byId(k) -> v }))
+  lazy val data = {    
+    rawData.map(sample => (sample._1 -> sample._2.flatMap {case (k,v) => 
+        Option(attributes.byId(k)).map(a => (a,v)) }))          
+  }
 
   println(data take 10)
 

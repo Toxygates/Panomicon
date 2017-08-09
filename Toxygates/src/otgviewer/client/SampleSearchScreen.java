@@ -3,13 +3,16 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -53,7 +56,7 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
 
   private Widget tools;
   private ConditionEditor conditionEditor;
-  private Button downloadButton;
+  private MenuItem saveCVSMenuItem;
   private Button saveGroupButton;
   private Label resultCountLabel;
 
@@ -69,18 +72,22 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   private Collection<BioParamValue> searchParameters;
   private Collection<BioParamValue> nonSearchParameters;
 
+  private Map<String, String> humanReadableParamNames;
+
   private Collection<ParameterTickItem> parameterMenuItems;
 
   private void getParameterInfo() {
     BioParamValue[] allParams = appInfo.bioParameters();
     List<BioParamValue> searchParams = new ArrayList<BioParamValue>();
     List<BioParamValue> nonSearchParams = new ArrayList<BioParamValue>();
+    humanReadableParamNames = new HashMap<String, String>();
     for (BioParamValue bp : allParams) {
       if (bp instanceof NumericalBioParamValue) {
         searchParams.add(bp);
       } else {
         nonSearchParams.add(bp);
       }
+      humanReadableParamNames.put(bp.id(), bp.label());
     }
     java.util.Collections.sort(searchParams);
     java.util.Collections.sort(nonSearchParams);
@@ -120,26 +127,12 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
     unitSearchButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
+        logger.info("Search class:" + chosenSampleClass);
         unitSearch.attemptSearch(chosenSampleClass, conditionEditor.getCondition());
       }
     });
 
     resultCountLabel = new Label();
-
-    downloadButton = new Button("Download CSV...", new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        SampleSearchScreen.this.sampleService.prepareUnitCSVDownload(unitSearch.searchResult(),
-            unitTableHelper.allKeys(), new PendingAsyncCallback<String>(SampleSearchScreen.this,
-                "Unable to prepare the data for download,") {
-              @Override
-              public void handleSuccess(String url) {
-                Utils.displayURL("Your download is ready.", "Download", url);
-              }
-            });
-      }
-    });
-    downloadButton.setVisible(false);
 
     saveGroupButton = new Button("Save sample group", new ClickHandler() {
       @Override
@@ -154,6 +147,8 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
           columnsChanged(chosenColumns);
           storeColumns(manager().getParser());
 
+          unitTableHelper.selectionTable().clearSelection();
+
           Window.alert("Saved group: " + name);
         } catch (Exception e) {
           Window.alert("Saving group failed: " + e);
@@ -163,7 +158,7 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
     saveGroupButton.setVisible(false);
 
     tools = Utils.mkVerticalPanel(true, conditionEditor, Utils.mkHorizontalPanel(true,
-        unitSearchButton, sampleSearchButton, resultCountLabel, saveGroupButton, downloadButton));
+        unitSearchButton, sampleSearchButton, resultCountLabel, saveGroupButton));
   }
 
   private String findAvailableGroupName(String prefix) throws Exception {
@@ -229,17 +224,46 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
         }
         currentSearch.helper().addExtraColumn(parameterId, isNumeric, waitForData);
       } else {
-        currentSearch.helper().removeColumn(parameterId);
+        currentSearch.helper().removeKeyColumn(parameterId);
       }
     }
   }
 
   private void setupMenuItems() {
-    parameterMenuItems = new ArrayList<ParameterTickItem>();
+    MenuBar fileBar = new MenuBar(true);
+    MenuItem fileItem = new MenuItem("File", false, fileBar);
+    saveCVSMenuItem = new MenuItem("Save results to CSV", false, new Command() {
+      @Override
+      public void execute() {
+        prepareUnitCVSDownload();
+      }
+    });
+    saveCVSMenuItem.setEnabled(false);
+    fileBar.addItem(saveCVSMenuItem);
+    addMenu(fileItem);
 
+    MenuBar editBar = new MenuBar(true);
+    MenuItem editItem = new MenuItem("Edit", false, editBar);
+    MenuItem clearSearchConditionItem =
+        new MenuItem("Clear search condition", false, new Command() {
+          @Override
+          public void execute() {
+            conditionEditor.clear();
+          }
+        });
+    editBar.addItem(clearSearchConditionItem);
+    MenuItem clearSelectionItem = new MenuItem("Clear selection", false, new Command() {
+      @Override
+      public void execute() {
+        currentSearch.helper().selectionTable().clearSelection();
+      }
+    });
+    editBar.addItem(clearSelectionItem);
+    addMenu(editItem);
+
+    parameterMenuItems = new ArrayList<ParameterTickItem>();
     MenuBar parametersBar = new MenuBar(true);
     MenuItem parameterItem = new MenuItem("View", false, parametersBar);
-
     MenuBar numericalParametersBar = new MenuBar(true);
     MenuItem numericalParametersItem =
         new MenuItem("Numerical parameters", false, numericalParametersBar);
@@ -247,7 +271,6 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
       parameterMenuItems.add(new ParameterTickItem(numericalParametersBar,
           parameter.label(), parameter.id(), true, false, false));
     }
-
     MenuBar stringParametersBar = new MenuBar(true);
     MenuItem stringParametersItem =
         new MenuItem("Non-numerical parameters", false, stringParametersBar);
@@ -255,10 +278,8 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
       parameterMenuItems.add(new ParameterTickItem(stringParametersBar,
           parameter.label(), parameter.id(), false, false, false));
     }
-
     parametersBar.addItem(numericalParametersItem);
     parametersBar.addItem(stringParametersItem);
-
     addMenu(parameterItem);
   }
 
@@ -291,6 +312,17 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
     unitTableHelper.selectionTable().setVisible(false);
   }
 
+  private void prepareUnitCVSDownload() {
+    SampleSearchScreen.this.sampleService.prepareUnitCSVDownload(unitSearch.searchResult(),
+        unitTableHelper.allKeys(), new PendingAsyncCallback<String>(SampleSearchScreen.this,
+            "Unable to prepare the data for download,") {
+          @Override
+          public void handleSuccess(String url) {
+            Utils.displayURL("Your download is ready.", "Download", url);
+          }
+        });
+  }
+
   /*
    * Search.Delegate methods
    */
@@ -304,12 +336,12 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   }
 
   @Override
-  public void searchEnded(Search<?, ?> search, int numResults) {
+  public void searchEnded(Search<?, ?> search, String resultCountText) {
     waitDialog.hide();
     hideTables();
-    resultCountLabel.setText("Found " + numResults + " results");
+    resultCountLabel.setText(resultCountText);
     currentSearch = search;
-    downloadButton.setVisible((currentSearch == unitSearch));
+    saveCVSMenuItem.setEnabled(currentSearch == unitSearch);
     saveGroupButton.setVisible((currentSearch == unitSearch));
   }
 
@@ -319,6 +351,16 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   @Override
   public ImageResource inspectCellImage() {
     return manager.resources().magnify();
+  }
+
+  @Override
+  public String humanReadableTitleForColumn(String id) {
+    String title = humanReadableParamNames.get(id);
+    if (title == null) {
+      return id;
+    } else {
+      return humanReadableParamNames.get(id);
+    }
   }
 
   @Override
@@ -355,6 +397,6 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
     Group g = new Group(schema(), "data", unitsWithControl);
 
     table.loadFrom(g, false);
-    Utils.displayInPopup("Unit details", table, DialogPosition.Center);
+    Utils.displayInPopup("Unit details", table, DialogPosition.Top);
   }
 }

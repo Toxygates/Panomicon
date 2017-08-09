@@ -3,7 +3,6 @@ package t.common.server.sample.search
 import t.viewer.server
 import t.viewer.server.Conversions._
 import t.viewer.server.Annotations
-import t.db.SampleParameter
 import t.platform.ControlGroup
 import t.common.shared.DataSchema
 import t.common.shared.sample.Sample
@@ -20,12 +19,8 @@ object IndividualSearch extends SearchCompanion[Sample, IndividualSearch] {
     searchParams: Iterable[Attribute]) =
       new IndividualSearch(schema, metadata, condition, controlGroups, samples, searchParams)
 
-  protected def preprocessSample(metadata: Metadata, searchParams: Iterable[Attribute]) =
-    (sample: Sample) => sample
-
-  protected def formControlGroups(metadata: Metadata, annotations:Annotations) = (samples: Iterable[Sample]) =>
-    annotations.controlGroups(samples, metadata)
-
+  protected def formControlGroups(metadata: Metadata, annotations: Annotations) = 
+    annotations.controlGroups(_, metadata)
 }
 
 class IndividualSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
@@ -57,9 +52,9 @@ class IndividualSearch(schema: DataSchema, metadata: Metadata, condition: MatchC
       val ss = asScalaSample(sample)
       for (
         p <- searchParams;
-        v <- metadata.parameter(ss, p.id)
+        v <- metadata.parameter(ss, p)
       ) {
-        sample.sampleClass().put(p.id, v)
+        sample.sampleClass().put(p, v)
       }
       sample
     }

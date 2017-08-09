@@ -22,6 +22,7 @@ import scala.annotation.meta.param
 import t.model.sample.Attribute
 import scala.annotation.meta.param
 import t.model.sample.AttributeSet
+import t.model.sample.CoreParameter
 
   /**
    * Companion object to create sample search objects; meant to encapsulate
@@ -38,15 +39,14 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
              searchParams: Iterable[Attribute]): SS
 
   // Called on samples before they are used in computations
-  protected def preprocessSample(m: Metadata, sps: Iterable[Attribute]): (ST => ST)
+  protected def preprocessSample(m: Metadata, sps: Iterable[Attribute]): (ST => ST)  = (x => x)
 
   // Finds the control groups in a collection of samples and sets up a lookup table
   protected def formControlGroups(m: Metadata, as: Annotations): (Iterable[ST] => Map[ST, ControlGroup])
 
   // Extracts the sample parameters used in a MatchCondition
-  private def conditionParams(attributes: AttributeSet, cond: MatchCondition): Iterable[Attribute] = {
+  def conditionParams(attributes: AttributeSet, cond: MatchCondition): Iterable[Attribute] = 
     cond.neededParameters().map(p => attributes.byId(p.id))
-  }
 
   def apply(data: Samples, condition: MatchCondition, annotations: Annotations,
             samples: Iterable[ST])(implicit sf: SampleFilter): AbstractSampleSearch[ST] = {
@@ -54,9 +54,10 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
 
     val attributes = annotations.baseConfig.attributes
 
-    val usedParams = conditionParams(attributes, condition) // here
-    val coreParams = Seq(CGParam.id, annotations.schema.timeParameter(), "sample_id").map(
-      attributes.byId)
+    val usedParams = conditionParams(attributes, condition) 
+    val coreParams = Seq(CGParam, attributes.byId(annotations.schema.timeParameter()), 
+      CoreParameter.Batch, CoreParameter.SampleId)
+    
     val neededParams = (coreParams ++ usedParams).toSeq.distinct
 
     val metadata = new CachingTriplestoreMetadata(data, attributes, neededParams)
@@ -89,23 +90,23 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
   private def paramComparison(s: ST,
                               paramGetter: ST => Option[Double],
                               controlGroupValue: ST => Option[Double],
-                              comparator: (Double, Double) => Boolean): Boolean = {
-    val pv = paramGetter(s)
-    val ub = controlGroupValue(s)
-    (pv, ub) match {
-      case (Some(p), Some(u)) => comparator(p, u)
-      case _                  => false
+                              comparator: (Double, Double) => Boolean): Option[Boolean] = {
+    val testValue = paramGetter(s)
+    val reference = controlGroupValue(s)
+    (testValue, reference) match {
+      case (Some(t), Some(r)) => Some(comparator(t, r))
+      case _                  => None
     }
   }
 
-  private def paramIsHigh(s: ST, attr: Attribute): Boolean = {
+  private def paramIsHigh(s: ST, attr: Attribute): Option[Boolean] = {
     paramComparison(s,
       sampleAttributeValue(_, attr),
       x => controlGroups.get(x).flatMap(_.upperBound(attr, time(x), zTestSampleSize(s))),
       _ > _)
   }
 
-  private def paramIsLow(s: ST, attr: Attribute): Boolean = {
+  private def paramIsLow(s: ST, attr: Attribute): Option[Boolean] = {
     paramComparison(s,
       sampleAttributeValue(_, attr),
       x => controlGroups.get(x).flatMap(_.lowerBound(attr, time(x), zTestSampleSize(s))),
@@ -134,10 +135,12 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
   private def matches(s: ST, mt: MatchType, attr: Attribute,
                       threshold: Option[Double]): Boolean =
     mt match {
-      case MatchType.High => paramIsHigh(s, attr)
-      case MatchType.Low  => paramIsLow(s, attr)
+      case MatchType.High => paramIsHigh(s, attr).getOrElse(false)
+      case MatchType.Low  => paramIsLow(s, attr).getOrElse(false)
       case MatchType.NormalRange =>
-        !paramIsHigh(s, attr) && !paramIsLow(s, attr)
+        !sampleAttributeValue(s, attr).isEmpty &&
+          paramIsHigh(s, attr) == Some(false) &&
+          paramIsLow(s, attr) == Some(false)
       case _ =>
         sampleAttributeValue(s, attr) match {
           case Some(v) =>

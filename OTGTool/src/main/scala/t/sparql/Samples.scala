@@ -153,6 +153,18 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     parameterQuery(sample.sampleId, querySet).collect {
       case (sp, Some(v)) => (sp, v)
     }
+  
+  /**
+   * Can the given predicate ID be queried as a predicate of a sample?
+   */
+  protected def isPredicateAttribute(attribute: String) = 
+    attribute != "batchGraph"
+  
+  /**
+   * In the supplied collection, remove all attributes that are not predicates. 
+   */
+  protected def predicateAttributes(attributes: Iterable[String]) = 
+    attributes.filter(isPredicateAttribute(_))
 
   /**
    * Get parameter values, if present, for a given sample
@@ -160,7 +172,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
    */
   def parameterQuery(sample: String,
     querySet: Iterable[Attribute] = Seq()): Seq[(Attribute, Option[String])] = {
-
+    
     val attrs = otg.model.sample.AttributeSet.getDefault
     val queryParams = (if (querySet.isEmpty) {
 
@@ -171,7 +183,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
             if (p.isNumerical()) "numerical" else "text"))
     } else {
       querySet
-    }).toSeq
+    }).toSeq.filter(a => isPredicateAttribute(a.id))
 
     val withIndex = queryParams.zipWithIndex
     val triples = withIndex.map(x => " OPTIONAL { ?x t:" + x._1.id + " ?k" + x._2 + ". } ")
@@ -192,6 +204,10 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
    * Get all distinct values for an attribute inside specified SampleFilter
    */
   def sampleAttributeQuery(attribute: String)(implicit sf: SampleFilter): Query[Seq[String]] = {
+    if (!isPredicateAttribute(attribute)) {
+      throw new Exception("Invalid query")
+    }
+    
     Query(tPrefixes,
       "SELECT DISTINCT ?q " +
         s"WHERE { GRAPH ?batchGraph { " +
@@ -199,18 +215,19 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
       s"} ${sf.standardSampleFilters} } ",
       triplestore.simpleQueryNonQuiet)
   }
-
+  
   /**
    * Get all distinct values for a set of attributes inside specified SampleFilter
    */
   def sampleAttributeQuery(attribute: Seq[String])
     (implicit sf: SampleFilter): Query[Seq[Map[String, String]]] = {
-
+    val pattr = predicateAttributes(attribute)
+    
     Query(tPrefixes,
-      "SELECT DISTINCT " + attribute.map("?" + _).mkString(" ") +
+      "SELECT DISTINCT * " +
         " WHERE { GRAPH ?batchGraph { " +
         "?x " +
-          attribute.map(x => s"t:$x ?$x").mkString("; "),
+          pattr.map(x => s"t:$x ?$x").mkString("; "),
       s"} ${sf.standardSampleFilters} } ",
       triplestore.mapQuery(_, 10000))
   }
