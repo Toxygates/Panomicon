@@ -40,28 +40,6 @@ trait Metadata extends t.db.Metadata {
 
 object OTGParameterSet extends ParameterSet {
 
-  //TODO reconsider this method
-  def postReadAdjustment(kv: (String, String)): String = kv._1 match {
-    case "CAS number" => {
-      val s = kv._2.split("3333/")
-      if (s.size > 1) {
-        s(1)
-      } else {
-        "N/A"
-      }
-    }
-    //expect e.g. http://bio2rdf.org/dr:D00268
-    case "KEGG drug" | "KEGG compound" => {
-      val s = kv._1.split(":")
-      if (s.size > 2) {
-        s(2)
-      } else {
-        "N/A"
-      }
-    }
-    case _ => kv._2
-  }
-
   /**
    * Find the files that are control samples in the collection that a given barcode
    * belongs to.

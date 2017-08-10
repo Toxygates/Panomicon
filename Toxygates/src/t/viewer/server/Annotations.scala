@@ -170,14 +170,11 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
       }
     }
 
-//    val useBps = bioParamsForSample(barcode)
-
     val params = for (
       x <- attribs.toSeq;
       bp <- bioParameters.get(x._1);
       p = (bp.label, x._2.getOrElse("N/A"));
-      dispVal = OTGParameterSet.postReadAdjustment(p);
-      bpv = bioParamValue(bp, dispVal)
+      bpv = bioParamValue(bp, p._2)
     ) yield bpv
 
     new Annotation(sample.id, new java.util.ArrayList(params))
