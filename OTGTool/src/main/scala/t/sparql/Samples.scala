@@ -23,7 +23,6 @@ package t.sparql
 import t.BaseConfig
 import t.TriplestoreConfig
 import t.db.Sample
-import t.db.SampleParameter
 import t.sparql.{ Filter => TFilter }
 import t.model.sample.Attribute
 import scala.collection.JavaConversions._
@@ -75,7 +74,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
   def itemClass: String = Samples.itemClass
   def defaultPrefix = Samples.defaultPrefix
 
-  val standardAttributes = bc.sampleParameters.required.map(_.identifier)
+  val standardAttributes = bc.attributes.getRequired.map(_.id)
   val hlAttributes = bc.attributes.getHighLevel.map(_.id)
   val tsCon: TriplestoreConfig = bc.triplestore
 
@@ -157,14 +156,11 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
   /**
    * Can the given predicate ID be queried as a predicate of a sample?
    */
-  protected def isPredicateAttribute(attribute: String) = 
+  protected def isPredicateAttribute(attribute: String): Boolean = 
     attribute != "batchGraph"
-  
-  /**
-   * In the supplied collection, remove all attributes that are not predicates. 
-   */
-  protected def predicateAttributes(attributes: Iterable[String]) = 
-    attributes.filter(isPredicateAttribute(_))
+    
+  protected def isPredicateAttribute(attribute: Attribute): Boolean = 
+    isPredicateAttribute(attribute.id)
 
   /**
    * Get parameter values, if present, for a given sample
@@ -175,12 +171,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     
     val attrs = otg.model.sample.AttributeSet.getDefault
     val queryParams = (if (querySet.isEmpty) {
-
-      //TODO this is temporary during refactoring.
-      //future: do not use bc.sampleParameters at all
-      bc.sampleParameters.all.map(p =>
-        attrs.findOrCreate(p.id(), p.title(),
-            if (p.isNumerical()) "numerical" else "text"))
+      bc.attributes.getAll.toSeq     
     } else {
       querySet
     }).toSeq.filter(a => isPredicateAttribute(a.id))
@@ -203,7 +194,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
   /**
    * Get all distinct values for an attribute inside specified SampleFilter
    */
-  def sampleAttributeQuery(attribute: String)(implicit sf: SampleFilter): Query[Seq[String]] = {
+  def sampleAttributeQuery(attribute: Attribute)(implicit sf: SampleFilter): Query[Seq[String]] = {
     if (!isPredicateAttribute(attribute)) {
       throw new Exception("Invalid query")
     }
@@ -211,7 +202,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     Query(tPrefixes,
       "SELECT DISTINCT ?q " +
         s"WHERE { GRAPH ?batchGraph { " +
-        "?x t:" + attribute + " ?q . ",
+        "?x t:" + attribute.id + " ?q . ",
       s"} ${sf.standardSampleFilters} } ",
       triplestore.simpleQueryNonQuiet)
   }
@@ -219,20 +210,20 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
   /**
    * Get all distinct values for a set of attributes inside specified SampleFilter
    */
-  def sampleAttributeQuery(attribute: Seq[String])
+  def sampleAttributeQuery(attributes: Seq[Attribute])
     (implicit sf: SampleFilter): Query[Seq[Map[String, String]]] = {
-    val pattr = predicateAttributes(attribute)
+    val pattr = attributes.filter(isPredicateAttribute)
     
     Query(tPrefixes,
       "SELECT DISTINCT * " +
         " WHERE { GRAPH ?batchGraph { " +
         "?x " +
-          pattr.map(x => s"t:$x ?$x").mkString("; "),
+          pattr.map(x => s"t:${x.id} ?${x.id}").mkString("; "),
       s"} ${sf.standardSampleFilters} } ",
       triplestore.mapQuery(_, 10000))
   }
 
-  def attributeValues(filter: TFilter, attribute: String)(implicit sf: SampleFilter) =
+  def attributeValues(filter: TFilter, attribute: Attribute)(implicit sf: SampleFilter) =
     sampleAttributeQuery(attribute).constrain(filter)()
 
   def sampleGroups(sf: SampleFilter): Iterable[(String, Iterable[Sample])] = {

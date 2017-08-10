@@ -37,7 +37,6 @@ import t.db.Sample
 import t.db.Metadata
 import t.db.ExprValue
 import t.db.BasicExprValue
-import t.db.SampleParameter
 import otg.model.sample.Attribute._
 import t.model.sample.Attribute
 

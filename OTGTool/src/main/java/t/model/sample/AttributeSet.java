@@ -77,15 +77,31 @@ abstract public class AttributeSet {
    * doesn't exist.
    * @param id
    * @param title
+   * @param kind
+   * @return
+   */
+  public Attribute findOrCreate(String id, @Nullable String title,
+                                @Nullable String kind) {
+    return findOrCreate(id, title, kind, null);
+  }
+  
+  
+  /**
+   * Find the attribute with the given id or create it (and add it to this set) if it
+   * doesn't exist.
+   * @param id
+   * @param title
+   * @param kind
+   * @param section
    * @return
    */
   synchronized public Attribute findOrCreate(String id, @Nullable String title,
-      @Nullable String kind) {
+      @Nullable String kind, @Nullable String section) {
     if (byId.containsKey(id)) {
       return byId.get(id);
     }
     
-    Attribute a = new BasicAttribute(id, title, kind);
+    Attribute a = new BasicAttribute(id, title, kind, section);
     add(a);
     return a;
   }

@@ -37,8 +37,8 @@ import t.sparql.TRDF
 import t.common.shared.Dataset
 import t.db.Metadata
 import javax.annotation.Nullable
-import t.db.SampleParameter
 import t.common.shared.maintenance.BatchUploadException
+import t.model.sample.Attribute
 
 /**
  * Routines for servlets that support the management of batches.
@@ -169,18 +169,17 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
     bs.setComment(b.getTitle, TRDF.escape(b.getComment))
   }
 
-  protected def overviewParameters: Seq[SampleParameter] =
-    context.config.sampleParameters.required.toSeq
+  protected def overviewParameters: Seq[Attribute] =
+    context.config.attributes.getRequired.toSeq
 
   def batchParameterSummary(batch: Batch): Array[Array[String]] = {
     val samples = context.samples
     val params = overviewParameters
-    val paramIds = params.map(_.identifier)
     val batchURI = Batches.packURI(batch.getTitle)
     val sf = SampleFilter(None, Some(batchURI))
-    val data = samples.sampleAttributeQuery(paramIds)(sf)()
-    val titles = params.map(_.humanReadable).toArray
-    val adata = data.map(row => paramIds.map(c => row(c)).toArray).toArray
+    val data = samples.sampleAttributeQuery(params)(sf)()
+    val titles = params.map(_.title).toArray
+    val adata = data.map(row => params.map(c => row(c.id)).toArray).toArray
     Array(titles) ++ adata
   }
 

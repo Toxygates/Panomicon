@@ -63,6 +63,8 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
   implicit protected def asShared(s: S): SSeries
   implicit protected def fromShared(s: SSeries): S
 
+  protected def attributes = baseConfig.attributes
+  
   override def localInit(config: Configuration): Unit = {
     this.config = config
   }
@@ -71,8 +73,10 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     val dsTitles = ds.map(_.getTitle).distinct.toList
     implicit val sf = SampleFilter(instanceURI = config.instanceURI,
         datasetURIs = dsTitles.map(Datasets.packURI(_)))
+    
+    val majAttr = attributes.byId(schema.majorParameter())
     context.samples.attributeValues(SampleClassFilter(sc).filterAll,
-      schema.majorParameter()).toSet
+      majAttr).toSet
   }
 
   def rankedCompounds(ds: Array[Dataset], sc: SampleClass,

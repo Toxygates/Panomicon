@@ -250,7 +250,7 @@ class BatchManager(context: Context) {
     }
   }
 
-  val requiredParameters = config.sampleParameters.required.map(_.identifier)
+  val requiredParameters = config.attributes.getRequired.map(_.id)
   val hlParameters = config.attributes.getHighLevel.map(_.id)
 
   def add[S <: Series[S]](title: String, comment: String, metadata: Metadata,

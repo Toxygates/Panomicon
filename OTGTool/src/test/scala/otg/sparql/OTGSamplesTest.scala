@@ -60,7 +60,7 @@ class OTGSamplesTest extends TTestSuite {
       "sin_rep_type" -> "Repeat") ++ baseConstraints)
       ).filterAll
 
-    val os = samples.sampleAttributeQuery("organ_id").
+    val os = samples.sampleAttributeQuery(Organ).
       constrain(sf)()
 
     os.toSet should (contain("Kidney"))
@@ -69,7 +69,7 @@ class OTGSamplesTest extends TTestSuite {
   test("dose levels") {
     val sf = SampleClassFilter(fullConstraints).filterAll
 
-    val ds = samples.sampleAttributeQuery(DoseLevel.id).
+    val ds = samples.sampleAttributeQuery(DoseLevel).
       constrain(sf)()
 
     //TODO use the unified DataSchema instead
@@ -79,7 +79,7 @@ class OTGSamplesTest extends TTestSuite {
   test("times") {
     val sf = SampleClassFilter(fullConstraints).filterAll
 
-    val ts = samples.sampleAttributeQuery(ExposureTime.id).
+    val ts = samples.sampleAttributeQuery(ExposureTime).
       constrain(sf)()
 
     //TODO use the unified DataSchema instead

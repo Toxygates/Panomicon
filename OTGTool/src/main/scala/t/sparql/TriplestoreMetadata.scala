@@ -21,17 +21,16 @@
 package t.sparql
 
 import t.db.Sample
-import t.db.SampleParameter
 import t.db.Metadata
 import t.db.ParameterSet
 import t.Factory
+import t.model.sample.CoreParameter._
 import t.model.sample.Attribute
 import t.model.sample.AttributeSet
 
 /**
  * Metadata from a triplestore.
- * The graph to be queried can be influenced by setting
- * os.batchURI.
+ * @param sampleStore The triplestore to be queried.
  * @param querySet the parameters to be obtained. The default case returns all parameters.
  */
 class TriplestoreMetadata(sampleStore: Samples, val attributes: AttributeSet,
@@ -62,7 +61,7 @@ class CachingTriplestoreMetadata(os: Samples, attributes: AttributeSet,
     querySet: Iterable[Attribute] = Seq())(implicit sf: SampleFilter)
     extends TriplestoreMetadata(os, attributes, querySet) {
 
-  val useQuerySet = (querySet.map(_.id).toSeq :+ "sample_id").distinct
+  val useQuerySet = (querySet.toSeq :+ SampleId).distinct
 
   lazy val rawData = {
     val raw = os.sampleAttributeQuery(useQuerySet)(sf)()

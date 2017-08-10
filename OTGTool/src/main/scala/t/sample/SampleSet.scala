@@ -1,6 +1,5 @@
 package t.sample
 
-import t.db.SampleParameter
 import t.db.Sample
 import t.db.ParameterSet
 import t.model.sample.Attribute

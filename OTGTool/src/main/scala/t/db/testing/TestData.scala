@@ -32,7 +32,6 @@ import t.db.kyotocabinet.KCExtMatrixDB
 import t.testing.FakeContext
 import t.platform.OrthologMapping
 import t.db.Metadata
-import t.db.SampleParameter
 import t.model.sample.Attribute
 import t.model.sample.CoreParameter._ 
 import otg.model.sample.Attribute._

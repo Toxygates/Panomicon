@@ -1,5 +1,7 @@
 package t.model.sample;
 
+import javax.annotation.Nullable;
+
 /**
  * An attribute of a sample
  */
@@ -22,4 +24,10 @@ public interface Attribute {
    * @return
    */
   public boolean isNumerical();
+  
+  /**
+   * The section that the attribute belongs to, if any.
+   * @return
+   */
+  public @Nullable String section();
 }

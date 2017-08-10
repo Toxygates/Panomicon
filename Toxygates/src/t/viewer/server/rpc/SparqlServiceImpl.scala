@@ -91,6 +91,7 @@ import t.common.shared.sample.SampleClassUtils
 import t.model.SampleClass
 import t.viewer.server.Units
 import t.common.shared.RequestResult
+import t.BaseConfig
 
 object SparqlServiceImpl {
   var inited = false
@@ -139,11 +140,22 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     val triplestore = baseConfig.triplestore.triplestore
     uniprot = new LocalUniprot(triplestore)
-
+    
+    populateAttributes(baseConfig)
     this.instanceURI = conf.instanceURI
     //Preload appInfo
     appInfoLoader.latest
   }
+  
+  /**
+   * From the triplestore, read attributes that do not yet exist
+   * in the attribute set and populate them once.
+   */
+  protected def populateAttributes(bc: BaseConfig) {
+    val platforms = new t.sparql.Platforms(bc.triplestore)
+    platforms.populateAttributes(bc.attributes)
+  }
+  
 
   //AppInfo refreshes at most once per day.
   //This is to allow updates such as clusterings, annotation info etc to feed through.
@@ -295,7 +307,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       parameter: String): Array[String] = {
     //Get the parameters without changing the persistent datasets in getSessionData
     val filter = sampleFilterFor(ds)
-    sampleStore.attributeValues(SampleClassFilter(sc).filterAll, parameter)(filter).
+    val attr = baseConfig.attributes.byId(parameter)
+    sampleStore.attributeValues(SampleClassFilter(sc).filterAll, attr)(filter).
       filter(x => !schema.isControlValue(parameter, x)).toArray
   }
 
@@ -306,7 +319,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   @throws[TimeoutException]
   def parameterValues(sc: SampleClass, parameter: String): Array[String] = {
-    sampleStore.attributeValues(SampleClassFilter(sc).filterAll, parameter).
+    val attr = baseConfig.attributes.byId(parameter)
+    sampleStore.attributeValues(SampleClassFilter(sc).filterAll, attr).
       filter(x => !schema.isControlValue(parameter, x)).toArray
   }
 

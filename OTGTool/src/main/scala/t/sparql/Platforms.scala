@@ -26,6 +26,7 @@ import t.util.TempFiles
 import t.platform.BioParameter
 import t.platform.BioParameters
 import t.model.sample.BasicAttribute
+import t.model.sample.AttributeSet
 
 object Platforms extends RDFClass {
   def itemClass: String = "t:platform"
@@ -66,10 +67,6 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
     }
   }
 
-  //TODO test
-  def isBiological(name: String): Boolean =
-    platformTypes.get(name) == Some(biologicalPlatform)
-
   /**
    * Note, the map may only be partially populated
    */
@@ -86,6 +83,23 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
     } else {
       x
     }
+  
+  def populateAttributes(into: AttributeSet): Unit = {
+    val timeout: Int = 60000
+     val attribs = triplestore.mapQuery(s"""$tPrefixes
+        |SELECT DISTINCT * WHERE {
+        |  ?p $platformType $biologicalPlatform.
+        |  GRAPH ?p {
+        |    ?probe a t:probe; rdfs:label ?id; t:type ?type; t:section ?section;
+        |    t:label ?title.
+        |  }
+        |}""".stripMargin, timeout)
+        
+     for (a <- attribs) {       
+       val at = into.findOrCreate(a("id"), a("title"), a("type"), a("section"))
+       println(s"Create attribute $at")
+     }
+  }
 
   /**
    * Obtain the bio-parameters in all bio platforms

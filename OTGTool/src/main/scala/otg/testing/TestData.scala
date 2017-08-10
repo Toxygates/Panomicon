@@ -27,7 +27,6 @@ import t.Factory
 import t.db.BasicExprValue
 import t.db.ParameterSet
 import t.db.Sample
-import t.db.SampleParameter
 import t.db.SeriesPoint
 import t.db.testing.TestData.enumMaps
 import t.platform.ControlGroup
@@ -119,7 +118,7 @@ object TestData {
 
     def parameters(s: Sample): Seq[(Attribute, String)] = {
       samples.find(_ == s).get.sampleClass.getMap.map(x =>  {
-         val k = OTGParameterSet.byId(x._1)
+         val k = attribSet.byId(x._1)
          (k, x._2)
       }).toSeq ++ Seq(
           (LiverWeight, "" + liverWt(s)),

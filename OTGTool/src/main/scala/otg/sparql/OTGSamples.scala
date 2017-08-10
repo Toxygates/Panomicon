@@ -29,6 +29,7 @@ import t.sparql.SampleClassFilter
 import t.sparql.SampleFilter
 import t.sparql.Samples
 import t.model.sample.CoreParameter._
+import otg.model.sample.Attribute._
 
 class OTGSamples(bc: BaseConfig) extends Samples(bc) {
 
@@ -40,9 +41,11 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
   //TODO case with no attributes won't work
   //TODO consider lifting up
   def sampleQuery(filter: SampleClassFilter)(implicit sf: SampleFilter): Query[Vector[Sample]] = {
+    val standardPred = standardAttributes.filter(isPredicateAttribute)
+    
     val filterString = if(filter.constraints.isEmpty) "" else
         s"""|  FILTER(
-        |    ${standardAttributes.map(a => filter.get(a).map(f =>
+        |    ${standardPred.map(a => filter.get(a).map(f =>
               s"?$a = " + "\"" + f + "\"")).flatten.mkString(" && ")}
         |  )""".stripMargin
 
@@ -53,7 +56,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
       s"""SELECT * WHERE {
         |  GRAPH $batchFilterQ {
         |    ?x a t:sample; rdfs:label ?id;
-        |    ${standardAttributes.map(a => s"t:$a ?$a").mkString("; ")} .
+        |    ${standardPred.map(a => s"t:$a ?$a").mkString("; ")} .
         |""".stripMargin,
 
       s"""|} ${sf.standardSampleFilters}
@@ -70,13 +73,14 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
   def sampleClasses(implicit sf: SampleFilter): Seq[Map[String, String]] = {
     //TODO case with no attributes
     //TODO may be able to lift up to superclass and generalise
-
-    val vars = hlAttributes.map(a => s"?$a").mkString(" ")
+    val hlPred = hlAttributes.filter(isPredicateAttribute)
+    
+    val vars = hlPred.map(a => s"?$a").mkString(" ")
     val r = triplestore.mapQuery(s"""$prefixes
        |SELECT DISTINCT $vars WHERE {
        |  GRAPH ?batchGraph {
        |    ?x a t:sample;
-       |    ${hlAttributes.map(a => s"t:$a ?$a").mkString("; ")} .
+       |    ${hlPred.map(a => s"t:$a ?$a").mkString("; ")} .
        |  }
        |  ${sf.standardSampleFilters}
        |}""".stripMargin)
@@ -84,7 +88,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
   }
 
   def compounds(filter: TFilter)(implicit sf: SampleFilter) =
-    sampleAttributeQuery("compound_name").constrain(filter)()
+    sampleAttributeQuery(Compound).constrain(filter)()
 
   def pathologyQuery(constraints: String): Vector[Pathology] = {
     val r = triplestore.mapQuery(s"""$prefixes

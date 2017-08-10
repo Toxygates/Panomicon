@@ -27,16 +27,6 @@ import t.model.sample.Attribute
 import t.model.sample.AttributeSet
 
 trait ParameterSet {
-
-  def all: Iterable[SampleParameter]
-
-  def required: Iterable[SampleParameter]
-
-//  def highLevel: Iterable[SampleParameter]
-
-  lazy val byId = Map() ++ all.map(x => x.identifier -> x)
-  lazy val byIdLowercase = byId.map(x => x._1.toLowerCase() -> x._2)
-
   /**
    * Retrieve the set of control samples corresponding to a given sample.
    */

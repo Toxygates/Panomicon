@@ -1,6 +1,5 @@
 package t.platform
 
-import t.db.SampleParameter
 import t.db.file.TSVMetadata
 import t.db.file.MapMetadata
 import t.db.Metadata
@@ -21,7 +20,7 @@ import scala.collection.JavaConversions._
  */
 case class BioParameter(attribute: Attribute,
     section: Option[String],
-    lowerBound: Option[Double], upperBound: Option[Double],
+    lowerBound: Option[Double], upperBound: Option[Double],    
     attributes: Map[String, String] = Map()) {
 
   def key: String = attribute.id
@@ -73,7 +72,7 @@ class BioParameters(lookup: Map[Attribute, BioParameter]) {
  */
 class ControlGroup(bps: BioParameters, samples: SampleSet,
     val controlSamples: Iterable[Sample]) {
-  println(s"Control group for $controlSamples")
+//  println(s"Control group for $controlSamples")
   val byTime = controlSamples.groupBy(s => samples.parameter(s, ExposureTime))
 
   val allParamVals = byTime.filter(_._1 != None).
