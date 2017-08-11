@@ -14,6 +14,7 @@ abstract public class AttributeSet {
  
   /**
    * Construct a new attribute set. 
+   * Throughout an application, only one attribute set should be used in most cases.
    * @param attributes All attributes in the set.
    * @param required The subset of attributes that are required to be present in new batches.
    */

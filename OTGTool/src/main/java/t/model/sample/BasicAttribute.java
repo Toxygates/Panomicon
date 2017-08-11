@@ -2,7 +2,11 @@ package t.model.sample;
 
 import javax.annotation.Nullable;
 
-public class BasicAttribute implements Attribute {
+/**
+ * A generic attribute. In most cases, users should not create attributes directly,
+ * but request them through an attribute set, to ensure that no duplicates exist.
+ */
+class BasicAttribute implements Attribute {
 
   private String id, title;
   private @Nullable String section;
@@ -34,16 +38,6 @@ public class BasicAttribute implements Attribute {
   
   @Override
   public @Nullable String section() { return section; }
-  
-  @Override
-  public boolean equals(Object other) {
-    return Attributes.equal(this, other);
-  }
-  
-  @Override
-  public int hashCode() {
-    return id.hashCode();
-  }
   
   @Override
   public String toString() {
