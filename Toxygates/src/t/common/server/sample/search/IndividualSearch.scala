@@ -62,7 +62,7 @@ class IndividualSearch(schema: DataSchema, metadata: Metadata, condition: MatchC
   protected def zTestSampleSize(s: Sample): Int = 1
 
   protected def sortObject(sample: Sample): (String, Int, Int) = {
-    (sample.get(Compound), doseLevelMap(sample.get(DoseLevel)),
-        exposureTimeMap(sample.get(ExposureTime)))
+    (sample.get(Compound), doseLevelMap.getOrElse((sample.get(DoseLevel)), Int.MaxValue),
+        exposureTimeMap.getOrElse((sample.get(ExposureTime)), Int.MaxValue))
   }
 }

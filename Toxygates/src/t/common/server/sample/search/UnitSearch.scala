@@ -103,7 +103,8 @@ class UnitSearch(schema: DataSchema, metadata: Metadata, condition: MatchConditi
   protected def zTestSampleSize(unit: Unit): Int = 
     unit.getSamples().length
 
-  protected def sortObject(unit: Unit): (String, Int, Int) = 
-    (unit.get(Compound), doseLevelMap(unit.get(DoseLevel)),
-        exposureTimeMap(unit.get(ExposureTime)))  
+  protected def sortObject(unit: Unit): (String, Int, Int) = {
+    (unit.get(Compound), doseLevelMap.getOrElse((unit.get(DoseLevel)), Int.MaxValue),
+        exposureTimeMap.getOrElse((unit.get(ExposureTime)), Int.MaxValue))
+  }
 }
