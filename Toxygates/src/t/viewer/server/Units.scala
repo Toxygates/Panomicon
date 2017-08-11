@@ -15,7 +15,7 @@ import t.model.sample.CoreParameter._
 
 
 class Units(schema: DataSchema, sampleStore: Samples) {
-    /**
+  /**
    * Generates units containing treated samples and their associated control samples.
    * TODO: sensitive algorithm, should simplify and possibly move to OTGTool.
    */
@@ -98,11 +98,11 @@ class Units(schema: DataSchema, sampleStore: Samples) {
     }
     r
   }
-  
+
   private val mediumParameter = schema.mediumParameter()
 
   def isControl(u: Unit) = schema.isControlValue(u.get(mediumParameter))
-    
+
   def isControl(s: Sample) = schema.isControlValue(s.get(mediumParameter))
 
   import t.model.sample.CoreParameter.{ControlGroup => ControlGroupParam}
