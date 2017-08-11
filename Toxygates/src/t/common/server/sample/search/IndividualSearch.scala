@@ -19,8 +19,11 @@ object IndividualSearch extends SearchCompanion[Sample, IndividualSearch] {
     searchParams: Iterable[Attribute]) =
       new IndividualSearch(schema, metadata, condition, controlGroups, samples, searchParams)
 
-  protected def formControlGroups(metadata: Metadata, annotations: Annotations) = 
+  protected def formControlGroups(metadata: Metadata, annotations: Annotations) =
     annotations.controlGroups(_, metadata)
+
+  protected def isControlSample(schema: DataSchema) =
+    schema.isControl(_)
 }
 
 class IndividualSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondition,

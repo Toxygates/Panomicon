@@ -542,7 +542,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     val ss = t.common.server.sample.search.IndividualSearch(sampleStore, cond, annotations,
         searchSpace.map(asJavaSample))
-    val rs = ss.results.filter(s => !schema.isControl(s))
+    val rs = ss.results
     println(s"Search results (displaying 20/${rs.size}:")
     for (s <- rs take 20) {
       println(s)
@@ -568,7 +568,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     val ss = t.common.server.sample.search.UnitSearch(sampleStore, cond, annotations,
         units)
-    val rs = ss.results.filter(u => !schema.isControl(u))
+    val rs = ss.results
     for (s <- rs) {
       for (param <- appInfoLoader.latest.numericalParameters()) {
         s.averageAttribute(param.id)

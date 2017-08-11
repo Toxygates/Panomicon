@@ -77,6 +77,9 @@ object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
         }
       }).flatten
   }
+
+  protected def isControlSample(schema: DataSchema) =
+    schema.isControl(_)
 }
 
 class UnitSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
@@ -84,7 +87,7 @@ class UnitSearch(schema: DataSchema, metadata: Metadata, condition: MatchConditi
     extends AbstractSampleSearch[Unit](schema, metadata, condition,
         controlGroups, samples, searchParams)  {
 
-  protected def sampleAttributeValue(unit: Unit, param: Attribute): Option[Double] = 
+  protected def sampleAttributeValue(unit: Unit, param: Attribute): Option[Double] =
     try {
       Option(unit.get(param)) match {
         case Some(v) => Some(v.toDouble)
@@ -94,13 +97,13 @@ class UnitSearch(schema: DataSchema, metadata: Metadata, condition: MatchConditi
       case nf: NumberFormatException => None
     }
 
-  protected def time(unit: Unit): String = 
+  protected def time(unit: Unit): String =
     unit.get(schema.timeParameter())
 
-  protected def postMatchAdjust(unit: Unit): Unit = 
+  protected def postMatchAdjust(unit: Unit): Unit =
     unit
 
-  protected def zTestSampleSize(unit: Unit): Int = 
+  protected def zTestSampleSize(unit: Unit): Int =
     unit.getSamples().length
 
   protected def sortObject(unit: Unit): (String, Int, Int) = {
