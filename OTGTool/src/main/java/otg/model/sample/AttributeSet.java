@@ -9,16 +9,27 @@ import t.model.sample.Attribute;
 import t.model.sample.CoreParameter;
 import static otg.model.sample.Attribute.*;
 
+/**
+ * An AttributeSet for Open TG-GATEs data.
+ */
 public class AttributeSet extends t.model.sample.AttributeSet {
-    public AttributeSet(Collection<Attribute> attributes, Collection<Attribute> required) {
-    super(attributes, required);   
-    Collections.addAll(previewDisplay, Dose, DoseUnit, DoseLevel,
-        ExposureTime, AdmRoute);
+  
+  /**
+   * Internal constructor. Users should not access this constructor directly.
+   * @param attributes
+   * @param required
+   */
+  AttributeSet(Collection<Attribute> attributes, Collection<Attribute> required) {
+    super(attributes, required);
+    Collections.addAll(previewDisplay, Dose, DoseUnit, DoseLevel, ExposureTime, AdmRoute);
     Collections.addAll(highLevel, Organism, Organ, TestType, Repeat);
   }
     
   private static AttributeSet defaultSet;
 
+  /**
+   * Obtain the Open TG-GATEs AttributeSet singleton.
+   */
   synchronized public static AttributeSet getDefault() {
     if (defaultSet == null) {
       List<Attribute> attributes = new ArrayList<Attribute>();
