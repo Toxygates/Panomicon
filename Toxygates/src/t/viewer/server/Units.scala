@@ -99,12 +99,6 @@ class Units(schema: DataSchema, sampleStore: Samples) {
     r
   }
 
-  private val mediumParameter = schema.mediumParameter()
-
-  def isControl(u: Unit) = schema.isControlValue(u.get(mediumParameter))
-
-  def isControl(s: Sample) = schema.isControlValue(s.get(mediumParameter))
-
   import t.model.sample.CoreParameter.{ControlGroup => ControlGroupParam}
   type ControlGroupKey = (String, String, String)
 
