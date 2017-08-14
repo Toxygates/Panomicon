@@ -140,13 +140,13 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
     val triplestore = baseConfig.triplestore.triplestore
     uniprot = new LocalUniprot(triplestore)
-    
+
     populateAttributes(baseConfig)
     this.instanceURI = conf.instanceURI
     //Preload appInfo
     appInfoLoader.latest
   }
-  
+
   /**
    * From the triplestore, read attributes that do not yet exist
    * in the attribute set and populate them once.
@@ -155,7 +155,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val platforms = new t.sparql.Platforms(bc.triplestore)
     platforms.populateAttributes(bc.attributes)
   }
-  
+
 
   //AppInfo refreshes at most once per day.
   //This is to allow updates such as clusterings, annotation info etc to feed through.
@@ -538,6 +538,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   def sampleSearch(sc: SampleClass, cond: MatchCondition, maxResults: Int): RequestResult[Sample] = {
     val searchSpace = sampleStore.sampleQuery(SampleClassFilter(sc))(sf)()
+    val unitHelper = new Units(schema, sampleStore)
 
     val ss = t.common.server.sample.search.IndividualSearch(sampleStore, cond, annotations,
         searchSpace.map(asJavaSample))
@@ -545,7 +546,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     println(s"Search results (displaying 20/${rs.size}:")
     for (s <- rs take 20) {
       println(s)
-    }    
+    }
 
     new RequestResult((rs take maxResults).toArray, rs.size)
   }
@@ -560,14 +561,14 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val unitHelper = new Units(schema, sampleStore)
 
     val groupedUnits = unitHelper.byControlGroup(units)
-    
+
     val controlGroupMap = Map() ++ groupedUnits.flatMap { case (param, units) =>
-      units.find(unitHelper.isControl(_)).map(param -> _)
+      units.find(schema.isControl(_)).map(param -> _)
     }
 
     val ss = t.common.server.sample.search.UnitSearch(sampleStore, cond, annotations,
         units)
-    val rs = ss.results.filter(u => !unitHelper.isControl(u))
+    val rs = ss.results
     for (s <- rs) {
       for (param <- baseConfig.attributes.getNumerical) {
         s.averageAttribute(param)
@@ -577,9 +578,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       }      
     }
     println(s"Search results (displaying 20/${rs.size}:")
-    for (u <- rs take 20) {      
+    for (u <- rs take 20) {
       println(u)
-    }    
+    }
 
     val pairs = (for (
       unit <- rs take maxResults;
@@ -587,7 +588,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
       controlUnit <- controlGroupMap.get(unitHelper.controlGroupKey(unit));
       pair = new Pair(unit, controlUnit)
       ) yield pair).toArray
-    
+
     new RequestResult(pairs, rs.size)
   }
 

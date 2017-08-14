@@ -55,7 +55,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
     val controlGroups = unitHelper.samplesByControlGroup(samples)
     val knownSamples = sampleSet.samples.map(_.sampleId).toSet
     Map() ++ controlGroups.flatMap { case (cgroup, ss) =>
-      var (cs, ts) = ss.partition(s => unitHelper.isControl(s))
+      var (cs, ts) = ss.partition(s => schema.isControl(s))
       val controls = cs.map(asScalaSample).filter(s => knownSamples.contains(s.sampleId))
       if (!controls.isEmpty) {
         val cg = new ControlGroup(bioParameters, sampleSet, controls)

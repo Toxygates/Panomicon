@@ -24,6 +24,7 @@ import java.util.Comparator;
 
 import javax.annotation.Nullable;
 
+import t.common.shared.sample.Sample;
 import t.model.SampleClass;
 
 
@@ -68,6 +69,7 @@ public abstract class DataSchema implements Serializable {
   public void sort(String parameter, String[] values) throws Exception {
     final String[] sorted = sortedValues(parameter);
     Arrays.sort(values, new Comparator<String>() {
+      @Override
       public int compare(String e1, String e2) {
         Integer i1 = SharedUtils.indexOf(sorted, e1);
         Integer i2 = SharedUtils.indexOf(sorted, e2);
@@ -146,6 +148,14 @@ public abstract class DataSchema implements Serializable {
    */
   public boolean isControlValue(String value) {
     return false;
+  }
+
+  public boolean isControl(SampleClass s) {
+    return isControlValue(s.get(mediumParameter()));
+  }
+
+  public boolean isControl(Sample s) {
+    return isControlValue(s.get(mediumParameter()));
   }
 
   @Deprecated

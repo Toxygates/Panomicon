@@ -38,6 +38,9 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
              samples: Iterable[ST],
              searchParams: Iterable[Attribute]): SS
 
+  // Used to filter out control samples in the search space
+  protected def isControlSample(schema: DataSchema): (ST => Boolean)
+
   // Called on samples before they are used in computations
   protected def preprocessSample(m: Metadata, sps: Iterable[Attribute]): (ST => ST)  = (x => x)
 
@@ -45,7 +48,7 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
   protected def formControlGroups(m: Metadata, as: Annotations): (Iterable[ST] => Map[ST, ControlGroup])
 
   // Extracts the sample parameters used in a MatchCondition
-  def conditionParams(attributes: AttributeSet, cond: MatchCondition): Iterable[Attribute] = 
+  def conditionParams(attributes: AttributeSet, cond: MatchCondition): Iterable[Attribute] =
     cond.neededParameters().map(p => attributes.byId(p.id))
 
   def apply(data: Samples, condition: MatchCondition, annotations: Annotations,
@@ -54,10 +57,10 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
 
     val attributes = annotations.baseConfig.attributes
 
-    val usedParams = conditionParams(attributes, condition) 
-    val coreParams = Seq(CGParam, attributes.byId(annotations.schema.timeParameter()), 
+    val usedParams = conditionParams(attributes, condition)
+    val coreParams = Seq(CGParam, attributes.byId(annotations.schema.timeParameter()),
       CoreParameter.Batch, CoreParameter.SampleId)
-    
+
     val neededParams = (coreParams ++ usedParams).toSeq.distinct
 
     val metadata = new CachingTriplestoreMetadata(data, attributes, neededParams)
@@ -66,7 +69,9 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
 
     val fetchedControlGroups: Map[ST, ControlGroup] = formControlGroups(metadata, annotations)(processedSamples)
 
-    create(schema, metadata, condition, fetchedControlGroups, samples, usedParams)
+    val filteredSamples: Iterable[ST] = processedSamples.filter(!isControlSample(schema)(_))
+
+    create(schema, metadata, condition, fetchedControlGroups, filteredSamples, usedParams)
   }
 }
 
