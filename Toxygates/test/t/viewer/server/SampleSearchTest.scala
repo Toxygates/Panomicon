@@ -19,12 +19,13 @@ import org.scalatest.junit.JUnitRunner
 import t.common.shared.sample.StringBioParamValue
 import otg.model.sample.Attribute._
 import t.common.server.sample.search.AbstractSampleSearch
+import t.model.sample.BasicAttribute
 
 @RunWith(classOf[JUnitRunner])
 class SampleSearchTest extends TTestSuite {
   def atomic(param: String, mt: MatchType) =
     new AtomicMatch(
-        new StringBioParamValue(param, param, "", ""),
+        new BasicAttribute(param, param),        
         mt, null)
 
   def or(mc1: MatchCondition, mc2: MatchCondition) =

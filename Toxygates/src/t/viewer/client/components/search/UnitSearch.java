@@ -6,26 +6,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
-
 import t.common.shared.Pair;
 import t.common.shared.RequestResult;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.BioParamValue;
-import t.common.shared.sample.NumericalBioParamValue;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
+import t.model.sample.AttributeSet;
+import static t.model.sample.CoreParameter.*;
 import t.viewer.client.Analytics;
 import t.viewer.client.rpc.SampleServiceAsync;
+
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class UnitSearch extends Search<Unit, Pair<Unit, Unit>> {
   private Sample[] samplesInResult;
   private HashMap<String, Sample> sampleIdHashMap;
   private HashMap<String, Unit> controlUnitsMap;
 
-  public UnitSearch(Delegate delegate, ResultTable<Unit> helper, SampleServiceAsync sampleService) {
-    super(delegate, helper, sampleService);
+  public UnitSearch(Delegate delegate, ResultTable<Unit> helper, 
+                    AttributeSet attributes, SampleServiceAsync sampleService) {
+    super(delegate, helper, attributes, sampleService);
   }
 
   @Override
@@ -92,20 +95,14 @@ public class UnitSearch extends Search<Unit, Pair<Unit, Unit>> {
       }
     }
 
-    // check if parameter is numeric; someday this step should become trivial
-    boolean parameterIsNumeric = false;
-    for (BioParamValue value : annotations[0].getAnnotations()) {
-      if (value.id() == parameterId) {
-        parameterIsNumeric = (value instanceof NumericalBioParamValue);
-      }
-    }
-
+    Attribute attr = attributes.byId(parameterId);
+    
     // then compute parameter value for each unit
     for (Unit unit : searchResult) {
-      if (parameterIsNumeric) {
-        unit.averageAttribute(parameterId);
+      if (attr.isNumerical()) {
+        unit.averageAttribute(attr);
       } else {
-        unit.concatenateAttribute(parameterId);
+        unit.concatenateAttribute(attr);
       }
     }
   }
@@ -114,7 +111,7 @@ public class UnitSearch extends Search<Unit, Pair<Unit, Unit>> {
     List<Unit> allUnits = new ArrayList<Unit>();
     for (Unit unit : units) {
       allUnits.add(unit);
-      allUnits.add(controlUnitsMap.get(unit.get("sample_id")));
+      allUnits.add(controlUnitsMap.get(unit.get(SampleId)));
     }
     return allUnits.toArray(new Unit[0]);
   }

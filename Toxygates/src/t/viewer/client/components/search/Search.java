@@ -5,23 +5,24 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-
 import t.common.shared.RequestResult;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.HasSamples;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.search.MatchCondition;
 import t.model.SampleClass;
+import t.model.sample.AttributeSet;
 import t.viewer.client.rpc.SampleServiceAsync;
+
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
  * Makes asynchronous sample/unit search requests to the SampleService and reports back on the
  * results
  * 
- * @tparam Entity the type of objects that are searched for
- * @tparam Container the type of object (either Entity or some kind of wrapper around Entity)
+ * @tparam EntityType the type of objects that are searched for
+ * @tparam ContainerType the type of object (usually some kind of collection of EntityType)
  *         representing a search result
  */
 public abstract class Search<Entity, Container> {
@@ -35,16 +36,19 @@ public abstract class Search<Entity, Container> {
   protected Delegate delegate;
   protected ResultTable<Entity> helper;
   protected SampleServiceAsync sampleService;
-
+  protected AttributeSet attributes;
+  
   Entity[] searchResult;
   MatchCondition condition;
   private Set<String> fetchedParameters;
 
   public Search(Delegate delegate, ResultTable<Entity> helper,
+                AttributeSet attributes,
       SampleServiceAsync sampleService) {
     this.delegate = delegate;
     this.helper = helper;
     this.sampleService = sampleService;
+    this.attributes = attributes;
   }
 
   public ResultTable<Entity> helper() {

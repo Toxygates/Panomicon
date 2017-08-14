@@ -7,17 +7,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import t.common.client.Utils;
+import t.common.client.components.SelectionTable;
+import t.common.shared.sample.Unit;
+import t.common.shared.sample.search.MatchCondition;
+import t.model.sample.Attribute;
+import t.viewer.client.table.TooltipColumn;
+
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
-
-import t.common.client.Utils;
-import t.common.client.components.SelectionTable;
-import t.common.shared.sample.BioParamValue;
-import t.common.shared.sample.Unit;
-import t.common.shared.sample.search.MatchCondition;
-import t.viewer.client.table.TooltipColumn;
 
 /**
  * Manages a table for displaying the results of a sample/unit search.
@@ -103,8 +103,8 @@ public abstract class ResultTable<T> {
 
   private void setConditionKeys(MatchCondition condition) {
     assert(conditionKeys.size() == 0);  
-    for (BioParamValue bp : condition.neededParameters()) {
-      conditionKeys.add(bp.id()); 
+    for (Attribute attr : condition.neededParameters()) {
+      conditionKeys.add(attr.id()); 
     }
   }
 

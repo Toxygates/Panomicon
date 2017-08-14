@@ -21,7 +21,6 @@ package t.viewer.shared;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -30,10 +29,8 @@ import t.common.shared.Dataset;
 import t.common.shared.Platform;
 import t.common.shared.StringList;
 import t.common.shared.clustering.ProbeClustering;
-import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.Group;
-import t.common.shared.sample.NumericalBioParamValue;
-import t.common.shared.sample.StringBioParamValue;
+import t.model.sample.AttributeSet;
 import t.viewer.shared.intermine.IntermineInstance;
 
 /**
@@ -56,9 +53,7 @@ public class AppInfo implements Serializable {
   private String[] annotationComments;
   private IntermineInstance[] intermineInstances;
   
-  private BioParamValue[] bioParameters;
-  private NumericalBioParamValue[] numericalParameters;
-  private StringBioParamValue[] stringParameters;
+  private AttributeSet attributes;
   
   private String userKey;
   
@@ -90,26 +85,13 @@ public class AppInfo implements Serializable {
       List<ProbeClustering> probeClusterings, String appName,
       String userKey,
       String[][] annotationInfo,
-      BioParamValue[] bioParameters) {
+      AttributeSet attributes) {
     this(instanceName_, datasets, platforms, probeLists,
         instances, appName, userKey);
     this.probeClusterings = probeClusterings;
     this.annotationTitles = annotationInfo[0];
     this.annotationComments = annotationInfo[1];
-    this.bioParameters = bioParameters;
-
-    List<NumericalBioParamValue> numericalParams = new LinkedList<NumericalBioParamValue>();
-    List<StringBioParamValue> stringParams = new LinkedList<StringBioParamValue>();
-    for (BioParamValue param : bioParameters) {
-      if (param instanceof NumericalBioParamValue) {
-        numericalParams.add((NumericalBioParamValue) param);
-      } else if (param instanceof StringBioParamValue) {
-        stringParams.add((StringBioParamValue) param);
-      }
-    }
-    numericalParameters =
-        numericalParams.toArray(new NumericalBioParamValue[0]);
-    stringParameters = stringParams.toArray(new StringBioParamValue[0]);
+    this.attributes = attributes;
   }
 
   public String welcomeHtmlURL() {
@@ -166,18 +148,10 @@ public class AppInfo implements Serializable {
     return annotationComments;
   }
   
-  public BioParamValue[] bioParameters() {
-    return bioParameters;
+  public AttributeSet attributes() {
+    return attributes;
   }
   
-  public NumericalBioParamValue[] numericalParameters() {
-    return numericalParameters;
-  }
-
-  public StringBioParamValue[] stringParameters() {
-    return stringParameters;
-  }
-
   public String getUserKey() {
     return userKey;
   }

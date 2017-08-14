@@ -29,6 +29,7 @@ import java.util.Map;
 
 import t.common.shared.DataSchema;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 
 /**
  * A sample class with associated samples.
@@ -51,31 +52,31 @@ public class Unit extends SampleClass {
     return samples;
   }
 
-  public void averageAttribute(String paramId) {
+  public void averageAttribute(Attribute attr) {
     Sample first = samples[0];
-    if (first.sampleClass().get(paramId) != null) {
+    if (first.sampleClass().get(attr) != null) {
       int count = 0;
       double sum = 0.0;
       for (Sample sample : samples) {
         count++;
-        sum += Double.parseDouble(sample.sampleClass().get(paramId));
+        sum += Double.parseDouble(sample.sampleClass().get(attr));
       }
-      put(paramId, Double.toString(sum / count));
+      put(attr, Double.toString(sum / count));
     }
     // TODO: maybe some exception checking for when conversion to double fails
   }
 
-  public void concatenateAttribute(String paramId) {
+  public void concatenateAttribute(Attribute attr) {
     String separator = " / ";
 
     Sample firstSample = samples[0];
-    if (firstSample.sampleClass().get(paramId) != null) {
+    if (firstSample.sampleClass().get(attr) != null) {
       HashSet<String> values = new HashSet<String>();
       String concatenation = "";
 
       Boolean firstIteration = true;
       for (Sample sample : samples) {
-        String newValue = sample.sampleClass().get(paramId);
+        String newValue = sample.sampleClass().get(attr);
         if (!values.contains(newValue)) {
           values.add(newValue);
           if (!firstIteration) {
@@ -86,7 +87,7 @@ public class Unit extends SampleClass {
           concatenation += newValue;
         }
       }
-      put(paramId, concatenation);
+      put(attr, concatenation);
     }
     // TODO: maybe more robust handling of when only some of the samples have a value for
     // a given parameter. Or maybe we can assume that won't happen.

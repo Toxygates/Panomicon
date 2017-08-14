@@ -51,5 +51,4 @@ public enum Attribute implements t.model.sample.Attribute {
   
   @Override
   public String section() { return section; }
-
 }

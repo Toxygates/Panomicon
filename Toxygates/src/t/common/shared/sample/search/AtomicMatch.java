@@ -7,12 +7,12 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.sample.BioParamValue;
+import t.model.sample.Attribute;
 
 @SuppressWarnings("serial")
 public class AtomicMatch implements MatchCondition, Serializable {
   @Nullable Double param1;
-  BioParamValue paramId;
+  Attribute attr;
   MatchType matchType;
   
   //GWT constructor
@@ -23,17 +23,17 @@ public class AtomicMatch implements MatchCondition, Serializable {
    * @param matchType
    * @param param1
    */
-  public AtomicMatch(BioParamValue paramId, MatchType matchType,
+  public AtomicMatch(Attribute paramId, MatchType matchType,
       @Nullable Double param1) {
     this.matchType = matchType;
-    this.paramId = paramId;
+    this.attr = paramId;
     this.param1 = param1;
   }
   
   @Override
-  public Collection<BioParamValue> neededParameters() {
-    List<BioParamValue> r = new ArrayList<BioParamValue>();
-    r.add(paramId);        
+  public Collection<Attribute> neededParameters() {
+    List<Attribute> r = new ArrayList<Attribute>();
+    r.add(attr);        
     return r;
   }
   
@@ -44,5 +44,5 @@ public class AtomicMatch implements MatchCondition, Serializable {
   /**
    * @return parameter identified by human-readable string
    */
-  public BioParamValue parameter() { return paramId; }
+  public Attribute parameter() { return attr; }
 }

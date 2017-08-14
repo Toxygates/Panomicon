@@ -1,8 +1,10 @@
 package t.model.sample;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -10,8 +12,12 @@ import javax.annotation.Nullable;
 /**
  * A set of sample attributes.
  */
-abstract public class AttributeSet {
+@SuppressWarnings("serial")
+abstract public class AttributeSet implements Serializable {
  
+  //GWT constructor
+  public AttributeSet() {}
+  
   /**
    * Construct a new attribute set. 
    * Throughout an application, only one attribute set should be used in most cases.
@@ -33,6 +39,24 @@ abstract public class AttributeSet {
   
   public Collection<Attribute> getAll() {
     return attributes;
+  }
+  
+  public List<Attribute> getAllByKind(boolean isNumerical) {
+    List<Attribute> r = new ArrayList<Attribute>();
+    for (Attribute a: attributes) {
+      if (a.isNumerical() == isNumerical) {
+        r.add(a);
+      }
+    }
+    return r;
+  }
+  
+  public List<Attribute> getNumerical() {
+    return getAllByKind(true);
+  }
+  
+  public List<Attribute> getString() {
+    return getAllByKind(false);
   }
   
   /**
@@ -105,5 +129,9 @@ abstract public class AttributeSet {
     Attribute a = new BasicAttribute(id, title, kind, section);
     add(a);
     return a;
+  }
+  
+  public static int compare(Attribute a1, Attribute a2) {
+    return a1.title().compareTo(a2.title());
   }
 }

@@ -3,22 +3,24 @@ package t.viewer.client.components.search;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
-
 import t.common.shared.RequestResult;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.Sample;
 import t.model.SampleClass;
+import t.model.sample.AttributeSet;
 import t.viewer.client.Analytics;
 import t.viewer.client.rpc.SampleServiceAsync;
+
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class SampleSearch extends Search<Sample, Sample> {
   private HashMap<String, Sample> sampleIdHashMap;
 
   public SampleSearch(Delegate delegate, ResultTable<Sample> helper,
+                      AttributeSet attributes,
       SampleServiceAsync sampleService) {
-    super(delegate, helper, sampleService);
+    super(delegate, helper, attributes, sampleService);
   }
 
   @Override

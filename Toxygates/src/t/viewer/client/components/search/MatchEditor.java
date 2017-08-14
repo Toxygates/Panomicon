@@ -4,20 +4,20 @@ import java.util.Collection;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.sample.BioParamValue;
+import t.model.sample.Attribute;
 
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
 
 abstract public class MatchEditor extends Composite {
 
-  protected Collection<BioParamValue> parameters;
+  protected Collection<Attribute> parameters;
   
   protected @Nullable MatchEditor parent;
   
   private boolean signalled = false;
   
-  public MatchEditor(@Nullable MatchEditor parent, Collection<BioParamValue> parameters) {
+  public MatchEditor(@Nullable MatchEditor parent, Collection<Attribute> parameters) {
     super();
     this.parameters = parameters;
     this.parent = parent;

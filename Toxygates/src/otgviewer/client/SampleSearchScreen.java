@@ -3,11 +3,33 @@ package otgviewer.client;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+
+import otgviewer.client.components.FilterTools;
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
+import otgviewer.client.components.ScreenManager;
+import otgviewer.client.components.TickMenuItem;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.Sample;
+import t.common.shared.sample.Unit;
+import t.model.SampleClass;
+import t.model.sample.Attribute;
+import t.model.sample.AttributeComparator;
+import t.model.sample.AttributeSet;
+import t.viewer.client.Utils;
+import t.viewer.client.components.search.ConditionEditor;
+import t.viewer.client.components.search.ResultTable;
+import t.viewer.client.components.search.SampleSearch;
+import t.viewer.client.components.search.SampleTable;
+import t.viewer.client.components.search.Search;
+import t.viewer.client.components.search.UnitSearch;
+import t.viewer.client.components.search.UnitTable;
+import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.shared.AppInfo;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -22,29 +44,6 @@ import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
-
-import otgviewer.client.components.FilterTools;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import otgviewer.client.components.ScreenManager;
-import otgviewer.client.components.TickMenuItem;
-import t.common.shared.sample.BioParamValue;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.NumericalBioParamValue;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.Unit;
-import t.model.SampleClass;
-import t.viewer.client.Utils;
-import t.viewer.client.components.search.ConditionEditor;
-import t.viewer.client.components.search.ResultTable;
-import t.viewer.client.components.search.SampleSearch;
-import t.viewer.client.components.search.SampleTable;
-import t.viewer.client.components.search.Search;
-import t.viewer.client.components.search.UnitSearch;
-import t.viewer.client.components.search.UnitTable;
-import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.rpc.SampleServiceAsync;
-import t.viewer.shared.AppInfo;
 
 public class SampleSearchScreen extends Screen implements Search.Delegate, ResultTable.Delegate {
   public static final String key = "search";
@@ -69,28 +68,18 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   private UnitSearch unitSearch;
   private Search<?, ?> currentSearch = null;
 
-  private Collection<BioParamValue> searchParameters;
-  private Collection<BioParamValue> nonSearchParameters;
-
-  private Map<String, String> humanReadableParamNames;
+  private Collection<Attribute> searchParameters;
+  private Collection<Attribute> nonSearchParameters;
 
   private Collection<ParameterTickItem> parameterMenuItems;
 
   private void getParameterInfo() {
-    BioParamValue[] allParams = appInfo.bioParameters();
-    List<BioParamValue> searchParams = new ArrayList<BioParamValue>();
-    List<BioParamValue> nonSearchParams = new ArrayList<BioParamValue>();
-    humanReadableParamNames = new HashMap<String, String>();
-    for (BioParamValue bp : allParams) {
-      if (bp instanceof NumericalBioParamValue) {
-        searchParams.add(bp);
-      } else {
-        nonSearchParams.add(bp);
-      }
-      humanReadableParamNames.put(bp.id(), bp.label());
-    }
-    java.util.Collections.sort(searchParams);
-    java.util.Collections.sort(nonSearchParams);
+    AttributeSet attributes = appInfo.attributes();
+    List<Attribute> searchParams = attributes.getNumerical();
+    List<Attribute> nonSearchParams = attributes.getString();
+    
+    java.util.Collections.sort(searchParams, new AttributeComparator());
+    java.util.Collections.sort(nonSearchParams, new AttributeComparator());
 
     searchParameters = searchParams;
     nonSearchParameters = nonSearchParams;
@@ -104,8 +93,10 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
 
     sampleService = man.sampleService();
 
-    sampleSearch = new SampleSearch(this, sampleTableHelper, sampleService);
-    unitSearch = new UnitSearch(this, unitTableHelper, sampleService);
+    sampleSearch = new SampleSearch(this, sampleTableHelper, appInfo.attributes(), 
+      sampleService);
+    unitSearch = new UnitSearch(this, unitTableHelper, appInfo.attributes(), 
+      sampleService);
 
     getParameterInfo();
 
@@ -267,16 +258,16 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
     MenuBar numericalParametersBar = new MenuBar(true);
     MenuItem numericalParametersItem =
         new MenuItem("Numerical parameters", false, numericalParametersBar);
-    for (BioParamValue parameter : searchParameters) {
+    for (Attribute parameter : searchParameters) {
       parameterMenuItems.add(new ParameterTickItem(numericalParametersBar,
-          parameter.label(), parameter.id(), true, false, false));
+          parameter.title(), parameter.id(), true, false, false));
     }
     MenuBar stringParametersBar = new MenuBar(true);
     MenuItem stringParametersItem =
         new MenuItem("Non-numerical parameters", false, stringParametersBar);
-    for (BioParamValue parameter : nonSearchParameters) {
+    for (Attribute parameter : nonSearchParameters) {
       parameterMenuItems.add(new ParameterTickItem(stringParametersBar,
-          parameter.label(), parameter.id(), false, false, false));
+          parameter.title(), parameter.id(), false, false, false));
     }
     parametersBar.addItem(numericalParametersItem);
     parametersBar.addItem(stringParametersItem);
@@ -354,13 +345,8 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   }
 
   @Override
-  public String humanReadableTitleForColumn(String id) {
-    String title = humanReadableParamNames.get(id);
-    if (title == null) {
-      return id;
-    } else {
-      return humanReadableParamNames.get(id);
-    }
+  public String humanReadableTitleForColumn(String id) { 
+    return appInfo.attributes().byId(id).title();    
   }
 
   @Override

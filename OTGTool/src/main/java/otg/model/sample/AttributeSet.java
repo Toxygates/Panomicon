@@ -12,7 +12,11 @@ import static otg.model.sample.Attribute.*;
 /**
  * An AttributeSet for Open TG-GATEs data.
  */
+@SuppressWarnings("serial")
 public class AttributeSet extends t.model.sample.AttributeSet {
+  
+  //GWT constructor
+  public AttributeSet() {}
   
   /**
    * Internal constructor. Users should not access this constructor directly.

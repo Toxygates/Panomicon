@@ -177,7 +177,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
         configuration.intermineInstances.toArray,
         probeClusterings(probeLists), appName,
         makeUserKey(), getAnnotationInfo,
-        annotations.allParamsAsShared.toArray)
+        baseConfig.attributes)        
   }
 
   protected lazy val b2rKegg: B2RKegg =
@@ -569,11 +569,11 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
         units)
     val rs = ss.results.filter(u => !unitHelper.isControl(u))
     for (s <- rs) {
-      for (param <- appInfoLoader.latest.numericalParameters()) {
-        s.averageAttribute(param.id)
+      for (param <- baseConfig.attributes.getNumerical) {
+        s.averageAttribute(param)
       }
-      for (param <- appInfoLoader.latest.stringParameters()) {
-        s.concatenateAttribute(param.id)
+      for (param <- baseConfig.attributes.getString) {
+        s.concatenateAttribute(param)
       }      
     }
     println(s"Search results (displaying 20/${rs.size}:")

@@ -25,4 +25,5 @@ public enum CoreParameter implements Attribute {
   public String title() { return title; }
   public boolean isNumerical() { return isNumerical; }
   public String section() { return section; }
+  
 }

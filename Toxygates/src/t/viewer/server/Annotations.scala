@@ -128,19 +128,6 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
         value)
 
   /**
-   * Convert all parameters to shared API
-   */
-  def allParamsAsShared =
-    bioParameters.all.map(p => {
-      p.kind match {
-      case "numerical" =>
-        numericalAsShared(p, null, null, null)
-      case _ =>
-        stringAsShared(p, null)
-      }
-    })
-
-  /**
    * Construct an Annotation from sample attributes
    */
   def fromAttributes(sample: Sample,

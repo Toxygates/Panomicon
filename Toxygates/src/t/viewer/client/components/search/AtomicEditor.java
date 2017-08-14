@@ -6,50 +6,50 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import t.common.client.components.ItemSelector;
+import t.common.shared.sample.search.AtomicMatch;
+import t.common.shared.sample.search.MatchType;
+import t.model.sample.Attribute;
+import t.model.sample.BasicAttribute;
+import t.viewer.client.Utils;
+
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.TextBox;
 
-import t.common.client.components.ItemSelector;
-import t.common.shared.sample.BioParamValue;
-import t.common.shared.sample.StringBioParamValue;
-import t.common.shared.sample.search.AtomicMatch;
-import t.common.shared.sample.search.MatchType;
-import t.viewer.client.Utils;
-
 public class AtomicEditor extends MatchEditor {
 
-  private ItemSelector<BioParamValue> paramSel;
+  private ItemSelector<Attribute> paramSel;
   private ItemSelector<MatchType> typeSel;
   private TextBox textBox = new TextBox();
   
-  final static BioParamValue UNDEFINED_ITEM = 
-      new StringBioParamValue("undefined", "Undefined", "", "");
+  final static Attribute UNDEFINED_ITEM =
+      new BasicAttribute("undefined", "Undefined", false, null);
   
   public AtomicEditor(@Nullable MatchEditor parent, 
-      final Collection<BioParamValue> parameters) {
+      final Collection<Attribute> parameters) {
     super(parent, parameters);
     
     HorizontalPanel hPanel = Utils.mkHorizontalPanel(true);
     initWidget(hPanel);
     hPanel.addStyleName("samplesearch-atomicpanel");
     
-    paramSel = new ItemSelector<BioParamValue>() {
+    paramSel = new ItemSelector<Attribute>() {
       @Override
-      protected BioParamValue[] values() {
-        List<BioParamValue> r = new ArrayList<BioParamValue>();
+      protected Attribute[] values() {
+        List<Attribute> r = new ArrayList<Attribute>();
         r.add(UNDEFINED_ITEM);
         r.addAll(parameters);
-        return r.toArray(new BioParamValue[0]);
+        return r.toArray(new Attribute[0]);
       }      
       
       @Override
-      protected String titleForValue(BioParamValue bp) {
-        return bp.label();
+      protected String titleForValue(Attribute bp) {
+        return bp.title();
       }
       
       @Override
-      protected void onValueChange(BioParamValue selected) {
+      protected void onValueChange(Attribute selected) {
         if (selected.equals(UNDEFINED_ITEM)) {
           disable();
         } else {
