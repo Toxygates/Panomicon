@@ -21,17 +21,10 @@
 package t.db.testing
 
 import kyotocabinet.DB
-import t.db.ExtMatrixDB
-import t.db.MatrixDB
-import t.db.PExprValue
-import t.db.ProbeIndex
-import t.db.RawExpressionData
-import t.db.Sample
-import t.db.SampleIndex
+import t.db._
 import t.db.kyotocabinet.KCExtMatrixDB
 import t.testing.FakeContext
 import t.platform.OrthologMapping
-import t.db.Metadata
 import t.model.sample.Attribute
 import t.model.sample.CoreParameter._ 
 import otg.model.sample.Attribute._

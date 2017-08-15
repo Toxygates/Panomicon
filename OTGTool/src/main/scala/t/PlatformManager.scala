@@ -20,14 +20,15 @@
 
 package t
 
-import t.sparql.Platforms
-import t.platform.PlatformDefFile
-import t.util.TempFiles
-import t.platform.affy.AffymetrixConverter
 import t.db.kyotocabinet.KCIndexDB
+import t.global.KCDBRegistry
+import t.platform.PlatformDefFile
+import t.platform.affy.AffymetrixConverter
+
+import t.sparql.Platforms
 import t.sparql.Probes
 import t.sparql.TRDF
-import t.global.KCDBRegistry
+import t.util.TempFiles
 
 /**
  * Platform/probe management CLI

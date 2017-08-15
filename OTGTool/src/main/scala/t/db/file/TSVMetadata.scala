@@ -22,11 +22,9 @@ package t.db.file
 
 import friedrich.util.formats.TSVFile
 import t.db.ParameterSet
-import t.db.Sample
-import t.db.Metadata
+import t.db._
 import t.Factory
-import t.model.sample.AttributeSet
-import t.model.sample.Attribute
+import t.model.sample._
 import t.model.sample.Helpers._
 import scala.collection.JavaConversions._
 

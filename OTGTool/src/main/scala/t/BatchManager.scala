@@ -24,35 +24,12 @@ import scala.Vector
 import scala.collection.JavaConversions._
 
 import otg.sparql.OTGSamples
-import t.db.ExprValue
-import t.db.Log2Data
-import t.db.LookupFailedException
-import t.db.MatrixContext
-import t.db.MatrixDBReader
-import t.db.MatrixDBWriter
-import t.db.MatrixInsert
-import t.db.Metadata
-import t.db.PExprValue
-import t.db.ProbeIndex
-import t.db.ProbeMap
-import t.db.Sample
-import t.db.SampleIndex
-import t.db.SampleMap
-import t.db.Series
-import t.db.SeriesBuilder
-import t.db.SimplePFoldValueInsert
+import t.db._
 import t.db.file.CSVRawExpressionData
 import t.db.file.PFoldValueBuilder
-import t.db.kyotocabinet.KCIndexDB
-import t.db.kyotocabinet.KCMatrixDB
-import t.db.kyotocabinet.KCSeriesDB
+import t.db.kyotocabinet._
 import t.global.KCDBRegistry
-import t.sparql.Batches
-import t.sparql.Platforms
-import t.sparql.SampleFilter
-import t.sparql.TRDF
-import t.sparql.Triplestore
-import t.sparql.TriplestoreMetadata
+import t.sparql._
 import t.util.TempFiles
 
 /**

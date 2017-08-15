@@ -19,20 +19,10 @@
  */
 
 package t
-import java.lang.System
+
 import scala.collection.JavaConversions._
-import t.db.MatrixInsert
-import t.db.kyotocabinet.KCMatrixDB
-import t.db.RawExpressionData
-import t.db.SimplePFoldValueInsert
-import t.global.KCDBRegistry
-import t.db.Sample
-import t.db.MatrixDBReader
-import t.db.MatrixContext
-import t.db.PExprValue
-import t.db.FoldPExpr
-import t.db.ExprValue
-import t.db.MatrixDBWriter
+
+import t.db._
 
 /**
  * Mid-level copy tool for copying matrix data between different formats.

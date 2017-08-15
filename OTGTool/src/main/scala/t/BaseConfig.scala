@@ -21,25 +21,14 @@
 package t
 
 import scala.language.existentials
-import t.sparql.Triplestore
-import t.db.Series
-import t.db.SeriesBuilder
-import t.db.Metadata
-import t.db.ParameterSet
-import t.db.file.TSVMetadata
-import t.db.kyotocabinet.KCSeriesDB
-import t.db.kyotocabinet.KCIndexDB
-import t.db.kyotocabinet.chunk.KCChunkMatrixDB
-import t.db.kyotocabinet.KCMatrixDB
-import t.db.MatrixDBReader
-import t.db.PExprValue
-import t.db.BasicExprValue
-import t.db.MatrixContext
-import t.db.ExprValue
-import t.db.TransformingWrapper
-import t.db.MatrixDB
+
 import org.eclipse.rdf4j.repository.RepositoryConnection
+
+import t.db._
+import t.db.kyotocabinet._
+import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 import t.model.sample.AttributeSet
+import t.sparql.Triplestore
 
 //TODO should BaseConfig be invariant between applications?
 trait BaseConfig {

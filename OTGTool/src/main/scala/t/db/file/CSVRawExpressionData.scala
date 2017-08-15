@@ -21,10 +21,8 @@
 package t.db.file
 
 import scala.io.Source
-import t.db.RawExpressionData
-import t.db.Sample
 import scala.collection.{ Map => CMap }
-import t.db.FoldPExpr
+import t.db._
 
 class ParseException(msg: String) extends Exception
 

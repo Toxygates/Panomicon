@@ -20,19 +20,16 @@
 
 package otg.testing
 
+import scala.collection.JavaConversions._
+
 import otg.OTGSeries
 import otg.db.Metadata
-import otg.db.OTGParameterSet
+import otg.model.sample.Attribute._
 import t.Factory
 import t.db._
 import t.db.testing.TestData.enumMaps
-import t.platform._
-import otg.OTGBConfig
-import otg.model.sample.Attribute._
-
-import scala.collection.JavaConversions._
-import t.model.sample.BasicAttribute
 import t.model.sample.Attribute
+import t.platform._
 
 object TestData {
   import t.db.testing.TestData._

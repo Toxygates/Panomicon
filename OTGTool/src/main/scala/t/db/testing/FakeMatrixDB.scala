@@ -20,13 +20,9 @@
 
 package t.db.testing
 
-import t.db.MatrixDB
-import t.db.ExprValue
 import otg.Species._
 import otg.Context
-import t.db.BasicExprValue
-import t.db.ProbeMap
-import t.db.Sample
+import t.db._
 
 abstract class AbsFakeMatrixDB[E >: Null <: ExprValue](var records: Seq[(Sample, Int, E)] = Vector())(implicit val probeMap: ProbeMap) extends MatrixDB[E, E] {
   var closed = false

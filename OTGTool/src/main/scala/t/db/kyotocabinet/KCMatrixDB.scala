@@ -23,20 +23,13 @@ package t.db.kyotocabinet
 import t.db.MatrixDB
 import kyotocabinet.DB
 import java.nio.ByteBuffer
-import t.db.ExprValue
-import t.db.BasicExprValue
-import t.db.PExprValue
-import t.db.ExtMatrixDB
+import t.db._
 import otg.Species._
 import otg.Context
 import t.platform.SimpleProbe
-import t.db.MatrixContext
-import t.db.Sample
 import t.global.KCDBRegistry
 import t.platform.Probe
 import t.db.kyotocabinet.chunk.KCChunkMatrixDB
-import t.db.MatrixDBReader
-import t.db.MatrixDBWriter
 
 object KCMatrixDB {
 

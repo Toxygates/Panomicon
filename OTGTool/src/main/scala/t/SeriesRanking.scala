@@ -20,12 +20,9 @@
 
 package t
 
-import t.db.Series
 import t.util.SafeMath
-import t.db.SeriesDB
+import t.db._
 import friedrich.data.Statistics
-import t.db.ExprValue
-import t.db.MatrixContext
 
 class SeriesRanking[S <: Series[S]](val db: SeriesDB[S], val key: S)(implicit context: MatrixContext) {
   protected def getScores(mt: SeriesRanking.RankType): Iterable[(S, Double)] = {

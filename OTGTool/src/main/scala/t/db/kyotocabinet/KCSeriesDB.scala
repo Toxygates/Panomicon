@@ -23,14 +23,8 @@ package t.db.kyotocabinet
 import java.nio.ByteBuffer
 import scala.annotation.tailrec
 import kyotocabinet.DB
-import t.db.ProbeMap
-import t.db.SeriesDB
 import otg.Context
-import t.db.BasicExprValue
-import t.db.MatrixContext
-import t.db.Series
-import t.db.SeriesBuilder
-import t.db.SeriesPoint
+import t.db._
 import t.global.KCDBRegistry
 import t.platform.Probe
 

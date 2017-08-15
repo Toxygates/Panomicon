@@ -20,9 +20,7 @@
 
 package t
 
-import otg.sparql.OTGSamples
-import t.db.Metadata
-import t.db.Sample
+import t.db._
 import t.sparql.Samples
 
 abstract class ValueSummary(valueName: String) {

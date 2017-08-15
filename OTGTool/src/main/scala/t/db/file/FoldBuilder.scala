@@ -20,17 +20,14 @@
 
 package t.db.file
 
-import friedrich.util.CmdLineOptions
 import java.io._
-import org.apache.commons.math3.stat.inference.TTest
-import t.db.RawExpressionData
-import t.db.Metadata
-import t.db.Sample
-import t.db.PExprValue
-import t.db.ExprValue
-import otg.Factory
+
 import scala.Vector
-import t.db.FoldPExpr
+
+import org.apache.commons.math3.stat.inference.TTest
+
+import friedrich.util.CmdLineOptions
+import t.db._
 import t.model.sample.Helpers._
 
 /**

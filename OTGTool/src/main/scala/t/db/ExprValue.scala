@@ -20,8 +20,7 @@
 
 package t.db
 import java.text.NumberFormat
-import t.platform.Probe
-import t.platform.SimpleProbe
+import t.platform._
 
 object ExprValue {
   def presentMean(vs: Iterable[ExprValue], probe: String): ExprValue = {
