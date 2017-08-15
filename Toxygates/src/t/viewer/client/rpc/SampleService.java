@@ -15,6 +15,7 @@ import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
 import t.common.shared.sample.search.MatchCondition;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 import t.viewer.shared.TimeoutException;
 
 /**
@@ -102,6 +103,15 @@ public interface SampleService extends RemoteService {
    * @return
    */
   Annotation annotations(Sample barcode) throws TimeoutException;
+
+  /**
+   * Obtain annotations for a set of samples
+   * 
+   * @param samples
+   * @param attributes the attributes to fetch
+   * @return
+   */
+  Annotation[] annotations(Sample[] samples, Attribute[] attributes) throws TimeoutException;
 
   /**
    * Obtain annotations for a set of samples

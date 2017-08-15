@@ -92,6 +92,7 @@ import t.model.SampleClass
 import t.viewer.server.Units
 import t.common.shared.RequestResult
 import t.BaseConfig
+import t.model.sample.Attribute
 
 object SparqlServiceImpl {
   var inited = false
@@ -384,6 +385,11 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   def annotations(barcode: Sample): Annotation = {
     val params = sampleStore.parameterQuery(barcode.id)
     annotations.fromAttributes(barcode, params)
+  }
+
+  @throws[TimeoutException]
+  def annotations(samples: Array[Sample], attributes: Array[Attribute]): Array[Annotation] = {
+    annotations.forSamples(sampleStore, samples, attributes)
   }
 
   @throws[TimeoutException]
