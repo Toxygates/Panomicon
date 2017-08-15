@@ -20,16 +20,14 @@
 
 package otg
 
-import t.TriplestoreConfig
-import t.sparql.Samples
+import otg.db.Metadata
 import otg.sparql.OTGSamples
 import otg.sparql.Probes
 import t.BaseConfig
-import t.db.file.TSVMetadata
 import t.DataConfig
-import t.db.ParameterSet
+
+import t.TriplestoreConfig
 import t.db.file.MapMetadata
-import otg.db.Metadata
 import t.model.sample.AttributeSet
 
 class Factory extends t.Factory {

@@ -21,21 +21,13 @@
 package otg.sparql
 
 import scala.collection.JavaConversions._
+
 import otg.Species._
-import scala.annotation.tailrec
-import otg.Context
 import t.TriplestoreConfig
-import t.sparql.QueryUtils
-import t.sparql.Triplestore
-import t.db.ProbeMap
-import t.db.DefaultBio
-import t.db.Store
-import t.sparql._
-import t.sparql.secondary.Protein
-import t.sparql.secondary.Gene
-import t.sparql.secondary.GOTerm
-import t.platform.OrthologMapping
+import t.db._
 import t.platform.Probe
+import t.sparql._
+import t.sparql.secondary._
 import t.sparql.secondary.B2RKegg
 
 // TODO: quite a bit of code from here should be lifted up

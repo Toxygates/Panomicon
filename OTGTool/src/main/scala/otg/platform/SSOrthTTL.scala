@@ -19,14 +19,18 @@
  */
 
 package otg.platform
-import scala.io._
+
 import java.io._
-import t.sparql.secondary.Gene
-import scala.collection.mutable.{ HashMap => MHMap, Set => MSet }
-import otg.sparql.Probes
+
+import scala.collection.mutable.{ HashMap => MHMap }
 import scala.collection.mutable.{ HashMap => MHMap }
 import scala.collection.mutable.{ Set => MSet }
+import scala.collection.mutable.{ Set => MSet }
+import scala.io._
+
+import otg.sparql.Probes
 import t.platform.Probe
+import t.sparql.secondary.Gene
 
 /**
  * Convert SSearch similarity files to TTL format, by using

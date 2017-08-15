@@ -20,8 +20,6 @@
 
 package otg.db
 
-import scala.collection.immutable.ListMap
-
 import t.db.ParameterSet
 import t.db.Sample
 import otg.model.sample.Attribute._

@@ -23,11 +23,8 @@ package otg.sparql
 import otg.Pathology
 import t.BaseConfig
 import t.db.Sample
+import t.sparql._
 import t.sparql.{ Filter => TFilter }
-import t.sparql.Query
-import t.sparql.SampleClassFilter
-import t.sparql.SampleFilter
-import t.sparql.Samples
 import t.model.sample.CoreParameter._
 import otg.model.sample.Attribute._
 

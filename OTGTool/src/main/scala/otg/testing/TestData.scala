@@ -24,15 +24,9 @@ import otg.OTGSeries
 import otg.db.Metadata
 import otg.db.OTGParameterSet
 import t.Factory
-import t.db.BasicExprValue
-import t.db.ParameterSet
-import t.db.Sample
-import t.db.SeriesPoint
+import t.db._
 import t.db.testing.TestData.enumMaps
-import t.platform.ControlGroup
-import t.platform.BioParameter
-import t.platform.BioParameters
-import t.platform.ControlGroup
+import t.platform._
 import otg.OTGBConfig
 import otg.model.sample.Attribute._
 

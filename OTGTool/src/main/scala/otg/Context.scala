@@ -20,27 +20,12 @@
 
 package otg
 
-import otg.db.Metadata
 import otg.sparql.OTGSamples
-import t.TriplestoreConfig
-import t.db.MatrixContext
-import t.db.MatrixDBReader
-import t.db.ProbeIndex
-import t.db.kyotocabinet.KCMatrixDB
-import t.db.SampleIndex
-import t.BaseConfig
-import t.db.PExprValue
-import t.db.ExprValue
-import t.db.ProbeMap
-import t.sparql.Samples
 import otg.sparql.Probes
-import t.db.TRefresher
-import t.db.SeriesBuilder
-import t.db.TransformingWrapper
-import t.db.BasicExprValue
+import t.BaseConfig
+import t.TriplestoreConfig
+import t.db._
 import t.db.kyotocabinet.KCSeriesDB
-import t.global.KCDBRegistry
-import t.db.SeriesDB
 
 object Context {
   val factory = new Factory()

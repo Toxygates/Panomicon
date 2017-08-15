@@ -20,24 +20,10 @@
 
 package otg
 
-import scala.annotation.tailrec
-import friedrich.util.CmdLineOptions
-import t.db.MatrixDB
-import t.db.SeriesDB
-import t.db.kyotocabinet.KCMatrixDB
-import otg.sparql.OTGSamples
 import otg.Species._
-import t.db.MatrixDBReader
-import t.db.kyotocabinet.KCSeriesDB
-import t.db.{ Series => TSeries }
-import t.db.MatrixContext
-import t.db.SeriesBuilder
-import t.db.SeriesPoint
-import t.db.Sample
-import t.db.Metadata
-import t.db.ExprValue
-import t.db.BasicExprValue
 import otg.model.sample.Attribute._
+import t.db._
+import t.db.{ Series => TSeries }
 import t.model.sample.Attribute
 
 //TODO all parameters are nullable - use options
