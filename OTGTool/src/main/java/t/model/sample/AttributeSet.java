@@ -134,4 +134,12 @@ abstract public class AttributeSet implements Serializable {
   public static int compare(Attribute a1, Attribute a2) {
     return a1.title().compareTo(a2.title());
   }
+  
+  public static boolean attributesEqual(Attribute a1, Attribute a2) {
+    return a1.id().equals(a2.id());
+  }
+  
+  public static int attributeHash(Attribute a1) {
+    return a1.id().hashCode();
+  }
 }

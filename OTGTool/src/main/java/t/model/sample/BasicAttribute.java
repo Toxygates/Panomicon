@@ -49,4 +49,20 @@ public class BasicAttribute implements Attribute, Serializable {
   public String toString() {
     return title;
   }
+
+  @Override
+  public int hashCode() {
+    return AttributeSet.attributeHash(this);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof Attribute) {
+      return AttributeSet.attributesEqual(this, (Attribute) obj);
+    } else {
+      return false;
+    }
+  }
+  
+  
 }
