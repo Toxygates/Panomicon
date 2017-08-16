@@ -26,7 +26,7 @@ import scala.Vector
  * A tool for converting Affymetrix annotation files to the T
  * platform definition format.
  */
-object AffymetrixConverter {
+object Converter {
 
   val columns = List(GOBP, GOCC, GOMF,
       Swissprot, RefseqTranscript, RefseqProtein, ProbeID, GeneChip, Title,

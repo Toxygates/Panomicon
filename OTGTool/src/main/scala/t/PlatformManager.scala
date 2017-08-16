@@ -23,12 +23,13 @@ package t
 import t.db.kyotocabinet.KCIndexDB
 import t.global.KCDBRegistry
 import t.platform.PlatformDefFile
-import t.platform.affy.AffymetrixConverter
+import t.platform.affy.Converter
 
 import t.sparql.Platforms
 import t.sparql.Probes
 import t.sparql.TRDF
 import t.util.TempFiles
+import t.platform.affy.Converter
 
 /**
  * Platform/probe management CLI
@@ -107,7 +108,7 @@ class PlatformManager(context: Context) {
         try {
           val platforms = new Platforms(config.triplestore)
           val temp = tf.makeNew("TPLATFORM", "tsv")
-          AffymetrixConverter.convert(file, temp.getAbsolutePath())
+          Converter.convert(file, temp.getAbsolutePath())
           val defns = new PlatformDefFile(temp.getAbsolutePath()).records
           for (d <- defns) {
             checkValidIdentifier(d.id, "probe ID")

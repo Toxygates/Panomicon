@@ -22,9 +22,9 @@ package t.platform.affy
 
 import scala.io.Source
 
-case class AffyOrthologRecord(title: String, probes: Set[String])
+case class OrthologRecord(title: String, probes: Set[String])
 
-object AffymetrixOrthConverter {
+object OrthConverter {
 
   /**
    * Arguments: input file (Affymetrix format, e.g. Rat230_2.na34.ortholog.csv)
@@ -41,7 +41,7 @@ object AffymetrixOrthConverter {
 
     val bySourceAndTitle = data.groupBy(x => (x(0), x(4)))
     val recs = bySourceAndTitle.map {
-      case (k, v) => AffyOrthologRecord(k._2, v.map(_(2)).toSet + k._1)
+      case (k, v) => OrthologRecord(k._2, v.map(_(2)).toSet + k._1)
     }
 
     val ps = new java.io.PrintStream(new java.io.FileOutputStream(output))
