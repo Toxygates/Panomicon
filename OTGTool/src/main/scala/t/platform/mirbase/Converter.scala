@@ -4,9 +4,10 @@ import scala.io.Source
 import otg.Species
 
 
-case class MirnaRecord(id: String, accession: String, species: Species.Species) {
+case class MirnaRecord(id: String, accession: String, species: Species.Species,
+  title: String) {
   def asTPlatformRecord: String = {
-    s"$id\ttitle=$id,accession=$accession,species=${species.longName}"
+    s"$id\ttitle=$title,accession=$accession,species=${species.longName}"
   }
 }
 
@@ -35,13 +36,17 @@ object Converter {
         //e.g. 
         //ID   mmu-let-7g        standard; RNA; MMU; 88 BP.
         id <- rec.find(_.startsWith("ID"));
+        ids = id.split("\\s+");
         //e.g.
         //AC   MI0000137;
-        accession <- rec.find(_.startsWith("AC"));        
-        ids = id.split("\\s+");
+        accession <- rec.find(_.startsWith("AC"));
         acs = accession.split("\\s+");
+        //e.g.
+        //DE   Caenorhabditis elegans let-7 stem-loop
+        description <- rec.find(_.startsWith("DE"));
+        des = description.split("DE\\s+");
         sp <- Species.values.find(s => ids(1).startsWith(s.shortCode)); 
-        mrec = Some(MirnaRecord(ids(1), acs(1).replace(";", ""), sp))              
+        mrec = Some(MirnaRecord(ids(1), acs(1).replace(";", ""), sp, des(1)))              
       ) yield mrec
       
       for (mr <- mrecs.flatten) {
