@@ -20,8 +20,6 @@
 
 package t
 
-import org.scalatest.Matchers
-import org.scalatest.FunSuite
-import org.scalatest.BeforeAndAfter
+import org.scalatest._
 
 trait TTestSuite extends FunSuite with Matchers with BeforeAndAfter

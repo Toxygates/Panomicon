@@ -20,9 +20,7 @@
 
 package t.sparql
 
-import t.db.Sample
-import t.db.Metadata
-import t.db.ParameterSet
+import t.db._
 import t.Factory
 import t.model.sample.CoreParameter._
 import t.model.sample.Attribute

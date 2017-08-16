@@ -25,14 +25,8 @@ import java.io._
 import t.TriplestoreConfig
 import t.db.DefaultBio
 import t.db.ProbeMap
-import t.platform.OrthologGroup
-import t.platform.OrthologMapping
-import t.platform.Probe
-import t.platform.ProbeRecord
-import t.platform.SimpleProbe
-import t.sparql.secondary.GOTerm
-import t.sparql.secondary.Gene
-import t.sparql.secondary.Protein
+import t.platform._
+import t.sparql.secondary._
 import t.util.TempFiles
 
 object Probes extends RDFClass {

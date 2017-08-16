@@ -20,14 +20,12 @@
 
 package t.db.kyotocabinet
 
-import t.db.PExprValue
-import kyotocabinet.DB
-import t.db.MatrixDB
-import t.db.testing.TestData
-import org.scalatest.Matchers
-import t.db.RawExpressionData
 import org.junit.runner.RunWith
+import org.scalatest.Matchers
 import org.scalatest.junit.JUnitRunner
+
+import t.db._
+import t.db.testing.TestData
 
 @RunWith(classOf[JUnitRunner])
 object KCDBTest extends Matchers {

@@ -4,8 +4,6 @@ import t.db.Sample
 import t.db.Metadata
 import scala.collection.JavaConversions._
 
-
-
 object Helpers { 
 
   implicit class AttributeSetHelper(attr: AttributeSet) {

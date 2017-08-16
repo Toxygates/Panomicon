@@ -20,9 +20,7 @@
 
 package t.testing
 
-import t.DataConfig
-import t.TriplestoreConfig
-import t.BaseConfig
+import t._
 import otg.OTGBConfig
 import t.ChunkDataConfig
 

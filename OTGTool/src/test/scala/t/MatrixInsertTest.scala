@@ -20,14 +20,9 @@
 
 package t
 
-import t.db.FoldPExpr
+import t.db._
 import t.db.testing.FakeBasicMatrixDB
 import t.testing.FakeContext
-import t.db.SampleIndex
-import t.db.Sample
-import t.db.ProbeMap
-import t.db.BasicExprValue
-import t.db.BasicValueInsert
 import t.db.testing.TestData
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner

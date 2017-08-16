@@ -24,11 +24,9 @@ import t.SeriesRanking.safePCorrelation
 import friedrich.data.Statistics.pearsonCorrelation
 import org.scalatest.junit.JUnitRunner
 import t.TTestSuite
-import t.db.Series
+import t.db._
 import t.testing.TestConfig
 import t.db.testing.TestData
-import t.db.ExprValue
-import t.db.SeriesPoint
 import org.junit.runner.RunWith
 
 @RunWith(classOf[JUnitRunner])
