@@ -21,7 +21,6 @@ package otgviewer.client;
 import java.util.List;
 import java.util.logging.Level;
 
-import otg.model.sample.Attribute;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import t.common.shared.sample.Annotation;
@@ -31,6 +30,7 @@ import t.common.shared.sample.NumericalBioParamValue;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
 import t.model.SampleClass;
+import static otg.model.sample.Attribute.*;
 import t.viewer.client.Analytics;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -85,7 +85,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 
     if (annotationSelector.getItemCount() == 0 && compounds.size() > 0) {
       SampleClass sc = chosenSampleClass.copy();
-      sc.put("compound_name", compounds.get(0));
+      sc.put(Compound, compounds.get(0));
       sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(
           this, "Unable to get samples") {
         public void handleSuccess(Sample[] bcs) {
@@ -118,9 +118,9 @@ public class AnnotationTDGrid extends TimeDoseGrid {
       final String compound, final String dose, final String time) {
 
     SampleClass sc = chosenSampleClass.copy();
-    sc.put("dose_level", dose);
-    sc.put(Attribute.ExposureTime.id(), time);
-    sc.put("compound_name", compound);
+    sc.put(DoseLevel, dose);
+    sc.put(ExposureTime, time);
+    sc.put(Compound, compound);
 
     sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(this,
         "Unable to retrieve barcodes for the group definition.") {

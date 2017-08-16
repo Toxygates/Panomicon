@@ -24,6 +24,7 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.RuleType;
 import t.model.SampleClass;
+import static otg.model.sample.Attribute.*;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -82,7 +83,7 @@ public class FullRuleInputHelper extends RuleInputHelper {
     }
     final String selCompound = refCompound.getItemText(selIndex);
     SampleClass sc = ranker.chosenSampleClass.copy();
-    sc.put("compound_name", selCompound);
+    sc.put(Compound, selCompound);
 
     ranker.sparqlService.parameterValues(sc, "dose_level", new PendingAsyncCallback<String[]>(
         ranker.selector, "Unable to retrieve dose levels.") {

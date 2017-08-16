@@ -26,6 +26,7 @@ import t.common.shared.AType;
 import t.common.shared.DataSchema;
 import t.common.shared.ValueType;
 import t.model.SampleClass;
+import static otg.model.sample.Attribute.*;
 
 @SuppressWarnings("serial")
 public class OTGSchema extends DataSchema {
@@ -160,7 +161,7 @@ public class OTGSchema extends DataSchema {
 
   @Override
   public boolean isSelectionControl(SampleClass sc) {
-    return sc.get("dose_level").equals("Control");
+    return sc.get(DoseLevel).equals("Control");
   }
 
   @Override
@@ -224,7 +225,7 @@ public class OTGSchema extends DataSchema {
    * TODO this is brittle
    */
   public int numDataPointsInSeries(SampleClass sc) {
-    if (sc.get("test_type") != null && sc.get("test_type").equals("in vitro")) {
+    if (sc.get(TestType) != null && sc.get(TestType).equals("in vitro")) {
       return 3;
     }
     return 4;

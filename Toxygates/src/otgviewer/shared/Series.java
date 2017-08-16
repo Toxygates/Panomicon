@@ -18,11 +18,14 @@
 
 package otgviewer.shared;
 
+import static otg.model.sample.Attribute.*;
+
 import java.io.Serializable;
 
 import t.common.shared.HasClass;
 import t.common.shared.sample.ExpressionValue;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 
 /**
  * An expression value series that fixes all parameters except one, which varies on the x-axis.
@@ -75,14 +78,14 @@ public class Series implements HasClass, Serializable {
   @Deprecated
   public String timeDose() {
     // TODO don't hardcode this
-    String fixedParam = _independentParam.equals("exposure_time") ? "dose_level" : "exposure_time";
+    Attribute fixedParam = _independentParam.equals("exposure_time") ? DoseLevel : ExposureTime;
     return _sc.get(fixedParam);
   }
 
   // TODO users should access the sample class instead
   @Deprecated
   public String compound() {
-    return _sc.get("compound_name");
+    return _sc.get(Compound);
   }
 
   private ExpressionValue[] _values;
@@ -100,7 +103,7 @@ public class Series implements HasClass, Serializable {
   // TODO users should access the sample class instead
   @Deprecated
   public String organism() {
-    return _sc.get("organism");
+    return _sc.get(Organism);
   }
 
   public String get(String key) {

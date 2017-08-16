@@ -26,11 +26,11 @@ import otgviewer.client.components.Screen;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 import t.model.SampleClass;
+import static otg.model.sample.Attribute.*;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.ProbeServiceAsync;
-
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Anchor;
@@ -111,7 +111,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
             probe = rowFilters.get(r);
           }
           if (org != null) {
-            sc.put("organism", org);
+            sc.put(Organism, org);
           }
           String colKey = columnsAreMins ? schema.minorParameter() : schema.mediumParameter();
           sc.put(colKey, minsOrMeds[c]);

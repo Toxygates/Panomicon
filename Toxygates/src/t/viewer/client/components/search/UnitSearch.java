@@ -37,7 +37,7 @@ public class UnitSearch extends Search<Unit, Pair<Unit, Unit>> {
     controlUnitsMap = new HashMap<String, Unit>();
     for (Pair<Unit, Unit> pair : result.items()) {
       units.add(pair.first());
-      controlUnitsMap.put(pair.first().get("sample_id"), pair.second());
+      controlUnitsMap.put(pair.first().get(SampleId), pair.second());
     }
     searchResult = units.toArray(new Unit[0]);
   }
