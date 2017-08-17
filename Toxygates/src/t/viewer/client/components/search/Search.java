@@ -7,10 +7,10 @@ import javax.annotation.Nullable;
 
 import t.common.shared.RequestResult;
 import t.common.shared.sample.Annotation;
-import t.common.shared.sample.HasSamples;
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.search.MatchCondition;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 import t.model.sample.AttributeSet;
 import t.model.sample.Attribute;
 import t.viewer.client.rpc.SampleServiceAsync;
@@ -41,7 +41,7 @@ public abstract class Search<Entity, Container> {
   
   Entity[] searchResult;
   MatchCondition condition;
-  private Set<String> fetchedParameters;
+  private Set<Attribute> fetchedAttributes;
 
   public Search(Delegate delegate, ResultTable<Entity> helper,
                 AttributeSet attributes,
@@ -69,7 +69,7 @@ public abstract class Search<Entity, Container> {
 
   protected void searchComplete(RequestResult<Container> result) {
     extractSearchResult(result);
-    fetchedParameters = new HashSet<String>();
+    fetchedAttributes = new HashSet<Attribute>();
     if (result.totalCount() <= MAX_RESULTS) {
       delegate.searchEnded(Search.this, "Found " + result.totalCount() + " results");
     } else {
@@ -108,26 +108,25 @@ public abstract class Search<Entity, Container> {
     });
   }
 
-  public boolean hasParameter(String parameterId) {
-    return fetchedParameters.contains(parameterId);
+  public boolean hasParameter(Attribute attribute) {
+    return fetchedAttributes.contains(attribute);
   }
 
-  protected void getAnnotationsAsync(String parameterId, AsyncCallback<Annotation[]> callback) {
-    // TODO: only get specified parameter
-    HasSamples<Sample> hasSamples = new SampleContainer(relevantSamples());
-    sampleService.annotations(hasSamples, false, callback);
+  protected void getAnnotationsAsync(Attribute attribute, AsyncCallback<Annotation[]> callback) {
+    sampleService.annotations(relevantSamples(), new Attribute[] {attribute}, callback);
   }
 
   abstract Sample[] relevantSamples();
-  abstract void addParameter(String parameterId, Annotation[] annotations);
 
-  public void fetchParameter(final String parameterId) {
-    getAnnotationsAsync(parameterId, new AsyncCallback<Annotation[]>() {
+  abstract void addParameter(Attribute attribute, Annotation[] annotations);
+
+  public void fetchParameter(final Attribute attribute) {
+    getAnnotationsAsync(attribute, new AsyncCallback<Annotation[]>() {
       @Override
       public void onSuccess(Annotation[] result) {
-        addParameter(parameterId, result);
-        fetchedParameters.add(parameterId);
-        helper.gotDataForKey(parameterId);
+        addParameter(attribute, result);
+        fetchedAttributes.add(attribute);
+        helper.gotDataForKey(attribute.id());
         helper.cellTable().redraw();
       }
 

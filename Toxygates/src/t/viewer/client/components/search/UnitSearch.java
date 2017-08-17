@@ -1,10 +1,14 @@
 package t.viewer.client.components.search;
 
+import static t.model.sample.CoreParameter.SampleId;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import t.common.shared.Pair;
 import t.common.shared.RequestResult;
@@ -15,11 +19,8 @@ import t.common.shared.sample.Unit;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.AttributeSet;
-import static t.model.sample.CoreParameter.*;
 import t.viewer.client.Analytics;
 import t.viewer.client.rpc.SampleServiceAsync;
-
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class UnitSearch extends Search<Unit, Pair<Unit, Unit>> {
   private Sample[] samplesInResult;
@@ -81,28 +82,26 @@ public class UnitSearch extends Search<Unit, Pair<Unit, Unit>> {
   }
 
   @Override
-  protected void addParameter(String parameterId, Annotation[] annotations) {
+  protected void addParameter(Attribute attribute, Annotation[] annotations) {
     // first load parameter info into samples
     for (Annotation annotation : annotations) {
       Sample sample = sampleIdMap().get(annotation.id());
       if (sample != null) {
         for (BioParamValue value : annotation.getAnnotations()) {
-          if (value.id() == parameterId) {
-            sample.sampleClass().put(parameterId, value.displayValue());
+          if (value.id() == attribute.id()) {
+            sample.sampleClass().put(attribute, value.displayValue());
             break;
           }
         }
       }
     }
-
-    Attribute attr = attributes.byId(parameterId);
     
     // then compute parameter value for each unit
     for (Unit unit : searchResult) {
-      if (attr.isNumerical()) {
-        unit.averageAttribute(attr);
+      if (attribute.isNumerical()) {
+        unit.averageAttribute(attribute);
       } else {
-        unit.concatenateAttribute(attr);
+        unit.concatenateAttribute(attribute);
       }
     }
   }

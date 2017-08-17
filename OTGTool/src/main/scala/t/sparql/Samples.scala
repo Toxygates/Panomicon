@@ -194,9 +194,6 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
       idOption <- groupedResult.keys
       sampleId <- idOption
       paramsForId = groupedResult(Some(sampleId)).head
-//      resultsForId = groupedResult(Some(sampleId))
-//      if (!resultsForId.isEmpty)
-//      paramsForId = resultsForId.head
     } yield sampleId -> withIndex.map(x => (x._1, paramsForId.get("k" + x._2))))
   }
 

@@ -7,6 +7,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
+
 import otgviewer.client.components.FilterTools;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
@@ -30,20 +44,6 @@ import t.viewer.client.components.search.UnitTable;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.shared.AppInfo;
-
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 public class SampleSearchScreen extends Screen implements Search.Delegate, ResultTable.Delegate {
   public static final String key = "search";
@@ -189,15 +189,16 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   }
 
   private class ParameterTickItem extends TickMenuItem {
-    private String parameterId;
-    private boolean isNumeric;
+    private Attribute attribute;
 
-    public ParameterTickItem(MenuBar mb, String title, String id, boolean numeric,
-        boolean initState, boolean enabled) {
-      super(mb, title, initState);
-      parameterId = id;
-      isNumeric = numeric;
+    public ParameterTickItem(MenuBar mb, Attribute attrib, boolean initState, boolean enabled) {
+      super(mb, attrib.title(), initState);
+      attribute = attrib;
       setEnabled(enabled);
+    }
+
+    public String id() {
+      return attribute.id();
     }
 
     @Override
@@ -209,13 +210,13 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
     public void stateChange(boolean newState) {
       if (newState) {
         boolean waitForData = false;
-        if (!currentSearch.hasParameter(parameterId)) {
-          currentSearch.fetchParameter(parameterId);
+        if (!currentSearch.hasParameter(attribute)) {
+          currentSearch.fetchParameter(attribute);
           waitForData = true;
         }
-        currentSearch.helper().addExtraColumn(parameterId, isNumeric, waitForData);
+        currentSearch.helper().addExtraColumn(attribute.id(), attribute.isNumerical(), waitForData);
       } else {
-        currentSearch.helper().removeKeyColumn(parameterId);
+        currentSearch.helper().removeKeyColumn(attribute.id());
       }
     }
   }
@@ -258,16 +259,16 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
     MenuBar numericalParametersBar = new MenuBar(true);
     MenuItem numericalParametersItem =
         new MenuItem("Numerical parameters", false, numericalParametersBar);
-    for (Attribute parameter : searchParameters) {
+    for (Attribute attribute : searchParameters) {
       parameterMenuItems.add(new ParameterTickItem(numericalParametersBar,
-          parameter.title(), parameter.id(), true, false, false));
+          attribute, false, false));
     }
     MenuBar stringParametersBar = new MenuBar(true);
     MenuItem stringParametersItem =
         new MenuItem("Non-numerical parameters", false, stringParametersBar);
-    for (Attribute parameter : nonSearchParameters) {
+    for (Attribute attribute : nonSearchParameters) {
       parameterMenuItems.add(new ParameterTickItem(stringParametersBar,
-          parameter.title(), parameter.id(), false, false, false));
+          attribute, false, false));
     }
     parametersBar.addItem(numericalParametersItem);
     parametersBar.addItem(stringParametersItem);
@@ -360,10 +361,10 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
         new HashSet<String>(Arrays.asList(currentSearch.helper().nonRequiredKeys()));
 
     for (ParameterTickItem item : parameterMenuItems) {
-      if (requiredParameterIds.contains(item.parameterId)) {
+      if (requiredParameterIds.contains(item.id())) {
         item.setState(true);
         item.setEnabled(false);
-      } else if (nonRequiredParameterIds.contains(item.parameterId)) {
+      } else if (nonRequiredParameterIds.contains(item.id())) {
         item.setState(true);
         item.setEnabled(true);
       } else {
