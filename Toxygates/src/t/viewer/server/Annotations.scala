@@ -25,6 +25,7 @@ import t.viewer.server.Conversions._
 import java.lang.{Double => JDouble}
 import scala.language.implicitConversions
 import t.sample.SampleSet
+import t.model.sample.CoreParameter
 
 class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
     unitHelper: Units) {
@@ -67,14 +68,32 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
   }
 
   /**
+   * Fetch annotations for given samples. Does not compute any bounds for
+   * any parameters. Annotations will only be returned for samples that
+   * have values for *all* of the attributes selected.
+   * @param querySamples the samples for which to fetch annotations
+   * @param queryAttributes the attributes to fetch
+   */
+  def forSamples(samples: Samples, querySamples: Iterable[Sample],
+      queryAttribs: Iterable[Attribute]): Array[Annotation] = {
+    val queryResult = samples.sampleAttributeValues(querySamples.map(_.id),
+        queryAttribs)
+    querySamples.map(s => fromAttributes(None, s, queryResult(s.id))).toArray
+  }
+
+  /**
    * For given samples, which may be in different control groups, fetch
-   * annotations
+   * annotations, using the control samples in the provided samples to
+   * compute bounds for values if appropriate.
    * @param samples data source
    * @param column the samples for which we fetch annotations
    */
    //TODO get these from schema, etc.
   def forSamples(samples: Samples, querySet: Iterable[Sample],
       importantOnly: Boolean = false): Array[Annotation] = {
+
+    samples.sampleAttributeValues(querySet.map(x => x.get(CoreParameter.SampleId)),
+        List(otg.model.sample.Attribute.KidneyWeight, otg.model.sample.Attribute.LiverWeight))
 
     val cgs = querySet.groupBy(_(ControlGroupParam))
 
@@ -87,7 +106,8 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
   }
 
   /**
-   * Fetch annotations for samples from the same control group
+   * Fetch annotations for samples from the same control group, using
+   * provided control samples to generate bounds for variable, if applicable
    */
   private def forSamplesSingleGroup(sampleStore: Samples,
       samples: Iterable[Sample], importantOnly: Boolean) = {

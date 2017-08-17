@@ -64,5 +64,4 @@ public class BasicAttribute implements Attribute, Serializable {
     }
   }
   
-  
 }

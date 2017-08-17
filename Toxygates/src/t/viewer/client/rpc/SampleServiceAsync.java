@@ -13,6 +13,7 @@ import t.common.shared.sample.Sample;
 import t.common.shared.sample.Unit;
 import t.common.shared.sample.search.MatchCondition;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 
 public interface SampleServiceAsync {
 
@@ -46,6 +47,8 @@ public interface SampleServiceAsync {
       AsyncCallback<Pair<Unit, Unit>[]> callback);
 
   void annotations(Sample barcode, AsyncCallback<Annotation> callback);
+
+  void annotations(Sample[] samples, Attribute[] attributes, AsyncCallback<Annotation[]> callback);
 
   void annotations(HasSamples<Sample> column, boolean importantOnly,
       AsyncCallback<Annotation[]> callback);

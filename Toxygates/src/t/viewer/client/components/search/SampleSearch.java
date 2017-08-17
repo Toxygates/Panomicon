@@ -3,16 +3,17 @@ package t.viewer.client.components.search;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
+
 import t.common.shared.RequestResult;
 import t.common.shared.sample.Annotation;
 import t.common.shared.sample.BioParamValue;
 import t.common.shared.sample.Sample;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Analytics;
 import t.viewer.client.rpc.SampleServiceAsync;
-
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class SampleSearch extends Search<Sample, Sample> {
   private HashMap<String, Sample> sampleIdHashMap;
@@ -61,13 +62,13 @@ public class SampleSearch extends Search<Sample, Sample> {
   }
 
   @Override
-  protected void addParameter(String parameterId, Annotation[] annotations) {
+  protected void addParameter(Attribute attribute, Annotation[] annotations) {
     for (Annotation annotation : annotations) {
       Sample sample = sampleIdMap().get(annotation.id());
       if (sample != null) {
         for (BioParamValue value : annotation.getAnnotations()) {
-          if (value.id() == parameterId) {
-            sample.sampleClass().put(parameterId, value.displayValue());
+          if (value.id() == attribute.id()) {
+            sample.sampleClass().put(attribute, value.displayValue());
             break;
           }
         }

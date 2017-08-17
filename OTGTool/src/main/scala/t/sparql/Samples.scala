@@ -152,15 +152,51 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     parameterQuery(sample.sampleId, querySet).collect {
       case (sp, Some(v)) => (sp, v)
     }
-  
+
   /**
    * Can the given predicate ID be queried as a predicate of a sample?
    */
-  protected def isPredicateAttribute(attribute: String): Boolean = 
+  protected def isPredicateAttribute(attribute: String): Boolean =
     attribute != "batchGraph"
-    
-  protected def isPredicateAttribute(attribute: Attribute): Boolean = 
+
+  protected def isPredicateAttribute(attribute: Attribute): Boolean =
     isPredicateAttribute(attribute.id)
+
+  /**
+   * Get parameter values for a set of samples. Values will only be returned
+   * for samples that have values for *all* of the parameters requested.
+   * @param querySet the set of parameters to fetch. If ordered, we preserve the ordering in the result
+   */
+  def sampleAttributeValues(samples: Iterable[String],
+    queryAttribs: Iterable[Attribute] = Seq()): Map[String, Seq[(Attribute, Option[String])]] = {
+
+    val queryParams = (if (queryAttribs.isEmpty) {
+      bc.attributes.getAll.toSeq
+    } else {
+      queryAttribs
+    }).toSeq.filter(a => isPredicateAttribute(a.id))
+    val withIndex = queryParams.zipWithIndex
+    val vars = withIndex.map("?k" + _._2 + " ").mkString
+    val triples = withIndex.map(x => " ?x t:" + x._1.id + " ?k" + x._2 + ".  ").mkString
+    val sampleIds = samples.map("\"" + _ + "\" ").mkString
+    val sampleIdsXsd = samples.map("\"" + _ + "\"^^xsd:string ").mkString
+
+    val queryResult = triplestore.mapQuery(s"""$tPrefixes
+      |SELECT ?label $vars WHERE {
+      |  GRAPH ?g {
+      |    $triples
+      |    ?x rdfs:label ?label. VALUES ?label {$sampleIds $sampleIdsXsd}
+      |  }
+      |}""".stripMargin)
+
+    val groupedResult = queryResult.groupBy(_.get("label"))
+
+    Map() ++ (for {
+      idOption <- groupedResult.keys
+      sampleId <- idOption
+      paramsForId = groupedResult(Some(sampleId)).head
+    } yield sampleId -> withIndex.map(x => (x._1, paramsForId.get("k" + x._2))))
+  }
 
   /**
    * Get parameter values, if present, for a given sample
@@ -168,10 +204,10 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
    */
   def parameterQuery(sample: String,
     querySet: Iterable[Attribute] = Seq()): Seq[(Attribute, Option[String])] = {
-    
-    val attrs = otg.model.sample.AttributeSet.getDefault
+
+    //val attrs = otg.model.sample.AttributeSet.getDefault
     val queryParams = (if (querySet.isEmpty) {
-      bc.attributes.getAll.toSeq     
+      bc.attributes.getAll.toSeq
     } else {
       querySet
     }).toSeq.filter(a => isPredicateAttribute(a.id))
@@ -198,7 +234,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     if (!isPredicateAttribute(attribute)) {
       throw new Exception("Invalid query")
     }
-    
+
     Query(tPrefixes,
       "SELECT DISTINCT ?q " +
         s"WHERE { GRAPH ?batchGraph { " +
@@ -206,14 +242,14 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
       s"} ${sf.standardSampleFilters} } ",
       triplestore.simpleQueryNonQuiet)
   }
-  
+
   /**
    * Get all distinct values for a set of attributes inside specified SampleFilter
    */
   def sampleAttributeQuery(attributes: Seq[Attribute])
     (implicit sf: SampleFilter): Query[Seq[Map[String, String]]] = {
     val pattr = attributes.filter(isPredicateAttribute)
-    
+
     Query(tPrefixes,
       "SELECT DISTINCT * " +
         " WHERE { GRAPH ?batchGraph { " +
