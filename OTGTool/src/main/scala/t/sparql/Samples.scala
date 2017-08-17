@@ -163,7 +163,8 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     isPredicateAttribute(attribute.id)
 
   /**
-   * Get parameter values, if present, for a set of samples
+   * Get parameter values for a set of samples. Values will only be returned
+   * for samples that have values for *all* of the parameters requested.
    * @param querySet the set of parameters to fetch. If ordered, we preserve the ordering in the result
    */
   def sampleAttributeValues(samples: Iterable[String],
@@ -176,7 +177,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     }).toSeq.filter(a => isPredicateAttribute(a.id))
     val withIndex = queryParams.zipWithIndex
     val vars = withIndex.map("?k" + _._2 + " ").mkString
-    val triples = withIndex.map(x => " OPTIONAL { ?x t:" + x._1.id + " ?k" + x._2 + ". } ").mkString
+    val triples = withIndex.map(x => " ?x t:" + x._1.id + " ?k" + x._2 + ".  ").mkString
     val sampleIds = samples.map("\"" + _ + "\" ").mkString
     val sampleIdsXsd = samples.map("\"" + _ + "\"^^xsd:string ").mkString
 
@@ -184,7 +185,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
       |SELECT ?label $vars WHERE {
       |  GRAPH ?g {
       |    $triples
-      |    { ?x rdfs:label ?label. VALUES ?label {$sampleIds $sampleIdsXsd}}
+      |    ?x rdfs:label ?label. VALUES ?label {$sampleIds $sampleIdsXsd}
       |  }
       |}""".stripMargin)
 

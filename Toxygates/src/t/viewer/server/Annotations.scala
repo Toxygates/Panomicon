@@ -69,7 +69,8 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
 
   /**
    * Fetch annotations for given samples. Does not compute any bounds for
-   * any parameters
+   * any parameters. Annotations will only be returned for samples that
+   * have values for *all* of the attributes selected.
    * @param querySamples the samples for which to fetch annotations
    * @param queryAttributes the attributes to fetch
    */
