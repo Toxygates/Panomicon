@@ -84,10 +84,10 @@ object Triplestore {
       new SPARQLRepository(queryUrl, updateUrl)
     } else {
       new SPARQLRepository(queryUrl)
-    }    
+    }
     if (user != null && pass != null) {
       rep.setUsernameAndPassword(user, pass)
-    }    
+    }
     rep.initialize()
     if (rep == null) {
       throw new Exception("Unable to access repository ")
@@ -141,7 +141,7 @@ abstract class Triplestore extends Closeable {
     if (isReadonly) {
       println("Triplestore is read-only, ignoring update query")
     } else {
-      try {        
+      try {
         val pq = con.prepareUpdate(QueryLanguage.SPARQL, query)
         pq.setMaxExecutionTime(0)
         pq.execute()
@@ -180,6 +180,7 @@ abstract class Triplestore extends Closeable {
    * Query for some number of records, each containing a single field.
    */
   def simpleQuery(query: String, quiet: Boolean = false, timeoutMillis: Int = 10000): Vector[String] = {
+    val start = System.currentTimeMillis()
     val rs = evaluate(query, timeoutMillis)
     val recs = for (
       tuple <- rs;
@@ -188,7 +189,7 @@ abstract class Triplestore extends Closeable {
     ) yield s
     rs.close
     if (!quiet) {
-      println(if (recs.size > 10) { "[" + recs.size + "] " + recs.take(5) + " ... " } else { recs })
+      logQueryStats(recs, start)
     }
     recs
   }
@@ -204,9 +205,7 @@ abstract class Triplestore extends Closeable {
       rec = tuple.map(n => n.getValue.stringValue)
     ) yield rec.toVector
     rs.close
-
-    println("Took " + (System.currentTimeMillis() - start) / 1000.0 + " s")
-    println(if (recs.size > 10) { recs.take(10) + " ... " } else { recs })
+    logQueryStats(recs, start)
     recs
   }
 
@@ -214,14 +213,20 @@ abstract class Triplestore extends Closeable {
    * Query for some number of records, each containing named fields.
    */
   def mapQuery(query: String, timeoutMillis: Int = 10000): Vector[Map[String, String]] = {
+    val start = System.currentTimeMillis()
     val rs = evaluate(query, timeoutMillis)
     val recs = for (
       tuple <- rs;
       rec = Map() ++ tuple.map(n => n.getName -> n.getValue.stringValue())
     ) yield rec
     rs.close
-    println(if (recs.size > 10) { recs.take(10) + " ... " } else { recs })
+    logQueryStats(recs, start)
     recs
+  }
+
+  def logQueryStats(recs: Vector[Object], start: Long) {
+    println("Found " + recs.size + " results in " + (System.currentTimeMillis() - start) / 1000.0 + "s:")
+    println(if (recs.size > 10) { recs.take(10) + " ... " } else { recs })
   }
 }
 
