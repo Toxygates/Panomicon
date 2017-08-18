@@ -99,7 +99,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     } else {
       map
     }
-    overrideBatch match {
+    result = overrideBatch match {
       case Some(ob) => result + ("batchGraph" -> ob)
       case _ => result
     }
