@@ -46,13 +46,8 @@ trait BaseConfig {
 case class TriplestoreConfig(url: String, updateUrl: String,
   user: String, pass: String, repository: String) {
   lazy val triplestore: RepositoryConnection = {
-    if (repository != null && repository != "") {
-      println("RemoteRepository connect to " + url)
-      Triplestore.connectRemoteRepository(this)
-    } else {
-      println("SPARQLRepository connect to " + this.url + " and " + this.updateUrl)
-      Triplestore.connectSPARQLRepository(this.url, this.updateUrl, user, pass)
-    }
+    println("SPARQLRepository connect to " + this.url + " and " + this.updateUrl)
+    Triplestore.connectSPARQLRepository(this.url, this.updateUrl, user, pass)
   }
 
   def get = new t.sparql.SimpleTriplestore(triplestore, updateUrl == null)

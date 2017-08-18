@@ -20,23 +20,22 @@
 
 package t.sparql
 
-import t.TriplestoreConfig
-import scala.concurrent.Await
-import scala.concurrent._
-import scala.concurrent.duration.Duration
-import scala.collection.JavaConversions._
-import java.util.concurrent.TimeoutException
 import java.util.concurrent.Executors
-import java.net.ProxySelector
-import t.Closeable
-import org.eclipse.rdf4j.repository.manager.RemoteRepositoryManager
+import java.util.concurrent.TimeoutException
+
+import scala.Vector
+import scala.collection.JavaConversions.iterableAsScalaIterable
+import scala.concurrent.ExecutionContext
+import scala.language.implicitConversions
+
+import org.eclipse.rdf4j.common.iteration.Iteration
+import org.eclipse.rdf4j.model.impl.URIImpl
+import org.eclipse.rdf4j.query.QueryLanguage
 import org.eclipse.rdf4j.repository.RepositoryConnection
 import org.eclipse.rdf4j.repository.sparql.SPARQLRepository
-import org.eclipse.rdf4j.common.iteration.Iteration
 import org.eclipse.rdf4j.rio.RDFFormat
-import org.eclipse.rdf4j.query.QueryLanguage
-import org.eclipse.rdf4j.model.impl.URIImpl
-import org.apache.http.params.HttpConnectionParams
+
+import t.Closeable
 
 object Triplestore {
   val executor = Executors.newCachedThreadPool()
@@ -48,32 +47,6 @@ object Triplestore {
     |PREFIX owl:<http://www.w3.org/2002/07/owl#>
     |PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     |PREFIX t:<http://level-five.jp/t/>""".stripMargin.replace('\n', ' ')
-
-  /*
-   * TODO: Currently we use connectRemoteRepository for Owlim-SE connections, and
-   * SPARQLRepository for all other connections, but there should be no
-   * need to have two connection methods.
-   * Aim to use only SPARQLRepository in the future.
-   */
-
-  @deprecated("Being replaced with SPARQL", "Jan 2017")
-  def connectRemoteRepository(config: TriplestoreConfig): RepositoryConnection = {
-    println("Initialize remote repository connection for " + config.url)
-    val repMan = RemoteRepositoryManager.getInstance(config.url, config.user, config.pass)
-    repMan.initialize()
-
-    val rep = if (config.repository != null && config.repository != "") {
-      repMan.getRepository(config.repository)
-    } else {
-      repMan.getSystemRepository()
-    }
-
-    if (rep == null) {
-      throw new Exception("Unable to select repository " + config.repository)
-    }
-    val c = rep.getConnection
-    c
-  }
 
   def connectSPARQLRepository(queryUrl: String, updateUrl: String = null,
     user: String = null, pass: String = null): RepositoryConnection = {
@@ -123,10 +96,6 @@ abstract class Triplestore extends Closeable {
     printHash("printing query:", query)
     println(query)
     val pq = con.prepareTupleQuery(QueryLanguage.SPARQL, query)
-    // for sesame 2.7
-//    pq.setMaxQueryTime(timeoutMillis / 1000)
-    // for sesame 2.8
-
     pq.setMaxExecutionTime(timeoutMillis / 1000)
     pq.evaluate()
   }
