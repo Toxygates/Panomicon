@@ -54,10 +54,10 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
    */
   def controlGroups(samples: Iterable[Sample], sampleSet: SampleSet): Map[Sample, VarianceSet] = {
     val controlGroups = unitHelper.samplesByControlGroup(samples)
-    val knownSamples = sampleSet.samples.map(_.sampleId).toSet
+    val knownSampleIds = sampleSet.sampleIds
     Map() ++ controlGroups.flatMap { case (cgroup, ss) =>
       var (cs, ts) = ss.partition(s => schema.isControl(s))
-      val controls = cs.map(asScalaSample).filter(s => knownSamples.contains(s.sampleId))
+      val controls = cs.map(asScalaSample).filter(s => knownSampleIds.contains(s.sampleId))
       if (!controls.isEmpty) {
         val cg = new VarianceSet(sampleSet, controls)
         ss.map(s => s -> cg)

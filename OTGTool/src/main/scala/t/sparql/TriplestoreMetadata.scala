@@ -61,6 +61,8 @@ class CachingTriplestoreMetadata(os: Samples, attributes: AttributeSet,
 
   val useQuerySet = (querySet.toSeq :+ SampleId).distinct
 
+  override lazy val sampleIds = rawData.keySet
+
   lazy val rawData = {
     val raw = os.sampleAttributeQuery(useQuerySet)(sf)()
     Map() ++ raw.map(r => r("sample_id") -> r)
@@ -68,9 +70,9 @@ class CachingTriplestoreMetadata(os: Samples, attributes: AttributeSet,
 
   println(rawData take 10)
 
-  lazy val data = {    
-    rawData.map(sample => (sample._1 -> sample._2.flatMap {case (k,v) => 
-        Option(attributes.byId(k)).map(a => (a,v)) }))          
+  lazy val data = {
+    rawData.map(sample => (sample._1 -> sample._2.flatMap {case (k,v) =>
+        Option(attributes.byId(k)).map(a => (a,v)) }))
   }
 
   println(data take 10)
