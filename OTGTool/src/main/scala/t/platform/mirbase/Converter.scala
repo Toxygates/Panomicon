@@ -2,7 +2,7 @@ package t.platform.mirbase
 
 import scala.io.Source
 import otg.Species
-
+import scala.language.postfixOps
 
 case class MirnaRecord(id: String, accession: String, species: Species.Species,
   title: String) {
@@ -13,10 +13,10 @@ case class MirnaRecord(id: String, accession: String, species: Species.Species,
 
 case class Feature(data: Seq[String]) {
   def featureType = data.head.split("\\s+")(1)
-  
+
   val AccRegex = ".*accession=\"(.*)\""r
   val ProdRegex = ".*product=\"(.*)\""r
-  
+
   def mirnaRecords: Iterable[MirnaRecord] =
     for (
       acc <- data.collect { case AccRegex(a) => a };
@@ -24,39 +24,39 @@ case class Feature(data: Seq[String]) {
       sp <- Species.values.find(s => prod.startsWith(s.shortCode));
       mr = MirnaRecord(prod, acc, sp, prod)
     ) yield mr
-  
+
 }
 
-case class RawRecord(data: Seq[String]) {  
+case class RawRecord(data: Seq[String]) {
   private def featuresFrom(rem: Seq[String]): Vector[Feature] = {
     if (rem.isEmpty) {
       Vector()
     } else {
-      val (cur, next) = rem.drop(1).span(_.matches("FT\\s+/.*")) 
-      Feature(rem.head +: cur) +: featuresFrom(next) 
+      val (cur, next) = rem.drop(1).span(_.matches("FT\\s+/.*"))
+      Feature(rem.head +: cur) +: featuresFrom(next)
     }
   }
-  
-  def features: Iterable[Feature] = 
-    featuresFrom(data.filter(_.startsWith("FT")))    
-    
+
+  def features: Iterable[Feature] =
+    featuresFrom(data.filter(_.startsWith("FT")))
+
   def mirnaFeatures = features.filter(_.featureType == "miRNA")
-  
+
   def mirnaRecords = mirnaFeatures.flatMap(_.mirnaRecords)
-  
+
 }
 
 /**
  * Reads raw miRBase dat files and produces T platform format files.
  */
 object Converter {
- 
+
   val speciesOfInterest = Species.values.map(_.shortCode)
-  
+
   def main(args: Array[String]) {
       val lines = Source.fromFile(args(0)).getLines()
       var (record, next) = lines.span(! _.startsWith("//"))
-      
+
       def remainingRecords: Stream[RawRecord] = {
         if (!lines.hasNext) {
           Stream.empty
@@ -66,8 +66,8 @@ object Converter {
           Stream.cons(r, remainingRecords)
         }
       }
-      
-      val mrecs = remainingRecords.flatMap(_.mirnaRecords)         
+
+      val mrecs = remainingRecords.flatMap(_.mirnaRecords)
       for (mr <- mrecs) {
         println(mr.asTPlatformRecord)
       }
