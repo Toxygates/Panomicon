@@ -11,7 +11,7 @@ import t.common.shared.sample.search.MatchCondition
 import t.common.shared.sample.search.MatchType
 import t.common.shared.sample.search.OrMatch
 import t.common.server.sample.search.IndividualSearch
-import t.platform.ControlGroup
+import t.platform.VarianceSet
 import otg.testing.TestData
 import t.viewer.server.Conversions._
 import org.junit.runner.RunWith
@@ -25,7 +25,7 @@ import t.model.sample.BasicAttribute
 class SampleSearchTest extends TTestSuite {
   def atomic(param: String, mt: MatchType) =
     new AtomicMatch(
-        new BasicAttribute(param, param),        
+        new BasicAttribute(param, param),
         mt, null)
 
   def or(mc1: MatchCondition, mc2: MatchCondition) =
@@ -54,9 +54,9 @@ class SampleSearchTest extends TTestSuite {
     for (s <- r) {
       println(s.sampleClass())
       val cg = TestData.controlGroups(asScalaSample(s))
-      println(cg.upperBound(LiverWeight, s.get(ExposureTime.id), 1))
+      println(cg.upperBound(LiverWeight, 1))
 
-      println(cg.controlSamples.map(TestData.metadata.parameter(_, LiverWeight)))
+      println(cg.samples.map(TestData.metadata.parameter(_, LiverWeight)))
       s.get(Individual.id) should (equal ("1") or (equal ("3")))
     }
     // 4/5 dose levels, individuals 1, 3

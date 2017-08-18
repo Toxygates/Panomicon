@@ -20,7 +20,7 @@ import scala.collection.JavaConversions._
  */
 case class BioParameter(attribute: Attribute,
     section: Option[String],
-    lowerBound: Option[Double], upperBound: Option[Double],    
+    lowerBound: Option[Double], upperBound: Option[Double],
     attributes: Map[String, String] = Map()) {
 
   def key: String = attribute.id
@@ -67,43 +67,35 @@ class BioParameters(lookup: Map[Attribute, BioParameter]) {
 }
 
 /**
- * Helper to compute statistical values for samples belonging to the same treated/control group.
+ * Helper to compute statistical values for some set of samples (e.g., a control group).
  * Will eagerly retrieve and process all parameters for the samples upon construction.
  */
-class ControlGroup(bps: BioParameters, samples: SampleSet,
-    val controlSamples: Iterable[Sample]) {
-  val byTime = controlSamples.groupBy(s => samples.parameter(s, ExposureTime))
+class VarianceSet(sampleSet: SampleSet, val samples: Iterable[Sample]) {
+  val paramVals = samples.map(Map() ++ sampleSet.parameters(_))
 
-  val allParamVals = byTime.filter(_._1 != None).
-    map(ss => ss._1.get -> ss._2.map(Map() ++ samples.parameters(_)))
+  private def varAndMean(param: Attribute): Option[(Double, Double)] = {
+    val vs = paramVals.flatMap(_.get(param))
+    val nvs = vs.flatMap(BioParameter.convert)
 
-  private def varAndMean(param: Attribute, time: String): Option[(Double, Double)] = {
-    allParamVals.get(time) match {
-      case None => None
-      case Some(pvs) =>
-        val vs = pvs.flatMap(_.get(param))
-        val nvs = vs.flatMap(BioParameter.convert)
-
-        if (nvs.size < 2) {
-          None
-        } else {
-          Some((variance(nvs.toArray), mean(nvs.toArray)))
-        }
+    if (nvs.size < 2) {
+      None
+    } else {
+      Some((variance(nvs.toArray), mean(nvs.toArray)))
     }
   }
 
-  def lowerBound(param: Attribute, time: String, testSampleSize: Int): Option[Double] =
-    varAndMean(param, time).map {
+  def lowerBound(param: Attribute, zTestSampleSize: Int): Option[Double] =
+    varAndMean(param).map {
       case (v, m) =>
         val sd = Math.sqrt(v)
-        m - 2 / Math.sqrt(testSampleSize) * sd
+        m - 2 / Math.sqrt(zTestSampleSize) * sd
     }
 
-  def upperBound(param: Attribute, time: String, testSampleSize: Int): Option[Double] =
-    varAndMean(param, time).map {
+  def upperBound(param: Attribute, zTestSampleSize: Int): Option[Double] =
+    varAndMean(param).map {
       case (v, m) =>
         val sd = Math.sqrt(v)
-        m + 2 / Math.sqrt(testSampleSize) * sd
+        m + 2 / Math.sqrt(zTestSampleSize) * sd
     }
 }
 

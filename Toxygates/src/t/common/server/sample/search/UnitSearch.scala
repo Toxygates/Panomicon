@@ -2,7 +2,7 @@ package t.common.server.sample.search
 
 import t.viewer.server.Conversions._
 import t.viewer.server.Annotations
-import t.platform.ControlGroup
+import t.platform.VarianceSet
 import org.stringtemplate.v4.ST
 import t.common.shared.DataSchema
 import t.common.shared.sample.Unit
@@ -14,7 +14,7 @@ import otg.model.sample.Attribute._
 object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
 
   protected def create(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
-    controlGroups: Map[Unit, ControlGroup],
+    controlGroups: Map[Unit, VarianceSet],
     samples: Iterable[Unit],
     searchParams: Iterable[Attribute]) =
       new UnitSearch(schema, metadata, condition, controlGroups, samples, searchParams)
@@ -83,7 +83,7 @@ object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
 }
 
 class UnitSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
-    controlGroups: Map[Unit, ControlGroup], samples: Iterable[Unit], searchParams: Iterable[Attribute])
+    controlGroups: Map[Unit, VarianceSet], samples: Iterable[Unit], searchParams: Iterable[Attribute])
     extends AbstractSampleSearch[Unit](schema, metadata, condition,
         controlGroups, samples, searchParams)  {
 

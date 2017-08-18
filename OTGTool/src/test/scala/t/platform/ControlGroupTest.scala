@@ -20,11 +20,11 @@ class ControlGroupTest extends TTestSuite {
   test("basic") {
     for (s <- samples) {
       val cg = TestData.controlGroups(s)
-      cg.controlSamples.size should equal(3)
+      cg.samples.size should equal(3)
 
       val remove = Set(DoseLevel.id, Individual.id)
 
-      for (cs <- cg.controlSamples) {
+      for (cs <- cg.samples) {
         cs.sampleClass.getMap.filter(c => ! remove.contains(c._1)) should
           equal(s.sampleClass.getMap.filter(c => ! remove.contains(c._1)))
       }
@@ -34,7 +34,7 @@ class ControlGroupTest extends TTestSuite {
   test("liver weight") {
     for (s <- samples;
       cg = TestData.controlGroups(s)) {
-      val isControl = cg.controlSamples.toSet.contains(s)
+      val isControl = cg.samples.toSet.contains(s)
 
       if (isControl || s.sampleClass(Individual.id) == "2") {
          //healthy
@@ -47,12 +47,12 @@ class ControlGroupTest extends TTestSuite {
       }
 
       val time = metadata.parameter(s, ExposureTime).get
-      println(cg.allParamVals(time))
+      println(cg.paramVals)
 
       //TODO might need to adjust these limits
-      cg.lowerBound(liverParam, time, 1).get should
+      cg.lowerBound(liverParam, 1).get should
         be (2.9 +- 0.2)
-      cg.upperBound(liverParam, time, 1).get should
+      cg.upperBound(liverParam, 1).get should
         be (3.1 +- 0.2)
     }
   }

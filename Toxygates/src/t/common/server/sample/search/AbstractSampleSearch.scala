@@ -1,7 +1,7 @@
 package t.common.server.sample.search
 
 import scala.collection.JavaConversions._
-import t.platform.ControlGroup
+import t.platform.VarianceSet
 import t.common.shared.DataSchema
 import t.common.shared.sample.search.AndMatch
 import t.common.shared.sample.search.AtomicMatch
@@ -12,7 +12,6 @@ import t.db.Metadata
 import t.sparql.Samples
 import t.sparql.CachingTriplestoreMetadata
 import t.sparql.SampleFilter
-import t.platform.ControlGroup
 import t.db.ParameterSet
 import scala.collection.Seq
 import t.viewer.server.Annotations
@@ -34,7 +33,7 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
 
   // Needs to be overridden to specify how to make an SS
   protected def create(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
-             controlGroups: Map[ST, ControlGroup],
+             controlGroups: Map[ST, VarianceSet],
              samples: Iterable[ST],
              searchParams: Iterable[Attribute]): SS
 
@@ -45,7 +44,7 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
   protected def preprocessSample(m: Metadata, sps: Iterable[Attribute]): (ST => ST)  = (x => x)
 
   // Finds the control groups in a collection of samples and sets up a lookup table
-  protected def formControlGroups(m: Metadata, as: Annotations): (Iterable[ST] => Map[ST, ControlGroup])
+  protected def formControlGroups(m: Metadata, as: Annotations): (Iterable[ST] => Map[ST, VarianceSet])
 
   // Extracts the sample parameters used in a MatchCondition
   def conditionParams(attributes: AttributeSet, cond: MatchCondition): Iterable[Attribute] =
@@ -67,7 +66,7 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
 
     val processedSamples: Iterable[ST] = samples.map(preprocessSample(metadata, usedParams))
 
-    val fetchedControlGroups: Map[ST, ControlGroup] = formControlGroups(metadata, annotations)(processedSamples)
+    val fetchedControlGroups: Map[ST, VarianceSet] = formControlGroups(metadata, annotations)(processedSamples)
 
     val filteredSamples: Iterable[ST] = processedSamples.filter(!isControlSample(schema)(_))
 
@@ -77,7 +76,7 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
 
 abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
     condition: MatchCondition,
-    controlGroups: Map[ST, ControlGroup], samples: Iterable[ST],
+    controlGroups: Map[ST, VarianceSet], samples: Iterable[ST],
     searchParams: Iterable[Attribute]) {
 
   protected def time(s: ST): String
@@ -107,14 +106,14 @@ abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
   private def paramIsHigh(s: ST, attr: Attribute): Option[Boolean] = {
     paramComparison(s,
       sampleAttributeValue(_, attr),
-      x => controlGroups.get(x).flatMap(_.upperBound(attr, time(x), zTestSampleSize(s))),
+      x => controlGroups.get(x).flatMap(_.upperBound(attr, zTestSampleSize(s))),
       _ > _)
   }
 
   private def paramIsLow(s: ST, attr: Attribute): Option[Boolean] = {
     paramComparison(s,
       sampleAttributeValue(_, attr),
-      x => controlGroups.get(x).flatMap(_.lowerBound(attr, time(x), zTestSampleSize(s))),
+      x => controlGroups.get(x).flatMap(_.lowerBound(attr, zTestSampleSize(s))),
       _ < _)
   }
 

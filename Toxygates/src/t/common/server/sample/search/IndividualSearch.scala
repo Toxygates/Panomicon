@@ -3,7 +3,7 @@ package t.common.server.sample.search
 import t.viewer.server
 import t.viewer.server.Conversions._
 import t.viewer.server.Annotations
-import t.platform.ControlGroup
+import t.platform.VarianceSet
 import t.common.shared.DataSchema
 import t.common.shared.sample.Sample
 import t.common.shared.sample.search.MatchCondition
@@ -14,7 +14,7 @@ import otg.model.sample.Attribute._
 object IndividualSearch extends SearchCompanion[Sample, IndividualSearch] {
 
   protected def create(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
-    controlGroups: Map[Sample, ControlGroup],
+    controlGroups: Map[Sample, VarianceSet],
     samples: Iterable[Sample],
     searchParams: Iterable[Attribute]) =
       new IndividualSearch(schema, metadata, condition, controlGroups, samples, searchParams)
@@ -27,7 +27,7 @@ object IndividualSearch extends SearchCompanion[Sample, IndividualSearch] {
 }
 
 class IndividualSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
-    controlGroups: Map[Sample, ControlGroup], samples: Iterable[Sample], searchParams: Iterable[Attribute])
+    controlGroups: Map[Sample, VarianceSet], samples: Iterable[Sample], searchParams: Iterable[Attribute])
     extends AbstractSampleSearch[Sample](schema, metadata, condition,
         controlGroups, samples, searchParams)  {
 
