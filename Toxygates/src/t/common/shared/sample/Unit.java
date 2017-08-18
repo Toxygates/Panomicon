@@ -59,7 +59,7 @@ public class Unit extends SampleClass {
       double sum = 0.0;
       for (Sample sample : samples) {
         count++;
-        sum += Double.parseDouble(sample.sampleClass().get(attr));
+        sum += Double.parseDouble(sample.sampleClass().get(attr).replace(",", ""));
       }
       put(attr, Double.toString(sum / count));
     }
