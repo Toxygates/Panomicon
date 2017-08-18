@@ -13,11 +13,11 @@ import otg.model.sample.Attribute._
 
 object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
 
-  protected def create(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
+  protected def create(metadata: Metadata, condition: MatchCondition,
     controlGroups: Map[Unit, VarianceSet],
     samples: Iterable[Unit],
     searchParams: Iterable[Attribute]) =
-      new UnitSearch(schema, metadata, condition, controlGroups, samples, searchParams)
+      new UnitSearch(metadata, condition, controlGroups, samples, searchParams)
 
   /**
    * Preprocess a Unit to prepare it for searching. For each search parameter,
@@ -82,9 +82,9 @@ object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
     schema.isControl(_)
 }
 
-class UnitSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
+class UnitSearch(metadata: Metadata, condition: MatchCondition,
     controlGroups: Map[Unit, VarianceSet], samples: Iterable[Unit], searchParams: Iterable[Attribute])
-    extends AbstractSampleSearch[Unit](schema, metadata, condition,
+    extends AbstractSampleSearch[Unit](metadata, condition,
         controlGroups, samples, searchParams)  {
 
   protected def sampleAttributeValue(unit: Unit, param: Attribute): Option[Double] =
@@ -96,9 +96,6 @@ class UnitSearch(schema: DataSchema, metadata: Metadata, condition: MatchConditi
     } catch {
       case nf: NumberFormatException => None
     }
-
-  protected def time(unit: Unit): String =
-    unit.get(schema.timeParameter())
 
   protected def postMatchAdjust(unit: Unit): Unit =
     unit

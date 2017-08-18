@@ -32,7 +32,7 @@ import t.model.sample.CoreParameter
 trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
 
   // Needs to be overridden to specify how to make an SS
-  protected def create(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
+  protected def create(metadata: Metadata, condition: MatchCondition,
              controlGroups: Map[ST, VarianceSet],
              samples: Iterable[ST],
              searchParams: Iterable[Attribute]): SS
@@ -70,16 +70,15 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
 
     val filteredSamples: Iterable[ST] = processedSamples.filter(!isControlSample(schema)(_))
 
-    create(schema, metadata, condition, fetchedControlGroups, filteredSamples, usedParams)
+    create(metadata, condition, fetchedControlGroups, filteredSamples, usedParams)
   }
 }
 
-abstract class AbstractSampleSearch[ST](schema: DataSchema, metadata: Metadata,
+abstract class AbstractSampleSearch[ST](metadata: Metadata,
     condition: MatchCondition,
     controlGroups: Map[ST, VarianceSet], samples: Iterable[ST],
     searchParams: Iterable[Attribute]) {
 
-  protected def time(s: ST): String
   protected def sampleAttributeValue(s: ST, sp: Attribute): Option[Double]
   protected def postMatchAdjust(s: ST): ST
   protected def zTestSampleSize(s: ST): Int

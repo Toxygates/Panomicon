@@ -44,7 +44,7 @@ class SampleSearchTest extends TTestSuite {
   def search(cond: MatchCondition) = {
     val searchParams = IndividualSearch.conditionParams(attributes,
         cond)
-    val ss: IndividualSearch = new IndividualSearch(schema, TestData.metadata,
+    val ss: IndividualSearch = new IndividualSearch(TestData.metadata,
         cond, cgroups, samples.toSeq.map(asJavaSample), searchParams)
     ss.results
   }
