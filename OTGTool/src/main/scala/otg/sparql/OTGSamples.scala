@@ -32,8 +32,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
 
   import t.sparql.scToSparql
 
-  val prefixes = commonPrefixes + """
-    |PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>""".stripMargin
+  val prefixes = s"$commonPrefixes PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>"
 
   //TODO case with no attributes won't work
   //TODO consider lifting up

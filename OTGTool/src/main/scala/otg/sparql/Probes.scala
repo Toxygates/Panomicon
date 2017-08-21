@@ -34,8 +34,7 @@ import t.sparql.secondary.B2RKegg
 class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Store[Probe] {
   import Probes._
 
-  val prefixes = s"""$commonPrefixes
-    |PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>""".stripMargin
+  val prefixes = s"$commonPrefixes PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>"
 
   def proteins(pr: Probe): Iterable[Protein] = withAttributes(List(pr)).flatMap(_.proteins)
   def genes(pr: Probe): Iterable[Gene] = withAttributes(List(pr)).flatMap(_.genes)
