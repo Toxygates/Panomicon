@@ -42,7 +42,7 @@ object Triplestore {
   val executor = Executors.newCachedThreadPool()
   val executionContext = ExecutionContext.fromExecutor(executor)
 
-  val tPrefixes: String = "\n" + """PREFIX purl:<http://purl.org/dc/elements/1.1/>
+  val tPrefixes: String = """PREFIX purl:<http://purl.org/dc/elements/1.1/>
     |PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     |PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     |PREFIX owl:<http://www.w3.org/2002/07/owl#>
@@ -119,7 +119,7 @@ abstract class Triplestore extends Closeable {
    */
   @throws(classOf[TimeoutException])
   private def evaluate(query: String, timeoutMillis: Int = 10000) = {
-    println(query)
+    println('\n' + query)
     val pq = con.prepareTupleQuery(QueryLanguage.SPARQL, query)
     // for sesame 2.7
 //    pq.setMaxQueryTime(timeoutMillis / 1000)
@@ -134,7 +134,7 @@ abstract class Triplestore extends Closeable {
    */
   def update(query: String, quiet: Boolean = false): Unit = {
     if (!quiet) {
-      println(query)
+      println('\n' + query)
     }
     if (isReadonly) {
       println("Triplestore is read-only, ignoring update query")

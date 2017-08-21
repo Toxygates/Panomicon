@@ -40,10 +40,11 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
     val standardPred = standardAttributes.filter(isPredicateAttribute)
 
     val filterString = if(filter.constraints.isEmpty) "" else
-        s"""|  FILTER(
-        |    ${standardPred.map(a => filter.get(a).map(f =>
-              s"?$a = " + "\"" + f + "\"")).flatten.mkString(" && ")}
-        |  )""".stripMargin
+        s"""|
+            |  FILTER(
+            |    ${standardPred.map(attribute => filter.get(attribute).map(value =>
+                  s"?$attribute = " + "\"" + value + "\"")).flatten.mkString(" && ")}
+            |  )""".stripMargin
 
     val batchFilter = filter.get("batchGraph")
     val batchFilterQ = batchFilter.map("<" + _ + ">").getOrElse("?batchGraph")
@@ -52,11 +53,9 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
       s"""SELECT * WHERE {
         |  GRAPH $batchFilterQ {
         |    ?x a t:sample; rdfs:label ?id;
-        |    ${standardPred.map(a => s"t:$a ?$a").mkString("; ")} .
-        |""".stripMargin,
+        |    ${standardPred.map(a => s"t:$a ?$a").mkString("; ")} .""".stripMargin,
 
-      s"""|} ${sf.standardSampleFilters}
-        |  $filterString
+      s"""|} ${sf.standardSampleFilters} $filterString
         |  }""".stripMargin,
 
       eval = triplestore.mapQuery(_, 20000).map(x => {

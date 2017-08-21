@@ -135,7 +135,7 @@ class Batches(config: TriplestoreConfig) extends BatchGroups(config) {
 
   def samples(batch: String): Iterable[String] = {
     val prefix = Samples.defaultPrefix
-    triplestore.simpleQuery(s"$tPrefixes SELECT ?l WHERE " +
+    triplestore.simpleQuery(s"$tPrefixes\nSELECT ?l WHERE " +
       s"{ graph <$defaultPrefix/$batch> { ?x a t:sample ; rdfs:label ?l } }")
   }
 

@@ -43,15 +43,15 @@ class Datasets(config: TriplestoreConfig) extends BatchGroups(config) {
   def defaultPrefix = Datasets.defaultPrefix
 
   def descriptions: Map[String, String] = {
-    Map() ++ triplestore.mapQuery(s"$tPrefixes select ?l ?desc where { ?item a $itemClass; rdfs:label ?l ; " +
+    Map() ++ triplestore.mapQuery(s"$tPrefixes\nSELECT ?l ?desc WHERE { ?item a $itemClass; rdfs:label ?l ; " +
       "t:description ?desc } ").map(x => {
       x("l") -> x("desc")
     })
   }
 
   def numBatches: Map[String, Int] = {
-    Map() ++ triplestore.mapQuery(s"$tPrefixes select ?l (count(?b) as ?n) { ?b a t:batch; t:visibleIn ?d. " +
-        " ?d a t:dataset; rdfs:label ?l } group by ?l").map(x => {
+    Map() ++ triplestore.mapQuery(s"$tPrefixes\nSELECT ?l (COUNT(?b) as ?n) { ?b a t:batch; t:visibleIn ?d. " +
+        " ?d a t:dataset; rdfs:label ?l } GROUP BY ?l").map(x => {
         x("l") -> x("n").toInt
     })
   }
@@ -64,7 +64,7 @@ class Datasets(config: TriplestoreConfig) extends BatchGroups(config) {
   }
 
   def withBatchesInInstance(instanceURI: String): Seq[String] = {
-    triplestore.simpleQuery(s"$tPrefixes select distinct ?l WHERE " +
+    triplestore.simpleQuery(s"$tPrefixes\nSELECT DISTINCT ?l WHERE " +
       s"{ ?item a $itemClass; rdfs:label ?l. " +
       s"?b a ${Batches.itemClass}; $memberRelation ?item; " +
         s"${Batches.memberRelation} <$instanceURI> }")
