@@ -119,7 +119,9 @@ abstract class Triplestore extends Closeable {
    */
   @throws(classOf[TimeoutException])
   private def evaluate(query: String, timeoutMillis: Int = 10000) = {
-    println('\n' + query)
+    println
+    printHash("printing query:", query)
+    println(query)
     val pq = con.prepareTupleQuery(QueryLanguage.SPARQL, query)
     // for sesame 2.7
 //    pq.setMaxQueryTime(timeoutMillis / 1000)
@@ -187,7 +189,7 @@ abstract class Triplestore extends Closeable {
     ) yield s
     rs.close
     if (!quiet) {
-      logQueryStats(recs, start)
+      logQueryStats(recs, start, query)
     }
     recs
   }
@@ -203,14 +205,14 @@ abstract class Triplestore extends Closeable {
       rec = tuple.map(n => n.getValue.stringValue)
     ) yield rec.toVector
     rs.close
-    logQueryStats(recs, start)
+    logQueryStats(recs, start, query)
     recs
   }
 
   /**
    * Query for some number of records, each containing named fields.
    */
-  def mapQuery(query: String, timeoutMillis: Int = 10000): Vector[Map[String, String]] = {
+  def mapQuery(query: String, timeoutMillis: Int = 50000): Vector[Map[String, String]] = {
     val start = System.currentTimeMillis()
     val rs = evaluate(query, timeoutMillis)
     val recs = for (
@@ -218,13 +220,23 @@ abstract class Triplestore extends Closeable {
       rec = Map() ++ tuple.map(n => n.getName -> n.getValue.stringValue())
     ) yield rec
     rs.close
-    logQueryStats(recs, start)
+    logQueryStats(recs, start, query)
     recs
   }
 
-  def logQueryStats(recs: Vector[Object], start: Long) {
+  def logQueryStats(recs: Vector[Object], start: Long, query: String) {
+    printHash("printing query result:", query)
     println("Found " + recs.size + " results in " + (System.currentTimeMillis() - start) / 1000.0 + "s:")
     println(if (recs.size > 10) { recs.take(10) + " ... " } else { recs })
+  }
+
+  val DEBUG_LOG_HASHES = false
+
+  def printHash(postfix: String, obj: Object) = {
+    if (DEBUG_LOG_HASHES) {
+      val hash = obj.hashCode
+      println(s"Hashcode $hash $postfix")
+    }
   }
 }
 
