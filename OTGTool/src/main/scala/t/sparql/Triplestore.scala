@@ -163,7 +163,7 @@ abstract class Triplestore extends Closeable {
     }
   }
 
-  def simpleQueryNonQuiet(query: String): Vector[String] = simpleQuery(query, true)
+  def simpleQueryNonQuiet(query: String): Vector[String] = simpleQuery(query, false)
 
   import scala.language.implicitConversions
   private implicit def resultToSeq[T, U <: Exception](i: Iteration[T,U]) = {
