@@ -18,48 +18,24 @@
 
 package otgviewer.client.components;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
+import otgviewer.client.*;
+import otgviewer.client.rpc.SparqlServiceAsync;
+import t.common.client.components.ResizingDockLayoutPanel;
+import t.common.client.components.ResizingListBox;
+import t.common.shared.*;
+import t.common.shared.sample.Group;
+import t.model.SampleClass;
+import t.viewer.client.Analytics;
+import t.viewer.client.Utils;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.RadioButton;
-import com.google.gwt.user.client.ui.StackLayoutPanel;
-import com.google.gwt.user.client.ui.SuggestBox;
-import com.google.gwt.user.client.ui.TextArea;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
-
-import otgviewer.client.ClusteringSelector;
-import otgviewer.client.GeneOracle;
-import otgviewer.client.ProbeSelector;
-import otgviewer.client.StringListsStoreHelper;
-import otgviewer.client.rpc.SparqlServiceAsync;
-import t.common.client.components.ResizingDockLayoutPanel;
-import t.common.client.components.ResizingListBox;
-import t.common.shared.ItemList;
-import t.common.shared.SharedUtils;
-import t.common.shared.Term;
-import t.common.shared.sample.Group;
-import t.viewer.client.Analytics;
-import t.model.SampleClass;
-import t.viewer.client.Utils;
+import com.google.gwt.user.client.ui.*;
 
 public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHandler {
 

@@ -18,19 +18,17 @@
 
 package otgviewer.client.components;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
+
+import t.common.shared.SharedUtils;
+import t.model.SampleClass;
+import t.viewer.client.rpc.SampleServiceAsync;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
-
-import t.common.shared.SharedUtils;
-import t.model.SampleClass;
-import t.viewer.client.rpc.SampleServiceAsync;
 
 public class DataFilterEditor extends DataListenerWidget {
   List<SampleClass> sampleClasses = new ArrayList<SampleClass>();

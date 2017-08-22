@@ -18,28 +18,15 @@
 
 package otgviewer.client.charts;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import otgviewer.shared.Series;
-import t.common.shared.DataSchema;
-import t.common.shared.HasClass;
-import t.common.shared.SampleMultiFilter;
-import t.common.shared.SharedUtils;
-import t.common.shared.ValueType;
-import t.common.shared.sample.ExpressionRow;
-import t.common.shared.sample.ExpressionValue;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleClassUtils;
-import t.common.shared.sample.Unit;
+import t.common.shared.*;
+import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.FullMatrix;

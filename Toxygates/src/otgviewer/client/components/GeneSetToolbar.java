@@ -21,9 +21,7 @@ package otgviewer.client.components;
 import java.util.List;
 
 import otgviewer.client.DataScreen;
-import t.common.shared.ClusteringList;
-import t.common.shared.ItemList;
-import t.common.shared.StringList;
+import t.common.shared.*;
 import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.CodeDownload;
 import t.viewer.client.Utils;
@@ -31,10 +29,7 @@ import t.viewer.client.Utils;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 
 public class GeneSetToolbar extends DataListenerWidget {
 

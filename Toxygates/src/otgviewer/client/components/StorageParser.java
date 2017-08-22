@@ -18,18 +18,12 @@
 
 package otgviewer.client.components;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.DataSchema;
-import t.common.shared.ItemList;
-import t.common.shared.Packable;
-import t.common.shared.SharedUtils;
+import t.common.shared.*;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.SampleColumn;
 

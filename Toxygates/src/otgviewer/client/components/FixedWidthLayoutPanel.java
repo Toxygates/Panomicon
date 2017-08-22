@@ -19,9 +19,7 @@
 package otgviewer.client.components;
 
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.user.client.ui.LayoutPanel;
-import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * A layout panel that tries to keep a single widget at a fixed width, centered, filling all

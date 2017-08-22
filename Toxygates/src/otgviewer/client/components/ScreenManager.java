@@ -20,13 +20,9 @@ package otgviewer.client.components;
 
 import otgviewer.client.Resources;
 import otgviewer.client.UIFactory;
-import t.common.shared.DataSchema;
-import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.client.rpc.ProbeServiceAsync;
-import t.viewer.client.rpc.SampleServiceAsync;
-import t.viewer.client.rpc.SeriesServiceAsync;
 import otgviewer.client.rpc.SparqlServiceAsync;
-import t.viewer.client.rpc.UserDataServiceAsync;
+import t.common.shared.DataSchema;
+import t.viewer.client.rpc.*;
 import t.viewer.shared.AppInfo;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
