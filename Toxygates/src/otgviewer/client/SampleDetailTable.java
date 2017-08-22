@@ -18,21 +18,12 @@
 
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import t.common.shared.sample.Annotation;
-import t.common.shared.sample.BioParamValue;
-import t.common.shared.sample.HasSamples;
-import t.common.shared.sample.NumericalBioParamValue;
-import t.common.shared.sample.Sample;
+import otgviewer.client.components.*;
+import t.common.shared.sample.*;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.table.TooltipColumn;
@@ -40,10 +31,8 @@ import t.viewer.client.table.TooltipColumn;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.SafeHtmlHeader;
+import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
-import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.view.client.NoSelectionModel;

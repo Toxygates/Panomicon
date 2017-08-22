@@ -18,11 +18,7 @@
 
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
@@ -30,25 +26,18 @@ import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.Pathology;
 import t.common.client.ImageClickCell;
 import t.common.shared.GroupUtils;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleColumn;
+import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Utils;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
-import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * This screen displays information about pathological findings in a given set of sample groups.

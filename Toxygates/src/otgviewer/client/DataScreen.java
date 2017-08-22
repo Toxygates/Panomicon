@@ -23,20 +23,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.ResizeLayoutPanel;
-import com.google.gwt.user.client.ui.Widget;
-
-import otgviewer.client.components.GeneSetToolbar;
-import otgviewer.client.components.Screen;
-import otgviewer.client.components.ScreenManager;
-import otgviewer.client.components.StorageParser;
-import otgviewer.client.components.TickMenuItem;
+import otgviewer.client.components.*;
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
 import t.common.shared.sample.ExpressionRow;
@@ -45,6 +32,10 @@ import t.viewer.client.Analytics;
 import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.RichTable.HideableColumn;
 import t.viewer.shared.intermine.IntermineInstance;
+
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * The main data display screen. Data is displayed in the ExpressionTable widget.

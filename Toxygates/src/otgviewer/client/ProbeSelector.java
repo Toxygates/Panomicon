@@ -20,10 +20,7 @@ package otgviewer.client;
 
 import java.util.Arrays;
 
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import otgviewer.client.components.TermSuggestBox;
+import otgviewer.client.components.*;
 import t.common.client.components.ResizingListBox;
 import t.common.shared.SharedUtils;
 import t.common.shared.Term;
@@ -37,17 +34,8 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.SuggestOracle;
+import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
-import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  * An interface component that helps users to select probes using some kind of higher level concept

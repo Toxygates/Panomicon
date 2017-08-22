@@ -17,19 +17,12 @@
  */
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import t.common.client.HasLogger;
-import t.common.shared.ClusteringList;
-import t.common.shared.ItemList;
-import t.common.shared.StringList;
+import t.common.shared.*;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InputDialog;

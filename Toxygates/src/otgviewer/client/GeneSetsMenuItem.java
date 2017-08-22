@@ -18,37 +18,23 @@
 
 package otgviewer.client;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.MenuItemSeparator;
-
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.GeneSetEditor;
-import otgviewer.client.components.SaveActionHandler;
+import otgviewer.client.components.*;
 import t.clustering.shared.Algorithm;
-import t.common.shared.ClusteringList;
-import t.common.shared.ItemList;
-import t.common.shared.SharedUtils;
-import t.common.shared.StringList;
+import t.common.shared.*;
 import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.Analytics;
 import t.viewer.client.CodeDownload;
+
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.*;
+import com.google.gwt.user.client.ui.*;
 
 public class GeneSetsMenuItem extends DataListenerWidget {
 

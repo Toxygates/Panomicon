@@ -18,31 +18,18 @@
 
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import t.common.shared.DataSchema;
-import t.common.shared.Pair;
-import t.common.shared.SharedUtils;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleClassUtils;
-import t.common.shared.sample.Unit;
+import otgviewer.client.components.*;
+import t.common.shared.*;
+import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SampleServiceAsync;
 
-import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * A widget that displays times and doses for a number of compounds in a grid layout. For each

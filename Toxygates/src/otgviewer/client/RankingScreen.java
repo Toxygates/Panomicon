@@ -22,9 +22,7 @@ import static t.common.client.Utils.makeScrolled;
 
 import java.util.List;
 
-import otgviewer.client.components.FilterTools;
-import otgviewer.client.components.Screen;
-import otgviewer.client.components.ScreenManager;
+import otgviewer.client.components.*;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.client.components.ranking.CompoundRanker;
 import t.common.shared.Dataset;

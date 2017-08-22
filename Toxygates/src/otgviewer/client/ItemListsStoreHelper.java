@@ -19,19 +19,15 @@
  */
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.DialogBox;
+import java.util.*;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.StorageParser;
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
+
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.DialogBox;
 
 public abstract class ItemListsStoreHelper {
 

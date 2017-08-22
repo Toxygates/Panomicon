@@ -18,14 +18,12 @@
 
 package otgviewer.client;
 
+import static t.common.client.Utils.makeScrolled;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import t.viewer.client.Utils;
-import static t.common.client.Utils.makeScrolled;
 
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * This is the first screen, where a dataset can be selected.

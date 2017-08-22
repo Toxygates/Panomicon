@@ -1,49 +1,23 @@
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
+import otgviewer.client.components.*;
+import t.common.shared.sample.*;
+import t.model.SampleClass;
+import t.model.sample.*;
+import t.viewer.client.Utils;
+import t.viewer.client.components.search.*;
+import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.shared.AppInfo;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
-
-import otgviewer.client.components.FilterTools;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import otgviewer.client.components.ScreenManager;
-import otgviewer.client.components.TickMenuItem;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.Unit;
-import t.model.SampleClass;
-import t.model.sample.Attribute;
-import t.model.sample.AttributeComparator;
-import t.model.sample.AttributeSet;
-import t.viewer.client.Utils;
-import t.viewer.client.components.search.ConditionEditor;
-import t.viewer.client.components.search.ResultTable;
-import t.viewer.client.components.search.SampleSearch;
-import t.viewer.client.components.search.SampleTable;
-import t.viewer.client.components.search.Search;
-import t.viewer.client.components.search.UnitSearch;
-import t.viewer.client.components.search.UnitTable;
-import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.rpc.SampleServiceAsync;
-import t.viewer.shared.AppInfo;
+import com.google.gwt.user.client.ui.*;
 
 public class SampleSearchScreen extends Screen implements Search.Delegate, ResultTable.Delegate {
   public static final String key = "search";

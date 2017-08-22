@@ -22,17 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Widget;
-
-import otgviewer.client.components.FilterTools;
-import otgviewer.client.components.Screen;
-import otgviewer.client.components.ScreenManager;
-import otgviewer.client.components.StorageParser;
+import otgviewer.client.components.*;
 import otgviewer.client.components.compoundsel.CompoundSelector;
 import otgviewer.client.components.groupdef.GroupInspector;
 import t.common.shared.DataSchema;
@@ -40,6 +30,11 @@ import t.common.shared.sample.Group;
 import t.common.shared.sample.SampleColumn;
 import t.model.SampleClass;
 import t.viewer.client.Utils;
+
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * This screen allows for column (group) definition as well as compound ranking.

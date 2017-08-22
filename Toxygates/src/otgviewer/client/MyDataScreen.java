@@ -20,35 +20,23 @@
 
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.view.client.ListDataProvider;
+import java.util.*;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import t.common.client.Utils;
-import t.common.client.maintenance.BatchEditor;
-import t.common.client.maintenance.BatchPanel;
-import t.common.client.maintenance.ListDataCallback;
-import t.common.client.maintenance.TaskCallback;
+import t.common.client.maintenance.*;
 import t.common.shared.Dataset;
 import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.Instance;
 import t.viewer.client.Analytics;
 import t.viewer.client.rpc.UserDataServiceAsync;
+
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
+import com.google.gwt.view.client.ListDataProvider;
 
 public class MyDataScreen extends Screen {
 

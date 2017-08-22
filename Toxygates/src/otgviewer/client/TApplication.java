@@ -18,58 +18,14 @@
 
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.MetaElement;
-import com.google.gwt.dom.client.NodeList;
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.MouseOutEvent;
-import com.google.gwt.event.dom.client.MouseOutHandler;
-import com.google.gwt.event.dom.client.MouseOverEvent;
-import com.google.gwt.event.dom.client.MouseOverHandler;
-import com.google.gwt.event.logical.shared.ResizeEvent;
-import com.google.gwt.event.logical.shared.ResizeHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.TextResource;
-import com.google.gwt.storage.client.Storage;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.RootLayoutPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
-
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.*;
 import otgviewer.client.components.Screen.QueuedAction;
-import otgviewer.client.components.ScreenManager;
-import otgviewer.client.components.StorageParser;
 import otgviewer.client.dialog.FeedbackForm;
 import otgviewer.client.rpc.SparqlService;
 import otgviewer.client.rpc.SparqlServiceAsync;
@@ -80,15 +36,21 @@ import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.MetadataInfo;
-import t.viewer.client.rpc.MatrixService;
-import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.client.rpc.ProbeServiceAsync;
-import t.viewer.client.rpc.SampleServiceAsync;
-import t.viewer.client.rpc.SeriesService;
-import t.viewer.client.rpc.SeriesServiceAsync;
-import t.viewer.client.rpc.UserDataService;
-import t.viewer.client.rpc.UserDataServiceAsync;
+import t.viewer.client.rpc.*;
 import t.viewer.shared.AppInfo;
+
+import com.google.gwt.core.client.*;
+import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.*;
+import com.google.gwt.event.logical.shared.*;
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.resources.client.TextResource;
+import com.google.gwt.storage.client.Storage;
+import com.google.gwt.user.client.*;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * The main entry point for Toxygates. The main task of this class is to manage the history

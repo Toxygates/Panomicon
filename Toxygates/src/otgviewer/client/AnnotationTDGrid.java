@@ -23,12 +23,7 @@ import java.util.logging.Level;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
-import t.common.shared.sample.Annotation;
-import t.common.shared.sample.BioParamValue;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.NumericalBioParamValue;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.Unit;
+import t.common.shared.sample.*;
 import t.model.SampleClass;
 import static otg.model.sample.Attribute.*;
 import t.viewer.client.Analytics;
@@ -36,20 +31,11 @@ import t.viewer.client.Analytics;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 
 /**
- * A time and dose grid that can show some variable as a heat map. The variable is supplied as a
+ * A time and dose grid that can show some variable as a mini heat map. The variable is supplied as a
  * microarray sample annotation.
- * 
- * @author johan
- *
  */
 public class AnnotationTDGrid extends TimeDoseGrid {
 

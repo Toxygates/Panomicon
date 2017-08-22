@@ -18,48 +18,22 @@
 
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import otgviewer.client.components.ScreenManager;
-import otgviewer.client.components.StorageParser;
+import otgviewer.client.components.*;
 import t.common.shared.DataSchema;
-import t.common.shared.sample.Annotation;
-import t.common.shared.sample.BioParamValue;
-import t.common.shared.sample.DataColumn;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.HasSamples;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleClassUtils;
-import t.common.shared.sample.SampleColumn;
+import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SampleServiceAsync;
 
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * This screen displays detailed information about a sample or a set of samples, i.e. experimental

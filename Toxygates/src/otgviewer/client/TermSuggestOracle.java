@@ -19,16 +19,10 @@
  */
 package otgviewer.client;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
-import otgviewer.client.components.ExactMatchHandler;
-import otgviewer.client.components.HasExactMatchHandler;
-import otgviewer.client.components.Screen;
-import t.common.shared.AType;
-import t.common.shared.Pair;
-import t.common.shared.Term;
+import otgviewer.client.components.*;
+import t.common.shared.*;
 import t.viewer.client.rpc.SparqlServiceAsync;
 
 import com.google.gwt.user.client.Timer;
