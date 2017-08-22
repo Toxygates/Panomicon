@@ -23,14 +23,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
-import t.model.SampleClass;
-import t.common.shared.SharedUtils;
-import t.viewer.client.rpc.SampleServiceAsync;
-
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
+
+import t.common.shared.SharedUtils;
+import t.model.SampleClass;
+import t.viewer.client.rpc.SampleServiceAsync;
 
 public class DataFilterEditor extends DataListenerWidget {
   List<SampleClass> sampleClasses = new ArrayList<SampleClass>();
@@ -124,8 +124,6 @@ public class DataFilterEditor extends DataListenerWidget {
     initWidget(hp);
     logger = SharedUtils.getLogger("dfeditor");
     sampleService = screen.manager.sampleService();
-
-    update();
 
     parameters = screen.schema().macroParameters();
     selectors = new SCListBox[parameters.length];

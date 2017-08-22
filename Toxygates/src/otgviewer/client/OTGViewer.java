@@ -36,15 +36,11 @@ public class OTGViewer extends TApplication {
   protected void initScreens() {
     addScreenSeq(new StartScreen(this));
     addScreenSeq(new ColumnScreen(this));
+    addScreenSeq(new SampleSearchScreen(this));
     addScreenSeq(new DataScreen(this));
     addScreenSeq(new RankingScreen(this));
     addScreenSeq(new PathologyScreen(this));
-    addScreenSeq(new SampleDetailScreen(this));
-    
-    boolean isDev = appInfo.instanceName().equals("dev");
-    if (isDev) {
-      addScreenSeq(new SampleSearchScreen(this));
-    }
+    addScreenSeq(new SampleDetailScreen(this));    
 
     if (factory.hasMyData()) {      
       addScreenSeq(new MyDataScreen(this));

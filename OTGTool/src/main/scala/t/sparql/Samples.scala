@@ -60,10 +60,10 @@ case class SampleFilter(instanceURI: Option[String] = None,
     case Some(bu) => s" FILTER(?batchGraph = <$bu>)."
   }
 
-  def standardSampleFilters = s"\n$instanceFilter " +
+  def standardSampleFilters = s"$instanceFilter " +
     s"?batchGraph ${Datasets.memberRelation} ?dataset. " +
     s"?dataset a ${Datasets.itemClass}." +
-    s"$datasetFilter $batchFilter\n"
+    s"$datasetFilter $batchFilter"
 }
 
 abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
@@ -99,7 +99,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     } else {
       map
     }
-    overrideBatch match {
+    result = overrideBatch match {
       case Some(ob) => result + ("batchGraph" -> ob)
       case _ => result
     }
@@ -218,7 +218,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
       "{ { ?x rdfs:label \"" + sample + "\" } UNION" +
       "{ ?x rdfs:label \"" + sample + "\"^^xsd:string } }" +
       triples.mkString + " } } "
-    val r = triplestore.mapQuery(tPrefixes + query)
+    val r = triplestore.mapQuery(tPrefixes + '\n' + query)
     if (r.isEmpty) {
       List()
     } else {
@@ -263,7 +263,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     sampleAttributeQuery(attribute).constrain(filter)()
 
   def sampleGroups(sf: SampleFilter): Iterable[(String, Iterable[Sample])] = {
-    val q = tPrefixes +
+    val q = tPrefixes + '\n' +
       "SELECT DISTINCT ?l ?sid WHERE { " +
       s"?g a ${SampleGroups.itemClass}. " +
       sf.visibilityRel("?g") +

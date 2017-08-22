@@ -30,8 +30,8 @@ trait QueryUtils {
     if (values.isEmpty) {
       ""
     } else {
-      " FILTER(" + v + " IN(\n" + values.grouped(10).map("\t" + _.mkString(",")).
-        mkString(",\n") + "\n)) \n"
+      " FILTER(" + v + " IN( " + values.grouped(10).map("\t" + _.mkString(",")).
+        mkString(",\n") + " ))"
     }
   }
 

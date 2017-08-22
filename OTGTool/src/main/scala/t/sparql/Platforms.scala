@@ -71,7 +71,7 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
    * Note, the map may only be partially populated
    */
   def platformTypes: Map[String, String] = {
-    Map() ++ triplestore.mapQuery(s"$tPrefixes select ?l ?type where { ?item a $itemClass; rdfs:label ?l ; " +
+    Map() ++ triplestore.mapQuery(s"$tPrefixes\nSELECT ?l ?type WHERE { ?item a $itemClass; rdfs:label ?l ; " +
       s"$platformType ?type } ").map(x => {
       x("l") -> x("type")
     })
@@ -83,7 +83,7 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
     } else {
       x
     }
-  
+
   def populateAttributes(into: AttributeSet): Unit = {
     val timeout: Int = 60000
      val attribs = triplestore.mapQuery(s"""$tPrefixes
@@ -94,8 +94,8 @@ class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF
         |    t:label ?title.
         |  }
         |}""".stripMargin, timeout)
-        
-     for (a <- attribs) {       
+
+     for (a <- attribs) {
        val at = into.findOrCreate(a("id"), a("title"), a("type"), a("section"))
        println(s"Create attribute $at")
      }

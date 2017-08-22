@@ -46,7 +46,7 @@ abstract class ListManager(config: TriplestoreConfig) extends Closeable {
   }
 
   def list(): Seq[String] = {
-    triplestore.simpleQuery(s"$tPrefixes\n SELECT ?l { ?x a $itemClass ; rdfs:label ?l }")
+    triplestore.simpleQuery(s"$tPrefixes\nSELECT ?l { ?x a $itemClass ; rdfs:label ?l }")
   }
 
   val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -69,7 +69,7 @@ abstract class ListManager(config: TriplestoreConfig) extends Closeable {
   }
 
   private def attributeQuery[T](attr: String, decode: String => T): Map[String, T] = {
-    Map() ++ triplestore.mapQuery(s"$tPrefixes SELECT ?l ?att WHERE { ?item a $itemClass; rdfs:label ?l ; " +
+    Map() ++ triplestore.mapQuery(s"$tPrefixes\nSELECT ?l ?att WHERE { ?item a $itemClass; rdfs:label ?l ; " +
       s"$attr ?att } ").map(x => {
       x("l") -> decode(x("att"))
     })

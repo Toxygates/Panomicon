@@ -32,7 +32,7 @@ package object sparql extends t.sparql.QueryUtils {
   val commonPrefixes = s"""$tPrefixes
     |PREFIX local:<http://127.0.0.1:3333/>
     |PREFIX luc: <http://www.ontotext.com/owlim/lucene#>
-    |PREFIX bio2rdf:<http://bio2rdf.org/ns/bio2rdf#>""".stripMargin
+    |PREFIX bio2rdf:<http://bio2rdf.org/ns/bio2rdf#>""".stripMargin.replace('\n', ' ')
 
   def infixStringMatch(q: String) = " luc:myIndex \"*" + q + "*\". "
   def prefixStringMatch(q: String) = " luc:myIndex \"" + q + "*\". "

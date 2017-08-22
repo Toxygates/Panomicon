@@ -42,14 +42,12 @@ object Triplestore {
   val executor = Executors.newCachedThreadPool()
   val executionContext = ExecutionContext.fromExecutor(executor)
 
-  val tPrefixes: String = """
-    |PREFIX purl:<http://purl.org/dc/elements/1.1/>
+  val tPrefixes: String = """PREFIX purl:<http://purl.org/dc/elements/1.1/>
     |PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     |PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     |PREFIX owl:<http://www.w3.org/2002/07/owl#>
     |PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-    |PREFIX t:<http://level-five.jp/t/>
-    |""".stripMargin
+    |PREFIX t:<http://level-five.jp/t/>""".stripMargin.replace('\n', ' ')
 
   /*
    * TODO: Currently we use connectRemoteRepository for Owlim-SE connections, and
@@ -84,10 +82,10 @@ object Triplestore {
       new SPARQLRepository(queryUrl, updateUrl)
     } else {
       new SPARQLRepository(queryUrl)
-    }    
+    }
     if (user != null && pass != null) {
       rep.setUsernameAndPassword(user, pass)
-    }    
+    }
     rep.initialize()
     if (rep == null) {
       throw new Exception("Unable to access repository ")
@@ -121,6 +119,8 @@ abstract class Triplestore extends Closeable {
    */
   @throws(classOf[TimeoutException])
   private def evaluate(query: String, timeoutMillis: Int = 10000) = {
+    println
+    printHash("printing query:", query)
     println(query)
     val pq = con.prepareTupleQuery(QueryLanguage.SPARQL, query)
     // for sesame 2.7
@@ -136,12 +136,12 @@ abstract class Triplestore extends Closeable {
    */
   def update(query: String, quiet: Boolean = false): Unit = {
     if (!quiet) {
-      println(query)
+      println('\n' + query)
     }
     if (isReadonly) {
       println("Triplestore is read-only, ignoring update query")
     } else {
-      try {        
+      try {
         val pq = con.prepareUpdate(QueryLanguage.SPARQL, query)
         pq.setMaxExecutionTime(0)
         pq.execute()
@@ -165,7 +165,7 @@ abstract class Triplestore extends Closeable {
     }
   }
 
-  def simpleQueryNonQuiet(query: String): Vector[String] = simpleQuery(query, true)
+  def simpleQueryNonQuiet(query: String): Vector[String] = simpleQuery(query, false)
 
   import scala.language.implicitConversions
   private implicit def resultToSeq[T, U <: Exception](i: Iteration[T,U]) = {
@@ -180,6 +180,7 @@ abstract class Triplestore extends Closeable {
    * Query for some number of records, each containing a single field.
    */
   def simpleQuery(query: String, quiet: Boolean = false, timeoutMillis: Int = 10000): Vector[String] = {
+    val start = System.currentTimeMillis()
     val rs = evaluate(query, timeoutMillis)
     val recs = for (
       tuple <- rs;
@@ -188,7 +189,7 @@ abstract class Triplestore extends Closeable {
     ) yield s
     rs.close
     if (!quiet) {
-      println(if (recs.size > 10) { "[" + recs.size + "] " + recs.take(5) + " ... " } else { recs })
+      logQueryStats(recs, start, query)
     }
     recs
   }
@@ -204,24 +205,38 @@ abstract class Triplestore extends Closeable {
       rec = tuple.map(n => n.getValue.stringValue)
     ) yield rec.toVector
     rs.close
-
-    println("Took " + (System.currentTimeMillis() - start) / 1000.0 + " s")
-    println(if (recs.size > 10) { recs.take(10) + " ... " } else { recs })
+    logQueryStats(recs, start, query)
     recs
   }
 
   /**
    * Query for some number of records, each containing named fields.
    */
-  def mapQuery(query: String, timeoutMillis: Int = 10000): Vector[Map[String, String]] = {
+  def mapQuery(query: String, timeoutMillis: Int = 50000): Vector[Map[String, String]] = {
+    val start = System.currentTimeMillis()
     val rs = evaluate(query, timeoutMillis)
     val recs = for (
       tuple <- rs;
       rec = Map() ++ tuple.map(n => n.getName -> n.getValue.stringValue())
     ) yield rec
     rs.close
-    println(if (recs.size > 10) { recs.take(10) + " ... " } else { recs })
+    logQueryStats(recs, start, query)
     recs
+  }
+
+  def logQueryStats(recs: Vector[Object], start: Long, query: String) {
+    printHash("printing query result:", query)
+    println("Found " + recs.size + " results in " + (System.currentTimeMillis() - start) / 1000.0 + "s:")
+    println(if (recs.size > 10) { recs.take(10) + " ... " } else { recs })
+  }
+
+  val DEBUG_LOG_HASHES = false
+
+  def printHash(postfix: String, obj: Object) = {
+    if (DEBUG_LOG_HASHES) {
+      val hash = obj.hashCode
+      println(s"Hashcode $hash $postfix")
+    }
   }
 }
 

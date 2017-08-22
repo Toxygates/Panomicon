@@ -32,19 +32,19 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
 
   import t.sparql.scToSparql
 
-  val prefixes = commonPrefixes + """
-    |PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>""".stripMargin
+  val prefixes = s"$commonPrefixes PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>"
 
   //TODO case with no attributes won't work
   //TODO consider lifting up
   def sampleQuery(filter: SampleClassFilter)(implicit sf: SampleFilter): Query[Vector[Sample]] = {
     val standardPred = standardAttributes.filter(isPredicateAttribute)
-    
+
     val filterString = if(filter.constraints.isEmpty) "" else
-        s"""|  FILTER(
-        |    ${standardPred.map(a => filter.get(a).map(f =>
-              s"?$a = " + "\"" + f + "\"")).flatten.mkString(" && ")}
-        |  )""".stripMargin
+        s"""|
+            |  FILTER(
+            |    ${standardPred.map(attribute => filter.get(attribute).map(value =>
+                  s"?$attribute = " + "\"" + value + "\"")).flatten.mkString(" && ")}
+            |  )""".stripMargin
 
     val batchFilter = filter.get("batchGraph")
     val batchFilterQ = batchFilter.map("<" + _ + ">").getOrElse("?batchGraph")
@@ -53,11 +53,9 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
       s"""SELECT * WHERE {
         |  GRAPH $batchFilterQ {
         |    ?x a t:sample; rdfs:label ?id;
-        |    ${standardPred.map(a => s"t:$a ?$a").mkString("; ")} .
-        |""".stripMargin,
+        |    ${standardPred.map(a => s"t:$a ?$a").mkString("; ")} .""".stripMargin,
 
-      s"""|} ${sf.standardSampleFilters}
-        |  $filterString
+      s"""|} ${sf.standardSampleFilters} $filterString
         |  }""".stripMargin,
 
       eval = triplestore.mapQuery(_, 20000).map(x => {
@@ -71,7 +69,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
     //TODO case with no attributes
     //TODO may be able to lift up to superclass and generalise
     val hlPred = hlAttributes.filter(isPredicateAttribute)
-    
+
     val vars = hlPred.map(a => s"?$a").mkString(" ")
     val r = triplestore.mapQuery(s"""$prefixes
        |SELECT DISTINCT $vars WHERE {
@@ -90,14 +88,13 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
   def pathologyQuery(constraints: String): Vector[Pathology] = {
     val r = triplestore.mapQuery(s"""$prefixes
       |SELECT DISTINCT ?spontaneous ?grade ?topography ?finding ?image WHERE {
-      |  $constraints
-      |  ?x t:pathology ?p .
-      |  ?p local:find_id ?f; local:topo_id ?t; local:grade_id ?g;
-      |  local:spontaneous_flag ?spontaneous .
-      |  ?f local:label ?finding .
-      |  OPTIONAL { ?x t:pathology_digital_image ?image . }
-      |  OPTIONAL { ?t local:label ?topography . }
-      |  ?g local:label ?grade.
+      |  GRAPH ?gr1 { $constraints }
+      |  GRAPH ?gr2 { ?x t:pathology ?p . OPTIONAL { ?x t:pathology_digital_image ?image . } }
+      |  GRAPH ?gr3 { ?p local:find_id ?f; local:topo_id ?t;
+      |    local:grade_id ?g; local:spontaneous_flag ?spontaneous . }
+      |  GRAPH ?gr4 { ?f local:label ?finding . }
+      |  GRAPH ?gr5 { OPTIONAL { ?g local:label ?grade . } }
+      |  GRAPH ?gr6 { OPTIONAL { ?t local:label ?topography . } }
       |}""".stripMargin)
 
       //TODO clean up the 1> etc
@@ -107,6 +104,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
   }
 
   def pathologies(barcode: String): Vector[Pathology] = {
+    case class Person(age: Int, name: String)
     val r = pathologyQuery("?x rdfs:label \"" + barcode + "\". ")
     r.map(_.copy(barcode = barcode))
   }

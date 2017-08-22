@@ -14,6 +14,8 @@ trait SampleSet {
    */
   def samples: Iterable[Sample]
 
+  lazy val sampleIds = samples.map(_.sampleId).toSet
+
   /**
    * Obtain all available attributes for a given sample.
    * TODO rename method

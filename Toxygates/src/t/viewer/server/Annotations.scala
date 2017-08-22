@@ -15,7 +15,7 @@ import t.common.shared.sample.Sample
 import t.common.shared.sample.StringBioParamValue
 import t.model.sample.Attribute
 import t.platform.BioParameter
-import t.platform.ControlGroup
+import t.platform.VarianceSet
 import t.sparql.Samples
 import t.viewer.server.Conversions.asScalaSample
 import t.sparql.TriplestoreMetadata
@@ -52,14 +52,14 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
    * @param samples samples to partition
    * @param sampleSet a set that the discovered control samples have to be contained in
    */
-  def controlGroups(samples: Iterable[Sample], sampleSet: SampleSet): Map[Sample, ControlGroup] = {
+  def controlGroups(samples: Iterable[Sample], sampleSet: SampleSet): Map[Sample, VarianceSet] = {
     val controlGroups = unitHelper.samplesByControlGroup(samples)
-    val knownSamples = sampleSet.samples.map(_.sampleId).toSet
+    val knownSampleIds = sampleSet.sampleIds
     Map() ++ controlGroups.flatMap { case (cgroup, ss) =>
       var (cs, ts) = ss.partition(s => schema.isControl(s))
-      val controls = cs.map(asScalaSample).filter(s => knownSamples.contains(s.sampleId))
+      val controls = cs.map(asScalaSample).filter(s => knownSampleIds.contains(s.sampleId))
       if (!controls.isEmpty) {
-        val cg = new ControlGroup(bioParameters, sampleSet, controls)
+        val cg = new VarianceSet(sampleSet, controls)
         ss.map(s => s -> cg)
       } else {
         Seq()
@@ -122,7 +122,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
         (None,
           bioParameters.sampleParameters)
       } else {
-        (Some(new ControlGroup(bioParameters, sampleStore, controls.map(asScalaSample))),
+        (Some(new VarianceSet(sampleStore, controls.map(asScalaSample))),
           bioParameters.sampleParameters)
       }
     }
@@ -159,7 +159,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
    * Construct an Annotation from sample attributes
    * @param cg control group; used to compute upper/lower bounds for parameters
    */
-  private def fromAttributes(cg: Option[ControlGroup], sample: Sample,
+  private def fromAttributes(cg: Option[VarianceSet], sample: Sample,
     attribs: Iterable[(Attribute, Option[String])]): Annotation = {
 
     def asJDouble(d: Option[Double]) =
@@ -169,8 +169,8 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
       bp.kind match {
         case "numerical" =>
           val t = sample.get(schema.timeParameter())
-          val lb = cg.flatMap(_.lowerBound(bp.attribute, t, 1))
-          val ub = cg.flatMap(_.upperBound(bp.attribute, t, 1))
+          val lb = cg.flatMap(_.lowerBound(bp.attribute, 1))
+          val ub = cg.flatMap(_.upperBound(bp.attribute, 1))
 
           numericalAsShared(bp, asJDouble(lb), asJDouble(ub), dispVal)
         case _ => stringAsShared(bp, dispVal)

@@ -3,7 +3,7 @@ package t.common.server.sample.search
 import t.viewer.server
 import t.viewer.server.Conversions._
 import t.viewer.server.Annotations
-import t.platform.ControlGroup
+import t.platform.VarianceSet
 import t.common.shared.DataSchema
 import t.common.shared.sample.Sample
 import t.common.shared.sample.search.MatchCondition
@@ -13,11 +13,11 @@ import otg.model.sample.Attribute._
 
 object IndividualSearch extends SearchCompanion[Sample, IndividualSearch] {
 
-  protected def create(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
-    controlGroups: Map[Sample, ControlGroup],
+  protected def create(metadata: Metadata, condition: MatchCondition,
+    controlGroups: Map[Sample, VarianceSet],
     samples: Iterable[Sample],
     searchParams: Iterable[Attribute]) =
-      new IndividualSearch(schema, metadata, condition, controlGroups, samples, searchParams)
+      new IndividualSearch(metadata, condition, controlGroups, samples, searchParams)
 
   protected def formControlGroups(metadata: Metadata, annotations: Annotations) =
     annotations.controlGroups(_, metadata)
@@ -26,9 +26,9 @@ object IndividualSearch extends SearchCompanion[Sample, IndividualSearch] {
     schema.isControl(_)
 }
 
-class IndividualSearch(schema: DataSchema, metadata: Metadata, condition: MatchCondition,
-    controlGroups: Map[Sample, ControlGroup], samples: Iterable[Sample], searchParams: Iterable[Attribute])
-    extends AbstractSampleSearch[Sample](schema, metadata, condition,
+class IndividualSearch(metadata: Metadata, condition: MatchCondition,
+    controlGroups: Map[Sample, VarianceSet], samples: Iterable[Sample], searchParams: Iterable[Attribute])
+    extends AbstractSampleSearch[Sample](metadata, condition,
         controlGroups, samples, searchParams)  {
 
   protected def sampleAttributeValue(sample: Sample, attr: Attribute): Option[Double] = {
@@ -42,9 +42,6 @@ class IndividualSearch(schema: DataSchema, metadata: Metadata, condition: MatchC
       case nf: NumberFormatException => None
     }
   }
-
-  protected def time(sample: Sample): String =
-    sample.get(schema.timeParameter())
 
   /**
    * Insert additional parameter information in the sample (the parameters
