@@ -28,7 +28,6 @@ import org.apache.commons.math3.stat.inference.TTest
 
 import friedrich.util.CmdLineOptions
 import t.db._
-import t.model.sample.Helpers._
 
 /**
  * log-2 fold values constructed from the input data
@@ -47,7 +46,7 @@ abstract class FoldValueBuilder[E <: ExprValue](md: Metadata, input: RawExpressi
    */
   def values(s: Sample): Iterable[(Sample, String, E)] = {
     println("Compute control values")
-    val groups = md.attributes.treatedControlGroups(md, input.samples)
+    val groups = md.treatedControlGroups(input.samples)
     var r = Vector[(Sample, String, E)]()
 
     for ((ts, cs) <- groups;
@@ -76,14 +75,13 @@ abstract class FoldValueBuilder[E <: ExprValue](md: Metadata, input: RawExpressi
    * @param calls: calls for each barcode (probe -> call)
    * @param cbs: control barcodes.
    */
-  protected def controlMeanSample(cbs: Iterable[Sample], from: RawExpressionData): Map[String, Double] = {
+  protected def controlMeanSample(controlSamples: Iterable[Sample], from: RawExpressionData): Map[String, Double] = {
     var controlValues = Map[String, Double]()
 
     for (probe <- from.probes) {
-      val eval = cbs.map(from.expr(_, probe)).sum / cbs.size
-      val acalls = cbs.map(from.call(_, probe)).toList.distinct
-      //      val call = acalls.reduce(safeCall)
-      controlValues += (probe -> eval)
+      val usableVals = controlSamples.map(from.expr(_, probe)).flatten      
+      val mean = usableVals.sum / usableVals.size      
+      controlValues += (probe -> mean)
     }
     controlValues
   }
@@ -145,10 +143,16 @@ class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
       println(x)
       r ++= cached.probes.map(p => {
         val control = controlMean(p)
-        val foldVal = Math.log(cached.expr(x, p) / control) / l2
-        val pacall = foldPACall(foldVal, controlSamples.map(cached.call(_, p)),
-          treatedSamples.map(cached.call(_, p)))
-        (x, p, PExprValue(foldVal, pVals(p), pacall))
+        cached.expr(x, p) match {
+          case Some(v) =>
+            val foldVal = Math.log(v / control) / l2
+            val controlCalls = controlSamples.toSeq.flatMap(cached.call(_, p))
+            val treatedCalls = treatedSamples.toSeq.flatMap(cached.call(_, p))            
+            val pacall = foldPACall(foldVal, controlCalls, treatedCalls)              
+              (x, p, PExprValue(foldVal, pVals(p), pacall))    
+          case None =>
+            (x, p, PExprValue(Double.NaN, Double.NaN, 'A'))
+        }
       })
     }
     r

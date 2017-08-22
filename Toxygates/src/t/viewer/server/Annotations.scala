@@ -5,7 +5,6 @@ import java.lang.{ Double => JDouble }
 import scala.collection.JavaConversions._
 import scala.language.implicitConversions
 
-import otg.db.OTGParameterSet
 import t.BaseConfig
 import t.common.shared.DataSchema
 import t.common.shared.sample.Annotation

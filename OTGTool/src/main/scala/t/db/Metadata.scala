@@ -77,4 +77,12 @@ trait Metadata extends SampleSet {
    * of the parameters.
    */
   def mapParameter(fact: Factory, key: String, f: String => String): Metadata
+  
+  def controlSamples(s: Sample): Iterable[Sample] = ???  
+  
+  def treatedControlGroups(ss: Iterable[Sample]): Iterable[(Iterable[Sample], Iterable[Sample])] = {
+   ss.groupBy(controlSamples(_)).toSeq.map(sg => {
+        sg._2.partition(!isControl(_))
+   })
+  }
 }

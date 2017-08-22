@@ -33,34 +33,20 @@ trait Metadata extends t.db.Metadata {
   def attributes: t.model.sample.AttributeSet
   
   override def isControl(s: Sample): Boolean = parameter(s, DoseLevel).get == "Control"
+  
+  private def controlGroupKey(s: Sample) =
+      (parameter(s, ControlGroup), parameter(s, ExposureTime), parameter(s, Batch))
+    
+    override def controlSamples(s: Sample): Iterable[Sample] = {
+      val key = controlGroupKey(s)
+      samples.filter(controlGroupKey(_) == key).filter(isControl)      
+    }
 
+    override def treatedControlGroups(ss: Iterable[Sample]) = { 
+      val gs = super.treatedControlGroups(ss)
+      gs.flatMap( { case (treated, control) => {
+        treated.groupBy(_.get(DoseLevel)).values.toSeq.map(ts => (ts, control))
+      } } )
+    }
 }
 
-object OTGParameterSet extends ParameterSet {
-
-  /**
-   * Find the files that are control samples in the collection that a given barcode
-   * belongs to.
-   *
-   * TODO factor out commonalities with SparqlServiceImpl
-   */
-  override def controlSamples(metadata: t.db.Metadata, s: Sample): Iterable[Sample] = {
-    val expTime = metadata.parameter(s, ExposureTime)
-    val cgroup = metadata.parameter(s, ControlGroup)
-
-    println(expTime + " " + cgroup)
-    metadata.samples.filter(s => {
-      metadata.parameter(s, ExposureTime) == expTime &&
-      metadata.parameter(s, ControlGroup) == cgroup &&
-      metadata.isControl(s)
-    })
-  }
-
-  override def treatedControlGroups(metadata: t.db.Metadata, ss: Iterable[Sample]):
-    Iterable[(Iterable[Sample], Iterable[Sample])] = {
-    for (
-      (cs, ts) <- ss.groupBy(controlSamples(metadata, _));
-      (d, dts) <- ts.groupBy(metadata.parameter(_, DoseLevel))
-    ) yield ((dts, cs))
-  }
-}

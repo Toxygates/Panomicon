@@ -29,7 +29,6 @@ import scala.collection.{ Set => CSet }
 
 import SparqlServiceImpl.platforms
 import javax.annotation.Nullable
-import otg.db.OTGParameterSet
 import otgviewer.shared.Pathology
 import t.common.server.ScalaUtils
 import t.common.shared.AType

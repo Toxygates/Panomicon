@@ -46,8 +46,6 @@ object BatchManager extends ManagerTool {
       showHelp()
     }
 
-    startTaskRunner()
-
     args(0) match {
       case "add" =>
         val title = require(stringOption(args, "-title"),
@@ -154,14 +152,6 @@ object BatchManager extends ManagerTool {
         sampleCheck(config.data.foldDb,
           args.size > 1 && args(1) == "delete")
       case _ => showHelp()
-    }
-
-    try {
-      Thread.sleep(2000)
-      waitForTasklets()
-    } finally {
-      KCDBRegistry.closeWriters
-      stopTaskRunner()
     }
   }
 

@@ -36,10 +36,13 @@ import t.platform.affy.Converter
  */
 object PlatformManager extends ManagerTool {
   def apply(args: Seq[String])(implicit context: Context): Unit = {
-    val platforms = new Platforms(context.config.triplestore)
+
+    val manager = new PlatformManager(context)
     if (args.size < 1) {
       showHelp()
     }
+    val platforms = new Platforms(context.config.triplestore)
+    
     try {
       args(0) match {
         case "add" =>
@@ -49,11 +52,14 @@ object PlatformManager extends ManagerTool {
             "Please specify a definition file with -input")
           val defns = new PlatformDefFile(inputFile).records
           val comment = stringOption(args, "-comment").getOrElse("")
-          platforms.redefine(title, comment, false, defns) //TODO
+          addTasklets(manager.add(title, comment, inputFile, false, false))
+          
+          //Redefine only syntax
+//          platforms.redefine(title, comment, false, defns) 
         case "delete" =>
           val title = require(stringOption(args, "-title"),
             "Please specify a title with -title")
-          platforms.delete(title)
+          manager.delete(title)
         case "list" =>
           for (p <- platforms.list) {
             println(p)

@@ -15,21 +15,5 @@ object Helpers {
       
     def getByTitle(title: String): Option[Attribute] =
       Option(attr.byTitle(title))
-    
-    /**
-     * Identify the control samples belonging to a treated sample.
-     */
-    def controlSamples(metadata: Metadata, s: Sample): Iterable[Sample] = Seq()
-
-    /**
-     * Construct groups of treated and control samples.
-     * @param ss treated samples that the groups are to be based on.
-     */
-    def treatedControlGroups(metadata: Metadata, ss: Iterable[Sample]): 
-      Iterable[(Iterable[Sample], Iterable[Sample])] = {
-      ss.groupBy(controlSamples(metadata, _)).toSeq.map(sg => {
-        sg._2.partition(!metadata.isControl(_))
-      })
-    }
   }
 }
