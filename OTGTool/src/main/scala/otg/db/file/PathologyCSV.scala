@@ -18,12 +18,13 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package t.db.file
+package otg.db.file
 
 import scala.io.Source
 import otg.Pathology
 import scala.annotation.tailrec
 import scala.io.Codec
+import scala.Vector
 
 case class PathologyItem(barcode: String,
   expId: String,

@@ -21,12 +21,10 @@
 package t.db.kyotocabinet
 
 import java.nio.ByteBuffer
-import scala.annotation.tailrec
+
 import kyotocabinet.DB
-import otg.Context
 import t.db._
 import t.global.KCDBRegistry
-import t.platform.Probe
 
 object KCSeriesDB {
   val c20g = 20l * 1204 * 1204 * 1024

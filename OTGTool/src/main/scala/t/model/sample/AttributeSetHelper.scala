@@ -1,7 +1,5 @@
 package t.model.sample
 
-import t.db.Sample
-import t.db.Metadata
 import scala.collection.JavaConversions._
 
 object Helpers { 

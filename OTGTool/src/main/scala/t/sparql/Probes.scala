@@ -26,6 +26,7 @@ import t.TriplestoreConfig
 import t.db.DefaultBio
 import t.db.ProbeMap
 import t.platform._
+//TODO try to remove this dependency
 import t.sparql.secondary._
 import t.util.TempFiles
 

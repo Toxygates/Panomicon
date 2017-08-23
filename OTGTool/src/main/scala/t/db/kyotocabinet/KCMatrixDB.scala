@@ -20,16 +20,14 @@
 
 package t.db.kyotocabinet
 
-import t.db.MatrixDB
-import kyotocabinet.DB
 import java.nio.ByteBuffer
+
+import kyotocabinet.DB
 import t.db._
-import otg.Species._
-import otg.Context
-import t.platform.SimpleProbe
-import t.global.KCDBRegistry
-import t.platform.Probe
+
+import t.db.MatrixDB
 import t.db.kyotocabinet.chunk.KCChunkMatrixDB
+import t.global.KCDBRegistry
 
 object KCMatrixDB {
 

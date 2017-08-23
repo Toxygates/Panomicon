@@ -19,7 +19,6 @@
  */
 
 package t.sparql.secondary
-import otg.Species._
 import t.sparql._
 
 class DrugBank extends Triplestore with CompoundTargets {
