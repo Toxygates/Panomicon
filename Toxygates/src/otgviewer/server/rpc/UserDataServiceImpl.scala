@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition 
+ * Copyright (c) 2012-2017 Toxygates authors, National Institutes of Biomedical Innovation, Health and Nutrition
  * (NIBIOHN), Japan.
  *
  * This file is part of Toxygates.
@@ -24,7 +24,7 @@ import t.db.Metadata
 import t.common.shared.maintenance.MaintenanceException
 import t.model.sample._
 import t.model.sample.CoreParameter._
-import otg.model.sample.Attribute._
+import otg.model.sample.OTGAttribute._
 
 class UserDataServiceImpl extends t.viewer.server.rpc.UserDataServiceImpl
   with OTGServiceServlet {
@@ -33,7 +33,7 @@ class UserDataServiceImpl extends t.viewer.server.rpc.UserDataServiceImpl
   //TODO: factor out
   override protected def overviewParameters: Seq[Attribute] = {
     Seq(Organism, TestType, Repeat, Organ, Compound, DoseLevel, ExposureTime,
-      Platform, ControlGroup)    
+      Platform, ControlGroup)
   }
 
   override protected def checkMetadata(md: Metadata): Unit = {

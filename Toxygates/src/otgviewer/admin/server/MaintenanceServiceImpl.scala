@@ -23,12 +23,12 @@ package otgviewer.admin.server
 import otgviewer.server.rpc.OTGServiceServlet
 import t.model.sample._
 import t.model.sample.CoreParameter._
-import otg.model.sample.Attribute._
+import otg.model.sample.OTGAttribute._
 
 class MaintenanceServiceImpl extends t.admin.server.MaintenanceServiceImpl
   with OTGServiceServlet {
 
-  override protected def overviewParameters: Seq[Attribute] = 
+  override protected def overviewParameters: Seq[Attribute] =
     Seq(Organism, TestType, Repeat, Organ, Compound, DoseLevel,
       ExposureTime, Platform, ControlGroup)
 }

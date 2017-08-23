@@ -30,7 +30,7 @@ import t.model.shared.SampleClassHelper
 import t.sparql._
 import t.testing.TestConfig
 import otg.OTGSeries
-import otg.model.sample.Attribute._
+import otg.model.sample.OTGAttribute._
 
 @RunWith(classOf[JUnitRunner])
 class OTGSamplesTest extends TTestSuite {

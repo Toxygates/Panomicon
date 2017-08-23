@@ -1,7 +1,7 @@
 package otg.model.sample;
 
 import static t.model.sample.CoreParameter.*;
-import static otg.model.sample.Attribute.*;
+import static otg.model.sample.OTGAttribute.*;
 import java.util.*;
 
 import t.model.sample.Attribute;
@@ -36,7 +36,7 @@ public class AttributeSet extends t.model.sample.AttributeSet {
     if (defaultSet == null) {
       List<Attribute> attributes = new ArrayList<Attribute>();
       Collections.addAll(attributes, CoreParameter.values());
-      Collections.addAll(attributes, otg.model.sample.Attribute.values());
+      Collections.addAll(attributes, otg.model.sample.OTGAttribute.values());
       List<Attribute> required = new ArrayList<Attribute>();
       
       //TODO having CoreParameter.BatchGraph in required may pose problems for certain backend tools

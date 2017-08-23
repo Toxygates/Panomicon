@@ -24,7 +24,7 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.RuleType;
 import t.model.SampleClass;
-import static otg.model.sample.Attribute.*;
+import static otg.model.sample.OTGAttribute.*;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;

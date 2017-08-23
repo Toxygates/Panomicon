@@ -10,7 +10,7 @@ import org.apache.commons.math3.stat.StatUtils.mean
 import t.sample.SampleSet
 import t.model.sample.Attribute
 import t.model.sample.BasicAttribute
-import otg.model.sample.Attribute._
+import otg.model.sample.OTGAttribute._
 import scala.collection.JavaConversions._
 
 /**

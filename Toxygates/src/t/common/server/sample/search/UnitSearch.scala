@@ -9,7 +9,7 @@ import t.common.shared.sample.Unit
 import t.common.shared.sample.search.MatchCondition
 import t.db.Metadata
 import t.model.sample.Attribute
-import otg.model.sample.Attribute._
+import otg.model.sample.OTGAttribute._
 
 object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
 

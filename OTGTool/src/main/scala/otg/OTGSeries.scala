@@ -21,7 +21,7 @@
 package otg
 
 import otg.Species._
-import otg.model.sample.Attribute._
+import otg.model.sample.OTGAttribute._
 import t.db._
 import t.db.{ Series => TSeries }
 import t.model.sample.Attribute

@@ -92,7 +92,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
       importantOnly: Boolean = false): Array[Annotation] = {
 
     samples.sampleAttributeValues(querySet.map(x => x.get(CoreParameter.SampleId)),
-        List(otg.model.sample.Attribute.KidneyWeight, otg.model.sample.Attribute.LiverWeight))
+        List(otg.model.sample.OTGAttribute.KidneyWeight, otg.model.sample.OTGAttribute.LiverWeight))
 
     val cgs = querySet.groupBy(_(ControlGroupParam))
 

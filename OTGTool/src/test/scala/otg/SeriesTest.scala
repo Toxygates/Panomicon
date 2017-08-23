@@ -28,7 +28,7 @@ import t.testing.TestConfig
 import t.db.testing.TestData
 import t.TTestSuite
 import org.junit.runner.RunWith
-import otg.model.sample.Attribute.ExposureTime
+import otg.model.sample.OTGAttribute.ExposureTime
 
 import scala.collection.JavaConversions._
 

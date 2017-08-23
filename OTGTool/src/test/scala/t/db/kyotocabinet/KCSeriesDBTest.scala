@@ -25,7 +25,7 @@ import t.TTestSuite
 import t.db.testing.TestData
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import otg.model.sample.Attribute.ExposureTime
+import otg.model.sample.OTGAttribute.ExposureTime
 
 @RunWith(classOf[JUnitRunner])
 class KCSeriesDBTest extends TTestSuite {

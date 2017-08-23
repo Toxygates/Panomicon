@@ -26,8 +26,8 @@ import t.db.kyotocabinet.KCExtMatrixDB
 import t.testing.FakeContext
 import t.platform.OrthologMapping
 import t.model.sample.Attribute
-import t.model.sample.CoreParameter._ 
-import otg.model.sample.Attribute._
+import t.model.sample.CoreParameter._
+import otg.model.sample.OTGAttribute._
 
 object TestData {
   def pickOne[T](xs: Seq[T]): T = {

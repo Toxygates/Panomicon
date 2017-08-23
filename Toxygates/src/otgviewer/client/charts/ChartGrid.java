@@ -18,7 +18,7 @@
 
 package otgviewer.client.charts;
 
-import static otg.model.sample.Attribute.Organism;
+import static otg.model.sample.OTGAttribute.Organism;
 
 import java.util.List;
 

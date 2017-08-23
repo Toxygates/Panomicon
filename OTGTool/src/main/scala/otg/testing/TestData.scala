@@ -24,7 +24,7 @@ import scala.collection.JavaConversions._
 
 import otg.OTGSeries
 import otg.db.Metadata
-import otg.model.sample.Attribute._
+import otg.model.sample.OTGAttribute._
 import t.Factory
 import t.db._
 import t.db.testing.TestData.enumMaps
@@ -71,7 +71,6 @@ object TestData {
 
   //temporary
   val attribSet = otg.model.sample.AttributeSet.getDefault
-  import otg.model.sample.Attribute._
 
   val bioParams = Seq(
       BioParameter(LiverWeight, None, None, None),
