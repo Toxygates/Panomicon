@@ -4,13 +4,8 @@ import java.util.List;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-import t.common.shared.Dataset;
-import t.common.shared.Pair;
-import t.common.shared.RequestResult;
-import t.common.shared.sample.Annotation;
-import t.common.shared.sample.HasSamples;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.Unit;
+import t.common.shared.*;
+import t.common.shared.sample.*;
 import t.common.shared.sample.search.MatchCondition;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
@@ -62,6 +57,6 @@ public interface SampleServiceAsync {
   void unitSearch(SampleClass sampleClass, MatchCondition condition, int maxResults,
       AsyncCallback<RequestResult<Pair<Unit, Unit>>> callback);
 
-  void prepareUnitCSVDownload(Unit[] units, String[] parameterNames,
+  void prepareUnitCSVDownload(Unit[] units, Attribute[] attributes,
       AsyncCallback<String> callback);
 }

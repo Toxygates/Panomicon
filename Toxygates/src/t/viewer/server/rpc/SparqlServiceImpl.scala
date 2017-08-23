@@ -597,17 +597,17 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     new RequestResult(pairs, rs.size)
   }
 
-  def prepareUnitCSVDownload(units: Array[Unit], parameterNames: Array[String]):
+  def prepareUnitCSVDownload(units: Array[Unit], attributes: Array[Attribute]):
     String = {
 
     val csvFile = new CSVFile{
-      def colCount = parameterNames.size
+      def colCount = attributes.size
     	def rowCount = units.size + 1
 
       def apply(x: Int, y: Int) = if (y == 0) {
-        parameterNames(x)
+        attributes(x)
       } else {  //y > 0
-        units(y - 1).get(parameterNames(x))
+        units(y - 1).get(attributes(x))
       }
     }
 

@@ -6,13 +6,8 @@ import javax.annotation.Nullable;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 
-import t.common.shared.Dataset;
-import t.common.shared.Pair;
-import t.common.shared.RequestResult;
-import t.common.shared.sample.Annotation;
-import t.common.shared.sample.HasSamples;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.Unit;
+import t.common.shared.*;
+import t.common.shared.sample.*;
 import t.common.shared.sample.search.MatchCondition;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
@@ -139,5 +134,5 @@ public interface SampleService extends RemoteService {
       int maxResults)
       throws TimeoutException;
 
-  String prepareUnitCSVDownload(Unit[] units, String[] parameterNames) throws TimeoutException;
+  String prepareUnitCSVDownload(Unit[] units, Attribute[] attributes) throws TimeoutException;
 }

@@ -279,12 +279,8 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   }
 
   private void prepareUnitCVSDownload() {
-    List<String> attributeIds = new ArrayList<String>();
-    for (Attribute attrib : unitTableHelper.allAttributes()) {
-      attributeIds.add(attrib.id());
-    }
     SampleSearchScreen.this.sampleService.prepareUnitCSVDownload(unitSearch.searchResult(),
-        attributeIds.toArray(new String[0]), new PendingAsyncCallback<String>(SampleSearchScreen.this,
+        unitTableHelper.allAttributes(), new PendingAsyncCallback<String>(SampleSearchScreen.this,
             "Unable to prepare the data for download,") {
           @Override
           public void handleSuccess(String url) {
