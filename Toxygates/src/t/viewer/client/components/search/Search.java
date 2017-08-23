@@ -125,7 +125,7 @@ public abstract class Search<Entity, Container> {
       public void onSuccess(Annotation[] result) {
         addParameter(attribute, result);
         fetchedAttributes.add(attribute);
-        helper.gotDataForKey(attribute.id());
+        helper.gotDataForAttribute(attribute);
         helper.cellTable().redraw();
       }
 

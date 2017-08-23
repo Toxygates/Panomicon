@@ -1,23 +1,20 @@
 package t.viewer.client.components.search;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import t.common.client.Utils;
-import t.common.client.components.SelectionTable;
-import t.common.shared.sample.Unit;
-import t.common.shared.sample.search.MatchCondition;
-import t.model.sample.Attribute;
-import t.viewer.client.table.TooltipColumn;
+import java.util.*;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
+
+import otg.model.sample.OTGAttribute;
+import t.common.client.Utils;
+import t.common.client.components.SelectionTable;
+import t.common.shared.sample.Unit;
+import t.common.shared.sample.search.MatchCondition;
+import t.model.sample.Attribute;
+import t.model.sample.CoreParameter;
+import t.viewer.client.table.TooltipColumn;
 
 /**
  * Manages a table for displaying the results of a sample/unit search.
@@ -26,8 +23,6 @@ public abstract class ResultTable<T> {
   public interface Delegate {
     void finishedSettingUpTable();
     ImageResource inspectCellImage();
-
-    String humanReadableTitleForColumn(String id);
     void displayDetailsForEntry(Unit unit);
   }
 
@@ -35,18 +30,19 @@ public abstract class ResultTable<T> {
     @Override
     protected void initTable(CellTable<T> table) {}
   };
-  private Map<String, KeyColumn<T>> keyColumns = new HashMap<String, KeyColumn<T>>();
-  private List<Column<T, ?>> nonKeyColumns = new ArrayList<Column<T, ?>>();
-  private List<String> additionalKeys = new LinkedList<String>();
-  private List<String> conditionKeys = new ArrayList<String>();
+  private Map<Attribute, AttributeColumn<T>> attributeColumns = new HashMap<Attribute, AttributeColumn<T>>();
+  private List<Column<T, ?>> nonAttributeColumns = new ArrayList<Column<T, ?>>();
+  private List<Attribute> conditionAttributes = new ArrayList<Attribute>();
+  private List<Attribute> additionalAttributes = new LinkedList<Attribute>();
   protected Delegate delegate;
 
-  protected abstract KeyColumn<T> makeColumn(String key, boolean numeric);
+  protected abstract AttributeColumn<T> makeColumn(Attribute attribute, boolean numeric);
 
   // Could also have macro parameters here, such as organism, tissue etc
   // but currently the search is always constrained on those parameters
-  private final String[] classKeys = {"compound_name", "dose_level", "exposure_time"};
-  private final String[] adhocKeys = {"sample_id"};
+  private final Attribute[] classAttributes =
+      {OTGAttribute.Compound, OTGAttribute.DoseLevel, OTGAttribute.ExposureTime};
+  private final Attribute[] adhocAttributes = {CoreParameter.SampleId};
 
   public ResultTable(Delegate delegate) {
     this.delegate = delegate;
@@ -60,88 +56,88 @@ public abstract class ResultTable<T> {
     return selectionTable.table();
   }
 
-  public String[] allKeys() {
-    List<String> keys = new ArrayList<String>();
-    keys.addAll(Arrays.asList(requiredKeys()));
-    keys.addAll(Arrays.asList(nonRequiredKeys()));
+  public Attribute[] allAttributes() {
+    List<Attribute> attributes = new ArrayList<Attribute>();
+    attributes.addAll(Arrays.asList(requiredAttributes()));
+    attributes.addAll(Arrays.asList(nonRequiredAttributes()));
 
-    return keys.toArray(new String[0]);
+    return attributes.toArray(new Attribute[0]);
   }
 
   /**
-   * Keys that cannot be hidden
+   * Attributes that cannot be hidden
    */
-  public String[] requiredKeys() {
-    List<String> keys = new ArrayList<String>();
-    keys.addAll(Arrays.asList(classKeys()));
-    keys.addAll(Arrays.asList(adhocKeys()));
-    keys.addAll(conditionKeys);
+  public Attribute[] requiredAttributes() {
+    List<Attribute> attributes = new ArrayList<Attribute>();
+    attributes.addAll(Arrays.asList(classAttributes()));
+    attributes.addAll(Arrays.asList(adhocAttributes()));
+    attributes.addAll(conditionAttributes);
 
-    return keys.toArray(new String[0]);
+    return attributes.toArray(new Attribute[0]);
   }
 
   /**
-   * Keys that can be hidden
+   * Attributes that can be hidden
    */
-  public String[] nonRequiredKeys() {
-    return additionalKeys.toArray(new String[0]);
+  public Attribute[] nonRequiredAttributes() {
+    return additionalAttributes.toArray(new Attribute[0]);
   }
 
   /**
-   * Keys that identify the sample class
+   * Attributes that identify the sample class
    */
-  protected String[] classKeys() {
-    return classKeys;
+  protected Attribute[] classAttributes() {
+    return classAttributes;
   }
 
   /**
-   * Other required keys
+   * Other required Attributes
    */
-  protected String[] adhocKeys() {
-    return adhocKeys;
+  protected Attribute[] adhocAttributes() {
+    return adhocAttributes;
   }
 
-  private void setConditionKeys(MatchCondition condition) {
-    assert(conditionKeys.size() == 0);  
+  private void setConditionAttributes(MatchCondition condition) {
+    assert(conditionAttributes.size() == 0);  
     for (Attribute attr : condition.neededParameters()) {
-      conditionKeys.add(attr.id()); 
+      conditionAttributes.add(attr);
     }
   }
 
-  public void addExtraColumn(String key, boolean isNumeric, boolean waitForData) {
-    addNewColumn(key, isNumeric, waitForData);
-    additionalKeys.add(key);
+  public void addExtraColumn(Attribute attribute, boolean isNumeric, boolean waitForData) {
+    addNewColumn(attribute, isNumeric, waitForData);
+    additionalAttributes.add(attribute);
   }
 
-  private void addNewColumn(String key, boolean isNumeric, boolean waitForData) {
-    KeyColumn<T> column = makeColumn(key, isNumeric);
+  private void addNewColumn(Attribute attribute, boolean isNumeric, boolean waitForData) {
+    AttributeColumn<T> column = makeColumn(attribute, isNumeric);
     if (waitForData) {
       column.startWaitingForData();
     }
-    addKeyColumn(column, key);
+    addAttributeColumn(column, attribute);
   }
 
-  protected void addKeyColumn(KeyColumn<T> column, String id) {
-    keyColumns.put(id, column);
-    cellTable().addColumn(column, delegate.humanReadableTitleForColumn(id));
+  protected void addAttributeColumn(AttributeColumn<T> column, Attribute attribute) {
+    attributeColumns.put(attribute, column);
+    cellTable().addColumn(column, attribute.title());
   }
 
-  protected void addNonKeyColumn(Column<T, ?> column, String title) {
-    nonKeyColumns.add(column);
+  protected void addNonAttributeColumn(Column<T, ?> column, String title) {
+    nonAttributeColumns.add(column);
     cellTable().addColumn(column, title);
   }
 
   public void setupTable(T[] entries, MatchCondition condition) {
-    setConditionKeys(condition);
+    setConditionAttributes(condition);
 
-    for (String key : classKeys()) {
-      addNewColumn(key, false, false);
+    for (Attribute attribute : classAttributes()) {
+      addNewColumn(attribute, false, false);
     }
 
     addAdhocColumns();
 
-    for (String key : conditionKeys) {
-      addNewColumn(key, true, false);
+    for (Attribute attribute : conditionAttributes) {
+      addNewColumn(attribute, true, false);
     }
 
     cellTable().setRowData(Arrays.asList(entries));
@@ -150,39 +146,39 @@ public abstract class ResultTable<T> {
   }
 
   protected void addAdhocColumns() {
-    for (String key : adhocKeys()) {
-      addKeyColumn(makeColumn(key, false), key);
+    for (Attribute attribute : adhocAttributes()) {
+      addAttributeColumn(makeColumn(attribute, false), attribute);
     }
   }
 
-  public void removeKeyColumn(String id) {
-    Column<T, ?> column = keyColumns.get(id);
+  public void removeAttributeColumn(Attribute attribute) {
+    Column<T, ?> column = attributeColumns.get(attribute);
     cellTable().removeColumn(column);
-    keyColumns.remove(id);
+    attributeColumns.remove(attribute);
   }
 
-  public void gotDataForKey(String key) {
-    keyColumns.get(key).stopWaitingForData();
+  public void gotDataForAttribute(Attribute attribute) {
+    attributeColumns.get(attribute).stopWaitingForData();
   }
 
   public void clear() {
-    for (String key : keyColumns.keySet()) {
-      cellTable().removeColumn(keyColumns.get(key));
+    for (Attribute attribute : attributeColumns.keySet()) {
+      cellTable().removeColumn(attributeColumns.get(attribute));
     }
-    keyColumns.clear();
-    for (Column<T, ?> column : nonKeyColumns) {
+    attributeColumns.clear();
+    for (Column<T, ?> column : nonAttributeColumns) {
       cellTable().removeColumn(column);
     }
-    nonKeyColumns.clear();
-    conditionKeys.clear();
-    additionalKeys.clear();
+    nonAttributeColumns.clear();
+    conditionAttributes.clear();
+    additionalAttributes.clear();
   }
 
   /**
    * A column for displaying an attribute value for a sample or unit.
    */
-  protected abstract class KeyColumn<S> extends TooltipColumn<S> {
-    protected String keyName;
+  protected abstract class AttributeColumn<S> extends TooltipColumn<S> {
+    protected Attribute attribute;
     protected boolean isNumeric;
 
     private boolean waitingForData = false;
@@ -194,14 +190,14 @@ public abstract class ResultTable<T> {
       waitingForData = false;
     }
 
-    public KeyColumn(Cell<String> cell, String key, boolean numeric) {
+    public AttributeColumn(Cell<String> cell, Attribute attrib, boolean numeric) {
       super(cell);
-      keyName = key;
+      attribute = attrib;
       isNumeric = numeric;
     }
 
-    public String key() {
-      return keyName;
+    public Attribute attribute() {
+      return attribute;
     }
 
     protected abstract String getData(S s);

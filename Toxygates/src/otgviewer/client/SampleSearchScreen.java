@@ -2,6 +2,13 @@ package otgviewer.client;
 
 import java.util.*;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.components.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
@@ -11,13 +18,6 @@ import t.viewer.client.components.search.*;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.shared.AppInfo;
-
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
 
 public class SampleSearchScreen extends Screen implements Search.Delegate, ResultTable.Delegate {
   public static final String key = "search";
@@ -171,8 +171,8 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
       setEnabled(enabled);
     }
 
-    public String id() {
-      return attribute.id();
+    public Attribute attribute() {
+      return attribute;
     }
 
     @Override
@@ -188,9 +188,9 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
           currentSearch.fetchParameter(attribute);
           waitForData = true;
         }
-        currentSearch.helper().addExtraColumn(attribute.id(), attribute.isNumerical(), waitForData);
+        currentSearch.helper().addExtraColumn(attribute, attribute.isNumerical(), waitForData);
       } else {
-        currentSearch.helper().removeKeyColumn(attribute.id());
+        currentSearch.helper().removeAttributeColumn(attribute);
       }
     }
   }
@@ -279,8 +279,12 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   }
 
   private void prepareUnitCVSDownload() {
+    List<String> attributeIds = new ArrayList<String>();
+    for (Attribute attrib : unitTableHelper.allAttributes()) {
+      attributeIds.add(attrib.id());
+    }
     SampleSearchScreen.this.sampleService.prepareUnitCSVDownload(unitSearch.searchResult(),
-        unitTableHelper.allKeys(), new PendingAsyncCallback<String>(SampleSearchScreen.this,
+        attributeIds.toArray(new String[0]), new PendingAsyncCallback<String>(SampleSearchScreen.this,
             "Unable to prepare the data for download,") {
           @Override
           public void handleSuccess(String url) {
@@ -320,25 +324,20 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   }
 
   @Override
-  public String humanReadableTitleForColumn(String id) { 
-    return appInfo.attributes().byId(id).title();    
-  }
-
-  @Override
   public void finishedSettingUpTable() {
     currentSearch.helper().selectionTable().setVisible(true);
     currentSearch.helper().selectionTable().clearSelection();
 
-    HashSet<String> requiredParameterIds =
-        new HashSet<String>(Arrays.asList(currentSearch.helper().requiredKeys()));
-    HashSet<String> nonRequiredParameterIds =
-        new HashSet<String>(Arrays.asList(currentSearch.helper().nonRequiredKeys()));
+    HashSet<Attribute> requiredAttributes =
+        new HashSet<Attribute>(Arrays.asList(currentSearch.helper().requiredAttributes()));
+    HashSet<Attribute> nonRequiredAttributes =
+        new HashSet<Attribute>(Arrays.asList(currentSearch.helper().nonRequiredAttributes()));
 
     for (ParameterTickItem item : parameterMenuItems) {
-      if (requiredParameterIds.contains(item.id())) {
+      if (requiredAttributes.contains(item.attribute())) {
         item.setState(true);
         item.setEnabled(false);
-      } else if (nonRequiredParameterIds.contains(item.id())) {
+      } else if (nonRequiredAttributes.contains(item.attribute())) {
         item.setState(true);
         item.setEnabled(true);
       } else {
