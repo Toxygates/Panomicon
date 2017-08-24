@@ -24,7 +24,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 import otg.OTGContext
-import otg.Species.Rat
+import t.platform.Species.Rat
 import t.TTestSuite
 import t.model.shared.SampleClassHelper
 import t.sparql._

@@ -1,6 +1,6 @@
 package otgviewer.server
 
-import otg.Species._
+import t.platform.Species._
 import otg.sparql.Probes
 import t.common.shared.AType
 import t.model.SampleClass

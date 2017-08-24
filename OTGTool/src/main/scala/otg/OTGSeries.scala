@@ -20,7 +20,7 @@
 
 package otg
 
-import otg.Species._
+import t.platform.Species._
 import otg.model.sample.Attribute._
 import t.db._
 import t.db.{ Series => TSeries }

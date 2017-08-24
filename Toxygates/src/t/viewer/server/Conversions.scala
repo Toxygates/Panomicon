@@ -28,10 +28,11 @@ import t.db.{ExprValue => TExprValue}
 import t.common.shared.FirstKeyedPair
 import t.common.shared.sample.ExpressionValue
 import t.common.shared.sample.Sample
+import t.platform.Species
 
 object Conversions {
-	implicit def asSpecies(sc: t.model.SampleClass): otg.Species.Species =
-	  otg.Species.withName(sc.get("organism"))
+	implicit def asSpecies(sc: t.model.SampleClass): Species.Species =
+	  Species.withName(sc.get("organism"))
 
 	def asJavaSample(s: t.db.Sample): Sample =
     new Sample(s.sampleId, s.sampleClass)

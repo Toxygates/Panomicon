@@ -24,7 +24,7 @@ import scala.Array.canBuildFrom
 import scala.collection.{ Set => CSet }
 
 import otg.OTGContext
-import otg.Species.Human
+import t.platform.Species.Human
 import otg.sparql._
 import otg.sparql.Probes
 import otgviewer.shared.OTGSchema

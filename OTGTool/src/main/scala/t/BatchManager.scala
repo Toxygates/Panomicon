@@ -23,7 +23,6 @@ package t
 import scala.Vector
 import scala.collection.JavaConversions._
 
-import otg.sparql.OTGSamples
 import t.db._
 import t.db.file.CSVRawExpressionData
 import t.db.file.PFoldValueBuilder
@@ -352,8 +351,7 @@ class BatchManager(context: Context) {
     new Tasklet("Insert sample RDF data") {
       def run() {
         val tempFiles = new TempFiles()
-        val samples = new OTGSamples(config)
-        val summaries = sb.enums.map(e => AttribValueSummary(samples, e))
+        val summaries = sb.enums.map(e => AttribValueSummary(context.samples, e))
 
         try {
           //TODO check existence of samples

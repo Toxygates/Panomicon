@@ -18,7 +18,7 @@
  * along with Toxygates. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package otg
+package t.platform
 
 object Species extends Enumeration(0) {
   type Species = Value

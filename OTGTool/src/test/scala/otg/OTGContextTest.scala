@@ -22,7 +22,7 @@ package otg
 
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import otg.Species._
+import t.platform.Species._
 import t.testing.TestConfig
 import t.TTestSuite
 import org.junit.runner.RunWith

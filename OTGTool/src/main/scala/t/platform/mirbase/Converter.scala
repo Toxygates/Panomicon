@@ -1,7 +1,7 @@
 package t.platform.mirbase
 
 import scala.io.Source
-import otg.Species
+import t.platform.Species
 import scala.language.postfixOps
 
 case class MirnaRecord(id: String, accession: String, species: Species.Species,

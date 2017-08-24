@@ -24,12 +24,10 @@ import t.db.kyotocabinet.KCIndexDB
 import t.global.KCDBRegistry
 import t.platform.PlatformDefFile
 import t.platform.affy.Converter
-
 import t.sparql.Platforms
 import t.sparql.Probes
 import t.sparql.TRDF
 import t.util.TempFiles
-import t.platform.affy.Converter
 
 /**
  * Platform/probe management CLI

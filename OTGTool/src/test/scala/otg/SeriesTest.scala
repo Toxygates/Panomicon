@@ -23,7 +23,7 @@ package otg
 import t.db._
 import t.db.kyotocabinet._
 import org.scalatest.junit.JUnitRunner
-import otg.Species._
+import t.platform.Species._
 import t.testing.TestConfig
 import t.db.testing.TestData
 import t.TTestSuite

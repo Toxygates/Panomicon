@@ -19,10 +19,10 @@
  */
 
 package t.sparql.secondary
-import otg.Species._
 import t.sparql.Triplestore
 import t.sparql._
-import otg.Species
+import t.platform.Species._
+import t.platform.Species
 
 trait CompoundTargets {
   def targetsFor(compound: Compound): Iterable[Protein]

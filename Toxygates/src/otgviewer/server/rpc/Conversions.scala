@@ -24,7 +24,8 @@ import scala.collection.JavaConversions._
 import scala.language.implicitConversions
 
 import t.SeriesRanking
-import otg.Species
+import t.platform.Species
+import t.platform.Species._
 import otgviewer.shared.Pathology
 import otgviewer.shared.RankRule
 import otgviewer.shared.Series
@@ -32,7 +33,6 @@ import t.common.shared.sample._
 import otg.SeriesRanking
 import otg.Context
 import otgviewer.shared.RuleType
-import otg.Species._
 import otg.OTGSeries
 import t.common.shared.Pair
 import t.common.shared.sample.Sample

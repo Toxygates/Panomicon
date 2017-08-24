@@ -20,7 +20,7 @@
 
 package t.testing
 
-import otg.Species._
+import t.platform.Species._
 import t.db._
 import t.db.kyotocabinet.KCExtMatrixDB
 import t.db.kyotocabinet.KCMatrixDB
