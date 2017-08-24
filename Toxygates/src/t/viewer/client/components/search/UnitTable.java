@@ -7,6 +7,8 @@ import com.google.gwt.user.cellview.client.Column;
 
 import t.common.client.ImageClickCell;
 import t.common.shared.sample.Unit;
+import t.model.sample.Attribute;
+import t.model.sample.CoreParameter;
 
 public class UnitTable extends ResultTable<Unit> {
   private TextCell textCell = new TextCell();
@@ -15,32 +17,32 @@ public class UnitTable extends ResultTable<Unit> {
     super(delegate);
   }
 
-  protected class UnitKeyColumn extends KeyColumn<Unit> {
-    public UnitKeyColumn(Cell<String> cell, String key, boolean numeric) {
-      super(cell, key, numeric);
+  protected class UnitAttributeColumn extends AttributeColumn<Unit> {
+    public UnitAttributeColumn(Cell<String> cell, Attribute attribute, boolean numeric) {
+      super(cell, attribute, numeric);
     }
 
     @Override
     public String getData(Unit unit) {
-      return unit.get(keyName);
+      return unit.get(attribute);
     }
   }
 
   @Override
-  protected KeyColumn<Unit> makeColumn(String key, boolean numeric) {
-    return new UnitKeyColumn(textCell, key, numeric);
+  protected AttributeColumn<Unit> makeColumn(Attribute attribute, boolean numeric) {
+    return new UnitAttributeColumn(textCell, attribute, numeric);
   }
 
   @Override
   protected void addAdhocColumns() {
-    addKeyColumn(new UnitKeyColumn(textCell, "sample_id", false) {
+    addAttributeColumn(new UnitAttributeColumn(textCell, CoreParameter.SampleId, false) {
       @Override
       public String getValue(Unit unit) {
         return getData(unit).split("\\s*/\\s*")[0];
       }
-    }, "sample_id");
+    }, CoreParameter.SampleId);
     
-    addNonKeyColumn(new ToolColumn(new InspectCell()), "");
+    addNonAttributeColumn(new ToolColumn(new InspectCell()), "");
   }
 
   class InspectCell extends ImageClickCell<Unit> {

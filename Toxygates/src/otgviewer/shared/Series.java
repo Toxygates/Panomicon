@@ -18,7 +18,7 @@
 
 package otgviewer.shared;
 
-import static otg.model.sample.Attribute.*;
+import static otg.model.sample.OTGAttribute.*;
 
 import java.io.Serializable;
 

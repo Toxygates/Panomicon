@@ -3,6 +3,7 @@ package t.viewer.client.components.search;
 import com.google.gwt.cell.client.TextCell;
 
 import t.common.shared.sample.Sample;
+import t.model.sample.Attribute;
 
 public class SampleTable extends ResultTable<Sample> {
   private TextCell textCell = new TextCell();
@@ -12,11 +13,11 @@ public class SampleTable extends ResultTable<Sample> {
   }
 
   @Override
-  protected KeyColumn<Sample> makeColumn(String key, boolean numeric) {
-    return new KeyColumn<Sample>(textCell, key, numeric) {
+  protected AttributeColumn<Sample> makeColumn(Attribute attribute, boolean numeric) {
+    return new AttributeColumn<Sample>(textCell, attribute, numeric) {
       @Override
       public String getData(Sample sample) {
-        return sample.get(keyName);
+        return sample.get(attribute);
       }
     };
   }

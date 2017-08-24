@@ -17,7 +17,7 @@ import t.viewer.server.Conversions._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import t.common.shared.sample.StringBioParamValue
-import otg.model.sample.Attribute._
+import otg.model.sample.OTGAttribute._
 import t.common.server.sample.search.AbstractSampleSearch
 import t.model.sample.BasicAttribute
 

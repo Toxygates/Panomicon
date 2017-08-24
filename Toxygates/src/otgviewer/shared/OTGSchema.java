@@ -26,7 +26,7 @@ import t.common.shared.AType;
 import t.common.shared.DataSchema;
 import t.common.shared.ValueType;
 import t.model.SampleClass;
-import static otg.model.sample.Attribute.*;
+import static otg.model.sample.OTGAttribute.*;
 
 @SuppressWarnings("serial")
 public class OTGSchema extends DataSchema {

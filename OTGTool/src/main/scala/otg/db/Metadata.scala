@@ -22,7 +22,7 @@ package otg.db
 
 import t.db.ParameterSet
 import t.db.Sample
-import otg.model.sample.Attribute._
+import otg.model.sample.OTGAttribute._
 import t.model.sample.CoreParameter._
 
 /**
@@ -31,18 +31,18 @@ import t.model.sample.CoreParameter._
 trait Metadata extends t.db.Metadata {
 
   def attributes: t.model.sample.AttributeSet
-  
+
   override def isControl(s: Sample): Boolean = parameter(s, DoseLevel).get == "Control"
-  
+
   private def controlGroupKey(s: Sample) =
       (parameter(s, ControlGroup), parameter(s, ExposureTime), parameter(s, Batch))
-    
+
     override def controlSamples(s: Sample): Iterable[Sample] = {
       val key = controlGroupKey(s)
-      samples.filter(controlGroupKey(_) == key).filter(isControl)      
+      samples.filter(controlGroupKey(_) == key).filter(isControl)
     }
 
-    override def treatedControlGroups(ss: Iterable[Sample]) = { 
+    override def treatedControlGroups(ss: Iterable[Sample]) = {
       val gs = super.treatedControlGroups(ss)
       gs.flatMap( { case (treated, control) => {
         treated.groupBy(_.get(DoseLevel)).values.toSeq.map(ts => (ts, control))

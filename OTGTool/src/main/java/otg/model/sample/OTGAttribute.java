@@ -1,13 +1,16 @@
 package otg.model.sample;
 
-import static otg.model.sample.Section.*;
+import static otg.model.sample.Section.OrganWeight;
+import static otg.model.sample.Section.SampleDetails;
+
+import t.model.sample.Attribute;
 
 /**
  * Attributes available in Open TG-GATEs.
  * This enum defines essential attributes (needed in code) only.
  * Additional attributes are defined in the triplestore.
  */
-public enum Attribute implements t.model.sample.Attribute {  
+public enum OTGAttribute implements Attribute {
   DoseLevel("dose_level", "Dose level", false, SampleDetails),
   Individual("individual_id", "Individual", false, SampleDetails), 
   ExposureTime("exposure_time", "Exposure Time", false, SampleDetails),
@@ -29,14 +32,14 @@ public enum Attribute implements t.model.sample.Attribute {
   boolean isNumerical;
   private String section;
   
-  Attribute(String id, String title, boolean numerical, String section) {
+  OTGAttribute(String id, String title, boolean numerical, String section) {
     this.id = id;
     this.title = title;
     this.isNumerical = numerical;
     this.section = section;
   }
   
-  Attribute(String id, String title, boolean numerical, Section sec) {
+  OTGAttribute(String id, String title, boolean numerical, Section sec) {
     this(id, title, numerical, sec.title);
   }
   

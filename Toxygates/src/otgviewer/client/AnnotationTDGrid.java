@@ -25,7 +25,7 @@ import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
-import static otg.model.sample.Attribute.*;
+import static otg.model.sample.OTGAttribute.*;
 import t.viewer.client.Analytics;
 
 import com.google.gwt.event.dom.client.ClickEvent;
