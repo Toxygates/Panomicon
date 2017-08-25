@@ -96,26 +96,25 @@ class CSVRawExpressionData(exprFiles: Iterable[String],
     })
 
     var r = Map[Sample, CMap[String, T]]()
-    var col = scala.collection.mutable.Map[String, T]()
     for (c <- 1 until columns.size;
       sampleId = unquote(columns(c));
       sample = Sample(sampleId);
       if ss.contains(sample)) {
 
-      val pr =
-        col ++= raw.map(r => {
-          val pr = unquote(r(0))
-          try {
-            pr -> extract(r(c))
-          } catch {
-            case nfe: NumberFormatException =>
-              val wmsg = "Number format error: unable to parse string '" + r(c) + "' for probe " +
-                pr + " and sample " + sampleId
-              parseWarningHandler(wmsg)
-              throw nfe
-          }
-        })
-        r += sample -> col
+      var col = scala.collection.mutable.Map[String, T]()
+      col ++= raw.map(r => {
+        val pr = unquote(r(0))
+        try {
+          pr -> extract(r(c))
+        } catch {
+          case nfe: NumberFormatException =>
+            val wmsg = "Number format error: unable to parse string '" + r(c) + "' for probe " +
+              pr + " and sample " + sampleId
+            parseWarningHandler(wmsg)
+            throw nfe
+        }
+      })
+      r += sample -> col
     }
 
     r
