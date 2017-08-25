@@ -18,11 +18,7 @@
 
 package otgviewer.client.components.groupdef;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
@@ -31,9 +27,7 @@ import otgviewer.client.TimeDoseGrid;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import t.common.shared.Pair;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.Unit;
+import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
@@ -43,14 +37,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Anchor;
-import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * A time/dose grid for defining and editing sample groups in terms of time/dose combinations for

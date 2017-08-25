@@ -20,15 +20,18 @@ package otgviewer.client.components.groupdef;
 
 import static t.common.client.Utils.makeScrolled;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
+
+import otgviewer.client.components.*;
+import otgviewer.client.components.compoundsel.CompoundSelector;
+import t.common.client.components.SelectionTable;
+import t.common.shared.*;
+import t.common.shared.sample.*;
+import t.model.SampleClass;
+import t.viewer.client.Analytics;
+import t.viewer.client.Utils;
+import t.viewer.client.rpc.SampleServiceAsync;
 
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.TextButtonCell;
@@ -36,39 +39,9 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.cellview.client.RowStyles;
-import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.SplitLayoutPanel;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
-
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.GroupMaker;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import otgviewer.client.components.StorageParser;
-import otgviewer.client.components.compoundsel.CompoundSelector;
-import t.common.client.components.SelectionTable;
-import t.common.shared.DataSchema;
-import t.common.shared.Dataset;
-import t.common.shared.Pair;
-import t.common.shared.SharedUtils;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleClassUtils;
-import t.common.shared.sample.SampleColumn;
-import t.common.shared.sample.Unit;
-import t.model.SampleClass;
-import t.viewer.client.Analytics;
-import t.viewer.client.Utils;
-import t.viewer.client.rpc.SampleServiceAsync;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * This widget is intended to help visually define and modify groups of samples. The main dose/time

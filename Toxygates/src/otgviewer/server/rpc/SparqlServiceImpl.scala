@@ -21,34 +21,24 @@
 package otgviewer.server.rpc
 
 import scala.Array.canBuildFrom
-import scala.collection.{ Set => CSet }
 
 import otg.OTGContext
 import t.platform.Species.Human
 import otg.sparql._
-import otg.sparql.Probes
-import otgviewer.shared.OTGSchema
 import otgviewer.shared.Pathology
-import t.BaseConfig
-import t.DataConfig
-import t.common.server.ScalaUtils.gracefully
 import t.common.shared.AType
-import t.model.SampleClass
 import t.common.shared.sample._
+import t.model.SampleClass
 import t.platform.Probe
 import t.sparql._
-import t.sparql.TriplestoreMetadata
 import t.sparql.secondary._
 import t.viewer.server.Configuration
 import t.viewer.server.Conversions._
+import t.viewer.server.intermine.IntermineConnector
+import t.viewer.server.intermine.Intermines
+import t.viewer.shared.AppInfo
 import t.viewer.shared.Association
 import t.viewer.shared.TimeoutException
-import t.viewer.shared.AppInfo
-import otgviewer.server.AssociationResolver
-
-import t.model.SampleClass
-import t.viewer.server.intermine.Intermines
-import t.viewer.server.intermine.IntermineConnector
 
 /**
  * This servlet is reponsible for making queries to RDF stores.

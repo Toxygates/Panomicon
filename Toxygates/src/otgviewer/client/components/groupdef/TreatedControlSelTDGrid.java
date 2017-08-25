@@ -23,8 +23,7 @@ import otgviewer.client.components.Screen;
 import t.common.shared.sample.Unit;
 
 /**
- * A SelTDGrid that displays counts of both treated and control samples.
- *
+ * A SelectionTDGrid that displays counts of both treated and control samples.
  */
 public class TreatedControlSelTDGrid extends SelectionTDGrid {
 

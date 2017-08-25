@@ -1,24 +1,16 @@
 package otgviewer.server
 
 import t.platform.Species._
+import otg.sparql.OTGSamples
 import otg.sparql.Probes
 import t.common.shared.AType
 import t.model.SampleClass
 import t.platform.Probe
 import t.sparql._
-import t.sparql.SampleFilter
-import t.sparql.secondary.B2RKegg
-import t.sparql.secondary.ChEMBL
-import t.sparql.secondary.Compound
-import t.sparql.secondary.CompoundTargets
-import t.sparql.secondary.DrugBank
-import t.sparql.secondary.Protein
-import t.sparql.secondary.Uniprot
-import t.viewer.server.Conversions._
-import otg.sparql.OTGSamples
-import t.viewer.server.intermine.TargetmineColumns
-import t.viewer.server.intermine.IntermineColumn
+import t.sparql.secondary._
+import t.sparql.toBioMap
 import t.viewer.server.intermine.IntermineConnector
+import t.viewer.server.intermine.TargetmineColumns
 
 /**
  * Association resolver for Open TG-GATEs-specific associations.

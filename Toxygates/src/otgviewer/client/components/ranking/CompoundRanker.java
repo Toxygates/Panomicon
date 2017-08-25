@@ -18,17 +18,10 @@
 
 package otgviewer.client.components.ranking;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
-import otgviewer.client.GeneOracle;
-import otgviewer.client.Resources;
-import otgviewer.client.StringListsStoreHelper;
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.ListChooser;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
+import otgviewer.client.*;
+import otgviewer.client.components.*;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.shared.RankRule;
 import t.common.shared.DataSchema;
@@ -41,12 +34,7 @@ import t.viewer.client.rpc.SparqlServiceAsync;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * This widget is an UI for defining compound ranking rules. The actual ranking is requested by a

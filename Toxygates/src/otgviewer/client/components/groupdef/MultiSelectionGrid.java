@@ -18,13 +18,7 @@
 
 package otgviewer.client.components.groupdef;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
@@ -32,9 +26,7 @@ import javax.annotation.Nullable;
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
-import t.common.shared.DataSchema;
-import t.common.shared.Pair;
-import t.common.shared.SharedUtils;
+import t.common.shared.*;
 import t.common.shared.sample.SampleClassUtils;
 import t.common.shared.sample.Unit;
 import t.model.SampleClass;

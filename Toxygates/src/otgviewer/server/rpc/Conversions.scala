@@ -23,22 +23,15 @@ package otgviewer.server.rpc
 import scala.collection.JavaConversions._
 import scala.language.implicitConversions
 
-import t.SeriesRanking
-import t.platform.Species
-import t.platform.Species._
+import otg.Context
+import otg.OTGSeries
 import otgviewer.shared.Pathology
 import otgviewer.shared.RankRule
 import otgviewer.shared.Series
+import t.SeriesRanking
 import t.common.shared.sample._
-import otg.SeriesRanking
-import otg.Context
-import otgviewer.shared.RuleType
-import otg.OTGSeries
-import t.common.shared.Pair
-import t.common.shared.sample.Sample
-
 import t.db.MatrixContext
-import t.common.shared.FirstKeyedPair
+import otgviewer.shared.RuleType
 
 /**
  * Conversions between Scala and Java types.

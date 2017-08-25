@@ -28,9 +28,7 @@ import static otg.model.sample.OTGAttribute.*;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.*;
 
 public class FullRuleInputHelper extends RuleInputHelper {
 

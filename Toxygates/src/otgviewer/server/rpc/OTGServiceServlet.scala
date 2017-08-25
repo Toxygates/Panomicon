@@ -20,12 +20,11 @@
 
 package otgviewer.server.rpc
 
-import t.viewer.server.rpc.TServiceServlet
-import otg.Factory
-import otg.Context
-import t.viewer.server.Configuration
+import otg._
 import otgviewer.shared.OTGSchema
-import otg.OTGBConfig
+import t.viewer.server.Configuration
+
+import t.viewer.server.rpc.TServiceServlet
 
 trait OTGServiceServlet extends TServiceServlet {
   override protected def context: Context = _context

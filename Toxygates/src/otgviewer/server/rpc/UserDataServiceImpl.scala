@@ -20,8 +20,9 @@
 
 package otgviewer.server.rpc
 
-import t.db.Metadata
 import t.common.shared.maintenance.MaintenanceException
+
+import t.db.Metadata
 import t.model.sample._
 import t.model.sample.CoreParameter._
 import otg.model.sample.OTGAttribute._

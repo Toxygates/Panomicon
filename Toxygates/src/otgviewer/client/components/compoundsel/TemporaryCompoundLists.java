@@ -20,18 +20,21 @@
 
 package otgviewer.client.components.compoundsel;
 
+import static t.common.shared.StringList.COMPOUND_LIST_TYPE;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import t.common.shared.StringList;
-import static t.common.shared.StringList.COMPOUND_LIST_TYPE;
 
+@Deprecated
 public class TemporaryCompoundLists {
 
 	/*
 	 * TODO Temporary hardcoded lists for testing. Will eventually be stored as RDF.
 	 * @return
 	 */
+  @Deprecated
 	static List<StringList> predefinedLists() {
 		List<StringList> r = new ArrayList<StringList>();
 		String[] negElBilib = new String[] { 
