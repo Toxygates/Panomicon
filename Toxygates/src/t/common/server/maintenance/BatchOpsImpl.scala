@@ -90,7 +90,7 @@ trait BatchOpsImpl extends MaintenanceOpsImpl
       } catch {
         case e: Exception =>
           e.printStackTrace()
-          throw BatchUploadException.badMetaData("Error while parsing metadata. Please check the file.")
+          throw BatchUploadException.badMetaData("Error while parsing metadata. Please check the file. " + e.getMessage)
       }
 
       checkMetadata(md)

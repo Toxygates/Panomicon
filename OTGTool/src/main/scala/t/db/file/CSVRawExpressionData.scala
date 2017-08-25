@@ -53,7 +53,7 @@ class CSVRawExpressionData(exprFiles: Iterable[String],
     lines.next
     for (line <- lines;
       columns = line.split(",", -1).map(_.trim);
-      probe = columns.head
+      probe = unquote(columns.head)
     ) yield probe
   }
 
@@ -142,19 +142,19 @@ class CSVRawExpressionData(exprFiles: Iterable[String],
     val call = callFiles.map(readCalls(_, ss.toSet))
 
     //NB, samples must not be repeated across files - we should check this
-    val allExpr = Map() ++ expr.flatten
-    val allCall = Map() ++ call.flatten
+    val allExprs = Map() ++ expr.flatten
+    val allCalls = Map() ++ call.flatten
 
-    allExpr.map {
+    allExprs.map {
       case (s, col) => {
-        val call = allCall.get(s)
+        val sampleCalls = allCalls.get(s)
         s -> col.map {
           case (p, v) => {
-            if (call != None && !call.get.contains(p)) {
+            if (sampleCalls != None && !sampleCalls.get.contains(p)) {
               throw new Exception(s"No call available for probe $p in sample $s")
             }
-            val usec = call.map(_(p)).getOrElse('P')
-            (p -> (v, usec, Double.NaN))
+            val useCall = sampleCalls.map(_(p)).getOrElse('P')
+            (p -> (v, useCall, Double.NaN))
           }
         }
       }

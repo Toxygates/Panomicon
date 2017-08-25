@@ -42,19 +42,19 @@ trait RawExpressionData {
     Map() ++ ss.map(s => s -> data(s))
 
   /**
-   * Obtain a call value. Need not necessarily be present.
+   * Obtain a call value. 
    */
-  def call(x: Sample, probe: String) = data(x).get(probe).map(_._2)
+  def call(x: Sample, probe: String): Option[Char] = data(x).get(probe).map(_._2)
   
   /**
-   * Obtain an expression value. Need not necessarily be present.
+   * Obtain an expression value. 
    */
   def expr(x: Sample, probe: String): Option[Double] = data(x).get(probe).map(_._1)
   
   /**
-   * Obtain a p-value. Need not necessarily be present.
+   * Obtain a p-value. 
    */
-  def p(x: Sample, probe: String) = data(x).get(probe).map(_._3)
+  def p(x: Sample, probe: String): Option[Double] = data(x).get(probe).map(_._3)
 
   def probes: Iterable[String] = probesInSamples
 

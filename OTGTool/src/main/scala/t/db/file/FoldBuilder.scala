@@ -44,7 +44,7 @@ abstract class FoldValueBuilder[E <: ExprValue](md: Metadata, input: RawExpressi
    * This method may return values for more samples than the one requested. Callers should
    * inspect the results for efficiency.
    */
-  def values(s: Sample): Iterable[(Sample, String, E)] = {
+  def values(s: Sample): Seq[(Sample, String, E)] = {
     println("Compute control values")
     val groups = md.treatedControlGroups(input.samples)
     var r = Vector[(Sample, String, E)]()
@@ -53,7 +53,7 @@ abstract class FoldValueBuilder[E <: ExprValue](md: Metadata, input: RawExpressi
       if ts.toSet.contains(s)) {
       println("Control barcodes: " + cs)
       println("Treated: " + ts)
-      r ++= makeFolds(cs, ts)
+      r ++= makeFolds(cs.toSeq, ts.toSeq)
     }
 
     for (s <- r.map(_._1).distinct) {
@@ -66,8 +66,8 @@ abstract class FoldValueBuilder[E <: ExprValue](md: Metadata, input: RawExpressi
   /**
    * Construct fold values for a sample group.
    */
-  protected def makeFolds(controlSamples: Iterable[Sample],
-      treatedSamples: Iterable[Sample]): Iterable[(Sample, String, E)]
+  protected def makeFolds(controlSamples: Seq[Sample],
+      treatedSamples: Seq[Sample]): Seq[(Sample, String, E)]
 
   /**
    * Compute a control sample (as a mean).
@@ -75,13 +75,15 @@ abstract class FoldValueBuilder[E <: ExprValue](md: Metadata, input: RawExpressi
    * @param calls: calls for each barcode (probe -> call)
    * @param cbs: control barcodes.
    */
-  protected def controlMeanSample(controlSamples: Iterable[Sample], from: RawExpressionData): Map[String, Double] = {
+  protected def controlMeanSample(controlSamples: Seq[Sample], from: RawExpressionData): Map[String, Double] = {
     var controlValues = Map[String, Double]()
 
     for (probe <- from.probes) {
-      val usableVals = controlSamples.map(from.expr(_, probe)).flatten      
-      val mean = usableVals.sum / usableVals.size      
-      controlValues += (probe -> mean)
+      val usableVals = controlSamples.map(from.expr(_, probe)).flatten
+      if (usableVals.size > 0) {
+        val mean = usableVals.sum / usableVals.size
+        controlValues += (probe -> mean)
+      }
     }
     controlValues
   }
@@ -115,8 +117,8 @@ class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
 
   //TODO: factor out some code shared with the superclass
 
-  override protected def makeFolds(controlSamples: Iterable[Sample],
-    treatedSamples: Iterable[Sample]): Iterable[(Sample, String, PExprValue)] = {
+  override protected def makeFolds(controlSamples: Seq[Sample],
+    treatedSamples: Seq[Sample]): Seq[(Sample, String, PExprValue)] = {
 
     val cached = input.cached(controlSamples ++ treatedSamples)
 
@@ -142,15 +144,15 @@ class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
     for (x <- treatedSamples) {
       println(x)
       r ++= cached.probes.map(p => {
-        val control = controlMean(p)
-        cached.expr(x, p) match {
-          case Some(v) =>
+        (cached.expr(x, p), controlMean.get(p)) match {
+          case (Some(v), Some(control)) =>
+          	println(s"$v $control")
             val foldVal = Math.log(v / control) / l2
-            val controlCalls = controlSamples.toSeq.flatMap(cached.call(_, p))
-            val treatedCalls = treatedSamples.toSeq.flatMap(cached.call(_, p))            
+            val controlCalls = controlSamples.flatMap(cached.call(_, p))
+            val treatedCalls = treatedSamples.flatMap(cached.call(_, p))            
             val pacall = foldPACall(foldVal, controlCalls, treatedCalls)              
               (x, p, PExprValue(foldVal, pVals(p), pacall))    
-          case None =>
+          case _ =>
             (x, p, PExprValue(Double.NaN, Double.NaN, 'A'))
         }
       })
