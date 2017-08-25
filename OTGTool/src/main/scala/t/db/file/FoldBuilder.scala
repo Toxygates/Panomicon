@@ -79,7 +79,7 @@ abstract class FoldValueBuilder[E <: ExprValue](md: Metadata, input: RawExpressi
     var controlValues = Map[String, Double]()
 
     for (probe <- from.probes) {
-      val usableVals = controlSamples.map(from.expr(_, probe)).flatten
+      val usableVals = controlSamples.flatMap(from.expr(_, probe))
       if (usableVals.size > 0) {
         val mean = usableVals.sum / usableVals.size
         controlValues += (probe -> mean)
@@ -146,12 +146,11 @@ class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
       r ++= cached.probes.map(p => {
         (cached.expr(x, p), controlMean.get(p)) match {
           case (Some(v), Some(control)) =>
-          	println(s"$v $control")
             val foldVal = Math.log(v / control) / l2
             val controlCalls = controlSamples.flatMap(cached.call(_, p))
-            val treatedCalls = treatedSamples.flatMap(cached.call(_, p))            
-            val pacall = foldPACall(foldVal, controlCalls, treatedCalls)              
-              (x, p, PExprValue(foldVal, pVals(p), pacall))    
+            val treatedCalls = treatedSamples.flatMap(cached.call(_, p))
+            val pacall = foldPACall(foldVal, controlCalls, treatedCalls)
+              (x, p, PExprValue(foldVal, pVals(p), pacall))
           case _ =>
             (x, p, PExprValue(Double.NaN, Double.NaN, 'A'))
         }

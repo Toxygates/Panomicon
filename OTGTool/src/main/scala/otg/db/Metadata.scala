@@ -35,18 +35,19 @@ trait Metadata extends t.db.Metadata {
   override def isControl(s: Sample): Boolean = parameter(s, DoseLevel).get == "Control"
 
   private def controlGroupKey(s: Sample) =
-      (parameter(s, ControlGroup), parameter(s, ExposureTime), parameter(s, Batch))
+    (parameter(s, ControlGroup), parameter(s, ExposureTime), parameter(s, Batch))
 
-    override def controlSamples(s: Sample): Iterable[Sample] = {
-      val key = controlGroupKey(s)
-      samples.filter(controlGroupKey(_) == key).filter(isControl)
-    }
+  override def controlSamples(s: Sample): Iterable[Sample] = {
+    val key = controlGroupKey(s)
+    samples.filter(controlGroupKey(_) == key).filter(isControl)
+  }
 
-    override def treatedControlGroups(ss: Iterable[Sample]) = {
-      val gs = super.treatedControlGroups(ss)
-      gs.flatMap( { case (treated, control) => {
+  override def treatedControlGroups(ss: Iterable[Sample]) = {
+    val gs = super.treatedControlGroups(ss)
+    gs.flatMap({
+      case (treated, control) => {
         treated.groupBy(_.get(DoseLevel)).values.toSeq.map(ts => (ts, control))
-      } } )
-    }
+      }
+    })
+  }
 }
-

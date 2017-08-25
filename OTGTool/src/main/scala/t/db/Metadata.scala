@@ -37,8 +37,7 @@ trait ParameterSet {
    * This is a naive implementation which needs to be overridden if control samples are
    * shared between multiple treated groups.
    */
-  def treatedControlGroups(metadata: Metadata, ss: Iterable[Sample]):
-    Iterable[(Iterable[Sample], Iterable[Sample])] = {
+  def treatedControlGroups(metadata: Metadata, ss: Iterable[Sample]): Iterable[(Iterable[Sample], Iterable[Sample])] = {
     ss.groupBy(controlSamples(metadata, _)).toSeq.map(sg => {
       sg._2.partition(!metadata.isControl(_))
     })
@@ -57,9 +56,9 @@ trait Metadata extends SampleSet {
    */
   def parameterValues(identifier: String): Set[String]
 
-  def attributeValues(attr: Attribute): Set[String] = 
+  def attributeValues(attr: Attribute): Set[String] =
     parameterValues(attr.id)
-  
+
   override def parameter(s: Sample, identifier: String): Option[String] =
     parameterMap(s).get(identifier)
 
@@ -72,17 +71,17 @@ trait Metadata extends SampleSet {
 
   def isControl(s: Sample): Boolean = false
 
-    /**
+  /**
    * Obtain a new metadata set after applying a mapping function to one
    * of the parameters.
    */
   def mapParameter(fact: Factory, key: String, f: String => String): Metadata
-  
-  def controlSamples(s: Sample): Iterable[Sample] = ???  
-  
+
+  def controlSamples(s: Sample): Iterable[Sample] = ???
+
   def treatedControlGroups(ss: Iterable[Sample]): Iterable[(Iterable[Sample], Iterable[Sample])] = {
-   ss.groupBy(controlSamples(_)).toSeq.map(sg => {
-        sg._2.partition(!isControl(_))
-   })
+    ss.groupBy(controlSamples(_)).toSeq.map(sg => {
+      sg._2.partition(!isControl(_))
+    })
   }
 }
