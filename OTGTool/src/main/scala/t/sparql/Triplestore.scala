@@ -181,7 +181,7 @@ abstract class Triplestore extends Closeable {
   /**
    * Query for some number of records, each containing named fields.
    */
-  def mapQuery(query: String, timeoutMillis: Int = 50000): Vector[Map[String, String]] = {
+  def mapQuery(query: String, timeoutMillis: Int = 10000): Vector[Map[String, String]] = {
     val start = System.currentTimeMillis()
     val rs = evaluate(query, timeoutMillis)
     val recs = for (
