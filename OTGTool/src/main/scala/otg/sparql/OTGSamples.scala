@@ -60,7 +60,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
 
       eval = triplestore.mapQuery(_, 20000).map(x => {
         val sc = SampleClassFilter(adjustSample(x, batchFilter)) ++ filter
-        Sample(x("id"), sc, Some(x(ControlGroup.id)))
+        Sample(x("id"), sc)
        })
      )
   }

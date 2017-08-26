@@ -27,7 +27,7 @@ import t.model.sample.Attribute
 /**
  * A sample.
  */
-case class Sample(sampleId: String, sampleClass: SampleClass, cgroup: Option[String]) {
+case class Sample(sampleId: String, sampleClass: SampleClass) {
 
   def dbCode(implicit context: MatrixContext): Int =
     context.sampleMap.pack(sampleId)
@@ -68,10 +68,10 @@ object Sample {
   }
 
   def apply(code: Int)(implicit context: MatrixContext): Sample = {
-    new Sample(identifierFor(code), SampleClassHelper(), None)
+    new Sample(identifierFor(code), SampleClassHelper())
   }
 
-  def apply(id: String) = new Sample(id, SampleClassHelper(), None)
+  def apply(id: String) = new Sample(id, SampleClassHelper())
 
-  def apply(id: String, map: Map[String, String]) = new Sample(id, SampleClassHelper(map), None)
+  def apply(id: String, map: Map[String, String]) = new Sample(id, SampleClassHelper(map))
 }

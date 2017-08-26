@@ -38,7 +38,7 @@ object Conversions {
     new Sample(s.sampleId, s.sampleClass)
 
 	def asScalaSample(s: Sample) =
-	  new t.db.Sample(s.id, s.sampleClass, None)
+	  new t.db.Sample(s.id, s.sampleClass)
 
   implicit def asJava(ev: TExprValue): ExpressionValue = new ExpressionValue(ev.value, ev.call)
   //Loses probe information!
