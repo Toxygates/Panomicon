@@ -46,17 +46,13 @@ trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
   // Finds the control groups in a collection of samples and sets up a lookup table
   protected def formControlGroups(m: Metadata, as: Annotations): (Iterable[ST] => Map[ST, VarianceSet])
 
-  // Extracts the sample parameters used in a MatchCondition
-  def conditionParams(attributes: AttributeSet, cond: MatchCondition): Iterable[Attribute] =
-    cond.neededParameters().map(p => attributes.byId(p.id))
-
   def apply(data: Samples, condition: MatchCondition, annotations: Annotations,
             samples: Iterable[ST])(implicit sf: SampleFilter): AbstractSampleSearch[ST] = {
     val schema = annotations.schema
 
     val attributes = annotations.baseConfig.attributes
 
-    val usedParams = conditionParams(attributes, condition)
+    val usedParams = condition.neededParameters()
     val coreParams = Seq(CGParam, attributes.byId(annotations.schema.timeParameter()),
       CoreParameter.Batch, CoreParameter.SampleId)
 

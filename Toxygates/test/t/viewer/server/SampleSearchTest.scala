@@ -1,7 +1,6 @@
 package t.viewer.server
 
-import scala.collection.JavaConversions.seqAsJavaList
-
+import scala.collection.JavaConversions._
 import otgviewer.shared.OTGSchema
 import t.TTestSuite
 import t.common.shared.sample.Sample
@@ -42,8 +41,7 @@ class SampleSearchTest extends TTestSuite {
   val attributes = TestData.attribSet
 
   def search(cond: MatchCondition) = {
-    val searchParams = IndividualSearch.conditionParams(attributes,
-        cond)
+    val searchParams = cond.neededParameters()
     val ss: IndividualSearch = new IndividualSearch(TestData.metadata,
         cond, cgroups, samples.toSeq.map(asJavaSample), searchParams)
     ss.results
