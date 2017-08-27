@@ -26,6 +26,8 @@ import t.db.Sample
 import t.sparql.{ Filter => TFilter }
 import t.model.sample.Attribute
 import scala.collection.JavaConversions._
+import t.model.sample.CoreParameter
+import t.model.SampleClass
 
 object Samples extends RDFClass {
   val defaultPrefix = s"$tRoot/sample"
@@ -257,6 +259,38 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
           pattr.map(x => s"t:${x.id} ?${x.id}").mkString("; "),
       s"} ${sf.standardSampleFilters} } ",
       triplestore.mapQuery(_, 10000))
+  }
+
+  /**
+   * For all samples within a specified sample class, create Sample objects
+   * storing the sample's ID as well as all specified attributes. Samples
+   * missing any of the specified attributes, however, will not be fetched.
+   * Does not support specification of batch graph in the SampleClassFilter.
+   * @param attributes
+   * @param sampleClassFilter
+   */
+  def sampleAttributeQuery(attributes: Iterable[Attribute], sampleClassFilter: SampleClassFilter =
+    SampleClassFilter())
+    (implicit sampleFilter: SampleFilter): Query[Seq[Sample]] = {
+
+    val queryAttributes = (attributes.filter(isPredicateAttribute).toSeq :+ CoreParameter.SampleId).distinct
+    val filterAttributes = sampleClassFilter.constraints.keys.flatMap(k => Option(bc.attributes.byId(k))).filter(isPredicateAttribute)
+
+    val sampleClassFilterString = if (sampleClassFilter.constraints.isEmpty) "" else
+      s"""|
+          |    FILTER( ${filterAttributes.map(a => s"?${a.id} = " + "\"" +
+                           sampleClassFilter.constraints(a.id) + "\"").mkString(" && ") } )""".stripMargin
+
+    Query(tPrefixes,
+        s"""SELECT ${ queryAttributes.map('?' + _.id).mkString(" ") }
+           |  WHERE { GRAPH ?batchGraph {
+           |    ?x ${ (queryAttributes ++ filterAttributes).distinct.map(a => s"t:${a.id} ?${a.id}").mkString("; ") }""".stripMargin,
+        s"""} ${sampleFilter.standardSampleFilters} $sampleClassFilterString
+           |  }""".stripMargin,
+        triplestore.mapQuery(_, 20000).map(x => {
+          val sc = new SampleClass(x)
+          Sample(x(CoreParameter.SampleId.id), sc)
+    }))
   }
 
   def attributeValues(filter: TFilter, attribute: Attribute)(implicit sf: SampleFilter) =
