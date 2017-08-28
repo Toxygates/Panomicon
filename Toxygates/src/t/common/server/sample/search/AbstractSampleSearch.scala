@@ -1,7 +1,7 @@
 package t.common.server.sample.search
 
 import scala.collection.JavaConversions._
-import t.platform.VarianceSet
+import t.db.VarianceSet
 import t.common.shared.DataSchema
 import t.common.shared.sample.search.AndMatch
 import t.common.shared.sample.search.AtomicMatch

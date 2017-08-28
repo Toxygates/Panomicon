@@ -67,13 +67,12 @@ class BioParameters(lookup: Map[Attribute, BioParameter]) {
 }
 
 /**
- * Helper to compute statistical values for some set of samples (e.g., a control group).
- * Will eagerly retrieve and process all parameters for the samples upon construction.
+ * A VarianceSet that retrieves attribute values from a SampleSet
  */
-class VarianceSet(sampleSet: SampleSet, val samples: Iterable[Sample]) {
+class SSVarianceSet(sampleSet: SampleSet, val samples: Iterable[Sample]) extends t.db.VarianceSet {
   val paramVals = samples.map(Map() ++ sampleSet.parameters(_))
 
-  private def varAndMean(param: Attribute): Option[(Double, Double)] = {
+  def varAndMean(param: Attribute): Option[(Double, Double)] = {
     val vs = paramVals.flatMap(_.get(param))
     val nvs = vs.flatMap(BioParameter.convert)
 
@@ -83,20 +82,6 @@ class VarianceSet(sampleSet: SampleSet, val samples: Iterable[Sample]) {
       Some((variance(nvs.toArray), mean(nvs.toArray)))
     }
   }
-
-  def lowerBound(param: Attribute, zTestSampleSize: Int): Option[Double] =
-    varAndMean(param).map {
-      case (v, m) =>
-        val sd = Math.sqrt(v)
-        m - 2 / Math.sqrt(zTestSampleSize) * sd
-    }
-
-  def upperBound(param: Attribute, zTestSampleSize: Int): Option[Double] =
-    varAndMean(param).map {
-      case (v, m) =>
-        val sd = Math.sqrt(v)
-        m + 2 / Math.sqrt(zTestSampleSize) * sd
-    }
 }
 
 object BioParameter {

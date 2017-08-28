@@ -3,7 +3,7 @@ package t.common.server.sample.search
 import t.viewer.server
 import t.viewer.server.Conversions._
 import t.viewer.server.Annotations
-import t.platform.VarianceSet
+import t.db.VarianceSet
 import t.common.shared.DataSchema
 import t.common.shared.sample.Sample
 import t.common.shared.sample.search.MatchCondition

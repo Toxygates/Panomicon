@@ -10,7 +10,7 @@ import t.common.shared.sample.search.MatchCondition
 import t.common.shared.sample.search.MatchType
 import t.common.shared.sample.search.OrMatch
 import t.common.server.sample.search.IndividualSearch
-import t.platform.VarianceSet
+import t.db.VarianceSet
 import otg.testing.TestData
 import t.viewer.server.Conversions._
 import org.junit.runner.RunWith
