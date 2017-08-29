@@ -18,24 +18,19 @@
 
 package t.admin.client;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.Nullable;
-
-import com.google.gwt.core.shared.GWT;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
 
 import t.common.client.maintenance.BatchEditor;
 import t.common.client.maintenance.TaskCallback;
 import t.common.shared.Dataset;
 import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.Instance;
+
+import com.google.gwt.core.shared.GWT;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
 
 public class FullBatchEditor extends BatchEditor {
 

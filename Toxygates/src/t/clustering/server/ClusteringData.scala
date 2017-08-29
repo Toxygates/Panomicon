@@ -19,7 +19,6 @@
 
 package t.clustering.server
 
-import java.util.{List => JList}
 import scala.collection.JavaConversions._
 
 /**

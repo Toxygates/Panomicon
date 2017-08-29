@@ -18,15 +18,13 @@
 
 package otgviewer.shared;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
+import static otg.model.sample.OTGAttribute.DoseLevel;
+import static otg.model.sample.OTGAttribute.TestType;
 
-import t.common.shared.AType;
-import t.common.shared.DataSchema;
-import t.common.shared.ValueType;
+import java.util.*;
+
+import t.common.shared.*;
 import t.model.SampleClass;
-import static otg.model.sample.OTGAttribute.*;
 
 @SuppressWarnings("serial")
 public class OTGSchema extends DataSchema {

@@ -20,6 +20,14 @@ package t.admin.client;
 
 import java.util.logging.Logger;
 
+import t.common.client.HasLogger;
+import t.common.client.Resources;
+import t.common.client.maintenance.*;
+import t.common.shared.Dataset;
+import t.common.shared.Platform;
+import t.common.shared.maintenance.Batch;
+import t.common.shared.maintenance.Instance;
+
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -27,23 +35,8 @@ import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.RootLayoutPanel;
-import com.google.gwt.user.client.ui.TabLayoutPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.ListDataProvider;
-
-import t.common.client.HasLogger;
-import t.common.client.Resources;
-import t.common.client.maintenance.BatchPanel;
-import t.common.client.maintenance.ListDataCallback;
-import t.common.client.maintenance.ManagedItemEditor;
-import t.common.client.maintenance.ManagerPanel;
-import t.common.client.maintenance.TaskCallback;
-import t.common.shared.Dataset;
-import t.common.shared.Platform;
-import t.common.shared.maintenance.Batch;
-import t.common.shared.maintenance.Instance;
 
 /**
  * Entry point for the data and instance management tool.

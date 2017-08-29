@@ -20,13 +20,16 @@
 
 package t.clustering.server
 
-import java.util.logging.Logger
-import scala.sys.process._
-import org.rosuda.REngine.Rserve.RserveException
-import org.rosuda.REngine.Rserve.RConnection
-import org.rosuda.REngine.REXP
-import scala.collection.immutable.Queue
 import java.util.logging.Level
+
+import java.util.logging.Logger
+
+import scala.collection.immutable.Queue
+import scala.sys.process._
+
+import org.rosuda.REngine.REXP
+import org.rosuda.REngine.Rserve.RConnection
+import org.rosuda.REngine.Rserve.RserveException
 
 class R() {
   private val logger = Logger.getLogger("R")

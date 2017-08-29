@@ -18,9 +18,7 @@
 
 package t.common.client.components;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.Nullable;
 

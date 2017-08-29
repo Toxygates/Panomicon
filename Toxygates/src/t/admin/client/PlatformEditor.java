@@ -23,12 +23,12 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.core.shared.GWT;
-import com.google.gwt.user.client.ui.TextArea;
-
 import t.common.client.maintenance.ManagedItemEditor;
 import t.common.client.maintenance.TaskCallback;
 import t.common.shared.Platform;
+
+import com.google.gwt.core.shared.GWT;
+import com.google.gwt.user.client.ui.TextArea;
 
 public class PlatformEditor extends ManagedItemEditor {
 

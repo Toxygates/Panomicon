@@ -18,9 +18,7 @@
 
 package t.common.client;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 
 import t.common.client.components.SelectionTable;
 import t.common.shared.DataRecord;
