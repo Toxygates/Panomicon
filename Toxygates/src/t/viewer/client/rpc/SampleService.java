@@ -28,14 +28,6 @@ public interface SampleService extends RemoteService {
    */
   SampleClass[] chooseDatasets(Dataset[] enabled) throws TimeoutException;
   
-  /**
-   * Obtain all sample classes in the triple store
-   * 
-   * @return
-   */
-  @Deprecated
-  SampleClass[] sampleClasses() throws TimeoutException;
-  
   String[] parameterValues(Dataset[] ds, SampleClass sc, String parameter)
       throws TimeoutException;
 

@@ -257,7 +257,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     if (getSessionData().sampleFilter.datasetURIs.isEmpty) {
       //Initialise the selected datasets by selecting all, except shared user data.
       val defaultVisible = appInfo.datasets.filter(ds =>
-        ! Dataset.isSharedDataset(ds.getTitle))
+        ! Dataset.isSharedDataset(ds.getTitle))        
       chooseDatasets(defaultVisible)
     }
    appInfo
@@ -300,7 +300,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   def chooseDatasets(ds: Array[Dataset]): Array[t.model.SampleClass] = {
     println("Choose datasets: " + ds.map(_.getTitle).mkString(" "))
     getSessionData.sampleFilter = sampleFilterFor(ds)
-    sampleClasses()
+
+    sampleStore.sampleClasses.map(x =>
+      new SampleClass(new java.util.HashMap(x))).toArray
   }
 
   @throws[TimeoutException]
@@ -348,13 +350,6 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   def samples(scs: Array[SampleClass], param: String,
       paramValues: Array[String]): Array[Sample] =
         scs.flatMap(x => samples(x, param, paramValues)).distinct.toArray
-
-  @throws[TimeoutException]
-  def sampleClasses(): Array[t.model.SampleClass] = {
-  sampleStore.sampleClasses.map(x =>
-    new SampleClass(new java.util.HashMap(x))
-    ).toArray
-  }
 
   @throws[TimeoutException]
   def units(sc: SampleClass,

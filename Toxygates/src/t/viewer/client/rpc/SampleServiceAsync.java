@@ -14,9 +14,6 @@ public interface SampleServiceAsync {
 
   void chooseDatasets(Dataset[] enabled, AsyncCallback<SampleClass[]> callback);
 
-  @Deprecated
-  void sampleClasses(AsyncCallback<SampleClass[]> callback);
-
   void parameterValues(Dataset[] ds, SampleClass sc, String parameter,
       AsyncCallback<String[]> callback);
 

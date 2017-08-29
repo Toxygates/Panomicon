@@ -23,7 +23,6 @@ import java.util.logging.Logger;
 
 import t.common.shared.SharedUtils;
 import t.model.SampleClass;
-import t.viewer.client.rpc.SampleServiceAsync;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -33,7 +32,6 @@ import com.google.gwt.user.client.ui.ListBox;
 public class DataFilterEditor extends DataListenerWidget {
   List<SampleClass> sampleClasses = new ArrayList<SampleClass>();
   final SCListBox[] selectors;
-  private final SampleServiceAsync sampleService;
   private final String[] parameters;
   protected final Logger logger;
 
@@ -121,7 +119,6 @@ public class DataFilterEditor extends DataListenerWidget {
     HorizontalPanel hp = new HorizontalPanel();
     initWidget(hp);
     logger = SharedUtils.getLogger("dfeditor");
-    sampleService = screen.manager.sampleService();
 
     parameters = screen.schema().macroParameters();
     selectors = new SCListBox[parameters.length];
@@ -137,16 +134,6 @@ public class DataFilterEditor extends DataListenerWidget {
       });
 
     }
-  }
-
-  public void update() {
-    sampleService.sampleClasses(new PendingAsyncCallback<SampleClass[]>(this,
-        "Unable to obtain sample classes from server") {
-      @Override
-      public void handleSuccess(SampleClass[] result) {
-        setAvailable(result);
-      }
-    });
   }
 
   public void setAvailable(SampleClass[] sampleClasses) {
