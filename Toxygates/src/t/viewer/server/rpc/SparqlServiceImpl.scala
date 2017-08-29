@@ -297,9 +297,10 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     getSessionData.sampleFilter.copy(datasetURIs = dsTitles.map(Datasets.packURI(_)))
   }
 
-  def chooseDatasets(ds: Array[Dataset]): scala.Unit = {
+  def chooseDatasets(ds: Array[Dataset]): Array[t.model.SampleClass] = {
     println("Choose datasets: " + ds.map(_.getTitle).mkString(" "))
     getSessionData.sampleFilter = sampleFilterFor(ds)
+    sampleClasses()
   }
 
   @throws[TimeoutException]

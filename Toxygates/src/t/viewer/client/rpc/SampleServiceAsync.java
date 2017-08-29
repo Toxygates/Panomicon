@@ -12,7 +12,7 @@ import t.model.sample.Attribute;
 
 public interface SampleServiceAsync {
 
-  void chooseDatasets(Dataset[] enabled, AsyncCallback<Void> callback);
+  void chooseDatasets(Dataset[] enabled, AsyncCallback<SampleClass[]> callback);
 
   @Deprecated
   void sampleClasses(AsyncCallback<SampleClass[]> callback);

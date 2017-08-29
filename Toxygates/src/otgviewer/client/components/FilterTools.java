@@ -31,6 +31,10 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
+/**
+ * Tools to select from the available datasets, and then from
+ * the available sample macro classes within those datasets.
+ */
 public class FilterTools extends DataListenerWidget {
   private HorizontalPanel filterTools;
   private DataFilterEditor dfe;
@@ -99,12 +103,7 @@ public class FilterTools extends DataListenerWidget {
           @Override
           public void onOK() {
             datasetsChanged(getSelected().toArray(new Dataset[0]));
-            sampleService.chooseDatasets(chosenDatasets, new PendingAsyncCallback<Void>(screen,
-                "Unable to choose datasets") {
-              public void handleSuccess(Void v) {
-                dfe.update();
-              }
-            });
+            storeDatasets(getParser(screen));            
             db.hide();
           }
 
@@ -122,12 +121,16 @@ public class FilterTools extends DataListenerWidget {
 
   @Override
   public void datasetsChanged(Dataset[] ds) {
-    boolean realChange = !Arrays.equals(ds, chosenDatasets);
     super.datasetsChanged(ds);
-    storeDatasets(getParser(screen));
-    if (realChange) {
-      dfe.update();
-    }
+    getSampleClasses();
   }
 
+  protected void getSampleClasses() {
+    sampleService.chooseDatasets(chosenDatasets, new PendingAsyncCallback<SampleClass[]>(screen,
+        "Unable to choose datasets") {
+      public void handleSuccess(SampleClass[] sampleClasses) {
+        dfe.setAvailable(sampleClasses);
+      }
+    });
+  }
 }
