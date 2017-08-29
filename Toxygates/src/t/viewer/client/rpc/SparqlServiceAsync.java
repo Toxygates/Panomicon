@@ -32,10 +32,9 @@ public interface SparqlServiceAsync extends SampleServiceAsync, ProbeServiceAsyn
 
   void appInfo(String userDataKey, AsyncCallback<AppInfo> callback);
 
-  void pathways(SampleClass sc, String pattern, AsyncCallback<String[]> callback);
+  void pathways(String pattern, AsyncCallback<String[]> callback);
 
-  void probesForPathway(SampleClass sc, String pathway, List<Sample> samples,
-      AsyncCallback<String[]> callback);
+  void probesForPathway(String pathway, List<Sample> samples, AsyncCallback<String[]> callback);
 
   void geneSyms(String[] probes, AsyncCallback<String[][]> callback);
 

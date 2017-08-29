@@ -401,7 +401,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   //TODO remove sc
   @throws[TimeoutException]
-  def pathways(sc: SampleClass, pattern: String): Array[String] =
+  def pathways(pattern: String): Array[String] =
     b2rKegg.forPattern(pattern).toArray
 
   //TODO: return a map instead
@@ -418,14 +418,13 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   //TODO more general two-way annotation resolution (don't hardcode a single annotation type
   //such as pathway)
-  //TODO remove sc
   @throws[TimeoutException]
-  def probesForPathway(sc: SampleClass, pathway: String): Array[String] = {
-    probesForPathway(sc, pathway, null)
+  def probesForPathway(pathway: String): Array[String] = {
+    probesForPathway(pathway, null)
   }
 
   @throws[TimeoutException]
-  def probesForPathway(sc: SampleClass, pathway: String, samples: JList[Sample]): Array[String] = {
+  def probesForPathway(pathway: String, samples: JList[Sample]): Array[String] = {
     val pw = Pathway(null, pathway)
     val prs = probeStore.forPathway(b2rKegg, pw)
     val pmap = context.matrix.probeMap //TODO

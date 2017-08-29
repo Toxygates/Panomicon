@@ -293,7 +293,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
       protected void getProbes(Term term) {
         switch (term.getAssociation()) {
           case KEGG:
-            sparqlService.probesForPathway(chosenSampleClass, term.getTermString(),
+            sparqlService.probesForPathway(term.getTermString(),
                 getAllSamples(), retrieveProbesCallback());
             break;
           case GO:
