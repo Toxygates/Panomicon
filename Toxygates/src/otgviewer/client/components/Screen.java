@@ -24,7 +24,6 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 import otgviewer.client.*;
-import t.common.client.HasLogger;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
@@ -48,7 +47,7 @@ import com.google.gwt.user.client.ui.*;
  * depend on data that is selected in earlier screens.
  */
 public class Screen extends DataListenerWidget implements 
-  RequiresResize, ProvidesResize, HasLogger {
+  RequiresResize, ProvidesResize {
 
   protected DockLayoutPanel rootPanel;
 

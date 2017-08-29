@@ -20,7 +20,6 @@ package t.admin.client;
 
 import java.util.logging.Logger;
 
-import t.common.client.HasLogger;
 import t.common.client.Resources;
 import t.common.client.maintenance.*;
 import t.common.shared.Dataset;
@@ -41,7 +40,7 @@ import com.google.gwt.view.client.ListDataProvider;
 /**
  * Entry point for the data and instance management tool.
  */
-public class AdminConsole implements EntryPoint, HasLogger {
+public class AdminConsole implements EntryPoint {
 
   private RootLayoutPanel rootPanel;
   protected MaintenanceServiceAsync maintenanceService = (MaintenanceServiceAsync) GWT
@@ -209,7 +208,7 @@ public class AdminConsole implements EntryPoint, HasLogger {
       return;
     }
     maintenanceService.deleteBatchAsync(object, 
-        new TaskCallback(this, "Delete batch", maintenanceService) {
+        new TaskCallback(logger, "Delete batch", maintenanceService) {
       @Override
       protected void onCompletion() {
         refreshBatches();
@@ -223,7 +222,7 @@ public class AdminConsole implements EntryPoint, HasLogger {
       return;
     }
     maintenanceService.deletePlatformAsync(object.getTitle(), 
-        new TaskCallback(this, "Delete platform", maintenanceService) {
+        new TaskCallback(logger, "Delete platform", maintenanceService) {
       @Override
       protected void onCompletion() {
         refreshPlatforms();
@@ -289,9 +288,4 @@ public class AdminConsole implements EntryPoint, HasLogger {
   }
 
   final Logger logger = Logger.getLogger("AdminConsole");
-
-  @Override
-  public Logger getLogger() {
-    return logger;
-  }
 }

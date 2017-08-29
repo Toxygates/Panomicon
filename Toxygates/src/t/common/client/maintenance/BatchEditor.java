@@ -84,7 +84,7 @@ abstract public class BatchEditor extends ManagedItemEditor {
 
     if (addNew) {
       if (uploader.canProceed()) {
-        batchOps.addBatchAsync(b, new TaskCallback(this, "Upload batch", batchOps) {
+        batchOps.addBatchAsync(b, new TaskCallback(logger, "Upload batch", batchOps) {
 
           @Override
           public void onSuccess(Void result) {

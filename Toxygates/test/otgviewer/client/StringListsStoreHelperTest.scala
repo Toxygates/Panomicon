@@ -33,11 +33,8 @@ import java.util.logging.Logger
 
 import org.junit.runner.RunWith
 
-import t.common.client.HasLogger
 import t.TTestSuite
 import org.scalatest.Matchers
-
-import t.TTestSuite
 
 @RunWith(classOf[JUnitRunner])
 class StringListsStoreHelperTest extends TTestSuite {
@@ -55,10 +52,8 @@ class StringListsStoreHelperTest extends TTestSuite {
         s"Cluster $i", cl.toArray)
   }
 
-  val logger = new HasLogger {
-    def getLogger = Logger.getGlobal
-  }
-
+  val logger = Logger.getGlobal
+  
   test("basic") {
     val clustering = new ClusteringList(
       ClusteringList.USER_CLUSTERING_TYPE,

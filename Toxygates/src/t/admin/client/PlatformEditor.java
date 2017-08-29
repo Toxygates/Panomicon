@@ -58,7 +58,7 @@ public class PlatformEditor extends ManagedItemEditor {
         new Date(), publicComments.getValue());
     if (addNew) {
       maintenanceService.addPlatformAsync(p, uploader.platformType(), new TaskCallback(
-          this, "Add platform", maintenanceService) {
+          logger, "Add platform", maintenanceService) {
         @Override
         protected void onCompletion() {
           onFinish();

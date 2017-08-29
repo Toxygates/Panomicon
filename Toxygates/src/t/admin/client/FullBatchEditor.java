@@ -94,7 +94,7 @@ public class FullBatchEditor extends BatchEditor {
     if (addNew) {
       if (uploader.canProceed()) {
         batchOps.addBatchAsync(b, new TaskCallback(
-            this, "Upload batch", batchOps) {
+            logger, "Upload batch", batchOps) {
 
           @Override
           protected void onCompletion() {
