@@ -18,10 +18,7 @@
 
 package t.common.shared;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import javax.annotation.Nullable;
 

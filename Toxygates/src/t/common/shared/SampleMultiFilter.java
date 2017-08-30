@@ -18,10 +18,7 @@
 
 package t.common.shared;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import t.model.SampleClass;
 

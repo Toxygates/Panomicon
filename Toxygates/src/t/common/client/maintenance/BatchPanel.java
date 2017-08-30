@@ -30,9 +30,7 @@ import t.common.client.components.StringArrayTable;
 import t.common.client.rpc.BatchOperationsAsync;
 import t.common.shared.maintenance.Batch;
 
-import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.DialogBox;

@@ -1,27 +1,24 @@
 package t.common.server.sample.search
 
 import scala.collection.JavaConversions._
-import t.platform.VarianceSet
+import scala.collection.Seq
+
+import otgviewer.shared.OTGSchema
 import t.common.shared.DataSchema
 import t.common.shared.sample.search.AndMatch
 import t.common.shared.sample.search.AtomicMatch
-import t.common.shared.sample.search.OrMatch
 import t.common.shared.sample.search.MatchCondition
 import t.common.shared.sample.search.MatchType
+import t.common.shared.sample.search.OrMatch
 import t.db.Metadata
-import t.sparql.Samples
+import t.model.sample.Attribute
+import t.model.sample.CoreParameter
+import t.model.sample.CoreParameter.{ControlGroup => CGParam}
+import t.platform.VarianceSet
 import t.sparql.CachingTriplestoreMetadata
 import t.sparql.SampleFilter
-import t.db.ParameterSet
-import scala.collection.Seq
+import t.sparql.Samples
 import t.viewer.server.Annotations
-import otgviewer.shared.OTGSchema
-import t.model.sample.CoreParameter.{ControlGroup => CGParam}
-import scala.annotation.meta.param
-import t.model.sample.Attribute
-import scala.annotation.meta.param
-import t.model.sample.AttributeSet
-import t.model.sample.CoreParameter
 
   /**
    * Companion object to create sample search objects; meant to encapsulate
