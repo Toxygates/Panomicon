@@ -30,16 +30,4 @@ object ScalaUtils {
         onFailure
     }
   }
-
-  def tryOrFailWith[T](f: () => T, onFailure: T, finalizer: () => Unit): T = {
-    try {
-      f()
-    } catch {
-      case e: Exception =>
-        e.printStackTrace()
-        onFailure
-    } finally {
-      finalizer()
-    }
-  }
 }
