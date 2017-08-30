@@ -157,6 +157,9 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
         _.map(x => x.copy(identifier = x.identifier.replace("EC:", "")))
         )
   }
+  
+  def mirnaAccessionLookup(probes: Iterable[Probe]): MMap[Probe, DefaultBio] = 
+    simpleRelationQuery(probes, "t:accession")
 
   def unigeneLookup(probes: Iterable[Probe]): MMap[Probe, DefaultBio] =
     simpleRelationQuery(probes, "t:" + t.platform.affy.Unigene.key)
