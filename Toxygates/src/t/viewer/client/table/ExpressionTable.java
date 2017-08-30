@@ -592,10 +592,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
   @Override
   protected List<HideableColumn<ExpressionRow, ?>> initHideableColumns(DataSchema schema) {
-    SafeHtmlCell shc = new SafeHtmlCell();
+    SafeHtmlCell htmlCell = new SafeHtmlCell();
     List<HideableColumn<ExpressionRow, ?>> r = new ArrayList<HideableColumn<ExpressionRow, ?>>();
 
-    r.add(new LinkingColumn<ExpressionRow>(shc, "Gene ID", initVisibility(StandardColumns.GeneID),
+    r.add(new LinkingColumn<ExpressionRow>(htmlCell, "Gene ID", initVisibility(StandardColumns.GeneID),
         initWidth(StandardColumns.GeneID)) {
       @Override
       protected String formLink(String value) {
@@ -614,7 +614,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
     });
 
-    r.add(new HTMLHideableColumn<ExpressionRow>(shc, "Gene Symbol",
+    r.add(new HTMLHideableColumn<ExpressionRow>(htmlCell, "Gene Symbol",
         initVisibility(StandardColumns.GeneSym), initWidth(StandardColumns.GeneSym)) {
       @Override
       protected String getHtml(ExpressionRow er) {
@@ -623,7 +623,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
     });
 
-    r.add(new HTMLHideableColumn<ExpressionRow>(shc, "Probe Title",
+    r.add(new HTMLHideableColumn<ExpressionRow>(htmlCell, "Probe Title",
         initVisibility(StandardColumns.ProbeTitle), initWidth(StandardColumns.ProbeTitle)) {
       @Override
       protected String getHtml(ExpressionRow er) {
@@ -631,7 +631,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
     });
 
-    r.add(new LinkingColumn<ExpressionRow>(shc, "Probe", initVisibility(StandardColumns.Probe),
+    r.add(new LinkingColumn<ExpressionRow>(htmlCell, "Probe", initVisibility(StandardColumns.Probe),
         initWidth(StandardColumns.Probe)) {
 
       @Override
