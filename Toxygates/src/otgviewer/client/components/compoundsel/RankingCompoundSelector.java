@@ -173,18 +173,13 @@ public class RankingCompoundSelector extends CompoundSelector {
     }
 
     private void makeSeriesCharts(final String value, final List<Series> ss) {
-      GWT.runAsync(new CodeDownload(logger) {        
+      Charts cgf = new Charts(screen, new SampleClass[] {w.chosenSampleClass});
+      cgf.makeSeriesCharts(ss, false, scores.get(value).dose(), new Charts.ChartAcceptor() {
         @Override
-        public void onSuccess() {
-          Charts cgf = new Charts(screen, new SampleClass[] {w.chosenSampleClass});
-          cgf.makeSeriesCharts(ss, false, scores.get(value).dose(), new Charts.ChartAcceptor() {
-            @Override
-            public void acceptCharts(ChartGrid<?> cg) {
-              Utils.displayInPopup("Charts", cg, DialogPosition.Side);
-            }
-          }, screen);          
-        }        
-      });
+        public void acceptCharts(ChartGrid<?> cg) {
+          Utils.displayInPopup("Charts", cg, DialogPosition.Side);
+        }
+      }, screen);
     }
   }
 

@@ -28,9 +28,7 @@ import t.clustering.shared.Algorithm;
 import t.common.shared.*;
 import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.Analytics;
-import t.viewer.client.CodeDownload;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.*;
@@ -394,19 +392,14 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   }
 
   private void geneSetEditor(@Nullable final StringList list) {
-    
-    GWT.runAsync(new CodeDownload(logger) {
-      public void onSuccess() {
-        if (list != null) {
-          geneSetEditorAsync().edit(list.name());
-        } else {
-          geneSetEditorAsync().createNew(screen.displayedAtomicProbes());
-        }
-      }
-    });
+    if (list != null) {
+      makeGeneSetEditor().edit(list.name());
+    } else {
+      makeGeneSetEditor().createNew(screen.displayedAtomicProbes());
+    } 
   }
   
-  private GeneSetEditor geneSetEditorAsync() {
+  private GeneSetEditor makeGeneSetEditor() {
     // TODO same code as GeneSetToolbar
     GeneSetEditor gse = screen.factory().geneSetEditor(screen);
     gse.addSaveActionHandler(new SaveActionHandler() {

@@ -23,10 +23,8 @@ import java.util.List;
 import otgviewer.client.DataScreen;
 import t.common.shared.*;
 import t.common.shared.clustering.ProbeClustering;
-import t.viewer.client.CodeDownload;
 import t.viewer.client.Utils;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
@@ -59,23 +57,15 @@ public class GeneSetToolbar extends DataListenerWidget {
 
     btnNew = new Button("New", new ClickHandler() {
       @Override
-      public void onClick(ClickEvent event) {
-        GWT.runAsync(new CodeDownload(logger) {
-          public void onSuccess() {
-            geneSetEditorNew();
-          }
-        });
+      public void onClick(ClickEvent event) {        
+            geneSetEditorNew();          
       }
     });
 
     btnEdit = new Button("Edit", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        GWT.runAsync(new CodeDownload(logger) {
-          public void onSuccess() {
-            geneSetEditorEdit();
-          }
-        });
+        geneSetEditorEdit();        
       }
     });
     btnEdit.setEnabled(false);

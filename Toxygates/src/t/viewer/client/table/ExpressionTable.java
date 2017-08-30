@@ -18,77 +18,40 @@
 
 package t.viewer.client.table;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.SafeHtmlCell;
-import com.google.gwt.cell.client.TextCell;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.cellview.client.ColumnSortList;
-import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
-import com.google.gwt.user.cellview.client.Header;
-import com.google.gwt.user.cellview.client.PageSizePager;
-import com.google.gwt.user.cellview.client.SimplePager;
-import com.google.gwt.user.cellview.client.SimplePager.Resources;
-import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.view.client.AsyncDataProvider;
-import com.google.gwt.view.client.HasData;
-import com.google.gwt.view.client.NoSelectionModel;
-import com.google.gwt.view.client.Range;
-
 import otgviewer.client.StandardColumns;
-import otgviewer.client.charts.AdjustableGrid;
-import otgviewer.client.charts.Charts;
+import otgviewer.client.charts.*;
 import otgviewer.client.charts.Charts.AChartAcceptor;
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.*;
 import t.common.client.ImageClickCell;
-import t.common.shared.AType;
-import t.common.shared.DataSchema;
-import t.common.shared.GroupUtils;
-import t.common.shared.Pair;
-import t.common.shared.SharedUtils;
-import t.common.shared.ValueType;
-import t.common.shared.sample.DataColumn;
-import t.common.shared.sample.ExpressionRow;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleClassUtils;
+import t.common.shared.*;
+import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
-import t.viewer.client.CodeDownload;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.FilterEditor;
 import t.viewer.client.rpc.MatrixServiceAsync;
-import t.viewer.shared.ColumnFilter;
-import t.viewer.shared.ManagedMatrixInfo;
-import t.viewer.shared.Synthetic;
+import t.viewer.shared.*;
 import t.viewer.shared.table.SortKey;
+
+import com.google.gwt.cell.client.*;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.*;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.user.cellview.client.*;
+import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
+import com.google.gwt.user.cellview.client.SimplePager.Resources;
+import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
+import com.google.gwt.view.client.*;
 
 /**
  * The main data display table. This class has many different functionalities. (too many, should be
@@ -895,29 +858,24 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   
   protected void onGettingExpressionFailed() {}
 
-  private void asyncDisplayCharts() {
-    GWT.runAsync(new CodeDownload(logger) {      
+  private void displayCharts() {
+    final Charts cgf = new Charts(screen, chosenColumns);
+    ExpressionRow dispRow = grid.getVisibleItem(highlightedRow);
+    final String[] probes = dispRow.getAtomicProbes();
+    cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, probes, new AChartAcceptor() {
       @Override
-      public void onSuccess() {
-        final Charts cgf = new Charts(screen, chosenColumns);
-        ExpressionRow dispRow = grid.getVisibleItem(highlightedRow);
-        final String[] probes = dispRow.getAtomicProbes();
-        cgf.makeRowCharts(screen, chartBarcodes, chosenValueType, probes, new AChartAcceptor() {
-          @Override
-          public void acceptCharts(final AdjustableGrid<?, ?> cg) {
-            Utils.displayInPopup("Charts", cg, true, DialogPosition.Side);
-          }
+      public void acceptCharts(final AdjustableGrid<?, ?> cg) {
+        Utils.displayInPopup("Charts", cg, true, DialogPosition.Side);
+      }
 
-          @Override
-          public void acceptBarcodes(Sample[] bcs) {
-            chartBarcodes = bcs;
-          }
-        });
-        Analytics.trackEvent(Analytics.CATEGORY_VISUALIZATION, Analytics.ACTION_DISPLAY_CHARTS);
-      }      
+      @Override
+      public void acceptBarcodes(Sample[] bcs) {
+        chartBarcodes = bcs;
+      }
     });
+    Analytics.trackEvent(Analytics.CATEGORY_VISUALIZATION, Analytics.ACTION_DISPLAY_CHARTS);
   }
-  
+
   /**
    * This cell displays an image that can be clicked to display charts.
    */
@@ -934,7 +892,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       Utils.ensureVisualisationAndThen(new Runnable() {
         @Override
         public void run() {
-          asyncDisplayCharts();
+          displayCharts();
         }
       });
     }
