@@ -18,14 +18,7 @@
 
 package t.common.shared.sample;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import t.common.shared.DataSchema;
 import t.model.SampleClass;
@@ -53,44 +46,46 @@ public class Unit extends SampleClass {
   }
 
   public void averageAttribute(Attribute attr) {
-    Sample first = samples[0];
-    if (first.sampleClass().get(attr) != null) {
-      int count = 0;
-      double sum = 0.0;
-      for (Sample sample : samples) {
-        count++;
-        sum += Double.parseDouble(sample.sampleClass().get(attr).replace(",", ""));
+    int count = 0;
+    double sum = 0.0;
+    for (Sample sample : samples) {
+      if (sample.contains(attr)) {
+        try {
+          sum += Double.parseDouble(sample.get(attr).replace(",", ""));
+          count++;
+        } catch (NumberFormatException e) {
+        }
       }
+    }
+    if (count > 0) {
       put(attr, Double.toString(sum / count));
     }
-    // TODO: maybe some exception checking for when conversion to double fails
   }
 
   public void concatenateAttribute(Attribute attr) {
     String separator = " / ";
 
-    Sample firstSample = samples[0];
-    if (firstSample.sampleClass().get(attr) != null) {
-      HashSet<String> values = new HashSet<String>();
-      String concatenation = "";
+    HashSet<String> values = new HashSet<String>();
+    String concatenation = "";
 
-      Boolean firstIteration = true;
-      for (Sample sample : samples) {
-        String newValue = sample.sampleClass().get(attr);
+    Boolean foundFirstValue = true;
+    for (Sample sample : samples) {
+      if (sample.contains(attr)) {
+        String newValue = sample.get(attr);
         if (!values.contains(newValue)) {
           values.add(newValue);
-          if (!firstIteration) {
+          if (!foundFirstValue) {
             concatenation += separator;
           } else {
-            firstIteration = false;
+            foundFirstValue = false;
           }
           concatenation += newValue;
         }
       }
+    }
+    if (!foundFirstValue) {
       put(attr, concatenation);
     }
-    // TODO: maybe more robust handling of when only some of the samples have a value for
-    // a given parameter. Or maybe we can assume that won't happen.
   }
 
   public static Unit[] formUnits(DataSchema schema, Sample[] samples) { 

@@ -23,6 +23,7 @@ package t.db
 import t.model.SampleClass
 import t.model.shared.SampleClassHelper
 import t.model.sample.Attribute
+import t.model.sample.SampleLike
 
 /**
  * A sample.
@@ -64,6 +65,21 @@ object Sample {
         val r = s"unknown_sample[$code]"
         println(r)
         r
+    }
+  }
+
+  def numericalValue(sample: SampleLike, key: Attribute): Option[Double] = {
+    if (key.isNumerical) {
+      Option(sample.get(key)) match {
+        case Some(v) => try {
+          Some(v.toDouble)
+        } catch {
+          case e: NumberFormatException => None
+        }
+        case None    => None
+      }
+    } else {
+      throw new IllegalArgumentException(s"Tried to get numerical value of non-numerical attribute $key")
     }
   }
 

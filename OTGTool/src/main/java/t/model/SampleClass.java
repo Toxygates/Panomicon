@@ -19,16 +19,10 @@
 package t.model;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import t.model.sample.Attribute;
+import t.model.sample.SampleLike;
 
 
 /**
@@ -39,7 +33,7 @@ import t.model.sample.Attribute;
  * compound_name, exposure_time, dose_level 
  */
 @SuppressWarnings("serial")
-public class SampleClass implements Serializable {
+public class SampleClass implements Serializable, SampleLike {
 
   public SampleClass() {}
 
@@ -59,6 +53,7 @@ public class SampleClass implements Serializable {
     return get(key);
   }
   
+  @Override
   public String get(Attribute key) {
     return data.get(key.id());
   }
@@ -109,6 +104,10 @@ public class SampleClass implements Serializable {
 
   public boolean contains(String key) {
     return data.containsKey(key);
+  }
+
+  public boolean contains(Attribute key) {
+    return data.containsKey(key.id());
   }
 
   /**

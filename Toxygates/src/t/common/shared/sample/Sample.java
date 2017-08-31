@@ -20,14 +20,13 @@ package t.common.shared.sample;
 
 import java.io.Serializable;
 
-import t.common.shared.DataSchema;
-import t.common.shared.HasClass;
-import t.common.shared.Packable;
+import t.common.shared.*;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
+import t.model.sample.SampleLike;
 
 @SuppressWarnings("serial")
-public class Sample implements Packable, Serializable, HasClass {
+public class Sample implements Packable, Serializable, HasClass, SampleLike {
 
   public Sample() {}
 
@@ -58,10 +57,12 @@ public class Sample implements Packable, Serializable, HasClass {
     return false;
   }
 
+  @Override
   public SampleClass sampleClass() {
     return sampleClass;
   }
 
+  @Override
   public String get(Attribute attribute) {
     return sampleClass.get(attribute);
   }
@@ -69,6 +70,10 @@ public class Sample implements Packable, Serializable, HasClass {
   //TODO deprecate when the time is right
   public String get(String parameter) {
     return sampleClass.get(parameter);
+  }
+
+  public boolean contains(Attribute key) {
+    return sampleClass.contains(key);
   }
 
   public String getTitle(DataSchema schema) {
@@ -79,6 +84,7 @@ public class Sample implements Packable, Serializable, HasClass {
     return get(schema.mediumParameter()) + "/" + get(schema.minorParameter());
   }
 
+  @Override
   public String toString() {
     return sampleClass.toString();
   }
@@ -95,6 +101,7 @@ public class Sample implements Packable, Serializable, HasClass {
     return new Sample(id, sc);
   }
 
+  @Override
   public String pack() {
     final String sep = "$$$";
     StringBuilder sb = new StringBuilder();

@@ -1,7 +1,8 @@
 package otg.model.sample;
 
-import static t.model.sample.CoreParameter.*;
 import static otg.model.sample.OTGAttribute.*;
+import static t.model.sample.CoreParameter.*;
+
 import java.util.*;
 
 import t.model.sample.Attribute;
@@ -25,6 +26,7 @@ public class AttributeSet extends t.model.sample.AttributeSet {
     super(attributes, required);
     Collections.addAll(previewDisplay, Dose, DoseUnit, DoseLevel, ExposureTime, AdmRoute);
     Collections.addAll(highLevel, Organism, Organ, TestType, Repeat);
+    Collections.addAll(unitLevel, Compound, DoseLevel, ExposureTime);
   }
     
   private static AttributeSet defaultSet;
@@ -59,4 +61,8 @@ public class AttributeSet extends t.model.sample.AttributeSet {
   @Override
   public Collection<Attribute> getHighLevel() { return highLevel; }
   
+  private List<Attribute> unitLevel = new ArrayList<Attribute>();
+  @Override
+  public Collection<Attribute> getUnitLevel() { return unitLevel; }
+
 }

@@ -1,63 +1,42 @@
 package t.common.server.sample.search
 
-import t.viewer.server
-import t.viewer.server.Conversions._
-import t.viewer.server.Annotations
-import t.db.VarianceSet
+import otg.model.sample.OTGAttribute._
 import t.common.shared.DataSchema
 import t.common.shared.sample.Sample
 import t.common.shared.sample.search.MatchCondition
-import t.db.Metadata
-import t.model.sample.Attribute
-import otg.model.sample.OTGAttribute._
+import t.db.SimpleVarianceSet
+import t.db.VarianceSet
+import t.model.SampleClass
+import t.model.sample.AttributeSet
+import t.model.sample.CoreParameter
+import t.sparql.SampleFilter
+import t.sparql.Samples
+import t.viewer.server.UnitsHelper
 
 object IndividualSearch extends SearchCompanion[Sample, IndividualSearch] {
 
-  protected def create(metadata: Metadata, condition: MatchCondition,
-    controlGroups: Map[Sample, VarianceSet],
-    samples: Iterable[Sample],
-    searchParams: Iterable[Attribute]) =
-      new IndividualSearch(metadata, condition, controlGroups, samples, searchParams)
+  def apply(condition: MatchCondition, sampleClass: SampleClass, sampleStore: Samples,
+      schema: DataSchema, attributes: AttributeSet)
+      (implicit sampleFilter: SampleFilter): IndividualSearch = {
 
-  protected def formControlGroups(metadata: Metadata, annotations: Annotations) =
-    annotations.controlGroups(_, metadata)
+    val unitHelper = new UnitsHelper(schema)
+    val samples = rawSamples(condition, sampleClass, sampleFilter,
+        sampleStore, schema, attributes)
+    val groupedSamples = unitHelper.formTreatedAndControlUnits(samples)
 
-  protected def isControlSample(schema: DataSchema) =
-    schema.isControl(_)
+    val treatedSamples = groupedSamples.flatMap(_._1).flatten
+    val varianceSets = Map() ++ groupedSamples.flatMap { case (treatedSamples, controlSamples) =>
+      val varianceSet = new SimpleVarianceSet(controlSamples)
+      treatedSamples.flatMap(_.map(_.get(CoreParameter.SampleId) -> varianceSet))
+    }
+
+    new IndividualSearch(condition, varianceSets, treatedSamples)
+  }
 }
 
-class IndividualSearch(metadata: Metadata, condition: MatchCondition,
-    controlGroups: Map[Sample, VarianceSet], samples: Iterable[Sample], searchParams: Iterable[Attribute])
-    extends AbstractSampleSearch[Sample](metadata, condition,
-        controlGroups, samples, searchParams)  {
-
-  protected def sampleAttributeValue(sample: Sample, attr: Attribute): Option[Double] = {
-    try {
-      metadata.parameter(asScalaSample(sample), attr) match {
-        case Some("NA") => None
-        case Some(s)    => Some(s.toDouble)
-        case None       => None
-      }
-    } catch {
-      case nf: NumberFormatException => None
-    }
-  }
-
-  /**
-   * Insert additional parameter information in the sample (the parameters
-   * that were used in the match condition).
-   * The mutable sample class is modified in place.
-   */
-  protected def postMatchAdjust(sample: Sample): Sample = {
-      val ss = asScalaSample(sample)
-      for (
-        p <- searchParams;
-        v <- metadata.parameter(ss, p)
-      ) {
-        sample.sampleClass().put(p, v)
-      }
-      sample
-    }
+class IndividualSearch(condition: MatchCondition,
+    varianceSets: Map[String, VarianceSet], samples: Iterable[Sample])
+    extends AbstractSampleSearch[Sample](condition, varianceSets, samples)  {
 
   protected def zTestSampleSize(s: Sample): Int = 1
 

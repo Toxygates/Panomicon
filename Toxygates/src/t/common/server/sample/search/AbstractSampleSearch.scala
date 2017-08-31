@@ -1,27 +1,26 @@
 package t.common.server.sample.search
 
 import scala.collection.JavaConversions._
-import t.db.VarianceSet
+import scala.collection.Seq
+
+import otgviewer.shared.OTGSchema
 import t.common.shared.DataSchema
+import t.common.shared.sample.Sample
 import t.common.shared.sample.search.AndMatch
 import t.common.shared.sample.search.AtomicMatch
-import t.common.shared.sample.search.OrMatch
 import t.common.shared.sample.search.MatchCondition
 import t.common.shared.sample.search.MatchType
-import t.db.Metadata
-import t.sparql.Samples
-import t.sparql.CachingTriplestoreMetadata
-import t.sparql.SampleFilter
-import t.db.ParameterSet
-import scala.collection.Seq
-import t.viewer.server.Annotations
-import otgviewer.shared.OTGSchema
-import t.model.sample.CoreParameter.{ControlGroup => CGParam}
-import scala.annotation.meta.param
+import t.common.shared.sample.search.OrMatch
+import t.db.VarianceSet
+import t.model.SampleClass
 import t.model.sample.Attribute
-import scala.annotation.meta.param
 import t.model.sample.AttributeSet
 import t.model.sample.CoreParameter
+import t.model.sample.SampleLike
+import t.sparql.SampleClassFilter
+import t.sparql.SampleFilter
+import t.sparql.Samples
+import t.viewer.server.Conversions.asJavaSample
 
   /**
    * Companion object to create sample search objects; meant to encapsulate
@@ -29,54 +28,25 @@ import t.model.sample.CoreParameter
    * @tparam ST the type of objects that SS searches through
    * @tparam SS the type of SampleSearch object to be created
    */
-trait SearchCompanion[ST, SS <: AbstractSampleSearch[ST]] {
+trait SearchCompanion[ST <: SampleLike, SS <: AbstractSampleSearch[ST]] {
 
-  // Needs to be overridden to specify how to make an SS
-  protected def create(metadata: Metadata, condition: MatchCondition,
-             controlGroups: Map[ST, VarianceSet],
-             samples: Iterable[ST],
-             searchParams: Iterable[Attribute]): SS
+  protected def rawSamples(condition: MatchCondition, sampleClass: SampleClass,
+      sampleFilter: SampleFilter, sampleStore: Samples, schema: DataSchema,
+      attributes: AttributeSet): Seq[Sample] = {
 
-  // Used to filter out control samples in the search space
-  protected def isControlSample(schema: DataSchema): (ST => Boolean)
-
-  // Called on samples before they are used in computations
-  protected def preprocessSample(m: Metadata, sps: Iterable[Attribute]): (ST => ST)  = (x => x)
-
-  // Finds the control groups in a collection of samples and sets up a lookup table
-  protected def formControlGroups(m: Metadata, as: Annotations): (Iterable[ST] => Map[ST, VarianceSet])
-
-  def apply(data: Samples, condition: MatchCondition, annotations: Annotations,
-            samples: Iterable[ST])(implicit sf: SampleFilter): AbstractSampleSearch[ST] = {
-    val schema = annotations.schema
-
-    val attributes = annotations.baseConfig.attributes
-
-    val usedParams = condition.neededParameters()
-    val coreParams = Seq(CGParam, attributes.byId(annotations.schema.timeParameter()),
-      CoreParameter.Batch, CoreParameter.SampleId)
-
-    val neededParams = (coreParams ++ usedParams).toSeq.distinct
-
-    val metadata = new CachingTriplestoreMetadata(data, attributes, neededParams)
-
-    val processedSamples: Iterable[ST] = samples.map(preprocessSample(metadata, usedParams))
-
-    val fetchedControlGroups: Map[ST, VarianceSet] = formControlGroups(metadata, annotations)(processedSamples)
-
-    val filteredSamples: Iterable[ST] = processedSamples.filter(!isControlSample(schema)(_))
-
-    create(metadata, condition, fetchedControlGroups, filteredSamples, usedParams)
+    sampleStore.sampleAttributeQuery(condition.neededParameters() ++
+        attributes.getUnitLevel() ++ Seq(CoreParameter.ControlGroup),
+        SampleClassFilter(sampleClass))(sampleFilter)().map(asJavaSample)
   }
+
+  def apply(condition: MatchCondition, sampleClass: SampleClass, sampleStore: Samples,
+      schema: DataSchema, attributes: AttributeSet)
+      (implicit sampleFilter: SampleFilter): AbstractSampleSearch[ST]
 }
 
-abstract class AbstractSampleSearch[ST](metadata: Metadata,
-    condition: MatchCondition,
-    controlGroups: Map[ST, VarianceSet], samples: Iterable[ST],
-    searchParams: Iterable[Attribute]) {
+abstract class AbstractSampleSearch[ST <: SampleLike](condition: MatchCondition,
+    varianceSets: Map[String, VarianceSet], samples: Iterable[ST]) {
 
-  protected def sampleAttributeValue(s: ST, sp: Attribute): Option[Double]
-  protected def postMatchAdjust(s: ST): ST
   protected def zTestSampleSize(s: ST): Int
   protected def sortObject(s: ST): (String, Int, Int)
 
@@ -84,31 +54,33 @@ abstract class AbstractSampleSearch[ST](metadata: Metadata,
    * Results of the search.
    */
   lazy val results: Iterable[ST] =
-    results(condition).toSeq.map(postMatchAdjust).sortBy(sortObject(_))
+    results(condition).toSeq.sortBy(sortObject(_))
 
-  private def paramComparison(s: ST,
-                              paramGetter: ST => Option[Double],
+  protected def sampleAttributeValue(sample: ST, attribute: Attribute): Option[Double] =
+    t.db.Sample.numericalValue(sample, attribute)
+
+  private def paramComparison(sample: ST, attribute: Attribute,
                               controlGroupValue: ST => Option[Double],
                               comparator: (Double, Double) => Boolean): Option[Boolean] = {
-    val testValue = paramGetter(s)
-    val reference = controlGroupValue(s)
+    val testValue = sampleAttributeValue(sample, attribute)
+    val reference = controlGroupValue(sample)
     (testValue, reference) match {
       case (Some(t), Some(r)) => Some(comparator(t, r))
       case _                  => None
     }
   }
 
-  private def paramIsHigh(s: ST, attr: Attribute): Option[Boolean] = {
-    paramComparison(s,
-      sampleAttributeValue(_, attr),
-      x => controlGroups.get(x).flatMap(_.upperBound(attr, zTestSampleSize(s))),
+  private def paramIsHigh(sample: ST, attribute: Attribute): Option[Boolean] = {
+    paramComparison(sample, attribute,
+      x => varianceSets.get(x.get(CoreParameter.SampleId)).
+          flatMap(_.upperBound(attribute, zTestSampleSize(sample))),
       _ > _)
   }
 
-  private def paramIsLow(s: ST, attr: Attribute): Option[Boolean] = {
-    paramComparison(s,
-      sampleAttributeValue(_, attr),
-      x => controlGroups.get(x).flatMap(_.lowerBound(attr, zTestSampleSize(s))),
+  private def paramIsLow(sample: ST, attribute: Attribute): Option[Boolean] = {
+    paramComparison(sample, attribute,
+      x => varianceSets.get(x.get(CoreParameter.SampleId)).
+          flatMap(_.lowerBound(attribute, zTestSampleSize(sample))),
       _ < _)
   }
 
@@ -127,9 +99,8 @@ abstract class AbstractSampleSearch[ST](metadata: Metadata,
     if (d == null) None else Some(d)
 
   private def results(condition: AtomicMatch): Set[ST] =
-    samples.filter(matches(_, condition.matchType,
-        metadata.attributes.byId(condition.parameter.id),
-      doubleOption(condition.param1))).toSet
+    samples.filter(matches(_, condition.matchType, condition.parameter,
+        doubleOption(condition.param1))).toSet
 
   private def matches(s: ST, mt: MatchType, attr: Attribute,
                       threshold: Option[Double]): Boolean =
