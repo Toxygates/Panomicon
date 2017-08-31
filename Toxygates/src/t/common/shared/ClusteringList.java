@@ -20,20 +20,12 @@
 
 package t.common.shared;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 
 import javax.annotation.Nullable;
 
-import t.clustering.shared.Algorithm;
-import t.clustering.shared.Distances;
-import t.clustering.shared.Methods;
+import t.clustering.shared.*;
 
 @SuppressWarnings("serial")
 public class ClusteringList extends ItemList {

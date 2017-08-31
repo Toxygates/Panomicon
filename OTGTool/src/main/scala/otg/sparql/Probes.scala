@@ -90,10 +90,11 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
       |SELECT DISTINCT ?s WHERE {
       |  GRAPH ?g {
       |    ?p a $itemClass; t:symbol ?s.
-      |    ?s ${prefixStringMatch(title + "*")}
       |  }
-      |  ${platform.map(x => "?g rdfs:label \"" + x + "\"").getOrElse("")}
-      |} LIMIT 10""".stripMargin
+      |  ${platform.map(x => "?g rdfs:label \"" + x + "\".").getOrElse("")}
+      |  FILTER REGEX(STR(?s), "^$title.*", "i")
+      |} 
+      |LIMIT 10""".stripMargin
     triplestore.mapQuery(query).map(x => Probe(x("s")))
   }
 
@@ -156,6 +157,9 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
         _.map(x => x.copy(identifier = x.identifier.replace("EC:", "")))
         )
   }
+  
+  def mirnaAccessionLookup(probes: Iterable[Probe]): MMap[Probe, DefaultBio] = 
+    simpleRelationQuery(probes, "t:accession")
 
   def unigeneLookup(probes: Iterable[Probe]): MMap[Probe, DefaultBio] =
     simpleRelationQuery(probes, "t:" + t.platform.affy.Unigene.key)

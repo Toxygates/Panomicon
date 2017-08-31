@@ -223,7 +223,7 @@ public class MyDataScreen extends Screen {
   }
   
   private void deleteBatch(Batch b) {
-    userData.deleteBatchAsync(b, new TaskCallback(this, "Delete batch", userData) {
+    userData.deleteBatchAsync(b, new TaskCallback(logger, "Delete batch", userData) {
       @Override
       public void onCompletion() {
         refreshBatches();

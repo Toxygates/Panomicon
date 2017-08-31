@@ -20,9 +20,7 @@
 
 package t.common.shared;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * This class is intended mainly for grouping shared datasets, which will have

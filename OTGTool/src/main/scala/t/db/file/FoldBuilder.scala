@@ -127,12 +127,12 @@ class PFoldValueBuilder(md: Metadata, input: RawExpressionData)
     val l2 = Math.log(2)
     var pVals = Map[String, Double]()
 
+    val controlData = controlSamples.map(cached.data)
+    val treatedData = treatedSamples.map(cached.data)
+      
     for (probe <- cached.probes) {
-      val controlData = controlSamples.map(cached.data)
-      val treatedData = treatedSamples.map(cached.data)
-
-      val cs = controlData.map(_(probe)._1)
-      val ts = treatedData.map(_(probe)._1)
+      val cs = controlData.flatMap(_.get(probe)).map(_._1)
+      val ts = treatedData.flatMap(_.get(probe)).map(_._1)
       val pval = if (cs.size >= 2 && ts.size >= 2) {
         tt.tTest(cs.toArray, ts.toArray)
       } else {

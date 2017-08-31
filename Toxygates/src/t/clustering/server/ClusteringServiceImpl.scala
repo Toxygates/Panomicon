@@ -19,11 +19,16 @@
 
 package t.clustering.server
 
-import t.clustering.client.ClusteringService
-import com.google.gwt.user.server.rpc.RemoteServiceServlet
-import t.clustering.shared.Algorithm
 import java.util.{List => JList}
+
 import scala.collection.JavaConversions._
+
+import com.google.gwt.user.server.rpc.RemoteServiceServlet
+
+
+
+import t.clustering.client.ClusteringService
+import t.clustering.shared.Algorithm
 
 abstract class ClusteringServiceImpl[C, R] extends RemoteServiceServlet with ClusteringService[C, R] {
   

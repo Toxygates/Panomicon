@@ -18,10 +18,7 @@
 
 package t.common.shared;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.SampleGroup;

@@ -61,7 +61,7 @@ public interface SparqlService extends RemoteService, SampleService, ProbeServic
    * @param pattern
    * @return
    */
-  String[] pathways(SampleClass sc, String pattern) throws TimeoutException;
+  String[] pathways(String pattern) throws TimeoutException;
 
   /**
    * Obtain filtered probes that belong to the named pathway.
@@ -70,7 +70,7 @@ public interface SparqlService extends RemoteService, SampleService, ProbeServic
    * @param samples If null, all probes will be obtained.
    * @return
    */
-  String[] probesForPathway(SampleClass sc, String pathway, @Nullable List<Sample> samples)
+  String[] probesForPathway(String pathway, @Nullable List<Sample> samples)
       throws TimeoutException;
 
   /**

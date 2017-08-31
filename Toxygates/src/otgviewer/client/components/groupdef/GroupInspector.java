@@ -414,7 +414,8 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
       }
       Dataset[] enAr = newEnabled.toArray(new Dataset[0]);
       screen.datasetsChanged(enAr);
-      sampleService.chooseDatasets(enAr, new PendingAsyncCallback<Void>(screen));
+      sampleService.chooseDatasets(enAr, new PendingAsyncCallback<SampleClass[]>(screen));
+      storeDatasets(getParser(screen));
       Window
           .alert(missing.size() + " dataset(s) were activated " + "because of your group choice.");
     }

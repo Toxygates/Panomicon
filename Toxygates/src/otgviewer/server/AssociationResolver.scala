@@ -62,6 +62,17 @@ class AssociationResolver(probeStore: Probes,
       })
     }
 
+    def resolveMiRNA(probes: Iterable[Probe]): BBMap = {
+      val (isMirna, isNotMirna) = probes.partition(_.isMiRna)
+  
+      val immediateLookup = probeStore.mirnaAccessionLookup(isMirna)        
+      
+      val viaGeneAnnotation = toBioMap(isNotMirna, (_: Probe).genes) combine
+          mirnaResolver.forGenes(probes.flatMap(_.genes))
+          
+      immediateLookup ++ viaGeneAnnotation
+    }
+    
     lazy val mirnaResolver = TargetmineColumns.miRNA(targetmine.get)
 
     override def associationLookup(at: AType, sc: SampleClass, probes: Iterable[Probe])(implicit sf: SampleFilter): BBMap = {
@@ -77,9 +88,7 @@ class AssociationResolver(probeStore: Probes,
         case _: AType.Ensembl.type    => probeStore.ensemblLookup(probes)
         case _: AType.EC.type         => probeStore.ecLookup(probes)
         case _: AType.Unigene.type    => probeStore.unigeneLookup(probes)
-        case _: AType.MiRNA.type      =>
-          toBioMap(probes, (_: Probe).genes) combine
-            mirnaResolver.forGenes(probes.flatMap(_.genes))
+        case _: AType.MiRNA.type      => resolveMiRNA(probes)
         case _                        => super.associationLookup(at, sc, probes)
       }
     }

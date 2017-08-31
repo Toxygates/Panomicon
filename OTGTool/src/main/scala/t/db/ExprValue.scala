@@ -23,10 +23,12 @@ import java.text.NumberFormat
 import t.platform._
 
 object ExprValue {
+  import t.util.SafeMath._
+  
   def presentMean(vs: Iterable[ExprValue], probe: String): ExprValue = {
     val nps = vs.filter(_.call != 'A')
     if (nps.size > 0) {
-      apply(nps.map(_.value).sum / nps.size, 'P', probe)
+      apply(safeMean(nps.map(_.value)), 'P', probe)
     } else {
       apply(0, 'A', probe)
     }
@@ -34,7 +36,7 @@ object ExprValue {
 
   def allMean(vs: Iterable[ExprValue], probe: String): ExprValue = {
     val value = if (vs.size > 0) {
-      vs.map(_.value).sum / vs.size
+      safeMean(vs.map(_.value))      
     } else {
       0
     }

@@ -18,16 +18,12 @@
 
 package t.common.client.maintenance;
 
-import gwtupload.client.IUploader;
-import gwtupload.client.SingleUploader;
-import gwtupload.client.Uploader;
+import gwtupload.client.*;
 import gwtupload.client.IUploader.OnCancelUploaderHandler;
 import gwtupload.client.IUploader.OnFinishUploaderHandler;
 import gwtupload.client.IUploader.OnStartUploaderHandler;
 
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * Handles the uploading of a single file.

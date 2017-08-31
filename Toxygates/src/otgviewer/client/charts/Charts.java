@@ -31,6 +31,7 @@ import otgviewer.shared.Series;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
+import static t.model.sample.CoreParameter.*;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.rpc.SeriesServiceAsync;
 
@@ -49,7 +50,7 @@ public class Charts {
     void acceptBarcodes(Sample[] barcodes);
   }
 
-  private final Logger logger = SharedUtils.getLogger("cgf");
+  private final Logger logger = SharedUtils.getLogger("charts");
 
   protected final SampleServiceAsync sampleService;
   protected final SeriesServiceAsync seriesService;
@@ -73,8 +74,10 @@ public class Charts {
 
     List<SampleClass> scs = new ArrayList<SampleClass>();
     for (Group g : groups) {
-      SampleClass sc = SampleClassUtils.asMacroClass(g.getSamples()[0].sampleClass(),
+      SampleClass groupSc = g.getSamples()[0].sampleClass();
+      SampleClass sc = SampleClassUtils.asMacroClass(groupSc,
           schema);
+      sc.put(ControlGroup, groupSc.get(ControlGroup));
       scs.add(sc);
     }
 
@@ -148,6 +151,7 @@ public class Charts {
     String[] majorVals = GroupUtils.collect(groups, schema.majorParameter()).toArray(new String[0]);
 
     if (organisms.size() > 1) {
+      logger.info("Get rows for chart based on units");
       sampleService.units(sampleClasses, schema.majorParameter(), majorVals,
           new AsyncCallback<Pair<Unit, Unit>[]>() {
 
@@ -163,6 +167,7 @@ public class Charts {
             }
           });
     } else if (barcodes == null) {
+      logger.info("Get rows for chart based on sample classes");
       sampleService.samples(sampleClasses, schema.majorParameter(), majorVals,
           new AsyncCallback<Sample[]>() {
 
@@ -180,6 +185,7 @@ public class Charts {
             }
           });
     } else {
+      logger.info("Already had samples for chart");
       // We already have the necessary samples, can finish immediately
       finishRowCharts(screen, probes, vt, groups, barcodes, acceptor);
     }
@@ -187,9 +193,10 @@ public class Charts {
 
   private void finishRowCharts(Screen screen, String[] probes, ValueType vt, List<Group> groups,
       Sample[] barcodes, AChartAcceptor acceptor) {
-    DataSource cds =
+    DataSource dataSource =
         new DataSource.DynamicExpressionRowSource(schema, probes, vt, barcodes, screen);
-    AdjustableGrid<?, ?> acg = factory.adjustableGrid(screen, cds, groups, vt);
+    logger.info("Finish charts with " + dataSource);
+    AdjustableGrid<?, ?> acg = factory.adjustableGrid(screen, dataSource, groups, vt);
     acceptor.acceptCharts(acg);
   }
 
@@ -200,9 +207,10 @@ public class Charts {
       treated.add(u.first());
     }
 
-    DataSource cds =
+    DataSource dataSource =
         new DataSource.DynamicUnitSource(schema, probes, vt, treated.toArray(new Unit[0]), screen);
-    AdjustableGrid<?, ?> acg = factory.adjustableGrid(screen, cds, groups, vt);
+    logger.info("Finish charts with " + dataSource);
+    AdjustableGrid<?, ?> acg = factory.adjustableGrid(screen, dataSource, groups, vt);
     acceptor.acceptCharts(acg);
   }
 }

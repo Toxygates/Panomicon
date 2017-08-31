@@ -257,7 +257,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     if (getSessionData().sampleFilter.datasetURIs.isEmpty) {
       //Initialise the selected datasets by selecting all, except shared user data.
       val defaultVisible = appInfo.datasets.filter(ds =>
-        ! Dataset.isSharedDataset(ds.getTitle))
+        ! Dataset.isSharedDataset(ds.getTitle))        
       chooseDatasets(defaultVisible)
     }
    appInfo
@@ -297,9 +297,12 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     getSessionData.sampleFilter.copy(datasetURIs = dsTitles.map(Datasets.packURI(_)))
   }
 
-  def chooseDatasets(ds: Array[Dataset]): scala.Unit = {
+  def chooseDatasets(ds: Array[Dataset]): Array[t.model.SampleClass] = {
     println("Choose datasets: " + ds.map(_.getTitle).mkString(" "))
     getSessionData.sampleFilter = sampleFilterFor(ds)
+
+    sampleStore.sampleClasses.map(x =>
+      new SampleClass(new java.util.HashMap(x))).toArray
   }
 
   @throws[TimeoutException]
@@ -347,13 +350,6 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
   def samples(scs: Array[SampleClass], param: String,
       paramValues: Array[String]): Array[Sample] =
         scs.flatMap(x => samples(x, param, paramValues)).distinct.toArray
-
-  @throws[TimeoutException]
-  def sampleClasses(): Array[t.model.SampleClass] = {
-  sampleStore.sampleClasses.map(x =>
-    new SampleClass(new java.util.HashMap(x))
-    ).toArray
-  }
 
   @throws[TimeoutException]
   def units(sc: SampleClass,
@@ -405,7 +401,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   //TODO remove sc
   @throws[TimeoutException]
-  def pathways(sc: SampleClass, pattern: String): Array[String] =
+  def pathways(pattern: String): Array[String] =
     b2rKegg.forPattern(pattern).toArray
 
   //TODO: return a map instead
@@ -422,14 +418,13 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   //TODO more general two-way annotation resolution (don't hardcode a single annotation type
   //such as pathway)
-  //TODO remove sc
   @throws[TimeoutException]
-  def probesForPathway(sc: SampleClass, pathway: String): Array[String] = {
-    probesForPathway(sc, pathway, null)
+  def probesForPathway(pathway: String): Array[String] = {
+    probesForPathway(pathway, null)
   }
 
   @throws[TimeoutException]
-  def probesForPathway(sc: SampleClass, pathway: String, samples: JList[Sample]): Array[String] = {
+  def probesForPathway(pathway: String, samples: JList[Sample]): Array[String] = {
     val pw = Pathway(null, pathway)
     val prs = probeStore.forPathway(b2rKegg, pw)
     val pmap = context.matrix.probeMap //TODO

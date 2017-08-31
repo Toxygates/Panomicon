@@ -20,9 +20,7 @@ package t.admin.client;
 
 import t.admin.shared.PlatformType;
 import t.common.client.rpc.BatchOperationsAsync;
-import t.common.shared.Dataset;
-import t.common.shared.ManagedItem;
-import t.common.shared.Platform;
+import t.common.shared.*;
 import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.Instance;
 

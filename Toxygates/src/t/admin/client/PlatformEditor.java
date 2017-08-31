@@ -23,12 +23,12 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.core.shared.GWT;
-import com.google.gwt.user.client.ui.TextArea;
-
 import t.common.client.maintenance.ManagedItemEditor;
 import t.common.client.maintenance.TaskCallback;
 import t.common.shared.Platform;
+
+import com.google.gwt.core.shared.GWT;
+import com.google.gwt.user.client.ui.TextArea;
 
 public class PlatformEditor extends ManagedItemEditor {
 
@@ -58,7 +58,7 @@ public class PlatformEditor extends ManagedItemEditor {
         new Date(), publicComments.getValue());
     if (addNew) {
       maintenanceService.addPlatformAsync(p, uploader.platformType(), new TaskCallback(
-          this, "Add platform", maintenanceService) {
+          logger, "Add platform", maintenanceService) {
         @Override
         protected void onCompletion() {
           onFinish();

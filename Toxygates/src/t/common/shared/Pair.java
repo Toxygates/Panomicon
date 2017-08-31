@@ -19,9 +19,7 @@
 package t.common.shared;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @SuppressWarnings("serial")
 public class Pair<T, U> implements Serializable {

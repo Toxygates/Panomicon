@@ -4,8 +4,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.user.client.rpc.RemoteService;
-
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.common.shared.sample.search.MatchCondition;
@@ -13,21 +11,22 @@ import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.viewer.shared.TimeoutException;
 
+import com.google.gwt.user.client.rpc.RemoteService;
+
 /**
  * A service that provides information about samples, datasets, and 
  * related objects.
  */
 public interface SampleService extends RemoteService {
   
-  void chooseDatasets(Dataset[] enabled) throws TimeoutException;
-  
   /**
-   * Obtain all sample classes in the triple store
+   * Choose the visible datasets.
    * 
-   * @return
+   * @param enabled 
+   * @return sample classes in the new dataset view.
+   * @throws TimeoutException
    */
-  @Deprecated
-  SampleClass[] sampleClasses() throws TimeoutException;
+  SampleClass[] chooseDatasets(Dataset[] enabled) throws TimeoutException;
   
   String[] parameterValues(Dataset[] ds, SampleClass sc, String parameter)
       throws TimeoutException;

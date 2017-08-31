@@ -92,7 +92,7 @@ public class InterMineData {
         parent, "Unable to import lists from " + instance.title()) {
       public void handleSuccess(StringList[] data) {
         Collection<ItemList> rebuild =
-            StringListsStoreHelper.rebuildLists(parent, Arrays.asList(data));
+            StringListsStoreHelper.rebuildLists(logger, Arrays.asList(data));
         List<StringList> normal = StringList.pickProbeLists(rebuild, null);
         List<ClusteringList> clustering = ClusteringList.pickUserClusteringLists(rebuild, null);
 
