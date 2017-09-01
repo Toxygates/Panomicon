@@ -8,62 +8,25 @@ import scala.language.implicitConversions
 import t.BaseConfig
 import t.common.shared.DataSchema
 import t.common.shared.sample.Annotation
-import t.common.shared.sample.HasSamples
 import t.common.shared.sample.NumericalBioParamValue
 import t.common.shared.sample.Sample
 import t.common.shared.sample.StringBioParamValue
+import t.db.VarianceSet
 import t.model.sample.Attribute
-import t.platform.BioParameter
-import t.platform.VarianceSet
-import t.sparql.Samples
-import t.viewer.server.Conversions.asScalaSample
-import t.sparql.TriplestoreMetadata
-import t.sparql.SampleFilter
-import t.db.Metadata
-import t.viewer.server.Conversions._
-import java.lang.{Double => JDouble}
-import scala.language.implicitConversions
-import t.sample.SampleSet
 import t.model.sample.CoreParameter
+import t.platform.BioParameter
+import t.platform.SSVarianceSet
+import t.sparql.Samples
+import t.viewer.server.Conversions._
+import t.viewer.server.Conversions.asScalaSample
 
 class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
     unitHelper: Units) {
-
-//  private def bioParamsForSample(s: Sample): BioParameters =
-//    Option(s.get(schema.timeParameter())) match {
-//      case Some(t) => bioParameters.forTimePoint(t)
-//      case _       => bioParameters
-//    }
 
   //TODO this needs to update sometimes, ideally without restart
   lazy val bioParameters = {
     val pfs = new t.sparql.Platforms(baseConfig.triplestore)
     pfs.bioParameters
-  }
-
-  import t.model.sample.CoreParameter.{ControlGroup => ControlGroupParam}
-
-  implicit def asScala(x: Sample) = asScalaSample(x)
-
-  /**
-   * Find the control groups in a set of samples and create a map associating
-   * samples with their control group
-   * @param samples samples to partition
-   * @param sampleSet a set that the discovered control samples have to be contained in
-   */
-  def controlGroups(samples: Iterable[Sample], sampleSet: SampleSet): Map[Sample, VarianceSet] = {
-    val controlGroups = unitHelper.samplesByControlGroup(samples)
-    val knownSampleIds = sampleSet.sampleIds
-    Map() ++ controlGroups.flatMap { case (cgroup, ss) =>
-      var (cs, ts) = ss.partition(s => schema.isControl(s))
-      val controls = cs.map(asScalaSample).filter(s => knownSampleIds.contains(s.sampleId))
-      if (!controls.isEmpty) {
-        val cg = new VarianceSet(sampleSet, controls)
-        ss.map(s => s -> cg)
-      } else {
-        Seq()
-      }
-    }
   }
 
   /**
@@ -94,7 +57,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
     samples.sampleAttributeValues(querySet.map(x => x.get(CoreParameter.SampleId)),
         List(otg.model.sample.OTGAttribute.KidneyWeight, otg.model.sample.OTGAttribute.LiverWeight))
 
-    val cgs = querySet.groupBy(_(ControlGroupParam))
+    val cgs = querySet.groupBy(_.get(CoreParameter.ControlGroup))
 
     val rs = for (
       (cgroup, ss) <- cgs;
@@ -121,7 +84,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
         (None,
           bioParameters.sampleParameters)
       } else {
-        (Some(new VarianceSet(sampleStore, controls.map(asScalaSample))),
+        (Some(new SSVarianceSet(sampleStore, controls.map(asScalaSample))),
           bioParameters.sampleParameters)
       }
     }

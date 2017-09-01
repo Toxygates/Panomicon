@@ -1,11 +1,7 @@
 package t.model.sample;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
@@ -82,6 +78,12 @@ abstract public class AttributeSet implements Serializable {
    */
   abstract public Collection<Attribute> getHighLevel();
   
+  /**
+   * Get all attributes that are sufficient for distinguishing units within the high-level grouping
+   * 
+   * @return
+   */
+  abstract public Collection<Attribute> getUnitLevel();
   
   public @Nullable Attribute byId(String id) {
     return byId.get(id);

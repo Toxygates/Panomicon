@@ -59,10 +59,10 @@ object TestData {
 
   import t.model.sample.CoreParameter.{ControlGroup => CGParam}
 
-  lazy val controlGroups: Map[Sample, VarianceSet] = {
+  lazy val controlGroups: Map[Sample, SSVarianceSet] = {
     val gr = samples.groupBy(_(CGParam))
     val controls = gr.mapValues(vs =>
-      new VarianceSet(metadata,
+      new SSVarianceSet(metadata,
           vs.toSeq.filter(_(DoseLevel) == "Control"))
       )
 

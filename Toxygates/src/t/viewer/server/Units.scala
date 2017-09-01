@@ -12,9 +12,12 @@ import t.sparql.Samples
 import t.sparql.SampleFilter
 import t.viewer.server.Conversions._
 import t.model.sample.CoreParameter._
+import t.db.SimpleVarianceSet
+import sun.text.normalizer.NormalizerImpl.NextCCArgs
 
 
-class Units(schema: DataSchema, sampleStore: Samples) {
+class Units(schema: DataSchema, sampleStore: Samples) extends
+  UnitsHelper(schema) {
   /**
    * Generates units containing treated samples and their associated control samples.
    * TODO: sensitive algorithm, should simplify and possibly move to OTGTool.
@@ -98,6 +101,9 @@ class Units(schema: DataSchema, sampleStore: Samples) {
     }
     r
   }
+}
+
+class UnitsHelper(schema: DataSchema) {
 
   import t.model.sample.CoreParameter.{ControlGroup => ControlGroupParam}
   type ControlGroupKey = (String, String, String)
@@ -116,4 +122,31 @@ class Units(schema: DataSchema, sampleStore: Samples) {
 
   def controlGroupKey(s: Sample): ControlGroupKey =
       (s.get(ControlGroupParam), s.get(minorParameter), s.get(Batch))
+
+  def unitGroupKey(s: Sample) = s.get(schema.mediumParameter())
+  /**
+   * Groups the samples provided into treated and control groups, returning
+   * a list of tuples whose first element is a treated unit and whose second
+   * element is the corresponding control unit.
+   * @param samples samples to partition
+   */
+  def formTreatedAndControlUnits(samples: Iterable[Sample]):
+      Seq[(Iterable[Iterable[Sample]], Iterable[Sample])] = {
+    val controlGroups = samples.groupBy(controlGroupKey)
+    controlGroups.map { case (unitKey, samples) =>
+      samples.partition(!schema.isControl(_)) match {
+        case (treated, controls) =>
+          (treated.groupBy(unitGroupKey).values, controls)
+      }
+    }.toList
+  }
+
+  /**
+   * Forms a unit from a set of samples.
+   * @param samples all of the samples from the desired unit
+   */
+  def formUnit(samples: Iterable[Sample], schema:DataSchema): Unit = {
+    new Unit(SampleClassUtils.asUnit(samples.head.sampleClass(), schema),
+        samples.toArray)
+  }
 }
