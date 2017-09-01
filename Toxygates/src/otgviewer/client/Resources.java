@@ -49,6 +49,9 @@ public interface Resources extends t.common.client.Resources {
 
   @Source("help/compoundRanking.png")
   ImageResource compoundRankingHelp();
+  
+  @Source("help/sampleSearch.png")
+  ImageResource sampleSearchHelp();
 
   @Source("help/start.html")
   TextResource startHTML();

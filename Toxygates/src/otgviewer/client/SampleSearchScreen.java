@@ -5,6 +5,7 @@ import java.util.*;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
@@ -355,4 +356,15 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
     table.loadFrom(g, false);
     Utils.displayInPopup("Unit details", table, DialogPosition.Top);
   }
+
+  @Override
+  protected TextResource getHelpHTML() {
+    return super.getHelpHTML();
+  }
+
+  @Override
+  protected ImageResource getHelpImage() {
+    return resources().sampleSearchHelp();
+  }
+  
 }
