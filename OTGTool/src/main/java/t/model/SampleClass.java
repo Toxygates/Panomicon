@@ -72,6 +72,13 @@ public class SampleClass implements Serializable, SampleLike {
     data.put(key.id(), value);
   }
   
+  // TODO: this should return a set of attributes, but we can't do that until
+  // we switch to using attributes as hashmap keys.
+  @Deprecated
+  public Set<String> getKeys() {
+    return data.keySet();
+  }
+
   public void remove(String key) {
     data.remove(key);
   }

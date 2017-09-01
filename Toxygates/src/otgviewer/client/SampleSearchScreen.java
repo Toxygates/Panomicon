@@ -104,18 +104,23 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
       @Override
       public void onClick(ClickEvent event) {
         try {
-          Unit[] units =
-              unitSearch.sampleGroupFromUnits(unitTableHelper.selectionTable().getSelection());
-          String name = findAvailableGroupName("Sample search group ");
-          Group pendingGroup = new Group(schema(), name, units);
+          Collection<Unit> selectedUnits = unitTableHelper.selectionTable().getSelection();
+          if (selectedUnits.size() > 0) {
+            Unit[] allUnits = unitSearch.sampleGroupFromUnits(selectedUnits);
+            String name = findAvailableGroupName("Sample search group ");
+            Group pendingGroup = new Group(schema(), name, allUnits);
 
-          chosenColumns.add(pendingGroup);
-          columnsChanged(chosenColumns);
-          storeColumns(manager().getParser());
+            chosenColumns.add(pendingGroup);
+            columnsChanged(chosenColumns);
+            storeColumns(manager().getParser());
 
-          unitTableHelper.selectionTable().clearSelection();
+            unitTableHelper.selectionTable().clearSelection();
 
-          Window.alert("Saved group: " + name);
+            Window.alert("Saved group: " + name);
+          } else {
+            Window.alert("Sample groups must complain at least one unit. " + '\n'
+                + "Please select some units before attempting to save a sample group.");
+          }
         } catch (Exception e) {
           Window.alert("Saving group failed: " + e);
         }
