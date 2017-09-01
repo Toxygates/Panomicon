@@ -30,11 +30,11 @@ import t.common.client.ImageClickCell;
 import t.common.client.Resources;
 import t.common.shared.SharedUtils;
 import t.model.SampleClass;
-import t.viewer.client.*;
+import t.viewer.client.Analytics;
+import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SeriesServiceAsync;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
