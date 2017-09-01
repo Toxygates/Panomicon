@@ -50,11 +50,26 @@ abstract class AbstractSampleSearch[ST <: SampleLike](condition: MatchCondition,
   protected def zTestSampleSize(s: ST): Int
   protected def sortObject(s: ST): (String, Int, Int)
 
+  val MAX_PRINT = 20
+
   /**
    * Results of the search.
    */
-  lazy val results: Iterable[ST] =
-    results(condition).toSeq.sortBy(sortObject(_))
+  lazy val results: Iterable[ST] = {
+    val searchResult = results(condition).toSeq.map(postProcessSample).sortBy(sortObject(_))
+
+    val count = searchResult.size
+    val countString = if (count > MAX_PRINT) s"(displaying $MAX_PRINT/$count)"
+        else s"($count)"
+    println(s"Search results $countString:")
+    for (sample <- searchResult take MAX_PRINT) {
+      println(sample)
+    }
+
+    searchResult
+  }
+
+  protected def postProcessSample(sample: ST): ST = sample
 
   protected def sampleAttributeValue(sample: ST, attribute: Attribute): Option[Double] =
     t.db.Sample.numericalValue(sample, attribute)

@@ -23,6 +23,7 @@ import java.util.*;
 import t.common.shared.DataSchema;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
+import t.model.sample.AttributeSet;
 
 /**
  * A sample class with associated samples.
@@ -43,6 +44,26 @@ public class Unit extends SampleClass {
 
   public Sample[] getSamples() {
     return samples;
+  }
+
+  // TODO: get rid of the AttributeSet dependency once we refactor SampleClass to store Attributes
+  public void computeAllAttributes(AttributeSet attributeSet, boolean overwrite) {
+    Set<Attribute> computedAttribs = new HashSet<Attribute>();
+
+    for (Sample sample : samples) {
+      for (String key : sample.getKeys()) {
+        Attribute attribute = attributeSet.byId(key);
+
+        if (!computedAttribs.contains(attribute) && (overwrite || !contains(attribute))) {
+          computedAttribs.add(attribute);
+          if (attribute.isNumerical()) {
+            averageAttribute(attribute);
+          } else {
+            concatenateAttribute(attribute);
+          }
+        }
+      }
+    }
   }
 
   public void averageAttribute(Attribute attr) {
