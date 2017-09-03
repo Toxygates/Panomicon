@@ -61,7 +61,8 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   }
 
   public SampleSearchScreen(ScreenManager man) {
-    super("Sample search", key, true, man);
+    super("Sample search", key, true, man, man.resources().sampleSearchHTML(),
+        man.resources().sampleSearchHelp());
     appInfo = man.appInfo();
     filterTools = new FilterTools(this);
     this.addListener(filterTools);
