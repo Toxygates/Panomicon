@@ -272,10 +272,26 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
     return false;
   }
 
+  private boolean initialised = false;
+  @Override 
+  public void show() {
+    super.show();
+    if (!initialised) {
+      //Force reloading of sample classes
+      changeDatasets(chosenDatasets);
+      initialised = true;
+    }
+  }
   @Override
   public void changeSampleClass(SampleClass sc) {
-    super.changeSampleClass(sc);
-    storeSampleClass(getParser());
+    // On this screen, ignore the blank sample class set by
+    // DataListenerWidget
+    // TODO clarify why this is needed, try to remove or simplify.
+    // See also similar logic in ColumnScreen
+    if (!sc.getMap().isEmpty()) {
+      super.changeSampleClass(sc);
+      storeSampleClass(getParser());
+    }
   }
 
   protected void hideTables() {
@@ -372,5 +388,5 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   protected ImageResource getHelpImage() {
     return resources().sampleSearchHelp();
   }
-  
+
 }

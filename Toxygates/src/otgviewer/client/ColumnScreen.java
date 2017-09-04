@@ -149,6 +149,17 @@ public class ColumnScreen extends Screen {
     }
   }
 
+  private boolean initialised = false;
+  @Override 
+  public void show() {
+    super.show();
+    if (!initialised) {
+      //Force reloading of sample classes
+      changeDatasets(chosenDatasets);
+      initialised = true;
+    }
+  }
+
   @Override
   public void tryConfigure() {
     if (chosenColumns.size() > 0) {

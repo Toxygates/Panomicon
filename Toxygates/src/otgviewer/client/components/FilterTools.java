@@ -126,6 +126,7 @@ public class FilterTools extends DataListenerWidget {
   }
 
   protected void getSampleClasses() {
+    logger.info("Request sample classes for " + chosenDatasets.length + " datasets");
     sampleService.chooseDatasets(chosenDatasets, new PendingAsyncCallback<SampleClass[]>(screen,
         "Unable to choose datasets") {
       public void handleSuccess(SampleClass[] sampleClasses) {
