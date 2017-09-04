@@ -66,7 +66,6 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
           selected.remove(object);
         }
         selectionChanged(selected);
-        table.redrawRow(index);
       }
     });
 
@@ -160,7 +159,6 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
   public void setSelection(Collection<T> items, @Nullable SetEditor<T> fromSelector) {
     setSelection(items);
   }
-
 
   /**
    * Get an item that was selected by highlighting a row (not by ticking a check box)

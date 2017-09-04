@@ -19,6 +19,7 @@
 package t.common.shared.sample;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import t.common.shared.*;
 import t.model.SampleClass;
@@ -67,9 +68,19 @@ public class Sample implements Packable, Serializable, HasClass, SampleLike {
     return sampleClass.get(attribute);
   }
   
+  @Deprecated
+  public Set<String> getKeys() {
+    return sampleClass.getKeys();
+  }
+
   //TODO deprecate when the time is right
   public String get(String parameter) {
     return sampleClass.get(parameter);
+  }
+
+  @Deprecated
+  public boolean contains(String key) {
+    return sampleClass.contains(key);
   }
 
   public boolean contains(Attribute key) {

@@ -45,16 +45,22 @@ object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
     val controlUnits = controlUnitsAndVarianceSetsbyID.mapValues(_._1)
     val varianceSets = controlUnitsAndVarianceSetsbyID.mapValues(_._2)
 
-    new UnitSearch(condition, varianceSets, controlUnits, units)
+    new UnitSearch(condition, varianceSets, controlUnits, units, attributes)
   }
 }
 
 class UnitSearch(condition: MatchCondition,
-    varianceSets: Map[String, VarianceSet], controlUnits: Map[String, Unit], samples: Iterable[Unit])
+    varianceSets: Map[String, VarianceSet], controlUnits: Map[String, Unit], samples: Iterable[Unit],
+    attributes: AttributeSet)
     extends AbstractSampleSearch[Unit](condition, varianceSets, samples)  {
 
   lazy val pairedResults = results.map(unit => (unit,
       controlUnits(unit.get(CoreParameter.SampleId))))
+
+  override protected def postProcessSample(sample: Unit): Unit = {
+    sample.computeAllAttributes(attributes, false)
+    sample
+  }
 
   protected def zTestSampleSize(unit: Unit): Int =
     unit.getSamples().length

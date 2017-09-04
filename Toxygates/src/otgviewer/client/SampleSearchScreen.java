@@ -5,6 +5,7 @@ import java.util.*;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
@@ -60,7 +61,8 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   }
 
   public SampleSearchScreen(ScreenManager man) {
-    super("Sample search", key, true, man);
+    super("Sample search", key, true, man, man.resources().sampleSearchHTML(),
+        man.resources().sampleSearchHelp());
     appInfo = man.appInfo();
     filterTools = new FilterTools(this);
     this.addListener(filterTools);
@@ -103,18 +105,23 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
       @Override
       public void onClick(ClickEvent event) {
         try {
-          Unit[] units =
-              unitSearch.sampleGroupFromUnits(unitTableHelper.selectionTable().getSelection());
-          String name = findAvailableGroupName("Sample search group ");
-          Group pendingGroup = new Group(schema(), name, units);
+          Collection<Unit> selectedUnits = unitTableHelper.selectionTable().getSelection();
+          if (selectedUnits.size() > 0) {
+            Unit[] allUnits = unitSearch.sampleGroupFromUnits(selectedUnits);
+            String name = findAvailableGroupName("Sample search group ");
+            Group pendingGroup = new Group(schema(), name, allUnits);
 
-          chosenColumns.add(pendingGroup);
-          columnsChanged(chosenColumns);
-          storeColumns(manager().getParser());
+            chosenColumns.add(pendingGroup);
+            columnsChanged(chosenColumns);
+            storeColumns(manager().getParser());
 
-          unitTableHelper.selectionTable().clearSelection();
+            unitTableHelper.selectionTable().clearSelection();
 
-          Window.alert("Saved group: " + name);
+            Window.alert("Saved group: " + name);
+          } else {
+            Window.alert("Sample groups must complain at least one unit. " + '\n'
+                + "Please select some units before attempting to save a sample group.");
+          }
         } catch (Exception e) {
           Window.alert("Saving group failed: " + e);
         }
@@ -355,4 +362,15 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
     table.loadFrom(g, false);
     Utils.displayInPopup("Unit details", table, DialogPosition.Top);
   }
+
+  @Override
+  protected TextResource getHelpHTML() {
+    return super.getHelpHTML();
+  }
+
+  @Override
+  protected ImageResource getHelpImage() {
+    return resources().sampleSearchHelp();
+  }
+  
 }
