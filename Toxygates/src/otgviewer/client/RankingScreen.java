@@ -22,16 +22,16 @@ import static t.common.client.Utils.makeScrolled;
 
 import java.util.List;
 
-import otgviewer.client.components.*;
+import otgviewer.client.components.FilterTools;
+import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.client.components.ranking.CompoundRanker;
 import t.common.shared.Dataset;
-import t.model.SampleClass;
 
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-public class RankingScreen extends Screen {
+public class RankingScreen extends DataFilterScreen {
 
   public static final String key = "rank";
 
@@ -84,16 +84,6 @@ public class RankingScreen extends Screen {
   @Override
   protected boolean shouldShowStatusBar() {
     return false;
-  }
-
-  @Override
-  public void changeSampleClass(SampleClass sc) {
-    // On this screen, ignore the blank sample class set by
-    // DataListenerWidget
-    if (!sc.getMap().isEmpty()) {
-      super.changeSampleClass(sc);
-      storeSampleClass(getParser());
-    }
   }
 
   @Override

@@ -2,6 +2,15 @@ package otgviewer.client;
 
 import java.util.*;
 
+import otgviewer.client.components.*;
+import t.common.shared.sample.*;
+import t.model.sample.*;
+import t.viewer.client.Utils;
+import t.viewer.client.components.search.*;
+import t.viewer.client.dialog.DialogPosition;
+import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.shared.AppInfo;
+
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
@@ -10,17 +19,7 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.components.*;
-import t.common.shared.sample.*;
-import t.model.SampleClass;
-import t.model.sample.*;
-import t.viewer.client.Utils;
-import t.viewer.client.components.search.*;
-import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.rpc.SampleServiceAsync;
-import t.viewer.shared.AppInfo;
-
-public class SampleSearchScreen extends Screen implements Search.Delegate, ResultTable.Delegate {
+public class SampleSearchScreen extends DataFilterScreen implements Search.Delegate, ResultTable.Delegate {
   public static final String key = "search";
 
   private AppInfo appInfo;
@@ -270,28 +269,6 @@ public class SampleSearchScreen extends Screen implements Search.Delegate, Resul
   @Override
   protected boolean shouldShowStatusBar() {
     return false;
-  }
-
-  private boolean initialised = false;
-  @Override 
-  public void show() {
-    super.show();
-    if (!initialised) {
-      //Force reloading of sample classes
-      changeDatasets(chosenDatasets);
-      initialised = true;
-    }
-  }
-  @Override
-  public void changeSampleClass(SampleClass sc) {
-    // On this screen, ignore the blank sample class set by
-    // DataListenerWidget
-    // TODO clarify why this is needed, try to remove or simplify.
-    // See also similar logic in ColumnScreen
-    if (!sc.getMap().isEmpty()) {
-      super.changeSampleClass(sc);
-      storeSampleClass(getParser());
-    }
   }
 
   protected void hideTables() {

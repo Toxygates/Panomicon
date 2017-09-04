@@ -28,7 +28,6 @@ import otgviewer.client.components.groupdef.GroupInspector;
 import t.common.shared.DataSchema;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.SampleColumn;
-import t.model.SampleClass;
 import t.viewer.client.Utils;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -39,7 +38,7 @@ import com.google.gwt.user.client.ui.*;
 /**
  * This screen allows for column (group) definition as well as compound ranking.
  */
-public class ColumnScreen extends Screen {
+public class ColumnScreen extends DataFilterScreen {
   public static String key = "columns";
 
   private GroupInspector gi;
@@ -136,27 +135,6 @@ public class ColumnScreen extends Screen {
         logger.log(Level.WARNING, "Unable to load i. columns", e);
         Window.alert("Unable to load inactive columns.");
       }
-    }
-  }
-
-  @Override
-  public void changeSampleClass(SampleClass sc) {
-    // On this screen, ignore the blank sample class set by
-    // DataListenerWidget
-    if (!sc.getMap().isEmpty()) {
-      super.changeSampleClass(sc);
-      storeSampleClass(getParser());
-    }
-  }
-
-  private boolean initialised = false;
-  @Override 
-  public void show() {
-    super.show();
-    if (!initialised) {
-      //Force reloading of sample classes
-      changeDatasets(chosenDatasets);
-      initialised = true;
     }
   }
 
