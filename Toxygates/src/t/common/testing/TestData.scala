@@ -20,10 +20,11 @@
 
 package t.common.testing
 
-import t.db.RawExpressionData
-import t.viewer.server.ExprMatrix
 import t.common.shared.sample.Group
+
+import t.db.RawExpressionData
 import t.viewer.server.Conversions._
+import t.viewer.server.ExprMatrix
 
 /**
  * @author johan

@@ -1,8 +1,6 @@
 package t.viewer.client.components.search;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import javax.annotation.Nullable;
 

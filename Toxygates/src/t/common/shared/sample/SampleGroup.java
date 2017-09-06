@@ -19,9 +19,7 @@
 package t.common.shared.sample;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
