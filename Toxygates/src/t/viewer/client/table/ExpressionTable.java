@@ -29,6 +29,7 @@ import otgviewer.client.charts.*;
 import otgviewer.client.charts.Charts.AChartAcceptor;
 import otgviewer.client.components.*;
 import t.common.client.ImageClickCell;
+import t.common.client.components.StringArrayTable;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
@@ -500,11 +501,25 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     if (isFilterClick) {
       // Identify the column that was filtered.
       int col = columnAt(x);
-      ExpressionColumn ec = (ExpressionColumn) grid.getColumn(col);
-      editColumnFilter(ec.matrixColumn());
+      Column<ExpressionRow, ?> clickedCol = grid.getColumn(col);
+      if (clickedCol instanceof ExpressionColumn) {
+        ExpressionColumn ec = (ExpressionColumn) clickedCol;
+        editColumnFilter(ec.matrixColumn());
+      } else if (clickedCol instanceof AssociationTable.AssociationColumn){
+        columnSummary((AssociationTable<ExpressionRow>.AssociationColumn) clickedCol);
+      }
     }
     // If we return true, the click will be passed on to the other widgets
     return !isFilterClick;
+  }
+  
+  /**
+   * Display a summary of a column.
+   */
+  private void columnSummary(AssociationTable<ExpressionRow>.AssociationColumn col) {
+    AssociationSummary summary = new AssociationSummary(col, grid.getDisplayedItems());
+    StringArrayTable.displayDialog(summary.getTable(), col.getAssociation().title() + " summary",
+      500, 500);
   }
   
   protected void editColumnFilter(int column) {

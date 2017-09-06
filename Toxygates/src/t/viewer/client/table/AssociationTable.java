@@ -151,7 +151,12 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 		public AssociationColumn(SafeHtmlCell tc, AType association) {
 			super(tc, association.title(), false, "15em");
 			this.assoc = association;			
-			this._columnInfo = new ColumnInfo(_name, _width, association.canSort());
+			this._columnInfo = new ColumnInfo(_name, _width, association.canSort(),
+			  true, true, false);
+		}
+		
+		public AType getAssociation() {
+		  return assoc;
 		}
 		
 		public SortKey sortKey() {
