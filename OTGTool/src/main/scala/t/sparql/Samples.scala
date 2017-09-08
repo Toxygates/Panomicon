@@ -26,7 +26,7 @@ import t.db.Sample
 import t.sparql.{ Filter => TFilter }
 import t.model.sample.Attribute
 import scala.collection.JavaConversions._
-import t.model.sample.CoreParameter
+import t.model.sample.CoreParameter._
 import t.model.SampleClass
 
 object Samples extends RDFClass {
@@ -76,8 +76,8 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
   def itemClass: String = Samples.itemClass
   def defaultPrefix = Samples.defaultPrefix
 
-  val standardAttributes = bc.attributes.getRequired.map(_.id)
-  val hlAttributes = bc.attributes.getHighLevel.map(_.id)
+  val standardAttributes = bc.attributes.getRequired.toSeq
+  val hlAttributes = bc.attributes.getHighLevel.toSeq
   val tsCon: TriplestoreConfig = bc.triplestore
 
   val hasRelation = "t:hasSample"
@@ -158,11 +158,8 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
   /**
    * Can the given predicate ID be queried as a predicate of a sample?
    */
-  protected def isPredicateAttribute(attribute: String): Boolean =
-    attribute != "batchGraph"
-
   protected def isPredicateAttribute(attribute: Attribute): Boolean =
-    isPredicateAttribute(attribute.id)
+    attribute != Batch
 
   /**
    * Get parameter values for a set of samples. Values will only be returned
@@ -176,7 +173,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
       bc.attributes.getAll.toSeq
     } else {
       queryAttribs
-    }).toSeq.filter(a => isPredicateAttribute(a.id))
+    }).toSeq.filter(a => isPredicateAttribute(a))
     val withIndex = queryParams.zipWithIndex
     val vars = withIndex.map("?k" + _._2 + " ").mkString
     val triples = withIndex.map(x => " ?x t:" + x._1.id + " ?k" + x._2 + ".  ").mkString
@@ -212,7 +209,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
       bc.attributes.getAll.toSeq
     } else {
       querySet
-    }).toSeq.filter(a => isPredicateAttribute(a.id))
+    }).toSeq.filter(a => isPredicateAttribute(a))
 
     val withIndex = queryParams.zipWithIndex
     val triples = withIndex.map(x => " OPTIONAL { ?x t:" + x._1.id + " ?k" + x._2 + ". } ")
@@ -273,7 +270,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     SampleClassFilter())
     (implicit sampleFilter: SampleFilter): Query[Seq[Sample]] = {
 
-    val queryAttributes = (attributes.filter(isPredicateAttribute).toSeq :+ CoreParameter.SampleId).distinct
+    val queryAttributes = (attributes.filter(isPredicateAttribute).toSeq :+ SampleId).distinct
     val filterAttributes = sampleClassFilter.constraints.keys.flatMap(k => Option(bc.attributes.byId(k))).filter(isPredicateAttribute)
 
     val sampleClassFilterString = if (sampleClassFilter.constraints.isEmpty) "" else
@@ -289,7 +286,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
            |  }""".stripMargin,
         triplestore.mapQuery(_, 20000).map(x => {
           val sc = new SampleClass(x)
-          Sample(x(CoreParameter.SampleId.id), sc)
+          Sample(x(SampleId.id), sc)
     }))
   }
 

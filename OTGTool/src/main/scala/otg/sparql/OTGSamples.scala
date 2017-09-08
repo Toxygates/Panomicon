@@ -46,7 +46,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
                   s"?$attribute = " + "\"" + value + "\"")).flatten.mkString(" && ")}
             |  )""".stripMargin
 
-    val batchFilter = filter.get("batchGraph")
+    val batchFilter = filter.get(Batch)
     val batchFilterQ = batchFilter.map("<" + _ + ">").getOrElse("?batchGraph")
 
     Query(prefixes,
