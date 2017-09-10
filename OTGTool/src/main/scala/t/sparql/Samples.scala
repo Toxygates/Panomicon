@@ -288,7 +288,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
         s"""} ${sampleFilter.standardSampleFilters} $sampleClassFilterString
            |  }""".stripMargin,
         triplestore.mapQuery(_, 20000).map(x => {
-          val sc = new SampleClass(x)
+          val sc = new SampleClass(x ++ sampleClassFilter.constraints)
           Sample(x(CoreParameter.SampleId.id), sc)
     }))
   }
