@@ -32,8 +32,6 @@ import t.SeriesRanking
 import t.common.shared.sample._
 import t.db.MatrixContext
 import otgviewer.shared.RuleType
-import t.model.sample.CoreParameter._
-import otg.model.sample.OTGAttribute._
 
 /**
  * Conversions between Scala and Java types.
@@ -53,22 +51,22 @@ object Conversions {
 	val p = context.probeMap.pack(series.probe) //TODO filtering
 	val sc = series.sampleClass
 
-	new OTGSeries(sc.get(Repeat),
-	    sc.get(Organ), sc.get(Organism),
-	    p, sc.get(Compound), sc.get(DoseLevel), sc.get(TestType), Vector())
+	new OTGSeries(sc.get("sin_rep_type"),
+	    sc.get("organ_id"), sc.get("organism"),
+	    p, sc.get("compound_name"), sc.get("dose_level"), sc.get("test_type"), Vector())
   }
 
   implicit def asJava(series: OTGSeries)(implicit context: Context): Series = {
     implicit val mc = context.matrix
     val name = series.compound + " " + series.dose
     val sc = new t.model.SampleClass
-    sc.put(DoseLevel, series.dose)
-    sc.put(Compound, series.compound)
-    sc.put(Organism, series.organism)
-    sc.put(TestType, series.testType)
-    sc.put(Organ, series.organ)
-    sc.put(Repeat, series.repeat)
-    new Series(name, series.probeStr, ExposureTime.id(), sc,
+    sc.put("dose_level", series.dose)
+    sc.put("compound_name", series.compound)
+    sc.put("organism", series.organism)
+    sc.put("test_type", series.testType)
+    sc.put("organ_id", series.organ)
+    sc.put("sin_rep_type", series.repeat)
+    new Series(name, series.probeStr, "exposure_time", sc,
          series.values.map(t.viewer.server.Conversions.asJava).toArray)
   }
 
