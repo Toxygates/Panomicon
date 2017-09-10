@@ -38,7 +38,7 @@ public class UnitTable extends ResultTable<Unit> {
     addAttributeColumn(new UnitAttributeColumn(textCell, CoreParameter.SampleId, false) {
       @Override
       public String getValue(Unit unit) {
-        return getData(unit).split("\\s*/\\s*")[0];
+        return getData(unit).split("\\s*/\\s*")[0] + "...";
       }
     }, CoreParameter.SampleId);
     
