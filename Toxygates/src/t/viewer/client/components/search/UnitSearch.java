@@ -2,20 +2,13 @@ package t.viewer.client.components.search;
 
 import static t.model.sample.CoreParameter.SampleId;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import t.common.shared.Pair;
 import t.common.shared.RequestResult;
-import t.common.shared.sample.Annotation;
-import t.common.shared.sample.BioParamValue;
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.Unit;
+import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.AttributeSet;
@@ -106,7 +99,8 @@ public class UnitSearch extends Search<Unit, Pair<Unit, Unit>> {
     }
   }
 
-  public Unit[] sampleGroupFromUnits(Collection<Unit> units) {
+  @Override
+  public Unit[] sampleGroupFromEntities(Collection<Unit> units) {
     List<Unit> allUnits = new ArrayList<Unit>();
     for (Unit unit : units) {
       allUnits.add(unit);

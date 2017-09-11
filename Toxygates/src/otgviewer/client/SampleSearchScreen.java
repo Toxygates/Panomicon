@@ -2,6 +2,14 @@ package otgviewer.client;
 
 import java.util.*;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.resources.client.TextResource;
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.components.*;
 import t.common.shared.sample.*;
 import t.model.sample.*;
@@ -10,14 +18,6 @@ import t.viewer.client.components.search.*;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.shared.AppInfo;
-
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.TextResource;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
 
 public class SampleSearchScreen extends DataFilterScreen implements Search.Delegate, ResultTable.Delegate {
   public static final String key = "search";
@@ -104,9 +104,9 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
       @Override
       public void onClick(ClickEvent event) {
         try {
-          Collection<Unit> selectedUnits = unitTableHelper.selectionTable().getSelection();
-          if (selectedUnits.size() > 0) {
-            Unit[] allUnits = unitSearch.sampleGroupFromUnits(selectedUnits);
+          if (currentSearch.helper().selectionTable().getSelection().size() > 0) {
+            Unit[] allUnits = currentSearch.sampleGroupFromSelected();
+
             String name = findAvailableGroupName("Sample search group ");
             Group pendingGroup = new Group(schema(), name, allUnits);
 
@@ -114,7 +114,7 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
             columnsChanged(chosenColumns);
             storeColumns(manager().getParser());
 
-            unitTableHelper.selectionTable().clearSelection();
+            currentSearch.helper().selectionTable().clearSelection();
 
             Window.alert("Saved group: " + name);
           } else {
@@ -126,7 +126,7 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
         }
       }
     });
-    saveGroupButton.setVisible(false);
+    saveGroupButton.setEnabled(false);
 
     tools = Utils.mkVerticalPanel(true, conditionEditor, Utils.mkHorizontalPanel(true,
         unitSearchButton, sampleSearchButton, resultCountLabel, saveGroupButton));
@@ -308,7 +308,7 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
     resultCountLabel.setText(resultCountText);
     currentSearch = search;
     saveCVSMenuItem.setEnabled(currentSearch == unitSearch);
-    saveGroupButton.setVisible((currentSearch == unitSearch));
+    saveGroupButton.setEnabled(true);
   }
 
   /*
@@ -349,7 +349,7 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
     
     List<Unit> singleUnitList = new ArrayList<Unit>();
     singleUnitList.add(unit);
-    Unit[] unitsWithControl = unitSearch.sampleGroupFromUnits(singleUnitList);
+    Unit[] unitsWithControl = unitSearch.sampleGroupFromEntities(singleUnitList);
     Group g = new Group(schema(), "data", unitsWithControl);
 
     table.loadFrom(g, false);
@@ -365,5 +365,4 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
   protected ImageResource getHelpImage() {
     return resources().sampleSearchHelp();
   }
-
 }

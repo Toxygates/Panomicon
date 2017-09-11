@@ -1,22 +1,23 @@
 package t.viewer.client.components.search;
 
-import java.util.HashMap;
-import java.util.Map;
+import static t.model.sample.CoreParameter.SampleId;
+
+import java.util.*;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+import t.common.shared.Pair;
 import t.common.shared.RequestResult;
-import t.common.shared.sample.Annotation;
-import t.common.shared.sample.BioParamValue;
-import t.common.shared.sample.Sample;
+import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Analytics;
 import t.viewer.client.rpc.SampleServiceAsync;
 
-public class SampleSearch extends Search<Sample, Sample> {
+public class SampleSearch extends Search<Sample, Pair<Sample, Pair<Unit, Unit>>> {
   private HashMap<String, Sample> sampleIdHashMap;
+  private HashMap<String, Pair<Unit, Unit>> unitPairsMap;
 
   public SampleSearch(Delegate delegate, ResultTable<Sample> helper,
                       AttributeSet attributes,
@@ -25,13 +26,19 @@ public class SampleSearch extends Search<Sample, Sample> {
   }
 
   @Override
-  protected void extractSearchResult(RequestResult<Sample> result) {
-    searchResult = result.items();
+  protected void extractSearchResult(RequestResult<Pair<Sample, Pair<Unit, Unit>>> result) {
+    List<Sample> samples = new ArrayList<Sample>();
+    unitPairsMap = new HashMap<String, Pair<Unit, Unit>>();
+    for (Pair<Sample, Pair<Unit, Unit>> pair: result.items()) {
+      samples.add(pair.first());
+      unitPairsMap.put(pair.first().get(SampleId), pair.second());
+    }
+    searchResult = samples.toArray(new Sample[0]);
   }
 
   @Override
   protected void asyncSearch(SampleClass sampleClass,
-      AsyncCallback<RequestResult<Sample>> callback) {
+      AsyncCallback<RequestResult<Pair<Sample, Pair<Unit, Unit>>>> callback) {
     sampleService.sampleSearch(sampleClass, condition, MAX_RESULTS, callback);
   }
 
@@ -41,7 +48,7 @@ public class SampleSearch extends Search<Sample, Sample> {
   }
 
   @Override
-  protected void searchComplete(RequestResult<Sample> result) {
+  protected void searchComplete(RequestResult<Pair<Sample, Pair<Unit, Unit>>> result) {
     super.searchComplete(result);
     sampleIdHashMap = null;
   }
@@ -74,5 +81,16 @@ public class SampleSearch extends Search<Sample, Sample> {
         }
       }
     }
+  }
+
+  @Override
+  public Unit[] sampleGroupFromEntities(Collection<Sample> samples) {
+    Set<Unit> allUnits = new HashSet<Unit>();
+    for (Sample sample : samples) {
+      Pair<Unit, Unit> units = unitPairsMap.get(sample.get(SampleId));
+      allUnits.add(units.first());
+      allUnits.add(units.second());
+    }
+    return allUnits.toArray(new Unit[0]);
   }
 }

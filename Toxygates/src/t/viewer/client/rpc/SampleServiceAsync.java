@@ -49,7 +49,7 @@ public interface SampleServiceAsync {
       AsyncCallback<String> callback);
 
   void sampleSearch(SampleClass sampleClass, MatchCondition condition, int maxResults,
-      AsyncCallback<RequestResult<Sample>> callback);
+      AsyncCallback<RequestResult<Pair<Sample, Pair<Unit, Unit>>>> callback);
 
   void unitSearch(SampleClass sampleClass, MatchCondition condition, int maxResults,
       AsyncCallback<RequestResult<Pair<Unit, Unit>>> callback);

@@ -257,7 +257,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     if (getSessionData().sampleFilter.datasetURIs.isEmpty) {
       //Initialise the selected datasets by selecting all, except shared user data.
       val defaultVisible = appInfo.datasets.filter(ds =>
-        ! Dataset.isSharedDataset(ds.getTitle))        
+        ! Dataset.isSharedDataset(ds.getTitle))
       chooseDatasets(defaultVisible)
     }
    appInfo
@@ -536,27 +536,32 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     }.toArray
   }
 
-  def sampleSearch(sc: SampleClass, cond: MatchCondition, maxResults: Int): RequestResult[Sample] = {
+  def sampleSearch(sc: SampleClass, cond: MatchCondition, maxResults: Int):
+      RequestResult[Pair[Sample, Pair[Unit, Unit]]] = {
 
-    val sampleSearch = t.common.server.sample.search.IndividualSearch(cond, 
+    val sampleSearch = t.common.server.sample.search.IndividualSearch(cond,
         sc, sampleStore, schema, baseConfig.attributes)
-    val results = sampleSearch.results
-    new RequestResult((results take maxResults).toArray, results.size)
+    val pairs = sampleSearch.pairedResults.take(maxResults).map {
+      case (sample, (treated, control)) =>
+        new Pair(sample, new Pair(treated, control))
+    }.toArray
+    new RequestResult(pairs.toArray, pairs.size)
   }
 
-  def unitSearch(sc: SampleClass, cond: MatchCondition, maxResults: Int): RequestResult[Pair[Unit, Unit]] = {
+  def unitSearch(sc: SampleClass, cond: MatchCondition, maxResults: Int):
+      RequestResult[Pair[Unit, Unit]] = {
 
     val unitSearch = t.common.server.sample.search.UnitSearch(cond,
         sc, sampleStore, schema, baseConfig.attributes)
-    val results = unitSearch.results
-    val pairs = unitSearch.pairedResults.take(maxResults).map { case (treated, control) =>
-      new Pair(treated, control)
+    val pairs = unitSearch.pairedResults.take(maxResults).map {
+      case (treated, control) =>
+        new Pair(treated, control)
     }.toArray
-    new RequestResult(pairs, results.size)
+    new RequestResult(pairs, pairs.size)
   }
 
   def prepareUnitCSVDownload(units: Array[Unit], attributes: Array[Attribute]):
-    String = {
+      String = {
 
     val csvFile = new CSVFile{
       def colCount = attributes.size

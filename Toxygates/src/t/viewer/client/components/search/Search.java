@@ -1,7 +1,6 @@
 package t.viewer.client.components.search;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
@@ -9,8 +8,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import t.common.shared.RequestResult;
-import t.common.shared.sample.Annotation;
-import t.common.shared.sample.Sample;
+import t.common.shared.sample.*;
 import t.common.shared.sample.search.MatchCondition;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
@@ -135,5 +133,11 @@ public abstract class Search<Entity, Container> {
       }
     });
   }
+
+  public Unit[] sampleGroupFromSelected() {
+    return sampleGroupFromEntities(helper.selectionTable().getSelection());
+  }
+
+  abstract Unit[] sampleGroupFromEntities(Collection<Entity> entities);
 }
 

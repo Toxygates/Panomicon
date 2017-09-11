@@ -4,14 +4,14 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.rpc.RemoteService;
+
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.common.shared.sample.search.MatchCondition;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.viewer.shared.TimeoutException;
-
-import com.google.gwt.user.client.rpc.RemoteService;
 
 /**
  * A service that provides information about samples, datasets, and 
@@ -126,8 +126,8 @@ public interface SampleService extends RemoteService {
    */
   String prepareAnnotationCSVDownload(HasSamples<Sample> column) throws TimeoutException;
   
-  RequestResult<Sample> sampleSearch(SampleClass sampleClass, MatchCondition condition,
-      int maxResults) throws TimeoutException;
+  RequestResult<Pair<Sample, Pair<Unit, Unit>>> sampleSearch(SampleClass sampleClass,
+      MatchCondition condition, int maxResults) throws TimeoutException;
 
   RequestResult<Pair<Unit, Unit>> unitSearch(SampleClass sampleClass, MatchCondition condition,
       int maxResults)
