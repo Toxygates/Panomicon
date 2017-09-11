@@ -12,31 +12,38 @@ import t.model.sample.CoreParameter
 import t.sparql.SampleFilter
 import t.sparql.Samples
 import t.viewer.server.UnitsHelper
+import t.common.shared.sample.Unit
 
 object IndividualSearch extends SearchCompanion[Sample, IndividualSearch] {
 
-  def apply(condition: MatchCondition, sampleClass: SampleClass, sampleStore: Samples,
-      schema: DataSchema, attributes: AttributeSet)
-      (implicit sampleFilter: SampleFilter): IndividualSearch = {
+  def apply(samples: Iterable[Sample], condition: MatchCondition,
+      unitsHelper: UnitsHelper, attributes: AttributeSet) = {
 
-    val unitHelper = new UnitsHelper(schema)
-    val samples = rawSamples(condition, sampleClass, sampleFilter,
-        sampleStore, schema, attributes)
-    val groupedSamples = unitHelper.formTreatedAndControlUnits(samples)
-
-    val treatedSamples = groupedSamples.flatMap(_._1).flatten
-    val varianceSets = Map() ++ groupedSamples.flatMap { case (treatedSamples, controlSamples) =>
-      val varianceSet = new SimpleVarianceSet(controlSamples)
-      treatedSamples.flatMap(_.map(_.get(CoreParameter.SampleId) -> varianceSet))
+    val unitsAndVarianceSets = Map() ++
+      unitsHelper.formControlUnitsAndVarianceSets(samples).flatMap {
+        case (treatedUnit, (controlUnit, varianceSet)) =>
+          treatedUnit.getSamples.map(_ -> ((treatedUnit, controlUnit), varianceSet))
     }
 
-    new IndividualSearch(condition, varianceSets, treatedSamples)
+    val treatedSamples = unitsAndVarianceSets.map(_._1)
+    val unitsAndVarianceSetsById = Map() ++ unitsAndVarianceSets.map {
+      case(sample, stuff) =>
+        sample.get(CoreParameter.SampleId) -> stuff
+    }
+
+    val units = unitsAndVarianceSetsById.mapValues(_._1)
+    val varianceSets = unitsAndVarianceSetsById.mapValues(_._2)
+
+    new IndividualSearch(condition, varianceSets, units, treatedSamples)
   }
 }
 
-class IndividualSearch(condition: MatchCondition,
-    varianceSets: Map[String, VarianceSet], samples: Iterable[Sample])
+class IndividualSearch(condition: MatchCondition, varianceSets: Map[String, VarianceSet],
+    units: Map[String, (Unit, Unit)], samples: Iterable[Sample])
     extends AbstractSampleSearch[Sample](condition, varianceSets, samples)  {
+
+  lazy val pairedResults = results.map(sample => (sample,
+      units(sample.get(CoreParameter.SampleId))))
 
   protected def zTestSampleSize(s: Sample): Int = 1
 

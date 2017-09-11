@@ -14,6 +14,7 @@ import t.viewer.server.Conversions._
 import t.model.sample.CoreParameter._
 import t.db.SimpleVarianceSet
 import sun.text.normalizer.NormalizerImpl.NextCCArgs
+import t.db.VarianceSet
 
 
 class Units(schema: DataSchema, sampleStore: Samples) extends
@@ -124,10 +125,29 @@ class UnitsHelper(schema: DataSchema) {
       (s.get(ControlGroupParam), s.get(minorParameter), s.get(Batch))
 
   def unitGroupKey(s: Sample) = s.get(schema.mediumParameter())
+  
+  /**
+   * Groups the samples provided into treated and control units, returning
+   * a list of tuples whose first element is a treated unit and whose second
+   * element is a tuple containing the corresponding control unit and variance
+   * set.
+   * @param samples samples to partition
+   */
+  def formControlUnitsAndVarianceSets(samples: Iterable[Sample]):
+      Seq[(Unit, (Unit, VarianceSet))] = {
+    formTreatedAndControlUnits(samples).flatMap { 
+      case (treatedSamples, controlSamples) =>
+        val units = treatedSamples.map(formUnit(_, schema))
+        val controlGroup = formUnit(controlSamples, schema)
+        val varianceSet = new SimpleVarianceSet(controlSamples)
+        units.map(_ -> (controlGroup, varianceSet))
+    }
+  }
+    
   /**
    * Groups the samples provided into treated and control groups, returning
-   * a list of tuples whose first element is a treated unit and whose second
-   * element is the corresponding control unit.
+   * a list of tuples whose first element is the samples in a treated unit and 
+   * whose second element is the samples from the corresponding control unit.
    * @param samples samples to partition
    */
   def formTreatedAndControlUnits(samples: Iterable[Sample]):

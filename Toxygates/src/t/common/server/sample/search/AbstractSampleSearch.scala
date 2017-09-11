@@ -21,6 +21,7 @@ import t.sparql.SampleClassFilter
 import t.sparql.SampleFilter
 import t.sparql.Samples
 import t.viewer.server.Conversions.asJavaSample
+import t.viewer.server.UnitsHelper
 
   /**
    * Companion object to create sample search objects; meant to encapsulate
@@ -41,7 +42,15 @@ trait SearchCompanion[ST <: SampleLike, SS <: AbstractSampleSearch[ST]] {
 
   def apply(condition: MatchCondition, sampleClass: SampleClass, sampleStore: Samples,
       schema: DataSchema, attributes: AttributeSet)
-      (implicit sampleFilter: SampleFilter): AbstractSampleSearch[ST]
+      (implicit sampleFilter: SampleFilter): SS = {
+    val samples = rawSamples(condition, sampleClass, sampleFilter,
+        sampleStore, schema, attributes)
+    val unitHelper = new UnitsHelper(schema)
+    apply(samples, condition, unitHelper, attributes)
+  }
+
+  def apply(samples: Iterable[Sample], condition: MatchCondition,
+      unitsHelper: UnitsHelper, attributes: AttributeSet): SS
 }
 
 abstract class AbstractSampleSearch[ST <: SampleLike](condition: MatchCondition,

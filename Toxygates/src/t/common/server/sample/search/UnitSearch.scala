@@ -14,25 +14,14 @@ import t.model.sample.CoreParameter
 import t.sparql.SampleFilter
 import t.sparql.Samples
 import t.viewer.server.UnitsHelper
+import t.common.shared.sample.Sample
 
 object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
 
-  def apply(condition: MatchCondition, sampleClass: SampleClass, sampleStore: Samples,
-      schema: DataSchema, attributes: AttributeSet)
-      (implicit sampleFilter: SampleFilter): UnitSearch = {
+  def apply(samples: Iterable[Sample], condition: MatchCondition,
+      unitsHelper: UnitsHelper, attributes: AttributeSet) = {
 
-    val unitHelper = new UnitsHelper(schema)
-    val samples = rawSamples(condition, sampleClass, sampleFilter, sampleStore,
-        schema, attributes)
-    val groupedSamples = unitHelper.formTreatedAndControlUnits(samples)
-
-    val controlUnitsAndVarianceSets =
-      groupedSamples.flatMap { case (treatedSamples, controlSamples) =>
-        val units = treatedSamples.map(unitHelper.formUnit(_, schema))
-        val controlGroup = unitHelper.formUnit(controlSamples, schema)
-        val varianceSet = new SimpleVarianceSet(controlSamples)
-        units.map(_ -> (controlGroup, varianceSet))
-    }
+    val controlUnitsAndVarianceSets = unitsHelper.formControlUnitsAndVarianceSets(samples)
 
     val units = controlUnitsAndVarianceSets.map(_._1)
     units.map(_.concatenateAttribute(CoreParameter.SampleId))
@@ -50,8 +39,8 @@ object UnitSearch extends SearchCompanion[Unit, UnitSearch] {
 }
 
 class UnitSearch(condition: MatchCondition,
-    varianceSets: Map[String, VarianceSet], controlUnits: Map[String, Unit], samples: Iterable[Unit],
-    attributes: AttributeSet)
+    varianceSets: Map[String, VarianceSet], controlUnits: Map[String, Unit],
+    samples: Iterable[Unit], attributes: AttributeSet)
     extends AbstractSampleSearch[Unit](condition, varianceSets, samples)  {
 
   lazy val pairedResults = results.map(unit => (unit,
