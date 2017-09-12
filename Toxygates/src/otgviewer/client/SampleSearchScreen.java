@@ -207,7 +207,7 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
     saveCVSMenuItem = new MenuItem("Save results to CSV", false, new Command() {
       @Override
       public void execute() {
-        prepareUnitCVSDownload();
+        prepareCSVDownload();
       }
     });
     saveCVSMenuItem.setEnabled(false);
@@ -278,9 +278,10 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
     unitTableHelper.selectionTable().setVisible(false);
   }
 
-  private void prepareUnitCVSDownload() {
-    SampleSearchScreen.this.sampleService.prepareUnitCSVDownload(unitSearch.searchResult(),
-        unitTableHelper.allAttributes(), new PendingAsyncCallback<String>(SampleSearchScreen.this,
+  private void prepareCSVDownload() {
+    this.sampleService.prepareCSVDownload((SampleLike[]) currentSearch.searchResult(),
+        currentSearch.helper().allAttributes(), new PendingAsyncCallback<String>(
+            SampleSearchScreen.this,
             "Unable to prepare the data for download,") {
           @Override
           public void handleSuccess(String url) {
@@ -307,7 +308,7 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
     hideTables();
     resultCountLabel.setText(resultCountText);
     currentSearch = search;
-    saveCVSMenuItem.setEnabled(currentSearch == unitSearch);
+    saveCVSMenuItem.setEnabled(true);
     saveGroupButton.setEnabled(true);
   }
 

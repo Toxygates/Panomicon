@@ -11,6 +11,7 @@ import t.common.shared.sample.*;
 import t.common.shared.sample.search.MatchCondition;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
+import t.model.sample.SampleLike;
 import t.viewer.shared.TimeoutException;
 
 /**
@@ -133,5 +134,5 @@ public interface SampleService extends RemoteService {
       int maxResults)
       throws TimeoutException;
 
-  String prepareUnitCSVDownload(Unit[] units, Attribute[] attributes) throws TimeoutException;
+  String prepareCSVDownload(SampleLike[] samples, Attribute[] attributes) throws TimeoutException;
 }

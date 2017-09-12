@@ -9,6 +9,7 @@ import t.common.shared.sample.*;
 import t.common.shared.sample.search.MatchCondition;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
+import t.model.sample.SampleLike;
 
 public interface SampleServiceAsync {
 
@@ -54,6 +55,6 @@ public interface SampleServiceAsync {
   void unitSearch(SampleClass sampleClass, MatchCondition condition, int maxResults,
       AsyncCallback<RequestResult<Pair<Unit, Unit>>> callback);
 
-  void prepareUnitCSVDownload(Unit[] units, Attribute[] attributes,
+  void prepareCSVDownload(SampleLike[] samples, Attribute[] attributes,
       AsyncCallback<String> callback);
 }

@@ -92,6 +92,7 @@ import t.viewer.server.Units
 import t.common.shared.RequestResult
 import t.BaseConfig
 import t.model.sample.Attribute
+import t.model.sample.SampleLike
 
 object SparqlServiceImpl {
   var inited = false
@@ -560,17 +561,17 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     new RequestResult(pairs, pairs.size)
   }
 
-  def prepareUnitCSVDownload(units: Array[Unit], attributes: Array[Attribute]):
-      String = {
+  def prepareCSVDownload(samples: Array[SampleLike],
+      attributes: Array[Attribute]): String = {
 
     val csvFile = new CSVFile{
       def colCount = attributes.size
-    	def rowCount = units.size + 1
+    	def rowCount = samples.size + 1
 
       def apply(x: Int, y: Int) = if (y == 0) {
         attributes(x)
       } else {  //y > 0
-        units(y - 1).get(attributes(x))
+        samples(y - 1).get(attributes(x))
       }
     }
 
