@@ -3,6 +3,7 @@ package t.db
 import t.model.sample.Attribute
 import org.apache.commons.math3.stat.StatUtils.variance
 import org.apache.commons.math3.stat.StatUtils.mean
+import scala.collection.mutable.HashMap
 
 /**
  * Provides distributional information for attributes, typically from a
@@ -32,12 +33,21 @@ abstract class VarianceSet() {
  */
 class SimpleVarianceSet(samples: Iterable[t.model.sample.SampleLike]) extends VarianceSet {
 
+  val varsAndMeans = new HashMap[Attribute, Option[(Double, Double)]]
+
   def varAndMean(param: Attribute): Option[(Double, Double)] = {
-    val values = samples.flatMap(Sample.numericalValue(_, param)).toArray
-    if (values.size < 2) {
-      None
-    } else {
-      Some((variance(values), mean(values)))
+    varsAndMeans.get(param) match {
+      case Some(somePair) =>
+        somePair
+      case None =>
+        val attributeValues = samples.flatMap(Sample.numericalValue(_, param)).toArray
+        val newPair = if (attributeValues.size < 2) {
+          None
+        } else {
+          Some((variance(attributeValues), mean(attributeValues)))
+        }
+        varsAndMeans.put(param, newPair)
+        newPair
     }
   }
 }
