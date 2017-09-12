@@ -29,6 +29,8 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
 
   private Widget tools;
   private ConditionEditor conditionEditor;
+  RadioButton individualSearchRadioButton;
+  RadioButton unitSearchRadioButton;
   private MenuItem saveCVSMenuItem;
   private Button saveGroupButton;
   private Label resultCountLabel;
@@ -81,22 +83,23 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
   private void makeTools() {
     conditionEditor = new ConditionEditor(searchParameters);
 
-    Button sampleSearchButton = new Button("Sample Search");
-    sampleSearchButton.addClickHandler(new ClickHandler() {
+    Button searchButton = new Button("Search");
+    searchButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        sampleSearch.attemptSearch(chosenSampleClass, conditionEditor.getCondition());
+        if (individualSearchRadioButton.getValue()) {
+          sampleSearch.attemptSearch(chosenSampleClass, conditionEditor.getCondition());
+        } else if (unitSearchRadioButton.getValue()) {
+          unitSearch.attemptSearch(chosenSampleClass, conditionEditor.getCondition());
+        }
       }
     });
 
-    Button unitSearchButton = new Button("Unit Search");
-    unitSearchButton.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        logger.info("Search class:" + chosenSampleClass);
-        unitSearch.attemptSearch(chosenSampleClass, conditionEditor.getCondition());
-      }
-    });
+    individualSearchRadioButton = new RadioButton("searchTypeGroup", "Individual samples");
+    unitSearchRadioButton = new RadioButton("searchTypeGroup", "Sample units");
+    individualSearchRadioButton.setValue(true);
+    VerticalPanel radioButtonPanel =
+        Utils.mkVerticalPanel(true, individualSearchRadioButton, unitSearchRadioButton);
 
     resultCountLabel = new Label();
 
@@ -129,7 +132,7 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
     saveGroupButton.setEnabled(false);
 
     tools = Utils.mkVerticalPanel(true, conditionEditor, Utils.mkHorizontalPanel(true,
-        unitSearchButton, sampleSearchButton, resultCountLabel, saveGroupButton));
+        searchButton, radioButtonPanel, resultCountLabel, saveGroupButton));
   }
 
   private String findAvailableGroupName(String prefix) throws Exception {
