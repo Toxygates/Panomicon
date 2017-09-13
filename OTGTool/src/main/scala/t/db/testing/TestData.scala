@@ -59,6 +59,23 @@ object TestData {
     "" + c
   }
 
+  def randomNumber(mean: Double, range: Double) =
+    Math.random * range + (mean - range/2)
+
+  def liverWeight(dose: String, individual: String) =
+    if (dose == "Control" || individual == "2")
+      //TODO find a better way to generate values with predictable s.d.
+      3 //healthy
+    else
+      randomNumber(5, 0.2) //abnormal individual_id 1, 3
+
+  def kidneyWeight(dose: String, individual: String) =
+    if (dose == "Control" || individual == "1")
+      //TODO find a better way to generate values with predictable s.d.
+      5 //healthy
+    else
+      randomNumber(1, 0.2) //abnormal individual_id 2, 3
+
   val ids = (0 until (5 * 4 * 3 * 4)).toStream.iterator
   val samples = for (
     dose <- em(DoseLevel); time <- em(ExposureTime);
@@ -68,6 +85,8 @@ object TestData {
           ExposureTime.id -> time, "compound_name" -> compound,
           "sin_rep_type" -> "Single", "organ_id" -> "Liver",
           "test_type" -> "Vivo", "organism" -> "Rat",
+          LiverWeight.id -> liverWeight(dose, ind).toString,
+          KidneyWeight.id -> kidneyWeight(dose, ind).toString,
           ControlGroup.id -> cgroup(time, compound))
         )
   ) yield s

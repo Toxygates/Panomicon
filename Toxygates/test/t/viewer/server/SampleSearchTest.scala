@@ -19,13 +19,12 @@ import t.common.shared.sample.StringBioParamValue
 import otg.model.sample.OTGAttribute._
 import t.common.server.sample.search.AbstractSampleSearch
 import t.model.sample.BasicAttribute
+import t.model.sample.Attribute
 
 @RunWith(classOf[JUnitRunner])
 class SampleSearchTest extends TTestSuite {
-  def atomic(param: String, mt: MatchType) =
-    new AtomicMatch(
-        new BasicAttribute(param, param),
-        mt, null)
+  def atomic(attribute: Attribute, mt: MatchType) =
+    new AtomicMatch(attribute, mt, null)
 
   def or(mc1: MatchCondition, mc2: MatchCondition) =
     new OrMatch(Seq(mc1, mc2))
@@ -34,28 +33,20 @@ class SampleSearchTest extends TTestSuite {
     new AndMatch(Seq(mc1, mc2))
 
   val schema = new OTGSchema
-  val cgroups = TestData.controlGroups.map(x =>
-    asJavaSample(x._1) -> x._2)
-  val samples = t.db.testing.TestData.samples
+  val samples = t.db.testing.TestData.samples.toSeq.map(asJavaSample)
 
   val attributes = TestData.attribSet
 
   def search(cond: MatchCondition) = {
     val searchParams = cond.neededParameters()
-    val ss: IndividualSearch = ???
-//      new IndividualSearch(cond, cgroups,
-//        samples.toSeq.map(asJavaSample))
+    val ss: IndividualSearch =
+      IndividualSearch(samples, cond, new UnitsHelper(schema), attributes)
     ss.results
   }
 
   test("atomic") {
-    val r = search(atomic(LiverWeight.title, MatchType.High))
+    val r = search(atomic(LiverWeight, MatchType.High))
     for (s <- r) {
-      println(s.sampleClass())
-      val cg = TestData.controlGroups(asScalaSample(s))
-      println(cg.upperBound(LiverWeight, 1))
-
-      println(cg.samples.map(TestData.metadata.parameter(_, LiverWeight)))
       s.get(Individual.id) should (equal ("1") or (equal ("3")))
     }
     // 4/5 dose levels, individuals 1, 3
@@ -65,8 +56,8 @@ class SampleSearchTest extends TTestSuite {
   test("and") {
     val r = search(
         and(
-            atomic(LiverWeight.title, MatchType.High),
-            atomic(KidneyWeight.title, MatchType.Low)
+            atomic(LiverWeight, MatchType.High),
+            atomic(KidneyWeight, MatchType.Low)
             )
         )
     for (s <- r) {
@@ -78,8 +69,8 @@ class SampleSearchTest extends TTestSuite {
   test("or") {
      val r = search(
         or(
-            atomic(LiverWeight.title, MatchType.High),
-            atomic(KidneyWeight.title, MatchType.Low)
+            atomic(LiverWeight, MatchType.High),
+            atomic(KidneyWeight, MatchType.Low)
             )
          )
     r.size should equal(3 * samples.size / 3 * 4 / 5)

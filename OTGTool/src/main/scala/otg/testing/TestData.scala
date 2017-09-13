@@ -82,19 +82,11 @@ object TestData {
   def randomNumber(mean: Double, range: Double) =
     Math.random * range + (mean - range/2)
 
-  def liverWt(s: Sample) =
-    if (s(DoseLevel) == "Control" || s(Individual) == "2")
-      //TODO find a better way to generate values with predictable s.d.
-      3 //healthy
-    else
-      randomNumber(5, 0.2) //abnormal individual_id 1, 3
+  def liverWeight(s: Sample) =
+    t.db.testing.TestData.liverWeight(s(DoseLevel), s(Individual))
 
-  def kidneyWt(s: Sample) =
-    if (s(DoseLevel) == "Control" || s(Individual) == "1")
-      //TODO find a better way to generate values with predictable s.d.
-      5 //healthy
-    else
-      randomNumber(1, 0.2) //abnormal individual_id 2, 3
+  def kidneyWeight(s: Sample) =
+    t.db.testing.TestData.kidneyWeight(s(DoseLevel), s(Individual))
 
   def metadata: Metadata = new Metadata {
     def samples = t.db.testing.TestData.samples
@@ -111,8 +103,8 @@ object TestData {
          val k = attribSet.byId(x._1)
          (k, x._2)
       }).toSeq ++ Seq(
-          (LiverWeight, "" + liverWt(s)),
-          (KidneyWeight, "" + kidneyWt(s))
+          (LiverWeight, "" + liverWeight(s)),
+          (KidneyWeight, "" + kidneyWeight(s))
           )
     }
   }
