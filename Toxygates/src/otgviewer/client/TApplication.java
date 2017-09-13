@@ -291,7 +291,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   private void prepareScreens() {       
     initScreens(); // Need access to the nav. panel
     showScreenForToken(History.getToken(), true);    
-    deconfigureAll(pickScreen(History.getToken()));
+    reconfigureAll(pickScreen(History.getToken()));
   }
 
   protected static Storage tryGetStorage() {
@@ -574,7 +574,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   }
 
   @Override
-  public void deconfigureAll(Screen from) {
+  public void reconfigureAll(Screen from) {
     for (Screen s : workflow) {
       if (s != from) {
         s.setConfigured(false);
