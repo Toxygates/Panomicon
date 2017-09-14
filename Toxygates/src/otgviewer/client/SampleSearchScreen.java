@@ -17,12 +17,10 @@ import t.viewer.client.Utils;
 import t.viewer.client.components.search.*;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SampleServiceAsync;
-import t.viewer.shared.AppInfo;
 
 public class SampleSearchScreen extends DataFilterScreen implements Search.Delegate, ResultTable.Delegate {
   public static final String key = "search";
 
-  private AppInfo appInfo;
   private SampleServiceAsync sampleService;
 
   private FilterTools filterTools;
@@ -50,9 +48,8 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
   private Collection<ParameterTickItem> parameterMenuItems;
 
   private void getParameterInfo() {
-    AttributeSet attributes = appInfo.attributes();
-    List<Attribute> searchParams = attributes.getNumerical();
-    List<Attribute> nonSearchParams = attributes.getString();
+    List<Attribute> searchParams = attributes().getNumerical();
+    List<Attribute> nonSearchParams = attributes().getString();
     
     java.util.Collections.sort(searchParams, new AttributeComparator());
     java.util.Collections.sort(nonSearchParams, new AttributeComparator());
@@ -64,16 +61,13 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
   public SampleSearchScreen(ScreenManager man) {
     super("Sample search", key, true, man, man.resources().sampleSearchHTML(),
         man.resources().sampleSearchHelp());
-    appInfo = man.appInfo();
     filterTools = new FilterTools(this);
     this.addListener(filterTools);
 
     sampleService = man.sampleService();
 
-    sampleSearch = new SampleSearch(this, sampleTableHelper, appInfo.attributes(), 
-      sampleService);
-    unitSearch = new UnitSearch(this, unitTableHelper, appInfo.attributes(), 
-      sampleService);
+    sampleSearch = new SampleSearch(this, sampleTableHelper, attributes(), sampleService);
+    unitSearch = new UnitSearch(this, unitTableHelper, attributes(), sampleService);
 
     getParameterInfo();
 
