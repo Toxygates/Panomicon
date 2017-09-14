@@ -6,6 +6,9 @@
   <info organisation="level-five" module="t" />
         
   <dependencies>
+  
+  <!-- Force same version as OTGTool -->
+  <dependency org="commons-logging" name="commons-logging" rev="1.2"/>
 
   <!-- for GWT upload -->
   <!-- This fails to resolve some of its dependencies as of 15/1/27.
