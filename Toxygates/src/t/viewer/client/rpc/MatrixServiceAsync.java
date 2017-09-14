@@ -22,18 +22,15 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
-
 import t.clustering.client.ClusteringServiceAsync;
 import t.clustering.shared.Algorithm;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
-import t.viewer.shared.ColumnFilter;
-import t.viewer.shared.FullMatrix;
-import t.viewer.shared.ManagedMatrixInfo;
-import t.viewer.shared.Synthetic;
+import t.viewer.shared.*;
 import t.viewer.shared.table.SortKey;
+
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface MatrixServiceAsync extends ClusteringServiceAsync<Group,String> {
 

@@ -1,14 +1,16 @@
 package t.viewer.server.intermine;
 
+import scala.collection.JavaConversions._
+
+import org.intermine.pathquery.Constraints
+import org.intermine.pathquery.PathQuery
+
+import t.db.DefaultBio
+import t.sparql._
+
 //TODO remove sparql dependency by refactoring that package
 import t.sparql.secondary.Gene
-import t.sparql._
-import t.db.DefaultBio
-import t.viewer.shared.intermine.IntermineException
 import t.viewer.server.Platforms
-import org.intermine.pathquery.PathQuery
-import org.intermine.pathquery.Constraints
-import scala.collection.JavaConversions._
 
 object TargetmineColumns {
   def connector(mines: Intermines,

@@ -20,14 +20,18 @@
 
 package t.viewer.server
 
+import java.util.{ HashMap => JHMap }
+import java.util.{ HashSet => JHSet }
+
 import scala.collection.JavaConversions._
+import scala.collection.{ Map => CMap }
+import scala.collection.{ Set => CSet }
 import scala.language.implicitConversions
-import java.util.{ Map => JMap, HashMap => JHMap, Set => JSet, HashSet => JHSet, List => JList }
-import scala.collection.{Map => CMap, Set => CSet}
-import t.db.{ExprValue => TExprValue}
+
 import t.common.shared.FirstKeyedPair
 import t.common.shared.sample.ExpressionValue
 import t.common.shared.sample.Sample
+import t.db.{ExprValue => TExprValue}
 import t.platform.Species
 
 object Conversions {

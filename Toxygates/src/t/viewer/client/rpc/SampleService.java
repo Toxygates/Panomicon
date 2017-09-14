@@ -4,8 +4,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.user.client.rpc.RemoteService;
-
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.common.shared.sample.search.MatchCondition;
@@ -13,6 +11,8 @@ import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.model.sample.SampleLike;
 import t.viewer.shared.TimeoutException;
+
+import com.google.gwt.user.client.rpc.RemoteService;
 
 /**
  * A service that provides information about samples, datasets, and 

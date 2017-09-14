@@ -21,9 +21,9 @@
 package t.viewer.server
 
 import t.Context
+import t.common.shared.DataSchema
 import t.common.shared.sample.ExpressionRow
 import t.platform.Probe
-import t.common.shared.DataSchema
 
 class RowLabels(context: Context, schema: DataSchema) {
   val probes = context.probes

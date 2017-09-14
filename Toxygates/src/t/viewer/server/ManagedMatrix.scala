@@ -21,20 +21,19 @@
 package t.viewer.server
 
 import t.common.shared.sample.ExpressionValue
-import t.viewer.server.Conversions._
-import t.viewer.shared.ManagedMatrixInfo
-import t.viewer.shared.Synthetic
-import t.db.MatrixDBReader
-import t.common.shared.sample.{Sample => SSample, Unit => TUnit}
 import t.common.shared.sample.Group
-import t.db.Sample
-import t.db.PExprValue
+import t.common.shared.sample.{ Sample => SSample }
+import t.common.shared.sample.{ Unit => TUnit }
+import t.db.BasicExprValue
 import t.db.ExprValue
 import t.db.MatrixContext
-import t.db.BasicExprValue
-import t.common.shared.sample.EVArray
+import t.db.MatrixDBReader
+import t.db.PExprValue
+import t.db.Sample
+import t.viewer.server.Conversions._
 import t.viewer.shared.ColumnFilter
-import t.viewer.shared.FilterType
+import t.viewer.shared.ManagedMatrixInfo
+import t.viewer.shared.Synthetic
 
 /**
  * Routines for loading a ManagedMatrix

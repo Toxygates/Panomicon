@@ -20,26 +20,14 @@ package t.viewer.client.dialog;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.InputGrid;
-import otgviewer.client.components.Screen;
+import otgviewer.client.components.*;
 import t.viewer.client.Utils;
 import t.viewer.client.intermine.InstanceSelector;
 import t.viewer.shared.intermine.IntermineInstance;
 
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.PasswordTextBox;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 
 abstract public class InterMineSyncDialog extends InteractionDialog {
 

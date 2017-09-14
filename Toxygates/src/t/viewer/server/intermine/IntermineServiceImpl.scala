@@ -21,22 +21,15 @@
 package t.viewer.server.intermine
 
 import scala.collection.JavaConversions._
-import com.google.gwt.user.server.rpc.RemoteServiceServlet
-import t.common.shared.StringList
-import t.viewer.client.intermine.IntermineService
-import t.sparql.Probes
-import javax.servlet.ServletConfig
-import javax.servlet.ServletException
-import t.viewer.server.Configuration
-import t.BaseConfig
-import t.DataConfig
-import t.TriplestoreConfig
-import t.viewer.server.Platforms
-import t.viewer.server.rpc.TServiceServlet
-import org.intermine.webservice.client.services.ListService
-import java.util.Arrays
 
 import org.intermine.webservice.client.results.TabTableResult
+
+import t.common.shared.StringList
+import t.sparql.Probes
+import t.viewer.client.intermine.IntermineService
+import t.viewer.server.Configuration
+import t.viewer.server.Platforms
+import t.viewer.server.rpc.TServiceServlet
 import t.viewer.shared.intermine._
 
 abstract class IntermineServiceImpl extends TServiceServlet with IntermineService {

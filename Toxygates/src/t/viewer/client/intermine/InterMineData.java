@@ -18,35 +18,24 @@
 
 package t.viewer.client.intermine;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
-
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.DialogBox;
 
 import otgviewer.client.StringListsStoreHelper;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import t.common.client.components.StringArrayTable;
-import t.common.shared.ClusteringList;
-import t.common.shared.ItemList;
-import t.common.shared.SharedUtils;
-import t.common.shared.StringList;
+import t.common.shared.*;
 import t.viewer.client.Analytics;
-import t.viewer.client.dialog.DialogPosition;
-import t.viewer.client.dialog.InterMineEnrichDialog;
-import t.viewer.client.dialog.InterMineSyncDialog;
-import t.viewer.client.dialog.InteractionDialog;
+import t.viewer.client.dialog.*;
 import t.viewer.shared.intermine.EnrichmentParams;
 import t.viewer.shared.intermine.IntermineInstance;
+
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.DialogBox;
 
 /**
  * Client side helper for InterMine data import/export.

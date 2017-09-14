@@ -20,19 +20,10 @@
 
 package t.viewer.client.table;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import otgviewer.client.components.Screen;
-import t.common.shared.AType;
-import t.common.shared.DataSchema;
-import t.common.shared.Pair;
-import t.common.shared.SharedUtils;
+import t.common.shared.*;
 import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.Association;
 import t.viewer.shared.table.SortKey;

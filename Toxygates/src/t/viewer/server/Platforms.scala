@@ -20,8 +20,9 @@
 
 package t.viewer.server
 
-import t.sparql.Probes
 import t.platform.Probe
+
+import t.sparql.Probes
 
 object Platforms {
   def apply(probes: Probes): Platforms = {

@@ -20,25 +20,16 @@ package t.viewer.client.dialog;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
-
 import t.common.client.components.ItemSelector;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.shared.ColumnFilter;
 import t.viewer.shared.FilterType;
+
+import com.google.gwt.event.dom.client.*;
+import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * A dialog for displaying and modifying a column filter.

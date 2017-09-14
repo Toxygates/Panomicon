@@ -1,20 +1,20 @@
 package t.viewer.server
 
-import t.sparql.SampleClassFilter
-import t.model.SampleClass
-import t.common.shared.sample.SampleClassUtils
-import t.viewer.shared.TimeoutException
-import t.common.shared.sample.Sample
-import t.common.shared.Pair
 import t.common.shared.DataSchema
+import t.common.shared.Pair
+import t.common.shared.sample.Sample
+import t.common.shared.sample.SampleClassUtils
 import t.common.shared.sample.Unit
-import t.sparql.Samples
-import t.sparql.SampleFilter
-import t.viewer.server.Conversions._
-import t.model.sample.CoreParameter._
 import t.db.SimpleVarianceSet
-import sun.text.normalizer.NormalizerImpl.NextCCArgs
 import t.db.VarianceSet
+import t.model.SampleClass
+import t.model.sample.CoreParameter._
+
+import t.sparql.SampleClassFilter
+import t.sparql.SampleFilter
+import t.sparql.Samples
+import t.viewer.server.Conversions._
+import t.viewer.shared.TimeoutException
 
 
 class Units(schema: DataSchema, sampleStore: Samples) extends

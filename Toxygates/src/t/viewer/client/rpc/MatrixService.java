@@ -23,20 +23,16 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.user.client.rpc.RemoteService;
-import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
-
 import t.clustering.client.ClusteringService;
 import t.clustering.shared.Algorithm;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
-import t.viewer.shared.ColumnFilter;
-import t.viewer.shared.FullMatrix;
-import t.viewer.shared.ManagedMatrixInfo;
-import t.viewer.shared.ServerError;
-import t.viewer.shared.Synthetic;
+import t.viewer.shared.*;
 import t.viewer.shared.table.SortKey;
+
+import com.google.gwt.user.client.rpc.RemoteService;
+import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 /**
  * This service obtains expression data from the underlying data store.

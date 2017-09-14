@@ -24,18 +24,9 @@ import javax.annotation.Nullable;
 
 import otgviewer.client.components.Screen;
 import t.common.client.components.ItemSelector;
-import t.viewer.shared.intermine.Correction;
-import t.viewer.shared.intermine.EnrichmentParams;
-import t.viewer.shared.intermine.EnrichmentWidget;
-import t.viewer.shared.intermine.IntermineInstance;
+import t.viewer.shared.intermine.*;
 
-import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 
 public class InterMineEnrichDialog extends InterMineSyncDialog {
 

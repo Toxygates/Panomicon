@@ -1,22 +1,20 @@
 package t.viewer.server
 
-import t.viewer.shared.Association
-import t.db.DefaultBio
-import t.sparql.SampleFilter
+import scala.collection.{ Set => CSet }
+
+import t.common.server.ScalaUtils.gracefully
 import t.common.shared.AType
-import t.viewer.shared.Association
+import t.db.DefaultBio
 import t.model.SampleClass
 import t.platform.Probe
-import t.sparql.Probes
-import Association._
 import t.sparql._
+import t.sparql.Probes
+import t.sparql.SampleFilter
 import t.sparql.secondary._
 import t.viewer.server.Conversions._
-import t.common.server.ScalaUtils.gracefully
-import scala.collection.{Set => CSet}
-import t.viewer.server.intermine.IntermineColumn
-import t.viewer.server.intermine.IntermineColumn
-import t.viewer.server.intermine.TargetmineColumns
+
+import t.viewer.shared.Association
+import t.viewer.shared.Association._
 
 /**
  * Helper class to look up probe associations from a variety of sources

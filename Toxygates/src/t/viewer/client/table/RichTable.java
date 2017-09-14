@@ -18,29 +18,19 @@
 
 package t.viewer.client.table;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import otgviewer.client.components.DataListenerWidget;
 import t.common.shared.DataSchema;
 
-import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.SafeHtmlCell;
-import com.google.gwt.cell.client.TextCell;
+import com.google.gwt.cell.client.*;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
-import com.google.gwt.user.cellview.client.ColumnSortList;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
-import com.google.gwt.user.cellview.client.DataGrid;
-import com.google.gwt.user.cellview.client.Header;
-import com.google.gwt.user.cellview.client.RowStyles;
-import com.google.gwt.user.cellview.client.SafeHtmlHeader;
 import com.google.gwt.user.client.Event;
 
 /**

@@ -21,13 +21,9 @@
 package t.viewer.server
 
 import javax.servlet.ServletConfig
-import otg.OTGContext
-import t.TriplestoreConfig
-import t.DataConfig
-import t.BaseConfig
-import t.db.MatrixContext
-import t.Factory
 import t.Context
+import t.Factory
+import t.TriplestoreConfig
 import t.sparql.Instances
 import t.viewer.shared.intermine.IntermineInstance
 
