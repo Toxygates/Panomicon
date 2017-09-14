@@ -1,9 +1,7 @@
 package t.common.shared.sample.search;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import javax.annotation.Nullable;
 

@@ -1,14 +1,10 @@
 package t.viewer.client.components.search;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.sample.search.AtomicMatch;
-import t.common.shared.sample.search.MatchCondition;
-import t.common.shared.sample.search.OrMatch;
+import t.common.shared.sample.search.*;
 import t.model.sample.Attribute;
 import t.viewer.client.Utils;
 

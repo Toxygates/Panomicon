@@ -4,8 +4,6 @@ import static t.model.sample.CoreParameter.SampleId;
 
 import java.util.*;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
-
 import t.common.shared.Pair;
 import t.common.shared.RequestResult;
 import t.common.shared.sample.*;
@@ -14,6 +12,8 @@ import t.model.sample.Attribute;
 import t.model.sample.AttributeSet;
 import t.viewer.client.Analytics;
 import t.viewer.client.rpc.SampleServiceAsync;
+
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class UnitSearch extends Search<Unit, Pair<Unit, Unit>> {
   private Sample[] samplesInResult;

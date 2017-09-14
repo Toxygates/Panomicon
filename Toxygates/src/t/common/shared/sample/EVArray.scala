@@ -21,8 +21,8 @@
 package t.common.shared.sample
 
 import scala.collection.generic.CanBuildFrom
-import scala.collection.mutable.Builder
 import scala.collection.mutable.ArrayBuilder
+import scala.collection.mutable.Builder
 
 object EVABuilder extends CanBuildFrom[Seq[ExpressionValue], ExpressionValue, EVArray] {
   def apply() = new EVABuilder

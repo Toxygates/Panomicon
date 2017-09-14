@@ -19,12 +19,8 @@
 package t.common.shared.clustering;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import t.common.shared.SharedUtils;
 import t.common.shared.StringList;
