@@ -23,14 +23,6 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.*;
-import t.common.shared.DataSchema;
-import t.common.shared.SharedUtils;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
-import t.viewer.client.Utils;
-import t.viewer.shared.AppInfo;
-
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -38,6 +30,15 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 import com.google.gwt.user.client.ui.*;
+
+import otgviewer.client.*;
+import t.common.shared.DataSchema;
+import t.common.shared.SharedUtils;
+import t.common.shared.sample.Group;
+import t.common.shared.sample.Sample;
+import t.model.sample.AttributeSet;
+import t.viewer.client.Utils;
+import t.viewer.shared.AppInfo;
 
 /**
  * Screens are a high level building block for user interfaces. Sequences of screens can form a
@@ -119,10 +120,12 @@ public class Screen extends DataListenerWidget implements
       this.name = name;
     }
 
+    @Override
     public int hashCode() {
       return name.hashCode();
     }
 
+    @Override
     public boolean equals(Object other) {
       if (other instanceof QueuedAction) {
         return name.equals(((QueuedAction) other).name);
@@ -130,6 +133,7 @@ public class Screen extends DataListenerWidget implements
       return false;
     }
 
+    @Override
     abstract public void run();
   }
 
@@ -193,6 +197,10 @@ public class Screen extends DataListenerWidget implements
 
   public DataSchema schema() {
     return manager.schema();
+  }
+
+  public AttributeSet attributes() {
+    return manager.appInfo().attributes();
   }
 
   public Resources resources() {
@@ -454,6 +462,7 @@ public class Screen extends DataListenerWidget implements
    */
   private void deferredResize() {
     Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+      @Override
       public void execute() {
         resizeInterface();
       }
