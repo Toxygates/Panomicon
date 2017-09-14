@@ -11,5 +11,5 @@ shift
 REPO=$1
 shift
 
-curl -u xyzuser:xyzpass -X POST -H "Content-type:application/x-trig" "http://sontaran:8081/owlim-workbench-webapp-5.3.1/repositories/$REPO/statements" --data-binary @$INPUT
+curl -u xyzuser:xyzpass -X POST -H "Content-type:application/x-trig" "http://localhost:3030/$REPO/" --data-binary @$INPUT
 

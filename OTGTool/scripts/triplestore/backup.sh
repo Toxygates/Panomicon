@@ -9,12 +9,12 @@ function rdf_backup {
  [ -f $REPO.trig.1.gz ] && rm -f $REPO.trig.1.gz
  [ -f $REPO.trig.gz ] && mv $REPO.trig.gz $REPO.trig.1.gz
 
- curl -u user:pass -X GET -H "Accept:application/x-trig"   "http://sontaran:8081/owlim-workbench-webapp-5.3.1/repositories/$REPO/rdf-graphs/service?graph=http://www.ontotext.com/explicit" | gzip -f > $REPO.trig.gz
+ curl -u user:pass -X GET -H "Accept:application/x-trig"   "http://localhost:3030/$REPO/" | gzip -f > $REPO.trig.gz
 }
 
 #RDF backup
-#rdf_backup otg
-rdf_backup ttest
+#This part must be run from a machine that has access to the triplestore.
+rdf_backup Toxygates
 
 #KC backup
 
@@ -31,6 +31,7 @@ function backup {
  gzip -f $DEST/*.kch
 }
 
+#This part can be run from any machine with ssh access to Toxygates.
 #backup /opt/toxygates $BACKUPDIR/data-main
 #backup /opt/toxygates-dev $BACKUPDIR/data-dev
 backup /opt/toxygates-chunk $BACKUPDIR/data-chunk
