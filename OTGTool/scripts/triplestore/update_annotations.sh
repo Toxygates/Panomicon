@@ -1,10 +1,15 @@
 #!/bin/bash
 
+#Note, /home/nibioadmin on toxygates is separate from the same directory on the cluster,
+#as the former is not a cluster machine.
+#We assume that this script is run from a cluster machine.
+
 TGHOME=/home/nibioadmin/toxygates
 AHOME=$TGHOME/annotation
-REPO=ttest
+REPO=Toxygates
+
+ssh toxygates mkdir -p $AHOME
 mkdir -p $AHOME
-cd $AHOME
 
 MAINTENANCE_FILE=/opt/toxygates-chunk/MAINTENANCE_MODE
 
@@ -15,16 +20,16 @@ MAINTENANCE_FILE=/opt/toxygates-chunk/MAINTENANCE_MODE
 
 ssh toxygates touch $MAINTENANCE_FILE
 
-curl -O http://geneontology.org/ontology/go.owl
-$TGHOME/replace.sh $AHOME/go.owl $REPO http://level-five.jp/t/annotation/go \
+ssh toxygates curl -o $AHOME/go.owl http://geneontology.org/ontology/go.owl
+ssh toxygates $TGHOME/replace.sh $AHOME/go.owl $REPO http://level-five.jp/t/annotation/go \
         "GO terms" "Updated $(date) from go.owl" &
 
 $TGHOME/kegg_rdf/build_kegg.sh && \
-	cp $TGHOME/kegg_rdf/rdf/kegg-pathways-genes.f.nt $AHOME &
+	scp $TGHOME/kegg_rdf/rdf/kegg-pathways-genes.f.nt nibioadmin@toxygates${AHOME} &
 
 wait
 
-$TGHOME/replace.sh $AHOME/kegg-pathways-genes.f.nt $REPO http://level-five.jp/t/annotation/kegg \
+ssh toxygates $TGHOME/replace.sh $AHOME/kegg-pathways-genes.f.nt $REPO http://level-five.jp/t/annotation/kegg \
 	"KEGG pathways" "Updated $(date) from ftp.bioinformatics.jp"
 		
 ssh toxygates rm $MAINTENANCE_FILE

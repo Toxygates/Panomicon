@@ -2,6 +2,7 @@
 
 export PATH=$PATH:/usr/local/bin
 
+
 KEGGBASE=/home/nibioadmin/toxygates/kegg_rdf
 OUTDIR=$KEGGBASE/download
 RDFDIR=$KEGGBASE/rdf
@@ -11,6 +12,7 @@ B2R=$KEGGBASE/b2r/bio2rdf-scripts-release3
 mkdir -p $OUTDIR
 
 #Copy fresh files from the latest regular download
+#These files are available on the cluster (e.g. 10.100.0.34)
 KEGGFTP=/data/bio/db/ftp/kegg
 cp $KEGGFTP/genes/organisms/hsa/T01001.ent.gz $OUTDIR
 cp $KEGGFTP/genes/organisms/mmu/T01002.ent.gz $OUTDIR
