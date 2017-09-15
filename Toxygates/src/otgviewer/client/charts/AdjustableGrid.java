@@ -21,14 +21,14 @@ package otgviewer.client.charts;
 import java.util.*;
 import java.util.logging.Logger;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.components.Screen;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.viewer.client.Utils;
-
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * A chart grid where the user can interactively choose what kind of charts to display (for example,
@@ -74,7 +74,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
     }
     organisms = new ArrayList<String>(os);
 
-    String majorParam = screen.schema().majorParameter();
+    String majorParam = screen.schema().majorParameter().id();
     this.majorVals = new ArrayList<String>(GroupUtils.collect(groups, majorParam));
     this.valueType = vt;
 
@@ -95,8 +95,8 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
     chartCombo = new ListBox();
     ihp.add(chartCombo);
 
-    String medTitle = schema.title(schema.mediumParameter());
-    String minTitle = schema.title(schema.minorParameter());
+    String medTitle = schema.mediumParameter().title();
+    String minTitle = schema.minorParameter().title();
 
     chartCombo.addItem("Expression vs " + minTitle + ", fixed " + medTitle + ":");
     chartCombo.addItem("Expression vs " + medTitle + ", fixed " + minTitle + ":");
@@ -106,6 +106,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
     ihp.add(chartSubtypeCombo);
 
     chartSubtypeCombo.addChangeHandler(new ChangeHandler() {
+      @Override
       public void onChange(ChangeEvent event) {
         lastSubtype = chartSubtypes.get(chartSubtypeCombo.getSelectedIndex());
         computedWidth = 0;
@@ -114,6 +115,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
 
     });
     chartCombo.addChangeHandler(new ChangeHandler() {
+      @Override
       public void onChange(ChangeEvent event) {
         lastType = chartCombo.getSelectedIndex();
         lastSubtype = null;
@@ -170,13 +172,13 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
   private void gridFor(final boolean vsMinor, final String[] columns, final String[] useMajors,
       final List<ChartGrid<D>> intoList, final SimplePanel intoPanel) {
 
-    String columnParam = vsMinor ? schema.mediumParameter() : schema.minorParameter();
+    String columnParam = vsMinor ? schema.mediumParameter().id() : schema.minorParameter().id();
     String[] preColumns =
         (columns == null ? (vsMinor ? source.mediumVals() : source.minorVals()) : columns);
     final String[] useColumns = schema.filterValuesForDisplay(valueType, columnParam, preColumns);
 
     SampleMultiFilter smf = new SampleMultiFilter();
-    smf.addPermitted(schema.majorParameter(), useMajors);
+    smf.addPermitted(schema.majorParameter().id(), useMajors);
     smf.addPermitted(columnParam, useColumns);
 
     if (computedWidth == 0) {
@@ -284,8 +286,8 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
    * @return
    */
   private String findPreferredItem(boolean isMed) {
-    final String medParam = schema.mediumParameter();
-    final String minParam = schema.minorParameter();
+    final String medParam = schema.mediumParameter().id();
+    final String minParam = schema.minorParameter().id();
     if (lastSubtype != null) {
       if (lastSubtype.equals(SELECTION_ALL)) {
         return lastSubtype;
@@ -308,7 +310,8 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
       logger.info("Unit: " + u);
       if (isMed) {
         final String[] useMeds =
-            schema.filterValuesForDisplay(valueType, schema.mediumParameter(), source.mediumVals());
+            schema.filterValuesForDisplay(valueType, schema.mediumParameter().id(),
+                source.mediumVals());
 
         String med = u.get(medParam);
         if (Arrays.binarySearch(useMeds, med) != -1) {

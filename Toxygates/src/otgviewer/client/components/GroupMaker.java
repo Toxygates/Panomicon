@@ -25,6 +25,7 @@ import t.common.shared.DataSchema;
 import t.common.shared.Pair;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Unit;
+import t.model.sample.Attribute;
 
 public class GroupMaker {
 
@@ -46,7 +47,7 @@ public class GroupMaker {
       return r;
     }
 
-    final String medParam = schema.mediumParameter(), minParam = schema.minorParameter();
+    final Attribute medParam = schema.mediumParameter(), minParam = schema.minorParameter();
 
     int maxLen = 0;
     String maxKey = "";

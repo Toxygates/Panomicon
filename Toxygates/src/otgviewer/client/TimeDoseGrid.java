@@ -22,14 +22,14 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.components.*;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SampleServiceAsync;
-
-import com.google.gwt.user.client.ui.*;
 
 /**
  * A widget that displays times and doses for a number of compounds in a grid layout. For each
@@ -73,13 +73,13 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
     rootPanel.setWidth("730px");
     mainPanel = new VerticalPanel();
     this.schema = screen.schema();
-    this.majorParameter = schema.majorParameter();
-    this.mediumParameter = schema.mediumParameter();
-    this.minorParameter = schema.minorParameter();
-    this.timeParameter = schema.timeParameter();
+    this.majorParameter = schema.majorParameter().id();
+    this.mediumParameter = schema.mediumParameter().id();
+    this.minorParameter = schema.minorParameter().id();
+    this.timeParameter = schema.timeParameter().id();
     try {
       mediumValues = new ArrayList<String>();
-      String[] mvs = schema.sortedValues(schema.mediumParameter());
+      String[] mvs = schema.sortedValues(schema.mediumParameter().id());
       for (String v : mvs) {
         if (!schema.isControlValue(v)) {
           mediumValues.add(v);
@@ -156,6 +156,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
     logger.info("Fetch minor");
     sampleService.parameterValues(chosenSampleClass, minorParameter,
         new PendingAsyncCallback<String[]>(this, "Unable to fetch minor parameter for samples") {
+          @Override
           public void handleSuccess(String[] times) {
             try {
               // logger.info("Sort " + times.length + " times");
@@ -169,6 +170,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
             }
           }
 
+          @Override
           public void handleFailure(Throwable caught) {
             super.handleFailure(caught);
             fetchingMinor = false;

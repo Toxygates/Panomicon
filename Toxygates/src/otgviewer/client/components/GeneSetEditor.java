@@ -20,6 +20,13 @@ package otgviewer.client.components;
 
 import java.util.*;
 
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.*;
 import otgviewer.client.rpc.SparqlServiceAsync;
 import t.common.client.components.ResizingDockLayoutPanel;
@@ -29,13 +36,6 @@ import t.common.shared.sample.Group;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
-
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
 
 public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHandler {
 
@@ -353,6 +353,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     customProbeText.setWidth("95%");
 
     vpii.add(new Button("Add manual list", new ClickHandler() {
+      @Override
       public void onClick(ClickEvent ev) {
         String text = customProbeText.getText();
         String[] split = text.split("[\n ,\t]");
@@ -373,6 +374,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
       vpii.add(sb);
       sb.setWidth("95%");
       vpii.add(new Button("Add gene", new ClickHandler() {
+        @Override
         public void onClick(ClickEvent ev) {
           String[] gs = new String[1];
           if (sb.getText().length() == 0) {
@@ -393,6 +395,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
       vpii.add(tb);
       tb.setWidth("95%");
       vpii.add(new Button("Add", new ClickHandler() {
+        @Override
         public void onClick(ClickEvent ev) {
           String[] gs = new String[1];
           if (tb.getText().length() == 0) {
@@ -424,10 +427,12 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
       // TODO reduce the number of ajax calls done by this screen by
       // collapsing them
       sparqlService.geneSyms(probesInOrder, new AsyncCallback<String[][]>() {
+        @Override
         public void onSuccess(String[][] syms) {
           deferredAddProbes(probesInOrder, syms);
         }
 
+        @Override
         public void onFailure(Throwable caught) {
           Window.alert("Unable to get gene symbols for probes.");
         }
@@ -444,6 +449,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
         screen.getAllSamples(),
         new PendingAsyncCallback<String[]>(screen,
             "Unable to obtain manual probes (technical error).") {
+          @Override
           public void handleSuccess(String[] probes) {
             if (probes.length == 0) {
               Window.alert("No matching probes were found.");
@@ -482,6 +488,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
 
       sparqlService.probesTargetedByCompound(sc, compound, service, homologs,
           new PendingAsyncCallback<String[]>(w, "Unable to get probes (technical error).") {
+            @Override
             public void handleSuccess(String[] probes) {
               if (probes.length == 0) {
                 Window.alert("No matching probes were found.");
@@ -586,7 +593,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
   @Override
   public void columnsChanged(List<Group> cs) {
     super.columnsChanged(cs);
-    Set<String> compounds = Group.collectAll(cs, screen.schema().majorParameter());
+    Set<String> compounds = Group.collectAll(cs, screen.schema().majorParameter().id());
     compoundList.clear();
     for (String c : compounds) {
       compoundList.addItem(c);

@@ -18,9 +18,9 @@ public class SampleClassUtils {
     for (String s : schema.macroParameters()) {
       keys.add(s);
     }
-    keys.add(schema.majorParameter());
-    keys.add(schema.mediumParameter());
-    keys.add(schema.minorParameter());
+    keys.add(schema.majorParameter().id());
+    keys.add(schema.mediumParameter().id());
+    keys.add(schema.minorParameter().id());
     return sc.copyOnly(keys);
   }
   
@@ -71,7 +71,7 @@ public class SampleClassUtils {
       DataSchema schema, HS hasSamples, @Nullable SampleClass sc) {
     List<S> sList = Arrays.asList(hasSamples.getSamples());
     List<S> filtered = (sc != null) ? filter(sc, sList) : sList;
-    return collectInner(filtered, schema.majorParameter());
+    return collectInner(filtered, schema.majorParameter().id());
   }
   
   public static <T extends HasClass> List<T> filter(SampleClass sc, List<T> from) {

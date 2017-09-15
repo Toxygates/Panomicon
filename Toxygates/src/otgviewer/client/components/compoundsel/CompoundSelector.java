@@ -22,6 +22,10 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.ui.*;
+import com.google.gwt.view.client.NoSelectionModel;
+
 import otgviewer.client.components.*;
 import t.common.client.components.SetEditor;
 import t.common.shared.ItemList;
@@ -30,10 +34,6 @@ import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.components.StackedListEditor;
 import t.viewer.client.rpc.SampleServiceAsync;
-
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.user.client.ui.*;
-import com.google.gwt.view.client.NoSelectionModel;
 
 /**
  * This widget is for selecting a compound or a set of compounds using various data sources.
@@ -58,7 +58,7 @@ public class CompoundSelector extends DataListenerWidget implements RequiresResi
     this.screen = screen;
     this.sampleService = screen.manager().sampleService();
     dp = new DockLayoutPanel(Unit.PX);
-    this.majorParameter = screen.schema().majorParameter();
+    this.majorParameter = screen.schema().majorParameter().id();
 
     initWidget(dp);
     Label lblCompounds = new Label(heading);

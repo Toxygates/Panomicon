@@ -22,20 +22,21 @@ import static otg.model.sample.OTGAttribute.Organism;
 
 import java.util.List;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.charts.google.GVizChartGrid;
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.ProbeServiceAsync;
-
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * A grid to display time (or dose) series charts for a number of probes and doses (or times).
@@ -110,7 +111,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
           if (org != null) {
             sc.put(Organism, org);
           }
-          String colKey = columnsAreMins ? schema.minorParameter() : schema.mediumParameter();
+          Attribute colKey = columnsAreMins ? schema.minorParameter() : schema.mediumParameter();
           sc.put(colKey, minsOrMeds[c]);
           tables[r * osize + o][c] = dataset.makeData(sc, probe);
         }
@@ -120,6 +121,7 @@ abstract public class ChartGrid<D extends Data> extends Composite {
     if (!rowsAreMajors) {
       probeService.geneSyms(rowFilters.toArray(new String[0]),
           new PendingAsyncCallback<String[][]>(screen) {
+            @Override
             public void handleSuccess(String[][] results) {
               for (int i = 0; i < results.length; ++i) {
                 g.setWidget(i * 2 + 1, 0,

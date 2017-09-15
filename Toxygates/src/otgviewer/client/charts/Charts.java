@@ -18,9 +18,14 @@
 
 package otgviewer.client.charts;
 
+import static t.model.sample.CoreParameter.ControlGroup;
+
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import otgviewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
 import otgviewer.client.charts.google.GDTDataset;
@@ -31,12 +36,9 @@ import otgviewer.shared.Series;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
-import static t.model.sample.CoreParameter.*;
+import t.model.sample.Attribute;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.rpc.SeriesServiceAsync;
-
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class Charts {
 
@@ -108,9 +110,9 @@ public class Charts {
       final Screen screen) {
     // TODO get from schema or data
     try {
-      final String majorParam = schema.majorParameter();
-      final String[] medVals = schema.sortedValuesForDisplay(null, schema.mediumParameter());
-      schema.sort(schema.timeParameter(), times);
+      final Attribute majorParam = schema.majorParameter();
+      final String[] medVals = schema.sortedValuesForDisplay(null, schema.mediumParameter().id());
+      schema.sort(schema.timeParameter().id(), times);
       DataSource cds = new DataSource.SeriesSource(schema, series, times);
 
       cds.getSamples(new SampleMultiFilter(), new TimeDoseColorPolicy(medVals[highlightMed],
@@ -148,11 +150,12 @@ public class Charts {
       final String[] probes, final AChartAcceptor acceptor) {
     Set<String> organisms = Group.collectAll(groups, "organism");
 
-    String[] majorVals = GroupUtils.collect(groups, schema.majorParameter()).toArray(new String[0]);
+    String[] majorVals =
+        GroupUtils.collect(groups, schema.majorParameter().id()).toArray(new String[0]);
 
     if (organisms.size() > 1) {
       logger.info("Get rows for chart based on units");
-      sampleService.units(sampleClasses, schema.majorParameter(), majorVals,
+      sampleService.units(sampleClasses, schema.majorParameter().id(), majorVals,
           new AsyncCallback<Pair<Unit, Unit>[]>() {
 
             @Override
@@ -168,7 +171,7 @@ public class Charts {
           });
     } else if (barcodes == null) {
       logger.info("Get rows for chart based on sample classes");
-      sampleService.samples(sampleClasses, schema.majorParameter(), majorVals,
+      sampleService.samples(sampleClasses, schema.majorParameter().id(), majorVals,
           new AsyncCallback<Sample[]>() {
 
             @Override
