@@ -46,8 +46,15 @@ class SampleSearchTest extends TTestSuite {
     IndividualSearch(samples, cond, new UnitsHelper(schema), attributes).results
   }
 
-  test("atomic") {
-    val r = sampleSearch(atomic(LiverWeight, MatchType.High))
+  def unitSearch(cond: MatchCondition) = {
+    val searchParams = cond.neededParameters()
+    UnitSearch(samples, cond, new UnitsHelper(schema), attributes).results
+  }
+
+  val atomicCondition = atomic(LiverWeight, MatchType.High)
+
+  test("atomic-sample") {
+    val r = sampleSearch(atomicCondition)
     for (s <- r) {
       s.get(Individual.id) should (equal ("1") or (equal ("3")))
     }
@@ -56,27 +63,41 @@ class SampleSearchTest extends TTestSuite {
     r.size should equal(2 * samples.size / 3 * 4 / 5)
   }
 
+  test("atomic-unit") {
+    val result = unitSearch(atomicCondition)
+    result.size should equal(samples.size / 3 * 4 / 5)
+  }
+
+  val normalCondition = atomic(KidneyWeight, MatchType.NormalRange)
+
+  test("normal-sample") {
+    val result = sampleSearch(normalCondition)
+    // All Low and Really high dose samples (2/5), 1/3 of High dose samples (1/15),
+    //
+    result.size should equal(samples.size * 7 / 15)
+  }
+
+  test("normal-unit") {
+    val result = unitSearch(normalCondition)
+    // High and Low dose units (2/5); 3 samples per unit
+    //
+    result.size should equal(samples.size / 3 * 2 / 5)
+  }
+
   test("and") {
-    val r = sampleSearch(
-        and(
-            atomic(LiverWeight, MatchType.High),
-            atomic(KidneyWeight, MatchType.Low)
-            )
-        )
-    for (s <- r) {
-      s.get(Individual.id) should equal("3")
-    }
-    r.size should equal(samples.size / 3 * 4 / 5)
+    val r = sampleSearch(and(
+        atomic(LiverWeight, MatchType.High),
+        atomic(KidneyWeight, MatchType.Low)))
+    // Dose High Individual 3 (1/5 * 1/3) + Dose Middle Individual 1 or 3 (1/5 * 2/3)
+    r.size should equal(samples.size / 5)
   }
 
   test("or") {
-     val r = sampleSearch(
-        or(
-            atomic(LiverWeight, MatchType.High),
-            atomic(KidneyWeight, MatchType.Low)
-            )
-         )
-    r.size should equal(3 * samples.size / 3 * 4 / 5)
+     val r = sampleSearch(or(
+         atomic(LiverWeight, MatchType.High),
+         atomic(KidneyWeight, MatchType.Low)))
+    // Dose Middle (1/5) + Dose Low/High/Really High && Individual 1 or 3 (3/5 * 2/3)
+    r.size should equal(samples.size * 3 / 5 )
   }
 
   test("normal") {
