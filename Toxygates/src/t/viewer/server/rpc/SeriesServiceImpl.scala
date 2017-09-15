@@ -70,7 +70,8 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     implicit val sf = SampleFilter(instanceURI = config.instanceURI,
         datasetURIs = dsTitles.map(Datasets.packURI(_)))
 
-    val majAttr = attributes.byId(schema.majorParameter())
+    val majAttr = schema.majorParameter()
+
     context.samples.attributeValues(SampleClassFilter(sc).filterAll,
       majAttr).toSet
   }
@@ -109,7 +110,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       })
 
       val allowedMajorVals = allowedMajors(ds, sc)
-      val mediumVals = schema.sortedValues(schema.mediumParameter())
+      val mediumVals = schema.sortedValues(schema.mediumParameter().id())
 
       val r = rr.map(p => {
         val (compound, score, dose) = (p._1, p._3, mediumVals.indexOf(p._2) - 1)

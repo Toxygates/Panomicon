@@ -22,6 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.components.*;
 import otgviewer.client.components.compoundsel.CompoundSelector;
 import otgviewer.client.components.groupdef.GroupInspector;
@@ -29,11 +34,6 @@ import t.common.shared.DataSchema;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.SampleColumn;
 import t.viewer.client.Utils;
-
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * This screen allows for column (group) definition as well as compound ranking.
@@ -49,8 +49,7 @@ public class ColumnScreen extends DataFilterScreen {
     super("Sample groups", key, false, man, man.resources().groupDefinitionHTML(), 
         man.resources().groupDefinitionHelp());
 
-    String majorParam = man.schema().majorParameter();
-    cs = new CompoundSelector(this, man.schema().title(majorParam), true, true) {
+    cs = new CompoundSelector(this, man.schema().majorParameter().title(), true, true) {
       @Override
       public void changeCompounds(List<String> compounds) {
         super.changeCompounds(compounds);

@@ -65,8 +65,8 @@ abstract public class DataSource {
 
   protected void initParams(List<? extends HasClass> from, boolean controlMedVals) {
     try {
-      String minorParam = schema.minorParameter();
-      String medParam = schema.mediumParameter();
+      String minorParam = schema.minorParameter().id();
+      String medParam = schema.mediumParameter().id();
       Set<String> minorVals = SampleClassUtils.collectInner(from, minorParam);
       _minorVals = minorVals.toArray(new String[0]);
       schema.sort(minorParam, _minorVals);
@@ -96,7 +96,7 @@ abstract public class DataSource {
    * acceptor when they are available.
    */
   void getSamples(SampleMultiFilter smf, ColorPolicy policy, SampleAcceptor acceptor) {
-    if (!smf.contains(schema.majorParameter())) {
+    if (!smf.contains(schema.majorParameter().id())) {
       // TODO why is this needed?
       applyPolicy(policy, chartSamples);
       acceptor.accept(chartSamples);
@@ -120,7 +120,7 @@ abstract public class DataSource {
         for (int i = 0; i < s.values().length; ++i) {
           ExpressionValue ev = s.values()[i];
           String time = times[i];
-          SampleClass sc = s.sampleClass().copyWith(schema.timeParameter(), time);
+          SampleClass sc = s.sampleClass().copyWith(schema.timeParameter().id(), time);
           ChartSample cs =
               new ChartSample(sc, schema, ev.getValue(), null, s.probe(), ev.getCall(), null);
           chartSamples.add(cs);

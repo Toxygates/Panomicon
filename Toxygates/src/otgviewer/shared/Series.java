@@ -58,6 +58,7 @@ public class Series implements HasClass, Serializable {
 
   private SampleClass _sc;
 
+  @Override
   public SampleClass sampleClass() {
     return _sc;
   }
@@ -106,6 +107,11 @@ public class Series implements HasClass, Serializable {
     return _sc.get(Organism);
   }
 
+  public String get(Attribute key) {
+    return _sc.get(key);
+  }
+
+  @Deprecated
   public String get(String key) {
     return _sc.get(key);
   }

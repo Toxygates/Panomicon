@@ -64,17 +64,34 @@ object TestData {
 
   def liverWeight(dose: String, individual: String) =
     if (dose == "Control" || individual == "2")
-      //TODO find a better way to generate values with predictable s.d.
       3 //healthy
     else
       randomNumber(5, 0.2) //abnormal individual_id 1, 3
 
-  def kidneyWeight(dose: String, individual: String) =
-    if (dose == "Control" || individual == "1")
-      //TODO find a better way to generate values with predictable s.d.
-      5 //healthy
-    else
-      randomNumber(1, 0.2) //abnormal individual_id 2, 3
+  def kidneyWeight(dose: String, individual: String) = {
+    val sigma = 0.1
+    val mean = 2.0
+    dose match {
+      case "Control" => // Rigged for the above mean and standard deviation
+        if (individual == "1")
+          mean - sigma * 2.0 / scala.math.sqrt(2)
+        else
+          mean + sigma / scala.math.sqrt(2)
+      case "Really high" =>
+        2.19 // Out of normal range for unit search, but not sample search
+      case "High" => // normal range for unit search
+        if (individual == "1")
+          2.0
+        else if (individual == "2")
+          2.5 // out of normal range for sample search
+        else // (individual == "3")
+          1.5 // ditto
+      case "Middle" => // All 3 individuals (and unit) below range
+          1.5
+      case _ => // "Low" => healthy
+        2.0
+    }
+  }
 
   val ids = (0 until (5 * 4 * 3 * 4)).toStream.iterator
   val samples = for (

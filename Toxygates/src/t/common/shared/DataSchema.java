@@ -26,6 +26,7 @@ import javax.annotation.Nullable;
 
 import t.common.shared.sample.Sample;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 
 
 /**
@@ -39,9 +40,9 @@ public abstract class DataSchema implements Serializable {
   String[] defaultChartParameters = new String[3];
 
   public DataSchema() {
-    defaultChartParameters[0] = majorParameter();
-    defaultChartParameters[1] = mediumParameter();
-    defaultChartParameters[2] = minorParameter();
+    defaultChartParameters[0] = majorParameter().id();
+    defaultChartParameters[1] = mediumParameter().id();
+    defaultChartParameters[2] = minorParameter().id();
   }
 
   /**
@@ -79,7 +80,7 @@ public abstract class DataSchema implements Serializable {
   }
 
   public void sortTimes(String[] times) throws Exception {
-    sort(timeParameter(), times);
+    sort(timeParameter().id(), times);
   }
 
   /**
@@ -87,35 +88,35 @@ public abstract class DataSchema implements Serializable {
    * 
    * @return
    */
-  public abstract String majorParameter();
+  public abstract Attribute majorParameter();
 
   /**
    * Used for columns in the time/dose selection grid
    * 
    * @return
    */
-  public abstract String mediumParameter();
+  public abstract Attribute mediumParameter();
 
   /**
    * Used for subcolumns (checkboxes) in the time/dose selection grid
    * 
    * @return
    */
-  public abstract String minorParameter();
+  public abstract Attribute minorParameter();
 
   /**
    * Used for charts
    * 
    * @return
    */
-  public abstract String timeParameter();
+  public abstract Attribute timeParameter();
 
   /**
    * Used to group charts in columns, when possible
    * 
    * @return
    */
-  public abstract String timeGroupParameter();
+  public abstract Attribute timeGroupParameter();
 
   public abstract String[] macroParameters();
 

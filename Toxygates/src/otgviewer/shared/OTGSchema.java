@@ -23,8 +23,10 @@ import static otg.model.sample.OTGAttribute.TestType;
 
 import java.util.*;
 
+import otg.model.sample.OTGAttribute;
 import t.common.shared.*;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 
 @SuppressWarnings("serial")
 public class OTGSchema extends DataSchema {
@@ -32,6 +34,7 @@ public class OTGSchema extends DataSchema {
       "4 day", "8 day", "15 day", "29 day"};
   public static String[] allDoses = new String[] {"Control", "Low", "Middle", "High"};
 
+  @Override
   public String[] sortedValues(String parameter) throws Exception {
     if (parameter.equals("exposure_time")) {
       return allTimes;
@@ -114,28 +117,28 @@ public class OTGSchema extends DataSchema {
   }
 
   @Override
-  public String majorParameter() {
-    return "compound_name";
+  public Attribute majorParameter() {
+    return OTGAttribute.Compound;
   }
 
   @Override
-  public String mediumParameter() {
-    return "dose_level";
+  public Attribute mediumParameter() {
+    return OTGAttribute.DoseLevel;
   }
 
   @Override
-  public String minorParameter() {
-    return "exposure_time";
+  public Attribute minorParameter() {
+    return OTGAttribute.ExposureTime;
   }
 
   @Override
-  public String timeParameter() {
-    return "exposure_time";
+  public Attribute timeParameter() {
+    return OTGAttribute.ExposureTime;
   }
 
   @Override
-  public String timeGroupParameter() {
-    return "dose_level";
+  public Attribute timeGroupParameter() {
+    return OTGAttribute.DoseLevel;
   }
 
   @Override
@@ -153,6 +156,7 @@ public class OTGSchema extends DataSchema {
 
   private String[] macroParams = new String[] {"organism", "test_type", "organ_id", "sin_rep_type"};
 
+  @Override
   public String[] macroParameters() {
     return macroParams;
   }
@@ -186,6 +190,7 @@ public class OTGSchema extends DataSchema {
       AType.Uniprot, AType.RefseqTrn, AType.RefseqProt, AType.EC, AType.Ensembl, AType.Unigene,
       AType.MiRNA};
 
+  @Override
   public AType[] associations() {
     return associations;
   }
@@ -207,6 +212,7 @@ public class OTGSchema extends DataSchema {
   }
 
   // TODO as above.
+  @Override
   public String organismPlatform(String organism) {
     if (organism.equals("Human")) {
       return "HG-U133_Plus_2";
@@ -222,6 +228,7 @@ public class OTGSchema extends DataSchema {
   /**
    * TODO this is brittle
    */
+  @Override
   public int numDataPointsInSeries(SampleClass sc) {
     if (sc.get(TestType) != null && sc.get(TestType).equals("in vitro")) {
       return 3;
@@ -231,6 +238,7 @@ public class OTGSchema extends DataSchema {
 
   @Override
   public String[] chartParameters() {
-    return new String[] {minorParameter(), mediumParameter(), majorParameter(), "organism"};
+    return new String[] {minorParameter().id(), mediumParameter().id(), majorParameter().id(),
+        "organism"};
   }
 }

@@ -22,14 +22,14 @@ import static t.common.client.Utils.makeScrolled;
 
 import java.util.List;
 
+import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.Widget;
+
 import otgviewer.client.components.FilterTools;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
 import otgviewer.client.components.ranking.CompoundRanker;
 import t.common.shared.Dataset;
-
-import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 public class RankingScreen extends DataFilterScreen {
 
@@ -56,8 +56,7 @@ public class RankingScreen extends DataFilterScreen {
     };
     this.addListener(filterTools);
 
-    String majorParam = man.schema().majorParameter();
-    cs = new RankingCompoundSelector(this, man.schema().title(majorParam)) {
+    cs = new RankingCompoundSelector(this, man.schema().majorParameter().title()) {
       @Override
       public void changeCompounds(List<String> compounds) {
         super.changeCompounds(compounds);
@@ -75,6 +74,7 @@ public class RankingScreen extends DataFilterScreen {
     addLeftbar(cs, 350);
   }
 
+  @Override
   public Widget content() {
     CompoundRanker cr = factory().compoundRanker(this, cs);
     sp = makeScrolled(cr);

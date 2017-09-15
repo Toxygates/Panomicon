@@ -23,6 +23,9 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.VerticalPanel;
+
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.groupdef.SelectionTDGrid.UnitListener;
@@ -30,9 +33,7 @@ import t.common.shared.*;
 import t.common.shared.sample.SampleClassUtils;
 import t.common.shared.sample.Unit;
 import t.model.SampleClass;
-
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import t.model.sample.Attribute;
 
 /**
  * A SelectionTDGrid with multiple sections, one for each data filter. Dispatches compound and
@@ -87,6 +88,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
     }
   }
 
+  @Override
   public void availableUnitsChanged(DataListenerWidget sender, List<Pair<Unit, Unit>> units) {
     List<Pair<Unit, Unit>> fullAvailability = allAvailable();
     if (listener != null) {
@@ -150,7 +152,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
     }
     expectedSelection = selection;
 
-    final String majorParam = scr.schema().majorParameter();
+    final Attribute majorParam = scr.schema().majorParameter();
     Map<SampleClass, Set<String>> lcompounds = new HashMap<SampleClass, Set<String>>();
     for (Unit u : selection) {
       SampleClass sc = SampleClassUtils.asMacroClass(u, schema);

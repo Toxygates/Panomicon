@@ -40,7 +40,7 @@ class Units(schema: DataSchema, sampleStore: Samples) extends
 
     //TODO the copying may be costly - consider optimising in the future
     def unitWithoutMajorMedium(s: Sample) = unit(s).
-      copyWithout(schema.majorParameter).copyWithout(schema.mediumParameter())
+      copyWithout(schema.majorParameter.id).copyWithout(schema.mediumParameter.id)
 
     def asUnit(ss: Iterable[Sample]) = new Unit(unit(ss.head), ss.toArray)
 
@@ -125,7 +125,7 @@ class UnitsHelper(schema: DataSchema) {
       (s.get(ControlGroupParam), s.get(minorParameter), s.get(Batch))
 
   def unitGroupKey(s: Sample) = s.get(schema.mediumParameter())
-  
+
   /**
    * Groups the samples provided into treated and control units, returning
    * a list of tuples whose first element is a treated unit and whose second
@@ -135,7 +135,7 @@ class UnitsHelper(schema: DataSchema) {
    */
   def formControlUnitsAndVarianceSets(samples: Iterable[Sample]):
       Seq[(Unit, (Unit, VarianceSet))] = {
-    formTreatedAndControlUnits(samples).flatMap { 
+    formTreatedAndControlUnits(samples).flatMap {
       case (treatedSamples, controlSamples) =>
         val units = treatedSamples.map(formUnit(_, schema))
         val controlGroup = formUnit(controlSamples, schema)
@@ -143,10 +143,10 @@ class UnitsHelper(schema: DataSchema) {
         units.map(_ -> (controlGroup, varianceSet))
     }
   }
-    
+
   /**
    * Groups the samples provided into treated and control groups, returning
-   * a list of tuples whose first element is the samples in a treated unit and 
+   * a list of tuples whose first element is the samples in a treated unit and
    * whose second element is the samples from the corresponding control unit.
    * @param samples samples to partition
    */

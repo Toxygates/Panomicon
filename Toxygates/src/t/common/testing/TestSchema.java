@@ -19,8 +19,10 @@
  */
 package t.common.testing;
 
+import otg.model.sample.OTGAttribute;
 import t.common.shared.DataSchema;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 
 @SuppressWarnings("serial")
 public class TestSchema extends DataSchema {
@@ -34,19 +36,29 @@ public class TestSchema extends DataSchema {
   }
 
   @Override
-  public String majorParameter() { return "major"; }
+  public Attribute majorParameter() {
+    return OTGAttribute.Compound;
+  }
 
   @Override
-  public String mediumParameter() { return "medium"; }
+  public Attribute mediumParameter() {
+    return OTGAttribute.DoseLevel;
+  }
 
   @Override
-  public String minorParameter() { return "minor"; }
+  public Attribute minorParameter() {
+    return OTGAttribute.ExposureTime;
+  }
 
   @Override
-  public String timeParameter() { return "minor"; }
+  public Attribute timeParameter() {
+    return OTGAttribute.ExposureTime;
+  }
 
   @Override
-  public String timeGroupParameter() { return "medium"; }
+  public Attribute timeGroupParameter() {
+    return OTGAttribute.DoseLevel;
+  }
   
   @Override
   public String[] macroParameters() {
