@@ -23,76 +23,32 @@ package t.viewer.server.rpc
 import java.util.{ List => JList }
 
 import scala.Array.canBuildFrom
-import scala.Vector
 import scala.collection.JavaConversions._
-import scala.collection.{ Set => CSet }
 
 import SparqlServiceImpl.platforms
 import javax.annotation.Nullable
 import otgviewer.shared.Pathology
-import t.common.server.ScalaUtils
-import t.common.shared.AType
-import t.common.shared.Dataset
-import t.common.shared.Pair
-import t.common.shared.Platform
-import t.model.SampleClass
-import t.common.shared.StringList
-import t.common.shared.clustering.ProbeClustering
-import t.common.shared.sample.HasSamples
-import t.common.shared.sample.NumericalBioParamValue
-import t.common.shared.sample.Sample
-import t.common.shared.sample.SampleColumn
-import t.common.shared.sample.StringBioParamValue
-import t.common.shared.sample.Unit
-import t.db.DefaultBio
-import t.platform.BioParameter
-import t.platform.Probe
-import t.sparql.BBMap
-import t.sparql.Datasets
-import t.sparql.MMap
-import t.sparql.Platforms
-import t.sparql.Probes
-import t.sparql.SampleFilter
-import t.sparql.Samples
-import t.sparql.TriplestoreMetadata
-import t.sparql.makeRich
-import t.sparql.secondary.B2RKegg
-import t.sparql.secondary.Gene
-import t.sparql.secondary.GOTerm
-import t.sparql.secondary.LocalUniprot
-import t.sparql.secondary.Pathway
-import t.sparql.secondary.Uniprot
-import t.sparql.toBioMap
-import t.util.PeriodicRefresh
-import t.util.Refreshable
-import t.viewer.client.rpc.SparqlService
-import t.viewer.server.AssociationResolver
-import t.viewer.server.CSVHelper
-import t.viewer.server.CSVHelper.CSVFile
-import t.viewer.server.Configuration
-
-import t.viewer.server.Conversions._
-
-import t.viewer.server.SharedDatasets
-import t.viewer.server.SharedPlatforms
-import t.viewer.shared.AppInfo
-import t.viewer.shared.Association
-import t.viewer.shared.TimeoutException
-import t.common.shared.sample.Annotation
-import t.platform.BioParameters
-import t.viewer.server.Annotations
-
-import t.common.shared.sample.search.MatchCondition
-import t.common.shared.sample.BioParamValue
-import t.sparql.SampleClassFilter
-import t.model.shared.SampleClassHelper
-import t.common.shared.sample.SampleClassUtils
-import t.model.SampleClass
-import t.viewer.server.Units
-import t.common.shared.RequestResult
 import t.BaseConfig
+import t.common.server.ScalaUtils
+import t.common.shared._
+import t.common.shared.clustering.ProbeClustering
+import t.common.shared.sample._
+import t.common.shared.sample.search.MatchCondition
+import t.model.SampleClass
 import t.model.sample.Attribute
 import t.model.sample.SampleLike
+import t.platform.Probe
+import t.sparql._
+import t.sparql.Platforms
+import t.sparql.secondary._
+import t.util.PeriodicRefresh
+import t.util.Refreshable
+import t.viewer.server.rpc.GeneSetServlet._
+import t.viewer.client.rpc.SparqlService
+import t.viewer.server._
+import t.viewer.server.CSVHelper.CSVFile
+import t.viewer.server.Conversions._
+import t.viewer.shared._
 
 object SparqlServiceImpl {
   var inited = false
@@ -156,7 +112,6 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     val platforms = new t.sparql.Platforms(bc.triplestore)
     platforms.populateAttributes(bc.attributes)
   }
-
 
   //AppInfo refreshes at most once per day.
   //This is to allow updates such as clusterings, annotation info etc to feed through.
@@ -240,7 +195,6 @@ abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
     appInfo.setDatasets(sDatasets(userKey))
 
     val sess = getThreadLocalRequest.getSession
-    import GeneSetServlet._
 
     /*
      * From GeneSetServlet

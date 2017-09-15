@@ -20,14 +20,15 @@
 
 package t.viewer.server.rpc
 
-import t.viewer.client.rpc.UserDataService
 import t.common.server.maintenance.BatchOpsImpl
-import t.viewer.server.Configuration
-import t.common.shared.maintenance.Batch
 import t.common.shared.Dataset
-import t.global.KCDBRegistry
+import t.common.shared.maintenance.Batch
 import t.common.shared.maintenance.MaintenanceException
 import t.db.Metadata
+import t.global.KCDBRegistry
+
+import t.viewer.client.rpc.UserDataService
+import t.viewer.server.Configuration
 
 /**
  * A servlet for managing user data (as batches).

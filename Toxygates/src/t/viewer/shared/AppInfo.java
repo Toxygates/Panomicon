@@ -19,15 +19,11 @@
 package t.viewer.shared;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
-import t.common.shared.Dataset;
-import t.common.shared.Platform;
-import t.common.shared.StringList;
+import t.common.shared.*;
 import t.common.shared.clustering.ProbeClustering;
 import t.common.shared.sample.Group;
 import t.model.sample.AttributeSet;

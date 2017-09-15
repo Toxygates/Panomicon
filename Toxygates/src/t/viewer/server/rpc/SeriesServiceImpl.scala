@@ -22,32 +22,28 @@ package t.viewer.server.rpc
 
 import java.util.ArrayList
 import java.util.{List => JList}
+
 import scala.Array.canBuildFrom
-import scala.collection.JavaConversions.asJavaCollection
 import scala.collection.JavaConversions._
 import scala.language.implicitConversions
-import otgviewer.server.rpc.Conversions
-import otgviewer.server.rpc.Conversions.asJava
+
 import otgviewer.server.rpc.Conversions.asScala
 import otgviewer.shared.MatchResult
 import otgviewer.shared.RankRule
 import otgviewer.shared.{Series => SSeries}
-import t.BaseConfig
-import t.viewer.client.rpc.SeriesService
-import t.model.SampleClass
-import t.db.MatrixContext
-import t.db.SeriesDB
-import t.db.Series
-import t.sparql.Probes
 import t.SeriesRanking
-import t.viewer.server.Conversions._
 import t.common.shared.Dataset
-import t.sparql.Datasets
-import t.sparql.SampleFilter
-import t.viewer.server.Configuration
-import t.viewer.shared.NoSuchProbeException
-import t.sparql.SampleClassFilter
+import t.db.MatrixContext
+import t.db.Series
+import t.db.SeriesDB
 import t.model.SampleClass
+import t.sparql.Datasets
+import t.sparql.SampleClassFilter
+import t.sparql.SampleFilter
+import t.viewer.client.rpc.SeriesService
+import t.viewer.server.Configuration
+import t.viewer.server.Conversions._
+import t.viewer.shared.NoSuchProbeException
 
 abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with SeriesService {
   import java.lang.{ Double => JDouble }
@@ -64,7 +60,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
   implicit protected def fromShared(s: SSeries): S
 
   protected def attributes = baseConfig.attributes
-  
+
   override def localInit(config: Configuration): Unit = {
     this.config = config
   }
@@ -73,7 +69,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
     val dsTitles = ds.map(_.getTitle).distinct.toList
     implicit val sf = SampleFilter(instanceURI = config.instanceURI,
         datasetURIs = dsTitles.map(Datasets.packURI(_)))
-    
+
     val majAttr = attributes.byId(schema.majorParameter())
     context.samples.attributeValues(SampleClassFilter(sc).filterAll,
       majAttr).toSet

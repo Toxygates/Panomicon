@@ -24,11 +24,10 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet
 
 import javax.servlet.ServletConfig
 import javax.servlet.ServletException
-import t.BaseConfig
 import t.Context
 import t.Factory
-import t.viewer.server.Configuration
 import t.common.shared.DataSchema
+import t.viewer.server.Configuration
 
 abstract class TServiceServlet extends RemoteServiceServlet {
   protected def context: Context
