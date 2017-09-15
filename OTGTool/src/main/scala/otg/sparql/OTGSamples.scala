@@ -43,17 +43,17 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
         s"""|
             |  FILTER(
             |    ${standardPred.map(attribute => filter.get(attribute).map(value =>
-                  s"?$attribute = " + "\"" + value + "\"")).flatten.mkString(" && ")}
+                  s"?${attribute.id} = " + "\"" + value + "\"")).flatten.mkString(" && ")}
             |  )""".stripMargin
 
-    val batchFilter = filter.get("batchGraph")
+    val batchFilter = filter.get(Batch)
     val batchFilterQ = batchFilter.map("<" + _ + ">").getOrElse("?batchGraph")
 
     Query(prefixes,
       s"""SELECT * WHERE {
         |  GRAPH $batchFilterQ {
-        |    ?x a t:sample; rdfs:label ?id;
-        |    ${standardPred.map(a => s"t:$a ?$a").mkString("; ")} .""".stripMargin,
+        |    ?x a $itemClass; rdfs:label ?id;
+        |    ${standardPred.map(a => s"t:${a.id} ?${a.id}").mkString("; ")} .""".stripMargin,
 
       s"""|} ${sf.standardSampleFilters} $filterString
         |  }""".stripMargin,
@@ -70,12 +70,12 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
     //TODO may be able to lift up to superclass and generalise
     val hlPred = hlAttributes.filter(isPredicateAttribute)
 
-    val vars = hlPred.map(a => s"?$a").mkString(" ")
+    val vars = hlPred.map(a => s"?${a.id}").mkString(" ")
     val r = triplestore.mapQuery(s"""$prefixes
        |SELECT DISTINCT $vars WHERE {
        |  GRAPH ?batchGraph {
-       |    ?x a t:sample;
-       |    ${hlPred.map(a => s"t:$a ?$a").mkString("; ")} .
+       |    ?x a $itemClass;
+       |    ${hlPred.map(a => s"t:${a.id} ?${a.id}").mkString("; ")} .
        |  }
        |  ${sf.standardSampleFilters}
        |}""".stripMargin)
