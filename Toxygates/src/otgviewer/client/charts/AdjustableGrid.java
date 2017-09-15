@@ -28,6 +28,7 @@ import com.google.gwt.user.client.ui.*;
 import otgviewer.client.components.Screen;
 import t.common.shared.*;
 import t.common.shared.sample.*;
+import t.model.sample.Attribute;
 import t.viewer.client.Utils;
 
 /**
@@ -286,8 +287,8 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
    * @return
    */
   private String findPreferredItem(boolean isMed) {
-    final String medParam = schema.mediumParameter().id();
-    final String minParam = schema.minorParameter().id();
+    final Attribute medParam = schema.mediumParameter();
+    final Attribute minParam = schema.minorParameter();
     if (lastSubtype != null) {
       if (lastSubtype.equals(SELECTION_ALL)) {
         return lastSubtype;
@@ -295,11 +296,11 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
       // Try to reuse the most recent one
       for (Group g : groups) {
         if (isMed) {
-          if (Unit.contains(g.getUnits(), medParam, lastSubtype)) {
+          if (Unit.contains(g.getUnits(), medParam.id(), lastSubtype)) {
             return lastSubtype;
           }
         } else {
-          if (Unit.contains(g.getUnits(), minParam, lastSubtype)) {
+          if (Unit.contains(g.getUnits(), minParam.id(), lastSubtype)) {
             return lastSubtype;
           }
         }

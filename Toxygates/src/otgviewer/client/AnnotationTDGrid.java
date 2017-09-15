@@ -18,20 +18,21 @@
 
 package otgviewer.client;
 
+import static otg.model.sample.OTGAttribute.*;
+
 import java.util.List;
 import java.util.logging.Level;
-
-import otgviewer.client.components.PendingAsyncCallback;
-import otgviewer.client.components.Screen;
-import t.common.shared.sample.*;
-import t.model.SampleClass;
-import static otg.model.sample.OTGAttribute.*;
-import t.viewer.client.Analytics;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.*;
+
+import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
+import t.common.shared.sample.*;
+import t.model.SampleClass;
+import t.viewer.client.Analytics;
 
 /**
  * A time and dose grid that can show some variable as a mini heat map. The variable is supplied as a
@@ -56,6 +57,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     toolPanel.add(annotationSelector);
     annotationButton = new Button("Show");
     annotationButton.addClickHandler(new ClickHandler() {
+      @Override
       public void onClick(ClickEvent ce) {
         reloadAnnotations();
         Analytics.trackEvent(Analytics.CATEGORY_VISUALIZATION,
@@ -74,10 +76,12 @@ public class AnnotationTDGrid extends TimeDoseGrid {
       sc.put(Compound, compounds.get(0));
       sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(
           this, "Unable to get samples") {
+        @Override
         public void handleSuccess(Sample[] bcs) {
 
           sampleService.annotations(bcs[0], new PendingAsyncCallback<Annotation>(
               AnnotationTDGrid.this, "Unable to get annotations.") {
+            @Override
             public void handleSuccess(Annotation a) {
               for (BioParamValue e : a.getAnnotations()) {
                 if (e instanceof NumericalBioParamValue) {
@@ -110,6 +114,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 
     sampleService.samples(sc, new PendingAsyncCallback<Sample[]>(this,
         "Unable to retrieve barcodes for the group definition.") {
+      @Override
       public void handleSuccess(Sample[] barcodes) {
         processAnnotationBarcodes(annotation, row, col, time, barcodes);
       }
@@ -131,6 +136,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     Group g = new Group(schema, "temporary", barcodes, null);
     sampleService.annotations(g, false, new PendingAsyncCallback<Annotation[]>(this,
         "Unable to get annotations.") {
+      @Override
       public void handleSuccess(Annotation[] as) {
         double sum = 0;
         int n = 0;
@@ -208,10 +214,10 @@ public class AnnotationTDGrid extends TimeDoseGrid {
 
   @Override
   protected Widget guiForUnit(Unit unit) {
-    int time = minorValues.indexOf(unit.get(timeParameter));
-    int compound = chosenCompounds.indexOf(unit.get(majorParameter));
-    int dose = mediumValues.indexOf(unit.get(mediumParameter));
-    HTML r = new HTML(unit.get(timeParameter));
+    int time = minorValues.indexOf(unit.get(schema.timeParameter()));
+    int compound = chosenCompounds.indexOf(unit.get(schema.majorParameter()));
+    int dose = mediumValues.indexOf(unit.get(schema.mediumParameter()));
+    HTML r = new HTML(unit.get(schema.timeParameter()));
     r.setStylePrimaryName("slightlySpaced");
     labels[compound][minorValues.size() * dose + time] = r;
     return r;

@@ -22,6 +22,13 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.SampleDetailTable;
 import otgviewer.client.TimeDoseGrid;
 import otgviewer.client.components.DataListenerWidget;
@@ -29,15 +36,9 @@ import otgviewer.client.components.Screen;
 import t.common.shared.Pair;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
-
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * A time/dose grid for defining and editing sample groups in terms of time/dose combinations for
@@ -215,6 +216,7 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
   }
 
   private abstract class UnitMultiSelector implements ValueChangeHandler<Boolean> {
+    @Override
     public void onValueChange(ValueChangeEvent<Boolean> vce) {
       for (Unit b : unitUis.keySet()) {
         if (filter(b) && unitUis.get(b).isEnabled()) {
@@ -229,15 +231,17 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
 
   // Two parameter constraint
   private class DualSelectHandler extends UnitMultiSelector {
-    private String p1, p2, v1, v2;
+    private Attribute p1, p2;
+    private String v1, v2;
 
-    DualSelectHandler(String p1, String v1, String p2, String v2) {
+    DualSelectHandler(Attribute p1, String v1, Attribute p2, String v2) {
       this.p1 = p1;
       this.p2 = p2;
       this.v1 = v1;
       this.v2 = v2;
     }
 
+    @Override
     protected boolean filter(Unit b) {
       return b.get(p1).equals(v1) && b.get(p2).equals(v2);
     }
@@ -258,9 +262,9 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
 
   protected void makeSampleClass(String major, String medium, String minor) {
     SampleClass sc = new SampleClass();
-    sc.put(majorParameter, major);
-    sc.put(mediumParameter, medium);
-    sc.put(minorParameter, minor);
+    sc.put(schema.majorParameter(), major);
+    sc.put(schema.mediumParameter(), medium);
+    sc.put(schema.minorParameter(), minor);
   }
 
   public List<Unit> getSelectedUnits(boolean treatedOnly) {
@@ -334,8 +338,8 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     CheckBox all = new CheckBox("All");
     all.setEnabled(false); // disabled by default until samples have been confirmed
     cmpDoseCheckboxes[compound * nd + dose] = all;
-    all.addValueChangeHandler(new DualSelectHandler(majorParameter, chosenCompounds.get(compound),
-        mediumParameter, mediumValues.get(dose)));
+    all.addValueChangeHandler(new DualSelectHandler(schema.majorParameter(),
+        chosenCompounds.get(compound), schema.mediumParameter(), mediumValues.get(dose)));
     return all;
   }
 
@@ -348,8 +352,8 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
     cb.setEnabled(false); // disabled by default until samples have been confirmed
     final int col = dose * minorValues.size() + time;
     doseTimeCheckboxes[col] = cb;
-    cb.addValueChangeHandler(new DualSelectHandler(mediumParameter, mediumValues.get(dose),
-        minorParameter, minorValues.get(time)));
+    cb.addValueChangeHandler(new DualSelectHandler(schema.mediumParameter(), mediumValues.get(dose),
+        schema.minorParameter(), minorValues.get(time)));
     return p;
   }
 
@@ -402,9 +406,9 @@ abstract public class SelectionTDGrid extends TimeDoseGrid {
       // will be populated with concrete Barcodes (getSamples)
       unitUis.put(u, ui);
 
-      int cIdx = chosenCompounds.indexOf(u.get(majorParameter));
-      int dIdx = mediumValues.indexOf(u.get(mediumParameter));
-      int tIdx = minorValues.indexOf(u.get(minorParameter));
+      int cIdx = chosenCompounds.indexOf(u.get(schema.majorParameter()));
+      int dIdx = mediumValues.indexOf(u.get(schema.mediumParameter()));
+      int tIdx = minorValues.indexOf(u.get(schema.minorParameter()));
 
       if (cIdx == -1 || dIdx == -1 || tIdx == -1) {
         Window.alert("Data error");

@@ -46,7 +46,6 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
   protected final SampleServiceAsync sampleService;
 
   protected Screen screen;
-  protected final String majorParameter, mediumParameter, minorParameter, timeParameter;
   protected final DataSchema schema;
 
   protected List<String> mediumValues = new ArrayList<String>();
@@ -73,10 +72,6 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
     rootPanel.setWidth("730px");
     mainPanel = new VerticalPanel();
     this.schema = screen.schema();
-    this.majorParameter = schema.majorParameter().id();
-    this.mediumParameter = schema.mediumParameter().id();
-    this.minorParameter = schema.minorParameter().id();
-    this.timeParameter = schema.timeParameter().id();
     try {
       mediumValues = new ArrayList<String>();
       String[] mvs = schema.sortedValues(schema.mediumParameter().id());
@@ -89,7 +84,8 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
       logger.warning("Unable to sort medium parameters");
     }
 
-    logger.info("Medium: " + mediumParameter + " minor: " + minorParameter);
+    logger.info("Medium: " + schema.mediumParameter().id() + 
+        " minor: " + schema.minorParameter().id());
 
     HorizontalPanel selectionPanel = Utils.mkHorizontalPanel();
     mainPanel.add(selectionPanel);
@@ -97,7 +93,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
     selectionPanel.setSpacing(2);
 
     this.hasDoseTimeGUIs = hasDoseTimeGUIs;
-    String mtitle = schema.title(majorParameter);
+    String mtitle = schema.majorParameter().title();
     emptyMessage = "Please select at least one " + mtitle;
 
     grid.setStylePrimaryName("highlySpaced");
@@ -154,13 +150,13 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
   private void fetchMinor() {
     fetchingMinor = true;
     logger.info("Fetch minor");
-    sampleService.parameterValues(chosenSampleClass, minorParameter,
+    sampleService.parameterValues(chosenSampleClass, schema.minorParameter().id(),
         new PendingAsyncCallback<String[]>(this, "Unable to fetch minor parameter for samples") {
           @Override
           public void handleSuccess(String[] times) {
             try {
               // logger.info("Sort " + times.length + " times");
-              schema.sort(minorParameter, times);
+              schema.sort(schema.minorParameter().id(), times);
               minorValues = Arrays.asList(times);
               drawGridInner(grid);
               fetchingMinor = false;
@@ -194,7 +190,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
     availableUnits = new ArrayList<Pair<Unit, Unit>>();
     String[] compounds = chosenCompounds.toArray(new String[0]);
     final String[] fetchingForCompounds = compounds;
-    sampleService.units(chosenSampleClass, majorParameter, compounds,
+    sampleService.units(chosenSampleClass, schema.majorParameter().id(), compounds,
         new PendingAsyncCallback<Pair<Unit, Unit>[]>(this, "Unable to obtain samples.") {
 
           @Override
@@ -302,9 +298,9 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
         HorizontalPanel hp = Utils.mkHorizontalPanel(true);
         for (int t = 0; t < numMin; ++t) {
           SampleClass sc = new SampleClass();
-          sc.put(majorParameter, chosenCompounds.get(c));
-          sc.put(mediumParameter, mediumValues.get(d));
-          sc.put(minorParameter, minorValues.get(t));
+          sc.put(schema.majorParameter(), chosenCompounds.get(c));
+          sc.put(schema.mediumParameter(), mediumValues.get(d));
+          sc.put(schema.minorParameter(), minorValues.get(t));
           sc.mergeDeferred(chosenSampleClass);
           Unit unit = new Unit(sc, new Sample[] {});
           allUnits.add(new Pair<Unit, Unit>(unit, null));
