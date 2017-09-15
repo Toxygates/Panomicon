@@ -92,9 +92,11 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
     individualSearchRadioButton = new RadioButton("searchTypeGroup", "Individual samples");
     unitSearchRadioButton = new RadioButton("searchTypeGroup", "Sample units");
     individualSearchRadioButton.setValue(true);
-    VerticalPanel radioButtonPanel =
-        Utils.mkVerticalPanel(true, individualSearchRadioButton, unitSearchRadioButton);
-
+    VerticalPanel radioButtonPanel = Utils.mkVerticalPanel(true);
+    radioButtonPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
+    radioButtonPanel.add(individualSearchRadioButton);
+    radioButtonPanel.add(unitSearchRadioButton);
+    
     resultCountLabel = new Label();
 
     saveGroupButton = new Button("Save sample group", new ClickHandler() {
