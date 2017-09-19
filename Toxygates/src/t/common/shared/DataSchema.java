@@ -129,8 +129,8 @@ public abstract class DataSchema implements Serializable {
   }
 
   public boolean isControlValue(String parameter, String value) {
-    return (parameter.equals(mediumParameter()) && isControlValue(value))
-        || (parameter.equals(majorParameter()) && isMajorParamSharedControl(value));
+    return (parameter.equals(mediumParameter().id()) && isControlValue(value))
+        || (parameter.equals(majorParameter().id()) && isMajorParamSharedControl(value));
   }
 
   /**
