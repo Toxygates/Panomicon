@@ -442,7 +442,9 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   def annotationsAndComments: Iterable[(String, String)] = {
     val q = s"""$tPrefixes
        |SELECT DISTINCT ?title ?comment WHERE {
-       |  ?x a t:annotation; rdfs:label ?title; t:comment ?comment
+       |  GRAPH ?x {
+       |    ?x a t:annotation; rdfs:label ?title; t:comment ?comment
+       |  }
        |} """.stripMargin
     triplestore.mapQuery(q).map(x => (x("title"), x("comment")))
   }
