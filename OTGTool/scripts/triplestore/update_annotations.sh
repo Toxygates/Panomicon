@@ -22,7 +22,7 @@ ssh toxygates touch $MAINTENANCE_FILE
 
 ssh toxygates curl -o $AHOME/go.owl http://geneontology.org/ontology/go.owl
 ssh toxygates $TGHOME/replace.sh $AHOME/go.owl $REPO http://level-five.jp/t/annotation/go \
-        "GO terms" "Updated $(date) from go.owl" &
+        "\"GO terms\"" "\"Updated $(date) from go.owl\"" &
 
 $TGHOME/kegg_rdf/build_kegg.sh && \
 	scp $TGHOME/kegg_rdf/rdf/kegg-pathways-genes.f.nt nibioadmin@toxygates${AHOME} &
@@ -30,7 +30,7 @@ $TGHOME/kegg_rdf/build_kegg.sh && \
 wait
 
 ssh toxygates $TGHOME/replace.sh $AHOME/kegg-pathways-genes.f.nt $REPO http://level-five.jp/t/annotation/kegg \
-	"KEGG pathways" "Updated $(date) from ftp.bioinformatics.jp"
+	"\"KEGG pathways\"" "\"Updated $(date) from ftp.bioinformatics.jp\""
 		
 ssh toxygates rm $MAINTENANCE_FILE
-	
+
