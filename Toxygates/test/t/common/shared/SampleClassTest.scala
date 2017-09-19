@@ -25,6 +25,7 @@ import org.junit.runner.RunWith
 import t.TTestSuite
 import org.scalatest.junit.JUnitRunner
 import t.model.SampleClass
+import t.model.sample.BasicAttribute
 
 @RunWith(classOf[JUnitRunner])
 class SampleClassTest extends TTestSuite {
@@ -61,7 +62,8 @@ class SampleClassTest extends TTestSuite {
   }
 
   test("collect") {
-    assert(SampleClass.collect(seqAsJavaList(List(testSc, incomp)), "x").toSet
+    assert(SampleClass.collect(seqAsJavaList(List(testSc, incomp)),
+      new BasicAttribute("x", "whatever", false, null)).toSet
         == Set("x", "y"))
   }
 }

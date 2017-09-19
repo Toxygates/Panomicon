@@ -66,7 +66,7 @@ public class DataFilterEditor extends DataListenerWidget {
       }
     }
 
-    void setItemsFrom(List<SampleClass> scs, String key) {
+    void setItemsFrom(List<SampleClass> scs, Attribute key) {
       setItems(new ArrayList<String>(SampleClass.collect(scs, key)));
     }
 
@@ -92,7 +92,7 @@ public class DataFilterEditor extends DataListenerWidget {
     }
     // Constrain the selectors to the right of this one
     for (int i = sel + 1; i < selectors.length; ++i) {
-      selectors[i].setItemsFrom(selected, parameters[i].id());
+      selectors[i].setItemsFrom(selected, parameters[i]);
     }
 
     if (sel < selectors.length - 1) {
@@ -105,7 +105,7 @@ public class DataFilterEditor extends DataListenerWidget {
         if (x == null) {
           allSet = false;
         } else {
-          r.put(parameters[i].id(), x);
+          r.put(parameters[i], x);
         }
       }
 
@@ -143,7 +143,7 @@ public class DataFilterEditor extends DataListenerWidget {
       logger.info(sampleClasses[0].toString() + " ...");
     }
     this.sampleClasses = Arrays.asList(sampleClasses);
-    selectors[0].setItemsFrom(this.sampleClasses, parameters[0].id());
+    selectors[0].setItemsFrom(this.sampleClasses, parameters[0]);
     changeFrom(0, true); // Propagate the constraint
   }
 

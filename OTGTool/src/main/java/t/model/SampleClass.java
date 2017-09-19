@@ -169,7 +169,7 @@ public class SampleClass implements Serializable, SampleLike {
     return true;
   }
 
-  public static Set<String> collect(List<? extends SampleClass> from, String key) {
+  public static Set<String> collect(List<? extends SampleClass> from, Attribute key) {
     Set<String> r = new HashSet<String>();
     for (SampleClass sc : from) {
       String x = sc.get(key);

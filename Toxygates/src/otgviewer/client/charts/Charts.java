@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+import otg.model.sample.OTGAttribute;
 import otgviewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
 import otgviewer.client.charts.google.GDTDataset;
 import otgviewer.client.charts.google.GVizFactory;
@@ -131,7 +132,8 @@ public class Charts {
           }
 
           List<String> organisms =
-              new ArrayList<String>(SampleClass.collect(Arrays.asList(sampleClasses), "organism"));
+                  new ArrayList<String>(
+                      SampleClass.collect(Arrays.asList(sampleClasses), OTGAttribute.Organism));
 
           ChartGrid<?> cg =
               factory.grid(screen, ds, filters, organisms, rowsAreCompounds, medVals, false, 400);
