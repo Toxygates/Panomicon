@@ -67,11 +67,6 @@ public class TestSchema extends DataSchema {
   }
 
   @Override
-  public String title(String parameter) {
-    return "T:" + parameter;
-  }
-
-  @Override
   public int numDataPointsInSeries(SampleClass sc) {
     // TODO Auto-generated method stub
     return 0;

@@ -140,19 +140,6 @@ public class OTGSchema extends DataSchema {
     return OTGAttribute.DoseLevel;
   }
 
-  @Override
-  public String title(String parameter) {
-    if (parameter.equals("exposure_time")) {
-      return "Time";
-    } else if (parameter.equals("compound_name")) {
-      return "Compound";
-    } else if (parameter.equals("dose_level")) {
-      return "Dose";
-    } else {
-      return "???";
-    }
-  }
-
   private Attribute[] macroParams = new Attribute[] {OTGAttribute.Organism, OTGAttribute.TestType,
       OTGAttribute.Organ, OTGAttribute.Repeat};
 

@@ -124,14 +124,6 @@ public abstract class DataSchema implements Serializable {
     return defaultChartParameters;
   }
 
-  /**
-   * Human-readable title
-   * 
-   * @param parameter
-   * @return
-   */
-  public abstract String title(String parameter);
-
   public boolean isSelectionControl(SampleClass sc) {
     return false;
   }
