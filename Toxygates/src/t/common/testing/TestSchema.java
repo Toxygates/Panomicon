@@ -61,8 +61,9 @@ public class TestSchema extends DataSchema {
   }
   
   @Override
-  public String[] macroParameters() {
-    return new String[] { "macro1", "macro2" };
+  public Attribute[] macroParameters() {
+    return new Attribute[] {OTGAttribute.Organism, OTGAttribute.TestType,
+        OTGAttribute.Organ, OTGAttribute.Repeat};
   }
 
   @Override

@@ -18,7 +18,6 @@
 
 package otgviewer.shared;
 
-import static otg.model.sample.OTGAttribute.DoseLevel;
 import static otg.model.sample.OTGAttribute.TestType;
 
 import java.util.*;
@@ -154,16 +153,17 @@ public class OTGSchema extends DataSchema {
     }
   }
 
-  private String[] macroParams = new String[] {"organism", "test_type", "organ_id", "sin_rep_type"};
+  private Attribute[] macroParams = new Attribute[] {OTGAttribute.Organism, OTGAttribute.TestType,
+      OTGAttribute.Organ, OTGAttribute.Repeat};
 
   @Override
-  public String[] macroParameters() {
+  public Attribute[] macroParameters() {
     return macroParams;
   }
 
   @Override
   public boolean isSelectionControl(SampleClass sc) {
-    return sc.get(DoseLevel).equals("Control");
+    return sc.get(OTGAttribute.DoseLevel).equals("Control");
   }
 
   @Override
@@ -237,8 +237,8 @@ public class OTGSchema extends DataSchema {
   }
 
   @Override
-  public String[] chartParameters() {
-    return new String[] {minorParameter().id(), mediumParameter().id(), majorParameter().id(),
-        "organism"};
+  public Attribute[] chartParameters() {
+    return new Attribute[] {minorParameter(), mediumParameter(), majorParameter(),
+        OTGAttribute.Organism};
   }
 }

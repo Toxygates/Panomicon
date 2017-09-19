@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import t.common.shared.DataSchema;
 import t.common.shared.HasClass;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 
 public class SampleClassUtils {
   public static SampleClass asMacroClass(SampleClass sc, DataSchema schema) {
@@ -14,20 +15,20 @@ public class SampleClassUtils {
   }
 
   public static SampleClass asUnit(SampleClass sc, DataSchema schema) {
-    List<String> keys = new ArrayList<String>();
-    for (String s : schema.macroParameters()) {
-      keys.add(s);
+    List<Attribute> keys = new ArrayList<Attribute>();
+    for (Attribute attribute : schema.macroParameters()) {
+      keys.add(attribute);
     }
-    keys.add(schema.majorParameter().id());
-    keys.add(schema.mediumParameter().id());
-    keys.add(schema.minorParameter().id());
+    keys.add(schema.majorParameter());
+    keys.add(schema.mediumParameter());
+    keys.add(schema.minorParameter());
     return sc.copyOnly(keys);
   }
   
   public static String label(SampleClass sc, DataSchema schema) {
     StringBuilder sb = new StringBuilder();
-    for (String p : schema.macroParameters()) {
-      sb.append(sc.get(p)).append("/");
+    for (Attribute attribute : schema.macroParameters()) {
+      sb.append(sc.get(attribute)).append("/");
     }
     return sb.toString();
   }

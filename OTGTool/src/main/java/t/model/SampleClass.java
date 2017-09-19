@@ -87,10 +87,10 @@ public class SampleClass implements Serializable, SampleLike {
     return new SampleClass(getMap());
   }
 
-  public SampleClass copyOnly(Collection<String> keys) {
+  public SampleClass copyOnly(Collection<Attribute> attributes) {
     Map<String, String> data = new HashMap<String, String>();
-    for (String k : keys) {
-      data.put(k, get(k));
+    for (Attribute attribute : attributes) {
+      data.put(attribute.id(), get(attribute));
     }
     return new SampleClass(data);
   }

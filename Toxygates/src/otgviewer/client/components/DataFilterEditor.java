@@ -21,18 +21,19 @@ package otgviewer.client.components;
 import java.util.*;
 import java.util.logging.Logger;
 
-import t.common.shared.SharedUtils;
-import t.model.SampleClass;
-
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 
+import t.common.shared.SharedUtils;
+import t.model.SampleClass;
+import t.model.sample.Attribute;
+
 public class DataFilterEditor extends DataListenerWidget {
   List<SampleClass> sampleClasses = new ArrayList<SampleClass>();
   final SCListBox[] selectors;
-  private final String[] parameters;
+  private final Attribute[] parameters;
   protected final Logger logger;
 
   class SCListBox extends ListBox {
@@ -85,13 +86,13 @@ public class DataFilterEditor extends DataListenerWidget {
     for (int i = 0; i <= sel; ++i) {
       String sval = selectors[i].getSelected();
       if (sval != null) {
-        selected = SampleClass.filter(selected, parameters[i], sval);
+        selected = SampleClass.filter(selected, parameters[i].id(), sval);
 //        logger.info("Filtered to " + selected.size());
       }
     }
     // Constrain the selectors to the right of this one
     for (int i = sel + 1; i < selectors.length; ++i) {
-      selectors[i].setItemsFrom(selected, parameters[i]);
+      selectors[i].setItemsFrom(selected, parameters[i].id());
     }
 
     if (sel < selectors.length - 1) {
@@ -104,7 +105,7 @@ public class DataFilterEditor extends DataListenerWidget {
         if (x == null) {
           allSet = false;
         } else {
-          r.put(parameters[i], x);
+          r.put(parameters[i].id(), x);
         }
       }
 
@@ -142,7 +143,7 @@ public class DataFilterEditor extends DataListenerWidget {
       logger.info(sampleClasses[0].toString() + " ...");
     }
     this.sampleClasses = Arrays.asList(sampleClasses);
-    selectors[0].setItemsFrom(this.sampleClasses, parameters[0]);
+    selectors[0].setItemsFrom(this.sampleClasses, parameters[0].id());
     changeFrom(0, true); // Propagate the constraint
   }
 

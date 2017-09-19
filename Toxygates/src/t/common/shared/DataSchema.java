@@ -37,12 +37,12 @@ import t.model.sample.Attribute;
 @SuppressWarnings("serial")
 public abstract class DataSchema implements Serializable {
 
-  String[] defaultChartParameters = new String[3];
+  Attribute[] defaultChartParameters = new Attribute[3];
 
   public DataSchema() {
-    defaultChartParameters[0] = majorParameter().id();
-    defaultChartParameters[1] = mediumParameter().id();
-    defaultChartParameters[2] = minorParameter().id();
+    defaultChartParameters[0] = majorParameter();
+    defaultChartParameters[1] = mediumParameter();
+    defaultChartParameters[2] = minorParameter();
   }
 
   /**
@@ -118,9 +118,9 @@ public abstract class DataSchema implements Serializable {
    */
   public abstract Attribute timeGroupParameter();
 
-  public abstract String[] macroParameters();
+  public abstract Attribute[] macroParameters();
 
-  public String[] chartParameters() {
+  public Attribute[] chartParameters() {
     return defaultChartParameters;
   }
 
