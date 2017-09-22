@@ -22,7 +22,7 @@ import java.util.*;
 
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
-import otgviewer.client.rpc.SparqlServiceAsync;
+import otgviewer.client.rpc.SampleServiceAsync;
 import otgviewer.shared.Pathology;
 import t.common.client.ImageClickCell;
 import t.common.shared.GroupUtils;
@@ -60,12 +60,12 @@ public class PathologyScreen extends Screen {
     return manager.isConfigured(ColumnScreen.key); // && ct == CellType.Vivo;
   }
 
-  private final SparqlServiceAsync sparqlService;
+  private final SampleServiceAsync sampleService;
 
   public PathologyScreen(ScreenManager man) {
     super("Pathologies", key, true, man);
     resources = man.resources();
-    sparqlService = man.sparqlService();
+    sampleService = man.sampleService();
     mkTools();
   }
 
@@ -174,7 +174,7 @@ public class PathologyScreen extends Screen {
             .equals(lastColumns))) {
       pathologies.clear();
       for (SampleColumn c : chosenColumns) {
-        sparqlService.pathologies(c, new AsyncCallback<Pathology[]>() {
+        sampleService.pathologies(c, new AsyncCallback<Pathology[]>() {
           public void onFailure(Throwable caught) {
             Window.alert("Unable to get pathologies.");
           }

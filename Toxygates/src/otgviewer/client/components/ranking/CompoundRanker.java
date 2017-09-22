@@ -29,7 +29,8 @@ import t.common.shared.ItemList;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
-import t.viewer.client.rpc.SparqlServiceAsync;
+import t.viewer.client.rpc.ProbeServiceAsync;
+import t.viewer.client.rpc.SampleServiceAsync;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -49,7 +50,8 @@ abstract public class CompoundRanker extends DataListenerWidget {
   final GeneOracle oracle;
   List<String> availableCompounds = chosenCompounds;
 
-  protected final SparqlServiceAsync sparqlService;
+  protected final ProbeServiceAsync probeService;
+  protected final SampleServiceAsync sampleService;
 
   protected VerticalPanel csVerticalPanel = new VerticalPanel();
   protected List<String> rankProbes = new ArrayList<String>();
@@ -70,7 +72,8 @@ abstract public class CompoundRanker extends DataListenerWidget {
     oracle = new GeneOracle(screen);
     schema = screen.schema();
     resources = screen.resources();
-    sparqlService = _screen.manager().sparqlService();
+    probeService = _screen.manager().probeService();
+    sampleService = _screen.manager().sampleService();
 
     selector.addListener(this);
     listChooser = new ListChooser(screen.appInfo().predefinedProbeLists(), "probes") {
@@ -80,7 +83,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
         // We override this to pull in the probes, because they
         // may need to be converted from gene symbols.
 
-        sparqlService.identifiersToProbes(probes, true, false, false, null,
+        probeService.identifiersToProbes(probes, true, false, false, null,
             new PendingAsyncCallback<String[]>(this) {
               public void handleSuccess(String[] resolved) {
                 setItems(Arrays.asList(resolved));
@@ -91,7 +94,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
 
       @Override
       protected void itemsChanged(List<String> items) {
-        sparqlService.identifiersToProbes(items.toArray(new String[0]), true, 
+        probeService.identifiersToProbes(items.toArray(new String[0]), true, 
             false, false, null,
             new PendingAsyncCallback<String[]>(this) {
               public void handleSuccess(String[] resolved) {

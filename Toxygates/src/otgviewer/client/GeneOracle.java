@@ -23,7 +23,7 @@ import java.util.List;
 
 import otgviewer.client.components.Screen;
 import t.model.SampleClass;
-import t.viewer.client.rpc.SparqlServiceAsync;
+import t.viewer.client.rpc.ProbeServiceAsync;
 
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -64,10 +64,10 @@ public class GeneOracle extends SuggestOracle {
   }
 
   public GeneOracle(Screen screen) {
-    sparqlService = screen.manager().sparqlService();
+    probeService = screen.manager().probeService();
   }
 
-  private final SparqlServiceAsync sparqlService;
+  private final ProbeServiceAsync probeService;
 
   @Override
   public void requestSuggestions(final Request request, final Callback callback) {
@@ -84,7 +84,7 @@ public class GeneOracle extends SuggestOracle {
   }
 
   private void getSuggestions(final Request request, final Callback callback) {
-    sparqlService.geneSuggestions(sampleClass, request.getQuery(), new AsyncCallback<String[]>() {
+    probeService.geneSuggestions(sampleClass, request.getQuery(), new AsyncCallback<String[]>() {
 
       @Override
       public void onSuccess(String[] result) {
