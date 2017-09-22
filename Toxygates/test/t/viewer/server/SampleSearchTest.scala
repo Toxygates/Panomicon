@@ -9,6 +9,7 @@ import otg.model.sample.OTGAttribute._
 import otg.testing.TestData
 import otgviewer.shared.OTGSchema
 import t.TTestSuite
+import t.common.server.sample.search.IndividualSearch
 import t.common.server.sample.search.UnitSearch
 import t.common.shared.sample.search.AndMatch
 import t.common.shared.sample.search.AtomicMatch
