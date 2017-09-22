@@ -21,20 +21,16 @@
 package otgviewer.server
 
 import scala.collection.JavaConversions._
-import t.model.SampleClass
-import t.common.shared.AType
+
 import org.junit.runner.RunWith
-import t.TTestSuite
 import org.scalatest.junit.JUnitRunner
-import otgviewer.server.rpc.SparqlServiceImpl
-import t.viewer.shared.TimeoutException
-import t.sparql.secondary.ChEMBL
-import t.sparql.secondary.DrugBank
-import t.sparql.secondary.Uniprot
-import t.sparql.secondary.B2RKegg
-import t.sparql.secondary.LocalUniprot
-import t.sparql.SampleFilter
+
 import otg.OTGBConfig
+import t.TTestSuite
+import t.common.shared.AType
+import t.model.SampleClass
+import t.sparql.SampleFilter
+import t.sparql.secondary._
 
 object AssociationResolverTest {
 

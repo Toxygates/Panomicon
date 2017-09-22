@@ -1,26 +1,22 @@
 package t.viewer.server
 
 import scala.collection.JavaConversions._
+
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+
+import otg.model.sample.OTGAttribute._
+import otg.testing.TestData
 import otgviewer.shared.OTGSchema
 import t.TTestSuite
-import t.common.shared.sample.Sample
+import t.common.server.sample.search.UnitSearch
 import t.common.shared.sample.search.AndMatch
 import t.common.shared.sample.search.AtomicMatch
 import t.common.shared.sample.search.MatchCondition
 import t.common.shared.sample.search.MatchType
 import t.common.shared.sample.search.OrMatch
-import t.common.server.sample.search.IndividualSearch
-import t.db.VarianceSet
-import otg.testing.TestData
-import t.viewer.server.Conversions._
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import t.common.shared.sample.StringBioParamValue
-import otg.model.sample.OTGAttribute._
-import t.common.server.sample.search.AbstractSampleSearch
-import t.model.sample.BasicAttribute
 import t.model.sample.Attribute
-import t.common.server.sample.search.UnitSearch
+import t.viewer.server.Conversions._
 
 @RunWith(classOf[JUnitRunner])
 class SampleSearchTest extends TTestSuite {

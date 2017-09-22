@@ -22,9 +22,7 @@ package otgviewer.client
 
 import java.util.logging.Logger
 
-import scala.collection.JavaConversions.asScalaBuffer
-import scala.collection.JavaConversions.bufferAsJavaList
-import scala.collection.JavaConversions.seqAsJavaList
+import scala.collection.JavaConversions._
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import t.common.shared.StringList
@@ -53,7 +51,7 @@ class StringListsStoreHelperTest extends TTestSuite {
   }
 
   val logger = Logger.getGlobal
-  
+
   test("basic") {
     val clustering = new ClusteringList(
       ClusteringList.USER_CLUSTERING_TYPE,
