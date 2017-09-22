@@ -53,7 +53,7 @@ class SampleSearchTest extends TTestSuite {
   test("atomic-sample") {
     val r = sampleSearch(atomicCondition)
     for (s <- r) {
-      s.get(Individual.id) should (equal ("1") or (equal ("3")))
+      s.get(Individual) should (equal ("1") or (equal ("3")))
     }
     // 4/5 of the samples are treated samples, and 2/3 of those treated samples have
     // ID 1 or 3 and hence high liver weight

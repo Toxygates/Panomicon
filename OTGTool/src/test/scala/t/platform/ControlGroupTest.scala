@@ -36,7 +36,7 @@ class ControlGroupTest extends TTestSuite {
       cg = TestData.controlGroups(s)) {
       val isControl = cg.samples.toSet.contains(s)
 
-      if (isControl || s.sampleClass(Individual.id) == "2") {
+      if (isControl || s.sampleClass(Individual) == "2") {
          //healthy
         metadata.parameter(s, "liver_wt").get.toDouble should
           be (3.0 +- 0.1)

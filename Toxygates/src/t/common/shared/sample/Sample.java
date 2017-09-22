@@ -73,7 +73,7 @@ public class Sample implements Packable, Serializable, HasClass, SampleLike {
     return sampleClass.getKeys();
   }
 
-  //TODO deprecate when the time is right
+  @Deprecated
   public String get(String parameter) {
     return sampleClass.get(parameter);
   }

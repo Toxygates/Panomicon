@@ -34,6 +34,7 @@ import t.viewer.server.Conversions._
 import t.viewer.shared.ColumnFilter
 import t.viewer.shared.ManagedMatrixInfo
 import t.viewer.shared.Synthetic
+import otg.model.sample.OTGAttribute
 
 /**
  * Routines for loading a ManagedMatrix
@@ -149,7 +150,7 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
 
   //TODO use schema
   protected def treatedAndControl(g: Group) =
-    g.getUnits().partition(_.get("dose_level") != "Control")
+    g.getUnits().partition(_.get(OTGAttribute.DoseLevel) != "Control")
 }
 
 trait TreatedControlBuilder[E >: Null <: ExprValue] {
@@ -444,8 +445,10 @@ class ManagedMatrix(val initProbes: Seq[String],
     s match {
       case test: Synthetic.TwoGroupSynthetic =>
         //TODO
-        val g1s = test.getGroup1.getSamples.filter(_.get("dose_level") != "Control").map(_.id)
-        val g2s = test.getGroup2.getSamples.filter(_.get("dose_level") != "Control").map(_.id)
+        val g1s = test.getGroup1.getSamples.filter(_.get(OTGAttribute.DoseLevel)
+            != "Control").map(_.id)
+        val g2s = test.getGroup2.getSamples.filter(_.get(OTGAttribute.DoseLevel)
+            != "Control").map(_.id)
 
         val currentRows = (0 until current.rows).map(i => current.rowAt(i))
         //Need this to take into account sorting and filtering of currentMat
