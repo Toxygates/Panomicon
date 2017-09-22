@@ -25,7 +25,7 @@ ssh toxygates $TGHOME/replace.sh $AHOME/go.owl $REPO http://level-five.jp/t/anno
         "\"GO terms\"" "\"Updated $(date) from go.owl\"" &
 
 $TGHOME/kegg_rdf/build_kegg.sh && \
-	scp $TGHOME/kegg_rdf/rdf/kegg-pathways-genes.f.nt nibioadmin@toxygates${AHOME} &
+	scp $TGHOME/kegg_rdf/rdf/kegg-pathways-genes.f.nt nibioadmin@toxygates:${AHOME} &
 
 wait
 
