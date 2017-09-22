@@ -593,7 +593,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
   @Override
   public void columnsChanged(List<Group> cs) {
     super.columnsChanged(cs);
-    Set<String> compounds = Group.collectAll(cs, screen.schema().majorParameter().id());
+    Set<String> compounds = Group.collectAll(cs, screen.schema().majorParameter());
     compoundList.clear();
     for (String c : compounds) {
       compoundList.addItem(c);

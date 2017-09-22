@@ -28,6 +28,7 @@ import otgviewer.shared.Series;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
+import t.model.sample.Attribute;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.FullMatrix;
 
@@ -65,8 +66,8 @@ abstract public class DataSource {
 
   protected void initParams(List<? extends HasClass> from, boolean controlMedVals) {
     try {
-      String minorParam = schema.minorParameter().id();
-      String medParam = schema.mediumParameter().id();
+      Attribute minorParam = schema.minorParameter();
+      Attribute medParam = schema.mediumParameter();
       Set<String> minorVals = SampleClassUtils.collectInner(from, minorParam);
       _minorVals = minorVals.toArray(new String[0]);
       schema.sort(minorParam, _minorVals);

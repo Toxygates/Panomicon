@@ -1,7 +1,6 @@
 package otg.model.sample;
 
-import static otg.model.sample.Section.OrganWeight;
-import static otg.model.sample.Section.SampleDetails;
+import static otg.model.sample.Section.*;
 
 import t.model.sample.Attribute;
 
@@ -23,6 +22,8 @@ public enum OTGAttribute implements Attribute {
   Repeat("sin_rep_type", "Repeat?", false, SampleDetails),
   TestType("test_type", "Test type", false, SampleDetails),
   
+  Dataset("dataset", "Dataset", false, Meta),
+
   AdmRoute("adm_route_type", "Administration route", false, SampleDetails),
   
   LiverWeight("liver_wt", "Liver weight (g)", true, OrganWeight),

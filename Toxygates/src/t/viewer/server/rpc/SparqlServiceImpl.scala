@@ -49,6 +49,8 @@ import t.viewer.server._
 import t.viewer.server.CSVHelper.CSVFile
 import t.viewer.server.Conversions._
 import t.viewer.shared._
+import otg.model.sample.OTGAttribute
+import t.model.sample.CoreParameter
 
 object SparqlServiceImpl {
   var inited = false
@@ -462,14 +464,14 @@ abstract class SparqlServiceImpl extends TServiceServlet with
   @throws[TimeoutException]
   def geneSuggestions(sc: SampleClass, partialName: String): Array[String] = {
       val plat = for (scl <- Option(sc);
-        org <- Option(scl.get("organism"));
+        org <- Option(scl.get(OTGAttribute.Organism));
         pl <- Option(schema.organismPlatform(org))) yield pl
 
       probeStore.probesForPartialSymbol(plat, partialName).map(_.identifier).toArray
   }
 
   private def filterProbesByGroupInner(probes: Iterable[String], group: Iterable[Sample]) = {
-    val platforms: Set[String] = group.map(x => x.get("platform_id")).toSet
+    val platforms: Set[String] = group.map(x => x.get(CoreParameter.Platform)).toSet
     val lookup = probeStore.platformsAndProbes
     val acceptable = platforms.flatMap(p => lookup(p)).map(_.identifier)
     probes.filter(acceptable.contains)

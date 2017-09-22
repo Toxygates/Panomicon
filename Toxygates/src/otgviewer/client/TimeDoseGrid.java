@@ -74,7 +74,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
     this.schema = screen.schema();
     try {
       mediumValues = new ArrayList<String>();
-      String[] mvs = schema.sortedValues(schema.mediumParameter().id());
+      String[] mvs = schema.sortedValues(schema.mediumParameter());
       for (String v : mvs) {
         if (!schema.isControlValue(v)) {
           mediumValues.add(v);
@@ -156,7 +156,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
           public void handleSuccess(String[] times) {
             try {
               // logger.info("Sort " + times.length + " times");
-              schema.sort(schema.minorParameter().id(), times);
+              schema.sort(schema.minorParameter(), times);
               minorValues = Arrays.asList(times);
               drawGridInner(grid);
               fetchingMinor = false;

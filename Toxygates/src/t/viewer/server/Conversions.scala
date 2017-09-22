@@ -33,10 +33,11 @@ import t.common.shared.sample.ExpressionValue
 import t.common.shared.sample.Sample
 import t.db.{ExprValue => TExprValue}
 import t.platform.Species
+import otg.model.sample.OTGAttribute
 
 object Conversions {
 	implicit def asSpecies(sc: t.model.SampleClass): Species.Species =
-	  Species.withName(sc.get("organism"))
+	  Species.withName(sc.get(OTGAttribute.Organism))
 
 	def asJavaSample(s: t.db.Sample): Sample =
     new Sample(s.sampleId, s.sampleClass)

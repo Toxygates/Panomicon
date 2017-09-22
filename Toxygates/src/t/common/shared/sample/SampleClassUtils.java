@@ -40,7 +40,7 @@ public class SampleClassUtils {
     return maj + "/" + med + "/" + min;
   }
 
-  public static Set<String> collectInner(List<? extends HasClass> from, String key) {
+  public static Set<String> collectInner(List<? extends HasClass> from, Attribute key) {
     Set<String> r = new HashSet<String>();
     for (HasClass hc : from) {
       String x = hc.sampleClass().get(key);
@@ -72,7 +72,7 @@ public class SampleClassUtils {
       DataSchema schema, HS hasSamples, @Nullable SampleClass sc) {
     List<S> sList = Arrays.asList(hasSamples.getSamples());
     List<S> filtered = (sc != null) ? filter(sc, sList) : sList;
-    return collectInner(filtered, schema.majorParameter().id());
+    return collectInner(filtered, schema.majorParameter());
   }
   
   public static <T extends HasClass> List<T> filter(SampleClass sc, List<T> from) {

@@ -20,6 +20,16 @@ package otgviewer.client;
 
 import java.util.*;
 
+import com.google.gwt.cell.client.SafeHtmlCell;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.user.cellview.client.*;
+import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
+
+import otg.model.sample.OTGAttribute;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.rpc.SampleServiceAsync;
@@ -29,15 +39,6 @@ import t.common.shared.GroupUtils;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Utils;
-
-import com.google.gwt.cell.client.SafeHtmlCell;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.user.cellview.client.*;
-import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * This screen displays information about pathological findings in a given set of sample groups.
@@ -84,6 +85,7 @@ public class PathologyScreen extends Screen {
     addToolbar(tools, 30);
   }
 
+  @Override
   public Widget content() {
 
     scrollPanel.setWidget(pathologyTable);
@@ -91,6 +93,7 @@ public class PathologyScreen extends Screen {
     pathologyTable.setWidth("100%");
 
     TextColumn<Pathology> col = new TextColumn<Pathology>() {
+      @Override
       public String getValue(Pathology p) {
         List<Group> gs = GroupUtils.groupsFor(chosenColumns, p.barcode());
         StringBuilder sb = new StringBuilder();
@@ -108,15 +111,17 @@ public class PathologyScreen extends Screen {
     pathologyTable.addColumn(col, "Group");
 
     col = new TextColumn<Pathology>() {
+      @Override
       public String getValue(Pathology p) {
         Sample b = GroupUtils.sampleFor(chosenColumns, p.barcode());
-        return b.get("compound_name") + "/" + b.getShortTitle(schema()) + "/"
-            + b.get("individual_id");
+        return b.get(OTGAttribute.Compound) + "/" + b.getShortTitle(schema()) + "/"
+            + b.get(OTGAttribute.Individual);
       }
     };
     pathologyTable.addColumn(col, "Sample");
 
     col = new TextColumn<Pathology>() {
+      @Override
       public String getValue(Pathology p) {
         return p.finding();
       }
@@ -130,6 +135,7 @@ public class PathologyScreen extends Screen {
     pathologyTable.addColumn(col, "Finding");
 
     col = new TextColumn<Pathology>() {
+      @Override
       public String getValue(Pathology p) {
         return p.topography();
       }
@@ -137,6 +143,7 @@ public class PathologyScreen extends Screen {
     pathologyTable.addColumn(col, "Topography");
 
     col = new TextColumn<Pathology>() {
+      @Override
       public String getValue(Pathology p) {
         return p.grade();
       }
@@ -144,6 +151,7 @@ public class PathologyScreen extends Screen {
     pathologyTable.addColumn(col, "Grade");
 
     col = new TextColumn<Pathology>() {
+      @Override
       public String getValue(Pathology p) {
         return "" + p.spontaneous();
       }
@@ -151,6 +159,7 @@ public class PathologyScreen extends Screen {
     pathologyTable.addColumn(col, "Spontaneous");
 
     Column<Pathology, SafeHtml> lcol = new Column<Pathology, SafeHtml>(new SafeHtmlCell()) {
+      @Override
       public SafeHtml getValue(Pathology p) {
         SafeHtmlBuilder b = new SafeHtmlBuilder();
         if (p.viewerLink() != null) {
@@ -175,10 +184,12 @@ public class PathologyScreen extends Screen {
       pathologies.clear();
       for (SampleColumn c : chosenColumns) {
         sampleService.pathologies(c, new AsyncCallback<Pathology[]>() {
+          @Override
           public void onFailure(Throwable caught) {
             Window.alert("Unable to get pathologies.");
           }
 
+          @Override
           public void onSuccess(Pathology[] values) {
             pathologies.addAll(Arrays.asList(values));
             pathologyTable.setRowData(new ArrayList<Pathology>(pathologies));
@@ -196,6 +207,7 @@ public class PathologyScreen extends Screen {
       super(resources.magnify(), false);
     }
 
+    @Override
     public void onClick(String value) {
       displaySampleDetail(GroupUtils.sampleFor(chosenColumns, value));
     }
@@ -206,6 +218,7 @@ public class PathologyScreen extends Screen {
       super(tc);
     }
 
+    @Override
     public String getValue(Pathology p) {
       return p.barcode();
     }

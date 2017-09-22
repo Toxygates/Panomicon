@@ -112,8 +112,8 @@ public class Charts {
     // TODO get from schema or data
     try {
       final Attribute majorParam = schema.majorParameter();
-      final String[] medVals = schema.sortedValuesForDisplay(null, schema.mediumParameter().id());
-      schema.sort(schema.timeParameter().id(), times);
+      final String[] medVals = schema.sortedValuesForDisplay(null, schema.mediumParameter());
+      schema.sort(schema.timeParameter(), times);
       DataSource cds = new DataSource.SeriesSource(schema, series, times);
 
       cds.getSamples(new SampleMultiFilter(), new TimeDoseColorPolicy(medVals[highlightMed],
@@ -150,10 +150,10 @@ public class Charts {
 
   public void makeRowCharts(final Screen screen, final Sample[] barcodes, final ValueType vt,
       final String[] probes, final AChartAcceptor acceptor) {
-    Set<String> organisms = Group.collectAll(groups, "organism");
+    Set<String> organisms = Group.collectAll(groups, OTGAttribute.Dataset);
 
     String[] majorVals =
-        GroupUtils.collect(groups, schema.majorParameter().id()).toArray(new String[0]);
+        GroupUtils.collect(groups, schema.majorParameter()).toArray(new String[0]);
 
     if (organisms.size() > 1) {
       logger.info("Get rows for chart based on units");

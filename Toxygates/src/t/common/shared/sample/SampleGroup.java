@@ -23,6 +23,7 @@ import java.util.*;
 
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
+import t.model.sample.Attribute;
 
 /**
  * A way of grouping microarray samples. Unique colors for each group can be generated.
@@ -72,6 +73,7 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
     return _samples;
   }
 
+  @Override
   public S[] getSamples() {
     return _samples;
   }
@@ -80,10 +82,12 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
     return name;
   }
 
+  @Override
   public String getShortTitle(DataSchema schema) {
     return name;
   }
 
+  @Override
   public String toString() {
     return name;
   }
@@ -104,6 +108,7 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
     return colorIndexOf(color);
   }
 
+  @Override
   public String pack() {
     StringBuilder s = new StringBuilder();
     s.append("Group:::");
@@ -141,12 +146,12 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
     return other instanceof SampleGroup;
   }
 
-  public Set<String> collect(String parameter) {
+  public Set<String> collect(Attribute parameter) {
     return SampleClassUtils.collectInner(Arrays.asList(_samples), parameter);
   }
 
   public static <S extends Sample, G extends SampleGroup<S>> Set<String> collectAll(
-      Iterable<G> from, String parameter) {
+      Iterable<G> from, Attribute parameter) {
     Set<String> r = new HashSet<String>();
     for (G g : from) {
       r.addAll(g.collect(parameter));

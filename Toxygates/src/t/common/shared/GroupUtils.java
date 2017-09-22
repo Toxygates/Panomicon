@@ -22,6 +22,7 @@ import java.util.*;
 
 import t.common.shared.sample.Sample;
 import t.common.shared.sample.SampleGroup;
+import t.model.sample.Attribute;
 
 /**
  * Data manipulation utility methods.
@@ -88,7 +89,7 @@ public class GroupUtils {
     return r;
   }
 
-  public static Set<String> collect(List<? extends SampleGroup<?>> columns, String parameter) {
+  public static Set<String> collect(List<? extends SampleGroup<?>> columns, Attribute parameter) {
     Set<String> r = new HashSet<String>();
     for (SampleGroup<?> g : columns) {
       for (String c : g.collect(parameter)) {

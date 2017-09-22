@@ -7,7 +7,7 @@ package otg.model.sample;
  */
 enum Section {
   SampleDetails("Sample details"),
-  OrganWeight("Organ weight");
+  OrganWeight("Organ weight"), Meta("Meta");
   
   String title;
   Section(String title) {
