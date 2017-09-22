@@ -104,7 +104,6 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
   }
 
   def pathologies(barcode: String): Vector[Pathology] = {
-    case class Person(age: Int, name: String)
     val r = pathologyQuery("?x rdfs:label \"" + barcode + "\". ")
     r.map(_.copy(barcode = barcode))
   }
