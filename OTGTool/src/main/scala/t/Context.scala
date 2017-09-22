@@ -34,7 +34,9 @@ class Context(val config: BaseConfig,
   val samples: Samples,
   val matrix: MatrixContext) {
 
-  //TODO best location for this?
+  /*
+   * Note: this may not be the best location for the auxSortMap
+   */
 
   /**
    * Obtain an ordering of the probes, identified by a string key.

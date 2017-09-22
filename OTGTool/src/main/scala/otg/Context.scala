@@ -36,7 +36,6 @@ object Context {
       new OTGContext(bc))
 }
 
-//TODO consider adding a sparql subcontext with lazy val endpoints
 class Context(override val config: OTGBConfig,
   override val factory: Factory,
   override val probes: Probes,

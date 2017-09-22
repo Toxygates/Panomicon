@@ -34,8 +34,6 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
 
   val prefixes = s"$commonPrefixes PREFIX go:<http://www.geneontology.org/dtds/go.dtd#>"
 
-  //TODO case with no attributes won't work
-  //TODO consider lifting up
   def sampleQuery(filter: SampleClassFilter)(implicit sf: SampleFilter): Query[Vector[Sample]] = {
     val standardPred = standardAttributes.filter(isPredicateAttribute)
 
@@ -66,7 +64,6 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
   }
 
   def sampleClasses(implicit sf: SampleFilter): Seq[Map[String, String]] = {
-    //TODO case with no attributes
     //TODO may be able to lift up to superclass and generalise
     val hlPred = hlAttributes.filter(isPredicateAttribute)
 

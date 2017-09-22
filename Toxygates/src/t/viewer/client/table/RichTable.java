@@ -248,8 +248,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
   }
 
   /**
-   * External users should use this to set a column's visibility, rather than the hc.setVisibility
-   * method.
+   * External users should use this to set a column's visibility.
    * 
    * @param hc
    */
@@ -281,8 +280,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
       return _visible;
     }
 
-    // TODO consider not exposing this
-    public void setVisibility(boolean v) {
+    void setVisibility(boolean v) {
       _visible = v;
     }
   }

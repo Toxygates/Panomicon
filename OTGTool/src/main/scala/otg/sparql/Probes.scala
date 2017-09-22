@@ -84,7 +84,6 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
 	      })
   }
 
-  //TODO the platform constraint will only work on Owlim, not Fuseki (with RDF1.1 strings)
   override def probesForPartialSymbol(platform: Option[String], title: String): Vector[Probe] = {
     val query = s"""$prefixes
       |SELECT DISTINCT ?s WHERE {
@@ -93,7 +92,7 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
       |  }
       |  ${platform.map(x => "?g rdfs:label \"" + x + "\".").getOrElse("")}
       |  FILTER REGEX(STR(?s), "^$title.*", "i")
-      |} 
+      |}
       |LIMIT 10""".stripMargin
     triplestore.mapQuery(query).map(x => Probe(x("s")))
   }
@@ -157,8 +156,8 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
         _.map(x => x.copy(identifier = x.identifier.replace("EC:", "")))
         )
   }
-  
-  def mirnaAccessionLookup(probes: Iterable[Probe]): MMap[Probe, DefaultBio] = 
+
+  def mirnaAccessionLookup(probes: Iterable[Probe]): MMap[Probe, DefaultBio] =
     simpleRelationQuery(probes, "t:accession")
 
   def unigeneLookup(probes: Iterable[Probe]): MMap[Probe, DefaultBio] =

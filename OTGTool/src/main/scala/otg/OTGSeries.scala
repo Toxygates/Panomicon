@@ -20,7 +20,6 @@
 
 package otg
 
-
 import t.platform.Species._
 import otg.model.sample.OTGAttribute._
 import t.db._
@@ -175,7 +174,10 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
   def sortTimes(items: Iterable[String]): Seq[String] =
     items.toList.sortWith(isBefore)
 
-  //TODO we don't currently use dose series
+    /*
+     * Note: we don't currently use dose series; this might be untested/
+     * inadequate
+     */
   val expectedDoses = List("Low", "Middle", "High")
 
   def expectedTimes(key: OTGSeries): Seq[String] = {
