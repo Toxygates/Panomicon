@@ -28,6 +28,7 @@ import t.common.shared.clustering.ProbeClustering;
 import t.common.shared.sample.Group;
 import t.model.sample.AttributeSet;
 import t.viewer.shared.intermine.IntermineInstance;
+import t.viewer.shared.mirna.MirnaSource;
 
 /**
  * Container for various client side application parameters.
@@ -47,7 +48,8 @@ public class AppInfo implements Serializable {
 
   private String[] annotationTitles;
   private String[] annotationComments;
-  private IntermineInstance[] intermineInstances;
+  private IntermineInstance[] intermineInstances;  
+  private MirnaSource[] mirnaSources;
   
   private AttributeSet attributes;
   
@@ -57,33 +59,20 @@ public class AppInfo implements Serializable {
   
   public AppInfo() {}
 
-  public AppInfo(String instanceName_, String pathologyTermsURL_, IntermineInstance[] instances,
-      String applicationName_, String userKey_) {
-    instanceName = instanceName_;
-    pathologyTermsURL = pathologyTermsURL_;    
-    applicationName = applicationName_;
-    userKey = userKey_;
-    intermineInstances = instances;
-    // NB does not set datasets or platforms
-  }
-
-  public AppInfo(String instanceName_, Dataset[] datasets, Platform[] platforms,
-      List<StringList> probeLists, IntermineInstance[] instances, String appName, String userKey) {
-    this(instanceName_, "http://toxico.nibiohn.go.jp/open-tggates/doc/pathology_parameter.pdf",
-        instances, appName, userKey);
-    this.datasets = datasets;
-    this.platforms = platforms;
-    this.predefProbeLists = probeLists;
-  }
-
   public AppInfo(String instanceName_, Dataset[] datasets, Platform[] platforms,
       List<StringList> probeLists, IntermineInstance[] instances,
       List<ProbeClustering> probeClusterings, String appName,
       String userKey,
       String[][] annotationInfo,
       AttributeSet attributes) {
-    this(instanceName_, datasets, platforms, probeLists,
-        instances, appName, userKey);
+    this.instanceName = instanceName_;
+    this.pathologyTermsURL = "http://toxico.nibiohn.go.jp/open-tggates/doc/pathology_parameter.pdf";    
+    this.applicationName = appName;
+    this.userKey = userKey;
+    this.intermineInstances = instances;    
+    this.datasets = datasets;
+    this.platforms = platforms;
+    this.predefProbeLists = probeLists;
     this.probeClusterings = probeClusterings;
     this.annotationTitles = annotationInfo[0];
     this.annotationComments = annotationInfo[1];
