@@ -39,7 +39,7 @@ public interface ProbeService extends RemoteService {
    */
   String[][] geneSyms(String[] probes) throws TimeoutException;
 
-  /*
+  /**
    * Obtain gene suggestions from a partial gene symbol
    * 
    * @param partialName
