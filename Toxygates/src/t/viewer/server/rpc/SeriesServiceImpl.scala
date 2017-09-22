@@ -33,13 +33,9 @@ import otgviewer.shared.RankRule
 import otgviewer.shared.{Series => SSeries}
 import t.SeriesRanking
 import t.common.shared.Dataset
-import t.db.MatrixContext
-import t.db.Series
-import t.db.SeriesDB
+import t.db._
+import t.sparql._
 import t.model.SampleClass
-import t.sparql.Datasets
-import t.sparql.SampleClassFilter
-import t.sparql.SampleFilter
 import t.viewer.client.rpc.SeriesService
 import t.viewer.server.Configuration
 import t.viewer.server.Conversions._
