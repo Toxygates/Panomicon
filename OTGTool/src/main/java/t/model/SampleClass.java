@@ -52,7 +52,7 @@ public class SampleClass implements Serializable, SampleLike {
   public String apply(String key) {
     return get(key);
   }
-  
+
   @Override
   public String get(Attribute key) {
     return data.get(key.id());
@@ -61,11 +61,6 @@ public class SampleClass implements Serializable, SampleLike {
   @Deprecated
   public String get(String key) {
     return data.get(key);
-  }
-
-  @Deprecated
-  public void put(String key, String value) {
-    data.put(key, value);
   }
   
   public void put(Attribute key, String value) {
@@ -95,7 +90,7 @@ public class SampleClass implements Serializable, SampleLike {
     return new SampleClass(data);
   }
 
-  public SampleClass copyWith(String key, String value) {
+  public SampleClass copyWith(Attribute key, String value) {
     SampleClass sc = copy();
     sc.put(key, value);
     return sc;

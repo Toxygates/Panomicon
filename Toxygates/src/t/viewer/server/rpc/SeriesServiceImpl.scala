@@ -44,6 +44,7 @@ import t.viewer.client.rpc.SeriesService
 import t.viewer.server.Configuration
 import t.viewer.server.Conversions._
 import t.viewer.shared.NoSuchProbeException
+import otg.model.sample.OTGAttribute
 
 abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with SeriesService {
   import java.lang.{ Double => JDouble }
@@ -146,7 +147,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
       val ss = validated.flatMap(p =>
         compounds.flatMap(c =>
           db.read(fromShared(new SSeries("", p, "dose_level",
-              sc.copyWith("compound_name", c), Array.empty)))))
+              sc.copyWith(OTGAttribute.Compound, c), Array.empty)))))
       println(s"Read ${ss.size} series")
       println(ss.take(5).mkString("\n"))
       val jss = ss.map(asShared)
