@@ -74,8 +74,8 @@ public class SampleClass implements Serializable, SampleLike {
     return data.keySet();
   }
 
-  public void remove(String key) {
-    data.remove(key);
+  public void remove(Attribute key) {
+    data.remove(key.id());
   }
 
   public SampleClass copy() {
@@ -95,8 +95,8 @@ public class SampleClass implements Serializable, SampleLike {
     sc.put(key, value);
     return sc;
   }
-  
-  public SampleClass copyWithout(String key) {
+
+  public SampleClass copyWithout(Attribute key) {
     SampleClass sc = copy();
     if (sc.contains(key)) {
       sc.remove(key);
@@ -104,6 +104,7 @@ public class SampleClass implements Serializable, SampleLike {
     return sc;
   }
 
+  @Deprecated
   public boolean contains(String key) {
     return data.containsKey(key);
   }
@@ -211,12 +212,13 @@ public class SampleClass implements Serializable, SampleLike {
     return r;
   }
 
-  public static <T extends SampleClass> List<T> filter(T[] from, String key, String constraint) {
+  public static <T extends SampleClass> List<T> filter(T[] from, Attribute key, String constraint) {
     List<T> ff = Arrays.asList(from);
     return filter(ff, key, constraint);
   }
 
-  public static <T extends SampleClass> List<T> filter(List<T> from, String key, String constraint) {
+  public static <T extends SampleClass> List<T> filter(List<T> from, Attribute key,
+      String constraint) {
     List<T> r = new ArrayList<T>();
     for (T sc : from) {
       if (sc.get(key).equals(constraint)) {

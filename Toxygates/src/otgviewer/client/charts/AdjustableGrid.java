@@ -297,11 +297,11 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
       // Try to reuse the most recent one
       for (Group g : groups) {
         if (isMed) {
-          if (Unit.contains(g.getUnits(), medParam.id(), lastSubtype)) {
+          if (Unit.contains(g.getUnits(), medParam, lastSubtype)) {
             return lastSubtype;
           }
         } else {
-          if (Unit.contains(g.getUnits(), minParam.id(), lastSubtype)) {
+          if (Unit.contains(g.getUnits(), minParam, lastSubtype)) {
             return lastSubtype;
           }
         }
