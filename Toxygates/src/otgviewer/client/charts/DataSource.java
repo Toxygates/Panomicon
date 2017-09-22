@@ -121,7 +121,7 @@ abstract public class DataSource {
         for (int i = 0; i < s.values().length; ++i) {
           ExpressionValue ev = s.values()[i];
           String time = times[i];
-          SampleClass sc = s.sampleClass().copyWith(schema.timeParameter().id(), time);
+          SampleClass sc = s.sampleClass().copyWith(schema.timeParameter(), time);
           ChartSample cs =
               new ChartSample(sc, schema, ev.getValue(), null, s.probe(), ev.getCall(), null);
           chartSamples.add(cs);
