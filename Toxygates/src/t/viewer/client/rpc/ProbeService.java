@@ -22,7 +22,7 @@ public interface ProbeService extends RemoteService {
 
   /**
    * Obtain general application info. 
-   * TODO migrate one-time mandatory data retrival to this object
+   * TODO migrate one-time mandatory data retrieval to this object
    * to make the API smaller and reduce the number of calls
    * 
    * @return
