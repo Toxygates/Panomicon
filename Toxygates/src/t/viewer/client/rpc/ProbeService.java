@@ -9,6 +9,7 @@ import t.common.shared.Pair;
 import t.common.shared.sample.Sample;
 import t.model.SampleClass;
 import t.viewer.shared.*;
+import t.viewer.shared.mirna.MirnaSource;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -126,8 +127,6 @@ public interface ProbeService extends RemoteService {
    */
   String[] probesForGoTerm(String goTerm, @Nullable List<Sample> samples)
       throws TimeoutException;
-
- 
 
   /**
    * Obtain associations -- the "dynamic columns" on the data screen.

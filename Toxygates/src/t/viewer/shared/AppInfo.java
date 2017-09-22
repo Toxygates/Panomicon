@@ -64,7 +64,8 @@ public class AppInfo implements Serializable {
       List<ProbeClustering> probeClusterings, String appName,
       String userKey,
       String[][] annotationInfo,
-      AttributeSet attributes) {
+      AttributeSet attributes,
+      MirnaSource[] mirnaSources) {
     this.instanceName = instanceName_;
     this.pathologyTermsURL = "http://toxico.nibiohn.go.jp/open-tggates/doc/pathology_parameter.pdf";    
     this.applicationName = appName;
@@ -77,6 +78,7 @@ public class AppInfo implements Serializable {
     this.annotationTitles = annotationInfo[0];
     this.annotationComments = annotationInfo[1];
     this.attributes = attributes;
+    this.mirnaSources = mirnaSources;
   }
 
   public String welcomeHtmlURL() {
@@ -145,6 +147,10 @@ public class AppInfo implements Serializable {
     return intermineInstances; 
   }
   
+  public MirnaSource[] mirnaSources() {
+    return mirnaSources;
+  }
+  
   /**
    * One-time gene import that may be done by POST request.
    * The gene set is passed to the client here.
@@ -157,4 +163,6 @@ public class AppInfo implements Serializable {
   public void setImportedGenes(String[] genes) {
     importedGenes = genes;
   }
+  
+  
 }
