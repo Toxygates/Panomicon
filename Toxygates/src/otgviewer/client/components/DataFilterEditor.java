@@ -86,7 +86,7 @@ public class DataFilterEditor extends DataListenerWidget {
     for (int i = 0; i <= sel; ++i) {
       String sval = selectors[i].getSelected();
       if (sval != null) {
-        selected = SampleClass.filter(selected, parameters[i].id(), sval);
+        selected = SampleClass.filter(selected, parameters[i], sval);
 //        logger.info("Filtered to " + selected.size());
       }
     }

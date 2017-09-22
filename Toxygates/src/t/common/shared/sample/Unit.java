@@ -142,7 +142,7 @@ public class Unit extends SampleClass {
     return r.toArray(new Sample[0]);
   }
 
-  public static boolean contains(Unit[] units, String param, String value) {
+  public static boolean contains(Unit[] units, Attribute param, String value) {
     return SampleClass.filter(units, param, value).size() > 0;
   }
 }

@@ -40,7 +40,7 @@ class Units(schema: DataSchema, sampleStore: Samples) extends
 
     //TODO the copying may be costly - consider optimising in the future
     def unitWithoutMajorMedium(s: Sample) = unit(s).
-      copyWithout(schema.majorParameter.id).copyWithout(schema.mediumParameter.id)
+      copyWithout(schema.majorParameter).copyWithout(schema.mediumParameter)
 
     def asUnit(ss: Iterable[Sample]) = new Unit(unit(ss.head), ss.toArray)
 
@@ -75,8 +75,8 @@ class Units(schema: DataSchema, sampleStore: Samples) extends
 
         val fcs = potentialControls.filter(s =>
           unitWithoutMajorMedium(s) == repUnit
-          && s.get(ControlGroup.id) == repSample.get(ControlGroup.id)
-          && s.get(Batch.id) == repSample.get(Batch.id)
+          && s.get(ControlGroup) == repSample.get(ControlGroup)
+          && s.get(Batch) == repSample.get(Batch)
           )
 
         val cu = if (fcs.isEmpty)
