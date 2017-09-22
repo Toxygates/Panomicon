@@ -31,7 +31,7 @@ public class TestSchema extends DataSchema {
   }
 
   @Override
-  public String[] sortedValues(String parameter) throws Exception {
+  public String[] sortedValues(Attribute parameter) throws Exception {
     throw new Exception("Implement me");
   }
 

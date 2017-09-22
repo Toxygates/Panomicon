@@ -48,26 +48,28 @@ public abstract class DataSchema implements Serializable {
   /**
    * All the possible values, in their natural order, for a sortable parameter.
    */
-  public abstract String[] sortedValues(String parameter) throws Exception;
+  public abstract String[] sortedValues(Attribute parameter) throws Exception;
 
   /**
    * Ordered values for a sortable parameter, which should be displayed to the user in the context
    * of a given list of sample classes.
    */
   // TODO move ValueType or avoid depending on here
-  public String[] sortedValuesForDisplay(@Nullable ValueType vt, String parameter) throws Exception {
+  public String[] sortedValuesForDisplay(@Nullable ValueType vt, Attribute parameter)
+      throws Exception {
     return filterValuesForDisplay(vt, parameter, sortedValues(parameter));
   }
 
   // TODO move ValueType or avoid depending on here
-  public String[] filterValuesForDisplay(@Nullable ValueType vt, String parameter, String[] from) {
+  public String[] filterValuesForDisplay(@Nullable ValueType vt, Attribute parameter,
+      String[] from) {
     return from;
   }
 
   /**
    * Sort values from the given sortable parameter in place.
    */
-  public void sort(String parameter, String[] values) throws Exception {
+  public void sort(Attribute parameter, String[] values) throws Exception {
     final String[] sorted = sortedValues(parameter);
     Arrays.sort(values, new Comparator<String>() {
       @Override
@@ -80,7 +82,7 @@ public abstract class DataSchema implements Serializable {
   }
 
   public void sortTimes(String[] times) throws Exception {
-    sort(timeParameter().id(), times);
+    sort(timeParameter(), times);
   }
 
   /**

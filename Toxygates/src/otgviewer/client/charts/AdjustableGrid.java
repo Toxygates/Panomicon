@@ -25,6 +25,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.*;
 
+import otg.model.sample.OTGAttribute;
 import otgviewer.client.components.Screen;
 import t.common.shared.*;
 import t.common.shared.sample.*;
@@ -71,11 +72,11 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
 
     // TODO use schema somehow to handle organism propagation
     for (Group g : groups) {
-      os.addAll(g.collect("organism"));
+      os.addAll(g.collect(OTGAttribute.Organism));
     }
     organisms = new ArrayList<String>(os);
 
-    String majorParam = screen.schema().majorParameter().id();
+    Attribute majorParam = screen.schema().majorParameter();
     this.majorVals = new ArrayList<String>(GroupUtils.collect(groups, majorParam));
     this.valueType = vt;
 
@@ -173,14 +174,14 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
   private void gridFor(final boolean vsMinor, final String[] columns, final String[] useMajors,
       final List<ChartGrid<D>> intoList, final SimplePanel intoPanel) {
 
-    String columnParam = vsMinor ? schema.mediumParameter().id() : schema.minorParameter().id();
+    Attribute columnParam = vsMinor ? schema.mediumParameter() : schema.minorParameter();
     String[] preColumns =
         (columns == null ? (vsMinor ? source.mediumVals() : source.minorVals()) : columns);
     final String[] useColumns = schema.filterValuesForDisplay(valueType, columnParam, preColumns);
 
     SampleMultiFilter smf = new SampleMultiFilter();
     smf.addPermitted(schema.majorParameter().id(), useMajors);
-    smf.addPermitted(columnParam, useColumns);
+    smf.addPermitted(columnParam.id(), useColumns);
 
     if (computedWidth == 0) {
       int theoretical = useColumns.length * factory.gridMaxWidth();
@@ -311,7 +312,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
       logger.info("Unit: " + u);
       if (isMed) {
         final String[] useMeds =
-            schema.filterValuesForDisplay(valueType, schema.mediumParameter().id(),
+            schema.filterValuesForDisplay(valueType, schema.mediumParameter(),
                 source.mediumVals());
 
         String med = u.get(medParam);

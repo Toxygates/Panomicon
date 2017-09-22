@@ -34,10 +34,10 @@ public class OTGSchema extends DataSchema {
   public static String[] allDoses = new String[] {"Control", "Low", "Middle", "High"};
 
   @Override
-  public String[] sortedValues(String parameter) throws Exception {
-    if (parameter.equals("exposure_time")) {
+  public String[] sortedValues(Attribute parameter) throws Exception {
+    if (parameter.equals(OTGAttribute.ExposureTime)) {
       return allTimes;
-    } else if (parameter.equals("dose_level")) {
+    } else if (parameter.equals(OTGAttribute.DoseLevel)) {
       return allDoses;
     } else {
       throw new Exception("Invalid parameter (not sortable): " + parameter);
@@ -45,8 +45,8 @@ public class OTGSchema extends DataSchema {
   }
 
   @Override
-  public String[] filterValuesForDisplay(ValueType vt, String parameter, String[] from) {
-    if (parameter.equals("dose_level") && (vt == null || vt == ValueType.Folds)) {
+  public String[] filterValuesForDisplay(ValueType vt, Attribute parameter, String[] from) {
+    if (parameter.equals(OTGAttribute.DoseLevel) && (vt == null || vt == ValueType.Folds)) {
       ArrayList<String> r = new ArrayList<String>();
       for (String s : from) {
         if (!isControlValue(s)) {
@@ -60,8 +60,8 @@ public class OTGSchema extends DataSchema {
   }
 
   @Override
-  public void sort(String parameter, String[] values) throws Exception {
-    if (parameter.equals("exposure_time")) {
+  public void sort(Attribute parameter, String[] values) throws Exception {
+    if (parameter.equals(OTGAttribute.ExposureTime)) {
       sortTimes(values);
     } else {
       super.sort(parameter, values);
@@ -69,7 +69,7 @@ public class OTGSchema extends DataSchema {
   }
 
   public void sortDoses(String[] doses) throws Exception {
-    sort("dose_level", doses);
+    sort(OTGAttribute.DoseLevel, doses);
   }
 
   // TODO validity check units and exposure times before we subject
