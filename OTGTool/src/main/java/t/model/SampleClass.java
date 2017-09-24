@@ -61,7 +61,7 @@ public class SampleClass implements Serializable, SampleLike {
   }
 
   public void remove(Attribute key) {
-    data.remove(key.id());
+    data.remove(key);
   }
 
   public SampleClass copy() {
