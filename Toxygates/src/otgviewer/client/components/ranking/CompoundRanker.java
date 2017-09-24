@@ -29,8 +29,7 @@ import t.common.shared.ItemList;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
-import t.viewer.client.rpc.ProbeServiceAsync;
-import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.client.rpc.SparqlServiceAsync;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -50,8 +49,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
   final GeneOracle oracle;
   List<String> availableCompounds = chosenCompounds;
 
-  protected final ProbeServiceAsync probeService;
-  protected final SampleServiceAsync sampleService;
+  protected final SparqlServiceAsync sparqlService;
 
   protected VerticalPanel csVerticalPanel = new VerticalPanel();
   protected List<String> rankProbes = new ArrayList<String>();
@@ -72,8 +70,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
     oracle = new GeneOracle(screen);
     schema = screen.schema();
     resources = screen.resources();
-    probeService = _screen.manager().probeService();
-    sampleService = _screen.manager().sampleService();
+    sparqlService = _screen.manager().sparqlService();
 
     selector.addListener(this);
     listChooser = new ListChooser(screen.appInfo().predefinedProbeLists(), "probes") {
@@ -83,7 +80,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
         // We override this to pull in the probes, because they
         // may need to be converted from gene symbols.
 
-        probeService.identifiersToProbes(probes, true, false, false, null,
+        sparqlService.identifiersToProbes(probes, true, false, false, null,
             new PendingAsyncCallback<String[]>(this) {
               public void handleSuccess(String[] resolved) {
                 setItems(Arrays.asList(resolved));
@@ -94,7 +91,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
 
       @Override
       protected void itemsChanged(List<String> items) {
-        probeService.identifiersToProbes(items.toArray(new String[0]), true, 
+        sparqlService.identifiersToProbes(items.toArray(new String[0]), true, 
             false, false, null,
             new PendingAsyncCallback<String[]>(this) {
               public void handleSuccess(String[] resolved) {

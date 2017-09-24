@@ -30,10 +30,9 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
 import otg.model.sample.OTGAttribute;
-import otg.model.sample.OTGAttribute;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
-import otgviewer.client.rpc.SampleServiceAsync;
+import otgviewer.client.rpc.SparqlServiceAsync;
 import otgviewer.shared.Pathology;
 import t.common.client.ImageClickCell;
 import t.common.shared.GroupUtils;
@@ -62,12 +61,12 @@ public class PathologyScreen extends Screen {
     return manager.isConfigured(ColumnScreen.key); // && ct == CellType.Vivo;
   }
 
-  private final SampleServiceAsync sampleService;
+  private final SparqlServiceAsync sparqlService;
 
   public PathologyScreen(ScreenManager man) {
     super("Pathologies", key, true, man);
     resources = man.resources();
-    sampleService = man.sampleService();
+    sparqlService = man.sparqlService();
     mkTools();
   }
 
@@ -179,12 +178,11 @@ public class PathologyScreen extends Screen {
   @Override
   public void show() {
     super.show();
-    if (visible
-        && (lastClass == null || !lastClass.equals(chosenSampleClass) || lastColumns == null || !chosenColumns
-            .equals(lastColumns))) {
+    if (visible && (lastClass == null || !lastClass.equals(chosenSampleClass) || lastColumns == null
+        || !chosenColumns.equals(lastColumns))) {
       pathologies.clear();
       for (SampleColumn c : chosenColumns) {
-        sampleService.pathologies(c, new AsyncCallback<Pathology[]>() {
+        sparqlService.pathologies(c, new AsyncCallback<Pathology[]>() {
           @Override
           public void onFailure(Throwable caught) {
             Window.alert("Unable to get pathologies.");

@@ -24,7 +24,7 @@ import java.util.*;
 
 import otgviewer.client.components.Screen;
 import t.common.shared.*;
-import t.viewer.client.rpc.ProbeServiceAsync;
+import t.viewer.client.rpc.SparqlServiceAsync;
 import t.viewer.shared.Association;
 import t.viewer.shared.table.SortKey;
 
@@ -38,13 +38,13 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  *
  */
 abstract public class AssociationTable<T> extends RichTable<T> {
-	protected final ProbeServiceAsync probeService;
+	protected final SparqlServiceAsync sparqlService;
 	protected Map<AType, Association> associations = new HashMap<AType, Association>();
 	private boolean waitingForAssociations = true;
 	
 	public AssociationTable(Screen screen) {
 		super(screen.schema());
-		probeService = screen.manager().probeService();
+		sparqlService = screen.manager().sparqlService();
 	}
 	
 	protected List<HideableColumn<T, ?>> initHideableColumns(DataSchema schema) {
@@ -90,7 +90,7 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 			};
 
 			logger.info("Get associations for " + chosenSampleClass.toString());
-			probeService.associations(chosenSampleClass, vas,
+			sparqlService.associations(chosenSampleClass, vas,
 					displayedAtomicProbes(), 
 					assocCallback);
 		}

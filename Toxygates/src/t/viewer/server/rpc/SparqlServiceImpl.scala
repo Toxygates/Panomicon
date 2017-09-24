@@ -44,7 +44,7 @@ import t.sparql.secondary._
 import t.util.PeriodicRefresh
 import t.util.Refreshable
 import t.viewer.server.rpc.GeneSetServlet._
-import t.viewer.client.rpc._
+import t.viewer.client.rpc.SparqlService
 import t.viewer.server._
 import t.viewer.server.CSVHelper.CSVFile
 import t.viewer.server.Conversions._
@@ -69,8 +69,7 @@ object SparqlServiceImpl {
 /**
  * SPARQL query servlet.
  */
-abstract class SparqlServiceImpl extends TServiceServlet with
-  SampleService with ProbeService {
+abstract class SparqlServiceImpl extends TServiceServlet with SparqlService {
 
   import SparqlServiceImpl._
   import ScalaUtils._

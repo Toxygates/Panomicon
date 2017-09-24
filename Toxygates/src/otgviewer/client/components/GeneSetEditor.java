@@ -20,7 +20,15 @@ package otgviewer.client.components;
 
 import java.util.*;
 
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.*;
+import otgviewer.client.rpc.SparqlServiceAsync;
 import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
 import t.common.shared.*;
@@ -28,14 +36,6 @@ import t.common.shared.sample.Group;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
-import otgviewer.client.rpc.ProbeServiceAsync;
-
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
 
 public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHandler {
 
@@ -48,7 +48,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
 
   private final Screen screen;
 
-  private final ProbeServiceAsync probeService;
+  private final SparqlServiceAsync sparqlService;
 
   private final GeneOracle oracle;
 
@@ -81,7 +81,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     this.screen = screen;
     dialog = new DialogBox();
     oracle = new GeneOracle(screen);
-    probeService = screen.manager.probeService();
+    sparqlService = screen.manager.sparqlService();
 
     initWindow();
   }
@@ -293,11 +293,11 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
       protected void getProbes(Term term) {
         switch (term.getAssociation()) {
           case KEGG:
-            probeService.probesForPathway(term.getTermString(),
+            sparqlService.probesForPathway(term.getTermString(),
                 getAllSamples(), retrieveProbesCallback());
             break;
           case GO:
-            probeService.probesForGoTerm(term.getTermString(), getAllSamples(),
+            sparqlService.probesForGoTerm(term.getTermString(), getAllSamples(),
                 retrieveProbesCallback());
             break;
           default:
@@ -426,7 +426,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     if (probes.length > 0) {
       // TODO reduce the number of ajax calls done by this screen by
       // collapsing them
-      probeService.geneSyms(probesInOrder, new AsyncCallback<String[][]>() {
+      sparqlService.geneSyms(probesInOrder, new AsyncCallback<String[][]>() {
         @Override
         public void onSuccess(String[][] syms) {
           deferredAddProbes(probesInOrder, syms);
@@ -445,7 +445,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     // change the identifiers (which can be mixed format, for example genes
     // and proteins etc) into a
     // homogenous format (probes only)
-    probeService.identifiersToProbes(probes, true, false, titleMatch, 
+    sparqlService.identifiersToProbes(probes, true, false, titleMatch, 
         screen.getAllSamples(),
         new PendingAsyncCallback<String[]>(screen,
             "Unable to obtain manual probes (technical error).") {
@@ -486,7 +486,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
       SampleClass sc = screen.chosenColumns.get(0).samples()[0].sampleClass();
       logger.info("Target lookup for: " + sc.toString());
 
-      probeService.probesTargetedByCompound(sc, compound, service, homologs,
+      sparqlService.probesTargetedByCompound(sc, compound, service, homologs,
           new PendingAsyncCallback<String[]>(w, "Unable to get probes (technical error).") {
             @Override
             public void handleSuccess(String[] probes) {

@@ -13,14 +13,11 @@ import t.model.sample.SampleLike;
 import t.viewer.shared.TimeoutException;
 
 import com.google.gwt.user.client.rpc.RemoteService;
-import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 /**
  * A service that provides information about samples, datasets, and 
  * related objects.
  */
-
-@RemoteServiceRelativePath("sample")
 public interface SampleService extends RemoteService {
   
   /**
