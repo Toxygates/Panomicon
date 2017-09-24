@@ -46,19 +46,9 @@ public class SampleClass implements Serializable, SampleLike {
   public String apply(Attribute key) {
     return get(key);
   }
-  
-  @Deprecated
-  public String apply(String key) {
-    return get(key);
-  }
 
   @Override
   public String get(Attribute key) {
-    return data.get(key.id());
-  }
-  
-  @Deprecated
-  public String get(String key) {
     return data.get(key);
   }
   
@@ -66,9 +56,6 @@ public class SampleClass implements Serializable, SampleLike {
     data.put(key, value);
   }
   
-  // TODO: this should return a set of attributes, but we can't do that until
-  // we switch to using attributes as hashmap keys.
-  @Deprecated
   public Set<Attribute> getKeys() {
     return data.keySet();
   }
@@ -103,7 +90,6 @@ public class SampleClass implements Serializable, SampleLike {
     return sc;
   }
 
-  @Deprecated
   public boolean contains(Attribute key) {
     return data.containsKey(key);
   }
