@@ -40,9 +40,9 @@ case class SampleClassFilter(constraints: CMap[Attribute, String] = Map()) exten
     if (constraints.isEmpty) {
       Filter("", "")
     } else {
-      val ptn = "?x " + constraints.keySet.map(k => s"t:$k ?$k").mkString(";") + "."
+      val ptn = "?x " + constraints.keySet.map(k => s"t:${k.id} ?${k.id}").mkString(";") + "."
       val cnst = "FILTER(" + constraints.keySet.map(k => {
-        "?" + k + " = \"" + constraints(k) + "\""
+        "?" + k.id + " = \"" + constraints(k) + "\""
       }).mkString(" && ") + "). "
       Filter(ptn, cnst)
     }
@@ -52,7 +52,8 @@ case class SampleClassFilter(constraints: CMap[Attribute, String] = Map()) exten
     if (!constraints.contains(key)) {
       Filter("", "")
     } else {
-      Filter(s"?x t:$key ?$key.", "FILTER(?" + key + " = \"" + constraints(key) + "\").")
+
+      Filter(s"?x t:${key.id} ?${key.id}.", "FILTER(?" + key.id + " = \"" + constraints(key) + "\").")
     }
   }
 }
