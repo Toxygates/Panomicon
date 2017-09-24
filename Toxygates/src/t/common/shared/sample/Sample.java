@@ -23,8 +23,7 @@ import java.util.Set;
 
 import t.common.shared.*;
 import t.model.SampleClass;
-import t.model.sample.Attribute;
-import t.model.sample.SampleLike;
+import t.model.sample.*;
 
 @SuppressWarnings("serial")
 public class Sample implements Packable, Serializable, HasClass, SampleLike {
@@ -68,20 +67,10 @@ public class Sample implements Packable, Serializable, HasClass, SampleLike {
     return sampleClass.get(attribute);
   }
   
-  @Deprecated
-  public Set<String> getKeys() {
+  public Set<Attribute> getKeys() {
     return sampleClass.getKeys();
   }
 
-  @Deprecated
-  public String get(String parameter) {
-    return sampleClass.get(parameter);
-  }
-
-  @Deprecated
-  public boolean contains(String key) {
-    return sampleClass.contains(key);
-  }
 
   public boolean contains(Attribute key) {
     return sampleClass.contains(key);
@@ -100,7 +89,7 @@ public class Sample implements Packable, Serializable, HasClass, SampleLike {
     return sampleClass.toString();
   }
 
-  public static Sample unpack(String s) {
+  public static Sample unpack(String s, AttributeSet attributeSet) {
     String[] spl = s.split("\\$\\$\\$");
     String v = spl[0];
     if (!v.equals("Barcode_v3")) {
@@ -108,7 +97,7 @@ public class Sample implements Packable, Serializable, HasClass, SampleLike {
       return null;
     }
     String id = spl[1];
-    SampleClass sc = SampleClass.unpack(spl[2]);
+    SampleClass sc = SampleClass.unpack(spl[2], attributeSet);
     return new Sample(id, sc);
   }
 

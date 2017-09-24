@@ -20,20 +20,20 @@ package otgviewer.client.charts.google;
 
 import java.util.List;
 
-import otgviewer.client.charts.ChartGrid;
-import otgviewer.client.charts.Factory;
-import otgviewer.client.components.Screen;
-import t.common.shared.sample.Sample;
-
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.*;
+import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.events.ReadyHandler;
 import com.google.gwt.visualization.client.events.SelectHandler;
 import com.google.gwt.visualization.client.visualizations.corechart.*;
+
+import otgviewer.client.charts.ChartGrid;
+import otgviewer.client.charts.Factory;
+import otgviewer.client.components.Screen;
+import t.common.shared.sample.Sample;
 
 /**
  * A ChartGrid that uses the Google Visualization API.
@@ -111,7 +111,7 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
           int row = s.getRow();
           String bc = dt.getProperty(row, col, "barcode");
           if (bc != null) {
-            Sample b = Sample.unpack(bc);
+            Sample b = Sample.unpack(bc, screen.attributes());
             screen.displaySampleDetail(b);
           }
         }
@@ -128,6 +128,6 @@ public class GVizChartGrid extends ChartGrid<GDTData> {
   }
 
   private static native String imageURI(JavaScriptObject coreChart) /*-{
-	  return coreChart.getImageURI();
-	}-*/;
+    return coreChart.getImageURI();
+  }-*/;
 }

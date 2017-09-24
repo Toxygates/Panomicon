@@ -99,10 +99,7 @@ object TestData {
     def attributes = otg.model.sample.AttributeSet.getDefault
 
     def parameters(s: Sample): Seq[(Attribute, String)] = {
-      samples.find(_ == s).get.sampleClass.getMap.map(x =>  {
-         val k = attribSet.byId(x._1)
-         (k, x._2)
-      }).toSeq ++ Seq(
+      samples.find(_ == s).get.sampleClass.getMap.toSeq ++ Seq(
           (LiverWeight, "" + liverWeight(s)),
           (KidneyWeight, "" + kidneyWeight(s))
           )

@@ -36,14 +36,16 @@ case class OTGSeries(repeat: String, organ: String, organism: String, override v
 
   def asSingleProbeKey = copy(probe = probe, compound = null, dose = null)
 
-  override def constraints: Map[String, String] = Map(
-       TestType.id -> testType,
-       Organ.id -> organ,
-       Organism.id -> organism,
-       Compound.id -> compound,
-       DoseLevel.id -> dose,
-       Repeat.id -> repeat
-       ).filter(_._2 != null)
+  override def constraints: Map[Attribute, String] = {
+    val map: Map[Attribute, String] = Map(TestType -> testType,
+       Organ -> organ,
+       Organism -> organism,
+       Compound -> compound,
+       DoseLevel -> dose,
+       Repeat -> repeat
+       )
+    map.filter(_._2 != null)
+  }
 }
 
 object OTGSeries extends SeriesBuilder[OTGSeries] {

@@ -26,13 +26,14 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.DialogBox;
+
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
+import t.model.sample.AttributeSet;
 import t.viewer.client.Utils;
-
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.DialogBox;
 
 /**
  * A Composite that is also a DataViewListener. 
@@ -76,55 +77,66 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   }
 
   // incoming signals
+  @Override
   public void datasetsChanged(Dataset[] ds) {
     chosenDatasets = ds;
     changeDatasets(ds);
   }
 
+  @Override
   public void sampleClassChanged(SampleClass sc) {
     chosenSampleClass = sc;
     changeSampleClass(sc);
   }
 
+  @Override
   public void probesChanged(String[] probes) {
     chosenProbes = probes;
     changeProbes(probes);
   }
 
+  @Override
   public void availableCompoundsChanged(List<String> compounds) {
     changeAvailableCompounds(compounds);
   }
 
+  @Override
   public void compoundsChanged(List<String> compounds) {
     chosenCompounds = compounds;
     changeCompounds(compounds);
   }
 
+  @Override
   public void compoundChanged(String compound) {
     chosenCompound = compound;
     changeCompound(compound);
   }
 
+  @Override
   public void columnsChanged(List<Group> columns) {
     chosenColumns = columns;
     changeColumns(columns);
   }
 
+  @Override
   public void customColumnChanged(SampleColumn customColumn) {
     this.chosenCustomColumn = customColumn;
     changeCustomColumn(customColumn);
   }
 
+  @Override
   public void itemListsChanged(List<ItemList> lists) {
     this.chosenItemLists = lists;
     changeItemLists(lists);
   }
 
+  @Override
   public void geneSetChanged(ItemList geneSet) {
     this.chosenGeneSet = geneSet;
     changeGeneSet(geneSet);
   }
 
+  @Override
   public void clusteringListsChanged(List<ItemList> lists) {
     this.chosenClusteringList = lists;
     changeClusteringLists(lists);
@@ -302,7 +314,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   // Separator hierarchy for columns:
   // ### > ::: > ^^^ > $$$
   protected List<Group> loadColumns(StorageParser p, DataSchema schema,
-      String key, Collection<? extends SampleColumn> expectedColumns)
+      String key, Collection<? extends SampleColumn> expectedColumns, AttributeSet attributes)
       throws Exception {
     // TODO unpack old format columns
     String v = p.getItem(key);
@@ -310,7 +322,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     if (v != null && !v.equals(packColumns(expectedColumns))) {
       String[] spl = v.split("###");
       for (String cl : spl) {
-        Group c = unpackColumn(schema, cl);
+        Group c = unpackColumn(schema, cl, attributes);
         r.add(c);
       }
       return r;
@@ -407,12 +419,12 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     changeCompounds(r);
   }
   
-  public void loadSampleClass(StorageParser p) {
+  public void loadSampleClass(StorageParser p, AttributeSet attributes) {
     String v = p.getItem("sampleClass");
     if (v == null || v.equals(chosenSampleClass.pack())) {
       return;
     }
-    SampleClass sc = SampleClass.unpack(v);
+    SampleClass sc = SampleClass.unpack(v, attributes);
     changeSampleClass(sc);    
   }
 
@@ -421,12 +433,12 @@ public class DataListenerWidget extends Composite implements DataViewListener {
    * If the loaded state is different from what was previously remembered in this widget, the appropriate 
    * signals will fire.
    */
-  public void loadState(Screen sc) {
+  public void loadState(Screen sc, AttributeSet attributes) {
     StorageParser p = getParser(sc);
-    loadState(p, sc.schema());
+    loadState(p, sc.schema(), attributes);
   }
 
-  public void loadState(StorageParser p, DataSchema schema) {
+  public void loadState(StorageParser p, DataSchema schema, AttributeSet attributes) {
     SampleClass sc = new SampleClass();
     // Note: currently the "real" sample class, as chosen by the user on the
     // column screen for example, is not stored, and hence not propagated
@@ -434,13 +446,13 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     sampleClassChanged(sc);
 
     try {
-      List<Group> cs = loadColumns(p, schema, "columns", chosenColumns);
+      List<Group> cs = loadColumns(p, schema, "columns", chosenColumns, attributes);
       if (cs != null) {
         logger.info("Unpacked columns: " + cs.get(0) + ": "
             + cs.get(0).getSamples()[0] + " ... ");
         columnsChanged(cs);
       }
-      Group g = unpackColumn(schema, p.getItem("customColumn"));
+      Group g = unpackColumn(schema, p.getItem("customColumn"), attributes);
       if (g != null) {
         customColumnChanged(g);
       }
@@ -481,7 +493,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
     
     //Note: the ordering of the following 3 is important
     loadDatasets(p);
-    loadSampleClass(p);
+    loadSampleClass(p, attributes);
     loadCompounds(p);
   }
 

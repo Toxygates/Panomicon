@@ -97,7 +97,7 @@ abstract public class DataSource {
    * acceptor when they are available.
    */
   void getSamples(SampleMultiFilter smf, ColorPolicy policy, SampleAcceptor acceptor) {
-    if (!smf.contains(schema.majorParameter().id())) {
+    if (!smf.contains(schema.majorParameter())) {
       // TODO why is this needed?
       applyPolicy(policy, chartSamples);
       acceptor.accept(chartSamples);

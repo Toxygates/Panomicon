@@ -27,6 +27,7 @@ import t.sparql._
 import t.sparql.{ Filter => TFilter }
 import t.model.sample.CoreParameter._
 import otg.model.sample.OTGAttribute._
+import t.model.sample.Attribute
 
 class OTGSamples(bc: BaseConfig) extends Samples(bc) {
 
@@ -57,13 +58,13 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
         |  }""".stripMargin,
 
       eval = triplestore.mapQuery(_, 20000).map(x => {
-        val sc = SampleClassFilter(adjustSample(x, batchFilter)) ++ filter
-        Sample(x("id"), sc)
+        val attributeValues = convertMapToAttributes(adjustSample(x, batchFilter), bc.attributes)
+        Sample(x("id"), SampleClassFilter(attributeValues) ++ filter)
        })
      )
   }
 
-  def sampleClasses(implicit sf: SampleFilter): Seq[Map[String, String]] = {
+  def sampleClasses(implicit sf: SampleFilter): Seq[Map[Attribute, String]] = {
     //TODO may be able to lift up to superclass and generalise
     val hlPred = hlAttributes.filter(isPredicateAttribute)
 
@@ -76,7 +77,7 @@ class OTGSamples(bc: BaseConfig) extends Samples(bc) {
        |  }
        |  ${sf.standardSampleFilters}
        |}""".stripMargin)
-    r.map(adjustSample(_))
+    r.map(s => convertMapToAttributes(adjustSample(s), bc.attributes))
   }
 
   def compounds(filter: TFilter)(implicit sf: SampleFilter) =

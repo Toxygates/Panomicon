@@ -44,20 +44,20 @@ class OTGSamplesTest extends TTestSuite {
   }
 
   val baseConstraints = Map(
-    "organism" -> "Rat",
-    "test_type" -> "in vivo")
+    Organism -> "Rat",
+    TestType -> "in vivo")
 
   val fullConstraints = SampleClassHelper(Map(
-      "organ_id" -> "Liver",
-      "sin_rep_type" -> "Single") ++ baseConstraints)
+      Organ -> "Liver",
+      Repeat -> "Single") ++ baseConstraints)
 
   implicit val sampleFilter = SampleFilter()
 
   test("organs") {
     val sf = SampleClassFilter(
         SampleClassHelper(Map(
-      "organ_id" -> "Kidney",
-      "sin_rep_type" -> "Repeat") ++ baseConstraints)
+      Organ -> "Kidney",
+      Repeat -> "Repeat") ++ baseConstraints)
       ).filterAll
 
     val os = samples.sampleAttributeQuery(Organ).

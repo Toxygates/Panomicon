@@ -20,6 +20,8 @@
 
 package t.db
 
+import t.model.sample.Attribute
+
 /**
  * A series of expression values ranging over some independent variable
  */
@@ -49,7 +51,7 @@ abstract class Series[This <: Series[This]](val probe: Int, val points: Seq[Seri
    */
   def asSingleProbeKey: This
 
-  def constraints: Map[String, String] = Map()
+  def constraints: Map[Attribute, String] = Map()
 }
 
 /**

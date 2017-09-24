@@ -445,10 +445,10 @@ class ManagedMatrix(val initProbes: Seq[String],
     s match {
       case test: Synthetic.TwoGroupSynthetic =>
         //TODO
-        val g1s = test.getGroup1.getSamples.filter(_.get(OTGAttribute.DoseLevel)
-            != "Control").map(_.id)
-        val g2s = test.getGroup2.getSamples.filter(_.get(OTGAttribute.DoseLevel)
-            != "Control").map(_.id)
+        val g1s = test.getGroup1.getSamples.filter(_.get(OTGAttribute.DoseLevel) != "Control")
+          .map(_.id)
+        val g2s = test.getGroup2.getSamples.filter(_.get(OTGAttribute.DoseLevel) != "Control")
+          .map(_.id)
 
         val currentRows = (0 until current.rows).map(i => current.rowAt(i))
         //Need this to take into account sorting and filtering of currentMat

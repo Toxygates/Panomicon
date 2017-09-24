@@ -24,6 +24,7 @@ import scala.collection.JavaConversions.mapAsScalaMap
 import scala.collection.{ Map => CMap }
 
 import t.db.SampleClassLike
+import t.model.sample.Attribute
 
 object SampleClassFilter {
   def apply(cl: t.model.SampleClass): SampleClassFilter =
@@ -33,7 +34,7 @@ object SampleClassFilter {
 /**
  * A sample class with sparql methods.
  */
-case class SampleClassFilter(constraints: CMap[String, String] = Map()) extends SampleClassLike {
+case class SampleClassFilter(constraints: CMap[Attribute, String] = Map()) extends SampleClassLike {
 
   def filterAll: Filter = {
     if (constraints.isEmpty) {
@@ -47,7 +48,7 @@ case class SampleClassFilter(constraints: CMap[String, String] = Map()) extends 
     }
   }
 
-  def filter(key: String): Filter = {
+  def filter(key: Attribute): Filter = {
     if (!constraints.contains(key)) {
       Filter("", "")
     } else {

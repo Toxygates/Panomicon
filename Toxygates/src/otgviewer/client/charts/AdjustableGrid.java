@@ -180,8 +180,8 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
     final String[] useColumns = schema.filterValuesForDisplay(valueType, columnParam, preColumns);
 
     SampleMultiFilter smf = new SampleMultiFilter();
-    smf.addPermitted(schema.majorParameter().id(), useMajors);
-    smf.addPermitted(columnParam.id(), useColumns);
+    smf.addPermitted(schema.majorParameter(), useMajors);
+    smf.addPermitted(columnParam, useColumns);
 
     if (computedWidth == 0) {
       int theoretical = useColumns.length * factory.gridMaxWidth();

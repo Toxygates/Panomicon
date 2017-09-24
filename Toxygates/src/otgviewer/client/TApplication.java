@@ -24,9 +24,26 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.core.client.*;
+import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.*;
+import com.google.gwt.event.logical.shared.*;
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.resources.client.TextResource;
+import com.google.gwt.storage.client.Storage;
+import com.google.gwt.user.client.*;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.components.*;
 import otgviewer.client.components.Screen.QueuedAction;
 import otgviewer.client.dialog.FeedbackForm;
+import otgviewer.client.rpc.ProbeService;
+import otgviewer.client.rpc.ProbeServiceAsync;
+import otgviewer.client.rpc.SampleService;
+import otgviewer.client.rpc.SampleServiceAsync;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
@@ -36,24 +53,6 @@ import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.MetadataInfo;
 import t.viewer.client.rpc.*;
 import t.viewer.shared.AppInfo;
-
-import otgviewer.client.rpc.SampleServiceAsync;
-import otgviewer.client.rpc.ProbeServiceAsync;
-import otgviewer.client.rpc.ProbeService;
-import otgviewer.client.rpc.SampleService;
-
-import com.google.gwt.core.client.*;
-import com.google.gwt.dom.client.*;
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.*;
-import com.google.gwt.event.logical.shared.*;
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.TextResource;
-import com.google.gwt.storage.client.Storage;
-import com.google.gwt.user.client.*;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * The main entry point for Toxygates. The main task of this class is to manage the history
@@ -112,10 +111,12 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
   protected AppInfo appInfo = null;
 
+  @Override
   public AppInfo appInfo() {
     return appInfo;
   }
 
+  @Override
   public void reloadAppInfo(final AsyncCallback<AppInfo> handler) {
     final Logger l = SharedUtils.getLogger();
     final DialogBox wait = Utils.waitDialog();
@@ -123,6 +124,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     @Nullable
     String existingKey = getParser().getItem("userDataKey");
     probeService.appInfo(existingKey, new AsyncCallback<AppInfo>() {
+      @Override
       public void onSuccess(AppInfo result) {
         l.info("Got appInfo");
         wait.hide();
@@ -130,6 +132,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
         handler.onSuccess(result);
       }
 
+      @Override
       public void onFailure(Throwable caught) {
         wait.hide();
         l.log(Level.WARNING, "Failed to obtain appInfo", caught);
@@ -141,6 +144,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   /**
    * This is the entry point method.
    */
+  @Override
   public void onModuleLoad() {
 
     reloadAppInfo(new AsyncCallback<AppInfo>() {
@@ -163,6 +167,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   protected void setupUIBase() {
     menuBar = setupMenu();
     History.addValueChangeHandler(new ValueChangeHandler<String>() {
+      @Override
       public void onValueChange(ValueChangeEvent<String> vce) {
         showScreenForToken(vce.getValue(), false);
       }
@@ -171,8 +176,10 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     rootPanel = RootLayoutPanel.get();
 
     Window.addResizeHandler(new ResizeHandler() {
+      @Override
       public void onResize(ResizeEvent event) {
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+          @Override
           public void execute() {
             resizeInterface();
           }
@@ -226,6 +233,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
         public void run() {
           probeService.identifiersToProbes(pr, true, true, false, null,
               new PendingAsyncCallback<String[]>(scr, "Failed to resolve gene identifiers") {
+                @Override
                 public void handleSuccess(String[] probes) {
                   if (Arrays.equals(probes, scr.chosenProbes)) {
                     return;
@@ -267,6 +275,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
         public void run() {
           sampleService.samplesById(useGroups, new PendingAsyncCallback<List<Sample[]>>(scr,
               "Failed to look up samples") {
+            @Override
             public void handleSuccess(List<Sample[]> samples) {
               int i = 0;
               List<Group> finalGroups = new ArrayList<Group>();
@@ -312,6 +321,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     return instanceName();
   }
 
+  @Override
   public StorageParser getParser() {
     if (parser != null) {
       return parser;
@@ -361,6 +371,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     mi.getElement().setId("helpMenu");
 
     mi = new MenuItem("Leave feedback...", new Command() {
+      @Override
       public void execute() {
         FeedbackForm feedbackDialog =
             new FeedbackForm(currentScreen, currentScreen,
@@ -372,36 +383,42 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     mi.addStyleName("feedbackMenuItem");
 
     hm.addItem(new MenuItem("Help for this screen...", new Command() {
+      @Override
       public void execute() {
         currentScreen.showHelp();
       }
     }));
 
     hm.addItem(new MenuItem("Data sources...", new Command() {
+      @Override
       public void execute() {
         showDataSources();
       }
     }));
 
     hm.addItem(new MenuItem("Download user guide...", new Command() {
+      @Override
       public void execute() {
         Window.open(appInfo.userGuideURL(), "_blank", "");
       }
     }));
 
     hm.addItem(new MenuItem("Display guide messages", new Command() {
+      @Override
       public void execute() {
         currentScreen.showGuide();
       }
     }));
 
     hm.addItem(new MenuItem("About Toxygates...", new Command() {
+      @Override
       public void execute() {
         Utils.showHelp(getAboutHTML(), getAboutImage());
       }
     }));
 
     hm.addItem(new MenuItem("Version history...", new Command() {
+      @Override
       public void execute() {
         Utils.showHelp(getVersionHTML(), null);
       }
@@ -438,6 +455,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       l.addStyleName("navlink");
       if (s.enabled() && s != current) {
         l.addClickHandler(new ClickHandler() {
+          @Override
           public void onClick(ClickEvent e) {
             History.newItem(s.key());
           }
@@ -539,6 +557,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   /**
    * Proceed if the screen is ready.
    */
+  @Override
   public void attemptProceed(String to) {
     Screen s = pickScreen(to);
     if (s.enabled()) {
@@ -585,7 +604,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     }
     for (Screen s : workflow) {
       if (s != from) {
-        s.loadState(s);
+        s.loadState(s, appInfo.attributes());
         s.tryConfigure();
       }
     }
@@ -616,26 +635,32 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     rootPanel.onResize();
   }
 
+  @Override
   public Resources resources() {
     return resources;
   }
 
+  @Override
   public SampleServiceAsync sampleService() {
     return sampleService;
   }
 
+  @Override
   public ProbeServiceAsync probeService() {
     return probeService;
   }
 
+  @Override
   public SeriesServiceAsync seriesService() {
     return seriesService;
   }
 
+  @Override
   public MatrixServiceAsync matrixService() {
     return matrixService;
   }
 
+  @Override
   public UserDataServiceAsync userDataService() {
     return userDataService;
   }

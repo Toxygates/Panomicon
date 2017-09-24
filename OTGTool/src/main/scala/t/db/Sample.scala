@@ -89,5 +89,5 @@ object Sample {
 
   def apply(id: String) = new Sample(id, SampleClassHelper())
 
-  def apply(id: String, map: Map[String, String]) = new Sample(id, SampleClassHelper(map))
+  def apply(id: String, map: Map[Attribute, String]) = new Sample(id, SampleClassHelper(map))
 }

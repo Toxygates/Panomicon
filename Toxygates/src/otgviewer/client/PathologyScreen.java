@@ -30,6 +30,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
 import otg.model.sample.OTGAttribute;
+import otg.model.sample.OTGAttribute;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import otgviewer.client.rpc.SampleServiceAsync;

@@ -28,6 +28,7 @@ import t.model.sample.Attribute
 import scala.collection.JavaConversions._
 import t.model.sample.CoreParameter._
 import t.model.SampleClass
+import t.model.sample.AttributeSet
 
 object Samples extends RDFClass {
   val defaultPrefix = s"$tRoot/sample"
@@ -108,6 +109,16 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     result
   }
 
+  /**
+   * Converts the keys in a Map from String to Attribute using the supplied
+   * AttributeSet. Keys not found in the AttributeSet will be ommitted.
+   */
+  protected def convertMapToAttributes(map: Map[String, String],
+      attributeSet: AttributeSet): Map[Attribute, String] = {
+    map.map(x => Option(bc.attributes.byId(x._1)) -> x._2)
+      .collect { case (Some(attrib), value) => (attrib, value) }
+  }
+
   protected def graphCon(g: Option[String]) = g.map("<" + _ + ">").getOrElse("?g")
 
   /**
@@ -144,7 +155,7 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
       multiFilter(s"?$fparam", fvalues.map("\"" + _ + "\"")))()
   }
 
-  def sampleClasses(implicit sf: SampleFilter): Seq[Map[String, String]]
+  def sampleClasses(implicit sf: SampleFilter): Seq[Map[Attribute, String]]
 
   def parameters(sample: Sample): Seq[(Attribute, String)] =
     parameters(sample, Seq())
@@ -271,13 +282,12 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
     (implicit sampleFilter: SampleFilter): Query[Seq[Sample]] = {
 
     val queryAttributes = (attributes.filter(isPredicateAttribute).toSeq :+ SampleId).distinct
-    val filterAttributes = sampleClassFilter.constraints.keys.flatMap(k =>
-      Option(bc.attributes.byId(k))).filter(isPredicateAttribute)
+    val filterAttributes = sampleClassFilter.constraints.keys.filter(isPredicateAttribute)
 
     val sampleClassFilterString = if (sampleClassFilter.constraints.isEmpty) "" else
       s"""|
           |    FILTER( ${filterAttributes.map(a => s"?${a.id} = " + "\"" +
-                           sampleClassFilter.constraints(a.id) + "\"").mkString(" && ") } )""".stripMargin
+                           sampleClassFilter.constraints(a) + "\"").mkString(" && ") } )""".stripMargin
 
     Query(tPrefixes,
         s"""SELECT ${ queryAttributes.map('?' + _.id).mkString(" ") }
@@ -286,10 +296,12 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
            |""".stripMargin,
         s"""} ${sampleFilter.standardSampleFilters} $sampleClassFilterString
            |  }""".stripMargin,
-        triplestore.mapQuery(_, 20000).map(x => {
-          val sc = new SampleClass(x ++ sampleClassFilter.constraints)
-          Sample(x(SampleId.id), sc)
-    }))
+        triplestore.mapQuery(_, 20000).map(s => {
+          val sampleClass = new SampleClass(convertMapToAttributes(s, bc.attributes)
+              ++ sampleClassFilter.constraints)
+          Sample(s(SampleId.id), sampleClass)
+          }
+    ))
   }
 
   def attributeValues(filter: TFilter, attribute: Attribute)(implicit sf: SampleFilter) =

@@ -31,13 +31,15 @@ import t.common.shared.AType
 import t.model.SampleClass
 import t.sparql.SampleFilter
 import t.sparql.secondary._
+import otg.model.sample.OTGAttribute
+import t.model.sample.Attribute
 
 object AssociationResolverTest {
 
-  val testClass = Map("sin_rep_type" -> "Single",
-    "organism" -> "Rat",
-    "organ_id" -> "Liver",
-    "test_type" -> "in vivo")
+  val testClass: Map[Attribute, String] = Map(OTGAttribute.Repeat -> "Single",
+    OTGAttribute.Organism -> "Rat",
+    OTGAttribute.Organ -> "Liver",
+    OTGAttribute.TestType -> "in vivo")
 
   def testSampleClass = new SampleClass(testClass)
 }

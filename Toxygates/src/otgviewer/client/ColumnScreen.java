@@ -33,6 +33,7 @@ import otgviewer.client.components.groupdef.GroupInspector;
 import t.common.shared.DataSchema;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.SampleColumn;
+import t.model.sample.AttributeSet;
 import t.viewer.client.Utils;
 
 /**
@@ -115,13 +116,13 @@ public class ColumnScreen extends DataFilterScreen {
   }
 
   @Override
-  public void loadState(StorageParser p, DataSchema schema) {
-    super.loadState(p, schema);
+  public void loadState(StorageParser p, DataSchema schema, AttributeSet attributes) {
+    super.loadState(p, schema, attributes);
     if (visible) {
       try {
         List<Group> ics =
             loadColumns(p, schema(), "inactiveColumns", new ArrayList<SampleColumn>(gi
-                .existingGroupsTable().inverseSelection()));
+                .existingGroupsTable().inverseSelection()), attributes());
         if (ics != null && ics.size() > 0) {
           logger.info("Unpacked i. columns: " + ics.get(0) + ": " + ics.get(0).getSamples()[0]
               + " ... ");

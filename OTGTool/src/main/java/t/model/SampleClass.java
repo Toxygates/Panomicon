@@ -21,8 +21,7 @@ package t.model;
 import java.io.Serializable;
 import java.util.*;
 
-import t.model.sample.Attribute;
-import t.model.sample.SampleLike;
+import t.model.sample.*;
 
 
 /**
@@ -37,11 +36,11 @@ public class SampleClass implements Serializable, SampleLike {
 
   public SampleClass() {}
 
-  private Map<String, String> data = new HashMap<String, String>();
+  private Map<Attribute, String> data = new HashMap<Attribute, String>();
 
-  public SampleClass(Map<String, String> data) {
+  public SampleClass(Map<Attribute, String> data) {
     //Copy to a new java.util.HashMap to ensure GWT serialisation is possible
-    this.data = new HashMap<String, String>(data);
+    this.data = new HashMap<Attribute, String>(data);
   }
 
   public String apply(Attribute key) {
@@ -64,13 +63,13 @@ public class SampleClass implements Serializable, SampleLike {
   }
   
   public void put(Attribute key, String value) {
-    data.put(key.id(), value);
+    data.put(key, value);
   }
   
   // TODO: this should return a set of attributes, but we can't do that until
   // we switch to using attributes as hashmap keys.
   @Deprecated
-  public Set<String> getKeys() {
+  public Set<Attribute> getKeys() {
     return data.keySet();
   }
 
@@ -83,9 +82,9 @@ public class SampleClass implements Serializable, SampleLike {
   }
 
   public SampleClass copyOnly(Collection<Attribute> attributes) {
-    Map<String, String> data = new HashMap<String, String>();
+    Map<Attribute, String> data = new HashMap<Attribute, String>();
     for (Attribute attribute : attributes) {
-      data.put(attribute.id(), get(attribute));
+      data.put(attribute, get(attribute));
     }
     return new SampleClass(data);
   }
@@ -105,12 +104,8 @@ public class SampleClass implements Serializable, SampleLike {
   }
 
   @Deprecated
-  public boolean contains(String key) {
-    return data.containsKey(key);
-  }
-
   public boolean contains(Attribute key) {
-    return data.containsKey(key.id());
+    return data.containsKey(key);
   }
 
   /**
@@ -118,7 +113,7 @@ public class SampleClass implements Serializable, SampleLike {
    * @param from
    */
   public void mergeDeferred(SampleClass from) {
-    for (String k : from.getMap().keySet()) {
+    for (Attribute k : from.getMap().keySet()) {
       if (!data.containsKey(k)) {
         data.put(k, from.get(k));
       }
@@ -129,8 +124,8 @@ public class SampleClass implements Serializable, SampleLike {
    * Returns a copy of this sample class' constraint map.
    * @return
    */
-  public Map<String, String> getMap() {
-    return new HashMap<String, String>(data);
+  public Map<Attribute, String> getMap() {
+    return new HashMap<Attribute, String>(data);
   }
 
   /**
@@ -141,7 +136,7 @@ public class SampleClass implements Serializable, SampleLike {
    * @return
    */
   public boolean compatible(SampleClass other) {
-    for (String k : data.keySet()) {
+    for (Attribute k : data.keySet()) {
       if (other.contains(k) && !other.get(k).equals(get(k))) {
         return false;
       }
@@ -157,7 +152,7 @@ public class SampleClass implements Serializable, SampleLike {
    * @return
    */
   public boolean strictCompatible(SampleClass other) {
-    for (String k : data.keySet()) {
+    for (Attribute k : data.keySet()) {
       if (!other.contains(k) || !other.get(k).equals(get(k))) {
         return false;
       }
@@ -184,13 +179,13 @@ public class SampleClass implements Serializable, SampleLike {
    * @return
    */
   public SampleClass intersection(SampleClass other) {
-    Set<String> k1 = other.getMap().keySet();
-    Set<String> k2 = getMap().keySet();
-    Set<String> keys = new HashSet<String>();
+    Set<Attribute> k1 = other.getMap().keySet();
+    Set<Attribute> k2 = getMap().keySet();
+    Set<Attribute> keys = new HashSet<Attribute>();
     keys.addAll(k1);
     keys.addAll(k2);
-    Map<String, String> r = new HashMap<String, String>();
-    for (String k : keys) {
+    Map<Attribute, String> r = new HashMap<Attribute, String>();
+    for (Attribute k : keys) {
       if (k2.contains(k) && k1.contains(k) && get(k).equals(other.get(k))) {
         r.put(k, get(k));
       }
@@ -247,8 +242,8 @@ public class SampleClass implements Serializable, SampleLike {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("SC(");
-    for (String k : data.keySet()) {
-      sb.append(k + ":" + data.get(k) + ",");
+    for (Attribute k : data.keySet()) {
+      sb.append(k.id() + ":" + data.get(k) + ",");
     }
     sb.append(")");
     return sb.toString();
@@ -257,19 +252,19 @@ public class SampleClass implements Serializable, SampleLike {
   //TODO move out of OTGTool
   public String pack() {
     StringBuilder sb = new StringBuilder();
-    for (String k : data.keySet()) {
-      sb.append(k + ",,,");
+    for (Attribute k : data.keySet()) {
+      sb.append(k.id() + ",,,");
       sb.append(data.get(k) + ",,,");
     }
     return sb.toString();
   }
 
   //TODO move out of OTGTool
-  public static SampleClass unpack(String data) {
+  public static SampleClass unpack(String data, AttributeSet attributeSet) {
     String[] spl = data.split(",,,");
-    Map<String, String> d = new HashMap<String, String>();
+    Map<Attribute, String> d = new HashMap<Attribute, String>();
     for (int i = 0; i < spl.length; i += 2) {
-      d.put(spl[i], spl[i + 1]);
+      d.put(attributeSet.byId(spl[i]), spl[i + 1]);
     }
     return new SampleClass(d);
   }

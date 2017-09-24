@@ -22,6 +22,7 @@ import java.util.*;
 
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
+import t.model.sample.AttributeSet;
 
 /**
  * A group of barcodes.
@@ -69,6 +70,7 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
     return name;
   }
 
+  @Override
   public Sample[] getSamples() {
     return _samples;
   }
@@ -122,7 +124,7 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
   // See SampleGroup for the packing method
   // TODO lift up the unpacking code to have
   // the mirror images in the same class, if possible
-  public static Group unpack(DataSchema schema, String s) {
+  public static Group unpack(DataSchema schema, String s, AttributeSet attributeSet) {
     // Window.alert(s + " as group");
     String[] s1 = s.split(":::"); // !!
     String name = s1[1];
@@ -141,7 +143,7 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
     String[] s2 = barcodes.split("\\^\\^\\^");
     Sample[] bcs = new Sample[s2.length];
     for (int i = 0; i < s2.length; ++i) {
-      Sample b = Sample.unpack(s2[i]);
+      Sample b = Sample.unpack(s2[i], attributeSet);
       bcs[i] = b;
     }
     // DataFilter useFilter = (bcs[0].getUnit().getOrgan() == null) ? filter : null;

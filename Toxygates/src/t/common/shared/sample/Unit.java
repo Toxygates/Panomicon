@@ -51,15 +51,13 @@ public class Unit extends SampleClass {
     Set<Attribute> computedAttribs = new HashSet<Attribute>();
 
     for (Sample sample : samples) {
-      for (String key : sample.getKeys()) {
-        Attribute attribute = attributeSet.byId(key);
-
-        if (!computedAttribs.contains(attribute) && (overwrite || !contains(attribute))) {
-          computedAttribs.add(attribute);
-          if (attribute.isNumerical()) {
-            averageAttribute(attribute);
+      for (Attribute key : sample.getKeys()) {
+        if (!computedAttribs.contains(key) && (overwrite || !contains(key))) {
+          computedAttribs.add(key);
+          if (key.isNumerical()) {
+            averageAttribute(key);
           } else {
-            concatenateAttribute(attribute);
+            concatenateAttribute(key);
           }
         }
       }

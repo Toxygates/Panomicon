@@ -133,7 +133,8 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
 
   private String findAvailableGroupName(String prefix) throws Exception {
     List<Group> inactiveGroups =
-        loadColumns(manager().getParser(), schema(), "inactiveColumns", new ArrayList<Group>());
+        loadColumns(manager().getParser(), schema(), "inactiveColumns", new ArrayList<Group>(),
+            attributes());
 
     Set<String> groupNames = new HashSet<String>();
     for (Group group : chosenColumns) {

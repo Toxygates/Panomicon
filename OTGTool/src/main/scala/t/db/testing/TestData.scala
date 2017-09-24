@@ -97,15 +97,14 @@ object TestData {
   val samples = for (
     dose <- em(DoseLevel); time <- em(ExposureTime);
     ind <- Set("1", "2", "3"); compound <- em("compound_name");
-    s = Sample("s" + ids.next,
-        Map(DoseLevel.id -> dose, Individual.id -> ind,
-          ExposureTime.id -> time, "compound_name" -> compound,
-          "sin_rep_type" -> "Single", "organ_id" -> "Liver",
-          "test_type" -> "Vivo", "organism" -> "Rat",
-          LiverWeight.id -> liverWeight(dose, ind).toString,
-          KidneyWeight.id -> kidneyWeight(dose, ind).toString,
-          ControlGroup.id -> cgroup(time, compound))
-        )
+    values: Map[Attribute, String] = Map(DoseLevel -> dose, Individual -> ind,
+          ExposureTime -> time, Compound -> compound,
+          Repeat -> "Single", Organ -> "Liver",
+          TestType -> "Vivo", Organism -> "Rat",
+          LiverWeight -> liverWeight(dose, ind).toString,
+          KidneyWeight -> kidneyWeight(dose, ind).toString,
+          ControlGroup -> cgroup(time, compound));
+    s = Sample("s" + ids.next, values)
   ) yield s
 
   def randomExpr(): (Double, Char, Double) = {

@@ -23,12 +23,13 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.storage.client.Storage;
+import com.google.gwt.user.client.Window;
+
 import t.common.shared.*;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.SampleColumn;
-
-import com.google.gwt.storage.client.Storage;
-import com.google.gwt.user.client.Window;
+import t.model.sample.AttributeSet;
 
 /**
  * Eventually all storage parsing/serialising code should be centralised here, but for now, some of
@@ -70,13 +71,13 @@ public class StorageParser {
   }
 
   @Nullable
-  public static Group unpackColumn(DataSchema schema, String s) {
+  public static Group unpackColumn(DataSchema schema, String s, AttributeSet attributes) {
     if (s == null) {
       return null;
     }
     String[] spl = s.split("\\$\\$\\$");
     if (!spl[0].equals("Barcode") && !spl[0].equals("Barcode_v3")) {
-      return Group.unpack(schema, s);
+      return Group.unpack(schema, s, attributes);
     } else {
       // Legacy or incorrect format
       logger.warning("Unexpected column format: " + s);

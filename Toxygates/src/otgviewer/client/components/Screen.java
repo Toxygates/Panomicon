@@ -335,7 +335,7 @@ public class Screen extends DataListenerWidget implements
   public void show() {
     rootPanel.forceLayout();
     visible = true;
-    loadState(this);
+    loadState(this, attributes());
     if (showGuide) {
       showToolbar(guideBar);
     } else {
@@ -347,8 +347,8 @@ public class Screen extends DataListenerWidget implements
   }
 
   @Override
-  public void loadState(StorageParser p, DataSchema schema) {
-    super.loadState(p, schema);
+  public void loadState(StorageParser p, DataSchema schema, AttributeSet attributes) {
+    super.loadState(p, schema, attributes);
     String v = p.getItem("OTG.showGuide");
     if (v == null || v.equals("yes")) {
       showGuide = true;
