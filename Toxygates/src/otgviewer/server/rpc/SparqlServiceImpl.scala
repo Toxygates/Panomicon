@@ -45,7 +45,7 @@ import t.viewer.shared.TimeoutException
  * Future: May be split into a sample service and a probe service.
  */
 class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGServiceServlet
-  with otgviewer.client.rpc.SparqlService {
+  with otgviewer.client.rpc.ProbeService with otgviewer.client.rpc.SampleService {
 
   private def probeStore: otg.sparql.Probes = context.probes
   private def sampleStore: otg.sparql.OTGSamples = context.samples

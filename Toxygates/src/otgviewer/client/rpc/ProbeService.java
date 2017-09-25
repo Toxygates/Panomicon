@@ -1,21 +1,12 @@
 package otgviewer.client.rpc;
 
-import otgviewer.shared.Pathology;
-import t.common.shared.sample.SampleColumn;
 import t.model.SampleClass;
 import t.viewer.shared.TimeoutException;
 
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
-@RemoteServiceRelativePath("sparql")
-public interface SparqlService extends t.viewer.client.rpc.SparqlService {
-  /**
-   * Obtain pathologies for a set of samples
-   * 
-   * @param column
-   * @return
-   */
-  Pathology[] pathologies(SampleColumn column) throws TimeoutException;
+@RemoteServiceRelativePath("probe")
+public interface ProbeService extends t.viewer.client.rpc.ProbeService {
 
   /**
    * Obtain probes that correspond to proteins targeted by the named compound.

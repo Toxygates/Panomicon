@@ -83,7 +83,7 @@ public class FullRuleInputHelper extends RuleInputHelper {
     SampleClass sc = ranker.chosenSampleClass.copy();
     sc.put(Compound, selCompound);
 
-    ranker.sparqlService.parameterValues(sc, "dose_level", new PendingAsyncCallback<String[]>(
+    ranker.sampleService.parameterValues(sc, DoseLevel.id(), new PendingAsyncCallback<String[]>(
         ranker.selector, "Unable to retrieve dose levels.") {
 
       @Override

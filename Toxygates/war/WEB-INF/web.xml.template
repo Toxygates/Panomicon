@@ -87,9 +87,14 @@
 
 	<servlet-mapping>
 		<servlet-name>sparqlServlet</servlet-name>
-		<url-pattern>/toxygates/sparql</url-pattern>
+		<url-pattern>/toxygates/probe</url-pattern>
 	</servlet-mapping>
 
+	<servlet-mapping>
+		<servlet-name>sparqlServlet</servlet-name>
+		<url-pattern>/toxygates/sample</url-pattern>
+	</servlet-mapping>
+	
 	<servlet-mapping>
 		<servlet-name>seriesServlet</servlet-name>
 		<url-pattern>/toxygates/series</url-pattern>

@@ -23,7 +23,7 @@ import java.util.*;
 
 import otgviewer.client.components.*;
 import t.common.shared.*;
-import t.viewer.client.rpc.SparqlServiceAsync;
+import t.viewer.client.rpc.ProbeServiceAsync;
 
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -32,7 +32,7 @@ import com.google.gwt.user.client.ui.SuggestOracle;
 public class TermSuggestOracle extends SuggestOracle implements
     HasExactMatchHandler<Term> {
 
-  private final SparqlServiceAsync sparqlService;
+  private final ProbeServiceAsync probeService;
 
   private String lastRequest = "";
 
@@ -40,7 +40,7 @@ public class TermSuggestOracle extends SuggestOracle implements
       new ArrayList<ExactMatchHandler<Term>>();
 
   public TermSuggestOracle(Screen screen) {
-    sparqlService = screen.manager().sparqlService();
+    probeService = screen.manager().probeService();
   }
 
   @Override
@@ -64,7 +64,7 @@ public class TermSuggestOracle extends SuggestOracle implements
   }
 
   public void getSuggestions(final Request request, final Callback callback) {
-    sparqlService.keywordSuggestions(request.getQuery(), 5,
+    probeService.keywordSuggestions(request.getQuery(), 5,
         new AsyncCallback<Pair<String, AType>[]>() {
           @Override
           public void onSuccess(Pair<String, AType>[] result) {
