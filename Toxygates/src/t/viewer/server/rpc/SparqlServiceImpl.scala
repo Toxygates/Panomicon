@@ -51,6 +51,7 @@ import t.viewer.server.Conversions._
 import t.viewer.shared._
 import otg.model.sample.OTGAttribute
 import t.model.sample.CoreParameter
+import t.viewer.shared.mirna.MirnaSource
 
 object SparqlServiceImpl {
   var inited = false
@@ -137,7 +138,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with
         probeClusterings(probeLists), appName,
         makeUserKey(), getAnnotationInfo,
         baseConfig.attributes,
-        Array())
+        getMirnaSourceInfo)
   }
 
   protected lazy val b2rKegg: B2RKegg =
@@ -178,6 +179,19 @@ abstract class SparqlServiceImpl extends TServiceServlet with
 
   protected def staticAnnotationInfo: Seq[(String, String)] = Seq()
 
+  protected def getMirnaSourceInfo: Array[MirnaSource] = {
+    val size = 0 //TODO
+    val dynamic = probeStore.mirnaSources.map(s =>
+      new MirnaSource(s._1, s._2, s._3, s._4, asJDouble(s._5), size))
+    val static = staticMirnaSources
+    dynamic.toArray ++ static
+  }
+
+  /**
+   * MiRNA sources that are hardcoded into the application.
+   */
+  protected def staticMirnaSources: Seq[MirnaSource] = Seq()
+  
   /**
    * Generate a new user key, to be used when the client does not already have one.
    */

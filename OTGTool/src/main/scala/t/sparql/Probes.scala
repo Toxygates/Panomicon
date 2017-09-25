@@ -451,18 +451,20 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
   /**
    * MiRNA association sources.
-   * Format: (name, empirical, scores available?, suggested limit)
+   * Format: (id, name, empirical, scores available?, suggested limit)
+   * For dynamic sources, the ID string is the triplestore graph.
    */
-  def mirnaSources: Iterable[(String, Boolean, Boolean, Option[Double])] = {
+  def mirnaSources: Iterable[(String, String, Boolean, Boolean, Option[Double])] = {
     val q = s"""$tPrefixes
-      |SELECT DISTINCT ?title ?empirical ?hasScores ?suggestedLimit WHERE {
+      |SELECT DISTINCT ?g ?title ?empirical ?hasScores ?suggestedLimit WHERE {
       |  GRAPH ?g {
       |    ?g a t:mirnaSource; rdfs:label ?title; t:hasScores ?hasScores;
       |      t:empirical ?empirical.
       |    OPTIONAL { ?g t:suggestedLimit ?suggestedLimit }.
-      |  }""".stripMargin
+      |  }
+      |}""".stripMargin
       triplestore.mapQuery(q).map(x =>
-        (x("title"), x("empirical").toBoolean, x("hasScores").toBoolean,
+        (x("g"), x("title"), x("empirical").toBoolean, x("hasScores").toBoolean,
             x.get("suggestedLimit").map(_.toDouble))
         )
   }

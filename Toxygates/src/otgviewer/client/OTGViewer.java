@@ -18,12 +18,15 @@
 
 package otgviewer.client;
 
+import otgviewer.client.dialog.MirnaSourceSelector;
 import otgviewer.shared.OTGSchema;
 import t.common.shared.DataSchema;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
+import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.intermine.InterMineData;
 import t.viewer.shared.intermine.IntermineInstance;
+import t.viewer.shared.mirna.MirnaSource;
 
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
@@ -80,6 +83,17 @@ public class OTGViewer extends TApplication {
     for (IntermineInstance ii: appInfo.intermineInstances()) {
       toolsMenuBar.addItem(intermineMenu(ii));
     }  
+    
+    MenuItem mi = new MenuItem("Select MiRNA sources...", new Command() {
+      @Override
+      public void execute() {
+        MirnaSource[] sources = appInfo().mirnaSources();
+        Utils.displayInPopup("MiRNA sources", new MirnaSourceSelector(sources), 
+          DialogPosition.Center);        
+      }      
+    });
+    
+    toolsMenuBar.addItem(mi);
   }
   
   protected MenuItem intermineMenu(final IntermineInstance inst) {

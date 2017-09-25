@@ -75,4 +75,7 @@ object Conversions {
       }
     }
   }
+  
+  def asJDouble(x: Option[Double]): java.lang.Double = 
+    x.map(new java.lang.Double(_)).getOrElse(null)
 }

@@ -39,6 +39,7 @@ import t.viewer.server.intermine.Intermines
 import t.viewer.shared.AppInfo
 import t.viewer.shared.Association
 import t.viewer.shared.TimeoutException
+import t.viewer.shared.mirna.MirnaSource
 
 /**
  * This servlet is reponsible for making queries to RDF stores.
@@ -141,6 +142,13 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
     Seq(
       ("ChEMBL", "Dynamically obtained from https://www.ebi.ac.uk/rdf/services/chembl/sparql"),
       ("DrugBank", "Dynamically obtained from http://drugbank.bio2rdf.org/sparql")
+      )
+  }
+  
+  override protected def staticMirnaSources: Seq[MirnaSource] = {
+    val size = 0 //TODO
+    Seq(
+      new MirnaSource("TargetMine", "miRTarBase (via TargetMine)", true, true, 0.5, size)
       )
   }
 }
