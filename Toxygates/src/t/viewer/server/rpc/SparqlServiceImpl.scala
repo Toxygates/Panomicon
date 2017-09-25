@@ -136,7 +136,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with
         configuration.intermineInstances.toArray,
         probeClusterings(probeLists), appName,
         makeUserKey(), getAnnotationInfo,
-        baseConfig.attributes)
+        baseConfig.attributes,
+        Array())
   }
 
   protected lazy val b2rKegg: B2RKegg =
