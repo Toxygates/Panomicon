@@ -1,8 +1,11 @@
 package t.viewer.shared.mirna;
 
+import java.io.Serializable;
+
 import javax.annotation.Nullable;
 
-public class MirnaSource {
+@SuppressWarnings("serial")
+public class MirnaSource implements Serializable {
   //GWT constructor
   MirnaSource() {}
   
