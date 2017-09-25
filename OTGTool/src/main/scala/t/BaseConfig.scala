@@ -30,12 +30,18 @@ import t.db.kyotocabinet.chunk.KCChunkMatrixDB
 import t.model.sample.AttributeSet
 import t.sparql.Triplestore
 
-//TODO should BaseConfig be invariant between applications?
+/*
+ * Note: it is not clear whether
+ * BaseConfig should be invariant between applications. 
+ * Currently OTGBConfig is the concrete OTG version of this. 
+ */
 trait BaseConfig {
   def triplestore: TriplestoreConfig
   def data: DataConfig
 
-  //TODO Should this be in context?
+  /*
+   * Note: this might be better in the context instead.
+   */
   def seriesBuilder: SeriesBuilder[S] forSome { type S <: Series[S] }
 
   def attributes: AttributeSet

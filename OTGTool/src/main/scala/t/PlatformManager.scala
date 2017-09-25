@@ -78,8 +78,11 @@ class PlatformManager(context: Context) {
   import TRDF._
   def config = context.config
 
-  //TODO consider representing affymetrixFormat and bioFormat
-  //as a different type, since they are mutually exclusive
+  /*
+   * Note: AffymetrixFormat and BioFormat might be represented differently,
+   * e.g. with case objects or enums.
+   * They are mutually exclusive.
+   */
   def add(title: String, comment: String,
     inputFile: String, affymetrixFormat: Boolean, bioFormat: Boolean): Iterable[Tasklet] = {
     val pf = new Platforms(config.triplestore)

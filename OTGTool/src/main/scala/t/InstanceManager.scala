@@ -56,7 +56,7 @@ object InstanceManager extends ManagerTool {
           throw new Exception(msg)
         }
 
-      //TODO: access management
+      //TODO: Management of other functions, such as access/visibility
       case "help" => showHelp()
     }
   }

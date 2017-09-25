@@ -30,7 +30,7 @@ t.viewer.server.rpc.SeriesServiceImpl[OTGSeries] with OTGServiceServlet {
   implicit def mat = context.matrix
   implicit def ctxt = context
 
-  override protected def ranking(db: SeriesDB[OTGSeries], key: OTGSeries) =
+  protected def ranking(db: SeriesDB[OTGSeries], key: OTGSeries) =
     new otg.SeriesRanking(db, key)
 
   override protected def asShared(s: OTGSeries): SSeries =

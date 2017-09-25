@@ -27,8 +27,10 @@ import t.db.file.MapMetadata
 import t.db.Metadata
 import t.model.sample.AttributeSet
 
-//TODO consider making ts, data constructor parameters
-//then store them and the resulting context, baseconfig
+/*
+ * Note: It may be a good idea to make ts and data constructor parameters,
+ * and then store them and the resulting context, baseconfig 
+ */
 abstract class Factory {
   def samples(config: BaseConfig): Samples
 

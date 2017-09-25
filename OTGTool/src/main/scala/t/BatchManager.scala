@@ -145,7 +145,7 @@ object BatchManager extends ManagerTool {
           }
         }
       case "sampleCheck" =>
-        //TODO: do not access the db files directly
+        //TODO: do not access the db files directly (obtain readers instead)
         sampleCheck(config.data.exprDb,
           args.size > 1 && args(1) == "delete")
         sampleCheck(config.data.foldDb,
@@ -157,9 +157,7 @@ object BatchManager extends ManagerTool {
   private def sampleCheck(dbf: String, delete: Boolean)(implicit context: Context) {
     val bm = new BatchManager(context)
     implicit val mc = bm.matrixContext
-    val db = KCMatrixDB.get(dbf, true)
-    //TODO don't cast here
-    val kdb = db.asInstanceOf[KCMatrixDB]
+    val kdb = KCMatrixDB.get(dbf, true)
 
     try {
       val ss = kdb.allSamples(true, Set())
@@ -171,7 +169,7 @@ object BatchManager extends ManagerTool {
         kdb.allSamples(true, unknowns)
       }
     } finally {
-      db.release
+      kdb.release
     }
   }
 
@@ -234,13 +232,15 @@ class BatchManager(context: Context) {
     r :+= addSampleIDs(metadata)
     r :+= addRDF(title, metadata, sbuilder, ts)
 
-    // Note that we rely on these maps not being read until they are needed
+    // Note that we rely on probe maps, sample maps etc in matrixContext
+    // not being read until they are needed
     // (after addSampleIDs has run!)
-    // TODO: more robust updating of maps
+    // TODO: more robust updating of maps 
     implicit val mc = matrixContext()
     r :+= addEnums(metadata, sbuilder)
 
-    //TODO logging directly to TaskRunner is controversial
+    //TODO logging directly to TaskRunner is controversial. 
+    //Would be better to log from inside the tasklets.
     r :+= addExprData(metadata, dataFile, callFile,
         m => TaskRunner.log(s"Warning: $m"))
     r :+= addFoldsData(metadata, dataFile, callFile, simpleLog2,
@@ -368,7 +368,10 @@ class BatchManager(context: Context) {
             val context = Batches.context(title)
             ts.addTTL(ttl, context)
             percentComplete += 1000.0 * 100.0 / total
-            //TODO cancellation check
+            /*
+             * This task is atomic and cannot be interrupted mid-run, since it
+             * usually quick
+             */
           }
 
           for (s <- summaries) {
@@ -425,8 +428,15 @@ class BatchManager(context: Context) {
       case t: Throwable => throw t
     }
   }
-
+  
+  
   def deleteFoldData(title: String)(implicit mc: MatrixContext) =
+    deleteExtFormatData(title, "Delete fold data")
+
+  def deleteExprData(title: String)(implicit mc: MatrixContext) =
+    deleteExtFormatData(title, "Delete normalized intensity data")
+  
+  private def deleteExtFormatData(title: String, taskName: String)(implicit mc: MatrixContext) =
     new Tasklet("Delete fold data") {
       def run() {
         val bs = new Batches(config.triplestore)
@@ -443,29 +453,13 @@ class BatchManager(context: Context) {
         }
       }
     }
-
-  //TODO unify with deleteFoldData above once DB formats are unified
-  def deleteExprData(title: String)(implicit mc: MatrixContext) =
-    new Tasklet("Delete normalized intensity data") {
-      def run() {
-        val bs = new Batches(config.triplestore)
-        val ss = bs.samples(title).map(Sample(_))
-         if (ss.isEmpty) {
-          log("Nothing to do, batch has no samples")
-          return
-        }
-        val db = config.data.extWriter(config.data.exprDb)
-        try {
-          deleteFromDB(db, ss)
-        } finally {
-          db.release()
-        }
-      }
-    }
-
+    
   def addEnums(md: Metadata, sb: SeriesBuilder[_])(implicit mc: MatrixContext) =
     new Tasklet("Add enum values") {
-      //TODO these cannot be deleted currently
+      /*
+       * Note: enums currently cannot be deleted. We may eventually need a system
+       * to rebuild enum databases.
+       */
       def run() {
         val db = KCIndexDB(config.data.enumIndex, true)
         for (

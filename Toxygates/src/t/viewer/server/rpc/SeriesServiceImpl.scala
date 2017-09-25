@@ -52,7 +52,7 @@ abstract class SeriesServiceImpl[S <: Series[S]] extends TServiceServlet with Se
 
   protected def getDB(): SeriesDB[S]
 
-  protected def ranking(db: SeriesDB[S], key: S): SeriesRanking[S] = new SeriesRanking(db, key)
+  protected def ranking(db: SeriesDB[S], key: S): SeriesRanking[S]
 
   implicit protected def asShared(s: S): SSeries
   implicit protected def fromShared(s: SSeries): S
