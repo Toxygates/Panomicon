@@ -206,8 +206,10 @@ class KCChunkMatrixDB(db: DB, writeMode: Boolean)(implicit mc: MatrixContext)
   }
 
   /**
-   * TODO this operation is slow for the chunk database.
-   * Forces a full traversal
+   * Obtain all samples.
+   * This operation is slow for the chunk database (all current expression 
+   * databases).
+   * Forces a full traversal.
    */
   def allSamples: Iterable[Sample] =
     allChunks(List()).map(x => Sample(x._1))
