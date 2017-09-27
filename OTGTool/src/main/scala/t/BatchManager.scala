@@ -280,7 +280,7 @@ class BatchManager(context: Context) {
 
       val bsamples = batches.samples(title).toSet
 
-      val ps = new Platforms(config.triplestore)
+      val ps = new Platforms(config)
       val platforms = ps.list.toSet
       val existingSamples = samples.list.toSet
       for (s <- md.samples; p = md.platform(s)) {

@@ -294,7 +294,9 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
       triplestore.simpleQuery(query).map(Protein(_))
     }
 
-  //TODO
+  /**
+   * Retrieve all genes. In most cases, subclasses should override this method.
+   */
   def allGeneIds(): MMap[Probe, Gene] = emptyMMap()
 
   def forTitlePatterns(patterns: Iterable[String]): Iterable[Probe] = {

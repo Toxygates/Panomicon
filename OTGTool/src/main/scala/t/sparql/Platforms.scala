@@ -27,6 +27,7 @@ import t.platform.BioParameter
 import t.platform.BioParameters
 import t.model.sample.BasicAttribute
 import t.model.sample.AttributeSet
+import t.BaseConfig
 
 object Platforms extends RDFClass {
   def itemClass: String = "t:platform"
@@ -38,10 +39,12 @@ object Platforms extends RDFClass {
   def context(name: String) = defaultPrefix + "/" + name
 }
 
-class Platforms(config: TriplestoreConfig) extends ListManager(config) with TRDF {
+class Platforms(baseConfig: BaseConfig) extends 
+  ListManager(baseConfig.triplestore) {
   import Triplestore._
   import Platforms._
 
+  def config = baseConfig.triplestore
   def itemClass = Platforms.itemClass
   def defaultPrefix = Platforms.defaultPrefix
 

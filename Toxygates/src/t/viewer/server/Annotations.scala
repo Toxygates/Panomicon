@@ -25,7 +25,7 @@ class Annotations(val schema: DataSchema, val baseConfig: BaseConfig,
 
   //TODO this needs to update sometimes, ideally without restart
   lazy val bioParameters = {
-    val pfs = new t.sparql.Platforms(baseConfig.triplestore)
+    val pfs = new t.sparql.Platforms(baseConfig)
     pfs.bioParameters
   }
 

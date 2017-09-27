@@ -112,7 +112,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with
    * in the attribute set and populate them once.
    */
   protected def populateAttributes(bc: BaseConfig) {
-    val platforms = new t.sparql.Platforms(bc.triplestore)
+    val platforms = new t.sparql.Platforms(bc)
     platforms.populateAttributes(bc.attributes)
   }
 
@@ -247,7 +247,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with
   }
 
   private def sPlatforms(): Array[Platform] = {
-    val platforms = new Platforms(baseConfig.triplestore) with SharedPlatforms
+    val platforms = new Platforms(baseConfig) with SharedPlatforms
     platforms.sharedList.toArray
   }
 

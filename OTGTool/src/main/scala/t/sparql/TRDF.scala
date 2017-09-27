@@ -20,11 +20,7 @@
 
 package t.sparql
 
-trait TRDF {
-  val tRoot = "http://level-five.jp/t"
-}
-
-trait RDFClass extends TRDF {
+trait RDFClass {
   def itemClass: String
   def defaultPrefix: String
 
