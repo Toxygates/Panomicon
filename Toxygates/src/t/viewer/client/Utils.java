@@ -19,7 +19,6 @@
 package t.viewer.client;
 
 import static t.common.client.Utils.makeScrolled;
-import t.viewer.client.dialog.DialogPosition;
 
 import com.google.gwt.dom.client.Style.Float;
 import com.google.gwt.event.dom.client.*;
@@ -34,6 +33,8 @@ import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
+
+import t.viewer.client.dialog.DialogPosition;
 
 /**
  * GUI/GWT utility methods.
@@ -115,7 +116,7 @@ public class Utils {
     w.getElement().getStyle().setFloat(Float.RIGHT);
   }
 
-  public static void floatLeft(FlowPanel fp, Widget w) {
+  public static void addAndFloatLeft(FlowPanel fp, Widget w) {
     floatLeft(w);
     fp.add(w);
   }
@@ -139,6 +140,7 @@ public class Utils {
     vp.add(h);
     
     vp.add(new Button("Close", new ClickHandler() {
+      @Override
       public void onClick(ClickEvent ev) {
         db.hide();
       }
@@ -206,6 +208,7 @@ public class Utils {
   private static PositionCallback displayAt(final PopupPanel pp, final DockPanel dp,
       final Widget center, final int atX, final int atY, final DialogPosition pos) {
     return new PositionCallback() {
+      @Override
       public void setPosition(int w, int h) {
         if (DialogPosition.isTallDialog(h)) {
           // Have to make it scrolled, too tall

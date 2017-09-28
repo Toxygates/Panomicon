@@ -387,7 +387,7 @@ public class Screen extends DataListenerWidget implements
     Utils.floatLeft(viewLabel);
     if (showGroups) {
       Collections.sort(chosenColumns);
-      Utils.floatLeft(statusPanel, factory().groupLabels(this, schema(), chosenColumns));
+      Utils.addAndFloatLeft(statusPanel, factory().groupLabels(this, schema(), chosenColumns));
     }
   }
 
