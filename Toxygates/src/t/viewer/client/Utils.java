@@ -52,35 +52,35 @@ public class Utils {
   }
 
   public static HorizontalPanel mkWidePanel() {
-    HorizontalPanel r = mkHorizontalPanel(false);
-    r.setWidth("100%");
-    return r;
+    HorizontalPanel panel = mkHorizontalPanel(false);
+    panel.setWidth("100%");
+    return panel;
   }
 
   public static VerticalPanel mkTallPanel() {
-    VerticalPanel r = mkVerticalPanel(false);
-    r.setHeight("100%");
-    return r;
+    VerticalPanel panel = mkVerticalPanel(false);
+    panel.setHeight("100%");
+    return panel;
   }
 
   public static HorizontalPanel mkHorizontalPanel(boolean spaced, Widget... widgets) {
-    HorizontalPanel hp = new HorizontalPanel();
+    HorizontalPanel panel = new HorizontalPanel();
     // hp.setStylePrimaryName("slightlySpaced");
-    hp.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-    hp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+    panel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+    panel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     if (spaced) {
-      hp.setSpacing(4);
+      panel.setSpacing(4);
     }
     for (Widget w : widgets) {
-      hp.add(w);
+      panel.add(w);
     }
-    return hp;
+    return panel;
   }
 
-  public static HorizontalPanel wideCentered(Widget w) {
-    HorizontalPanel hp = mkWidePanel();
-    hp.add(w);
-    return hp;
+  public static HorizontalPanel wideCentered(Widget widget) {
+    HorizontalPanel panel = mkWidePanel();
+    panel.add(widget);
+    return panel;
   }
 
   public static VerticalPanel mkVerticalPanel() {
@@ -88,37 +88,37 @@ public class Utils {
   }
 
   public static VerticalPanel mkVerticalPanel(boolean spaced, Widget... widgets) {
-    VerticalPanel vp = new VerticalPanel();
+    VerticalPanel panel = new VerticalPanel();
     // vp.setStylePrimaryName("slightlySpaced");
-    vp.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-    vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+    panel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+    panel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     if (spaced) {
-      vp.setSpacing(4);
+      panel.setSpacing(4);
     }
 
-    for (Widget w : widgets) {
-      vp.add(w);
+    for (Widget widget : widgets) {
+      panel.add(widget);
     }
-    return vp;
+    return panel;
   }
 
-  public static Label mkEmphLabel(String s) {
-    Label r = new Label(s);
-    r.setStylePrimaryName("emphasized");
-    return r;
+  public static Label mkEmphLabel(String string) {
+    Label label = new Label(string);
+    label.setStylePrimaryName("emphasized");
+    return label;
   }
 
-  public static void floatLeft(Widget w) {
-    w.getElement().getStyle().setFloat(Float.LEFT);
+  public static void floatLeft(Widget widget) {
+    widget.getElement().getStyle().setFloat(Float.LEFT);
   }
 
-  public static void floatRight(Widget w) {
-    w.getElement().getStyle().setFloat(Float.RIGHT);
+  public static void floatRight(Widget widget) {
+    widget.getElement().getStyle().setFloat(Float.RIGHT);
   }
 
-  public static void addAndFloatLeft(FlowPanel fp, Widget w) {
-    floatLeft(w);
-    fp.add(w);
+  public static void addAndFloatLeft(FlowPanel panel, Widget widget) {
+    floatLeft(widget);
+    panel.add(widget);
   }
 
   /**
@@ -129,46 +129,46 @@ public class Utils {
    * @param url
    */
   public static void displayURL(String message, String linkText, final String url) {
-    final DialogBox db = new DialogBox(false, true);
+    final DialogBox dialogBox = new DialogBox(false, true);
 
-    db.setHTML(message);
-    VerticalPanel vp = new VerticalPanel();
-    vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-    vp.setWidth("100%");
-    HTML h = new HTML();
-    h.setHTML("<a target=_blank href=\"" + url + "\">" + url + "</a>");
-    vp.add(h);
+    dialogBox.setHTML(message);
+    VerticalPanel panel = new VerticalPanel();
+    panel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+    panel.setWidth("100%");
+    HTML html = new HTML();
+    html.setHTML("<a target=_blank href=\"" + url + "\">" + url + "</a>");
+    panel.add(html);
     
-    vp.add(new Button("Close", new ClickHandler() {
+    panel.add(new Button("Close", new ClickHandler() {
       @Override
       public void onClick(ClickEvent ev) {
-        db.hide();
+        dialogBox.hide();
       }
     }));
 
-    db.add(vp);
-    db.setPopupPositionAndShow(displayInCenter(db));
+    dialogBox.add(panel);
+    dialogBox.setPopupPositionAndShow(displayInCenter(dialogBox));
   }
 
   private static int lastX = -1, lastY = -1;
 
-  public static DialogBox displayInPopup(String caption, Widget w, DialogPosition pos) {
-    return displayInPopup(caption, w, false, pos);
+  public static DialogBox displayInPopup(String caption, Widget widget, DialogPosition pos) {
+    return displayInPopup(caption, widget, false, pos);
   }
 
   /**
    * Display a popup dialog.
    * 
    * @param caption Dialog title
-   * @param w Widget to show in dialog
+   * @param widget Widget to show in dialog
    * @param trackLocation Whether to remember the location of this dialog box. Only one dialog box
    *        location can be remembered as we use static variables for this purpose. (TODO: fix by
    *        having a DialogContext or similar)
    * @param pos The position to display the dialog at.
    */
-  public static DialogBox displayInPopup(String caption, final Widget w,
+  public static DialogBox displayInPopup(String caption, final Widget widget,
       final boolean trackLocation, final DialogPosition pos) {
-    final DialogBox db = new DialogBox(true, false) {
+    final DialogBox dialogBox = new DialogBox(true, false) {
       @Override
       protected void endDragging(MouseUpEvent event) {
         super.endDragging(event);
@@ -178,74 +178,74 @@ public class Utils {
         }
       }
     };
-    db.setText(caption);
-    final DockPanel dp = new DockPanel();
-    dp.add(w, DockPanel.CENTER);
-    db.setWidget(dp);
+    dialogBox.setText(caption);
+    final DockPanel dockPanel = new DockPanel();
+    dockPanel.add(widget, DockPanel.CENTER);
+    dialogBox.setWidget(dockPanel);
 
     if (trackLocation) {
-      db.setPopupPositionAndShow(displayAt(db, dp, w, lastX, lastY, pos));
+      dialogBox.setPopupPositionAndShow(displayAt(dialogBox, dockPanel, widget, lastX, lastY, pos));
     } else {
-      db.setPopupPositionAndShow(displayAt(db, dp, w, -1, -1, pos));
+      dialogBox.setPopupPositionAndShow(displayAt(dialogBox, dockPanel, widget, -1, -1, pos));
     }
-    return db;
+    return dialogBox;
   }
 
-  public static PositionCallback displayInCenter(final PopupPanel pp) {
-    return displayAt(pp, null, null, -1, -1, DialogPosition.Center);
+  public static PositionCallback displayInCenter(final PopupPanel panel) {
+    return displayAt(panel, null, null, -1, -1, DialogPosition.Center);
   }
 
   /**
    * 
-   * @param pp
-   * @param dp
+   * @param panel
+   * @param dialogPosition
    * @param center
    * @param atX If not -1, this is the coordinate that is used
    * @param atY If not -1, this is the coordinate that is used
    * @param pos Used to compute coordinates if atX or atY is -1
    * @return
    */
-  private static PositionCallback displayAt(final PopupPanel pp, final DockPanel dp,
+  private static PositionCallback displayAt(final PopupPanel panel, final DockPanel dialogPosition,
       final Widget center, final int atX, final int atY, final DialogPosition pos) {
     return new PositionCallback() {
       @Override
-      public void setPosition(int w, int h) {
-        if (DialogPosition.isTallDialog(h)) {
+      public void setPosition(int width, int height) {
+        if (DialogPosition.isTallDialog(height)) {
           // Have to make it scrolled, too tall
-          pp.setHeight((Window.getClientHeight() - 100) + "px");
-          if (center != null && dp != null) {
-            dp.remove(center);
-            Widget scrl = makeScrolled(center);
-            scrl.setHeight((Window.getClientHeight() - 120) + "px");
-            dp.add(scrl, DockPanel.CENTER);
+          panel.setHeight((Window.getClientHeight() - 100) + "px");
+          if (center != null && dialogPosition != null) {
+            dialogPosition.remove(center);
+            Widget scrolled = makeScrolled(center);
+            scrolled.setHeight((Window.getClientHeight() - 120) + "px");
+            dialogPosition.add(scrolled, DockPanel.CENTER);
           } else {
-            Widget wd = pp.getWidget();
-            pp.setWidget(makeScrolled(wd));
+            Widget widget = panel.getWidget();
+            panel.setWidget(makeScrolled(widget));
           }
         }
-        pp.setPopupPosition(atX != -1 ? atX : pos.computeX(w), atY != -1 ? atY : pos.computeY(h));
-        pp.setWidth("auto");
+        panel.setPopupPosition(atX != -1 ? atX : pos.computeX(width), atY != -1 ? atY : pos.computeY(height));
+        panel.setWidth("auto");
       }
     };
   }
 
   public static void showHelp(TextResource helpText, ImageResource helpImage) {
-    VerticalPanel vp = new VerticalPanel();
+    VerticalPanel verticalPanel = new VerticalPanel();
     if (helpImage != null) {
-      HorizontalPanel wp = Utils.mkWidePanel();
-      wp.add(new Image(helpImage));
-      vp.add(wp);
+      HorizontalPanel widePanel = Utils.mkWidePanel();
+      widePanel.add(new Image(helpImage));
+      verticalPanel.add(widePanel);
     }
-    SimplePanel sp = new SimplePanel();
-    sp.setWidget(new HTML(helpText.getText()));
-    vp.add(sp);
-    sp.setWidth("600px");
+    SimplePanel simplePanel = new SimplePanel();
+    simplePanel.setWidget(new HTML(helpText.getText()));
+    verticalPanel.add(simplePanel);
+    simplePanel.setWidth("600px");
     if (helpImage != null) {
-      vp.setWidth((helpImage.getWidth() + 50) + "px");
+      verticalPanel.setWidth((helpImage.getWidth() + 50) + "px");
     } else {
-      vp.setWidth("650px");
+      verticalPanel.setWidth("650px");
     }
-    Utils.displayInPopup("Help", vp, DialogPosition.Center);
+    Utils.displayInPopup("Help", verticalPanel, DialogPosition.Center);
   }
 
   public static void loadHTML(String url, RequestCallback callback) {
@@ -277,12 +277,12 @@ public class Utils {
   }
 
   public static void setEnabled(HasWidgets root, boolean enabled) {
-    for (Widget w : root) {
-      if (w instanceof HasWidgets) {
-        setEnabled((HasWidgets) w, enabled);
+    for (Widget widget : root) {
+      if (widget instanceof HasWidgets) {
+        setEnabled((HasWidgets) widget, enabled);
       }
-      if (w instanceof FocusWidget) {
-        ((FocusWidget) w).setEnabled(enabled);
+      if (widget instanceof FocusWidget) {
+        ((FocusWidget) widget).setEnabled(enabled);
       }
     }
   }
