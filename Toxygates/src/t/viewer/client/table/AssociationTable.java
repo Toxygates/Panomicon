@@ -26,6 +26,7 @@ import otgviewer.client.components.Screen;
 import t.common.shared.*;
 import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.shared.Association;
+import t.viewer.shared.AssociationValue;
 import t.viewer.shared.table.SortKey;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
@@ -111,15 +112,17 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 			super(c, name, initState, width);			
 		}
 		
-		protected List<String> makeLinks(Collection<Pair<String, String>> values) {
+		//TODO might move this method down or parameterise AssociationValue,
+		//use an interface etc
+		protected List<String> makeLinks(Collection<AssociationValue> values) {
 			List<String> r = new ArrayList<String>();
-			for (Pair<String, String> v: values) {
-				String l = formLink(v.second());
+			for (AssociationValue v: values) {
+				String l = formLink(v.formalIdentifier());
 				if (l != null) {
 					r.add("<div class=\"associationValue\"><a target=\"_TGassoc\" href=\"" +
-							l + "\">" + v.first() + "</a></div>");
+							l + "\">" + v.title() + "</a></div>");
 				} else {
-					r.add("<div class=\"associationValue\">" + v.first() + "</div>"); //no link
+					r.add("<div class=\"associationValue\">" + v.title() + "</div>"); //no link
 				}				
 			}
 			return r;
@@ -130,8 +133,8 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 			return SharedUtils.mkString(makeLinks(getLinkableValues(er)), "");
 		}
 				
-		protected Collection<Pair<String, String>> getLinkableValues(T er) {
-			return new ArrayList<Pair<String, String>>();
+		protected Collection<AssociationValue> getLinkableValues(T er) {
+			return new ArrayList<AssociationValue>();
 		}
 		
 		protected abstract String formLink(String value);
@@ -168,15 +171,15 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 		
 		protected String formLink(String value) { return assoc.formLink(value); }
 		
-		protected Collection<Pair<String, String>> getLinkableValues(T er) {
+		protected Collection<AssociationValue> getLinkableValues(T expressionRow) {
 			Association a = associations.get(assoc);
-			Set<Pair<String, String>> all = new HashSet<Pair<String, String>>();
-			for (String at : atomicProbesForRow(er)) {
+			Set<AssociationValue> all = new HashSet<AssociationValue>();
+			for (String at : atomicProbesForRow(expressionRow)) {
 				if (a.data().containsKey(at)) {
 					all.addAll(a.data().get(at));					
 				} 
 			}
-			for (String gi : geneIdsForRow(er)) {
+			for (String gi : geneIdsForRow(expressionRow)) {
 				if (a.data().containsKey(gi)) {
 					all.addAll(a.data().get(gi));
 				}
