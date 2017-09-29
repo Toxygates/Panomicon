@@ -20,7 +20,6 @@ package otgviewer.client.components;
 
 import java.util.List;
 
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
@@ -53,7 +52,6 @@ public class GroupLabels extends Composite {
     return ":" + g.getTriples(schema, 2, ", ");
   }
 
-  //TODO move some of the style code to CSS
   private void show(List<Group> groups) {
     flowPanel.clear();
     for (Group group : groups) {
@@ -63,21 +61,16 @@ public class GroupLabels extends Composite {
       String tip =
           SampleClassUtils.label(sc, schema) + ":\n" + group.getTriples(schema, -1, ", ");
 
-      Label shortLabel = Utils.mkEmphLabel(group.getName());
-      shortLabel.setWordWrap(false);
-      shortLabel.getElement().getStyle().setMargin(2, Unit.PX);
-      shortLabel.setStylePrimaryName(group.getStyleName());
-      shortLabel.addStyleName("grouplabel");
-      Utils.addAndFloatLeft(groupPanel, shortLabel);
-      shortLabel.setTitle(tip);
-
+      Label shortLabel = new Label(group.getName());
       Label longLabel = new Label(groupDetailString(group));
-      longLabel.getElement().getStyle().setMargin(2, Unit.PX);
-      longLabel.setStylePrimaryName(group.getStyleName());
-      UIObject.setStyleName(longLabel.getElement(), "grouplabel", true);
-      Utils.addAndFloatLeft(groupPanel, longLabel);
-      longLabel.setTitle(tip);
-      longLabel.setWordWrap(false);
+      Label[] labels = {shortLabel, longLabel};
+      for (Label label : labels) {
+        label.addStyleName(group.getStyleName());
+        label.addStyleName("groupLabel");
+        label.setTitle(tip);
+        groupPanel.add(label);
+      }
+
       Utils.addAndFloatLeft(flowPanel, groupPanel);
     }
   }
