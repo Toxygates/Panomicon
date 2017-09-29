@@ -2,8 +2,8 @@ package t.viewer.client.table;
 
 import java.util.*;
 
-import t.common.shared.Pair;
 import t.common.shared.sample.ExpressionRow;
+import t.viewer.shared.AssociationValue;
 
 /**
  * Summarises a single association column as a histogram for a set of rows.
@@ -11,16 +11,17 @@ import t.common.shared.sample.ExpressionRow;
 class AssociationSummary {
 
   class HistogramEntry {
-    Pair<String, String> entry;
+    AssociationValue entry;
+
     int count;
-    HistogramEntry(Pair<String, String> entry, int count) {
+    HistogramEntry(AssociationValue entry, int count) {
       this.entry = entry;
       this.count = count;
     }
   }
   
-  private List<Pair<String, String>> data = new ArrayList<Pair<String, String>>();
-  private Set<Pair<String, String>> unique = new HashSet<Pair<String, String>>();
+  private List<AssociationValue> data = new ArrayList<AssociationValue>();
+  private Set<AssociationValue> unique = new HashSet<AssociationValue>();
   private List<HistogramEntry> sortedByCount = new ArrayList<HistogramEntry>();
   
   AssociationSummary(AssociationTable<ExpressionRow>.AssociationColumn col, 
@@ -29,7 +30,7 @@ class AssociationSummary {
       data.addAll(col.getLinkableValues(row));
       unique.addAll(col.getLinkableValues(row));
     }    
-    for (Pair<String, String> key: unique) {
+    for (AssociationValue key: unique) {
       HistogramEntry he = countItem(key);
       sortedByCount.add(he);
     }
@@ -44,9 +45,9 @@ class AssociationSummary {
     });
   }
   
-  HistogramEntry countItem(Pair<String, String> item) {
+  HistogramEntry countItem(AssociationValue item) {
     int count = 0;
-    for (Pair<String, String> key: data) {
+    for (AssociationValue key: data) {
       if (key.equals(item)) {
         count += 1;
       }
@@ -59,8 +60,8 @@ class AssociationSummary {
     r[0] = new String[] { "Title", "ID", "Count" };
     for (int i = 0; i < sortedByCount.size(); i++) {
       HistogramEntry he = sortedByCount.get(i);
-      r[i + 1][0] = he.entry.first();
-      r[i + 1][1] = he.entry.second();
+      r[i + 1][0] = he.entry.title();
+      r[i + 1][1] = he.entry.formalIdentifier();
       r[i + 1][2] = he.count + "";
     }
     return r;
