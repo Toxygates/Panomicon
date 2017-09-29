@@ -96,7 +96,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
     String mtitle = schema.majorParameter().title();
     emptyMessage = "Please select at least one " + mtitle;
 
-    grid.setStylePrimaryName("highlySpaced");
+    grid.addStyleName("highlySpaced");
     grid.setWidth("100%");
     grid.setHeight("400px");
     grid.setBorderWidth(0);
@@ -286,7 +286,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
           hp.add(guiForDoseTime(d, t));
         }
         SimplePanel sp = new SimplePanel(hp);
-        sp.setStylePrimaryName("invisibleBorder");
+        sp.addStyleName("invisibleBorder");
         grid.setWidget(r, d + 1, hp);
       }
       r++;
@@ -312,7 +312,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
         }
 
         SimplePanel sp = new SimplePanel(hp);
-        sp.setStylePrimaryName("border");
+        sp.addStyleName("border");
         grid.setWidget(r, d + 1, sp);
       }
       r++;

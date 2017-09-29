@@ -20,6 +20,11 @@ package otgviewer.client.components.ranking;
 
 import java.util.*;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.*;
 import otgviewer.client.components.*;
 import otgviewer.client.components.compoundsel.RankingCompoundSelector;
@@ -31,11 +36,6 @@ import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.client.rpc.SampleServiceAsync;
-
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * This widget is an UI for defining compound ranking rules. The actual ranking is requested by a
@@ -85,6 +85,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
 
         probeService.identifiersToProbes(probes, true, false, false, null,
             new PendingAsyncCallback<String[]>(this) {
+              @Override
               public void handleSuccess(String[] resolved) {
                 setItems(Arrays.asList(resolved));
                 saveAction();
@@ -97,6 +98,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
         probeService.identifiersToProbes(items.toArray(new String[0]), true, 
             false, false, null,
             new PendingAsyncCallback<String[]>(this) {
+              @Override
               public void handleSuccess(String[] resolved) {
                 setProbeList(Arrays.asList(resolved));
               }
@@ -109,7 +111,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
         screen.storeItemLists(getParser(screen));
       }
     };
-    listChooser.setStylePrimaryName("colored");
+    listChooser.addStyleName("colored");
     selector.addListener(listChooser);
 
     csVerticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
@@ -146,6 +148,7 @@ abstract public class CompoundRanker extends DataListenerWidget {
     csVerticalPanel.add(hp);
 
     hp.add(new Button("Rank", new ClickHandler() {
+      @Override
       public void onClick(ClickEvent event) {
         performRanking();
       }

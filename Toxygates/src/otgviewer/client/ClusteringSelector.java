@@ -21,6 +21,10 @@ package otgviewer.client;
 import java.util.*;
 import java.util.Map.Entry;
 
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.*;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ListChooser;
 import t.common.shared.ItemList;
@@ -28,10 +32,6 @@ import t.common.shared.StringList;
 import t.common.shared.clustering.Algorithm;
 import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.Utils;
-
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.*;
-import com.google.gwt.user.client.ui.*;
 
 public abstract class ClusteringSelector extends DataListenerWidget implements RequiresResize {
 
@@ -238,6 +238,7 @@ public abstract class ClusteringSelector extends DataListenerWidget implements R
 
     addButton = new Button("Add probes >>");
     addButton.addClickHandler(new ClickHandler() {
+      @Override
       public void onClick(ClickEvent e) {
         clusterChanged(new ArrayList<String>(loadedProbes));
       }
@@ -250,7 +251,7 @@ public abstract class ClusteringSelector extends DataListenerWidget implements R
     vp.add(addButton);
 
     HorizontalPanel hp = Utils.wideCentered(vp);
-    hp.setStylePrimaryName("colored");
+    hp.addStyleName("colored");
 
     dp.add(Utils.wideCentered(hp));
     

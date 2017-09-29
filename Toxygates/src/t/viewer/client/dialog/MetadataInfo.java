@@ -18,10 +18,10 @@
 
 package t.viewer.client.dialog;
 
+import com.google.gwt.user.client.ui.*;
+
 import t.common.shared.Platform;
 import t.viewer.shared.AppInfo;
-
-import com.google.gwt.user.client.ui.*;
 
 public class MetadataInfo extends Composite {
 
@@ -48,24 +48,24 @@ public class MetadataInfo extends Composite {
 
     Grid g = new Grid(titles.length + 1, 2);
     vp.add(g);
-    g.setStylePrimaryName("metadata-grid");
+    g.addStyleName("metadata-grid");
     g.getColumnFormatter().setStyleName(0, "metadata-firstColumn");
     g.getRowFormatter().setStyleName(0, "metadata-firstRow");
 
     Label l = new Label(type);
-    l.setStylePrimaryName("metadata-info-heading");
+    l.addStyleName("metadata-info-heading");
     g.setWidget(0, 0, l);
     l = new Label("Comment");
-    l.setStylePrimaryName("metadata-info-heading");
+    l.addStyleName("metadata-info-heading");
     g.setWidget(0, 1, l);
 
     for (int i = 1; i < titles.length + 1; ++i) {
       l = new Label(titles[i - 1]);
-      l.setStylePrimaryName("metadata-info-title");
+      l.addStyleName("metadata-info-title");
       g.setWidget(i, 0, l);
 
       l = new Label(comments[i - 1]);
-      l.setStylePrimaryName("metadata-info-comment");
+      l.addStyleName("metadata-info-comment");
       g.setWidget(i, 1, l);
     }
   }

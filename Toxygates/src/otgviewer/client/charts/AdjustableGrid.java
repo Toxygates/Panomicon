@@ -87,7 +87,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
     HorizontalPanel hp = Utils.mkHorizontalPanel();
     vp.add(hp);
 
-    hp.setStylePrimaryName("colored");
+    hp.addStyleName("colored");
     hp.setWidth("100%");
 
     HorizontalPanel ihp = Utils.mkHorizontalPanel();

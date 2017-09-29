@@ -194,10 +194,10 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
     HorizontalPanel navOuter = Utils.mkHorizontalPanel();
     navOuter.setWidth("100%");
-    navOuter.setStylePrimaryName("navOuterPanel");
+    navOuter.addStyleName("navOuterPanel");
 
     navPanel = Utils.mkHorizontalPanel();
-    navPanel.setStylePrimaryName("navPanel");
+    navPanel.addStyleName("navPanel");
     navOuter.add(navPanel);
     mainDockPanel.addNorth(navOuter, 35);
   }
