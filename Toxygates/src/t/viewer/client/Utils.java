@@ -104,7 +104,7 @@ public class Utils {
 
   public static Label mkEmphLabel(String string) {
     Label label = new Label(string);
-    label.setStylePrimaryName("emphasized");
+    label.addStyleName("emphasized");
     return label;
   }
 
