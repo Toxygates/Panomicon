@@ -210,6 +210,12 @@ exprGrid {
 	color: #B354B3;
 }
 
+.groupLabel {
+	margin: 2px;
+	white-space: nowrap;
+	float: left;
+}
+
 .watermark {
 	font-style: italic;
 	color: DarkGray;
