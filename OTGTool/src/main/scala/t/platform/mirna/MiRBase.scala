@@ -1,4 +1,4 @@
-package t.platform.mirbase
+package t.platform.mirna
 
 import scala.io.Source
 import t.platform.Species
@@ -49,7 +49,7 @@ case class RawRecord(data: Seq[String]) {
 /**
  * Reads raw miRBase dat files and produces T platform format files.
  */
-object Converter {
+object MiRBaseConverter {
 
   val speciesOfInterest = Species.values.map(_.shortCode)
 
