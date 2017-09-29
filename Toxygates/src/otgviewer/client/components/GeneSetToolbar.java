@@ -20,14 +20,14 @@ package otgviewer.client.components;
 
 import java.util.List;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.DataScreen;
 import t.common.shared.*;
 import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.Utils;
-
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.*;
 
 public class GeneSetToolbar extends DataListenerWidget {
 
@@ -50,7 +50,7 @@ public class GeneSetToolbar extends DataListenerWidget {
   private void makeTool() {
     selector = Utils.mkHorizontalPanel(true);
     selector.setHeight(DataScreen.STANDARD_TOOL_HEIGHT + "px");
-    selector.setStylePrimaryName("colored");
+    selector.addStyleName("colored");
     selector.addStyleName("slightlySpaced");
 
     lblSelected = new Label();

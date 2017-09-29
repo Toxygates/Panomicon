@@ -82,7 +82,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     vp = Utils.mkTallPanel();
 
     titleLabel = new Label("Sample group definition");
-    titleLabel.setStylePrimaryName("heading");
+    titleLabel.addStyleName("heading");
     vp.add(titleLabel);
 
     msg = new MultiSelectionGrid(scr, this);
@@ -95,7 +95,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     vp.add(toolPanel);
 
     Label lblSaveGroupAs = new Label("Save group as");
-    lblSaveGroupAs.setStylePrimaryName("slightlySpaced");
+    lblSaveGroupAs.addStyleName("slightlySpaced");
     toolPanel.add(lblSaveGroupAs);
 
     txtbxGroup = new TextBox();

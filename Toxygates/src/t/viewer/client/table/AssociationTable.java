@@ -119,10 +119,12 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 			for (AssociationValue v: values) {
 				String l = formLink(v.formalIdentifier());
 				if (l != null) {
-					r.add("<div class=\"associationValue\"><a target=\"_TGassoc\" href=\"" +
+					r.add("<div class=\"associationValue\" title=\"" + v.tooltip() + 
+					    "\"><a target=\"_TGassoc\" href=\"" +
 							l + "\">" + v.title() + "</a></div>");
 				} else {
-					r.add("<div class=\"associationValue\">" + v.title() + "</div>"); //no link
+					r.add("<div class=\"associationValue\" title=\"" + v.tooltip() +
+					    "\">" + v.title() + "</div>"); //no link
 				}				
 			}
 			return r;

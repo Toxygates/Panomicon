@@ -30,7 +30,7 @@ public enum AType {
   KEGG("KEGG pathways") {
     // TODO construct proper link
     public String formLink(String value) {
-      return value;
+      return "http://www.genome.jp/dbget-bin/www_bget?path:" + value;
     }
   },
   Chembl("CHEMBL compounds") {

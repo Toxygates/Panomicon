@@ -153,7 +153,10 @@ class Probes(config: TriplestoreConfig) extends t.sparql.Probes(config) with Sto
     //convert e.g. EC:3.6.3.1 into 3.6.3.1
     simpleRelationQuery(probes, "t:" + t.platform.affy.EC.key).
       mapValues(
-        _.map(x => x.copy(identifier = x.identifier.replace("EC:", "")))
+        _.map(x => x.copy(
+            identifier = x.identifier.replace("EC:", ""),
+            name = x.identifier.replace("EC:", "")
+            ))
         )
   }
 

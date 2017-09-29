@@ -56,7 +56,7 @@ public class GroupLabels extends Composite {
     flowPanel.clear();
     for (Group group : groups) {
       FlowPanel groupPanel = new FlowPanel();
-      groupPanel.setStylePrimaryName("statusBorder");
+      groupPanel.addStyleName("statusBorder");
       SampleClass sc = group.getSamples()[0].sampleClass();
       String tip =
           SampleClassUtils.label(sc, schema) + ":\n" + group.getTriples(schema, -1, ", ");

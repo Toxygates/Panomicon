@@ -65,7 +65,7 @@ public class Utils {
 
   public static HorizontalPanel mkHorizontalPanel(boolean spaced, Widget... widgets) {
     HorizontalPanel panel = new HorizontalPanel();
-    // hp.setStylePrimaryName("slightlySpaced");
+    // hp.addStyleName("slightlySpaced");
     panel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
     panel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     if (spaced) {
@@ -89,7 +89,7 @@ public class Utils {
 
   public static VerticalPanel mkVerticalPanel(boolean spaced, Widget... widgets) {
     VerticalPanel panel = new VerticalPanel();
-    // vp.setStylePrimaryName("slightlySpaced");
+    // vp.addStyleName("slightlySpaced");
     panel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
     panel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     if (spaced) {

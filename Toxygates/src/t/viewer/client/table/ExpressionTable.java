@@ -24,8 +24,22 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.cell.client.*;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.*;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.user.cellview.client.*;
+import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
+import com.google.gwt.user.cellview.client.SimplePager.Resources;
+import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
+import com.google.gwt.view.client.*;
+
 import otgviewer.client.StandardColumns;
-import otgviewer.client.charts.*;
+import otgviewer.client.charts.AdjustableGrid;
+import otgviewer.client.charts.Charts;
 import otgviewer.client.charts.Charts.AChartAcceptor;
 import otgviewer.client.components.*;
 import t.common.client.ImageClickCell;
@@ -40,19 +54,6 @@ import t.viewer.client.dialog.FilterEditor;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.*;
 import t.viewer.shared.table.SortKey;
-
-import com.google.gwt.cell.client.*;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.*;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.user.cellview.client.*;
-import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
-import com.google.gwt.user.cellview.client.SimplePager.Resources;
-import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
-import com.google.gwt.view.client.*;
 
 /**
  * The main data display table. This class has many different functionalities. (too many, should be
@@ -133,7 +134,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     this.resources = _screen.resources();
     screen = _screen;
 
-    grid.setStylePrimaryName("exprGrid");
+    grid.addStyleName("exprGrid");
     grid.setPageSize(INIT_PAGE_SIZE);
 
     grid.setSelectionModel(new NoSelectionModel<ExpressionRow>());
@@ -194,7 +195,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     tools = Utils.mkHorizontalPanel();
 
     HorizontalPanel horizontalPanel = Utils.mkHorizontalPanel(true);
-    horizontalPanel.setStylePrimaryName("colored");
+    horizontalPanel.addStyleName("colored");
     horizontalPanel.addStyleName("slightlySpaced");
     tools.add(horizontalPanel);
 
@@ -231,7 +232,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_PAGE_CHANGE);
       }
     };
-    sp.setStylePrimaryName("slightlySpaced"); 
+    sp.addStyleName("slightlySpaced");
     horizontalPanel.add(sp);
     sp.setDisplay(grid);
 
@@ -245,7 +246,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
     };
 
-    pager.setStylePrimaryName("slightlySpaced");
+    pager.addStyleName("slightlySpaced");
     horizontalPanel.add(pager);
 
     if (withPValueOption) {
@@ -307,7 +308,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
    */
   private void makeAnalysisTools() {
     analysisTools = Utils.mkHorizontalPanel(true);
-    analysisTools.setStylePrimaryName("colored2");
+    analysisTools.addStyleName("colored2");
 
     analysisTools.add(groupsel1);
     groupsel1.setVisibleItemCount(1);

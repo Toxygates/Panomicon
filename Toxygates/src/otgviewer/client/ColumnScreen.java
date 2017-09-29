@@ -58,7 +58,7 @@ public class ColumnScreen extends DataFilterScreen {
       }
     };
     this.addListener(cs);
-    cs.setStylePrimaryName("compoundSelector");
+    cs.addStyleName("compoundSelector");
 
     chosenDatasets = appInfo().datasets();
     filterTools = new FilterTools(this);

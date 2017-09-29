@@ -218,7 +218,7 @@ public class AnnotationTDGrid extends TimeDoseGrid {
     int compound = chosenCompounds.indexOf(unit.get(schema.majorParameter()));
     int dose = mediumValues.indexOf(unit.get(schema.mediumParameter()));
     HTML r = new HTML(unit.get(schema.timeParameter()));
-    r.setStylePrimaryName("slightlySpaced");
+    r.addStyleName("slightlySpaced");
     labels[compound][minorValues.size() * dose + time] = r;
     return r;
   }

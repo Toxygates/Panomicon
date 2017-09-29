@@ -20,10 +20,6 @@ package t.common.client.maintenance;
 
 import java.util.Date;
 
-import t.common.client.rpc.MaintenanceOperationsAsync;
-import t.common.shared.maintenance.OperationResults;
-import t.common.shared.maintenance.Progress;
-
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -32,6 +28,10 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
+
+import t.common.client.rpc.MaintenanceOperationsAsync;
+import t.common.shared.maintenance.OperationResults;
+import t.common.shared.maintenance.Progress;
 
 /**
  * A widget that periodically polls and displays the current progress status from the server.
@@ -56,10 +56,10 @@ public class ProgressDisplay extends Composite {
     this.maintenanceService = maintenanceService;
     VerticalPanel vp = new VerticalPanel();
     initWidget(vp);
-    statusLabel.setStylePrimaryName("taskStatus");
+    statusLabel.addStyleName("taskStatus");
     vp.add(statusLabel);
     logPanel = new VerticalPanel();
-    logPanel.setStylePrimaryName("taskLog");
+    logPanel.addStyleName("taskLog");
     ScrollPanel sp = new ScrollPanel(logPanel);
     vp.add(sp);
     sp.setHeight("500px");
@@ -158,13 +158,13 @@ public class ProgressDisplay extends Composite {
     String time = DateTimeFormat.getFormat(PredefinedFormat.TIME_SHORT).format(now);
 
     Label l = new Label(time + " " + message);
-    l.setStylePrimaryName("taskLogEntry");
+    l.addStyleName("taskLogEntry");
     logPanel.insert(l, 0);
   }
 
   Label infoLabel(String message) {
     Label l = new Label(message);
-    l.setStylePrimaryName("taskInfoEntry");
+    l.addStyleName("taskInfoEntry");
     return l;
   }
 

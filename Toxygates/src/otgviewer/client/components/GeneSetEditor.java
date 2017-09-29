@@ -20,7 +20,15 @@ package otgviewer.client.components;
 
 import java.util.*;
 
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.*;
+import otgviewer.client.rpc.ProbeServiceAsync;
 import t.common.client.components.ResizingDockLayoutPanel;
 import t.common.client.components.ResizingListBox;
 import t.common.shared.*;
@@ -28,14 +36,6 @@ import t.common.shared.sample.Group;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
-import otgviewer.client.rpc.ProbeServiceAsync;
-
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
 
 public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHandler {
 
@@ -122,7 +122,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     addProbeSelectionTools(probeSelStack);
 
     Label l = new Label("Selected probes");
-    l.setStylePrimaryName("heading");
+    l.addStyleName("heading");
 
     probesList = new ResizingListBox(74);
     probesList.setMultipleSelect(true);
@@ -215,7 +215,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     bottomContainer.add(bottomContent);
 
     l = new Label("Title:");
-    l.setStylePrimaryName("heading");
+    l.addStyleName("heading");
     l.addStyleName("table-cell");
 
     titleText = new TextBox();
@@ -324,7 +324,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
   private VerticalPanel innerVP(String l) {
     VerticalPanel vpii = Utils.mkVerticalPanel();
     vpii.setWidth("100%");
-    vpii.setStylePrimaryName("colored-margin");
+    vpii.addStyleName("colored-margin");
 
     Label label = new Label(l);
     vpii.add(label);
@@ -508,7 +508,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     vp.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
 
     VerticalPanel vpi = Utils.mkVerticalPanel(true);
-    vpi.setStylePrimaryName("colored");
+    vpi.addStyleName("colored");
     Label l = new Label(label);
     vpi.add(l);
 

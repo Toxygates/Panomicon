@@ -49,7 +49,11 @@ public class AssociationValue implements Serializable {
   
   public String tooltip() {
     if (tooltip == null) {
-      return formalIdentifier +": " + title; 
+      if (!formalIdentifier.equals(title)) {
+        return formalIdentifier +": " + title;
+      } else {
+        return title;
+      }       
     } else {
       return tooltip;
     }

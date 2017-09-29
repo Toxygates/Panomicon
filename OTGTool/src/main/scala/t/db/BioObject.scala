@@ -24,15 +24,14 @@ package t.db
  * A BioObject is some biological entity that can be uniquely identified
  * by a string. It can also have a name, which by default is the same
  * as the identifier.
- * This trait needs to be implemented by Java classes, so it should
- * have no implementations.
  */
 trait BioObject {
   def identifier: String
   def name: String
+  def additionalInfo: Option[String] = None
 }
 
-/*
+/**
  * Convenience implementations, but this can't be extended by Java classes
  */
 trait GenBioObject extends BioObject {
@@ -43,7 +42,8 @@ trait GenBioObject extends BioObject {
 /**
  * The default implementation of a BioObject.
  */
-case class DefaultBio(identifier: String, override val name: String = "") extends GenBioObject
+case class DefaultBio(identifier: String, override val name: String = "",
+    override val additionalInfo: Option[String] = None) extends GenBioObject
 
 trait StoredBioObject[T <: StoredBioObject[T]] extends GenBioObject {
   this: T =>
