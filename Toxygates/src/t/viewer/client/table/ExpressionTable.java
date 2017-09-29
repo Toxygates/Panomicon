@@ -581,12 +581,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
 
       @Override
-      protected Collection<Pair<String, String>> getLinkableValues(ExpressionRow er) {
+      protected Collection<AssociationValue> getLinkableValues(ExpressionRow er) {
         String[] geneIds = er.getGeneIds(); // basis for the URL
         String[] labels = er.getGeneIdLabels();
-        List<Pair<String, String>> r = new ArrayList<Pair<String, String>>();
+        List<AssociationValue> r = new ArrayList<AssociationValue>();
         for (int i = 0; i < geneIds.length; i++) {
-          r.add(new Pair<String, String>(labels[i], geneIds[i]));
+          r.add(new AssociationValue(labels[i], geneIds[i], null));
         }
         return r;
       }
@@ -618,8 +618,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
 
       @Override
-      protected Collection<Pair<String, String>> getLinkableValues(ExpressionRow er) {
-        return Pair.duplicate(Arrays.asList(er.getAtomicProbes()));
+      protected Collection<AssociationValue> getLinkableValues(ExpressionRow er) {
+        List<AssociationValue> r = new LinkedList<AssociationValue>();
+        for (String probe: er.getAtomicProbes()) {
+          r.add(new AssociationValue(probe, probe, null));
+        }        
+        return r;
       }
 
     });

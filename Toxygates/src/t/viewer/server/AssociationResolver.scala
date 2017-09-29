@@ -71,6 +71,6 @@ class AssociationResolver(probeStore: Probes,
 
   def resolve(implicit sf: SampleFilter): Array[Association] = {
     val m1 = types.par.map(x => (x, standardMapping(lookupFunction(x)(sf)))).seq
-    m1.map(p => new Association(p._1, convertPairs(p._2))).toArray
+    m1.map(p => new Association(p._1, convertAssociations(p._2))).toArray
   }
 }

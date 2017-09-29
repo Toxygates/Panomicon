@@ -34,6 +34,7 @@ import t.common.shared.sample.Sample
 import t.db.{ExprValue => TExprValue}
 import t.platform.Species
 import otg.model.sample.OTGAttribute
+import t.viewer.shared.AssociationValue
 
 object Conversions {
 	implicit def asSpecies(sc: t.model.SampleClass): Species.Species =
@@ -53,12 +54,13 @@ object Conversions {
   def asJavaPair[T,U](v: (T, U)) = new t.common.shared.FirstKeyedPair(v._1, v._2)
 
    //Convert from scala coll types to serialization-safe java coll types.
-  def convertPairs(m: CMap[String, CSet[(String, String)]]): JHMap[String, JHSet[FirstKeyedPair[String, String]]] = {
-    val r = new JHMap[String, JHSet[FirstKeyedPair[String, String]]]
-    val mm: CMap[String, CSet[FirstKeyedPair[String, String]]] = m.map(k => (k._1 -> k._2.map(asJavaPair(_))))
+	def convertAssociations(m: CMap[String, CSet[(String, String)]]): JHMap[String, JHSet[AssociationValue]] = {
+	  val r = new JHMap[String, JHSet[AssociationValue]]
+	    val mm: CMap[String, CSet[AssociationValue]] =
+	      m.map(k => (k._1 -> k._2.map(x => new AssociationValue(x._1, x._2, null))))
     addJMultiMap(r, mm)
     r
-  }
+	}
 
    def convert(m: CMap[String, CSet[String]]): JHMap[String, JHSet[String]] = {
     val r = new JHMap[String, JHSet[String]]
@@ -75,7 +77,8 @@ object Conversions {
       }
     }
   }
-  
-  def asJDouble(x: Option[Double]): java.lang.Double = 
+
+  def asJDouble(x: Option[Double]): java.lang.Double =
     x.map(new java.lang.Double(_)).getOrElse(null)
+
 }

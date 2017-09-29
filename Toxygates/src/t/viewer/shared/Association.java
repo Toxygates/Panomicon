@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.*;
 
 import t.common.shared.AType;
-import t.common.shared.Pair;
 
 /**
  * An association is a mapping from probes to other objects. They are used as "dynamic columns" in
@@ -32,18 +31,17 @@ import t.common.shared.Pair;
 public class Association implements Serializable {
 
   private AType _type;
-  private Map<String, ? extends Set<? extends Pair<String, String>>> _data =
-      new HashMap<String, HashSet<? extends Pair<String, String>>>();
+  private Map<String, ? extends Set<AssociationValue>> _data =
+      new HashMap<String, HashSet<AssociationValue>>();
 
   public Association() {}
 
   /**
    * 
    * @param type
-   * @param data Association data keyed on probe id:s. The first value in the value pair is the
-   *        title, the second value is the formal identifier
+   * @param data Association data keyed on probe id:s.
    */
-  public Association(AType type, Map<String, ? extends Set<? extends Pair<String, String>>> data) {
+  public Association(AType type, Map<String, ? extends Set<AssociationValue>> data) {
     _type = type;
     _data = data;
   }
@@ -56,7 +54,7 @@ public class Association implements Serializable {
     return _type.name();
   }
 
-  public Map<String, ? extends Set<? extends Pair<String, String>>> data() {
+  public Map<String, ? extends Set<AssociationValue>> data() {
     return _data;
   }
 }
