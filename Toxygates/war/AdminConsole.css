@@ -9,11 +9,11 @@
 	width: 100%;
 }
 
-.success {
+.gwt-Label-success {
 	color: green;
 }
 
-.failure {
+.gwt-Label-failure {
 	color: red;
 }
 

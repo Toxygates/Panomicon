@@ -257,17 +257,16 @@ public class Screen extends DataListenerWidget implements
     r.setHeight("30px");
     r.add(content);
     r.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
-    r.setStylePrimaryName(styleName);
+    r.addStyleName(styleName);
     return r;
   }
 
   public void initGUI() {
     statusPanel = new FlowPanel();
-    statusPanel.setStylePrimaryName("statusPanel");
+    statusPanel.addStyleName("statusPanel");
     Utils.floatLeft(statusPanel);
 
     spOuter = mkStandardToolbar(statusPanel, "statusPanel");
-    statusPanel.setStylePrimaryName("statusPanel");
     guideBar = mkStandardToolbar(mkGuideTools(), "guideBar");
 
     addToolbars(); // must be called before rootPanel.add()
@@ -292,7 +291,8 @@ public class Screen extends DataListenerWidget implements
     PushButton i;
     if (helpAvailable()) {
       i = new PushButton(new Image(resources().help()));
-      i.setStylePrimaryName("slightlySpaced");
+      i.setStylePrimaryName("non-gwt-Button"); // just so it doesn't get the GWT button style
+      i.addStyleName("slightlySpaced");
       i.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
@@ -303,7 +303,8 @@ public class Screen extends DataListenerWidget implements
     }
 
     i = new PushButton(new Image(resources().close()));
-    i.setStylePrimaryName("slightlySpaced");
+    i.setStylePrimaryName("non-gwt-Button"); // just so it doesn't get the GWT button style
+    i.addStyleName("slightlySpaced");
     final Screen sc = this;
     i.addClickHandler(new ClickHandler() {
       @Override

@@ -64,7 +64,7 @@ public class RankingScreen extends DataFilterScreen {
       }
     };
     this.addListener(cs);
-    cs.setStylePrimaryName("compoundSelector");
+    cs.addStyleName("compoundSelector");
   }
 
   @Override
