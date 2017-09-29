@@ -470,4 +470,30 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
             x.get("suggestedLimit").map(_.toDouble))
         )
   }
+
+  def mirnaAssociations(probes: Iterable[Probe]): MMap[Probe, DefaultBio] = {
+    //   |    ?g2 a t:mirnaSource; rdfs:label ?mappingTitle; t:empirical ?empirical.
+    val q = s"""$tPrefixes
+    |SELECT DISTINCT ?probe ?score ?mirna ?probe ?trn WHERE {
+    |  GRAPH ?g {
+    |    ?probe a t:probe; t:refseqTrn ?trn.
+    |  }
+    |  GRAPH ?g2 <http://level-five.jp/t/mapping/mirdb>  {
+    |    ?mirna t:refseqTrn ?trn; t:score ?score.
+    |  }
+    |  ${valuesMultiFilter("?probe", probes.map(p => bracket(p.pack)))}
+    |}
+    |""".stripMargin
+
+    val r = triplestore.mapQuery(q, 30000).map(x => {
+      val score = x("score")
+      val mirna = x("mirna")
+      val refseq = x("trn")
+      val empirical = false
+      val mapping = "miRDB 5.0"
+      val extraInfo = s"$mirna ($mapping) empirical: $empirical score: $score via: $refseq"
+      Probe.unpack(x("probe")) -> DefaultBio(mirna, mirna, Some(extraInfo))
+    })
+    makeMultiMap(r)
+  }
 }

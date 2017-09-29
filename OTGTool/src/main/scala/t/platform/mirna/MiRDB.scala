@@ -29,7 +29,7 @@ object MiRDBConverter {
                     |  t:suggestedLimit "50"; t:empirical "false". """.stripMargin)
       for (l <- lines) {
         val Array(mirna, refseq, score) = l.split("\\s+")
-        w.println(s"""  tp:$mirna t:refseqTrn "$refseq"; t:score "$score".""")
+        w.println(s"""  [] t:mirna tp:$mirna; t:refseqTrn "$refseq"; t:score "$score".""")
       }
       w.println("}")
     } finally {

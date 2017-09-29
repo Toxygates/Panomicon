@@ -35,6 +35,11 @@ trait QueryUtils {
     }
   }
 
+  def valuesMultiFilter(v: String, values: Iterable[String]): String =
+    if (values.isEmpty) { "" } else {
+      s"VALUES $v { ${values.mkString(" ")} }"
+    }
+
   def multiFilter(v: String, values: Option[Iterable[String]]): String =
     multiFilter(v, values.getOrElse(Iterable.empty))
 
