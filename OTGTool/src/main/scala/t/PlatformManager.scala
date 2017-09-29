@@ -39,7 +39,7 @@ object PlatformManager extends ManagerTool {
     if (args.size < 1) {
       showHelp()
     }
-    val platforms = new Platforms(context.config.triplestore)
+    val platforms = new Platforms(context.config)
     
     try {
       args(0) match {
@@ -85,7 +85,7 @@ class PlatformManager(context: Context) {
    */
   def add(title: String, comment: String,
     inputFile: String, affymetrixFormat: Boolean, bioFormat: Boolean): Iterable[Tasklet] = {
-    val pf = new Platforms(config.triplestore)
+    val pf = new Platforms(config)
     var r = Vector[Tasklet]()
     r :+= consistencyCheck(title)
 
@@ -113,7 +113,7 @@ class PlatformManager(context: Context) {
       def run() {
         val tf = new TempFiles()
         try {
-          val platforms = new Platforms(config.triplestore)
+          val platforms = new Platforms(config)
           val temp = tf.makeNew("TPLATFORM", "tsv")
           Converter.convert(file, temp.getAbsolutePath())
           val defns = new PlatformDefFile(temp.getAbsolutePath()).records
@@ -150,7 +150,7 @@ class PlatformManager(context: Context) {
     new Tasklet("Add platform (RDF)") {
       def run() {
         val defns = new PlatformDefFile(file).records
-        val platforms = new Platforms(config.triplestore)
+        val platforms = new Platforms(config)
         platforms.redefine(title, TRDF.escape(comment), biological, defns)
       }
     }
@@ -185,7 +185,7 @@ class PlatformManager(context: Context) {
 
   def deleteRDF(title: String): Tasklet = new Tasklet("Delete platform") {
     def run() {
-      val platforms = new Platforms(config.triplestore)
+      val platforms = new Platforms(config)
       platforms.delete(title)
     }
   }

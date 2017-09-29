@@ -24,7 +24,8 @@ import t.BaseConfig
 import t.util.Refreshable
 import t.db.kyotocabinet.KCIndexDB
 
-//TODO: this is arguably a KyotoCabinet specific concept.
+//TODO: this is arguably a KyotoCabinet specific concept - might be moved to
+//a different package accordingly
 class TMaps(config: BaseConfig) {
   def data = config.data
 

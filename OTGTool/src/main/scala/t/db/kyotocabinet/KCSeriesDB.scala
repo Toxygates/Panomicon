@@ -30,7 +30,11 @@ object KCSeriesDB {
   val c20g = 20l * 1204 * 1204 * 1024
   val c1g = 1l * 1204 * 1204 * 1024
   val c4g = 1l * 1204 * 1204 * 1024
-  //TODO possibly re-tune this
+  
+  /*
+   * The seriesDB options may need to be re-tuned at some point,
+   * although they work fine currently
+   */
   val options = s"#bnum=10000000#apow=1#pccap=$c1g"
 
   /**

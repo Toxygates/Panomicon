@@ -180,7 +180,7 @@ with BatchOpsImpl with MaintenanceService {
   def getPlatforms: Array[Platform] = {
     val prs = new Probes(baseConfig.triplestore)
     val np = prs.numProbes()
-    val ps = new Platforms(baseConfig.triplestore)
+    val ps = new Platforms(baseConfig)
     val comments = ps.comments
     val pubComments = ps.publicComments
     val dates = ps.timestamps
@@ -204,7 +204,7 @@ with BatchOpsImpl with MaintenanceService {
   }
 
   private def updatePlatform(p: Platform): Unit = {
-    val pfs = new Platforms(baseConfig.triplestore)
+    val pfs = new Platforms(baseConfig)
     pfs.setComment(p.getTitle, p.getComment)
     pfs.setPublicComment(p.getTitle, p.getPublicComment)
   }

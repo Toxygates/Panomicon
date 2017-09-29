@@ -34,7 +34,6 @@ abstract class KyotoCabinetDB(db: DB, writeMode: Boolean) {
   }
 
   def release() {
-    //TODO in-memory dbs etc?
     val path = db.path()
     if (path != null &&
         path != "*" && //in memory cache DB

@@ -40,10 +40,9 @@ trait SampleSet {
   /**
    * Query a specific attribute for a given sample.
    * TODO rename method
-   * TODO refactor to avoid the id == id comparison (temporary during refactoring)
    */
   def parameter(sample: Sample, attrib: Attribute): Option[String] =
-    parameters(sample, Seq()).find(_._1.id == attrib.id).map(_._2)
+    parameters(sample, Seq()).find(_._1 == attrib).map(_._2)
 
   @deprecated("Query by Attribute instead.", "June 2017")
   def parameter(sample: Sample, parameter: String): Option[String] =

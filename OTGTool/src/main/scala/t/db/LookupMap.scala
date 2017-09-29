@@ -23,40 +23,38 @@ package t.db
 /**
  * A set of string values that can quickly and reversibly be
  * converted to another type T. Useful for database encodings.
- *
- * TODO: Do we need this trait? Will it do to use a standard collection Map?
+ * Unlike a standard Map, efficient bidirectional lookups are supported.
  */
 trait LookupMap[T] {
+  
+  protected def baseMap: Map[T, String]
+  
   /**
    * Keys that are actually used
    */
-  def keys: Set[T]
+  def keys: Set[T] = baseMap.keySet
 
-  def tokens: Set[String]
+  def tokens: Set[String] = baseMap.values.toSet
 
-  def pack(item: String): T
+  def pack(item: String): T 
 
-  def unpack(item: T): String
-  def tryUnpack(item: T): Option[String]
+  def unpack(item: T): String = baseMap(item)
+  def tryUnpack(item: T): Option[String] = baseMap.get(item)
 
   def isToken(t: String): Boolean = tokens.contains(t)
 }
 
 trait CachedLookupMap[T] extends LookupMap[T] {
   def data: Map[String, T]
+  
+  protected val baseMap = Map[T, String]() ++ data.map(_.swap)
 
-  protected val revMap = Map[T, String]() ++ data.map(_.swap)
-
-  def keys = revMap.keySet
-  def tokens: Set[String] = data.keySet
   def pack(item: String): T = data.get(item).getOrElse(
-    throw new LookupFailedException(s"Lookup failed for $item"))
-  def unpack(item: T): String = revMap(item)
-  def tryUnpack(item: T) = revMap.get(item)
+    throw new LookupFailedException(s"Lookup failed for $item"))  
 }
 
 trait CachedIntLookupMap extends CachedLookupMap[Int] {
-  protected val revLookup = Array.tabulate(keys.max + 1)(x => revMap.get(x))
+  protected val revLookup = Array.tabulate(keys.max + 1)(x => baseMap.get(x))
 
   override def tryUnpack(x: Int) = revLookup(x)
   override def unpack(x: Int) =  revLookup(x).get
@@ -64,12 +62,3 @@ trait CachedIntLookupMap extends CachedLookupMap[Int] {
 
 class LookupFailedException(reason: String) extends Exception(reason)
 
-/**
- * A probe encoding.
- */
-trait ProbeMap extends LookupMap[Int]
-
-/**
- * A sample encoding.
- */
-trait SampleMap extends LookupMap[Int]

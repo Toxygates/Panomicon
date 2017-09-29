@@ -49,7 +49,9 @@ class ControlGroupTest extends TTestSuite {
       val time = metadata.parameter(s, ExposureTime).get
       println(cg.paramVals)
 
-      //TODO might need to adjust these limits
+      /*
+       * These limits may need to be adjusted in the future.
+       */
       cg.lowerBound(liverParam, 1).get should
         be (2.9 +- 0.2)
       cg.upperBound(liverParam, 1).get should
