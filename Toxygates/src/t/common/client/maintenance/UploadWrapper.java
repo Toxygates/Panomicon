@@ -38,7 +38,7 @@ public class UploadWrapper extends Composite {
     initWidget(vp);
     Label l = new Label(description);
     vp.add(l);
-    vp.setStylePrimaryName("uploader");
+    vp.addStyleName("uploader");
     vp.setHeight("80px");
     vp.setWidth("250px");
 
