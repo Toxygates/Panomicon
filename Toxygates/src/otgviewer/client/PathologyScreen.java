@@ -20,16 +20,6 @@ package otgviewer.client;
 
 import java.util.*;
 
-import com.google.gwt.cell.client.SafeHtmlCell;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.user.cellview.client.*;
-import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
-
-import otg.model.sample.OTGAttribute;
 import otg.model.sample.OTGAttribute;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
@@ -40,6 +30,15 @@ import t.common.shared.GroupUtils;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Utils;
+
+import com.google.gwt.cell.client.SafeHtmlCell;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.user.cellview.client.*;
+import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * This screen displays information about pathological findings in a given set of sample groups.
