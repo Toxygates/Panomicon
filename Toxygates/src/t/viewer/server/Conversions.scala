@@ -54,10 +54,13 @@ object Conversions {
   def asJavaPair[T,U](v: (T, U)) = new t.common.shared.FirstKeyedPair(v._1, v._2)
 
    //Convert from scala coll types to serialization-safe java coll types.
-	def convertAssociations(m: CMap[String, CSet[(String, String)]]): JHMap[String, JHSet[AssociationValue]] = {
+	def convertAssociations(m: CMap[String, CSet[(String, String, Option[String])]]):
+	  JHMap[String, JHSet[AssociationValue]] = {
 	  val r = new JHMap[String, JHSet[AssociationValue]]
 	    val mm: CMap[String, CSet[AssociationValue]] =
-	      m.map(k => (k._1 -> k._2.map(x => new AssociationValue(x._1, x._2, null))))
+	      m.map(k =>
+	        (k._1 -> k._2.map(x => new AssociationValue(x._1, x._2, x._3.getOrElse(null))))
+	          )
     addJMultiMap(r, mm)
     r
 	}

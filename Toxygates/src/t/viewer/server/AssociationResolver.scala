@@ -56,7 +56,7 @@ class AssociationResolver(probeStore: Probes,
       case _ => throw new Exception("Unexpected annotation type")
     }
 
-  val emptyVal = CSet(DefaultBio("error", "(Timeout or error)"))
+  val emptyVal = CSet(DefaultBio("error", "(Timeout or error)", None))
   val errorVals = Map() ++ aprobes.map(p => (Probe(p.identifier) -> emptyVal))
 
   def queryOrEmpty[T](f: () => BBMap): BBMap = {
@@ -66,8 +66,8 @@ class AssociationResolver(probeStore: Probes,
   private def lookupFunction(t: AType)(implicit sf: SampleFilter): BBMap =
     queryOrEmpty(() => associationLookup(t, sc, aprobes))
 
-  def standardMapping(m: BBMap): MMap[String, (String, String)] =
-    m.mapKeys(_.identifier).mapInnerValues(p => (p.name, p.identifier))
+  def standardMapping(m: BBMap): MMap[String, (String, String, Option[String])] =
+    m.mapKeys(_.identifier).mapInnerValues(p => (p.name, p.identifier, p.additionalInfo))
 
   def resolve(implicit sf: SampleFilter): Array[Association] = {
     val m1 = types.par.map(x => (x, standardMapping(lookupFunction(x)(sf)))).seq
