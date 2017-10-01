@@ -902,6 +902,4 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       });
     }
   }
-
-
 }

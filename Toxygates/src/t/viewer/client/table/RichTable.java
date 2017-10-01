@@ -73,7 +73,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 
     initWidget(grid);
     grid.setWidth("100%");
-    grid.setRowStyles(new RowHighligher<T>());
+    grid.setRowStyles(new RowHighlighter<T>());
     AsyncHandler colSortHandler = new AsyncHandler(grid);
     grid.addColumnSortHandler(colSortHandler);
   }
@@ -310,11 +310,10 @@ abstract public class RichTable<T> extends DataListenerWidget {
     }
 
     protected abstract String getHtml(T er);
-
   }
 
-  protected class RowHighligher<U> implements RowStyles<U> {
-    public RowHighligher() {}
+  protected class RowHighlighter<U> implements RowStyles<U> {
+    public RowHighlighter() {}
 
     @Override
     public String getStyleNames(U row, int rowIndex) {
