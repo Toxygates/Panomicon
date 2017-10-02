@@ -181,9 +181,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with
   protected def staticAnnotationInfo: Seq[(String, String)] = Seq()
 
   protected def getMirnaSourceInfo: Array[MirnaSource] = {
-    val size = 0 //TODO
     val dynamic = probeStore.mirnaSources.map(s =>
-      new MirnaSource(s._1, s._2, s._3, s._4, asJDouble(s._5), size))
+      new MirnaSource(s._1, s._2, s._3, s._4, asJDouble(s._5), s._6.getOrElse(0)))
     val static = staticMirnaSources
     dynamic.toArray ++ static
   }

@@ -15,6 +15,7 @@ object MiRDBConverter {
    * hsa-let-7a-2-3p NM_001127715    92.914989543
    */
   def main(args: Array[String]) {
+    val size =  Source.fromFile(args(0)).getLines.size
     val lines = Source.fromFile(args(0)).getLines
     //trig format
     val w = new PrintWriter(args(1))
@@ -27,7 +28,7 @@ object MiRDBConverter {
                     |@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
                     |$graph {
                     |  $graph a t:mirnaSource; t:hasScores "true"; rdfs:label "$label";
-                    |  t:suggestedLimit 50.0; t:empirical "false". """.stripMargin)
+                    |  t:suggestedLimit 50.0; t:empirical "false"; t:size $size. """.stripMargin)
       for (l <- lines) {
         val Array(mirna, refseq, score) = l.split("\\s+")
         w.println(s"""  [] t:mirna tp:$mirna; t:refseqTrn "$refseq"; t:score $score.""")
