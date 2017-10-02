@@ -471,16 +471,18 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
         )
   }
 
+  //TODO do not hardcode platform graph names here
   def mirnaAssociations(probes: Iterable[Probe]): MMap[Probe, DefaultBio] = {
-    //   |    ?g2 a t:mirnaSource; rdfs:label ?mappingTitle; t:empirical ?empirical.
     val q = s"""$tPrefixes
-    |SELECT DISTINCT ?probe ?score ?mirna ?probe ?trn WHERE {
-    |  GRAPH ?g {
-    |    ?probe a t:probe; t:refseqTrn ?trn.
-    |  }
-    |  GRAPH ?g2 <http://level-five.jp/t/mapping/mirdb>  {
-    |    ?mirna t:refseqTrn ?trn; t:score ?score.
-    |  }
+    |SELECT DISTINCT ?probe ?score ?mirna ?probe ?trn 
+    |FROM <http://level-five.jp/t/mapping/mirdb>
+    |FROM <http://level-five.jp/t/platform/HG-U133_Plus_2>
+    |FROM <http://level-five.jp/t/platform/Mouse430_2>
+    |FROM <http://level-five.jp/t/platform/Rat230_2>
+    |FROM <http://level-five.jp/t/platform/mirbase-v21>
+    |WHERE {    
+    |    ?probe t:refseqTrn ?trn.    
+    |    [ t:refseqTrn ?trn; t:mirna [rdfs:label ?mirna]; t:score ?score ].      
     |  ${valuesMultiFilter("?probe", probes.map(p => bracket(p.pack)))}
     |}
     |""".stripMargin
