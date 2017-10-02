@@ -146,6 +146,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with
 
   protected class SparqlState(ds: Datasets) {
     var sampleFilter: SampleFilter = SampleFilter(instanceURI = instanceURI)
+    var mirnaSources: Array[MirnaSource] = Array()
   }
 
   protected def getSessionData(): SparqlState = {
@@ -474,8 +475,13 @@ abstract class SparqlServiceImpl extends TServiceServlet with
   @throws[TimeoutException]
   def associations(sc: SampleClass, types: Array[AType],
     _probes: Array[String]): Array[Association] =
-    new AssociationResolver(probeStore, b2rKegg, sc, types, _probes).resolve
-
+    new AssociationResolver(probeStore, b2rKegg, getSessionData().mirnaSources, sc, types, _probes).resolve
+    
+  @throws[TimeoutException]
+  def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {
+    val state = getSessionData().mirnaSources = sources
+  }
+  
   @throws[TimeoutException]
   def geneSuggestions(sc: SampleClass, partialName: String): Array[String] = {
       val plat = for (scl <- Option(sc);
@@ -550,4 +556,5 @@ abstract class SparqlServiceImpl extends TServiceServlet with
     CSVHelper.writeCSV("toxygates", configuration.csvDirectory,
         configuration.csvUrlBase, csvFile)
   }
+
 }

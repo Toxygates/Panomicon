@@ -9,6 +9,7 @@ import t.common.shared.Pair;
 import t.common.shared.sample.Sample;
 import t.model.SampleClass;
 import t.viewer.shared.*;
+import t.viewer.shared.mirna.MirnaSource;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -137,4 +138,13 @@ public interface ProbeService extends RemoteService {
    */
   Association[] associations(SampleClass sc, AType[] types, String[] probes)
       throws TimeoutException;
+  
+  /**
+   * Set the desired miRNA association sources. In the objects passed in,
+   * only the ID string and the score threshold (lower bound) are used.
+   * The choices are persisted in the user's server side session.
+   * @param sources
+   * @throws TimeoutException
+   */
+  void setMirnaSources(MirnaSource[] sources) throws TimeoutException;
 }

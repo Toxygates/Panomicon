@@ -129,7 +129,7 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
     _probes: Array[String]): Array[Association] =
     new otgviewer.server.AssociationResolver(probeStore, sampleStore,
         b2rKegg, uniprot, chembl, drugBank,
-        targetmine,
+        targetmine, getSessionData().mirnaSources,
         sc, types, _probes).resolve
 
   override def staticAnnotationInfo: Seq[(String, String)] = {

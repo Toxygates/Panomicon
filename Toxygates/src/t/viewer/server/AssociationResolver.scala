@@ -15,6 +15,7 @@ import t.viewer.server.Conversions._
 
 import t.viewer.shared.Association
 import t.viewer.shared.Association._
+import t.viewer.shared.mirna.MirnaSource
 
 /**
  * Helper class to look up probe associations from a variety of sources
@@ -28,6 +29,7 @@ import t.viewer.shared.Association._
  */
 class AssociationResolver(probeStore: Probes,
     b2rKegg: B2RKegg,
+    mirnaSources: Seq[MirnaSource],
     sc: SampleClass, types: Array[AType],
     _probes: Iterable[String]) {
 

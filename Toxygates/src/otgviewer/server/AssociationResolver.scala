@@ -11,6 +11,7 @@ import t.sparql.secondary._
 import t.sparql.toBioMap
 import t.viewer.server.intermine.IntermineConnector
 import t.viewer.server.intermine.TargetmineColumns
+import t.viewer.shared.mirna.MirnaSource
 
 /**
  * Association resolver for Open TG-GATEs-specific associations.
@@ -20,11 +21,12 @@ class AssociationResolver(probeStore: Probes,
     b2rKegg: B2RKegg,
     uniprot: Uniprot,
     chembl: ChEMBL,
-    drugBank: DrugBank,
+    drugBank: DrugBank,    
     targetmine: Option[IntermineConnector],
+    mirnaSources: Seq[MirnaSource],
     sc: SampleClass, types: Array[AType],
      _probes: Iterable[String]) extends
-     t.viewer.server.AssociationResolver(probeStore, b2rKegg, sc, types, _probes) {
+     t.viewer.server.AssociationResolver(probeStore, b2rKegg, mirnaSources, sc, types, _probes) {
 
       //    val sp = asSpecies(sc)
     //orthologous proteins if needed
@@ -63,14 +65,20 @@ class AssociationResolver(probeStore: Probes,
     }
 
     def resolveMiRNA(probes: Iterable[Probe]): BBMap = {
+      /*
+       * To do here: 1. Make lookups parallel
+       * 2. Respect filters and chosen sources, if any
+       */
+      
       val (isMirna, isNotMirna) = probes.partition(_.isMiRna)
-
       val immediateLookup = probeStore.mirnaAccessionLookup(isMirna)
 
+      val sourceMap = Map() ++ mirnaSources.map(x => x.id() -> x)
+      
       val viaGeneAnnotation = toBioMap(isNotMirna, (_: Probe).genes) combine
           mirnaResolver.forGenes(probes.flatMap(_.genes))
 
-      val viaSparql = probeStore.mirnaAssociations(probes)
+      val viaSparql = probeStore.mirnaAssociations(probes, sourceMap.get("http://level-five.jp/t/mapping/mirdb").map(_.limit()))
 
       immediateLookup ++ viaGeneAnnotation ++ viaSparql
     }

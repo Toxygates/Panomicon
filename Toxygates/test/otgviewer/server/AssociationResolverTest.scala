@@ -68,7 +68,7 @@ class AssociationResolverTest extends TTestSuite {
   def ar(types: Array[AType]) = new AssociationResolver(probeStore,
       sampleStore,
       b2rKegg, uniprot, chembl, drugBank,
-      None,
+      None, Seq(),
       sc, types, probes
       )
 

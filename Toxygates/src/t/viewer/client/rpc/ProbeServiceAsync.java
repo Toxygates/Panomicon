@@ -8,6 +8,7 @@ import t.common.shared.sample.Sample;
 import t.model.SampleClass;
 import t.viewer.shared.AppInfo;
 import t.viewer.shared.Association;
+import t.viewer.shared.mirna.MirnaSource;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -39,5 +40,7 @@ public interface ProbeServiceAsync {
 
   void associations(SampleClass sc, AType[] types, String[] probes,
       AsyncCallback<Association[]> callback);
+
+  void setMirnaSources(MirnaSource[] sources, AsyncCallback<Void> callback);
 
 }

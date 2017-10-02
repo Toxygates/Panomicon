@@ -24,12 +24,13 @@ object MiRDBConverter {
       w.println(s"""|@prefix t:<http://level-five.jp/t/>.
                     |@prefix tp:<http://level-five.jp/t/probe/>.
                     |@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+                    |@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
                     |$graph {
                     |  $graph a t:mirnaSource; t:hasScores "true"; rdfs:label "$label";
-                    |  t:suggestedLimit "50"; t:empirical "false". """.stripMargin)
+                    |  t:suggestedLimit 50.0; t:empirical "false". """.stripMargin)
       for (l <- lines) {
         val Array(mirna, refseq, score) = l.split("\\s+")
-        w.println(s"""  [] t:mirna tp:$mirna; t:refseqTrn "$refseq"; t:score "$score".""")
+        w.println(s"""  [] t:mirna tp:$mirna; t:refseqTrn "$refseq"; t:score $score.""")
       }
       w.println("}")
     } finally {

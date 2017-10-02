@@ -5,8 +5,10 @@ import java.util.Arrays;
 import t.common.client.components.SelectionTable;
 import t.viewer.shared.mirna.MirnaSource;
 
-import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.cell.client.EditTextCell;
+import com.google.gwt.cell.client.FieldUpdater;
+import com.google.gwt.user.cellview.client.*;
+import com.google.gwt.user.client.Window;
 
 /**
  * A dialog for selecting among a set of available miRNA sources and,
@@ -51,13 +53,24 @@ public class MirnaSourceSelector extends SelectionTable<MirnaSource> {
     };
     table.addColumn(textColumn, "Empirically validated");    
     
-    textColumn = new TextColumn<MirnaSource>() {
+    Column <MirnaSource, String> scoreColumn = new Column<MirnaSource, String>(new EditTextCell()) {    
       @Override
       public String getValue(MirnaSource object) {
         return object.limit() + "";        
       }
     };
-    table.addColumn(textColumn, "Limit");    
+    
+    table.addColumn(scoreColumn, "Score limit (lower)");    
+    scoreColumn.setFieldUpdater(new FieldUpdater<MirnaSource, String>() {      
+      @Override
+      public void update(int row, MirnaSource source, String value) {
+        try {
+          source.setLimit(Double.valueOf(value));
+        } catch (NumberFormatException e) {
+          Window.alert("Please enter a numerical value as the limit.");
+        }
+      }
+    });
     
     textColumn = new TextColumn<MirnaSource>() {
       @Override
