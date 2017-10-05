@@ -368,7 +368,7 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   
   public void storeSampleClass(StorageParser p) {
     if (chosenSampleClass != null) {
-      p.setItem("sampleClass", chosenSampleClass.pack());
+      p.setItem("sampleClass", t.common.client.Utils.packSampleClass(chosenSampleClass));
     }    
   }
   
@@ -421,10 +421,10 @@ public class DataListenerWidget extends Composite implements DataViewListener {
   
   public void loadSampleClass(StorageParser p, AttributeSet attributes) {
     String v = p.getItem("sampleClass");
-    if (v == null || v.equals(chosenSampleClass.pack())) {
+    if (v == null || v.equals(t.common.client.Utils.packSampleClass(chosenSampleClass))) {
       return;
     }
-    SampleClass sc = SampleClass.unpack(v, attributes);
+    SampleClass sc = t.common.client.Utils.unpackSampleClass(attributes, v);
     changeSampleClass(sc);    
   }
 

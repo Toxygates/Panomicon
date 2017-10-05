@@ -97,7 +97,7 @@ public class Sample implements Packable, Serializable, HasClass, SampleLike {
       return null;
     }
     String id = spl[1];
-    SampleClass sc = SampleClass.unpack(spl[2], attributeSet);
+    SampleClass sc = t.common.client.Utils.unpackSampleClass(attributeSet, spl[2]);
     return new Sample(id, sc);
   }
 
@@ -107,7 +107,7 @@ public class Sample implements Packable, Serializable, HasClass, SampleLike {
     StringBuilder sb = new StringBuilder();
     sb.append("Barcode_v3").append(sep);
     sb.append(id()).append(sep);
-    sb.append(sampleClass.pack()).append(sep);
+    sb.append(t.common.client.Utils.packSampleClass(sampleClass)).append(sep);
     return sb.toString();
   }
 }

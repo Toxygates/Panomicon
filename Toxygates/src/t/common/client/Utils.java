@@ -18,9 +18,12 @@
 
 package t.common.client;
 
-import java.util.List;
+import java.util.*;
 
 import t.common.shared.ManagedItem;
+import t.model.SampleClass;
+import t.model.sample.Attribute;
+import t.model.sample.AttributeSet;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -100,5 +103,23 @@ public class Utils {
     } else {
       return sf.format(v);
     }
+  }
+  
+  public static String packSampleClass(SampleClass sc) {
+    StringBuilder sb = new StringBuilder();
+    for (Attribute k : sc.getKeys()) {
+      sb.append(k.id() + ",,,");
+      sb.append(sc.get(k) + ",,,");
+    }
+    return sb.toString();
+  }
+  
+  public static SampleClass unpackSampleClass(AttributeSet attributes, String value) {
+    String[] spl = value.split(",,,");
+    Map<Attribute, String> d = new HashMap<Attribute, String>();
+    for (int i = 0; i < spl.length; i += 2) {
+      d.put(attributes.byId(spl[i]), spl[i + 1]);
+    }
+    return new SampleClass(d);
   }
 }
