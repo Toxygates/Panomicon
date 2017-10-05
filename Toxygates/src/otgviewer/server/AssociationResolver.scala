@@ -1,5 +1,6 @@
 package otgviewer.server
 
+import t._
 import t.platform.Species._
 import otg.sparql.OTGSamples
 import otg.sparql.Probes
@@ -12,6 +13,7 @@ import t.sparql.toBioMap
 import t.viewer.server.intermine.IntermineConnector
 import t.viewer.server.intermine.TargetmineColumns
 import t.viewer.shared.mirna.MirnaSource
+import t.db.DefaultBio
 
 /**
  * Association resolver for Open TG-GATEs-specific associations.
@@ -21,7 +23,7 @@ class AssociationResolver(probeStore: Probes,
     b2rKegg: B2RKegg,
     uniprot: Uniprot,
     chembl: ChEMBL,
-    drugBank: DrugBank,    
+    drugBank: DrugBank,
     targetmine: Option[IntermineConnector],
     mirnaSources: Seq[MirnaSource],
     sc: SampleClass, types: Array[AType],
@@ -64,23 +66,29 @@ class AssociationResolver(probeStore: Probes,
       })
     }
 
+    def resolveMiRNA(source: MirnaSource, probes: Iterable[Probe]): MMap[Probe, DefaultBio] = {
+      source.id match {
+        case "http://level-five.jp/t/mapping/mirdb" =>
+          probeStore.mirnaAssociations(probes,
+              if(source.limit == null) None else Some(source.limit))
+
+        case AppInfoLoader.TARGETMINE_SOURCE =>
+            toBioMap(probes, (_: Probe).genes) combine
+              mirnaResolver.forGenes(probes.flatMap(_.genes))
+
+        case _ => throw new Exception(s"Unexpected miRNA source ${source.id}")
+      }
+    }
+
     def resolveMiRNA(probes: Iterable[Probe]): BBMap = {
-      /*
-       * To do here: 1. Make lookups parallel
-       * 2. Respect filters and chosen sources, if any
-       */
-      
       val (isMirna, isNotMirna) = probes.partition(_.isMiRna)
       val immediateLookup = probeStore.mirnaAccessionLookup(isMirna)
 
-      val sourceMap = Map() ++ mirnaSources.map(x => x.id() -> x)
-      
-      val viaGeneAnnotation = toBioMap(isNotMirna, (_: Probe).genes) combine
-          mirnaResolver.forGenes(probes.flatMap(_.genes))
+      val empty = emptyMMap[Probe, DefaultBio]()
+      val resolved = mirnaSources.par.map(s =>
+        resolveMiRNA(s, isNotMirna)).seq.foldLeft(empty)(_ union _)
 
-      val viaSparql = probeStore.mirnaAssociations(probes, sourceMap.get("http://level-five.jp/t/mapping/mirdb").map(_.limit()))
-
-      immediateLookup ++ viaGeneAnnotation ++ viaSparql
+      immediateLookup ++ resolved
     }
 
     lazy val mirnaResolver = TargetmineColumns.miRNA(targetmine.get)

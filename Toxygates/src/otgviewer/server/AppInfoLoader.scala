@@ -5,11 +5,17 @@ import otg.sparql.Probes
 import t.viewer.server.Configuration
 import t.viewer.shared.mirna.MirnaSource
 
+object AppInfoLoader {
+  val TARGETMINE_SOURCE = "TargetMine"
+}
+
 class AppInfoLoader(probeStore: Probes,
   configuration: Configuration, baseConfig: BaseConfig,
   appName: String)
     extends t.viewer.server.AppInfoLoader(probeStore,
       configuration, baseConfig, appName) {
+
+  import AppInfoLoader._
 
   override def staticAnnotationInfo: Seq[(String, String)] = {
     /*
@@ -23,7 +29,6 @@ class AppInfoLoader(probeStore: Probes,
       ("DrugBank", "Dynamically obtained from http://drugbank.bio2rdf.org/sparql"))
   }
 
-  private val TARGETMINE_SOURCE = "TargetMine"
   override protected def staticMirnaSources: Seq[MirnaSource] = {
     val size = 0 //TODO
     Seq(
