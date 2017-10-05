@@ -19,8 +19,10 @@ object TargetmineColumns {
 
   def miRNA(connector: IntermineConnector) =
     new IntermineColumn(connector,
-        "Gene.miRNAInteractions.miRNA.primaryIdentifier",
-        Seq("Gene.miRNAInteractions.miRNA.symbol"))
+        "Gene.miRNAInteractions.miRNA.secondaryIdentifier",
+        Seq("Gene.miRNAInteractions.miRNA.secondaryIdentifier"))
+//        "Gene.miRNAInteractions.miRNA.primaryIdentifier",
+//        Seq("Gene.miRNAInteractions.miRNA.symbol"))
 }
 
 /**
