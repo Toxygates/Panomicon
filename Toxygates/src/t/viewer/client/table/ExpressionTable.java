@@ -493,19 +493,19 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
     // Identify a click on the filter image.
     // TODO use a more robust identification method (!!)
-    boolean isFilterClick =
+    boolean shouldFilterClick =
         ((target.startsWith("<img") || target.startsWith("<IMG")) && 
             (target.indexOf("width:12") != -1 || // most browsers
             target.indexOf("WIDTH: 12") != -1 || // IE9
         target.indexOf("width: 12") != -1)); // IE8
-    if (isFilterClick) {
+    if (shouldFilterClick) {
       // Identify the column that was filtered.
       int col = columnAt(x);
       ExpressionColumn ec = (ExpressionColumn) grid.getColumn(col);
       editColumnFilter(ec.matrixColumn());
     }
-    // If we return true, the click will be passed on to the other widgets
-    return !isFilterClick;
+    // If we return true, the click will not be passed on to the other widgets
+    return shouldFilterClick;
   }
   
   protected void editColumnFilter(int column) {

@@ -20,9 +20,6 @@ package t.viewer.client.table;
 
 import java.util.*;
 
-import otgviewer.client.components.DataListenerWidget;
-import t.common.shared.DataSchema;
-
 import com.google.gwt.cell.client.*;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
@@ -32,6 +29,9 @@ import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.client.Event;
+
+import otgviewer.client.components.DataListenerWidget;
+import t.common.shared.DataSchema;
 
 /**
  * A data grid with functionality for hiding columns and displaying clickable icons in the leftmost
@@ -62,7 +62,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
           if (Element.is(et)) {
             Element e = et.cast();
             String target = e.getString();
-            if (!interceptGridClick(target, event.getClientX(), event.getClientY())) {
+            if (interceptGridClick(target, event.getClientX(), event.getClientY())) {
               return;
             }
           }
@@ -82,10 +82,10 @@ abstract public class RichTable<T> extends DataListenerWidget {
    * TODO clean this mechanism up as much as possible
    * 
    * @param target
-   * @return true if the click event should be propagated further.
+   * @return true if the click event should be intercepted and not propagated further.
    */
   protected boolean interceptGridClick(String target, int x, int y) {
-    return true;
+    return false;
   }
 
   protected void setupColumns() {
@@ -302,6 +302,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
       _columnInfo = new ColumnInfo(name, width, false);
     }
 
+    @Override
     public SafeHtml getValue(T er) {
       SafeHtmlBuilder build = new SafeHtmlBuilder();
       build.appendHtmlConstant(getHtml(er));
