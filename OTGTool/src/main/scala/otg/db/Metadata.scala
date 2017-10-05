@@ -32,10 +32,10 @@ trait Metadata extends t.db.Metadata {
 
   def attributes: t.model.sample.AttributeSet
 
-  override def isControl(s: Sample): Boolean = parameter(s, DoseLevel).get == "Control"
+  override def isControl(s: Sample): Boolean = attribute(s, DoseLevel).get == "Control"
 
   private def controlGroupKey(s: Sample) =
-    (parameter(s, ControlGroup), parameter(s, ExposureTime), parameter(s, Batch))
+    (attribute(s, ControlGroup), attribute(s, ExposureTime), attribute(s, Batch))
 
   override def controlSamples(s: Sample): Iterable[Sample] = {
     val key = controlGroupKey(s)

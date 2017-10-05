@@ -37,7 +37,7 @@ class TriplestoreMetadata(sampleStore: Samples, val attributes: AttributeSet,
 
   override def samples: Iterable[Sample] = sampleStore.samples(SampleClassFilter())
 
-  override def parameters(s: Sample): Seq[(Attribute, String)] = {
+  override def attributes(s: Sample): Seq[(Attribute, String)] = {
     sampleStore.parameterQuery(s.identifier, querySet).collect( {
       case (sp, Some(s)) => (sp, s)
     })
