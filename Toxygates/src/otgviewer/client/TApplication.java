@@ -28,7 +28,8 @@ import com.google.gwt.core.client.*;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.*;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.*;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
@@ -451,41 +452,27 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       final Screen s = workflow.get(i);
       // String link = (i < workflow.size() - 1) ? (s.getTitle() + " >> ") : s.getTitle();
       String link = s.getTitle();
-      final Label l = new Label(link);
-      l.addStyleName("navlink");
+      final Label label = new Label(link);
+      label.setStylePrimaryName("navlink");
       if (s.enabled() && s != current) {
-        l.addClickHandler(new ClickHandler() {
+        label.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent e) {
             History.newItem(s.key());
           }
         });
-        l.setStylePrimaryName("navlink-enabled");
-
-        l.addMouseOverHandler(new MouseOverHandler() {
-          @Override
-          public void onMouseOver(MouseOverEvent event) {
-            l.setStylePrimaryName("navlink-mouseover");
-          }
-        });
-        l.addMouseOutHandler(new MouseOutHandler() {
-          @Override
-          public void onMouseOut(MouseOutEvent event) {
-            l.setStylePrimaryName("navlink-enabled");
-          }
-        });
-
+        label.addStyleDependentName("enabled");
       } else {
         if (s == current) {
-          l.setStylePrimaryName("navlink-current");
+          label.addStyleDependentName("current");
         } else {
-          l.setStylePrimaryName("navlink-disabled");
+          label.addStyleDependentName("disabled");
         }
       }
       if (i > 0) {
-        l.addStyleName("navlink-inner");
+        label.addStyleDependentName("inner");
       }
-      navPanel.add(l);
+      navPanel.add(label);
     }
   }
 

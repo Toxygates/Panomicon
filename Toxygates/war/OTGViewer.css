@@ -81,7 +81,7 @@ exprGrid {
 	padding: 5px;
 }
 
-.navlink-mouseover {
+.navlink-enabled:hover {
 	background: BurlyWood;
 	cursor: pointer;
 }
@@ -103,10 +103,6 @@ exprGrid {
 .navlink-current {	
 	background: #505050;
 	color: beige;		
-}
-
-.navlink-enabled-mouseover {
-	
 }
 
 .border {

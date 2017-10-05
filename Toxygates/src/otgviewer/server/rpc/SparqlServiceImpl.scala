@@ -40,6 +40,7 @@ import t.viewer.shared.AppInfo
 import t.viewer.shared.Association
 import t.viewer.shared.TimeoutException
 import t.viewer.shared.mirna.MirnaSource
+import otgviewer.server.AppInfoLoader
 
 /**
  * This servlet is reponsible for making queries to RDF stores.
@@ -70,8 +71,8 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
     }
   }
 
-  override protected def refreshAppInfo(): AppInfo = {
-    val r = super.refreshAppInfo()
+  override protected def reloadAppInfo = {
+    val r = new AppInfoLoader(probeStore, configuration, baseConfig, appName).load
     r.setPredefinedGroups(predefinedGroups)
     r
   }
@@ -132,23 +133,4 @@ class SparqlServiceImpl extends t.viewer.server.rpc.SparqlServiceImpl with OTGSe
         targetmine, getSessionData().mirnaSources,
         sc, types, _probes).resolve
 
-  override def staticAnnotationInfo: Seq[(String, String)] = {
-     /*
-     * Note: the only data sources hardcoded here should be the ones
-     * whose provisioning is independent of SPARQL data that we
-     * control. For example, the ones obtained solely from remote
-     * sources.
-     */
-    Seq(
-      ("ChEMBL", "Dynamically obtained from https://www.ebi.ac.uk/rdf/services/chembl/sparql"),
-      ("DrugBank", "Dynamically obtained from http://drugbank.bio2rdf.org/sparql")
-      )
-  }
-  
-  override protected def staticMirnaSources: Seq[MirnaSource] = {
-    val size = 0 //TODO
-    Seq(
-      new MirnaSource("TargetMine", "miRTarBase (via TargetMine)", true, true, 0.5, size)
-      )
-  }
 }

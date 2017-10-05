@@ -63,7 +63,6 @@ public class Screen extends DataListenerWidget implements
    * Is this screen currently visible?
    */
   protected boolean visible = false;
-  private Label viewLabel = new Label();
   private boolean showGroups = false;
 
   /**
@@ -172,8 +171,6 @@ public class Screen extends DataListenerWidget implements
 
     initWidget(rootPanel);
     manager = man;
-    viewLabel.setWordWrap(false);
-    viewLabel.getElement().getStyle().setMargin(2, Unit.PX);
     this.key = key;
     this.logger = SharedUtils.getLogger(key);
     setTitle(title);
@@ -376,16 +373,9 @@ public class Screen extends DataListenerWidget implements
     }
   }
 
-  /**
-   * The standard status panel contains a label that indicates the current data set, and
-   * descriptions of the currently defined groups.
-   */
-
   protected void updateStatusPanel() {
     // statusPanel.setWidth(Window.getClientHeight() + "px");
     statusPanel.clear();
-    statusPanel.add(viewLabel);
-    Utils.floatLeft(viewLabel);
     if (showGroups) {
       Collections.sort(chosenColumns);
       Utils.addAndFloatLeft(statusPanel, factory().groupLabels(this, schema(), chosenColumns));

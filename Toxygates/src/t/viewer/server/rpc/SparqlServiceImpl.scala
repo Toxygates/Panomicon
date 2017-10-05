@@ -121,25 +121,12 @@ abstract class SparqlServiceImpl extends TServiceServlet with
   //This is to allow updates such as clusterings, annotation info etc to feed through.
   protected val appInfoLoader: Refreshable[AppInfo] =
     new PeriodicRefresh[AppInfo]("AppInfo", 3600 * 24) {
-    def reload(): AppInfo = {
-      refreshAppInfo()
-    }
+    def reload(): AppInfo = reloadAppInfo
   }
 
-  /**
-   * Called when AppInfo needs a full refresh.
-   */
-  protected def refreshAppInfo(): AppInfo = {
-    val probeLists = predefProbeLists()
-
-    new AppInfo(configuration.instanceName, Array(),
-        sPlatforms(), probeLists,
-        configuration.intermineInstances.toArray,
-        probeClusterings(probeLists), appName,
-        makeUserKey(), getAnnotationInfo,
-        baseConfig.attributes,
-        getMirnaSourceInfo)
-  }
+  protected def reloadAppInfo =
+    new AppInfoLoader(probeStore, configuration, baseConfig,
+        appName).load
 
   protected lazy val b2rKegg: B2RKegg =
     new B2RKegg(baseConfig.triplestore.triplestore)
@@ -167,31 +154,6 @@ abstract class SparqlServiceImpl extends TServiceServlet with
   protected def setSessionData(m: SparqlState) =
     getThreadLocalRequest().getSession().setAttribute("sparql", m)
 
-    /**
-     * Obtain data sources information for AppInfo
-     */
-  protected def getAnnotationInfo: Array[Array[String]] = {
-    val dynamic = probeStore.annotationsAndComments.toArray
-    val static = staticAnnotationInfo
-    Array(
-      (dynamic ++ static).map(_._1),
-      (dynamic ++ static).map(_._2))
-  }
-
-  protected def staticAnnotationInfo: Seq[(String, String)] = Seq()
-
-  protected def getMirnaSourceInfo: Array[MirnaSource] = {
-    val dynamic = probeStore.mirnaSources.map(s =>
-      new MirnaSource(s._1, s._2, s._3, s._4, asJDouble(s._5), s._6.getOrElse(0)))
-    val static = staticMirnaSources
-    dynamic.toArray ++ static
-  }
-
-  /**
-   * MiRNA sources that are hardcoded into the application.
-   */
-  protected def staticMirnaSources: Seq[MirnaSource] = Seq()
-  
   /**
    * Generate a new user key, to be used when the client does not already have one.
    */
@@ -233,22 +195,12 @@ abstract class SparqlServiceImpl extends TServiceServlet with
         ! Dataset.isSharedDataset(ds.getTitle))
       chooseDatasets(defaultVisible)
     }
-   appInfo
+    appInfo
   }
 
-  private def predefProbeLists() = {
-    val ls = probeStore.probeLists(instanceURI).mapInnerValues(p => p.identifier)
-    val sls = ls.map(x => new StringList(
-        StringList.PROBES_LIST_TYPE, x._1, x._2.toArray)).toList
-    new java.util.LinkedList(seqAsJavaList(sls.sortBy(_.name)))
-  }
-
-  //Currently identical to predef probe lists
-  private def probeClusterings(probeLists: Iterable[StringList]) = {
-    val cls = probeLists.map(x => ProbeClustering.buildFrom(x))
-    new java.util.LinkedList(seqAsJavaList(cls.toSeq))
-  }
-
+  /**
+   * "shared" datasets
+   */
   private def sDatasets(userKey: String): Array[Dataset] = {
     val datasets = new Datasets(baseConfig.triplestore) with SharedDatasets
     var r = (instanceURI match {
@@ -258,11 +210,6 @@ abstract class SparqlServiceImpl extends TServiceServlet with
 
     r = r.filter(ds => Dataset.isDataVisible(ds.getTitle, userKey))
     r.toArray
-  }
-
-  private def sPlatforms(): Array[Platform] = {
-    val platforms = new Platforms(baseConfig) with SharedPlatforms
-    platforms.sharedList.toArray
   }
 
   private def sampleFilterFor(ds: Array[Dataset]) = {
@@ -475,12 +422,12 @@ abstract class SparqlServiceImpl extends TServiceServlet with
   def associations(sc: SampleClass, types: Array[AType],
     _probes: Array[String]): Array[Association] =
     new AssociationResolver(probeStore, b2rKegg, getSessionData().mirnaSources, sc, types, _probes).resolve
-    
+
   @throws[TimeoutException]
   def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {
     val state = getSessionData().mirnaSources = sources
   }
-  
+
   @throws[TimeoutException]
   def geneSuggestions(sc: SampleClass, partialName: String): Array[String] = {
       val plat = for (scl <- Option(sc);
