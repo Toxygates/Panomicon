@@ -20,10 +20,13 @@ package t.viewer.client.table;
 
 import java.util.*;
 
+import otgviewer.client.StandardColumns;
+import otgviewer.client.components.DataListenerWidget;
+import t.common.shared.DataSchema;
+
 import com.google.gwt.cell.client.*;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
@@ -31,9 +34,6 @@ import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.client.Event;
-
-import otgviewer.client.components.DataListenerWidget;
-import t.common.shared.DataSchema;
 
 /**
  * A data grid with functionality for hiding columns and displaying clickable icons in the leftmost
@@ -60,8 +60,11 @@ abstract public class RichTable<T> extends DataListenerWidget {
     DataGrid.Style dataGridStyle();
   }
 
-  public RichTable(DataSchema schema) {
+  protected TableStyle style;
+ 
+  public RichTable(DataSchema schema, TableStyle style) {
     this.schema = schema;
+    this.style = style;
     hideableColumns = initHideableColumns(schema);
     Resources resources = GWT.create(Resources.class);
     grid = new DataGrid<T>(50, resources) {
@@ -115,7 +118,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
     Column<T, String> tcl = toolColumn(toolCell());
 
     grid.addColumn(tcl, "");
-    increaseSectionCount("default");
+    increaseSectionColumnCount("default");
     // This object will never be used - mainly to keep indexes consistent
     columnInfos.add(new ColumnInfo("", "", false, false, false, false));
 
@@ -184,7 +187,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
     }
   }
 
-  private void increaseSectionCount(String section) {
+  private void increaseSectionColumnCount(String section) {
     int old = sectionColumnCount.get(section);
     sectionColumnCount.put(section, old + 1);
   }
@@ -261,7 +264,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 
   protected void addColumn(Column<T, ?> col, String section, ColumnInfo info) {
     int at = nextColumnIndex(section);
-    increaseSectionCount(section);
+    increaseSectionColumnCount(section);
     grid.insertColumn(at, col, getColumnHeader(info));
     setup(col, info);
     columnInfos.add(at, info);
@@ -348,6 +351,11 @@ abstract public class RichTable<T> extends DataListenerWidget {
       _name = name;
       _width = width;
       _columnInfo = new ColumnInfo(name, width, false);
+    }
+    
+    public HTMLHideableColumn(SafeHtmlCell c, String name, 
+        StandardColumns col, TableStyle style) {
+      this(c, name, style.initVisibility(col), style.initWidth(col));
     }
 
     @Override

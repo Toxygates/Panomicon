@@ -79,7 +79,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
   private Screen screen;
   private KCAsyncProvider asyncProvider = new KCAsyncProvider();
-
+  
   private HorizontalPanel tools, analysisTools;
   // We enable/disable this button when the value type changes
   private Button foldChangeBtn = new Button("Add fold-change difference");
@@ -125,8 +125,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   
   private CheckBox pcb;
 
-  public ExpressionTable(Screen _screen, boolean withPValueOption) {
-    super(_screen);
+  public ExpressionTable(Screen _screen, boolean withPValueOption,
+      TableStyle style) {
+    super(_screen, style);
     this.withPValueOption = withPValueOption;
     this.matrixService = _screen.manager().matrixService();
     this.resources = _screen.resources();
@@ -142,6 +143,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     makeTools();
     makeAnalysisTools();
     setEnabled(false);
+  }
+  
+  public void setStyle(TableStyle style) {
+    this.style = style;
   }
 
   protected boolean isMergeMode() {
@@ -558,8 +563,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     SafeHtmlCell htmlCell = new SafeHtmlCell();
     List<HideableColumn<ExpressionRow, ?>> r = new ArrayList<HideableColumn<ExpressionRow, ?>>();
 
-    r.add(new LinkingColumn<ExpressionRow>(htmlCell, "Gene ID", initVisibility(StandardColumns.GeneID),
-        initWidth(StandardColumns.GeneID)) {
+    r.add(new LinkingColumn<ExpressionRow>(htmlCell, "Gene ID", 
+        StandardColumns.GeneID, style) {        
       @Override
       protected String formLink(String value) {
         return AType.formGeneLink(value);
@@ -578,7 +583,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     });
 
     r.add(new HTMLHideableColumn<ExpressionRow>(htmlCell, "Gene Symbol",
-        initVisibility(StandardColumns.GeneSym), initWidth(StandardColumns.GeneSym)) {
+        StandardColumns.GeneSym, style) {        
       @Override
       protected String getHtml(ExpressionRow er) {
         return mkAssociationList(er.getGeneSyms());
@@ -587,15 +592,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     });
 
     r.add(new HTMLHideableColumn<ExpressionRow>(htmlCell, "Probe Title",
-        initVisibility(StandardColumns.ProbeTitle), initWidth(StandardColumns.ProbeTitle)) {
+        StandardColumns.ProbeTitle, style) {        
       @Override
       protected String getHtml(ExpressionRow er) {
         return mkAssociationList(er.getAtomicProbeTitles());
       }
     });
 
-    r.add(new LinkingColumn<ExpressionRow>(htmlCell, "Probe", initVisibility(StandardColumns.Probe),
-        initWidth(StandardColumns.Probe)) {
+    r.add(new LinkingColumn<ExpressionRow>(htmlCell, "Probe", 
+        StandardColumns.Probe, style) {        
 
       @Override
       protected String formLink(String value) {
@@ -618,25 +623,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     r.addAll(super.initHideableColumns(schema));
 
     return r;
-  }
-
-  protected boolean initVisibility(StandardColumns col) {
-    return col != StandardColumns.GeneID;
-  }
-
-  protected String initWidth(StandardColumns col) {
-    switch (col) {
-      case Probe:
-        return "8em";
-      case GeneSym:
-        return "10em";
-      case ProbeTitle:
-        return "18em";
-      case GeneID:
-        return "12em";
-      default:
-        return "15em";
-    }
   }
 
   /**
