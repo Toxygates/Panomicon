@@ -20,6 +20,7 @@ package t.viewer.client.table;
 
 import java.util.*;
 
+import otgviewer.client.StandardColumns;
 import otgviewer.client.components.DataListenerWidget;
 import t.common.shared.DataSchema;
 
@@ -51,8 +52,11 @@ abstract public class RichTable<T> extends DataListenerWidget {
   // Track the number of columns in each section
   private Map<String, Integer> sectionColumnCount = new HashMap<String, Integer>();
 
-  public RichTable(DataSchema schema) {
+  protected TableStyle style;
+  
+  public RichTable(DataSchema schema, TableStyle style) {
     this.schema = schema;
+    this.style = style;
     hideableColumns = initHideableColumns(schema);
     grid = new DataGrid<T>() {
       @Override
@@ -105,7 +109,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
     Column<T, String> tcl = toolColumn(toolCell());
 
     grid.addColumn(tcl, "");
-    increaseSectionCount("default");
+    increaseSectionColumnCount("default");
     // This object will never be used - mainly to keep indexes consistent
     columnInfos.add(new ColumnInfo("", "", false, false, false, false));
 
@@ -174,7 +178,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
     }
   }
 
-  private void increaseSectionCount(String section) {
+  private void increaseSectionColumnCount(String section) {
     int old = sectionColumnCount.get(section);
     sectionColumnCount.put(section, old + 1);
   }
@@ -215,7 +219,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 
   protected void addColumn(Column<T, ?> col, String section, ColumnInfo info) {
     int at = nextColumnIndex(section);
-    increaseSectionCount(section);
+    increaseSectionColumnCount(section);
     grid.insertColumn(at, col, getColumnHeader(info));
     setup(col, info);
     columnInfos.add(at, info);
@@ -300,6 +304,11 @@ abstract public class RichTable<T> extends DataListenerWidget {
       _name = name;
       _width = width;
       _columnInfo = new ColumnInfo(name, width, false);
+    }
+    
+    public HTMLHideableColumn(SafeHtmlCell c, String name, 
+        StandardColumns col, TableStyle style) {
+      this(c, name, style.initVisibility(col), style.initWidth(col));
     }
 
     public SafeHtml getValue(T er) {
