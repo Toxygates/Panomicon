@@ -23,6 +23,7 @@ import java.util.*;
 import com.google.gwt.cell.client.*;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.*;
@@ -42,6 +43,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
   protected DataGrid<T> grid;
   protected List<HideableColumn<T, ?>> hideableColumns = new ArrayList<HideableColumn<T, ?>>();
   protected int highlightedRow = -1;
+  protected boolean shouldComputeTableWidth = true;
 
   protected final DataSchema schema;
   protected List<ColumnInfo> columnInfos = new ArrayList<ColumnInfo>();
@@ -110,7 +112,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
     columnInfos.add(new ColumnInfo("", "", false, false, false, false));
 
     tcl.setCellStyleNames("clickCell");
-    grid.setColumnWidth(tcl, "40px");
+    grid.setColumnWidth(tcl, "2.5em");
 
     for (HideableColumn<T, ?> c : hideableColumns) {
       if (c.visible()) {
@@ -213,12 +215,49 @@ abstract public class RichTable<T> extends DataListenerWidget {
     return new SafeHtmlHeader(i.headerHtml());
   }
 
+  /**
+   * Computes the width that the table should have, by summing the widths of each table column.
+   * Requires that all columns have widths specified in ems.
+   * @return the width of the table in ems, as long as every column has a width specified in ems.
+   *         Otherwise, null.
+   */
+  protected Double totalColumnWidth() {
+    double totalWidth = 0;
+    for (int i = 0; i < grid.getColumnCount(); i++) {
+      String widthString = grid.getColumnWidth(grid.getColumn(i));
+      if (widthString.endsWith("em")) {
+        try {
+          totalWidth += Double.parseDouble(widthString.substring(0, widthString.length() - 2));
+        } catch (NumberFormatException e) {
+          return null;
+        }
+      } else {
+        return null;
+      }
+    }
+    return totalWidth;
+  }
+
+  /**
+   * Sets the table width based on the total width of columns, if shouldComputeTableWidth = true.
+   * Should be called after every operation that causes a change in column widths.
+   */
+  protected void computeTableWidth() {
+    if (shouldComputeTableWidth) {
+      Double width = totalColumnWidth();
+      if (width != null) {
+        grid.setTableWidth(width, Unit.EM);
+      }
+    }
+  }
+
   protected void addColumn(Column<T, ?> col, String section, ColumnInfo info) {
     int at = nextColumnIndex(section);
     increaseSectionCount(section);
     grid.insertColumn(at, col, getColumnHeader(info));
     setup(col, info);
     columnInfos.add(at, info);
+    computeTableWidth();
   }
 
   protected void removeColumn(Column<T, ?> col) {
@@ -239,6 +278,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
     }
     columnInfos.remove(idx);
     grid.removeColumn(col);
+    computeTableWidth();
   }
 
   abstract protected List<HideableColumn<T, ?>> initHideableColumns(DataSchema schema);
