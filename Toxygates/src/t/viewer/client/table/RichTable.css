@@ -14,7 +14,7 @@
 
 .dataGridFooter {
   border-top: 2px solid #6f7277;
-  padding: 3px 15px;
+  padding: 3px;
   text-align: left;
   color: #4b4a4a;
   text-shadow: #ddf 1px 1px 0;
@@ -24,7 +24,7 @@
 
 .dataGridHeader {
   border-bottom: 2px solid #6f7277;
-  padding: 3px 15px;
+  padding: 3px;
   text-align: left;
   color: #4b4a4a;
   text-shadow: #ddf 1px 1px 0;
@@ -33,7 +33,7 @@
 }
 
 .dataGridCell {
-  padding: 2px 15px;
+  padding: 2px;
   overflow: hidden;
 }
 
