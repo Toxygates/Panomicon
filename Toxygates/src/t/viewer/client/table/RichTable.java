@@ -21,6 +21,7 @@ package t.viewer.client.table;
 import java.util.*;
 
 import com.google.gwt.cell.client.*;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Style.Unit;
@@ -53,10 +54,17 @@ abstract public class RichTable<T> extends DataListenerWidget {
   // Track the number of columns in each section
   private Map<String, Integer> sectionColumnCount = new HashMap<String, Integer>();
 
+  public interface Resources extends DataGrid.Resources {
+    @Override
+    @Source("t/viewer/client/table/RichTable.css")
+    DataGrid.Style dataGridStyle();
+  }
+
   public RichTable(DataSchema schema) {
     this.schema = schema;
     hideableColumns = initHideableColumns(schema);
-    grid = new DataGrid<T>() {
+    Resources resources = GWT.create(Resources.class);
+    grid = new DataGrid<T>(50, resources) {
       @Override
       protected void onBrowserEvent2(Event event) {
         if ("click".equals(event.getType())) {

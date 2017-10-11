@@ -30,7 +30,6 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
-import com.google.gwt.user.cellview.client.SimplePager.Resources;
 import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -210,7 +209,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
     });
 
-    Resources r = GWT.create(Resources.class);
+    SimplePager.Resources r = GWT.create(SimplePager.Resources.class);
 
     SimplePager sp = new SimplePager(TextLocation.CENTER, r, true, 500, true) {
       @Override
