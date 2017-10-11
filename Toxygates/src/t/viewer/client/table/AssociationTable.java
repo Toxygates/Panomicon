@@ -22,6 +22,7 @@ package t.viewer.client.table;
 
 import java.util.*;
 
+import otgviewer.client.StandardColumns;
 import otgviewer.client.components.Screen;
 import t.common.shared.*;
 import t.viewer.client.rpc.ProbeServiceAsync;
@@ -43,8 +44,8 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 	protected Map<AType, Association> associations = new HashMap<AType, Association>();
 	private boolean waitingForAssociations = true;
 	
-	public AssociationTable(Screen screen) {
-		super(screen.schema());
+	public AssociationTable(Screen screen, TableStyle style) {
+		super(screen.schema(), style);
 		probeService = screen.manager().probeService();
 	}
 	
@@ -110,6 +111,11 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 		public LinkingColumn(SafeHtmlCell c, String name, 
 				boolean initState, String width) {
 			super(c, name, initState, width);			
+		}
+		
+		public LinkingColumn(SafeHtmlCell c, String name,
+		    StandardColumns col, TableStyle style) {
+		  this(c, name, style.initVisibility(col), style.initWidth(col));
 		}
 		
 		//TODO might move this method down or parameterise AssociationValue,

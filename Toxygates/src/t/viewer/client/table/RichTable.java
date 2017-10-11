@@ -20,12 +20,14 @@ package t.viewer.client.table;
 
 import java.util.*;
 
+import otgviewer.client.StandardColumns;
 import otgviewer.client.components.DataListenerWidget;
 import t.common.shared.DataSchema;
 
 import com.google.gwt.cell.client.*;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.*;
@@ -42,6 +44,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
   protected DataGrid<T> grid;
   protected List<HideableColumn<T, ?>> hideableColumns = new ArrayList<HideableColumn<T, ?>>();
   protected int highlightedRow = -1;
+  protected boolean shouldComputeTableWidth = true;
 
   protected final DataSchema schema;
   protected List<ColumnInfo> columnInfos = new ArrayList<ColumnInfo>();
@@ -51,10 +54,20 @@ abstract public class RichTable<T> extends DataListenerWidget {
   // Track the number of columns in each section
   private Map<String, Integer> sectionColumnCount = new HashMap<String, Integer>();
 
-  public RichTable(DataSchema schema) {
+  public interface Resources extends DataGrid.Resources {
+    @Override
+    @Source("t/viewer/client/table/RichTable.css")
+    DataGrid.Style dataGridStyle();
+  }
+
+  protected TableStyle style;
+ 
+  public RichTable(DataSchema schema, TableStyle style) {
     this.schema = schema;
+    this.style = style;
     hideableColumns = initHideableColumns(schema);
-    grid = new DataGrid<T>() {
+    Resources resources = GWT.create(Resources.class);
+    grid = new DataGrid<T>(50, resources) {
       @Override
       protected void onBrowserEvent2(Event event) {
         if ("click".equals(event.getType())) {
@@ -62,7 +75,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
           if (Element.is(et)) {
             Element e = et.cast();
             String target = e.getString();
-            if (!interceptGridClick(target, event.getClientX(), event.getClientY())) {
+            if (interceptGridClick(target, event.getClientX(), event.getClientY())) {
               return;
             }
           }
@@ -73,7 +86,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 
     initWidget(grid);
     grid.setWidth("100%");
-    grid.setRowStyles(new RowHighligher<T>());
+    grid.setRowStyles(new RowHighlighter<T>());
     AsyncHandler colSortHandler = new AsyncHandler(grid);
     grid.addColumnSortHandler(colSortHandler);
   }
@@ -82,10 +95,10 @@ abstract public class RichTable<T> extends DataListenerWidget {
    * TODO clean this mechanism up as much as possible
    * 
    * @param target
-   * @return true if the click event should be propagated further.
+   * @return true if the click event should be intercepted and not propagated further.
    */
   protected boolean interceptGridClick(String target, int x, int y) {
-    return true;
+    return false;
   }
 
   protected void setupColumns() {
@@ -105,12 +118,12 @@ abstract public class RichTable<T> extends DataListenerWidget {
     Column<T, String> tcl = toolColumn(toolCell());
 
     grid.addColumn(tcl, "");
-    increaseSectionCount("default");
+    increaseSectionColumnCount("default");
     // This object will never be used - mainly to keep indexes consistent
     columnInfos.add(new ColumnInfo("", "", false, false, false, false));
 
     tcl.setCellStyleNames("clickCell");
-    grid.setColumnWidth(tcl, "40px");
+    grid.setColumnWidth(tcl, "2.5em");
 
     for (HideableColumn<T, ?> c : hideableColumns) {
       if (c.visible()) {
@@ -174,7 +187,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
     }
   }
 
-  private void increaseSectionCount(String section) {
+  private void increaseSectionColumnCount(String section) {
     int old = sectionColumnCount.get(section);
     sectionColumnCount.put(section, old + 1);
   }
@@ -213,12 +226,49 @@ abstract public class RichTable<T> extends DataListenerWidget {
     return new SafeHtmlHeader(i.headerHtml());
   }
 
+  /**
+   * Computes the width that the table should have, by summing the widths of each table column.
+   * Requires that all columns have widths specified in ems.
+   * @return the width of the table in ems, as long as every column has a width specified in ems.
+   *         Otherwise, null.
+   */
+  protected Double totalColumnWidth() {
+    double totalWidth = 0;
+    for (int i = 0; i < grid.getColumnCount(); i++) {
+      String widthString = grid.getColumnWidth(grid.getColumn(i));
+      if (widthString.endsWith("em")) {
+        try {
+          totalWidth += Double.parseDouble(widthString.substring(0, widthString.length() - 2));
+        } catch (NumberFormatException e) {
+          return null;
+        }
+      } else {
+        return null;
+      }
+    }
+    return totalWidth;
+  }
+
+  /**
+   * Sets the table width based on the total width of columns, if shouldComputeTableWidth = true.
+   * Should be called after every operation that causes a change in column widths.
+   */
+  protected void computeTableWidth() {
+    if (shouldComputeTableWidth) {
+      Double width = totalColumnWidth();
+      if (width != null) {
+        grid.setTableWidth(width, Unit.EM);
+      }
+    }
+  }
+
   protected void addColumn(Column<T, ?> col, String section, ColumnInfo info) {
     int at = nextColumnIndex(section);
-    increaseSectionCount(section);
+    increaseSectionColumnCount(section);
     grid.insertColumn(at, col, getColumnHeader(info));
     setup(col, info);
     columnInfos.add(at, info);
+    computeTableWidth();
   }
 
   protected void removeColumn(Column<T, ?> col) {
@@ -239,6 +289,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
     }
     columnInfos.remove(idx);
     grid.removeColumn(col);
+    computeTableWidth();
   }
 
   abstract protected List<HideableColumn<T, ?>> initHideableColumns(DataSchema schema);
@@ -301,7 +352,13 @@ abstract public class RichTable<T> extends DataListenerWidget {
       _width = width;
       _columnInfo = new ColumnInfo(name, width, false);
     }
+    
+    public HTMLHideableColumn(SafeHtmlCell c, String name, 
+        StandardColumns col, TableStyle style) {
+      this(c, name, style.initVisibility(col), style.initWidth(col));
+    }
 
+    @Override
     public SafeHtml getValue(T er) {
       SafeHtmlBuilder build = new SafeHtmlBuilder();
       build.appendHtmlConstant(getHtml(er));
@@ -309,11 +366,10 @@ abstract public class RichTable<T> extends DataListenerWidget {
     }
 
     protected abstract String getHtml(T er);
-
   }
 
-  protected class RowHighligher<U> implements RowStyles<U> {
-    public RowHighligher() {}
+  protected class RowHighlighter<U> implements RowStyles<U> {
+    public RowHighlighter() {}
 
     @Override
     public String getStyleNames(U row, int rowIndex) {

@@ -48,6 +48,13 @@ abstract class ListManager(config: TriplestoreConfig) extends Closeable {
   def list(): Seq[String] = {
     triplestore.simpleQuery(s"$tPrefixes\nSELECT ?l { ?x a $itemClass ; rdfs:label ?l }")
   }
+  
+  def verifyExists(item: String): Unit = {
+    if (!list.contains(item)) {
+      val msg = s"$item of class $itemClass does not exist"
+      throw new Exception(msg)
+    }
+  }
 
   val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 

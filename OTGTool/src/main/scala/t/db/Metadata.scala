@@ -50,7 +50,7 @@ trait Metadata extends SampleSet {
   def attributes: AttributeSet
 
   def parameterMap(s: Sample): Map[String, String] =
-    Map() ++ parameters(s).map(x => x._1.id -> x._2)
+    Map() ++ attributes(s).map(x => x._1.id -> x._2)
   /**
    * Obtain all available values for a given parameter.
    */
@@ -65,7 +65,7 @@ trait Metadata extends SampleSet {
   /**
    * Does this metadata set have information about the given sample?
    */
-  def contains(s: Sample): Boolean = !parameters(s).isEmpty
+  def contains(s: Sample): Boolean = !attributes(s).isEmpty
 
   def platform(s: Sample): String = parameter(s, "platform_id").get
 
