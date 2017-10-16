@@ -287,7 +287,7 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
         }
         SimplePanel sp = new SimplePanel(hp);
         sp.addStyleName("invisibleBorder");
-        grid.setWidget(r, d + 1, hp);
+        grid.setWidget(r, d + 1, sp);
       }
       r++;
     }
