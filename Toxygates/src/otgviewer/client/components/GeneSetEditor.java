@@ -324,7 +324,7 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
   private VerticalPanel innerVP(String l) {
     VerticalPanel vpii = Utils.mkVerticalPanel();
     vpii.setWidth("100%");
-    vpii.addStyleName("colored-margin");
+    vpii.addStyleName("geneSetInnerPanel");
 
     Label label = new Label(l);
     vpii.add(label);

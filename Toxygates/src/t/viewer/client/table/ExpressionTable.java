@@ -311,7 +311,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
    */
   private void makeAnalysisTools() {
     analysisTools = Utils.mkHorizontalPanel(true);
-    analysisTools.addStyleName("colored2");
+    analysisTools.addStyleName("analysisTools");
 
     analysisTools.add(groupsel1);
     groupsel1.setVisibleItemCount(1);
