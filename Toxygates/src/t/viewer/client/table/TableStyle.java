@@ -2,8 +2,6 @@ package t.viewer.client.table;
 
 import otgviewer.client.StandardColumns;
 
-import com.google.gwt.cell.client.SafeHtmlCell;
-
 /**
  * Controls the overall style of an ExpressionTable.
  */
@@ -21,7 +19,8 @@ public abstract class TableStyle {
   
   static class DefaultTableStyle extends TableStyle {
     boolean initVisibility(StandardColumns col) {
-      return col != StandardColumns.GeneID;
+      return col != StandardColumns.GeneID &&
+          col != StandardColumns.Count;
     }
 
     String initWidth(StandardColumns col) {
@@ -34,6 +33,8 @@ public abstract class TableStyle {
           return "18em";
         case GeneID:
           return "12em";
+        case Count:
+          return "8em";
         default:
           return "15em";
       }
@@ -53,7 +54,8 @@ public abstract class TableStyle {
     
     @Override
     boolean initVisibility(StandardColumns col) {
-      return col == StandardColumns.Probe;
+      return col == StandardColumns.Probe ||
+          col == StandardColumns.Count;
     }
   }
 }

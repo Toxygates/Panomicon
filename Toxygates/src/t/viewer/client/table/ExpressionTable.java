@@ -24,21 +24,8 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.cell.client.*;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.*;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.user.cellview.client.*;
-import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
-import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
-import com.google.gwt.view.client.*;
-
 import otgviewer.client.StandardColumns;
-import otgviewer.client.charts.AdjustableGrid;
-import otgviewer.client.charts.Charts;
+import otgviewer.client.charts.*;
 import otgviewer.client.charts.Charts.AChartAcceptor;
 import otgviewer.client.components.*;
 import t.common.client.ImageClickCell;
@@ -53,6 +40,18 @@ import t.viewer.client.dialog.FilterEditor;
 import t.viewer.client.rpc.MatrixServiceAsync;
 import t.viewer.shared.*;
 import t.viewer.shared.table.SortKey;
+
+import com.google.gwt.cell.client.*;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.*;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.user.cellview.client.*;
+import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
+import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
+import com.google.gwt.view.client.*;
 
 /**
  * The main data display table. This class has many different functionalities. (too many, should be
@@ -630,6 +629,13 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         return r;
       }
 
+    });
+    
+    r.add(new HTMLHideableColumn<ExpressionRow>(htmlCell, "Count",
+        StandardColumns.Count, style) {
+      protected String getHtml(ExpressionRow er) {
+        return "1";
+      }
     });
 
     // We want gene sym, probe title etc. to be before the association
