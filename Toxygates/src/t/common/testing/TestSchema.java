@@ -68,7 +68,6 @@ public class TestSchema extends DataSchema {
 
   @Override
   public int numDataPointsInSeries(SampleClass sc) {
-    // TODO Auto-generated method stub
     return 0;
   }
 
