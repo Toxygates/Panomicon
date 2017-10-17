@@ -21,9 +21,13 @@ package t.common.shared.sample;
 import java.io.Serializable;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import t.common.shared.*;
 import t.model.SampleClass;
 import t.model.sample.*;
+
+import com.google.gwt.user.client.Window;
 
 @SuppressWarnings("serial")
 public class Sample implements Packable, Serializable, HasClass, SampleLike {
@@ -89,15 +93,16 @@ public class Sample implements Packable, Serializable, HasClass, SampleLike {
     return sampleClass.toString();
   }
 
-  public static Sample unpack(String s, AttributeSet attributeSet) {
+  public static @Nullable Sample unpack(String s, AttributeSet attributeSet) {
     String[] spl = s.split("\\$\\$\\$");
     String v = spl[0];
     if (!v.equals("Barcode_v3")) {
-      // Incorrect/legacy format - TODO: warn here
+      Window.alert("Legacy data has been detected in your browser's storage. " +
+            "Some of your older sample groups may not load properly.");
       return null;
     }
     String id = spl[1];
-    SampleClass sc = SampleClass.unpack(spl[2], attributeSet);
+    SampleClass sc = t.common.client.Utils.unpackSampleClass(attributeSet, spl[2]);
     return new Sample(id, sc);
   }
 
@@ -107,7 +112,7 @@ public class Sample implements Packable, Serializable, HasClass, SampleLike {
     StringBuilder sb = new StringBuilder();
     sb.append("Barcode_v3").append(sep);
     sb.append(id()).append(sep);
-    sb.append(sampleClass.pack()).append(sep);
+    sb.append(t.common.client.Utils.packSampleClass(sampleClass)).append(sep);
     return sb.toString();
   }
 }

@@ -91,7 +91,6 @@ object BatchManager extends ManagerTool {
         val title = require(stringOption(args, "-title"),
           "Please specify a title with -title")
         val rdfOnly = booleanOption(args, "-rdfonly")
-        // TODO move verification into the batches API
         verifyExists(batches, title)
         val bm = new BatchManager(context)
         addTasklets(bm.delete(title, config.seriesBuilder, rdfOnly))
@@ -120,7 +119,6 @@ object BatchManager extends ManagerTool {
         val len = Integer.parseInt(args(3))
         val bm = new BatchManager(context)
         val db = config.data.absoluteDBReader(context.matrix)
-        //TODO don't cast here
         val kdb = db.asInstanceOf[KCMatrixDB]
         try {
           kdb.dumpKeys(args(1), args(2), len)
@@ -173,12 +171,8 @@ object BatchManager extends ManagerTool {
     }
   }
 
-  def verifyExists(bs: Batches, batch: String): Unit = {
-    if (!bs.list.contains(batch)) {
-      val msg = s"Batch $batch does not exist"
-      throw new Exception(msg)
-    }
-  }
+  def verifyExists(bs: Batches, batch: String): Unit =
+    bs.verifyExists(batch)
 
   def showHelp() {
     throw new Exception("Please specify a command (add/delete/list/list-access/enable/disable)")
@@ -235,11 +229,11 @@ class BatchManager(context: Context) {
     // Note that we rely on probe maps, sample maps etc in matrixContext
     // not being read until they are needed
     // (after addSampleIDs has run!)
-    // TODO: more robust updating of maps 
+    // TODO: more robust updating of maps
     implicit val mc = matrixContext()
     r :+= addEnums(metadata, sbuilder)
 
-    //TODO logging directly to TaskRunner is controversial. 
+    //TODO logging directly to TaskRunner is controversial.
     //Would be better to log from inside the tasklets.
     r :+= addExprData(metadata, dataFile, callFile,
         m => TaskRunner.log(s"Warning: $m"))
@@ -428,14 +422,13 @@ class BatchManager(context: Context) {
       case t: Throwable => throw t
     }
   }
-  
-  
+
   def deleteFoldData(title: String)(implicit mc: MatrixContext) =
     deleteExtFormatData(title, "Delete fold data")
 
   def deleteExprData(title: String)(implicit mc: MatrixContext) =
     deleteExtFormatData(title, "Delete normalized intensity data")
-  
+
   private def deleteExtFormatData(title: String, taskName: String)(implicit mc: MatrixContext) =
     new Tasklet("Delete fold data") {
       def run() {
@@ -453,7 +446,7 @@ class BatchManager(context: Context) {
         }
       }
     }
-    
+
   def addEnums(md: Metadata, sb: SeriesBuilder[_])(implicit mc: MatrixContext) =
     new Tasklet("Add enum values") {
       /*

@@ -28,7 +28,6 @@ import t.model.sample._
 import t.model.sample.Helpers._
 import scala.collection.JavaConversions._
 
-
 /**
  * Metadata that is read from a TSV file.
  */
@@ -86,7 +85,7 @@ class MapMetadata(val metadata: Map[String, Seq[String]],
     }
   }
 
-  override def parameters(s: Sample): Seq[(Attribute, String)] = {
+  override def attributes(s: Sample): Seq[(Attribute, String)] = {
     val idx = getIdx(s)
     metadata.map(column => (attributes.byId(column._1), column._2(idx))).toSeq
   }
@@ -94,9 +93,9 @@ class MapMetadata(val metadata: Map[String, Seq[String]],
   def parameterValues(identifier: String): Set[String] =
     metadata(identifier).toSet
 
-  override def parameter(s: Sample, identifier: String): Option[String] = {
+  override def attribute(s: Sample, attribute: Attribute): Option[String] = {
     val idx = getIdx(s)
-    Some(metadata(identifier)(idx))
+    Some(metadata(attribute.id)(idx))
   }
 
   def mapParameter(fact: Factory, key: String, f: String => String): Metadata = {

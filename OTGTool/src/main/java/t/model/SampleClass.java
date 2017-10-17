@@ -234,24 +234,4 @@ public class SampleClass implements Serializable, SampleLike {
     sb.append(")");
     return sb.toString();
   }
-
-  //TODO move out of OTGTool
-  public String pack() {
-    StringBuilder sb = new StringBuilder();
-    for (Attribute k : data.keySet()) {
-      sb.append(k.id() + ",,,");
-      sb.append(data.get(k) + ",,,");
-    }
-    return sb.toString();
-  }
-
-  //TODO move out of OTGTool
-  public static SampleClass unpack(String data, AttributeSet attributeSet) {
-    String[] spl = data.split(",,,");
-    Map<Attribute, String> d = new HashMap<Attribute, String>();
-    for (int i = 0; i < spl.length; i += 2) {
-      d.put(attributeSet.byId(spl[i]), spl[i + 1]);
-    }
-    return new SampleClass(d);
-  }
 }

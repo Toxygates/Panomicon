@@ -30,7 +30,6 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
-import com.google.gwt.user.cellview.client.SimplePager.Resources;
 import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -216,7 +215,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
     });
 
-    Resources r = GWT.create(Resources.class);
+    SimplePager.Resources r = GWT.create(SimplePager.Resources.class);
 
     SimplePager sp = new SimplePager(TextLocation.CENTER, r, true, 500, true) {
       @Override
@@ -313,7 +312,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
    */
   private void makeAnalysisTools() {
     analysisTools = Utils.mkHorizontalPanel(true);
-    analysisTools.addStyleName("colored2");
+    analysisTools.addStyleName("analysisTools");
 
     analysisTools.add(groupsel1);
     groupsel1.setVisibleItemCount(1);
@@ -421,12 +420,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
             new ColumnInfo(matrixInfo.columnName(i), 
                 matrixInfo.columnHint(i), true, false, true,
                 matrixInfo.columnFilter(i).active());
-        ci.setCellStyleNames("dataColumn");
-        addColumn(valueCol, "data", ci);
         Group g = matrixInfo.columnGroup(i);
-        if (g != null) {
-          valueCol.setCellStyleNames(g.getStyleName());
-        }
+        String styleName = g == null ? "dataColumn" : g.getStyleName();
+        ci.setCellStyleNames(styleName);
+        addColumn(valueCol, "data", ci);
       }
     }
     
@@ -499,12 +496,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
     // Identify a click on the filter image.
     // TODO use a more robust identification method (!!)
-    boolean isFilterClick =
+    boolean shouldFilterClick =
         ((target.startsWith("<img") || target.startsWith("<IMG")) && 
             (target.indexOf("width:12") != -1 || // most browsers
             target.indexOf("WIDTH: 12") != -1 || // IE9
         target.indexOf("width: 12") != -1)); // IE8
-    if (isFilterClick) {
+    if (shouldFilterClick) {
       // Identify the column that was filtered.
       int col = columnAt(x);
       Column<ExpressionRow, ?> clickedCol = grid.getColumn(col);
@@ -515,8 +512,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         columnSummary((AssociationTable<ExpressionRow>.AssociationColumn) clickedCol);
       }
     }
-    // If we return true, the click will be passed on to the other widgets
-    return !isFilterClick;
+    // If we return true, the click will not be passed on to the other widgets
+    return shouldFilterClick;
   }
   
   /**

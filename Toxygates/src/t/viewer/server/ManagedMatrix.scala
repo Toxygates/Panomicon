@@ -95,7 +95,6 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
         columnsFor(g, sortedSamples, data)
     }).seq
 
-    //TODO try to avoid adjoining lots of small matrices
     val (groupedData, info) = cols.par.reduceLeft((p1, p2) => {
       val d = (p1._1 zip p2._1).map(r => r._1 ++ r._2)
       val info = p1._2.addAllNonSynthetic(p2._2)
@@ -104,7 +103,6 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     val colNames = (0 until info.numColumns()).map(i => info.columnName(i))
     val grouped = ExprMatrix.withRows(groupedData, sortedProbes, colNames)
 
-    //TODO: avoid EVArray building
     val ungrouped = ExprMatrix.withRows(data,
         sortedProbes, sortedSamples.map(_.sampleId))
 

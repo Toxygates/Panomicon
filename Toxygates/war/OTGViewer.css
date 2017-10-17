@@ -1,68 +1,59 @@
+/******************************************************************************	
+App elements 
+******************************************************************************/
+
 .toxygatesTitle {
 	font-family: 'Play', sans-serif;
 	font-size: 36pt;
-}
-
-.resizingListBox {
-	font-size: 13px;
-}
-
-.dialogVPanel {
-	margin: 5px;
-}
-
-exprGrid {
-	border: 1px solid black;
-}
-
-.highlySpaced {
-	margin: 5px;
-}
-
-.slightlySpaced {
-	margin: 2px;
-}
-
-.slightlySpacedLeftRight {
-	margin-left: 2px;
-	margin-right: 2px;
-}
-
-.colored {
-	background: Beige;
-}
-
-.colored-margin {
-	background: Beige;
-	padding: 5px;
-	border: grey solid 1px;
-	margin: 2px;
-}
-
-.darkColored {
-	background: White;
-	margin: 2px;
-}
-
-.colored2 {
-	margin: 1px 0px 0px 0px;
-	background: Beige;
 }
 
 .compoundSelector {
 	margin: 0em 0em 0em 1em;
 }
 
-.none {
-	
+.analysisTools {
+	margin: 1px 0px 0px 0px;
+	background: Beige;
 }
 
-.heading {
-	font-size: 1.2em;
-	color: #777777;
-	margin: 5px;
-	text-align: center;	
+#helpMenu {
+	font-weight: bold;
+	color: green;
 }
+
+.feedbackMenuItem {
+	font-weight: bold;
+	color: green;
+}
+
+.gwt-MenuItem-disabled {
+	color: DarkGray;
+}
+
+.menuSeparatorCaption {
+  color: DarkGray;
+  font-style: italic;
+  font-size: 0.75em;
+}
+
+/**************************************	
+Gene set editor 
+**************************************/
+
+.resizingListBox {
+	font-size: 13px;
+}
+
+.geneSetInnerPanel {
+	background: Beige;
+	padding: 5px;
+	border: grey solid 1px;
+	margin: 2px;
+}
+
+/**************************************	
+Top-level navigation links 
+**************************************/
 
 .navPanel {	
 	float: left;
@@ -105,37 +96,49 @@ exprGrid {
 	color: beige;		
 }
 
-.border {
-	margin: 1px;
-	border: solid black 1px;
+/**************************************	
+Time-dose grids 
+**************************************/
+
+.timeDoseGrid {
+	margin: 5px;
 }
 
-.invisibleBorder {
+.doseTimeBox {
 	margin: 1px;
 	border: solid white 1px;
 }
 
-.datasetInfo {
+.compoundDoseTimeBox {
 	margin: 1px;
-	padding: 2px;
 	border: solid black 1px;
-	cursor: pointer;	
 }
 
-.emphasized {
-	font-weight: bold;
-}
-
-.heavyEmphasized {
+.selectionGridSectionHeading {
 	font-weight: bold;
 	font-size: 1.1em;
 	margin: 2px;	
 }
 
+/**************************************	
+Status panel 
+**************************************/
+
 .statusPanel {
 	background: White;
 	text-align: left;
 	color: black;
+}
+
+.statusBorder {
+	margin: 1px;
+	border: solid DarkBlue 1px;
+}
+
+.groupLabel {
+	margin: 2px;
+	white-space: nowrap;
+	float: left;
 }
 
 .guideBar {
@@ -146,10 +149,9 @@ exprGrid {
 	font-size: large;
 }
 
-.statusBorder {
-	margin: 1px;
-	border: solid DarkBlue 1px;
-}
+/**************************************	
+Expression table
+**************************************/
 
 .highlightedRow {
 	font-style: italic;	
@@ -164,23 +166,14 @@ exprGrid {
 	color: Black;
 }
 
-.clickCell {
-	cursor: pointer;
-}
-
 .associationValue {
 	clear: left;
 }
 
-#helpMenu {
-	font-weight: bold;
-	color: green;
-}
 
-.feedbackMenuItem {
-	font-weight: bold;
-	color: green;
-}
+/**************************************	
+Groups
+**************************************/
 
 /* This must correspond to the colors in SampleGroup.java
 */
@@ -206,45 +199,36 @@ exprGrid {
 	color: #B354B3;
 }
 
-.groupLabel {
-	margin: 2px;
-	white-space: nowrap;
-	float: left;
+/**************************************	
+Sample Search
+**************************************/
+
+.samplesearch-label {
+	color: silver;
 }
 
-.watermark {
-	font-style: italic;
-	color: DarkGray;
+.samplesearch-rootpanel {
 }
 
-.suggest-keyword {
-	text-align: left;
+.samplesearch-andpanel {
+	margin:1px;
 }
 
-.suggest-reference {
-	text-align: right;
-	color: DarkGray;
-	font-style: italic;
-	font-size: 0.75em;
+.samplesearch-orpanel {
+	margin:1px;
+	border-top: solid grey 1px;
+	border-bottom: solid grey 1px;
 }
 
-.table-cell {
-	display: table-cell;
+.samplesearch-atomicpanel {
+	margin:1px;
+	padding: 1px;
+	background: beige;
 }
 
-.width-fix {
-	padding-right: 10px;
-}
-
-.gwt-MenuItem-disabled {
-	color: DarkGray;
-}
-
-.menuSeparatorCaption {
-  color: DarkGray;
-  font-style: italic;
-  font-size: 0.75em;
-}
+/**************************************	
+Data sources information
+**************************************/
 
 .metadata-info {
 	margin: 5px;
@@ -277,6 +261,30 @@ exprGrid {
 	width: 200px;
 }
 
+/**************************************	
+Probe selector
+**************************************/
+
+.watermark {
+	font-style: italic;
+	color: DarkGray;
+}
+
+.suggestion-keyword {
+	text-align: left;
+}
+
+.suggestion-reference {
+	text-align: right;
+	color: DarkGray;
+	font-style: italic;
+	font-size: 0.75em;
+}
+
+/**************************************	
+Sample details
+**************************************/
+
 .numericalParameterAbove {
 	color: red;
 	font-weight: bold;
@@ -305,28 +313,49 @@ exprGrid {
 	width: 10em;
 }
 
-.samplesearch-label {
-	color: silver;
+/******************************************************************************	
+Non-semantic 
+******************************************************************************/
+
+.slightlySpaced {
+	margin: 2px;
 }
 
-.samplesearch-rootpanel {
+.slightlySpacedLeftRight {
+	margin-left: 2px;
+	margin-right: 2px;
 }
 
-.samplesearch-andpanel {
-	margin:1px;
+.colored {
+	background: Beige;
 }
 
-.samplesearch-orpanel {
-	margin:1px;
-	border-top: solid grey 1px;
-	border-bottom: solid grey 1px;
+.heading {
+	font-size: 1.2em;
+	color: #777777;
+	margin: 5px;
+	text-align: center;	
 }
 
-.samplesearch-atomicpanel {
-	margin:1px;
-	padding: 1px;
-	background: beige;
+.emphasized {
+	font-weight: bold;
 }
+
+.clickCell {
+	cursor: pointer;
+}
+
+.table-cell {
+	display: table-cell;
+}
+
+.width-fix {
+	padding-right: 10px;
+}
+
+/******************************************************************************	
+Miscellaneous
+******************************************************************************/
 
 /*
  Fix "Ghost scrollbar" issue in Safari with trackpads.

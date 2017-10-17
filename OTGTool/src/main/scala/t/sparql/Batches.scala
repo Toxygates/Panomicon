@@ -42,7 +42,7 @@ object Batches extends RDFClass {
     for (s <- samples) {
       fout.write(s"<${Samples.defaultPrefix}/${s.identifier}>\n")
       fout.write(s"  a <$tRoot/sample>; rdfs:label" + "\"" + s.identifier + "\"; \n")
-      val params = md.parameters(s).map(
+      val params = md.attributes(s).map(
         p => s"<$tRoot/${p._1.id}> " + "\"" + TRDF.escape(p._2) + "\"")
       fout.write(params.mkString(";\n  ") + ".")
       fout.write("\n\n")
