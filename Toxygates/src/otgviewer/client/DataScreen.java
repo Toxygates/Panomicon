@@ -28,6 +28,8 @@ import t.common.shared.ItemList;
 import t.common.shared.StringList;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
+import t.model.SampleClass;
+import t.model.sample.CoreParameter;
 import t.viewer.client.Analytics;
 import t.viewer.client.table.ExpressionTable;
 import t.viewer.client.table.TableStyle;
@@ -85,6 +87,29 @@ public class DataScreen extends Screen {
         updateProbes();
       }
     };
+  }
+  
+  protected TableStyle styleForColumns(List<Group> columns) {
+    boolean foundMirna = false;
+    boolean foundNonMirna = false;
+    for (Group g: chosenColumns) {
+      SampleClass sc = g.getTreatedSamples()[0].sampleClass();
+      String platform = sc.get(CoreParameter.Platform);
+      if (CoreParameter.isMiRNAPlatform(platform)) {
+        foundMirna = true;
+      } else {
+        foundNonMirna = true;
+      }
+    }
+    
+    TableStyle r; 
+    if (foundMirna && ! foundNonMirna) {
+      r = TableStyle.getStyle("mirna");
+    } else {
+     r = TableStyle.getStyle("default");
+    }
+    logger.info("Use tabke style: " + r);
+    return r;    
   }
 
   static final public int STANDARD_TOOL_HEIGHT = 43;
@@ -233,7 +258,7 @@ public class DataScreen extends Screen {
     // Attempt to avoid reloading the data
     if (lastColumns == null || !chosenColumns.equals(lastColumns)) {
       logger.info("Data reloading needed");
-      expressionTable.setStyle(getStyle(chosenColumns));
+      expressionTable.setStyle(styleForColumns(chosenColumns));
       expressionTable.getExpressions();      
     } else if (!Arrays.equals(chosenProbes, lastProbes)) {
       logger.info("Only refiltering is needed");
@@ -248,10 +273,6 @@ public class DataScreen extends Screen {
   public void show() {
     super.show();
     updateProbes();
-  }
-  
-  private TableStyle getStyle(List<Group> columns) {
-    return TableStyle.getStyle("default");
   }
 
   @Override

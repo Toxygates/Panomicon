@@ -26,4 +26,7 @@ public enum CoreParameter implements Attribute {
   public boolean isNumerical() { return isNumerical; }
   public String section() { return section; }
   
+  public static boolean isMiRNAPlatform(String value) {
+    return value.startsWith("mirbase");
+  }
 }

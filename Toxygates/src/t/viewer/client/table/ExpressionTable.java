@@ -148,6 +148,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   
   public void setStyle(TableStyle style) {
     this.style = style;
+    hideableColumns = initHideableColumns(schema);
   }
 
   protected boolean isMergeMode() {
