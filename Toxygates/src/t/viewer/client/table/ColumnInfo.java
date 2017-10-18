@@ -30,7 +30,6 @@ public class ColumnInfo {
 
   private String title, tooltip, width;
   private @Nullable String cellStyleNames;
-  // TODO hideable may not be needed here
   private boolean sortable, hideable, defaultSortAsc, filterable, filterActive;
 
   public ColumnInfo(String title, String tooltip, boolean sortable, boolean hideable, String width,

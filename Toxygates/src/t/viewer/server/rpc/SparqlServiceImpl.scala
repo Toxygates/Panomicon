@@ -310,7 +310,6 @@ abstract class SparqlServiceImpl extends TServiceServlet with
         configuration.csvDirectory, configuration.csvUrlBase)
   }
 
-  //TODO remove sc
   @throws[TimeoutException]
   def pathways(pattern: String): Array[String] =
     b2rKegg.forPattern(pattern).toArray
@@ -338,7 +337,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with
   def probesForPathway(pathway: String, samples: JList[Sample]): Array[String] = {
     val pw = Pathway(null, pathway)
     val prs = probeStore.forPathway(b2rKegg, pw)
-    val pmap = context.matrix.probeMap //TODO
+    val pmap = context.matrix.probeMap 
 
     val result = prs.map(_.identifier).filter(pmap.isToken)
     filterByGroup(result, samples).toArray
