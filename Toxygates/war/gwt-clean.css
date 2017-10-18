@@ -3,7 +3,6 @@
  */
 
 body, table td, select, button {
-  font-family: Arial Unicode MS, Arial, sans-serif;
   font-size: small;
 }
 pre {
@@ -256,20 +255,15 @@ select {
 }
 .gwt-MenuBar .gwt-MenuItem {
   cursor: default;
-  font-family: Arial Unicode MS, Arial, sans-serif;
 }
 .gwt-MenuBar .gwt-MenuItem-selected {
   background: #E3E8F3;
 }
 .gwt-MenuBar-horizontal {
-  background: #e3e8f3 url(images/hborder.png) repeat-x 0px -2003px;
-  border: 1px solid #e0e0e0;
 }
 .gwt-MenuBar-horizontal .gwt-MenuItem {
   padding: 5px 10px;
   vertical-align: bottom;
-  color: #000;
-  font-weight: bold;
 }
 .gwt-MenuBar-horizontal .gwt-MenuItemSeparator {
   width: 1px;

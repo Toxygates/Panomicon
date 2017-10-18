@@ -1,4 +1,12 @@
 /******************************************************************************	
+Global
+******************************************************************************/
+
+html * {
+	font-family: Georgia, Times, "Times New Roman", serif;
+}
+
+/******************************************************************************	
 App elements 
 ******************************************************************************/
 
@@ -16,9 +24,31 @@ App elements
 	background: Beige;
 }
 
+/**************************************	
+Menu bar
+**************************************/
+
+.menuBarPanel {
+	padding-left: 11px;
+	background: #363636;	
+}
+
+.gwt-MenuBar table {
+	border-spacing: 0px;
+}
+
+.gwt-MenuBar-horizontal .gwt-MenuItem {
+	color: white;
+	border-left: solid 1px #595959;
+}
+
+.gwt-MenuItem-disabled {
+	color: DarkGray;
+}
+
 #helpMenu {
-	font-weight: bold;
-	color: green;
+	color: #FCEE21;
+	border-right: solid 1px #595959;
 }
 
 .feedbackMenuItem {
@@ -26,14 +56,60 @@ App elements
 	color: green;
 }
 
-.gwt-MenuItem-disabled {
-	color: DarkGray;
-}
-
 .menuSeparatorCaption {
   color: DarkGray;
   font-style: italic;
   font-size: 0.75em;
+}
+
+/**************************************	
+Top-level navigation links 
+**************************************/
+
+.navPanel {	
+	height: 100%;
+	float: left;
+	margin-left: 11px;
+}
+
+.navOuterPanel {
+	height: 100%;
+	background: #363636;
+	float: left;
+}
+
+.navlink {
+	height: 35px;
+	line-height: 35px;
+	text-align: center;
+	font-size: 1.2em;
+	color: #A1A1A1;
+	margin: 0px;
+	padding: 0px 10px;
+	border-right: solid 1px #595959;
+	border-top: solid 1px #595959;
+}
+
+.navlink-enabled:hover {
+	background: BurlyWood;
+	cursor: pointer;
+}
+
+.navlink-disabled {	
+}
+
+.navlink-enabled {	
+	cursor: pointer;	
+}
+
+.navlink-first {
+	border-left: solid 1px #595959;
+}
+
+.navlink-current {	
+	background: white;
+	color: black;		
+	border-top: none;
 }
 
 /**************************************	
@@ -49,51 +125,6 @@ Gene set editor
 	padding: 5px;
 	border: grey solid 1px;
 	margin: 2px;
-}
-
-/**************************************	
-Top-level navigation links 
-**************************************/
-
-.navPanel {	
-	float: left;
-}
-
-.navOuterPanel {
-	background: Beige;
-	float: left;
-}
-
-.navlink {
-	font-size: 1.2em;
-	font-weight: bold;
-	color: grey;
-	margin: 0px;	
-	padding: 5px;
-}
-
-.navlink-enabled:hover {
-	background: BurlyWood;
-	cursor: pointer;
-}
-
-.navlink-disabled {	
-	color: grey;	
-}
-
-.navlink-enabled {	
-	color: black;	
-	cursor: pointer;	
-}
-
-.navlink-inner {
-	border-left: solid 2px #505050;
-	margin-left: 0px;	
-}
-
-.navlink-current {	
-	background: #505050;
-	color: beige;		
 }
 
 /**************************************	
