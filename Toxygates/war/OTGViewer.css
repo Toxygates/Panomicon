@@ -39,7 +39,23 @@ Menu bar
 
 .gwt-MenuBar-horizontal .gwt-MenuItem {
 	color: white;
-	border-left: solid 1px #595959;
+	position: relative;
+	/* This border needs to be the same color as the menuBarPanel background. It ensures 
+	   correct positioning of the partial border :before pseudo-element, and also prevents
+	   the pixels on the border from changing color when mousing over the menu item (this
+	   is why we can't just use transparent instead of setting the same color). 
+	*/
+	border-left: solid 1px #363636;
+}
+
+.gwt-MenuBar-horizontal .gwt-MenuItem:before {
+  content: '';
+  width: 1px; 
+  height: 5px; 
+  background: #7E7E7E; 
+  position: absolute; 
+  top: 1px;
+  left: -1px;
 }
 
 .gwt-MenuItem-disabled {
@@ -48,7 +64,19 @@ Menu bar
 
 #helpMenu {
 	color: #FCEE21;
-	border-right: solid 1px #595959;
+	/* This does the same thing as the border-left in .gwt-MenuBar-horizontal .gwt-MenuItem,
+	   except for the :after pseudo-element. */
+	border-right: solid 1px #363636;
+}
+
+.gwt-MenuBar-horizontal .gwt-MenuItem:after {
+  content: '';
+  width: 1px; 
+  height: 5px; 
+  background: #7E7E7E; 
+  position: absolute; 
+  top: 1px;
+  right: -1px;
 }
 
 .feedbackMenuItem {
