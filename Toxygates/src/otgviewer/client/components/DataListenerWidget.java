@@ -44,7 +44,7 @@ import t.viewer.client.Utils;
  */
 public class DataListenerWidget extends Composite implements DataViewListener {
 
-  private List<DataViewListener> listeners = new ArrayList<DataViewListener>();
+  protected List<DataViewListener> listeners = new ArrayList<DataViewListener>();
 
   //TODO visibility of these members
   protected Dataset[] chosenDatasets = new Dataset[0];

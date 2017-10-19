@@ -24,12 +24,10 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.StandardColumns;
 import otgviewer.client.charts.*;
 import otgviewer.client.charts.Charts.AChartAcceptor;
 import otgviewer.client.components.*;
 import t.common.client.ImageClickCell;
-import t.common.client.components.StringArrayTable;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
@@ -147,7 +145,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   
   public void setStyle(TableStyle style) {
     this.style = style;
-    hideableColumns = initHideableColumns(schema);
+    for (HideableColumn<ExpressionRow, ?> hc: hideableColumns) {
+      style.reapply(this, hc);
+    }
   }
 
   protected boolean isMergeMode() {
@@ -509,20 +509,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         ExpressionColumn ec = (ExpressionColumn) clickedCol;
         editColumnFilter(ec.matrixColumn());
       } else if (clickedCol instanceof AssociationTable.AssociationColumn){
-        columnSummary((AssociationTable<ExpressionRow>.AssociationColumn) clickedCol);
+        displayColumnSummary((AssociationColumn) clickedCol);
       }
     }
     // If we return true, the click will not be passed on to the other widgets
     return shouldFilterClick;
-  }
-  
-  /**
-   * Display a summary of a column.
-   */
-  private void columnSummary(AssociationTable<ExpressionRow>.AssociationColumn col) {
-    AssociationSummary summary = new AssociationSummary(col, grid.getDisplayedItems());
-    StringArrayTable.displayDialog(summary.getTable(), col.getAssociation().title() + " summary",
-      500, 500);
   }
   
   protected void editColumnFilter(int column) {
@@ -634,7 +625,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     r.add(new HTMLHideableColumn<ExpressionRow>(htmlCell, "Count",
         StandardColumns.Count, style) {
       protected String getHtml(ExpressionRow er) {
-        return "1";
+        Map<String, String> values = staticAssociations.get(StandardColumns.Count.toString());
+        if (values != null) {
+          return values.get(er.getProbe());
+        } else {
+          return "1";
+        }
       }
     });
 

@@ -20,8 +20,10 @@ package t.viewer.client.table;
 
 import java.util.*;
 
-import otgviewer.client.StandardColumns;
+import javax.annotation.Nullable;
+
 import otgviewer.client.components.Screen;
+import t.common.client.components.StringArrayTable;
 import t.common.shared.*;
 import t.viewer.client.rpc.ProbeServiceAsync;
 import t.viewer.shared.Association;
@@ -41,6 +43,9 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 abstract public class AssociationTable<T> extends RichTable<T> {
   protected final ProbeServiceAsync probeService;
   protected Map<AType, Association> associations = new HashMap<AType, Association>();
+  protected Map<AType, AssociationColumn> assocColumns;
+  protected Map<String, Map<String, String>> staticAssociations = new HashMap<String, Map<String, String>>();
+  
   private boolean waitingForAssociations = true;
 
   public AssociationTable(Screen screen, TableStyle style) {
@@ -51,10 +56,12 @@ abstract public class AssociationTable<T> extends RichTable<T> {
   protected List<HideableColumn<T, ?>> initHideableColumns(DataSchema schema) {
     SafeHtmlCell shc = new SafeHtmlCell();
     List<HideableColumn<T, ?>> r = new ArrayList<HideableColumn<T, ?>>();
+    assocColumns = new HashMap<AType, AssociationColumn>();
     for (AType at : schema.associations()) {
       // TODO fill in matrixColumn for sortable associations
       AssociationColumn ac = new AssociationColumn(shc, at);
       r.add(ac);
+      assocColumns.put(at, ac);
     }
     return r;
   }
@@ -62,10 +69,10 @@ abstract public class AssociationTable<T> extends RichTable<T> {
   private AType[] visibleAssociations() {
     List<AType> r = new ArrayList<AType>();
     for (HideableColumn<T, ?> ac : hideableColumns) {
-      if (ac instanceof AssociationTable<?>.AssociationColumn) {
+      if (ac instanceof AssociationTable.AssociationColumn) {
         if (ac.visible()) {
-          r.add(((AssociationTable<?>.AssociationColumn) ac).assoc);
-        }
+          r.add(((AssociationTable.AssociationColumn) ac).assoc);
+        }       
       }
     }
     return r.toArray(new AType[0]);
@@ -86,14 +93,22 @@ abstract public class AssociationTable<T> extends RichTable<T> {
           for (Association a : result) {
             associations.put(a.type(), a);
           };
+          associationsUpdated();
           grid.redraw();
         }
       };
 
       logger.info("Get associations for " + chosenSampleClass.toString());
       probeService.associations(chosenSampleClass, vas, displayedAtomicProbes(), assocCallback);
+    } else {
+      logger.info("No associations to fetch");
     }
   }
+  
+  /**
+   * Called when associations have been updated.
+   */
+  protected void associationsUpdated() {}
 
   /**
    * Get the atomic probes currently being displayed (keys for associations)
@@ -171,7 +186,7 @@ abstract public class AssociationTable<T> extends RichTable<T> {
     }
 
     @Override
-    public void setVisibility(boolean v) {
+    void setVisibility(boolean v) {
       super.setVisibility(v);
       if (v) {
         getAssociations();
@@ -185,6 +200,9 @@ abstract public class AssociationTable<T> extends RichTable<T> {
     protected Collection<AssociationValue> getLinkableValues(T expressionRow) {
       Association a = associations.get(assoc);
       Set<AssociationValue> all = new HashSet<AssociationValue>();
+      if (a == null) {
+        return all;
+      }
       for (String at : atomicProbesForRow(expressionRow)) {
         if (a.data().containsKey(at)) {
           all.addAll(a.data().get(at));
@@ -207,5 +225,36 @@ abstract public class AssociationTable<T> extends RichTable<T> {
       }
       return ("(Data unavailable)");
     }
+  }
+  
+  /**
+   * Display a summary of a column.
+   */
+  public void displayColumnSummary(AssociationColumn col) {
+    AssociationSummary<T> summary = associationSummary(col);
+    StringArrayTable.displayDialog(summary.getTable(), col.getAssociation().title() + " summary",
+      500, 500);
+  }
+
+  @Nullable 
+  public AssociationSummary<T> associationSummary(AType atype) {
+    AssociationColumn col = assocColumns.get(atype);
+    if (col == null) {
+      return null;
+    }
+    return associationSummary(col);
+  }
+  
+  AssociationSummary<T> associationSummary(AssociationColumn col) {
+    return new AssociationSummary<T>(col, grid.getDisplayedItems());
+  }
+  
+  /**
+   * Set values for a static association.
+   * @param key identifies the association.
+   * @param values Maps each probe to the corresponding value.
+   */
+  public void setStaticAssociation(String key, Map<String, String> values) {
+    staticAssociations.put(key, values);
   }
 }

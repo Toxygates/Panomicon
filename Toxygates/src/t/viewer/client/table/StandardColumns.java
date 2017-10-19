@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client;
+package t.viewer.client.table;
 
 public enum StandardColumns {
   GeneID, GeneSym, ProbeTitle, Probe, Count;

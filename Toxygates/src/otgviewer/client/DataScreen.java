@@ -24,15 +24,11 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import otgviewer.client.components.*;
-import t.common.shared.ItemList;
-import t.common.shared.StringList;
+import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
-import t.model.SampleClass;
-import t.model.sample.CoreParameter;
 import t.viewer.client.Analytics;
-import t.viewer.client.table.ExpressionTable;
-import t.viewer.client.table.TableStyle;
+import t.viewer.client.table.*;
 import t.viewer.client.table.RichTable.HideableColumn;
 import t.viewer.shared.intermine.IntermineInstance;
 
@@ -86,16 +82,21 @@ public class DataScreen extends Screen {
         DataScreen.this.geneSetChanged(null);
         updateProbes();
       }
+      
+      @Override
+      protected void associationsUpdated() {
+        DataScreen.this.associationsUpdated();
+      }
     };
   }
+  
+  protected void associationsUpdated() {}
   
   protected TableStyle styleForColumns(List<Group> columns) {
     boolean foundMirna = false;
     boolean foundNonMirna = false;
     for (Group g: chosenColumns) {
-      SampleClass sc = g.getTreatedSamples()[0].sampleClass();
-      String platform = sc.get(CoreParameter.Platform);
-      if (CoreParameter.isMiRNAPlatform(platform)) {
+      if (GroupUtils.isMirnaGroup(g)) {      
         foundMirna = true;
       } else {
         foundNonMirna = true;
@@ -108,7 +109,7 @@ public class DataScreen extends Screen {
     } else {
      r = TableStyle.getStyle("default");
     }
-    logger.info("Use tabke style: " + r);
+    logger.info("Use table style: " + r);
     return r;    
   }
 
@@ -128,9 +129,11 @@ public class DataScreen extends Screen {
   @Override
   public Widget content() {
     setupMenuItems();
-
+    return mainTablePanel();
+  }
+  
+  protected Widget mainTablePanel() {
     ResizeLayoutPanel rlp = new ResizeLayoutPanel();
-
     rlp.setWidth("100%");
     rlp.add(expressionTable);
     return rlp;
@@ -162,6 +165,7 @@ public class DataScreen extends Screen {
     addMenu(mActions);
 
     menuBar = new MenuBar(true);
+    //TODO store the TickMenuItem in HideableColumn so that the state can be synchronised
     for (final HideableColumn<ExpressionRow, ?> c : expressionTable.getHideableColumns()) {
     	final String title = c.columnInfo().title();
       new TickMenuItem(menuBar, title, c.visible()) {

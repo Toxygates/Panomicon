@@ -1,6 +1,7 @@
 package t.viewer.client.table;
 
-import otgviewer.client.StandardColumns;
+import t.common.shared.sample.ExpressionRow;
+import t.viewer.client.table.RichTable.HideableColumn;
 
 /**
  * Controls the overall style of an ExpressionTable.
@@ -8,6 +9,15 @@ import otgviewer.client.StandardColumns;
 public abstract class TableStyle {
   abstract boolean initVisibility(StandardColumns col);
   abstract String initWidth(StandardColumns col);
+  
+  public void reapply(ExpressionTable table, HideableColumn<ExpressionRow, ?> toColumn) {
+    if (toColumn instanceof RichTable.HTMLHideableColumn<?>) {
+      StandardColumns col = ((RichTable.HTMLHideableColumn<?>) toColumn).standardColumn();
+      if (col != null) {
+        table.setVisible(toColumn, initVisibility(col));
+      }
+    }
+  }
   
   public static TableStyle getStyle(String name) {
     if (name.equals("mirna")) {
