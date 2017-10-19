@@ -2,7 +2,7 @@
 Global
 ******************************************************************************/
 
-html * {
+body {
 	font-family: Georgia, Times, "Times New Roman", serif;
 }
 
@@ -88,6 +88,10 @@ Menu bar
   color: DarkGray;
   font-style: italic;
   font-size: 0.75em;
+}
+
+.gwt-MenuBarPopup {
+	margin-left: 1px;
 }
 
 /**************************************	
