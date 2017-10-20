@@ -123,11 +123,13 @@ Top-level navigation links
 }
 
 .navlink-enabled:hover {
-	background: BurlyWood;
+	background: white;
+	color: black;
 	cursor: pointer;
 }
 
 .navlink-disabled {	
+	color: #585858
 }
 
 .navlink-enabled {	
