@@ -43,14 +43,16 @@ public class DualDataScreen extends DataScreen {
     return rlp;
   }
   
-  //TODO if columns are not mixed, we should simply return all columns here, even if
-  //they are mirna
   protected List<Group> columnsForMainTable(List<Group> from) {
     ArrayList<Group> r = new ArrayList<Group>();
     for (Group g: from) {
       if (!GroupUtils.isMirnaGroup(g)) {
         r.add(g);
       }
+    }
+    //If mRNA and miRNA columns are not mixed, we simply display them as they are
+    if (r.isEmpty()) {
+      r.addAll(from);
     }
     return r;
   }
