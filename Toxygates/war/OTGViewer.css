@@ -21,7 +21,7 @@ App elements
 
 .analysisTools {
 	margin: 1px 0px 0px 0px;
-	background: Beige;
+	background: #F1F1F1;
 }
 
 /**************************************	
@@ -155,7 +155,7 @@ Gene set editor
 }
 
 .geneSetInnerPanel {
-	background: Beige;
+	background: #F1F1F1;
 	padding: 5px;
 	border: grey solid 1px;
 	margin: 2px;
@@ -288,7 +288,7 @@ Sample Search
 .samplesearch-atomicpanel {
 	margin:1px;
 	padding: 1px;
-	background: beige;
+	background: #F1F1F1;
 }
 
 /**************************************	
@@ -392,7 +392,7 @@ Non-semantic
 }
 
 .colored {
-	background: Beige;
+	background: #F1F1F1;
 }
 
 .heading {
