@@ -1,4 +1,10 @@
 /******************************************************************************	
+Variables
+******************************************************************************/
+
+
+
+/******************************************************************************	
 Global
 ******************************************************************************/
 
@@ -78,6 +84,43 @@ Menu bar
   top: 1px;
   right: -1px;
 }
+
+.gwt-MenuBar-horizontal .gwt-MenuItem-selected {
+	background: #B5B5B5;
+}
+
+
+.gwt-MenuBar-vertical .gwt-MenuItem {
+	background: #F1F1F1;
+}
+
+.gwt-MenuBar-vertical .gwt-MenuItem-selected {
+	background: #B5B5B5;
+}
+
+.gwt-MenuBar-vertical .subMenuIcon  {
+	background: #F1F1F1;
+}
+
+.gwt-MenuBar-vertical .subMenuIcon-selected  {
+	background: #B5B5B5;
+}
+
+/*.gwt-MenuBar-vertical .gwt-MenuItem {
+	background: #B5B5B5;
+}
+
+.gwt-MenuBar-vertical .gwt-MenuItem-selected {
+	background: #F1F1F1;
+}
+
+.gwt-MenuBar-vertical .subMenuIcon  {
+	background: #B5B5B5;
+}
+
+.gwt-MenuBar-vertical .subMenuIcon-selected  {
+	background: #F1F1F1;
+}*/
 
 .feedbackMenuItem {
 	font-weight: bold;
