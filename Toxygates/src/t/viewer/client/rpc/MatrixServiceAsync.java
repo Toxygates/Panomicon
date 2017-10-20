@@ -20,43 +20,42 @@ package t.viewer.client.rpc;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import t.clustering.client.ClusteringServiceAsync;
 import t.clustering.shared.Algorithm;
 import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.shared.*;
+import t.viewer.shared.Synthetic.TwoGroupSynthetic;
 import t.viewer.shared.table.SortKey;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface MatrixServiceAsync extends ClusteringServiceAsync<Group,String> {
 
-  void loadMatrix(List<Group> columns, String[] probes, ValueType type,
+  void loadMatrix(String id, List<Group> columns, String[] probes, ValueType type,
       AsyncCallback<ManagedMatrixInfo> callback);
 
-  void matrixRows(int offset, int size, SortKey sortKey, boolean ascending,
+  void matrixRows(String id, int offset, int size, SortKey sortKey, boolean ascending,
       AsyncCallback<List<ExpressionRow>> callback);
 
-  void selectProbes(String[] probes, AsyncCallback<ManagedMatrixInfo> callback);
+  void selectProbes(String id, String[] probes, AsyncCallback<ManagedMatrixInfo> callback);
 
-  void setColumnFilter(int column, @Nullable ColumnFilter filter,
+  void setColumnFilter(String id, int column, ColumnFilter filter,
       AsyncCallback<ManagedMatrixInfo> callback);
 
   void getFullData(List<Group> g, String[] probes, boolean withSymbols,
       ValueType typ, AsyncCallback<FullMatrix> callback);
 
-  void prepareCSVDownload(boolean individualSamples, AsyncCallback<String> callback);
+  void prepareCSVDownload(String id, boolean individualSamples, AsyncCallback<String> callback);
 
-  void addTwoGroupTest(Synthetic.TwoGroupSynthetic test, AsyncCallback<ManagedMatrixInfo> callback);
+  void addTwoGroupTest(String id, TwoGroupSynthetic test, AsyncCallback<ManagedMatrixInfo> callback);
 
-  void removeTwoGroupTests(AsyncCallback<ManagedMatrixInfo> callback);
+  void removeTwoGroupTests(String id, AsyncCallback<ManagedMatrixInfo> callback);
 
   void sendFeedback(String name, String email, String feedback, AsyncCallback<Void> callback);
 
-  void prepareHeatmap(List<Group> chosenColumns, List<String> chosenProbes, ValueType valueType,
+  void prepareHeatmap(String id, List<Group> chosenColumns, List<String> chosenProbes, ValueType valueType,
       Algorithm algorithm, int featureDecimalDigits, AsyncCallback<String> callback);
 
 }

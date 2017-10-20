@@ -58,13 +58,16 @@ abstract public class HeatmapDialog<C, R> {
   private ListBox cMethod;
 
   protected Logger logger;
+  
+  protected String matrixId;
 
   protected Algorithm lastClusteringAlgorithm = new Algorithm();
 
-  public HeatmapDialog(Logger logger, ClusteringServiceAsync<C, R> service) {
+  public HeatmapDialog(String matrixId, Logger logger, ClusteringServiceAsync<C, R> service) {
     clusteringService = service;
     dialog = new DialogBox();
     this.logger = logger;
+    this.matrixId = matrixId;
   }
 
   private static boolean injected = false;
@@ -131,7 +134,7 @@ abstract public class HeatmapDialog<C, R> {
   }
 
   protected void doClustering(Algorithm algo) {
-    clusteringService.prepareHeatmap(columnsForClustering(),
+    clusteringService.prepareHeatmap(matrixId, columnsForClustering(),
       rowsForClustering(), algo,
         HEATMAP_TOOLTIP_DECIMAL_DIGITS, prepareHeatmapCallback());
   }

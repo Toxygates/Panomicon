@@ -72,9 +72,12 @@ public class DataScreen extends Screen {
       }
     };
   }
+  
+  protected static final String defaultMatrix = "DEFAULT";
 
   protected ExpressionTable makeExpressionTable() {
-    return new ExpressionTable(this, true, TableStyle.getStyle("default")) {
+    return new ExpressionTable(this, true, TableStyle.getStyle("default"),
+        defaultMatrix) {
       @Override
       protected void onGettingExpressionFailed() {
         super.onGettingExpressionFailed();

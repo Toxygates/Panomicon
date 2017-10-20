@@ -22,10 +22,13 @@ public class DualDataScreen extends DataScreen {
 
   protected ExpressionTable sideExpressionTable;
   
+  protected final static String sideMatrix = "SECONDARY";
+  
   public DualDataScreen(ScreenManager man) {
     super(man);
     
-    sideExpressionTable = new ExpressionTable(this, true, TableStyle.getStyle("mirna"));      
+    sideExpressionTable = new ExpressionTable(this, true,
+        TableStyle.getStyle("mirna"), sideMatrix);     
   }
   
   @Override

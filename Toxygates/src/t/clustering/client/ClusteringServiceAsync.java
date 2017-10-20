@@ -27,7 +27,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface ClusteringServiceAsync<C, R> {
 
-  void prepareHeatmap(List<C> columns, List<R> rows, Algorithm algorithm,
+  void prepareHeatmap(String matrixId, List<C> columns, List<R> rows, Algorithm algorithm,
       int featureDecimalDigits, AsyncCallback<String> callback);
 
 }

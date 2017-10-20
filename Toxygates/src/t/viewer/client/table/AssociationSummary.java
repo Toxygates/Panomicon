@@ -2,7 +2,6 @@ package t.viewer.client.table;
 
 import java.util.*;
 
-import t.common.shared.sample.ExpressionRow;
 import t.viewer.shared.AssociationValue;
 
 /**

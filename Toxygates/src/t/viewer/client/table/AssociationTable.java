@@ -71,7 +71,7 @@ abstract public class AssociationTable<T> extends RichTable<T> {
     for (HideableColumn<T, ?> ac : hideableColumns) {
       if (ac instanceof AssociationTable.AssociationColumn) {
         if (ac.visible()) {
-          r.add(((AssociationTable.AssociationColumn) ac).assoc);
+          r.add(((AssociationTable<?>.AssociationColumn) ac).assoc);
         }       
       }
     }

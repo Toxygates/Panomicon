@@ -123,13 +123,16 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   protected ValueType chosenValueType;
   
   private CheckBox pcb;
+  
+  private String matrixId;
 
   public ExpressionTable(Screen _screen, boolean withPValueOption,
-      TableStyle style) {
+      TableStyle style, String matrixId) {
     super(_screen, style);
     this.withPValueOption = withPValueOption;
     this.matrixService = _screen.manager().matrixService();
     this.resources = _screen.resources();
+    this.matrixId = matrixId;
     screen = _screen;
 
     grid.addStyleName("exprGrid");
@@ -297,7 +300,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   }
 
   private void removeTests() {    
-    matrixService.removeTwoGroupTests(new PendingAsyncCallback<ManagedMatrixInfo>(this, 
+    matrixService.removeTwoGroupTests(matrixId, 
+        new PendingAsyncCallback<ManagedMatrixInfo>(this, 
         "There was an error removing the test columns.") {
 
       @Override
@@ -370,7 +374,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       final Group g1 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel1));
       final Group g2 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel2));
       synth.setGroups(g1, g2);
-      matrixService.addTwoGroupTest(synth, new PendingAsyncCallback<ManagedMatrixInfo>(this,
+      matrixService.addTwoGroupTest(matrixId, synth, 
+          new PendingAsyncCallback<ManagedMatrixInfo>(this,
           "Adding test column failed") {
         @Override
         public void handleSuccess(ManagedMatrixInfo r) {
@@ -388,7 +393,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       return;
     }
     
-    matrixService.prepareCSVDownload(individualSamples, new PendingAsyncCallback<String>(this,
+    matrixService.prepareCSVDownload(matrixId, individualSamples, 
+        new PendingAsyncCallback<String>(this,
         "Unable to prepare the requested data for download.") {
 
       @Override
@@ -521,7 +527,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
    * Display a summary of a column.
    */
   private void columnSummary(AssociationTable<ExpressionRow>.AssociationColumn col) {
-    AssociationSummary summary = new AssociationSummary(col, grid.getDisplayedItems());
+    AssociationSummary<ExpressionRow> summary = 
+        new AssociationSummary<ExpressionRow>(col, grid.getDisplayedItems());
     StringArrayTable.displayDialog(summary.getTable(), col.getAssociation().title() + " summary",
       500, 500);
   }
@@ -542,7 +549,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   protected void applyColumnFilter(final int column, 
       final @Nullable ColumnFilter filter) {
     setEnabled(false);
-    matrixService.setColumnFilter(column, filter, new AsyncCallback<ManagedMatrixInfo>() {
+    matrixService.setColumnFilter(matrixId,
+        column, filter, new AsyncCallback<ManagedMatrixInfo>() {
       @Override
       public void onFailure(Throwable caught) {
         Window.alert("An error occurred when the column filter was changed.");
@@ -726,8 +734,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         range = display.getVisibleRange();
         computeSortParams();
         if (range.getLength() > 0) {
-          matrixService.matrixRows(range.getStart(), range.getLength(), sortKey, sortAsc,
-              rowCallback);
+          matrixService.matrixRows(matrixId, range.getStart(), range.getLength(), 
+              sortKey, sortAsc, rowCallback);
         }
       }
     }
@@ -791,7 +799,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     asyncProvider.updateRowCount(0, false);
     // grid.setRowCount(0, false);
     logger.info("Refilter for " + chosenProbes.length + " probes");
-    matrixService.selectProbes(chosenProbes, dataUpdateCallback());
+    matrixService.selectProbes(matrixId, chosenProbes, dataUpdateCallback());
   }
 
   private AsyncCallback<ManagedMatrixInfo> dataUpdateCallback() {
@@ -837,7 +845,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     logger.info("begin loading data for " + chosenColumns.size() + " columns and "
         + chosenProbes.length + " probes");
     // load data
-    matrixService.loadMatrix(chosenColumns, chosenProbes, chosenValueType,
+    matrixService.loadMatrix(matrixId, chosenColumns, chosenProbes, chosenValueType,
         new AsyncCallback<ManagedMatrixInfo>() {
           @Override
           public void onFailure(Throwable caught) {

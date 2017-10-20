@@ -24,8 +24,9 @@ public class HeatmapViewer extends DataListenerWidget {
     this.screen = screen;
   }
 
-  public HeatmapDialog dialog(ValueType defaultType) {
-    return new HeatmapDialog(screen.manager().matrixService(), defaultType);
+  public HeatmapDialog dialog(ValueType defaultType, String matrixId) {
+    return new HeatmapDialog(screen.manager().matrixService(), defaultType,
+        matrixId);
   }
 
   public class HeatmapDialog extends t.clustering.client.HeatmapDialog<Group, String> {
@@ -35,8 +36,9 @@ public class HeatmapViewer extends DataListenerWidget {
     private final ListBox valType;
     private final MatrixServiceAsync matrixService;
 
-    public HeatmapDialog(MatrixServiceAsync service, ValueType defaultType) {
-      super(HeatmapViewer.this.logger, service);
+    public HeatmapDialog(MatrixServiceAsync service, ValueType defaultType, 
+        String matrixId) {
+      super(matrixId, HeatmapViewer.this.logger, service);
       this.matrixService = service;
       this.defaultType = defaultType;
       valType = new ListBox();
@@ -73,7 +75,7 @@ public class HeatmapViewer extends DataListenerWidget {
 
     @Override
     protected void doClustering(Algorithm algo) {
-      matrixService.prepareHeatmap(columnsForClustering(),
+      matrixService.prepareHeatmap(matrixId, columnsForClustering(),
         rowsForClustering(), getValueType(), algo,
           HeatmapDialog.HEATMAP_TOOLTIP_DECIMAL_DIGITS, prepareHeatmapCallback());
     }
@@ -138,10 +140,11 @@ public class HeatmapViewer extends DataListenerWidget {
 
   public static void show(DataScreen screen, ValueType defaultType) {
     HeatmapViewer viewer = new HeatmapViewer(screen);
-    show(viewer, screen, defaultType);
+    show(viewer, screen, defaultType, DataScreen.defaultMatrix);
   }
 
-  public static void show(HeatmapViewer viewer, DataScreen screen, ValueType defaultType) {
+  public static void show(HeatmapViewer viewer, DataScreen screen, ValueType defaultType,
+      String matrixId) {
     screen.propagateTo(viewer);
     viewer.probesChanged(screen.displayedAtomicProbes());
 
@@ -165,7 +168,7 @@ public class HeatmapViewer extends DataListenerWidget {
     }
 
     // all checks passed
-    HeatmapDialog dialog = viewer.dialog(defaultType);
+    HeatmapDialog dialog = viewer.dialog(defaultType, matrixId);
     dialog.initWindow();
     Analytics.trackEvent(Analytics.CATEGORY_ANALYSIS, Analytics.ACTION_SHOW_HEAT_MAP);
   }

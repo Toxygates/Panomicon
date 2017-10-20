@@ -49,50 +49,56 @@ public interface MatrixService extends ClusteringService<Group, String>, RemoteS
    * TODO: this call should return a FullMatrix with the first page of rows. In effect, merge
    * loadMatrix() with the first call to matrixRows().
    * 
+   * @param id ID of the matrix
    * @param barcodes
    * @param probes
    * @param type
    * @return The number of rows that remain after filtering.
    */
-  ManagedMatrixInfo loadMatrix(List<Group> columns, String[] probes, ValueType type)
+  ManagedMatrixInfo loadMatrix(String id,
+      List<Group> columns, String[] probes, ValueType type)
       throws ServerError;
 
   /**
    * Filter data that has already been loaded into the session.
    * 
+   * @param id ID of the matrix
    * @param probes Probes to keep
    * @return
    */
-  ManagedMatrixInfo selectProbes(String[] probes);
+  ManagedMatrixInfo selectProbes(String id, String[] probes);
 
   /**
    * Set the filtering threshold for a single column.
    * 
+   * @param id ID of the matrix
    * @param column
    * @param filter the filter, or null to reset.
    * @return
    */
-  ManagedMatrixInfo setColumnFilter(int column, @Nullable ColumnFilter filter);
+  ManagedMatrixInfo setColumnFilter(String id, int column, @Nullable ColumnFilter filter);
 
   /**
    * Add a T-test/U-test/fold change difference column. Requires that loadDataset was first used to
    * load items. After this has been done, datasetItems or getFullData can be used as normal to
    * obtain the data. The test is two-tailed and does not assume equal sample variances.
    * 
+   * @param id ID of the matrix
    * @param g1
    * @param g2
    */
-  ManagedMatrixInfo addTwoGroupTest(Synthetic.TwoGroupSynthetic test) throws ServerError;
+  ManagedMatrixInfo addTwoGroupTest(String id, Synthetic.TwoGroupSynthetic test) throws ServerError;
 
   /**
    * Remove all test columns. The result will be reflected in subsequent calls to datasetItems or
    * getFullData.
    */
-  ManagedMatrixInfo removeTwoGroupTests() throws ServerError;
+  ManagedMatrixInfo removeTwoGroupTests(String id) throws ServerError;
 
   /**
    * Get one page. Requires that loadMatrix was first used to load items.
    * 
+   * @param id ID of the matrix
    * @param offset
    * @param size
    * @param sortColumn data column to sort by (starting at 0) If this parameter is -1, the
@@ -100,8 +106,8 @@ public interface MatrixService extends ClusteringService<Group, String>, RemoteS
    * @param ascending Whether to use ascending sort. Applies if sortColumn is not -1.
    * @return
    */
-  List<ExpressionRow> matrixRows(int offset, int size, SortKey sortKey, boolean ascending)
-      throws ServerError;
+  List<ExpressionRow> matrixRows(String id, int offset, int size, SortKey sortKey, 
+      boolean ascending) throws ServerError;
 
   /**
    * Get all data immediately, on the level of individual values (not averaged).
@@ -121,11 +127,12 @@ public interface MatrixService extends ClusteringService<Group, String>, RemoteS
    * Prepare a CSV file representing the loaded data for download. Requires that loadDataset was
    * first used to load items.
    * 
+   * @param id ID of the matrix
    * @param individualSamples if true, each individual sample is included as a separate column
    *        (only). If false, groups are used.
    * @return A downloadable URL.
    */
-  String prepareCSVDownload(boolean individualSamples) throws ServerError;
+  String prepareCSVDownload(String id, boolean individualSamples) throws ServerError;
 
   /**
    * Send a feedback email from a user. This should not necessarily be in MatrixService.
@@ -134,7 +141,7 @@ public interface MatrixService extends ClusteringService<Group, String>, RemoteS
 
   /**
    * Perform a clustering that can be used to display a heat map.
-   * 
+   * @param id The matrix ID. We will attempt to reuse data from this matrix if possible.
    * @param chosenColumns
    * @param chosenProbes The atomic probes (even for orthologous display) to cluster.
    * @param valueType
@@ -143,7 +150,7 @@ public interface MatrixService extends ClusteringService<Group, String>, RemoteS
    * @return The clusters in JSON format.
    * @throws ServerError
    */
-  String prepareHeatmap(List<Group> chosenColumns, 
+  String prepareHeatmap(@Nullable String id, List<Group> chosenColumns, 
       @Nullable List<String> chosenProbes,
       ValueType valueType, Algorithm algorithm, int featureDecimalDigits) throws ServerError;
   
