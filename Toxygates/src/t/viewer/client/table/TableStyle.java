@@ -1,8 +1,7 @@
 package t.viewer.client.table;
 
-import otgviewer.client.StandardColumns;
-
-import com.google.gwt.cell.client.SafeHtmlCell;
+import t.common.shared.sample.ExpressionRow;
+import t.viewer.client.table.RichTable.HideableColumn;
 
 /**
  * Controls the overall style of an ExpressionTable.
@@ -10,6 +9,15 @@ import com.google.gwt.cell.client.SafeHtmlCell;
 public abstract class TableStyle {
   abstract boolean initVisibility(StandardColumns col);
   abstract String initWidth(StandardColumns col);
+  
+  public void reapply(ExpressionTable table, HideableColumn<ExpressionRow, ?> toColumn) {
+    if (toColumn instanceof RichTable.HTMLHideableColumn<?>) {
+      StandardColumns col = ((RichTable.HTMLHideableColumn<?>) toColumn).standardColumn();
+      if (col != null) {
+        table.setVisible(toColumn, initVisibility(col));
+      }
+    }
+  }
   
   public static TableStyle getStyle(String name) {
     if (name.equals("mirna")) {
@@ -21,7 +29,8 @@ public abstract class TableStyle {
   
   static class DefaultTableStyle extends TableStyle {
     boolean initVisibility(StandardColumns col) {
-      return col != StandardColumns.GeneID;
+      return col != StandardColumns.GeneID &&
+          col != StandardColumns.Count;
     }
 
     String initWidth(StandardColumns col) {
@@ -34,6 +43,8 @@ public abstract class TableStyle {
           return "18em";
         case GeneID:
           return "12em";
+        case Count:
+          return "8em";
         default:
           return "15em";
       }
@@ -53,7 +64,8 @@ public abstract class TableStyle {
     
     @Override
     boolean initVisibility(StandardColumns col) {
-      return col == StandardColumns.Probe;
+      return col == StandardColumns.Probe ||
+          col == StandardColumns.Count;
     }
   }
 }

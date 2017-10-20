@@ -19,7 +19,6 @@
 package otgviewer.client;
 
 import otgviewer.client.dialog.MirnaSourceDialog;
-import otgviewer.client.dialog.MirnaSourceSelector;
 import otgviewer.shared.OTGSchema;
 import t.common.shared.DataSchema;
 import t.viewer.client.Analytics;
@@ -41,7 +40,7 @@ public class OTGViewer extends TApplication {
     addScreenSeq(new StartScreen(this));
     addScreenSeq(new ColumnScreen(this));
     addScreenSeq(new SampleSearchScreen(this));
-    addScreenSeq(new DataScreen(this));
+    addScreenSeq(new DualDataScreen(this));
     addScreenSeq(new RankingScreen(this));
     addScreenSeq(new PathologyScreen(this));
     addScreenSeq(new SampleDetailScreen(this));    

@@ -79,6 +79,7 @@ class AssociationResolver(probeStore: Probes,
 
         case _ => throw new Exception(s"Unexpected miRNA source ${source.id}")
       }
+
       } catch {
         case e: Exception =>
           e.printStackTrace()

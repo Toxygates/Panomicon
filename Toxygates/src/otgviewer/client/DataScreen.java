@@ -24,13 +24,11 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import otgviewer.client.components.*;
-import t.common.shared.ItemList;
-import t.common.shared.StringList;
+import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
-import t.viewer.client.table.ExpressionTable;
-import t.viewer.client.table.TableStyle;
+import t.viewer.client.table.*;
 import t.viewer.client.table.RichTable.HideableColumn;
 import t.viewer.shared.intermine.IntermineInstance;
 
@@ -84,7 +82,35 @@ public class DataScreen extends Screen {
         DataScreen.this.geneSetChanged(null);
         updateProbes();
       }
+      
+      @Override
+      protected void associationsUpdated() {
+        DataScreen.this.associationsUpdated();
+      }
     };
+  }
+  
+  protected void associationsUpdated() {}
+  
+  protected TableStyle styleForColumns(List<Group> columns) {
+    boolean foundMirna = false;
+    boolean foundNonMirna = false;
+    for (Group g: chosenColumns) {
+      if (GroupUtils.isMirnaGroup(g)) {      
+        foundMirna = true;
+      } else {
+        foundNonMirna = true;
+      }
+    }
+    
+    TableStyle r; 
+    if (foundMirna && ! foundNonMirna) {
+      r = TableStyle.getStyle("mirna");
+    } else {
+     r = TableStyle.getStyle("default");
+    }
+    logger.info("Use table style: " + r);
+    return r;    
   }
 
   static final public int STANDARD_TOOL_HEIGHT = 43;
@@ -103,9 +129,11 @@ public class DataScreen extends Screen {
   @Override
   public Widget content() {
     setupMenuItems();
-
+    return mainTablePanel();
+  }
+  
+  protected Widget mainTablePanel() {
     ResizeLayoutPanel rlp = new ResizeLayoutPanel();
-
     rlp.setWidth("100%");
     rlp.add(expressionTable);
     return rlp;
@@ -137,6 +165,7 @@ public class DataScreen extends Screen {
     addMenu(mActions);
 
     menuBar = new MenuBar(true);
+    //TODO store the TickMenuItem in HideableColumn so that the state can be synchronised
     for (final HideableColumn<ExpressionRow, ?> c : expressionTable.getHideableColumns()) {
     	final String title = c.columnInfo().title();
       new TickMenuItem(menuBar, title, c.visible()) {
@@ -233,7 +262,7 @@ public class DataScreen extends Screen {
     // Attempt to avoid reloading the data
     if (lastColumns == null || !chosenColumns.equals(lastColumns)) {
       logger.info("Data reloading needed");
-      expressionTable.setStyle(getStyle(chosenColumns));
+      expressionTable.setStyle(styleForColumns(chosenColumns));
       expressionTable.getExpressions();      
     } else if (!Arrays.equals(chosenProbes, lastProbes)) {
       logger.info("Only refiltering is needed");
@@ -248,10 +277,6 @@ public class DataScreen extends Screen {
   public void show() {
     super.show();
     updateProbes();
-  }
-  
-  private TableStyle getStyle(List<Group> columns) {
-    return TableStyle.getStyle("default");
   }
 
   @Override

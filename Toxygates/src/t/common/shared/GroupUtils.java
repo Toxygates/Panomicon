@@ -20,9 +20,10 @@ package t.common.shared;
 
 import java.util.*;
 
-import t.common.shared.sample.Sample;
-import t.common.shared.sample.SampleGroup;
+import t.common.shared.sample.*;
+import t.model.SampleClass;
 import t.model.sample.Attribute;
+import t.model.sample.CoreParameter;
 
 /**
  * Data manipulation utility methods.
@@ -117,5 +118,14 @@ public class GroupUtils {
     return null;
   }
 
+  public static String groupPlatform(Group g) {
+    SampleClass sc = g.getTreatedSamples()[0].sampleClass();
+    String platform = sc.get(CoreParameter.Platform);
+    return platform;
+  }
+  
+  public static boolean isMirnaGroup(Group g) {
+    return CoreParameter.isMiRNAPlatform(groupPlatform(g));
+  }
 
 }

@@ -20,7 +20,8 @@ package t.viewer.client.table;
 
 import java.util.*;
 
-import otgviewer.client.StandardColumns;
+import javax.annotation.Nullable;
+
 import otgviewer.client.components.DataListenerWidget;
 import t.common.shared.DataSchema;
 
@@ -54,14 +55,14 @@ abstract public class RichTable<T> extends DataListenerWidget {
   // Track the number of columns in each section
   private Map<String, Integer> sectionColumnCount = new HashMap<String, Integer>();
 
+  protected TableStyle style;
+  
   public interface Resources extends DataGrid.Resources {
     @Override
     @Source("t/viewer/client/table/RichTable.css")
     DataGrid.Style dataGridStyle();
   }
 
-  protected TableStyle style;
- 
   public RichTable(DataSchema schema, TableStyle style) {
     this.schema = schema;
     this.style = style;
@@ -273,6 +274,9 @@ abstract public class RichTable<T> extends DataListenerWidget {
 
   protected void removeColumn(Column<T, ?> col) {
     int idx = grid.getColumnIndex(col);
+    if (idx == -1) {
+      return;
+    }
     decreaseSectionCount(idx);
     ColumnInfo info = columnInfos.get(idx);
 
@@ -333,7 +337,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
 
     void setVisibility(boolean v) {
       _visible = v;
-    }
+    }    
   }
 
   /**
@@ -344,7 +348,8 @@ abstract public class RichTable<T> extends DataListenerWidget {
     protected String _width;
     protected String _name;
     protected SafeHtmlCell _c;
-
+    @Nullable protected StandardColumns standardColumn;
+    
     public HTMLHideableColumn(SafeHtmlCell c, String name, boolean initState, String width) {
       super(c, initState);
       this._c = c;
@@ -356,6 +361,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
     public HTMLHideableColumn(SafeHtmlCell c, String name, 
         StandardColumns col, TableStyle style) {
       this(c, name, style.initVisibility(col), style.initWidth(col));
+      this.standardColumn = col;
     }
 
     @Override
@@ -366,6 +372,11 @@ abstract public class RichTable<T> extends DataListenerWidget {
     }
 
     protected abstract String getHtml(T er);
+    
+    @Nullable
+    public StandardColumns standardColumn() {
+      return standardColumn;
+    }
   }
 
   protected class RowHighlighter<U> implements RowStyles<U> {

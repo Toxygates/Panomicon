@@ -8,7 +8,7 @@ import t.viewer.shared.AssociationValue;
 /**
  * Summarises a single association column as a histogram for a set of rows.
  */
-class AssociationSummary {
+public class AssociationSummary<T> {
 
   class HistogramEntry {
     AssociationValue entry;
@@ -24,9 +24,9 @@ class AssociationSummary {
   private Set<AssociationValue> unique = new HashSet<AssociationValue>();
   private List<HistogramEntry> sortedByCount = new ArrayList<HistogramEntry>();
   
-  AssociationSummary(AssociationTable<ExpressionRow>.AssociationColumn col, 
-    Collection<ExpressionRow> rows) {
-    for (ExpressionRow row: rows) {
+  AssociationSummary(AssociationTable<T>.AssociationColumn col, 
+    Collection<T> rows) {
+    for (T row: rows) {
       data.addAll(col.getLinkableValues(row));
       unique.addAll(col.getLinkableValues(row));
     }    
@@ -55,7 +55,7 @@ class AssociationSummary {
     return new HistogramEntry(item, count);    
   }
   
-  String[][] getTable() {
+  public String[][] getTable() {
     String[][] r = new String[sortedByCount.size() + 1][3];
     r[0] = new String[] { "Title", "ID", "Count" };
     for (int i = 0; i < sortedByCount.size(); i++) {
