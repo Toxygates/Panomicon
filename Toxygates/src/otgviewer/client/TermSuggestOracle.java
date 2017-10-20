@@ -21,13 +21,13 @@ package otgviewer.client;
 
 import java.util.*;
 
-import otgviewer.client.components.*;
-import t.common.shared.*;
-import t.viewer.client.rpc.ProbeServiceAsync;
-
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.SuggestOracle;
+
+import otgviewer.client.components.*;
+import t.common.shared.*;
+import t.viewer.client.rpc.ProbeServiceAsync;
 
 public class TermSuggestOracle extends SuggestOracle implements
     HasExactMatchHandler<Term> {
@@ -141,10 +141,10 @@ public class TermSuggestOracle extends SuggestOracle implements
     private String getFullDisplayString(String display, String reference) {
       StringBuffer sb = new StringBuffer();
       sb.append("<div class=\"suggest-item\">");
-      sb.append("<div class=\"suggest-keyword\">");
+      sb.append("<div class=\"suggestion-keyword\">");
       sb.append(display);
       sb.append("</div>");
-      sb.append("<div class=\"suggest-reference\">");
+      sb.append("<div class=\"suggestion-reference\">");
       sb.append(reference);
       sb.append("</div>");
       sb.append("</div>");

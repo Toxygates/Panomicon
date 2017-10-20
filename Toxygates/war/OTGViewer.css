@@ -1,80 +1,125 @@
+/******************************************************************************	
+Global
+******************************************************************************/
+
+body {
+	font-family: Georgia, Times, "Times New Roman", serif;
+}
+
+/******************************************************************************	
+App elements 
+******************************************************************************/
+
 .toxygatesTitle {
 	font-family: 'Play', sans-serif;
 	font-size: 36pt;
-}
-
-.resizingListBox {
-	font-size: 13px;
-}
-
-.dialogVPanel {
-	margin: 5px;
-}
-
-.highlySpaced {
-	margin: 5px;
-}
-
-.slightlySpaced {
-	margin: 2px;
-}
-
-.slightlySpacedLeftRight {
-	margin-left: 2px;
-	margin-right: 2px;
-}
-
-.colored {
-	background: Beige;
-}
-
-.colored-margin {
-	background: Beige;
-	padding: 5px;
-	border: grey solid 1px;
-	margin: 2px;
-}
-
-.darkColored {
-	background: White;
-	margin: 2px;
-}
-
-.colored2 {
-	margin: 1px 0px 0px 0px;
-	background: Beige;
 }
 
 .compoundSelector {
 	margin: 0em 0em 0em 1em;
 }
 
-.none {
-	
+.analysisTools {
+	margin: 1px 0px 0px 0px;
+	background: Beige;
 }
 
-.heading {
-	font-size: 1.2em;
-	color: #777777;
-	margin: 5px;
-	text-align: center;	
+/**************************************	
+Menu bar
+**************************************/
+
+.menuBarPanel {
+	padding-left: 11px;
+	background: #363636;	
 }
+
+.gwt-MenuBar table {
+	border-spacing: 0px;
+}
+
+.gwt-MenuBar-horizontal .gwt-MenuItem {
+	color: white;
+	position: relative;
+	/* This border needs to be the same color as the menuBarPanel background. It ensures 
+	   correct positioning of the partial border :before pseudo-element, and also prevents
+	   the pixels on the border from changing color when mousing over the menu item (this
+	   is why we can't just use transparent instead of setting the same color). 
+	*/
+	border-left: solid 1px #363636;
+}
+
+.gwt-MenuBar-horizontal .gwt-MenuItem:before {
+  content: '';
+  width: 1px; 
+  height: 5px; 
+  background: #7E7E7E; 
+  position: absolute; 
+  top: 1px;
+  left: -1px;
+}
+
+.gwt-MenuItem-disabled {
+	color: DarkGray;
+}
+
+#helpMenu {
+	color: #FCEE21;
+	/* This does the same thing as the border-left in .gwt-MenuBar-horizontal .gwt-MenuItem,
+	   except for the :after pseudo-element. */
+	border-right: solid 1px #363636;
+}
+
+.gwt-MenuBar-horizontal .gwt-MenuItem:after {
+  content: '';
+  width: 1px; 
+  height: 5px; 
+  background: #7E7E7E; 
+  position: absolute; 
+  top: 1px;
+  right: -1px;
+}
+
+.feedbackMenuItem {
+	font-weight: bold;
+	color: green;
+}
+
+.menuSeparatorCaption {
+  color: DarkGray;
+  font-style: italic;
+  font-size: 0.75em;
+}
+
+.gwt-MenuBarPopup {
+	margin-left: 1px;
+}
+
+/**************************************	
+Top-level navigation links 
+**************************************/
 
 .navPanel {	
+	height: 100%;
 	float: left;
+	margin-left: 11px;
 }
 
 .navOuterPanel {
-	background: Beige;
+	height: 100%;
+	background: #363636;
 	float: left;
 }
 
 .navlink {
+	height: 35px;
+	line-height: 35px;
+	text-align: center;
 	font-size: 1.2em;
-	font-weight: bold;
-	color: grey;
-	margin: 0px;	
-	padding: 5px;
+	color: #A1A1A1;
+	margin: 0px;
+	padding: 0px 10px;
+	border-right: solid 1px #595959;
+	border-top: solid 1px #595959;
 }
 
 .navlink-enabled:hover {
@@ -83,55 +128,80 @@
 }
 
 .navlink-disabled {	
-	color: grey;	
 }
 
 .navlink-enabled {	
-	color: black;	
 	cursor: pointer;	
 }
 
-.navlink-inner {
-	border-left: solid 2px #505050;
-	margin-left: 0px;	
+.navlink-first {
+	border-left: solid 1px #595959;
 }
 
 .navlink-current {	
-	background: #505050;
-	color: beige;		
+	background: white;
+	color: black;		
+	border-top: none;
 }
 
-.border {
-	margin: 1px;
-	border: solid black 1px;
+/**************************************	
+Gene set editor 
+**************************************/
+
+.resizingListBox {
+	font-size: 13px;
 }
 
-.invisibleBorder {
+.geneSetInnerPanel {
+	background: Beige;
+	padding: 5px;
+	border: grey solid 1px;
+	margin: 2px;
+}
+
+/**************************************	
+Time-dose grids 
+**************************************/
+
+.timeDoseGrid {
+	margin: 5px;
+}
+
+.doseTimeBox {
 	margin: 1px;
 	border: solid white 1px;
 }
 
-.datasetInfo {
+.compoundDoseTimeBox {
 	margin: 1px;
-	padding: 2px;
 	border: solid black 1px;
-	cursor: pointer;	
 }
 
-.emphasized {
-	font-weight: bold;
-}
-
-.heavyEmphasized {
+.selectionGridSectionHeading {
 	font-weight: bold;
 	font-size: 1.1em;
 	margin: 2px;	
 }
 
+/**************************************	
+Status panel 
+**************************************/
+
 .statusPanel {
 	background: White;
 	text-align: left;
 	color: black;
+}
+
+.statusBorder {
+	margin: 1px;
+	border: solid DarkBlue 1px;
+}
+
+.groupLabel {
+	margin: 2px;
+	white-space: nowrap;
+	float: left;
 }
 
 .guideBar {
@@ -142,10 +212,9 @@
 	font-size: large;
 }
 
-.statusBorder {
-	margin: 1px;
-	border: solid DarkBlue 1px;
-}
+/**************************************	
+Expression table
+**************************************/
 
 .highlightedRow {
 	font-style: italic;	
@@ -160,23 +229,14 @@
 	color: Black;
 }
 
-.clickCell {
-	cursor: pointer;
-}
-
 .associationValue {
 	clear: left;
 }
 
-#helpMenu {
-	font-weight: bold;
-	color: green;
-}
 
-.feedbackMenuItem {
-	font-weight: bold;
-	color: green;
-}
+/**************************************	
+Groups
+**************************************/
 
 /* This must correspond to the colors in SampleGroup.java
 */
@@ -202,45 +262,36 @@
 	color: #B354B3;
 }
 
-.groupLabel {
-	margin: 2px;
-	white-space: nowrap;
-	float: left;
+/**************************************	
+Sample Search
+**************************************/
+
+.samplesearch-label {
+	color: silver;
 }
 
-.watermark {
-	font-style: italic;
-	color: DarkGray;
+.samplesearch-rootpanel {
 }
 
-.suggest-keyword {
-	text-align: left;
+.samplesearch-andpanel {
+	margin:1px;
 }
 
-.suggest-reference {
-	text-align: right;
-	color: DarkGray;
-	font-style: italic;
-	font-size: 0.75em;
+.samplesearch-orpanel {
+	margin:1px;
+	border-top: solid grey 1px;
+	border-bottom: solid grey 1px;
 }
 
-.table-cell {
-	display: table-cell;
+.samplesearch-atomicpanel {
+	margin:1px;
+	padding: 1px;
+	background: beige;
 }
 
-.width-fix {
-	padding-right: 10px;
-}
-
-.gwt-MenuItem-disabled {
-	color: DarkGray;
-}
-
-.menuSeparatorCaption {
-  color: DarkGray;
-  font-style: italic;
-  font-size: 0.75em;
-}
+/**************************************	
+Data sources information
+**************************************/
 
 .metadata-info {
 	margin: 5px;
@@ -273,6 +324,30 @@
 	width: 200px;
 }
 
+/**************************************	
+Probe selector
+**************************************/
+
+.watermark {
+	font-style: italic;
+	color: DarkGray;
+}
+
+.suggestion-keyword {
+	text-align: left;
+}
+
+.suggestion-reference {
+	text-align: right;
+	color: DarkGray;
+	font-style: italic;
+	font-size: 0.75em;
+}
+
+/**************************************	
+Sample details
+**************************************/
+
 .numericalParameterAbove {
 	color: red;
 	font-weight: bold;
@@ -301,28 +376,49 @@
 	width: 10em;
 }
 
-.samplesearch-label {
-	color: silver;
+/******************************************************************************	
+Non-semantic 
+******************************************************************************/
+
+.slightlySpaced {
+	margin: 2px;
 }
 
-.samplesearch-rootpanel {
+.slightlySpacedLeftRight {
+	margin-left: 2px;
+	margin-right: 2px;
 }
 
-.samplesearch-andpanel {
-	margin:1px;
+.colored {
+	background: Beige;
 }
 
-.samplesearch-orpanel {
-	margin:1px;
-	border-top: solid grey 1px;
-	border-bottom: solid grey 1px;
+.heading {
+	font-size: 1.2em;
+	color: #777777;
+	margin: 5px;
+	text-align: center;	
 }
 
-.samplesearch-atomicpanel {
-	margin:1px;
-	padding: 1px;
-	background: beige;
+.emphasized {
+	font-weight: bold;
 }
+
+.clickCell {
+	cursor: pointer;
+}
+
+.table-cell {
+	display: table-cell;
+}
+
+.width-fix {
+	padding-right: 10px;
+}
+
+/******************************************************************************	
+Miscellaneous
+******************************************************************************/
 
 /*
  Fix "Ghost scrollbar" issue in Safari with trackpads.

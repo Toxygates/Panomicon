@@ -191,7 +191,10 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     mainDockPanel = new DockLayoutPanel(Unit.PX);
     rootPanel.add(mainDockPanel);
 
-    mainDockPanel.addNorth(menuBar, 35);
+    FlowPanel menuBarPanel = new FlowPanel();
+    menuBarPanel.add(menuBar);
+    menuBarPanel.addStyleName("menuBarPanel");
+    mainDockPanel.addNorth(menuBarPanel, 56);
 
     HorizontalPanel navOuter = Utils.mkHorizontalPanel();
     navOuter.setWidth("100%");
@@ -469,8 +472,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
           label.addStyleDependentName("disabled");
         }
       }
-      if (i > 0) {
-        label.addStyleDependentName("inner");
+      if (i == 0) {
+        label.addStyleDependentName("first");
       }
       navPanel.add(label);
     }

@@ -312,7 +312,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
    */
   private void makeAnalysisTools() {
     analysisTools = Utils.mkHorizontalPanel(true);
-    analysisTools.addStyleName("colored2");
+    analysisTools.addStyleName("analysisTools");
 
     analysisTools.add(groupsel1);
     groupsel1.setVisibleItemCount(1);
@@ -420,12 +420,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
             new ColumnInfo(matrixInfo.columnName(i), 
                 matrixInfo.columnHint(i), true, false, true,
                 matrixInfo.columnFilter(i).active());
-        ci.setCellStyleNames("dataColumn");
-        addColumn(valueCol, "data", ci);
         Group g = matrixInfo.columnGroup(i);
-        if (g != null) {
-          valueCol.setCellStyleNames(g.getStyleName());
-        }
+        String styleName = g == null ? "dataColumn" : g.getStyleName();
+        ci.setCellStyleNames(styleName);
+        addColumn(valueCol, "data", ci);
       }
     }
     
