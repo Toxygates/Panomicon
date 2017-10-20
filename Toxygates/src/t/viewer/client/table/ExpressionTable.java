@@ -408,7 +408,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   @Override
   protected void setupColumns() {
     super.setupColumns();
-    ensureSection("synthetic");
 
     TextCell tc = new TextCell();
 
@@ -426,6 +425,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
     }
     
+    ensureSection("synthetic");    
     for (int i = matrixInfo.numDataColumns(); i < matrixInfo.numColumns(); i++) {
       addSynthColumn(matrixInfo.columnName(i), matrixInfo.columnHint(i), i);
     }    
