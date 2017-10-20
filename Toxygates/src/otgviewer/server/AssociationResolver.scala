@@ -67,6 +67,7 @@ class AssociationResolver(probeStore: Probes,
     }
 
     def resolveMiRNA(source: MirnaSource, probes: Iterable[Probe]): MMap[Probe, DefaultBio] = {
+      try {
       source.id match {
         case "http://level-five.jp/t/mapping/mirdb" =>
           probeStore.mirnaAssociations(probes,
@@ -77,6 +78,11 @@ class AssociationResolver(probeStore: Probes,
               mirnaResolver.forGenes(probes.flatMap(_.genes))
 
         case _ => throw new Exception(s"Unexpected miRNA source ${source.id}")
+      }
+      } catch {
+        case e: Exception =>
+          e.printStackTrace()
+          emptyMMap()
       }
     }
 
