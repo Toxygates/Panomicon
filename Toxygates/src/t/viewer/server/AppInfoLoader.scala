@@ -39,9 +39,9 @@ class AppInfoLoader(probeStore: Probes,
     new java.util.LinkedList(seqAsJavaList(sls.sortBy(_.name)))
   }
 
-  //Currently identical to predef probe lists
   def probeClusterings(probeLists: Iterable[StringList]) = {
-    val cls = probeLists.map(x => ProbeClustering.buildFrom(x))
+    val cls = probeLists.flatMap(x => Option(ProbeClustering.buildFrom(x)))
+    
     new java.util.LinkedList(seqAsJavaList(cls.toSeq))
   }
 
