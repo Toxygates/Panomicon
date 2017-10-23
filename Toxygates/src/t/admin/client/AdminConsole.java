@@ -22,8 +22,7 @@ import java.util.logging.Logger;
 
 import t.common.client.Resources;
 import t.common.client.maintenance.*;
-import t.common.shared.Dataset;
-import t.common.shared.Platform;
+import t.common.shared.*;
 import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.Instance;
 
@@ -284,7 +283,7 @@ public class AdminConsole implements EntryPoint {
 
   // TODO reduce duplicated code
   private void refreshDatasets() {
-    maintenanceService.getDatasets(new ListDataCallback<Dataset>(datasetData, "platform list"));
+    maintenanceService.getDatasets(new ListDataCallback<Dataset>(datasetData, "dataset list"));
   }
 
   final Logger logger = Logger.getLogger("AdminConsole");
