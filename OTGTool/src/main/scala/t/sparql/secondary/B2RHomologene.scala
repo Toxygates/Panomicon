@@ -43,7 +43,6 @@ class B2RHomologene extends Triplestore {
   /**
    * For several different source genes (specified as Entrez number) obtain the
    * orthologous Entrez gene IDs in other species.
-   * TODO consider using a UNION query instead
    */
   def homologousGenes(genes: Iterable[Gene]): MMap[Gene, Gene] = {
     val r = multiQuery(prefixes + " SELECT DISTINCT ?g ?o WHERE { " +
