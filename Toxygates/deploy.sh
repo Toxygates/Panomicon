@@ -4,7 +4,6 @@ TGCP=war/WEB-INF/classes
 TOOLCP=../OTGTool/classes
 
 function makeWar {
-    VERSION=$1
     OUTPUT=toxygates-template.war
     cp -r $TOOLCP/friedrich $TGCP
     cp -r $TOOLCP/otg $TGCP
@@ -14,7 +13,9 @@ function makeWar {
     rm WEB-INF/web.xml
     [ ! -d csv ] && mkdir csv
     rm csv/*.csv
-    jar cf $OUTPUT toxygates csv *.pdf *.css images *.html.template *.zip
+    cp *.css toxygates
+    cp -r images toxygates
+    jar cf $OUTPUT toxygates csv *.pdf *.css *.html.template *.zip
     #Exclude classes in t/admin and t/global
     jar uf $OUTPUT $(find WEB-INF \( -path WEB-INF/classes/t/admin -o \
       -path WEB-INF/classes/t/global \) -prune -o \( -type f -print \) )
