@@ -12,7 +12,6 @@
 	<!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
 	
 	<stylesheet src="/gwt-clean.css" />
-	<stylesheet src="/OTGViewer.css" />
 
 	<!-- Other module inherits                                      -->
 	<inherits name='com.google.gwt.visualization.Visualization'/>
@@ -32,6 +31,8 @@
 	<set-property name="gwt.logging.consoleHandler" value="ENABLED"/>
 	<set-property name="gwt.logging.logLevel" value="INFO"/>
 		
+  	<set-configuration-property name="CssResource.enableGss" value="true" />
+	<set-configuration-property name="CssResource.legacy" value="true" />
 <!-- 	<set-property name="gwt.logging.popupHandler" value="DISABLED"/>  -->
 
 </module>

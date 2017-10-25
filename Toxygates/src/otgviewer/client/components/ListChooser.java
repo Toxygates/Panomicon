@@ -34,9 +34,8 @@ import com.google.gwt.user.client.ui.*;
  * The ListChooser allows the user to select from a range of named lists, as well as save and delete
  * their own lists.
  * 
- * TODO: consider implementing SetEditor
+ * In the future, this class might implement SetEditor.
  * 
- * @author johan
  *
  */
 public class ListChooser extends DataListenerWidget {

@@ -390,7 +390,8 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
       vpii = innerVP("Match by partial probe name:");
       vpi.add(vpii);
 
-      // TODO "filter" function as well as "add"
+      //In the future, we might have a "filter" function for intersection,
+      //in addition to "add" (which is effectively a union)
       final TextBox tb = new TextBox();
       vpii.add(tb);
       tb.setWidth("95%");
