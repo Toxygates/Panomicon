@@ -4,12 +4,21 @@
 Variables
 ******************************************************************************/
 
+@def GLOBAL_LEFT_PADDING 11px;
 
+@def MENUBARPANEL_COLOR #363636;
+@def MENUBAR_PIP_COLOR #7e7e7e;
+@def MENUBARITEM_COLOR #f1f1f1;
+@def MENUBARITEM_SELECTED_COLOR #b5b5b5;
+@def MENUBAR_HELP_COLOR #fcee21;
+
+@def NAVLINK_TEXT_COLOR #a1a1a1;
+@def NAVLINK_BORDER_COLOR #595959;
+@def NAVLINK_DISABLED_COLOR #585858;
 
 /******************************************************************************	
 Global
 ******************************************************************************/
-
 body {
 	font-family: Georgia, Times, "Times New Roman", serif;
 }
@@ -17,32 +26,30 @@ body {
 /******************************************************************************	
 App elements 
 ******************************************************************************/
-
 .toxygatesTitle {
-	font-family: 'Play', sans-serif;
+	font-family: "Play", sans-serif;
 	font-size: 36pt;
 }
 
 .compoundSelector {
-	margin: 0em 0em 0em 1em;
+	margin: 0 0 0 1em;
 }
 
 .analysisTools {
-	margin: 1px 0px 0px 0px;
-	background: #F1F1F1;
+	margin: 1px 0 0 0;
+	background: MENUBARITEM_COLOR;
 }
 
 /**************************************	
 Menu bar
 **************************************/
-
 .menuBarPanel {
-	padding-left: 11px;
-	background: #363636;	
+	padding-left: GLOBAL_LEFT_PADDING;
+	background: MENUBARPANEL_COLOR;
 }
 
 .gwt-MenuBar table {
-	border-spacing: 0px;
+	border-spacing: 0;
 }
 
 .gwt-MenuBar-horizontal .gwt-MenuItem {
@@ -53,17 +60,17 @@ Menu bar
 	   the pixels on the border from changing color when mousing over the menu item (this
 	   is why we can't just use transparent instead of setting the same color). 
 	*/
-	border-left: solid 1px #363636;
+	border-left: solid 1px MENUBARPANEL_COLOR;
 }
 
 .gwt-MenuBar-horizontal .gwt-MenuItem:before {
-  content: '';
-  width: 1px; 
-  height: 5px; 
-  background: #7E7E7E; 
-  position: absolute; 
-  top: 1px;
-  left: -1px;
+	content: "";
+	width: 1px;
+	height: 5px;
+	background: MENUBAR_PIP_COLOR;
+	position: absolute;
+	top: 1px;
+	left: -1px;
 }
 
 .gwt-MenuItem-disabled {
@@ -71,58 +78,41 @@ Menu bar
 }
 
 #helpMenu {
-	color: #FCEE21;
+	color: MENUBAR_HELP_COLOR;
 	/* This does the same thing as the border-left in .gwt-MenuBar-horizontal .gwt-MenuItem,
 	   except for the :after pseudo-element. */
-	border-right: solid 1px #363636;
+	border-right: solid 1px MENUBARPANEL_COLOR;
 }
 
 .gwt-MenuBar-horizontal .gwt-MenuItem:after {
-  content: '';
-  width: 1px; 
-  height: 5px; 
-  background: #7E7E7E; 
-  position: absolute; 
-  top: 1px;
-  right: -1px;
+	content: "";
+	width: 1px;
+	height: 5px;
+	background: MENUBAR_PIP_COLOR;
+	position: absolute;
+	top: 1px;
+	right: -1px;
 }
 
 .gwt-MenuBar-horizontal .gwt-MenuItem-selected {
-	background: #B5B5B5;
+	background: MENUBARITEM_SELECTED_COLOR;
 }
-
 
 .gwt-MenuBar-vertical .gwt-MenuItem {
-	background: #F1F1F1;
+	background: MENUBARITEM_COLOR;
 }
 
 .gwt-MenuBar-vertical .gwt-MenuItem-selected {
-	background: #B5B5B5;
+	background: MENUBARITEM_SELECTED_COLOR;
 }
 
-.gwt-MenuBar-vertical .subMenuIcon  {
-	background: #F1F1F1;
+.gwt-MenuBar-vertical .subMenuIcon {
+	background: MENUBARITEM_COLOR;
 }
 
-.gwt-MenuBar-vertical .subMenuIcon-selected  {
-	background: #B5B5B5;
+.gwt-MenuBar-vertical .subMenuIcon-selected {
+	background: MENUBARITEM_SELECTED_COLOR;
 }
-
-/*.gwt-MenuBar-vertical .gwt-MenuItem {
-	background: #B5B5B5;
-}
-
-.gwt-MenuBar-vertical .gwt-MenuItem-selected {
-	background: #F1F1F1;
-}
-
-.gwt-MenuBar-vertical .subMenuIcon  {
-	background: #B5B5B5;
-}
-
-.gwt-MenuBar-vertical .subMenuIcon-selected  {
-	background: #F1F1F1;
-}*/
 
 .feedbackMenuItem {
 	font-weight: bold;
@@ -130,9 +120,9 @@ Menu bar
 }
 
 .menuSeparatorCaption {
-  color: DarkGray;
-  font-style: italic;
-  font-size: 0.75em;
+	color: DarkGray;
+	font-style: italic;
+	font-size: 0.75em;
 }
 
 .gwt-MenuBarPopup {
@@ -142,16 +132,15 @@ Menu bar
 /**************************************	
 Top-level navigation links 
 **************************************/
-
-.navPanel {	
+.navPanel {
 	height: 100%;
 	float: left;
-	margin-left: 11px;
+	margin-left: GLOBAL_LEFT_PADDING;
 }
 
 .navOuterPanel {
 	height: 100%;
-	background: #363636;
+	background: MENUBARPANEL_COLOR;
 	float: left;
 }
 
@@ -160,11 +149,11 @@ Top-level navigation links
 	line-height: 35px;
 	text-align: center;
 	font-size: 1.2em;
-	color: #A1A1A1;
-	margin: 0px;
-	padding: 0px 10px;
-	border-right: solid 1px #595959;
-	border-top: solid 1px #595959;
+	color: NAVLINK_TEXT_COLOR;
+	margin: 0;
+	padding: 0 10px;
+	border-right: solid 1px NAVLINK_BORDER_COLOR;
+	border-top: solid 1px NAVLINK_BORDER_COLOR;
 }
 
 .navlink-enabled:hover {
@@ -173,34 +162,33 @@ Top-level navigation links
 	cursor: pointer;
 }
 
-.navlink-disabled {	
-	color: #585858
+.navlink-disabled {
+	color: NAVLINK_DISABLED_COLOR;
 }
 
-.navlink-enabled {	
-	cursor: pointer;	
+.navlink-enabled {
+	cursor: pointer;
 }
 
 .navlink-first {
-	border-left: solid 1px #595959;
+	border-left: solid 1px NAVLINK_BORDER_COLOR;
 }
 
-.navlink-current {	
+.navlink-current {
 	background: white;
-	color: black;		
+	color: black;
 	border-top: none;
 }
 
 /**************************************	
 Gene set editor 
 **************************************/
-
 .resizingListBox {
 	font-size: 13px;
 }
 
 .geneSetInnerPanel {
-	background: #F1F1F1;
+	background: MENUBARITEM_COLOR;
 	padding: 5px;
 	border: grey solid 1px;
 	margin: 2px;
@@ -209,7 +197,6 @@ Gene set editor
 /**************************************	
 Time-dose grids 
 **************************************/
-
 .timeDoseGrid {
 	margin: 5px;
 }
@@ -227,13 +214,12 @@ Time-dose grids
 .selectionGridSectionHeading {
 	font-weight: bold;
 	font-size: 1.1em;
-	margin: 2px;	
+	margin: 2px;
 }
 
 /**************************************	
 Status panel 
 **************************************/
-
 .statusPanel {
 	background: White;
 	text-align: left;
@@ -262,10 +248,9 @@ Status panel
 /**************************************	
 Expression table
 **************************************/
-
 .highlightedRow {
-	font-style: italic;	
-	font-weight: bold;	
+	font-style: italic;
+	font-weight: bold;
 }
 
 .dataColumn {
@@ -280,87 +265,91 @@ Expression table
 	clear: left;
 }
 
-
 /**************************************	
 Groups
 **************************************/
 
-/* This must correspond to the colors in SampleGroup.java
+/* These must correspond to the colors in SampleGroup.java
 */
-.Group0 {	
-	color: #8582B5;
+.Group0 {
+	color: #8582b5;
 }
+
 .Group1 {
-	color: #7AC653;	
+	color: #7ac653;
 }
+
 .Group2 {
-	color: #C3534D;
+	color: #c3534d;
 }
+
 .Group3 {
-	color: #90C1AB;
+	color: #90c1ab;
 }
+
 .Group4 {
 	color: #504239;
 }
+
 .Group5 {
-	color: #C1A54A;
+	color: #c1a54a;
 }
+
 .Group6 {
-	color: #B354B3;
+	color: #b354b3;
 }
 
 /**************************************	
 Sample Search
 **************************************/
-
 .samplesearch-label {
 	color: silver;
 }
 
 .samplesearch-rootpanel {
+	
 }
 
 .samplesearch-andpanel {
-	margin:1px;
+	margin: 1px;
 }
 
 .samplesearch-orpanel {
-	margin:1px;
+	margin: 1px;
 	border-top: solid grey 1px;
 	border-bottom: solid grey 1px;
 }
 
 .samplesearch-atomicpanel {
-	margin:1px;
+	margin: 1px;
 	padding: 1px;
-	background: #F1F1F1;
+	background: MENUBARITEM_COLOR;
 }
 
 /**************************************	
 Data sources information
 **************************************/
-
 .metadata-info {
 	margin: 5px;
 }
 
 .metadata-info-title {
-	font-size:1.1em;
+	font-size: 1.1em;
 	font-weight: bold;
-	margin:0.5em;
-	margin-right:3em;	
+	margin: 0.5em;
+	margin-right: 3em;
 }
 
 .metadata-info-heading {
-	font-size: 1.2em;	
-	font-weight: bold; 
-	margin:0.5em;
+	font-size: 1.2em;
+	font-weight: bold;
+	margin: 0.5em;
 	border-top: solid black 1px;
 	border-bottom: solid black 1px;
 }
 
 .metadata-info-comment {
-	margin:0.5em;
+	margin: 0.5em;
 }
 
 .metadata-grid {
@@ -374,7 +363,6 @@ Data sources information
 /**************************************	
 Probe selector
 **************************************/
-
 .watermark {
 	font-style: italic;
 	color: DarkGray;
@@ -394,7 +382,6 @@ Probe selector
 /**************************************	
 Sample details
 **************************************/
-
 .numericalParameterAbove {
 	color: red;
 	font-weight: bold;
@@ -413,6 +400,7 @@ Sample details
 }
 
 .numericalParameterHealthy {
+	
 }
 
 .sampleDetailTitleColumn {
@@ -426,7 +414,6 @@ Sample details
 /******************************************************************************	
 Non-semantic 
 ******************************************************************************/
-
 .slightlySpaced {
 	margin: 2px;
 }
@@ -437,14 +424,14 @@ Non-semantic
 }
 
 .colored {
-	background: #F1F1F1;
+	background: MENUBARITEM_COLOR;
 }
 
 .heading {
 	font-size: 1.2em;
-	color: #777777;
+	color: #777;
 	margin: 5px;
-	text-align: center;	
+	text-align: center;
 }
 
 .emphasized {
@@ -466,24 +453,15 @@ Non-semantic
 /******************************************************************************	
 Miscellaneous
 ******************************************************************************/
-
-/*
- Fix "Ghost scrollbar" issue in Safari with trackpads.
- See https://groups.google.com/forum/#!topic/google-web-toolkit/xxeS6LETdBs
- 
- Unfortunately this makes scrollbars permamently visible, which
- doesn't always look good.
- */
-
 ::-webkit-scrollbar {
-    width: 7px;
-    height: 7px;
+	width: 7px;
+	height: 7px;
 }
 
 ::-webkit-scrollbar-thumb {
-    width: 7px;
-    height: 7px;
-    -webkit-border-radius:3px;
-    border-radius:3px;
-    background:rgba(0,0,0,0.3);
+	width: 7px;
+	height: 7px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	background: rgba(0, 0, 0, 0.3);
 }
