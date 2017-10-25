@@ -311,7 +311,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
   protected static Storage tryGetStorage() {
     Storage r = Storage.getLocalStorageIfSupported();
-    // TODO concurrency an issue for GWT here?
     if (r == null) {
       Window
           .alert("Local storage must be supported in the web browser. The application cannot continue.");

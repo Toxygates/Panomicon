@@ -110,7 +110,6 @@ class Platforms(baseConfig: BaseConfig) extends
   def bioParameters: BioParameters = {
     val timeout: Int = 60000
 
-    //TODO test this
     val attribs = triplestore.mapQuery(s"""$tPrefixes
         |SELECT ?id ?key ?value WHERE {
         |  ?p $platformType $biologicalPlatform.

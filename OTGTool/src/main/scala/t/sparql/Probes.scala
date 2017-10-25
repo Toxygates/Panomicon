@@ -84,7 +84,6 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
   /**
    * Obtain all ortholog groups in the given platforms.
-   * TODO!
    */
   def orthologs(platforms: Iterable[String]): Iterable[OrthologGroup] = {
     val q = tPrefixes +
@@ -98,7 +97,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
     val byTitle = r.groupBy(_("title"))
     for (
       (title, entries) <- byTitle;
-      probes = entries.map(x => SimpleProbe(x("probe"), x("platform")))
+      probes = entries.map(x => OrthologousProbe(x("probe"), x("platform")))
     ) yield OrthologGroup(title, probes)
   }
 
@@ -262,7 +261,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   }
 
   /**
-   * based on a set of entrez gene ID's (numbers), return the
+   * Based on a set of entrez gene ID's (numbers), return the
    * corresponding probes.
    */
   def forGenes(genes: Iterable[Gene]): Iterable[Probe] =
@@ -329,6 +328,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
 
     r.groupBy(_("pr")).map(_._2).map(g => {
       val p = Probe(g(0)("l"))
+      
       //TODO!
       val tritiTitle = (g.map(_.get("gene")) ++
         g.map(_.get("protid"))).flatten.toSet.mkString(", ")
@@ -343,7 +343,7 @@ class Probes(config: TriplestoreConfig) extends ListManager(config) {
   }
 
   def probesForPartialSymbol(platform: Option[String], title: String): Vector[Probe] = {
-    Vector() //TODO
+    ???
   }
 
   /**

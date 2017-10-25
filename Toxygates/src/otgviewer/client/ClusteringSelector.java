@@ -27,8 +27,7 @@ import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.ListChooser;
-import t.common.shared.ItemList;
-import t.common.shared.StringList;
+import t.common.shared.*;
 import t.common.shared.clustering.Algorithm;
 import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.Utils;
@@ -170,8 +169,8 @@ public abstract class ClusteringSelector extends DataListenerWidget implements R
   
   private void updateClusteringList() {
     // filter probe clusterings with current list selection
-    Collection<ProbeClustering> filter1 = ProbeClustering.filterByAlgorithm(probeClusterings, lastAlgorithm);
-    Collection<ProbeClustering> filter2 = ProbeClustering.filterByClustering(filter1, clustering.getSelected());
+    Collection<ProbeClustering> filter1 = ProbeClustering.filterByAlgorithm(probeClusterings, lastAlgorithm);    
+    Collection<ProbeClustering> filter2 = ProbeClustering.filterByClustering(filter1, clustering.getSelected());    
     for (Entry<String, ClListBox> e : params.entrySet()) {
       filter2 = ProbeClustering.filterByParam(filter2, e.getKey(), e.getValue().getSelected());
     }
@@ -224,7 +223,8 @@ public abstract class ClusteringSelector extends DataListenerWidget implements R
     selector.setWidget(2, 0, paramTitlesContainer);
     selector.setWidget(2, 1, paramListsContainer);
 
-    cluster = new ListChooser(new ArrayList<StringList>(), "probes", false) {
+    cluster = new ListChooser(new ArrayList<StringList>(), ProbeClustering.PROBE_CLUSTERING_TYPE, 
+      false) {
       @Override
       protected void itemsChanged(List<String> items) {
         loadedProbes.clear();

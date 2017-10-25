@@ -93,8 +93,9 @@ abstract class Samples(bc: BaseConfig) extends ListManager(bc.triplestore)
       " }")
   }
 
-  //TODO is this the best way to handle URI/title conversion?
-  //Is such conversion needed?
+  /**
+   * Adjust parameters of the sample after loading from the triplestore.
+   */
   protected def adjustSample(map: Map[String, String],
                              overrideBatch: Option[String] = None): Map[String, String] = {
     var result = if (map.contains("dataset")) {

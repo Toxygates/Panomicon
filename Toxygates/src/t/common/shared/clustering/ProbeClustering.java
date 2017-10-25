@@ -70,7 +70,8 @@ public class ProbeClustering implements Serializable {
     }
     path.add(cl.cluster);
 
-    return new ProbeClustering(cl, new StringList(PROBE_CLUSTERING_TYPE, SharedUtils.packList(path, "###"), list.items()));
+    return new ProbeClustering(cl, new StringList(PROBE_CLUSTERING_TYPE, list.name(), 
+      list.items()));
   }
 
   public static Collection<ProbeClustering> filterByAlgorithm(Collection<ProbeClustering> from,

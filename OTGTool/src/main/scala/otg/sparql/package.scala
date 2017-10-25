@@ -26,12 +26,7 @@ import scala.language.implicitConversions
 
 //TODO code duplication with t.sparql.secondary
 package object sparql extends t.sparql.QueryUtils {
-  import Triplestore._
-
-  //TODO update pathology RDF and queries, and retire the "local" prefix
-  val commonPrefixes = s"""$tPrefixes
-    |PREFIX local:<http://127.0.0.1:3333/>
-    |PREFIX bio2rdf:<http://bio2rdf.org/ns/bio2rdf#>""".stripMargin.replace('\n', ' ')
+  val commonPrefixes = t.sparql.secondary.commonPrefixes
 
   implicit def withQueries(p: Pathology) = new PathologySparql(p)
 }
