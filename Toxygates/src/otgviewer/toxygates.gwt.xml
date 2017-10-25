@@ -12,7 +12,6 @@
 	<!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
 	
 	<stylesheet src="gwt-clean.css" />
-	<stylesheet src="OTGViewer.css" />
 
 	<!-- Other module inherits                                      -->
 	<inherits name='com.google.gwt.visualization.Visualization'/>

@@ -148,6 +148,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
   @Override
   public void onModuleLoad() {
 
+    resources.otgViewerStyle().ensureInjected();
+
     reloadAppInfo(new AsyncCallback<AppInfo>() {
       @Override
       public void onSuccess(AppInfo result) {

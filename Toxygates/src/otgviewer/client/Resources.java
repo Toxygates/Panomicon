@@ -18,10 +18,12 @@
 
 package otgviewer.client;
 
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.TextResource;
+import com.google.gwt.resources.client.*;
 
 public interface Resources extends t.common.client.Resources {
+
+  @Source("otgviewer/client/OTGViewer.css")
+  CssResource otgViewerStyle();
 
   @Source("help/default.html")
   TextResource defaultHelpHTML();
