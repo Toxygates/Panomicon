@@ -86,6 +86,7 @@ public class DualDataScreen extends DataScreen {
   @Override
   public void updateProbes() {
     super.updateProbes();
+    sideExpressionTable.clearMatrix();
     extractMirnaProbes();
   }
   
@@ -95,6 +96,12 @@ public class DualDataScreen extends DataScreen {
     extractMirnaProbes();
   }
   
+  @Override
+  protected void beforeGetAssociations() {
+    super.beforeGetAssociations();
+    sideExpressionTable.clearMatrix();
+  }
+  
   protected void extractMirnaProbes() {
     AssociationSummary<ExpressionRow> mirnaSummary = expressionTable.associationSummary(AType.MiRNA);
     if (mirnaSummary == null) {
@@ -102,20 +109,27 @@ public class DualDataScreen extends DataScreen {
       return;
     }
     String[][] rawData = mirnaSummary.getTable();
-    String[] ids = new String[rawData.length];
+    if (rawData.length < 2) {
+      logger.info("No miRNAs found in summary - not updating side table probes");
+      return;
+    }
+    String[] ids = new String[rawData.length - 1];
     Map<String, String> counts = new HashMap<String, String>();
-    for (int i = 0; i < rawData.length; i++) {    
-      ids[i] = rawData[i][1];
+    //The first row is headers
+    for (int i = 1; i < rawData.length; i++) {    
+      ids[i - 1] = rawData[i][1];
       counts.put(rawData[i][1], rawData[i][2]);
     }
     
-    logger.info("Extracted " + ids.length + " mirnas");
+    logger.info("Extracted " + ids.length + " mirnas");    
     sideExpressionTable.setStaticAssociation(StandardColumns.Count.toString(), counts);
     changeSideTableProbes(ids);
   }
   
   protected void changeSideTableProbes(String[] probes) {      
     sideExpressionTable.probesChanged(probes);
-    sideExpressionTable.getExpressions();
+    if (probes.length > 0) {
+      sideExpressionTable.getExpressions();
+    }
   }
 }

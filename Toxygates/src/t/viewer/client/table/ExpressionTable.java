@@ -146,6 +146,18 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     makeAnalysisTools();
     setEnabled(false);
   }
+
+  private void logMatrixInfo(String msg) {
+    logger.info("Matrix " + matrixId + ":" + msg);
+  }
+  
+  private void logMatrix(Level level, String msg) {
+    logger.log(level, "Matrix " + matrixId + ":" + msg);
+  }
+  
+  private void logMatrix(Level level, String msg, Throwable throwable) {
+    logger.log(level, "Matrix " + matrixId + ":" + msg, throwable);
+  }
   
   public void setStyle(TableStyle style) {
     this.style = style;
@@ -743,7 +755,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
   @Override
   public void sampleClassChanged(SampleClass sc) {
-    logger.info("Change SC to " + sc);
+    logMatrixInfo("Change SC to " + sc);
   }
 
   @Override
@@ -751,7 +763,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     HashSet<Group> oldColumns = new HashSet<Group>(chosenColumns);
     HashSet<Group> newColumns = new HashSet<Group>(columns);
     if (newColumns.equals(oldColumns) && newColumns.size() > 0) {
-      logger.info("Ignoring column change signal");
+      logMatrixInfo("Ignoring column change signal");
       return;
     }
 
@@ -766,7 +778,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       allCs.addAll(SampleClassUtils.classes(Arrays.asList(g.getSamples())));
     }
     changeSampleClass(SampleClass.intersection(allCs));
-    logger.info("Set SC to: " + chosenSampleClass.toString());
+    logMatrixInfo("Set SC to: " + chosenSampleClass.toString());
 
     groupsel1.clear();
     groupsel2.clear();
@@ -784,7 +796,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
     chartBarcodes = null;
     loadedData = false;
-    logger.info("Columns changed (" + columns.size() + ")");
+    logMatrixInfo("Columns changed (" + columns.size() + ")");
   }
 
   /**
@@ -792,13 +804,13 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
    */
   public void refilterData() {
     if (!loadedData) {
-      logger.info("Request to refilter but data was not loaded");
+      logMatrixInfo("Request to refilter but data was not loaded");
       return;
     }
     setEnabled(false);
     asyncProvider.updateRowCount(0, false);
     // grid.setRowCount(0, false);
-    logger.info("Refilter for " + chosenProbes.length + " probes");
+    logMatrixInfo("Refilter for " + chosenProbes.length + " probes");
     matrixService.selectProbes(matrixId, chosenProbes, dataUpdateCallback());
   }
 
@@ -806,7 +818,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     return new AsyncCallback<ManagedMatrixInfo>() {
       @Override
       public void onFailure(Throwable caught) {
-        logger.log(Level.WARNING, "Exception in data update callback", caught);
+        logMatrix(Level.WARNING, "Exception in data update callback", caught);
         getExpressions(); // the user probably let the session
         // expire
       }
@@ -816,6 +828,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         setMatrix(result);        
       }
     };
+  }
+  
+  public void clearMatrix() {
+    matrixInfo = null;
+    asyncProvider.updateRowCount(0, true);
+    setEnabled(false);
   }
 
   protected void setMatrix(ManagedMatrixInfo matrix) {
@@ -842,7 +860,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     setEnabled(false);
     asyncProvider.updateRowCount(0, false);
 
-    logger.info("begin loading data for " + chosenColumns.size() + " columns and "
+    logMatrixInfo("Begin loading data for " + chosenColumns.size() + " columns and "
         + chosenProbes.length + " probes");
     // load data
     matrixService.loadMatrix(matrixId, chosenColumns, chosenProbes, chosenValueType,
@@ -850,7 +868,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
           @Override
           public void onFailure(Throwable caught) {
             Window.alert("Unable to load dataset");
-            logger.log(Level.SEVERE, "Unable to load dataset", caught);
+            logMatrix(Level.SEVERE, "Unable to load dataset", caught);
           }
 
           @Override
@@ -870,10 +888,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
                 Analytics.trackEvent(Analytics.CATEGORY_TABLE, Analytics.ACTION_CHANGE_GENE_SET);
               }
 
-              logger.info("Data successfully loaded");
+              logMatrixInfo("Data successfully loaded");
             } else {
               Window
-                  .alert("No data was available for this gene set.\nThe view will switch to default selection.");
+                  .alert("No data was available for the saved gene set (" + chosenProbes.length + " probes)." +
+                      "\nThe view will switch to default selection. (Wrong species?)");
               onGettingExpressionFailed();
             }
           }

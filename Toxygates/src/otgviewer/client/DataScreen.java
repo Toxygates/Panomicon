@@ -90,8 +90,16 @@ public class DataScreen extends Screen {
       protected void associationsUpdated() {
         DataScreen.this.associationsUpdated();
       }
+      
+      @Override
+      protected void getAssociations() {
+        DataScreen.this.beforeGetAssociations();
+        super.getAssociations();        
+      }
     };
   }
+  
+  protected void beforeGetAssociations() {}
   
   protected void associationsUpdated() {}
   
