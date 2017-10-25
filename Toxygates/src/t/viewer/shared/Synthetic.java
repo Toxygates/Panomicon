@@ -19,6 +19,7 @@
 package t.viewer.shared;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import t.common.shared.DataSchema;
 import t.common.shared.sample.*;
@@ -130,6 +131,27 @@ abstract public class Synthetic implements DataColumn<Sample>, Serializable {
       return false;
     }
   }
+  
+  public static class Precomputed extends Synthetic {
+    Map<String, Double> data;
+    String tooltip;
+    
+    //GWT constructor
+    Precomputed() {}
+    
+    public Precomputed(String name, String tooltip, Map<String, Double> data) {
+      super(name);
+      this.tooltip = tooltip;
+      this.data = data;
+    }
+    
+    public Map<String, Double> getData() { return data; }
+    
+    @Override
+    public String getTooltip() {
+      return tooltip;
+    }
+  }
 
   protected String name;
 
@@ -151,6 +173,10 @@ abstract public class Synthetic implements DataColumn<Sample>, Serializable {
     return name;
   }
 
+  public String getName() {
+    return name;
+  }
+  
   public String getTooltip() {
     return "Synthetic";
   }

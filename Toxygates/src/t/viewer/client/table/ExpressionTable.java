@@ -225,7 +225,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     tableList.addChangeHandler(new ChangeHandler() {
       @Override
       public void onChange(ChangeEvent event) {
-        removeTests();
+        removeSynthetics();
         chosenValueType = getValueType();
         getExpressions();
       }
@@ -311,8 +311,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     return analysisTools;
   }
 
-  private void removeTests() {    
-    matrixService.removeTwoGroupTests(matrixId, 
+  private void removeSynthetics() {    
+    logMatrixInfo("Remove synthetic columns");
+    matrixService.removeSyntheticColumns(matrixId, 
         new PendingAsyncCallback<ManagedMatrixInfo>(this, 
         "There was an error removing the test columns.") {
 
@@ -367,7 +368,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     analysisTools.add(new Button("Remove tests", new ClickHandler() {
       @Override
       public void onClick(ClickEvent ce) {
-        removeTests();
+        removeSynthetics();
       }
     }));
     analysisTools.setVisible(false); // initially hidden
@@ -386,7 +387,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       final Group g1 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel1));
       final Group g2 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel2));
       synth.setGroups(g1, g2);
-      matrixService.addTwoGroupTest(matrixId, synth, 
+      matrixService.addSyntheticColumn(matrixId, synth, 
           new PendingAsyncCallback<ManagedMatrixInfo>(this,
           "Adding test column failed") {
         @Override
@@ -651,18 +652,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       }
 
     });
-    
-    r.add(new HTMLHideableColumn<ExpressionRow>(htmlCell, "Count",
-        StandardColumns.Count, style) {
-      protected String getHtml(ExpressionRow er) {
-        Map<String, String> values = staticAssociations.get(StandardColumns.Count.toString());
-        if (values != null) {
-          return values.get(er.getProbe());
-        } else {
-          return "1";
-        }
-      }
-    });
 
     // We want gene sym, probe title etc. to be before the association
     // columns going left to right
@@ -853,10 +842,15 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     }
   }
 
+  public void getExpressions() {
+    List<Synthetic> ss = Arrays.asList();
+    getExpressions(ss);
+  }
+  
   /**
    * Load data (when there is nothing stored in our server side session)
    */
-  public void getExpressions() {
+  public void getExpressions(List<Synthetic> initSynthColumns) {
     setEnabled(false);
     asyncProvider.updateRowCount(0, false);
 
@@ -864,6 +858,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         + chosenProbes.length + " probes");
     // load data
     matrixService.loadMatrix(matrixId, chosenColumns, chosenProbes, chosenValueType,
+        initSynthColumns,
         new AsyncCallback<ManagedMatrixInfo>() {
           @Override
           public void onFailure(Throwable caught) {

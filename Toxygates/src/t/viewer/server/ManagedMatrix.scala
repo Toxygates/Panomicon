@@ -462,12 +462,23 @@ class ManagedMatrix(val initProbes: Seq[String],
                 Seq(test.getGroup2.getName), md.getShortTitle(null)) //TODO
           case _ => throw new Exception("Unexpected test type!")
         }
-        val name = test.getShortTitle(null);
+        val name = test.getName
         if (!currentInfo.hasColumn(name)) {
           currentInfo.addColumn(true, name, test.getTooltip(),
             ColumnFilter.emptyLT, null, false,
             Array[SSample]()) //TODO
         }
+      case precomp: Synthetic.Precomputed =>
+        val name = precomp.getName
+        if (!currentInfo.hasColumn(name)) {
+          currentInfo.addColumn(true, name, precomp.getTooltip,
+            ColumnFilter.emptyGT, null, false,
+            Array[SSample]())
+        }
+        val data = precomp.getData        
+        val inOrder = (0 until current.rows).map(i => data.get(current.rowAt(i)).toDouble) 
+        
+        current = current.appendStatic(inOrder, precomp.getName)
       case _ => throw new Exception("Unexpected test type")
     }
   }

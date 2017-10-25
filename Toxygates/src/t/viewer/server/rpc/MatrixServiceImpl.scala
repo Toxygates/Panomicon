@@ -116,11 +116,15 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
     getThreadLocalRequest().getSession().setAttribute("matrix", m)
 
   def loadMatrix(id: String, groups: JList[Group], probes: Array[String],
-    typ: ValueType): ManagedMatrixInfo = {
+    typ: ValueType, initSynthetics: JList[Synthetic]): ManagedMatrixInfo = {
     getSessionData.controllers += (id ->
       MatrixController(context, () => getOrthologs(context),
           groups, probes, typ, false))
-    getSessionData.matrix(id).info
+    val mat = getSessionData.matrix(id)
+    for (s <- initSynthetics) {
+      mat.addSynthetic(s)
+    }
+    mat.info
   }
 
   @throws(classOf[NoDataLoadedException])
@@ -207,14 +211,14 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   }
 
   @throws(classOf[NoDataLoadedException])
-  def addTwoGroupTest(id: String, test: Synthetic.TwoGroupSynthetic): ManagedMatrixInfo = {
+  def addSyntheticColumn(id: String, synth: Synthetic): ManagedMatrixInfo = {
     val current = getSessionData.matrix(id)
-    current.addSynthetic(test)
+    current.addSynthetic(synth)
     current.info
   }
 
   @throws(classOf[NoDataLoadedException])
-  def removeTwoGroupTests(id: String): ManagedMatrixInfo = {
+  def removeSyntheticColumns(id: String): ManagedMatrixInfo = {
     val current = getSessionData.matrix(id)
     current.removeSynthetics()
     current.info

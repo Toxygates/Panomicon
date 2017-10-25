@@ -8,6 +8,7 @@ import t.common.shared.GroupUtils;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.table.*;
+import t.viewer.shared.Synthetic;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.*;
@@ -114,22 +115,29 @@ public class DualDataScreen extends DataScreen {
       return;
     }
     String[] ids = new String[rawData.length - 1];
-    Map<String, String> counts = new HashMap<String, String>();
+    Map<String, Double> counts = new HashMap<String, Double>();
+    
     //The first row is headers
     for (int i = 1; i < rawData.length; i++) {    
       ids[i - 1] = rawData[i][1];
-      counts.put(rawData[i][1], rawData[i][2]);
+      counts.put(rawData[i][1], Double.parseDouble(rawData[i][2]));
     }
     
     logger.info("Extracted " + ids.length + " mirnas");    
-    sideExpressionTable.setStaticAssociation(StandardColumns.Count.toString(), counts);
-    changeSideTableProbes(ids);
+    
+    Synthetic.Precomputed countColumn = new Synthetic.Precomputed("Count", 
+      "Number of times each miRNA appeared", counts);
+
+    List<Synthetic> synths = new ArrayList<Synthetic>();
+    synths.add(countColumn);
+    
+    changeSideTableProbes(ids, synths);
   }
   
-  protected void changeSideTableProbes(String[] probes) {      
+  protected void changeSideTableProbes(String[] probes, List<Synthetic> synths) {      
     sideExpressionTable.probesChanged(probes);
     if (probes.length > 0) {
-      sideExpressionTable.getExpressions();
+      sideExpressionTable.getExpressions(synths);
     }
   }
 }

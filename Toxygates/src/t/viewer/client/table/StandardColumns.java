@@ -19,5 +19,5 @@
 package t.viewer.client.table;
 
 public enum StandardColumns {
-  GeneID, GeneSym, ProbeTitle, Probe, Count;
+  GeneID, GeneSym, ProbeTitle, Probe;
 }

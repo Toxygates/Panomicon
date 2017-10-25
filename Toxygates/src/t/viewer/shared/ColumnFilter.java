@@ -25,8 +25,9 @@ import javax.annotation.Nullable;
 @SuppressWarnings("serial")
 public class ColumnFilter implements Serializable {
 
-  public static ColumnFilter emptyAbsGT = new ColumnFilter(null, FilterType.AbsGT);
-  public static ColumnFilter emptyLT =  new ColumnFilter(null, FilterType.LT);
+  public static final ColumnFilter emptyAbsGT = new ColumnFilter(null, FilterType.AbsGT);
+  public static final ColumnFilter emptyLT =  new ColumnFilter(null, FilterType.LT);
+  public static final ColumnFilter emptyGT = new ColumnFilter(null, FilterType.GT);
   
   /**
    * GWT constructor

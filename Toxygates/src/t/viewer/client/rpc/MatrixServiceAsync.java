@@ -26,7 +26,6 @@ import t.common.shared.ValueType;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.shared.*;
-import t.viewer.shared.Synthetic.TwoGroupSynthetic;
 import t.viewer.shared.table.SortKey;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -34,7 +33,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public interface MatrixServiceAsync extends ClusteringServiceAsync<Group,String> {
 
   void loadMatrix(String id, List<Group> columns, String[] probes, ValueType type,
-      AsyncCallback<ManagedMatrixInfo> callback);
+      List<Synthetic> initSynthetics, AsyncCallback<ManagedMatrixInfo> callback);
 
   void matrixRows(String id, int offset, int size, SortKey sortKey, boolean ascending,
       AsyncCallback<List<ExpressionRow>> callback);
@@ -49,13 +48,14 @@ public interface MatrixServiceAsync extends ClusteringServiceAsync<Group,String>
 
   void prepareCSVDownload(String id, boolean individualSamples, AsyncCallback<String> callback);
 
-  void addTwoGroupTest(String id, TwoGroupSynthetic test, AsyncCallback<ManagedMatrixInfo> callback);
-
-  void removeTwoGroupTests(String id, AsyncCallback<ManagedMatrixInfo> callback);
+  void addSyntheticColumn(String id, Synthetic synth, AsyncCallback<ManagedMatrixInfo> callback);
+  
+  void removeSyntheticColumns(String id, AsyncCallback<ManagedMatrixInfo> callback);
 
   void sendFeedback(String name, String email, String feedback, AsyncCallback<Void> callback);
 
   void prepareHeatmap(String id, List<Group> chosenColumns, List<String> chosenProbes, ValueType valueType,
       Algorithm algorithm, int featureDecimalDigits, AsyncCallback<String> callback);
+
 
 }

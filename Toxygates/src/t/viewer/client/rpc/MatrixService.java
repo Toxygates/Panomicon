@@ -56,7 +56,8 @@ public interface MatrixService extends ClusteringService<Group, String>, RemoteS
    * @return The number of rows that remain after filtering.
    */
   ManagedMatrixInfo loadMatrix(String id,
-      List<Group> columns, String[] probes, ValueType type)
+      List<Group> columns, String[] probes, ValueType type,
+      List<Synthetic> initSynthetics)
       throws ServerError;
 
   /**
@@ -79,21 +80,23 @@ public interface MatrixService extends ClusteringService<Group, String>, RemoteS
   ManagedMatrixInfo setColumnFilter(String id, int column, @Nullable ColumnFilter filter);
 
   /**
-   * Add a T-test/U-test/fold change difference column. Requires that loadDataset was first used to
+   * Add a T-test/U-test/fold change difference/etc. column. Requires that loadDataset was first used to
    * load items. After this has been done, datasetItems or getFullData can be used as normal to
-   * obtain the data. The test is two-tailed and does not assume equal sample variances.
+   * obtain the data. 
+   * For T- and U-tests, the test is two-tailed and does not assume equal sample variances.
    * 
    * @param id ID of the matrix
    * @param g1
    * @param g2
    */
-  ManagedMatrixInfo addTwoGroupTest(String id, Synthetic.TwoGroupSynthetic test) throws ServerError;
+  ManagedMatrixInfo addSyntheticColumn(String id, Synthetic synth) throws ServerError;
 
   /**
-   * Remove all test columns. The result will be reflected in subsequent calls to datasetItems or
+   * Remove all synthetic columns (two-group test and static). 
+   * The result will be reflected in subsequent calls to datasetItems or
    * getFullData.
    */
-  ManagedMatrixInfo removeTwoGroupTests(String id) throws ServerError;
+  ManagedMatrixInfo removeSyntheticColumns(String id) throws ServerError;
 
   /**
    * Get one page. Requires that loadMatrix was first used to load items.

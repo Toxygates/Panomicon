@@ -44,7 +44,6 @@ abstract public class AssociationTable<T> extends RichTable<T> {
   protected final ProbeServiceAsync probeService;
   protected Map<AType, Association> associations = new HashMap<AType, Association>();
   protected Map<AType, AssociationColumn> assocColumns;
-  protected Map<String, Map<String, String>> staticAssociations = new HashMap<String, Map<String, String>>();
   
   private boolean waitingForAssociations = true;
 
@@ -249,12 +248,4 @@ abstract public class AssociationTable<T> extends RichTable<T> {
     return new AssociationSummary<T>(col, grid.getDisplayedItems());
   }
   
-  /**
-   * Set values for a static association.
-   * @param key identifies the association.
-   * @param values Maps each probe to the corresponding value.
-   */
-  public void setStaticAssociation(String key, Map<String, String> values) {
-    staticAssociations.put(key, values);
-  }
 }

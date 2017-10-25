@@ -29,8 +29,7 @@ public abstract class TableStyle {
   
   static class DefaultTableStyle extends TableStyle {
     boolean initVisibility(StandardColumns col) {
-      return col != StandardColumns.GeneID &&
-          col != StandardColumns.Count;
+      return col != StandardColumns.GeneID;
     }
 
     String initWidth(StandardColumns col) {
@@ -43,8 +42,6 @@ public abstract class TableStyle {
           return "18em";
         case GeneID:
           return "12em";
-        case Count:
-          return "8em";
         default:
           return "15em";
       }
@@ -64,8 +61,7 @@ public abstract class TableStyle {
     
     @Override
     boolean initVisibility(StandardColumns col) {
-      return col == StandardColumns.Probe ||
-          col == StandardColumns.Count;
+      return col == StandardColumns.Probe;
     }
   }
 }

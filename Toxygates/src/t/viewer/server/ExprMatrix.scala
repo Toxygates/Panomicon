@@ -171,5 +171,10 @@ class ExprMatrix(data: Seq[Seq[ExprValue]], rows: Int, columns: Int,
 
     appendTwoColTest(sourceData, group1, group2, diffTest(_, _), 1, colName)
   }
+  
+  def appendStatic(data: Seq[Double], name: String): ExprMatrix = {
+    val vs = data.map(x => new BasicExprValue(x, 'P'))
+    appendColumn(vs, name)
+  }
 
 }
