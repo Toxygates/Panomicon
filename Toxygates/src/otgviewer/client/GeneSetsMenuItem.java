@@ -370,53 +370,21 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   }
 
   private void ensureSorted(List<? extends ItemList> list) {
-    // TODO consider ordering
     Collections.sort(list, new Comparator<ItemList>() {
       @Override
       public int compare(ItemList o1, ItemList o2) {
         return o1.name().compareTo(o2.name());
       }
     });
-
-    // new Comparator<ItemList>() {
-    // @Override
-    // public int compare(ItemList o1, ItemList o2) {
-    // String name1 = o1.name();
-    // String name2 = o2.name();
-    // if (name1.length() == name2.length()) {
-    // return name1.compareTo(name2);
-    // }
-    // return (name1.length() < name2.length() ? -1 : 1);
-    // }
-    // });
   }
 
   private void geneSetEditor(@Nullable final StringList list) {
+    GeneSetEditor gse = GeneSetEditor.make(screen, this); 
     if (list != null) {
-      makeGeneSetEditor().edit(list.name());
+      gse.edit(list.name());
     } else {
-      makeGeneSetEditor().createNew(screen.displayedAtomicProbes());
+      gse.createNew(screen.displayedAtomicProbes());
     } 
-  }
-  
-  private GeneSetEditor makeGeneSetEditor() {
-    // TODO same code as GeneSetToolbar
-    GeneSetEditor gse = screen.factory().geneSetEditor(screen);
-    gse.addSaveActionHandler(new SaveActionHandler() {
-      @Override
-      public void onSaved(String title, List<String> items) {
-        String[] itemsArray = items.toArray(new String[0]);
-        screen.geneSetChanged(new StringList(StringList.PROBES_LIST_TYPE, 
-            title, itemsArray));
-        screen.probesChanged(itemsArray);
-        screen.updateProbes();
-      }
-
-      @Override
-      public void onCanceled() {}
-    });
-    addListener(gse);
-    return gse;
   }
 
   /**

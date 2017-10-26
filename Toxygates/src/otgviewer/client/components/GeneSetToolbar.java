@@ -58,7 +58,7 @@ public class GeneSetToolbar extends DataListenerWidget {
     btnNew = new Button("New", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {        
-            geneSetEditorNew();          
+        geneSetEditorNew();          
       }
     });
 
@@ -84,22 +84,7 @@ public class GeneSetToolbar extends DataListenerWidget {
   }
 
   private GeneSetEditor geneSetEditor() {
-    GeneSetEditor gse = screen.factory().geneSetEditor(screen);
-    gse.addSaveActionHandler(new SaveActionHandler() {
-      @Override
-      public void onSaved(String title, List<String> items) {
-        String[] itemsArray = items.toArray(new String[0]);
-        screen.geneSetChanged(new StringList(StringList.PROBES_LIST_TYPE, 
-            title, itemsArray));
-        screen.probesChanged(itemsArray);
-        screen.updateProbes();
-      }
-
-      @Override
-      public void onCanceled() {}
-    });
-    addListener(gse);
-    return gse;
+    return GeneSetEditor.make(screen, this);
   }
 
   public Widget selector() {
