@@ -21,12 +21,13 @@ package t.viewer.shared;
 import java.io.Serializable;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import t.common.shared.DataSchema;
 import t.common.shared.sample.*;
 
 @SuppressWarnings("serial")
-abstract public class Synthetic implements DataColumn<Sample>, Serializable {
-
+abstract public class Synthetic implements DataColumn<Sample>, Serializable {  
   public abstract static class TwoGroupSynthetic extends Synthetic {
     protected Group g1, g2;
 
@@ -139,10 +140,12 @@ abstract public class Synthetic implements DataColumn<Sample>, Serializable {
     //GWT constructor
     Precomputed() {}
     
-    public Precomputed(String name, String tooltip, Map<String, Double> data) {
+    public Precomputed(String name, String tooltip, Map<String, Double> data,
+                       @Nullable ColumnFilter initFilter) {
       super(name);
       this.tooltip = tooltip;
       this.data = data;
+      this.initFilter = initFilter;
     }
     
     public Map<String, Double> getData() { return data; }
@@ -154,7 +157,8 @@ abstract public class Synthetic implements DataColumn<Sample>, Serializable {
   }
 
   protected String name;
-
+  protected ColumnFilter initFilter;
+  
   public Synthetic() {}
 
   public Synthetic(String name) {
@@ -183,6 +187,14 @@ abstract public class Synthetic implements DataColumn<Sample>, Serializable {
 
   public boolean isDefaultSortAscending() {
     return true;
+  }
+  
+  /**
+   * The initial column filter, if any
+   * @return
+   */
+  public @Nullable ColumnFilter initFilter() {
+    return initFilter;
   }
 
   public String pack() {

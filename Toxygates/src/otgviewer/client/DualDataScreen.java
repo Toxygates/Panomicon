@@ -2,13 +2,15 @@ package otgviewer.client;
 
 import java.util.*;
 
+import javax.annotation.Nullable;
+
 import otgviewer.client.components.ScreenManager;
 import t.common.shared.AType;
 import t.common.shared.GroupUtils;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.table.*;
-import t.viewer.shared.Synthetic;
+import t.viewer.shared.*;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.*;
@@ -38,7 +40,7 @@ public class DualDataScreen extends DataScreen {
     ResizeLayoutPanel rlp = new ResizeLayoutPanel();
     rlp.setWidth("100%");
     DockLayoutPanel dlp = new DockLayoutPanel(Unit.PX);    
-    dlp.addEast(sideExpressionTable, 400);
+    dlp.addEast(sideExpressionTable, 550);
     dlp.add(expressionTable);
     rlp.add(dlp);
     return rlp;
@@ -97,9 +99,12 @@ public class DualDataScreen extends DataScreen {
     extractMirnaProbes();
   }
   
+  private ColumnFilter lastCountFilter = null;
+  
   @Override
   protected void beforeGetAssociations() {
     super.beforeGetAssociations();
+    lastCountFilter = countColumnFilter();
     sideExpressionTable.clearMatrix();
   }
   
@@ -126,13 +131,30 @@ public class DualDataScreen extends DataScreen {
     logger.info("Extracted " + ids.length + " mirnas");    
     
     Synthetic.Precomputed countColumn = new Synthetic.Precomputed("Count", 
-      "Number of times each miRNA appeared", counts);
+      "Number of times each miRNA appeared", counts,
+      lastCountFilter);
 
     List<Synthetic> synths = new ArrayList<Synthetic>();
     synths.add(countColumn);
     
     changeSideTableProbes(ids, synths);
   }
+  
+  private @Nullable ColumnFilter countColumnFilter() {
+    ManagedMatrixInfo matInfo = sideExpressionTable.currentMatrixInfo();
+    if (matInfo == null) {
+      return null;
+    }
+    int numData = matInfo.numDataColumns();
+    int numSynth = matInfo.numSynthetics();
+    if (numData > 0 && numSynth > 0) {
+      //We rely on the count column being the first synthetic
+      return matInfo.columnFilter(numData);
+    } else {
+      return null;
+    }
+  }
+  
   
   protected void changeSideTableProbes(String[] probes, List<Synthetic> synths) {      
     sideExpressionTable.probesChanged(probes);

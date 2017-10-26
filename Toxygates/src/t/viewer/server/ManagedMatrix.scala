@@ -378,8 +378,7 @@ class ManagedMatrix(val initProbes: Seq[String],
       case (Some(sc), _) => sort(sc, _sortAscending)
       case (_, Some(sat)) =>
         sortWithAuxTable(sat, _sortAscending)
-      case (None, None) =>
-        throw new Exception("Insufficient sort parameters")
+      case _ => //not sorting
     }
   }
 
@@ -480,6 +479,14 @@ class ManagedMatrix(val initProbes: Seq[String],
         
         current = current.appendStatic(inOrder, precomp.getName)
       case _ => throw new Exception("Unexpected test type")
+    }
+    
+    Option(s.initFilter) match {
+      case Some(f) =>
+        val col = current.columns - 1
+        currentInfo.setColumnFilter(col, f)
+        filterAndSort()
+      case _ =>
     }
   }
 
