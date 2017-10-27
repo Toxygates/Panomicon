@@ -238,7 +238,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
               new PendingAsyncCallback<String[]>(scr, "Failed to resolve gene identifiers") {
                 @Override
                 public void handleSuccess(String[] probes) {
-                  if (Arrays.equals(probes, scr.chosenProbes)) {
+                  if (Arrays.equals(probes, scr.state().probes)) {
                     return;
                   }
                   scr.probesChanged(probes);

@@ -28,6 +28,7 @@ import t.clustering.shared.Algorithm;
 import t.common.shared.*;
 import t.common.shared.clustering.ProbeClustering;
 import t.viewer.client.Analytics;
+import t.viewer.client.ClientState;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
@@ -101,9 +102,10 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   }
 
   private void createUserSets() {
+    ClientState state = screen.state();
     root.addSeparator(new MenuItemCaptionSeparator("User sets"));
 
-    List<StringList> geneSets = StringList.pickProbeLists(screen.chosenItemLists, null);
+    List<StringList> geneSets = StringList.pickProbeLists(state.itemLists, null);
     ensureSorted(geneSets);
 
     for (final StringList sl : geneSets) {
@@ -121,10 +123,11 @@ public class GeneSetsMenuItem extends DataListenerWidget {
   }
 
   private void createUserClusterings() {
+    ClientState state = screen.state();
     root.addSeparator(new MenuItemCaptionSeparator("Clusterings (user)"));
 
     List<ClusteringList> clusterings =
-        ClusteringList.pickUserClusteringLists(screen.chosenClusteringList, null);
+        ClusteringList.pickUserClusteringLists(state.chosenClusteringList, null);
     ensureSorted(clusterings);
 
     for (final ClusteringList cl : clusterings) {
@@ -291,14 +294,15 @@ public class GeneSetsMenuItem extends DataListenerWidget {
             .confirm("About to delete the user set \"" + sl.name() + "\". \nAre you sure?")) {
           return;
         }
-
+        
+        ClientState state = screen.state();
         StringListsStoreHelper helper = 
             new StringListsStoreHelper(StringList.PROBES_LIST_TYPE, screen);
         helper.delete(sl.name());
         Analytics.trackEvent(Analytics.CATEGORY_GENE_SET, Analytics.ACTION_DELETE_GENE_SET);
         // If the user deletes chosen gene set, switch to "All probes" automatically.
-        if (screen.chosenGeneSet != null && sl.type().equals(screen.chosenGeneSet.type())
-            && sl.name().equals(screen.chosenGeneSet.name())) {
+        if (state.geneSet != null && sl.type().equals(state.geneSet.type())
+            && sl.name().equals(state.geneSet.name())) {
           switchToAllProbes();
         }
       }
@@ -333,9 +337,11 @@ public class GeneSetsMenuItem extends DataListenerWidget {
             new ClusteringListsStoreHelper(
                 ClusteringList.USER_CLUSTERING_TYPE, screen);
         helper.delete(cl.name());
+        ClientState state = screen.state();
+        
         // If the user deletes chosen gene set, switch to "All probes" automatically.
-        if (screen.chosenGeneSet != null && cl.type().equals(screen.chosenGeneSet.type())
-            && cl.name().equals(screen.chosenGeneSet.name())) {
+        if (state.geneSet != null && cl.type().equals(state.geneSet.type())
+            && cl.name().equals(state.geneSet.name())) {
           switchToAllProbes();
         }
       }

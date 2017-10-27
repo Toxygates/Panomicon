@@ -35,7 +35,7 @@ public class ClusteringListsStoreHelper extends ItemListsStoreHelper {
 
   @Override
   protected void init() {
-    for (ItemList il : screen.chosenClusteringList) {
+    for (ItemList il : screen.state().chosenClusteringList) {
       if (il instanceof ClusteringList) {
         ClusteringList sl = (ClusteringList) il;
         putIfAbsent(sl.type()).put(sl.name(), sl);

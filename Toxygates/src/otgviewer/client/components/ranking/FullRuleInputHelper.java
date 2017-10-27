@@ -80,7 +80,7 @@ public class FullRuleInputHelper extends RuleInputHelper {
       return;
     }
     final String selCompound = refCompound.getItemText(selIndex);
-    SampleClass sc = ranker.chosenSampleClass.copy();
+    SampleClass sc = ranker.state().sampleClass.copy();
     sc.put(Compound, selCompound);
 
     ranker.sampleService.parameterValues(sc, DoseLevel.id(), new PendingAsyncCallback<String[]>(
@@ -144,7 +144,7 @@ public class FullRuleInputHelper extends RuleInputHelper {
         double[] data;
         String[] ss = syntheticCurveText.getText().split(" ");
         RankRule r = new RankRule(rt, probe);
-        SampleClass sc = ranker.chosenSampleClass;
+        SampleClass sc = ranker.state().sampleClass.copy();
         int expectedPoints = ranker.schema.numDataPointsInSeries(sc);
 
         if (ss.length != expectedPoints) {

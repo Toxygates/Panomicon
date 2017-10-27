@@ -52,7 +52,7 @@ public abstract class ItemListsStoreHelper {
    * Obtain current item lists
    */
   protected void init() {
-    for (ItemList il : screen.chosenItemLists) {
+    for (ItemList il : screen.state().itemLists) {
       if (il instanceof StringList) {
         StringList sl = (StringList) il;
         putIfAbsent(sl.type()).put(sl.name(), sl);
