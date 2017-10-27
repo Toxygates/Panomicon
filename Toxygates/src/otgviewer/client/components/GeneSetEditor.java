@@ -86,6 +86,32 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
     initWindow();
   }
 
+  /**
+   * Construct a gene set editor in a DataScreen and set up listeners
+   * appropriately.
+   * @param screen
+   * @param parent
+   * @return
+   */
+  public static GeneSetEditor make(final DataScreen screen, final DataListenerWidget parent) {
+    GeneSetEditor gse = screen.factory().geneSetEditor(screen);
+    gse.addSaveActionHandler(new SaveActionHandler() {
+      @Override
+      public void onSaved(String title, List<String> items) {
+        String[] itemsArray = items.toArray(new String[0]);
+        screen.geneSetChanged(new StringList(StringList.PROBES_LIST_TYPE, 
+            title, itemsArray));
+        screen.probesChanged(itemsArray);
+        screen.updateProbes();
+      }
+
+      @Override
+      public void onCanceled() {}
+    });
+    parent.addListener(gse);
+    return gse;
+  }
+  
   /*
    * Override this function to handle post save event and what genes were saved
    */

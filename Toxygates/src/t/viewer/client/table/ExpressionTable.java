@@ -837,7 +837,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
               logger.info("Data successfully loaded");
             } else {
               Window
-                  .alert("No data was available for this gene set.\nThe view will switch to default selection.");
+                  .alert("No data was available for the saved gene set (" + chosenProbes.length + " probes)." +
+                      "\nThe view will switch to default selection. (Wrong species?)");
               onGettingExpressionFailed();
             }
           }

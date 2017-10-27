@@ -7,6 +7,9 @@
         
   <dependencies>
   
+  <!-- for GWT 2.8 -->
+  <dependency org="javax.servlet" name="javax.servlet-api" rev="latest.integration" />
+  
   <!-- Force same version as OTGTool -->
   <dependency org="commons-logging" name="commons-logging" rev="1.2"/>
 

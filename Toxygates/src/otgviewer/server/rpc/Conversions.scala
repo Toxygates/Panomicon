@@ -68,7 +68,7 @@ object Conversions {
     sc.put(TestType, series.testType)
     sc.put(Organ, series.organ)
     sc.put(Repeat, series.repeat)
-    new Series(name, series.probeStr, ExposureTime.id(), sc,
+    new Series(name, series.probeStr, ExposureTime, sc,
          series.values.map(t.viewer.server.Conversions.asJava).toArray)
   }
 

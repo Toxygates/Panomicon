@@ -182,7 +182,6 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
         vp.remove(i - 1);
         sections.remove(tg.chosenSampleClass);
         clearEmptySections();
-        // TODO not the best flow logic
         return;
       }
     }
