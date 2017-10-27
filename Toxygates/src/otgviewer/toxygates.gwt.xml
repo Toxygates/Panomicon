@@ -10,8 +10,6 @@
 	<!-- <inherits name='com.google.gwt.user.theme.standard.Standard'/> -->
 	<!-- <inherits name='com.google.gwt.user.theme.chrome.Chrome'/> -->
 	<!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
-	
-	<stylesheet src="gwt-clean.css" />
 
 	<!-- Other module inherits                                      -->
 	<inherits name='com.google.gwt.visualization.Visualization'/>
