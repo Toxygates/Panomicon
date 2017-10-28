@@ -20,6 +20,8 @@ package t.common.shared;
 
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SharedUtils {
   public static <T> int indexOf(T[] haystack, T needle) {
@@ -32,12 +34,13 @@ public class SharedUtils {
   }
 
   public static <T> int indexOf(List<T> haystack, T needle) {
-    for (int i = 0; i < haystack.size(); ++i) {
-      if (haystack.get(i).equals(needle)) {
-        return i;
-      }
-    }
-    return -1;
+    return haystack.indexOf(needle);
+//    for (int i = 0; i < haystack.size(); ++i) {
+//      if (haystack.get(i).equals(needle)) {
+//        return i;
+//      }
+//    }
+//    return -1;
   }
 
   public static String mkString(String[] ar) {
@@ -53,26 +56,10 @@ public class SharedUtils {
   }
 
   public static String mkString(Collection<? extends Object> cl, String separator) {
-    List<String> ss = new ArrayList<String>();
-    for (Object o : cl) {
-      if (o == null) {
-        ss.add("null");
-      } else {
-        ss.add(o.toString());
-      }
-    }
-    java.util.Collections.sort(ss);
-    StringBuilder sb = new StringBuilder();
-    for (String s : ss) {
-      sb.append(s);
-      sb.append(separator);
-    }
-    String r = sb.toString();
-    if (r.length() > 0) {
-      return r.substring(0, r.length() - separator.length()); // remove final separator
-    } else {
-      return r;
-    }
+    Stream<String> ss = cl.stream().
+        map(x -> (x == null ? "null" : x.toString())).sorted();
+    
+    return ss.collect(Collectors.joining (separator));    
   }
 
   public static Logger getLogger() {
@@ -85,11 +72,8 @@ public class SharedUtils {
 
   // TODO best location for this?
   public static String packList(Collection<String> items, String separator) {
-    StringBuilder sb = new StringBuilder();
-    for (String x : items) {
-      sb.append(x);
-      sb.append(separator);
-    }
+    StringBuilder sb = new StringBuilder();    
+    items.stream().forEachOrdered(i -> sb.append(i + separator));    
     return sb.toString();
   }
 }
