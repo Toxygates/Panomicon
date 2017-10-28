@@ -33,16 +33,6 @@ public class SharedUtils {
     return -1;
   }
 
-  public static <T> int indexOf(List<T> haystack, T needle) {
-    return haystack.indexOf(needle);
-//    for (int i = 0; i < haystack.size(); ++i) {
-//      if (haystack.get(i).equals(needle)) {
-//        return i;
-//      }
-//    }
-//    return -1;
-  }
-
   public static String mkString(String[] ar) {
     return mkString(ar, "");
   }
