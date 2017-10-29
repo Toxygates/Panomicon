@@ -77,6 +77,10 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
   public S[] getSamples() {
     return _samples;
   }
+  
+  public boolean containsSample(String sampleId) {
+    return Arrays.stream(_samples).anyMatch(s -> s.id().equals(sampleId));
+  }
 
   public String getName() {
     return name;
