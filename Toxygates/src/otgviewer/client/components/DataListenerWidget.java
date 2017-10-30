@@ -26,37 +26,36 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.DialogBox;
-
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
+import t.viewer.client.ClientState;
 import t.viewer.client.Utils;
+
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.DialogBox;
 
 /**
  * A Composite that is also a DataViewListener. 
  * Has default implementations for the change listener methods.
- * 
- * @author johan
  *
  */
 public class DataListenerWidget extends Composite implements DataViewListener {
 
   private List<DataViewListener> listeners = new ArrayList<DataViewListener>();
 
-  //TODO visibility of these members
   protected Dataset[] chosenDatasets = new Dataset[0];
-  public SampleClass chosenSampleClass; 
-  public String[] chosenProbes = new String[0];
-  public List<String> chosenCompounds = new ArrayList<String>();
+  protected SampleClass chosenSampleClass; 
+  protected String[] chosenProbes = new String[0];
+  protected List<String> chosenCompounds = new ArrayList<String>();
   protected String chosenCompound;
   protected List<Group> chosenColumns = new ArrayList<Group>();
   protected SampleColumn chosenCustomColumn;
-  public List<ItemList> chosenItemLists = new ArrayList<ItemList>(); // TODO
-  public ItemList chosenGeneSet = null;
-  public List<ItemList> chosenClusteringList = new ArrayList<ItemList>();
+  //TODO this should not be public
+  public List<ItemList> chosenItemLists = new ArrayList<ItemList>(); 
+  protected ItemList chosenGeneSet = null;
+  protected List<ItemList> chosenClusteringList = new ArrayList<ItemList>();
 
   protected final Logger logger = SharedUtils.getLogger("dlwidget");
 
@@ -70,6 +69,13 @@ public class DataListenerWidget extends Composite implements DataViewListener {
 
   public DataListenerWidget() {
     super();
+  }
+  
+  public ClientState state() {
+    return new ClientState(chosenDatasets, chosenSampleClass,
+        chosenProbes, chosenCompounds, chosenCompound, chosenColumns,
+        chosenCustomColumn, chosenItemLists, chosenGeneSet,
+        chosenClusteringList);
   }
 
   public void addListener(DataViewListener l) {

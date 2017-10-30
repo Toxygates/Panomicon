@@ -273,13 +273,13 @@ abstract public class CompoundRanker extends DataListenerWidget {
   @Override
   public void itemListsChanged(List<ItemList> lists) {
     super.itemListsChanged(lists);
-    listChooser.setLists(StringListsStoreHelper.compileLists(this));
+    listChooser.setLists(StringListsStoreHelper.compileLists(this.state()));
   }
 
   @Override
   public void clusteringListsChanged(List<ItemList> lists) {
     super.clusteringListsChanged(lists);     
-    listChooser.setLists(StringListsStoreHelper.compileLists(this));
+    listChooser.setLists(StringListsStoreHelper.compileLists(this.state()));
   }
   
   

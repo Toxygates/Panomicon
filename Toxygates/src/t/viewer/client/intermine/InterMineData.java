@@ -29,6 +29,7 @@ import otgviewer.client.components.Screen;
 import t.common.client.components.StringArrayTable;
 import t.common.shared.*;
 import t.viewer.client.Analytics;
+import t.viewer.client.ClientState;
 import t.viewer.client.dialog.*;
 import t.viewer.shared.intermine.EnrichmentParams;
 import t.viewer.shared.intermine.IntermineInstance;
@@ -80,16 +81,18 @@ public class InterMineData {
     tmService.importLists(instance, user, pass, asProbes, new PendingAsyncCallback<StringList[]>(
         parent, "Unable to import lists from " + instance.title()) {
       public void handleSuccess(StringList[] data) {
+        ClientState state = parent.state();
+        
         Collection<ItemList> rebuild =
             StringListsStoreHelper.rebuildLists(logger, Arrays.asList(data));
         List<StringList> normal = StringList.pickProbeLists(rebuild, null);
         List<ClusteringList> clustering = ClusteringList.pickUserClusteringLists(rebuild, null);
 
         // TODO revise pop-up message handling for this process
-        parent.itemListsChanged(mergeLists(parent.chosenItemLists, normal, replace,
+        parent.itemListsChanged(mergeLists(state.itemLists, normal, replace,
           "lists"));
         parent.storeItemLists(parent.getParser());
-        parent.clusteringListsChanged(mergeLists(parent.chosenClusteringList, clustering, 
+        parent.clusteringListsChanged(mergeLists(state.chosenClusteringList, clustering, 
           replace, "clusters"));
         parent.storeClusteringLists(parent.getParser());
       }
@@ -108,7 +111,8 @@ public class InterMineData {
           protected void userProceed(IntermineInstance instance, String user, String pass,
               boolean replace) {
             super.userProceed();
-            doExport(instance, user, pass, StringListsStoreHelper.compileLists(parent), replace);
+            doExport(instance, user, pass, 
+                StringListsStoreHelper.compileLists(parent.state()), replace);
           }
 
         };

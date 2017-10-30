@@ -365,8 +365,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     } else if (groupsel1.getSelectedIndex() == groupsel2.getSelectedIndex()) {
       Window.alert("Please select two different groups to perform " + name + ".");
     } else {
-      final Group g1 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel1));
-      final Group g2 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel2));
+      final Group g1 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel1)).get();
+      final Group g2 = GroupUtils.findGroup(chosenColumns, selectedGroup(groupsel2)).get();
       synth.setGroups(g1, g2);
       matrixService.addTwoGroupTest(synth, new PendingAsyncCallback<ManagedMatrixInfo>(this,
           "Adding test column failed") {
