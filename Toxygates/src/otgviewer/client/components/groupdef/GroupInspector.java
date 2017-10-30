@@ -22,16 +22,8 @@ import static t.common.client.Utils.makeScrolled;
 
 import java.util.*;
 import java.util.logging.Logger;
-
-import com.google.gwt.cell.client.FieldUpdater;
-import com.google.gwt.cell.client.TextButtonCell;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.cellview.client.*;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import otg.model.sample.OTGAttribute;
 import otgviewer.client.components.*;
@@ -43,6 +35,16 @@ import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.rpc.SampleServiceAsync;
+
+import com.google.gwt.cell.client.FieldUpdater;
+import com.google.gwt.cell.client.TextButtonCell;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.user.cellview.client.*;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * This widget is intended to help visually define and modify groups of samples. The main dose/time
@@ -379,7 +381,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
 
     logger.info("Available DS: " + SharedUtils.mkString(availDs, ", "));
     for (Group g : existingGroupsTable.getSelection()) {
-      Set<String> reqDs = g.collect(OTGAttribute.Dataset);
+      List<String> reqDs = g.collect(OTGAttribute.Dataset).collect(Collectors.toList());
       logger.info("Group " + g.getShortTitle() + " needs " + SharedUtils.mkString(reqDs, ", "));
       if (!availDs.containsAll(reqDs)) {
         existingGroupsTable.unselect(g);
@@ -394,7 +396,7 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
   }
 
   protected void enableDatasetsIfNeeded(Collection<Group> gs) {
-    Set<String> neededDatasets = Group.collectAll(gs, OTGAttribute.Dataset);
+    List<String> neededDatasets = Group.collectAll(gs, OTGAttribute.Dataset).collect(Collectors.toList());
     logger.info("Needed datasets: " + SharedUtils.mkString(neededDatasets, ", "));
 
     Dataset[] allDatasets = screen.appInfo().datasets();
@@ -578,8 +580,9 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
     changeSampleClass(macroClass);
     screen.sampleClassChanged(macroClass);
 
-    List<String> compounds =
-        new ArrayList<String>(SampleClassUtils.getMajors(schema, groups.get(name), chosenSampleClass));
+    List<String> compounds = 
+        SampleClassUtils.getMajors(schema, groups.get(name), chosenSampleClass).
+        collect(Collectors.toList());
 
     compoundSel.setSelection(compounds);
     txtbxGroup.setValue(name);

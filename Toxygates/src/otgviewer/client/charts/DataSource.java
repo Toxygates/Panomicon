@@ -68,9 +68,8 @@ abstract public class DataSource {
     try {
       Attribute minorParam = schema.minorParameter();
       Attribute medParam = schema.mediumParameter();
-      Set<String> minorVals = SampleClassUtils.collectInner(from, minorParam);
-      _minorVals = minorVals.toArray(new String[0]);
-      schema.sort(minorParam, _minorVals);
+      String[] minorVals = SampleClassUtils.collectInner(from, minorParam).toArray(String[]::new);      
+      schema.sort(minorParam, minorVals);
 
       Set<String> medVals = new HashSet<String>();
       for (HasClass f : from) {

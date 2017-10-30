@@ -1,6 +1,7 @@
 package t.common.shared.sample;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -40,15 +41,9 @@ public class SampleClassUtils {
     return maj + "/" + med + "/" + min;
   }
 
-  public static Set<String> collectInner(List<? extends HasClass> from, Attribute key) {
-    Set<String> r = new HashSet<String>();
-    for (HasClass hc : from) {
-      String x = hc.sampleClass().get(key);
-      if (x != null) {
-        r.add(x);
-      }
-    }
-    return r;
+  public static Stream<String> collectInner(List<? extends HasClass> from, Attribute key) {
+    return from.stream().map(hc -> hc.sampleClass().get(key)).
+      filter(k -> k != null).distinct();
   }
 
   public static boolean strictCompatible(SampleClass sc, HasClass hc2) {
@@ -63,12 +58,14 @@ public class SampleClassUtils {
     return r;
   }
 
-  public static <S extends Sample, HS extends HasSamples<S>> Set<String> getMajors(
+  public static <S extends Sample, HS extends HasSamples<S>> 
+  Stream<String> getMajors(
       DataSchema schema, HS hasSamples) {
     return getMajors(schema, hasSamples, (SampleClass) null);
   }
 
-  public static <S extends Sample, HS extends HasSamples<S>> Set<String> getMajors(
+  public static <S extends Sample, HS extends HasSamples<S>> 
+  Stream<String> getMajors(
       DataSchema schema, HS hasSamples, @Nullable SampleClass sc) {
     List<S> sList = Arrays.asList(hasSamples.getSamples());
     List<S> filtered = (sc != null) ? filter(sc, sList) : sList;

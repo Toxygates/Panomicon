@@ -19,13 +19,7 @@
 package otgviewer.client.components;
 
 import java.util.*;
-
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
+import java.util.stream.Stream;
 
 import otgviewer.client.*;
 import otgviewer.client.rpc.ProbeServiceAsync;
@@ -36,6 +30,13 @@ import t.common.shared.sample.Group;
 import t.model.SampleClass;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
+
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
 
 public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHandler {
 
@@ -620,11 +621,9 @@ public class GeneSetEditor extends DataListenerWidget implements HasSaveActionHa
   @Override
   public void columnsChanged(List<Group> cs) {
     super.columnsChanged(cs);
-    Set<String> compounds = Group.collectAll(cs, screen.schema().majorParameter());
+    Stream<String> compounds = Group.collectAll(cs, screen.schema().majorParameter());
     compoundList.clear();
-    for (String c : compounds) {
-      compoundList.addItem(c);
-    }
+    compounds.forEach(c -> compoundList.addItem(c));    
   }
 
   public void createNew(String[] initProbes) {
