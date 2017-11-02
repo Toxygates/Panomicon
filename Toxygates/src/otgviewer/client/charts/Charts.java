@@ -150,12 +150,12 @@ public class Charts {
 
   public void makeRowCharts(final Screen screen, final Sample[] barcodes, final ValueType vt,
       final String[] probes, final AChartAcceptor acceptor) {
-    Set<String> organisms = Group.collectAll(groups, OTGAttribute.Dataset);
+    String[] organisms = Group.collectAll(groups, OTGAttribute.Dataset).toArray(String[]::new);
 
     String[] majorVals =
-        GroupUtils.collect(groups, schema.majorParameter()).toArray(new String[0]);
+        GroupUtils.collect(groups, schema.majorParameter()).toArray(String[]::new);
 
-    if (organisms.size() > 1) {
+    if (organisms.length > 1) {
       logger.info("Get rows for chart based on units");
       sampleService.units(sampleClasses, schema.majorParameter().id(), majorVals,
           new AsyncCallback<Pair<Unit, Unit>[]>() {

@@ -76,23 +76,15 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
   }
 
   public Sample[] getTreatedSamples() {
-    List<Sample> r = new ArrayList<Sample>();
-    for (Unit u : _units) {
-      if (!schema.isSelectionControl(u)) {
-        r.addAll(Arrays.asList(u.getSamples()));
-      }
-    }
-    return r.toArray(new Sample[0]);
+    return Arrays.stream(_units).
+      filter(u -> !schema.isSelectionControl(u)).
+      flatMap(u -> Arrays.stream(u.getSamples())).toArray(Sample[]::new);    
   }
 
   public Sample[] getControlSamples() {
-    List<Sample> r = new ArrayList<Sample>();
-    for (Unit u : _units) {
-      if (schema.isSelectionControl(u)) {
-        r.addAll(Arrays.asList(u.getSamples()));
-      }
-    }
-    return r.toArray(new Sample[0]);
+    return Arrays.stream(_units).
+        filter(u -> schema.isSelectionControl(u)).
+        flatMap(u -> Arrays.stream(u.getSamples())).toArray(Sample[]::new);    
   }
 
   public Unit[] getUnits() {

@@ -20,6 +20,7 @@ package t.common.shared.sample;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Stream;
 
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
@@ -150,17 +151,13 @@ public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializabl
     return other instanceof SampleGroup;
   }
 
-  public Set<String> collect(Attribute parameter) {
+  public Stream<String> collect(Attribute parameter) {
     return SampleClassUtils.collectInner(Arrays.asList(_samples), parameter);
   }
 
-  public static <S extends Sample, G extends SampleGroup<S>> Set<String> collectAll(
-      Iterable<G> from, Attribute parameter) {
-    Set<String> r = new HashSet<String>();
-    for (G g : from) {
-      r.addAll(g.collect(parameter));
-    }
-    return r;
+  public static <S extends Sample, G extends SampleGroup<S>> 
+  Stream<String> collectAll(Collection<G> from, Attribute parameter) {
+    return from.stream().flatMap(g -> g.collect(parameter)).distinct();    
   }
 
 }

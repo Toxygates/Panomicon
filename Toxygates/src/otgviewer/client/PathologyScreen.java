@@ -107,12 +107,14 @@ public class PathologyScreen extends Screen {
     };
     pathologyTable.addColumn(col, "Group");
 
+    //Note: we may need to stop including p.barcode() at some point
+    //if pathologies get to have longer barcodes (currently only OTG samples)
     col = new TextColumn<Pathology>() {
       @Override
       public String getValue(Pathology p) {
         Sample b = GroupUtils.sampleFor(chosenColumns, p.barcode());
-        return b.get(OTGAttribute.Compound) + "/" + b.getShortTitle(schema()) + "/"
-            + b.get(OTGAttribute.Individual);
+        return b.get(OTGAttribute.Compound) + "/" + b.getShortTitle(schema()) +
+            " [" + p.barcode() + "]";
       }
     };
     pathologyTable.addColumn(col, "Sample");

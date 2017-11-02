@@ -59,14 +59,8 @@ public class GroupUtils {
     return columns.stream().filter(c -> c.containsSample(barcode));  
   }
 
-  public static Set<String> collect(List<? extends SampleGroup<?>> columns, Attribute parameter) {
-    Set<String> r = new HashSet<String>();
-    for (SampleGroup<?> g : columns) {
-      for (String c : g.collect(parameter)) {
-        r.add(c);
-      }
-    }
-    return r;
+  public static Stream<String> collect(List<? extends SampleGroup<?>> columns, Attribute parameter) {
+    return columns.stream().flatMap(c -> c.collect(parameter)).distinct();    
   }
 
   /**

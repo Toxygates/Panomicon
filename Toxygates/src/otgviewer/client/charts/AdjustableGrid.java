@@ -20,10 +20,7 @@ package otgviewer.client.charts;
 
 import java.util.*;
 import java.util.logging.Logger;
-
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.user.client.ui.*;
+import java.util.stream.Collectors;
 
 import otg.model.sample.OTGAttribute;
 import otgviewer.client.components.Screen;
@@ -31,6 +28,10 @@ import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.sample.Attribute;
 import t.viewer.client.Utils;
+
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * A chart grid where the user can interactively choose what kind of charts to display (for example,
@@ -68,16 +69,13 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
     this.factory = factory;
     schema = screen.schema();
 
-    Set<String> os = new HashSet<String>();
-
-    // TODO use schema somehow to handle organism propagation
-    for (Group g : groups) {
-      os.addAll(g.collect(OTGAttribute.Organism));
-    }
-    organisms = new ArrayList<String>(os);
+    // TODO use schema somehow to handle organism propagation   
+    organisms = groups.stream().
+        flatMap(g -> g.collect(OTGAttribute.Organism)).
+        distinct().collect(Collectors.toList());
 
     Attribute majorParam = screen.schema().majorParameter();
-    this.majorVals = new ArrayList<String>(GroupUtils.collect(groups, majorParam));
+    this.majorVals = GroupUtils.collect(groups, majorParam).collect(Collectors.toList());
     this.valueType = vt;
 
     vp = Utils.mkVerticalPanel();
@@ -261,11 +259,8 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
 
       final boolean vsTime = chartCombo.getSelectedIndex() == 0;
       if (groups != null) {
-        Set<String> majors = new HashSet<String>();
-        for (Group g : groups) {
-          majors.addAll(SampleClassUtils.getMajors(schema, g));
-        }
-        String[] majorsA = majors.toArray(new String[0]);
+        String[] majorsA = groups.stream().flatMap(g -> SampleClassUtils.getMajors(schema, g)).
+            distinct().toArray(String[]::new);        
         SimplePanel sp = makeGridPanel(majorsA);
         ivp.add(sp);
         expectedGrids += 1;
