@@ -26,6 +26,7 @@ import javax.annotation.Nullable;
 
 import com.google.gwt.cell.client.*;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.builder.shared.TableRowBuilder;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.*;
@@ -125,6 +126,62 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   
   private CheckBox pcb;
 
+  protected class HeaderBuilder extends DefaultHeaderOrFooterBuilder<ExpressionRow> {
+    AbstractCellTable.Style style;
+
+    public HeaderBuilder(AbstractCellTable<ExpressionRow> table) {
+      super(table, false);
+      style = getTable().getResources().style();
+    }
+
+    private void buildGroupHeader(TableRowBuilder rowBuilder, Group group, int columnCount) {
+      rowBuilder.startTH().colSpan(columnCount).className(style.header()).text(group.getName())
+          .endTH();
+    }
+
+    // private void buildSectionHeader(TableRowBuilder rowBuilder, String text, int columnCount) {
+    // rowBuilder.startTH().colSpan(columnCount).className(style.header()).text(text).endTH();
+    // }
+
+    private void buildBlankHeader(TableRowBuilder rowBuilder, int columnCount) {
+      rowBuilder.startTH().colSpan(columnCount).endTH();
+    }
+
+    @Override
+    protected boolean buildHeaderOrFooterImpl() {
+      if (columnSections.size() > 0) {
+        TableRowBuilder rowBuilder = startRow();
+        for (int i = 0; i < columnSections.size(); i++) {
+          String sectionName = columnSections.get(i);
+          int numSectionColumns = sectionColumnCount.get(sectionName);
+          if (numSectionColumns > 0) {
+            if (sectionName == "data") {
+              int groupColumnCount = 1;
+              Group group = matrixInfo.columnGroup(0);
+              // Iterate through data columns, and build a group header whenever
+              // we switch groups, and also at the end of the iteration.
+              for (int j = 1; j < matrixInfo.numDataColumns(); j++) {
+                if (displayPColumns || !matrixInfo.isPValueColumn(j)) {
+                  Group nextGroup = matrixInfo.columnGroup(j);
+                  if (group != nextGroup) {
+                    buildGroupHeader(rowBuilder, group, groupColumnCount);
+                    groupColumnCount = 0;
+                  }
+                  groupColumnCount++;
+                  group = nextGroup;
+                }
+              }
+              buildGroupHeader(rowBuilder, group, groupColumnCount);
+            } else {
+              buildBlankHeader(rowBuilder, numSectionColumns);
+            }
+          }
+        }
+      }
+      return super.buildHeaderOrFooterImpl();
+    }
+  }
+
   public ExpressionTable(Screen _screen, boolean withPValueOption,
       TableStyle style) {
     super(_screen, style);
@@ -133,6 +190,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     this.resources = _screen.resources();
     screen = _screen;
 
+    grid.setHeaderBuilder(new HeaderBuilder(grid));
     grid.addStyleName("exprGrid");
     grid.setPageSize(INIT_PAGE_SIZE);
 
