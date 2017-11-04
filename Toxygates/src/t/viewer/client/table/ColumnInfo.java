@@ -20,16 +20,16 @@ package t.viewer.client.table;
 
 import javax.annotation.Nullable;
 
-import t.viewer.client.Utils;
-
 import com.google.gwt.safehtml.shared.SafeHtml;
+
+import t.viewer.client.Utils;
 
 public class ColumnInfo {
 
   static final String DEFAULT_COL_WIDTH = "12em";
 
   private String title, tooltip, width;
-  private @Nullable String cellStyleNames;
+  private @Nullable String cellStyleNames, headerStyleNames;
   private boolean sortable, hideable, defaultSortAsc, filterable, filterActive;
 
   public ColumnInfo(String title, String tooltip, boolean sortable, boolean hideable, String width,
@@ -110,6 +110,14 @@ public class ColumnInfo {
 
   public void setCellStyleNames(String v) {
     cellStyleNames = v;
+  }
+
+  public String headerStyleNames() {
+    return headerStyleNames;
+  }
+
+  public void setHeaderStyleNames(String v) {
+    headerStyleNames = v;
   }
 
   public boolean defaultSortAsc() {

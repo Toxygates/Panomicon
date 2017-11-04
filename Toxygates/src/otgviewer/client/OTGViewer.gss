@@ -16,6 +16,11 @@ Variables
 @def NAVLINK_BORDER_COLOR #595959;
 @def NAVLINK_DISABLED_COLOR #585858;
 
+@def DARK_BORDER_COLOR #656565;
+@def LIGHT_BORDER_COLOR #C2C2C2;
+@def DARK_ROW_COLOR #F2F2F2;
+@def LIGHT_ROW_COLOR #FFFFFF;
+
 /******************************************************************************	
 Global
 ******************************************************************************/
@@ -248,6 +253,31 @@ Status panel
 /**************************************	
 Expression table
 **************************************/
+.dataGridHeader {
+	border-bottom: 1px solid DARK_BORDER_COLOR;
+}
+
+.majorHeader {
+	text-align: left;
+	border-bottom: none;
+}
+
+.darkBorderLeft {
+	border-left: 1px solid DARK_BORDER_COLOR;
+}
+
+.lightBorderLeft {
+	border-left: 1px solid LIGHT_BORDER_COLOR;
+}
+
+.dataGridEvenRow {
+	background: LIGHT_ROW_COLOR;
+}
+
+.dataGridOddRow {
+	background: DARK_ROW_COLOR;
+}
+
 .highlightedRow {
 	font-style: italic;
 	font-weight: bold;

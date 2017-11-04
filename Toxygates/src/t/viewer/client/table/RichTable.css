@@ -2,6 +2,9 @@
    Note: the DataGrid.Style interface requires certain selectors to be present, so empty 
    declaration blocks shouldn't be deleted.
 */
+
+@external '*';
+
 @def selectionBorderWidth 2px;
 .dataGridWidget {
 }
@@ -13,21 +16,15 @@
 }
 
 .dataGridFooter {
-  border-top: 2px solid #6f7277;
   padding: 3px;
   text-align: left;
-  color: #4b4a4a;
-  text-shadow: #ddf 1px 1px 0;
   overflow: hidden;
   white-space: nowrap;
 }
 
 .dataGridHeader {
-  border-bottom: 2px solid #6f7277;
   padding: 3px;
   text-align: left;
-  color: #4b4a4a;
-  text-shadow: #ddf 1px 1px 0;
   overflow: hidden;
   white-space: nowrap;
 }
@@ -71,19 +68,15 @@
 }
 
 .dataGridEvenRow {
-  background: #ffffff;
 }
 
 .dataGridEvenRowCell {
-  border: selectionBorderWidth solid #ffffff;
 }
 
 .dataGridOddRow {
-  background: #f3f7fb;
 }
 
 .dataGridOddRowCell {
-  border: selectionBorderWidth solid #f3f7fb;
 }
 
 .dataGridHoveredRow {

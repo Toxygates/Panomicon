@@ -134,9 +134,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       style = getTable().getResources().style();
     }
 
-    private void buildGroupHeader(TableRowBuilder rowBuilder, Group group, int columnCount) {
-      rowBuilder.startTH().colSpan(columnCount).className(style.header()).text(group.getName())
-          .endTH();
+    private void buildGroupHeader(TableRowBuilder rowBuilder, Group group, int columnCount,
+        String styleNames) {
+      rowBuilder.startTH().colSpan(columnCount)
+          .className(style.header() + " majorHeader " + styleNames).text(group.getName()).endTH();
     }
 
     // private void buildSectionHeader(TableRowBuilder rowBuilder, String text, int columnCount) {
@@ -160,18 +161,21 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
               Group group = matrixInfo.columnGroup(0);
               // Iterate through data columns, and build a group header whenever
               // we switch groups, and also at the end of the iteration.
+              boolean first = true;
               for (int j = 1; j < matrixInfo.numDataColumns(); j++) {
                 if (displayPColumns || !matrixInfo.isPValueColumn(j)) {
                   Group nextGroup = matrixInfo.columnGroup(j);
                   if (group != nextGroup) {
-                    buildGroupHeader(rowBuilder, group, groupColumnCount);
+                    buildGroupHeader(rowBuilder, group, groupColumnCount,
+                        first ? "darkBorderLeft" : "");
+                    first = false;
                     groupColumnCount = 0;
                   }
                   groupColumnCount++;
                   group = nextGroup;
                 }
               }
-              buildGroupHeader(rowBuilder, group, groupColumnCount);
+              buildGroupHeader(rowBuilder, group, groupColumnCount, "");
             } else {
               buildBlankHeader(rowBuilder, numSectionColumns);
             }
@@ -469,6 +473,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
     TextCell tc = new TextCell();
 
+    Group previousGroup = null;
     for (int i = 0; i < matrixInfo.numDataColumns(); ++i) {
       if (displayPColumns || !matrixInfo.isPValueColumn(i)) {
         Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);
@@ -476,17 +481,23 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
             new ColumnInfo(matrixInfo.columnName(i), 
                 matrixInfo.columnHint(i), true, false, true,
                 matrixInfo.columnFilter(i).active());
-        Group g = matrixInfo.columnGroup(i);
-        String styleName = g == null ? "dataColumn" : g.getStyleName();
-        ci.setCellStyleNames(styleName);
+        Group group = matrixInfo.columnGroup(i);
+        String groupStyle = group == null ? "dataColumn" : group.getStyleName();
+        String borderStyle = (group != previousGroup) ? "darkBorderLeft" : "lightBorderLeft";
+        ci.setCellStyleNames(groupStyle + " " + borderStyle);
+        ci.setHeaderStyleNames(borderStyle);
+        previousGroup = group;
         addColumn(valueCol, "data", ci);
       }
     }
     
-    ensureSection("synthetic");    
+    ensureSection("synthetic");
+    boolean first = true;
     for (int i = matrixInfo.numDataColumns(); i < matrixInfo.numColumns(); i++) {
-      addSynthColumn(matrixInfo.columnName(i), matrixInfo.columnHint(i), i);
-    }    
+      String borderStyle = first ? "darkBorderLeft" : "lightBorderLeft";
+      first = false;
+      addSynthColumn(matrixInfo.columnName(i), matrixInfo.columnHint(i), i, borderStyle);
+    }
   }
 
   @Override
@@ -508,11 +519,12 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     return new ToolCell(this);
   }
 
-  private void addSynthColumn(String title, String tooltip, int matIndex) {
+  private void addSynthColumn(String title, String tooltip, int matIndex, String borderStyle) {
     TextCell tc = new TextCell();    
     Column<ExpressionRow, String> synCol = new ExpressionColumn(tc, matIndex);    
     ColumnInfo info = new ColumnInfo(title, tooltip, true, false, true, false);
-    info.setCellStyleNames("extraColumn");
+    info.setCellStyleNames("extraColumn " + borderStyle);
+    info.setHeaderStyleNames(borderStyle);
     info.setDefaultSortAsc(true);
     addColumn(synCol, "synthetic", info);
   }
@@ -521,7 +533,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   protected Header<SafeHtml> getColumnHeader(ColumnInfo info) {
     Header<SafeHtml> superHeader = super.getColumnHeader(info);
     if (info.filterable()) {
-      return new FilteringHeader(superHeader.getValue(), info.filterActive());
+      FilteringHeader header = new FilteringHeader(superHeader.getValue(), info.filterActive());
+      header.setHeaderStyleNames(info.headerStyleNames());
+      return header;
     } else {
       return superHeader;
     }
