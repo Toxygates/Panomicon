@@ -19,7 +19,8 @@
 package t.common.shared.sample;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.stream.Stream;
 
 import t.common.shared.DataSchema;
@@ -35,14 +36,17 @@ import t.model.sample.Attribute;
 public class SampleGroup<S extends Sample> implements DataColumn<S>, Serializable,
     Comparable<SampleGroup<?>> {
 
-  /**
-   * This list was generated using the service at http://tools.medialab.sciences-po.fr/iwanthue/
-   */
-  public static final String[] groupColors = new String[] {"#8582B5", "#7AC653", "#C3534D",
-      "#90C1AB", "#504239", "#C1A54A", "#B354B3"};
+  public static String[] groupColors;
+
+  public static void setColors(String[] colors) {
+    if (groupColors != null) {
+      throw new RuntimeException("Colors have already been set");
+    } else {
+      groupColors = colors;
+    }
+  }
 
   private static int nextColor = 0;
-
 
   public SampleGroup() {}
 

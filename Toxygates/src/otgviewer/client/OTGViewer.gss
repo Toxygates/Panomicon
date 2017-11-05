@@ -21,6 +21,17 @@ Variables
 @def DARK_ROW_COLOR #F2F2F2;
 @def LIGHT_ROW_COLOR #FFFFFF;
 
+/**
+ * This list was generated using the service at http://tools.medialab.sciences-po.fr/iwanthue/
+ */
+@def GROUP0_COLOR #8582b5;
+@def GROUP1_COLOR #7ac653;
+@def GROUP2_COLOR #c3534d;
+@def GROUP3_COLOR #90c1ab;
+@def GROUP4_COLOR #504239;
+@def GROUP5_COLOR #c1a54a;
+@def GROUP6_COLOR #b354b3;
+
 /******************************************************************************	
 Global
 ******************************************************************************/
@@ -302,31 +313,31 @@ Groups
 /* These must correspond to the colors in SampleGroup.java
 */
 .Group0 {
-	color: #8582b5;
+	color: GROUP0_COLOR;
 }
 
 .Group1 {
-	color: #7ac653;
+	color: GROUP1_COLOR;
 }
 
 .Group2 {
-	color: #c3534d;
+	color: GROUP2_COLOR;
 }
 
 .Group3 {
-	color: #90c1ab;
+	color: GROUP3_COLOR;
 }
 
 .Group4 {
-	color: #504239;
+	color: GROUP4_COLOR;
 }
 
 .Group5 {
-	color: #c1a54a;
+	color: GROUP5_COLOR;
 }
 
 .Group6 {
-	color: #b354b3;
+	color: GROUP6_COLOR;
 }
 
 /**************************************	
