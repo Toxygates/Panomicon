@@ -271,6 +271,7 @@ Expression table
 .majorHeader {
 	text-align: left;
 	border-bottom: none;
+	color: white;
 }
 
 .darkBorderLeft {
@@ -279,6 +280,10 @@ Expression table
 
 .lightBorderLeft {
 	border-left: 1px solid LIGHT_BORDER_COLOR;
+}
+
+.whiteBorderLeft {
+	border-left: 1px solid white;
 }
 
 .dataGridEvenRow {
@@ -310,8 +315,6 @@ Expression table
 Groups
 **************************************/
 
-/* These must correspond to the colors in SampleGroup.java
-*/
 .Group0 {
 	color: GROUP0_COLOR;
 }
@@ -338,6 +341,34 @@ Groups
 
 .Group6 {
 	color: GROUP6_COLOR;
+}
+
+.Group0-background {
+	background: GROUP0_COLOR;
+}
+
+.Group1-background {
+	background: GROUP1_COLOR;
+}
+
+.Group2-background {
+	background: GROUP2_COLOR;
+}
+
+.Group3-background {
+	background: GROUP3_COLOR;
+}
+
+.Group4-background {
+	background: GROUP4_COLOR;
+}
+
+.Group5-background {
+	background: GROUP5_COLOR;
+}
+
+.Group6-background {
+	background: GROUP6_COLOR;
 }
 
 /**************************************	

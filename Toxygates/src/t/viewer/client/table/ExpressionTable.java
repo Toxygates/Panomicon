@@ -26,6 +26,7 @@ import javax.annotation.Nullable;
 
 import com.google.gwt.cell.client.*;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.builder.shared.SpanBuilder;
 import com.google.gwt.dom.builder.shared.TableRowBuilder;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.safehtml.shared.SafeHtml;
@@ -136,8 +137,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
 
     private void buildGroupHeader(TableRowBuilder rowBuilder, Group group, int columnCount,
         String styleNames) {
-      rowBuilder.startTH().colSpan(columnCount)
-          .className(style.header() + " majorHeader " + styleNames).text(group.getName()).endTH();
+      SpanBuilder spanBuilder = rowBuilder.startTH().colSpan(columnCount)
+          .className(style.header() + " majorHeader " + styleNames).startSpan();
+      spanBuilder.title(group.getName()).text(group.getName()).endSpan();
+      rowBuilder.endTH();
     }
 
     // private void buildSectionHeader(TableRowBuilder rowBuilder, String text, int columnCount) {
@@ -166,8 +169,10 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
                 if (displayPColumns || !matrixInfo.isPValueColumn(j)) {
                   Group nextGroup = matrixInfo.columnGroup(j);
                   if (group != nextGroup) {
+                    String borderStyle = first ? "darkBorderLeft" : "whiteBorderLeft";
+                    String groupStyle = group.getStyleName() + "-background";
                     buildGroupHeader(rowBuilder, group, groupColumnCount,
-                        first ? "darkBorderLeft" : "");
+                        borderStyle + " " + groupStyle);
                     first = false;
                     groupColumnCount = 0;
                   }
@@ -175,7 +180,9 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
                   group = nextGroup;
                 }
               }
-              buildGroupHeader(rowBuilder, group, groupColumnCount, "");
+              String groupStyle = group.getStyleName() + "-background";
+              buildGroupHeader(rowBuilder, group, groupColumnCount,
+                  "whiteBorderLeft " + groupStyle);
             } else {
               buildBlankHeader(rowBuilder, numSectionColumns);
             }
@@ -485,7 +492,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         String groupStyle = group == null ? "dataColumn" : group.getStyleName();
         String borderStyle = (group != previousGroup) ? "darkBorderLeft" : "lightBorderLeft";
         ci.setCellStyleNames(groupStyle + " " + borderStyle);
-        ci.setHeaderStyleNames(borderStyle);
+        ci.setHeaderStyleNames(groupStyle + " " + borderStyle);
         previousGroup = group;
         addColumn(valueCol, "data", ci);
       }
