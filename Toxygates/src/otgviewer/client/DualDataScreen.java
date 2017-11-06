@@ -34,15 +34,17 @@ public class DualDataScreen extends DataScreen {
         TableStyle.getStyle("mirna"), sideMatrix);     
   }
   
+  protected DockLayoutPanel dockLayout;
+  
   @Override
   protected Widget mainTablePanel() {
     
     ResizeLayoutPanel rlp = new ResizeLayoutPanel();
     rlp.setWidth("100%");
-    DockLayoutPanel dlp = new DockLayoutPanel(Unit.PX);    
-    dlp.addEast(sideExpressionTable, 550);
-    dlp.add(expressionTable);
-    rlp.add(dlp);
+    dockLayout = new DockLayoutPanel(Unit.PX);    
+    dockLayout.addEast(sideExpressionTable, 550);
+    dockLayout.add(expressionTable);
+    rlp.add(dockLayout);
     return rlp;
   }
   
@@ -80,10 +82,16 @@ public class DualDataScreen extends DataScreen {
   
   @Override
   protected void changeColumns(List<Group> columns) {    
-    super.changeColumns(columnsForMainTable(columns));      
-    if (sideExpressionTable != null) {
-      sideExpressionTable.columnsChanged(columnsForSideTable(columns));
+    super.changeColumns(columnsForMainTable(columns));    
+    List<Group> sideColumns = columnsForSideTable(columns);
+    if (sideExpressionTable != null && !sideColumns.isEmpty()) {
+      sideExpressionTable.columnsChanged(sideColumns);
     }  
+    if (!sideColumns.isEmpty()) {
+      dockLayout.setWidgetSize(sideExpressionTable, 550);
+    } else {
+      dockLayout.setWidgetSize(sideExpressionTable, 0);
+    }
   }  
   
   @Override
