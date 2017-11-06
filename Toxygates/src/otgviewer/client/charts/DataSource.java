@@ -46,15 +46,15 @@ abstract public class DataSource {
 
   protected List<ChartSample> chartSamples = new ArrayList<ChartSample>();
 
-  protected String[] _minorVals;
-  protected String[] _mediumVals;
+  protected String[] minorVals;
+  protected String[] mediumVals;
 
   String[] minorVals() {
-    return _minorVals;
+    return minorVals;
   }
 
   String[] mediumVals() {
-    return _mediumVals;
+    return mediumVals;
   }
 
   protected DataSchema schema;
@@ -68,7 +68,7 @@ abstract public class DataSource {
     try {
       Attribute minorParam = schema.minorParameter();
       Attribute medParam = schema.mediumParameter();
-      String[] minorVals = SampleClassUtils.collectInner(from, minorParam).toArray(String[]::new);      
+      minorVals = SampleClassUtils.collectInner(from, minorParam).toArray(String[]::new);      
       schema.sort(minorParam, minorVals);
 
       Set<String> medVals = new HashSet<String>();
@@ -78,8 +78,8 @@ abstract public class DataSource {
           medVals.add(schema.getMedium(f));
         }
       }
-      _mediumVals = medVals.toArray(new String[0]);
-      schema.sort(medParam, _mediumVals);
+      mediumVals = medVals.toArray(new String[0]);
+      schema.sort(medParam, mediumVals);
     } catch (Exception e) {
       logger.log(Level.WARNING, "Unable to sort chart data", e);
     }
