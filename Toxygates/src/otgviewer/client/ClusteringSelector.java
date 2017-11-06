@@ -181,7 +181,7 @@ public abstract class ClusteringSelector extends DataListenerWidget implements R
     }
     
     cluster.setLists(items);
-    // TODO consider behavior of ListChooser
+
     // Reset selection of cluster to avoid loading problem here.
     // Note: even if the clustering changed, if the clustering has the same cluster name
     // as previous clustering, it would not load probes expected.

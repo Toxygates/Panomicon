@@ -20,9 +20,9 @@ package otgviewer.client;
 import java.util.*;
 import java.util.logging.Logger;
 
-import otgviewer.client.components.DataListenerWidget;
 import otgviewer.client.components.Screen;
 import t.common.shared.*;
+import t.viewer.client.ClientState;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InputDialog;
@@ -128,10 +128,10 @@ public class StringListsStoreHelper extends ItemListsStoreHelper {
    * @param parent
    * @return
    */
-  public static List<StringList> compileLists(DataListenerWidget parent) {    
+  public static List<StringList> compileLists(ClientState parentState) {    
     List<ItemList> r = new ArrayList<ItemList>();
-    r.addAll(parent.chosenItemLists);
-    r.addAll(parent.chosenClusteringList);
+    r.addAll(parentState.itemLists);
+    r.addAll(parentState.chosenClusteringList);
     return compileLists(r);    
   }
   

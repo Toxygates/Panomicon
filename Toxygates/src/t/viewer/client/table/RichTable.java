@@ -24,10 +24,12 @@ import javax.annotation.Nullable;
 
 import otgviewer.client.components.DataListenerWidget;
 import t.common.shared.DataSchema;
+import t.viewer.client.table.StandardColumns;
 
 import com.google.gwt.cell.client.*;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
@@ -35,6 +37,7 @@ import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.client.Event;
+
 
 /**
  * A data grid with functionality for hiding columns and displaying clickable icons in the leftmost
@@ -51,9 +54,9 @@ abstract public class RichTable<T> extends DataListenerWidget {
   protected List<ColumnInfo> columnInfos = new ArrayList<ColumnInfo>();
 
   // Track the order of sections
-  private List<String> columnSections = new ArrayList<String>();
+  protected List<String> columnSections = new ArrayList<String>();
   // Track the number of columns in each section
-  private Map<String, Integer> sectionColumnCount = new HashMap<String, Integer>();
+  protected Map<String, Integer> sectionColumnCount = new HashMap<String, Integer>();
 
   protected TableStyle style;
   
@@ -126,11 +129,22 @@ abstract public class RichTable<T> extends DataListenerWidget {
     tcl.setCellStyleNames("clickCell");
     grid.setColumnWidth(tcl, "2.5em");
 
-    for (HideableColumn<T, ?> c : hideableColumns) {
-      if (c.visible()) {
-        ColumnInfo info = c.columnInfo();
-        info.setCellStyleNames("extraColumn");
-        addColumn(c, "extra", info);
+    setupHideableColumns();
+  }
+
+  protected void setupHideableColumns() {
+    boolean first = true;
+    for (HideableColumn<T, ?> column : hideableColumns) {
+      if (column.visible()) {
+        if (grid.getColumnIndex(column) >= 0) {
+          removeColumn(column);
+        }
+        ColumnInfo info = column.columnInfo();
+        String borderStyle = first ? "darkBorderLeft" : "lightBorderLeft";
+        first = false;
+        info.setCellStyleNames("extraColumn " + borderStyle);
+        info.setHeaderStyleNames(borderStyle);
+        addColumn(column, "extra", info);
       }
     }
   }
@@ -224,7 +238,9 @@ abstract public class RichTable<T> extends DataListenerWidget {
 
   protected Header<SafeHtml> getColumnHeader(ColumnInfo info) {
     ColumnInfo i = info.trimTitle(COL_TITLE_MAX_LEN);
-    return new SafeHtmlHeader(i.headerHtml());
+    SafeHtmlHeader header = new SafeHtmlHeader(i.headerHtml());
+    header.setHeaderStyleNames(info.headerStyleNames());
+    return header;
   }
 
   /**
@@ -309,13 +325,11 @@ abstract public class RichTable<T> extends DataListenerWidget {
    */
   public void setVisible(HideableColumn<T, ?> hc, boolean newState) {
     hc.setVisibility(newState);
-    if (newState) {
-      ColumnInfo info = hc.columnInfo();
-      info.setCellStyleNames("extraColumn");
-      addColumn(hc, "extra", info);
-    } else {
+    if (!newState) {
       removeColumn(hc);
     }
+    // We need to set up all the columns each time in order to style borders correctly
+    setupHideableColumns();
   }
 
   public abstract static class HideableColumn<T, C> extends Column<T, C> {

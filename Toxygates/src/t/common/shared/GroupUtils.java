@@ -19,6 +19,7 @@
 package t.common.shared;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 import t.common.shared.sample.*;
 import t.model.SampleClass;
@@ -40,33 +41,10 @@ public class GroupUtils {
    * @param title
    * @return
    */
-  public static <T extends Sample, G extends SampleGroup<T>> G findGroup(List<G> groups,
+  public static <T extends Sample, G extends SampleGroup<T>> 
+  Optional<G> findGroup(List<G> groups,
       String title) {
-    for (G g : groups) {
-      if (g.getName().equals(title)) {
-        return g;
-      }
-    }
-    return null;
-  }
-
-  /**
-   * In the list of groups, find the first one that contains the given sample.
-   * 
-   * @param columns
-   * @param barcode
-   * @return
-   */
-  public static <T extends Sample> SampleGroup<T> groupFor(List<? extends SampleGroup<T>> columns,
-      String barcode) {
-    for (SampleGroup<T> c : columns) {
-      for (T t : c.getSamples()) {
-        if (t.id().equals(barcode)) {
-          return c;
-        }
-      }
-    }
-    return null;
+    return groups.stream().filter(g -> g.getName().equals(title)).findFirst();    
   }
 
   /**
@@ -76,28 +54,14 @@ public class GroupUtils {
    * @param barcode
    * @return
    */
-  public static <T extends Sample, G extends SampleGroup<T>> List<G> groupsFor(List<G> columns,
+  public static <T extends Sample, G extends SampleGroup<T>> 
+    Stream<G> groupsFor(List<G> columns,
       String barcode) {
-    List<G> r = new ArrayList<G>();
-    for (G c : columns) {
-      for (T t : c.getSamples()) {
-        if (t.id().equals(barcode)) {
-          r.add(c);
-          break;
-        }
-      }
-    }
-    return r;
+    return columns.stream().filter(c -> c.containsSample(barcode));  
   }
 
-  public static Set<String> collect(List<? extends SampleGroup<?>> columns, Attribute parameter) {
-    Set<String> r = new HashSet<String>();
-    for (SampleGroup<?> g : columns) {
-      for (String c : g.collect(parameter)) {
-        r.add(c);
-      }
-    }
-    return r;
+  public static Stream<String> collect(List<? extends SampleGroup<?>> columns, Attribute parameter) {
+    return columns.stream().flatMap(c -> c.collect(parameter)).distinct();    
   }
 
   /**

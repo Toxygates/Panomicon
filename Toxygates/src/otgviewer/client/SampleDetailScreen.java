@@ -19,6 +19,7 @@
 package otgviewer.client;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -189,12 +190,10 @@ public class SampleDetailScreen extends Screen {
     hp.add(new Button("Mini-heatmap...", new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        Set<String> compounds = new HashSet<String>();
-        for (SampleColumn d : chosenColumns) {
-          compounds.addAll(SampleClassUtils.getMajors(schema(), d));
-        }
-        List<String> compounds_ = new ArrayList<String>(compounds);
-        atd.compoundsChanged(compounds_);
+        List<String> compounds = 
+            chosenColumns.stream().flatMap(c -> SampleClassUtils.getMajors(schema(), c)).
+            distinct().collect(Collectors.toList());        
+        atd.compoundsChanged(compounds);
         Utils.displayInPopup("Visualisation", atd, DialogPosition.Center);
       }
     }));

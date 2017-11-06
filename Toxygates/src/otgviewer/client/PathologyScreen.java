@@ -19,6 +19,8 @@
 package otgviewer.client;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import otg.model.sample.OTGAttribute;
 import otgviewer.client.components.Screen;
@@ -95,27 +97,24 @@ public class PathologyScreen extends Screen {
     TextColumn<Pathology> col = new TextColumn<Pathology>() {
       @Override
       public String getValue(Pathology p) {
-        List<Group> gs = GroupUtils.groupsFor(chosenColumns, p.barcode());
-        StringBuilder sb = new StringBuilder();
-        for (Group g : gs) {
-          sb.append(g.getName());
-          sb.append(" ");
-        }
-        if (gs.size() > 0) {
-          return sb.toString();
-        } else {
+        Stream<Group> gs = GroupUtils.groupsFor(chosenColumns, p.barcode());        
+        String r = gs.map(g -> g.getName()).collect(Collectors.joining(" "));
+        if (r.length() == 0) {
           return "None";
         }
+        return r;
       }
     };
     pathologyTable.addColumn(col, "Group");
 
+    //Note: we may need to stop including p.barcode() at some point
+    //if pathologies get to have longer barcodes (currently only OTG samples)
     col = new TextColumn<Pathology>() {
       @Override
       public String getValue(Pathology p) {
         Sample b = GroupUtils.sampleFor(chosenColumns, p.barcode());
-        return b.get(OTGAttribute.Compound) + "/" + b.getShortTitle(schema()) + "/"
-            + b.get(OTGAttribute.Individual);
+        return b.get(OTGAttribute.Compound) + "/" + b.getShortTitle(schema()) +
+            " [" + p.barcode() + "]";
       }
     };
     pathologyTable.addColumn(col, "Sample");

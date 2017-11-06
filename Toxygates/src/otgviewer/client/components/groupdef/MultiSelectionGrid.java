@@ -137,7 +137,7 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
 
   List<String> compoundsFor(SampleClass sc) {
     SelectionTDGrid g = findOrCreateSection(scr, sc, false);
-    return g.chosenCompounds;
+    return g.state().compounds;
   }
 
   void setSelection(Unit[] selection) {
@@ -180,9 +180,8 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
       if (tg != currentGrid && tg.getSelectedUnits(true).size() == 0) {
         vp.remove(i);
         vp.remove(i - 1);
-        sections.remove(tg.chosenSampleClass);
+        sections.remove(tg.state().sampleClass);
         clearEmptySections();
-        // TODO not the best flow logic
         return;
       }
     }

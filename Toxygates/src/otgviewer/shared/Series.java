@@ -22,6 +22,7 @@ import static otg.model.sample.OTGAttribute.*;
 
 import java.io.Serializable;
 
+import otg.model.sample.OTGAttribute;
 import t.common.shared.HasClass;
 import t.common.shared.sample.ExpressionValue;
 import t.model.SampleClass;
@@ -47,7 +48,7 @@ public class Series implements HasClass, Serializable {
    * @param sc Sample class parameters
    * @param values Data points
    */
-  public Series(String title, String probe, String independentParam, SampleClass sc,
+  public Series(String title, String probe, OTGAttribute independentParam, SampleClass sc,
       ExpressionValue[] values) {
     _values = values;
     _title = title;
@@ -69,9 +70,9 @@ public class Series implements HasClass, Serializable {
     return _probe;
   }
 
-  private String _independentParam;
+  private OTGAttribute _independentParam;
 
-  public String independentParam() {
+  public OTGAttribute independentParam() {
     return _independentParam;
   }
 
@@ -79,14 +80,8 @@ public class Series implements HasClass, Serializable {
   @Deprecated
   public String timeDose() {
     // TODO don't hardcode this
-    Attribute fixedParam = _independentParam.equals("exposure_time") ? DoseLevel : ExposureTime;
+    Attribute fixedParam = _independentParam == ExposureTime ? DoseLevel : ExposureTime;
     return _sc.get(fixedParam);
-  }
-
-  // TODO users should access the sample class instead
-  @Deprecated
-  public String compound() {
-    return _sc.get(Compound);
   }
 
   private ExpressionValue[] _values;

@@ -11,8 +11,6 @@
 	<!-- <inherits name='com.google.gwt.user.theme.chrome.Chrome'/> -->
 	<!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
 	
-	<stylesheet src="/gwt-clean.css" />
-
 	<!-- Other module inherits                                      -->
 	<inherits name='com.google.gwt.visualization.Visualization'/>
 	<inherits name='com.google.gwt.http.HTTP'/>
@@ -32,7 +30,7 @@
 	<set-property name="gwt.logging.logLevel" value="INFO"/>
 		
   	<set-configuration-property name="CssResource.enableGss" value="true" />
-	<set-configuration-property name="CssResource.legacy" value="true" />
+	<set-configuration-property name="CssResource.conversionMode" value="strict" />
 <!-- 	<set-property name="gwt.logging.popupHandler" value="DISABLED"/>  -->
 
 </module>

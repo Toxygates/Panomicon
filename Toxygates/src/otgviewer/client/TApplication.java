@@ -46,8 +46,7 @@ import otgviewer.client.rpc.ProbeServiceAsync;
 import otgviewer.client.rpc.SampleService;
 import otgviewer.client.rpc.SampleServiceAsync;
 import t.common.shared.SharedUtils;
-import t.common.shared.sample.Group;
-import t.common.shared.sample.Sample;
+import t.common.shared.sample.*;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
@@ -147,8 +146,13 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    */
   @Override
   public void onModuleLoad() {
+    Resources.OtgCssResource css = resources.otgViewerStyle();
 
-    resources.otgViewerStyle().ensureInjected();
+    String[] colors = new String[] {css.group0_color(), css.group1_color(), css.group2_color(),
+        css.group3_color(), css.group4_color(), css.group5_color(), css.group6_color()};
+    SampleGroup.setColors(colors);
+
+    css.ensureInjected();
 
     reloadAppInfo(new AsyncCallback<AppInfo>() {
       @Override
@@ -241,7 +245,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
               new PendingAsyncCallback<String[]>(scr, "Failed to resolve gene identifiers") {
                 @Override
                 public void handleSuccess(String[] probes) {
-                  if (Arrays.equals(probes, scr.chosenProbes)) {
+                  if (Arrays.equals(probes, scr.state().probes)) {
                     return;
                   }
                   scr.probesChanged(probes);
