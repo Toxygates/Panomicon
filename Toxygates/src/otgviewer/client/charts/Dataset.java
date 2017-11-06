@@ -20,6 +20,8 @@ package otgviewer.client.charts;
 
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -45,9 +47,9 @@ abstract public class Dataset<D extends Data> {
 
   protected Logger logger = SharedUtils.getLogger("ChartDataset");
 
-  protected Dataset(List<ChartSample> samples, List<ChartSample> allSamples, String[] categories,
+  protected Dataset(Stream<ChartSample> samples, String[] categories,
       boolean categoriesAreMins) {
-    this.samples = samples;
+    this.samples = samples.collect(Collectors.toList());
     this.categoriesAreMins = categoriesAreMins;
     this.categories = categories;
     logger.info(categories.length + " categories");

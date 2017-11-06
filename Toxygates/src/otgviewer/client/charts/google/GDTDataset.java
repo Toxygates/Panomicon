@@ -20,6 +20,7 @@ package otgviewer.client.charts.google;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -34,9 +35,9 @@ import com.google.gwt.visualization.client.DataTable;
 
 public class GDTDataset extends Dataset<GDTData> {
 
-  GDTDataset(List<ChartSample> samples, List<ChartSample> allSamples, String[] categories,
+  GDTDataset(Stream<ChartSample> samples, String[] categories,
       boolean categoriesAreMins) {
-    super(samples, allSamples, categories, categoriesAreMins);
+    super(samples, categories, categoriesAreMins);
   }
 
   @Override

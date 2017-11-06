@@ -23,9 +23,7 @@ import static t.model.sample.CoreParameter.ControlGroup;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
+import java.util.stream.Stream;
 
 import otg.model.sample.OTGAttribute;
 import otgviewer.client.charts.ColorPolicy.TimeDoseColorPolicy;
@@ -40,6 +38,9 @@ import t.model.SampleClass;
 import t.model.sample.Attribute;
 import t.viewer.client.rpc.SampleServiceAsync;
 import t.viewer.client.rpc.SeriesServiceAsync;
+
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class Charts {
 
@@ -120,8 +121,8 @@ public class Charts {
           "SkyBlue"), new DataSource.SampleAcceptor() {
 
         @Override
-        public void accept(final List<ChartSample> samples) {
-          GDTDataset ds = factory.dataset(samples, samples, times, true);
+        public void accept(final Stream<ChartSample> samples) {
+          GDTDataset ds = factory.dataset(samples, times, true);
           List<String> filters = new ArrayList<String>();
           for (Series s : series) {
             if (rowsAreCompounds && !filters.contains(s.get(majorParam))) {
