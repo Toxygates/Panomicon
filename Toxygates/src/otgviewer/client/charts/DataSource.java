@@ -21,7 +21,7 @@ package otgviewer.client.charts;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
@@ -40,7 +40,7 @@ import t.viewer.shared.FullMatrix;
 abstract public class DataSource {
 
   interface SampleAcceptor {
-    void accept(Stream<ChartSample> samples);
+    void accept(List<ChartSample> samples);
   }
 
   private static Logger logger = SharedUtils.getLogger("chartdata");
@@ -100,11 +100,15 @@ abstract public class DataSource {
     if (!smf.contains(schema.majorParameter())) {
       // TODO why is this needed?
       applyPolicy(policy, chartSamples);
-      acceptor.accept(chartSamples.stream());
+      acceptor.accept(chartSamples);
     } else {
       // We may be getting the same samples several times
-      Stream<ChartSample> r = chartSamples.stream().filter(s -> smf.accepts(s)).distinct();
-      r.forEach(s -> s.color = policy.colorFor(s));        
+      List<ChartSample> r = chartSamples.stream().filter(s -> smf.accepts(s)).distinct().
+          collect(Collectors.toList());
+      
+      for (ChartSample s: r) {
+        s.color = policy.colorFor(s);
+      }
       acceptor.accept(r);
     }
   }

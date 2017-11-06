@@ -47,9 +47,9 @@ abstract public class Dataset<D extends Data> {
 
   protected Logger logger = SharedUtils.getLogger("ChartDataset");
 
-  protected Dataset(Stream<ChartSample> samples, String[] categories,
+  protected Dataset(List<ChartSample> samples, String[] categories,
       boolean categoriesAreMins) {
-    this.samples = samples.collect(Collectors.toList());
+    this.samples = samples;
     this.categoriesAreMins = categoriesAreMins;
     this.categories = categories;
     logger.info(categories.length + " categories");

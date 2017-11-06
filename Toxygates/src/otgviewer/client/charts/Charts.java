@@ -121,7 +121,7 @@ public class Charts {
           "SkyBlue"), new DataSource.SampleAcceptor() {
 
         @Override
-        public void accept(final Stream<ChartSample> samples) {
+        public void accept(final List<ChartSample> samples) {
           GDTDataset ds = factory.dataset(samples, times, true);
           List<String> filters = new ArrayList<String>();
           for (Series s : series) {

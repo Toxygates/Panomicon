@@ -34,7 +34,7 @@ public class GVizFactory extends Factory<GDTData, GDTDataset> {
   }
 
   @Override
-  public GDTDataset dataset(Stream<ChartSample> samples,
+  public GDTDataset dataset(List<ChartSample> samples,
       String[] categories, boolean categoriesAreMins) {
     return new GDTDataset(samples, categories, categoriesAreMins);
   }

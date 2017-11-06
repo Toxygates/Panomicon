@@ -27,7 +27,7 @@ abstract public class Factory<D extends Data, DS extends Dataset<D>> {
 
   abstract public D[][] dataArray(int rows, int cols);
 
-  abstract public DS dataset(Stream<ChartSample> samples,
+  abstract public DS dataset(List<ChartSample> samples,
       String[] categories, boolean categoriesAreMins);
 
   abstract public ChartGrid<D> grid(Screen screen, DS table, final List<String> rowFilters,

@@ -194,8 +194,8 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
 
     source.getSamples(smf, makeGroupPolicy(), new DataSource.SampleAcceptor() {
       @Override
-      public void accept(Stream<ChartSample> samples) {
-        allSamples.addAll(samples.collect(Collectors.toList()));
+      public void accept(List<ChartSample> samples) {
+        allSamples.addAll(samples);
         DS ct =
             factory.dataset(samples, vsMinor ? source.minorVals() : source.mediumVals(),
                 vsMinor);
