@@ -19,6 +19,7 @@
 package otgviewer.client.charts.google;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import otgviewer.client.charts.*;
 import otgviewer.client.components.Screen;
@@ -33,9 +34,9 @@ public class GVizFactory extends Factory<GDTData, GDTDataset> {
   }
 
   @Override
-  public GDTDataset dataset(List<ChartSample> samples, List<ChartSample> allSamples,
+  public GDTDataset dataset(List<ChartSample> samples,
       String[] categories, boolean categoriesAreMins) {
-    return new GDTDataset(samples, allSamples, categories, categoriesAreMins);
+    return new GDTDataset(samples, categories, categoriesAreMins);
   }
 
   @Override

@@ -21,6 +21,7 @@ package otgviewer.client.charts;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.client.components.Screen;
@@ -101,15 +102,14 @@ abstract public class DataSource {
       applyPolicy(policy, chartSamples);
       acceptor.accept(chartSamples);
     } else {
-      // We store these in a set since we may be getting the same samples several times
-      Set<ChartSample> r = new HashSet<ChartSample>();
-      for (ChartSample s : chartSamples) {
-        if (smf.accepts(s)) {
-          r.add(s);
-          s.color = policy.colorFor(s);
-        }
+      // We may be getting the same samples several times
+      List<ChartSample> r = chartSamples.stream().filter(s -> smf.accepts(s)).distinct().
+          collect(Collectors.toList());
+      
+      for (ChartSample s: r) {
+        s.color = policy.colorFor(s);
       }
-      acceptor.accept(new ArrayList<ChartSample>(r));
+      acceptor.accept(r);
     }
   }
 
@@ -180,15 +180,12 @@ abstract public class DataSource {
         final SampleAcceptor acceptor) {
       logger.info("Dynamic source: load for " + smf);
 
-      final List<Sample> useSamples = new ArrayList<Sample>();
-      for (Sample b : samples) {
-        if (smf.accepts(b)) {
-          useSamples.add(b);
-        }
-      }
+      
+      Sample[] useSamples = Arrays.stream(samples).filter(s -> smf.accepts(s)).
+          toArray(Sample[]::new);
 
       chartSamples.clear();
-      Group g = new Group(schema, "temporary", useSamples.toArray(new Sample[0]));
+      Group g = new Group(schema, "temporary", useSamples);
       List<Group> gs = new ArrayList<Group>();
       gs.add(g);
       matrixService.getFullData(gs, probes, false, type,
@@ -196,7 +193,7 @@ abstract public class DataSource {
 
             @Override
             public void handleSuccess(final FullMatrix mat) {
-              addSamplesFromBarcodes(useSamples.toArray(new Sample[0]), mat.rows());
+              addSamplesFromBarcodes(useSamples, mat.rows());
               getLoadedSamples(smf, policy, acceptor);
             }
           });
@@ -235,6 +232,7 @@ abstract public class DataSource {
       final List<Group> groups = new ArrayList<Group>();
       final List<Unit> useUnits = new ArrayList<Unit>();
       int i = 0;
+      
       for (Unit u : units) {
         if (smf.accepts(u)) {
           Group g = new Group(schema, "g" + i, u.getSamples());
