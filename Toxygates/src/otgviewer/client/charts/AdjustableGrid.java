@@ -21,6 +21,7 @@ package otgviewer.client.charts;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import otg.model.sample.OTGAttribute;
 import otgviewer.client.components.Screen;
@@ -196,7 +197,7 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
       public void accept(List<ChartSample> samples) {
         allSamples.addAll(samples);
         DS ct =
-            factory.dataset(samples, samples, vsMinor ? source.minorVals() : source.mediumVals(),
+            factory.dataset(samples, vsMinor ? source.minorVals() : source.mediumVals(),
                 vsMinor);
 
         ChartGrid<D> cg =

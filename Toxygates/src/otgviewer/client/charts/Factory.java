@@ -19,6 +19,7 @@
 package otgviewer.client.charts;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import otgviewer.client.components.Screen;
 
@@ -26,7 +27,7 @@ abstract public class Factory<D extends Data, DS extends Dataset<D>> {
 
   abstract public D[][] dataArray(int rows, int cols);
 
-  abstract public DS dataset(List<ChartSample> samples, List<ChartSample> allSamples,
+  abstract public DS dataset(List<ChartSample> samples,
       String[] categories, boolean categoriesAreMins);
 
   abstract public ChartGrid<D> grid(Screen screen, DS table, final List<String> rowFilters,
