@@ -20,7 +20,7 @@
 
 package otgviewer.client.components;
 
-import static otgviewer.client.components.StorageParser.*;
+import static t.viewer.client.StorageParser.*;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -30,8 +30,7 @@ import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.model.sample.AttributeSet;
-import t.viewer.client.ClientState;
-import t.viewer.client.Utils;
+import t.viewer.client.*;
 
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;

@@ -37,7 +37,7 @@ import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.model.sample.AttributeSet;
-import t.viewer.client.Utils;
+import t.viewer.client.*;
 import t.viewer.shared.AppInfo;
 
 /**
@@ -544,6 +544,13 @@ public class Screen extends DataListenerWidget implements
         ((RequiresResize) w).onResize();
       }
     }
+  }
+  
+  /**
+   * Persisted items that are to be applied once at application startup.
+   */
+  public List<PersistedState<?>> getPersistedItems() {
+    return new ArrayList<>();
   }
 
   /**

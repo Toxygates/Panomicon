@@ -24,20 +24,6 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-import com.google.gwt.core.client.*;
-import com.google.gwt.dom.client.*;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.*;
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.TextResource;
-import com.google.gwt.storage.client.Storage;
-import com.google.gwt.user.client.*;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
-
 import otgviewer.client.components.*;
 import otgviewer.client.components.Screen.QueuedAction;
 import otgviewer.client.dialog.FeedbackForm;
@@ -47,12 +33,25 @@ import otgviewer.client.rpc.SampleService;
 import otgviewer.client.rpc.SampleServiceAsync;
 import t.common.shared.SharedUtils;
 import t.common.shared.sample.*;
-import t.viewer.client.Analytics;
-import t.viewer.client.Utils;
+import t.viewer.client.*;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.MetadataInfo;
 import t.viewer.client.rpc.*;
 import t.viewer.shared.AppInfo;
+
+import com.google.gwt.core.client.*;
+import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.*;
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.resources.client.TextResource;
+import com.google.gwt.storage.client.Storage;
+import com.google.gwt.user.client.*;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
 
 /**
  * The main entry point for Toxygates. The main task of this class is to manage the history
@@ -159,6 +158,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       public void onSuccess(AppInfo result) {
         setupUIBase();
         prepareScreens();
+        applyPersistedState();
       }
 
       @Override
@@ -660,4 +660,21 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     return userDataService;
   }
 
+  /**
+   * Persisted items that are to be applied at application startup,
+   * when all screens have been initialised.
+   */
+  protected List<PersistedState<?>> getPersistedItems() {
+    return new ArrayList<>();
+  }
+
+  protected void applyPersistedState() {
+    for (PersistedState<?> ps: getPersistedItems()) {
+      ps.loadAndApply(getParser());
+    }
+    
+    screens.values().stream().flatMap(s -> s.getPersistedItems().stream()).
+      forEach(ps -> ps.loadAndApply(getParser()));    
+  }
+  
 }

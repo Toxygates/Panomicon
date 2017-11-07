@@ -21,7 +21,6 @@ package otgviewer.client.charts;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import otg.model.sample.OTGAttribute;
 import otgviewer.client.components.Screen;

@@ -32,6 +32,10 @@ import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.Analytics;
+
+import t.viewer.client.table.ExpressionTable;
+import t.viewer.client.table.TableStyle;
+import t.viewer.client.StorageParser;
 import t.viewer.client.table.*;
 import t.viewer.client.table.RichTable.HideableColumn;
 import t.viewer.shared.intermine.IntermineInstance;

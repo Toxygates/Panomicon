@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.components;
+package t.viewer.client;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -62,7 +62,7 @@ public class StorageParser {
 
   }
 
-  void clearItem(String key) {
+  public void clearItem(String key) {
     storage.removeItem(prefix + "." + key);
   }
 
