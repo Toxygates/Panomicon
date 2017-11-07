@@ -19,7 +19,6 @@
 package otgviewer.client.charts;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 import otgviewer.client.components.Screen;
 
