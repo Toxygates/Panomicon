@@ -22,14 +22,6 @@ public class MirnaSourceSelector extends SelectionTable<MirnaSource> {
     this.availableSources = availableSources;
     setItems(Arrays.asList(availableSources));
   }
-  
-  /**
-   * @return The current selections. Where appropriate, the limit field
-   * will be set according to the user's wishes.
-   */
-  public MirnaSource[] getSelections() {
-    return availableSources;
-  }
 
   @Override
   protected void initTable(CellTable<MirnaSource> table) {

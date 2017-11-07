@@ -66,14 +66,10 @@ abstract public class PersistedState<T> {
    * Change the value of this state as a result of e.g. 
    * a user action
    * @param newState
-   */
-  protected void changeAndPersist(@Nullable T newState) {
-    doChangeAndPersist(newState);
-    apply(newState);
-  }
-  
-  public void doChangeAndPersist(@Nullable T newState) {
+   */  
+  public void doChangeAndPersist(StorageParser parser, @Nullable T newState) {
     logger.info("Changed");
-    changeAndPersist(newState);
+    store(parser, newState);
+    apply(newState);
   }
 }

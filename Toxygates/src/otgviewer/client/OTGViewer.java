@@ -18,11 +18,13 @@
 
 package otgviewer.client;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 import otgviewer.client.dialog.MirnaSourceDialog;
 import otgviewer.shared.OTGSchema;
 import t.common.shared.DataSchema;
-import t.viewer.client.Analytics;
-import t.viewer.client.Utils;
+import t.viewer.client.*;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.intermine.InterMineData;
 import t.viewer.shared.intermine.IntermineInstance;
@@ -30,6 +32,7 @@ import t.viewer.shared.mirna.MirnaSource;
 
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 
@@ -88,7 +91,7 @@ public class OTGViewer extends TApplication {
       @Override
       public void execute() {
         MirnaSource[] sources = appInfo().mirnaSources();
-        new MirnaSourceDialog(currentScreen, probeService(), sources).
+        new MirnaSourceDialog(currentScreen, probeService(), sources, mirnaState).
           display("Choose miRNA sources", DialogPosition.Center);
       }      
     });
@@ -141,4 +144,42 @@ public class OTGViewer extends TApplication {
     }));
     return mi;
   }
+  
+  protected PersistedState<MirnaSource[]> mirnaState = new PersistedState<MirnaSource[]>(
+      "miRNASources", "mirnaSources") {
+    @Override
+    protected String doPack(MirnaSource[] state) {
+      return Arrays.stream(state).map(ms -> ms.pack()).collect(Collectors.joining(":::"));
+    }
+
+    @Override
+    protected MirnaSource[] doUnpack(String state) {
+      String[] spl = state.split(":::");
+      return Arrays.stream(spl).map(ms -> MirnaSource.unpack(ms)).toArray(MirnaSource[]::new);
+    }
+
+    @Override
+    public void apply(MirnaSource[] state) {
+      if (state != null) {}
+      probeService().setMirnaSources(state, new AsyncCallback<Void>() {
+
+        @Override
+        public void onFailure(Throwable caught) {
+          Window.alert("Unable to set miRNA sources.");
+        }
+
+        @Override
+        public void onSuccess(Void result) {}
+
+      });
+    }
+  };
+
+  @Override
+  protected List<PersistedState<?>> getPersistedItems() {
+    List<PersistedState<?>> r = new ArrayList<PersistedState<?>>();
+    r.addAll(super.getPersistedItems());
+    r.add(mirnaState);
+    return r;
+  }  
 }

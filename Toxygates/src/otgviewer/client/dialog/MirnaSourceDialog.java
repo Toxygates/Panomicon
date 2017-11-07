@@ -1,7 +1,7 @@
 package otgviewer.client.dialog;
 
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.PendingAsyncCallback;
+import otgviewer.client.components.Screen;
+import t.viewer.client.PersistedState;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.InteractionDialog;
 import t.viewer.client.rpc.ProbeServiceAsync;
@@ -14,13 +14,19 @@ import com.google.gwt.user.client.ui.*;
 public class MirnaSourceDialog extends InteractionDialog {
   MirnaSourceSelector selector;
   ProbeServiceAsync probeService;
-  
+  PersistedState<MirnaSource[]> state;
+  Screen screen;
   VerticalPanel vp;
-  public MirnaSourceDialog(DataListenerWidget parent, 
+  
+  public MirnaSourceDialog(Screen parent, 
                            ProbeServiceAsync probeService,
-                           MirnaSource[] availableSources) {
+                           MirnaSource[] availableSources,
+                           PersistedState<MirnaSource[]> state) {
     super(parent);
-    selector = new MirnaSourceSelector(availableSources);
+    
+    this.selector = new MirnaSourceSelector(availableSources);
+    this.state = state;
+    this.screen = parent;
     this.probeService = probeService;
     vp = Utils.mkVerticalPanel(true);
     vp.add(selector);
@@ -50,12 +56,8 @@ public class MirnaSourceDialog extends InteractionDialog {
   
   @Override
   protected void userProceed() {
-    probeService.setMirnaSources(selector.getSelections(), new PendingAsyncCallback<Void>(parent) {
-      @Override
-      public void handleSuccess(Void success) {
-        MirnaSourceDialog.super.userProceed();
-      }
-    });
+    state.doChangeAndPersist(screen.getParser(), 
+      selector.getSelection().toArray(new MirnaSource[0]));
+    MirnaSourceDialog.super.userProceed();    
   }
-
 }

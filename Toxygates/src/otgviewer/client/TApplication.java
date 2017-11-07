@@ -21,6 +21,7 @@ package otgviewer.client;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -38,6 +39,7 @@ import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.MetadataInfo;
 import t.viewer.client.rpc.*;
 import t.viewer.shared.AppInfo;
+import t.viewer.shared.mirna.MirnaSource;
 
 import com.google.gwt.core.client.*;
 import com.google.gwt.dom.client.*;
@@ -665,7 +667,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * when all screens have been initialised.
    */
   protected List<PersistedState<?>> getPersistedItems() {
-    return new ArrayList<>();
+    return Arrays.asList();
   }
 
   protected void applyPersistedState() {
@@ -675,6 +677,5 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     
     screens.values().stream().flatMap(s -> s.getPersistedItems().stream()).
       forEach(ps -> ps.loadAndApply(getParser()));    
-  }
-  
+  } 
 }
