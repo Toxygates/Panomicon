@@ -37,6 +37,7 @@ import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.RequiresResize;
 
 
 /**
@@ -44,7 +45,7 @@ import com.google.gwt.user.client.Event;
  * columns. It also manages a list of named column sections. Columns in a given section are adjacent
  * to each other.
  */
-abstract public class RichTable<T> extends DataListenerWidget {
+abstract public class RichTable<T> extends DataListenerWidget implements RequiresResize {
   protected DataGrid<T> grid;
   protected List<HideableColumn<T, ?>> hideableColumns = new ArrayList<HideableColumn<T, ?>>();
   protected int highlightedRow = -1;
@@ -404,5 +405,10 @@ abstract public class RichTable<T> extends DataListenerWidget {
         return "";
       }
     }
+  }
+  
+  @Override
+  public void onResize() {
+    grid.onResize();
   }
 }

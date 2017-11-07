@@ -23,6 +23,10 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.components.*;
 import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
@@ -31,10 +35,6 @@ import t.viewer.client.Analytics;
 import t.viewer.client.table.*;
 import t.viewer.client.table.RichTable.HideableColumn;
 import t.viewer.shared.intermine.IntermineInstance;
-
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * The main data display screen. Data is displayed in the ExpressionTable widget.
@@ -54,7 +54,7 @@ public class DataScreen extends Screen {
   private MenuItem heatMapMenu;
 
   public DataScreen(ScreenManager man) {
-    super("View data", key, true, man, man.resources().dataDisplayHTML(), 
+    super("View data", key, true, man, man.resources().dataDisplayHTML(),
         man.resources().dataDisplayHelp());
     geneSetToolbar = makeGeneSetSelector();
     expressionTable = makeExpressionTable();
@@ -289,6 +289,23 @@ public class DataScreen extends Screen {
     super.show();
     updateProbes();
   }
+<<<<<<< working copy
+||||||| base
+  
+  private TableStyle getStyle(List<Group> columns) {
+    return TableStyle.getStyle("default");
+  }
+=======
+  
+  @Override
+  protected boolean shouldShowStatusBar() {
+    return false;
+  }
+
+  private TableStyle getStyle(List<Group> columns) {
+    return TableStyle.getStyle("default");
+  }
+>>>>>>> merge rev
 
   @Override
   public String getGuideText() {
