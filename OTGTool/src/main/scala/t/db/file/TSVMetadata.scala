@@ -95,7 +95,7 @@ class MapMetadata(val metadata: Map[String, Seq[String]],
 
   override def attribute(s: Sample, attribute: Attribute): Option[String] = {
     val idx = getIdx(s)
-    Some(metadata(attribute.id)(idx))
+    metadata.get(attribute.id).map(_(idx))
   }
 
   def mapParameter(fact: Factory, key: String, f: String => String): Metadata = {
