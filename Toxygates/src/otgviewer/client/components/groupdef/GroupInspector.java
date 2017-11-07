@@ -31,8 +31,7 @@ import t.common.client.components.SelectionTable;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
-import t.viewer.client.Analytics;
-import t.viewer.client.Utils;
+import t.viewer.client.*;
 import t.viewer.client.rpc.SampleServiceAsync;
 
 import com.google.gwt.cell.client.FieldUpdater;
