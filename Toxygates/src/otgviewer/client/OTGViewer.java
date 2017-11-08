@@ -61,7 +61,7 @@ public class OTGViewer extends TApplication {
   }
 
   final private UIFactory factory = initFactory();
-
+  
   private UIFactory initFactory() {
     //TODO hardcoding these instance names here may be controversial
     // - think of a better way of handling this
@@ -90,8 +90,9 @@ public class OTGViewer extends TApplication {
     MenuItem mi = new MenuItem("Select MiRNA sources...", new Command() {
       @Override
       public void execute() {
-        MirnaSource[] sources = appInfo().mirnaSources();
-        new MirnaSourceDialog(currentScreen, probeService(), sources, mirnaState).
+        MirnaSource[] sources = appInfo().mirnaSources();        
+        new MirnaSourceDialog(currentScreen, probeService(), sources, 
+          mirnaState).
           display("Choose miRNA sources", DialogPosition.Center);
       }      
     });
@@ -161,16 +162,14 @@ public class OTGViewer extends TApplication {
     @Override
     public void apply(MirnaSource[] state) {
       if (state != null) {}
-      probeService().setMirnaSources(state, new AsyncCallback<Void>() {
-
+        probeService().setMirnaSources(state, new AsyncCallback<Void>() {
         @Override
         public void onFailure(Throwable caught) {
           Window.alert("Unable to set miRNA sources.");
         }
 
         @Override
-        public void onSuccess(Void result) {}
-
+        public void onSuccess(Void result) {}          
       });
     }
   };

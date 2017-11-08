@@ -13,10 +13,15 @@ abstract public class PersistedState<T> {
 
   protected Logger logger;
   protected String storageKey;
+  protected @Nullable T value = null;
   
   public PersistedState(String name, String storageKey) {
     logger = Logger.getLogger("PersistedState." + name);
     this.storageKey = storageKey;
+  }
+  
+  public @Nullable T value() {
+    return value;
   }
   
   /**
@@ -45,6 +50,7 @@ abstract public class PersistedState<T> {
   
   public void loadAndApply(StorageParser parser) {
     T state = unpack(parser.getItem(storageKey));
+    value = state;
     apply(state);
   }
   
@@ -60,15 +66,16 @@ abstract public class PersistedState<T> {
   /**
    * Apply the state to the client
    */
-  public abstract void apply(@Nullable T state);
+  protected abstract void apply(@Nullable T state);
   
   /**
    * Change the value of this state as a result of e.g. 
-   * a user action
+   * a user action, persisting and then applying it.
    * @param newState
    */  
-  public void doChangeAndPersist(StorageParser parser, @Nullable T newState) {
+  public void changeAndPersist(StorageParser parser, @Nullable T newState) {
     logger.info("Changed");
+    value = newState;
     store(parser, newState);
     apply(newState);
   }

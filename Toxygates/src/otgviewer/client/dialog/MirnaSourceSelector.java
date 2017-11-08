@@ -1,6 +1,10 @@
 package otgviewer.client.dialog;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import t.common.client.components.SelectionTable;
 import t.viewer.shared.mirna.MirnaSource;
@@ -17,10 +21,27 @@ import com.google.gwt.user.client.Window;
 public class MirnaSourceSelector extends SelectionTable<MirnaSource> {
   MirnaSource[] availableSources;
   
-  public MirnaSourceSelector(MirnaSource[] availableSources) {
+  /**
+   * @param availableSources
+   * @param preferredSources Sources that are already selected. Only IDs and
+   * cutoff values will be respected.
+   */
+  public MirnaSourceSelector(MirnaSource[] availableSources,
+                             @Nullable MirnaSource[] preferredSources) {
     super("", false);
     this.availableSources = availableSources;
+    
     setItems(Arrays.asList(availableSources));
+    if (preferredSources != null) {
+      Map<String, Double> preferred = 
+          Arrays.stream(preferredSources).collect(Collectors.toMap(ms -> ms.id(), ms -> ms.limit()));
+      for (MirnaSource s: availableSources) {
+        if (preferred.containsKey(s.id())) {
+          s.setLimit(preferred.get(s.id()));
+          select(s);
+        }
+      }
+    }    
   }
 
   @Override
