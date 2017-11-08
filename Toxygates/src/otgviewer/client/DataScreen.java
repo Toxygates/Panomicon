@@ -290,23 +290,11 @@ public class DataScreen extends Screen {
     super.show();
     updateProbes();
   }
-<<<<<<< working copy
-||||||| base
-  
-  private TableStyle getStyle(List<Group> columns) {
-    return TableStyle.getStyle("default");
-  }
-=======
-  
+
   @Override
   protected boolean shouldShowStatusBar() {
     return false;
   }
-
-  private TableStyle getStyle(List<Group> columns) {
-    return TableStyle.getStyle("default");
-  }
->>>>>>> merge rev
 
   @Override
   public String getGuideText() {
