@@ -154,7 +154,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
       public void onSuccess(AppInfo result) {
         setupUIBase();
         prepareScreens();
-        applyPersistedState();
+        loadPersistedState();
       }
 
       @Override
@@ -661,13 +661,13 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     return new ArrayList<>();
   }
 
-  protected void applyPersistedState() {
+  protected void loadPersistedState() {
     for (PersistedState<?> ps: getPersistedItems()) {
       ps.loadAndApply(getParser());
     }
-    
-    screens.values().stream().flatMap(s -> s.getPersistedItems().stream()).
-      forEach(ps -> ps.loadAndApply(getParser()));    
+    for (Screen s: screens.values()) {
+      s.loadPersistedState();
+    }
   }
   
 }

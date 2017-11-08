@@ -553,6 +553,12 @@ public class Screen extends DataListenerWidget implements
     return new ArrayList<>();
   }
 
+  public void loadPersistedState() {
+    for (PersistedState<?> ps: getPersistedItems()) {
+      ps.loadAndApply(getParser());
+    }
+  }
+    
   /**
    * Display the sample detail screen and show information about the given barcode. TODO: this
    * method should probably be somewhere else.

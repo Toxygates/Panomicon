@@ -78,5 +78,5 @@ abstract public class PersistedState<T> {
     value = newState;
     store(parser, newState);
     apply(newState);
-  }
+  }  
 }

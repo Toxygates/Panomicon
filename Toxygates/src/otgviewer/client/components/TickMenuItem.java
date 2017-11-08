@@ -54,11 +54,11 @@ public class TickMenuItem {
     return menuItem;
   }
 
-  protected boolean getState(boolean state) {
+  public boolean getState() {
     return ticked;
   }
 
-  protected void setState(boolean state) {
+  public void setState(boolean state) {
     ticked = state;
     setHTML(withImage);
   }

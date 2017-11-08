@@ -19,10 +19,14 @@
 package t.viewer.client.table;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import otgviewer.client.StandardColumns;
 import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.Screen;
 import t.common.shared.DataSchema;
+import t.common.shared.SharedUtils;
+import t.viewer.client.PersistedState;
 
 import com.google.gwt.cell.client.*;
 import com.google.gwt.core.client.GWT;
@@ -61,9 +65,11 @@ abstract public class RichTable<T> extends DataListenerWidget {
   }
 
   protected TableStyle style;
+  protected Screen screen;
  
-  public RichTable(DataSchema schema, TableStyle style) {
-    this.schema = schema;
+  public RichTable(Screen screen, TableStyle style) {
+    this.screen = screen;
+    this.schema = screen.schema();
     this.style = style;
     hideableColumns = initHideableColumns(schema);
     Resources resources = GWT.create(Resources.class);
@@ -125,6 +131,15 @@ abstract public class RichTable<T> extends DataListenerWidget {
     tcl.setCellStyleNames("clickCell");
     grid.setColumnWidth(tcl, "2.5em");
 
+    Set<String> preferredColumns = columnState.value();
+    if (preferredColumns != null) {
+      for (HideableColumn<T, ?> c : hideableColumns) {
+        ColumnInfo info = c.columnInfo();
+        boolean visible = preferredColumns.contains(info.title());
+        c.setVisibility(visible);
+      }
+    }
+    
     for (HideableColumn<T, ?> c : hideableColumns) {
       if (c.visible()) {
         ColumnInfo info = c.columnInfo();
@@ -308,15 +323,16 @@ abstract public class RichTable<T> extends DataListenerWidget {
     if (newState) {
       ColumnInfo info = hc.columnInfo();
       info.setCellStyleNames("extraColumn");
-      addColumn(hc, "extra", info);
+      addColumn(hc, "extra", info);      
     } else {
       removeColumn(hc);
     }
+    updateColumnState(hideableColumns);
   }
 
   public abstract static class HideableColumn<T, C> extends Column<T, C> {
     public HideableColumn(Cell<C> cell, boolean initState) {
-      super(cell);
+      super(cell);      
       _visible = initState;
     }
 
@@ -379,5 +395,41 @@ abstract public class RichTable<T> extends DataListenerWidget {
         return "";
       }
     }
+  }
+  
+  protected void updateColumnState(Collection<HideableColumn<T, ?>> columns) {
+    Set<String> vs = columns.stream().filter(c -> c.visible()).
+        map(c -> c.columnInfo().title()).collect(Collectors.toSet());
+    columnState.changeAndPersist(screen.getParser(), vs);
+  }
+  
+  public boolean persistedVisibility(String columnId, boolean default_) {
+    if (columnState.value() == null) {
+      return default_;
+    }
+    return columnState.value().contains(columnId);
+  }
+  
+  protected PersistedState<Set<String>> columnState = new PersistedState<Set<String>>(
+      "Hideable columns", "hideableColumns") {
+
+    @Override
+    protected String doPack(Set<String> state) {      
+      return SharedUtils.packList(state, ":::");
+    }
+
+    @Override
+    protected Set<String> doUnpack(String state) {
+      return new HashSet<String>(Arrays.asList(state.split(":::")));
+    }
+
+    @Override
+    protected void apply(Set<String> state) {
+//      setupColumns();
+    }   
+  };
+  
+  public List<PersistedState<?>> getPersistedItems() {
+    return Arrays.asList(columnState);    
   }
 }
