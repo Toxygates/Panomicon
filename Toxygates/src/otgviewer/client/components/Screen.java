@@ -37,7 +37,7 @@ import t.common.shared.SharedUtils;
 import t.common.shared.sample.Group;
 import t.common.shared.sample.Sample;
 import t.model.sample.AttributeSet;
-import t.viewer.client.Utils;
+import t.viewer.client.*;
 import t.viewer.shared.AppInfo;
 
 /**
@@ -545,7 +545,20 @@ public class Screen extends DataListenerWidget implements
       }
     }
   }
+  
+  /**
+   * Persisted items that are to be applied once at application startup.
+   */
+  public List<PersistedState<?>> getPersistedItems() {
+    return new ArrayList<>();
+  }
 
+  public void loadPersistedState() {
+    for (PersistedState<?> ps: getPersistedItems()) {
+      ps.loadAndApply(getParser());
+    }
+  }
+    
   /**
    * Display the sample detail screen and show information about the given barcode. TODO: this
    * method should probably be somewhere else.

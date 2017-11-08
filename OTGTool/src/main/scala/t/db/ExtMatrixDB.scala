@@ -28,6 +28,9 @@ import t.platform.Probe
  */
 trait ExtMatrixDBReader extends MatrixDBReader[PExprValue] {
   def emptyValue(probe: String) = PExprValue(0.0, 1.0, 'A', probe)
+  
+  override def isEmptyValue(e: ExprValue): Boolean =
+    e.value == 0.0 && e.call == 'A'
 }
 
 trait ExtMatrixDBWriter extends MatrixDBWriter[PExprValue]

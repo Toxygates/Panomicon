@@ -27,8 +27,7 @@ import otgviewer.client.components.*;
 import t.common.shared.DataSchema;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
-import t.viewer.client.Analytics;
-import t.viewer.client.Utils;
+import t.viewer.client.*;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.rpc.SampleServiceAsync;
 

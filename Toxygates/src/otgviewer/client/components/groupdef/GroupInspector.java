@@ -23,7 +23,6 @@ import static t.common.client.Utils.makeScrolled;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import otg.model.sample.OTGAttribute;
 import otgviewer.client.components.*;
@@ -32,8 +31,7 @@ import t.common.client.components.SelectionTable;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
-import t.viewer.client.Analytics;
-import t.viewer.client.Utils;
+import t.viewer.client.*;
 import t.viewer.client.rpc.SampleServiceAsync;
 
 import com.google.gwt.cell.client.FieldUpdater;

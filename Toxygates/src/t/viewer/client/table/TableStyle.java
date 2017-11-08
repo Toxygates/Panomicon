@@ -2,8 +2,6 @@ package t.viewer.client.table;
 
 import otgviewer.client.StandardColumns;
 
-import com.google.gwt.cell.client.SafeHtmlCell;
-
 /**
  * Controls the overall style of an ExpressionTable.
  */

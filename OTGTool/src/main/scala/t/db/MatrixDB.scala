@@ -97,6 +97,8 @@ trait MatrixDBReader[+E >: Null <: ExprValue] {
     val pname = pm.unpack(probe)
     emptyValue(pname)
   }
+  
+  def isEmptyValue(e: ExprValue): Boolean = false
 
   /**
    * Get values by probes and samples.

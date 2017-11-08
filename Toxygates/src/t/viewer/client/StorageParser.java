@@ -16,7 +16,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-package otgviewer.client.components;
+package t.viewer.client;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -32,8 +32,10 @@ import t.common.shared.sample.SampleColumn;
 import t.model.sample.AttributeSet;
 
 /**
- * Eventually all storage parsing/serialising code should be centralised here, but for now, some of
- * it is still spread out in other classes, such as Group and Barcode.
+ * Storage parsing/serialising code. Some is still spread out in other classes, 
+ * such as Group.
+ * PersistedState may also be considered for some of these items in the future, where 
+ * lifecycle management is needed.
  */
 public class StorageParser {
 
@@ -62,7 +64,7 @@ public class StorageParser {
 
   }
 
-  void clearItem(String key) {
+  public void clearItem(String key) {
     storage.removeItem(prefix + "." + key);
   }
 
