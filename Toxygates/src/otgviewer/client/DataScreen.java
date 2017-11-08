@@ -18,8 +18,7 @@
 
 package otgviewer.client;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
@@ -27,8 +26,7 @@ import otgviewer.client.components.*;
 import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
-import t.viewer.client.Analytics;
-import t.viewer.client.StorageParser;
+import t.viewer.client.*;
 import t.viewer.client.table.*;
 import t.viewer.client.table.RichTable.HideableColumn;
 import t.viewer.shared.intermine.IntermineInstance;
@@ -53,6 +51,7 @@ public class DataScreen extends Screen {
   // together with UIFactory.hasHeatMapMenu
   @Nullable
   private MenuItem heatMapMenu;
+  Map<String, TickMenuItem> hideableMenuItems = new HashMap<String, TickMenuItem>();
 
   public DataScreen(ScreenManager man) {
     super("View data", key, true, man, man.resources().dataDisplayHTML(),
@@ -180,6 +179,9 @@ public class DataScreen extends Screen {
     //TODO store the TickMenuItem in HideableColumn so that the state can be synchronised
     for (final HideableColumn<ExpressionRow, ?> c : expressionTable.getHideableColumns()) {
     	final String title = c.columnInfo().title();
+   
+      hideableMenuItems.put(title, 
+        //Automatically added to the menuBar
       new TickMenuItem(menuBar, title, c.visible()) {
         @Override
         public void stateChange(boolean newState) {
@@ -189,7 +191,7 @@ public class DataScreen extends Screen {
         			  Analytics.ACTION_DISPLAY_OPTIONAL_COLUMN, title);
           }
         }
-      };
+      });
     }
 
     GeneSetsMenuItem geneSetsMenu = factory().geneSetsMenuItem(this);
@@ -329,5 +331,21 @@ public class DataScreen extends Screen {
     }
     return r;
   }
+  
+  @Override
+  public List<PersistedState<?>> getPersistedItems() {
+    List<PersistedState<?>> r = new ArrayList<PersistedState<?>>();
+    r.addAll(expressionTable.getPersistedItems());
+    return r;
+  }
 
+  @Override
+  public void loadPersistedState() {
+    super.loadPersistedState();
+    for (String title: hideableMenuItems.keySet()) {
+      TickMenuItem mi = hideableMenuItems.get(title);
+      boolean state = expressionTable.persistedVisibility(title, mi.getState());
+      mi.setState(state);
+    }
+  }
 }

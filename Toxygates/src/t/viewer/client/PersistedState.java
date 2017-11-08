@@ -4,7 +4,6 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
-
 /**
  * A piece of client state that can be individually stored and applied.
  * @param <T> The type of the state
@@ -80,3 +79,4 @@ abstract public class PersistedState<T> {
     apply(newState);
   }
 }
+

@@ -19,6 +19,13 @@
 package t.viewer.client.table;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
+import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.Screen;
+import t.common.shared.DataSchema;
+import t.common.shared.SharedUtils;
+import t.viewer.client.PersistedState;
 
 import javax.annotation.Nullable;
 
@@ -28,8 +35,7 @@ import t.viewer.client.table.StandardColumns;
 
 import com.google.gwt.cell.client.*;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
@@ -58,8 +64,6 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
   protected List<String> columnSections = new ArrayList<String>();
   // Track the number of columns in each section
   protected Map<String, Integer> sectionColumnCount = new HashMap<String, Integer>();
-
-  protected TableStyle style;
   
   public interface Resources extends DataGrid.Resources {
     @Override
@@ -67,8 +71,12 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
     DataGrid.Style dataGridStyle();
   }
 
-  public RichTable(DataSchema schema, TableStyle style) {
-    this.schema = schema;
+  protected TableStyle style;
+  protected Screen screen;
+ 
+  public RichTable(Screen screen, TableStyle style) {
+    this.screen = screen;
+    this.schema = screen.schema();
     this.style = style;
     hideableColumns = initHideableColumns(schema);
     Resources resources = GWT.create(Resources.class);
@@ -135,11 +143,21 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
 
   protected void setupHideableColumns() {
     boolean first = true;
+    
+    Set<String> preferredColumns = columnState.value();
+    if (preferredColumns != null) {
+      for (HideableColumn<T, ?> c : hideableColumns) {
+        ColumnInfo info = c.columnInfo();
+        boolean visible = preferredColumns.contains(info.title());
+        c.setVisibility(visible);
+      }
+    }
+    
     for (HideableColumn<T, ?> column : hideableColumns) {
+      if (grid.getColumnIndex(column) >= 0) {
+        removeColumn(column);
+      }      
       if (column.visible()) {
-        if (grid.getColumnIndex(column) >= 0) {
-          removeColumn(column);
-        }
         ColumnInfo info = column.columnInfo();
         String borderStyle = first ? "darkBorderLeft" : "lightBorderLeft";
         first = false;
@@ -147,7 +165,7 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
         info.setHeaderStyleNames(borderStyle);
         addColumn(column, "extra", info);
       }
-    }
+    }    
   }
 
   /**
@@ -326,16 +344,15 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
    */
   public void setVisible(HideableColumn<T, ?> hc, boolean newState) {
     hc.setVisibility(newState);
-    if (!newState) {
-      removeColumn(hc);
-    }
+    updateColumnState(hideableColumns);
+
     // We need to set up all the columns each time in order to style borders correctly
     setupHideableColumns();
   }
 
   public abstract static class HideableColumn<T, C> extends Column<T, C> {
     public HideableColumn(Cell<C> cell, boolean initState) {
-      super(cell);
+      super(cell);      
       _visible = initState;
     }
 
@@ -406,9 +423,45 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
       }
     }
   }
-  
+
   @Override
   public void onResize() {
     grid.onResize();
+  }
+  
+  protected void updateColumnState(Collection<HideableColumn<T, ?>> columns) {
+    Set<String> vs = columns.stream().filter(c -> c.visible()).
+        map(c -> c.columnInfo().title()).collect(Collectors.toSet());
+    columnState.changeAndPersist(screen.getParser(), vs);
+  }
+  
+  public boolean persistedVisibility(String columnId, boolean default_) {
+    if (columnState.value() == null) {
+      return default_;
+    }
+    return columnState.value().contains(columnId);
+  }
+  
+  protected PersistedState<Set<String>> columnState = new PersistedState<Set<String>>(
+      "Hideable columns", "hideableColumns") {
+
+    @Override
+    protected String doPack(Set<String> state) {      
+      return SharedUtils.packList(state, ":::");
+    }
+
+    @Override
+    protected Set<String> doUnpack(String state) {
+      return new HashSet<String>(Arrays.asList(state.split(":::")));
+    }
+
+    @Override
+    protected void apply(Set<String> state) {
+//      setupColumns();
+    }   
+  };
+  
+  public List<PersistedState<?>> getPersistedItems() {
+    return Arrays.asList(columnState);    
   }
 }
