@@ -229,10 +229,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   }
   
   public void setStyle(TableStyle style) {
-    this.style = style;
-    for (HideableColumn<ExpressionRow, ?> hc: hideableColumns) {
-      style.reapply(this, hc);
-    }
+    this.style = style;    
   }
 
   protected boolean isMergeMode() {
