@@ -118,6 +118,10 @@ public class DualDataScreen extends DataScreen {
   
   protected void extractMirnaProbes() {
     AssociationSummary<ExpressionRow> mirnaSummary = expressionTable.associationSummary(AType.MiRNA);
+    if (sideExpressionTable.chosenColumns().isEmpty()) {
+      return;
+    }
+    
     if (mirnaSummary == null) {
       logger.info("Unable to get miRNA summary - not updating side table probes");
       return;
