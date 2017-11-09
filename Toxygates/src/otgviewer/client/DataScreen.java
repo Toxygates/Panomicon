@@ -19,20 +19,25 @@
 package otgviewer.client;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
 import otgviewer.client.components.*;
+import otgviewer.client.dialog.MirnaSourceDialog;
 import t.common.shared.*;
 import t.common.shared.sample.ExpressionRow;
 import t.common.shared.sample.Group;
 import t.viewer.client.*;
+import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.table.*;
 import t.viewer.client.table.RichTable.HideableColumn;
 import t.viewer.shared.intermine.IntermineInstance;
+import t.viewer.shared.mirna.MirnaSource;
 
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 
 /**
@@ -231,6 +236,18 @@ public class DataScreen extends Screen {
       }
     }));
     
+    MenuItem mi = new MenuItem("Select MiRNA sources...", new Command() {
+      @Override
+      public void execute() {
+        MirnaSource[] sources = appInfo().mirnaSources();        
+        new MirnaSourceDialog(DataScreen.this, manager().probeService(), sources, 
+          mirnaState).
+          display("Choose miRNA sources", DialogPosition.Center);
+      }      
+    });
+    
+    addAnalysisMenuItem(mi);
+    
     if (factory().hasHeatMapMenu()) {
       heatMapMenu = new MenuItem("Show heat map", new Command() {
         @Override
@@ -333,10 +350,42 @@ public class DataScreen extends Screen {
     return r;
   }
   
+  protected PersistedState<MirnaSource[]> mirnaState = new PersistedState<MirnaSource[]>(
+      "miRNASources", "mirnaSources") {
+    @Override
+    protected String doPack(MirnaSource[] state) {
+      return Arrays.stream(state).map(ms -> ms.pack()).collect(Collectors.joining(":::"));
+    }
+
+    @Override
+    protected MirnaSource[] doUnpack(String state) {
+      String[] spl = state.split(":::");
+      return Arrays.stream(spl).map(ms -> MirnaSource.unpack(ms)).toArray(MirnaSource[]::new);
+    }
+
+    @Override
+    public void apply(MirnaSource[] state) {
+      if (state != null) {}
+        manager().probeService().setMirnaSources(state, new AsyncCallback<Void>() {
+        @Override
+        public void onFailure(Throwable caught) {
+          Window.alert("Unable to set miRNA sources.");
+        }
+
+        @Override
+        public void onSuccess(Void result) {
+          expressionTable.getAssociations();
+        }
+      });
+    }
+  };
+
+  
   @Override
   public List<PersistedState<?>> getPersistedItems() {
     List<PersistedState<?>> r = new ArrayList<PersistedState<?>>();
     r.addAll(expressionTable.getPersistedItems());
+    r.add(mirnaState);
     return r;
   }
 

@@ -86,18 +86,6 @@ public class OTGViewer extends TApplication {
     for (IntermineInstance ii: appInfo.intermineInstances()) {
       toolsMenuBar.addItem(intermineMenu(ii));
     }  
-    
-    MenuItem mi = new MenuItem("Select MiRNA sources...", new Command() {
-      @Override
-      public void execute() {
-        MirnaSource[] sources = appInfo().mirnaSources();        
-        new MirnaSourceDialog(currentScreen, probeService(), sources, 
-          mirnaState).
-          display("Choose miRNA sources", DialogPosition.Center);
-      }      
-    });
-    
-    toolsMenuBar.addItem(mi);
   }
   
   protected MenuItem intermineMenu(final IntermineInstance inst) {
@@ -145,40 +133,11 @@ public class OTGViewer extends TApplication {
     }));
     return mi;
   }
-  
-  protected PersistedState<MirnaSource[]> mirnaState = new PersistedState<MirnaSource[]>(
-      "miRNASources", "mirnaSources") {
-    @Override
-    protected String doPack(MirnaSource[] state) {
-      return Arrays.stream(state).map(ms -> ms.pack()).collect(Collectors.joining(":::"));
-    }
-
-    @Override
-    protected MirnaSource[] doUnpack(String state) {
-      String[] spl = state.split(":::");
-      return Arrays.stream(spl).map(ms -> MirnaSource.unpack(ms)).toArray(MirnaSource[]::new);
-    }
-
-    @Override
-    public void apply(MirnaSource[] state) {
-      if (state != null) {}
-        probeService().setMirnaSources(state, new AsyncCallback<Void>() {
-        @Override
-        public void onFailure(Throwable caught) {
-          Window.alert("Unable to set miRNA sources.");
-        }
-
-        @Override
-        public void onSuccess(Void result) {}          
-      });
-    }
-  };
 
   @Override
   protected List<PersistedState<?>> getPersistedItems() {
     List<PersistedState<?>> r = new ArrayList<PersistedState<?>>();
     r.addAll(super.getPersistedItems());
-    r.add(mirnaState);
     return r;
   }  
 }
