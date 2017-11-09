@@ -44,7 +44,7 @@ public class MirnaSource implements Serializable, Packable {
   
   public @Nullable Double limit() { return limit; }
   
-  public void setLimit(double limit) { this.limit = limit; }
+  public void setLimit(Double limit) { this.limit = limit; }
   
   public String id() { return id; }
   
@@ -68,11 +68,20 @@ public class MirnaSource implements Serializable, Packable {
   
   public static MirnaSource unpack(String state) {
     String[] spl = state.split("\\^\\^\\^");
+    Double limit;
+    try {
+      if (spl.length == 2) {
+        limit = Double.parseDouble(spl[1]);
+      } else {
+        return null;
+      }
+    } catch (NumberFormatException e) {
+      limit = null;
+    }
     if (spl.length == 2) {
-      return new MirnaSource(spl[0], "", false, false, Double.parseDouble(spl[1]),
-        0);
+      return new MirnaSource(spl[0], "", false, false, limit, 0);
     } else {
       return null;
-    }
+    }    
   }
 }
