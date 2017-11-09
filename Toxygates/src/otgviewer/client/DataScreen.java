@@ -92,7 +92,7 @@ public class DataScreen extends Screen {
       }
       
       @Override
-      protected void getAssociations() {
+      public void getAssociations() {
         DataScreen.this.beforeGetAssociations();
         super.getAssociations();        
       }
@@ -186,6 +186,7 @@ public class DataScreen extends Screen {
         @Override
         public void stateChange(boolean newState) {
           expressionTable.setVisible(c, newState);
+          expressionTable.getAssociations();
           if (newState) {
         	  Analytics.trackEvent(Analytics.CATEGORY_TABLE, 
         			  Analytics.ACTION_DISPLAY_OPTIONAL_COLUMN, title);

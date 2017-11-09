@@ -77,7 +77,7 @@ abstract public class AssociationTable<T> extends RichTable<T> {
     return r.toArray(new AType[0]);
   }
 
-  protected void getAssociations() {
+  public void getAssociations() {
     waitingForAssociations = true;
     AType[] vas = visibleAssociations();
     if (vas.length > 0) {
@@ -187,9 +187,6 @@ abstract public class AssociationTable<T> extends RichTable<T> {
     @Override
     void setVisibility(boolean v) {
       super.setVisibility(v);
-      if (v) {
-        getAssociations();
-      }
     }
 
     protected String formLink(String value) {
