@@ -20,7 +20,7 @@ abstract public class PersistedState<T> {
     this.storageKey = storageKey;
   }
   
-  public @Nullable T value() {
+  public @Nullable T getValue() {
     return value;
   }
   
