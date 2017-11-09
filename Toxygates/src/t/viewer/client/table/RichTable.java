@@ -41,6 +41,13 @@ import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 import t.viewer.client.PersistedState;
 
+import otgviewer.client.StandardColumns;
+import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.Screen;
+import t.common.shared.DataSchema;
+import t.common.shared.SharedUtils;
+import t.viewer.client.PersistedState;
+
 /**
  * A data grid with functionality for hiding columns and displaying clickable icons in the leftmost
  * columns. It also manages a list of named column sections. Columns in a given section are adjacent
@@ -133,6 +140,7 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
     tcl.setCellStyleNames("clickCell");
     grid.setColumnWidth(tcl, "2.5em");
 
+    Set<String> preferredColumns = columnState.getValue();
     setupHideableColumns();
   }
 

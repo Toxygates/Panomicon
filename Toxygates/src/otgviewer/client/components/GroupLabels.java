@@ -26,8 +26,6 @@ import com.google.gwt.user.client.ui.*;
 
 import t.common.shared.DataSchema;
 import t.common.shared.sample.Group;
-import t.common.shared.sample.SampleClassUtils;
-import t.model.SampleClass;
 import t.viewer.client.Utils;
 
 public class GroupLabels extends Composite {
@@ -57,9 +55,7 @@ public class GroupLabels extends Composite {
     for (Group group : groups) {
       FlowPanel groupPanel = new FlowPanel();
       groupPanel.addStyleName("statusBorder");
-      SampleClass sc = group.getSamples()[0].sampleClass();
-      String tip =
-          SampleClassUtils.label(sc, schema) + ":\n" + group.getTriples(schema, -1, ", ");
+      String tip = group.tooltipText(schema);
 
       Label shortLabel = new Label(group.getName());
       Label longLabel = new Label(groupDetailString(group));
