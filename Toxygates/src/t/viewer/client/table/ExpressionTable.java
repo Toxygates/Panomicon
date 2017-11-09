@@ -139,7 +139,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         String styleNames) {
       SpanBuilder spanBuilder = rowBuilder.startTH().colSpan(columnCount)
           .className(style.header() + " majorHeader " + styleNames).startSpan();
-      spanBuilder.title(group.getName()).text(group.getName()).endSpan();
+      spanBuilder.title(group.tooltipText(screen.schema())).text(group.getName()).endSpan();
       rowBuilder.endTH();
     }
 
