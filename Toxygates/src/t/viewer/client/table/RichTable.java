@@ -21,16 +21,10 @@ package t.viewer.client.table;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import otgviewer.client.StandardColumns;
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.Screen;
-import t.common.shared.DataSchema;
-import t.common.shared.SharedUtils;
-import t.viewer.client.PersistedState;
-
 import com.google.gwt.cell.client.*;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
@@ -38,6 +32,13 @@ import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.client.Event;
+
+import otgviewer.client.StandardColumns;
+import otgviewer.client.components.DataListenerWidget;
+import otgviewer.client.components.Screen;
+import t.common.shared.DataSchema;
+import t.common.shared.SharedUtils;
+import t.viewer.client.PersistedState;
 
 /**
  * A data grid with functionality for hiding columns and displaying clickable icons in the leftmost
@@ -131,7 +132,7 @@ abstract public class RichTable<T> extends DataListenerWidget {
     tcl.setCellStyleNames("clickCell");
     grid.setColumnWidth(tcl, "2.5em");
 
-    Set<String> preferredColumns = columnState.value();
+    Set<String> preferredColumns = columnState.getValue();
     if (preferredColumns != null) {
       for (HideableColumn<T, ?> c : hideableColumns) {
         ColumnInfo info = c.columnInfo();
@@ -404,10 +405,10 @@ abstract public class RichTable<T> extends DataListenerWidget {
   }
   
   public boolean persistedVisibility(String columnId, boolean default_) {
-    if (columnState.value() == null) {
+    if (columnState.getValue() == null) {
       return default_;
     }
-    return columnState.value().contains(columnId);
+    return columnState.getValue().contains(columnId);
   }
   
   protected PersistedState<Set<String>> columnState = new PersistedState<Set<String>>(
