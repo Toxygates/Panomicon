@@ -193,7 +193,7 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
 
   abstract protected Column<T, String> toolColumn(Cell<String> cell);
 
-  private final static int COL_TITLE_MAX_LEN = 12;
+  private final static int COL_TITLE_MAX_LEN = 8;
 
   /**
    * Configure a column

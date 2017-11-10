@@ -26,7 +26,7 @@ import t.viewer.client.Utils;
 
 public class ColumnInfo {
 
-  static final String DEFAULT_COL_WIDTH = "12em";
+  static final String DEFAULT_COL_WIDTH = "8em";
 
   private String title, tooltip, width;
   private @Nullable String cellStyleNames, headerStyleNames;
