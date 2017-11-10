@@ -159,7 +159,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
         for (int i = 0; i < columnSections.size(); i++) {
           String sectionName = columnSections.get(i);
           int numSectionColumns = sectionColumnCount.get(sectionName);
-          if (numSectionColumns > 0) {
+          if (numSectionColumns > 0 && matrixInfo != null) {
             if (sectionName == "data") {
               int groupColumnCount = 1;
               Group group = matrixInfo.columnGroup(0);
