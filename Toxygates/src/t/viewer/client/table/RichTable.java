@@ -41,13 +41,6 @@ import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
 import t.viewer.client.PersistedState;
 
-import otgviewer.client.StandardColumns;
-import otgviewer.client.components.DataListenerWidget;
-import otgviewer.client.components.Screen;
-import t.common.shared.DataSchema;
-import t.common.shared.SharedUtils;
-import t.viewer.client.PersistedState;
-
 /**
  * A data grid with functionality for hiding columns and displaying clickable icons in the leftmost
  * columns. It also manages a list of named column sections. Columns in a given section are adjacent
@@ -69,7 +62,7 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
 
   public interface Resources extends DataGrid.Resources {
     @Override
-    @Source("t/viewer/client/table/RichTable.css")
+    @Source("t/viewer/client/table/Tables.gss")
     DataGrid.Style dataGridStyle();
   }
 

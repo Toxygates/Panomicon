@@ -264,7 +264,7 @@ Status panel
 /**************************************	
 Expression table
 **************************************/
-.dataGridHeader {
+.dataGridHeader, .cellTableHeader {
 	border-bottom: 1px solid DARK_BORDER_COLOR;
 }
 
@@ -286,11 +286,11 @@ Expression table
 	border-left: 1px solid white;
 }
 
-.dataGridEvenRow {
+.dataGridEvenRow, .cellTableEvenRow {
 	background: LIGHT_ROW_COLOR;
 }
 
-.dataGridOddRow {
+.dataGridOddRow, .cellTableOddRow {
 	background: DARK_ROW_COLOR;
 }
 
