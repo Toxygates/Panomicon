@@ -134,7 +134,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
   }
 
   @throws(classOf[NoDataLoadedException])
-  def setColumnFilter(id: String, column: Int, f: ColumnFilter): ManagedMatrixInfo = {
+  def setColumnFilter(id: String, column: Int, f: ColumnFilter): ManagedMatrixInfo = safely {
     val mm = getSessionData.matrix(id)
 
     println(s"Filter for column $column: $f")
@@ -144,7 +144,7 @@ abstract class MatrixServiceImpl extends TServiceServlet with MatrixService {
 
   @throws(classOf[NoDataLoadedException])
   def matrixRows(id: String, offset: Int, size: Int, sortKey: SortKey,
-    ascending: Boolean): JList[ExpressionRow] = {
+    ascending: Boolean): JList[ExpressionRow] = safely {
     val cont = getSessionData.controller(id)
     val mm =
       cont.applySorting(sortKey, ascending)
