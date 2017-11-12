@@ -24,6 +24,20 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import com.google.gwt.core.client.*;
+import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.*;
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.resources.client.TextResource;
+import com.google.gwt.storage.client.Storage;
+import com.google.gwt.user.client.*;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
+
 import otgviewer.client.components.*;
 import otgviewer.client.components.Screen.QueuedAction;
 import otgviewer.client.dialog.FeedbackForm;
@@ -39,20 +53,6 @@ import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.MetadataInfo;
 import t.viewer.client.rpc.*;
 import t.viewer.shared.AppInfo;
-
-import com.google.gwt.core.client.*;
-import com.google.gwt.dom.client.*;
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.*;
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.TextResource;
-import com.google.gwt.storage.client.Storage;
-import com.google.gwt.user.client.*;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * The main entry point for Toxygates. The main task of this class is to manage the history
@@ -347,7 +347,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    * In the HTML head, e.g.: <meta name="instanceName" content="toxygates"> .
    * 
    * TODO: this information is also available via AppInfo and we should move towards using only
-   * that.
+   * that. Except we now only use it in storageParserPrefix, which is needed for getting AppInfo in
+   * the first place...
    * 
    * @return
    */
