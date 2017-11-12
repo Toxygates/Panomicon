@@ -110,6 +110,8 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
   protected AppInfo appInfo = null;
 
+  protected Resources.OtgCssResource css = resources.otgViewerStyle();
+
   @Override
   public AppInfo appInfo() {
     return appInfo;
@@ -145,8 +147,6 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
    */
   @Override
   public void onModuleLoad() {
-    Resources.OtgCssResource css = resources.otgViewerStyle();
-
     String[] colors = new String[] {css.group0_color(), css.group1_color(), css.group2_color(),
         css.group3_color(), css.group4_color(), css.group5_color(), css.group6_color()};
     SampleGroup.setColors(colors);
@@ -200,7 +200,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     FlowPanel menuBarPanel = new FlowPanel();
     menuBarPanel.add(menuBar);
     menuBarPanel.addStyleName("menuBarPanel");
-    mainDockPanel.addNorth(menuBarPanel, 56);
+    mainDockPanel.addNorth(menuBarPanel, css.menubarpanel_height());
 
     HorizontalPanel navOuter = Utils.mkHorizontalPanel();
     navOuter.setWidth("100%");
@@ -209,7 +209,7 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
     navPanel = Utils.mkHorizontalPanel();
     navPanel.addStyleName("navPanel");
     navOuter.add(navPanel);
-    mainDockPanel.addNorth(navOuter, 35);
+    mainDockPanel.addNorth(navOuter, css.navpanel_height());
   }
 
   protected void readURLParameters(Screen scr) {

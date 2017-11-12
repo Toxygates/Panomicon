@@ -59,6 +59,8 @@ App elements
 /**************************************	
 Menu bar
 **************************************/
+@def MENUBARPANEL_HEIGHT 56px;
+
 .menuBarPanel {
 	padding-left: GLOBAL_LEFT_PADDING;
 	background: MENUBARPANEL_COLOR;
@@ -148,6 +150,8 @@ Menu bar
 /**************************************	
 Top-level navigation links 
 **************************************/
+@def NAVPANEL_HEIGHT 35px;
+
 .navPanel {
 	height: 100%;
 	float: left;
@@ -161,8 +165,8 @@ Top-level navigation links
 }
 
 .navlink {
-	height: 35px;
-	line-height: 35px;
+	height: NAVPANEL_HEIGHT;
+	line-height: NAVPANEL_HEIGHT;
 	text-align: center;
 	font-size: 1.2em;
 	color: NAVLINK_TEXT_COLOR;
@@ -262,16 +266,10 @@ Status panel
 }
 
 /**************************************	
-Expression table
+Tables
 **************************************/
 .dataGridHeader, .cellTableHeader {
 	border-bottom: 1px solid DARK_BORDER_COLOR;
-}
-
-.majorHeader {
-	text-align: left;
-	border-bottom: none;
-	color: white;
 }
 
 .darkBorderLeft {
@@ -282,16 +280,25 @@ Expression table
 	border-left: 1px solid LIGHT_BORDER_COLOR;
 }
 
-.whiteBorderLeft {
-	border-left: 1px solid white;
-}
-
 .dataGridEvenRow, .cellTableEvenRow {
 	background: LIGHT_ROW_COLOR;
 }
 
 .dataGridOddRow, .cellTableOddRow {
 	background: DARK_ROW_COLOR;
+}
+
+/**************************************	
+Expression table
+**************************************/
+.majorHeader {
+	text-align: left;
+	border-bottom: none;
+	color: white;
+}
+
+.whiteBorderLeft {
+	border-left: 1px solid white;
 }
 
 .highlightedRow {
