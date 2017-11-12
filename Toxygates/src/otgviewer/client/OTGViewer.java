@@ -18,17 +18,17 @@
 
 package otgviewer.client;
 
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
+
 import otgviewer.shared.OTGSchema;
 import t.common.shared.DataSchema;
 import t.viewer.client.Analytics;
 import t.viewer.client.Utils;
 import t.viewer.client.intermine.InterMineData;
 import t.viewer.shared.intermine.IntermineInstance;
-
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
 
 public class OTGViewer extends TApplication {
 
@@ -54,20 +54,26 @@ public class OTGViewer extends TApplication {
     return schema;
   }
 
-  final private UIFactory factory = initFactory();
+  private UIFactory factory;
 
-  private UIFactory initFactory() {
+  @Override
+  protected void setupUIBase() {
+    initFactory();
+    super.setupUIBase();
+  }
+
+  private void initFactory() {
+    UIFactory f;
     //TODO hardcoding these instance names here may be controversial
     // - think of a better way of handling this
-    UIFactory f;
-    if (instanceName().equals("toxygates") ||
-        instanceName().equals("tg-update")) {
+    if (appInfo().instanceName().equals("toxygates")
+        || appInfo().instanceName().equals("tg-update")) {
       f = new ClassicOTGFactory();
     } else {
       f = new OTGFactory();
     }    
     logger.info("Using factory: " + f.getClass().toString());
-    return f;
+    factory = f;
   }
   
   @Override
