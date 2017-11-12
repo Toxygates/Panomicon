@@ -133,7 +133,6 @@ abstract public class RichTable<T> extends DataListenerWidget implements Require
     tcl.setCellStyleNames("clickCell");
     grid.setColumnWidth(tcl, "2.5em");
 
-    Set<String> preferredColumns = columnState.getValue();
     setupHideableColumns();
   }
 
