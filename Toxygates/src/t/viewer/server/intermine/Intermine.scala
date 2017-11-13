@@ -50,7 +50,7 @@ class IntermineConnector(instance: IntermineInstance,
     println(s"Connect to $title")
     // TODO this is insecure - ideally, auth tokens should be used.
     val sf = (user, pass) match {
-      case (Some(u), Some(p)) => new ServiceFactory(serviceUrl, u, p)
+      case (Some(u), Some(p)) => InsecureServiceFactory.fromUserAndPass(serviceUrl, u, p)
       case _                  => new ServiceFactory(serviceUrl)
     }
 
