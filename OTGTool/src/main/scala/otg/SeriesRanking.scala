@@ -36,7 +36,9 @@ class SeriesRanking(override val db: SeriesDB[OTGSeries], override val key: OTGS
 
   override protected def getScores(mt: RankType): Iterable[(OTGSeries, Double)] = {
     mt match {
-      case r: ReferenceCompound[OTGSeries] => {
+      //TODO modify ReferenceCompound API to be able to check for type argument at runtime
+      //or stop trying to match the type argument
+      case r: ReferenceCompound[OTGSeries @unchecked] => {
         r.init(db, key.copy(compound = r.compound, dose = r.dose)) //init this once and reuse it across all the compounds
       }
       case _ => {}
