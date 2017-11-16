@@ -36,6 +36,7 @@ import org.eclipse.rdf4j.repository.sparql.SPARQLRepository
 import org.eclipse.rdf4j.rio.RDFFormat
 
 import t.Closeable
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory
 
 object Triplestore {
   val executor = Executors.newCachedThreadPool()
@@ -130,7 +131,7 @@ abstract class Triplestore extends Closeable {
       println(s"Triplestore is read-only, ignoring data insertion of $file into $context")
     } else {
       println(s"Insert file $file into $context")
-      con.add(file, null, RDFFormat.TURTLE, new URIImpl(context))
+      con.add(file, null, RDFFormat.TURTLE, SimpleValueFactory.getInstance.createIRI(context))
     }
   }
 

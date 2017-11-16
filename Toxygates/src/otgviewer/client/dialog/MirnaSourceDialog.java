@@ -24,7 +24,7 @@ public class MirnaSourceDialog extends InteractionDialog {
                            PersistedState<MirnaSource[]> state) {
     super(parent);
     
-    this.selector = new MirnaSourceSelector(availableSources, state.value());
+    this.selector = new MirnaSourceSelector(availableSources, state.getValue());
     this.state = state;
     this.screen = parent;
     this.probeService = probeService;

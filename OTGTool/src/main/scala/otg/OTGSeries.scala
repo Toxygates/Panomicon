@@ -98,7 +98,7 @@ object OTGSeries extends SeriesBuilder[OTGSeries] {
 
     val r = for (r <- rs; o <- os; s <- ss; c <- cs; d <- ds; t <- ts)
       yield OTGSeries(r, o, s, group.probe, c, d, t, empty)
-    println("Generated keys:" + r.mkString("\n\t"))
+    //println("Generated keys:" + r.mkString("\n\t"))
     r
   }
 

@@ -22,6 +22,7 @@ import java.util.*;
 
 import t.common.shared.DataSchema;
 import t.common.shared.SharedUtils;
+import t.model.SampleClass;
 import t.model.sample.AttributeSet;
 
 /**
@@ -111,6 +112,11 @@ public class Group extends SampleGroup<Sample> implements SampleColumn {
     } else {
       return r;
     }
+  }
+
+  public String tooltipText(DataSchema schema) {
+    SampleClass sc = getSamples()[0].sampleClass();
+    return SampleClassUtils.label(sc, schema) + ":\n" + getTriples(schema, -1, ", ");
   }
 
   // See SampleGroup for the packing method

@@ -103,7 +103,9 @@ class MatrixController(context: Context,
       //TODO get rid of/factor out this, possibly to a factory of some kind
       //TODO get rid of the enhancedCols flag
       val b = reader match {
-        case wrapped: TransformingWrapper[PExprValue] =>
+        //TODO modify TransformingWrapper API to be able to check for type argument at runtime
+        //or stop trying to match the type argument
+        case wrapped: TransformingWrapper[PExprValue @unchecked] =>
           new ExtFoldBuilder(enhancedCols, wrapped, probes)
         case db: KCMatrixDB =>
           assert(typ == ValueType.Absolute)

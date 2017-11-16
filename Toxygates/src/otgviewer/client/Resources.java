@@ -24,18 +24,14 @@ public interface Resources extends t.common.client.Resources {
 
   public interface OtgCssResource extends CssResource {
     String group0_color();
-
     String group1_color();
-
     String group2_color();
-
     String group3_color();
-
     String group4_color();
-
     String group5_color();
-
     String group6_color();
+    int menubarpanel_height();
+    int navpanel_height();
   }
 
   @Source("otgviewer/client/OTGViewer.gss")

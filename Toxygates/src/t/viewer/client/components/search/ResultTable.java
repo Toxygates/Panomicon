@@ -2,6 +2,10 @@ package t.viewer.client.components.search;
 
 import java.util.*;
 
+import com.google.gwt.cell.client.Cell;
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.user.cellview.client.*;
+
 import otg.model.sample.OTGAttribute;
 import t.common.client.Utils;
 import t.common.client.components.SelectionTable;
@@ -10,11 +14,6 @@ import t.common.shared.sample.search.MatchCondition;
 import t.model.sample.Attribute;
 import t.model.sample.CoreParameter;
 import t.viewer.client.table.TooltipColumn;
-
-import com.google.gwt.cell.client.Cell;
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.Column;
 
 /**
  * Manages a table for displaying the results of a sample/unit search.
@@ -117,14 +116,20 @@ public abstract class ResultTable<T> {
     addAttributeColumn(column, attribute);
   }
 
+  protected void addColumn(Column<T, ?> column, String title) {
+    TextHeader header = new TextHeader(title);
+    header.setHeaderStyleNames("lightBorderLeft");
+    cellTable().addColumn(column, header);
+  }
+
   protected void addAttributeColumn(AttributeColumn<T> column, Attribute attribute) {
     attributeColumns.put(attribute, column);
-    cellTable().addColumn(column, attribute.title());
+    addColumn(column, attribute.title());
   }
 
   protected void addNonAttributeColumn(Column<T, ?> column, String title) {
     nonAttributeColumns.add(column);
-    cellTable().addColumn(column, title);
+    addColumn(column, title);
   }
 
   public void setupTable(T[] entries, MatchCondition condition) {
@@ -194,6 +199,7 @@ public abstract class ResultTable<T> {
       super(cell);
       attribute = attrib;
       isNumeric = numeric;
+      setCellStyleNames("lightBorderLeft");
     }
 
     public Attribute attribute() {
@@ -222,7 +228,7 @@ public abstract class ResultTable<T> {
 
     @Override
     public String getTooltip(S s) {
-      return getData(s);
+      return getValue(s);
     }
   }
 }
