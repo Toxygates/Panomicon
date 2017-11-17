@@ -46,7 +46,7 @@ import t.viewer.client.Utils;
  */
 public class StackedListEditor extends ResizeComposite implements SetEditor<String> {
 
-  private static Logger logger = SharedUtils.getLogger("sle");
+  // private static Logger logger = SharedUtils.getLogger("sle");
 
   /**
    * A selection method that allows the user to edit a list as text, freely. Items are separated by
@@ -222,7 +222,7 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
 
     @Override
     public void setSelection(Collection<String> items) {
-      logger.info("Receive selection " + items.size());
+      // logger.info("Receive selection " + items.size());
       selTable.setSelection(items);
       selTable.table().redraw();
     }
@@ -459,8 +459,8 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
    */
   @Override
   public void setSelection(Collection<String> items, @Nullable SetEditor<String> from) {
-    logger.info("Receive selection " + items.size() + " from "
-        + (from != null ? from.getClass().toString() : "null"));
+    //logger.info("Receive selection " + items.size() + " from "
+    // + (from != null ? from.getClass().toString() : "null"));
     for (SelectionMethod<String> m : methods) {
       if (m != from) {
         m.setSelection(items);

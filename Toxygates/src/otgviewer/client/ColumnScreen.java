@@ -27,7 +27,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
-import otgviewer.client.components.*;
+import otgviewer.client.components.FilterTools;
+import otgviewer.client.components.ScreenManager;
 import otgviewer.client.components.compoundsel.CompoundSelector;
 import otgviewer.client.components.groupdef.GroupInspector;
 import t.common.shared.DataSchema;
@@ -129,11 +130,11 @@ public class ColumnScreen extends DataFilterScreen {
               + " ... ");
           gi.inactiveColumnsChanged(ics);
         } else {
-          logger.info("No i. columns available");
+          logger.info("No inactive columns available");
         }
 
       } catch (Exception e) {
-        logger.log(Level.WARNING, "Unable to load i. columns", e);
+        logger.log(Level.WARNING, "Unable to load inactive columns", e);
         Window.alert("Unable to load inactive columns.");
       }
     }
