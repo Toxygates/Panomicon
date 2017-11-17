@@ -111,7 +111,7 @@ abstract public class SelectionTable<T> extends Composite implements SetEditor<T
   @Override
   public void setSelection(Collection<T> selection) {
     clearSelection();
-    logger.info("Received selection " + selection.size());
+    // logger.info("Received selection " + selection.size());
     selected = new HashSet<T>(selection);
     table.redraw();
   }
