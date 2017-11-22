@@ -28,7 +28,6 @@ import javax.annotation.Nullable;
  */
 public enum AType {
   KEGG("KEGG pathways") {
-    // TODO construct proper link
     public String formLink(String value) {
       return "http://www.genome.jp/dbget-bin/www_bget?path:" + value;
     }
@@ -124,7 +123,7 @@ public enum AType {
     }
   },
   KEGGOSA("O.Sativa orth. pathways") {
-    // TODO construct proper link
+    //Not used currently (Tritigate legacy)
     public String formLink(String value) {
       return value;
     }
