@@ -220,7 +220,9 @@ public class AdjustableGrid<D extends Data, DS extends Dataset<D>> extends Compo
             }
           }
           for (ChartGrid<D> gr : intoList) {
-            gr.adjustAndDisplay(maxCols, minVal, maxVal);
+            gr.adjustAndDisplay(
+              new ChartStyle(0, false, null, false),
+              maxCols, minVal, maxVal);
           }
         }
       }
