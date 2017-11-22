@@ -71,7 +71,6 @@ object KCIndexDB {
       db.fullMap
     } catch {
       case e: Exception =>
-        //TODO permanent solution for non-existent files
         println("Exception while trying to open " + file)
         e.printStackTrace()
         Map()

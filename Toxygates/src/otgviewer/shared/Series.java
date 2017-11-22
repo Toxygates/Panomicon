@@ -79,7 +79,6 @@ public class Series implements HasClass, Serializable {
   // TODO users should access the sample class instead
   @Deprecated
   public String timeDose() {
-    // TODO don't hardcode this
     Attribute fixedParam = _independentParam == ExposureTime ? DoseLevel : ExposureTime;
     return _sc.get(fixedParam);
   }
