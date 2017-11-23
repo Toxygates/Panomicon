@@ -2,9 +2,6 @@
  * The file contains styles for GWT widgets in the Clean theme.
  */
 
-body, table td, select, button {
-  font-size: small;
-}
 pre {
   font-family: "courier new", courier;
   font-size: small;
@@ -49,7 +46,6 @@ select {
   text-decoration: none;
   cursor: pointer;
   cursor: hand;
-  font-size:small;
   background: url("images/hborder.png") repeat-x 0px -2077px;
   border:1px solid #bbb;
   border-bottom: 1px solid #a0a0a0;
@@ -831,7 +827,6 @@ select {
   padding: 5px 4px;
   border: 1px solid #ccc;
   border-top: 1px solid #999;
-  font-size: small;
 }
 .gwt-TextBox-readonly {
   color: #888;
