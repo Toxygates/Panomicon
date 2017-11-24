@@ -75,7 +75,7 @@ abstract public class AssociationTable<T> extends RichTable<T> {
 	protected void getAssociations() {
 		waitingForAssociations = true;					
 		AType[] vas = visibleAssociations();
-		if (vas.length > 0) {
+		if (vas.length > 0 && displayedAtomicProbes().length > 0) {
 			AsyncCallback<Association[]> assocCallback = new AsyncCallback<Association[]>() {
 				public void onFailure(Throwable caught) {
 					Window.alert("Unable to get associations: " + caught.getMessage());

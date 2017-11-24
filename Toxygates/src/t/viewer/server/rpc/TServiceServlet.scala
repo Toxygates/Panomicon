@@ -50,4 +50,12 @@ abstract class TServiceServlet extends RemoteServiceServlet {
   protected def schema: DataSchema
 
   protected def appName: String
+
+  protected def safely[T](fn: => T): T = try {
+    fn
+  } catch {
+    case t: Throwable =>
+      t.printStackTrace()
+      throw t
+  }
 }

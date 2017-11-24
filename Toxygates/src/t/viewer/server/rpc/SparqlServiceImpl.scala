@@ -120,10 +120,10 @@ abstract class SparqlServiceImpl extends TServiceServlet with
   //This is to allow updates such as clusterings, annotation info etc to feed through.
   protected val appInfoLoader: Refreshable[AppInfo] =
     new PeriodicRefresh[AppInfo]("AppInfo", 3600 * 24) {
-    def reload(): AppInfo = reloadAppInfo    
+    def reload(): AppInfo = reloadAppInfo
   }
 
-  protected def reloadAppInfo = 
+  protected def reloadAppInfo =
     new AppInfoLoader(probeStore, configuration, baseConfig,
         appName).load
 
@@ -152,8 +152,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with
   protected def setSessionData(m: SparqlState) =
     getThreadLocalRequest().getSession().setAttribute("sparql", m)
 
-
-  def appInfo(@Nullable userKey: String): AppInfo = {
+  def appInfo(@Nullable userKey: String): AppInfo = safely {
     getSessionData() //initialise this if needed
 
     val appInfo = appInfoLoader.latest
@@ -201,7 +200,6 @@ abstract class SparqlServiceImpl extends TServiceServlet with
     r = r.filter(ds => Dataset.isDataVisible(ds.getTitle, userKey))
     r.toArray
   }
-
 
   private def sampleFilterFor(ds: Array[Dataset]) = {
      val dsTitles = ds.toList.map(_.getTitle)
@@ -288,18 +286,18 @@ abstract class SparqlServiceImpl extends TServiceServlet with
   def pathologies(column: SampleColumn): Array[Pathology] = Array()
 
   @throws[TimeoutException]
-  def annotations(barcode: Sample): Annotation = {
+  def annotations(barcode: Sample): Annotation = safely {
     val params = sampleStore.parameterQuery(barcode.id)
     annotations.fromAttributes(barcode, params)
   }
 
   @throws[TimeoutException]
-  def annotations(samples: Array[Sample], attributes: Array[Attribute]): Array[Annotation] = {
+  def annotations(samples: Array[Sample], attributes: Array[Attribute]): Array[Annotation] = safely {
     annotations.forSamples(sampleStore, samples, attributes)
   }
 
   @throws[TimeoutException]
-  def annotations(column: HasSamples[Sample], importantOnly: Boolean = false): Array[Annotation] = {
+  def annotations(column: HasSamples[Sample], importantOnly: Boolean = false): Array[Annotation] = safely {
     annotations.forSamples(sampleStore, column.getSamples, importantOnly)
   }
 
@@ -337,7 +335,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with
   def probesForPathway(pathway: String, samples: JList[Sample]): Array[String] = {
     val pw = Pathway(null, pathway)
     val prs = probeStore.forPathway(b2rKegg, pw)
-    val pmap = context.matrix.probeMap 
+    val pmap = context.matrix.probeMap
 
     val result = prs.map(_.identifier).filter(pmap.isToken)
     filterByGroup(result, samples).toArray
@@ -410,8 +408,9 @@ abstract class SparqlServiceImpl extends TServiceServlet with
 
   @throws[TimeoutException]
   def associations(sc: SampleClass, types: Array[AType],
-    _probes: Array[String]): Array[Association] =
+    _probes: Array[String]): Array[Association] = safely {
     new AssociationResolver(probeStore, b2rKegg, sc, types, _probes).resolve
+  }
 
   @throws[TimeoutException]
   def geneSuggestions(sc: SampleClass, partialName: String): Array[String] = {

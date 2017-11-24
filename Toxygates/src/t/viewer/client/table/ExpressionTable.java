@@ -108,11 +108,11 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   /**
    * Names of the probes currently displayed
    */
-  private String[] displayedAtomicProbes;
+  private String[] displayedAtomicProbes = new String[0];
   /**
    * Names of the (potentially merged) probes being displayed
    */
-  private String[] displayedProbes;
+  private String[] displayedProbes = new String[0];
 
   private boolean loadedData = false;
   private ManagedMatrixInfo matrixInfo = null;
