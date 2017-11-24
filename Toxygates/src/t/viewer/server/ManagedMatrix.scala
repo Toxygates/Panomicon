@@ -67,9 +67,11 @@ abstract class ManagedMatrixBuilder[E >: Null <: ExprValue](reader: MatrixDBRead
     val samples = TUnit.collectBarcodes(tus)
 
     val info = new ManagedMatrixInfo()
-    info.addColumn(false, g.toString, g.toString + ": average of treated samples",
-        ColumnFilter.emptyAbsGT, g,
-        false, samples)
+
+    val shortName = g.toString // TODO change this based on whether log2fold or normalized intensity
+    info.addColumn(false, shortName, g.toString,
+        g.toString + ": average of treated samples", // TODO change this as well, accordingly
+        ColumnFilter.emptyAbsGT, g, false, samples)
     val d = data.map(vs => Seq(mean(selectIdx(vs, treatedIdx))))
 
     (d, info)
@@ -203,10 +205,10 @@ class NormalizedBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[Exp
   protected def columnInfo(g: Group) = {
     val (tus, cus) = treatedAndControl(g)
     val info = new ManagedMatrixInfo()
-    info.addColumn(false, colNames(g)(0),
+    info.addColumn(false, "Treated", colNames(g)(0),
         colNames(g)(0) + ": average of treated samples", ColumnFilter.emptyAbsGT, g, false,
         TUnit.collectBarcodes(tus))
-    info.addColumn(false, colNames(g)(1),
+    info.addColumn(false, "Control", colNames(g)(1),
         colNames(g)(1) + ": average of control samples", ColumnFilter.emptyAbsGT, g, false,
         TUnit.collectBarcodes(cus))
     info
@@ -249,10 +251,10 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
     val tus = treatedAndControl(g)._1
     val samples = TUnit.collectBarcodes(tus)
     val info = new ManagedMatrixInfo()
-    info.addColumn(false, colNames(g)(0),
-        colNames(g)(0) + ": average of treated samples",
+    info.addColumn(false, "Log2-fold", colNames(g)(0),
+        colNames(g)(0) + ": log2-fold change of treated versus control",
         ColumnFilter.emptyAbsGT, g, false, samples)
-    info.addColumn(false, colNames(g)(1),
+    info.addColumn(false, "P-value", colNames(g)(1),
         colNames(g)(1) + ": p-values of treated against control",
         ColumnFilter.emptyLT, g, true,
         Array[SSample]())

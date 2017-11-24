@@ -485,7 +485,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       if (displayPColumns || !matrixInfo.isPValueColumn(i)) {
         Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);
         ColumnInfo ci =
-            new ColumnInfo(matrixInfo.columnName(i), 
+            new ColumnInfo(matrixInfo.shortColumnName(i),
                 matrixInfo.columnHint(i), true, false, true,
                 matrixInfo.columnFilter(i).active());
         Group group = matrixInfo.columnGroup(i);
@@ -503,7 +503,7 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     for (int i = matrixInfo.numDataColumns(); i < matrixInfo.numColumns(); i++) {
       String borderStyle = first ? "darkBorderLeft" : "lightBorderLeft";
       first = false;
-      addSynthColumn(matrixInfo.columnName(i), matrixInfo.columnHint(i), i, borderStyle);
+      addSynthColumn(matrixInfo.shortColumnName(i), matrixInfo.columnHint(i), i, borderStyle);
     }
   }
 
