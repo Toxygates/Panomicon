@@ -22,6 +22,12 @@ package otgviewer.client;
 
 import java.util.*;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
+import com.google.gwt.view.client.ListDataProvider;
+
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
 import t.common.client.Utils;
@@ -31,12 +37,6 @@ import t.common.shared.maintenance.Batch;
 import t.common.shared.maintenance.Instance;
 import t.viewer.client.Analytics;
 import t.viewer.client.rpc.UserDataServiceAsync;
-
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
-import com.google.gwt.view.client.ListDataProvider;
 
 public class MyDataScreen extends Screen {
 
@@ -80,7 +80,7 @@ public class MyDataScreen extends Screen {
       @Override
       protected boolean confirmAddNew() {
         String hasSeen = MyDataScreen.this.getParser().getItem(HAS_SEEN_WARNING);
-        if (hasSeen.equals("true")) {
+        if ("true".equals(hasSeen)) { // hasSeen might be null
           return true;
         }
         final String message = "NIBIOHN will take reasonable precautions to protect " +
