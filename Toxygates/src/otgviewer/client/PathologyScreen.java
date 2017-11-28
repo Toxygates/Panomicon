@@ -22,6 +22,16 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.gwt.cell.client.SafeHtmlCell;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.user.cellview.client.*;
+import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.*;
+
 import otg.model.sample.OTGAttribute;
 import otgviewer.client.components.Screen;
 import otgviewer.client.components.ScreenManager;
@@ -33,28 +43,24 @@ import t.common.shared.sample.*;
 import t.model.SampleClass;
 import t.viewer.client.Utils;
 
-import com.google.gwt.cell.client.SafeHtmlCell;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.user.cellview.client.*;
-import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
-
 /**
  * This screen displays information about pathological findings in a given set of sample groups.
  */
 public class PathologyScreen extends Screen {
   public static final String key = "path";
 
-  private CellTable<Pathology> pathologyTable = new CellTable<Pathology>();
+  private CellTable<Pathology> pathologyTable;
   private ScrollPanel scrollPanel = new ScrollPanel();
   private Set<Pathology> pathologies = new HashSet<Pathology>();
-  private final Resources resources;
 
   private SampleClass lastClass;
   private List<Group> lastColumns;
+
+  public interface Resources extends CellTable.Resources {
+    @Override
+    @Source("t/viewer/client/table/Tables.gss")
+    CellTable.Style cellTableStyle();
+  }
 
   @Override
   public boolean enabled() {
@@ -67,7 +73,8 @@ public class PathologyScreen extends Screen {
 
   public PathologyScreen(ScreenManager man) {
     super("Pathologies", key, true, man);
-    resources = man.resources();
+    Resources resources = GWT.create(Resources.class);
+    pathologyTable = new CellTable<Pathology>(15, resources);
     sampleService = man.sampleService();
     mkTools();
   }
@@ -87,12 +94,25 @@ public class PathologyScreen extends Screen {
     addToolbar(tools, 30);
   }
 
+  private void addColumn(Column<Pathology, ?> column, String headerString, String borderStyle,
+      String columnWidth) {
+    addColumn(column, headerString, "", borderStyle, columnWidth);
+  }
+
+  private void addColumn(Column<Pathology, ?> column, String headerString, String cellStyle,
+      String borderStyle, String columnWidth) {
+    column.setCellStyleNames(cellStyle + " " + borderStyle);
+    TextHeader header = new TextHeader(headerString);
+    header.setHeaderStyleNames(borderStyle);
+    pathologyTable.addColumn(column, header);
+    pathologyTable.setColumnWidth(column, columnWidth);
+  }
+
   @Override
   public Widget content() {
-
     scrollPanel.setWidget(pathologyTable);
     pathologyTable.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
-    pathologyTable.setWidth("100%");
+    pathologyTable.setWidth("auto");
 
     TextColumn<Pathology> col = new TextColumn<Pathology>() {
       @Override
@@ -105,7 +125,7 @@ public class PathologyScreen extends Screen {
         return r;
       }
     };
-    pathologyTable.addColumn(col, "Group");
+    addColumn(col, "Group", "", "10em");
 
     //Note: we may need to stop including p.barcode() at some point
     //if pathologies get to have longer barcodes (currently only OTG samples)
@@ -117,7 +137,10 @@ public class PathologyScreen extends Screen {
             " [" + p.barcode() + "]";
       }
     };
-    pathologyTable.addColumn(col, "Sample");
+    addColumn(col, "Sample", "lightBorderLeft", "22em");
+
+    ToolColumn tcl = new ToolColumn(new InspectCell());
+    addColumn(tcl, "", "clickCell", "lightBorderLeft", "35px");
 
     col = new TextColumn<Pathology>() {
       @Override
@@ -125,13 +148,7 @@ public class PathologyScreen extends Screen {
         return p.finding();
       }
     };
-
-    ToolColumn tcl = new ToolColumn(new InspectCell());
-    pathologyTable.addColumn(tcl, "");
-    pathologyTable.setColumnWidth(tcl, "40px");
-    tcl.setCellStyleNames("clickCell");
-
-    pathologyTable.addColumn(col, "Finding");
+    addColumn(col, "Finding", "lightBorderLeft", "10em");
 
     col = new TextColumn<Pathology>() {
       @Override
@@ -139,7 +156,7 @@ public class PathologyScreen extends Screen {
         return p.topography();
       }
     };
-    pathologyTable.addColumn(col, "Topography");
+    addColumn(col, "Topography", "lightBorderLeft", "8em");
 
     col = new TextColumn<Pathology>() {
       @Override
@@ -147,7 +164,7 @@ public class PathologyScreen extends Screen {
         return p.grade();
       }
     };
-    pathologyTable.addColumn(col, "Grade");
+    addColumn(col, "Grade", "lightBorderLeft", "8em");
 
     col = new TextColumn<Pathology>() {
       @Override
@@ -155,7 +172,7 @@ public class PathologyScreen extends Screen {
         return "" + p.spontaneous();
       }
     };
-    pathologyTable.addColumn(col, "Spontaneous");
+    addColumn(col, "Spontaneous", "lightBorderLeft", "8em");
 
     Column<Pathology, SafeHtml> lcol = new Column<Pathology, SafeHtml>(new SafeHtmlCell()) {
       @Override
@@ -169,7 +186,7 @@ public class PathologyScreen extends Screen {
         return b.toSafeHtml();
       }
     };
-    pathologyTable.addColumn(lcol, "Digital viewer");
+    addColumn(lcol, "Digital viewer", "lightBorderLeft", "8em");
 
     return scrollPanel;
   }
@@ -203,7 +220,7 @@ public class PathologyScreen extends Screen {
 
   class InspectCell extends ImageClickCell.StringImageClickCell {
     InspectCell() {
-      super(resources.magnify(), false);
+      super(manager.resources().magnify(), false);
     }
 
     @Override

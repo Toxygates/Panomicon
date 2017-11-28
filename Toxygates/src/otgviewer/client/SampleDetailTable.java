@@ -22,20 +22,21 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
-import otgviewer.client.components.*;
-import t.common.shared.sample.*;
-import t.viewer.client.Utils;
-import t.viewer.client.rpc.SampleServiceAsync;
-import t.viewer.client.table.TooltipColumn;
-
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.*;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.view.client.NoSelectionModel;
+
+import otgviewer.client.components.*;
+import t.common.shared.sample.*;
+import t.viewer.client.Utils;
+import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.client.table.TooltipColumn;
 
 /**
  * A table that displays sample annotations for a small set of samples.
@@ -51,6 +52,12 @@ public class SampleDetailTable extends Composite {
 
   public static final String DEFAULT_SECTION_TITLE = "Sample details";
   
+  public interface Resources extends CellTable.Resources {
+    @Override
+    @Source("t/viewer/client/table/Tables.gss")
+    CellTable.Style cellTableStyle();
+  }
+
   protected static class BioParamColumn extends TooltipColumn<BioParamValue[]> {
 
     private final int i;
@@ -102,7 +109,8 @@ public class SampleDetailTable extends Composite {
     this.isSection = isSection;
     this.waitListener = screen;
     sampleService = screen.manager().sampleService();
-    table = new CellTable<BioParamValue[]>();
+    Resources resources = GWT.create(Resources.class);
+    table = new CellTable<BioParamValue[]>(15, resources);
     initWidget(table);
     table.setWidth("100%", true); // use fixed layout so we can control column width explicitly
     table.setSelectionModel(new NoSelectionModel<BioParamValue[]>());
@@ -114,10 +122,12 @@ public class SampleDetailTable extends Composite {
   public void loadFrom(final HasSamples<Sample> c, boolean importantOnly) {        
     sampleService.annotations(c, importantOnly, new PendingAsyncCallback<Annotation[]>(
         waitListener) {
+      @Override
       public void handleFailure(Throwable caught) {
         Window.alert("Unable to get array annotations.");
       }
 
+      @Override
       public void handleSuccess(Annotation[] as) {
         setData(c, as);
       }
@@ -143,14 +153,15 @@ public class SampleDetailTable extends Composite {
     for (int i = 1; i < barcodes.length + 1; ++i) {
       String name = barcodes[i - 1].id();
       BioParamColumn bpc = new BioParamColumn(tc, i - 1);
-      
+      String borderStyle = i == 1 ? "darkBorderLeft" : "lightBorderLeft";
+      bpc.setCellStyleNames(borderStyle);
       String displayTitle = abbreviate(name);      
       SafeHtmlHeader header = new SafeHtmlHeader(Utils.tooltipSpan(name, displayTitle));
+      header.setHeaderStyleNames(borderStyle);
       table.addColumn(bpc, header);
       table.addColumnStyleName(i, "sampleDetailDataColumn");
     }
     table.setWidth((15 + 9 * barcodes.length) + "em", true);
-
   }
   
   private static String abbreviate(String sampleId) {
