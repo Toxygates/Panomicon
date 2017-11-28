@@ -33,7 +33,6 @@
 }
 
 .dataGridCell, .cellTableCell {
-  padding: 2px;
   overflow: hidden;
 }
 

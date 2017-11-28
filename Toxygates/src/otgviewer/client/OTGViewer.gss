@@ -280,6 +280,11 @@ Tables
 	border-bottom: 1px solid DARK_BORDER_COLOR;
 }
 
+.dataGridCell, .cellTableCell {
+  padding: 4px;
+  line-height: 20px;
+}
+
 .darkBorderLeft {
 	border-left: 1px solid DARK_BORDER_COLOR;
 }
@@ -491,7 +496,7 @@ Sample details
 }
 
 .sampleDetailTitleColumn {
-	width: 15em;
+	width: 12.5em;
 }
 
 .sampleDetailDataColumn {
