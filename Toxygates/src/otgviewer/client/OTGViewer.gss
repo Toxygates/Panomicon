@@ -69,6 +69,16 @@ App elements
 	background: MENUBARITEM_COLOR;
 }
 
+.gwt-StackLayoutPanel .gwt-StackLayoutPanelHeader {
+	background: MENUBARPANEL_COLOR;
+	color: white;
+	font-size: 1.25em;
+}
+
+.gwt-DialogBox .Caption {
+	font-size: 1.25em;
+}
+
 /**************************************	
 Menu bar
 **************************************/

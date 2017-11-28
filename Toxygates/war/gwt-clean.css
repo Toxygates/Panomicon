@@ -121,7 +121,6 @@ select {
   background: #F1F1F1;
   padding: 4px 8px 4px 4px;
   cursor: default;
-  font-weight: bold;
   border-bottom: 1px solid #bbbbbb;
   border-top: 1px solid #D2D2D2;
 }
@@ -1014,12 +1013,9 @@ td.datePickerYear {
 .gwt-StackLayoutPanel .gwt-StackLayoutPanelHeader {
   cursor: pointer;
   cursor: hand;
-  font-weight: bold;
-  font-size: 1.3em;
   padding: 3px;
   border: 1px solid #bbbbbb;
   border-bottom: 0px;
-  background: #d3def6 url(images/hborder.png) repeat-x 0px -989px;
 }
 .gwt-StackLayoutPanel .gwt-StackLayoutPanelHeader-hovering {
   background: #d3def6;
