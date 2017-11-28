@@ -79,6 +79,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   private final int MAX_PAGE_SIZE = 250;
   private final int PAGE_SIZE_INCREMENT = 50;
 
+  private final String COLUMN_WIDTH = "10em";
+
   private Screen screen;
   private KCAsyncProvider asyncProvider = new KCAsyncProvider();
   
@@ -142,10 +144,6 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
       spanBuilder.title(group.tooltipText(screen.schema())).text(group.getName()).endSpan();
       rowBuilder.endTH();
     }
-
-    // private void buildSectionHeader(TableRowBuilder rowBuilder, String text, int columnCount) {
-    // rowBuilder.startTH().colSpan(columnCount).className(style.header()).text(text).endTH();
-    // }
 
     private void buildBlankHeader(TableRowBuilder rowBuilder, int columnCount) {
       rowBuilder.startTH().colSpan(columnCount).endTH();
@@ -484,15 +482,17 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
     for (int i = 0; i < matrixInfo.numDataColumns(); ++i) {
       if (displayPColumns || !matrixInfo.isPValueColumn(i)) {
         Column<ExpressionRow, String> valueCol = new ExpressionColumn(tc, i);
-        ColumnInfo ci =
-            new ColumnInfo(matrixInfo.shortColumnName(i),
-                matrixInfo.columnHint(i), true, false, true,
-                matrixInfo.columnFilter(i).active());
+
         Group group = matrixInfo.columnGroup(i);
         String groupStyle = group == null ? "dataColumn" : group.getStyleName();
         String borderStyle = (group != previousGroup) ? "darkBorderLeft" : "lightBorderLeft";
-        ci.setCellStyleNames(groupStyle + " " + borderStyle);
-        ci.setHeaderStyleNames(groupStyle + " " + borderStyle);
+        String style = groupStyle + " " + borderStyle;
+
+        ColumnInfo ci =
+            new ColumnInfo(matrixInfo.shortColumnName(i), matrixInfo.columnHint(i), true, false,
+                COLUMN_WIDTH, style, false, true, matrixInfo.columnFilter(i).active());
+        ci.setHeaderStyleNames(style);
+
         previousGroup = group;
         addColumn(valueCol, "data", ci);
       }
@@ -529,8 +529,8 @@ public class ExpressionTable extends AssociationTable<ExpressionRow> {
   private void addSynthColumn(String title, String tooltip, int matIndex, String borderStyle) {
     TextCell tc = new TextCell();    
     Column<ExpressionRow, String> synCol = new ExpressionColumn(tc, matIndex);    
-    ColumnInfo info = new ColumnInfo(title, tooltip, true, false, true, false);
-    info.setCellStyleNames("extraColumn " + borderStyle);
+    ColumnInfo info = new ColumnInfo(title, tooltip, true, false, COLUMN_WIDTH,
+        "extraColumn " + borderStyle, false, true, false);
     info.setHeaderStyleNames(borderStyle);
     info.setDefaultSortAsc(true);
     addColumn(synCol, "synthetic", info);
