@@ -43,6 +43,11 @@ body {
 	font-size: 11pt;
 }
 
+a, a:visited  {
+	color: black;
+	text-decoration-style: dotted;
+}
+
 button {
 	font-size: 1em;
 }

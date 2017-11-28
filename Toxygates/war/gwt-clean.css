@@ -14,15 +14,6 @@ body {
   background: #fff;
   direction: ltr;
 }
-a, a:visited {
-  color: #0066cc;
-  text-decoration:none;
-}
-
-a:hover {
-  color: #0066cc;
-  text-decoration:underline;
-}
 
 select {
   background: white;
