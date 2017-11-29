@@ -293,11 +293,13 @@ Tables
 **************************************/
 .dataGridHeader, .cellTableHeader {
 	border-bottom: 1px solid DARK_BORDER_COLOR;
+	padding: 4px;
+  	line-height: 20px;
 }
 
 .dataGridCell, .cellTableCell {
-  padding: 4px;
-  line-height: 20px;
+	padding: 4px;
+	line-height: 20px;
 }
 
 .darkBorderLeft {

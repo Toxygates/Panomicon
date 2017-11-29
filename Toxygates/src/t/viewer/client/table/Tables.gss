@@ -26,7 +26,6 @@
 }
 
 .dataGridHeader, .cellTableHeader {
-  padding: 3px;
   text-align: left;
   overflow: hidden;
   white-space: nowrap;
