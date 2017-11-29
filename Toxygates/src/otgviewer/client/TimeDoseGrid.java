@@ -98,7 +98,6 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
 
     grid.addStyleName("timeDoseGrid");
     grid.setWidth("100%");
-    grid.setHeight("400px");
     grid.setBorderWidth(0);
     mainPanel.add(grid);
   }
@@ -237,7 +236,6 @@ abstract public class TimeDoseGrid extends DataListenerWidget {
       r++;
     }
 
-    grid.setHeight(50 * (chosenCompounds.size() + 1) + "px");
     // This will eventually draw the unit UIs
     lazyFetchMinor();
   }
