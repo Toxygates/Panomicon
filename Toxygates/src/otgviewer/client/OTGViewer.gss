@@ -73,6 +73,7 @@ App elements
 	background: MENUBARPANEL_COLOR;
 	color: white;
 	font-size: 1.25em;
+	padding-left: 8px;
 }
 
 .gwt-DialogBox .Caption {
