@@ -25,7 +25,7 @@ public class AttributeSet extends t.model.sample.AttributeSet {
   AttributeSet(Collection<Attribute> attributes, Collection<Attribute> required) {
     super(attributes, required);
     Collections.addAll(previewDisplay, Dose, DoseUnit, DoseLevel, ExposureTime, AdmRoute, Type);
-    Collections.addAll(highLevel, Organism, Organ, TestType, Repeat);
+    Collections.addAll(highLevel, Type, Organism, Organ, TestType, Repeat);
     Collections.addAll(unitLevel, Compound, DoseLevel, ExposureTime);
   }
     

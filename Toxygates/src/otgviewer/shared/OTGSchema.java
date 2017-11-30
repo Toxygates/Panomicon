@@ -26,6 +26,7 @@ import otg.model.sample.OTGAttribute;
 import t.common.shared.*;
 import t.model.SampleClass;
 import t.model.sample.Attribute;
+import t.model.sample.CoreParameter;
 
 @SuppressWarnings("serial")
 public class OTGSchema extends DataSchema {
@@ -140,7 +141,9 @@ public class OTGSchema extends DataSchema {
     return OTGAttribute.DoseLevel;
   }
 
-  private Attribute[] macroParams = new Attribute[] {OTGAttribute.Organism, OTGAttribute.TestType,
+  private Attribute[] macroParams = new Attribute[] {
+      CoreParameter.Type,
+      OTGAttribute.Organism, OTGAttribute.TestType,
       OTGAttribute.Organ, OTGAttribute.Repeat};
 
   @Override
