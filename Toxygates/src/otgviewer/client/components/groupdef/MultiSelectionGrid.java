@@ -135,11 +135,6 @@ public class MultiSelectionGrid extends DataListenerWidget implements SelectionT
     }
   }
 
-  List<String> compoundsFor(SampleClass sc) {
-    SelectionTDGrid g = findOrCreateSection(scr, sc, false);
-    return g.state().compounds;
-  }
-
   void setSelection(Unit[] selection) {
     logger.info("Set selection: " + selection.length + " units ");
     if (selection.length > 0) {
