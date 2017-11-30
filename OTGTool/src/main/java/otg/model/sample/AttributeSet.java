@@ -24,7 +24,7 @@ public class AttributeSet extends t.model.sample.AttributeSet {
    */
   AttributeSet(Collection<Attribute> attributes, Collection<Attribute> required) {
     super(attributes, required);
-    Collections.addAll(previewDisplay, Dose, DoseUnit, DoseLevel, ExposureTime, AdmRoute);
+    Collections.addAll(previewDisplay, Dose, DoseUnit, DoseLevel, ExposureTime, AdmRoute, Type);
     Collections.addAll(highLevel, Organism, Organ, TestType, Repeat);
     Collections.addAll(unitLevel, Compound, DoseLevel, ExposureTime);
   }
@@ -41,7 +41,7 @@ public class AttributeSet extends t.model.sample.AttributeSet {
       Collections.addAll(attributes, otg.model.sample.OTGAttribute.values());
       List<Attribute> required = new ArrayList<Attribute>();
       
-      Collections.addAll(required, SampleId, ControlGroup, Platform);
+      Collections.addAll(required, SampleId, ControlGroup, Platform, Type);
       Collections.addAll(required, Organism, TestType, Repeat, Organ,
         Compound, DoseLevel, ExposureTime);
       
