@@ -20,16 +20,16 @@ package otgviewer.client.components;
 
 import java.util.Arrays;
 
-import t.common.shared.Dataset;
-import t.model.SampleClass;
-import t.viewer.client.rpc.SampleServiceAsync;
-import t.viewer.shared.AppInfo;
-
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
+
+import t.common.shared.Dataset;
+import t.model.SampleClass;
+import t.viewer.client.rpc.SampleServiceAsync;
+import t.viewer.shared.AppInfo;
 
 /**
  * Tools to select from the available datasets, and then from
@@ -49,7 +49,7 @@ public class FilterTools extends DataListenerWidget {
     initWidget(filterTools);
 
     filterTools.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-    filterTools.addStyleName("slightlySpacedLeftRight");
+    filterTools.addStyleName("filterTools");
 
     Button b = new Button("Data...");
     filterTools.add(b);
@@ -129,6 +129,7 @@ public class FilterTools extends DataListenerWidget {
     logger.info("Request sample classes for " + chosenDatasets.length + " datasets");
     sampleService.chooseDatasets(chosenDatasets, new PendingAsyncCallback<SampleClass[]>(screen,
         "Unable to choose datasets") {
+      @Override
       public void handleSuccess(SampleClass[] sampleClasses) {
         dfe.setAvailable(sampleClasses);
       }

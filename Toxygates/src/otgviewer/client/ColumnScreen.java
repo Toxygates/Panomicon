@@ -70,9 +70,8 @@ public class ColumnScreen extends DataFilterScreen {
   @Override
   protected void addToolbars() {   
     super.addToolbars();   
-    HorizontalPanel hp = Utils.mkHorizontalPanel(true, filterTools);
-   
-    addToolbar(hp, 45);
+    HorizontalPanel hp = Utils.mkHorizontalPanel(false, filterTools);
+    addToolbar(hp, 0);
     addLeftbar(cs, 350);
   }
 

@@ -258,7 +258,8 @@ public class SampleSearchScreen extends DataFilterScreen implements Search.Deleg
   @Override
   protected void addToolbars() {
     super.addToolbars();
-    addToolbar(filterTools, 30);
+    HorizontalPanel hp = Utils.mkHorizontalPanel(false, filterTools);
+    addToolbar(hp, 0);
   }
 
   @Override

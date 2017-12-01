@@ -69,6 +69,10 @@ App elements
 	background: MENUBARITEM_COLOR;
 }
 
+.filterTools {
+	margin: GLOBAL_LEFT_PADDING 5px 5px GLOBAL_LEFT_PADDING;
+}
+
 .gwt-StackLayoutPanel .gwt-StackLayoutPanelHeader {
 	background: MENUBARPANEL_COLOR;
 	color: white;
@@ -526,11 +530,6 @@ Non-semantic
 ******************************************************************************/
 .slightlySpaced {
 	margin: 2px;
-}
-
-.slightlySpacedLeftRight {
-	margin-left: 2px;
-	margin-right: 2px;
 }
 
 .colored {
