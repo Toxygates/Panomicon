@@ -84,6 +84,29 @@ App elements
 	font-size: 1.25em;
 }
 
+.gwt-Button {
+  	margin: 0;
+	padding: 5px 7px;
+	text-decoration: none;
+	cursor: pointer;
+	cursor: hand;
+	color: MENUBARITEM_COLOR;
+	background: MENUBARPANEL_COLOR;
+	border: none;
+	border-radius: 0px;
+	-moz-border-radius: 0px;
+}
+.gwt-Button:active {
+}
+.gwt-Button:hover {
+}
+.gwt-Button[disabled] {
+	cursor: default;
+	color: #888;
+}
+.gwt-Button[disabled]:hover {
+}
+
 /**************************************	
 Menu bar
 **************************************/
