@@ -1,6 +1,7 @@
 package otgviewer.client;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -49,13 +50,14 @@ public class DualDataScreen extends DataScreen {
     return rlp;
   }
   
-  protected List<Group> columnsForMainTable(List<Group> from) {
-    ArrayList<Group> r = new ArrayList<Group>();
-    for (Group g: from) {
-      if (!GroupUtils.isMirnaGroup(g)) {
-        r.add(g);
-      }
-    }
+  protected List<Group> columnsOfType(List<Group> from, String type) {
+    return from.stream().filter(g -> type.equals(GroupUtils.groupType(g))).
+        collect(Collectors.toList());    
+  }
+  
+  protected List<Group> columnsForMainTable(List<Group> from) {    
+    List<Group> r = columnsOfType(from, "mRNA");
+    
     //If mRNA and miRNA columns are not mixed, we simply display them as they are
     if (r.isEmpty()) {
       r.addAll(from);
@@ -64,13 +66,7 @@ public class DualDataScreen extends DataScreen {
   }
   
   protected List<Group> columnsForSideTable(List<Group> from) {
-    ArrayList<Group> r = new ArrayList<Group>();
-    for (Group g: from) {
-      if (GroupUtils.isMirnaGroup(g)) {
-        r.add(g);
-      }
-    }
-    return r;
+    return columnsOfType(from, "miRNA");        
   }
   
   protected TableStyle mainTableStyle() {

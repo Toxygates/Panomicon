@@ -82,14 +82,17 @@ public class GroupUtils {
     return null;
   }
 
-  public static String groupPlatform(Group g) {
+  public static String groupAttribute(Group g, Attribute a) {
     SampleClass sc = g.getTreatedSamples()[0].sampleClass();
-    String platform = sc.get(CoreParameter.Platform);
+    String platform = sc.get(a);
     return platform;
   }
   
-  public static boolean isMirnaGroup(Group g) {
-    return CoreParameter.isMiRNAPlatform(groupPlatform(g));
+  public static String groupPlatform(Group g) {
+    return groupAttribute(g, CoreParameter.Platform);    
   }
-
+  
+  public static String groupType(Group g) {
+    return groupAttribute(g, CoreParameter.Type);    
+  }
 }

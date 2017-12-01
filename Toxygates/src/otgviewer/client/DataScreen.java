@@ -108,11 +108,15 @@ public class DataScreen extends Screen {
   
   protected void associationsUpdated() {}
   
+  protected boolean isMirnaGroup(Group g) {
+    return "miRNA".equals(GroupUtils.groupType(g));
+  }
+  
   protected TableStyle styleForColumns(List<Group> columns) {
     boolean foundMirna = false;
-    boolean foundNonMirna = false;
+    boolean foundNonMirna = false;    
     for (Group g: chosenColumns) {
-      if (GroupUtils.isMirnaGroup(g)) {      
+      if (isMirnaGroup(g)) {      
         foundMirna = true;
       } else {
         foundNonMirna = true;
