@@ -20,16 +20,16 @@ package otgviewer.client.components;
 
 import java.util.*;
 
+import com.google.gwt.event.dom.client.*;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.*;
+
 import t.common.shared.ItemList;
 import t.common.shared.StringList;
 import t.viewer.client.StorageParser;
 import t.viewer.client.Utils;
 import t.viewer.client.dialog.DialogPosition;
 import t.viewer.client.dialog.InputDialog;
-
-import com.google.gwt.event.dom.client.*;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
 
 /**
  * The ListChooser allows the user to select from a range of named lists, as well as save and delete
@@ -108,7 +108,8 @@ public class ListChooser extends DataListenerWidget {
 
 
   private Widget createPanel(boolean hasButtons) {
-    HorizontalPanel hp = Utils.mkWidePanel();
+    HorizontalPanel hp = Utils.mkHorizontalPanel(true);
+    hp.setWidth("100%");
 
     listBox.setVisibleItemCount(1);
     refreshSelector();
