@@ -1,6 +1,6 @@
 @external '*';
 
-/******************************************************************************	
+/******************************************************************************
 Variables
 ******************************************************************************/
 
@@ -32,14 +32,27 @@ Variables
 @def GROUP5_COLOR #c1a54a;
 @def GROUP6_COLOR #b354b3;
 
-/******************************************************************************	
+/******************************************************************************
 Global
 ******************************************************************************/
 body, .gwt-Button {
-	font-family: Georgia, Times, "Times New Roman", serif;
+	font-family: TimesNewRoman, Times New Roman, Times, Baskerville, serif;
 }
 
-/******************************************************************************	
+body {
+	font-size: 11pt;
+}
+
+a, a:visited  {
+	color: black;
+	text-decoration-style: dotted;
+}
+
+button {
+	font-size: 1em;
+}
+
+/******************************************************************************
 App elements 
 ******************************************************************************/
 .toxygatesTitle {
@@ -54,6 +67,17 @@ App elements
 .analysisTools {
 	margin: 1px 0 0 0;
 	background: MENUBARITEM_COLOR;
+}
+
+.gwt-StackLayoutPanel .gwt-StackLayoutPanelHeader {
+	background: MENUBARPANEL_COLOR;
+	color: white;
+	font-size: 1.25em;
+	padding-left: 8px;
+}
+
+.gwt-DialogBox .Caption {
+	font-size: 1.25em;
 }
 
 /**************************************	
@@ -116,7 +140,8 @@ Menu bar
 	background: MENUBARITEM_SELECTED_COLOR;
 }
 
-.gwt-MenuBar-vertical .gwt-MenuItem {
+.gwt-MenuBar-vertical .gwt-MenuItem,
+.gwt-MenuBar-vertical .gwt-MenuItemSeparator {
 	background: MENUBARITEM_COLOR;
 }
 
@@ -138,7 +163,6 @@ Menu bar
 }
 
 .menuSeparatorCaption {
-	color: DarkGray;
 	font-style: italic;
 	font-size: 0.75em;
 }
@@ -168,7 +192,7 @@ Top-level navigation links
 	height: NAVPANEL_HEIGHT;
 	line-height: NAVPANEL_HEIGHT;
 	text-align: center;
-	font-size: 1.2em;
+	font-size: 1.15em;
 	color: NAVLINK_TEXT_COLOR;
 	margin: 0;
 	padding: 0 10px;
@@ -270,6 +294,13 @@ Tables
 **************************************/
 .dataGridHeader, .cellTableHeader {
 	border-bottom: 1px solid DARK_BORDER_COLOR;
+	padding: 4px;
+  	line-height: 20px;
+}
+
+.dataGridCell, .cellTableCell {
+	padding: 4px;
+	line-height: 20px;
 }
 
 .darkBorderLeft {
@@ -483,14 +514,14 @@ Sample details
 }
 
 .sampleDetailTitleColumn {
-	width: 15em;
+	width: 12.5em;
 }
 
 .sampleDetailDataColumn {
 	width: 10em;
 }
 
-/******************************************************************************	
+/******************************************************************************
 Non-semantic 
 ******************************************************************************/
 .slightlySpaced {
@@ -529,7 +560,7 @@ Non-semantic
 	padding-right: 10px;
 }
 
-/******************************************************************************	
+/******************************************************************************
 Miscellaneous
 ******************************************************************************/
 ::-webkit-scrollbar {

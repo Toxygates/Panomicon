@@ -163,7 +163,8 @@ abstract class SparqlServiceImpl extends TServiceServlet with
     "%x%x".format(time, random)
   }
 
-  def appInfo(@Nullable userKey: String): AppInfo = {
+  def appInfo(@Nullable userKey: String): AppInfo = safely {
+
     getSessionData() //initialise this if needed
 
     val appInfo = appInfoLoader.latest
@@ -297,18 +298,18 @@ abstract class SparqlServiceImpl extends TServiceServlet with
   def pathologies(column: SampleColumn): Array[Pathology] = Array()
 
   @throws[TimeoutException]
-  def annotations(barcode: Sample): Annotation = {
+  def annotations(barcode: Sample): Annotation = safely {
     val params = sampleStore.parameterQuery(barcode.id)
     annotations.fromAttributes(barcode, params)
   }
 
   @throws[TimeoutException]
-  def annotations(samples: Array[Sample], attributes: Array[Attribute]): Array[Annotation] = {
+  def annotations(samples: Array[Sample], attributes: Array[Attribute]): Array[Annotation] = safely {
     annotations.forSamples(sampleStore, samples, attributes)
   }
 
   @throws[TimeoutException]
-  def annotations(column: HasSamples[Sample], importantOnly: Boolean = false): Array[Annotation] = {
+  def annotations(column: HasSamples[Sample], importantOnly: Boolean = false): Array[Annotation] = safely {
     annotations.forSamples(sampleStore, column.getSamples, importantOnly)
   }
 
@@ -346,7 +347,7 @@ abstract class SparqlServiceImpl extends TServiceServlet with
   def probesForPathway(pathway: String, samples: JList[Sample]): Array[String] = {
     val pw = Pathway(null, pathway)
     val prs = probeStore.forPathway(b2rKegg, pw)
-    val pmap = context.matrix.probeMap 
+    val pmap = context.matrix.probeMap
 
     val result = prs.map(_.identifier).filter(pmap.isToken)
     filterByGroup(result, samples).toArray
@@ -419,12 +420,13 @@ abstract class SparqlServiceImpl extends TServiceServlet with
 
   @throws[TimeoutException]
   def associations(sc: SampleClass, types: Array[AType],
-    _probes: Array[String]): Array[Association] =
+    _probes: Array[String]): Array[Association] = safely {
     new AssociationResolver(probeStore, b2rKegg, getSessionData().mirnaSources, sc, types, _probes).resolve
+  }
 
   @throws[TimeoutException]
   def setMirnaSources(sources: Array[MirnaSource]): scala.Unit = {
-    val state = getSessionData().mirnaSources = sources
+    getSessionData().mirnaSources = sources
   }
 
   @throws[TimeoutException]

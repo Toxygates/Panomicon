@@ -1,14 +1,14 @@
 package t.viewer.client.components.search;
 
-import t.common.client.ImageClickCell;
-import t.common.shared.sample.Unit;
-import t.model.sample.Attribute;
-import t.model.sample.CoreParameter;
-
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.Column;
+
+import t.common.client.ImageClickCell;
+import t.common.shared.sample.Unit;
+import t.model.sample.Attribute;
+import t.model.sample.CoreParameter;
 
 public class UnitTable extends ResultTable<Unit> {
   private TextCell textCell = new TextCell();
@@ -62,6 +62,7 @@ public class UnitTable extends ResultTable<Unit> {
   class ToolColumn extends Column<Unit, Unit> {
     public ToolColumn(InspectCell tc) {
       super(tc);
+      setCellStyleNames("lightBorderLeft");
     }
 
     @Override

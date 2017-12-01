@@ -153,6 +153,13 @@ abstract public class TApplication implements ScreenManager, EntryPoint {
 
     css.ensureInjected();
 
+    GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {      
+      @Override
+      public void onUncaughtException(Throwable e) {
+        logger.log(Level.WARNING, "Exception", e);
+      }
+    });
+    
     reloadAppInfo(new AsyncCallback<AppInfo>() {
       @Override
       public void onSuccess(AppInfo result) {

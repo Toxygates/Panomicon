@@ -137,7 +137,9 @@ public class Charts {
 
           ChartGrid<?> cg =
               factory.grid(screen, ds, filters, organisms, rowsAreCompounds, medVals, false, 400);
-          cg.adjustAndDisplay(cg.getMaxColumnCount(), ds.getMin(), ds.getMax());
+          cg.adjustAndDisplay(
+            new ChartStyle(0, true, null, false),
+            cg.getMaxColumnCount(), ds.getMin(), ds.getMax());
           acceptor.acceptCharts(cg);
         }
 

@@ -56,6 +56,7 @@ abstract public class AssociationTable<T> extends RichTable<T> {
     SafeHtmlCell shc = new SafeHtmlCell();
     List<HideableColumn<T, ?>> r = new ArrayList<HideableColumn<T, ?>>();
     assocColumns = new HashMap<AType, AssociationColumn>();
+
     for (AType at : schema.associations()) {
       // TODO fill in matrixColumn for sortable associations
       AssociationColumn ac = new AssociationColumn(shc, at);
@@ -64,6 +65,7 @@ abstract public class AssociationTable<T> extends RichTable<T> {
     }
     return r;
   }
+
   
   private AType[] visibleAssociations() {
     List<AType> r = new ArrayList<AType>();
@@ -80,7 +82,7 @@ abstract public class AssociationTable<T> extends RichTable<T> {
   public void getAssociations() {
     waitingForAssociations = true;
     AType[] vas = visibleAssociations();
-    if (vas.length > 0) {
+    if (vas.length > 0 && displayedAtomicProbes().length > 0) {
       AsyncCallback<Association[]> assocCallback = new AsyncCallback<Association[]>() {
         public void onFailure(Throwable caught) {
           Window.alert("Unable to get associations: " + caught.getMessage());
@@ -185,8 +187,14 @@ abstract public class AssociationTable<T> extends RichTable<T> {
     }
 
     @Override
-    void setVisibility(boolean v) {
+
+    
+    public void setVisibility(boolean v) {
+
       super.setVisibility(v);
+      if (v) {
+        getAssociations();
+      }
     }
 
     protected String formLink(String value) {
@@ -199,6 +207,7 @@ abstract public class AssociationTable<T> extends RichTable<T> {
       if (a == null) {
         return all;
       }
+
       for (String at : atomicProbesForRow(expressionRow)) {
         if (a.data().containsKey(at)) {
           all.addAll(a.data().get(at));

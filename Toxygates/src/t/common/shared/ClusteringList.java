@@ -158,7 +158,7 @@ public class ClusteringList extends ItemList {
     sb.append(list.name());
     // because available separator is only "$" currently,
     // combine name and list with "$".
-    // TODO consider to define more separators
+    // We may consider defining more separators.
     sb.append("$$$");
     sb.append(SharedUtils.packList(list.packedItems(), "$$$"));
     return sb.toString();
