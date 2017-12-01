@@ -99,7 +99,7 @@ Menu bar
 }
 
 .gwt-MenuBar-horizontal .gwt-MenuItem {
-	color: white;
+	color: MENUBARITEM_COLOR;
 	position: relative;
 	/* This border needs to be the same color as the menuBarPanel background. It ensures 
 	   correct positioning of the partial border :before pseudo-element, and also prevents
