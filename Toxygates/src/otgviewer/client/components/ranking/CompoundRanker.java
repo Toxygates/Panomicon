@@ -264,10 +264,12 @@ abstract public class CompoundRanker extends DataListenerWidget {
   @Override
   public void availableCompoundsChanged(List<String> compounds) {
     super.availableCompoundsChanged(compounds);
-    availableCompounds = compounds;
-    for (RuleInputHelper rih : inputHelpers) {
-      rih.availableCompoundsChanged(compounds);
+    if (!compounds.equals(availableCompounds)) {
+      for (RuleInputHelper rih : inputHelpers) {
+        rih.availableCompoundsChanged(compounds);
+      }
     }
+    availableCompounds = compounds;
   }
 
   @Override
