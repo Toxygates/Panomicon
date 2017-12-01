@@ -18,17 +18,19 @@
 
 package otgviewer.client.components.ranking;
 
+import static otg.model.sample.OTGAttribute.Compound;
+import static otg.model.sample.OTGAttribute.DoseLevel;
+
 import java.util.List;
+
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.user.client.ui.*;
 
 import otgviewer.client.components.PendingAsyncCallback;
 import otgviewer.shared.RankRule;
 import otgviewer.shared.RuleType;
 import t.model.SampleClass;
-import static otg.model.sample.OTGAttribute.*;
-
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.user.client.ui.*;
 
 public class FullRuleInputHelper extends RuleInputHelper {
 
@@ -61,6 +63,7 @@ public class FullRuleInputHelper extends RuleInputHelper {
 
   final static int REQUIRED_COLUMNS = 6;
 
+  @Override
   protected RuleType[] ruleTypes() {
     return RuleType.values();
   }
@@ -97,6 +100,7 @@ public class FullRuleInputHelper extends RuleInputHelper {
     });
   }
 
+  @Override
   protected void rankTypeChanged() {
     RuleType rt = rankType.value();
     switch (rt) {
@@ -178,11 +182,7 @@ public class FullRuleInputHelper extends RuleInputHelper {
     syntheticCurveText.setText("");
   }
 
-  void sampleClassChanged(SampleClass sc) {
-    refCompound.clear();
-    refDose.clear();
-  }
-
+  @Override
   void availableCompoundsChanged(List<String> compounds) {
     refCompound.clear();
     refDose.clear();
