@@ -172,7 +172,8 @@ public class StackedListEditor extends ResizeComposite implements SetEditor<Stri
         }
       };
 
-      HorizontalPanel hp = Utils.mkWidePanel();
+      HorizontalPanel hp = Utils.mkHorizontalPanel(true);
+      hp.setWidth("100%");
       dlp.addSouth(hp, 36);
 
       sortButton = new Button("Sort by name", new ClickHandler() {
