@@ -319,6 +319,10 @@ Tables
 	background: DARK_ROW_COLOR;
 }
 
+.sideExpressionTable {
+	margin-top: 50px;
+}
+
 /**************************************	
 Expression table
 **************************************/

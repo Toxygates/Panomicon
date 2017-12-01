@@ -145,7 +145,6 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
         };
         table.addColumn(textColumn, "Type");
         
-        
         makeGroupColumns(table);
 
         // We use TextButtonCell instead of ButtonCell since it has setEnabled

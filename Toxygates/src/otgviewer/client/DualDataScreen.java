@@ -32,6 +32,7 @@ public class DualDataScreen extends DataScreen {
     
     sideExpressionTable = new ExpressionTable(this, true,
         TableStyle.getStyle("mirna"), sideMatrix);     
+    sideExpressionTable.addStyleName("sideExpressionTable");
   }
   
   protected DockLayoutPanel dockLayout;
