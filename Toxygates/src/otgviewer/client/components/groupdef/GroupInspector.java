@@ -31,6 +31,7 @@ import t.common.client.components.SelectionTable;
 import t.common.shared.*;
 import t.common.shared.sample.*;
 import t.model.SampleClass;
+import t.model.sample.CoreParameter;
 import t.viewer.client.*;
 import t.viewer.client.rpc.SampleServiceAsync;
 
@@ -136,6 +137,15 @@ abstract public class GroupInspector extends DataListenerWidget implements Requi
         };
         table.addColumn(textColumn, "Group");
 
+        textColumn = new TextColumn<Group>() {
+          @Override
+          public String getValue(Group object) {
+            return object.getSamples()[0].get(CoreParameter.Type);
+          }
+        };
+        table.addColumn(textColumn, "Type");
+        
+        
         makeGroupColumns(table);
 
         // We use TextButtonCell instead of ButtonCell since it has setEnabled
