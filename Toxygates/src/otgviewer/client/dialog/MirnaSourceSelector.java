@@ -57,14 +57,14 @@ public class MirnaSourceSelector extends SelectionTable<MirnaSource> {
     textColumn = new TextColumn<MirnaSource>() {
       @Override
       public String getValue(MirnaSource object) {
-        if (object.empirical()) {
+        if (object.experimental()) {
           return "Yes";
         } else {
           return "No";
         }
       }
     };
-    table.addColumn(textColumn, "Empirically validated");    
+    table.addColumn(textColumn, "Experimentally validated");    
     
     Column <MirnaSource, String> scoreColumn = new Column<MirnaSource, String>(new EditTextCell()) {    
       @Override

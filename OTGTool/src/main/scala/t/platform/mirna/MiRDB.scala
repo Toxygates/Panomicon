@@ -28,7 +28,7 @@ object MiRDBConverter {
                     |@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
                     |$graph {
                     |  $graph a t:mirnaSource; t:hasScores "true"; rdfs:label "$label";
-                    |  t:suggestedLimit 50.0; t:empirical "false"; t:size $size. """.stripMargin)
+                    |  t:suggestedLimit 50.0; t:experimental "false"; t:size $size. """.stripMargin)
       for (l <- lines) {
         val Array(mirna, refseq, score) = l.split("\\s+")
         w.println(s"""  [] t:mirna tp:$mirna; t:refseqTrn "$refseq"; t:score $score.""")

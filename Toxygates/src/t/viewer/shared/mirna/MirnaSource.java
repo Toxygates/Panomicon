@@ -12,7 +12,7 @@ public class MirnaSource implements Serializable, Packable {
   MirnaSource() {}
   
   private String title, id;
-  private boolean hasScores, empirical;
+  private boolean hasScores, experimental;
   private Double limit;
   private int size;
   
@@ -21,16 +21,16 @@ public class MirnaSource implements Serializable, Packable {
    * 
    * @param id An identifying string. 
    * @param title The title of the source
-   * @param empirical Whether the source is empirical
+   * @param experimental Whether the source is experimentally validated
    * @param hasScoresWhether the associations have numerical scores
    * @param limit The cutoff limit, if any (if there are numerical scores)
    */
-  public MirnaSource(String id, String title, boolean empirical, 
+  public MirnaSource(String id, String title, boolean experimental, 
       boolean hasScores, @Nullable Double limit,
       int size) {
     this.id = id;
     this.title = title;
-    this.empirical = empirical;
+    this.experimental = experimental;
     this.hasScores = hasScores;
     this.limit = limit;
     this.size = size;
@@ -40,7 +40,7 @@ public class MirnaSource implements Serializable, Packable {
   
   public boolean hasScores() { return hasScores; }
   
-  public boolean empirical() { return empirical; }
+  public boolean experimental() { return experimental; }
   
   public @Nullable Double limit() { return limit; }
   
