@@ -265,7 +265,7 @@ class ExtFoldBuilder(val enhancedColumns: Boolean, reader: MatrixDBReader[PExprV
   
   override protected def shortName(g: Group) = "Log2-fold"
   
-  override protected def tooltipSuffix = "log2-fold change of treated versus control"
+  override protected def tooltipSuffix = ": log2-fold change of treated versus control"
 
   override protected def columnInfo(g: Group): ManagedMatrixInfo = {
     val tus = treatedAndControl(g)._1
